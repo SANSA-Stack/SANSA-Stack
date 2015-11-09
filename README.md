@@ -1,10 +1,10 @@
-# dissect-rdf-spark
+# Spark-RDF
 RDF Spark Library.
 
 ## Description
 RDF Spark Library.
 
-## dissect-rdf-spark main application class
+## Spark-RDF main application class
 The main application class is `org.dissect.rdf.spark.App`.
 The application requires as application arguments:
 
