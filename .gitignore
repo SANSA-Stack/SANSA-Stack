@@ -17,3 +17,4 @@ buildNumber.properties
 .cache-main
 .cache-tests
 .classpath
+/bin
