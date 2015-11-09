@@ -14,3 +14,6 @@ buildNumber.properties
 .manager
 .scala_dependencies
 .cashe
+.cache-main
+.cache-tests
+.classpath
