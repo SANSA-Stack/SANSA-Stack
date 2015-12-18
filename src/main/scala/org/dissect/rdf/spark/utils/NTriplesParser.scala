@@ -1,5 +1,9 @@
 package org.dissect.rdf.spark.utils
 
+import org.apache.jena.riot.RiotReader
+import org.dissect.rdf.spark.model.StringInputStream
+import org.apache.jena.riot.Lang
+
 object NTriplesParser {
 
   // regex pattern for end of triple
@@ -24,5 +28,13 @@ object NTriplesParser {
       case other => throw Error("illegal character to start triple entity ( subject, relation, or object)")
     }
   }*/
+
+  /*
+   * Parse Triples
+   */
+  def parseTriple(fn: String) = {
+    val triples = RiotReader.createIteratorTriples(new StringInputStream(fn), Lang.NTRIPLES, "http://example/base").next
+    (triples.getSubject.toString(), triples.getPredicate.toString(), if (triples.getObject.isLiteral()) triples.getObject.getLiteralLexicalForm().toString() else triples.getObject().toString())
+  }
 
 }
