@@ -1,4 +1,4 @@
-package org.dissect.rdf.spark.analitycs
+package org.dissect.rdf.spark.analytics
 import org.apache.spark.graphx._
 
 

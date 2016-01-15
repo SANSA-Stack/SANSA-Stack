@@ -1,6 +1,9 @@
 package org.dissect.rdf.spark.model
 
 import java.io.InputStream
+import org.apache.spark.rdd.RDD
+import com.hp.hpl.jena.vocabulary.RDF
+
 
 /**
  * ******************************************************************************
@@ -210,3 +213,6 @@ class StringInputStream(s: String) extends InputStream {
     r.toInt
   }
 }
+
+
+

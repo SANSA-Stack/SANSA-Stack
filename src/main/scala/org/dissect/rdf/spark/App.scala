@@ -18,7 +18,7 @@ import org.apache.jena.riot.RiotReader
 import org.apache.jena.riot.Lang
 import org.dissect.rdf.spark.utils._
 import org.dissect.rdf.spark.model._
-import org.dissect.rdf.spark.analitycs._
+import org.dissect.rdf.spark.analytics._
 import org.dissect.rdf.spark.utils.Logging
 
 object App extends Logging {
