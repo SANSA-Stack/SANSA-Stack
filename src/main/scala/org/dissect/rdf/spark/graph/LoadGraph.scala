@@ -10,7 +10,7 @@ object LoadGraph extends Logging {
   var _graph: Graph[String, String] = null
   //var _graph: Graph[VertexAtt, EdgeAtt] = null
 
-  def loadGraph(filePath: String, sparkContext: SparkContext) {
+  def apply(filePath: String, sparkContext: SparkContext) {
     val text = sparkContext.textFile(filePath) //hdfsfile + "/gsejdiu/DistLODStats/Dbpedia/en/geonames_links_en.nt.bz2")
       .filter(line => !line.trim().isEmpty & !line.startsWith("#"))
 
