@@ -124,7 +124,7 @@ sealed class Lang(c: String) {
  * @param pred The predicate (property) of the triple
  * @param obj The object of the triple
  */
-class Triple(val subj: Node, val pred: URI, val obj: Node) {
+class TripleM(val subj: Node, val pred: URI, val obj: Node) {
 
   override def toString() = subj + " " + pred + " " + obj
 
@@ -133,22 +133,22 @@ class Triple(val subj: Node, val pred: URI, val obj: Node) {
    *
    */
   def isBlankNode() = this match {
-    case Triple(b: Node, _, _) => true
-    case Triple(_, _, b: Node) => true
+    case TripleM(b: Node, _, _) => true
+    case TripleM(_, _, b: Node) => true
     case _ => false
   }
   
   override def equals(other: Any) = {
     other match {
-      case Triple(s, p, o) => subj == s && pred == p && obj == 0
+      case TripleM(s, p, o) => subj == s && pred == p && obj == 0
       case _ => false
     }
   }
 
 }
-object Triple {
-  def apply(s: Node, p: URI, o: Node) = new Triple(s, p, o)
-  def unapply(statement: Triple): Option[Tuple3[Node, URI, Node]] = {
+object TripleM {
+  def apply(s: Node, p: URI, o: Node) = new TripleM(s, p, o)
+  def unapply(statement: TripleM): Option[Tuple3[Node, URI, Node]] = {
     Some(statement.subj, statement.pred, statement.obj)
   }
 }

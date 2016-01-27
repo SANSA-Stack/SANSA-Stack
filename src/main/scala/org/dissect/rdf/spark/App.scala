@@ -33,9 +33,17 @@ object App extends Logging {
       System.exit(1)
     }
     val sparkConf = new SparkConf().setAppName("BDE-readRDF").setMaster(SPARK_MASTER);
+    sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+    sparkConf.set("spark.kryo.registrator", "org.dissect.rdf.spark.model.serialization.Registrator")
+    sparkConf.set("spark.core.connection.ack.wait.timeout", "5000");
+    sparkConf.set("spark.shuffle.consolidateFiles", "true");
+    sparkConf.set("spark.rdd.compress", "true");
+    sparkConf.set("spark.kryoserializer.buffer.max.mb", "512");
+
     val sparkContext = new SparkContext(sparkConf)
 
-    val file = "C:/Users/Gezimi/Desktop/AKSW/Spark/sparkworkspace/data/nyse.nt"
+    /// val file = "C:/Users/Gezimi/Desktop/AKSW/Spark/sparkworkspace/data/nyse.nt"
+    val file = args(0)
     val graph = LoadGraph.apply(file, sparkContext)
 
     logger.info("RDFModel..........executed")
