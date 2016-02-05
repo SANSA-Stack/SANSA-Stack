@@ -19,6 +19,9 @@ import org.dissect.rdf.spark.model._
 import org.dissect.rdf.spark.analytics._
 import org.dissect.rdf.spark.utils.Logging
 import org.dissect.rdf.spark.graph.LoadGraph
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.jena.sparql.util.NodeUtils
 
 object App extends Logging {
 
@@ -37,7 +40,16 @@ object App extends Logging {
     val sparkContext = new SparkContext(sparkConf)
 
     //val file = "C:/Users/Gezimi/Desktop/AKSW/Spark/sparkworkspace/data/nyse.nt"
-    val graph = LoadGraph(fileName, sparkContext)
+    val graphLayout = LoadGraph(fileName, sparkContext)
+    val graph = graphLayout.graph
+    val vertexId = graphLayout.iriToId.lookup("http://fp7-pp.publicdata.eu/resource/funding/223894-999854564")
+
+    println("VERTEX ID = " + vertexId.mkString("."))
+
+    val landmarks = Seq[Long](1, 2, 3)
+    val result = ShortestPaths.run(graph, landmarks)
+
+
 
     logger.info("RDFModel..........executed")
 

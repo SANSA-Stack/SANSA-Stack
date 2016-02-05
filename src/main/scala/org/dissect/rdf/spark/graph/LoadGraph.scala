@@ -4,6 +4,8 @@ import org.dissect.rdf.spark.utils._
 import org.apache.spark.SparkContext
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.PairRDDFunctions
 
 object LoadGraph extends Logging {
 
@@ -18,6 +20,7 @@ object LoadGraph extends Logging {
 
     val indexedmap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithIndex //indexing
     val vertices: RDD[(VertexId, String)] = indexedmap.map(x => (x._2, x._1))
+    val _iriToId: RDD[(String, VertexId)] = indexedmap.map(x => (x._1, x._2))
 
     val tuples = rs.keyBy(_._1).join(indexedmap).map({
       case (k, ((s, p, o), si)) => (o, (si, p))
@@ -30,6 +33,11 @@ object LoadGraph extends Logging {
     // TODO is there a specific reason to not return the graph directly? ~ Claus
     //_graph =
     Graph(vertices, edges)
+
+    new {
+      val graph = Graph(vertices, edges)
+      val iriToId = _iriToId
+    }
 
   }
 
