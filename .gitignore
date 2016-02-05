@@ -18,3 +18,6 @@ buildNumber.properties
 .cache-tests
 .classpath
 /bin
+
+# filename i use to store output of mvn dependency:tree ~Claus
+deptree.txt
