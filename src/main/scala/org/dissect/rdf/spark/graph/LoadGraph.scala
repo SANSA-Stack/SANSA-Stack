@@ -7,10 +7,10 @@ import org.apache.spark.rdd.RDD
 
 object LoadGraph extends Logging {
 
-  var _graph: Graph[String, String] = null
+  //var _graph: Graph[String, String] = null
   //var _graph: Graph[VertexAtt, EdgeAtt] = null
 
-  def apply(filePath: String, sparkContext: SparkContext) {
+  def apply(filePath: String, sparkContext: SparkContext) = {
     val text = sparkContext.textFile(filePath) //hdfsfile + "/gsejdiu/DistLODStats/Dbpedia/en/geonames_links_en.nt.bz2")
       .filter(line => !line.trim().isEmpty & !line.startsWith("#"))
 
@@ -27,7 +27,9 @@ object LoadGraph extends Logging {
       case (k, ((si, p), oi)) => Edge(si, oi, p)
     })
 
-    _graph = Graph(vertices, edges)
+    // TODO is there a specific reason to not return the graph directly? ~ Claus
+    //_graph =
+    Graph(vertices, edges)
 
   }
 

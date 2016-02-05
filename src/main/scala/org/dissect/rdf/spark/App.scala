@@ -37,9 +37,12 @@ object App extends Logging {
     val sparkContext = new SparkContext(sparkConf)
 
     //val file = "C:/Users/Gezimi/Desktop/AKSW/Spark/sparkworkspace/data/nyse.nt"
-    val graph = LoadGraph.apply(fileName, sparkContext)
+    val graph = LoadGraph(fileName, sparkContext)
 
     logger.info("RDFModel..........executed")
+
+
+    logger.info("Graph stats: " + graph.numVertices + " - " + graph.numEdges)
 
     sparkContext.stop()
   }
