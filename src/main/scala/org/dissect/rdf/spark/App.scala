@@ -35,8 +35,9 @@ object App extends Logging {
     val sparkConf = new SparkConf().setAppName("BDE-readRDF").setMaster(SPARK_MASTER);
     val sparkContext = new SparkContext(sparkConf)
 
-    val file = "C:/Users/Gezimi/Desktop/AKSW/Spark/sparkworkspace/data/nyse.nt"
-    val graph = LoadGraph.apply(file, sparkContext)
+    //val file = "C:/Users/Gezimi/Desktop/AKSW/Spark/sparkworkspace/data/nyse.nt"
+    val fileName = args(0)
+    val graph = LoadGraph.apply(fileName, sparkContext)
 
     logger.info("RDFModel..........executed")
 
