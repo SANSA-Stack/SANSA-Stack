@@ -1,10 +1,11 @@
 package org.dissect.rdf.spark.model
-import com.hp.hpl.jena.graph.{ Node => rddNode }
-import com.hp.hpl.jena.graph.{ Node_Literal => rddLiteral }
-import com.hp.hpl.jena.rdf
-import com.hp.hpl.jena.vocabulary.RDF
+import org.apache.jena.graph.{ Node => rddNode }
+import org.apache.jena.graph.{ Node_Literal => rddLiteral }
+import org.apache.jena.rdf
+import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.rdd.MapPartitionsRDD
+import org.apache.jena.vocabulary.RDF
 
 object RDDModel {
 
@@ -69,7 +70,7 @@ object RDDModel {
       this,
       (iter) => iter.filter(f))
   }
-  * 
+  *
   */
 
   /*

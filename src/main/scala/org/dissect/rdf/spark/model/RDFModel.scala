@@ -2,7 +2,7 @@ package org.dissect.rdf.spark.model
 
 import java.io.InputStream
 import org.apache.spark.rdd.RDD
-import com.hp.hpl.jena.vocabulary.RDF
+import org.apache.jena.vocabulary.RDF
 
 
 /**
@@ -137,7 +137,7 @@ class Triple(val subj: Node, val pred: URI, val obj: Node) {
     case Triple(_, _, b: Node) => true
     case _ => false
   }
-  
+
   override def equals(other: Any) = {
     other match {
       case Triple(s, p, o) => subj == s && pred == p && obj == 0
