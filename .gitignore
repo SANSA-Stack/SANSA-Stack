@@ -21,3 +21,5 @@ buildNumber.properties
 
 # filename i use to store output of mvn dependency:tree ~Claus
 deptree.txt
+# local project specific tmp folder
+tmp
