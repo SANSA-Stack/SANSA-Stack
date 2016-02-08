@@ -16,6 +16,8 @@ class SparkPageRank(lines: Graph[VertexId, String], iters: Int) {
 
   var ranks = links.mapValues(v => 1.0)
 
+
+
   for (i <- 1 to iters) {
     val contribs = links.join(ranks).values.flatMap {
       case (urls, rank) =>
