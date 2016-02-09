@@ -1,5 +1,8 @@
 package org.dissect.rdf.spark.model
 
+/**
+ * Operations on URIs - taken from banana-rdf
+ */
 trait URIOps[Rdf <: RDF] {
 
   def getString(uri: Rdf#URI): String
@@ -30,7 +33,7 @@ trait URIOps[Rdf <: RDF] {
 
 }
 
-trait DefaultURIOps[Rdf <: RDF] extends URIOps[Rdf] { ops: RDFOps[Rdf] =>
+trait DefaultURIOps[Rdf <: RDF] extends URIOps[Rdf] { ops: RDFNodeOps[Rdf] =>
 
   import java.net.{ URI => jURI }
 
