@@ -3,9 +3,9 @@ package org.dissect.rdf.spark.model
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.xml.dtd.ANY
-
 /**
+ * Spark based implementation of RDFGraphOps
+ *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait SparkGraphOps[Rdf <: SparkRDD]

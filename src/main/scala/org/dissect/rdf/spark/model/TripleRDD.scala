@@ -3,7 +3,7 @@ package org.dissect.rdf.spark.model
 import org.apache.spark.rdd.RDD
 
 /**
- * Functions for RDD of Triples
+ * Implicit wrapper for functions for RDD of Jena Triples.
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>, Gezim Sejdiu <g.sejdiu@gmail.com>
  */

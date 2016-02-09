@@ -1,15 +1,14 @@
 package org.dissect.rdf.spark.model
 
+/**
+ * RDF DSL objects to make life easy - taken from banana-rdf
+ */
 trait RDFDSL[Rdf <: RDF] { this: RDFNodeOps[Rdf] with RDFGraphOps[Rdf] =>
-
-  // graph
 
   object Graph {
     def apply(elems: Rdf#Triple*): Rdf#Graph = makeGraph(elems.toIterable)
     def apply(it: Iterable[Rdf#Triple]): Rdf#Graph = makeGraph(it)
   }
-
-  // triple
 
   object Triple {
     def apply(s: Rdf#Node, p: Rdf#URI, o: Rdf#Node): Rdf#Triple = makeTriple(s, p, o)
@@ -17,16 +16,12 @@ trait RDFDSL[Rdf <: RDF] { this: RDFNodeOps[Rdf] with RDFGraphOps[Rdf] =>
       Some(fromTriple(triple))
   }
 
-  // URI
-
   object URI {
     def apply(s: String): Rdf#URI = makeUri(s)
     def unapply(uri: Rdf#URI): Some[String] = Some(fromUri(uri))
     def unapply(node: Rdf#Node): Option[String] =
       foldNode(node)(unapply, bnode => None, lit => None)
   }
-
-  // bnode
 
   object BNode {
     def apply(): Rdf#BNode = makeBNode()
@@ -39,8 +34,6 @@ trait RDFDSL[Rdf <: RDF] { this: RDFNodeOps[Rdf] with RDFGraphOps[Rdf] =>
   def bnode(): Rdf#BNode = BNode()
   def bnode(s: String): Rdf#BNode = BNode(s)
 
-  // typed literal
-
   object Literal {
     val xsdString = makeUri("http://www.w3.org/2001/XMLSchema#string")
     val rdfLangString = makeUri("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")
@@ -51,8 +44,6 @@ trait RDFDSL[Rdf <: RDF] { this: RDFNodeOps[Rdf] with RDFGraphOps[Rdf] =>
     def apply(lexicalForm: String, datatype: Rdf#URI): Rdf#Literal = makeLiteral(lexicalForm, datatype)
     def tagged(lexicalForm: String, lang: Rdf#Lang): Rdf#Literal = makeLangTaggedLiteral(lexicalForm, lang)
   }
-
-  // lang
 
   object Lang {
     def apply(s: String): Rdf#Lang = makeLang(s)

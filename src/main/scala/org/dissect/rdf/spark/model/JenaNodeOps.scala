@@ -4,6 +4,8 @@ import org.apache.jena.datatypes.{RDFDatatype, TypeMapper}
 import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
 
 /**
+ * Jena based implementation of RDFNodeOps
+ *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait JenaNodeOps[Rdf <: Jena]

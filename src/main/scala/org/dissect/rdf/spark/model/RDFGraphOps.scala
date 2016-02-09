@@ -1,6 +1,8 @@
 package org.dissect.rdf.spark.model
 
 /**
+ * Operations and traversal on RDF graphs.
+ *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait RDFGraphOps[Rdf <: RDF]

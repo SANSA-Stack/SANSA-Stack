@@ -1,6 +1,8 @@
 package org.dissect.rdf.spark.model
 
 /**
+ * Operations on RDF nodes/literals/triples etc., ie. elements of a graph
+ *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait RDFNodeOps[Rdf <: RDF]
