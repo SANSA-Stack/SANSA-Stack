@@ -7,7 +7,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.rdd.MapPartitionsRDD
 import org.apache.jena.vocabulary.RDF
 
-object RDDModel {
+object RDDModel extends Serializable {
 
   type Triple = (rddNode, rddNode, rddNode)
 

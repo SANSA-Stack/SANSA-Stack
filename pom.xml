@@ -25,35 +25,11 @@
     </repositories>
 
     <dependencies>
-
-
-        <!-- This version is no longer works with current spark versions; ~Claus -->
-        <!-- See: https://support.datastax.com/hc/en-us/articles/207038146-DSE-Spark-job-initialisation-returns-java-lang-NoSuchFieldException-SHUTDOWN-HOOK-PRIORITY- -->
-        <!-- <dependency> -->
-        <!-- <groupId>org.apache.hadoop</groupId> -->
-        <!-- <artifactId>hadoop-core</artifactId> -->
-        <!-- <version>1.2.1</version> -->
-        <!-- </dependency> -->
-
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-graphx_${scala.compat.version}</artifactId>
-            <!-- <version>1.5.1</version> -->
             <version>1.6.0</version>
-            <!-- <exclusions> -->
-            <!-- <exclusion> -->
-            <!-- <groupId>org.apache.hadoop</groupId> -->
-            <!-- <artifactId>hadoop-client</artifactId> -->
-            <!-- </exclusion> -->
-            <!-- </exclusions> -->
         </dependency>
-
-<!--         <dependency> -->
-<!--             <groupId>org.apache.spark</groupId> -->
-<!--             <artifactId>spark-core_${scala.compat.version}</artifactId> -->
-<!--             <version>1.6.0</version> -->
-<!--             <scope>provided</scope> -->
-<!--         </dependency> -->
 
         <!-- Test -->
         <dependency>
@@ -92,7 +68,6 @@
             <artifactId>commons-compress</artifactId>
             <version>1.0</version>
         </dependency>
-
     </dependencies>
 
     <build>
