@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
-trait SparkGraphOps[Rdf <: SparkRDD]
+trait SparkRDDGraphOps[Rdf <: SparkRDD]
   extends RDFGraphOps[Rdf]
   with URIOps[Rdf]
   with RDFDSL[Rdf] { this: RDFNodeOps[Rdf] =>
