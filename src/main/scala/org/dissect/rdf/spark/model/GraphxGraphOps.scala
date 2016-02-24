@@ -12,7 +12,7 @@ import scala.util.hashing.MurmurHash3
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
-trait GraphxGraphOps[Rdf <: SparkGraphX]
+trait GraphXGraphOps[Rdf <: SparkGraphX]
   extends RDFGraphOps[Rdf]
   with URIOps[Rdf]
   with RDFDSL[Rdf] { this: RDFNodeOps[Rdf] =>
