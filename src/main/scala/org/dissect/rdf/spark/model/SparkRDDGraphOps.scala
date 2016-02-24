@@ -21,7 +21,7 @@ trait SparkRDDGraphOps[Rdf <: SparkRDD]
     sparkContext.parallelize(triples.toSeq)
 
   protected def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple] =
-    graph.collect()
+    graph.toLocalIterator.toIterable
 
   // graph traversal
 
@@ -49,9 +49,8 @@ trait SparkRDDGraphOps[Rdf <: SparkRDD]
     }
   }
 
-  protected def find(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Iterator[Rdf#Triple] = {
+  protected def find(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Iterator[Rdf#Triple] =
     findGraph(graph, subject, predicate, objectt).toLocalIterator
-  }
 
   // graph operations
 
