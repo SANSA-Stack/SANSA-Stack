@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
-trait SparkGraphOps[Rdf <: SparkRDD]
+trait SparkRDDGraphOps[Rdf <: SparkRDD]
   extends RDFGraphOps[Rdf]
   with URIOps[Rdf]
   with RDFDSL[Rdf] { this: RDFNodeOps[Rdf] =>
@@ -21,7 +21,7 @@ trait SparkGraphOps[Rdf <: SparkRDD]
     sparkContext.parallelize(triples.toSeq)
 
   protected def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple] =
-    graph.collect()
+    graph.toLocalIterator.toIterable
 
   // graph traversal
 
@@ -49,9 +49,8 @@ trait SparkGraphOps[Rdf <: SparkRDD]
     }
   }
 
-  protected def find(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Iterator[Rdf#Triple] = {
+  protected def find(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Iterator[Rdf#Triple] =
     findGraph(graph, subject, predicate, objectt).toLocalIterator
-  }
 
   // graph operations
 

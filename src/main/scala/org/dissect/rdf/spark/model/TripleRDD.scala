@@ -7,88 +7,88 @@ import org.apache.spark.rdd.RDD
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>, Gezim Sejdiu <g.sejdiu@gmail.com>
  */
-class TripleRDD(graphRDD: JenaSpark#Graph) extends JenaNodeOps[JenaSpark] with SparkGraphOps[JenaSpark] {
+class TripleRDD(graphRDD: JenaSparkRDD#Graph) extends JenaNodeOps[JenaSparkRDD] with SparkRDDGraphOps[JenaSparkRDD] {
   val sparkContext = graphRDD.sparkContext
 
-  def getTriples: Iterable[JenaSpark#Triple] =
+  def getTriples: Iterable[JenaSparkRDD#Triple] =
     getTriples(graphRDD)
 
-  def getSubjects: RDD[JenaSpark#Node] =
+  def getSubjects: RDD[JenaSparkRDD#Node] =
     graphRDD.map(_.getSubject)
 
-  def getPredicates: RDD[JenaSpark#Node] =
+  def getPredicates: RDD[JenaSparkRDD#Node] =
     graphRDD.map(_.getPredicate)
 
-  def getObjects: RDD[JenaSpark#Node] =
+  def getObjects: RDD[JenaSparkRDD#Node] =
     graphRDD.map(_.getObject)
 
-  def getSubjectsWithPredicate(predicate: JenaSpark#URI): RDD[JenaSpark#Node] =
+  def getSubjectsWithPredicate(predicate: JenaSparkRDD#URI): RDD[JenaSparkRDD#Node] =
     getSubjectsRDD(graphRDD, predicate)
 
-  def getSubjectsWithPredicate(predicate: JenaSpark#URI, objectt: JenaSpark#Node): RDD[JenaSpark#Node] =
+  def getSubjectsWithPredicate(predicate: JenaSparkRDD#URI, objectt: JenaSparkRDD#Node): RDD[JenaSparkRDD#Node] =
     getSubjectsRDD(graphRDD, predicate, objectt)
 
-  def getObjectsWithPredicate(predicate: JenaSpark#URI): RDD[JenaSpark#Node] =
+  def getObjectsWithPredicate(predicate: JenaSparkRDD#URI): RDD[JenaSparkRDD#Node] =
     getObjectsRDD(graphRDD, predicate)
 
-  def getObjectsWithPredicate(subject: JenaSpark#Node, predicate: JenaSpark#URI): RDD[JenaSpark#Node] =
+  def getObjectsWithPredicate(subject: JenaSparkRDD#Node, predicate: JenaSparkRDD#URI): RDD[JenaSparkRDD#Node] =
     getObjectsRDD(graphRDD, subject, predicate)
 
-  def mapSubjects(func: (JenaSpark#Node) => JenaSpark#Node): JenaSpark#Graph = {
+  def mapSubjects(func: (JenaSparkRDD#Node) => JenaSparkRDD#Node): JenaSparkRDD#Graph = {
     graphRDD.map {
       case Triple(s, p, o) => Triple(func(s), p, o)
     }
   }
 
-  def mapPredicates(func: (JenaSpark#URI) => JenaSpark#URI): JenaSpark#Graph = {
+  def mapPredicates(func: (JenaSparkRDD#URI) => JenaSparkRDD#URI): JenaSparkRDD#Graph = {
     graphRDD.map {
       case Triple(s, p, o) => Triple(s, func(p), o)
     }
   }
 
-  def mapObjects(func: (JenaSpark#Node) => JenaSpark#Node): JenaSpark#Graph = {
+  def mapObjects(func: (JenaSparkRDD#Node) => JenaSparkRDD#Node): JenaSparkRDD#Graph = {
     graphRDD.map {
       case Triple(s, p, o) => Triple(s, p, func(o))
     }
   }
 
-  def filterSubjects(func: (JenaSpark#Node) => Boolean): JenaSpark#Graph = {
+  def filterSubjects(func: (JenaSparkRDD#Node) => Boolean): JenaSparkRDD#Graph = {
     graphRDD.filter {
       case Triple(s, p, o) => func(s)
     }
   }
 
-  def filterPredicates(func: (JenaSpark#URI) => Boolean): JenaSpark#Graph = {
+  def filterPredicates(func: (JenaSparkRDD#URI) => Boolean): JenaSparkRDD#Graph = {
     graphRDD.filter {
       case Triple(s, p, o) => func(p)
     }
   }
 
-  def filterObjects(func: (JenaSpark#Node) => Boolean): JenaSpark#Graph = {
+  def filterObjects(func: (JenaSparkRDD#Node) => Boolean): JenaSparkRDD#Graph = {
     graphRDD.filter {
       case Triple(s, p, o) => func(o)
     }
   }
 
-  def mapURIs(func: (JenaSpark#URI) => JenaSpark#URI): JenaSpark#Graph = {
-    def mapper(n: JenaSpark#Node) = foldNode(n)(func, bnode => bnode, lit => lit)
+  def mapURIs(func: (JenaSparkRDD#URI) => JenaSparkRDD#URI): JenaSparkRDD#Graph = {
+    def mapper(n: JenaSparkRDD#Node) = foldNode(n)(func, bnode => bnode, lit => lit)
     graphRDD.map {
-      case Triple(s, p, o) => Triple(mapper(s), mapper(p).asInstanceOf[JenaSpark#URI], mapper(s))
+      case Triple(s, p, o) => Triple(mapper(s), mapper(p).asInstanceOf[JenaSparkRDD#URI], mapper(s))
     }
   }
 
-  def mapLiterals(func: (JenaSpark#Literal) => JenaSpark#Literal): JenaSpark#Graph = {
-    def mapper(n: JenaSpark#Node) = foldNode(n)(uri => uri, bnode => bnode, func)
+  def mapLiterals(func: (JenaSparkRDD#Literal) => JenaSparkRDD#Literal): JenaSparkRDD#Graph = {
+    def mapper(n: JenaSparkRDD#Node) = foldNode(n)(uri => uri, bnode => bnode, func)
     graphRDD.map {
       case Triple(s, p, o) => Triple(mapper(s), p, mapper(o))
     }
   }
 
-  def find(subject: JenaSpark#NodeMatch, predicate: JenaSpark#NodeMatch, objectt: JenaSpark#NodeMatch): JenaSpark#Graph =
+  def find(subject: JenaSparkRDD#NodeMatch, predicate: JenaSparkRDD#NodeMatch, objectt: JenaSparkRDD#NodeMatch): JenaSparkRDD#Graph =
     findGraph(graphRDD, subject, predicate, objectt)
 }
 
 
 object TripleRDD {
-  implicit def tripleFunctions(rdd: RDD[JenaSpark#Triple]): TripleRDD = new TripleRDD(rdd)
+  implicit def tripleFunctions(rdd: RDD[JenaSparkRDD#Triple]): TripleRDD = new TripleRDD(rdd)
 }
