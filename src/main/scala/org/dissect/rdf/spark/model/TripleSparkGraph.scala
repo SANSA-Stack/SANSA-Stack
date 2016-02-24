@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
-class TripleSparkGraph(graph: SparkGraphX#Graph) extends JenaNodeOps[SparkGraphX] with GraphxGraphOps[SparkGraphX] {
+class TripleSparkGraph(graph: SparkGraphX#Graph) extends JenaNodeOps[SparkGraphX] with GraphXGraphOps[SparkGraphX] {
   val sparkContext = graph.edges.sparkContext
 
   def getTriples: Iterable[SparkGraphX#Triple] =
