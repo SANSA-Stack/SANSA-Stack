@@ -28,3 +28,7 @@ trait Jena extends RDF {
 trait SparkRDD extends RDF {
   type Graph = RDD[Triple]
 }
+
+trait SparkGraphX extends RDF {
+  type Graph = SparkGraph[Node, URI]
+}
