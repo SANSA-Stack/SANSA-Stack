@@ -1,4 +1,4 @@
-package org.dissect.rdf.spark.analitycs
+package org.dissect.rdf.spark.analytics
 import org.apache.spark.graphx._
 
 
@@ -15,6 +15,8 @@ class SparkPageRank(lines: Graph[VertexId, String], iters: Int) {
   val links = lines.vertices.distinct().groupByKey().cache()
 
   var ranks = links.mapValues(v => 1.0)
+
+
 
   for (i <- 1 to iters) {
     val contribs = links.join(ranks).values.flatMap {

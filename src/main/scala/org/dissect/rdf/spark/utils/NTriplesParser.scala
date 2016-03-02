@@ -36,5 +36,10 @@ object NTriplesParser {
     val triples = RiotReader.createIteratorTriples(new StringInputStream(fn), Lang.NTRIPLES, "http://example/base").next
     (triples.getSubject.toString(), triples.getPredicate.toString(), if (triples.getObject.isLiteral()) triples.getObject.getLiteralLexicalForm().toString() else triples.getObject().toString())
   }
+  
+  def parseTripleAsNode(fn: String) = {
+    val triples = RiotReader.createIteratorTriples(new StringInputStream(fn), Lang.NTRIPLES, "http://example/base").next
+    (triples.getSubject(), triples.getPredicate(), triples.getObject())
+  }
 
 }

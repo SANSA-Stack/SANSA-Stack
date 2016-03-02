@@ -9,6 +9,14 @@ class EdgeAtt(val nodeID: Long, val edgeAtt: String) extends Serializable {
 
   override def toString() = "Edge [nodeID=" + nodeID + ", edgeAtt=" + edgeAtt + "]"
 
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: EdgeAtt => (that isEqual (this)) && (this.edgeAtt == that.edgeAtt && this.nodeID == that.nodeID)
+      case _ => false
+    }
+ 
+  final def isEqual(other: Any): Boolean = other.isInstanceOf[EdgeAtt]
+
   override def hashCode(): Int = {
     val prime = 31
     var result = 1
@@ -16,13 +24,5 @@ class EdgeAtt(val nodeID: Long, val edgeAtt: String) extends Serializable {
     //result = prime * result + (if (nodeID == null) 0 else nodeID.hashCode)
     result
   }
-
-  override def equals(other: Any): Boolean =
-    other match {
-      case that: EdgeAtt => (that isEqual (this)) && (this.edgeAtt == that.edgeAtt && this.nodeID == that.nodeID)
-      case _ => false
-    }
-
-  final def isEqual(other: Any): Boolean = other.isInstanceOf[EdgeAtt]
 
 }

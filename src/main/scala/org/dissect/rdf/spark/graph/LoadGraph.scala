@@ -4,13 +4,15 @@ import org.dissect.rdf.spark.utils._
 import org.apache.spark.SparkContext
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.PairRDDFunctions
 
 object LoadGraph extends Logging {
 
-  var _graph: Graph[String, String] = null
+  //var _graph: Graph[String, String] = null
   //var _graph: Graph[VertexAtt, EdgeAtt] = null
 
-  def loadGraph(filePath: String, sparkContext: SparkContext) {
+  def apply(filePath: String, sparkContext: SparkContext) = {
     val text = sparkContext.textFile(filePath) //hdfsfile + "/gsejdiu/DistLODStats/Dbpedia/en/geonames_links_en.nt.bz2")
       .filter(line => !line.trim().isEmpty & !line.startsWith("#"))
 
@@ -18,6 +20,7 @@ object LoadGraph extends Logging {
 
     val indexedmap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithIndex //indexing
     val vertices: RDD[(VertexId, String)] = indexedmap.map(x => (x._2, x._1))
+    val _iriToId: RDD[(String, VertexId)] = indexedmap.map(x => (x._1, x._2))
 
     val tuples = rs.keyBy(_._1).join(indexedmap).map({
       case (k, ((s, p, o), si)) => (o, (si, p))
@@ -27,7 +30,14 @@ object LoadGraph extends Logging {
       case (k, ((si, p), oi)) => Edge(si, oi, p)
     })
 
-    _graph = Graph(vertices, edges)
+    // TODO is there a specific reason to not return the graph directly? ~ Claus
+    //_graph =
+    Graph(vertices, edges)
+
+    new {
+      val graph = Graph(vertices, edges)
+      val iriToId = _iriToId
+    }
 
   }
 
