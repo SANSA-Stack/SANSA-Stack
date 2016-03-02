@@ -1,17 +1,19 @@
 package org.dissect.rdf.spark.model
 
+import scala.reflect.ClassTag
+
 /**
  * RDF DSL objects to make life easy - taken from banana-rdf
  */
 trait RDFDSL[Rdf <: RDF] { this: RDFNodeOps[Rdf] with RDFGraphOps[Rdf] =>
 
   object Graph {
-    def apply(elems: Rdf#Triple*): Rdf#Graph = makeGraph(elems.toIterable)
-    def apply(it: Iterable[Rdf#Triple]): Rdf#Graph = makeGraph(it)
+    def apply(elems: Rdf#Triple*)(implicit ct: ClassTag[Rdf#Triple]): Rdf#Graph = makeGraph(elems.toIterable)
+    def apply(it: Iterable[Rdf#Triple])(implicit ct: ClassTag[Rdf#Triple]): Rdf#Graph = makeGraph(it)
   }
 
   object Triple {
-    def apply(s: Rdf#Node, p: Rdf#URI, o: Rdf#Node): Rdf#Triple = makeTriple(s, p, o)
+    def apply[T <: Rdf](s: T#Node, p: T#URI, o: T#Node): Rdf#Triple = makeTriple(s, p, o)
     def unapply(triple: Rdf#Triple): Some[(Rdf#Node, Rdf#URI, Rdf#Node)] =
       Some(fromTriple(triple))
   }

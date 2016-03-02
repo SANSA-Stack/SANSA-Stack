@@ -5,6 +5,7 @@ import org.apache.spark.graphx.PartitionStrategy.RandomVertexCut
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{Graph => SparkGraph, EdgeTriplet, VertexId, Edge}
 
+import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
 
 /**
@@ -12,16 +13,21 @@ import scala.util.hashing.MurmurHash3
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
-trait GraphXGraphOps[Rdf <: SparkGraphX]
+trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
   extends RDFGraphOps[Rdf]
   with URIOps[Rdf]
   with RDFDSL[Rdf] { this: RDFNodeOps[Rdf] =>
 
   protected val sparkContext: SparkContext
 
+  implicit protected def nodeTag: ClassTag[Rdf#Node]
+  implicit protected def uriTag: ClassTag[Rdf#Triple]
+  implicit protected def tripleTag: ClassTag[Rdf#URI]
+
   // graph
 
-  protected def makeGraph(triples: Iterable[Rdf#Triple]): Rdf#Graph = {
+  protected def makeGraph(triples: Iterable[Rdf#Triple]): Unit = {
+
     val triplesRDD = sparkContext.parallelize(triples.toSeq)
     makeGraph(triplesRDD)
   }
@@ -48,10 +54,11 @@ trait GraphXGraphOps[Rdf <: SparkGraphX]
         Edge(sid, oid, p)
     }
 
-    val subjectVertexIds: RDD[(VertexId, Option)] = subjectObjectMappedEdges.map(x => (x.srcId, None))
-    val objectVertexIds: RDD[(VertexId, Option)] = subjectObjectMappedEdges.map(x => (x.dstId, None))
+    val subjectVertexIds: RDD[(VertexId, Option[Int])] = subjectObjectMappedEdges.map(x => (x.srcId, None))
+    val objectVertexIds: RDD[(VertexId, Option[Int])] = subjectObjectMappedEdges.map(x => (x.dstId, None))
 
-    SparkGraph(vertices, subjectObjectMappedEdges)
+    val a = SparkGraph(vertices, subjectObjectMappedEdges)
+    a
   }
 
   protected def makeHashedVertexGraph(triples: RDD[Rdf#Triple]): Rdf#Graph = {
@@ -75,7 +82,7 @@ trait GraphXGraphOps[Rdf <: SparkGraphX]
   }
 
   protected def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple] =
-    graph.triplets.map(x => Triple(x.srcAttr, x.attr, x.dstAttr)).toLocalIterator.toIterable
+    graph.triplets.map{case x => Triple(x.srcAttr, x.attr, x.dstAttr)}.toLocalIterator.toIterable
 
   // graph traversal
 
@@ -98,7 +105,7 @@ trait GraphXGraphOps[Rdf <: SparkGraphX]
 
   protected def findGraph(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Rdf#Graph = {
     graph.subgraph({
-      (triplet: EdgeTriplet[Rdf#Node, Rdf#URI]) =>
+      (triplet) =>
         matchNode(triplet.srcAttr, subject) && matchNode(triplet.attr, predicate) && matchNode(triplet.dstAttr, objectt)
     }, (_, _) => true)
   }
@@ -108,16 +115,21 @@ trait GraphXGraphOps[Rdf <: SparkGraphX]
 
   // graph operations
 
-  protected def union(graphs: Seq[Rdf#Graph]): Rdf#Graph =
+  protected def union(graphs: Seq[Rdf#Graph]): Rdf#Graph = {
+//    implicit val ct1 = ClassTag(implicitly[ClassTag[Rdf#Node]].runtimeClass)
+//    implicit val ct2 = ClassTag(implicitly[ClassTag[Rdf#URI]].runtimeClass)
+
     graphs.reduce {
-      case (left: Rdf#Graph, right: Rdf#Graph) =>
+      (left: Rdf#Graph, right: Rdf#Graph) =>
+
         val newGraph = SparkGraph(left.vertices.union(right.vertices), left.edges.union(right.edges))
-        newGraph.partitionBy(RandomVertexCut).groupEdges( (attr1, attr2) => attr1 )
+        newGraph.partitionBy(RandomVertexCut).groupEdges((attr1, attr2) => attr1)
     }
+  }
 
   protected def intersection(graphs: Seq[Rdf#Graph]): Rdf#Graph =
     graphs.reduce {
-      case (left: Rdf#Graph, right: Rdf#Graph) =>
+      (left: Rdf#Graph, right: Rdf#Graph) =>
         val newGraph = SparkGraph(left.vertices.intersection(right.vertices), left.edges.intersection(right.edges))
         newGraph.partitionBy(RandomVertexCut).groupEdges( (attr1, attr2) => attr1 )
     }
@@ -126,7 +138,7 @@ trait GraphXGraphOps[Rdf <: SparkGraphX]
     /// subtract triples; edge triplet intersection is collected into memory - is there a better way? Joining somehow?
     val matchingTriplets = g1.triplets.intersection(g2.triplets).collect().toSet
     g1.subgraph({
-      (triplet: EdgeTriplet[Rdf#Node, Rdf#URI]) =>
+      (triplet) =>
         matchingTriplets.contains(triplet)
     }, (_, _) => true)
   }

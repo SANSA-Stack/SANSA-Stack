@@ -1,5 +1,7 @@
 package org.dissect.rdf.spark.model
 
+import org.apache.jena.graph
+import org.apache.jena.graph.Node_Concrete
 import org.apache.spark.rdd.RDD
 
 /**
@@ -36,7 +38,8 @@ class TripleRDD(graphRDD: JenaSparkRDD#Graph) extends JenaNodeOps[JenaSparkRDD] 
 
   def mapSubjects(func: (JenaSparkRDD#Node) => JenaSparkRDD#Node): JenaSparkRDD#Graph = {
     graphRDD.map {
-      case Triple(s, p, o) => Triple(func(s), p, o)
+      case Triple(s, p, o) => Triple[JenaSparkRDD](func(s), p, o)
+      // forcing type argument to JenaSparkRDD because wrong type is automatically inferred. TODO: see if this needs fixing during unit testing
     }
   }
 
@@ -71,21 +74,25 @@ class TripleRDD(graphRDD: JenaSparkRDD#Graph) extends JenaNodeOps[JenaSparkRDD] 
   }
 
   def mapURIs(func: (JenaSparkRDD#URI) => JenaSparkRDD#URI): JenaSparkRDD#Graph = {
-    def mapper(n: JenaSparkRDD#Node) = foldNode(n)(func, bnode => bnode, lit => lit)
+    def mapper(n: JenaSparkRDD#Node): JenaSparkRDD#Node = foldNode(n)(func, bnode => bnode, lit => lit)
     graphRDD.map {
-      case Triple(s, p, o) => Triple(mapper(s), mapper(p).asInstanceOf[JenaSparkRDD#URI], mapper(s))
+      case Triple(s, p, o) => Triple[JenaSparkRDD](mapper(s), mapper(p).asInstanceOf[JenaSparkRDD#URI], mapper(s))
+      // forcing type argument to JenaSparkRDD because wrong type is automatically inferred. TODO: see if this needs fixing during unit testing
     }
   }
 
   def mapLiterals(func: (JenaSparkRDD#Literal) => JenaSparkRDD#Literal): JenaSparkRDD#Graph = {
-    def mapper(n: JenaSparkRDD#Node) = foldNode(n)(uri => uri, bnode => bnode, func)
+    def mapper(n: JenaSparkRDD#Node): JenaSparkRDD#Node = foldNode(n)(uri => uri, bnode => bnode, func)
     graphRDD.map {
-      case Triple(s, p, o) => Triple(mapper(s), p, mapper(o))
+      case Triple(s, p, o) => Triple[JenaSparkRDD](mapper(s), p, mapper(o))
+      // forcing type argument to JenaSparkRDD because wrong type is automatically inferred. TODO: see if this needs fixing during unit testing
     }
   }
 
   def find(subject: JenaSparkRDD#NodeMatch, predicate: JenaSparkRDD#NodeMatch, objectt: JenaSparkRDD#NodeMatch): JenaSparkRDD#Graph =
     findGraph(graphRDD, subject, predicate, objectt)
+
+//  override def makeGraph(it: Iterable[graph.Triple]): RDD[graph.Triple] = ???
 }
 
 

@@ -55,7 +55,7 @@ trait RDFNodeOps[Rdf <: RDF]
 
   def matches(node1: Rdf#Node, node2: Rdf#Node): Boolean
 
-  final def matchNode(node: Rdf#Node, nodeMatch: Rdf#NodeMatch): Boolean =
+  final def matchNode[T <: Rdf](node: T#Node, nodeMatch: T#NodeMatch): Boolean =
     foldNodeMatch(nodeMatch)(true, n => matches(node, n))
 }
 

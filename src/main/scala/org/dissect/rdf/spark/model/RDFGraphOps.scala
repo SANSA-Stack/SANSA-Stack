@@ -1,5 +1,7 @@
 package org.dissect.rdf.spark.model
 
+import scala.reflect.ClassTag
+
 /**
  * Operations and traversal on RDF graphs.
  *

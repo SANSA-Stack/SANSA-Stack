@@ -43,7 +43,7 @@ trait JenaNodeOps[Rdf <: Jena]
     if (node.isURI)
       node.getURI
     else
-      throw new RuntimeException("fromUri: " + node.toString + " must be a URI")
+      throw new RuntimeException("fromUri: " + node + " must be a URI")
 
   // bnode
 

@@ -1,15 +1,19 @@
 package org.dissect.rdf.spark.model
 
 import org.apache.jena.graph.{Triple => JenaTriple, Node => JenaNode, Node_ANY, Node_Literal, Node_Blank, Node_URI}
+import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{Graph => SparkGraph}
+
+import scala.reflect.ClassTag
 
 /**
  * The JenaSpark model works with Jena and Spark RDDs.
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
-trait JenaSparkRDD extends Jena with SparkRDD
+trait JenaSparkRDD extends Jena with SparkRDD { type Blah = JenaSparkRDD }
+trait JenaSparkGraphX extends Jena with SparkGraphX { type Blah = Jena }
 
 trait Jena extends RDF {
   // types related to the RDF data model
@@ -26,9 +30,11 @@ trait Jena extends RDF {
 }
 
 trait SparkRDD extends RDF {
-  type Graph = RDD[Triple]
+  type Blah <: SparkRDD
+  type Graph = RDD[Blah#Triple]
 }
 
 trait SparkGraphX extends RDF {
-  type Graph = SparkGraph[Node, URI]
+  type Blah <: SparkGraphX
+  type Graph = SparkGraph[Blah#Node, Blah#URI]
 }
