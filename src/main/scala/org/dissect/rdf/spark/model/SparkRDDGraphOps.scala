@@ -1,7 +1,15 @@
 package org.dissect.rdf.spark.model
 
+import java.io.{StringReader, BufferedReader}
+
+import org.apache.jena.graph.Triple
+import org.apache.jena.riot.RDFDataMgr
+import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import scala.collection.JavaConversions._
+import org.apache.jena.riot.Lang
+
 
 import scala.reflect.ClassTag
 
@@ -19,7 +27,7 @@ trait SparkRDDGraphOps[Rdf <: SparkRDD{ type Blah = Rdf }]
 
   // graph
 
-  protected def makeGraph(triples: Iterable[Rdf#Triple])(implicit ct: ClassTag[Rdf#Triple]): Rdf#Graph =
+  protected def makeGraph(triples: Iterable[Rdf#Triple]): Rdf#Graph =
     sparkContext.parallelize(triples.toSeq)
 
   protected def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple] =
@@ -27,19 +35,19 @@ trait SparkRDDGraphOps[Rdf <: SparkRDD{ type Blah = Rdf }]
 
   // graph traversal
 
-  protected def getObjectsRDD(graph: Rdf#Graph, subject: Rdf#Node, predicate: Rdf#URI)(implicit ct1: ClassTag[Rdf#Node], ct2: ClassTag[Rdf#URI]): RDD[Rdf#Node] =
+  protected def getObjectsRDD(graph: Rdf#Graph, subject: Rdf#Node, predicate: Rdf#URI): RDD[Rdf#Node] =
     findGraph(graph, toConcreteNodeMatch(subject), toConcreteNodeMatch(predicate), ANY).map(t => fromTriple(t)._3)
 
-  protected def getObjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI)(implicit ct1: ClassTag[Rdf#Node], ct2: ClassTag[Rdf#URI]): RDD[Rdf#Node] =
+  protected def getObjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI): RDD[Rdf#Node] =
     findGraph(graph, ANY, toConcreteNodeMatch(predicate), ANY).map(t => fromTriple(t)._3)
 
-  protected def getPredicatesRDD(graph: Rdf#Graph, subject: Rdf#Node)(implicit ct1: ClassTag[Rdf#Node], ct2: ClassTag[Rdf#URI]): RDD[Rdf#URI] =
+  protected def getPredicatesRDD(graph: Rdf#Graph, subject: Rdf#Node): RDD[Rdf#URI] =
     findGraph(graph, toConcreteNodeMatch(subject), ANY, ANY).map(t => fromTriple(t)._2)
 
-  protected def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI, obj: Rdf#Node)(implicit ct1: ClassTag[Rdf#Node], ct2: ClassTag[Rdf#URI]): RDD[Rdf#Node] =
+  protected def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI, obj: Rdf#Node): RDD[Rdf#Node] =
     findGraph(graph, ANY, toConcreteNodeMatch(predicate), toConcreteNodeMatch(obj)).map(t => fromTriple(t)._1)
 
-  protected def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI)(implicit ct1: ClassTag[Rdf#Node], ct2: ClassTag[Rdf#URI]): RDD[Rdf#Node] =
+  protected def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI): RDD[Rdf#Node] =
     findGraph(graph, ANY, toConcreteNodeMatch(predicate), ANY).map(t => fromTriple(t)._1)
 
   // graph traversal

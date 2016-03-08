@@ -10,7 +10,14 @@ import scala.reflect.ClassTag
 trait RDFGraphOps[Rdf <: RDF]
   extends URIOps[Rdf]
   with RDFDSL[Rdf] { this: RDFNodeOps[Rdf] =>
+
+  implicit protected def nodeTag: ClassTag[Rdf#Node]
+  implicit protected def uriTag: ClassTag[Rdf#Triple]
+  implicit protected def tripleTag: ClassTag[Rdf#URI]
+
   // graph
+
+  def makeGraph(file: String): Rdf#Graph
 
   def makeGraph(it: Iterable[Rdf#Triple]): Rdf#Graph
 

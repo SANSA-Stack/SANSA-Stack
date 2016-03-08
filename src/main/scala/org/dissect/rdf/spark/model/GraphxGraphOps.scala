@@ -20,14 +20,9 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
 
   protected val sparkContext: SparkContext
 
-  implicit protected def nodeTag: ClassTag[Rdf#Node]
-  implicit protected def uriTag: ClassTag[Rdf#Triple]
-  implicit protected def tripleTag: ClassTag[Rdf#URI]
-
   // graph
 
   protected def makeGraph(triples: Iterable[Rdf#Triple]): Unit = {
-
     val triplesRDD = sparkContext.parallelize(triples.toSeq)
     makeGraph(triplesRDD)
   }

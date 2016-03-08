@@ -1,7 +1,7 @@
 package org.dissect.rdf.spark.model
 
 import org.apache.jena.graph
-import org.apache.jena.graph.Node_Concrete
+import org.apache.jena.graph.{Node, Node_URI, Node_Concrete}
 import org.apache.spark.rdd.RDD
 
 /**
@@ -92,7 +92,11 @@ class TripleRDD(graphRDD: JenaSparkRDD#Graph) extends JenaNodeOps[JenaSparkRDD] 
   def find(subject: JenaSparkRDD#NodeMatch, predicate: JenaSparkRDD#NodeMatch, objectt: JenaSparkRDD#NodeMatch): JenaSparkRDD#Graph =
     findGraph(graphRDD, subject, predicate, objectt)
 
-//  override def makeGraph(it: Iterable[graph.Triple]): RDD[graph.Triple] = ???
+  override implicit protected def nodeTag = reflect.ClassTag(classOf[JenaSparkRDD#Node])
+
+  override implicit protected def tripleTag = reflect.ClassTag(classOf[JenaSparkRDD#Triple])
+
+  override implicit protected def uriTag = reflect.ClassTag(classOf[JenaSparkRDD#URI])
 }
 
 
