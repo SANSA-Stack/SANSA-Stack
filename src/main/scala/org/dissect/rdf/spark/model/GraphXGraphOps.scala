@@ -22,7 +22,7 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
 
   // graph
 
-  protected def makeGraph(triples: Iterable[Rdf#Triple]): Unit = {
+  protected def makeGraph(triples: Iterable[Rdf#Triple]): Rdf#Graph = {
     val triplesRDD = sparkContext.parallelize(triples.toSeq)
     makeGraph(triplesRDD)
   }
