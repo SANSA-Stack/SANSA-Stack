@@ -1,7 +1,13 @@
 package org.dissect.rdf.spark.model
 
+import java.io.{StringWriter, BufferedInputStream, StringReader}
+
+import org.apache.commons.io.IOUtils
 import org.apache.jena.datatypes.{RDFDatatype, TypeMapper}
 import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
+import org.apache.jena.riot.writer.NTriplesWriter
+import org.apache.jena.riot.{Lang, RDFDataMgr}
+import scala.collection.JavaConversions._
 
 /**
  * Jena based implementation of RDFNodeOps
@@ -12,6 +18,15 @@ trait JenaNodeOps[Rdf <: Jena]
   extends RDFNodeOps[Rdf]
   with DefaultURIOps[Rdf] {
   // triple
+
+  protected def fromNTriples(rdf: String, baseIRI: String): Iterable[Rdf#Triple] =
+    RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(rdf), Lang.NTRIPLES, baseIRI).toIterable
+
+  protected def toNTriples(triples: Iterable[Rdf#Triple]): String = {
+    val writer = new StringWriter()
+    NTriplesWriter.write(writer, triples.iterator)
+    writer.toString
+  }
 
   protected def makeTriple(s: Rdf#Node, p: Rdf#URI, o: Rdf#Node): Rdf#Triple =
     JenaTriple.create(s, p, o)

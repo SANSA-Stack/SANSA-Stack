@@ -17,7 +17,13 @@ trait RDFGraphOps[Rdf <: RDF]
 
   // graph
 
-  def makeGraph(file: String): Rdf#Graph
+  def loadGraphFromNTriples(file: String, baseIRI: String): Rdf#Graph
+
+  def saveGraphToNTriples(graph: Rdf#Graph, file: String): Unit
+
+  def loadGraphFromSequenceFile(file: String): Rdf#Graph
+
+  def saveGraphToSequenceFile(graph:Rdf#Graph, file: String): Unit
 
   def makeGraph(it: Iterable[Rdf#Triple]): Rdf#Graph
 

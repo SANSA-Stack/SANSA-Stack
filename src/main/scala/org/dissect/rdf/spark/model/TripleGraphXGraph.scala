@@ -91,6 +91,10 @@ class TripleGraphXGraph(graph: JenaSparkGraphX#Graph) extends JenaNodeOps[JenaSp
   def find(subject: JenaSparkGraphX#NodeMatch, predicate: JenaSparkGraphX#NodeMatch, objectt: JenaSparkGraphX#NodeMatch): JenaSparkGraphX#Graph =
     findGraph(graph, subject, predicate, objectt)
 
+  def saveGraphToNTriples(file: String): Unit = saveGraphToNTriples(graph, file)
+
+  def saveGraphToSequenceFile(vertexFile: String, edgeFile: String):Unit = saveGraphToSequenceFile(graph, vertexFile, edgeFile)
+
   override implicit protected def nodeTag = reflect.ClassTag(classOf[JenaSparkGraphX#Node])
 
   override implicit protected def tripleTag = reflect.ClassTag(classOf[JenaSparkGraphX#Triple])
@@ -99,3 +103,6 @@ class TripleGraphXGraph(graph: JenaSparkGraphX#Graph) extends JenaNodeOps[JenaSp
 }
 
 
+object TripleGraphXGraph {
+  implicit def tripleFunctions(graph: JenaSparkGraphX#Graph): TripleGraphXGraph = new TripleGraphXGraph(graph)
+}

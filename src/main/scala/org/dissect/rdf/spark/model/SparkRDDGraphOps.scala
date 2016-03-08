@@ -26,6 +26,26 @@ trait SparkRDDGraphOps[Rdf <: SparkRDD{ type Blah = Rdf }]
   protected val sparkContext: SparkContext
 
   // graph
+  protected def loadGraphFromNTriples(file: String, baseIRI: String): Rdf#Graph =
+    sparkContext.textFile(file).mapPartitions {
+      case it =>
+        fromNTriples(it.mkString("\n"), baseIRI).iterator
+    }
+
+  protected def saveGraphToNTriples(graph: Rdf#Graph, file: String): Unit = {
+    graph.mapPartitions {
+      case it =>
+        toNTriples(it.toIterable).split("\n").iterator
+    }.saveAsTextFile(file)
+  }
+
+  // TODO: Do sequenceFile I/O using Avro, more efficient
+  protected def loadGraphFromSequenceFile(file: String): Rdf#Graph =
+    sparkContext.objectFile(file)
+
+  // TODO: Do sequenceFile I/O using Avro, more efficient
+  protected def saveGraphToSequenceFile(graph:Rdf#Graph, file: String): Unit =
+    graph.saveAsObjectFile(file)
 
   protected def makeGraph(triples: Iterable[Rdf#Triple]): Rdf#Graph =
     sparkContext.parallelize(triples.toSeq)

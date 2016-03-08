@@ -21,6 +21,35 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
   protected val sparkContext: SparkContext
 
   // graph
+  protected def loadGraphFromNTriples(file: String, baseIRI: String): Rdf#Graph =
+    makeGraph(sparkContext.textFile(file).mapPartitions {
+      case it =>
+        fromNTriples(it.mkString("\n"), baseIRI).iterator
+    })
+
+  protected def saveGraphToNTriples(graph: Rdf#Graph, file: String): Unit = {
+    toTripleRDD(graph).mapPartitions {
+      case it =>
+        toNTriples(it.toIterable).split("\n").iterator
+    }.saveAsTextFile(file)
+  }
+
+  def loadGraphFromSequenceFile(file: String): Rdf#Graph = loadGraphFromSequenceFile(file + ".vertices", file + ".edges")
+
+  def saveGraphToSequenceFile(graph:Rdf#Graph, file: String): Unit = saveGraphToSequenceFile(graph, file + ".vertices", file + ".edges")
+
+  // TODO: Do sequenceFile I/O using Avro, more efficient
+  protected def loadGraphFromSequenceFile(vertexFile: String, edgeFile: String): Rdf#Graph = {
+    val vertices: RDD[(VertexId, Rdf#Node)] = sparkContext.objectFile(vertexFile)
+    val edges: RDD[Edge[Rdf#URI]] = sparkContext.objectFile(edgeFile)
+    SparkGraph(vertices, edges)
+  }
+
+  // TODO: Do sequenceFile I/O using Avro, more efficient
+  protected def saveGraphToSequenceFile(graph:Rdf#Graph, vertexFile: String, edgeFile: String): Unit = {
+    graph.vertices.saveAsObjectFile(vertexFile)
+    graph.edges.saveAsObjectFile(edgeFile)
+  }
 
   protected def makeGraph(triples: Iterable[Rdf#Triple]): Rdf#Graph = {
     val triplesRDD = sparkContext.parallelize(triples.toSeq)
@@ -76,8 +105,11 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
     SparkGraph(vertices, edges)
   }
 
+  protected def toTripleRDD(graph: Rdf#Graph): RDD[Rdf#Triple] =
+    graph.triplets.map{case x => Triple(x.srcAttr, x.attr, x.dstAttr)}
+
   protected def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple] =
-    graph.triplets.map{case x => Triple(x.srcAttr, x.attr, x.dstAttr)}.toLocalIterator.toIterable
+    toTripleRDD(graph).toLocalIterator.toIterable
 
   // graph traversal
 
@@ -106,7 +138,7 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
   }
 
   protected def find(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Iterator[Rdf#Triple] =
-    findGraph(graph, subject, predicate, objectt).triplets.map(x => Triple(x.srcAttr, x.attr, x.dstAttr)).toLocalIterator
+    toTripleRDD(findGraph(graph, subject, predicate, objectt)).toLocalIterator
 
   // graph operations
 

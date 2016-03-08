@@ -92,6 +92,10 @@ class TripleRDD(graphRDD: JenaSparkRDD#Graph) extends JenaNodeOps[JenaSparkRDD] 
   def find(subject: JenaSparkRDD#NodeMatch, predicate: JenaSparkRDD#NodeMatch, objectt: JenaSparkRDD#NodeMatch): JenaSparkRDD#Graph =
     findGraph(graphRDD, subject, predicate, objectt)
 
+  def saveGraphToNTriples(file: String): Unit = saveGraphToNTriples(graphRDD, file)
+
+  def saveGraphToSequenceFile(file: String): Unit = saveGraphToSequenceFile(graphRDD, file)
+
   override implicit protected def nodeTag = reflect.ClassTag(classOf[JenaSparkRDD#Node])
 
   override implicit protected def tripleTag = reflect.ClassTag(classOf[JenaSparkRDD#Triple])

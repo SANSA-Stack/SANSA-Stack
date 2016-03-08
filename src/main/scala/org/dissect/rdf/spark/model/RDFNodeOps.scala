@@ -9,7 +9,9 @@ trait RDFNodeOps[Rdf <: RDF]
   extends URIOps[Rdf] {
   // triple
 
-  def parseTriples(rdf: String): Iterable[Rdf#Triple]
+  def fromNTriples(rdf: String, baseIRI: String): Iterable[Rdf#Triple]
+
+  def toNTriples(triples: Iterable[Rdf#Triple]): String
 
   def makeTriple(s: Rdf#Node, p: Rdf#URI, o: Rdf#Node): Rdf#Triple
 
