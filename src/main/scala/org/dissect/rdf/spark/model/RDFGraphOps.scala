@@ -29,7 +29,7 @@ trait RDFGraphOps[Rdf <: RDF]
 
   def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple]
 
-  def graphSize(g: Rdf#Graph): Int
+  def graphSize(g: Rdf#Graph): Long
 
   // graph traversal
 

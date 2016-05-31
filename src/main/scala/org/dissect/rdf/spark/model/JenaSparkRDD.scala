@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait JenaSparkRDD extends Jena with SparkRDD { type Blah = JenaSparkRDD }
-trait JenaSparkGraphX extends Jena with SparkGraphX { type Blah = Jena }
+trait JenaSparkGraphX extends Jena with SparkGraphX { type Blah = JenaSparkGraphX }
 
 trait Jena extends RDF {
   // types related to the RDF data model

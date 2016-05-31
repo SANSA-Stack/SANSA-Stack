@@ -14,20 +14,18 @@ import scala.util.hashing.MurmurHash3
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
-  extends RDFGraphOps[Rdf]
-  with URIOps[Rdf]
-  with RDFDSL[Rdf] { this: RDFNodeOps[Rdf] =>
+  extends RDFGraphOps[Rdf] { this: RDFNodeOps[Rdf] =>
 
   protected val sparkContext: SparkContext
 
   // graph
-  protected def loadGraphFromNTriples(file: String, baseIRI: String): Rdf#Graph =
+  def loadGraphFromNTriples(file: String, baseIRI: String): Rdf#Graph =
     makeGraph(sparkContext.textFile(file).mapPartitions {
       case it =>
         fromNTriples(it.mkString("\n"), baseIRI).iterator
     })
 
-  protected def saveGraphToNTriples(graph: Rdf#Graph, file: String): Unit = {
+  def saveGraphToNTriples(graph: Rdf#Graph, file: String): Unit = {
     toTripleRDD(graph).mapPartitions {
       case it =>
         toNTriples(it.toIterable).split("\n").iterator
@@ -39,24 +37,24 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
   def saveGraphToSequenceFile(graph:Rdf#Graph, file: String): Unit = saveGraphToSequenceFile(graph, file + ".vertices", file + ".edges")
 
   // TODO: Do sequenceFile I/O using Avro, more efficient
-  protected def loadGraphFromSequenceFile(vertexFile: String, edgeFile: String): Rdf#Graph = {
+  def loadGraphFromSequenceFile(vertexFile: String, edgeFile: String): Rdf#Graph = {
     val vertices: RDD[(VertexId, Rdf#Node)] = sparkContext.objectFile(vertexFile)
     val edges: RDD[Edge[Rdf#URI]] = sparkContext.objectFile(edgeFile)
     SparkGraph(vertices, edges)
   }
 
   // TODO: Do sequenceFile I/O using Avro, more efficient
-  protected def saveGraphToSequenceFile(graph:Rdf#Graph, vertexFile: String, edgeFile: String): Unit = {
+  def saveGraphToSequenceFile(graph:Rdf#Graph, vertexFile: String, edgeFile: String): Unit = {
     graph.vertices.saveAsObjectFile(vertexFile)
     graph.edges.saveAsObjectFile(edgeFile)
   }
 
-  protected def makeGraph(triples: Iterable[Rdf#Triple]): Rdf#Graph = {
+  def makeGraph(triples: Iterable[Rdf#Triple]): Rdf#Graph = {
     val triplesRDD = sparkContext.parallelize(triples.toSeq)
     makeGraph(triplesRDD)
   }
 
-  protected def makeGraph(triples: RDD[Rdf#Triple]): Rdf#Graph = {
+  def makeGraph(triples: RDD[Rdf#Triple]): Rdf#Graph = {
     val spo: RDD[(Rdf#Node, (Rdf#URI, Rdf#Node))] = triples.map {
       case Triple(s, p, o) => (s, (p, o))
     }
@@ -85,7 +83,7 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
     a
   }
 
-  protected def makeHashedVertexGraph(triples: RDD[Rdf#Triple]): Rdf#Graph = {
+  def makeHashedVertexGraph(triples: RDD[Rdf#Triple]): Rdf#Graph = {
     val spo: RDD[(Rdf#Node, Rdf#URI, Rdf#Node)] = triples.map {
       case Triple(s, p, o) => (s, p, o)
     }
@@ -105,44 +103,44 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
     SparkGraph(vertices, edges)
   }
 
-  protected def toTripleRDD(graph: Rdf#Graph): RDD[Rdf#Triple] =
+  def toTripleRDD(graph: Rdf#Graph): RDD[Rdf#Triple] =
     graph.triplets.map{case x => Triple(x.srcAttr, x.attr, x.dstAttr)}
 
-  protected def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple] =
+  def getTriples(graph: Rdf#Graph): Iterable[Rdf#Triple] =
     toTripleRDD(graph).toLocalIterator.toIterable
 
   // graph traversal
 
-  protected def getObjectsRDD(graph: Rdf#Graph, subject: Rdf#Node, predicate: Rdf#URI): RDD[Rdf#Node] =
+  def getObjectsRDD(graph: Rdf#Graph, subject: Rdf#Node, predicate: Rdf#URI): RDD[Rdf#Node] =
     findGraph(graph, toConcreteNodeMatch(subject), toConcreteNodeMatch(predicate), ANY).triplets.map(_.dstAttr)
 
-  protected def getObjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI): RDD[Rdf#Node] =
+  def getObjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI): RDD[Rdf#Node] =
     findGraph(graph, ANY, toConcreteNodeMatch(predicate), ANY).triplets.map(_.dstAttr)
 
-  protected def getPredicatesRDD(graph: Rdf#Graph, subject: Rdf#Node): RDD[Rdf#URI] =
+  def getPredicatesRDD(graph: Rdf#Graph, subject: Rdf#Node): RDD[Rdf#URI] =
     findGraph(graph, toConcreteNodeMatch(subject), ANY, ANY).triplets.map(_.attr)
 
-  protected def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI, obj: Rdf#Node): RDD[Rdf#Node] =
+  def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI, obj: Rdf#Node): RDD[Rdf#Node] =
     findGraph(graph, ANY, toConcreteNodeMatch(predicate), toConcreteNodeMatch(obj)).triplets.map(_.srcAttr)
 
-  protected def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI): RDD[Rdf#Node] =
+  def getSubjectsRDD(graph: Rdf#Graph, predicate: Rdf#URI): RDD[Rdf#Node] =
     findGraph(graph, ANY, toConcreteNodeMatch(predicate), ANY).triplets.map(_.srcAttr)
 
   // graph traversal
 
-  protected def findGraph(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Rdf#Graph = {
+  def findGraph(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Rdf#Graph = {
     graph.subgraph({
       (triplet) =>
         matchNode(triplet.srcAttr, subject) && matchNode(triplet.attr, predicate) && matchNode(triplet.dstAttr, objectt)
     }, (_, _) => true)
   }
 
-  protected def find(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Iterator[Rdf#Triple] =
+  def find(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Iterator[Rdf#Triple] =
     toTripleRDD(findGraph(graph, subject, predicate, objectt)).toLocalIterator
 
   // graph operations
 
-  protected def union(graphs: Seq[Rdf#Graph]): Rdf#Graph = {
+  def union(graphs: Seq[Rdf#Graph]): Rdf#Graph = {
 //    implicit val ct1 = ClassTag(implicitly[ClassTag[Rdf#Node]].runtimeClass)
 //    implicit val ct2 = ClassTag(implicitly[ClassTag[Rdf#URI]].runtimeClass)
 
@@ -154,14 +152,14 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
     }
   }
 
-  protected def intersection(graphs: Seq[Rdf#Graph]): Rdf#Graph =
+  def intersection(graphs: Seq[Rdf#Graph]): Rdf#Graph =
     graphs.reduce {
       (left: Rdf#Graph, right: Rdf#Graph) =>
         val newGraph = SparkGraph(left.vertices.intersection(right.vertices), left.edges.intersection(right.edges))
         newGraph.partitionBy(RandomVertexCut).groupEdges( (attr1, attr2) => attr1 )
     }
 
-  protected def difference(g1: Rdf#Graph, g2: Rdf#Graph): Rdf#Graph = {
+  def difference(g1: Rdf#Graph, g2: Rdf#Graph): Rdf#Graph = {
     /// subtract triples; edge triplet intersection is collected into memory - is there a better way? Joining somehow?
     val matchingTriplets = g1.triplets.intersection(g2.triplets).collect().toSet
     g1.subgraph({
@@ -173,7 +171,7 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
   /**
    * Implement Spark algorithm for determining whether left and right are isomorphic
    */
-  protected def isomorphism(left: Rdf#Graph, right: Rdf#Graph): Boolean = ???
+  def isomorphism(left: Rdf#Graph, right: Rdf#Graph): Boolean = ???
 
-  protected def graphSize(g: Rdf#Graph): Long = g.numEdges
+  def graphSize(g: Rdf#Graph): Long = g.numEdges
 }
