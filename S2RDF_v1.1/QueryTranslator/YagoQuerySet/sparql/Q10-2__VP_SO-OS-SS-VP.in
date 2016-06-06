@@ -1,0 +1,15 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?person ?uni ?child ?work
+WHERE {
+  ?person rdf:type ?personType .
+  ?personType skos:prefLabel "person"@eng .
+  ?person rdf:type <wikicategory_Cosmologists> .
+  ?person rdf:type <wikicategory_German_philosophers> .
+  ?person <graduatedFrom> ?uni .
+  ?person <hasChild> ?child .
+  ?person <wasBornOnDate> ?work 
+}

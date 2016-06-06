@@ -1,0 +1,19 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?GivenName ?FamilyName
+WHERE {
+  ?p <hasGivenName> ?GivenName .
+  ?p <hasFamilyName> ?FamilyName .
+  ?p rdf:type ?scientist .
+  ?scientist rdfs:label "scientist"@eng .
+  ?p <wasBornIn> ?city .
+  ?city <isLocatedIn> ?switzerland .
+  ?switzerland skos:prefLabel "Switzerland"@eng .
+  ?p <hasAcademicAdvisor> ?a .
+  ?a <wasBornIn> ?city2 .
+  ?city2 <isLocatedIn> ?germany .
+  ?germany skos:prefLabel "Germany"@eng
+}

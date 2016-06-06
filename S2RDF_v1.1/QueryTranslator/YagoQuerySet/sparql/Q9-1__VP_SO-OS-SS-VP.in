@@ -1,0 +1,12 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?name1 ?name2 ?date
+WHERE {
+  ?died <diedOnDate> ?date .
+  ?born <wasBornOnDate> ?date .
+  ?died skos:prefLabel ?name2 .
+  ?born skos:prefLabel ?name1
+}

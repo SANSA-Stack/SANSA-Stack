@@ -1,0 +1,10 @@
+wsdbm:Retailer736
+wsdbm:Retailer852
+wsdbm:Retailer184
+wsdbm:Retailer900
+wsdbm:Retailer522
+wsdbm:Retailer659
+wsdbm:Retailer313
+wsdbm:Retailer250
+wsdbm:Retailer478
+wsdbm:Retailer790

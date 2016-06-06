@@ -1,0 +1,5 @@
+wsdbm:Retailer10
+wsdbm:Retailer1
+wsdbm:Retailer2
+wsdbm:Retailer3
+wsdbm:Retailer7

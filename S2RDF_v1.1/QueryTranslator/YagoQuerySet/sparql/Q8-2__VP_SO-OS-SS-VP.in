@@ -1,0 +1,14 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?name ?prize
+WHERE {
+  ?individual rdf:type <wikicategory_American_male_singers> .
+  ?individual rdf:type <wikicategory_Roadrunner_Records_artists> .
+  ?individual rdf:type ?musician .
+  ?musician skos:prefLabel "musician"@eng .
+  ?individual skos:prefLabel ?name .
+  ?individual <hasWonPrize> ?prize .
+}

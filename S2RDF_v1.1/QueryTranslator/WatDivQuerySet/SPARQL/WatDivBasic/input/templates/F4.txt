@@ -1,0 +1,22 @@
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v2 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	?v0	foaf:homepage	?v1 .
+	?v2	gr:includes	?v0 .
+	?v0	og:tag	"%v1%" .
+	?v0	sorg:description	?v4 .
+	?v0	sorg:contentSize	?v8 .
+	?v1	sorg:url	?v5 .
+	?v1	wsdbm:hits	?v6 .
+	?v1	sorg:language	wsdbm:Language0 .
+	?v7	wsdbm:likes	?v0 .
+}
+

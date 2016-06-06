@@ -1,0 +1,257 @@
+#######################################################
+# (A) Varying OS selectivity for simple chain queries #
+#######################################################
+
+# (A.1.1)
+# ?v0 -- wsdbm:friendOf --> ?v1 -- sorg:email --> ?v2
+# wsdbm:fiendOf (0.41 of input size)
+# OS sel for wsdbm:fiendOf (sorg:email) = 0.90
+# SO sel for sorg:email (wsdbm:fiendOf) = 0.99
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v1 sorg:email ?v2 .
+}
+
+# (A.1.2)
+# ?v0 -- wsdbm:friendOf --> ?v1 -- foaf:age --> ?v2
+# wsdbm:fiendOf (0.41 of input size)
+# OS sel for wsdbm:fiendOf (foaf:age) = 0.50
+# SO sel for foaf:age (wsdbm:fiendOf) = 1
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v1 foaf:age ?v2 .
+}
+
+# (A.1.3)
+# ?v0 -- wsdbm:friendOf --> ?v1 -- sorg:jobTitle --> ?v2
+# wsdbm:fiendOf (0.41 of input size)
+# OS sel for wsdbm:fiendOf (sorg:jobTitle) = 0.05
+# SO sel for sorg:jobTitle (wsdbm:fiendOf) = 1
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v1 sorg:jobTitle ?v2 .
+}
+
+# (A.2.1)
+# ?v0 -- rev:reviewer --> ?v1 -- sorg:email --> ?v2
+# rev:reviewer (0.01 of input size)
+# OS sel for rev:reviewer (sorg:email) = 0.90
+# SO sel for sorg:email (rev:reviewer) = 0.31
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 rev:reviewer ?v1 .
+ ?v1 sorg:email ?v2 .
+}
+
+# (A.2.2)
+# ?v0 -- rev:reviewer --> ?v1 -- foaf:age --> ?v2
+# rev:reviewer (0.01 of input size)
+# OS sel for rev:reviewer (foaf:age) = 0.50
+# SO sel for foaf:age (rev:reviewer) = 0.31
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 rev:reviewer ?v1 .
+ ?v1 foaf:age ?v2 .
+}
+
+# (A.2.3)
+# ?v0 -- rev:reviewer --> ?v1 -- sorg:jobTitle --> ?v2
+# rev:reviewer (0.01 of input size)
+# sorg:jobTitle (< 0.01 of input size)
+# OS sel for rev:reviewer (sorg:jobTitle) = 0.05
+# SO sel for sorg:jobTitle (rev:reviewer) = 0.31
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 rev:reviewer ?v1 .
+ ?v1 sorg:jobTitle ?v2 .
+}
+
+
+#######################################################
+# (B) Varying SO selectivity for simple chain queries #
+#######################################################
+
+# (B.1.1)
+# ?v0 -- wsdbm:follows --> ?v1 -- wsdbm:friendOf --> ?v2
+# wsdbm:follows (0.30 of input size)
+# wsdbm:fiendOf (0.41 of input size)
+# OS sel for wsdbm:follows (wsdbm:fiendOf) = 0.40
+# SO sel for wsdbm:fiendOf (wsdbm:follows) = 0.91
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:follows ?v1 .
+ ?v1 wsdbm:friendOf ?v2 .
+}
+
+# (B.1.2)
+# ?v0 -- rev:reviewer --> ?v1 -- wsdbm:friendOf --> ?v2
+# rev:reviewer (0.01 of input size)
+# wsdbm:fiendOf (0.41 of input size)
+# OS sel for rev:reviewer (wsdbm:fiendOf) = 0.40
+# SO sel for wsdbm:fiendOf (rev:reviewer) = 0.31
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 rev:reviewer ?v1 .
+ ?v1 wsdbm:friendOf ?v2 .
+}
+
+# (B.1.3)
+# ?v0 -- sorg:author --> ?v1 -- wsdbm:friendOf --> ?v2
+# sorg:author (< 0.01 of input size)
+# wsdbm:fiendOf (0.41 of input size)
+# OS sel for sorg:author (wsdbm:fiendOf) = 0.41
+# SO sel for wsdbm:fiendOf (sorg:author) = 0.04
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 sorg:author ?v1 .
+ ?v1 wsdbm:friendOf ?v2 .
+}
+
+# (B.2.1)
+# ?v0 -- wsdbm:follows --> ?v1 -- wsdbm:likes --> ?v2
+# wsdbm:follows (0.30 of input size)
+# wsdbm:likes (0.01 of input size)
+# OS sel for wsdbm:follows (wsdbm:likes) = 0.24
+# SO sel for wsdbm:likes (wsdbm:follows) = 0.90
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:follows ?v1 .
+ ?v1 wsdbm:likes ?v2 .
+}
+
+# (B.2.2)
+# ?v0 -- rev:reviewer --> ?v1 -- wsdbm:likes --> ?v2
+# rev:reviewer (0.01 of input size)
+# wsdbm:likes (0.01 of input size)
+# OS sel for rev:reviewer (wsdbm:likes) = 0.24
+# SO sel for wsdbm:likes (rev:reviewer) = 0.31
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 rev:reviewer ?v1 .
+ ?v1 wsdbm:likes ?v2 .
+}
+
+# (B.2.3)
+# ?v0 -- sorg:author --> ?v1 -- wsdbm:likes --> ?v2
+# sorg:author (< 0.01 of input size)
+# wsdbm:likes (0.01 of input size)
+# OS sel for sorg:author (wsdbm:likes) = 0.24
+# SO sel for wsdbm:likes (sorg:author) = 0.04
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 sorg:author ?v1 .
+ ?v1 wsdbm:likes ?v2 .
+}
+
+
+######################################################
+# (C) Varying SS selectivity for simple star queries #
+######################################################
+
+# (C.1)
+# ?v1 <-- wsdbm:friendOf -- ?v0 -- sorg:email --> ?v2
+# wsdbm:fiendOf (0.41 of input size)
+# sorg:email (0.01 of input size)
+# SS sel for wsdbm:fiendOf (sorg:email) = 0.90
+# SS sel for sorg:email (wsdbm:fiendOf) = 0.40
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v0 sorg:email ?v2 .
+}
+
+# (C.2)
+# ?v1 <-- wsdbm:friendOf -- ?v0 -- wsdbm:follows --> ?v2
+# wsdbm:fiendOf (0.41 of input size)
+# wsdbm:follows (0.30 of input size)
+# SS sel for wsdbm:fiendOf (wsdbm:follows) = 0.77
+# SS sel for wsdbm:follows (wsdbm:fiendOf) = 0.40
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v0 wsdbm:follows ?v2 .
+}
+
+
+###########################################
+# (D) Speedy queries (small data queries) #
+###########################################
+
+# (D.1)
+# ?v0 -- wsdbm:likes --> ?v1 -- sorg:trailer --> ?v2
+# wsdbm:likes (0.01 of input size)
+# sorg:trailer (< 0.01 of input size)
+# OS sel for wsdbm:likes (sorg:trailer) = < 0.01
+# SO sel for sorg:trailer (wsdbm:likes) = 0.96
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:likes ?v1 .
+ ?v1 sorg:trailer ?v2 .
+}
+
+
+# (D.2)
+# ?v1 <-- sorg:email -- ?v0 -- sorg:faxNumber --> ?v2
+# sorg:email (0.01 of input size)
+# sorg:faxNumber (< 0.01 of input size)
+# SS sel for sorg:email (sorg:faxNumber) = < 0.01
+# SS sel for sorg:faxNumber (sorg:email) = 0.8
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 sorg:email ?v1 .
+ ?v0 sorg:faxNumber ?v2 .
+}
+
+
+#########################################
+# (E) OS vs SO for simple chain queries #
+#########################################
+
+# (E.1)
+# ?v0 -- wsdbm:friendOf --> ?v1 -- wsdbm:follows --> ?v2 -- foaf:homepage --> ?v3
+# wsdbm:fiendOf (0.41 of input size)
+# wsdbm:follows (0.30 of input size)
+# foaf:homepage (< 0.01 of input size)
+# OS sel for wsdbm:friendOf (wsdbm:follows) = 0.77
+# SO sel for wsdbm:follows (wsdbm:friendOf) = 1
+# OS sel for wsdbm:follows (foaf:homepage) = 0.05
+# SO sel for foaf:homepage (wsdbm:follows) = 0.4
+# => OS better for wsdbm:follows
+SELECT ?v0 ?v1 ?v2 ?v3 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v1 wsdbm:follows ?v2 .
+ ?v2 foaf:homepage ?v3 .
+}
+
+
+# (E.2)
+# ?v0 -- mo:artist --> ?v1 -- wsdbm:friendOf --> ?v2 -- wsdbm:follows --> ?v3
+# mo:artist (< 0.01 of input size)
+# wsdbm:fiendOf (0.41 of input size)
+# wsdbm:follows (0.30 of input size)
+# OS sel for mo:artist (wsdbm:friendOf) = 0.39
+# SO sel for wsdbm:friendOf (mo:artist) = 0.01
+# OS sel for wsdbm:friendOf (wsdbm:follows) = 0.77
+# SO sel for wsdbm:follows (wsdbm:friendOf) = 1
+# => SO better for wsdbm:friendOf
+SELECT ?v0 ?v1 ?v2 ?v3 WHERE {
+ ?v0 mo:artist ?v1 .
+ ?v1 wsdbm:friendOf ?v2 .
+ ?v2 wsdbm:follows ?v3 .
+}
+
+
+##################################
+# (F) Empty result chain queries #
+##################################
+
+# (F.1)
+# ?v0 -- wsdbm:friendOf --> ?v1 -- sorg:language --> ?v2
+# wsdbm:fiendOf (0.41 of input size)
+# OS sel for wsdbm:fiendOf (sorg:language) = 0
+# SO sel for sorg:language (wsdbm:fiendOf) = 0
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v1 sorg:language ?v2 .
+}
+
+# (F.2)
+# ?v0 -- wsdbm:friendOf --> ?v1 -- wsdbm:follows --> ?v2 -- sorg:language --> ?v3
+# wsdbm:fiendOf (0.41 of input size)
+# wsdbm:follows (0.30 of input size)
+# OS sel for wsdbm:fiendOf (wsdbm:follows) = 0.77
+# SO sel for wsdbm:follows (wsdbm:friendOf) = 1
+# OS sel for wsdbm:follows (sorg:language) = 0
+# SO sel for sorg:language (wsdbm:fiendOf) = 0
+SELECT ?v0 ?v1 ?v2 ?v3 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v1 wsdbm:follows ?v2 .
+ ?v2 sorg:language ?v3 .
+}

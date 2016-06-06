@@ -1,0 +1,19 @@
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+SELECT ?v0 ?v4 ?v6 ?v7 WHERE {
+	?v0	sorg:caption	?v1 .
+	?v0	sorg:text	?v2 .
+	?v0	sorg:contentRating	?v3 .
+	?v0	rev:hasReview	?v4 .
+	?v4	rev:title	?v5 .
+	?v4	rev:reviewer	?v6 .
+	?v7	sorg:actor	?v6 .
+	?v7	sorg:language	?v8 .
+}
+

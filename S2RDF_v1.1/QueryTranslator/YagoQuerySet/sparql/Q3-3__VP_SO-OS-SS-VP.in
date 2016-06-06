@@ -1,0 +1,15 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?name1 ?name2
+WHERE {
+  ?a1 skos:prefLabel ?name1 .
+  ?a2 skos:prefLabel ?name2 .
+  ?a1 rdf:type <wikicategory_English_film_actors> .
+  ?a2 rdf:type <wikicategory_English_film_actors> .
+  ?a1 <actedIn> ?movie .
+  ?a2 <actedIn> ?movie
+  FILTER (?a1 != ?a2)
+}

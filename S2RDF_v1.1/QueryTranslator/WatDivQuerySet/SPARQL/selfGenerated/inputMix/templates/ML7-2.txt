@@ -1,0 +1,10 @@
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	%v0%	sorg:contactPoint	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	sorg:author	?v3 .
+	?v3	wsdbm:follows	?v4 .
+	?v4 wsdbm:makesPurchase ?v5 .
+	?v5	wsdbm:purchaseFor	?v6 .
+	?v6	og:tag	?v7 .
+}

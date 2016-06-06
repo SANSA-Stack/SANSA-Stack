@@ -1,0 +1,8 @@
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	%v0%	sorg:contactPoint	?v1 .
+	?v1	wsdbm:follows	?v2 .
+	?v2	wsdbm:friendOf	?v3 .
+	?v3	dc:Location	?v4 .
+	?v4 gn:parentCountry ?v5 .
+}

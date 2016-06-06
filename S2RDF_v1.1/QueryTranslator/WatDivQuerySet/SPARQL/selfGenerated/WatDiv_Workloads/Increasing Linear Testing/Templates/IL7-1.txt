@@ -1,0 +1,10 @@
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	%v0%	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}

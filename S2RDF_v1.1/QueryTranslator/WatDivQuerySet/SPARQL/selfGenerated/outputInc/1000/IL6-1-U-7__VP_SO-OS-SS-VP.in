@@ -1,0 +1,19 @@
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User789116	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}

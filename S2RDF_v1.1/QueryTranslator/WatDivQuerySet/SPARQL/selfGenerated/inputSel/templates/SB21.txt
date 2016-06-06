@@ -1,0 +1,4 @@
+SELECT ?v0 ?v1 ?v2 WHERE {
+ ?v0 wsdbm:follows ?v1 .
+ ?v1 wsdbm:likes ?v2 .
+}

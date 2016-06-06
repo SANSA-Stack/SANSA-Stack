@@ -1,0 +1,5 @@
+SELECT ?v0 ?v1 ?v2 ?v3 WHERE {
+ ?v0 wsdbm:friendOf ?v1 .
+ ?v1 wsdbm:follows ?v2 .
+ ?v2 sorg:language ?v3 .
+}

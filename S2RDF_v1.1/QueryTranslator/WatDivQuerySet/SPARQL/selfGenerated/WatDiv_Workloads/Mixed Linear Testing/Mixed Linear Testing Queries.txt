@@ -1,0 +1,178 @@
+#####################################
+# Linear queries with path length 5 #
+#####################################
+
+(1)
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	%v0%	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:userId ?v5 .
+}
+
+(2)
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	%v0%	sorg:contactPoint	?v1 .
+	?v1	wsdbm:follows	?v2 .
+	?v2	wsdbm:friendOf	?v3 .
+	?v3	dc:Location	?v4 .
+	?v4 gn:parentCountry ?v5 .
+}
+
+
+#####################################
+# Linear queries with path length 6 #
+#####################################
+
+(1)
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	%v0%	wsdbm:friendOf	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	sorg:author	?v3 .
+	?v3	wsdbm:makesPurchase	?v4 .
+	?v4 wsdbm:purchaseFor ?v5 .
+	?v5	sorg:contentRating	?v6 .
+}
+
+(2)
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	%v0%	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:likes ?v5 .
+	?v5	sorg:description	?v6 .
+}
+
+
+#####################################
+# Linear queries with path length 7 #
+#####################################
+
+(1)
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	%v0%	wsdbm:makesPurchase	?v1 .
+	?v1	wsdbm:purchaseFor	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:follows ?v5 .
+	?v5	wsdbm:subscribes	?v6 .
+	?v6	sorg:language	?v7 .
+}
+
+(2)
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	%v0%	sorg:contactPoint	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	sorg:author	?v3 .
+	?v3	wsdbm:follows	?v4 .
+	?v4 wsdbm:makesPurchase ?v5 .
+	?v5	wsdbm:purchaseFor	?v6 .
+	?v6	og:tag	?v7 .
+}
+
+
+#####################################
+# Linear queries with path length 8 #
+#####################################
+
+(1)
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	%v0%	wsdbm:likes	?v1 .
+	?v1	rev:hasReview	?v2 .
+	?v2	rev:reviewer	?v3 .
+	?v3	wsdbm:makesPurchase	?v4 .
+	?v4 wsdbm:purchaseFor ?v5 .
+	?v5	mo:artist	?v6 .
+	?v6	wsdbm:friendOf	?v7 .
+	?v7	foaf:homepage	?v8 .
+}
+
+(2)
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	%v0%	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:author	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase	?v6 .
+	?v6	wsdbm:purchaseFor	?v7 .
+	?v7	foaf:homepage	?v8 .
+}
+
+
+#####################################
+# Linear queries with path length 9 #
+#####################################
+
+(1)
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	%v0%	wsdbm:follows	?v1 .
+	?v1	wsdbm:makesPurchase	?v2 .
+	?v2	wsdbm:purchaseFor	?v3 .
+	?v3	rev:hasReview	?v4 .
+	?v4 rev:reviewer ?v5 .
+	?v5	wsdbm:likes	?v6 .
+	?v6	sorg:actor	?v7 .
+	?v7	wsdbm:friendOf	?v8 .
+	?v8	sorg:telephone	?v9 .
+}
+
+(2)
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	%v0%	sorg:contactPoint	?v1 .
+	?v1	wsdbm:friendOf	?v2 .
+	?v2	wsdbm:likes	?v3 .
+	?v3	rev:hasReview	?v4 .
+	?v4 rev:reviewer ?v5 .
+	?v5	wsdbm:makesPurchase	?v6 .
+	?v6	wsdbm:purchaseFor	?v7 .
+	?v7	rev:hasReview	?v8 .
+	?v8	rev:title	?v9 .
+}
+
+
+######################################
+# Linear queries with path length 10 #
+######################################
+
+(1)
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	%v0%	wsdbm:friendOf	?v1 .
+	?v1	wsdbm:makesPurchase	?v2 .
+	?v2	wsdbm:purchaseFor	?v3 .
+	?v3	sorg:author	?v4 .
+	?v4 wsdbm:follows ?v5 .
+	?v5	wsdbm:likes	?v6 .
+	?v6	mo:artist	?v7 .
+	?v7	wsdbm:friendOf	?v8 .
+	?v8	wsdbm:likes	?v9 .
+	?v9	foaf:homepage	?v10 .
+}
+
+(2)
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	%v0%	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase	?v6 .
+	?v6	wsdbm:purchaseFor	?v7 .
+	?v7	sorg:actor	?v8 .
+	?v8	wsdbm:subscribes	?v9 .
+	?v9	sorg:language	?v10 .
+}

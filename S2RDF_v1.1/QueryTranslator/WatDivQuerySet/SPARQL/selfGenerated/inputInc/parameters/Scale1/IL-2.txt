@@ -1,0 +1,10 @@
+wsdbm:Retailer5
+wsdbm:Retailer9
+wsdbm:Retailer10
+wsdbm:Retailer8
+wsdbm:Retailer6
+wsdbm:Retailer7
+wsdbm:Retailer3
+wsdbm:Retailer11
+wsdbm:Retailer1
+wsdbm:Retailer4

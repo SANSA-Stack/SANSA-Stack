@@ -1,0 +1,21 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?country1 ?country2 ?capital ?lang ?geo ?lon1 ?lat1 ?lon2 ?lat2 ?area ?wiki ?property ?name ?url
+WHERE {
+  ?geo <hasLongitude> ?lon1 .
+  ?geo <hasLatitude> ?lat1 .
+  ?geo <hasArea> ?area .
+  ?geo <hasWikipediaUrl> ?wiki .
+  ?geo <linksTo> ?lang .
+  ?country1 <hasOfficialLanguage> ?lang .
+  ?country1 <dealsWith> ?country2 .
+  ?country2 <hasCapital> ?capital .
+  ?capital <owns> ?property .
+  ?property skos:prefLabel ?name .
+  ?property <hasWebsite> ?url .
+  ?property <hasLongitude> ?lon2 .
+  ?property <hasLatitude> ?lat2 .
+}

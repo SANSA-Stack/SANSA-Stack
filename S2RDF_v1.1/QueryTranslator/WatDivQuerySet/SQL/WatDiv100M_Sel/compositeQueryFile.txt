@@ -1,0 +1,851 @@
+>>>>>>SB12--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	0	VP	rev__reviewer/
+	VP	<rev__reviewer>	1500000
+------
+wsdbm__friendOf$$2$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+>>>>>>SB12--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	1	OS	rev__reviewer/wsdbm__friendOf
+	VP	<rev__reviewer>	1500000
+	OS	<rev__reviewer><wsdbm__friendOf>	601949	0.4
+------
+wsdbm__friendOf$$2$$	1	SO	wsdbm__friendOf/rev__reviewer
+	VP	<wsdbm__friendOf>	45092208
+	SO	<wsdbm__friendOf><rev__reviewer>	13968837	0.31
+------
+>>>>>>SE1--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab2.v3 AS v3 , tab2.v2 AS v2 
+ FROM    (SELECT obj AS v3 , sub AS v2 
+	 FROM foaf__homepage$$3$$
+	
+	) tab2
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__follows$$2$$
+	
+	) tab1
+ ON(tab2.v2=tab1.v2)
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__follows$$2$$	0	VP	wsdbm__follows/
+	VP	<wsdbm__follows>	32736135
+------
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+foaf__homepage$$3$$	0	VP	foaf__homepage/
+	VP	<foaf__homepage>	111711
+------
+>>>>>>SE1--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab2.v3 AS v3 , tab2.v2 AS v2 
+ FROM    (SELECT obj AS v3 , sub AS v2 
+	 FROM foaf__homepage$$3$$
+	
+	) tab2
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__follows$$2$$
+	
+	) tab1
+ ON(tab2.v2=tab1.v2)
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__follows$$2$$	2	OS	wsdbm__follows/foaf__homepage
+	VP	<wsdbm__follows>	32736135
+	SO	<wsdbm__follows><wsdbm__friendOf>	32736135	1.0
+	OS	<wsdbm__follows><foaf__homepage>	1610136	0.05
+------
+wsdbm__friendOf$$1$$	1	OS	wsdbm__friendOf/wsdbm__follows
+	VP	<wsdbm__friendOf>	45092208
+	OS	<wsdbm__friendOf><wsdbm__follows>	34944355	0.77
+------
+foaf__homepage$$3$$	1	SO	foaf__homepage/wsdbm__follows
+	VP	<foaf__homepage>	111711
+	SO	<foaf__homepage><wsdbm__follows>	44799	0.4
+------
+>>>>>>SA22--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM foaf__age$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	0	VP	rev__reviewer/
+	VP	<rev__reviewer>	1500000
+------
+foaf__age$$2$$	0	VP	foaf__age/
+	VP	<foaf__age>	500284
+------
+>>>>>>SA22--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM foaf__age$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	1	OS	rev__reviewer/foaf__age
+	VP	<rev__reviewer>	1500000
+	OS	<rev__reviewer><foaf__age>	751150	0.5
+------
+foaf__age$$2$$	1	SO	foaf__age/rev__reviewer
+	VP	<foaf__age>	500284
+	SO	<foaf__age><rev__reviewer>	154766	0.31
+------
+>>>>>>SD2--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab1.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v0 , obj AS v2 
+	 FROM sorg__faxNumber$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM sorg__email$$1$$
+	) tab0
+ ON(tab1.v0=tab0.v0)
+
+
+++++++Tables Statistic
+sorg__email$$1$$	0	VP	sorg__email/
+	VP	<sorg__email>	909754
+------
+sorg__faxNumber$$2$$	0	VP	sorg__faxNumber/
+	VP	<sorg__faxNumber>	1179
+------
+>>>>>>SD2--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM sorg__email$$1$$
+	) tab0
+ JOIN    (SELECT sub AS v0 , obj AS v2 
+	 FROM sorg__faxNumber$$2$$
+	
+	) tab1
+ ON(tab0.v0=tab1.v0)
+
+
+++++++Tables Statistic
+sorg__email$$1$$	1	SS	sorg__email/sorg__faxNumber
+	VP	<sorg__email>	909754
+	SS	<sorg__email><sorg__faxNumber>	945	0.0
+------
+sorg__faxNumber$$2$$	1	SS	sorg__faxNumber/sorg__email
+	VP	<sorg__faxNumber>	1179
+	SS	<sorg__faxNumber><sorg__email>	945	0.8
+------
+>>>>>>SC1--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab1.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v0 , obj AS v2 
+	 FROM sorg__email$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v0=tab0.v0)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+sorg__email$$2$$	0	VP	sorg__email/
+	VP	<sorg__email>	909754
+------
+>>>>>>SC1--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab1.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v0 , obj AS v2 
+	 FROM sorg__email$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v0=tab0.v0)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	1	SS	wsdbm__friendOf/sorg__email
+	VP	<wsdbm__friendOf>	45092208
+	SS	<wsdbm__friendOf><sorg__email>	40572024	0.9
+------
+sorg__email$$2$$	1	SS	sorg__email/wsdbm__friendOf
+	VP	<sorg__email>	909754
+	SS	<sorg__email><wsdbm__friendOf>	360296	0.4
+------
+>>>>>>SC2--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab1.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v0 , obj AS v2 
+	 FROM wsdbm__follows$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v0=tab0.v0)
+
+
+++++++Tables Statistic
+wsdbm__follows$$2$$	0	VP	wsdbm__follows/
+	VP	<wsdbm__follows>	32736135
+------
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+>>>>>>SC2--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab1.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v0 , obj AS v2 
+	 FROM wsdbm__follows$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v0=tab0.v0)
+
+
+++++++Tables Statistic
+wsdbm__follows$$2$$	1	SS	wsdbm__follows/wsdbm__friendOf
+	VP	<wsdbm__follows>	32736135
+	SS	<wsdbm__follows><wsdbm__friendOf>	13093416	0.4
+------
+wsdbm__friendOf$$1$$	1	SS	wsdbm__friendOf/wsdbm__follows
+	VP	<wsdbm__friendOf>	45092208
+	SS	<wsdbm__friendOf><wsdbm__follows>	34903307	0.77
+------
+>>>>>>SB21--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__likes$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__follows$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__likes$$2$$	0	VP	wsdbm__likes/
+	VP	<wsdbm__likes>	1124672
+------
+wsdbm__follows$$1$$	0	VP	wsdbm__follows/
+	VP	<wsdbm__follows>	32736135
+------
+>>>>>>SB21--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__likes$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__follows$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__likes$$2$$	1	SO	wsdbm__likes/wsdbm__follows
+	VP	<wsdbm__likes>	1124672
+	SO	<wsdbm__likes><wsdbm__follows>	1020726	0.91
+------
+wsdbm__follows$$1$$	1	OS	wsdbm__follows/wsdbm__likes
+	VP	<wsdbm__follows>	32736135
+	OS	<wsdbm__follows><wsdbm__likes>	7794356	0.24
+------
+>>>>>>SA21--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__email$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	0	VP	rev__reviewer/
+	VP	<rev__reviewer>	1500000
+------
+sorg__email$$2$$	0	VP	sorg__email/
+	VP	<sorg__email>	909754
+------
+>>>>>>SA21--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__email$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	1	OS	rev__reviewer/sorg__email
+	VP	<rev__reviewer>	1500000
+	OS	<rev__reviewer><sorg__email>	1350581	0.9
+------
+sorg__email$$2$$	1	SO	sorg__email/rev__reviewer
+	VP	<sorg__email>	909754
+	SO	<sorg__email><rev__reviewer>	278231	0.31
+------
+>>>>>>SB13--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM sorg__author$$1$$
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$2$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+sorg__author$$1$$	0	VP	sorg__author/
+	VP	<sorg__author>	40060
+------
+>>>>>>SB13--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM sorg__author$$1$$
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$2$$	1	SO	wsdbm__friendOf/sorg__author
+	VP	<wsdbm__friendOf>	45092208
+	SO	<wsdbm__friendOf><sorg__author>	1744916	0.04
+------
+sorg__author$$1$$	1	OS	sorg__author/wsdbm__friendOf
+	VP	<sorg__author>	40060
+	OS	<sorg__author><wsdbm__friendOf>	16301	0.41
+------
+>>>>>>SB11--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__follows$$1$$
+	
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$2$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+wsdbm__follows$$1$$	0	VP	wsdbm__follows/
+	VP	<wsdbm__follows>	32736135
+------
+>>>>>>SB11--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__follows$$1$$
+	
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$2$$	1	SO	wsdbm__friendOf/wsdbm__follows
+	VP	<wsdbm__friendOf>	45092208
+	SO	<wsdbm__friendOf><wsdbm__follows>	40904023	0.91
+------
+wsdbm__follows$$1$$	1	OS	wsdbm__follows/wsdbm__friendOf
+	VP	<wsdbm__follows>	32736135
+	OS	<wsdbm__follows><wsdbm__friendOf>	13091113	0.4
+------
+>>>>>>SB22--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__likes$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	0	VP	rev__reviewer/
+	VP	<rev__reviewer>	1500000
+------
+wsdbm__likes$$2$$	0	VP	wsdbm__likes/
+	VP	<wsdbm__likes>	1124672
+------
+>>>>>>SB22--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__likes$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	1	OS	rev__reviewer/wsdbm__likes
+	VP	<rev__reviewer>	1500000
+	OS	<rev__reviewer><wsdbm__likes>	356907	0.24
+------
+wsdbm__likes$$2$$	1	SO	wsdbm__likes/rev__reviewer
+	VP	<wsdbm__likes>	1124672
+	SO	<wsdbm__likes><rev__reviewer>	345355	0.31
+------
+>>>>>>SF1--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__language$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+sorg__language$$2$$	0	VP	sorg__language/
+	VP	<sorg__language>	63899
+------
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+>>>>>>SF1--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__language$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+   
+------
+>>>>>>SA13--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__jobTitle$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+sorg__jobTitle$$2$$	0	VP	sorg__jobTitle/
+	VP	<sorg__jobTitle>	50256
+------
+>>>>>>SA13--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__jobTitle$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	1	OS	wsdbm__friendOf/sorg__jobTitle
+	VP	<wsdbm__friendOf>	45092208
+	OS	<wsdbm__friendOf><sorg__jobTitle>	2266280	0.05
+------
+sorg__jobTitle$$2$$	0	VP	sorg__jobTitle/
+	VP	<sorg__jobTitle>	50256
+	SO	<sorg__jobTitle><wsdbm__friendOf>	50256	1.0
+------
+>>>>>>SD1--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__trailer$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__likes$$1$$
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+sorg__trailer$$2$$	0	VP	sorg__trailer/
+	VP	<sorg__trailer>	2406
+------
+wsdbm__likes$$1$$	0	VP	wsdbm__likes/
+	VP	<wsdbm__likes>	1124672
+------
+>>>>>>SD1--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__trailer$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__likes$$1$$
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+sorg__trailer$$2$$	1	SO	sorg__trailer/wsdbm__likes
+	VP	<sorg__trailer>	2406
+	SO	<sorg__trailer><wsdbm__likes>	2312	0.96
+------
+wsdbm__likes$$1$$	1	OS	wsdbm__likes/sorg__trailer
+	VP	<wsdbm__likes>	1124672
+	OS	<wsdbm__likes><sorg__trailer>	5221	0.0
+------
+>>>>>>SA11--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__email$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+sorg__email$$2$$	0	VP	sorg__email/
+	VP	<sorg__email>	909754
+------
+>>>>>>SA11--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__email$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	1	OS	wsdbm__friendOf/sorg__email
+	VP	<wsdbm__friendOf>	45092208
+	OS	<wsdbm__friendOf><sorg__email>	40589399	0.9
+------
+sorg__email$$2$$	1	SO	sorg__email/wsdbm__friendOf
+	VP	<sorg__email>	909754
+	SO	<sorg__email><wsdbm__friendOf>	900116	0.99
+------
+>>>>>>SF2--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab2.v3 AS v3 , tab2.v2 AS v2 
+ FROM    (SELECT obj AS v3 , sub AS v2 
+	 FROM sorg__language$$3$$
+	
+	) tab2
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__follows$$2$$
+	
+	) tab1
+ ON(tab2.v2=tab1.v2)
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__follows$$2$$	0	VP	wsdbm__follows/
+	VP	<wsdbm__follows>	32736135
+------
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+sorg__language$$3$$	0	VP	sorg__language/
+	VP	<sorg__language>	63899
+------
+>>>>>>SF2--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab2.v3 AS v3 , tab2.v2 AS v2 
+ FROM    (SELECT obj AS v3 , sub AS v2 
+	 FROM sorg__language$$3$$
+	
+	) tab2
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__follows$$2$$
+	
+	) tab1
+ ON(tab2.v2=tab1.v2)
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+   
+------
+>>>>>>SA12--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM foaf__age$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+foaf__age$$2$$	0	VP	foaf__age/
+	VP	<foaf__age>	500284
+------
+>>>>>>SA12--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM foaf__age$$2$$
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM wsdbm__friendOf$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$1$$	1	OS	wsdbm__friendOf/foaf__age
+	VP	<wsdbm__friendOf>	45092208
+	OS	<wsdbm__friendOf><foaf__age>	22565558	0.5
+------
+foaf__age$$2$$	0	VP	foaf__age/
+	VP	<foaf__age>	500284
+	SO	<foaf__age><wsdbm__friendOf>	500284	1.0
+------
+>>>>>>SB23--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM sorg__author$$1$$
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__likes$$2$$
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+wsdbm__likes$$2$$	0	VP	wsdbm__likes/
+	VP	<wsdbm__likes>	1124672
+------
+sorg__author$$1$$	0	VP	sorg__author/
+	VP	<sorg__author>	40060
+------
+>>>>>>SB23--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM sorg__author$$1$$
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__likes$$2$$
+	) tab1
+ ON(tab0.v1=tab1.v1)
+
+
+++++++Tables Statistic
+wsdbm__likes$$2$$	1	SO	wsdbm__likes/sorg__author
+	VP	<wsdbm__likes>	1124672
+	SO	<wsdbm__likes><sorg__author>	42895	0.04
+------
+sorg__author$$1$$	1	OS	sorg__author/wsdbm__likes
+	VP	<sorg__author>	40060
+	OS	<sorg__author><wsdbm__likes>	9454	0.24
+------
+>>>>>>SA23--VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__jobTitle$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	0	VP	rev__reviewer/
+	VP	<rev__reviewer>	1500000
+------
+sorg__jobTitle$$2$$	0	VP	sorg__jobTitle/
+	VP	<sorg__jobTitle>	50256
+------
+>>>>>>SA23--SO-OS-SS-VP__WatDiv100M
+SELECT tab1.v1 AS v1 , tab0.v0 AS v0 , tab1.v2 AS v2 
+ FROM    (SELECT sub AS v1 , obj AS v2 
+	 FROM sorg__jobTitle$$2$$
+	
+	) tab1
+ JOIN    (SELECT obj AS v1 , sub AS v0 
+	 FROM rev__reviewer$$1$$
+	
+	) tab0
+ ON(tab1.v1=tab0.v1)
+
+
+++++++Tables Statistic
+rev__reviewer$$1$$	1	OS	rev__reviewer/sorg__jobTitle
+	VP	<rev__reviewer>	1500000
+	OS	<rev__reviewer><sorg__jobTitle>	75628	0.05
+------
+sorg__jobTitle$$2$$	1	SO	sorg__jobTitle/rev__reviewer
+	VP	<sorg__jobTitle>	50256
+	SO	<sorg__jobTitle><rev__reviewer>	15568	0.31
+------
+>>>>>>SE2--VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab2.v3 AS v3 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM mo__artist$$1$$
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+ JOIN    (SELECT obj AS v3 , sub AS v2 
+	 FROM wsdbm__follows$$3$$
+	
+	) tab2
+ ON(tab1.v2=tab2.v2)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$2$$	0	VP	wsdbm__friendOf/
+	VP	<wsdbm__friendOf>	45092208
+------
+wsdbm__follows$$3$$	0	VP	wsdbm__follows/
+	VP	<wsdbm__follows>	32736135
+------
+mo__artist$$1$$	0	VP	mo__artist/
+	VP	<mo__artist>	13306
+------
+>>>>>>SE2--SO-OS-SS-VP__WatDiv100M
+SELECT tab0.v1 AS v1 , tab0.v0 AS v0 , tab2.v3 AS v3 , tab1.v2 AS v2 
+ FROM    (SELECT obj AS v1 , sub AS v0 
+	 FROM mo__artist$$1$$
+	) tab0
+ JOIN    (SELECT sub AS v1 , obj AS v2 
+	 FROM wsdbm__friendOf$$2$$
+	
+	) tab1
+ ON(tab0.v1=tab1.v1)
+ JOIN    (SELECT obj AS v3 , sub AS v2 
+	 FROM wsdbm__follows$$3$$
+	
+	) tab2
+ ON(tab1.v2=tab2.v2)
+
+
+++++++Tables Statistic
+wsdbm__friendOf$$2$$	1	SO	wsdbm__friendOf/mo__artist
+	VP	<wsdbm__friendOf>	45092208
+	SO	<wsdbm__friendOf><mo__artist>	266771	0.01
+	OS	<wsdbm__friendOf><wsdbm__follows>	34944355	0.77
+------
+wsdbm__follows$$3$$	0	VP	wsdbm__follows/
+	VP	<wsdbm__follows>	32736135
+	SO	<wsdbm__follows><wsdbm__friendOf>	32736135	1.0
+------
+mo__artist$$1$$	1	OS	mo__artist/wsdbm__friendOf
+	VP	<mo__artist>	13306
+	OS	<mo__artist><wsdbm__friendOf>	5227	0.39
+------

@@ -1,0 +1,12 @@
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	%v0%	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}

@@ -1,0 +1,14 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?city ?state ?country1 ?country2 ?continent
+WHERE {
+  ?city rdf:type ?cityType .
+  ?cityType skos:prefLabel "city"@eng .
+  ?city <isLocatedIn> ?state .
+  ?state <isLocatedIn> ?country1 .
+  ?country1 <dealsWith> ?country2 .
+  ?country2 <isLocatedIn> ?continent
+}

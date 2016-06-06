@@ -1,0 +1,22 @@
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	?v0	gr:includes	?v1 .
+	wsdbm:Retailer7	gr:offers	?v0 .
+	?v0	gr:price	?v3 .
+	?v0	gr:serialNumber	?v4 .
+	?v0	gr:validFrom	?v5 .
+	?v0	gr:validThrough	?v6 .
+	?v0	sorg:eligibleQuantity	?v7 .
+	?v0	sorg:eligibleRegion	?v8 .
+	?v0	sorg:priceValidUntil	?v9 .
+}
+

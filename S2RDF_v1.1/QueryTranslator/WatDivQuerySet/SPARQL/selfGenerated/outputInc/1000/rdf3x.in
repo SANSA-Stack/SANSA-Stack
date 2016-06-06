@@ -1,0 +1,2578 @@
+$$IL10-2-R-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer11202	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer7688	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer5258	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer10242	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer3412	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer2683	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer1487	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer8450	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer4795	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL10-2-R-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:Retailer6023	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+	?v9	sorg:caption ?v10 .
+}$$IL6-2-R-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer11202	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer7688	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer5258	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer10242	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer3412	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer2683	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer1487	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer8450	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer4795	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-2-R-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:Retailer6023	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL6-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	?v0	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+}$$IL8-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	?v0	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:author ?v7 .
+	?v7	wsdbm:follows ?v8 .
+}$$IL5-1-U-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User874554	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User917188	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User501546	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User129707	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User263933	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User479483	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User789116	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User684097	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User390756	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-1-U-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:User191261	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL8-1-U-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User874554	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User917188	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User501546	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User129707	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User263933	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User479483	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User789116	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User684097	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User390756	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL8-1-U-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:User191261	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+}$$IL7-2-R-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer11202	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer7688	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer5258	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer10242	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer3412	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer2683	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer1487	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer8450	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer4795	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL7-2-R-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:Retailer6023	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+}$$IL8-2-R-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer11202	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer7688	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer5258	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer10242	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer3412	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer2683	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer1487	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer8450	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer4795	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL8-2-R-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	wsdbm:Retailer6023	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+}$$IL9-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	?v0	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:author ?v7 .
+	?v7	wsdbm:follows ?v8 .
+	?v8	foaf:homepage	?v9 .
+}$$IL6-1-U-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User874554	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User917188	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User501546	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User129707	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User263933	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User479483	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User789116	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User684097	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User390756	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL6-1-U-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 WHERE {
+	wsdbm:User191261	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+}$$IL10-1-U-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User874554	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User917188	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User501546	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User129707	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User263933	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User479483	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User789116	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User684097	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User390756	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL10-1-U-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	wsdbm:User191261	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+	?v9	gn:parentCountry ?v10 .
+}$$IL9-2-R-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer11202	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer7688	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer5258	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer10242	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer3412	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer2683	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer1487	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer8450	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer4795	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL9-2-R-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:Retailer6023	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:editor ?v7 .
+	?v7	wsdbm:makesPurchase ?v8 .
+	?v8	wsdbm:purchaseFor	?v9 .
+}$$IL5-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	?v0	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL10-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 ?v10 WHERE {
+	?v0	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:author ?v7 .
+	?v7	wsdbm:follows ?v8 .
+	?v8	foaf:homepage	?v9 .
+	?v9	sorg:language ?v10 .
+}$$IL5-2-R-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer11202	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer7688	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer5258	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer10242	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer3412	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer2683	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer1487	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer8450	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer4795	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL5-2-R-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:Retailer uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
+	wsdbm:Retailer6023	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	sorg:director	?v3 .
+	?v3	wsdbm:friendOf	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+}$$IL7-1-U-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User874554	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User917188	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User501546	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User129707	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User263933	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User479483	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User789116	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User684097	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User390756	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL7-1-U-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	wsdbm:User191261	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+}$$IL9-1-U-1
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User874554	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-2
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User917188	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User501546	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-4
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User129707	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-5
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User263933	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-6
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User479483	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-7
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User789116	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-8
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User684097	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-9
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User390756	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL9-1-U-10
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+#mapping v0 wsdbm:User uniform
+SELECT ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 ?v9 WHERE {
+	wsdbm:User191261	wsdbm:follows	?v1 .
+	?v1	wsdbm:likes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:makesPurchase ?v6 .
+	?v6	wsdbm:purchaseFor ?v7 .
+	?v7	sorg:author ?v8 .
+	?v8	dc:Location	?v9 .
+}$$IL7-3
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX gr: <http://purl.org/goodrelations/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX og: <http://ogp.me/ns#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX sorg: <http://schema.org/>
+PREFIX wsdbm: <http://db.uwaterloo.ca/~galuc/wsdbm/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX dc: <http://purl.org/dc/terms/>
+SELECT ?v0 ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 WHERE {
+	?v0	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:author ?v7 .
+}

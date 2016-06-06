@@ -1,0 +1,18 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT DISTINCT ?name1 ?name2
+WHERE {
+  ?p1 <hasFamilyName> ?name1 .
+  ?p2 <hasFamilyName> ?name2 .
+  ?p1 rdf:type ?scientist .
+  ?p2 rdf:type ?scientist .
+  ?scientist rdfs:label "scientist"@eng .
+  ?p1 <hasWonPrize> ?award .
+  ?p2 <hasWonPrize> ?award .
+  ?p1 <wasBornIn> ?city .
+  ?p2 <wasBornIn> ?city
+  FILTER (?p1 != ?p2)
+}

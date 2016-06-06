@@ -1,0 +1,10 @@
+SELECT ?v0 ?v1 ?v2 ?v3 ?v4 ?v5 ?v6 ?v7 ?v8 WHERE {
+	?v0	gr:offers	?v1 .
+	?v1	gr:includes	?v2 .
+	?v2	rev:hasReview	?v3 .
+	?v3	rev:reviewer	?v4 .
+	?v4 wsdbm:friendOf ?v5 .
+	?v5	wsdbm:likes ?v6 .
+	?v6	sorg:author ?v7 .
+	?v7	wsdbm:follows ?v8 .
+}

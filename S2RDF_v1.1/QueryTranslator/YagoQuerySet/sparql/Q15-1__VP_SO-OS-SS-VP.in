@@ -1,0 +1,16 @@
+BASE <http://yago-knowledge.org/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?person1 ?person2 ?person3 ?person4 ?inst ?place ?url
+WHERE {
+  ?person1 rdf:type ?personType .
+  ?personType skos:prefLabel "person"@eng .
+  ?person1 <isMarriedTo> ?person2 .
+  ?person2 <influences> ?person3 .
+  ?person3 <hasChild> ?person4 .
+  ?person4 <isAffiliatedTo> ?inst .
+  ?inst <isLocatedIn> ?place .
+  ?place <hasWebsite> ?url
+}
