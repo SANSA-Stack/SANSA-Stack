@@ -21,7 +21,7 @@ import scala.reflect.ClassTag
 trait SparkRDDGraphOps[Rdf <: SparkRDD{ type Blah = Rdf }]
   extends RDFGraphOps[Rdf] { this: RDFNodeOps[Rdf] =>
 
-  protected val sparkContext: SparkContext
+  protected def sparkContext: SparkContext
 
   // graph
   def loadGraphFromNTriples(file: String, baseIRI: String): Rdf#Graph =
@@ -73,7 +73,7 @@ trait SparkRDDGraphOps[Rdf <: SparkRDD{ type Blah = Rdf }]
   def findGraph(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Rdf#Graph = {
     graph.filter {
       case Triple(s, p, o) =>
-        matchNode(s, subject) && matchNode(s, subject) && matchNode(s, subject)
+        matchNode(s, subject) && matchNode(p, predicate) && matchNode(o, objectt)
     }
   }
 
