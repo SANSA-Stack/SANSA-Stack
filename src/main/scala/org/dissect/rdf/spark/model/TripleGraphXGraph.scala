@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
-class TripleGraphXGraph(graph: JenaSparkGraphX#Graph) extends JenaNodeOps[JenaSparkGraphX] with GraphXGraphOps[JenaSparkGraphX] {
+class TripleGraphXGraph(graph: JenaSparkGraphX#Graph) extends JenaSparkGraphXOps {
   val sparkContext = graph.edges.sparkContext
 
   def getTriples: Iterable[JenaSparkGraphX#Triple] =
@@ -94,12 +94,6 @@ class TripleGraphXGraph(graph: JenaSparkGraphX#Graph) extends JenaNodeOps[JenaSp
   def saveGraphToNTriples(file: String): Unit = saveGraphToNTriples(graph, file)
 
   def saveGraphToSequenceFile(vertexFile: String, edgeFile: String):Unit = saveGraphToSequenceFile(graph, vertexFile, edgeFile)
-
-  override implicit protected def nodeTag = reflect.ClassTag(classOf[JenaSparkGraphX#Node])
-
-  override implicit protected def tripleTag = reflect.ClassTag(classOf[JenaSparkGraphX#Triple])
-
-  override implicit protected def uriTag = reflect.ClassTag(classOf[JenaSparkGraphX#URI])
 }
 
 

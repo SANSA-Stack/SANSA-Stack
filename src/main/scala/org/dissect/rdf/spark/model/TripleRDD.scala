@@ -95,12 +95,6 @@ class TripleRDD(@transient graphRDD: JenaSparkRDD#Graph) extends Serializable wi
   def saveGraphToNTriples(file: String): Unit = saveGraphToNTriples(graphRDD, file)
 
   def saveGraphToSequenceFile(file: String): Unit = saveGraphToSequenceFile(graphRDD, file)
-
-  override implicit protected def nodeTag = reflect.ClassTag(classOf[JenaSparkRDD#Node])
-
-  override implicit protected def tripleTag = reflect.ClassTag(classOf[JenaSparkRDD#Triple])
-
-  override implicit protected def uriTag = reflect.ClassTag(classOf[JenaSparkRDD#URI])
 }
 
 
