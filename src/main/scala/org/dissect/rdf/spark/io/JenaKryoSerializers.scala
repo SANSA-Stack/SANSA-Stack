@@ -49,13 +49,26 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node_ANY
     */
-  class VariableNodeSerializer extends Serializer[Node_ANY] {
+  class ANYNodeSerializer extends Serializer[Node_ANY] {
     override def write(kryo: Kryo, output: Output, obj: Node_ANY) {
-      output.writeString(obj.toString)
+
     }
 
     override def read(kryo: Kryo, input: Input, objClass: Class[Node_ANY]): Node_ANY = {
-      NodeFactory.createVariable(input.readString()).asInstanceOf[Node_ANY]
+      JenaNode.ANY.asInstanceOf[Node_ANY]
+    }
+  }
+
+  /**
+    * Kryo Serializer for Node_Variable
+    */
+  class VariableNodeSerializer extends Serializer[Node_Variable] {
+    override def write(kryo: Kryo, output: Output, obj: Node_Variable) {
+      output.writeString(obj.toString)
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Variable]): Node_Variable = {
+      NodeFactory.createVariable(input.readString()).asInstanceOf[Node_Variable]
     }
   }
 
