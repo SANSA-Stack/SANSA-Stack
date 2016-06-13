@@ -77,7 +77,7 @@ trait JenaNodeOps[Rdf <: Jena]
   // literal
 
   // ThreadLocal wrapper because TypeMapper's javadoc doesn't say if it is thread safe
-  private val mapper: ThreadLocal[TypeMapper] = new ThreadLocal[TypeMapper] {
+  private def mapper: ThreadLocal[TypeMapper] = new ThreadLocal[TypeMapper] {
     override def initialValue = TypeMapper.getInstance()
   }
 
@@ -86,9 +86,9 @@ trait JenaNodeOps[Rdf <: Jena]
     mapper.get.getSafeTypeByName(iriString)
   }
 
-  val __xsdString: RDFDatatype = mapper.get.getTypeByName("http://www.w3.org/2001/XMLSchema#string")
-  val __xsdStringURI: Rdf#URI = makeUri("http://www.w3.org/2001/XMLSchema#string")
-  val __rdfLangStringURI: Rdf#URI = makeUri("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")
+  def __xsdString: RDFDatatype = mapper.get.getTypeByName("http://www.w3.org/2001/XMLSchema#string")
+  def __xsdStringURI: Rdf#URI = makeUri("http://www.w3.org/2001/XMLSchema#string")
+  def __rdfLangStringURI: Rdf#URI = makeUri("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")
 
   def makeLiteral(lexicalForm: String, datatype: Rdf#URI): Rdf#Literal =
     if (datatype == __xsdStringURI)
@@ -120,7 +120,7 @@ trait JenaNodeOps[Rdf <: Jena]
 
   // node matching
 
-  val ANY: Rdf#NodeAny = JenaNode.ANY.asInstanceOf[Node_ANY]
+  def ANY: Rdf#NodeAny = JenaNode.ANY.asInstanceOf[Node_ANY]
 
   implicit def toConcreteNodeMatch(node: Rdf#Node): Rdf#NodeMatch = node.asInstanceOf[Rdf#Node]
 

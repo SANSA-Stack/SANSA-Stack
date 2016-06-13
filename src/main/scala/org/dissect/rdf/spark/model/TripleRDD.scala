@@ -9,8 +9,8 @@ import org.apache.spark.rdd.RDD
  *
  * @author Nilesh Chakraborty <nilesh@nileshc.com>, Gezim Sejdiu <g.sejdiu@gmail.com>
  */
-class TripleRDD(graphRDD: JenaSparkRDD#Graph) extends JenaNodeOps[JenaSparkRDD] with SparkRDDGraphOps[JenaSparkRDD] {
-  val sparkContext = graphRDD.sparkContext
+class TripleRDD(@transient graphRDD: JenaSparkRDD#Graph) extends Serializable with JenaSparkRDDOps {
+  @transient override def sparkContext = graphRDD.sparkContext
 
   def getTriples: Iterable[JenaSparkRDD#Triple] =
     getTriples(graphRDD)
@@ -106,4 +106,5 @@ class TripleRDD(graphRDD: JenaSparkRDD#Graph) extends JenaNodeOps[JenaSparkRDD] 
 
 object TripleRDD {
   implicit def tripleFunctions(rdd: RDD[JenaSparkRDD#Triple]): TripleRDD = new TripleRDD(rdd)
+
 }

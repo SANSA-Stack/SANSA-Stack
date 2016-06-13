@@ -1,5 +1,7 @@
 package org.dissect.rdf.spark.model
 
+import org.dissect.rdf.spark.io.KryoSerializationWrapper
+
 import scala.reflect.ClassTag
 
 /**
@@ -50,5 +52,34 @@ trait RDFDSL[Rdf <: RDF] { this: RDFNodeOps[Rdf] with RDFGraphOps[Rdf] =>
   object Lang {
     def apply(s: String): Rdf#Lang = makeLang(s)
     def unapply(l: Rdf#Lang): Some[String] = Some(fromLang(l))
+  }
+}
+
+object RDFDSL {
+  /**
+    * Returns the function object wrapped inside a KryoSerializationWrapper.
+    * This is useful for having Kryo-serialization for Spark closures.
+    *
+    * @param function
+    * @return
+    */
+  def kryoWrap[T, U](function: (T => U)): (T => U) =
+  {
+    def genMapper(kryoWrapper: KryoSerializationWrapper[(T => U)])(input: T): U =
+    {
+      kryoWrapper.value.apply(input)
+    }
+
+    genMapper(KryoSerializationWrapper(function)) _
+  }
+
+  def kryoWrap[T, U](function: (T, T) => T): (T, T) => T =
+  {
+    def genMapper(kryoWrapper: KryoSerializationWrapper[(T, T) => T])(input1: T, input2: T): T =
+    {
+      kryoWrapper.value.apply(input1, input2)
+    }
+
+    genMapper(KryoSerializationWrapper(function)) _
   }
 }

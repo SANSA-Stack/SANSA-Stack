@@ -9,8 +9,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 import org.apache.jena.riot.Lang
-
-
+import RDFDSL._
+import org.apache.jena.graph.{Triple => JenaTriple}
 import scala.reflect.ClassTag
 
 /**
@@ -21,19 +21,24 @@ import scala.reflect.ClassTag
 trait SparkRDDGraphOps[Rdf <: SparkRDD{ type Blah = Rdf }]
   extends RDFGraphOps[Rdf] { this: RDFNodeOps[Rdf] =>
 
-  protected def sparkContext: SparkContext
+  @transient protected def sparkContext: SparkContext
 
   // graph
   def loadGraphFromNTriples(file: String, baseIRI: String): Rdf#Graph =
     sparkContext.textFile(file).mapPartitions {
-      case it =>
-        fromNTriples(it.mkString("\n"), baseIRI).iterator
+      kryoWrap {
+        case it =>
+          val triples = it.mkString("\n")
+          fromNTriples(triples, baseIRI).iterator
+      }
     }
 
   def saveGraphToNTriples(graph: Rdf#Graph, file: String): Unit = {
     graph.mapPartitions {
-      case it =>
-        toNTriples(it.toIterable).split("\n").iterator
+      kryoWrap {
+        case it =>
+          toNTriples(it.toIterable).split("\n").iterator
+      }
     }.saveAsTextFile(file)
   }
 
@@ -72,8 +77,15 @@ trait SparkRDDGraphOps[Rdf <: SparkRDD{ type Blah = Rdf }]
 
   def findGraph(graph: Rdf#Graph, subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, objectt: Rdf#NodeMatch): Rdf#Graph = {
     graph.filter {
-      case Triple(s, p, o) =>
-        matchNode(s, subject) && matchNode(p, predicate) && matchNode(o, objectt)
+      kryoWrap {
+        // FIXME: Ugly code, supposed to work with Triple(s, p, o) directly but causing MatchError in some cases, no pun intended
+        case x =>
+          Triple.unapply(x.asInstanceOf[Rdf#Triple]) match {
+            case Some((s, p, o)) =>
+              val result = matchNode(s, subject) && matchNode(p, predicate) && matchNode(o, objectt)
+              result
+          }
+      }
     }
   }
 
