@@ -12,9 +12,10 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <encoding>UTF-8</encoding>
-        <scala.version>2.10.4</scala.version>
-        <scala.compat.version>2.10</scala.compat.version>
-        <mainclass>org.dissect.rdf.spark.App</mainclass>
+        <scala.version>2.11.7</scala.version>
+        <scala.compat.version>2.11</scala.compat.version>
+        <spark.version>2.0.0-SNAPSHOT</spark.version>
+        <jena.version>3.0.1</jena.version>
     </properties>
 
     <repositories>
@@ -22,13 +23,39 @@
             <id>Akka repository</id>
             <url>http://repo.akka.io/releases</url>
         </repository>
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>apache-snapshot</id>
+            <name>Apache repository (snapshots)</name>
+            <url>https://repository.apache.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.compat.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.spark</groupId>-->
+            <!--<artifactId>spark-tags_${scala.compat.version}</artifactId>-->
+            <!--<version>2.0.0</version>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
             <artifactId>spark-graphx_${scala.compat.version}</artifactId>
-            <version>1.6.0</version>
+            <version>${spark.version}</version>
         </dependency>
 
         <!-- Test -->
@@ -38,29 +65,15 @@
             <version>4.11</version>
             <scope>test</scope>
         </dependency>
-<!--         <dependency> -->
-<!--             <groupId>org.specs2</groupId> -->
-<!--             <artifactId>specs2-core_${scala.compat.version}</artifactId> -->
-<!--             <version>2.4.16</version> -->
-<!--             <scope>test</scope> -->
-<!--         </dependency> -->
-<!--         <dependency> -->
-<!--             <groupId>org.scalatest</groupId> -->
-<!--             <artifactId>scalatest_${scala.compat.version}</artifactId> -->
-<!--             <version>2.2.4</version> -->
-<!--             <scope>test</scope> -->
-<!--         </dependency> -->
-
-
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-core</artifactId>
-            <version>3.0.1</version>
+            <version>${jena.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>3.0.1</version>
+            <version>${jena.version}</version>
         </dependency>
 
         <dependency>
