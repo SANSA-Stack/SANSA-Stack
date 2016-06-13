@@ -1,58 +1,40 @@
 package org.dissect.rdf.spark
 
+import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import scala.io.Source
-import java.io.File
-import org.apache.commons.io.FileUtils
-import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.HashMap
-import org.apache.spark.graphx._
-import org.apache.spark.rdd.RDD
-import java.io.PrintWriter
-import scala.collection.mutable.ArrayBuffer
-import org.apache.spark.SparkConf
-import org.apache.jena.riot.RiotReader
-import org.apache.jena.riot.Lang
-import org.dissect.rdf.spark.utils._
-import org.dissect.rdf.spark.model._
-import org.dissect.rdf.spark.analytics._
-import org.dissect.rdf.spark.utils.Logging
-import org.dissect.rdf.spark.graph.LoadGraph
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.PairRDDFunctions
-import org.apache.jena.sparql.util.NodeUtils
+import org.dissect.rdf.spark.model.JenaSparkRDDOps
+import org.dissect.rdf.spark.model.TripleRDD._
 
-object App extends Logging {
-
+object App {
 
   def main(args: Array[String]): Unit = {
-    if (args.length < 1) {
-      logger.error("=> wrong parameters number")
-      System.err.println("Usage: FileName <path-to-files> <output-path>")
-      System.exit(1)
+    val sparkContext = {
+      val conf = new SparkConf().setAppName("BDE-readRDF").setMaster("local[1]")
+//        .set("spark.kryo.registrationRequired", "true") // use this for debugging and keeping track of which objects are being serialized.
+        .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .set("spark.kryo.registrator", "org.dissect.rdf.spark.io.JenaKryoRegistrator")
+
+      new SparkContext(conf)
     }
 
-    val fileName = args(0)
-    val sparkMasterHost = if(args.length >= 2) args(1) else SparkUtils.SPARK_MASTER
+    val triplesString =
+      """<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://xmlns.com/foaf/0.1/givenName>	"Guy De" .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/influenced>	<http://dbpedia.org/resource/Tobias_Wolff> .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/influenced>	<http://dbpedia.org/resource/Henry_James> .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Passy> .
+        |<http://dbpedia.org/resource/Charles_Dickens>	<http://xmlns.com/foaf/0.1/givenName>	"Charles"@en .
+        |<http://dbpedia.org/resource/Charles_Dickens>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Gads_Hill_Place> .""".stripMargin
 
-    val sparkConf = new SparkConf().setAppName("BDE-readRDF").setMaster(sparkMasterHost);
-    val sparkContext = new SparkContext(sparkConf)
+    val ops = JenaSparkRDDOps(sparkContext)
+    import ops._
 
-    //val file = "C:/Users/Gezimi/Desktop/AKSW/Spark/sparkworkspace/data/nyse.nt"
-    val graphLayout = LoadGraph(fileName, sparkContext)
-    val graph = graphLayout.graph
-    val vertexId = graphLayout.iriToId.lookup("http://fp7-pp.publicdata.eu/resource/funding/223894-999854564")
+    val triples = fromNTriples(triplesString, "http://dbpedia.org").toSeq
+    println(triples.mkString("\n"))
 
-    println("VERTEX ID = " + vertexId.mkString("."))
-
-    val landmarks = Seq[Long](1, 2, 3)
-    val result = ShortestPaths.run(graph, landmarks)
-
-    logger.info("RDFModel..........executed")
-
-
-    logger.info("Graph stats: " + graph.numVertices + " - " + graph.numEdges)
+    val graph = sparkContext.parallelize(triples)
+    println("All objects for predicate influenced:\n" + graph.getObjectsWithPredicate(URI("http://dbpedia.org/ontology/influenced")).collect().mkString("\n"))
+    println("All triples related to Dickens:\n" + graph.find(URI("http://dbpedia.org/resource/Charles_Dickens"), ANY, ANY).collect().mkString("\n"))
+    println("All triples with predicate deathPlace:\n" + graph.find(ANY, URI("http://dbpedia.org/ontology/deathPlace"), ANY).collect().mkString("\n"))
 
     sparkContext.stop()
   }
