@@ -1,0 +1,36 @@
+	VP Statistic
+---------------------------------------------------------
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#worksFor>>	42731	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#hasSameHomeTownWith>>	75805	12698059	0.01
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#like>>	333742	12698059	0.03
+<<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>>	2199147	12698059	0.17
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#isAdvisedBy>>	228323	12698059	0.02
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#isTaughtBy>>	1585	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#telephone>>	687225	12698059	0.05
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#firstName>>	687225	12698059	0.05
+<INFO>	49	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#isHeadOf>>	1910	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#teachingAssistantOf>>	35137	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#name>>	127731	12698059	0.01
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#isMemberOf>>	22668	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#hasMasterDegreeFrom>>	33423	12698059	0.00
+<<http://www.w3.org/2002/07/owl#imports>>	50	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#lastName>>	687225	12698059	0.05
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#subOrganizationOf>>	12025	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#enrollIn>>	618565	12698059	0.05
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#takesCourse>>	1781408	12698059	0.14
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#hasMajor>>	618565	12698059	0.05
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#teacherOf>>	126726	12698059	0.01
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#researchInterest>>	27686	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#love>>	166707	12698059	0.01
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#isFriendOf>>	1724744	12698059	0.14
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#emailAddress>>	687225	12698059	0.05
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#publicationAuthor>>	1383490	12698059	0.11
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#isCrazyAbout>>	166660	12698059	0.01
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#hasUndergraduateDegreeFrom>>	183598	12698059	0.01
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#isStudentOf>>	3261	12698059	0.00
+<<http://semantics.crl.ibm.com/univ-bench-dl.owl#hasDoctoralDegreeFrom>>	33423	12698059	0.00
+---------------------------------------------------------
+Saved tabels ->30
+Unsaved non-empty tables ->0
+Empty tables ->0
