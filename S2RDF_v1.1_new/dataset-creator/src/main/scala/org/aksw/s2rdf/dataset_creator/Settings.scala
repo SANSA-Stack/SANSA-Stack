@@ -3,7 +3,7 @@
  * Uni Freiburg
  */
 
-package dataCreator
+package org.aksw.s2rdf.dataset_creator
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf

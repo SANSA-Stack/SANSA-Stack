@@ -23,10 +23,28 @@
         <module>query-executor</module>
         <module>query-translator</module>
         <module>dataset-creator</module>
+        <module>s2rdf-example</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.s2rdf</groupId>
+                <artifactId>dataset-creator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.s2rdf</groupId>
+                <artifactId>query-translator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.s2rdf</groupId>
+                <artifactId>query-executor</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
@@ -90,5 +108,5 @@
         </plugins>
     </build>
 
-    
+
 </project>

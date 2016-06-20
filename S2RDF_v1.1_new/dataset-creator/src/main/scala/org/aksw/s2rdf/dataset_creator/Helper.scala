@@ -3,10 +3,8 @@
  * Uni Freiburg
  */
 
-package dataCreator
+package org.aksw.s2rdf.dataset_creator
 import java.io.File
-import java.nio.file.Paths
-
 import scala.sys.process._
 /**
  * The set of different help-functions 
