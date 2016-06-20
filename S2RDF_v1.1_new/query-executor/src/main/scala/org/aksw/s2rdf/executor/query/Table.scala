@@ -3,7 +3,7 @@
  * Uni Freiburg
  */
 
-/**
+package org.aksw.s2rdf.executor.query/**
  * Simple calss for SQL table description
  */
 class Table(tN:String, tT:String, tP:String ) {

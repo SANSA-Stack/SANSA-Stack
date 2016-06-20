@@ -1,4 +1,10 @@
-/* Copyright Simon Skilevic
+import org.aksw.s2rdf.executor.query.Settings
+
+import org.aksw.s2rdf.executor.query.QueryExecutor
+
+/* Copyright package org.aksw.s2rdf.executor.query
+
+Simon Skilevic
  * Master Thesis for Chair of Databases and Information Systems
  * Uni Freiburg
  */

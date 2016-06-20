@@ -3,6 +3,8 @@
  * Uni Freiburg
  */
 
+package org.aksw.s2rdf.executor.query
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SQLContext
