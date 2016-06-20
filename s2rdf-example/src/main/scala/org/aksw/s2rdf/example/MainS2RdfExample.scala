@@ -9,8 +9,6 @@ import org.aksw.s2rdf.dataset_creator.Settings
 
 object MainS2RdfExample {
   def main(args : Array[String]) : Unit = {
-    //Settings.
-    // TODO copy test file to target
     val srcFolder = new File("src/main/resources/");
     val tgtFolder = new File("target/example/")
 

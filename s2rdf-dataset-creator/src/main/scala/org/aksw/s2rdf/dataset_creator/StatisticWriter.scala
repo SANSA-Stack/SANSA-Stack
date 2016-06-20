@@ -3,25 +3,26 @@
  * Uni Freiburg
  */
 
-package dataCreator
+package org.aksw.s2rdf.dataset_creator
+
 /**
- * StatisticWriter records information about created tables using 
- * DataSetGenerator, it creates 4 statistic files for VP, ExtVP_SO, ExtVP_SS and 
- * ExtVP_OS tables respectively. 
+ * StatisticWriter records information about created tables using
+ * DataSetGenerator, it creates 4 statistic files for VP, ExtVP_SO, ExtVP_SS and
+ * ExtVP_OS tables respectively.
  */
 object StatisticWriter {
-  
+
   // number of unique predicates
   private var _predicatesNum = 0: Int
   // number of triples in the input RDF set
   private var _inputSize = 0: Long
   // the name of the active statistic file, which is being written
   private var _statisticFileName = "": String
-  
+
   private var _savedTables = 0: Int
   private var _unsavedNonEmptyTables = 0: Int
   private var _allPossibleTables = 0: Int
-  
+
   /**
    * Initializes StatisticWriter
    */
@@ -29,7 +30,7 @@ object StatisticWriter {
     _predicatesNum = predsNum
     _inputSize = inpSize
   }
-  
+
   /**
    * Initializes recording of new statistic file.
    */
@@ -37,15 +38,15 @@ object StatisticWriter {
     _statisticFileName = ("stat_"+relType.toLowerCase+".txt")
     _savedTables = 0
     _unsavedNonEmptyTables = 0
-    _allPossibleTables = if (relType == "VP") _predicatesNum 
+    _allPossibleTables = if (relType == "VP") _predicatesNum
                          else _predicatesNum * _predicatesNum
-    
+
     val fw = new java.io.FileWriter(_statisticFileName, false)
     try {
       fw.write("\t" +relType+ " Statistic\n")
       fw.write("---------------------------------------------------------\n")
     }
-    finally fw.close()     
+    finally fw.close()
   }
 
   /**
@@ -57,19 +58,19 @@ object StatisticWriter {
       fw.write("---------------------------------------------------------\n")
       fw.write("Saved tabels ->" + _savedTables +"\n")
       fw.write("Unsaved non-empty tables ->" + _unsavedNonEmptyTables +"\n")
-      fw.write("Empty tables ->" + (_allPossibleTables 
+      fw.write("Empty tables ->" + (_allPossibleTables
                                     - _savedTables
-                                    - _unsavedNonEmptyTables) 
+                                    - _unsavedNonEmptyTables)
                +"\n")
     }
-    finally fw.close() 
+    finally fw.close()
   }
   /**
    * Add new line to the actual statistic file
    */
-  def addTableStatistic(tableName: String, sizeExtVpT: Long, sizeVpT: Long) = {    
-    var statLine = tableName    
-            
+  def addTableStatistic(tableName: String, sizeExtVpT: Long, sizeVpT: Long) = {
+    var statLine = tableName
+
     if (sizeExtVpT > 0) {
       // ExtVP table statistic entry
       statLine += ("\t" + sizeExtVpT
@@ -82,12 +83,12 @@ object StatisticWriter {
                    + "\t" + _inputSize
                    + "\t" + Helper.ratio(sizeVpT, _inputSize))
     }
-    
+
     val fw = new java.io.FileWriter(_statisticFileName, true)
     try {
       fw.write( statLine+"\n")
     }
-    finally fw.close() 
+    finally fw.close()
   }
   /**
    * Increments the counter for the saved tables
@@ -95,10 +96,10 @@ object StatisticWriter {
   def incSavedTables() = {
     _savedTables += 1
   }
-  
+
   /**
-   * Increments the counter for the unsaved tables, which are not empty, e.g. 
-   * ExtVP tables having size bigger than ScaleUB * (Size of corresponding 
+   * Increments the counter for the unsaved tables, which are not empty, e.g.
+   * ExtVP tables having size bigger than ScaleUB * (Size of corresponding
    * VP table)
    */
   def incUnsavedNonEmptyTables() = {
