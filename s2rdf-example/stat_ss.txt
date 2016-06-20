@@ -1,0 +1,11 @@
+	SS Statistic
+---------------------------------------------------------
+<<http://ex.org/b>><<http://ex.org/b>>	1	1	1.00	0.33
+<<http://ex.org/b>><<http://ex.org/x>>	1	1	1.00	0.33
+<<http://ex.org/d>><<http://ex.org/d>>	1	1	1.00	0.33
+<<http://ex.org/x>><<http://ex.org/b>>	1	1	1.00	0.33
+<<http://ex.org/x>><<http://ex.org/x>>	1	1	1.00	0.33
+---------------------------------------------------------
+Saved tabels ->0
+Unsaved non-empty tables ->2
+Empty tables ->7

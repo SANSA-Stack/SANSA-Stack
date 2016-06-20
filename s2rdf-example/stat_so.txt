@@ -1,0 +1,7 @@
+	SO Statistic
+---------------------------------------------------------
+<<http://ex.org/d>><<http://ex.org/b>>	1	1	1.00	0.33
+---------------------------------------------------------
+Saved tabels ->0
+Unsaved non-empty tables ->1
+Empty tables ->8

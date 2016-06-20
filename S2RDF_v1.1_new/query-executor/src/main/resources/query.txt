@@ -1,3 +1,0 @@
-SELECT rel0.subject, rel1.subject, rel2.object
-FROM triples rel1 INNER JOIN TRIPLES rel0 ON rel1.subject=rel0.predicate  INNER JOIN TRIPLES rel2 ON rel0.object=rel2.subject
-WHERE rel1.predicate='http://www.w3.org/1999/02/22-rdf-syntax-ns#type' AND rel1.object='http://www.w3.org/2002/07/owl#TransitiveProperty'
