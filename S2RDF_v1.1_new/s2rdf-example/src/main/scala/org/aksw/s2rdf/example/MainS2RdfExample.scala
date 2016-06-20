@@ -8,36 +8,38 @@ import org.aksw.s2rdf.executor.query.QueryExecutor
 object MainS2RdfExample {
   def main(args : Array[String]) = {
     // TODO copy test file to target
-    val workingFolder = new File("target/example/")
-    FileUtils.deleteDirectory(workingFolder)
-    val inFile = "s2rdf-example-data.nt"
+    val srcFolder = new File("src/main/resources/");
+    val tgtFolder = new File("target/example/")
 
-    val queryPlanFile = new File(workingFolder, "queryPlan.dat")
+    FileUtils.deleteDirectory(tgtFolder)
+    tgtFolder.mkdirs()
 
-    workingFolder.mkdirs()
+    val inFile = new File(srcFolder, "s2rdf-example-data.nt")
+    FileUtils.copyFile(inFile, new File(tgtFolder, inFile.getName))
 
-    FileUtils.copyFile(new File("src/main/resources/", inFile), new File(workingFolder, inFile))
+    val queryPlanFile = new File(tgtFolder, "queryPlan.dat")
+
 
     List("VP", "ss", "so", "os").foreach(
-        joinType => runDriver.main(Array(workingFolder.getAbsolutePath + "/", inFile, joinType, "1")))
+        joinType => runDriver.main(Array(tgtFolder.getAbsolutePath + "/", inFile.getName, joinType, "1")))
 
 
-    val queryFile = new File(workingFolder, "query.txt")
+    val queryFile = new File(tgtFolder, "query.txt")
     FileUtils.write(queryFile, "SELECT * { ?s ?p ?o }")
 
-    val statsFolder = workingFolder
+    val statsFolder = tgtFolder
 
 
     queryTranslator.run.Main.main(Array(
-        "-f", workingFolder.getAbsolutePath,
+        "-f", tgtFolder.getAbsolutePath,
         "-i", queryFile.getName,
         "-o", queryPlanFile.getName,
-        "-sd", statsFolder.getAbsolutePath,
+        "-sd", statsFolder.getName,
         "-so",
         "-ss",
         "-os"))
 
-    runDriver.main(Array(workingFolder.getAbsolutePath, queryPlanFile.getName))
+    runDriver.main(Array(tgtFolder.getAbsolutePath, queryPlanFile.getName))
 
 
     //println("yay")
