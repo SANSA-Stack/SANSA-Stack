@@ -206,11 +206,14 @@ public class SparkTableStatistics {
 		  String line;
 		  while ((line = reader.readLine()) != null && !line.contains("-------------")){}
 		  while ((line = reader.readLine()) != null && !line.contains("-------------")){
+			  System.out.println("LINE: + " + line);
 			  String[] temp = line.split("\t");
 			  TStat newStat = new TStat(temp[1], temp[2], temp[3]);
 			  allTriplesNumber += newStat.size;
 			  numberOfStoredTables++;
-			  vpStats.put(tableName(temp[0]), newStat);
+			  String tableName = tableName(temp[0]);
+			  System.out.println("table name(" + temp[0] + ") = " + tableName);
+			  vpStats.put(tableName, newStat);
 		  }
 		  reader.close();
 		}

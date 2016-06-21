@@ -85,7 +85,8 @@ object DataSetGenerator {
    */
   private def createTT() = {
     val df = _sc.textFile(Settings.inputRDFSet)
-                         .map(_.replace("<", "").replace(">", "").split(" "))
+//                         .map(_.replace("<", "").replace(">", ""))
+                          .map(_.split(" "))
                          .map(p => Triple(p(0), p(1), p(2)))
                          .toDF()
     // Commented out due to execution problem for dataset of 1 Bil triples

@@ -9,7 +9,8 @@ import org.aksw.s2rdf.dataset_creator.Settings
 
 object MainS2RdfExample {
   def main(args : Array[String]) : Unit = {
-    val srcFolder = new File("src/main/resources/");
+    val srcFolder = new File("src/main/resources/")
+    println(srcFolder.getAbsolutePath)
     val tgtFolder = new File("target/example/")
 
     FileUtils.deleteDirectory(tgtFolder)
@@ -18,7 +19,7 @@ object MainS2RdfExample {
     val inFile = new File(srcFolder, "s2rdf-example-data.nt")
     FileUtils.copyFile(inFile, new File(tgtFolder, inFile.getName))
 
-    val queryPlanFile = new File(tgtFolder, "queryPlan.dat")
+
 
 
     List("VP", "SS", "SO", "OS").foreach(
@@ -29,11 +30,11 @@ object MainS2RdfExample {
     //if(true) { return }
 
     val queryFile = new File(tgtFolder, "query.sparql")
-    FileUtils.write(queryFile, "SELECT * { ?s ?p ?o }")
+    FileUtils.write(queryFile, "SELECT ?s { ?s <http://ex.org/b> ?o . ?s <http://ex.org/x> ?o2}")
 
     val statsFolder = tgtFolder
 
-
+    val queryPlanFile = new File(tgtFolder, "query.sparql.sql")
     queryTranslator.run.Main.main(Array(
         "-f", tgtFolder.getAbsolutePath,
         "-i", queryFile.getAbsolutePath,

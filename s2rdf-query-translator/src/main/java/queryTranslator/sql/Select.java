@@ -115,7 +115,7 @@ public class Select extends SqlStatement {
 	}
 
 	private String escape(String tableName) {
-		return "`" + tableName + "`";
+		return tableName.startsWith("<") ? ("`" + tableName + "`") : tableName;
 	}
 
 	@Override
