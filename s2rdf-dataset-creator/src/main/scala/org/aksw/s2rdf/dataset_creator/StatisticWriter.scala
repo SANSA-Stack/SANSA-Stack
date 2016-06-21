@@ -41,7 +41,7 @@ object StatisticWriter {
     _allPossibleTables = if (relType == "VP") _predicatesNum
                          else _predicatesNum * _predicatesNum
 
-    val fw = new java.io.FileWriter(_statisticFileName, false)
+    val fw = new java.io.FileWriter(Settings.workingDir + "/" + _statisticFileName, false)
     try {
       fw.write("\t" +relType+ " Statistic\n")
       fw.write("---------------------------------------------------------\n")
@@ -84,7 +84,7 @@ object StatisticWriter {
                    + "\t" + Helper.ratio(sizeVpT, _inputSize))
     }
 
-    val fw = new java.io.FileWriter(_statisticFileName, true)
+    val fw = new java.io.FileWriter(Settings.workingDir + "/" + _statisticFileName, true)
     try {
       fw.write( statLine+"\n")
     }

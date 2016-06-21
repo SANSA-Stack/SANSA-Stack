@@ -51,7 +51,7 @@ object DataSetGenerator {
   def generateDataSet(datasetType: String) = {
 
     // create or load TripleTable if already created
-    if (datasetType == "VP_new") createTT() else loadTT()
+    if (datasetType == "VP") createTT() else loadTT()
     // extract all unique predicates from TripleTable
     // necessary for VP/ExtVP generation
     _uPredicates = _sqlContext.sql("select distinct pred from triples")
@@ -207,7 +207,8 @@ object DataSetGenerator {
 
           // save ExtVP table in case if its size smaller than
           // ScaleUB*size(corresponding VPTable)
-          if (extVpTableSize < _vpTableSizes(pred1) * Settings.ScaleUB) {
+          val threshold = _vpTableSizes(pred1) * Settings.ScaleUB
+          if (extVpTableSize <= threshold) {
 
             // create directory extVP/relType/pred1 if not exists
             if (!createdDirs.contains(pred1)) {
