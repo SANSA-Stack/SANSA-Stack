@@ -283,7 +283,15 @@ object QueryExecutor {
 
   def run(query: Query) = {
     preloadTables(query, "SO")
-    executeQuery(query)
+    // execute query
+    val t0 = System.currentTimeMillis()
+    val result = _sqlContext.sql("""""" + query.query + """""")
+    val t1 = System.currentTimeMillis()
+    val cnt = result.count()
+    println(s"got $cnt rows in ${t1 - t0} ms")
+    println("Spark query execution plan\n" + result
+      .queryExecution
+      .executedPlan)
   }
 
   def runTests() = {

@@ -30,7 +30,7 @@ object MainS2RdfExample {
     //if(true) { return }
 
     val queryFile = new File(tgtFolder, "query.sparql")
-    FileUtils.write(queryFile, "SELECT ?s { ?s <http://ex.org/b> ?o . ?s <http://ex.org/x> ?o2}")
+    FileUtils.write(queryFile, "SELECT ?s { ?s <http://ex.org/b> ?o . }")
 
     val statsFolder = tgtFolder
 
