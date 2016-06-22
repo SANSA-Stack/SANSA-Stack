@@ -288,6 +288,8 @@ object QueryExecutor {
     val result = _sqlContext.sql("""""" + query.query + """""")
     val t1 = System.currentTimeMillis()
     val cnt = result.count()
+    //result.foreach { x => println(x.mkString(", ")) }
+    println(result.collect().mkString(", "))
     println(s"got $cnt rows in ${t1 - t0} ms")
     println("Spark query execution plan\n" + result
       .queryExecution

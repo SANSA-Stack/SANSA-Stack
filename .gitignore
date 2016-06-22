@@ -32,3 +32,6 @@ hs_err_pid*
 
 .cache-main
 .iml
+
+stat*.txt
+

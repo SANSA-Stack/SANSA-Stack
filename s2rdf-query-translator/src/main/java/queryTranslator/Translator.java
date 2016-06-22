@@ -39,7 +39,7 @@ public class Translator {
     String outputFile;
     private String sqlScript;
     private SqlOp sqlOpRoot;
-    
+
     // Define a static logger variable so that it references the corresponding Logger instance
     private static final Logger logger = Logger.getLogger(Translator.class);
 
@@ -51,7 +51,7 @@ public class Translator {
      * @param _outputFile Output script of the translator
      */
     public Translator(String _inputFile, String _outputFile) {
-    	sqlScript = "";
+        sqlScript = "";
         inputFile = _inputFile;
         outputFile = _outputFile;
     }
@@ -115,10 +115,22 @@ public class Translator {
     public void translateQuery() {
         //Parse input query
         Query query = QueryFactory.read("file:"+inputFile);
+//        if(query.isSelectType() && query.isQueryResultStar()) {
+//            query.setQueryResultStar(false);
+//            query.setResult(query.getResultVars());
+//        }
+//        System.out.println(query);
+
+//        val xxx = new Query;
+//        if(xxx.isSelectType() && xxx.isQueryResultStar()) {
+//          xxx.addProjectVars(xxx.getResultVars)
+//        }
+
+
         //Get prefixes defined in the query
         PrefixMapping prefixes = query.getPrefixMapping();
-        
-        // Read ExtVP/VP table statistics 
+
+        // Read ExtVP/VP table statistics
         SparkTableStatistics.init();
 
         //Generate translation logfile
@@ -218,7 +230,7 @@ public class Translator {
             logWriter.println("################################");
             logWriter.println(opRoot.toString(prefixes));
             logWriter.println();
-        }   
+        }
         //Transform SPARQL Algebra Tree in SQL Tree
         AlgebraTransformer transformer = new AlgebraTransformer(prefixes);
         sqlOpRoot = transformer.transform(opRoot);
@@ -231,19 +243,19 @@ public class Translator {
         logWriter.close();
 
         // Walk through SqlOp Tree and generate translation
-       
+
         // Translate query
         SqlOpTranslator translator = new SqlOpTranslator();
-        sqlScript += translator.translate(sqlOpRoot, Tags.expandPrefixes);        
-        
+        sqlScript += translator.translate(sqlOpRoot, Tags.expandPrefixes);
+
         // Print resulting SQL script program to output file
         PrintWriter sqlWriter;
         try {
-        	sqlWriter = new PrintWriter(outputFile+".sql");
-        	
-        	// Add to the output query tables usage instructions 
-        	sqlWriter.print(SparkTableStatistics.generateTablesUsageInstructions(sqlScript));
-        	sqlWriter.close();
+            sqlWriter = new PrintWriter(outputFile+".sql");
+
+            // Add to the output query tables usage instructions
+            sqlWriter.print(SparkTableStatistics.generateTablesUsageInstructions(sqlScript));
+            sqlWriter.close();
         } catch (Exception ex) {
             logger.fatal("Cannot open output file!", ex);
             System.exit(-1);

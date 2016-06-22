@@ -6,6 +6,7 @@ import java.io.File
 import org.aksw.s2rdf.executor.query.QueryExecutor
 import org.aksw.s2rdf.executor.query.runDriverQuery
 import org.aksw.s2rdf.dataset_creator.Settings
+import org.apache.jena.query.Query
 
 object MainS2RdfExample {
   def main(args : Array[String]) : Unit = {
@@ -31,6 +32,10 @@ object MainS2RdfExample {
 
     val queryFile = new File(tgtFolder, "query.sparql")
     FileUtils.write(queryFile, "SELECT ?s { ?s <http://ex.org/b> ?o . }")
+    //FileUtils.write(queryFile, "SELECT ?s { ?s ?p ?o . }")
+
+
+    //xxx.getProject.add xxx.getProjectVars
 
     val statsFolder = tgtFolder
 

@@ -1,9 +1,0 @@
-	VP Statistic
----------------------------------------------------------
-<<http://ex.org/b>>	1	3	0.33
-<<http://ex.org/d>>	1	3	0.33
-<<http://ex.org/x>>	1	3	0.33
----------------------------------------------------------
-Saved tabels ->3
-Unsaved non-empty tables ->0
-Empty tables ->0

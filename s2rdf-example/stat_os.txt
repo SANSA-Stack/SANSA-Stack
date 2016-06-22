@@ -1,7 +1,0 @@
-	OS Statistic
----------------------------------------------------------
-<<http://ex.org/b>><<http://ex.org/d>>	1	1	1.00	0.33
----------------------------------------------------------
-Saved tabels ->0
-Unsaved non-empty tables ->1
-Empty tables ->8

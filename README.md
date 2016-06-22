@@ -1,3 +1,9 @@
+Quick start:
+* Import the project into your IDE of choice
+* Run the class [MainS2RdfExample.scala](s2rdf-example/src/main/scala/org/aksw/s2rdf/example/MainS2RdfExample.scala)
+
+
+
 == dataset-creator
 vp = vertical partitioning -> each predicate to its own table
 
