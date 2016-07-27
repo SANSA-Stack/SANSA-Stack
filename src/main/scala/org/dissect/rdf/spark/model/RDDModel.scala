@@ -1,11 +1,14 @@
 package org.dissect.rdf.spark.model
+
 import org.apache.jena.graph.{ Node => rddNode }
 import org.apache.jena.graph.{ Node_Literal => rddLiteral }
+import org.apache.jena.graph.{ Node_Literal => rddLiteral }
 import org.apache.jena.rdf
-import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.rdd.MapPartitionsRDD
-import org.apache.jena.vocabulary.RDF
+import org.apache.jena.vocabulary.{ RDF => JenaRDF }
+import org.apache.jena.rdf.model.Literal
+import org.apache.jena.graph.Node
 
 object RDDModel extends Serializable {
 
@@ -16,7 +19,7 @@ object RDDModel extends Serializable {
     case _ => None
   }
   def getTypes(rdd: RDD[Triple]) = rdd.flatMap {
-    case (s, p, o) if RDF.predicate.equals(p) => Some(o);
+    case (s, p, o) if JenaRDF.predicate.equals(p) => Some(o);
     case _ => None
   }
 

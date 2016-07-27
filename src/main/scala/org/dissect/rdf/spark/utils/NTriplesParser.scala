@@ -1,8 +1,9 @@
 package org.dissect.rdf.spark.utils
 
 import org.apache.jena.riot.RiotReader
-import org.dissect.rdf.spark.model.StringInputStream
 import org.apache.jena.riot.Lang
+import org.apache.jena.riot.RDFDataMgr
+import java.io.ByteArrayInputStream
 
 object NTriplesParser {
 
@@ -33,12 +34,12 @@ object NTriplesParser {
    * Parse Triples
    */
   def parseTriple(fn: String) = {
-    val triples = RiotReader.createIteratorTriples(new StringInputStream(fn), Lang.NTRIPLES, "http://example/base").next
+    val triples = RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(fn.getBytes), Lang.NTRIPLES, "http://example/base").next
     (triples.getSubject.toString(), triples.getPredicate.toString(), if (triples.getObject.isLiteral()) triples.getObject.getLiteralLexicalForm().toString() else triples.getObject().toString())
   }
   
   def parseTripleAsNode(fn: String) = {
-    val triples = RiotReader.createIteratorTriples(new StringInputStream(fn), Lang.NTRIPLES, "http://example/base").next
+    val triples = RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(fn.getBytes), Lang.NTRIPLES, "http://example/base").next
     (triples.getSubject(), triples.getPredicate(), triples.getObject())
   }
 
