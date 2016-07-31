@@ -6,12 +6,12 @@
         <artifactId>inference-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
-    <groupId>org.dissect.inference</groupId>
+    <groupId>org.sansa.inference</groupId>
     <artifactId>inference-spark</artifactId>
     <version>0.1-SNAPSHOT</version>
 
-    <name>Inference API - SPARK</name>
-    <description>Apache SPARK based inference layer for RDF and OWL</description>
+    <name>Inference API - Spark</name>
+    <description>Apache Spark based inference layer for RDF and OWL</description>
 
     <!--
       <repositories>

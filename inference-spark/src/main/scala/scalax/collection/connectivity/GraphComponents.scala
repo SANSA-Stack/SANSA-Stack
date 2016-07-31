@@ -1,19 +1,14 @@
 package scalax.collection.connectivity
 
-import org.dissect.inference.utils.logging.Logging
-
-import org.dissect.inference.utils.logging
+import org.sansa.inference.spark.utils.logging.Logging
 
 import scala.collection.mutable.ListBuffer
-import scala.collection.{mutable, Set}
+import scala.collection.{Set, mutable}
 import scala.math.min
 import scala.reflect.ClassTag
-
+import scalax.collection.Graph
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef._
-import scalax.collection.Graph
-
-import logging.Logging
 
 /**
   * Provides algorithms for finding graph components.
