@@ -1,0 +1,67 @@
+{{PositiveEntailmentTestCase
+|id=rdfbased-xtr-reflection-listentries
+|description=One can make all the entries in an RDF list being the value of a sequence valued property into values of a single-valued property.
+|author=Michael Schneider, Kai Mainzer
+|syntax=RDF/XML
+|semantics=Test applies only to RDF-based semantics
+|rlrulescomplete=Yes
+|consistent-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:nodeID="A0">
+    <rdf:rest rdf:nodeID="A1"/>
+    <rdf:first rdf:nodeID="A2"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A3">
+    <rdf:rest rdf:nodeID="A4"/>
+    <rdf:first rdf:resource="http://www.example.org#charly"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A1">
+    <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+    <rdf:first rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#first"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#alice">
+    <ex:knowsAllOf rdf:nodeID="A5"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#knows">
+    <owl:propertyChainAxiom rdf:nodeID="A0"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A6">
+    <rdf:rest rdf:nodeID="A7"/>
+    <rdf:first rdf:nodeID="A2"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A2">
+    <owl:propertyChainAxiom rdf:nodeID="A6"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#knowsAllOf">
+    <rdfs:subPropertyOf rdf:nodeID="A2"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A4">
+    <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+    <rdf:first rdf:resource="http://www.example.org#dave"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A5">
+    <rdf:rest rdf:nodeID="A3"/>
+    <rdf:first rdf:resource="http://www.example.org#bob"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A7">
+    <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+    <rdf:first rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"/>
+  </rdf:Description>
+</rdf:RDF>
+|conclusion-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#alice">
+    <ex:knows rdf:resource="http://www.example.org#dave"/>
+    <ex:knows rdf:resource="http://www.example.org#charly"/>
+    <ex:knows rdf:resource="http://www.example.org#bob"/>
+  </rdf:Description>
+</rdf:RDF>
+}}

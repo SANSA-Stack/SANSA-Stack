@@ -1,0 +1,14 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#s">
+    <ex:p2 rdf:resource="http://www.example.org#o"/>
+    <ex:p1 rdf:resource="http://www.example.org#o"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#p1">
+    <owl:propertyDisjointWith rdf:resource="http://www.example.org#p2"/>
+  </rdf:Description>
+</rdf:RDF>

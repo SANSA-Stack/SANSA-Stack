@@ -1,0 +1,61 @@
+# started 2015-05-06T18:26:25Z
+<http://dbpedia.org/resource/Autism> <http://dbpedia.org/ontology/icd10> "F84.0"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://dbpedia.org/resource/Autism> <http://dbpedia.org/ontology/icd9> "299.00"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://dbpedia.org/resource/Autism> <http://dbpedia.org/ontology/omim> "209850"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Autism> <http://dbpedia.org/ontology/meshId> "D001321"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://dbpedia.org/resource/Autism> <http://xmlns.com/foaf/0.1/name> "Autism"@en .
+<http://dbpedia.org/resource/Anarchism> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/Anarchism> .
+<http://dbpedia.org/resource/Anarchism> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/France> .
+<http://dbpedia.org/resource/Anarchism> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/Violence> .
+<http://dbpedia.org/resource/Anarchism> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/Education> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/country> <http://dbpedia.org/resource/United_States> .
+<http://dbpedia.org/resource/Alabama> <http://xmlns.com/foaf/0.1/name> "State of Alabama"@en .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/demonym> "Alabamian"@en .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/language> <http://dbpedia.org/resource/English_American> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/capital> <http://dbpedia.org/resource/Montgomery,_Alabama> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/largestCity> <http://dbpedia.org/resource/Birmingham,_Alabama> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/areaTotal> "1.35765E11"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/areaLand> "1.31426E11"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/areaWater> "4.338E9"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/maximumElevation> "735.5"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Alabama> <http://dbpedia.org/ontology/minimumElevation> "0.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Alabama> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/List_of_counties_in_Alabama> .
+<http://dbpedia.org/resource/Alabama> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/Alabama_locations_by_per_capita_income> .
+<http://dbpedia.org/resource/Alabama> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/Lists_of_counties> .
+<http://dbpedia.org/resource/Alabama> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://dbpedia.org/resource/Alabama> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://xmlns.com/foaf/0.1/name> "Abraham Lincoln"@en .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/birthPlace> <http://dbpedia.org/resource/Hodgenville,_Kentucky> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/deathDate> "1865-04-15"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Petersen_House> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/restingPlace> <http://dbpedia.org/resource/Lincoln_Tomb> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/restingPlace> <http://dbpedia.org/resource/Oak_Ridge_Cemetery> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/restingPlace> <http://dbpedia.org/resource/Springfield,_Illinois> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/party> <http://dbpedia.org/resource/Whig_Party_(United_States)> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/party> <http://dbpedia.org/resource/Republican_Party_(United_States)> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/party> <http://dbpedia.org/resource/National_Union_Party_(United_States)> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/spouse> <http://dbpedia.org/resource/Mary_Todd_Lincoln> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/child> <http://dbpedia.org/resource/Robert_Todd_Lincoln> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/child> <http://dbpedia.org/resource/Edward_Baker_Lincoln> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/child> <http://dbpedia.org/resource/William_Wallace_Lincoln> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/child> <http://dbpedia.org/resource/Tad_Lincoln> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/religion> <http://dbpedia.org/resource/Abraham_Lincoln_and_religion> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/serviceStartYear> "0003"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/serviceEndYear> "0003"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/militaryRank> <http://dbpedia.org/resource/Captain_(United_States)> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/militaryRank> <http://dbpedia.org/resource/Private_(rank)> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/battle> <http://dbpedia.org/resource/Black_Hawk_War> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/successor> <http://dbpedia.org/resource/Andrew_Johnson> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/successor> <http://dbpedia.org/resource/Thomas_L._Harris> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/orderInOffice> "16th"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/office> "President of the United States"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/office> "Member of theU.S. House of RepresentativesfromIllinois's7thdistrict"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/office> "Member of the Illinois House of Representatives"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/activeYearsStartDate> "1861-03-04"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/activeYearsStartDate> "1847-03-04"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/activeYearsStartDate> "1834-12-01"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/activeYearsEndDate> "1865-04-15"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/activeYearsEndDate> "1849-03-04"^^<http://www.w3.org/2001/XMLSchema#date> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/vicePresident> <http://dbpedia.org/resource/Hannibal_Hamlin> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/vicePresident> <http://dbpedia.org/resource/Andrew_Johnson> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/region> <http://dbpedia.org/resource/Illinois> .
+<http://dbpedia.org/resource/Abraham_Lincoln> <http://dbpedia.org/ontology/termPeriod> <http://dbpedia.org/resource/Abraham_Lincoln

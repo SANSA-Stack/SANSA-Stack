@@ -1,0 +1,12 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#alice">
+    <ex:knows rdf:resource="http://www.example.org#dave"/>
+    <ex:knows rdf:resource="http://www.example.org#charly"/>
+    <ex:knows rdf:resource="http://www.example.org#bob"/>
+  </rdf:Description>
+</rdf:RDF>

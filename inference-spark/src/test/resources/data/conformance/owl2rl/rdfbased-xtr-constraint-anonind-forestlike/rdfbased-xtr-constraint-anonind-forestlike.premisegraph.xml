@@ -1,0 +1,21 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:nodeID="A0">
+    <ex:wifeOf rdf:nodeID="A1"/>
+    <ex:name>Alice</ex:name>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#husbandOf">
+    <rdfs:subPropertyOf rdf:resource="http://www.example.org#spouseOf"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#wifeOf">
+    <rdfs:subPropertyOf rdf:resource="http://www.example.org#spouseOf"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A1">
+    <ex:husbandOf rdf:nodeID="A0"/>
+    <ex:name>Bob</ex:name>
+  </rdf:Description>
+</rdf:RDF>

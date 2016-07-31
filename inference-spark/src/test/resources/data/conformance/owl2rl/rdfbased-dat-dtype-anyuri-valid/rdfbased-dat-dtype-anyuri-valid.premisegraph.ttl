@@ -1,0 +1,18 @@
+@prefix :        <http://www.example.org#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex:      <http://www.example.org#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+ex:w3
+      owl:sameAs "urn:ietf:rfc:3987"^^xsd:anyURI .
+
+ex:w1
+      owl:sameAs "http://www.example.org/absolute/iri"^^xsd:anyURI .
+
+ex:w2
+      owl:sameAs "http://www.example.org/iri/with#fragment"^^xsd:anyURI .
+
+ex:w4
+      owl:sameAs "/relative/iri/reference"^^xsd:anyURI .

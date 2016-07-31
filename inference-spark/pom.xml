@@ -1,0 +1,156 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.sansa.inference</groupId>
+        <artifactId>inference-parent</artifactId>
+        <version>0.1-SNAPSHOT</version>
+    </parent>
+    <groupId>org.dissect.inference</groupId>
+    <artifactId>inference-spark</artifactId>
+    <version>0.1-SNAPSHOT</version>
+
+    <name>Inference API - SPARK</name>
+    <description>Apache SPARK based inference layer for RDF and OWL</description>
+
+    <!--
+      <repositories>
+        <repository>
+          <id>scala-tools.org</id>
+          <name>Scala-Tools Maven2 Repository</name>
+          <url>http://scala-tools.org/repo-releases</url>
+        </repository>
+      </repositories>
+
+      <pluginRepositories>
+        <pluginRepository>
+          <id>scala-tools.org</id>
+          <name>Scala-Tools Maven2 Repository</name>
+          <url>http://scala-tools.org/repo-releases</url>
+        </pluginRepository>
+      </pluginRepositories>
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+
+        <!-- Apache Spark Core -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+        </dependency>
+        <!-- Apache Spark SQL -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <!-- Shapeless lib -->
+        <dependency>
+            <groupId>com.chuusai</groupId>
+            <artifactId>shapeless_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <!-- Apache JENA 3.x-->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+        </dependency>
+
+        <!-- Graph API -->
+        <dependency>
+            <groupId>com.assembla.scala-incubator</groupId>
+            <artifactId>graph-core_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.assembla.scala-incubator</groupId>
+            <artifactId>graph-dot_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-ext</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gephi</groupId>
+            <artifactId>gephi-toolkit</artifactId>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- disable surefire -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useFile>false</useFile>
+                    <disableXmlReport>true</disableXmlReport>
+                    <!-- If you have classpath issue like NoDefClassError,... -->
+                    <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+                    <includes>
+                        <include>**/*Test.*</include>
+                        <include>**/*Suite.*</include>
+                    </includes>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <!-- enable scalatest -->
+            <plugin>
+              <groupId>org.scalatest</groupId>
+              <artifactId>scalatest-maven-plugin</artifactId>
+              <configuration>
+                <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                <junitxml>.</junitxml>
+                <filereports>WDF TestSuite.txt</filereports>
+              </configuration>
+              <executions>
+                <execution>
+                  <id>test</id>
+                  <goals>
+                    <goal>test</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
