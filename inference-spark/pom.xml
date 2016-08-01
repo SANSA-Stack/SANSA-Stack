@@ -32,6 +32,12 @@
     -->
     <dependencies>
         <dependency>
+            <groupId>org.sansa.inference</groupId>
+            <artifactId>inference-common</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>

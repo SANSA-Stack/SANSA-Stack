@@ -1,11 +1,11 @@
-//package org.dissect.inference.utils
+//package org.sansa.inference.spark.utils
 //
 //import org.apache.jena.vocabulary.{OWL2}
 //import org.apache.spark.broadcast.Broadcast
 //import org.apache.spark.rdd.RDD
 //import org.apache.spark.sql.SparkSession
-//import org.dissect.inference.data.RDFGraphNative
-//import org.dissect.inference.utils.logging.Logging
+//import org.sansa.inference.spark.data.RDFGraphNative
+//import org.sansa.inference.spark.utils.logging.Logging
 //
 ///**
 //  * An extractor of the schema for OWL.

@@ -1,8 +1,8 @@
 package org.sansa.inference.spark.rules
 
 import org.sansa.inference.spark.UnitSpec
-import org.sansa.inference.spark.utils.RuleUtils
-import org.sansa.inference.spark.utils.RuleUtils.RuleExtension
+import org.sansa.inference.utils.RuleUtils
+import org.sansa.inference.utils.RuleUtils.RuleExtension
 
 /**
   * Test class for rules.

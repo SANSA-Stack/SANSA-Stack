@@ -2,7 +2,8 @@ package org.sansa.inference.spark
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import org.sansa.inference.spark.data.{RDFGraphLoader, RDFGraphWriter, RDFTriple}
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.spark.data.{RDFGraphLoader, RDFGraphWriter}
 import org.sansa.inference.spark.forwardchaining.ForwardRuleReasonerRDFS
 
 /**

@@ -1,7 +1,7 @@
 package org.sansa.inference.spark.rules.plan
 
 import org.apache.jena.graph.{Node, Triple}
-import org.sansa.inference.spark.utils.RuleUtils
+import org.sansa.inference.utils.RuleUtils
 
 import scala.collection.mutable
 

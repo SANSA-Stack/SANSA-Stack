@@ -3,9 +3,10 @@ package org.sansa.inference.spark.rules
 import org.apache.jena.vocabulary.{OWL2, RDF}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
+import org.sansa.inference.data.RDFTriple
 import org.sansa.inference.spark.data._
 import org.sansa.inference.spark.rules.plan.{PlanExecutorNative, PlanExecutorSQL}
-import org.sansa.inference.spark.utils.RuleUtils
+import org.sansa.inference.utils.RuleUtils
 
 import scala.collection.mutable
 

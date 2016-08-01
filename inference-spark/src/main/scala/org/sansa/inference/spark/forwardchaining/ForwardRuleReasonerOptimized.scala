@@ -1,9 +1,9 @@
 package org.sansa.inference.spark.forwardchaining
 
 import org.apache.jena.reasoner.rulesys.Rule
-import org.dissect.inference.rules._
+import org.sansa.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator}
 import org.sansa.inference.spark.data.AbstractRDFGraph
-import org.sansa.inference.spark.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator, RuleExecutor}
+import org.sansa.inference.spark.rules.RuleExecutor
 import org.slf4j.LoggerFactory
 
 import scala.language.{existentials, implicitConversions}

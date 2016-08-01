@@ -2,8 +2,9 @@ package org.sansa.inference.spark.forwardchaining
 
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.SparkContext
-import org.sansa.inference.spark.data.{RDFGraph, RDFTriple}
-import org.sansa.inference.spark.utils.CollectionUtils
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.spark.data.RDFGraph
+import org.sansa.inference.utils.CollectionUtils
 import org.slf4j.LoggerFactory
 
 /**

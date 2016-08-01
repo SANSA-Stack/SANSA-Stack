@@ -1,12 +1,11 @@
-package org.dissect.inference.utils
+package org.sansa.inference.spark.utils
 
 import org.apache.jena.vocabulary.RDFS
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.dissect.inference.data._
-import org.dissect.inference.utils.logging.Logging
-import org.sansa.inference.spark.data.RDFGraphDataFrame
+import org.sansa.inference.spark.data.{RDFGraphDataFrame, _}
+import org.sansa.inference.utils.{CollectionUtils, Logging}
 
 /**
   * An extractor of the schema for RDFS.

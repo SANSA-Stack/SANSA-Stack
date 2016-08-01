@@ -2,6 +2,7 @@ package org.sansa.inference.spark.data
 
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
+import org.sansa.inference.data.RDFTriple
 import org.slf4j.LoggerFactory
 
 /**

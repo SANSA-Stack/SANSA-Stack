@@ -2,8 +2,9 @@ package org.sansa.inference.spark.forwardchaining
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
-import org.sansa.inference.spark.data.{RDFGraph, RDFTriple}
-import org.sansa.inference.spark.utils.Profiler
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.spark.data.RDFGraph
+import org.sansa.inference.utils.Profiler
 
 import scala.collection.mutable
 import scala.reflect.ClassTag

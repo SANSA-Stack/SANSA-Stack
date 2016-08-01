@@ -2,7 +2,8 @@ package org.sansa.inference.spark.rules
 
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.spark.{SparkConf, SparkContext}
-import org.sansa.inference.spark.data.{RDFGraph, RDFGraphWriter, RDFTriple}
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.spark.data.{RDFGraph, RDFGraphWriter}
 import org.sansa.inference.spark.forwardchaining.ForwardRuleReasonerRDFS
 
 import scala.collection.mutable

@@ -1,6 +1,6 @@
 package org.sansa.inference.spark.rules
 
-import org.sansa.inference.spark.utils.RuleUtils
+import org.sansa.inference.utils.RuleUtils
 
 /**
   * @author Lorenz Buehmann

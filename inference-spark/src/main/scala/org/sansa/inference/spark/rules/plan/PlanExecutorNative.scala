@@ -8,9 +8,9 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions.{Alias, And, AttributeReference, EqualTo, Expression, IsNotNull, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, SubqueryAlias}
 import org.apache.spark.sql.catalyst.plans.{Inner, logical}
-import org.sansa.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative, RDFTriple}
-import org.sansa.inference.spark.utils.Tuple0
-import org.sansa.inference.spark.utils.logging.Logging
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative}
+import org.sansa.inference.utils.{Logging, Tuple0}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable

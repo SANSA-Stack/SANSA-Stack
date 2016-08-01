@@ -3,6 +3,7 @@ package org.sansa.inference.spark.data
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.sansa.inference.data.RDFTriple
 
 /**
   * A data structure that comprises a set of triples.

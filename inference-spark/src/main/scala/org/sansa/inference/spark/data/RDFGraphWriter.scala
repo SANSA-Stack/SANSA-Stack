@@ -6,7 +6,8 @@ import java.nio.charset.StandardCharsets
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
-import org.sansa.inference.spark.utils.RDFTripleOrdering
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.utils.RDFTripleOrdering
 import org.slf4j.LoggerFactory
 
 /**

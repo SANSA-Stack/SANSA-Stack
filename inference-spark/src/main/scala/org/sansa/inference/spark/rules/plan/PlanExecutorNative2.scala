@@ -3,7 +3,8 @@ package org.sansa.inference.spark.rules.plan
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.sansa.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative, RDFTriple}
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative}
 
 /**
   * An executor that works on the the native Scala data structures and uses Spark joins, filters etc.

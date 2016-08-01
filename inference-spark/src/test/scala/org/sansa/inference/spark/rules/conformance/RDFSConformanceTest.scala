@@ -3,7 +3,8 @@ package org.sansa.inference.spark.rules.conformance
 import java.io.File
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.sansa.inference.spark.data.{RDFGraph, RDFGraphWriter, RDFTriple}
+import org.sansa.inference.data.RDFTriple
+import org.sansa.inference.spark.data.{RDFGraph, RDFGraphWriter}
 import org.sansa.inference.spark.forwardchaining.ForwardRuleReasonerRDFS
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
@@ -17,7 +18,7 @@ import scala.collection.mutable
   */
 class RDFSConformanceTest extends FlatSpec with BeforeAndAfterAll {
 
-  behavior of "comformance of RDFS(simple) entailment rules"
+  behavior of "conformance of RDFS(simple) entailment rules"
 
   val rdfsSimpleTestCaseIds = Set(
     "rdfbased-sem-rdfs-domain-cond",

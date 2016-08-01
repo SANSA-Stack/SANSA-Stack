@@ -1,7 +1,7 @@
 package org.sansa.inference.spark.rules
 
 import org.apache.spark.rdd.RDD
-import org.sansa.inference.spark.data.RDFTriple
+import org.sansa.inference.data.RDFTriple
 
 /**
   * Common operations on RDD of triples.

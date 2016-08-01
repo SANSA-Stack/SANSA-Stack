@@ -1,7 +1,7 @@
 package org.sansa.inference.spark.rules.plan
 
 import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.dissect.inference.data.RDFGraph
+import org.sansa.inference.spark.data.RDFGraph
 import org.sansa.inference.spark.data.AbstractRDFGraph
 import org.slf4j.LoggerFactory
 

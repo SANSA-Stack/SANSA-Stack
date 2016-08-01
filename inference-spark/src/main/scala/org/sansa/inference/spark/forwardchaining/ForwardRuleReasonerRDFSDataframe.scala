@@ -3,7 +3,7 @@ package org.sansa.inference.spark.forwardchaining
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.dissect.inference.utils.RDFSSchemaExtractor
+import org.sansa.inference.spark.utils.RDFSSchemaExtractor
 import org.sansa.inference.spark.data.{RDFGraph, RDFGraphDataFrame}
 import org.slf4j.LoggerFactory
 

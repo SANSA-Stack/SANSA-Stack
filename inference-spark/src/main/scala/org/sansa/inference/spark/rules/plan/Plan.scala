@@ -6,7 +6,7 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.Analyzer
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.sansa.inference.spark.utils.TripleUtils
+import org.sansa.inference.utils.TripleUtils
 
 import scala.collection.mutable
 

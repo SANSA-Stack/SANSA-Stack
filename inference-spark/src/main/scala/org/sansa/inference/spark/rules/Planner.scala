@@ -3,11 +3,11 @@ package org.sansa.inference.spark.rules
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.spark.rdd.RDD
-import org.sansa.inference.spark.data.RDFTriple
+import org.sansa.inference.data.RDFTriple
 import org.sansa.inference.spark.rules.plan.{Join, Plan}
-import org.sansa.inference.spark.utils.RuleUtils
-import org.sansa.inference.spark.utils.RuleUtils._
-import org.sansa.inference.spark.utils.TripleUtils._
+import org.sansa.inference.utils.RuleUtils
+import org.sansa.inference.utils.RuleUtils._
+import org.sansa.inference.utils.TripleUtils._
 
 import scala.collection.mutable
 
