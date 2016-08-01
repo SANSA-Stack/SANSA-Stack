@@ -25,7 +25,6 @@ under the License.
 		<artifactId>inference-parent</artifactId>
 		<version>0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>org.sansa.inference</groupId>
 	<artifactId>inference-flink</artifactId>
 	<version>0.1-SNAPSHOT</version>
 
@@ -42,6 +41,13 @@ under the License.
 			<groupId>org.sansa.inference</groupId>
 			<artifactId>inference-common</artifactId>
 			<version>${parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.sansa.inference</groupId>
+			<artifactId>inference-tests</artifactId>
+			<version>${parent.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Apache Flink -->
