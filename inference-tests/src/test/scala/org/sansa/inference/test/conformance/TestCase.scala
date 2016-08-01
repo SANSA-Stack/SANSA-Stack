@@ -1,4 +1,4 @@
-package org.sansa.inference.spark.rules.conformance
+package org.sansa.inference.test.conformance
 
 import org.apache.jena.rdf.model.Model
 
