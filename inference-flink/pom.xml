@@ -190,9 +190,9 @@ under the License.
 									<exclude>de.javakaffee:kryo-serializers</exclude>
 									<exclude>joda-time:joda-time</exclude>
 									<exclude>org.apache.commons:commons-lang3</exclude>
-									<exclude>org.slf4j:slf4j-api</exclude>
-									<exclude>org.slf4j:slf4j-log4j12</exclude>
-									<exclude>log4j:log4j</exclude>
+									<!--<exclude>org.slf4j:slf4j-api</exclude>-->
+									<!--<exclude>org.slf4j:slf4j-log4j12</exclude>-->
+									<!--<exclude>log4j:log4j</exclude>-->
 									<exclude>org.apache.commons:commons-math</exclude>
 									<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>
 									<exclude>commons-logging:commons-logging</exclude>
@@ -234,7 +234,7 @@ under the License.
 							<transformers>
 								<!-- add Main-Class to manifest file -->
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>org.dissect.inference.Job</mainClass>
+									<mainClass>org.sansa.inference.flink.RDFGraphMaterializer</mainClass>
 								</transformer>
 							</transformers>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
@@ -312,7 +312,7 @@ under the License.
 				</dependency>
 				<dependency>
 					<groupId>org.apache.flink</groupId>
-					<artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
+					<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>

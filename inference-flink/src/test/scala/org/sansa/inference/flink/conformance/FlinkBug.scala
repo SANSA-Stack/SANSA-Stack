@@ -1,9 +1,10 @@
 package org.sansa.inference.flink.conformance
 
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}
+import org.apache.flink.configuration.Configuration
 import org.sansa.inference.data.RDFTriple
 import org.sansa.inference.flink.data.RDFGraph
-import org.sansa.inference.flink.forwardchaining.ForwardRuleReasonerRDFS
+import org.sansa.inference.flink.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
 
 /**
   * Test case for
@@ -21,6 +22,9 @@ object FlinkBug {
         "<http://www.example.org#w> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.example.org#c1> ."
 
     val env = ExecutionEnvironment.getExecutionEnvironment
+    val conf = new Configuration()
+    conf.setString("taskmanager.network.numberOfBuffers", "5000")
+    env.getConfig.setGlobalJobParameters(conf)
     val reasoner = new ForwardRuleReasonerRDFS(env)
 
     val triples = triplesStr.split("\n")
@@ -31,7 +35,10 @@ object FlinkBug {
 
     val g_inf = reasoner.apply(g)
 
+
     g_inf.triples.print()
+
+    env.execute()
   }
 
 }

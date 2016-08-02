@@ -1,5 +1,6 @@
 package org.sansa.inference.flink
 
+import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.sansa.inference.flink.data.{RDFGraphLoader, RDFGraphWriter}
 import org.sansa.inference.flink.forwardchaining.ForwardRuleReasonerRDFS
@@ -15,28 +16,36 @@ object RDFGraphMaterializer {
 
   def main(args: Array[String]) {
 
-    if (args.length < 2) {
-      System.err.println("Usage: RDFGraphMaterializer <sourceFile> <targetFile>")
+    // get params
+    val params: ParameterTool = ParameterTool.fromArgs(args)
+
+    if(params.has("input") && params.has("output")) {
+
+      // set up the execution environment
+      val env = ExecutionEnvironment.getExecutionEnvironment
+      env.setParallelism(4)
+
+      // make parameters available in the web interface
+      env.getConfig.setGlobalJobParameters(params)
+
+      // load triples from disk
+      val graph = RDFGraphLoader.loadFromFile(params.get("input"), env)
+
+      // create reasoner
+      val reasoner = new ForwardRuleReasonerRDFS(env)
+
+      // compute inferred graph
+      val inferredGraph = reasoner.apply(graph)
+
+      // write triples to disk
+      RDFGraphWriter.writeToFile(inferredGraph, params.get("output"))
+
+      env.execute("RDF graph materialization")
+
+    } else {
+      System.err.println("Usage: RDFGraphMaterializer --input <sourceFile> --output <targetFile>")
       System.exit(1)
     }
-
-    // set up the execution environment
-    val env = ExecutionEnvironment.getExecutionEnvironment
-    env.setParallelism(4)
-
-    // load triples from disk
-    val graph = RDFGraphLoader.loadFromFile(args(0), env)
-
-    // create reasoner
-    val reasoner = new ForwardRuleReasonerRDFS(env)
-
-    // compute inferred graph
-    val inferredGraph = reasoner.apply(graph)
-
-    // write triples to disk
-    RDFGraphWriter.writeToFile(inferredGraph, args(1))
-
-//    env.execute()
   }
 
 }

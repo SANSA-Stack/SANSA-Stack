@@ -8,9 +8,13 @@ import org.sansa.inference.utils.CollectionUtils
 import org.slf4j.LoggerFactory
 
 /**
-  * @author Lorenz Buehmann
-  */
-class ForwardRuleReasonerRDFS(Env: ExecutionEnvironment) extends ForwardRuleReasoner{
+* A forward chaining implementation of the OWL Horst entailment regime.
+*
+* @constructor create a new RDFS forward chaining reasoner
+* @param env the Apache Flink execution environment
+* @author Lorenz Buehmann
+*/
+class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReasoner{
 
     private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
@@ -103,12 +107,14 @@ class ForwardRuleReasonerRDFS(Env: ExecutionEnvironment) extends ForwardRuleReas
       .flatMap(t => subClassOfMap(t.`object`).map(supCls => RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
 
     // 5. merge triples and remove duplicates
-    val allTriples =
-    subClassOfTriplesTrans union
-      subPropertyOfTriplesTrans union
-      triples23 union
-      triplesRDFS7 union
-      triplesRDFS9 distinct()
+    val allTriples = env.union(
+      Seq(
+        subClassOfTriplesTrans,
+        subPropertyOfTriplesTrans,
+        triples23,
+        triplesRDFS7,
+        triplesRDFS9))
+      .distinct()
 
     logger.info("...finished materialization in " + (System.currentTimeMillis() - startTime) + "ms.")
 //    val newSize = allTriples.count()
