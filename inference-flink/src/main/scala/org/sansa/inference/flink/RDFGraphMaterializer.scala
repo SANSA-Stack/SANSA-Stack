@@ -23,7 +23,6 @@ object RDFGraphMaterializer {
 
       // set up the execution environment
       val env = ExecutionEnvironment.getExecutionEnvironment
-      env.setParallelism(4)
 
       // make parameters available in the web interface
       env.getConfig.setGlobalJobParameters(params)
