@@ -3,22 +3,15 @@ package org.sansa.inference.flink
 import java.util.Comparator
 
 import com.google.common.collect.ComparisonChain
-import org.apache.flink.api.common.functions.RichJoinFunction
-import org.apache.flink.api.common.operators.Order
-import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
-import org.apache.flink.core.fs.FileSystem.WriteMode
+import org.apache.flink.api.scala.{ExecutionEnvironment, _}
 import org.apache.flink.test.util.MultipleProgramsTestBase.TestExecutionMode
 import org.apache.flink.test.util.{MultipleProgramsTestBase, TestBaseUtils}
-import org.apache.flink.util.Collector
-import org.apache.jena.vocabulary.RDFS
-import org.junit.rules.TemporaryFolder
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.junit.{After, Before, Rule, Test}
 import org.sansa.inference.data.RDFTriple
 import org.sansa.inference.flink.data.RDFGraph
 
-import scala.collection.mutable
 import scala.collection.JavaConverters._
 
 /**
@@ -65,6 +58,5 @@ class RDFGraphTestCase(mode: TestExecutionMode) extends MultipleProgramsTestBase
         .result()
     })
   }
-
 
 }
