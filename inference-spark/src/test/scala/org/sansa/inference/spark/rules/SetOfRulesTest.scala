@@ -23,7 +23,8 @@ object SetOfRulesTest {
     .master("local[4]")
     .config("spark.eventLog.enabled", "true")
     .config("spark.hadoop.validateOutputSpecs", "false") //override output files
-      .config("spark.default.parallelism", "4")
+    .config("spark.default.parallelism", "4")
+    .config("spark.sql.shuffle.partitions", "8")
     //      .config("spark.jars", "/home/me/work/projects/scala/Spark-Sem-I/target/inference-spark-0.1-SNAPSHOT.jar")
     .getOrCreate()
 
@@ -44,7 +45,7 @@ object SetOfRulesTest {
     val numberOfTriples = graph.size()
     println("#Triples:" + numberOfTriples)
 
-    val rules = RuleUtils.load("rdfs-simple.rules").filter(r => ruleNames.contains(r.getName))
+    val rules = RuleUtils.load("rdfs-simple.rules")//.filter(r => ruleNames.contains(r.getName))
 
 //    runNaive(graph, rules)
 //    runNative(graph, rules)
@@ -119,7 +120,7 @@ object SetOfRulesTest {
   }
 
   def runNative(graph: RDFGraphNative, rules: Seq[Rule]) = {
-    val reasoner = new ForwardRuleReasonerOptimizedNative(sc, rules.toSet)
+    val reasoner = new ForwardRuleReasonerOptimizedNative(sparkSession, rules.toSet)
     val res = reasoner.apply(graph)
     RDFGraphWriter.writeToFile(res.toRDD(), "/tmp/spark-tests/optimized-native")
   }
