@@ -1,7 +1,7 @@
 package org.sansa.inference.spark.data
 
 import org.apache.jena.graph.Triple
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.sansa.inference.data.RDFTriple
 
 /**
@@ -83,4 +83,20 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
   def toDataFrame(sparkSession: SparkSession): DataFrame = triples
 
   def toRDD() = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
+
+  def unionAll(graphs: Seq[RDFGraphDataFrame]): RDFGraphDataFrame = {
+    // the Dataframe based solution
+//        return graphs.reduce(_ union _)
+
+    // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
+    val df: Option[DataFrame] = graphs match {
+      case g :: Nil => Some(g.toDataFrame())
+      case g :: _   => Some(g.toDataFrame().sqlContext.createDataFrame(
+        g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
+        g.toDataFrame().schema
+      ))
+      case _  => None
+    }
+    new RDFGraphDataFrame(df.get)
+  }
 }

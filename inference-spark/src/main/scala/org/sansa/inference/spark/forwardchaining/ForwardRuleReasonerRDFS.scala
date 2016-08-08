@@ -114,12 +114,13 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
         .flatMap(t => subClassOfMapBC.value(t.`object`).map(supCls => RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
 
     // 5. merge triples and remove duplicates
-    val allTriples =
-      subClassOfTriplesTrans union
-      subPropertyOfTriplesTrans union
-      triples23 union
-      triplesRDFS7 union
-      triplesRDFS9 distinct()
+    val allTriples = sc.union(Seq(
+                          subClassOfTriplesTrans,
+                          subPropertyOfTriplesTrans,
+                          triples23,
+                          triplesRDFS7,
+                          triplesRDFS9))
+                        .distinct()
 
     logger.info("...finished materialization in " + (System.currentTimeMillis() - startTime) + "ms.")
     val newSize = allTriples.count()

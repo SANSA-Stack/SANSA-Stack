@@ -59,4 +59,6 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](triples: T) {
 
   def toRDD(): RDD[RDFTriple]
 
+  def unionAll(graphs: Seq[G]): G
+
 }

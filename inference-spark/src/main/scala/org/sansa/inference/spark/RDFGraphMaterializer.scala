@@ -4,7 +4,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.sansa.inference.data.RDFTriple
 import org.sansa.inference.spark.data.{RDFGraphLoader, RDFGraphWriter}
-import org.sansa.inference.spark.forwardchaining.ForwardRuleReasonerRDFS
+import org.sansa.inference.spark.forwardchaining.{ForwardRuleReasonerOptimizedSQL, ForwardRuleReasonerRDFS}
+import org.sansa.inference.utils.RuleUtils
 
 /**
   * The class to compute the RDFS materialization of a given RDF graph.
@@ -43,15 +44,7 @@ object RDFGraphMaterializer {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-
-//    // load triples from disk
-//    val graph2 = RDFGraphLoader.loadGraphDataFrameFromFile(args(0), session, 4)
-//
-//    // create reasoner
-//    val reasoner2 = new ForwardRuleReasonerRDFSDataframe(session)
-//
-//    // compute inferred graph
-//    val inferredGraph2 = reasoner2.apply(graph2)
+    print(inferredGraph.size())
 
     // write triples to disk
     RDFGraphWriter.writeToFile(inferredGraph, args(1))

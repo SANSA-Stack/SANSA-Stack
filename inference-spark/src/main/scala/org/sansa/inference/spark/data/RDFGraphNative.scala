@@ -85,4 +85,12 @@ class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[R
 
     triplesDataFrame
   }
+
+  def unionAll(graphs: Seq[RDFGraphNative]): RDFGraphNative = {
+    //    return graphs.reduceLeft(_ union _)
+    val first = graphs(0)
+    return new RDFGraphNative(
+      first.triples.sparkContext.union(graphs.map(g => g.toRDD()))
+    )
+  }
 }

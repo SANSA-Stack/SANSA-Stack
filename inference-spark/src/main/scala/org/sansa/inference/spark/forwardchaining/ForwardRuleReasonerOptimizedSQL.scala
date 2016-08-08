@@ -13,5 +13,5 @@ import scala.language.{existentials, implicitConversions}
   * @author Lorenz Buehmann
   */
 class ForwardRuleReasonerOptimizedSQL(sparkSession: SparkSession, rules: Set[Rule])
-  extends ForwardRuleReasonerOptimized[DataFrame, RDFGraphDataFrame](rules, new RuleExecutorSQL(sparkSession)){
+  extends ForwardRuleReasonerOptimized[DataFrame, RDFGraphDataFrame](sparkSession, rules, new RuleExecutorSQL(sparkSession)){
 }

@@ -128,8 +128,8 @@ trait ForwardRuleReasoner extends Profiler{
         log.info(s"iteration $i...")
         oldCount = nextCount
 
-        val df1 = tc.alias("df1")
-        val df2 = tc.alias("df2")
+//        val df1 = tc.alias("df1")
+//        val df2 = tc.alias("df2")
         // perform the join (x, y) x (y, x), obtaining an RDD of (x=y, (y, x)) pairs,
         // then project the result to obtain the new (x, y) paths.
 

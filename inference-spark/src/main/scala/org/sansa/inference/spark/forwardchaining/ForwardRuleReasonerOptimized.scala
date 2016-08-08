@@ -1,8 +1,9 @@
 package org.sansa.inference.spark.forwardchaining
 
 import org.apache.jena.reasoner.rulesys.Rule
+import org.apache.spark.sql.{Row, SparkSession}
 import org.sansa.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator}
-import org.sansa.inference.spark.data.AbstractRDFGraph
+import org.sansa.inference.spark.data.{AbstractRDFGraph, RDFGraphDataFrame}
 import org.sansa.inference.spark.rules.RuleExecutor
 import org.slf4j.LoggerFactory
 
@@ -14,7 +15,7 @@ import scala.language.{existentials, implicitConversions}
   * @author Lorenz Buehmann
   */
 abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
-(rules: Set[Rule], ruleExecutor: RuleExecutor[V, G])
+(sparkSession: SparkSession, rules: Set[Rule], ruleExecutor: RuleExecutor[V, G])
   extends AbstractForwardRuleReasoner[V, G] {
 
   private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
@@ -125,11 +126,11 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
     * @param graph the graph
     */
   def applyRulesOnce(rules: Seq[Rule], graph: G): G = {
-    var newGraph = graph
-    rules.foreach {rule =>
-      newGraph = newGraph.union(applyRule(rule, graph))
-      unionCnt += 1
+    val graphs = rules.map {rule =>
+      applyRule(rule, graph)
     }
+    val newGraph = graph.unionAll(graphs.toList)
+      unionCnt += 1
 //    println(newGraph.toRDD().toDebugString)
     newGraph
 
