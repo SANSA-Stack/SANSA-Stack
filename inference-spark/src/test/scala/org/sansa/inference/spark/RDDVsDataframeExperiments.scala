@@ -17,7 +17,7 @@ object RDDVsDataframeExperiments extends Profiler{
 
   // the SPARK config
   val session = SparkSession.builder
-    .appName("SPARK Reasoning")
+    .appName("RDD-vs-Dataframe")
     .master("local[4]")
     .config("spark.eventLog.enabled", "true")
     .config("spark.hadoop.validateOutputSpecs", "false") //override output files
@@ -25,7 +25,6 @@ object RDDVsDataframeExperiments extends Profiler{
     .config("spark.default.parallelism", "4")
     .config("spark.sql.shuffle.partitions", "4")
     .config(conf)
-    .appName("RDD-vs-Dataframe")
     .getOrCreate()
 
   def main(args: Array[String]): Unit = {
@@ -36,17 +35,17 @@ object RDDVsDataframeExperiments extends Profiler{
 
     val sourcePath = args(0)
 
-//    profile{
-//      val infGraphRDD = computeRDD(sourcePath)
+//    val infGraphRDD = profile{
+//      computeRDD(sourcePath)
 //    }
-
-    profile {
-      val infGraphDataframe = computeDataframe(sourcePath)
-//      infGraphDataframe.toDataFrame().explain()
-    }
-
-//    println("Dataframe-based: " + infGraphDataframe.size())
 //    println("RDD-based: " + infGraphRDD.size())
+
+    val infGraphDataframe = profile {
+      computeDataframe(sourcePath)
+    }
+    println("Dataframe-based: " + infGraphDataframe.size())
+    //      infGraphDataframe.toDataFrame().explain()
+
 //
 //
 //    val targetDir = args(1)
@@ -83,5 +82,29 @@ object RDDVsDataframeExperiments extends Profiler{
     val inferredGraph = reasoner.apply(graph)
 
     inferredGraph
+  }
+
+  def compareTransitiveClosure() = {
+
+    val session = SparkSession.builder
+      .appName("TC Comparison")
+      .master("local[4]")
+      .config("spark.eventLog.enabled", "true")
+      .config("spark.hadoop.validateOutputSpecs", "false") // override output files
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .config("spark.default.parallelism", "4")
+      .config("spark.sql.shuffle.partitions", "4")
+      .config(conf)
+      .getOrCreate()
+
+
+    def rddBased() = {
+
+    }
+
+    def dataframeBased() = {
+
+    }
+
   }
 }

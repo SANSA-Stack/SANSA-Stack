@@ -56,10 +56,10 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession) extends ForwardRul
       * yyy rdfs:subClassOf zzz .	  xxx rdfs:subClassOf zzz .
      */
     val subClassOfTriples = index(RDFS.subClassOf.getURI) // extract rdfs:subClassOf triples
-    val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples).alias("SC")
-    val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.rdd.map(r => (r.getString(0) -> (r.getString(2)))).collect)
-    val subClassOfMapBC = session.sparkContext.broadcast(subClassOfMap)
-    val checkSubclass = udf((cls: String) => subClassOfMapBC.value.contains(cls))
+    val subClassOfTriplesTrans = broadcast(computeTransitiveClosure(subClassOfTriples).alias("SC"))
+//    val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.rdd.map(r => (r.getString(0) -> (r.getString(2)))).collect)
+//    val subClassOfMapBC = session.sparkContext.broadcast(subClassOfMap)
+//    val checkSubclass = udf((cls: String) => subClassOfMapBC.value.contains(cls))
 //    val makeSuperTypeTriple = udf((ind: String, cls: String) => (ind, subClassOfMapBC.value(cls)))
     /*
         rdfs5	xxx rdfs:subPropertyOf yyy .
@@ -83,11 +83,11 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession) extends ForwardRul
 
 
     // Broadcast
-    val subClassOfTriplesTransDataBC = session.sparkContext.broadcast(subPropertyOfTriplesTrans.collectAsList())
-    val subClassOfTriplesTransSchemaBC = session.sparkContext.broadcast(subPropertyOfTriplesTrans.schema)
-    val subClassOfTriplesTransBCDF = session.sqlContext.createDataFrame(
-                                        subClassOfTriplesTransDataBC.value,
-                                        subClassOfTriplesTransSchemaBC.value).alias("SCBC")
+//    val subClassOfTriplesTransDataBC = session.sparkContext.broadcast(subPropertyOfTriplesTrans.collectAsList())
+//    val subClassOfTriplesTransSchemaBC = session.sparkContext.broadcast(subPropertyOfTriplesTrans.schema)
+//    val subClassOfTriplesTransBCDF = session.sqlContext.createDataFrame(
+//                                        subClassOfTriplesTransDataBC.value,
+//                                        subClassOfTriplesTransSchemaBC.value).alias("SCBC")
 
     // 2. SubPropertyOf inheritance according to rdfs7 is computed
 
@@ -154,17 +154,21 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession) extends ForwardRul
     rdfs9	xxx rdfs:subClassOf yyy .
           zzz rdf:type xxx .	        zzz rdf:type yyy .
      */
-    val triplesRDFS9 =
-      typeTuples
-          .where(checkSubclass($"TYPES.object"))
-          .map(r => (r.getString(0), subClassOfMapBC.value(r.getString(1)).toArray))
-      .toDF("subject", "objects")
-    triplesRDFS9.printSchema()
+    val tripleRDFS9 = typeTuples
+      .join(subClassOfTriplesTrans, $"TYPES.object" === $"SC.subject", "inner")
+      .select($"TYPES.subject", $"SC.object") // (zzz, yyy)
 
-        val exploded = triplesRDFS9.flatMap(row => {
-          val objects = row.getAs[Array[String]]("objects")
-          objects.map(o => (row.getString(0), o))
-        }).toDF("subject", "object")
+//    val triplesRDFS9 =
+//      typeTuples
+//          .where(checkSubclass($"TYPES.object"))
+//          .map(r => (r.getString(0), subClassOfMapBC.value(r.getString(1)).toArray))
+//      .toDF("subject", "objects")
+//    triplesRDFS9.printSchema()
+//
+//        val exploded = triplesRDFS9.flatMap(row => {
+//          val objects = row.getAs[Array[String]]("objects")
+//          objects.map(o => (row.getString(0), o))
+//        }).toDF("subject", "object")
 
 //          explode("objects", "object") {
 //          case Row(classes: Array[Row]) => classes.map(clsRow => clsRow(0).asInstanceOf[String])
@@ -188,7 +192,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession) extends ForwardRul
 
     // 5. merge triples and remove duplicates
     val allTriples =
-      tuples23.union(exploded)
+      tuples23.union(tripleRDFS9)
         .withColumn("const", lit(RDF.`type`.getURI))
         .select("subject", "const", "object")
       .union(subClassOfTriplesTrans)
@@ -199,8 +203,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession) extends ForwardRul
 //    allTriples.explain()
 
     logger.info("...finished materialization in " + (System.currentTimeMillis() - startTime) + "ms.")
-    val newSize = allTriples.count()
-    logger.info(s"|G_inf|=$newSize")
+//    val newSize = allTriples.count()
+//    logger.info(s"|G_inf|=$newSize")
 
     // return graph with inferred triples
     new RDFGraphDataFrame(allTriples)
