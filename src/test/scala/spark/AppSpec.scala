@@ -1,0 +1,11 @@
+package spark
+
+import collection.mutable.Stack
+import org.dissect.rdf.spark.App
+import org.scalatest._
+
+class AppSpec extends UnitSpec {
+  it should "fail" in {
+    assert(true === false, "need integration tests for the application")
+  }
+}
