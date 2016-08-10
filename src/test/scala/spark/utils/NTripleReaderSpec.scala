@@ -26,7 +26,7 @@ class NTripleReaderSpec extends UnitSpec {
   }
 
   it should "not read the whole file in the memory" in {
-    assert(false === true, "the whole RDF file should not be read completely into the memory")
+    assert(false === true, "the whole RDF file should not be read completely into the memory, this will not scale!!!")
   }
 
   it should "use NTriplesParser for parsing" in {
