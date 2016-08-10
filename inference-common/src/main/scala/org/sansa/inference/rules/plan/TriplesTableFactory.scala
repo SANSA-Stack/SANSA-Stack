@@ -1,0 +1,51 @@
+package org.sansa.inference.rules.plan
+
+import java.util
+
+import org.apache.calcite.DataContext
+import org.apache.calcite.linq4j.{Enumerable, Linq4j}
+import org.apache.calcite.rel.`type`.{RelDataType, RelDataTypeFactory, RelProtoDataType}
+import org.apache.calcite.schema.Schema.TableType
+import org.apache.calcite.schema._
+import org.apache.calcite.sql.`type`.SqlTypeName
+import scala.collection.JavaConversions._
+
+/**
+  * @author Lorenz Buehmann
+  */
+class TriplesTableFactory extends TableFactory[Table] {
+  override def create(
+                       schema: SchemaPlus,
+                       name: String,
+                       operand: util.Map[String, AnyRef],
+                       rowType: RelDataType): Table = {
+
+    val rows: List[Array[AnyRef]] = List(
+      Array("s1", "p1", "o1")
+    )
+    new TriplesTable(rows)
+
+  }
+
+  class TriplesTable(val rows: List[Array[AnyRef]]) extends ScannableTable {
+
+    val protoRowType = new RelProtoDataType() {
+      override def apply(a0: RelDataTypeFactory): RelDataType = {
+        a0.builder()
+          .add("subject", SqlTypeName.VARCHAR, 200)
+          .add("predicate", SqlTypeName.VARCHAR, 200)
+          .add("object", SqlTypeName.VARCHAR, 200)
+          .build()
+      }
+    }
+
+    override def scan(root: DataContext): Enumerable[Array[AnyRef]] = Linq4j.asEnumerable(rows.toList)
+
+    override def getStatistic: Statistic = Statistics.UNKNOWN
+
+    override def getJdbcTableType: TableType = Schema.TableType.TABLE
+
+    override def getRowType(typeFactory: RelDataTypeFactory): RelDataType = protoRowType.apply(typeFactory)
+  }
+
+}

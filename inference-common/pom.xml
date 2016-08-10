@@ -48,12 +48,24 @@
     <dependency>
       <groupId>org.gephi</groupId>
       <artifactId>gephi-toolkit</artifactId>
+      <exclusions>
+        <exclusion>
+            <groupId>com.google.collections</groupId>
+          <artifactId>google-collections</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Guava -->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+
+    <!-- Apache Calcite -->
+    <dependency>
+      <groupId>org.apache.calcite</groupId>
+      <artifactId>calcite-core</artifactId>
     </dependency>
 
     <!-- Test -->

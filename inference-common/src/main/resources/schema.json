@@ -1,0 +1,16 @@
+{
+  version: '1.0',
+  defaultSchema: 'TRIPLES',
+  schemas: [
+    {
+      name: 'TRIPLES',
+      tables: [
+        {
+          name: 'Triples',
+          type: 'custom',
+          factory: 'org.sansa.inference.rules.plan.TriplesTableFactory'
+        }
+      ]
+    }
+  ]
+}
