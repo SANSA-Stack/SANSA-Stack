@@ -115,14 +115,16 @@ class PlanGenerator {
 
     val relNode = planner.rel(validatedSqlNode).project()
 
-    // decorrelate
-    val decorPlan = RelDecorrelator.decorrelateQuery(relNode)
+//    // decorrelate
+//    val decorPlan = RelDecorrelator.decorrelateQuery(relNode)
+//
+//    val optProgram = Programs.ofRules(optRuleSet)
+//
+//    val program = optProgram.run(planner2, decorPlan, relNode.getTraitSet)
+//
+//    program
 
-    val optProgram = Programs.ofRules(optRuleSet)
-
-    val program = optProgram.run(planner2, decorPlan, relNode.getTraitSet)
-
-    program
+    relNode
   }
 
 
