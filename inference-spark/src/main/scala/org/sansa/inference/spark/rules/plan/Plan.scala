@@ -5,6 +5,7 @@ import org.apache.jena.reasoner.TriplePattern
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.analysis.Analyzer
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
+import org.apache.spark.sql.catalyst.parser.ParserInterface
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.sansa.inference.utils.TripleUtils
 
@@ -34,22 +35,28 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     val sql = toSQL
     println("SQL query:" + sql)
 
-    // generate logical plan
-    val m = sqlContext.getClass().getDeclaredMethod("parseSql", classOf[String])
-    m.setAccessible(true)
-    var logicalPlan: LogicalPlan = m.invoke(sqlContext, sql).asInstanceOf[LogicalPlan]
-
+    // get session state
     val session = sqlContext.sparkSession
     val m2 = session.getClass().getDeclaredMethod("sessionState")
     m2.setAccessible(true)
     val sessionState = m2.invoke(session)
 
+    // get SQL parser
+    val m = sessionState.getClass().getDeclaredMethod("sqlParser")
+    m.setAccessible(true)
+    val sqlParser: ParserInterface = m.invoke(sessionState).asInstanceOf[ParserInterface]
+
+    // generate logical plan
+    var logicalPlan = sqlParser.parsePlan(sql)
+//    println(logicalPlan.treeString(false))
+
+    // analyze the plan
     val m3 = sessionState.getClass().getDeclaredMethod("analyzer")
     m3.setAccessible(true)
     val analyzer = m3.invoke(sessionState).asInstanceOf[Analyzer]
-
     logicalPlan = analyzer.execute(logicalPlan)
 
+    // optimize the plan
     val m4 = sessionState.getClass().getDeclaredMethod("optimizer")
     m4.setAccessible(true)
     val optimizer = m4.invoke(sessionState).asInstanceOf[Optimizer]
