@@ -62,14 +62,20 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
     trace("JOIN EXPR:" + joinExpressions)
 
     // get left and right join expressions
-    val joinExpressionsLeft = joinExpressions.filter(expr => leftExpressions.contains(expr))
-    val joinExpressionsRight = joinExpressions.filter(expr => rightExpressions.contains(expr))
+    val joinExpressionsLeft = joinExpressions.filter(expr => leftExpressions.exists(leftExpr => leftExpr.semanticEquals(expr)))
+    val joinExpressionsRight = joinExpressions.filter(expr => rightExpressions.exists(rightExpr => rightExpr.semanticEquals(expr)))
     trace("JOIN EXPR L:" + joinExpressionsLeft)
     trace("JOIN EXPR R:" + joinExpressionsRight)
 
     // get positions of expressions
-    val joinPositionsLeft = joinExpressionsLeft.map(expr => leftExpressions.indexOf(expr))
-    val joinPositionsRight = joinExpressionsRight.map(expr => rightExpressions.indexOf(expr))
+    val joinPositionsLeft = joinExpressionsLeft.map(expr => {
+      val leftExpr = leftExpressions.find(_ semanticEquals expr).get
+      leftExpressions.indexOf(leftExpr)
+    })
+    val joinPositionsRight = joinExpressionsRight.map(expr => {
+      val rightExpr = rightExpressions.find(_ semanticEquals expr).get
+      rightExpressions.indexOf(rightExpr)
+    })
     trace("JOIN POS L:" + joinPositionsLeft)
     trace("JOIN POS R:" + joinPositionsRight)
 
@@ -125,6 +131,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
       trace("EXTR POSITIONS:" + positions)
 
       result = rdd map genMapper(tuple => extract(tuple, positions, aliases))
+      trace("MAPPING RESULT\n" + result.collect().mkString("\n"))
     }
     result
   }
@@ -215,6 +222,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
       trace("EXTR POSITIONS:" + positions)
 
       resultRDD = rdd map genMapper(tuple => extract(tuple, positions, aliases))
+      trace("MAPPING RESULT\n" + resultRDD.collect().mkString("\n"))
     }
     resultRDD
   }
@@ -313,11 +321,12 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
   }
 
   def applyFilter[T <: Product](condition: Expression, childExpressions: List[Expression], rdd: RDD[T]): RDD[T] = {
-    debug("FILTER " + condition.simpleString)
+
     condition match {
       case And(left: Expression, right: Expression) =>
         applyFilter(right, childExpressions, applyFilter(left, childExpressions, rdd))
       case EqualTo(left: Expression, right: Expression) =>
+        debug("FILTER " + condition.simpleString)
         val value = right.toString()
 
         val index = childExpressions.map(e => e.toString()).indexOf(left.toString())
