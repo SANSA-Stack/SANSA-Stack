@@ -9,9 +9,9 @@ import org.jgrapht.experimental.equivalence.EquivalenceComparator
   *
   * @author Lorenz Buehmann
   */
-class NodeEquivalenceComparator extends EquivalenceComparator[Node, Graph[Node, LabeledEdge]] {
-  override def equivalenceHashcode(node: Node, context: Graph[Node, LabeledEdge]): Int = node.hashCode()
+class NodeEquivalenceComparator extends EquivalenceComparator[Node, Graph[Node, LabeledEdge[Node]]] {
+  override def equivalenceHashcode(node: Node, context: Graph[Node, LabeledEdge[Node]]): Int = node.hashCode()
 
   override def equivalenceCompare(node1: Node, node2: Node,
-                                  context1: Graph[Node, LabeledEdge], context2: Graph[Node, LabeledEdge]): Boolean = node1.equals(node2)
+                                  context1: Graph[Node, LabeledEdge[Node]], context2: Graph[Node, LabeledEdge[Node]]): Boolean = node1.equals(node2)
 }

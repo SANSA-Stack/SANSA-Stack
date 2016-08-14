@@ -9,6 +9,8 @@ import scala.reflect.ClassTag
 import scalax.collection.Graph
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef._
+import scalax.collection.edge.LDiEdge
+import scalax.collection.edge.Implicits._
 
 /**
   * Provides algorithms for finding graph components.
@@ -88,6 +90,57 @@ final class GraphComponents[N, E[X] <: EdgeLikeIn[X]](
       }
       val theseNodes = currentStack.map(_.value)
       val currentGraph: Graph[N, DiEdge] = Graph.from(theseNodes, innerEdges)
+      // create outer edges from current to previous graphs
+      evidence = (currentGraph ~> currentGraph)
+      outerEdges = referencedGraphs.map((currentGraph ~> _)) ++ outerEdges
+      // add currentGraph to lookup by its nodes
+      debug("adding " + currentGraph + " to lookup for each node: " + theseNodes)
+      lookup ++= theseNodes.map((_ -> currentGraph))
+    }
+
+    // call the algo
+    stronglyConnectedComponents(toSubgraphDag)
+
+    // if(outerEdges.isEmpty) should be able to say something like
+    // Graph.from(lookup.values) - ditching evidence and using outerEdges.head
+
+    Graph.from(lookup.values, outerEdges)
+  }
+
+  /**
+    * Do Tarjan's algorithm and return the DAG of (cyclic) subgraphs
+    * TODO not sound wrt to HyperGraphs
+    */
+  def stronglyConnectedComponentsDag2: Graph[Graph[N, LDiEdge], DiEdge] = {
+
+    // the result and its builder
+    val lookup: mutable.Map[N, Graph[N, LDiEdge]] = mutable.Map()
+    var outerEdges: List[DiEdge[Graph[N, LDiEdge]]] = List.empty
+    var evidence: DiEdge[Graph[N, LDiEdge]] = null
+
+    // graph of graphs aggregator
+    val toSubgraphDag: DeepSearchStackAggregator = { currentStack =>
+      debug("toSubgraphDag - init")
+      // previous graphs being referenced by current
+      var referencedGraphs: List[Graph[N, LDiEdge]] = Nil
+      // edges from and to nodes of the current stack
+      var innerEdges: List[LDiEdge[N]] = Nil
+
+      for (n <- currentStack; e <- n.outgoing) {
+        if (e.nodeSeq.forall(currentStack.contains(_))) { // TODO possibly improve performance
+          // edge within the subgraph
+          innerEdges = (e._1.value ~+> e._2.value)(e.label) :: innerEdges
+          debug("%s points to %s within the same subgraph".format(n.value.toString, e._2.value.toString))
+        } else {
+          // edge of the DAG
+          // only points to previous subgraphs
+          debug("%s points to %s from another subgraph".format(n.value.toString, e._2.value.toString))
+          debug(lookup.mkString(" "))
+          referencedGraphs = lookup(e._2.value) :: referencedGraphs
+        }
+      }
+      val theseNodes = currentStack.map(_.value)
+      val currentGraph: Graph[N, LDiEdge] = Graph.from(theseNodes, innerEdges)
       // create outer edges from current to previous graphs
       evidence = (currentGraph ~> currentGraph)
       outerEdges = referencedGraphs.map((currentGraph ~> _)) ++ outerEdges

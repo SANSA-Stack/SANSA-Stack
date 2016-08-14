@@ -4,6 +4,7 @@ import org.apache.jena.reasoner.rulesys.Rule
 
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.Graph
+import scalax.collection.edge.LDiEdge
 import scalax.collection.immutable.DefaultGraphImpl
 
 /**
@@ -29,9 +30,9 @@ import scalax.collection.immutable.DefaultGraphImpl
   *
   * @author Lorenz Buehmann
   */
-class HighLevelRuleDependencyGraph(iniNodes: Iterable[Graph[Rule, DiEdge]] = Set[Graph[Rule, DiEdge]](),
-                                   iniEdges: Iterable[DiEdge[Graph[Rule, DiEdge]]] = Set[DiEdge[Graph[Rule, DiEdge]]]())
-        extends DefaultGraphImpl[Graph[Rule, DiEdge], DiEdge](iniNodes, iniEdges)(implicitly, DefaultGraphImpl.defaultConfig) {
+class HighLevelRuleDependencyGraph(iniNodes: Iterable[Graph[Rule, LDiEdge]] = Set[Graph[Rule, LDiEdge]](),
+                                   iniEdges: Iterable[DiEdge[Graph[Rule, LDiEdge]]] = Set[DiEdge[Graph[Rule, LDiEdge]]]())
+        extends DefaultGraphImpl[Graph[Rule, LDiEdge], DiEdge](iniNodes, iniEdges)(implicitly, DefaultGraphImpl.defaultConfig) {
 
 
   /**

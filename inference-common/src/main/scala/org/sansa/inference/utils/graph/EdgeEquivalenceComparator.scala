@@ -8,11 +8,11 @@ import org.jgrapht.experimental.equivalence.EquivalenceComparator
   *
   * @author Lorenz Buehmann
   */
-class EdgeEquivalenceComparator extends EquivalenceComparator[LabeledEdge, org.jgrapht.Graph[Node, LabeledEdge]] {
-  override def equivalenceHashcode(edge: LabeledEdge, context: org.jgrapht.Graph[Node, LabeledEdge]): Int = edge.hashCode()
+class EdgeEquivalenceComparator extends EquivalenceComparator[LabeledEdge[Node], org.jgrapht.Graph[Node, LabeledEdge[Node]]] {
+  override def equivalenceHashcode(edge: LabeledEdge[Node], context: org.jgrapht.Graph[Node, LabeledEdge[Node]]): Int = edge.hashCode()
 
-  override def equivalenceCompare(edge1: LabeledEdge, edge2: LabeledEdge,
-                                  context1: org.jgrapht.Graph[Node, LabeledEdge], context2: org.jgrapht.Graph[Node, LabeledEdge]): Boolean =
+  override def equivalenceCompare(edge1: LabeledEdge[Node], edge2: LabeledEdge[Node],
+                                  context1: org.jgrapht.Graph[Node, LabeledEdge[Node]], context2: org.jgrapht.Graph[Node, LabeledEdge[Node]]): Boolean =
     (edge1.label.startsWith("?") && edge2.label.startsWith("?")) || // both predicates are variables
      edge1.label.equals(edge2.label) // both URIs match
 }

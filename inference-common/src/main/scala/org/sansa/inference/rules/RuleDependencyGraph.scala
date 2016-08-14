@@ -4,6 +4,7 @@ import org.apache.jena.reasoner.rulesys.Rule
 
 import scalax.collection.Graph
 import scalax.collection.GraphEdge.DiEdge
+import scalax.collection.edge.LDiEdge
 import scalax.collection.mutable.DefaultGraphImpl
 
 /**
@@ -21,10 +22,10 @@ import scalax.collection.mutable.DefaultGraphImpl
   * @author Lorenz Buehmann
   */
 class RuleDependencyGraph(iniNodes: Iterable[Rule] = Set[Rule](),
-                          iniEdges: Iterable[DiEdge[Rule]] = Set[DiEdge[Rule]]())
-  extends DefaultGraphImpl[Rule, DiEdge](iniNodes, iniEdges)(implicitly, DefaultGraphImpl.defaultConfig){
+                          iniEdges: Iterable[LDiEdge[Rule]] = Set[LDiEdge[Rule]]())
+  extends DefaultGraphImpl[Rule, LDiEdge](iniNodes, iniEdges)(implicitly, DefaultGraphImpl.defaultConfig){
 
-  def this(graph: Graph[Rule, DiEdge]) = {
+  def this(graph: Graph[Rule, LDiEdge]) = {
     this(graph.nodes.toOuter, graph.edges.toOuter)
   }
   /**
