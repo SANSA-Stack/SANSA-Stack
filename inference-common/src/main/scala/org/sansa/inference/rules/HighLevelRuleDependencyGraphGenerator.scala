@@ -18,7 +18,7 @@ object HighLevelRuleDependencyGraphGenerator {
     */
   def generate(graph: RuleDependencyGraph): HighLevelRuleDependencyGraph = {
     // compute the strongly connected components DAG
-    val sccDag = GraphComponents.graphToComponents(graph).stronglyConnectedComponentsDag
+    val sccDag = GraphComponents.graphToComponents(graph).stronglyConnectedComponentsDag2
 
     // create empty graph
     val g = new HighLevelRuleDependencyGraph(sccDag.nodes.toOuter, sccDag.edges.toOuter)

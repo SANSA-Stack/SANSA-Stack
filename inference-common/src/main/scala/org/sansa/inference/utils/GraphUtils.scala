@@ -56,8 +56,8 @@ object GraphUtils {
     * @param graph the 'Graph for Scala' graph
     * @return the JGraphT graph
     */
-  def asJGraphtGraph(graph: scalax.collection.mutable.Graph[Node, LDiEdge]): DirectedGraph[Node, LabeledEdge] = {
-    val g: DirectedGraph[Node, LabeledEdge] = new DefaultDirectedGraph[Node, LabeledEdge](classOf[LabeledEdge])
+  def asJGraphtGraph(graph: scalax.collection.mutable.Graph[Node, LDiEdge]): DirectedGraph[Node, LabeledEdge[Node]] = {
+    val g: DirectedGraph[Node, LabeledEdge[Node]] = new DefaultDirectedGraph[Node, LabeledEdge[Node]](classOf[LabeledEdge[Node]])
 
     val edges = graph.edges.toList
 
@@ -82,12 +82,12 @@ object GraphUtils {
           label = e1.label.toString + "_out"
         }
       }
-      g.addEdge(source, target, new LabeledEdge(label))
+      g.addEdge(source, target, new LabeledEdge[Node](source, target, label))
     }
     g
   }
 
-  implicit class ClassRuleDependencyGraphExporter(val graph: scalax.collection.mutable.Graph[Rule, DiEdge]) {
+  implicit class ClassRuleDependencyGraphExporter(val graph: scalax.collection.mutable.Graph[Rule, LDiEdge]) {
     /**
       * Export the rule dependency graph to GraphML format.
       *
@@ -95,18 +95,20 @@ object GraphUtils {
       */
     def export(filename: String) = {
 
-      val g: DirectedGraph[Rule, DefaultEdge] = new DefaultDirectedGraph[Rule, DefaultEdge](classOf[DefaultEdge])
-
+      val g: DirectedGraph[Rule, LabeledEdge[Rule]] = new DefaultDirectedGraph[Rule, LabeledEdge[Rule]](classOf[LabeledEdge[Rule]])
+      println(graph.edges.map(e => e.source.value.getName + "->" + e.target.value.getName).mkString("\n"))
       val edges = graph.edges.toList
 
       edges.foreach { e =>
-        val nodes = e.nodes.toList
-        val source = nodes(0)
-        val target = nodes(1)
-        g.addVertex(source)
-        g.addVertex(target)
-        g.addEdge(source, target, new DefaultEdge())
+        val s: Rule = e.source.value
+        val t: Rule = e.target.value
+        val label = e.label.toString
+        g.addVertex(s)
+        g.addVertex(t)
+        println(s + "-->" + t + s"($label)")
+        g.addEdge(s, t, new LabeledEdge(s, t, label))
       }
+      println(g.edgeSet().size())
 
       // In order to be able to export edge and node labels and IDs,
       // we must implement providers for them
@@ -118,24 +120,24 @@ object GraphUtils {
         override def getVertexName(v: Rule): String = v.getName
       }
 
-      val edgeIDProvider = new EdgeNameProvider[LabeledEdge]() {
-        override def getEdgeName(edge: LabeledEdge): String = {
+      val edgeIDProvider = new EdgeNameProvider[LabeledEdge[Rule]]() {
+        override def getEdgeName(edge: LabeledEdge[Rule]): String = {
           g.getEdgeSource(edge) + " > " + g.getEdgeTarget(edge)
         }
       }
 
-      val edgeLabelProvider = new EdgeNameProvider[LabeledEdge]() {
-        override def getEdgeName(e: LabeledEdge): String = e.label
+      val edgeLabelProvider = new EdgeNameProvider[LabeledEdge[Rule]]() {
+        override def getEdgeName(e: LabeledEdge[Rule]): String = e.label
       }
 
 //      val exporter = new GraphMLExporter[String,LabeledEdge](
 //        vertexIDProvider, vertexNameProvider, edgeIDProvider,edgeLabelProvider)
 
-      val exporter = new GraphMLExporter[Rule, DefaultEdge](
+      val exporter = new GraphMLExporter[Rule, LabeledEdge[Rule]](
         new IntegerNameProvider[Rule],
         vertexNameProvider,
-        new IntegerEdgeNameProvider[DefaultEdge],
-        null)
+        new IntegerEdgeNameProvider[LabeledEdge[Rule]],
+        edgeLabelProvider)
 
       val fw = new FileWriter(filename)
 
@@ -222,7 +224,7 @@ object GraphUtils {
       */
     def export(filename: String) = {
 
-      val g: DirectedGraph[Node, LabeledEdge] = new DefaultDirectedGraph[Node, LabeledEdge](classOf[LabeledEdge])
+      val g: DirectedGraph[Node, LabeledEdge[Node]] = new DefaultDirectedGraph[Node, LabeledEdge[Node]](classOf[LabeledEdge[Node]])
 
       val edges = graph.edges.toList
 
@@ -232,7 +234,7 @@ object GraphUtils {
         val target = nodes(1)
         g.addVertex(source)
         g.addVertex(target)
-        g.addEdge(source, target, new LabeledEdge(PrefixMapping.Standard.shortForm(e.label.toString)))
+        g.addEdge(source, target, new LabeledEdge[Node](source, target, PrefixMapping.Standard.shortForm(e.label.toString)))
       }
 
       // In order to be able to export edge and node labels and IDs,
@@ -245,23 +247,23 @@ object GraphUtils {
         override def getVertexName(v: Node): String = v.toString(PrefixMapping.Standard)
       }
 
-      val edgeIDProvider = new EdgeNameProvider[LabeledEdge]() {
-        override def getEdgeName(edge: LabeledEdge): String = {
+      val edgeIDProvider = new EdgeNameProvider[LabeledEdge[Node]]() {
+        override def getEdgeName(edge: LabeledEdge[Node]): String = {
           g.getEdgeSource(edge).toString(PrefixMapping.Standard) + " > " + edge.label + " > " + g.getEdgeTarget(edge).toString(PrefixMapping.Standard)
         }
       }
 
-      val edgeLabelProvider = new EdgeNameProvider[LabeledEdge]() {
-        override def getEdgeName(e: LabeledEdge): String = e.label
+      val edgeLabelProvider = new EdgeNameProvider[LabeledEdge[Node]]() {
+        override def getEdgeName(e: LabeledEdge[Node]): String = e.label
       }
 
       //      val exporter = new GraphMLExporter[String,LabeledEdge](
       //        vertexIDProvider, vertexNameProvider, edgeIDProvider,edgeLabelProvider)
 
-      val exporter = new GraphMLExporter[Node, LabeledEdge](
+      val exporter = new GraphMLExporter[Node, LabeledEdge[Node]](
         new IntegerNameProvider[Node],
         vertexNameProvider,
-        new IntegerEdgeNameProvider[LabeledEdge],
+        new IntegerEdgeNameProvider[LabeledEdge[Node]],
         edgeLabelProvider)
 
       val fw = new FileWriter(filename)

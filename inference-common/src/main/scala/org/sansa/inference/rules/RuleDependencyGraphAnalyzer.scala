@@ -14,9 +14,12 @@ import scalax.collection.GraphTraversal
 import scalax.collection.connectivity.GraphComponents
 import scalax.collection.Graph
 import org.sansa.inference.utils.GraphUtils._
+
 import scalax.collection.connectivity.GraphComponents.graphToComponents
 import scala.reflect.runtime.universe._
 import org.sansa.inference.utils.RuleUtils.RuleExtension
+
+import scalax.collection.edge.LDiEdge
 
 /**
   * @author Lorenz Buehmann
@@ -115,7 +118,7 @@ object RuleDependencyGraphAnalyzer {
 //    }
 //  }
 
-  def analyze(g: Graph[Rule, DiEdge]) = {
+  def analyze(g: Graph[Rule, LDiEdge]) = {
     // check for cycles
     val cycle = g.findCycle
     println("Cycle found: " + cycle.nonEmpty)

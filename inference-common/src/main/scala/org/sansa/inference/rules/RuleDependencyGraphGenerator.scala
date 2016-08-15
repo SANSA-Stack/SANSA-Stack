@@ -1,11 +1,12 @@
 package org.sansa.inference.rules
 
+import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.RDFS
 import org.sansa.inference.utils.RuleUtils._
 
 import scala.language.{existentials, implicitConversions}
-import scalax.collection.GraphPredef._
+import scalax.collection.edge.Implicits._
 
 /**
   * A generator for a so-called dependency graph based on a given set of rules.
@@ -24,20 +25,27 @@ object RuleDependencyGraphGenerator {
     * @param f a function that denotes whether a rule r1 depends on another rule r2
     * @return the rule dependency graph
     */
-  def generate(rules: Set[Rule], f:(Rule, Rule) => Boolean = dependsOn): RuleDependencyGraph = {
+  def generate(rules: Set[Rule], f:(Rule, Rule) => Option[TriplePattern] = dependsOnSmart): RuleDependencyGraph = {
     // create empty graph
     val g = new RuleDependencyGraph()
 
+    // 1. add node for each rule
     rules.foreach(r => g.add(r))
 
-    // add edge for each rule r1 that depends on another rule r2
+    // 2. add edge for each rule r1 that depends on another rule r2
     for (r1 <- rules; r2 <- rules) {
-      if (f(r1, r2)) // r1 depends on r2
-        g += r1 ~> r2
-      else if (f(r2, r1)) // r2 depends on r1
-        g += r2 ~> r1
-      else if (f(r1, r1)) // r1 depends on r1, i.e. reflexive dependency
-        g += r1 ~> r1
+
+      val r1r2 = f(r1, r2)// r1 depends on r2
+      if (r1r2.isDefined)
+        g += (r1 ~+> r2)(r1r2.get)
+      else {
+        val r2r1 = f(r2, r1)
+        if (r2r1.isDefined) // r2 depends on r1
+          g += (r2 ~+> r1)(r2r1.get)
+      }
+      val r1r1 = f(r1, r1)
+      if (r1r1.isDefined) // r1 depends on r1, i.e. reflexive dependency
+        g += (r1 ~+> r1)(r1r1.get)
     }
 
     g
@@ -66,6 +74,46 @@ object RuleDependencyGraphGenerator {
       } else {
         if(tp1.getPredicate.isVariable && tp2.getPredicate.equals(RDFS.subPropertyOf.asNode())) {
           ret = true
+        }
+      }
+
+    }
+
+    ret
+  }
+
+  /**
+    * Checks whether rule `rule1` depends on rule `rule2`.
+    * This methods currently checks if there is a triple pattern in the head of `rule2` that also occurs in the
+    * body of `rule1`.
+    *
+    * @param rule1 the first rule
+    * @param rule2 the second rule
+    * @return the triple pattern on which `rule1` depends
+    */
+  def dependsOnSmart(rule1: Rule, rule2: Rule) : Option[TriplePattern] = {
+    // R1: B1 -> H1
+    // R2: B2 -> H2
+    // R2 -> R1 = ?  , i.e. H2 ∩ B1
+
+    // head of rule2
+    val head2TriplePatterns = rule2.headTriplePatterns()
+    // body of rule1
+    val body1TriplePatterns = rule1.bodyTriplePatterns()
+
+    var ret: Option[TriplePattern] = None
+
+    for (tp2 <- head2TriplePatterns; tp1 <- body1TriplePatterns) {
+      // predicates are URIs
+      if (tp2.getPredicate.equals(tp1.getPredicate)) { // matching predicates
+        ret = Some(tp2)
+      } else {
+        if(tp1.getPredicate.isVariable && tp2.getPredicate.equals(RDFS.subPropertyOf.asNode())) {
+          ret = Some(tp2)
+        }
+
+        if(tp1.getPredicate.isVariable && tp2.getPredicate.isVariable) {
+          ret = Some(tp2)
         }
       }
 
