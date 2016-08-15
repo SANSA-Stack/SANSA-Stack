@@ -49,7 +49,7 @@ object SimpleRelBuilder {
 
     // create Flink type factory
     val typeSystem = config.getTypeSystem
-    val typeFactory = new FlinkTypeFactory(typeSystem)
+    val typeFactory = null// new FlinkTypeFactory(typeSystem)
 
     // create context instances with Flink type factory
     val cluster = RelOptCluster.create(planner, new RexBuilder(typeFactory))

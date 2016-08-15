@@ -103,6 +103,7 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
     var iteration = 1
     var oldCount = 0L
     var nextCount = newGraph.size
+    logger.info(s"initial size:$nextCount")
     do {
       logger.info("Iteration " + iteration)
       iteration += 1
@@ -113,6 +114,7 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
       distinctCnt += 1
 
       nextCount = newGraph.size()
+      logger.info(s"new size:$nextCount")
       countCnt += 1
     } while (nextCount != oldCount)
 
