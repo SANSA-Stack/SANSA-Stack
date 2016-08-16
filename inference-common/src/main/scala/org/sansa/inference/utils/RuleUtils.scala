@@ -8,7 +8,7 @@ import org.sansa.inference.rules.RuleEntailmentType._
 
 import scala.collection.JavaConversions._
 import scalax.collection.edge.Implicits._
-import scalax.collection.edge.LDiEdge
+import scalax.collection.edge.{LDiEdge, LkDiEdge}
 import scalax.collection.mutable.Graph
 
 /**
@@ -142,7 +142,7 @@ object RuleUtils {
 
     // add labeled edge p(s,o) for each triple pattern (s p o) in the body of the rule
     rule.getBody.collect { case b: TriplePattern => b }.foreach(
-      tp => g += (tp.getSubject ~+> tp.getObject)(tp.getPredicate)
+      tp => g += (tp.getSubject ~+#> tp.getObject)(tp.getPredicate)
     )
     g
   }
@@ -158,7 +158,7 @@ object RuleUtils {
 
     // add labeled edge p(s,o) for each triple pattern (s p o) in the head of the rule
     rule.getHead.collect { case b: TriplePattern => b }.foreach(
-      tp => g += (tp.getSubject ~+> tp.getObject)(tp.getPredicate)
+      tp => g += (tp.getSubject ~+#> tp.getObject)(tp.getPredicate)
     )
     g
   }
