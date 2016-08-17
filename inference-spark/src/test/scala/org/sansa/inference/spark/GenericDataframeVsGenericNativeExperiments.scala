@@ -1,11 +1,14 @@
 package org.sansa.inference.spark
 
+import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.sansa.inference.data.RDFTriple
 import org.sansa.inference.rules.RuleSets
 import org.sansa.inference.spark.data.{RDFGraphDataFrame, RDFGraphLoader, RDFGraphNative, RDFGraphWriter}
 import org.sansa.inference.spark.forwardchaining.{ForwardRuleReasonerOptimizedNative, ForwardRuleReasonerOptimizedSQL}
+
+import scala.collection.mutable
 
 /**
   * @author Lorenz Buehmann
@@ -16,7 +19,7 @@ object GenericDataframeVsGenericNativeExperiments {
   conf.registerKryoClasses(Array(classOf[RDFTriple]))
 
   // the SPARK config
-  val session = SparkSession.builder
+  val sessionBuilder = SparkSession.builder
     .appName("GenericDataframe-Vs-GenericNative-Experiments")
     .master("local[4]")
     .config("spark.eventLog.enabled", "true")
@@ -25,9 +28,13 @@ object GenericDataframeVsGenericNativeExperiments {
     .config("spark.default.parallelism", "4")
     .config("spark.sql.shuffle.partitions", "8")
     .config(conf)
-    .getOrCreate()
 
-  val rules = RuleSets.RDFS_SIMPLE.filter(r => r.getName == "rdfs7")
+
+  var session: SparkSession = null
+
+  val names = Seq("rdfs7", "rdfs9", "rdfs2", "rdfs3", "rdfs11", "rdfs5")
+
+  val rules = RuleSets.RDFS_SIMPLE.filter(r => names.isEmpty || names.contains(r.getName))
 
   def main(args: Array[String]): Unit = {
     if (args.length < 2) {
@@ -35,24 +42,75 @@ object GenericDataframeVsGenericNativeExperiments {
       System.exit(1)
     }
 
+    session = sessionBuilder.appName("generic-rdd").getOrCreate()
+
     // load triples from disk
-    val graph = RDFGraphLoader.loadGraphFromFile(args(0), session, 4)
+    var graph = RDFGraphLoader.loadGraphFromFile(args(0), session, 4)//generateData(1)
 
     val infGraphNative = native(graph)
 
+    println("Native: " + infGraphNative.size())
+
+    session.stop()
+
+    session = sessionBuilder.appName("generic-dataframe").getOrCreate()
+
+    graph = RDFGraphLoader.loadGraphFromFile(args(0), session, 4)
+
     val infGraphDataframe = dataframe(new RDFGraphDataFrame(graph.toDataFrame(session)))
 
-    println("Native: " + infGraphNative.size())
     println("Dataframe: " + infGraphDataframe.size())
+
+    session.stop()
 
     val targetDir = args(1)
 
     // write triples to disk
-    RDFGraphWriter.writeToFile(infGraphNative.toDataFrame(session), targetDir + "/native")
-    RDFGraphWriter.writeToFile(infGraphDataframe.toDataFrame(), targetDir + "/dataframe")
+//    RDFGraphWriter.writeToFile(infGraphNative.toDataFrame(session), targetDir + "/native")
+//    RDFGraphWriter.writeToFile(infGraphDataframe.toDataFrame(), targetDir + "/dataframe")
 
-    session.stop()
 
+
+  }
+
+  def generateData(scale: Integer) = {
+    println("generating data...")
+    val triples = new mutable.HashSet[RDFTriple]()
+    val ns = "http://ex.org/"
+    val p1 = ns + "p1"
+    val p2 = ns + "p2"
+    val p3 = ns + "p3"
+    triples += RDFTriple(p1, RDFS.subPropertyOf.getURI, p2)
+    triples += RDFTriple(p2, RDFS.subPropertyOf.getURI, p3)
+
+    var begin = 1
+    var end = 10 * scale
+    for (i <- begin to end) {
+      triples += RDFTriple(ns + "x" + i, p1, ns + "y" + i)
+//      triples += RDFTriple(ns + "y" + i, p1, ns + "z" + i)
+    }
+
+//    begin = end + 1
+//    end = begin + 10 * scale
+//    for (i <- begin to end) {
+//      // should not produce (?x_i, p1, ?z_i) as p1 and p2 are used
+//      triples += RDFTriple(ns + "x" + i, p1, ns + "y" + i)
+//      triples += RDFTriple(ns + "y" + i, p2, ns + "z" + i)
+//    }
+//
+//    begin = end + 1
+//    end = begin + 10 * scale
+//    for (i <- begin to end) {
+//      // should not produce (?x_i, p3, ?z_i) as p3 is not transitive
+//      triples += RDFTriple(ns + "x" + i, p3, ns + "y" + i)
+//      triples += RDFTriple(ns + "y" + i, p3, ns + "z" + i)
+//    }
+
+    // make RDD
+    val triplesRDD = session.sparkContext.parallelize(triples.toSeq, 4)
+    triplesRDD.cache()
+    println(s"size:${triplesRDD.count}")
+    new RDFGraphNative(triplesRDD)
   }
 
   def native(graph: RDFGraphNative): RDFGraphNative = {
