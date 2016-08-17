@@ -93,10 +93,10 @@ object GraphUtils {
       *
       * @param filename the target file
       */
-    def export(filename: String) = {
+    def export(filename: String, showInFlowDirection: Boolean = true) = {
 
       val g: DirectedGraph[Rule, LabeledEdge[Rule]] = new DefaultDirectedGraph[Rule, LabeledEdge[Rule]](classOf[LabeledEdge[Rule]])
-      println(graph.edges.map(e => e.source.value.getName + "->" + e.target.value.getName).mkString("\n"))
+
       val edges = graph.edges.toList
 
       edges.foreach { e =>
@@ -105,10 +105,13 @@ object GraphUtils {
         val label = e.label.toString
         g.addVertex(s)
         g.addVertex(t)
-        println(s + "-->" + t + s"($label)")
-        g.addEdge(s, t, new LabeledEdge(s, t, label))
+        if(showInFlowDirection) {
+          g.addEdge(t, s, new LabeledEdge(t, s, label))
+        } else {
+          g.addEdge(s, t, new LabeledEdge(s, t, label))
+        }
+
       }
-      println(g.edgeSet().size())
 
       // In order to be able to export edge and node labels and IDs,
       // we must implement providers for them
