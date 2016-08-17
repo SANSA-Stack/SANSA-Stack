@@ -2,6 +2,7 @@ package org.sansa.inference.common
 
 import org.sansa.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator, RuleSets}
 import org.sansa.inference.utils.GraphUtils._
+import org.sansa.inference.utils.RuleUtils
 
 /**
   * @author Lorenz Buehmann
@@ -9,12 +10,21 @@ import org.sansa.inference.utils.GraphUtils._
 object DependencyGraphTest {
 
   def main(args: Array[String]): Unit = {
+
+    val path = "/tmp"
+
     // define the rules
-    val rules = RuleSets.RDFS_SIMPLE
+    val rules = RuleSets.RDFS_SIMPLE.filter(r => r.getName == "rdfs7")
+
+    // export graphs
+    rules.foreach(rule => RuleUtils.asGraph(rule).export(s"${path}/rule-${rule.getName}.graphml"))
 
     // generate the rule dependency graph
-    val dependencyGraph = RuleDependencyGraphGenerator.generate(rules)
-    dependencyGraph.export("/tmp/rdfs-simple.graphml")
+    var dependencyGraph = RuleDependencyGraphGenerator.generate(rules)
+    dependencyGraph.export(s"${path}/rdg-rdfs-simple.graphml")
+
+    dependencyGraph = RuleDependencyGraphGenerator.generate(rules, pruned = true)
+    dependencyGraph.export(s"${path}/rdg-rdfs-simple-pruned.graphml")
 
     // generate the high-level dependency graph
     val highLevelDependencyGraph = HighLevelRuleDependencyGraphGenerator.generate(dependencyGraph)

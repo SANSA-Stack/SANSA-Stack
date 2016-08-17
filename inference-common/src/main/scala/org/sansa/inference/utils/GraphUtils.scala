@@ -21,7 +21,7 @@ import org.gephi.project.api.ProjectController
 import org.jgrapht.DirectedGraph
 import org.jgrapht.experimental.isomorphism.AdaptiveIsomorphismInspectorFactory
 import org.jgrapht.ext.{EdgeNameProvider, VertexNameProvider, _}
-import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge}
+import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge, DirectedMultigraph}
 import org.openide.util.Lookup
 import org.sansa.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
 
@@ -105,12 +105,12 @@ object GraphUtils {
         val label = e.label.toString
         g.addVertex(s)
         g.addVertex(t)
+
         if(showInFlowDirection) {
           g.addEdge(t, s, new LabeledEdge(t, s, label))
         } else {
           g.addEdge(s, t, new LabeledEdge(s, t, label))
         }
-
       }
 
       // In order to be able to export edge and node labels and IDs,
@@ -227,17 +227,18 @@ object GraphUtils {
       */
     def export(filename: String) = {
 
-      val g: DirectedGraph[Node, LabeledEdge[Node]] = new DefaultDirectedGraph[Node, LabeledEdge[Node]](classOf[LabeledEdge[Node]])
+      val g: DirectedGraph[Node, LabeledEdge[Node]] = new DirectedMultigraph[Node, LabeledEdge[Node]](classOf[LabeledEdge[Node]])
 
       val edges = graph.edges.toList
 
       edges.foreach { e =>
-        val nodes = e.nodes.toList
-        val source = nodes(0)
-        val target = nodes(1)
-        g.addVertex(source)
-        g.addVertex(target)
-        g.addEdge(source, target, new LabeledEdge[Node](source, target, PrefixMapping.Standard.shortForm(e.label.toString)))
+        println(e)
+        val s = e.source.value
+        val t = e.target.value
+        val label = PrefixMapping.Standard.shortForm(e.label.toString)
+        g.addVertex(s)
+        g.addVertex(t)
+        g.addEdge(s, t, new LabeledEdge(s, t, label))
       }
 
       // In order to be able to export edge and node labels and IDs,

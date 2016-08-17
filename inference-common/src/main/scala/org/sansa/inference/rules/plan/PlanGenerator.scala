@@ -15,7 +15,7 @@ import org.apache.calcite.schema.SchemaPlus
 import org.apache.calcite.sql.parser.SqlParser
 import org.apache.calcite.sql2rel.RelDecorrelator
 import org.apache.calcite.tools.Frameworks.PlannerAction
-import org.apache.calcite.tools.{Frameworks, Programs, RuleSets}
+import org.apache.calcite.tools.{Frameworks, Programs, RelBuilder, RuleSets}
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.rulesys.Rule
 import org.sansa.inference.utils.RuleUtils
@@ -72,7 +72,9 @@ class PlanGenerator {
     }
   })
 
-  val planner2 = clusters(0).getPlanner
+  val relBuilder = RelBuilder.create(calciteFrameworkConfig)
+
+  val planner2: RelOptPlanner = clusters(0).getPlanner
 
 
   val planner = Frameworks.getPlanner(calciteFrameworkConfig)
