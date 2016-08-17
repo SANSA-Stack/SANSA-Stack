@@ -14,7 +14,7 @@ object DependencyGraphTest {
     val path = "/tmp"
 
     // define the rules
-    val rules = RuleSets.RDFS_SIMPLE.filter(r => r.getName == "rdfs7")
+    val rules = RuleSets.RDFS_SIMPLE.filter(r => r.getName == "rdfs7" || r.getName == "rdfs9")
 
     // export graphs
     rules.foreach(rule => RuleUtils.asGraph(rule).export(s"${path}/rule-${rule.getName}.graphml"))

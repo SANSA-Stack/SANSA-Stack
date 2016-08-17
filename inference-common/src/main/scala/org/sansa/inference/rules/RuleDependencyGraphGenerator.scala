@@ -1,8 +1,10 @@
 package org.sansa.inference.rules
 
+import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.RDFS
+import org.sansa.inference.utils.RuleUtils
 import org.sansa.inference.utils.RuleUtils._
 
 import scala.language.{existentials, implicitConversions}
@@ -59,6 +61,7 @@ object RuleDependencyGraphGenerator {
     // 3. pruning
     if(pruned) {
       g = prune(g)
+      g = pruneRuleCyclic(g)
     }
 
     g
@@ -205,6 +208,71 @@ object RuleDependencyGraphGenerator {
     val newEdges = graph.edges.clone().filterNot(e => redundantEdges.contains(e)).map(edge => edge.toOuter)
 
     new RuleDependencyGraph(newNodes, newEdges)
+
+  }
+
+  def pruneRuleCyclic(graph: RuleDependencyGraph): RuleDependencyGraph = {
+
+    var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+    // for each node n in G
+    graph.nodes.foreach(node => {
+      println("#" * 20)
+      println(s"NODE:${node.value.getName}")
+
+      val rule = node.value
+
+      val bodyTPs = rule.bodyTriplePatterns()
+      val headTPs = rule.headTriplePatterns()
+
+      // for now we assume only 1 TP in head
+      if(headTPs.size > 1) {
+        throw new RuntimeException("Rules with more than 1 triple pattern in head not supported yet!")
+      }
+      val head = headTPs.head
+
+      // transform to graph
+      val ruleGraph = RuleUtils.asGraph(rule)
+
+      val subjectNode = ruleGraph.get(head.getSubject)
+      val objectNode = ruleGraph.get(head.getObject)
+      val headEdge = subjectNode.innerEdgeTraverser.filter(e => e.target == objectNode && e.label == head.getPredicate).head
+
+      // check if there is a path in body from the same subject to the same object
+      val pathOpt = subjectNode.withSubgraph(edges = !_.equals(headEdge)) pathTo objectNode
+      println(pathOpt)
+
+      // check if there is some other triple pattern in body
+      if(pathOpt.isDefined) {
+        val path = pathOpt.get
+        val predicateOpt: Option[Node] = path.length match {
+          case 1 => {
+            val p1 = path.edges.head.label.asInstanceOf[Node]
+            val p2 = headEdge.label.asInstanceOf[Node]
+            val p1Node = ruleGraph.get(p1)
+            val p2Node = ruleGraph.get(p2)
+
+            val pEdge = ruleGraph.edges.filter(e => e.source == p1Node && e.target == p2Node).head
+            Some(pEdge.label.asInstanceOf[Node])
+          }
+          case 2 => Some(path.edges.filterNot(e => e.label == headEdge.label).head.label.asInstanceOf[Node])
+          case _ => None
+        }
+
+        if(predicateOpt.isDefined) {
+          val predicate = predicateOpt.get
+
+          // check if predicate TC will be materialized before in the RDG
+
+        }
+
+      }
+
+
+
+    })
+
+    graph
 
   }
 
