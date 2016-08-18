@@ -19,14 +19,13 @@ import org.gephi.preview.api.{Item, PreviewController, PreviewProperty}
 import org.gephi.preview.types.EdgeColor
 import org.gephi.project.api.ProjectController
 import org.jgrapht.DirectedGraph
-import org.jgrapht.experimental.isomorphism.AdaptiveIsomorphismInspectorFactory
+import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector
 import org.jgrapht.ext.{EdgeNameProvider, VertexNameProvider, _}
-import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge, DirectedMultigraph}
+import org.jgrapht.graph._
 import org.openide.util.Lookup
 import org.sansa.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
 
 import scala.collection.JavaConversions._
-import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.edge.LDiEdge
 
 /**
@@ -44,10 +43,10 @@ object GraphUtils {
     val c1 = new NodeEquivalenceComparator()
     val c2 = new EdgeEquivalenceComparator()
 
-    val isoDetector = AdaptiveIsomorphismInspectorFactory.createIsomorphismInspector(
+    val isoDetector = new VF2GraphIsomorphismInspector[Node, LabeledEdge[Node]](
       g1, g2, c1, c2)
 
-    isoDetector.isIsomorphic
+    isoDetector.isomorphismExists()
   }
 
   /**
@@ -227,7 +226,7 @@ object GraphUtils {
       */
     def export(filename: String) = {
 
-      val g: DirectedGraph[Node, LabeledEdge[Node]] = new DirectedMultigraph[Node, LabeledEdge[Node]](classOf[LabeledEdge[Node]])
+      val g: DirectedGraph[Node, LabeledEdge[Node]] = new DirectedPseudograph[Node, LabeledEdge[Node]](classOf[LabeledEdge[Node]])
 
       val edges = graph.edges.toList
 

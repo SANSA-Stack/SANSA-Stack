@@ -13,8 +13,10 @@ object DependencyGraphTest {
 
     val path = "/tmp"
 
+    val names = Seq("rdfp13a", "rdfp13b", "rdfp13c", "rdfs5", "rdfs7")
+
     // define the rules
-    val rules = RuleSets.RDFS_SIMPLE.filter(r => r.getName == "rdfs7" || r.getName == "rdfs9")
+    val rules = RuleSets.OWL_HORST.filter(r => names.contains(r.getName))
 
     // export graphs
     rules.foreach(rule => RuleUtils.asGraph(rule).export(s"${path}/rule-${rule.getName}.graphml"))

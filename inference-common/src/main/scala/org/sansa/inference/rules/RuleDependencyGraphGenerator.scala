@@ -8,7 +8,7 @@ import org.sansa.inference.utils.RuleUtils
 import org.sansa.inference.utils.RuleUtils._
 
 import scala.language.{existentials, implicitConversions}
-import scalax.collection.GraphTraversal.{Parameters, Successors}
+import scalax.collection.GraphTraversal.{Parameters, Predecessors, Successors}
 import scalax.collection.edge.Implicits._
 import scalax.collection.GraphPredef._
 import scalax.collection._
@@ -60,8 +60,9 @@ object RuleDependencyGraphGenerator {
 
     // 3. pruning
     if(pruned) {
-      g = prune(g)
+//      g = prune(g)
       g = pruneRuleCyclic(g)
+      g = prune1(g)
     }
 
     g
@@ -211,7 +212,7 @@ object RuleDependencyGraphGenerator {
 
   }
 
-  def pruneRuleCyclic(graph: RuleDependencyGraph): RuleDependencyGraph = {
+  def prune1(graph: RuleDependencyGraph): RuleDependencyGraph = {
 
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
@@ -220,59 +221,146 @@ object RuleDependencyGraphGenerator {
       println("#" * 20)
       println(s"NODE:${node.value.getName}")
 
+      // get all nodes that depend on a TC node for a predicate p and produce p
+
+      // get all successors
+      val successors = node.innerNodeTraverser.filterNot(_.equals(node))
+      println(s"SUCCESSORS:${successors.map(n => n.value.getName)}")
+
+      // check for nodes that do compute the TC
+      successors.foreach(n => {
+        println(s"successor:${n.value.getName}")
+        val rule = n.value
+        val edges = node.innerEdgeTraverser.filter(e => e.target == n && e.source != n)
+
+        edges.foreach(e => {
+          // the predicate that is produced from the successor
+          val predicate = e.label.asInstanceOf[TriplePattern].getPredicate
+          println(s"predicate:$predicate")
+
+          // is the successor a TC node for that predicate
+          val isTC = RuleUtils.isTransitiveClosure(rule, predicate)
+          println(isTC)
+
+          if(isTC) {
+            // remove edges that produce the same predicate
+            val predecessors = node.innerEdgeTraverser.filter(e => e.target == node)
+
+           predecessors
+              .filter(inEdge => inEdge.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
+              .foreach{
+                inEdge => {
+                println(s"remove edge$inEdge")
+                redundantEdges +:= inEdge
+              }
+            }
+          }
+        })
+
+      })
+
+    })
+
+    val newNodes = graph.nodes.map(node => node.value)
+    val newEdges = graph.edges.clone().filterNot(e => redundantEdges.contains(e)).map(edge => edge.toOuter)
+
+    new RuleDependencyGraph(newNodes, newEdges)
+
+  }
+
+  def pruneRuleCyclic(graph: RuleDependencyGraph): RuleDependencyGraph = {
+
+    var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+    // for each node n in G
+    graph.nodes.foreach(node => {
       val rule = node.value
 
-      val bodyTPs = rule.bodyTriplePatterns()
-      val headTPs = rule.headTriplePatterns()
+      // we only handle cyclic rules
+      if(node.innerEdgeTraverser.exists(e => e.source == node && e.target == node)) {
+        println("#" * 20)
+        println(s"NODE:${node.value.getName}")
+        println(s"Rule:${node.value}")
 
-      // for now we assume only 1 TP in head
-      if(headTPs.size > 1) {
-        throw new RuntimeException("Rules with more than 1 triple pattern in head not supported yet!")
-      }
-      val head = headTPs.head
+        val bodyTPs = rule.bodyTriplePatterns()
+        val headTPs = rule.headTriplePatterns()
 
-      // transform to graph
-      val ruleGraph = RuleUtils.asGraph(rule)
+        // for now we assume only 1 TP in head
+        if(headTPs.size > 1) {
+          throw new RuntimeException("Rules with more than 1 triple pattern in head not supported yet!")
+        }
+        val head = headTPs.head
 
-      val subjectNode = ruleGraph.get(head.getSubject)
-      val objectNode = ruleGraph.get(head.getObject)
-      val headEdge = subjectNode.innerEdgeTraverser.filter(e => e.target == objectNode && e.label == head.getPredicate).head
+        // transform to graph
+        val ruleGraph = RuleUtils.asGraph(rule)
 
-      // check if there is a path in body from the same subject to the same object
-      val pathOpt = subjectNode.withSubgraph(edges = !_.equals(headEdge)) pathTo objectNode
-      println(pathOpt)
+        val subjectNode = ruleGraph.get(head.getSubject)
+        val objectNode = ruleGraph.get(head.getObject)
+        val headEdge = subjectNode.innerEdgeTraverser.filter(e => e.target == objectNode && e.label == head.getPredicate).head
 
-      // check if there is some other triple pattern in body
-      if(pathOpt.isDefined) {
-        val path = pathOpt.get
-        val predicateOpt: Option[Node] = path.length match {
-          case 1 => {
-            val p1 = path.edges.head.label.asInstanceOf[Node]
-            val p2 = headEdge.label.asInstanceOf[Node]
-            val p1Node = ruleGraph.get(p1)
-            val p2Node = ruleGraph.get(p2)
+        // check if there is a path in body from the same subject to the same object
+        val pathOpt = subjectNode.withSubgraph(edges = !_.equals(headEdge)) pathTo objectNode
+        println(pathOpt)
 
-            val pEdge = ruleGraph.edges.filter(e => e.source == p1Node && e.target == p2Node).head
-            Some(pEdge.label.asInstanceOf[Node])
+        // check if there is some other triple pattern in body
+        if(pathOpt.isDefined) {
+          val path = pathOpt.get
+          val predicateOpt: Option[Node] = path.length match {
+            case 1 => {
+              val p1 = path.edges.head.label.asInstanceOf[Node]
+              val p2 = headEdge.label.asInstanceOf[Node]
+              val p1Node = ruleGraph.get(p1)
+              val p2Node = ruleGraph.get(p2)
+
+              val pEdge = ruleGraph.edges.filter(e => e.source == p1Node && e.target == p2Node).head
+              Some(pEdge.label.asInstanceOf[Node])
+            }
+            case 2 => {
+              val otherEdges = path.edges.filterNot(e => e.label == headEdge.label)
+
+              if(otherEdges.nonEmpty) {
+                Some(otherEdges.head.label.asInstanceOf[Node])
+              } else {
+                None
+              }
+            }
+            case _ => None
           }
-          case 2 => Some(path.edges.filterNot(e => e.label == headEdge.label).head.label.asInstanceOf[Node])
-          case _ => None
+
+          if(predicateOpt.isDefined) {
+            val predicate = predicateOpt.get
+            println(s"Predicate:$predicate")
+
+            // check if predicate TC will be materialized before in the RDG
+            val tcMaterialized = node.innerNodeTraverser.filter(n => {
+
+              n.value.headTriplePatterns().exists(tp => tp.getPredicate.matches(predicate)) &&
+                (n.innerEdgeTraverser.exists(e => e == LDiEdge(n, n)(predicate)) ||  n.findCycle.isDefined)
+            })
+
+            if(tcMaterialized.nonEmpty) {
+              println(s"$predicate already materialized in node(s) ${tcMaterialized.map(n => n.value.getName)}")
+              val edge = node.innerEdgeTraverser.filter(e =>
+                e.source == node &&
+                  e.target == node &&
+                  e.label.asInstanceOf[TriplePattern].equals(head)
+              ).head
+              //            val edge = (node ~+> node)(head)
+              redundantEdges +:= edge
+            }
+
+          }
+
         }
-
-        if(predicateOpt.isDefined) {
-          val predicate = predicateOpt.get
-
-          // check if predicate TC will be materialized before in the RDG
-
-        }
-
       }
-
 
 
     })
 
-    graph
+    val newNodes = graph.nodes.map(node => node.value)
+    val newEdges = graph.edges.clone().filterNot(e => redundantEdges.contains(e)).map(edge => edge.toOuter)
+
+    new RuleDependencyGraph(newNodes, newEdges)
 
   }
 

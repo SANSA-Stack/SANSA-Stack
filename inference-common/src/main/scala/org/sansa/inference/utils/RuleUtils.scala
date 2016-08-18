@@ -187,7 +187,7 @@ object RuleUtils {
     * @param rule the rule to check
     * @return whether it denotes the TC or not
     */
-  def isTransitiveClosure(rule: Rule) : Boolean = {
+  def isTransitiveClosure(rule: Rule, property: Node = null) : Boolean = {
     // TPs contained in body
     val bodyTriplePatterns = rule.bodyTriplePatterns()
 
@@ -201,19 +201,28 @@ object RuleUtils {
       // graph for head
       val headGraph = graphOfHead(rule)
 
-      // get source and target node from head (we currently assume that there is only one edge)
+     // head edge (we currently assume that there is only one edge)
       val edge = headGraph.edges.head
-      val source = edge.source
-      val target = edge.target
 
-      // get the path in body graph
-      val path = (bodyGraph get source) pathTo (bodyGraph get target)
+      if(property == null || edge.label == property) {
+        // get source and target node from head
+        val source = edge.source
+        val target = edge.target
 
-      // check if there is a path  ?s -> ?o2 in body such that there is at least one edge labeled with the same predicate
-      isTC = path match {
-        case Some(value) => value.edges.filter(_.label.equals(edge.label)).toSeq.nonEmpty
-        case None => false
+        // get the path in body graph
+        val s = (bodyGraph get source).withSubgraph(edges = e => property == null || e.label.equals(property))
+        val t = (bodyGraph get target)
+        val path = s pathTo t
+
+
+        // check if there is a path  ?s -> ?o2 in body such that there is at least one edge labeled with the same predicate
+        isTC = path match {
+          case Some(value) => value.edges.filter(_.label.equals(edge.label)).toSeq.nonEmpty
+          case None => false
+        }
       }
+
+
     }
 
     isTC

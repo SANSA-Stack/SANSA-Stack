@@ -1,17 +1,16 @@
 package org.sansa.inference.utils.graph
 
+import java.util.Comparator
+
 import org.apache.jena.graph.Node
-import org.jgrapht.Graph
-import org.jgrapht.experimental.equivalence.EquivalenceComparator
+import org.apache.jena.sparql.util.NodeComparator
 
 /**
   * Definition of node equivalence used for graph isomorphism detection.
   *
   * @author Lorenz Buehmann
   */
-class NodeEquivalenceComparator extends EquivalenceComparator[Node, Graph[Node, LabeledEdge[Node]]] {
-  override def equivalenceHashcode(node: Node, context: Graph[Node, LabeledEdge[Node]]): Int = node.hashCode()
-
-  override def equivalenceCompare(node1: Node, node2: Node,
-                                  context1: Graph[Node, LabeledEdge[Node]], context2: Graph[Node, LabeledEdge[Node]]): Boolean = node1.equals(node2)
+class NodeEquivalenceComparator extends Comparator[Node] {
+  val c = new NodeComparator()
+  override def compare(o1: Node, o2: Node): Int = c.compare(o1, o2)
 }
