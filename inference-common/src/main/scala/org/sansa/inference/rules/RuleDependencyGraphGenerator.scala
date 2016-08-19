@@ -4,8 +4,11 @@ import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.RDFS
-import org.sansa.inference.utils.RuleUtils
+import org.jgrapht.alg.CycleDetector
+import org.jgrapht.alg.cycle.TarjanSimpleCycles
+import org.sansa.inference.utils.{GraphUtils, RuleUtils}
 import org.sansa.inference.utils.RuleUtils._
+import org.sansa.inference.utils.graph.LabeledEdge
 
 import scala.language.{existentials, implicitConversions}
 import scalax.collection.GraphTraversal.{Parameters, Predecessors, Successors}
@@ -61,8 +64,9 @@ object RuleDependencyGraphGenerator {
     // 3. pruning
     if(pruned) {
 //      g = prune(g)
-      g = pruneRuleCyclic(g)
-      g = prune1(g)
+      g = removeEdgesWithPredicateAlreadyTC(g)
+      g = removeCyclesIfPredicateIsTC(g)
+//      g = prune1(g)
     }
 
     g
@@ -212,6 +216,104 @@ object RuleDependencyGraphGenerator {
 
   }
 
+  // get all nodes that depend on a TC node for a predicate p and another node for p
+  def removeEdgesWithPredicateAlreadyTC(graph: RuleDependencyGraph): RuleDependencyGraph = {
+
+    var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+    // for each node n in G
+    graph.nodes.foreach(node => {
+      println("#" * 20)
+      println(s"NODE:${node.value.getName}")
+
+      // check for nodes that do compute the TC
+      val outgoingEdges = node.outgoing.withFilter(e => e.target != node)
+
+      outgoingEdges.foreach(e => {
+        val targetNode = e.target
+        val rule = targetNode.value
+        val predicate = e.label.asInstanceOf[TriplePattern].getPredicate
+        val isTCNode = RuleUtils.isTransitiveClosure(rule, predicate)
+        println(s"Direct successor:${rule.getName}\t\tisTC = $isTCNode")
+
+        // if it depends on a TC node
+        if(isTCNode) {
+          // check for dependency on other nodes that produce the same predicate
+          val samePredicateEdges = outgoingEdges
+            .withFilter(e2 => e != e2)
+            .withFilter(e2 => e.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
+          println(s"Redundant edges:${samePredicateEdges.map(e => e.toOuter.target.value.getName)}")
+          redundantEdges ++:= samePredicateEdges
+
+        }
+
+      })
+
+
+    })
+
+    val newNodes = graph.nodes.map(node => node.value)
+    val newEdges = graph.edges.clone().filterNot(e => redundantEdges.contains(e)).map(edge => edge.toOuter)
+
+    new RuleDependencyGraph(newNodes, newEdges)
+
+  }
+
+  // for cycles x -p-> y -p-> z -s-> x with y being TC node for p, we can remove edge (z -s-> x)
+  def removeEdgesWithCycleOverTCNode(graph: RuleDependencyGraph): RuleDependencyGraph = {
+
+    var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+    // convert to JGraphT graph for algorithms not contained in Scala Graph API
+    val g = GraphUtils.asJGraphtRuleSetGraph(graph)
+
+    // for each node n in G
+    graph.nodes.foreach(node => {
+      println("#" * 20)
+      println(s"NODE:${node.value.getName}")
+
+      // get cycles of length 3
+      val cycleDetector = new TarjanSimpleCycles[Rule, LabeledEdge[Rule, TriplePattern]](g)
+      cycleDetector.findSimpleCycles()
+
+//      val cycleDetector = new CycleDetector[Rule, LabeledEdge[Rule, TriplePattern]](g)
+
+
+
+
+      // check for nodes that do compute the TC
+      val outgoingEdges = node.outgoing.withFilter(e => e.target != node)
+
+      outgoingEdges.foreach(e => {
+        val targetNode = e.target
+        val rule = targetNode.value
+        val predicate = e.label.asInstanceOf[TriplePattern].getPredicate
+        val isTCNode = RuleUtils.isTransitiveClosure(rule, predicate)
+        println(s"Direct successor:${rule.getName}\t\tisTC = $isTCNode")
+
+        // if it depends on a TC node
+        if(isTCNode) {
+          // check for dependency on other nodes that produce the same predicate
+          val samePredicateEdges = outgoingEdges
+            .withFilter(e2 => e != e2)
+            .withFilter(e2 => e.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
+          println(s"Redundant edges:${samePredicateEdges.map(e => e.toOuter.target.value.getName)}")
+          redundantEdges ++:= samePredicateEdges
+
+        }
+
+      })
+
+
+    })
+
+    val newNodes = graph.nodes.map(node => node.value)
+    val newEdges = graph.edges.clone().filterNot(e => redundantEdges.contains(e)).map(edge => edge.toOuter)
+
+    new RuleDependencyGraph(newNodes, newEdges)
+
+  }
+
   def prune1(graph: RuleDependencyGraph): RuleDependencyGraph = {
 
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
@@ -268,7 +370,7 @@ object RuleDependencyGraphGenerator {
 
   }
 
-  def pruneRuleCyclic(graph: RuleDependencyGraph): RuleDependencyGraph = {
+  def removeCyclesIfPredicateIsTC(graph: RuleDependencyGraph): RuleDependencyGraph = {
 
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 

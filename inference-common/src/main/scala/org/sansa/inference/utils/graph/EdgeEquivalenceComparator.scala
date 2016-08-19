@@ -10,7 +10,7 @@ import org.apache.jena.graph.Node
   *
   * @author Lorenz Buehmann
   */
-class EdgeEquivalenceComparator extends Comparator[LabeledEdge[Node]] {
+class EdgeEquivalenceComparator extends Comparator[LabeledEdge[Node, String]] {
 
 //  def equivalenceHashcode(edge: LabeledEdge[Node], context: org.jgrapht.Graph[Node, LabeledEdge[Node]]): Int = edge.hashCode()
 //
@@ -18,8 +18,8 @@ class EdgeEquivalenceComparator extends Comparator[LabeledEdge[Node]] {
 //                                  context1: org.jgrapht.Graph[Node, LabeledEdge[Node]], context2: org.jgrapht.Graph[Node, LabeledEdge[Node]]): Boolean =
 //    (edge1.label.startsWith("?") && edge2.label.startsWith("?")) || // both predicates are variables
 //     edge1.label.equals(edge2.label) // both URIs match
-  override def compare(e1: LabeledEdge[Node], e2:
-   LabeledEdge[Node]): Int =
+  override def compare(e1: LabeledEdge[Node, String], e2:
+   LabeledEdge[Node, String]): Int =
   if((e1.label.startsWith("?") && e2.label.startsWith("?")) || e1.label.equals(e2.label))
     0
   else {
