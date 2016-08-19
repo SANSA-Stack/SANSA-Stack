@@ -20,6 +20,7 @@ import edge._
 import edge.LBase._
 import edge.Implicits._
 import scalax.collection.immutable.DefaultGraphImpl
+import scala.collection.JavaConversions._
 
 /**
   * A generator for a so-called dependency graph based on a given set of rules.
@@ -63,9 +64,11 @@ object RuleDependencyGraphGenerator {
 
     // 3. pruning
     if(pruned) {
-//      g = prune(g)
+
       g = removeEdgesWithPredicateAlreadyTC(g)
       g = removeCyclesIfPredicateIsTC(g)
+      g = removeEdgesWithCycleOverTCNode(g)
+      g = prune(g)
 //      g = prune1(g)
     }
 
@@ -267,42 +270,36 @@ object RuleDependencyGraphGenerator {
     // convert to JGraphT graph for algorithms not contained in Scala Graph API
     val g = GraphUtils.asJGraphtRuleSetGraph(graph)
 
-    // for each node n in G
-    graph.nodes.foreach(node => {
-      println("#" * 20)
-      println(s"NODE:${node.value.getName}")
+    // get cycles of length 3
+    val cycleDetector = new TarjanSimpleCycles[Rule, LabeledEdge[Rule, TriplePattern]](g)
+    val cycles = cycleDetector.findSimpleCycles().filter(c => c.size() == 3)
 
-      // get cycles of length 3
-      val cycleDetector = new TarjanSimpleCycles[Rule, LabeledEdge[Rule, TriplePattern]](g)
-      cycleDetector.findSimpleCycles()
+    cycles.foreach(c => {
+      println(s"cycle:$c")
 
-//      val cycleDetector = new CycleDetector[Rule, LabeledEdge[Rule, TriplePattern]](g)
+      val pathNodes = c.map(n => graph get n)
 
+      // get nodes that are TC with same in and out edge
+      val anchorNodes = pathNodes.filter(n => {
+        // in and out edge with same predicate
+        val inPred = n.incoming.head.label.asInstanceOf[TriplePattern].getPredicate
+        val outPred = n.outgoing.head.label.asInstanceOf[TriplePattern].getPredicate
 
-
-
-      // check for nodes that do compute the TC
-      val outgoingEdges = node.outgoing.withFilter(e => e.target != node)
-
-      outgoingEdges.foreach(e => {
-        val targetNode = e.target
-        val rule = targetNode.value
-        val predicate = e.label.asInstanceOf[TriplePattern].getPredicate
-        val isTCNode = RuleUtils.isTransitiveClosure(rule, predicate)
-        println(s"Direct successor:${rule.getName}\t\tisTC = $isTCNode")
-
-        // if it depends on a TC node
-        if(isTCNode) {
-          // check for dependency on other nodes that produce the same predicate
-          val samePredicateEdges = outgoingEdges
-            .withFilter(e2 => e != e2)
-            .withFilter(e2 => e.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
-          println(s"Redundant edges:${samePredicateEdges.map(e => e.toOuter.target.value.getName)}")
-          redundantEdges ++:= samePredicateEdges
-
-        }
-
+        inPred.matches(outPred) && RuleUtils.isTransitiveClosure(n.value, inPred)
       })
+
+      if(anchorNodes.size == 1) {
+        val anchor = anchorNodes.head
+        // remove edge between two other nodes
+        val edge = pathNodes.indexOf(anchor) match {
+          case 0 => pathNodes(1).outgoing.filter(e => e.target == pathNodes(2)).head
+          case 1 => pathNodes(2).outgoing.filter(e => e.target == pathNodes(0)).head
+          case 2 => pathNodes(0).outgoing.filter(e => e.target == pathNodes(1)).head
+        }
+        println(s"Redundant edge:${edge}")
+        redundantEdges +:= edge
+
+      }
 
 
     })

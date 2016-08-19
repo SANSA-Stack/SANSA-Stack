@@ -106,7 +106,7 @@ object GraphUtils {
 
       val label = e.label.asInstanceOf[TriplePattern]
 
-      g.addEdge(s, t, new LabeledEdge[Rule, TriplePattern](s, t, label))
+      g.addEdge(s, t, LabeledEdge[Rule, TriplePattern](s, t, label))
 
     }
 
