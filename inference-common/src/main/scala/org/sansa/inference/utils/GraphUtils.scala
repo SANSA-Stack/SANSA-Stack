@@ -9,7 +9,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.shared.PrefixMapping
-import org.gephi.graph.api.GraphController
+import org.gephi.graph.api.{Column, GraphController}
 import org.gephi.io.exporter.api.ExportController
 import org.gephi.io.exporter.preview.PDFExporter
 import org.gephi.io.importer.api.{EdgeDirectionDefault, ImportController}
@@ -28,14 +28,24 @@ import org.sansa.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, 
 
 import scala.collection.JavaConversions._
 import scalax.collection.edge.LDiEdge
+import org.gephi.io.exporter.api.ExportController
+import org.gephi.io.exporter.preview.PDFExporter
+import org.gephi.io.exporter.spi.CharacterExporter
+import org.gephi.io.exporter.spi.Exporter
+import org.gephi.io.exporter.spi.GraphExporter
+import org.gephi.io.importer.api.Container
+import org.gephi.io.importer.api.EdgeDirectionDefault
+import org.gephi.io.importer.api.ImportController
+import org.gephi.io.processor.plugin.DefaultProcessor
+import org.gephi.project.api.ProjectController
+import org.gephi.project.api.Workspace
+import org.openide.util.Lookup;
 
 /**
   * @author Lorenz Buehmann
   *         created on 1/23/16
   */
 object GraphUtils {
-
-
 
   def areIsomorphic(graph1: scalax.collection.mutable.Graph[Node, LDiEdge], graph2: scalax.collection.mutable.Graph[Node, LDiEdge]): Boolean = {
     val g1 = asJGraphtRuleGraph(graph1)
@@ -113,6 +123,8 @@ object GraphUtils {
     g
   }
 
+
+
   implicit class ClassRuleDependencyGraphExporter(val graph: scalax.collection.mutable.Graph[Rule, LDiEdge]) {
     /**
       * Export the rule dependency graph to GraphML format.
@@ -156,6 +168,79 @@ object GraphUtils {
 
       exporter.export(fw, g)
     }
+
+        def exportAsPDF(filename: String) = {
+
+          // Gephi
+          // Init a project - and therefore a workspace
+          val pc = Lookup.getDefault().lookup(classOf[ProjectController])
+          pc.newProject()
+          val workspace = pc.getCurrentWorkspace()
+
+          // Get controllers and models
+          val importController = Lookup.getDefault().lookup(classOf[ImportController])
+
+          // export as GraphML
+          val tmpFilename = "/tmp/temp-graph.graphml"
+          export(tmpFilename)
+
+          // Import file
+          val file = new File(tmpFilename)
+          val container = importController.importFile(file)
+          container.getLoader().setEdgeDefault(EdgeDirectionDefault.DIRECTED)   //Force DIRECTED
+          container.getLoader().setAllowAutoNode(false)  //Don't create missing nodes
+
+          // Append imported data to GraphAPI
+          importController.process(container, new DefaultProcessor(), workspace)
+
+          //List node columns
+
+
+
+          //See if graph is well imported
+          val graphModel = Lookup.getDefault().lookup(classOf[GraphController]).getGraphModel
+          graphModel.getNodeTable().foreach(println)
+          val g = graphModel.getDirectedGraph()
+
+          //Run YifanHuLayout for 100 passes - The layout always takes the current visible view
+          val layout = new YifanHuLayout(null, new StepDisplacement(1f));
+          layout.setGraphModel(graphModel);
+          layout.resetPropertiesValues();
+          layout.setOptimalDistance(200f);
+
+          layout.initAlgo();
+          for (i <- 0 to 100 if layout.canAlgo()) {
+            layout.goAlgo();
+          }
+          layout.endAlgo();
+
+          val model = Lookup.getDefault().lookup(classOf[PreviewController]).getModel();
+          model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, true);
+          model.getProperties().putValue(PreviewProperty.SHOW_EDGE_LABELS, true);
+          model.getProperties().putValue(PreviewProperty.EDGE_CURVED, false);
+          model.getProperties().putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(java.awt.Color.GRAY));
+          model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, 0.1f);
+          model.getProperties().putValue(PreviewProperty.NODE_LABEL_FONT, model.getProperties().getFontValue(PreviewProperty.NODE_LABEL_FONT).deriveFont(8));
+                model.getProperties.putValue(Item.NODE_LABEL, "Vertex Label")
+
+          println("node labels:")
+          for (item <- model.getItems(Item.NODE_LABEL)) {
+            println(item)
+          }
+
+
+          //Export full graph
+          val ec = Lookup.getDefault().lookup(classOf[ExportController]);
+          //      ec.exportFile(new File("io_gexf.gexf"));
+
+          //PDF Exporter config and export to Byte array
+          val pdfExporter = ec.getExporter("pdf").asInstanceOf[PDFExporter];
+          pdfExporter.setPageSize(PageSize.A0);
+          pdfExporter.setWorkspace(workspace);
+          val baos = new ByteArrayOutputStream();
+          ec.exportStream(baos, pdfExporter);
+          new FileOutputStream(filename + ".pdf").write(baos.toByteArray())
+        }
   }
 
   implicit class ClassRuleTriplePatternGraphExporter(val graph: scalax.collection.mutable.Graph[Node, LDiEdge]) {

@@ -13,10 +13,12 @@ object DependencyGraphTest {
 
     val path = "/tmp"
 
-    val names = Seq("rdfp13a", "rdfp13b", "rdfp13c", "rdfs5", "rdfs7")
+//    val names = Seq("rdfp13a", "rdfp13b", "rdfp13c", "rdfs5", "rdfs7") // property rules
+    val names = Seq("rdfp13a", "rdfp13b", "rdfp13c", "rdfs5", "rdfs7", "rdfp3", "rdfp4") // property rules + some instance rules
+//    val names = Seq("rdfs5", "rdfs7", "rdfp3", "rdfp4") // property TC rule + some instance rules
 
     // define the rules
-    val rules = RuleSets.OWL_HORST//.filter(r => names.contains(r.getName))
+    val rules = RuleSets.OWL_HORST.filter(r => names.contains(r.getName))
 
     // export graphs
     rules.foreach(rule => RuleUtils.asGraph(rule).export(s"${path}/rule-${rule.getName}.graphml"))
@@ -27,6 +29,7 @@ object DependencyGraphTest {
 
     dependencyGraph = RuleDependencyGraphGenerator.generate(rules, pruned = true)
     dependencyGraph.export(s"${path}/rdg-rdfs-simple-pruned.graphml")
+    dependencyGraph.exportAsPDF(s"${path}/rdg-rdfs-simple-pruned.pdf")
 
     // generate the high-level dependency graph
     val highLevelDependencyGraph = HighLevelRuleDependencyGraphGenerator.generate(dependencyGraph)
