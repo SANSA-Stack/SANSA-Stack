@@ -68,7 +68,9 @@ object RuleDependencyGraphGenerator {
       g = removeEdgesWithPredicateAlreadyTC(g)
       g = removeCyclesIfPredicateIsTC(g)
       g = removeEdgesWithCycleOverTCNode(g)
-      g = prune(g)
+//      g = prune(g)
+
+
 //      g = prune1(g)
     }
 
@@ -221,7 +223,7 @@ object RuleDependencyGraphGenerator {
 
   // get all nodes that depend on a TC node for a predicate p and another node for p
   def removeEdgesWithPredicateAlreadyTC(graph: RuleDependencyGraph): RuleDependencyGraph = {
-
+    println("removeEdgesWithPredicateAlreadyTC")
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
@@ -244,8 +246,8 @@ object RuleDependencyGraphGenerator {
           // check for dependency on other nodes that produce the same predicate
           val samePredicateEdges = outgoingEdges
             .withFilter(e2 => e != e2)
-            .withFilter(e2 => e.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
-          println(s"Redundant edges:${samePredicateEdges.map(e => e.toOuter.target.value.getName)}")
+            .withFilter(e2 => e2.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
+          println(s"Redundant edges:${samePredicateEdges.map(e => e.toOuter.source.value.getName + "->" + e.toOuter.target.value.getName)}")
           redundantEdges ++:= samePredicateEdges
 
         }
@@ -264,6 +266,7 @@ object RuleDependencyGraphGenerator {
 
   // for cycles x -p-> y -p-> z -s-> x with y being TC node for p, we can remove edge (z -s-> x)
   def removeEdgesWithCycleOverTCNode(graph: RuleDependencyGraph): RuleDependencyGraph = {
+    println("removeEdgesWithCycleOverTCNode")
 
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
