@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>inference-parent</artifactId>
-    <groupId>org.sansa.inference</groupId>
+    <groupId>net.sansa_stack.inference</groupId>
     <version>0.1-SNAPSHOT</version>
   </parent>
   <artifactId>inference-tests</artifactId>
@@ -13,7 +13,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.sansa.inference</groupId>
+      <groupId>net.sansa_stack.inference</groupId>
       <artifactId>inference-common</artifactId>
       <version>${parent.version}</version>
     </dependency>

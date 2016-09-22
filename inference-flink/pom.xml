@@ -21,7 +21,7 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.sansa.inference</groupId>
+		<groupId>net.sansa_stack.inference</groupId>
 		<artifactId>inference-parent</artifactId>
 		<version>0.1-SNAPSHOT</version>
 	</parent>
@@ -38,12 +38,12 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>org.sansa.inference</groupId>
+			<groupId>net.sansa_stack.inference</groupId>
 			<artifactId>inference-common</artifactId>
 			<version>${parent.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.sansa.inference</groupId>
+			<groupId>net.sansa_stack.inference</groupId>
 			<artifactId>inference-tests</artifactId>
 			<version>${parent.version}</version>
 			<type>test-jar</type>

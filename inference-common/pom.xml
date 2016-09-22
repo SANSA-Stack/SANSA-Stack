@@ -3,10 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>inference-parent</artifactId>
-    <groupId>org.sansa.inference</groupId>
+    <groupId>net.sansa_stack.inference</groupId>
     <version>0.1-SNAPSHOT</version>
   </parent>
-  <groupId>org.sansa.inference</groupId>
   <artifactId>inference-common</artifactId>
   <version>0.1-SNAPSHOT</version>
   <name>Inference API - Common</name>
