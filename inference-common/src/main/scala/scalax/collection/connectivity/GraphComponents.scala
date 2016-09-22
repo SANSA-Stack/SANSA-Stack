@@ -1,6 +1,6 @@
 package scalax.collection.connectivity
 
-import org.sansa.inference.utils.Logging
+import net.sansa_stack.inference.utils.Logging
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.{Set, mutable}
