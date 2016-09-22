@@ -1,6 +1,6 @@
 package spark.utils
 
-import org.dissect.rdf.spark.utils.NTriplesParser
+import net.sansa.rdf.spark.utils.NTriplesParser
 import org.apache.jena.graph.Node_URI
 import org.apache.jena.graph.Node_Literal
 import org.apache.jena.graph.Node_Blank

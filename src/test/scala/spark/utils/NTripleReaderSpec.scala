@@ -1,6 +1,6 @@
 package spark.utils
 
-import org.dissect.rdf.spark.utils.NTripleReader
+import net.sansa.rdf.spark.utils.NTripleReader
 import java.io.File
 
 import org.scalatest._

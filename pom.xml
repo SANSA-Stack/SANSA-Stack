@@ -1,7 +1,7 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.dissect.rdf.spark</groupId>
-  <artifactId>dissect-rdf-spark</artifactId>
+  <groupId>net.sansa.rdf.spark</groupId>
+  <artifactId>sansa-rdf-spark</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>${project.artifactId}</name>
   <description>RDF Spark Library.</description>
