@@ -1,7 +1,7 @@
 package spark
 
 import collection.mutable.Stack
-import net.sansa.rdf.spark.App
+import net.sansa_stack.rdf.spark.App
 import org.scalatest._
 
 class AppSpec extends UnitSpec {
