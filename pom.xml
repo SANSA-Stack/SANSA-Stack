@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.sansa_stack.owl</groupId>
+    <artifactId>owl-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>OWL - Parent</name>
+
+    <organization>
+        <name>Smart Data Analytics (SDA) research group</name>
+        <url>http://sda.tech</url>
+    </organization>
+
+    <url>http://sansa-stack.net/</url>
+
+    <licenses>
+        <license>
+            <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
+            <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <modules>
+        <module>owl-flink</module>
+        <module>owl-spark</module>
+        <module>owl-flink</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <scala.version>2.11.8</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <spark.version>2.0.0</spark.version>
+        <flink.version>1.1.0</flink.version>
+    </properties>
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+
+            <!-- Apache Spark -->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-core_${scala.binary.version}</artifactId>
+                <version>${spark.version}</version>
+            </dependency>
+
+            <!-- Test -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.8.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.binary.version}</artifactId>
+                <version>2.2.6</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.holdenkarau</groupId>
+                <artifactId>spark-testing-base_2.11</artifactId>
+                <version>1.6.1_0.3.3</version>
+            </dependency>
+
+            <!-- OWL API-->
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-api</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-apibinding</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-impl</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.owlapi</groupId>
+                <artifactId>owlapi-parsers</artifactId>
+                <version>${owlapi.version}</version>
+            </dependency>
+
+            <!-- MLlib -->
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-mllib_2.10</artifactId>
+                <version>1.6.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.2.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>compile</goal>
+                                <goal>testCompile</goal>
+                            </goals>
+                            <configuration>
+                                <args>
+                                    <arg>-dependencyfile</arg>
+                                    <arg>${project.build.directory}/.scala_dependencies</arg>
+                                </args>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <scalaVersion>${scala.version}</scalaVersion>
+                        <recompileMode>incremental</recompileMode>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.5.1</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.scalatest</groupId>
+                    <artifactId>scalatest-maven-plugin</artifactId>
+                    <version>1.0</version>
+                    <executions>
+                        <execution>
+                            <id>test</id>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
