@@ -1,4 +1,4 @@
-package net.sansa_stack.owl.rdd
+package net.sansa_stack.owl.spark.rdd
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext}

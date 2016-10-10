@@ -1,4 +1,4 @@
-package net.sansa_stack.owl.rdd
+package net.sansa_stack.owl.spark.rdd
 
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.scalatest.FunSuite

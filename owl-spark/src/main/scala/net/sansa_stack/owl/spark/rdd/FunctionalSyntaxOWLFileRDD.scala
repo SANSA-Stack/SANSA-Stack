@@ -1,4 +1,4 @@
-package net.sansa_stack.owl.rdd
+package net.sansa_stack.owl.spark.rdd
 
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 
@@ -10,7 +10,10 @@ import scala.io.{BufferedSource, Source}
   * Class handling OWL files in the functional syntax format.
   *
   * Will be the first step in the RDD processing chain
-  * FunctionalSyntaxOWLFileRDD >> FunctionalSyntaxExpressionsRDD >> OWLAxiomsRDD
+  *
+  *   FunctionalSyntaxOWLFileRDD >> FunctionalSyntaxOWLAxiomsRDD
+  *
+  * with FunctionalSyntaxOWLAxiomsRDD being an OWLAxiomsRDD
   */
 class FunctionalSyntaxOWLFileRDD (
                                    sc: SparkContext,
