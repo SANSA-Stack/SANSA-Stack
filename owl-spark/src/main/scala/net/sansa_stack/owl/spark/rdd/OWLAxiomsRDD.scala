@@ -31,7 +31,7 @@ trait OWLAxiomsRDDTrait extends RDD[OWLAxiom] {
     })
   }
 
-  override def getPartitions: Array[Partition] = {
+  override protected def getPartitions: Array[Partition] = {
     val numPartitions = parent.numPartitions
     val partitions = new Array[Partition](numPartitions)
 
