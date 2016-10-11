@@ -52,8 +52,7 @@ class FunctionalSyntaxOWLFileRDD (
       /**
         * the axiom counter to only return axioms with
         * axiomNumber % numPartitions == split.index */
-      // FIXME: rename
-      var currStep = 0
+      var axiomNumber = 0
       /**
         * Map containing all read prefixes; required to expand namespace
         * shortcuts in the returned (functional syntax) axiom string */
@@ -155,11 +154,11 @@ class FunctionalSyntaxOWLFileRDD (
           }
 
           // d) check whether expression belongs to this partition
-          if ((currStep % numPartitions == split.index && !skipLine) || !inputFileIt.hasNext) {
+          if ((axiomNumber % numPartitions == split.index && !skipLine) || !inputFileIt.hasNext) {
             notDone = false
           }
 
-          if (!skipLine) currStep += 1
+          if (!skipLine) axiomNumber += 1
           else expression = null
         }
 
