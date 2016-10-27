@@ -9,7 +9,7 @@ import org.semanticweb.owlapi.model.OWLAxiom
 
 class FunctionalSyntaxOWLAxiomsRDD(
                                     sc: SparkContext,
-                                    parent: OWLFileRDD) extends OWLAxiomsRDD(sc, parent) {
+                                    parent: OWLExpressionsRDD) extends OWLAxiomsRDD(sc, parent) {
 
   private def parser = new OWLFunctionalSyntaxOWLParserFactory().createParser()
   private def man = OWLManager.createOWLOntologyManager()

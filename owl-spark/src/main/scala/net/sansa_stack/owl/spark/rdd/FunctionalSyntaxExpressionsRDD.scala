@@ -15,11 +15,11 @@ import scala.io.{BufferedSource, Source}
   *
   * with FunctionalSyntaxOWLAxiomsRDD being an OWLAxiomsRDD
   */
-class FunctionalSyntaxOWLFileRDD (
+class FunctionalSyntaxExpressionsRDD(
                                    sc: SparkContext,
                                    override val filePath: String,
                                    override val numPartitions: Int
-                                 ) extends OWLFileRDD(sc, filePath, numPartitions) {
+                                 ) extends OWLExpressionsRDD(sc, filePath, numPartitions) {
 
   /** Iterator to read the input (functional syntax) file line by line */
   var inputFileIt: BufferedSource = null

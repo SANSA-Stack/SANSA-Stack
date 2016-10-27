@@ -11,15 +11,15 @@ class OWLFilePartition(override val index: Int) extends Partition
   * Abstract class to be implemented by all classes reading in OWL axioms from
   * any kind of serialization format
   */
-abstract class OWLFileRDD(
+abstract class OWLExpressionsRDD(
                            sc: SparkContext,
                            override val filePath: String,
                            override val numPartitions: Int
-                         ) extends RDD[String](sc, Nil) with OWLFileRDDTrait
+                         ) extends RDD[String](sc, Nil) with OWLExpressionsRDDTrait
 
 
 /** Trait defining the main interface for classes handling OWL files */
-trait OWLFileRDDTrait extends RDD[String] {
+trait OWLExpressionsRDDTrait extends RDD[String] {
   def filePath: String
   def numPartitions: Int
   var ontURI: String = null

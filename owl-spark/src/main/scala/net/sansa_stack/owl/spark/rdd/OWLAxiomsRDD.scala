@@ -11,12 +11,12 @@ class OWLAxiomsPartition(override val index: Int) extends Partition
 
 abstract class OWLAxiomsRDD(
                              sc: SparkContext,
-                             override val parent: OWLFileRDD
+                             override val parent: OWLExpressionsRDD
                            ) extends RDD[OWLAxiom](sc, Nil) with OWLAxiomsRDDTrait
 
 
 trait OWLAxiomsRDDTrait extends RDD[OWLAxiom] {
-  def parent: OWLFileRDD
+  def parent: OWLExpressionsRDD
   def makeAxiom(expression: String): OWLAxiom
 
   override def compute(split: Partition, context: TaskContext): Iterator[OWLAxiom] = {
