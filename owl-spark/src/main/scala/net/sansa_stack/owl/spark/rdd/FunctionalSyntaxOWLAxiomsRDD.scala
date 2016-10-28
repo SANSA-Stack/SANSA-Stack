@@ -63,7 +63,7 @@ class FunctionalSyntaxOWLAxiomsRDD(
           null
         }
       }
-    })
+    }).filter(axiom => axiom != null)
   }
 
   override protected def getPartitions: Array[Partition] = {
