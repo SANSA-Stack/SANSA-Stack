@@ -1,7 +1,8 @@
 package net.sansa_stack.owl.spark.rdd
 
-import org.apache.spark.{Partition, SparkContext, TaskContext}
+import net.sansa_stack.owl.spark.ConvertibleToDataset
 import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partition, SparkContext, TaskContext}
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model.OWLAxiom
 
@@ -13,6 +14,7 @@ abstract class OWLAxiomsRDD(
                              sc: SparkContext,
                              override val parent: OWLExpressionsRDD
                            ) extends RDD[OWLAxiom](sc, Nil) with OWLAxiomsRDDTrait
+                              with ConvertibleToDataset[OWLAxiom]
 
 
 trait OWLAxiomsRDDTrait extends RDD[OWLAxiom] {
