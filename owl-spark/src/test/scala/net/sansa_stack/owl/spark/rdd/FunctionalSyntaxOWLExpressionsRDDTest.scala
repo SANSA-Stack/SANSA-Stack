@@ -5,11 +5,11 @@ import org.scalatest.FunSuite
 
 
 class FunctionalSyntaxOWLExpressionsRDDTest extends FunSuite with SharedSparkContext {
-  var _rdd: FunctionalSyntaxExpressionsRDD = null
+  var _rdd: FunctionalSyntaxOWLExpressionsRDD = null
 
   def rdd = {
     if (_rdd == null) {
-      _rdd = new FunctionalSyntaxExpressionsRDD(
+      _rdd = new FunctionalSyntaxOWLExpressionsRDD(
         sc, "src/test/resources/ont_functional.owl", sc.defaultMinPartitions)
       _rdd.cache()
     }
