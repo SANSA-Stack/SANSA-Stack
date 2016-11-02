@@ -24,6 +24,7 @@
     <modules>
         <module>owl-flink</module>
         <module>owl-spark</module>
+        <module>owl-common</module>
     </modules>
 
     <properties>
@@ -105,6 +106,13 @@
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-mllib_2.10</artifactId>
                 <version>1.6.1</version>
+            </dependency>
+
+            <!-- project modules -->
+            <dependency>
+                <groupId>net.sansa_stack.owl</groupId>
+                <artifactId>owl-common</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
