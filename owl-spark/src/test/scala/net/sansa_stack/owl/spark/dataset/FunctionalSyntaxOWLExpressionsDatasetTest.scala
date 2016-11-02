@@ -9,9 +9,10 @@ class FunctionalSyntaxOWLExpressionsDatasetTest extends FunSuite with SharedSpar
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master).getOrCreate()
   var _dataset: Dataset[String] = null
   def dataset: Dataset[String] = {
-    if (_dataset == null)
+    if (_dataset == null) {
       _dataset = FunctionalSyntaxOWLExpressionsDataset.read(
         spark, "src/test/resources/ont_functional.owl")
+    }
     _dataset
   }
 
