@@ -10,9 +10,7 @@
         <version>1.1</version>
     </parent>
 
-    <groupId>org.s2rdf</groupId>
     <artifactId>s2rdf-query-translator</artifactId>
-    <version>1.1</version>
 
     <dependencies>
         <!-- Apache Spark Core -->
@@ -52,5 +50,5 @@
         </plugins>
     </build>
 
-    
+
 </project>

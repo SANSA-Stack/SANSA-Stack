@@ -10,9 +10,7 @@
         <version>1.1</version>
     </parent>
 
-    <groupId>org.s2rdf</groupId>
     <artifactId>s2rdf-example</artifactId>
-    <version>1.1</version>
 
     <dependencies>
         <dependency>
@@ -29,5 +27,5 @@
         </dependency>
     </dependencies>
 
-    
+
 </project>
