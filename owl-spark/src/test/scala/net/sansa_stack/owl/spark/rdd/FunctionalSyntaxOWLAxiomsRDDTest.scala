@@ -12,7 +12,7 @@ class FunctionalSyntaxOWLAxiomsRDDTest extends FunSuite with SharedSparkContext 
   def rdd = {
     if (_rdd == null) {
       _rdd = new FunctionalSyntaxOWLAxiomsRDD(sc,
-        new FunctionalSyntaxExpressionsRDD(
+        new FunctionalSyntaxOWLExpressionsRDD(
           sc, "src/test/resources/ont_functional.owl", sc.defaultMinPartitions))
       _rdd.cache()
     }
