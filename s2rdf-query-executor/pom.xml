@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.s2rdf</groupId>
-    <artifactId>query-executor</artifactId>
+    <artifactId>s2rdf-query-executor</artifactId>
     <version>1.1</version>
 
     <dependencies>

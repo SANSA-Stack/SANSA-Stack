@@ -30,19 +30,19 @@
         <dependencies>
             <dependency>
                 <groupId>org.s2rdf</groupId>
-                <artifactId>dataset-creator</artifactId>
+                <artifactId>s2rdf-dataset-creator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.s2rdf</groupId>
-                <artifactId>query-translator</artifactId>
+                <artifactId>s2rdf-query-translator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.s2rdf</groupId>
-                <artifactId>query-executor</artifactId>
+                <artifactId>s2rdf-query-executor</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
