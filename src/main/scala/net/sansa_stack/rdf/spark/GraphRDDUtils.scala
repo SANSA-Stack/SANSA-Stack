@@ -11,6 +11,10 @@ object GraphRDDUtils extends Serializable {
     map
   }
 
+//  def equalsPredicate(a : Triple, b : Node) : Boolean = {
+//    a.getPredicate == b
+//  }
+
   implicit def partitionGraphByPredicatesArray(graphRdd : RDD[Triple]) : Array[(Node, RDD[(Node, Node)])] = {
     val predicates = graphRdd.map(_.getPredicate).distinct.map( _.getURI).collect
 
@@ -22,5 +26,16 @@ object GraphRDDUtils extends Serializable {
             .persist())
           }
     array
+//
+//    val predicates = graphRdd.map(_.getPredicate).distinct.collect
+//
+//    val array = predicates map { p => (
+//          p,
+//          graphRdd
+//            .filter(equalsPredicate(_, p))
+//            .map(t => t.getSubject -> t.getObject)
+//            .persist())
+//          }
+//    array
   }
 }

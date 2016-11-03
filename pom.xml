@@ -15,7 +15,7 @@
 		<scala.version>2.11.7</scala.version>
 		<scala.compat.version>2.11</scala.compat.version>
 		<spark.version>2.0.1</spark.version>
-		<jena.version>3.0.1</jena.version>
+		<jena.version>3.1.0</jena.version>
 	</properties>
 
     <scm>
@@ -120,11 +120,13 @@
 	</repositories>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_${scala.compat.version}</artifactId>
 			<version>${spark.version}</version>
 		</dependency>
+
 		<!--<dependency> -->
 		<!--<groupId>org.apache.spark</groupId> -->
 		<!--<artifactId>spark-tags_${scala.compat.version}</artifactId> -->
@@ -141,6 +143,23 @@
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-graphx_${scala.compat.version}</artifactId>
 			<version>${spark.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.aksw.sparqlify</groupId>
+			<artifactId>sparqlify-core</artifactId>
+			<version>0.8.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.aksw.sparqlify</groupId>
+					<artifactId>sparqlify-tests</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-jdbc</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Test -->
@@ -207,6 +226,37 @@
 				</configuration>
 			</plugin>
 
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.jboss.tattletale</groupId> -->
+<!-- 				<artifactId>tattletale-maven</artifactId> -->
+<!-- 				<version>1.2.0.Beta2</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						needs to run after WAR package has been built -->
+<!-- 						<phase>verify</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>report</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 				<configuration> -->
+<!-- 					<source>${project.build.directory}/${project.build.finalName}/WEB-INF/lib</source> -->
+<!-- 					<destination>${project.reporting.outputDirectory}/tattletale</destination> -->
+<!-- 					<reports> -->
+<!-- 						<report>jar</report> -->
+<!-- 						<report>multiplejars</report> -->
+<!-- 					</reports> -->
+<!-- 					<failOnWarn>true</failOnWarn> -->
+<!-- 					excluding some jars, if jar name contains any of these strings
+ 						it won't be analyzed -->
+<!-- 					<excludes> -->
+<!-- 						<exclude>commons-beanutils-core-</exclude> -->
+<!-- 						<exclude>postgresql-</exclude> -->
+<!-- 						<exclude>asm-</exclude> -->
+<!-- 					</excludes> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+
 			<!-- Make this jar executable -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -231,48 +281,51 @@
 <!-- 			</plugin> -->
 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.3</version>
-				<executions>
-					<!-- Run shade goal on package phase -->
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<!-- add Main-Class to manifest file -->
-								<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
-								<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
-								<!-- </transformer> -->
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
                 <version>1.0-m5.1</version>
 			</plugin>
 		</plugins>
 		<pluginManagement>
+
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>2.4.3</version>
+					<executions>
+						<!-- Run shade goal on package phase -->
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>shade</goal>
+							</goals>
+							<configuration>
+								<shadedArtifactAttached>true</shadedArtifactAttached>
+								<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+								<filters>
+									<filter>
+										<artifact>*:*</artifact>
+										<excludes>
+											<exclude>META-INF/*.SF</exclude>
+											<exclude>META-INF/*.DSA</exclude>
+											<exclude>META-INF/*.RSA</exclude>
+										</excludes>
+									</filter>
+								</filters>
+								<transformers>
+									<transformer
+										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+									<!-- add Main-Class to manifest file -->
+									<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+									<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
+									<!-- </transformer> -->
+								</transformers>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>

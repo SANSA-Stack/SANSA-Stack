@@ -1,16 +1,34 @@
 package net.sansa_stack.rdf.spark
 
+import java.util.Arrays
+import java.util.HashMap
+
 import scala.collection.JavaConversions._
 
+import org.aksw.jena_sparql_api.utils.Vars
+import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
+import org.aksw.sparqlify.config.syntax.ViewDefinition
+import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
+import org.aksw.sparqlify.core.TypeToken
+import org.aksw.sparqlify.core.sql.schema.SchemaImpl
 import org.apache.commons.io.IOUtils
-import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.graph.Node
+import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.sparql.core.Quad
+import org.apache.jena.sparql.core.QuadPattern
+import org.apache.jena.sparql.expr.E_Equals
+import org.apache.jena.sparql.expr.ExprList
+import org.apache.jena.sparql.expr.ExprVar
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
+import java.util.ArrayList
+import org.apache.jena.sparql.expr.Expr
+
 //import net.sansa_stack.rdf.spark.GraphRDDUtils
 //import org.dissect.rdf.spark.io.JenaKryoRegistrator
 
@@ -42,9 +60,39 @@ object MainPartitioner {
 
 
     //val map = graphRdd.partitionGraphByPredicates
-    val map = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
+    val predicateRdds = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
 
-    map.foreach(x => println(x._1, x._2.count))
+
+    val views = predicateRdds.map { pr =>
+      val p = pr._1
+      println("Processing: " + p)
+      val tableName = p.getURI
+
+      val quad = new Quad(Quad.defaultGraphIRI, Vars.s, p, Vars.o)
+      val quadPattern = new QuadPattern()
+      quadPattern.add(quad)
+
+      val es = new E_Equals(new ExprVar(Vars.s), new ExprVar(Vars.s))
+      val eo = new E_Equals(new ExprVar(Vars.o), new ExprVar(Vars.o))
+      val el = new ArrayList[Expr]//new ExprList()
+      el.add(es)
+      el.add(eo)
+
+      val typeMap = new HashMap[String, TypeToken]()
+      typeMap.put("s", TypeToken.alloc("Node"));
+      typeMap.put("o", TypeToken.alloc("Node"));
+      val schema = new SchemaImpl(Arrays.asList("s", "o"), typeMap)
+      val sqlOp = new SqlOpTable(schema, tableName)
+      //SqlOp
+
+      val vtd = new ViewTemplateDefinition(quadPattern, el)
+
+      val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
+
+      println(vd)
+    }
+
+    predicateRdds.foreach(x => println(x._1, x._2.count))
 
 
 

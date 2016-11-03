@@ -17,6 +17,7 @@ buildNumber.properties
 .cache-main
 .cache-tests
 .classpath
+deptree.txt
 # IntelliJ config
 .idea
 /bin
