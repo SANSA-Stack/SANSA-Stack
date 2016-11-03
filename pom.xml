@@ -229,31 +229,42 @@
 <!-- 					</archive> -->
 <!-- 				</configuration> -->
 <!-- 			</plugin> -->
+
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
-				<configuration>
-                    <attach>false</attach>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-<!-- 					<archive> -->
-<!-- 						<manifest> -->
-<!-- 							<mainClass>${mainclass}</mainClass> -->
-<!-- 						</manifest> -->
-<!-- 					</archive> -->
-				</configuration>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.3</version>
 				<executions>
+					<!-- Run shade goal on package phase -->
 					<execution>
-						<id>make-my-jar-with-dependencies</id>
 						<phase>package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<!-- add Main-Class to manifest file -->
+								<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+								<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
+								<!-- </transformer> -->
+							</transformers>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
                 <artifactId>jgitflow-maven-plugin</artifactId>
