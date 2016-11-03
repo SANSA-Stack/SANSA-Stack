@@ -63,8 +63,15 @@ object MainPartitioner {
     val predicateRdds = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
 
 
-    val views = predicateRdds.map { pr =>
-      val p = pr._1
+    val views = predicateRdds.map { case (p, rdd) =>
+
+      //rdd.
+      import sqlContext.implicits._
+
+      val ds = rdd.toDS()
+
+      print("Counting the dataset: " + ds.count())
+
       println("Processing: " + p)
       val tableName = p.getURI
 
