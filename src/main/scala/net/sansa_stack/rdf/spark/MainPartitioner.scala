@@ -11,27 +11,15 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
+//import net.sansa_stack.rdf.spark.GraphRDDUtils
 //import org.dissect.rdf.spark.io.JenaKryoRegistrator
 
 object MainPartitioner {
 
-  def partitionGraphByPredicates(graphRdd : RDD[Triple]) : Map[String, RDD[(Node, Node)]]= {
-    val predicates = graphRdd.map(_.getPredicate).distinct().collect()
-
-    val map = Map(predicates map { p => (
-          p.getURI,
-          graphRdd
-            .filter(_.getPredicate.equals(p))
-            .map(t => t.getSubject -> t.getObject)
-            .persist())
-          } : _*)
-    map
-  }
-
   def main(args: Array[String]): Unit = {
     val sparkContext = {
       val conf = new SparkConf().setAppName("BDE-readRDF").setMaster("local[1]")
-        .set("spark.kryo.registrationRequired", "true") // use this for debugging and keeping track of which objects are being serialized.
+        //.set("spark.kryo.registrationRequired", "true") // use this for debugging and keeping track of which objects are being serialized.
         .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
 
@@ -53,9 +41,8 @@ object MainPartitioner {
     val graphRdd = sparkContext.parallelize(it)
 
 
-    // graphRdd.mapPartitionsWithIndex(f, preservesPartitioning)
-
-    val map = partitionGraphByPredicates(graphRdd)
+    //val map = graphRdd.partitionGraphByPredicates
+    val map = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
 
     map.foreach(x => println(x._1, x._2.count))
 

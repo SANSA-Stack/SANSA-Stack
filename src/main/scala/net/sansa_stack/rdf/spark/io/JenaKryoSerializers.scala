@@ -1,14 +1,33 @@
 package net.sansa_stack.rdf.spark.io
 
-import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
-import com.esotericsoftware.kryo.{Kryo, Serializer}
-import com.esotericsoftware.kryo.io.{Input, Output}
+import org.apache.jena.graph.{ Node => JenaNode, Triple => JenaTriple, _ }
+import org.apache.jena.riot.system.RiotLib
 import org.apache.jena.sparql.util.FmtUtils
+
+import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.Serializer
+import com.esotericsoftware.kryo.io.Input
+import com.esotericsoftware.kryo.io.Output
 
 /**
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 object JenaKryoSerializers {
+
+
+  /**
+    * Kryo Serializer for Node
+    */
+  class NodeSerializer extends Serializer[JenaNode]
+  {
+    override def write(kryo: Kryo, output: Output, obj: JenaNode) {
+        output.writeString(FmtUtils.stringForNode(obj))
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
+        RiotLib.parse(input.readString())
+    }
+  }
 
   /**
     * Kryo Serializer for Array[Node]
