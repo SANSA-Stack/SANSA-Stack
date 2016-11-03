@@ -15,7 +15,7 @@
         <encoding>UTF-8</encoding>
         <scala.version>2.11.7</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.0.0-preview</spark.version>
+        <spark.version>2.0.1</spark.version>
         <jena.version>3.1.0</jena.version>
     </properties>
 
@@ -24,6 +24,7 @@
         <module>s2rdf-query-translator</module>
         <module>s2rdf-dataset-creator</module>
         <module>s2rdf-example</module>
+        <module>spark-rdf-partitioners</module>
     </modules>
 
     <dependencyManagement>
@@ -145,5 +146,5 @@
         </pluginManagement>
     </build>
 
-    
+
 </project>

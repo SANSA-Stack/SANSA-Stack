@@ -8,6 +8,7 @@ import java.util.Calendar
 
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
+import org.apache.jena.riot.system.RiotLib
 
 
 object QueryExecutor {
@@ -285,9 +286,20 @@ object QueryExecutor {
     preloadTables(query, "SO")
     // execute query
     val t0 = System.currentTimeMillis()
+    //import spark.implicits._
     val result = _sqlContext.sql("""""" + query.query + """""")
     val t1 = System.currentTimeMillis()
     val cnt = result.count()
+
+    val it = result.rdd.toLocalIterator.map { x => x.toSeq.map(y => RiotLib.parse(y.toString)) }
+    // Create binding objects: Get the query's result vars and zip them with the result rows
+
+
+    it.foreach { x => println("GOT: " + it.mkString(", ")) }
+
+    //result.map(x => x.toSeq.map(y => RiotLib.parse(y.toString)))
+
+    //result.map { x => ??? }
     //result.foreach { x => println(x.mkString(", ")) }
     println(result.collect().mkString(", "))
     println(s"got $cnt rows in ${t1 - t0} ms")
