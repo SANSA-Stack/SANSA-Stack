@@ -1,4 +1,4 @@
-package org.dissect.rdf.spark
+package net.sansa_stack.rdf.spark
 
 import scala.collection.JavaConversions._
 
