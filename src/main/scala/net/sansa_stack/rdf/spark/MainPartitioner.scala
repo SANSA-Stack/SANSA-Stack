@@ -33,7 +33,7 @@ object MainPartitioner {
       val conf = new SparkConf().setAppName("BDE-readRDF").setMaster("local[1]")
         .set("spark.kryo.registrationRequired", "true") // use this for debugging and keeping track of which objects are being serialized.
         .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-        .set("spark.kryo.registrator", "org.dissect.rdf.spark.io.JenaKryoRegistrator")
+        .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
 
       new SparkContext(conf)
     }
