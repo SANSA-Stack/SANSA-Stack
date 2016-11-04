@@ -1,50 +1,119 @@
 package net.sansa_stack.rdf.spark
 
-import java.util.Arrays
-import java.util.HashMap
+import scala.collection.JavaConversions.asScalaIterator
 
-import scala.collection.JavaConversions._
-
-import org.aksw.jena_sparql_api.utils.Vars
-import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
-import org.aksw.sparqlify.config.syntax.ViewDefinition
-import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
-import org.aksw.sparqlify.core.TypeToken
-import org.aksw.sparqlify.core.sql.schema.SchemaImpl
 import org.apache.commons.io.IOUtils
 import org.apache.jena.graph.Node
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.NodeFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
-import org.apache.jena.sparql.core.Quad
+import org.apache.spark.sql.SparkSession
+import org.apache.jena.datatypes.TypeMapper
+import org.apache.jena.sparql.expr.ExprVar
 import org.apache.jena.sparql.core.QuadPattern
 import org.apache.jena.sparql.expr.E_Equals
-import org.apache.jena.sparql.expr.ExprList
-import org.apache.jena.sparql.expr.ExprVar
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
+import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
+import org.aksw.sparqlify.core.sql.schema.SchemaImpl
+import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
+import java.util.HashMap
+import java.util.Arrays
+import org.apache.jena.sparql.core.Quad
+import org.aksw.jena_sparql_api.utils.Vars
+import org.aksw.sparqlify.config.syntax.ViewDefinition
 import java.util.ArrayList
+import org.aksw.sparqlify.core.TypeToken
 import org.apache.jena.sparql.expr.Expr
+
+case class RdfTerm(t : Int, v: String, lang: String, dt: String)
+
+
 
 //import net.sansa_stack.rdf.spark.GraphRDDUtils
 //import org.dissect.rdf.spark.io.JenaKryoRegistrator
 
 object MainPartitioner {
+    def toLexicalForm(o: Any) = "" + o//NodeFmtLib.str(node)
 
-  def main(args: Array[String]): Unit = {
-    val sparkContext = {
-      val conf = new SparkConf().setAppName("BDE-readRDF").setMaster("local[1]")
-        //.set("spark.kryo.registrationRequired", "true") // use this for debugging and keeping track of which objects are being serialized.
-        .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-        .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
-
-      new SparkContext(conf)
+    def termToNode(term: RdfTerm) = {
+        val lexicalForm = toLexicalForm(term.v)
+        val result = term.t match {
+        case 0 => NodeFactory.createBlankNode(lexicalForm)
+        case 1 => NodeFactory.createURI(lexicalForm)
+        case 2 => {
+            val dt = term.dt
+            if(dt != null && !dt.isEmpty()) {
+                //logger.warn("Language tag should be null or empty, was '" + dt + "'");
+            }
+            NodeFactory.createLiteral(lexicalForm, term.lang)
+        }
+        case 3 => // Typed Literal
+            val lang = term.lang
+            if(lang != null && !lang.isEmpty()) {
+                //logger.warn("Language tag should be null or empty, was '" + lang + "'");
+            }
+            val dt = TypeMapper.getInstance().getSafeTypeByName(term.dt)
+            NodeFactory.createLiteral(lexicalForm, dt)
+        }
     }
 
-    val sqlContext = new SQLContext(sparkContext)
+
+    def nodeToTerm(node: Node) = {
+        var t: Int = 0
+        var v: Any = ""
+        var lang: String = null
+        var dt: String = null
+
+        if(node.isBlank()) {
+            t = 0;
+            v = node.getBlankNodeId().getLabelString();
+        } else if(node.isURI()) {
+            t = 1;
+            v = node.getURI();
+        } else if(node.isLiteral()) {
+
+            v = node.getLiteral().getValue();
+
+            //lex = node.getLiteralLexicalForm();
+
+            dt = node.getLiteralDatatypeURI();
+            if(dt == null || dt.isEmpty()) {
+                //System.err.println("Treating plain literals as typed ones");
+                //logger.warn("Treating plain literals as typed ones");
+                t = 2;
+                lang = node.getLiteralLanguage();
+            } else {
+                t = 3;
+                dt = node.getLiteralDatatypeURI();
+            }
+        } else {
+            throw new RuntimeException("Should not happen");
+        }
+
+        var dtStr = if(dt == null) "" else dt;
+        var langStr = if(lang == null) "" else lang;
+
+        RdfTerm(t, "" + v, lang, dt)
+    }
+
+
+
+  def main(args: Array[String]): Unit = {
+//    val sparkContext = {
+//      val conf = new SparkConf().setAppName("BDE-readRDF").setMaster("local[1]")
+//        //.set("spark.kryo.registrationRequired", "true") // use this for debugging and keeping track of which objects are being serialized.
+//        .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+//        .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+//
+//      new SparkContext(conf)
+//    }
+    val sparkSession = SparkSession.builder
+        .master("local")
+        .appName("spark session example")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+        .getOrCreate()
+
+//    val sqlContext = new SQLContext(sparkContext)
 
     val triplesString =
       """<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://xmlns.com/foaf/0.1/givenName>	"Guy De" .
@@ -55,8 +124,9 @@ object MainPartitioner {
         |<http://dbpedia.org/resource/Charles_Dickens>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Gads_Hill_Place> .""".stripMargin
 
 
+
     val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString), Lang.NTRIPLES, "http://example.org/").toSeq
-    val graphRdd = sparkContext.parallelize(it)
+    val graphRdd = sparkSession.sparkContext.parallelize(it)
 
 
     //val map = graphRdd.partitionGraphByPredicates
@@ -65,10 +135,11 @@ object MainPartitioner {
 
     val views = predicateRdds.map { case (p, rdd) =>
 
-      //rdd.
-      import sqlContext.implicits._
+      import sparkSession.implicits._
 
-      val ds = rdd.toDS()
+      val rddx = rdd.map { case (s, o) => (nodeToTerm(s), nodeToTerm(o)) }
+
+      val ds = rddx.toDS()
 
       print("Counting the dataset: " + ds.count())
 
@@ -105,6 +176,6 @@ object MainPartitioner {
 
     //println(predicates.mkString("\n"))
 
-    sparkContext.stop()
+    sparkSession.stop()
   }
 }
