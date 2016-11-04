@@ -135,16 +135,33 @@ object MainPartitioner {
 
     val views = predicateRdds.map { case (p, rdd) =>
 
+      println("Processing: " + p)
+      val tableName = p.getURI.substring(p.getURI.lastIndexOf("/") + 1)
+      println("TableName: " + tableName)
+
       import sparkSession.implicits._
 
       val rddx = rdd.map { case (s, o) => (nodeToTerm(s), nodeToTerm(o)) }
 
       val ds = rddx.toDS()
+      println("FIELDS: " + ds.schema)
+      ds.createOrReplaceTempView(tableName)
+      //ds.printSchema()
+
+      val sqlQueryStr = s"""
+           |SELECT _1.v
+           |AS val
+           |FROM `$tableName`
+           |""".stripMargin
+
+      println(sqlQueryStr)
+
+      val items = sparkSession.sql(sqlQueryStr)
+
+      items.foreach(x => println("Item: " + x))
 
       print("Counting the dataset: " + ds.count())
 
-      println("Processing: " + p)
-      val tableName = p.getURI
 
       val quad = new Quad(Quad.defaultGraphIRI, Vars.s, p, Vars.o)
       val quadPattern = new QuadPattern()
