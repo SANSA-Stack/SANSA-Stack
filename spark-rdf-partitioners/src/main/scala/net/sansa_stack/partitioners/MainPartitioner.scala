@@ -11,7 +11,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.dissect.rdf.spark.io.JenaKryoRegistrator
+//import org.dissect.rdf.spark.io.JenaKryoRegistrator
 
 // Messing around with a copy of this class in the spark rdf layer
 object MainPartitioner {

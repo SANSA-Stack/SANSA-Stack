@@ -17,6 +17,10 @@
         <scala.binary.version>2.11</scala.binary.version>
         <spark.version>2.0.1</spark.version>
         <jena.version>3.1.0</jena.version>
+        <jsa.subversion>2-SNAPSHOT</jsa.subversion>
+
+
+        <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
     </properties>
 
     <modules>
@@ -29,6 +33,18 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.aksw.jena-sparql-api</groupId>
+                <artifactId>jena-sparql-api-core</artifactId>
+                <version>${jsa.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.quartz-scheduler</groupId>
+                        <artifactId>quartz</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.s2rdf</groupId>
                 <artifactId>s2rdf-dataset-creator</artifactId>
