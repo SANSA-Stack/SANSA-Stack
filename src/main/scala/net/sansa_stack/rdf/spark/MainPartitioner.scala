@@ -145,6 +145,7 @@ object MainPartitioner {
 
       val ds = rddx.toDS()
       println("FIELDS: " + ds.schema)
+
       ds.createOrReplaceTempView(tableName)
       //ds.printSchema()
 
@@ -155,6 +156,14 @@ object MainPartitioner {
            |""".stripMargin
 
       println(sqlQueryStr)
+      val x = ds.schema
+      val y = x.apply("_1")
+      //y
+      println("got: " + y)
+
+
+
+      println("Dtypes: " + ds.dtypes.mkString(", "))
 
       val items = sparkSession.sql(sqlQueryStr)
 
