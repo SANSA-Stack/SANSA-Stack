@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.dissect.rdf.spark</groupId>
-	<artifactId>dissect-rdf-spark</artifactId>
+	<groupId>org.sansa-stack.rdf.spark</groupId>
+	<artifactId>sansa-rdf-spark-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>${project.artifactId}</name>
-	<description>RDF Spark Library.</description>
+<!-- 	<name>${project.artifactId}</name> -->
+	<description>RDF Spark Library</description>
 	<inceptionYear>2015</inceptionYear>
 
 	<properties>
@@ -198,16 +198,15 @@
 				<executions>
 					<execution>
 						<goals>
-							<goal>add-source</goal>
 							<goal>compile</goal>
 							<goal>testCompile</goal>
 						</goals>
-						<configuration>
-							<args>
-								<arg>-dependencyfile</arg>
-								<arg>${project.build.directory}/.scala_dependencies</arg>
-							</args>
-						</configuration>
+<!-- 						<configuration> -->
+<!-- 							<args> -->
+<!-- 								<arg>-dependencyfile</arg> -->
+<!-- 								<arg>${project.build.directory}/.scala_dependencies</arg> -->
+<!-- 							</args> -->
+<!-- 						</configuration> -->
 					</execution>
 				</executions>
 			</plugin>
