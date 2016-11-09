@@ -1,0 +1,18 @@
+package net.sansa_stack.owl.spark.dataset
+
+import net.sansa_stack.owl.common.parsing.FunctionalSyntaxParsing
+import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
+import org.semanticweb.owlapi.model.OWLAxiom
+
+
+object FunctionalSyntaxOWLAxiomsDatasetBuilder extends FunctionalSyntaxParsing {
+  def build(spark: SparkSession, filePath: String): OWLAxiomsDataset = {
+    build(FunctionalSyntaxOWLExpressionsDatasetBuilder.build(spark, filePath))
+  }
+
+  def build(expressionsDataset: Dataset[String]): OWLAxiomsDataset = {
+    implicit val encoder = Encoders.kryo[OWLAxiom]
+    expressionsDataset.map(expression => makeAxiom(expression)).
+      filter(axiom => axiom != null)
+  }
+}

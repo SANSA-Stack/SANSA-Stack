@@ -6,14 +6,13 @@ import org.scalatest.FunSuite
 import org.semanticweb.owlapi.model._
 
 
-class FunctionalSyntaxOWLAxiomsDatasetTest extends FunSuite with SharedSparkContext {
+class FunctionalSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master).getOrCreate()
   var _dataset: Dataset[OWLAxiom] = null
   def dataset = {
     if (_dataset == null) {
-      _dataset = FunctionalSyntaxOWLAxiomsDataset.create(
-        FunctionalSyntaxOWLExpressionsDataset.read(
-          spark, "src/test/resources/ont_functional.owl"))
+      _dataset = FunctionalSyntaxOWLAxiomsDatasetBuilder.build(
+        spark, "src/test/resources/ont_functional.owl")
       _dataset.cache()
     }
     _dataset
