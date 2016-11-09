@@ -1,16 +1,17 @@
 package net.sansa_stack.owl.spark.rdd
 
 import com.holdenkarau.spark.testing.SharedSparkContext
+import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
 
 
-class FunctionalSyntaxOWLExpressionsRDDTest extends FunSuite with SharedSparkContext {
-  var _rdd: FunctionalSyntaxOWLExpressionsRDD = null
+class FunctionalSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedSparkContext {
+  var _rdd: OWLExpressionsRDD = null
 
   def rdd = {
     if (_rdd == null) {
-      _rdd = new FunctionalSyntaxOWLExpressionsRDD(
-        sc, "src/test/resources/ont_functional.owl", sc.defaultMinPartitions)
+      _rdd = FunctionalSyntaxOWLExpressionsRDDBuilder.build(
+        sc, "src/test/resources/ont_functional.owl")
       _rdd.cache()
     }
 
