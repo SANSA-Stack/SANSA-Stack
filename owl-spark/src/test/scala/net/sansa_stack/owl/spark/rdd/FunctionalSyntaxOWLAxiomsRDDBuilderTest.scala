@@ -1,19 +1,17 @@
 package net.sansa_stack.owl.spark.rdd
 
-import org.apache.spark.sql.Dataset
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.model.{OWLDataPropertyAssertionAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, SWRLRule, _}
 
 
-class FunctionalSyntaxOWLAxiomsRDDTest extends FunSuite with SharedSparkContext {
-  var _rdd: FunctionalSyntaxOWLAxiomsRDD = null
+class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkContext {
+  var _rdd: OWLAxiomsRDD = null
 
   def rdd = {
     if (_rdd == null) {
-      _rdd = new FunctionalSyntaxOWLAxiomsRDD(sc,
-        new FunctionalSyntaxOWLExpressionsRDD(
-          sc, "src/test/resources/ont_functional.owl", sc.defaultMinPartitions))
+      _rdd = FunctionalSyntaxOWLAxiomsRDDBuilder.build(
+        sc, "src/test/resources/ont_functional.owl")
       _rdd.cache()
     }
 
@@ -382,14 +380,6 @@ class FunctionalSyntaxOWLAxiomsRDDTest extends FunSuite with SharedSparkContext 
   //    filteredRDD.foreach(ax => println(ax))
   //    assert(filteredRDD.count() == expectedNumberOfAxioms)
   //  }
-
-  test("A Dataset should be returned calling asDataset on a FuncionalSyntaxOWLAxiomRDD") {
-    val ds: Dataset[OWLAxiom] = rdd.asDataset
-//    ds.explain(true)
-//    ds.show()
-//    ds.take(10).foreach(a => println(a))
-    assert(ds.count() == rdd.count())
-  }
 
   test("There should not be any null values") {
     assert(rdd.filter(a => a == null).count() == 0)
