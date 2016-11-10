@@ -27,6 +27,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 import scala.collection.mutable.LinkedHashMap
+import collection.JavaConverters._
 
 case class RdfTerm(t: Int, v: String, lang: String, dt: String)
 
@@ -96,20 +97,20 @@ object MainPartitioner {
     RdfTerm(t, "" + v, lang, dt)
   }
 
-  def resolveDts(schema: StructType, qualifiedName: String, fieldName: String, map: LinkedHashMap[String, String]) {
+  def flattenSchemaField(schema: StructType, qualifiedName: String, fieldName: String, map: LinkedHashMap[String, String]) {
     val field = schema.apply(fieldName)
     val dt = field.dataType
     dt match {
-      case st: StructType => resolve(st, qualifiedName, map)
+      case st: StructType => flattenSchema(st, qualifiedName, map)
       case _ => map += (qualifiedName -> dt.simpleString)
     }
   }
 
-  def resolve(schema: StructType, prefix: String = "", map: LinkedHashMap[String, String] = LinkedHashMap[String, String]()): LinkedHashMap[String, String] = {
+  def flattenSchema(schema: StructType, prefix: String = "", map: LinkedHashMap[String, String] = LinkedHashMap[String, String]()): LinkedHashMap[String, String] = {
     schema.fields.foreach { sf =>
       val fieldName = sf.name
       val qualifiedName = prefix + (if (prefix.isEmpty()) "" else ".") + fieldName
-      resolveDts(schema, qualifiedName, fieldName, map)
+      flattenSchemaField(schema, qualifiedName, fieldName, map)
     }
     map
   }
@@ -169,54 +170,16 @@ object MainPartitioner {
            |FROM `$tableName`
            |""".stripMargin
 
-        println(sqlQueryStr)
-        println("Schema: " + ds.schema)
-        println("Schema resolved: " + resolve(ds.schema))
+        val flatSchema = flattenSchema(ds.schema)
+        val columnNames = flatSchema.keySet.toSeq.asJava
+        val typeMap = flatSchema.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
 
-        //        val parts = name.split(".")
-        //        var datatype = ds.schema;
-        //        parts.foreach { part =>
-        //
-        //        }
-        //
-        //        ds.schema.apply("_1").dataType
-
-        val x = ds.schema.apply("_1")
-        x match {
-          case s: StructField => {
-            println("structfield: " + s)
-            s.dataType match {
-              case y: StructType => {
-                println("XXX StructType: " + y)
-                val z = y.apply("v")
-                println("XXXZ" + z.dataType.simpleString)
-
-              }
-              case _ => println("XXX bar")
-            }
-          }
-          //case _: StructType => println("structtype: " + _)
-          case _ => println("foo")
-        }
-        println(x)
-
-        //ds.schema.fields(0).
-        //val col = ds.col("_1.v")
-        //ds.schema.ap
-        //println("col: " + col.expr)
-
-        //val x = ds.schema
-        //val y = x.apply("_1")
-        //y
-        //println("got: " + y)
-
-        println("Dtypes: " + ds.dtypes.mkString(", "))
-
+        
         val items = sparkSession.sql(sqlQueryStr)
 
         items.foreach(x => println("Item: " + x))
 
-        print("Counting the dataset: " + ds.count())
+        println("Counting the dataset: " + ds.count())
 
         val quad = new Quad(Quad.defaultGraphIRI, Vars.s, p, Vars.o)
         val quadPattern = new QuadPattern()
@@ -228,10 +191,10 @@ object MainPartitioner {
         el.add(es)
         el.add(eo)
 
-        val typeMap = new HashMap[String, TypeToken]()
-        typeMap.put("s", TypeToken.alloc("Node"));
-        typeMap.put("o", TypeToken.alloc("Node"));
-        val schema = new SchemaImpl(Arrays.asList("s", "o"), typeMap)
+        val schema = new SchemaImpl(columnNames, typeMap)
+        
+        println("Schema: " + schema)
+        
         val sqlOp = new SqlOpTable(schema, tableName)
         //SqlOp
 
