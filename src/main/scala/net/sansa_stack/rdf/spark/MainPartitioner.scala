@@ -28,6 +28,18 @@ import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 import scala.collection.mutable.LinkedHashMap
 import collection.JavaConverters._
+import org.slf4j.LoggerFactory
+import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
+import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
+import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
+import net.sansa_stack.rdf.spark.MainPartitioner
+import org.aksw.sparqlify.util.SqlBackendConfig
+import org.aksw.sparqlify.config.v0_2.bridge.ConfiguratorCandidateSelector
+import org.aksw.sparqlify.util.SparqlifyUtils
+import org.aksw.sparqlify.config.v0_2.bridge.SyntaxBridge
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+import org.aksw.sparqlify.validation.LoggerCount
+import org.aksw.sparqlify.config.syntax.Config
 
 case class RdfTerm(t: Int, v: String, lang: String, dt: String)
 
@@ -147,6 +159,32 @@ object MainPartitioner {
     //val map = graphRdd.partitionGraphByPredicates
     val predicateRdds = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
 
+    val config = new Config();
+    val logger = LoggerFactory.getLogger(MainPartitioner.getClass);
+    val loggerCount = new LoggerCount(logger)
+    val backendConfig =new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBacktick())
+    val sqlEscaper = backendConfig.getSqlEscaper()
+    val typeSerializer = backendConfig.getTypeSerializer()
+
+    val schemaProvider = null
+    //SchemaProvider schemaProvider = new SchemaProviderImpl(conn, typeSystem, typeAlias, sqlEscaper);
+    val syntaxBridge = new SyntaxBridge(schemaProvider)
+  
+    val ers = SparqlifyUtils.createDefaultExprRewriteSystem()
+    //OpMappingRewriter opMappingRewriter = SparqlifyUtils.createDefaultOpMappingRewriter(typeSystem);
+    //MappingOps mappingOps = SparqlifyUtils.createDefaultMappingOps(typeSystem);
+    val mappingOps = SparqlifyUtils.createDefaultMappingOps(ers)
+    //OpMappingRewriter opMappingRewriter = new OpMappingRewriterImpl(mappingOps);
+  
+  
+    val candidateViewSelector = new CandidateViewSelectorSparqlify(mappingOps, new ViewDefinitionNormalizerImpl());
+  
+  
+    //RdfViewSystem system = new RdfViewSystem2();
+    ConfiguratorCandidateSelector.configure(config, syntaxBridge, candidateViewSelector, loggerCount);    
+    
+    //QueryExecutionFactoryEx qef = SparqlifyUtils.createDefaultSparqlifyEngine(dataSource, config, typeSerializer, sqlEscaper, mrs, maxQueryExecutionTime);
+    
     val views = predicateRdds.map {
       case (p, rdd) =>
 
@@ -202,6 +240,8 @@ object MainPartitioner {
 
         val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
 
+        config.getViewDefinitions.add(vd)
+        
         println(vd)
     }
 
