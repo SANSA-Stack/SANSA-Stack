@@ -175,6 +175,13 @@ class FunctionalSyntaxInputFormat extends FileInputFormat[LongWritable, Text]
             bytesRemaining -= splitSize
           }
 
+          if (bytesRemaining != 0) {
+            val splitHosts: Array[String] = getSplitHosts(blockLocations,
+              length - bytesRemaining, bytesRemaining, clusterMap)
+            splits(i) = new FileSplit(path, length-bytesRemaining,
+              bytesRemaining, splitHosts)
+          }
+
         } else {
           val splitHosts = getSplitHosts(blockLocations, 0, length, clusterMap)
           splits(i) = new FileSplit(path, 0, length, splitHosts)
