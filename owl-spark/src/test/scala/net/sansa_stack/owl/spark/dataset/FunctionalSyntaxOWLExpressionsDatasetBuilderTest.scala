@@ -1,14 +1,14 @@
 package net.sansa_stack.owl.spark.dataset
 
 import com.holdenkarau.spark.testing.SharedSparkContext
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
 
 
 class FunctionalSyntaxOWLExpressionsDatasetBuilderTest extends FunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master).getOrCreate()
-  var _dataset: Dataset[String] = null
-  def dataset: Dataset[String] = {
+  var _dataset: OWLExpressionsDataset = null
+  def dataset: OWLExpressionsDataset = {
     if (_dataset == null) {
       _dataset = FunctionalSyntaxOWLExpressionsDatasetBuilder.build(
         spark, "src/test/resources/ont_functional.owl")

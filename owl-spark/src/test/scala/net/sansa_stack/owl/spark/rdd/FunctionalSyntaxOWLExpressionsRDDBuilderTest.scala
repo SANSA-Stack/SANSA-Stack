@@ -1,7 +1,6 @@
 package net.sansa_stack.owl.spark.rdd
 
 import com.holdenkarau.spark.testing.SharedSparkContext
-import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
 
 
