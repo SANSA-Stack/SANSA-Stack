@@ -86,10 +86,10 @@
 	</profiles>
 
 	<repositories>
-		<repository>
-			<id>Akka repository</id>
-			<url>http://repo.akka.io/releases</url>
-		</repository>
+<!-- 		<repository> -->
+<!-- 			<id>Akka repository</id> -->
+<!-- 			<url>http://repo.akka.io/releases</url> -->
+<!-- 		</repository> -->
 		<repository>
 			<id>oss-sonatype</id>
 			<name>oss-sonatype</name>

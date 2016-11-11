@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory
 import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
 import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
-import net.sansa_stack.rdf.spark.MainPartitioner
 import org.aksw.sparqlify.util.SqlBackendConfig
 import org.aksw.sparqlify.config.v0_2.bridge.ConfiguratorCandidateSelector
 import org.aksw.sparqlify.util.SparqlifyUtils
@@ -40,6 +39,15 @@ import org.aksw.sparqlify.config.v0_2.bridge.SyntaxBridge
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
 import org.aksw.sparqlify.validation.LoggerCount
 import org.aksw.sparqlify.config.syntax.Config
+import org.aksw.sparqlify.util.SparqlifyCoreInit
+import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
+import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
+import org.aksw.sparqlify.backend.postgres.DatatypeToStringPostgres
+import org.apache.jena.query.QueryFactory
+import org.apache.jena.sparql.expr.E_URI
+import org.aksw.jena_sparql_api.views.E_RdfTerm
+import org.apache.jena.sparql.core.Var
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
 
 case class RdfTerm(t: Int, v: String, lang: String, dt: String)
 
@@ -109,23 +117,6 @@ object MainPartitioner {
     RdfTerm(t, "" + v, lang, dt)
   }
 
-  def flattenSchemaField(schema: StructType, qualifiedName: String, fieldName: String, map: LinkedHashMap[String, String]) {
-    val field = schema.apply(fieldName)
-    val dt = field.dataType
-    dt match {
-      case st: StructType => flattenSchema(st, qualifiedName, map)
-      case _ => map += (qualifiedName -> dt.simpleString)
-    }
-  }
-
-  def flattenSchema(schema: StructType, prefix: String = "", map: LinkedHashMap[String, String] = LinkedHashMap[String, String]()): LinkedHashMap[String, String] = {
-    schema.fields.foreach { sf =>
-      val fieldName = sf.name
-      val qualifiedName = prefix + (if (prefix.isEmpty()) "" else ".") + fieldName
-      flattenSchemaField(schema, qualifiedName, fieldName, map)
-    }
-    map
-  }
 
   def main(args: Array[String]): Unit = {
     //    val sparkContext = {
@@ -162,29 +153,31 @@ object MainPartitioner {
     val config = new Config();
     val logger = LoggerFactory.getLogger(MainPartitioner.getClass);
     val loggerCount = new LoggerCount(logger)
-    val backendConfig =new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("", "")) //new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
 
     val schemaProvider = null
     //SchemaProvider schemaProvider = new SchemaProviderImpl(conn, typeSystem, typeAlias, sqlEscaper);
     val syntaxBridge = new SyntaxBridge(schemaProvider)
-  
+
     val ers = SparqlifyUtils.createDefaultExprRewriteSystem()
     //OpMappingRewriter opMappingRewriter = SparqlifyUtils.createDefaultOpMappingRewriter(typeSystem);
     //MappingOps mappingOps = SparqlifyUtils.createDefaultMappingOps(typeSystem);
     val mappingOps = SparqlifyUtils.createDefaultMappingOps(ers)
     //OpMappingRewriter opMappingRewriter = new OpMappingRewriterImpl(mappingOps);
-  
-  
+
+
     val candidateViewSelector = new CandidateViewSelectorSparqlify(mappingOps, new ViewDefinitionNormalizerImpl());
-  
-  
+
+
     //RdfViewSystem system = new RdfViewSystem2();
-    ConfiguratorCandidateSelector.configure(config, syntaxBridge, candidateViewSelector, loggerCount);    
-    
+    ConfiguratorCandidateSelector.configure(config, syntaxBridge, candidateViewSelector, loggerCount);
+
     //QueryExecutionFactoryEx qef = SparqlifyUtils.createDefaultSparqlifyEngine(dataSource, config, typeSerializer, sqlEscaper, mrs, maxQueryExecutionTime);
-    
+
+    val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
+
     val views = predicateRdds.map {
       case (p, rdd) =>
 
@@ -200,6 +193,7 @@ object MainPartitioner {
         println("FIELDS: " + ds.schema)
 
         ds.createOrReplaceTempView(tableName)
+
         //ds.printSchema()
 
         val sqlQueryStr = s"""
@@ -208,44 +202,57 @@ object MainPartitioner {
            |FROM `$tableName`
            |""".stripMargin
 
-        val flatSchema = flattenSchema(ds.schema)
-        val columnNames = flatSchema.keySet.toSeq.asJava
-        val typeMap = flatSchema.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
+//        val flatSchema = DatasetUtils.flattenSchema(ds.schema)
+//        val columnNames = flatSchema.keySet.toSeq.asJava
+//        val typeMap = flatSchema.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
 
-        
+
         val items = sparkSession.sql(sqlQueryStr)
+        val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
+        //println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
 
-        items.foreach(x => println("Item: " + x))
+        //items.foreach(x => println("Item: " + x))
 
-        println("Counting the dataset: " + ds.count())
+        //println("Counting the dataset: " + ds.count())
 
         val quad = new Quad(Quad.defaultGraphIRI, Vars.s, p, Vars.o)
         val quadPattern = new QuadPattern()
         quadPattern.add(quad)
 
-        val es = new E_Equals(new ExprVar(Vars.s), new ExprVar(Vars.s))
-        val eo = new E_Equals(new ExprVar(Vars.o), new ExprVar(Vars.o))
+        val es = new E_Equals(new ExprVar(Vars.s), E_RdfTerm.createUri(new ExprVar(Var.alloc("_1.v"))))
+        val eo = new E_Equals(new ExprVar(Vars.o), E_RdfTerm.createUri(new ExprVar(Var.alloc("_2.v"))))
         val el = new ArrayList[Expr] //new ExprList()
         el.add(es)
         el.add(eo)
 
-        val schema = new SchemaImpl(columnNames, typeMap)
-        
+        val typeMap = basicTableInfo.getRawTypeMap.asScala.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
+
+
+        val schema = new SchemaImpl(new ArrayList[String](basicTableInfo.getRawTypeMap.keySet()), typeMap)
+
         println("Schema: " + schema)
-        
-        val sqlOp = new SqlOpTable(schema, tableName)
-        //SqlOp
+
+        val sqlOp = new SqlOpTable(null, tableName)
 
         val vtd = new ViewTemplateDefinition(quadPattern, el)
 
         val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
 
         config.getViewDefinitions.add(vd)
-        
+
         println(vd)
     }
 
-    predicateRdds.foreach(x => println(x._1, x._2.count))
+    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
+    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s ?p ?o }"))
+    val sqlQueryStr = rewrite.getSqlQueryString
+    println("SQL QUERY: " + sqlQueryStr)
+
+
+    val resultDs = sparkSession.sql(sqlQueryStr)
+    resultDs.foreach { x => println("RESULT ROW: " + x) }
+
+    //predicateRdds.foreach(x => println(x._1, x._2.count))
 
     //println(predicates.mkString("\n"))
 
