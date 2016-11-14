@@ -10,6 +10,7 @@ object FunctionalSyntaxOWLAxiomsDatasetBuilder extends FunctionalSyntaxParsing {
     build(FunctionalSyntaxOWLExpressionsDatasetBuilder.build(spark, filePath))
   }
 
+  // FIXME: It has to be ensured that the expressionsDataset is in functional syntax
   def build(expressionsDataset: OWLExpressionsDataset): OWLAxiomsDataset = {
     implicit val encoder = Encoders.kryo[OWLAxiom]
     expressionsDataset.map(expression => makeAxiom(expression)).

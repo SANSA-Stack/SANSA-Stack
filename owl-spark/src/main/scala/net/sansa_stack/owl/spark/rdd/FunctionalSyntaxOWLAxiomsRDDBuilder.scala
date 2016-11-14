@@ -13,6 +13,7 @@ object FunctionalSyntaxOWLAxiomsRDDBuilder extends FunctionalSyntaxParsing {
     build(sc, FunctionalSyntaxOWLExpressionsRDDBuilder.build(sc, filePath))
   }
 
+  // FIXME: It has to be ensured that expressionsRDD is in functional syntax
   def build(sc: SparkContext, expressionsRDD: OWLExpressionsRDD): OWLAxiomsRDD = {
     expressionsRDD.map(expression => {
       try makeAxiom(expression)
