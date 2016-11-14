@@ -1,11 +1,11 @@
 package net.sansa_stack.owl.flink.hadoop
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{BlockLocation, FSDataInputStream, FileStatus, FileSystem, LocatedFileStatus, Path}
+import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapred.{FileInputFormat, FileSplit, InputSplit, JobConf, JobConfigurable, RecordReader, Reporter}
-import org.apache.hadoop.net.NetworkTopology
+import org.apache.hadoop.mapred.{FileSplit, InputSplit, JobConf, RecordReader, Reporter, TextInputFormat}
 import org.apache.hadoop.util.LineReader
+import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxParserConstants._
 
 
 /**
@@ -21,25 +21,70 @@ import org.apache.hadoop.util.LineReader
   *
   */
 class FunctionalSyntaxRecordReader(
-    job: Configuration, split: FileSplit) extends RecordReader[LongWritable, Text] {
+  job: Configuration, split: FileSplit) extends RecordReader[LongWritable, Text] {
 
   private val file: Path = split.getPath
   private val fs: FileSystem = file.getFileSystem(job)
   private val fileIn: FSDataInputStream = fs.open(file)
-  private var pos: Long = 0
+  private var pos: Long = split.getStart
+  fileIn.seek(pos)
   private val start: Long = split.getStart
   private val end: Long = start + split.getLength
   private var currentRecord: String = null
   private val lineReader: LineReader = new LineReader(fileIn)
+  private var firstLine = true
+  private val sectionKeywords: Array[String] = Array(
+    tokenImage(COMMENT_START),  // "#"
+    // tokenImage(CLOSEPAR),  // ")"  TODO
+    tokenImage(ONTOLOGY),  // "Ontology"
+    tokenImage(IMPORT),  // "Import"
+    tokenImage(SUBCLASSOF),  // "SubClassOf"
+    tokenImage(EQUIVALENTCLASSES),  // "EquivalentClasses"
+    tokenImage(DISJOINTCLASSES),  // "DisjointClasses"
+    tokenImage(DISJOINTUNION),  // "DisjointUnion"
+    tokenImage(ANNOTATION),  // "Annotation"
+    tokenImage(ANNOTATIONASSERTION),  // "AnnotationAssertion"
+    tokenImage(SUBANNOTATIONPROPERTYOF),  // "SubAnnotationPropertyOf"
+    tokenImage(ANNOTATIONPROPERTYDOMAIN),  // "AnnotationPropertyDomain"
+    tokenImage(ANNOTATIONPROPERTYRANGE),  // "AnnotationPropertyRange"
+    tokenImage(HASKEY),  // "HasKey"
+    tokenImage(DECLARATION),  // "Declaration"
+    tokenImage(INVERSEOBJECTPROPERTIES),  // "InverseObjectProperties"
+    tokenImage(SUBOBJECTPROPERTYOF),  // "SubObjectPropertyOf"
+    tokenImage(EQUIVALENTOBJECTPROPERTIES),  // "EquivalentObjectProperties"
+    tokenImage(DISJOINTOBJECTPROPERTIES),  // "DisjointObjectProperties"
+    tokenImage(OBJECTPROPERTYDOMAIN),  // "ObjectPropertyDomain"
+    tokenImage(OBJECTPROPERTYRANGE),  // "ObjectPropertyRange"
+    tokenImage(FUNCTIONALOBJECTPROPERTY),  // "FunctionalObjectProperty"
+    tokenImage(INVERSEFUNCTIONALOBJECTPROPERTY),  // "InverseFunctionalObjectProperty"
+    tokenImage(REFLEXIVEOBJECTPROPERTY),  // "ReflexiveObjectProperty"
+    tokenImage(IRREFLEXIVEOBJECTPROPERTY),  // "IrreflexiveObjectProperty"
+    tokenImage(SYMMETRICOBJECTPROPERTY),  // "SymmetricObjectProperty"
+    tokenImage(ASYMMETRICOBJECTPROPERTY),  // "AsymmetricObjectProperty"
+    tokenImage(TRANSITIVEOBJECTPROPERTY),  // "TransitiveObjectProperty"
+    tokenImage(SUBDATAPROPERTYOF),  // "SubDataPropertyOf"
+    tokenImage(EQUIVALENTDATAPROPERTIES),  // "EquivalentDataProperties"
+    tokenImage(DISJOINTDATAPROPERTIES),  // "DisjointDataProperties"
+    tokenImage(DATAPROPERTYDOMAIN),  // "DataPropertyDomain"
+    tokenImage(DATAPROPERTYRANGE),  // "DataPropertyRange"
+    tokenImage(FUNCTIONALDATAPROPERTY),  // "FunctionalDataProperty"
+    tokenImage(SAMEINDIVIDUAL),  // "SameIndividual"
+    tokenImage(DIFFERENTINDIVIDUALS),  // "DifferentIndividuals"
+    tokenImage(CLASSASSERTION),  // "ClassAssertion"
+    tokenImage(OBJECTPROPERTYASSERTION),  // "ObjectPropertyAssertion"
+    tokenImage(NEGATIVEOBJECTPROPERTYASSERTION),  // "NegativeObjectPropertyAssertion"
+    tokenImage(DATAPROPERTYASSERTION),  // "DataPropertyAssertion"
+    tokenImage(NEGATIVEDATAPROPERTYASSERTION),  // "NegativeDataPropertyAssertion"
+    tokenImage(PREFIX)  // "Prefix"
+  ).map(s => s.substring(1, s.length - 1))  // trim off quotes
 
   /**
     * @return Boolean which determines whether an OWL axiom expression could be
     *         read (true) or not (false)
     */
   override def next(key: LongWritable, value: Text): Boolean = {
-    key.set(pos)
-
     currentRecord = readNextRecord
+    key.set(pos)
     if (currentRecord == null)
       value.set("")
     else
@@ -81,6 +126,37 @@ class FunctionalSyntaxRecordReader(
   private def readNextRecord: String = {
     val record = new Text()
 
+    /* In case this.split is somewhere in the middle of the file, the beginning
+     * of the split might not be the beginning of an OWL functional syntax
+     * expression. Thus, this case is handled separately checking whether the
+     * beginning of the split is a valid beginning ('sectionKeyword') w.r.t.
+     * the OWL functional syntax specification.
+     *
+     * It has to be noted here that this does not cover the case of the last
+     * closing parenthesis which would be a valid beginning in some sense but
+     * cannot be distinguished from a remainder of an arbitrary line, e.g.
+     *                   --- split (n-1) --->|<-- split n ---
+     *   "ClassAssertion(bar:Cls1 foo:indivA" ")"
+     *
+     * But this should not matter since the last closing parenthesis will be
+     * discarded in later processing steps anyway.
+     */
+    if (firstLine) {
+      val bytesRead = lineReader.readLine(record)
+      firstLine = false
+      pos += bytesRead
+      var skip = true
+
+      var cntr = 0
+      while (skip && cntr < sectionKeywords.length) {
+        if (record.toString.trim.startsWith(sectionKeywords(cntr))) skip = false
+        cntr += 1
+      }
+
+      if (skip) record.clear()  // discard what's read so far and read next line
+      else return record.toString  // return what's read
+    }
+
     if (pos >= end) {
       null
 
@@ -108,96 +184,14 @@ class FunctionalSyntaxRecordReader(
 
 
 /**
-  * An InputFormat class which mimics the behaviour of TextInputFormat, except
+  * An InputFormat class behaves like a TextInputFormat, except
   * that it returns a FunctionalSyntaxRecordReader instead of a
   * LineRecordReader.
   */
-class FunctionalSyntaxInputFormat extends FileInputFormat[LongWritable, Text] with JobConfigurable {
-  var minSplitSize: Long = 1
-  var SPLIT_SLOP = 1.1
-
-  /**
-    * Generates and returns an array of FileInput splits based on the
-    * configured number of splits.
-    * The actual code of this method was mainly copied over from
-    * TextInputFormat and slightly adapted.
-    */
-  override def getSplits(job: JobConf, numSplits: Int): Array[InputSplit] = {
-    val files: Array[FileStatus] = listStatus(job)
-    val numFiles = files.length
-    job.setLong(FileInputFormat.NUM_INPUT_FILES, files.length)
-
-    var totalSize: Long = 0
-    for (file <- files) {
-      if (file.isDirectory) throw new Exception("Not a file: " + file)
-
-      totalSize += file.getLen
-    }
-
-    val goalSize = totalSize / (if(numSplits == 0) 1 else numSplits)
-    val minSize = Math.max(
-      job.getLong(org.apache.hadoop.mapreduce.lib.input.FileInputFormat.SPLIT_MINSIZE, 1),
-      minSplitSize)
-    val splits = new Array[InputSplit](numFiles)
-    val clusterMap = new NetworkTopology
-
-    for (i <- 0 until numFiles) {
-      val file = files(i)
-      val path = file.getPath
-      val length = file.getLen
-
-      if (length != 0) {
-        val fs = path.getFileSystem(job)
-        var blockLocations: Array[BlockLocation] = null
-
-        file match {
-          case file: LocatedFileStatus =>
-            blockLocations = file.asInstanceOf[LocatedFileStatus].getBlockLocations
-          case _ => blockLocations = fs.getFileBlockLocations(file, 0, length)
-        }
-
-        if (isSplitable(fs, path)) {
-          val blockSize = file.getBlockSize
-          val splitSize = Math.max(minSize, Math.min(goalSize, blockSize))
-
-          var bytesRemaining = length
-
-          while (bytesRemaining.asInstanceOf[Double] / splitSize > SPLIT_SLOP) {
-            val splitHosts = getSplitHosts(blockLocations,
-              length-bytesRemaining, splitSize, clusterMap)
-            splits(i) = new FileSplit(path, length-bytesRemaining,
-              bytesRemaining, splitHosts)
-
-            bytesRemaining -= splitSize
-          }
-
-          if (bytesRemaining != 0) {
-            val splitHosts: Array[String] = getSplitHosts(blockLocations,
-              length - bytesRemaining, bytesRemaining, clusterMap)
-            splits(i) = new FileSplit(path, length-bytesRemaining,
-              bytesRemaining, splitHosts)
-          }
-
-        } else {
-          val splitHosts = getSplitHosts(blockLocations, 0, length, clusterMap)
-          splits(i) = new FileSplit(path, 0, length, splitHosts)
-        }
-
-      } else {
-        splits(i) = new FileSplit(path, 0, length, new Array[String](0))
-      }
-    }
-
-    splits
-  }
-
+class FunctionalSyntaxInputFormat extends TextInputFormat {
   override def getRecordReader(
       split: InputSplit, job: JobConf, reporter: Reporter): RecordReader[LongWritable, Text] = {
 
     new FunctionalSyntaxRecordReader(job, split.asInstanceOf[FileSplit])
-  }
-
-  override def configure(jobConf: JobConf): Unit = {
-    // ...well, seems there is nothing to configure, yet
   }
 }
