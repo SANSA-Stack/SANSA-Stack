@@ -22,7 +22,7 @@ class FunctionalSyntaxOWLExpressionsDataSetBuilderTest extends FunSuite {
       "Annotation(<http://ex.com/foo#hasName> \"Name\")",
       "Annotation(<http://ex.com/bar#hasTitle> \"Title\")",
       """Annotation(<http://ex.com/default#description> "A longer
-description runnig over
+description running over
 several lines")""")
     assert(res.size == 3)
     for (e <- expected) {

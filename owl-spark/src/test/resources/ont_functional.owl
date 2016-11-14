@@ -10,7 +10,7 @@ Ontology(<http://ex.com/ont/sample1.owl>
 Annotation(foo:hasName "Name")
     Annotation(bar:hasTitle "Title")
 Annotation(:description "A longer
-description runnig over
+description running over
 several lines")
 
 ## declarations

@@ -371,7 +371,7 @@ class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
   //    // --> Annotation(foo:hasName "Name")
   //    // --> Annotation(bar:hasTitle "Title")
   //    // --> Annotation(:description "A longer
-  //    // description runnig over
+  //    // description running over
   //    // several lines")
   //    val expectedNumberOfAxioms = 3
   //    val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLAnnotation])
