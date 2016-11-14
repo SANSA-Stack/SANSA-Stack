@@ -17,6 +17,7 @@
         <dependency>
             <groupId>net.sansa_stack.owl</groupId>
             <artifactId>owl-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Scala dependencies -->
@@ -25,12 +26,7 @@
             <artifactId>scala-library</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
-        </dependency>
-
-        <!-- Apache Flink depenencies -->
+        <!-- Apache Flink dependencies -->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-scala_${scala.binary.version}</artifactId>
@@ -44,6 +40,12 @@
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>
             <artifactId>owlapi-api</artifactId>
+        </dependency>
+
+        <!-- Testing dependencies -->
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
         </dependency>
     </dependencies>
 

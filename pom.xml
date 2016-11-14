@@ -35,21 +35,22 @@
         <scala.binary.version>2.11</scala.binary.version>
         <spark.version>2.0.0</spark.version>
         <flink.version>1.1.3</flink.version>
-        <hadoop.common.version>2.6.4</hadoop.common.version>
-        <hadoop.mapreduce-client.version>2.2.0</hadoop.mapreduce-client.version>
+        <hadoop.common.version>2.3.0</hadoop.common.version>
+        <hadoop.mapreduce-client.version>2.3.0</hadoop.mapreduce-client.version>
         <owlapi.version>5.0.3</owlapi.version>
     </properties>
 
 
     <dependencyManagement>
         <dependencies>
+            <!-- Scala dependencies -->
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
             </dependency>
 
-            <!-- Apache Spark -->
+            <!-- Apache Spark dependencies -->
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
@@ -61,7 +62,7 @@
                 <version>${spark.version}</version>
             </dependency>
 
-            <!-- Apache Flink -->
+            <!-- Apache Flink dependencies -->
             <dependency>
                 <groupId>org.apache.flink</groupId>
                 <artifactId>flink-scala_${scala.binary.version}</artifactId>
@@ -73,7 +74,11 @@
                 <version>${flink.version}</version>
             </dependency>
 
-            <!-- Hadoop (common packages used in owl-common) -->
+            <!-- 
+            Hadoop dependencies (used for custom InputFormat definition in
+            Spark; Flink comes with custom package 
+            org.apache.flink:flink-shaded-hadoop2 which contains all class
+            definitions) -->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-mapreduce-client-core</artifactId>
@@ -83,26 +88,6 @@
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-common</artifactId>
                 <version>${hadoop.common.version}</version>
-            </dependency>
-
-            <!-- Test -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.8.1</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>3.0.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.holdenkarau</groupId>
-                <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
-                <version>${spark.version}_0.4.7</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- OWL API-->
@@ -127,26 +112,40 @@
                 <version>${owlapi.version}</version>
             </dependency>
 
-            <!-- MLlib -->
+            <!-- MLlib dependencies -->
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-mllib_2.10</artifactId>
                 <version>1.6.1</version>
             </dependency>
 
-            <!-- logging -->
+            <!-- Testing dependencies -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.8.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.binary.version}</artifactId>
+                <version>3.0.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.holdenkarau</groupId>
+                <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+                <version>${spark.version}_0.4.7</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Logging dependencies -->
             <dependency>
                 <groupId>com.typesafe.scala-logging</groupId>
                 <artifactId>scala-logging_2.11</artifactId>
                 <version>3.5.0</version>
             </dependency>
 
-            <!-- project modules -->
-            <dependency>
-                <groupId>net.sansa_stack.owl</groupId>
-                <artifactId>owl-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

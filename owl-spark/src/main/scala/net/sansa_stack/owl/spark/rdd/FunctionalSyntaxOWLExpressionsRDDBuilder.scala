@@ -1,6 +1,7 @@
 package net.sansa_stack.owl.spark.rdd
 
-import net.sansa_stack.owl.common.parsing.{FunctionalSyntaxExpressionBuilder, FunctionalSyntaxInputFormat, FunctionalSyntaxPrefixParsing}
+import net.sansa_stack.owl.common.parsing.{FunctionalSyntaxExpressionBuilder, FunctionalSyntaxPrefixParsing}
+import net.sansa_stack.owl.spark.hadoop.FunctionalSyntaxInputFormat
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.spark.SparkContext
 

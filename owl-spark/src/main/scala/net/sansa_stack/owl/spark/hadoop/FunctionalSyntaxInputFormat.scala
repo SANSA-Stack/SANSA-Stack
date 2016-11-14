@@ -1,24 +1,22 @@
-package net.sansa_stack.owl.common.parsing
+package net.sansa_stack.owl.spark.hadoop
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{BlockLocation, FSDataInputStream, FileStatus,
-  FileSystem, LocatedFileStatus, Path}
+import org.apache.hadoop.fs.{BlockLocation, FSDataInputStream, FileStatus, FileSystem, LocatedFileStatus, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapred.{FileInputFormat, FileSplit, InputSplit,
-  JobConf, JobConfigurable, RecordReader, Reporter}
+import org.apache.hadoop.mapred.{FileInputFormat, FileSplit, InputSplit, JobConf, JobConfigurable, RecordReader, Reporter}
 import org.apache.hadoop.net.NetworkTopology
 import org.apache.hadoop.util.LineReader
 
 
 /**
-  * A RecordReader implementations which takes care of reading whole OWL axiom
+  * A RecordReader implementation which takes care of reading whole OWL axiom
   * expressions in functional syntax from a given file split.
   * The main functionality that distinguishes a FunctionalSyntaxRecordReader
   * from a LineRecordReader is that it checks whether a read line contains the
   * beginning of a multi-line literal like, for example
   *
   *   Annotation(:description "A longer
-  *   description runnig over
+  *   description running over
   *   several lines")
   *
   */
@@ -67,12 +65,12 @@ class FunctionalSyntaxRecordReader(
 
   /**
     * Reads a new line from this.lineReader and checks whether the quotes in
-    * this line are balanced, i.e. whether a sting started with a quote
+    * this line are balanced, i.e. whether a string started with a quote
     * character also ended with a quote character. If this is not the case
     * the read line contains a multi-line literal as e.g. in
     *
     *   Annotation(:description "A longer
-    *   description runnig over
+    *   description running over
     *   several lines")
     *
     * In this case the next lines are read from this.lineReader until the
@@ -114,9 +112,7 @@ class FunctionalSyntaxRecordReader(
   * that it returns a FunctionalSyntaxRecordReader instead of a
   * LineRecordReader.
   */
-class FunctionalSyntaxInputFormat extends FileInputFormat[LongWritable, Text]
-    with JobConfigurable {
-
+class FunctionalSyntaxInputFormat extends FileInputFormat[LongWritable, Text] with JobConfigurable {
   var minSplitSize: Long = 1
   var SPLIT_SLOP = 1.1
 
@@ -201,7 +197,7 @@ class FunctionalSyntaxInputFormat extends FileInputFormat[LongWritable, Text]
     new FunctionalSyntaxRecordReader(job, split.asInstanceOf[FileSplit])
   }
 
-  override def configure(job: JobConf): Unit = {
+  override def configure(jobConf: JobConf): Unit = {
     // ...well, seems there is nothing to configure, yet
   }
 }
