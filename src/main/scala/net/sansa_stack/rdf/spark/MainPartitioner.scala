@@ -148,7 +148,7 @@ object MainPartitioner {
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
     //val map = graphRdd.partitionGraphByPredicates
-    val predicateRdds = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
+    val partitions = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
 
     val config = new Config();
     val logger = LoggerFactory.getLogger(MainPartitioner.getClass);
@@ -178,21 +178,28 @@ object MainPartitioner {
 
     val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
 
-    val views = predicateRdds.map {
+    // Schema from case class:
+    //import org.apache.spark.sql.catalyst.ScalaReflection
+    //val schema = ScalaReflection.schemaFor[TestCase].dataType.asInstanceOf[StructType]
+
+    val views = partitions.map {
       case (p, rdd) =>
 
         println("Processing: " + p)
+        // TODO Deal with potential name clashes
         val tableName = p.getURI.substring(p.getURI.lastIndexOf("/") + 1)
         println("TableName: " + tableName)
 
         import sparkSession.implicits._
 
-        val rddx = rdd.map { case (s, o) => (nodeToTerm(s), nodeToTerm(o)) }
+        val layout = RdfPartition.determineLayout(p)
+        val df = sparkSession.createDataFrame(rdd, layout.schema)
+        //val rddx = rdd.map { case (s, o) => (nodeToTerm(s), nodeToTerm(o)) }
+//sparkSession.createDataframe
+        //val ds = rddx.toDS()
+        println("FIELDS: " + df.schema)
 
-        val ds = rddx.toDS()
-        println("FIELDS: " + ds.schema)
-
-        ds.createOrReplaceTempView(tableName)
+        df.createOrReplaceTempView(tableName)
 
         //ds.printSchema()
 
