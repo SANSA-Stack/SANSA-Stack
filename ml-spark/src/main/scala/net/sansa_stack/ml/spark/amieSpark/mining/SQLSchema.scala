@@ -1,6 +1,6 @@
-package net.sansa_stack.ml.spark.dissect.inference.data
 
-/**
+
+package net.sansa_stack.ml.spark.amieSpark.mining/**
   * The SQL schema used for RDF triples in a Dataframe.
   *
   * @author Lorenz Buehmann

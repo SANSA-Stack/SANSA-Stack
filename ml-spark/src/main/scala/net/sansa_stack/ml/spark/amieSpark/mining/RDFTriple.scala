@@ -1,5 +1,6 @@
-package net.sansa_stack.ml.spark.dissect.inference.data
 
+
+package net.sansa_stack.ml.spark.amieSpark.mining
 /**
   * An RDF triple.
   *

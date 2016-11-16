@@ -7,9 +7,10 @@ import org.apache.spark.SparkContext
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import net.sansa_stack.ml.spark.dissect.inference.data._
+
 
 import org.slf4j.LoggerFactory
+import net.sansa_stack.ml.spark.amieSpark.mining._
 
 object DfLoader {
   private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))

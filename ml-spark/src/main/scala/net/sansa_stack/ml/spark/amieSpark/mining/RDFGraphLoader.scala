@@ -1,15 +1,10 @@
-package net.sansa_stack.ml.spark.dissect.inference.data
+package net.sansa_stack.ml.spark.amieSpark.mining
 
 import org.apache.spark.SparkContext
-
-
-
-
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-
-
 import org.slf4j.LoggerFactory
+import net.sansa_stack.ml.spark.amieSpark.mining._
 
 /**
   * Loads an RDF graph from disk or a set of triples.

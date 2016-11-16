@@ -41,6 +41,8 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.WatchEvent;
+import net.sansa_stack.ml.spark.amieSpark.mining._
+
 object MineRules {
  /**	Algorithm that mines the Rules.
    * 

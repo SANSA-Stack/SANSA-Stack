@@ -33,6 +33,7 @@ import org.apache.spark.sql.functions.udf
 
 import org.apache.commons.io.FileUtils
 import java.io.File
+import net.sansa_stack.ml.spark.amieSpark.mining._
 
 object KBObject{
     case class Atom (rdf:RDFTriple)

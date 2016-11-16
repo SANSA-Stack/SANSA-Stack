@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.dissect.inference.data
+package net.sansa_stack.ml.spark.amieSpark.mining
 
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}

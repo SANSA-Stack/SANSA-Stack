@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.amieSpark.mining
 
-import net.sansa_stack.ml.spark.dissect.inference.data._
+import net.sansa_stack.ml.spark.amieSpark.mining._
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.reasoner.rulesys.ClauseEntry
 import org.apache.jena.reasoner.TriplePattern
@@ -18,6 +18,7 @@ import org.apache.spark.rdd.RDD
 import scala.collection.mutable.ArrayBuffer
 import KBObject.KB
 import scala.collection.mutable.Map
+
 
 
 object Rules {
