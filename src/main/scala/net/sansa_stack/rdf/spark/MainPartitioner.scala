@@ -1,53 +1,37 @@
 package net.sansa_stack.rdf.spark
 
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.HashMap
-
 import scala.collection.JavaConversions.asScalaIterator
+import scala.collection.JavaConverters._
 
-import org.aksw.jena_sparql_api.utils.Vars
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
+import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
+import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.config.syntax.ViewDefinition
-import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
-import org.aksw.sparqlify.core.TypeToken
-import org.aksw.sparqlify.core.sql.schema.SchemaImpl
+import org.aksw.sparqlify.config.v0_2.bridge.ConfiguratorCandidateSelector
+import org.aksw.sparqlify.config.v0_2.bridge.SyntaxBridge
+import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
+import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
+import org.aksw.sparqlify.util.SparqlifyUtils
+import org.aksw.sparqlify.util.SqlBackendConfig
+import org.aksw.sparqlify.validation.LoggerCount
 import org.apache.commons.io.IOUtils
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.query.QueryFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
-import org.apache.jena.sparql.core.Quad
-import org.apache.jena.sparql.core.QuadPattern
-import org.apache.jena.sparql.expr.E_Equals
-import org.apache.jena.sparql.expr.Expr
-import org.apache.jena.sparql.expr.ExprVar
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
-import scala.collection.mutable.LinkedHashMap
-import collection.JavaConverters._
 import org.slf4j.LoggerFactory
-import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
-import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
-import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
-import org.aksw.sparqlify.util.SqlBackendConfig
-import org.aksw.sparqlify.config.v0_2.bridge.ConfiguratorCandidateSelector
-import org.aksw.sparqlify.util.SparqlifyUtils
-import org.aksw.sparqlify.config.v0_2.bridge.SyntaxBridge
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
-import org.aksw.sparqlify.validation.LoggerCount
-import org.aksw.sparqlify.config.syntax.Config
-import org.aksw.sparqlify.util.SparqlifyCoreInit
+
 import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
 import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
-import org.aksw.sparqlify.backend.postgres.DatatypeToStringPostgres
-import org.apache.jena.query.QueryFactory
-import org.apache.jena.sparql.expr.E_URI
-import org.aksw.jena_sparql_api.views.E_RdfTerm
-import org.apache.jena.sparql.core.Var
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
+
+import scala.reflect.runtime.universe
 
 case class RdfTerm(t: Int, v: String, lang: String, dt: String)
 
@@ -198,7 +182,17 @@ object MainPartitioner {
         }
 
         val layout = RdfPartition.determineLayout(p)
-        val df = sparkSession.createDataFrame(rdd, layout.schema)
+//        val tag = layout.schema
+//        val m = runtimeMirror(getClass.getClassLoader)
+//        //val mirror = tag.mirror
+//        val clazz = mirror.runtimeClass(tag.tpe.typeSymbol.asClass)
+        val xxx = ScalaReflection.schemaFor(layout.schema).dataType.asInstanceOf[StructType]
+        println("XXX: " + xxx)
+        //sparkSession.createDataFrame(
+        val df = sparkSession.createDataFrame(rdd, xxx)
+        //sparkSession.create
+        //val r = Row()
+//        println("Schema for " + tableName + ": " + df.schema + " basic schema: " + layout.schema)
         df.createOrReplaceTempView(tableName)
         println(vd)
         config.getViewDefinitions.add(vd)

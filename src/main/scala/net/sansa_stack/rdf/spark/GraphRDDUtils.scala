@@ -19,22 +19,25 @@ import org.apache.jena.sparql.expr.E_Equals
 import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.sparql.expr.ExprVar
 import org.apache.spark.rdd.RDD
+import org.apache.jena.vocabulary.XSD
+import scala.reflect.runtime.universe._
+import org.apache.spark.sql.Row
 
-//import scala.reflect.runtime.{universe => ru}
+
 
 //def getRetTypeOfMethod(tpe: ru.Type)(methodName: String) =
 //  tpe.member(ru.TermName(methodName)).asMethod.returnType
 
 trait TripleLayout {
-  def schema: Class[_ <: Any]
-  def fromTriple(t: Triple): Any
+  def schema: Type
+  def fromTriple(t: Triple): Product
 }
 
 
 object TripleLayoutLong
   extends TripleLayout
 {
-  def schema = classOf[(String, Long)]
+  def schema = typeOf[(String, Long)]
 
   def fromTriple(t: Triple): (String, Long) = {
     val s = t.getSubject
@@ -53,7 +56,7 @@ object TripleLayoutLong
 object TripleLayoutDouble
   extends TripleLayout
 {
-  def schema = classOf[(String, Double)]
+  def schema = typeOf[(String, Double)]
   //val foo = universe
 
   def fromTriple(t: Triple): (String, Double) = {
@@ -72,7 +75,7 @@ object TripleLayoutDouble
 object TripleLayoutString
   extends TripleLayout
 {
-  def schema = classOf[(String, String)]
+  def schema = typeOf[(String, String)]
 
   def fromTriple(t: Triple): (String, String) = {
     val s = t.getSubject
@@ -95,7 +98,7 @@ object TripleLayoutString
 object TripleLayoutStringLang
   extends TripleLayout
 {
-  def schema = classOf[(String, String, String)]
+  def schema = typeOf[(String, String, String)]
 
   def fromTriple(t: Triple): (String, String, String) = {
     val s = t.getSubject
@@ -156,11 +159,13 @@ object SparqlifyUtils2 {
   }
 
   def createExprForNode(offset: Int, termType: Byte, datatype: String, langTag: String): E_RdfTerm = {
+    val o = offset + 1
+
     termType match {
-      case 0 => E_RdfTerm.createBlankNode(offset)
-      case 1 => E_RdfTerm.createUri(offset)
-      case 2 if(!Option(langTag).getOrElse("").isEmpty) => E_RdfTerm.createPlainLiteral(offset, offset + 1)
-      case 2 if(!Option(datatype).getOrElse("").isEmpty) => E_RdfTerm.createTypedLiteral(offset, offset + 1)
+      case 0 => E_RdfTerm.createBlankNode(o)
+      case 1 => E_RdfTerm.createUri(o)
+      case 2 if(!Option(langTag).getOrElse("").isEmpty) => E_RdfTerm.createPlainLiteral(o, o + 1)
+      case 2 if(!Option(datatype).getOrElse("").isEmpty) => E_RdfTerm.createTypedLiteral(o, o + 1)
       case _ => throw new RuntimeException("Unhandled case")
     }
   }
@@ -237,7 +242,10 @@ object RdfPartition {
   }
 
   def determineLayoutDatatype(dtypeIri: String): TripleLayout = {
-    val v = TypeMapper.getInstance.getSafeTypeByName(dtypeIri).getJavaClass
+    val dti = if(dtypeIri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")
+      XSD.xstring.getURI else dtypeIri
+
+    val v = TypeMapper.getInstance.getSafeTypeByName(dti).getJavaClass
 
     //val v = node.getLiteralValue
     v match {
@@ -252,7 +260,7 @@ object RdfPartition {
 
 object GraphRDDUtils extends Serializable {
 
-  implicit def partitionGraphByPredicates(graphRdd : RDD[Triple]) : Map[RdfPartition, RDD[Any]] = {
+  implicit def partitionGraphByPredicates(graphRdd : RDD[Triple]) : Map[RdfPartition, RDD[Row]] = {
     val map = Map(partitionGraphByPredicatesArray(graphRdd) :_*)
     map
   }
@@ -261,7 +269,7 @@ object GraphRDDUtils extends Serializable {
 //    a.getPredicate == b
 //  }
 
-  implicit def partitionGraphByPredicatesArray(graphRdd : RDD[Triple]) : Array[(RdfPartition, RDD[Any])] = {
+  implicit def partitionGraphByPredicatesArray(graphRdd : RDD[Triple]) : Array[(RdfPartition, RDD[Row])] = {
     //val predicates = graphRdd.map(_.getPredicate).distinct.map( _.getURI).collect
     val partitionKeys = graphRdd.map(RdfPartition.fromTriple).distinct.collect
 
@@ -270,7 +278,7 @@ object GraphRDDUtils extends Serializable {
           p,
           graphRdd
             .filter(p.matches) //_.getPredicate.getURI == p)
-            .map(t => RdfPartition.determineLayout(p).fromTriple(t).asInstanceOf[Any])
+            .map(t => Row(RdfPartition.determineLayout(p).fromTriple(t).productIterator.toList :_* ))
             .persist())
           }
     array
