@@ -117,46 +117,42 @@ object SparqlifyUtils2 {
   implicit def newExprVar(varName: String): ExprVar = new ExprVar(Var.alloc(varName))
   implicit def newExprVar(varId: Int): ExprVar = "_" + varId
 
-
-
   def createViewDefinition(p: RdfPartition): ViewDefinition = {
-        //val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
-        //println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
+    //val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
+    //println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
 
-        //items.foreach(x => println("Item: " + x))
+    //items.foreach(x => println("Item: " + x))
 
-        //println("Counting the dataset: " + ds.count())
-        val pred = p.predicate
-        val tableName = pred.substring(pred.lastIndexOf("/") + 1)
-        val pn = NodeFactory.createURI(p.predicate)
+    //println("Counting the dataset: " + ds.count())
+    val pred = p.predicate
+    val tableName = pred.substring(pred.lastIndexOf("/") + 1)
+    val pn = NodeFactory.createURI(p.predicate)
 
-        val quad = new Quad(Quad.defaultGraphIRI, Vars.s, pn, Vars.o)
-        val quadPattern = new QuadPattern()
-        quadPattern.add(quad)
+    val quad = new Quad(Quad.defaultGraphIRI, Vars.s, pn, Vars.o)
+    val quadPattern = new QuadPattern()
+    quadPattern.add(quad)
 
-        val sTerm = createExprForNode(0, p.subjectType, "", "")
-        val oTerm = createExprForNode(1, p.objectType, p.datatype, p.langTag)
+    val sTerm = createExprForNode(0, p.subjectType, "", "")
+    val oTerm = createExprForNode(1, p.objectType, p.datatype, p.langTag)
 
-        val se = new E_Equals(new ExprVar(Vars.s), sTerm)
-        val oe = new E_Equals(new ExprVar(Vars.o), oTerm)
-        val varDefs = new ArrayList[Expr] //new ExprList()
-        varDefs.add(se)
-        varDefs.add(oe)
+    val se = new E_Equals(new ExprVar(Vars.s), sTerm)
+    val oe = new E_Equals(new ExprVar(Vars.o), oTerm)
+    val varDefs = new ArrayList[Expr] //new ExprList()
+    varDefs.add(se)
+    varDefs.add(oe)
 
-        //val typeMap = basicTableInfo.getRawTypeMap.asScala.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
+    //val typeMap = basicTableInfo.getRawTypeMap.asScala.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
 
 
-        //val schema = new SchemaImpl(new ArrayList[String](basicTableInfo.getRawTypeMap.keySet()), typeMap)
+    //val schema = new SchemaImpl(new ArrayList[String](basicTableInfo.getRawTypeMap.keySet()), typeMap)
 
-        //println("Schema: " + schema)
+    //println("Schema: " + schema)
 
-        val sqlOp = new SqlOpTable(null, tableName)
+    val sqlOp = new SqlOpTable(null, tableName)
+    val vtd = new ViewTemplateDefinition(quadPattern, varDefs)
+    val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
 
-        val vtd = new ViewTemplateDefinition(quadPattern, varDefs)
-
-        val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
-
-        vd
+    vd
   }
 
   def createExprForNode(offset: Int, termType: Byte, datatype: String, langTag: String): E_RdfTerm = {

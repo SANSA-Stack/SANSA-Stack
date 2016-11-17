@@ -190,6 +190,19 @@ object MainPartitioner {
       case (p, rdd) =>
 //
         println("Processing: " + p)
+
+        val vd = SparqlifyUtils2.createViewDefinition(p);
+        val tableName = vd.getRelation match {
+          case o: SqlOpTable => o.getTableName
+          case _ => throw new RuntimeException("Table name required - instead got: " + vd)
+        }
+
+        val layout = RdfPartition.determineLayout(p)
+        val df = sparkSession.createDataFrame(rdd, layout.schema)
+        df.createOrReplaceTempView(tableName)
+        println(vd)
+        config.getViewDefinitions.add(vd)
+
 //        // TODO Deal with potential name clashes
 //        val tableName = p.getURI.substring(p.getURI.lastIndexOf("/") + 1)
 //        println("TableName: " + tableName)
@@ -249,7 +262,6 @@ object MainPartitioner {
 //
 //        val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
 //
-//        config.getViewDefinitions.add(vd)
 //
 //        println(vd)
     }
