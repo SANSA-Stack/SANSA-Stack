@@ -1,12 +1,10 @@
 package net.sansa_stack.rdf.spark
 
 import scala.collection.JavaConversions.asScalaIterator
-import scala.collection.JavaConverters._
 
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.config.syntax.Config
-import org.aksw.sparqlify.config.syntax.ViewDefinition
 import org.aksw.sparqlify.config.v0_2.bridge.ConfiguratorCandidateSelector
 import org.aksw.sparqlify.config.v0_2.bridge.SyntaxBridge
 import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
@@ -22,16 +20,15 @@ import org.apache.jena.graph.NodeFactory
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
-import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
-
-import scala.reflect.runtime.universe
+import net.sansa_stack.rdf.common.partition.sparqlify.SparqlifyUtils2
+import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 
 case class RdfTerm(t: Int, v: String, lang: String, dt: String)
 
@@ -164,8 +161,6 @@ object MainPartitioner {
 
     //QueryExecutionFactoryEx qef = SparqlifyUtils.createDefaultSparqlifyEngine(dataSource, config, typeSerializer, sqlEscaper, mrs, maxQueryExecutionTime);
 
-    val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
-
     // Schema from case class:
     //import org.apache.spark.sql.catalyst.ScalaReflection
     //val schema = ScalaReflection.schemaFor[TestCase].dataType.asInstanceOf[StructType]
@@ -181,7 +176,7 @@ object MainPartitioner {
           case _ => throw new RuntimeException("Table name required - instead got: " + vd)
         }
 
-        val layout = RdfPartition.determineLayout(p)
+        val layout = RdfPartitionerDefault.determineLayout(p)
 //        val tag = layout.schema
 //        val m = runtimeMirror(getClass.getClassLoader)
 //        //val mirror = tag.mirror
@@ -260,9 +255,12 @@ object MainPartitioner {
 //        println(vd)
     }
 
+    val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
+
     val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
     val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s ?p ?o }"))
     val sqlQueryStr = rewrite.getSqlQueryString
+    //RowMapperSparqlifyBinding rewrite.getVarDefinition
     println("SQL QUERY: " + sqlQueryStr)
 
 
