@@ -8,6 +8,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
+import org.apache.jena.rdf.model.impl.NTripleReader
 
 /**
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
@@ -55,15 +56,15 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node_Blank
     */
-  class BlankNodeSerializer extends Serializer[Node_Blank] {
-    override def write(kryo: Kryo, output: Output, obj: Node_Blank) {
-      output.writeString(obj.toString)
-    }
-
-    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Blank]): Node_Blank = {
-      NodeFactory.createBlankNode(input.readString()).asInstanceOf[Node_Blank]
-    }
-  }
+//  class BlankNodeSerializer extends Serializer[Node_Blank] {
+//    override def write(kryo: Kryo, output: Output, obj: Node_Blank) {
+//      output.writeString(obj.toString)
+//    }
+//
+//    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Blank]): Node_Blank = {
+//      NodeFactory.createBlankNode(input.readString()).asInstanceOf[Node_Blank]
+//    }
+//  }
 
   /**
     * Kryo Serializer for Node_ANY
@@ -94,28 +95,28 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node_URI
     */
-  class URINodeSerializer extends Serializer[Node_URI] {
-    override def write(kryo: Kryo, output: Output, obj: Node_URI) {
-      output.writeString(obj.toString())
-    }
-
-    override def read(kryo: Kryo, input: Input, objClass: Class[Node_URI]): Node_URI = {
-      NodeFactory.createURI(input.readString()).asInstanceOf[Node_URI]
-    }
-  }
+//  class URINodeSerializer extends Serializer[Node_URI] {
+//    override def write(kryo: Kryo, output: Output, obj: Node_URI) {
+//      output.writeString(obj.toString())
+//    }
+//
+//    override def read(kryo: Kryo, input: Input, objClass: Class[Node_URI]): Node_URI = {
+//      NodeFactory.createURI(input.readString()).asInstanceOf[Node_URI]
+//    }
+//  }
 
   /**
     * Kryo Serializer for Node_Literal
     */
-  class LiteralNodeSerializer extends Serializer[Node_Literal] {
-    override def write(kryo: Kryo, output: Output, obj: Node_Literal) {
-      output.writeString(obj.toString())
-    }
-
-    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Literal]): Node_Literal = {
-      NodeFactory.createLiteral(input.readString()).asInstanceOf[Node_Literal]
-    }
-  }
+//  class LiteralNodeSerializer extends Serializer[Node_Literal] {
+//    override def write(kryo: Kryo, output: Output, obj: Node_Literal) {
+//      output.writeString(obj.toString())
+//    }
+//
+//    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Literal]): Node_Literal = {
+//      NodeFactory.createLiteral(input.readString()).asInstanceOf[Node_Literal]
+//    }
+//  }
 
   /**
     * Kryo Serializer for Triple

@@ -144,11 +144,15 @@ object MainPartitioner {
         |<http://dbpedia.org/resource/Charles_Dickens>	<http://xmlns.com/foaf/0.1/givenName>	"Charles"@en .
         |<http://dbpedia.org/resource/Charles_Dickens>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Gads_Hill_Place> .""".stripMargin
 
-    val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString), Lang.NTRIPLES, "http://example.org/").toSeq
+    val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString), Lang.NTRIPLES, "http://example.org/").toArray.toSeq
+    //it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     val graphRdd = sparkSession.sparkContext.parallelize(it)
+
+    graphRdd.foreach { x => println("RDD: " + x) }
 
     //val map = graphRdd.partitionGraphByPredicates
     val partitions = GraphRDDUtils.partitionGraphByPredicates(graphRdd)
+
 
     val config = new Config();
     val logger = LoggerFactory.getLogger(MainPartitioner.getClass);
@@ -184,70 +188,70 @@ object MainPartitioner {
 
     val views = partitions.map {
       case (p, rdd) =>
-
+//
         println("Processing: " + p)
-        // TODO Deal with potential name clashes
-        val tableName = p.getURI.substring(p.getURI.lastIndexOf("/") + 1)
-        println("TableName: " + tableName)
-
-        import sparkSession.implicits._
-
-        val layout = RdfPartition.determineLayout(p)
-        val df = sparkSession.createDataFrame(rdd, layout.schema)
-        //val rddx = rdd.map { case (s, o) => (nodeToTerm(s), nodeToTerm(o)) }
-//sparkSession.createDataframe
-        //val ds = rddx.toDS()
-        println("FIELDS: " + df.schema)
-
-        df.createOrReplaceTempView(tableName)
-
-        //ds.printSchema()
-
-        val sqlQueryStr = s"""
-           |SELECT _1.v
-           |AS val
-           |FROM `$tableName`
-           |""".stripMargin
-
-//        val flatSchema = DatasetUtils.flattenSchema(ds.schema)
-//        val columnNames = flatSchema.keySet.toSeq.asJava
-//        val typeMap = flatSchema.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
-
-
-        val items = sparkSession.sql(sqlQueryStr)
-        val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
-        //println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
-
-        //items.foreach(x => println("Item: " + x))
-
-        //println("Counting the dataset: " + ds.count())
-
-        val quad = new Quad(Quad.defaultGraphIRI, Vars.s, p, Vars.o)
-        val quadPattern = new QuadPattern()
-        quadPattern.add(quad)
-
-        val es = new E_Equals(new ExprVar(Vars.s), E_RdfTerm.createUri(new ExprVar(Var.alloc("_1.v"))))
-        val eo = new E_Equals(new ExprVar(Vars.o), E_RdfTerm.createUri(new ExprVar(Var.alloc("_2.v"))))
-        val el = new ArrayList[Expr] //new ExprList()
-        el.add(es)
-        el.add(eo)
-
-        val typeMap = basicTableInfo.getRawTypeMap.asScala.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
-
-
-        val schema = new SchemaImpl(new ArrayList[String](basicTableInfo.getRawTypeMap.keySet()), typeMap)
-
-        println("Schema: " + schema)
-
-        val sqlOp = new SqlOpTable(null, tableName)
-
-        val vtd = new ViewTemplateDefinition(quadPattern, el)
-
-        val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
-
-        config.getViewDefinitions.add(vd)
-
-        println(vd)
+//        // TODO Deal with potential name clashes
+//        val tableName = p.getURI.substring(p.getURI.lastIndexOf("/") + 1)
+//        println("TableName: " + tableName)
+//
+//        import sparkSession.implicits._
+//
+//        val layout = RdfPartition.determineLayout(p)
+//        val df = sparkSession.createDataFrame(rdd, layout.schema)
+//        //val rddx = rdd.map { case (s, o) => (nodeToTerm(s), nodeToTerm(o)) }
+////sparkSession.createDataframe
+//        //val ds = rddx.toDS()
+//        println("FIELDS: " + df.schema)
+//
+//        df.createOrReplaceTempView(tableName)
+//
+//        //ds.printSchema()
+//
+//        val sqlQueryStr = s"""
+//           |SELECT _1.v
+//           |AS val
+//           |FROM `$tableName`
+//           |""".stripMargin
+//
+////        val flatSchema = DatasetUtils.flattenSchema(ds.schema)
+////        val columnNames = flatSchema.keySet.toSeq.asJava
+////        val typeMap = flatSchema.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
+//
+//
+//        val items = sparkSession.sql(sqlQueryStr)
+//        val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
+//        //println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
+//
+//        //items.foreach(x => println("Item: " + x))
+//
+//        //println("Counting the dataset: " + ds.count())
+//
+//        val quad = new Quad(Quad.defaultGraphIRI, Vars.s, p, Vars.o)
+//        val quadPattern = new QuadPattern()
+//        quadPattern.add(quad)
+//
+//        val es = new E_Equals(new ExprVar(Vars.s), E_RdfTerm.createUri(new ExprVar(Var.alloc("_1.v"))))
+//        val eo = new E_Equals(new ExprVar(Vars.o), E_RdfTerm.createUri(new ExprVar(Var.alloc("_2.v"))))
+//        val el = new ArrayList[Expr] //new ExprList()
+//        el.add(es)
+//        el.add(eo)
+//
+//        val typeMap = basicTableInfo.getRawTypeMap.asScala.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
+//
+//
+//        val schema = new SchemaImpl(new ArrayList[String](basicTableInfo.getRawTypeMap.keySet()), typeMap)
+//
+//        println("Schema: " + schema)
+//
+//        val sqlOp = new SqlOpTable(null, tableName)
+//
+//        val vtd = new ViewTemplateDefinition(quadPattern, el)
+//
+//        val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
+//
+//        config.getViewDefinitions.add(vd)
+//
+//        println(vd)
     }
 
     val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)

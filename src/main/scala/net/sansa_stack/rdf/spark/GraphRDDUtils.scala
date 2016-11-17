@@ -1,23 +1,24 @@
 package net.sansa_stack.rdf.spark
 
-import org.apache.jena.graph.Node
-import org.apache.jena.graph.Triple
-import org.apache.spark.rdd.RDD
-import org.apache.jena.sparql.expr.Expr
-import org.apache.jena.sparql.expr.ExprVar
-import org.aksw.jena_sparql_api.views.E_RdfTerm
-import org.apache.jena.sparql.expr.E_Equals
-import org.apache.jena.sparql.core.Var
-import org.aksw.jena_sparql_api.utils.Vars
-import org.apache.jena.sparql.core.QuadPattern
-import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
-import org.aksw.sparqlify.core.sql.schema.SchemaImpl
-import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
-import org.apache.jena.datatypes.TypeMapper
-import org.apache.jena.sparql.core.Quad
 import java.util.ArrayList
 import java.util.Arrays
+
+import org.aksw.jena_sparql_api.utils.Vars
+import org.aksw.jena_sparql_api.views.E_RdfTerm
+import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.aksw.sparqlify.config.syntax.ViewDefinition
+import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
+import org.apache.jena.datatypes.TypeMapper
+import org.apache.jena.graph.Node
+import org.apache.jena.graph.NodeFactory
+import org.apache.jena.graph.Triple
+import org.apache.jena.sparql.core.Quad
+import org.apache.jena.sparql.core.QuadPattern
+import org.apache.jena.sparql.core.Var
+import org.apache.jena.sparql.expr.E_Equals
+import org.apache.jena.sparql.expr.Expr
+import org.apache.jena.sparql.expr.ExprVar
+import org.apache.spark.rdd.RDD
 
 //import scala.reflect.runtime.{universe => ru}
 
@@ -117,46 +118,48 @@ object SparqlifyUtils2 {
   implicit def newExprVar(varId: Int): ExprVar = "_" + varId
 
 
-  def getDefinitions(p: RdfPartition): Expr = {
-    val se = createExprForNode(0, p.subjectType, "", "")
-    val oe = createExprForNode(1, p.objectType, p.datatype, p.langTag)
 
-  }
-
-  def createViewDefinition() = {
-        val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
+  def createViewDefinition(p: RdfPartition): ViewDefinition = {
+        //val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
         //println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
 
         //items.foreach(x => println("Item: " + x))
 
         //println("Counting the dataset: " + ds.count())
+        val pred = p.predicate
+        val tableName = pred.substring(pred.lastIndexOf("/") + 1)
+        val pn = NodeFactory.createURI(p.predicate)
 
-        val quad = new Quad(Quad.defaultGraphIRI, Vars.s, p, Vars.o)
+        val quad = new Quad(Quad.defaultGraphIRI, Vars.s, pn, Vars.o)
         val quadPattern = new QuadPattern()
         quadPattern.add(quad)
 
-        val es = new E_Equals(new ExprVar(Vars.s), E_RdfTerm.createUri(new ExprVar(Var.alloc("_1.v"))))
-        val eo = new E_Equals(new ExprVar(Vars.o), E_RdfTerm.createUri(new ExprVar(Var.alloc("_2.v"))))
-        val el = new ArrayList[Expr] //new ExprList()
-        el.add(es)
-        el.add(eo)
+        val sTerm = createExprForNode(0, p.subjectType, "", "")
+        val oTerm = createExprForNode(1, p.objectType, p.datatype, p.langTag)
 
-        val typeMap = basicTableInfo.getRawTypeMap.asScala.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
+        val se = new E_Equals(new ExprVar(Vars.s), sTerm)
+        val oe = new E_Equals(new ExprVar(Vars.o), oTerm)
+        val varDefs = new ArrayList[Expr] //new ExprList()
+        varDefs.add(se)
+        varDefs.add(oe)
+
+        //val typeMap = basicTableInfo.getRawTypeMap.asScala.map({ case (k, v) => (k, TypeToken.alloc(v)) }).asJava
 
 
-        val schema = new SchemaImpl(new ArrayList[String](basicTableInfo.getRawTypeMap.keySet()), typeMap)
+        //val schema = new SchemaImpl(new ArrayList[String](basicTableInfo.getRawTypeMap.keySet()), typeMap)
 
-        println("Schema: " + schema)
+        //println("Schema: " + schema)
 
         val sqlOp = new SqlOpTable(null, tableName)
 
-        val vtd = new ViewTemplateDefinition(quadPattern, el)
+        val vtd = new ViewTemplateDefinition(quadPattern, varDefs)
 
         val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
 
+        vd
   }
 
-  def createExprForNode(offset: Int, termType: Byte, datatype: String, langTag: String): E_RdfTerm {
+  def createExprForNode(offset: Int, termType: Byte, datatype: String, langTag: String): E_RdfTerm = {
     termType match {
       case 0 => E_RdfTerm.createBlankNode(offset)
       case 1 => E_RdfTerm.createUri(offset)
@@ -164,9 +167,6 @@ object SparqlifyUtils2 {
       case 2 if(!Option(datatype).getOrElse("").isEmpty) => E_RdfTerm.createTypedLiteral(offset, offset + 1)
       case _ => throw new RuntimeException("Unhandled case")
     }
-  }
-
-  def createViewDefinition(p: RdfPartition) : ViewDefiniton = {
   }
 
 }
@@ -205,6 +205,7 @@ object RdfPartition {
   }
 
   def fromTriple(t : Triple): RdfPartition = {
+    println("TRIPLE: " + t)
     val s = t.getSubject
     val o = t.getObject
 
@@ -230,7 +231,10 @@ object RdfPartition {
     val layout = oType match {
       case 0 => TripleLayoutString
       case 1 => TripleLayoutString
-      case 2 => if(t.objectType == 2 && t.langTag != "") TripleLayoutString else determineLayoutDatatype(t.datatype)
+      case 2 => if(t.objectType == 2 && t.datatype != "")
+        determineLayoutDatatype(t.datatype)
+        else if(t.langTag == "")
+          TripleLayoutString else TripleLayoutStringLang
       case _ => throw new RuntimeException("Unsupported object type: " + t)
     }
     layout
