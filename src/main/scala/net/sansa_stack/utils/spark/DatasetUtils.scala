@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark
+package net.sansa_stack.utils.spark
 
 import org.apache.spark.sql.types.StructType
 import scala.collection.mutable.LinkedHashMap

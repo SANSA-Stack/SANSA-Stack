@@ -6,7 +6,7 @@ import org.aksw.sparqlify.config.v0_2.bridge.BasicTableInfo
 import org.aksw.sparqlify.config.v0_2.bridge.BasicTableInfoProvider
 import org.apache.spark.sql.SparkSession
 
-import net.sansa_stack.rdf.spark.DatasetUtils
+import net.sansa_stack.utils.spark.DatasetUtils
 import java.util.Collections
 
 

@@ -1,17 +1,13 @@
-package net.sansa_stack.rdf.spark
-
-import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.typeOf
+package net.sansa_stack.rdf.spark.partition.core
 
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 
 
-object GraphRDDUtils extends Serializable {
+object RdfPartitionUtilsSpark extends Serializable {
 
   implicit def partitionGraphByPredicates(graphRdd : RDD[Triple]) : Map[RdfPartitionDefault, RDD[Row]] = {
     val map = Map(partitionGraphByPredicatesArray(graphRdd) :_*)
