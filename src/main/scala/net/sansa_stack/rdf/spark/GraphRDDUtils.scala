@@ -22,6 +22,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.vocabulary.XSD
 import scala.reflect.runtime.universe._
 import org.apache.spark.sql.Row
+import org.apache.jena.sparql.util.NodeUtils
+import org.apache.jena.vocabulary.RDF
+import org.apache.jena.sparql.expr.NodeValue
 
 
 
@@ -135,8 +138,8 @@ object SparqlifyUtils2 {
     val quadPattern = new QuadPattern()
     quadPattern.add(quad)
 
-    val sTerm = createExprForNode(0, p.subjectType, "", "")
-    val oTerm = createExprForNode(1, p.objectType, p.datatype, p.langTag)
+    val sTerm = createExprForNode(0, p.subjectType, "", p.langTagPresent)
+    val oTerm = createExprForNode(1, p.objectType, p.datatype, p.langTagPresent)
 
     val se = new E_Equals(new ExprVar(Vars.s), sTerm)
     val oe = new E_Equals(new ExprVar(Vars.o), oTerm)
@@ -158,14 +161,14 @@ object SparqlifyUtils2 {
     vd
   }
 
-  def createExprForNode(offset: Int, termType: Byte, datatype: String, langTag: String): E_RdfTerm = {
+  def createExprForNode(offset: Int, termType: Byte, datatype: String, langTagPresent: Boolean): E_RdfTerm = {
     val o = offset + 1
 
     termType match {
       case 0 => E_RdfTerm.createBlankNode(o)
       case 1 => E_RdfTerm.createUri(o)
-      case 2 if(!Option(langTag).getOrElse("").isEmpty) => E_RdfTerm.createPlainLiteral(o, o + 1)
-      case 2 if(!Option(datatype).getOrElse("").isEmpty) => E_RdfTerm.createTypedLiteral(o, o + 1)
+      case 2 => if(langTagPresent) E_RdfTerm.createPlainLiteral(o, o + 1) else E_RdfTerm.createTypedLiteral(o, NodeValue.makeString(datatype))
+      //case 2 if(!Option(datatype).getOrElse("").isEmpty) => E_RdfTerm.createTypedLiteral(o, o + 1)
       case _ => throw new RuntimeException("Unhandled case")
     }
   }
@@ -176,7 +179,7 @@ object SparqlifyUtils2 {
 /**
  * special datatypes: b for blank, u for uri, typed literal otherwise
  */
-case class RdfPartition(val subjectType: Byte, val predicate: String, val objectType: Byte, val datatype: String, val langTag: String) {
+case class RdfPartition(val subjectType: Byte, val predicate: String, val objectType: Byte, val datatype: String, val langTagPresent: Boolean) {//val langTag: String) {
 
 
   def matches(t: Triple): Boolean = {
@@ -205,6 +208,21 @@ object RdfPartition {
     result
   }
 
+  def isPlainLiteralDatatype(dtypeIri: String): Boolean = {
+    val result = dtypeIri == null || dtypeIri == "" || dtypeIri == XSD.xstring.getURI || dtypeIri == RDF.langString
+    result
+  }
+
+  def isPlainLiteral(node: Node): Boolean = {
+    val result = node.isLiteral() && isPlainLiteralDatatype(node.getLiteralDatatypeURI) //NodeUtils.isSimpleString(node) || NodeUtils.isLangString(node))
+    result
+  }
+
+  def isTypedLiteral(node: Node): Boolean = {
+    val result = node.isLiteral() && !isPlainLiteral(node)
+    result
+  }
+
   def fromTriple(t : Triple): RdfPartition = {
     println("TRIPLE: " + t)
     val s = t.getSubject
@@ -216,9 +234,10 @@ object RdfPartition {
 
     val predicate = t.getPredicate.getURI
     val datatype = if(o.isLiteral()) o.getLiteralDatatypeURI else ""
-    val langTag = if(o.isLiteral()) o.getLiteralLanguage else ""
+    val langTagPresent = isPlainLiteral(o)
 
-    RdfPartition(subjectType, predicate, objectType, datatype, langTag)
+
+    RdfPartition(subjectType, predicate, objectType, datatype, langTagPresent)
   }
 
 
@@ -232,10 +251,12 @@ object RdfPartition {
     val layout = oType match {
       case 0 => TripleLayoutString
       case 1 => TripleLayoutString
-      case 2 => if(t.objectType == 2 && t.datatype != "")
+      case 2 => if(isPlainLiteralDatatype(t.datatype))
+        TripleLayoutStringLang
+      else
         determineLayoutDatatype(t.datatype)
-        else if(t.langTag == "")
-          TripleLayoutString else TripleLayoutStringLang
+       //if(!t.langTagPresent)
+          //TripleLayoutString else TripleLayoutStringLang
       case _ => throw new RuntimeException("Unsupported object type: " + t)
     }
     layout
