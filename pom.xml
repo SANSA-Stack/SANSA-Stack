@@ -4,7 +4,7 @@
 	<groupId>org.sansa-stack.rdf.spark</groupId>
 	<artifactId>sansa-rdf-spark-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-<!-- 	<name>${project.artifactId}</name> -->
+	<!-- <name>${project.artifactId}</name> -->
 	<description>RDF Spark Library</description>
 	<inceptionYear>2015</inceptionYear>
 
@@ -18,12 +18,12 @@
 		<jena.version>3.1.1</jena.version>
 	</properties>
 
-    <scm>
-        <url>https://github.com/SANSA-Stack/Spark-RDF</url>
-        <connection>scm:git:git://github.com/SANSA-Stack/Spark-RDF.git</connection>
-        <developerConnection>scm:git:git@github.com:SANSA-Stack/Spark-RDF.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
+	<scm>
+		<url>https://github.com/SANSA-Stack/Spark-RDF</url>
+		<connection>scm:git:git://github.com/SANSA-Stack/Spark-RDF.git</connection>
+		<developerConnection>scm:git:git@github.com:SANSA-Stack/Spark-RDF.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 
 
 	<profiles>
@@ -86,10 +86,10 @@
 	</profiles>
 
 	<repositories>
-<!-- 		<repository> -->
-<!-- 			<id>Akka repository</id> -->
-<!-- 			<url>http://repo.akka.io/releases</url> -->
-<!-- 		</repository> -->
+		<!-- <repository> -->
+		<!-- <id>Akka repository</id> -->
+		<!-- <url>http://repo.akka.io/releases</url> -->
+		<!-- </repository> -->
 		<repository>
 			<id>oss-sonatype</id>
 			<name>oss-sonatype</name>
@@ -192,35 +192,52 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>de.javakaffee</groupId>
-		    <artifactId>kryo-serializers</artifactId>
-		    <version>0.41</version>
+			<groupId>de.javakaffee</groupId>
+			<artifactId>kryo-serializers</artifactId>
+			<version>0.41</version>
 		</dependency>
 	</dependencies>
 
+
 	<build>
-		<sourceDirectory>src/main/scala</sourceDirectory>
-		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
+<!-- 			<sourceDirectory>src/main/scala</sourceDirectory> -->
+<!-- 			<testSourceDirectory>src/test/scala</testSourceDirectory> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
-				<version>3.2.0</version>
+<!-- 				<configuration> -->
+<!-- 					<recompileMode>incremental</recompileMode> -->
+<!-- 				</configuration> -->
 				<executions>
 					<execution>
 						<goals>
+							<goal>add-source</goal>
 							<goal>compile</goal>
 							<goal>testCompile</goal>
 						</goals>
-<!-- 						<configuration> -->
-<!-- 							<args> -->
-<!-- 								<arg>-dependencyfile</arg> -->
-<!-- 								<arg>${project.build.directory}/.scala_dependencies</arg> -->
-<!-- 							</args> -->
-<!-- 						</configuration> -->
 					</execution>
+<!-- 					<execution> -->
+<!-- 						<goals> -->
+<!-- 							<goal>add-source</goal> -->
+<!-- 							<configuration> -->
+<!-- 								<sourceDir>src/main/scala</sourceDir> -->
+<!-- 								<testSourceDir>src/main/test</testSourceDir> -->
+<!-- 							</configuration> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
 				</executions>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -237,69 +254,28 @@
 				</configuration>
 			</plugin>
 
-<!-- 			<plugin> -->
-<!-- 				<groupId>org.jboss.tattletale</groupId> -->
-<!-- 				<artifactId>tattletale-maven</artifactId> -->
-<!-- 				<version>1.2.0.Beta2</version> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						needs to run after WAR package has been built -->
-<!-- 						<phase>verify</phase> -->
-<!-- 						<goals> -->
-<!-- 							<goal>report</goal> -->
-<!-- 						</goals> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 				<configuration> -->
-<!-- 					<source>${project.build.directory}/${project.build.finalName}/WEB-INF/lib</source> -->
-<!-- 					<destination>${project.reporting.outputDirectory}/tattletale</destination> -->
-<!-- 					<reports> -->
-<!-- 						<report>jar</report> -->
-<!-- 						<report>multiplejars</report> -->
-<!-- 					</reports> -->
-<!-- 					<failOnWarn>true</failOnWarn> -->
-<!-- 					excluding some jars, if jar name contains any of these strings
- 						it won't be analyzed -->
-<!-- 					<excludes> -->
-<!-- 						<exclude>commons-beanutils-core-</exclude> -->
-<!-- 						<exclude>postgresql-</exclude> -->
-<!-- 						<exclude>asm-</exclude> -->
-<!-- 					</excludes> -->
-<!-- 				</configuration> -->
-<!-- 			</plugin> -->
-
-			<!-- Make this jar executable -->
 			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-				</configuration>
-			</plugin>
-<!-- 			<plugin> -->
-<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
-<!-- 				<artifactId>maven-jar-plugin</artifactId> -->
-<!-- 				<version>2.3.1</version> -->
-<!-- 				<configuration> -->
-<!-- 					<archive> -->
-<!-- 						<manifest> -->
-<!-- 							<addClasspath>true</addClasspath> -->
-<!-- 							<mainClass>${mainclass}</mainClass> -->
-<!-- 						</manifest> -->
-<!-- 					</archive> -->
-<!-- 				</configuration> -->
-<!-- 			</plugin> -->
-
-			<plugin>
-                <groupId>external.atlassian.jgitflow</groupId>
-                <artifactId>jgitflow-maven-plugin</artifactId>
-                <version>1.0-m5.1</version>
+				<groupId>external.atlassian.jgitflow</groupId>
+				<artifactId>jgitflow-maven-plugin</artifactId>
+				<version>1.0-m5.1</version>
 			</plugin>
 		</plugins>
-		<pluginManagement>
 
+		<pluginManagement>
 			<plugins>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.6.0</version>
+				</plugin>
+
+				<plugin>
+					<groupId>net.alchim31.maven</groupId>
+					<artifactId>scala-maven-plugin</artifactId>
+					<version>3.2.2</version>
+				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
@@ -337,7 +313,8 @@
 					</executions>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -359,6 +336,7 @@
 										<goals>
 											<goal>testCompile</goal>
 											<goal>compile</goal>
+											<goal>add-source</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>

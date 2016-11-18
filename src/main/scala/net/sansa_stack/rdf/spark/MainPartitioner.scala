@@ -27,9 +27,11 @@ import org.apache.spark.sql.types.StructType
 import com.typesafe.scalalogging.LazyLogging
 
 import net.sansa_stack.rdf.common.partition.sparqlify.SparqlifyUtils2
+import net.sansa_stack.rdf.spark.model.RDFDSL
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
-import net.sansa_stack.rdf.spark.model.RDFDSL
+import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
+import org.apache.jena.query.ResultSetFormatter
 
 
 object MainPartitioner
@@ -105,26 +107,35 @@ object MainPartitioner
     val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
     //val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
 
-    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
-
-    val sqlQueryStr = rewrite.getSqlQueryString
-    //RowMapperSparqlifyBinding rewrite.getVarDefinition
-    println("SQL QUERY: " + sqlQueryStr)
-
-    val varDef = rewrite.getVarDefinition.getMap
-    val fuck = varDef.entries().iterator().next().getKey
-
-    val resultDs = sparkSession.sql(sqlQueryStr)
+//    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
 
 
-    val f = { row: Row => val b = rowToBinding(row)
-      ItemProcessorSparqlify.process(varDef, b) }
-    val g = RDFDSL.kryoWrap(f)
-    //val g = genMapper(f)//RDFDSL.kryoWrap(f)
+    val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 
-    val finalDs = resultDs.rdd.map(g)
+    val q = QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
 
-    finalDs.foreach(b => println("RESULT BINDING: " + b))
+    val qe = qef.createQueryExecution(q)
+    println(ResultSetFormatter.asText(qe.execSelect))
+
+//
+//    val sqlQueryStr = rewrite.getSqlQueryString
+//    //RowMapperSparqlifyBinding rewrite.getVarDefinition
+//    println("SQL QUERY: " + sqlQueryStr)
+//
+//    val varDef = rewrite.getVarDefinition.getMap
+//    val fuck = varDef.entries().iterator().next().getKey
+//
+//    val resultDs = sparkSession.sql(sqlQueryStr)
+//
+//
+//    val f = { row: Row => val b = rowToBinding(row)
+//      ItemProcessorSparqlify.process(varDef, b) }
+//    val g = RDFDSL.kryoWrap(f)
+//    //val g = genMapper(f)//RDFDSL.kryoWrap(f)
+//
+//    val finalDs = resultDs.rdd.map(g)
+//
+//    finalDs.foreach(b => println("RESULT BINDING: " + b))
 
     //resultDs.foreach { x => println("RESULT ROW: " + ItemProcessorSparqlify.process(varDef, rowToBinding(x))) }
 //    val f = { y: Row =>

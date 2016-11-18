@@ -23,12 +23,13 @@ object RdfPartitionUtilsSpark extends Serializable {
     val partitions = graphRdd.map(x => partitioner.fromTriple(x)).distinct.collect
 
     val array = partitions map { p => (
-          p,
-          graphRdd
-            .filter(p.matches)
-            .map(t => Row(p.layout.fromTriple(t).productIterator.toList :_* ))
-            .persist())
-          }
+      p,
+      graphRdd
+        .filter(p.matches)
+        .map(t => Row(p.layout.fromTriple(t).productIterator.toList :_* ))
+        .persist())
+    }
+
     array
   }
 }
