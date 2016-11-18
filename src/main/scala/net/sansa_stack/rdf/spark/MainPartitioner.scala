@@ -60,7 +60,7 @@ object MainPartitioner
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
     //val map = graphRdd.partitionGraphByPredicates
-    val partitions = RdfPartitionUtilsSpark.partitionGraphByPredicates(graphRdd)
+    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
 
 
     val config = new Config();
