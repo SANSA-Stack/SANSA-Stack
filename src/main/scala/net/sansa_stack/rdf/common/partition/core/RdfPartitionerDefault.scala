@@ -13,7 +13,7 @@ import net.sansa_stack.rdf.common.partition.layout.TripleLayoutStringStringLang
 
 
 object RdfPartitionerDefault
-  extends RdfPartitioner[RdfPartitionDefault]
+  extends RdfPartitioner[RdfPartitionDefault] with Serializable
 {
   def getUriOrBNodeString(node: Node): String = {
     val termType = getRdfTermType(node)
@@ -49,7 +49,6 @@ object RdfPartitionerDefault
   }
 
   def fromTriple(t : Triple): RdfPartitionDefault = {
-    println("TRIPLE: " + t)
     val s = t.getSubject
     val o = t.getObject
 

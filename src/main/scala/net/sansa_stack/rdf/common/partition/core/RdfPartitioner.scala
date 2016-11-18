@@ -1,13 +1,10 @@
 package net.sansa_stack.rdf.common.partition.core
 
-import net.sansa_stack.rdf.common.partition.layout.TripleLayout
-
 import org.apache.jena.graph.Triple
 
+//import scala.reflect.runtime.universe.TypeTag
 
-trait RdfPartitioner[P] {
-  //def determineLayout(triple: Triple): TripleLayout
+trait RdfPartitioner[P <: RdfPartition] {
   def fromTriple(triple: Triple): P
-  def determineLayout(partition: P): TripleLayout
 }
 
