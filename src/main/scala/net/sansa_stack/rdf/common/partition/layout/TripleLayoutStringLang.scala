@@ -9,7 +9,7 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 
 
 // Layout for plain literals with language tag
-object TripleLayoutStringStringLang
+object TripleLayoutStringLang
   extends TripleLayout
 {
   def schema = typeOf[(String, String, String)]

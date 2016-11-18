@@ -9,7 +9,7 @@ import net.sansa_stack.rdf.common.partition.layout.TripleLayoutLong
 import org.apache.jena.vocabulary.RDF
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.Triple
-import net.sansa_stack.rdf.common.partition.layout.TripleLayoutStringStringLang
+import net.sansa_stack.rdf.common.partition.layout.TripleLayoutStringLang
 
 
 object RdfPartitionerDefault
@@ -79,7 +79,7 @@ object RdfPartitionerDefault
       case 0 => TripleLayoutString
       case 1 => TripleLayoutString
       case 2 => if(isPlainLiteralDatatype(t.datatype))
-        TripleLayoutStringStringLang
+        TripleLayoutStringLang
       else
         determineLayoutDatatype(t.datatype)
        //if(!t.langTagPresent)

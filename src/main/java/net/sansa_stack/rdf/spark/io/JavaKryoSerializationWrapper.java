@@ -34,9 +34,9 @@ public class JavaKryoSerializationWrapper<T> implements Serializable {
 	}
 
 	public byte[] getValueSerialized() {
-		if (valueSerialized == null) {
+//		if (valueSerialized == null) {
 			valueSerialized = JavaKryoSerializer.serialize(classTag, value);
-		}
+//		}
 		return valueSerialized;
 	}
 

@@ -30,6 +30,11 @@ public class SparkRowMapperSparqlify
 		Binding rawBinding = rowToRawBinding(row);
 		Binding result = ItemProcessorSparqlify.process(varDef, rawBinding);
 
+//		System.out.println("VarDef: " + varDef);
+//		System.out.println("Row: " + row);
+//		System.out.println("RawBinding: " + rawBinding);
+//		System.out.println("ResultBinding: " + result);
+
 		return result;
 	}
 

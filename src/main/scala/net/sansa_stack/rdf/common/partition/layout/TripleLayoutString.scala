@@ -23,7 +23,7 @@ object TripleLayoutString
     val result = if(o.isLiteral()) {
       (sStr, o.getLiteralLexicalForm)
     } else {
-      val oStr = RdfPartitionerDefault.getUriOrBNodeString(s)
+      val oStr = RdfPartitionerDefault.getUriOrBNodeString(o)
       (sStr, oStr)
     }
 
