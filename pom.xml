@@ -162,6 +162,12 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-server-standalone</artifactId>
+			<version>3.1.1-1-SNAPSHOT</version>
+		</dependency>
+
 		<!-- Test -->
 		<dependency>
 			<groupId>junit</groupId>

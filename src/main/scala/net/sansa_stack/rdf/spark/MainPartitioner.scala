@@ -2,23 +2,31 @@ package net.sansa_stack.rdf.spark
 
 import scala.collection.JavaConversions.asScalaIterator
 
+import org.aksw.jena_sparql_api.core.SparqlServiceFactory
+import org.aksw.jena_sparql_api.core.SparqlServiceImpl
+import org.aksw.jena_sparql_api.server.utils.SparqlServerUtils
+import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
 import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
-import org.aksw.sparqlify.core.sparql.ItemProcessorSparqlify
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
 import org.aksw.sparqlify.util.SparqlifyUtils
 import org.aksw.sparqlify.util.SqlBackendConfig
 import org.aksw.sparqlify.validation.LoggerCount
 import org.apache.commons.io.IOUtils
+import org.apache.http.client.HttpClient
 import org.apache.jena.query.QueryFactory
+import org.apache.jena.query.ResultSetFormatter
+import org.apache.jena.query.Syntax
 import org.apache.jena.riot.Lang
 import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.sparql.core.DatasetDescription
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.engine.binding.BindingHashMap
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.ScalaReflection
@@ -27,11 +35,9 @@ import org.apache.spark.sql.types.StructType
 import com.typesafe.scalalogging.LazyLogging
 
 import net.sansa_stack.rdf.common.partition.sparqlify.SparqlifyUtils2
-import net.sansa_stack.rdf.spark.model.RDFDSL
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
 import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
-import org.apache.jena.query.ResultSetFormatter
 
 
 object MainPartitioner
@@ -112,10 +118,21 @@ object MainPartitioner
 
     val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 
-    val q = QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
+    val sparqlStmtParser = SparqlStmtParserImpl.create(Syntax.syntaxARQ, true);
 
-    val qe = qef.createQueryExecution(q)
-    println(ResultSetFormatter.asText(qe.execSelect))
+    val ssf = new SparqlServiceFactory() {
+            def createSparqlService(serviceUri: String, datasetDescription: DatasetDescription, httpClient: HttpClient) = {
+                 new SparqlServiceImpl(qef, null);
+            }
+        };
+
+    val server = SparqlServerUtils.startSparqlEndpoint(ssf, sparqlStmtParser, 7531)
+    server.join()
+//
+//    val q = QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
+//
+//    val qe = qef.createQueryExecution(q)
+//    println(ResultSetFormatter.asText(qe.execSelect))
 
 //
 //    val sqlQueryStr = rewrite.getSqlQueryString
