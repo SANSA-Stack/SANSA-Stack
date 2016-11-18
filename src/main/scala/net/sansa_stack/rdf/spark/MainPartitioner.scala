@@ -100,7 +100,10 @@ object MainPartitioner
     val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
 
     val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
-    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
+    //val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
+
+    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
+
     val sqlQueryStr = rewrite.getSqlQueryString
     //RowMapperSparqlifyBinding rewrite.getVarDefinition
     println("SQL QUERY: " + sqlQueryStr)
