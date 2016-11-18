@@ -43,7 +43,10 @@ object MainPartitioner
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       //.config("spark.kryo.registrationRequired", "true")
+        .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+      .config("spark.default.parallelism", "4")
+      .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
 
 
@@ -55,7 +58,7 @@ object MainPartitioner
         |<http://dbpedia.org/resource/Charles_Dickens>	<http://xmlns.com/foaf/0.1/givenName>	"Charles"@en .
         |<http://dbpedia.org/resource/Charles_Dickens>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Gads_Hill_Place> .""".stripMargin
 
-    val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString), Lang.NTRIPLES, "http://example.org/").toArray.toSeq
+    val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").toArray.toSeq
     //it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
@@ -63,7 +66,7 @@ object MainPartitioner
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
 
 
-    val config = new Config();
+    val config = new Config()
     val loggerCount = new LoggerCount(logger.underlying)
 
 
