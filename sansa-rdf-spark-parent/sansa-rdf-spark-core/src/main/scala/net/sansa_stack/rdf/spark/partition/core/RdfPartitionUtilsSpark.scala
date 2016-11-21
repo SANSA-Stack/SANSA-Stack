@@ -4,9 +4,9 @@ import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartition
-import net.sansa_stack.rdf.common.partition.core.RdfPartitioner
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.partition.core.RdfPartition
+import net.sansa_stack.rdf.partition.core.RdfPartitioner
+import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
 
 import scala.reflect.ClassTag
 
