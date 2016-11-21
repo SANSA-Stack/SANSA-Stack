@@ -1,47 +1,16 @@
 package net.sansa_stack.ml.spark.amieSpark.mining
 
 
-import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext}
-
-
-
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql._
-import org.apache.spark.sql.types._
-
-
-
-
-import scala.collection.mutable
-import scala.collection.mutable.Map
-import scala.collection.mutable.ArrayBuffer
-
-import Rules.RuleContainer
-import KBObject.KB 
-
-import org.apache.jena.vocabulary.{OWL2, RDF}
-
-import net.sansa_stack.ml.spark.dissect.inference.data._
-import org.apache.jena.reasoner.rulesys.Rule
-import org.apache.jena.reasoner.rulesys.ClauseEntry
-import org.apache.jena.reasoner.TriplePattern
-import org.apache.jena.graph.{NodeFactory ,Node}
-
-import scala.util.{Try, Success, Failure}
-import org.apache.spark.rdd.RDD
-import org.apache.commons.io.FileUtils
 import java.io.File
 
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import java.nio.file.WatchEvent;
-import net.sansa_stack.ml.spark.amieSpark.mining._
+import net.sansa_stack.ml.spark.amieSpark.mining.KBObject.KB
+import net.sansa_stack.ml.spark.amieSpark.mining.Rules.RuleContainer
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession, _}
+
+import scala.collection.mutable.{ArrayBuffer, Map}
+import scala.util.Try
 
 object MineRules {
  /**	Algorithm that mines the Rules.

@@ -1,39 +1,18 @@
 package net.sansa_stack.ml.spark.amieSpark.mining
 
 
-import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.{DataFrame, SQLContext}
 
-
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql._
-import org.apache.spark.sql.types._
-
-
-import scala.collection.mutable.ArrayBuffer
-
-import scala.collection.mutable.Map
-
-import net.sansa_stack.ml.spark.dissect.inference.data._
-import org.apache.jena.reasoner.rulesys.Rule
-import org.apache.jena.reasoner.rulesys.ClauseEntry
-import org.apache.jena.reasoner.TriplePattern
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import scala.collection.mutable.{ArrayBuffer, Map}
 
 //import net.sansa_stack.ml.spark.dissect.inference.utils._
 
-import Rules.RuleContainer
-
-import org.apache.spark.rdd.RDD
-import org.apache.jena.ext.com.google.common.collect.Synchronized
-
-import scala.collection.immutable.ListMap
-
-import org.apache.spark.sql.functions.udf
-
-import org.apache.commons.io.FileUtils
 import java.io.File
-import net.sansa_stack.ml.spark.amieSpark.mining._
+
+import net.sansa_stack.ml.spark.amieSpark.mining.Rules.RuleContainer
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.functions.udf
 
 object KBObject{
     case class Atom (rdf:RDFTriple)
