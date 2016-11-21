@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-spark-core_${scala.compat.version}</artifactId>
+	<artifactId>sansa-rdf-spark-core</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-rdf-spark-parent_${scala.compat.version}</artifactId>
+		<artifactId>sansa-rdf-spark-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
@@ -14,17 +14,20 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-kryo-jena_${scala.compat.version}</artifactId>
+			<artifactId>sansa-rdf-kryo-jena</artifactId>
+<!-- 			<classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-utils_${scala.compat.version}</artifactId>
+			<artifactId>sansa-rdf-spark-utils</artifactId>
+<!-- 			<classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-common-partition-core_${scala.compat.version}</artifactId>
+			<artifactId>sansa-rdf-common-partition-core</artifactId>
+<!-- 			<classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 

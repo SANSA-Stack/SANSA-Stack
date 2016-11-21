@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-kryo-sparqlify_${scala.compat.version}</artifactId>
+	<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-rdf-kryo-parent_${scala.compat.version}</artifactId>
+		<artifactId>sansa-rdf-kryo-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
