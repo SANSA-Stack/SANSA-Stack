@@ -47,28 +47,28 @@
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-kryo-jena</artifactId>
 				<version>${project.version}</version>
-<!-- 				<classifier>${scala.classifier}</classifier> -->
+				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark-utils</artifactId>
 				<version>${project.version}</version>
-<!-- 				<classifier>${scala.classifier}</classifier> -->
+				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark-core</artifactId>
 				<version>${project.version}</version>
-<!-- 				<classifier>${scala.classifier}</classifier> -->
+				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-partition-core</artifactId>
 				<version>${project.version}</version>
-<!-- 				<classifier>${scala.classifier}</classifier> -->
+				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<!-- <dependency> -->
@@ -111,10 +111,25 @@
 				<version>${jena.version}</version>
 			</dependency>
 
+			<!-- Jena's (newer) vesion of jackson conflicts with hadoop's and causes it to crash -->
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-arq</artifactId>
 				<version>${jena.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-databind</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-annotations</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<dependency>
