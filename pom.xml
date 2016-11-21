@@ -159,6 +159,10 @@
 					<groupId>org.apache.hive</groupId>
 					<artifactId>hive-jdbc</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.springframework.batch</groupId>
+					<artifactId>spring-batch-infrastructure</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
