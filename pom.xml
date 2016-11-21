@@ -1,9 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.sansa-stack.rdf.spark</groupId>
-	<artifactId>sansa-rdf-spark-parent</artifactId>
+
+	<groupId>org.sansa-stack.rdf</groupId>
+	<artifactId>sansa-rdf-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
 	<!-- <name>${project.artifactId}</name> -->
 	<description>RDF Spark Library</description>
 	<inceptionYear>2015</inceptionYear>
@@ -17,6 +20,10 @@
 		<spark.version>2.0.1</spark.version>
 		<jena.version>3.1.1</jena.version>
 	</properties>
+
+	<modules>
+		<module>sansa-rdf-spark-core</module>
+	</modules>
 
 	<scm>
 		<url>https://github.com/SANSA-Stack/Spark-RDF</url>
@@ -119,6 +126,8 @@
 		</repository>
 	</repositories>
 
+
+	<dependencyManagement>
 	<dependencies>
 
 		<dependency>
@@ -207,6 +216,7 @@
 			<version>0.41</version>
 		</dependency>
 	</dependencies>
+	</dependencyManagement>
 
 
 	<build>
