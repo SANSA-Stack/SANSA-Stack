@@ -31,11 +31,6 @@ under the License.
 	<name>Inference API - Flink</name>
 	<description>Apache Flink based inference layer for RDF and OWL</description>
 
-	<issueManagement>
-		<system>GitHub</system>
-		<url>https://github.com/SANSA-Stack/Sem-I</url>
-	</issueManagement>
-
 	<dependencies>
 		<dependency>
 			<groupId>net.sansa_stack.inference</groupId>
