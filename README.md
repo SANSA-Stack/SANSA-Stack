@@ -1,6 +1,5 @@
 # Sem-I
-
-[![Build Status](http://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/badge/icon)](http://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/)
+[![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/)
 
 ## Structure
 ### inference-common
