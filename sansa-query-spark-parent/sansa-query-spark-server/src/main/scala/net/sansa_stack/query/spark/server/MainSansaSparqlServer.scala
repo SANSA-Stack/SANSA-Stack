@@ -1,4 +1,4 @@
-package org.sansa_stack.spark.server
+package net.sansa_stack.query.spark.server
 
 import org.aksw.jena_sparql_api.core.SparqlServiceFactory
 import org.aksw.jena_sparql_api.core.SparqlServiceImpl
