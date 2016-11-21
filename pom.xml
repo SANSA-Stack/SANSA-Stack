@@ -2,13 +2,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.sansa-stack.rdf</groupId>
-	<artifactId>sansa-rdf-parent</artifactId>
+	<groupId>net.sansa-stack</groupId>
+	<artifactId>sansa-rdf-parent_${scala.compat.version}</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<!-- <name>${project.artifactId}</name> -->
-	<description>RDF Spark Library</description>
+<!-- 	<name>SANSA Stack - RDF Layer</name> -->
+	<!-- <description>RDF Spark Library</description> -->
 	<inceptionYear>2015</inceptionYear>
 
 	<properties>
@@ -21,10 +21,6 @@
 		<jena.version>3.1.1</jena.version>
 	</properties>
 
-	<modules>
-		<module>sansa-rdf-spark-core</module>
-	</modules>
-
 	<scm>
 		<url>https://github.com/SANSA-Stack/Spark-RDF</url>
 		<connection>scm:git:git://github.com/SANSA-Stack/Spark-RDF.git</connection>
@@ -32,197 +28,81 @@
 		<tag>HEAD</tag>
 	</scm>
 
-
-	<profiles>
-		<profile>
-			<id>doclint-java8-disable</id>
-			<activation>
-				<jdk>[1.8,)</jdk>
-			</activation>
-
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.9.1</version>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<failOnError>false</failOnError>
-								</configuration>
-							</execution>
-						</executions>
-						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-								<configuration>
-									<keyname>AKSW</keyname>
-									<passphraseServerId>${gpg.keyname}</passphraseServerId>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
-	<repositories>
-		<!-- <repository> -->
-		<!-- <id>Akka repository</id> -->
-		<!-- <url>http://repo.akka.io/releases</url> -->
-		<!-- </repository> -->
-		<repository>
-			<id>oss-sonatype</id>
-			<name>oss-sonatype</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>apache-snapshot</id>
-			<name>Apache repository (snapshots)</name>
-			<url>https://repository.apache.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.aksw.snapshots</id>
-			<name>AKSW Snapshot Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
+	<modules>
+		<module>sansa-rdf-common-parent</module>
+		<module>sansa-rdf-spark-parent</module>
+	</modules>
 
 	<dependencyManagement>
-	<dependencies>
+		<dependencies>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_${scala.compat.version}</artifactId>
-			<version>${spark.version}</version>
-		</dependency>
+			<dependency>
+				<groupId>org.aksw.sparqlify</groupId>
+				<artifactId>sparqlify-core</artifactId>
+				<version>0.8.0-SNAPSHOT</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.aksw.sparqlify</groupId>
+						<artifactId>sparqlify-tests</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.hive</groupId>
+						<artifactId>hive-jdbc</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.batch</groupId>
+						<artifactId>spring-batch-infrastructure</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
 
-		<!--<dependency> -->
-		<!--<groupId>org.apache.spark</groupId> -->
-		<!--<artifactId>spark-tags_${scala.compat.version}</artifactId> -->
-		<!--<version>2.0.0</version> -->
-		<!--</dependency> -->
+			<dependency>
+				<groupId>org.aksw.jena-sparql-api</groupId>
+				<artifactId>jena-sparql-api-server-standalone</artifactId>
+				<version>3.1.1-1-SNAPSHOT</version>
+			</dependency>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-sql_${scala.compat.version}</artifactId>
-			<version>${spark.version}</version>
-		</dependency>
+			<!-- Test -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.11</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-core</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-arq</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-graphx_${scala.compat.version}</artifactId>
-			<version>${spark.version}</version>
-		</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.typesafe.scala-logging</groupId>
+				<artifactId>scala-logging_${scala.compat.version}</artifactId>
+				<version>3.5.0</version>
+			</dependency>
 
-
-		<dependency>
-			<groupId>org.aksw.sparqlify</groupId>
-			<artifactId>sparqlify-core</artifactId>
-			<version>0.8.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.aksw.sparqlify</groupId>
-					<artifactId>sparqlify-tests</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-jdbc</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework.batch</groupId>
-					<artifactId>spring-batch-infrastructure</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-server-standalone</artifactId>
-			<version>3.1.1-1-SNAPSHOT</version>
-		</dependency>
-
-		<!-- Test -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
-			<version>${jena.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-arq</artifactId>
-			<version>${jena.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging_${scala.compat.version}</artifactId>
-			<version>3.5.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.javakaffee</groupId>
-			<artifactId>kryo-serializers</artifactId>
-			<version>0.41</version>
-		</dependency>
-	</dependencies>
+			<dependency>
+				<groupId>de.javakaffee</groupId>
+				<artifactId>kryo-serializers</artifactId>
+				<version>0.41</version>
+			</dependency>
+		</dependencies>
 	</dependencyManagement>
-
 
 	<build>
 		<plugins>
-<!-- 			<sourceDirectory>src/main/scala</sourceDirectory> -->
-<!-- 			<testSourceDirectory>src/test/scala</testSourceDirectory> -->
+			<!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
+			<!-- <testSourceDirectory>src/test/scala</testSourceDirectory> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -235,9 +115,9 @@
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
-<!-- 				<configuration> -->
-<!-- 					<recompileMode>incremental</recompileMode> -->
-<!-- 				</configuration> -->
+				<!-- <configuration> -->
+				<!-- <recompileMode>incremental</recompileMode> -->
+				<!-- </configuration> -->
 				<executions>
 					<execution>
 						<goals>
@@ -246,15 +126,15 @@
 							<goal>testCompile</goal>
 						</goals>
 					</execution>
-<!-- 					<execution> -->
-<!-- 						<goals> -->
-<!-- 							<goal>add-source</goal> -->
-<!-- 							<configuration> -->
-<!-- 								<sourceDir>src/main/scala</sourceDir> -->
-<!-- 								<testSourceDir>src/main/test</testSourceDir> -->
-<!-- 							</configuration> -->
-<!-- 						</goals> -->
-<!-- 					</execution> -->
+					<!-- <execution> -->
+					<!-- <goals> -->
+					<!-- <goal>add-source</goal> -->
+					<!-- <configuration> -->
+					<!-- <sourceDir>src/main/scala</sourceDir> -->
+					<!-- <testSourceDir>src/main/test</testSourceDir> -->
+					<!-- </configuration> -->
+					<!-- </goals> -->
+					<!-- </execution> -->
 				</executions>
 			</plugin>
 
@@ -383,5 +263,98 @@
 			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
+
+	<profiles>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.9.1</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+						<configuration>
+							<additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<configuration>
+									<keyname>AKSW</keyname>
+									<passphraseServerId>${gpg.keyname}</passphraseServerId>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<repositories>
+		<!-- <repository> -->
+		<!-- <id>Akka repository</id> -->
+		<!-- <url>http://repo.akka.io/releases</url> -->
+		<!-- </repository> -->
+		<repository>
+			<id>oss-sonatype</id>
+			<name>oss-sonatype</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>apache-snapshot</id>
+			<name>Apache repository (snapshots)</name>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 </project>
