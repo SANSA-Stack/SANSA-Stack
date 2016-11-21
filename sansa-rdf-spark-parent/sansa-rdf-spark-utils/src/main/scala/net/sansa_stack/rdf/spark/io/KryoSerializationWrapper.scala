@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark.io
 
 import scala.reflect.ClassTag
+import net.sansa_stack.rdf.spark.io.KryoSerializer
 
 /**
   * A wrapper around some unserializable objects that make them both Java

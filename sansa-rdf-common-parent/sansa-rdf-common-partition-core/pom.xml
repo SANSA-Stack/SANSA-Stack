@@ -11,6 +11,12 @@
 	</parent>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+		</dependency>
+
 	</dependencies>
 
 </project>

@@ -7,7 +7,6 @@ import org.apache.spark.sql.Row
 import net.sansa_stack.rdf.common.partition.core.RdfPartition
 import net.sansa_stack.rdf.common.partition.core.RdfPartitioner
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
-import org.aksw.jena_sparql_api.utils.Vars
 
 import scala.reflect.ClassTag
 

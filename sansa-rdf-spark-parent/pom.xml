@@ -12,7 +12,7 @@
 	</parent>
 
 	<modules>
-		<module>sansa-rdf-spark-serialization</module>
+		<module>sansa-rdf-spark-utils</module>
 		<module>sansa-rdf-spark-core</module>
 	</modules>
 
@@ -26,12 +26,6 @@
 				<version>${spark.version}</version>
 			</dependency>
 
-			<!--<dependency> -->
-			<!--<groupId>org.apache.spark</groupId> -->
-			<!--<artifactId>spark-tags_${scala.compat.version}</artifactId> -->
-			<!--<version>2.0.0</version> -->
-			<!--</dependency> -->
-
 			<dependency>
 				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-sql_${scala.compat.version}</artifactId>
@@ -43,6 +37,12 @@
 				<artifactId>spark-graphx_${scala.compat.version}</artifactId>
 				<version>${spark.version}</version>
 			</dependency>
+
+			<!--<dependency> -->
+			<!--<groupId>org.apache.spark</groupId> -->
+			<!--<artifactId>spark-tags_${scala.compat.version}</artifactId> -->
+			<!--<version>2.0.0</version> -->
+			<!--</dependency> -->
 
 		</dependencies>
 	</dependencyManagement>

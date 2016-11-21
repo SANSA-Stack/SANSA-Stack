@@ -1,9 +1,9 @@
-package net.sansa_stack.utils.spark
+package net.sansa_stack.spark.utils
 
 import org.apache.spark.sql.types.StructType
 import scala.collection.mutable.LinkedHashMap
 
-object DatasetUtils {
+object SchemaUtils {
     def flattenSchemaField(schema: StructType, qualifiedName: String, fieldName: String, map: LinkedHashMap[String, String]) {
     val field = schema.apply(fieldName)
     val dt = field.dataType

@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-spark-serialization_${scala.compat.version}</artifactId>
+	<artifactId>sansa-rdf-spark-utils_${scala.compat.version}</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
@@ -31,7 +31,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
 

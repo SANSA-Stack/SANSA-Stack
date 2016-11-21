@@ -2,24 +2,24 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-common-sparqlify_${scala.compat.version}</artifactId>
+	<artifactId>sansa-rdf-kryo-jena_${scala.compat.version}</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-rdf-common-parent_${scala.compat.version}</artifactId>
+		<artifactId>sansa-rdf-kryo-parent_${scala.compat.version}</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-common-partition-core_${scala.compat.version}</artifactId>
+			<groupId>de.javakaffee</groupId>
+			<artifactId>kryo-serializers</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.sparqlify</groupId>
-			<artifactId>sparqlify-core</artifactId>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
 		</dependency>
 
 	</dependencies>

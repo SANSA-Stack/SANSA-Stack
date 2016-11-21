@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-<!-- 	<name>SANSA Stack - RDF Layer</name> -->
+	<!-- <name>SANSA Stack - RDF Layer</name> -->
 	<!-- <description>RDF Spark Library</description> -->
 	<inceptionYear>2015</inceptionYear>
 
@@ -19,6 +19,9 @@
 		<scala.compat.version>2.11</scala.compat.version>
 		<spark.version>2.0.1</spark.version>
 		<jena.version>3.1.1</jena.version>
+		<jsa.subversion>1-SNAPSHOT</jsa.subversion>
+
+		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 	</properties>
 
 	<scm>
@@ -31,10 +34,62 @@
 	<modules>
 		<module>sansa-rdf-common-parent</module>
 		<module>sansa-rdf-spark-parent</module>
+		<module>sansa-rdf-kryo-parent</module>
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-kryo-jena_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark-utils_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark-core_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-common-partition-core_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+
+			<!-- <dependency> -->
+			<!-- <groupId>${project.groupId}</groupId> -->
+			<!-- <artifactId>sansa-rdf-common-partition-core_${scala.compat.version}</artifactId> -->
+			<!-- <version>${project.version}</version> -->
+			<!-- </dependency> -->
+
+			<dependency>
+				<groupId>org.aksw.sparqlify</groupId>
+				<artifactId>sparqlify-core</artifactId>
+				<version>0.8.0-SNAPSHOT</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.aksw.sparqlify</groupId>
+						<artifactId>sparqlify-tests</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.hive</groupId>
+						<artifactId>hive-jdbc</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.batch</groupId>
+						<artifactId>spring-batch-infrastructure</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
 
 			<!-- Test -->
 			<dependency>
@@ -43,11 +98,13 @@
 				<version>4.11</version>
 				<scope>test</scope>
 			</dependency>
+
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-core</artifactId>
 				<version>${jena.version}</version>
 			</dependency>
+
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-arq</artifactId>
@@ -59,11 +116,19 @@
 				<artifactId>commons-compress</artifactId>
 				<version>1.0</version>
 			</dependency>
+
 			<dependency>
 				<groupId>com.typesafe.scala-logging</groupId>
 				<artifactId>scala-logging_${scala.compat.version}</artifactId>
 				<version>3.5.0</version>
 			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-kryo-jena_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 
 			<dependency>
 				<groupId>de.javakaffee</groupId>
@@ -75,64 +140,28 @@
 
 	<build>
 		<plugins>
-			<!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
-			<!-- <testSourceDirectory>src/test/scala</testSourceDirectory> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${maven.compiler.source}</source>
-					<target>${maven.compiler.target}</target>
-				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
-				<!-- <configuration> -->
-				<!-- <recompileMode>incremental</recompileMode> -->
-				<!-- </configuration> -->
-				<executions>
-					<execution>
-						<goals>
-							<goal>add-source</goal>
-							<goal>compile</goal>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-					<!-- <execution> -->
-					<!-- <goals> -->
-					<!-- <goal>add-source</goal> -->
-					<!-- <configuration> -->
-					<!-- <sourceDir>src/main/scala</sourceDir> -->
-					<!-- <testSourceDir>src/main/test</testSourceDir> -->
-					<!-- </configuration> -->
-					<!-- </goals> -->
-					<!-- </execution> -->
-				</executions>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
-				<configuration>
-					<useFile>false</useFile>
-					<disableXmlReport>true</disableXmlReport>
-					<!-- If you have classpath issue like NoDefClassError,... -->
-					<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
-					<includes>
-						<include>**/*Test.*</include>
-						<include>**/*Suite.*</include>
-					</includes>
-				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>external.atlassian.jgitflow</groupId>
 				<artifactId>jgitflow-maven-plugin</artifactId>
-				<version>1.0-m5.1</version>
 			</plugin>
+
+			<!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
+			<!-- <testSourceDirectory>src/test/scala</testSourceDirectory> -->
 		</plugins>
 
 		<pluginManagement>
@@ -142,12 +171,59 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.6.0</version>
+					<configuration>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
+					</configuration>
 				</plugin>
 
 				<plugin>
 					<groupId>net.alchim31.maven</groupId>
 					<artifactId>scala-maven-plugin</artifactId>
 					<version>3.2.2</version>
+					<!-- <configuration> -->
+					<!-- <recompileMode>incremental</recompileMode> -->
+					<!-- </configuration> -->
+					<executions>
+						<execution>
+							<goals>
+								<goal>add-source</goal>
+								<goal>compile</goal>
+								<goal>testCompile</goal>
+							</goals>
+						</execution>
+						<!-- <execution> -->
+						<!-- <goals> -->
+						<!-- <goal>add-source</goal> -->
+						<!-- <configuration> -->
+						<!-- <sourceDir>src/main/scala</sourceDir> -->
+						<!-- <testSourceDir>src/main/test</testSourceDir> -->
+						<!-- </configuration> -->
+						<!-- </goals> -->
+						<!-- </execution> -->
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.18.1</version>
+					<configuration>
+						<useFile>false</useFile>
+						<disableXmlReport>true</disableXmlReport>
+						<!-- If you have classpath issue like NoDefClassError,... -->
+						<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+						<includes>
+							<include>**/*Test.*</include>
+							<include>**/*Suite.*</include>
+						</includes>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>external.atlassian.jgitflow</groupId>
+					<artifactId>jgitflow-maven-plugin</artifactId>
+					<version>1.0-m5.1</version>
 				</plugin>
 
 				<plugin>
@@ -221,6 +297,7 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+
 			</plugins>
 		</pluginManagement>
 	</build>

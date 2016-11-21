@@ -10,7 +10,6 @@ import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import org.apache.jena.rdf.model.impl.NTripleReader
 import org.apache.jena.sparql.core.Var
-import org.aksw.jena_sparql_api.views.RestrictedExpr
 import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.sparql.util.ExprUtils
 
@@ -93,23 +92,6 @@ object JenaKryoSerializers {
 
     override def read(kryo: Kryo, input: Input, objClass: Class[Node_Variable]): Node_Variable = {
       NodeFactory.createVariable(input.readString).asInstanceOf[Node_Variable]
-    }
-  }
-
-  class RestrictedExprSerializer extends Serializer[RestrictedExpr] {
-    override def write(kryo: Kryo, output: Output, obj: RestrictedExpr) {
-      //output.writeString("true")
-      //output.writeString("" + obj.getExpr)
-      kryo.writeClassAndObject(output, obj.getExpr)
-    }
-
-    override def read(kryo: Kryo, input: Input, objClass: Class[RestrictedExpr]): RestrictedExpr = {
-      val expr = kryo.readClassAndObject(input).asInstanceOf[Expr]
-      new RestrictedExpr(expr)
-       //val restrictions = input.readString()
-//      val expr = ExprUtils.parse(input.readString())
-//
-//      new RestrictedExpr(expr)
     }
   }
 

@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-common-parent_${scala.compat.version}</artifactId>
+	<artifactId>sansa-rdf-kryo-parent_${scala.compat.version}</artifactId>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -12,8 +12,8 @@
 	</parent>
 
 	<modules>
-		<module>sansa-rdf-common-partition-core</module>
-		<module>sansa-rdf-common-partition-sparqlify</module>
+		<module>sansa-rdf-kryo-jena</module>
+		<module>sansa-rdf-kryo-sparqlify</module>
 	</modules>
 
 	<dependencyManagement>

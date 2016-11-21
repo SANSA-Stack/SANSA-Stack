@@ -1,10 +1,8 @@
 package net.sansa_stack.rdf.spark.io
 
 import java.nio.ByteBuffer
-
-import org.apache.spark.{SparkConf, SparkEnv}
-import org.apache.spark.serializer.{Serializer, KryoSerializer => SparkKryoSerializer}
-
+import org.apache.spark.SparkEnv
+import org.apache.spark.serializer.Serializer
 import scala.reflect.ClassTag
 
 
