@@ -2,23 +2,15 @@ package net.sansa_stack.inference.rules
 
 import java.io.File
 
-import org.apache.jena.reasoner.rulesys.Rule
-import net.sansa_stack.inference.utils.{GraphUtils, RuleUtils}
-
-import scala.collection.JavaConversions._
-import scala.language.{existentials, implicitConversions}
-import scala.reflect.ClassTag
-import scala.reflect.io.Directory
-import scalax.collection.GraphEdge.DiEdge
-import scalax.collection.GraphTraversal
-import scalax.collection.connectivity.GraphComponents
-import scalax.collection.Graph
 import net.sansa_stack.inference.utils.GraphUtils._
-
-import scalax.collection.connectivity.GraphComponents.graphToComponents
-import scala.reflect.runtime.universe._
+import net.sansa_stack.inference.utils.RuleUtils
 import net.sansa_stack.inference.utils.RuleUtils.RuleExtension
+import org.apache.jena.reasoner.rulesys.Rule
 
+import scala.language.{existentials, implicitConversions}
+import scalax.collection.Graph
+import scalax.collection.GraphEdge.DiEdge
+import scalax.collection.connectivity.GraphComponents
 import scalax.collection.edge.LDiEdge
 
 /**
