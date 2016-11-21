@@ -1,41 +1,11 @@
-# use glob syntax.
-syntax: glob
-*.ser
-*.class
-*~
-*.bak
-#*.off
-*.old
-
-# eclipse conf file
-.settings
-.classpath
-.project
-.manager
-.scala_dependencies
-
-# idea
-.idea
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
 *.iml
-
-# building
-target
-build
-null
-tmp*
-temp*
-dist
-test-output
-build.log
-
-# other scm
-.svn
-.CVS
-.hg*
-
-# switch to regexp syntax.
-#  syntax: regexp
-#  ^\.pc/
-
-#SHITTY output not in target directory
-build.log
+/graph
+*.idea
