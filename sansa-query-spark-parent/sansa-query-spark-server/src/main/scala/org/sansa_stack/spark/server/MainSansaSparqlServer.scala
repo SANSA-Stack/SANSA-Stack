@@ -36,7 +36,7 @@ import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import scala.collection.JavaConverters._
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.apache.spark.sql.catalyst.ScalaReflection
-import net.sansa_stack.rdf.common.partition.sparqlify.SparqlifyUtils2
+import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
 
 
 object MainSansaSparqlServer

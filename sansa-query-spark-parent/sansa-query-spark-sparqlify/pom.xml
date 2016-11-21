@@ -27,7 +27,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-common-partition-sparqlify</artifactId>
+			<artifactId>sansa-rdf-partition-sparqlify</artifactId>
 			<!-- 				<classifier>${scala.classifier}</classifier>				 -->
 		</dependency>
 
