@@ -35,7 +35,7 @@
 	</scm>
 
 	<modules>
-		<module>sansa-rdf-common-parent</module>
+		<module>sansa-rdf-partition-parent</module>
 		<module>sansa-rdf-spark-parent</module>
 		<module>sansa-rdf-kryo-parent</module>
 	</modules>
@@ -66,7 +66,7 @@
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-common-partition-core</artifactId>
+				<artifactId>sansa-rdf-partition-core</artifactId>
 				<version>${project.version}</version>
 <!-- 				<classifier>${scala.classifier}</classifier> -->
 			</dependency>

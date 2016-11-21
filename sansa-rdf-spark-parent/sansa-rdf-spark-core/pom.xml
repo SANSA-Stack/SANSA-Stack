@@ -26,7 +26,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-common-partition-core</artifactId>
+			<artifactId>sansa-rdf-partition-core</artifactId>
 <!-- 			<classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
