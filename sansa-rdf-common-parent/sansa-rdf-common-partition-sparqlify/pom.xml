@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-common-partition_${scala.compat.version}</artifactId>
+	<artifactId>sansa-rdf-common-partition-sparqlify_${scala.compat.version}</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>

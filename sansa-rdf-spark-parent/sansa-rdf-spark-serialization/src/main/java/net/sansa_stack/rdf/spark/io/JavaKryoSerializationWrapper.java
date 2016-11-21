@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.function.Function;
-
-import org.apache.spark.api.java.function.MapFunction;
-import org.apache.spark.serializer.Serializer;
 
 import scala.reflect.ClassTag;
 

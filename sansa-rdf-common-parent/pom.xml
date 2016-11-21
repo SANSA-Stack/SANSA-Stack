@@ -12,8 +12,14 @@
 	</parent>
 
 	<modules>
-		<module>sansa-rdf-common-partition</module>
+		<module>sansa-rdf-common-partition-core</module>
+                <module>sansa-rdf-common-partition-sparqlify</module>
 	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+		</dependencies>
+	</dependencyManagement>
 
 </project>
 

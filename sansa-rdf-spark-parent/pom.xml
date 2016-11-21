@@ -12,6 +12,7 @@
 	</parent>
 
 	<modules>
+		<module>sansa-rdf-spark-serialization</module>
 		<module>sansa-rdf-spark-core</module>
 	</modules>
 
