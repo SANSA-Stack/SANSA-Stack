@@ -168,6 +168,18 @@
 				<groupId>org.aksw.jena-sparql-api</groupId>
 				<artifactId>jena-sparql-api-server-standalone</artifactId>
 				<version>${jsa.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>xml-apis</groupId>
+						<artifactId>xml-apis</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.eclipse.jetty</groupId>
+						<artifactId>jetty-xml</artifactId>
+					</exclusion>
+
+
+				</exclusions>
 <!-- 				<classifier>${scala.compat.version}</classifier> -->
 			</dependency>
 
