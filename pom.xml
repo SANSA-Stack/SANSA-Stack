@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>net.sansa_stack.inference</groupId>
-  <artifactId>inference-parent</artifactId>
+  <groupId>net.sansa-stack</groupId>
+  <artifactId>sansa-inference-parent</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Inference API - Parent</name>
@@ -40,14 +40,14 @@
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/SANSA-Stack/Sem-I</url>
+    <url>https://github.com/SANSA-Stack/SANSA-Inference</url>
   </issueManagement>
 
   <modules>
-    <module>inference-common</module>
-    <module>inference-flink</module>
-    <module>inference-spark</module>
-    <module>inference-tests</module>
+    <module>sansa-inference-common</module>
+    <module>sansa-inference-flink</module>
+    <module>sansa-inference-spark</module>
+    <module>sansa-inference-tests</module>
   </modules>
 
   <properties>

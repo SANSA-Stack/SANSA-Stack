@@ -21,11 +21,11 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>net.sansa_stack.inference</groupId>
-		<artifactId>inference-parent</artifactId>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-inference-parent</artifactId>
 		<version>0.1-SNAPSHOT</version>
 	</parent>
-	<artifactId>inference-flink</artifactId>
+	<artifactId>sansa-inference-flink</artifactId>
 	<version>0.1-SNAPSHOT</version>
 
 	<name>Inference API - Flink</name>
@@ -33,13 +33,13 @@ under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>net.sansa_stack.inference</groupId>
-			<artifactId>inference-common</artifactId>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-inference-common</artifactId>
 			<version>${parent.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sansa_stack.inference</groupId>
-			<artifactId>inference-tests</artifactId>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-inference-tests</artifactId>
 			<version>${parent.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
