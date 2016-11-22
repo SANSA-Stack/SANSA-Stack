@@ -1,10 +1,7 @@
 package net.sansa_stack.ml.spark.amieSpark.mining
 
 import net.sansa_stack.ml.spark.amieSpark.mining._
-import org.apache.jena.reasoner.rulesys.Rule
-import org.apache.jena.reasoner.rulesys.ClauseEntry
-import org.apache.jena.reasoner.TriplePattern
-import org.apache.jena.graph.{NodeFactory ,Node, Triple}
+
 
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
