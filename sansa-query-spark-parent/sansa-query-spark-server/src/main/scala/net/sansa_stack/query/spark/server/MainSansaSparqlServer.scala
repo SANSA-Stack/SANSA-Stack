@@ -37,6 +37,8 @@ import scala.collection.JavaConverters._
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.apache.spark.sql.catalyst.ScalaReflection
 import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
+import java.io.File
+import java.nio.file.Files
 
 
 object MainSansaSparqlServer
@@ -44,6 +46,17 @@ object MainSansaSparqlServer
 {
 
   def main(args: Array[String]): Unit = {
+
+    val tempDirStr = System.getProperty("java.io.tmpdir")
+    if(tempDirStr == null) {
+      throw new RuntimeException("Could not obtain temporary directory")
+    }
+    val sparkEventsDir = new File(tempDirStr + "/spark-events")
+    if(!sparkEventsDir.exists()) {
+      sparkEventsDir.mkdirs()
+    }
+
+    //File.createTempFile("spark-events")
 
     val sparkSession = SparkSession.builder
       .master("local")
