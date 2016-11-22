@@ -25,35 +25,22 @@ object MineRules {
    * */
   class Algorithm(k: KB, mHC: Double, mL: Int, mCon: Double) extends Serializable
   {
-   //, sct: SparkContext, sqlContextt:SQLContext 
+   
    val kb: KB = k
    val minHC = mHC
    val maxLen = mL
    val minConf = mCon
   
-    //val sc:SparkContext = sct
-    //val sqlContext:SQLContext = sqlContextt
-   /*
-   def block(file:File) {
-     var path = file.toPath()
-     val watchService = path.getFileSystem().newWatchService()
-      path.register(watchService, StandardWatchEventKinds.ENTRY_DELETE)
-      val key = watchService.take()
-        while (key.reset()) {
-            key.pollEvents().asScala.foreach(e => {
-            if (e.filter(StandardWatchEventKinds.ENTRY_DELETE.equals(e.kind())).anyMatch(path.getFileName().equals(e.context()))))  
-            })
-            }
-          
-            
-}
-   */
+
    
      def deleteRecursive( path:File): Int={
+     
+  
     var files = path.listFiles()
 if(files != null){
 for (f <-files){
   if(f.isDirectory()) {
+   
           deleteRecursive(f)
           f.delete()
         }
@@ -63,12 +50,12 @@ for (f <-files){
          
          else {
            
-          
+  
             f.delete()
           
 }
 }
-//println("delet : "+co+" "+which+" "+path.toString())
+
 
 
     path.delete()
@@ -84,7 +71,11 @@ return 0
    
  def ruleMining (sc:SparkContext, sqlContext:SQLContext): ArrayBuffer[RuleContainer] = {
    
-  
+  var tmpdel = new File ("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent0/")
+  /**data home TheresaNathan*/
+   while (tmpdel.listFiles() != null) {
+            deleteRecursive(tmpdel)
+          }
     
  var predicates = kb.getKbGraph().triples.map{x => x.predicate 
      
@@ -124,10 +115,8 @@ for (i <- 0 to this.maxLen-1){
   
   if ((i> 0)&&(dataFrameRuleParts != null)){
     var temp = q.clone
-    var  p = new File( "permanent/")
-      while (p.listFiles() != null) {
-        deleteRecursive(p)
-      }
+    
+  
     
     q = new ArrayBuffer 
    
@@ -162,7 +151,7 @@ for (i <- 0 to this.maxLen-1){
   else if ((i> 0)&&(dataFrameRuleParts.isEmpty())){
      q = new ArrayBuffer
   }
-   //while (!(q.isEmpty)){
+
 
   
   
@@ -174,7 +163,7 @@ for (i <- 0 to this.maxLen-1){
       
     
      
-     //q.remove(0)
+    
      
      if (acceptedForOutput(outMap,r,minConf,kb,sc, sqlContext)){
        out += r
@@ -193,24 +182,16 @@ for (i <- 0 to this.maxLen-1){
      var R= new ArrayBuffer[RuleContainer]()
      
      if (r.getRule().length < maxLen){
-       //R= refine(r)
+
        dataFrameRuleParts = refine(i, j, r, dataFrameRuleParts, sc, sqlContext)
        //TODO: Dublicate check
-       /*for (rc <- R){
-         if ((rc.hc() >= minHC) && (!(q.contains(r)))){ 
-           q+=rc
-           
-         }
-         
-       }
-       * 
-       */
+     
        
      }
      
      
-   // out 
-   }//.collect 
+  
+   }
 }
    
 }
@@ -219,18 +200,7 @@ for (i <- 0 to this.maxLen-1){
    
    
    
-   /*
-   
-    var testRule = ArrayBuffer(RDFTriple("?a","produced","?b"), RDFTriple("?a","created","?b"), RDFTriple("?a","actedIn","?b"))
-   var testRuleContainer = new RuleContainer
-   testRuleContainer.initRule(testRule,kb,sc,sqlContext)
-   
-   var gh = testRuleContainer.getRule()
-   var RXY = ArrayBuffer(Tuple2("?w","?a"),Tuple2("?a","?w"), Tuple2("?w","?b"),Tuple2("?b","?w"))
-  // println(kb.countProjectionQueries("?a", minHC, gh, RXY, sc, sqlContext))
-   println(kb.addInstantiatedAtom(minHC, testRuleContainer, sc, sqlContext))
-  
- */
+
    return out
   } 
   
@@ -274,8 +244,7 @@ for (i <- 0 to this.maxLen-1){
  
  
  def refine(c: Int, id: Int, r: RuleContainer, dataFrameRuleParts:RDD[(RDFTriple, Int, Int)], sc:SparkContext, sqlContext:SQLContext):RDD[(RDFTriple, Int, Int)]= {
-   //var R = new ArrayBuffer[RuleContainer]
-   //var out:RDD[(String, Int)] = null
+   
    var out: DataFrame = null
    var OUT:RDD[(RDFTriple, Int, Int)] = dataFrameRuleParts
    //var count2:RDD[(String, Int)] = null 
@@ -295,97 +264,39 @@ for (i <- 0 to this.maxLen-1){
    }
    tpArString = tpArString.replace(" ", "_").replace("?", "_") 
    stringSELECT += "tp" + tpAr.length
-  /*
-       var p = new File( "test_table/")
-if (p.listFiles() != null) {
-  deleteRecursive(p)
-}*/
 
-
-   /*
-   var step2 = y.collect.map(y => (y(0).toString(), y.getLong(1)))
-   var newAtoms2 = step2.map(q => (q._1.split("\\s+"), q._2)).map(token => Tuple2(RDFTriple(token._1(0),token._1(1),token._1(2)), token._2) )
-   newAtoms2.foreach(println)
-   
-     for (n2 <- newAtoms2){
-       var newRuleC = new RuleContainer
-       var newTpArr = r.getRule().clone 
-       newTpArr += n2._1
-        newRuleC.setRule(n2._2, newTpArr, kb, sc, sqlContext)
-        R += newRuleC
-     }
-   */
  var z:Try[Row] =null
       if ((tpAr.length != maxLen -1)&&(temp == 0)){
         var a = kb.addDanglingAtom(c, id, minHC, r, sc, sqlContext)
-      //var x = sqlContext.read.parquet("test_table/")
-       // var x:DataFrame = null
-      //  var x = parquetToDF (path, sqlContext)
-   
+    
         z = Try(a.first())
         if ((!(z.isFailure))&&(z.isSuccess)){
       
-	       // var count2 = x.rdd.map(x => (x(r.getRule().length + 1).toString(), 1)).reduceByKey(_+_)
 	      
-	       // if (!(count2.isEmpty)){
             out = a
-          //}
+        
 	       
 	       
 	       
         }
       
-    // y = y.unionAll(x)
-     /*
-     var step1 = x.collect.map(y => (y(0).toString(), y.getLong(1)))
-     var newAtoms1 = step1.map(q => (q._1.split("\\s+"), q._2)).map(token => Tuple2(RDFTriple(token._1(0),token._1(1),token._1(2)), token._2) )
-     
-     for (n1 <- newAtoms1){
-       var newRuleC = new RuleContainer
-       var newTpArr = r.getRule().clone 
-       newTpArr += n1._1
-        newRuleC.setRule(n1._2, newTpArr, kb, sc, sqlContext)
-        R += newRuleC
-        
-        
-     }
-     
-     */
+
      
    }
       
    
   
- 
-/*
-  p = new File( "test_table/")
-if (p.listFiles() != null) {
-  deleteRecursive(p)
-}*/
+
   
     var b = kb.addClosingAtom(c, id, minHC, r, sc, sqlContext)
    
       
-     // y.registerTempTable("wholeTable")
-	 // var count = sqlContext.sql("SELECT key, COUNT(tp0) AS count FROM wholeTable GROUP BY key")
-   
-    // var y = sqlContext.read.parquet("test_table/")
     
-    //var y = parquetToDF (path, sqlContext)
     var t = Try(b.first)
   
     if ((!(t.isFailure))&&(t.isSuccess)&&(temp == 0)){
   
-	   // var count = y.rdd.map(x => (x(r.getRule().length + 1).toString(), 1)).reduceByKey(_+_)//.collect()
-   
-     /*  if ((!(count.isEmpty))&&(out == null)){
-         out = count
-     
-       }
-       else if(!(count.isEmpty)){
-        out = out.union(count)
-     
-       }*/
+
       
       if (out == null){
         out = b
@@ -396,7 +307,7 @@ if (p.listFiles() != null) {
       }
 	 
      }
-     //  p = new File( "test_table/")
+     
 
 
     var count:RDD[(String, Int)] = null
@@ -419,9 +330,14 @@ if (p.listFiles() != null) {
       
       if (tpAr.length < maxLen){
          var namesFolder = o.map(x => (tpArString+""+x._1.toString().replace(" ", "_").replace("?", "_"), x._1.toString()+ "  " + id.toString())).collect
-         var delFiles = new File ("permanent/")
+         var delFiles = new File ("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent"+(c-2)+"/")
          
-         
+           
+     
+     
+          while (delFiles.listFiles() != null) {
+            deleteRecursive(delFiles)
+          }
         
          
          
@@ -429,7 +345,10 @@ if (p.listFiles() != null) {
          for(n <- namesFolder){
            var tempDF = sqlContext.sql("SELECT "+stringSELECT+ " FROM outTable WHERE outTable.key = '"+ n._2+"'")
            
-           tempDF.write.parquet("permanent/"+n._1)
+           tempDF.write.parquet("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent"+c+"/"+n._1)
+           
+          
+            
          }
       }
      }
@@ -466,29 +385,35 @@ if (p.listFiles() != null) {
  
   
   def main(args: Array[String]) = {
-
-    val know = new KB()
     
+    /*
+     * config:
+     * .config("spark.executor.memory", "20g")
+     * .config("spark.driver.maxResultSize", "20g")
+     * .config("spark.sql.autoBroadcastJoinThreshold", "300000000")
+     * .config("spark.sql.shuffle.partitions", "100")
+     * .config("spark.sql.warehouse.dir", "file:///C:/Users/Theresa/git/Spark-Sem-ML/inference-spark/spark-warehouse")
+     * .config("spark.sql.crossJoin.enabled", true)
+     */
+  val know = new KB()
+ 
    val sparkSession = SparkSession.builder
-    .master("local[*]")
-    .appName("SPARK Reasoning")
-    .config("spark.sql.warehouse.dir", "file:///C:/Users/Theresa/git/Spark-Sem-ML/inference-spark/spark-warehouse")
-    .config("spark.sql.crossJoin.enabled", true)
-     .config("spark.driver.maxResultSize", "5g")
-     .config("spark.executor.memory", "5g")
-      .config("spark.sql.autoBroadcastJoinThreshold", "300000000")
-      .config("spark.sql.shuffle.partitions", "100")
+
+    .master("spark://139.18.2.34:3077")
+      .appName("SPARK Reasoning")
+    .config("spark.sql.warehouse.dir", "file:///data/home/mohamed/spark-2.0.1-bin-hadoop2.7/bin/spark-warehouse")
+    
+   
     .getOrCreate()
  //
   val sc = sparkSession.sparkContext
   val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-  know.setKbSrc("src/main/resources/rules/test_data.tsv")
+
+  know.setKbSrc("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/test_data.tsv")
   know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))
   know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2)  )
   val algo = new Algorithm (know, 0.01, 3, 0.1)
-  //(sc, sqlContext)
 
-//know,  0.01, 3, 0.1,
     
     var erg = algo.ruleMining(sc, sqlContext)
     println(erg)

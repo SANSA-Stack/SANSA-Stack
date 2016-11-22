@@ -894,20 +894,7 @@ for (f <-files){
 	  
 	 var whole:DataFrame = null
 	 var counter = 0
-	 /*var test:ArrayBuffer[RDFTriple] = ArrayBuffer(RDFTriple("?a","zug","?b"),RDFTriple("?z","zug","?w"), RDFTriple("?z","zug","?a"), RDFTriple("?z","a","?w")  )
-	 val sort = {
-	    (ar:ArrayBuffer[RDFTriple]) => 
-	      var out: Map[String, RDFTriple] = Map()
-	      for (a <- ar){
-	        out += (("" +a._2 + a._1 +a._3) -> a)
-	    }
-	      ListMap(out.toSeq.sortBy(_._1):_*)
-	  }
-	   
-	 println(sort(test))
-	 
-	 */
-//	 val startTime  = System.currentTimeMillis()
+
 	 
 	 var tpArDF: DataFrame = null
 	 if (posit == 0){
@@ -917,7 +904,7 @@ for (f <-files){
    
     
       tpArDF = sqlContext.sql("SELECT rdf AS tp0 FROM table WHERE rdf.predicate = '"+tpAr(0).predicate+"'")
-	   //tpArDF = cardinalityQueriesOnlyTpar(id,tpAr.clone(), sc, sqlContext)
+	   
 	 }
 	 else{
 	   var tpArString = ""
@@ -927,7 +914,7 @@ for (f <-files){
 	   
 	   tpArString = tpArString.replace(" ", "_").replace("?", "_") 
 	  
-	   tpArDF = sqlContext.read.parquet("permanent/a"+tpArString)
+	   tpArDF = sqlContext.read.parquet("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent"+(posit-1)+"/"+tpArString)
 	 }
 	 
 	  tpArDF.cache()
@@ -958,34 +945,6 @@ for (f <-files){
 	        var part = this.cardinalityQueries(id,tpArDF,temp, sc, sqlContext)
 	        
 	        
-	       /* if (counter == 0){
-	          //whole = part
-	        var p = new File("test_table/")
-	        println("in kb"+p.toString())
-	          deleteRecursive(p)
-	          
-	              p = new File( "test_table/")
-if (p.listFiles() != null) {
-  deleteRecursive(p)
-}
-	      
-	          }*/
-	      /*  var pcounter = new File ("test_table/key="+counter)
-	        if (pcounter.exists()){
-	         var files = pcounter.listFiles()
-	         //files(0).delete()
-	         for (f <- files){
-	           f.delete()
-	         }
-	         pcounter.delete()
-	        }
-	        //else{
-	         // whole = whole.unionAll(part)
-	           
-	      //  }
-	       *  
-	       */
-	       // part.write.parquet("test_table/key="+counter)
 	        
 	      if (whole == null){
 	        whole = part
@@ -1001,26 +960,7 @@ if (p.listFiles() != null) {
 	  }
 	
 	  
-	/* whole.registerTempTable("wholeTable")
-	  var count = sqlContext.sql("SELECT key, COUNT(tp0) AS count FROM wholeTable GROUP BY key")
-	 
-	  count.registerTempTable("countTable")
-	  var outMinusId = sqlContext.sql("SELECT key, count FROM countTable WHERE count >= "+ threshold)
-	  outMinusId.registerTempTable("outMinusIdT")
-    
-  var seq= Seq(id)
-    import sqlContext.implicits._
-   var plusID:DataFrame = seq.toDF("id")
-  plusID.registerTempTable("idTable")
-   
-   
-  var q = sqlContext.sql("SELECT * FROM outMinusIdT JOIN idTable")
-	  
-	  
-	  */
-	//println("time for Query count:   "+(System.currentTimeMillis()-startTime))
-	  
-	  //return q
+
 	  return whole
 	  
 	}
@@ -1675,9 +1615,7 @@ if (p.listFiles() != null) {
 	//TODO: solve with DataFrames
 		def cardPlusnegativeExamplesLength(triplesCard: ArrayBuffer[RDFTriple], sc:SparkContext):Double={
       
-     // println("prädikat"+x.getPredicate.getLiteralValue)
-      
-      //val triplesCard = rule.ruleToRDFTripleArray()
+    
       
        val k = this.kbGraph
        
@@ -1698,8 +1636,7 @@ if (p.listFiles() != null) {
               arbuf += x
              
            }
-           //var test =arbuf(0).collect
-           //println(test(0).toString)
+           
        /**initializing maplist with head of the rule*/
            for(ii <- arbuf(0).collect()){
              mapList += Map(triplesCard(0).subject -> ii._1, triplesCard(0).`object` -> ii._3)
@@ -1777,7 +1714,7 @@ if (p.listFiles() != null) {
          
            }
            
-       // println(mapList)
+       
           return ((mapList.length) + out)
      
       
@@ -1789,9 +1726,7 @@ if (p.listFiles() != null) {
     {
       val tpAr = rule.getRule()
       var RXY:ArrayBuffer[Tuple2[String,String]] = new ArrayBuffer
-     var path = new File( "test_table/") 
-      
-      deleteRecursive(path)
+     
       val notC = rule.notClosed()
       
       val variables = rule.getVariableList()
@@ -1821,9 +1756,7 @@ if (p.listFiles() != null) {
     {
       val tpAr = rule.getRule()
       var RXY:ArrayBuffer[Tuple2[String,String]] = new ArrayBuffer
-     var path = new File( "test_table/") 
-      
-      deleteRecursive(path)
+    
       val notC = rule.notClosed()
       
       val variables = rule.getVariableList()
@@ -1895,27 +1828,7 @@ if (p.listFiles() != null) {
 
     }
     
-	/** TODO: current work
-	 *  
-	 */
- 
-     
-   /* def deleteRecursive( path:File){
-      var c = 0
-      var pcounter = new File ("test_table/key="+c)
-        while (pcounter.exists()){
-	    for (f <- pcounter.listFiles()){
-	      f.delete()
-	    }
-	    pcounter.delete()
-	    c += 1
-	    pcounter = new File ("test_table/key="+c)
-	    
-	  }
-    }
-    * 
-    */
-    
+
       
  
     
