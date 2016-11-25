@@ -1,0 +1,68 @@
+{ "data": [
+  {
+    "id": 1,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Spark Master",
+      "base-url": "http://spark-master.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 2,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Spark Worker",
+      "base-url": "http://spark-worker.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 3,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "HDFS Namenode",
+      "base-url": "http://hdfs-namenode.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 4,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "HDFS Node manager",
+      "base-url": "http://hdfs-nodemanager.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 5,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "HDFS Resource manager",
+      "base-url": "http://hdfsresource.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 6,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Hue",
+      "base-url": "http://hue.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 7,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Virtuoso",
+      "base-url": "http://virtuoso.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 8,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Monitor",
+      "base-url": "http://monitor.demo.big-data-europe.local"
+    }
+  }
+
+]
+}
