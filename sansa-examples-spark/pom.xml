@@ -43,35 +43,36 @@
 		</dependency>
 
 		<!-- SANSA RDF -->
-		<!-- <dependency>
-			<groupId>net.sansa_stack.rdf</groupId>
-			<artifactId>rdf-spark</artifactId>
-			<version>0.1-SNAPSHOT</version>
-		</dependency> -->
+
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-rdf-spark-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<!-- SANSA OWL -->
-		<!-- <dependency>
+		<dependency>
 			<groupId>net.sansa_stack.owl</groupId>
 			<artifactId>owl-spark</artifactId>
 			<version>0.1-SNAPSHOT</version>
-		</dependency> -->
+		</dependency>
 		<!-- SANSA Inference -->
-		<!-- <dependency>
-			<groupId>net.sansa_stack.inference</groupId>
-			<artifactId>inference-spark</artifactId>
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-inference-spark</artifactId>
 			<version>0.1-SNAPSHOT</version>
-		</dependency> -->
+		</dependency>
 		<!-- SANSA Querying -->
-		<!-- <dependency>
-			<groupId>net.sansa_stack.querying</groupId>
-			<artifactId>querying-spark</artifactId>
-			<version>0.1-SNAPSHOT</version>
-		</dependency> -->
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-query-spark-sparqlify</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<!-- SANSA ML -->
-	<!-- 	<dependency>
+		<dependency>
 			<groupId>net.sansa_stack.ml</groupId>
-			<artifactId>inference-ml</artifactId>
+			<artifactId>ml-spark</artifactId>
 			<version>0.1-SNAPSHOT</version>
-		</dependency> -->
+		</dependency>
 
 		<!-- Test -->
 		<dependency>
@@ -187,6 +188,17 @@
 			<id>apache-snapshot</id>
 			<name>Apache repository (snapshots)</name>
 			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
