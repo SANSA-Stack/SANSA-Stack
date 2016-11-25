@@ -3,7 +3,7 @@ package net.sansa_stack.examples.spark.rdf
 import java.io.File
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
-//import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
+import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
 
 object TripleReader {
 
@@ -35,12 +35,13 @@ object TripleReader {
       .appName("Triple reader example (" + input + ")")
       .getOrCreate()
 
-    /*   val ops = JenaSparkRDDOps(sparkSession.sparkContext)
+    val ops = JenaSparkRDDOps(sparkSession.sparkContext)
     import ops._
 
-    val triples = fromNTriples(fname, "http://dbpedia.org").toSeq
+    val triples = fromNTriples(input, "http://dbpedia.org").toSeq
     val triplesRDD = sparkContext.parallelize(triples)
-    triplesRDD.saveAsTextFile("hdfs://...")*/
+    
+    triplesRDD.saveAsTextFile(output)
 
     sparkSession.stop
 
