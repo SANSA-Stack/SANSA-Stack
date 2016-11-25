@@ -9,3 +9,7 @@ buildNumber.properties
 *.iml
 /graph
 *.idea
+.cache-main
+.classpath
+.project
+.settings

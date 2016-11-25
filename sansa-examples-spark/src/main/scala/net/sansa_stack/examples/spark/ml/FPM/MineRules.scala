@@ -4,8 +4,7 @@ import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
 import net.sansa_stack.ml.spark.amieSpark.mining.KBObject.KB
-import net.sansa_stack.ml.spark.amieSpark.mining.RDFGraphLoader
-import net.sansa_stack.ml.spark.amieSpark.mining.DfLoader
+import net.sansa_stack.ml.spark.amieSpark.mining.{RDFGraphLoader, DfLoader}
 import net.sansa_stack.ml.spark.amieSpark.mining.MineRules.Algorithm
 
 /*
