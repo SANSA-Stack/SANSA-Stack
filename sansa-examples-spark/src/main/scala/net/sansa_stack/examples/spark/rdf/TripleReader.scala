@@ -40,7 +40,11 @@ object TripleReader {
 
     val triples = fromNTriples(input, "http://dbpedia.org").toSeq
     val triplesRDD = sparkContext.parallelize(triples)
-    
+
+ /*   val counts = triplesRDD.flatMap(line => line.split(" "))
+      .map(word => (word, 1))
+      .reduceByKey(_ + _)*/
+
     triplesRDD.saveAsTextFile(output)
 
     sparkSession.stop

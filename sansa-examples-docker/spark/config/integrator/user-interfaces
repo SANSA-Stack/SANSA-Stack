@@ -1,0 +1,35 @@
+{ "data": [
+  {
+    "id": 1,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Spark Master",
+      "base-url": "http://spark-master.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 2,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Spark Worker",
+      "base-url": "http://spark-worker.demo.big-data-europe.local"
+    }
+  },
+   "id": 3,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "HDFS",
+      "base-url": "http://hdfs.demo.big-data-europe.local"
+    }
+  },
+  {
+    "id": 4,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Hue",
+      "base-url": "http://hue.demo.big-data-europe.local",
+      "append-path": "/home"
+    }
+  }
+]
+}

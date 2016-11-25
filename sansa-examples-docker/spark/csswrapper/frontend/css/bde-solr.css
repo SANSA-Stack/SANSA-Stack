@@ -1,0 +1,258 @@
+body {
+    background: #A94F74;
+}
+
+h2 {
+    font-size: 1.50rem;
+}
+
+button {
+    padding: 8px 14px;
+    background: white;
+    border: none;
+    border-radius: 0;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 2px 1px -1px rgba(0,0,0,.12);
+}
+
+button[type=submit] {
+    background: #0064cd;
+}
+
+button[type=submit]:hover {
+    background: #589DE6;
+}
+
+button:hover {
+    background: #EEE;
+}
+
+button.warn {
+    background: #EA5850;
+}
+
+button.warn:hover {
+    background: #EC8580;
+}
+
+button:focus {
+    background-color: #ECECEC;
+}
+
+button#add {
+    width: 12%;
+}
+
+button#add span {
+    display: inline-block;
+}
+
+#header {
+    left: 10px;
+    top: 10px;
+}
+
+#main {
+    margin: 0 -30px;
+    margin-left: -20px;
+}
+
+#content-wrapper {
+    border: none;
+}
+
+.other-ui-link {
+    right: 10px;
+    top: 10px;
+}
+
+#content {
+    background: white;
+    border-top: 30px solid white;
+    border-right: 30px solid white;
+    border-left: 20px solid white;
+    border-bottom: 60px solid white;
+    margin-top: -30px;
+    margin-bottom: -60px;
+}
+
+#menu-wrapper {
+    left: 0;
+}
+
+#menu {
+    margin-right: -10px;
+}
+
+#menu ul {
+    padding: 0;
+}
+
+#menu li:hover:not(.active) {
+    background-color: #964768;
+}
+
+#menu-wrapper p {
+    padding: 0 5px;
+}
+
+#menu-wrapper a,
+#menu ul li a,
+#core-menu ul li a {
+    padding-left: 36px;
+    color: white;
+}
+
+#menu ul li.active a,
+#core-menu ul li.active a {
+    color: white;
+    font-weight: 700;
+    background-color: inherit;
+}
+
+#menu ul li a:hover {
+    color: white;
+    background-color: inherit;
+}
+
+#menu-wrapper p a:hover {
+    background-color: transparent;
+}
+
+#menu-wrapper p a {
+    padding-left: 36px;
+}
+
+#menu-wrapper .active p {
+    background-color: #DA85A8;
+}
+
+#menu-wrapper .active p a {
+    color: white;
+    background-color: #DA85A8;
+}
+
+#core-selector {
+    padding-right: 0;
+    margin-left: 5px;
+    margin-right: -5px;
+}
+
+#core-selector a {
+    padding-left: 8px;
+    color: black;
+}
+
+.chzn-container {
+    width: 150px;
+}
+
+.chzn-container-single .chzn-single {
+    background: white;
+    border-radius: 0;
+    margin-left: -5px;
+    margin-right: -5px;
+    padding: 2px 6px;
+    height: auto;
+}
+
+.chzn-container-single .chzn-drop {
+    width: 160px !important;
+    margin-left: -5px;
+}
+
+.chzn-container-single .chzn-search input {
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+#content #logging #viewer tbody .level-error span {
+    color: white !important;
+}
+
+#content #cores .actions div.action {
+	border: none;
+    box-shadow: 0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12);
+}
+
+#content #cores .actions form .buttons {
+    width: 100%;
+    text-align: center;
+}
+
+#statistics {
+    position: relative;
+}
+
+#content #segments .reload {
+    top: 0;
+    right: 0;
+}
+
+#type_or_name_chzn {
+    width: 100% !important;
+}
+
+#type_or_name_chzn .chzn-single {
+    margin: 0;
+}
+
+#content #documents #form {
+    float: none;
+}
+
+#content #documents #form #document-type_chzn {
+    width: 100% !important;
+}
+
+#content #documents #form #document-type_chzn .chzn-single {
+    margin: 0;
+}
+
+#meta {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 160px;
+    -webkit-transform: translate3d(0, 100%, 0);
+    -ms-transform: translate3d(0, 100%, 0);
+    transform: translate3d(0, 100%, 0);
+    -webkit-transition: transform 0.12s ease-out;
+    transition: transform 0.12s ease-out;
+}
+
+#meta:hover {
+    -webkit-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+}
+
+#meta:before {
+    content: "External Links";
+    color: white;
+    position: absolute;
+    top: -30px;
+    height: 30px;
+    width: 100%;
+    text-align: center;
+    line-height: 30px;
+    text-decoration: underline;
+}
+
+#meta li {
+    display: block;
+    float: none;
+}
+
+#meta li a {
+    display: inline-block;
+    color: white;
+}
+
+#meta li a:hover {
+    text-decoration: underline;
+    background-color: inherit;
+}
+
+#schema-browser .chzn-container {
+    width: 100% !important;
+}
