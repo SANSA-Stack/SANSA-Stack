@@ -4,7 +4,6 @@ services:
     image: bde2020/hadoop-namenode:1.0.0
     hostname: namenode
     container_name: namenode
-    domainname: hadoop
     networks:
       - hadoop
     volumes:
@@ -12,7 +11,7 @@ services:
     environment:
       - CLUSTER_NAME=test
       - INIT_DAEMON_STEP=setup_hdfs
-      - VIRTUAL_HOST=hdfs.demo.big-data-europe.local
+      - VIRTUAL_HOST=hdfs.demo.sansa-stack.local
     env_file:
       - ./config/hadoop/hadoop.env
     ports:
@@ -22,7 +21,6 @@ services:
     image: bde2020/hadoop-datanode:1.0.0
     hostname: datanode1
     container_name: datanode1
-    domainname: hadoop
     networks:
       - hadoop
     volumes:
@@ -34,7 +32,6 @@ services:
     image: bde2020/hadoop-datanode:1.0.0
     hostname: datanode2
     container_name: datanode2
-    domainname: hadoop
     networks: 
       - hadoop
     volumes:
@@ -46,78 +43,58 @@ services:
     image: bde2020/hdfs-filebrowser:3.9
     hostname: filebrowser
     container_name: filebrowser
-    domainname: hadoop
     networks:
       - hadoop
     environment:
       - NAMENODE_HOST=namenode
-      - VIRTUAL_HOST=hue.demo.big-data-europe.local
+      - VIRTUAL_HOST=hue.demo.sansa-stack.local
       - VIRTUAL_PORT=8088
-      - django_debug_mode=false
 #    ports:
 #      - "8088:8088"
 
- spark-master:
-   image: bde2020/spark-master:1.5.1-hadoop2.6
+ master:
+   image: bde2020/spark-master:1.5.1-hadoop2.6 
    hostname: spark-master
    container_name: spark-master
-   domainname: hadoop
    networks:
-     - hadoop
+    - hadoop
    environment:
       - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
-      - VIRTUAL_HOST=spark-master.demo.big-data-europe.local
+      - VIRTUAL_HOST=spark-master.demo.sansa-stack.local
       - VIRTUAL_PORT=8080
-   env_file:
-      - ./config/hadoop/hadoop.env
+ #  env_file:
+ #     - ./config/hadoop/hadoop.env
 
- spark-worker:
+ worker:
    image: bde2020/spark-worker:1.5.1-hadoop2.6
    hostname: spark-worker
    container_name: spark-worker
-   domainname: hadoop
-   networks: 
+   networks:
      - hadoop
    environment:
      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
-     - VIRTUAL_HOST=flink-worker.demo.big-data-europe.local
-     - VIRTUAL_PORT=8081 
-   env_file:
-     - ./config/hadoop/hadoop.env
+     - VIRTUAL_HOST=spark-worker.demo.sansa-stack.local
+     - VIRTUAL_PORT=8081
+  # env_file:
+  #   - ./config/hadoop/hadoop.env
    links:
-      - "spark-master"
-
- sansa-examples:
-  build: .
-  hostname: sansa-examples
-  container_name: sansa-examples
-  domainname: hadoop
-  networks:
-    - hadoop
-  environment:
-      - HDFS_URL=hdfs://namenode:8020
-  env_file:
-    - ./config/hadoop/hadoop.env
-  links:
-   - "spark-master"
+     - "master:spark-master"
 
  integratorui:
    image: bde2020/integrator-ui:latest
    hostname: integratorui
    container_name: integratorui
-   domainname: hadoop
    networks:
      - hadoop
    volumes:
       - ./config/integrator:/app/config
    environment:
-      - VIRTUAL_HOST=demo.big-data-europe.local
+      - VIRTUAL_HOST=demo.sansa-stack.local
 
  csswrapper:
     build: ./csswrapper/
     hostname: csswrapper
     container_name: csswrapper
-    domainname: hadoop
     networks:
       - hadoop
     ports:
@@ -125,49 +102,15 @@ services:
     links:
       - namenode:namenode
       - filebrowser:filebrowser
-      - spark-master:spark-master
-      - spark-worker:spark-worker
+      - master:master
+      - worker:worker
       - integratorui:integratorui
     depends_on:
       - namenode
       - filebrowser
-      - spark-master
-      - spark-worker
+      - master
+      - worker
       - integratorui
-
- identifier:
-  image: semtech/mu-identifier:1.0.0
-  hostname: identifier
-  container_name: identifier
-  domainname: hadoop
-  networks:
-   - hadoop
-
- dispatcher:
-  image: semtech/mu-dispatcher:1.0.1
-  hostname: dispatcher
-  container_name: dispatcher
-  domainname: hadoop
-  networks:
-    - hadoop
-  volumes:
-    - ./config:/config
-
- pipeline:
-  image: bde2020/mu-pipeline-service:0.1.0
-  hostname: pipeline
-  container_name: pipeline
-  domainname: hadoop
-  networks:
-    - hadoop
-
- initdaemon:
-  image: bde2020/mu-init-daemon-service:0.1.0
-  hostname: initdaemon
-  container_name: initdaemon
-  domainname: hadoop
-  networks:
-    - hadoop
 
 networks:
   hadoop:

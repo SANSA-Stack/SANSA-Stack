@@ -1,0 +1,20 @@
+version: '2' 
+services:
+ sansa-examples:
+  build: .
+  hostname: sansa-examples
+  container_name: sansa-examples
+  networks:
+    - hadoop
+  environment:
+      - HDFS_URL=hdfs://namenode:8020
+      - SPARK_APPLICATION_ARGS = $SPARK_APPLICATION_ARGS
+      - SPARK_APPLICATION_MAIN_CLASS = $SPARK_APPLICATION_MAIN_CLASS
+#  env_file:
+#    - ./config/hadoop/hadoop.env
+#  links:
+#   - "spark-master"
+
+networks:
+  hadoop:
+    external: true

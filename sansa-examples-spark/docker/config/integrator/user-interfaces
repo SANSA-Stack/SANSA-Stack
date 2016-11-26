@@ -4,7 +4,7 @@
     "type": "user-interfaces",
     "attributes": {
       "label": "Spark Master",
-      "base-url": "http://spark-master.demo.big-data-europe.local"
+      "base-url": "http://spark-master.demo.sansa-stack.local"
     }
   },
   {
@@ -12,14 +12,15 @@
     "type": "user-interfaces",
     "attributes": {
       "label": "Spark Worker",
-      "base-url": "http://spark-worker.demo.big-data-europe.local"
+      "base-url": "http://spark-worker.demo.sansa-stack.local"
     }
   },
+  {
    "id": 3,
     "type": "user-interfaces",
     "attributes": {
       "label": "HDFS",
-      "base-url": "http://hdfs.demo.big-data-europe.local"
+      "base-url": "http://hdfs.demo.sansa-stack.local"
     }
   },
   {
@@ -27,7 +28,7 @@
     "type": "user-interfaces",
     "attributes": {
       "label": "Hue",
-      "base-url": "http://hue.demo.big-data-europe.local",
+      "base-url": "http://hue.demo.sansa-stack.local",
       "append-path": "/home"
     }
   }
