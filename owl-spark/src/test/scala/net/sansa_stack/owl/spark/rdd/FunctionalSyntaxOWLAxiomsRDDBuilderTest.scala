@@ -12,15 +12,14 @@ class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     if (_rdd == null) {
       _rdd = FunctionalSyntaxOWLAxiomsRDDBuilder.build(
         sc, "src/test/resources/ont_functional.owl")
+//        sc, "hdfs://localhost:9000/ont_functional.owl")
       _rdd.cache()
     }
-
     _rdd
   }
 
   test("The number of axioms should match") {
     val expectedNumberOfAxioms = 67  // = 71 - commented out Import(...) - 3 x null
-
     assert(rdd.count() == expectedNumberOfAxioms)
   }
 
@@ -28,7 +27,6 @@ class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     // --> AnnotationAssertion(bar:label bar:Cls1 "Class 1")
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLAnnotationAssertionAxiom])
-
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
 

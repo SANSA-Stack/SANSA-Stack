@@ -13,13 +13,13 @@ class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     if (_dataSet == null) {
       _dataSet = FunctionalSyntaxOWLAxiomsDataSetBuilder.build(
         env, "src/test/resources/ont_functional.owl")
+//        env, "hdfs://localhost:9000/ont_functional.owl")
     }
     _dataSet
   }
 
   test("The number of axioms should match") {
     val expectedNumberOfAxioms = 67  // = 71 - commented out Import(...) - 3 x null
-
     assert(dataSet.count() == expectedNumberOfAxioms)
   }
 
