@@ -77,6 +77,7 @@
 			<groupId>de.javakaffee</groupId>
 			<artifactId>kryo-serializers</artifactId>
 		</dependency>
+
 	</dependencies>
 
 </project>
