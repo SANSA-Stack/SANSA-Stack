@@ -12,23 +12,6 @@
     <name>Inference API - Spark</name>
     <description>Apache Spark based inference layer for RDF and OWL</description>
 
-    <!--
-      <repositories>
-        <repository>
-          <id>scala-tools.org</id>
-          <name>Scala-Tools Maven2 Repository</name>
-          <url>http://scala-tools.org/repo-releases</url>
-        </repository>
-      </repositories>
-
-      <pluginRepositories>
-        <pluginRepository>
-          <id>scala-tools.org</id>
-          <name>Scala-Tools Maven2 Repository</name>
-          <url>http://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-      </pluginRepositories>
-    -->
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
@@ -43,6 +26,27 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- RDF Layer -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-rdf-spark-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-rdf-partition-core</artifactId>
+        </dependency>
+
+        <!-- Query Layer -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-query-spark-sparqlify</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-server-standalone</artifactId>
+        </dependency>
+
+        <!-- Scala -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>

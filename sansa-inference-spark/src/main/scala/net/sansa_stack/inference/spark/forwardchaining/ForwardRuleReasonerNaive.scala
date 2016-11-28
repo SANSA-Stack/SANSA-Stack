@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory
 import scala.language.{existentials, implicitConversions}
 
 /**
-  * A naive implementation of the forward chaining based reasoner.
+  * A naive implementation of the forward chaining based reasoner that does fix-point iteration, i.e. it applies
+  * all rules in each iteration until no new data has been generated.
+  * .
   *
   * @author Lorenz Buehmann
   */

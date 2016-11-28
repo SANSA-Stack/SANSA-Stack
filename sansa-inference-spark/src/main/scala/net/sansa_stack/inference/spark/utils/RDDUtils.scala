@@ -14,6 +14,12 @@ object RDDUtils {
 
   implicit class RDDOps[T: ClassTag](rdd: RDD[T]) {
 
+    /**
+      * Splits an RDD into two parts based on the given filter function
+      *
+      * @param f the boolean filter function
+      * @return two RDDs
+      */
     def span(f: T => Boolean): (RDD[T], RDD[T]) = {
       val spaned = rdd.mapPartitions { iter =>
         val (left, right) = iter.span(f)
@@ -21,15 +27,22 @@ object RDDUtils {
         iterSeq.iterator
       }
       val left = spaned.mapPartitions { iter =>
-        iter.next().toIterator
+        iter.next()
       }
       val right = spaned.mapPartitions { iter =>
         iter.next()
-        iter.next().toIterator
+        iter.next()
       }
       (left, right)
     }
 
+    /**
+      * Splits an RDD into two parts based on the given filter function. Note, that filtering is done twice on the same
+      * data twice, thus, caching beforehand is recommended!
+      *
+      * @param f the boolean filter function
+      * @return two RDDs
+      */
     def partitionBy(f: T => Boolean): (RDD[T], RDD[T]) = {
       val passes = rdd.filter(f)
       val fails = rdd.filter(e => !f(e)) // Spark doesn't have filterNot
