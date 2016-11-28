@@ -22,6 +22,8 @@ object KBObject{
     var kbGraph: RDFGraph = null
     var dfTable:DataFrame = null
     
+    var hdfsPath:String = "" 
+    
     var subject2predicate2object: Map[String,Map[String,Map[String,Int]]] = Map()
     var predicate2object2subject: Map[String,Map[String,Map[String,Int]]] = Map()
     var object2subject2predicate: Map[String,Map[String,Map[String,Int]]] = Map()
@@ -44,7 +46,9 @@ object KBObject{
 
 	val OBJECT2OBJECT: Int = 4
 	
-	
+	def sethdfsPath (hdfsP:String){
+      this.hdfsPath = hdfsP
+    }
 	
 	 def deleteRecursive( path:File){
     var files = path.listFiles()
@@ -914,7 +918,7 @@ for (f <-files){
 	   
 	   tpArString = tpArString.replace(" ", "_").replace("?", "_") 
 	  
-	   tpArDF = sqlContext.read.parquet("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent"+(posit-1)+"/"+tpArString)
+	   tpArDF = sqlContext.read.parquet(hdfsPath+"permanent"+(posit-1)+"/"+tpArString)
 	 }
 	 
 	  tpArDF.cache()

@@ -2,6 +2,8 @@ package net.sansa_stack.ml.spark.amieSpark.mining
 
 
 import java.io.File
+import java.net.URI
+
 
 import net.sansa_stack.ml.spark.amieSpark.mining.KBObject.KB
 import net.sansa_stack.ml.spark.amieSpark.mining.Rules.RuleContainer
@@ -11,6 +13,13 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession, _}
 
 import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.util.Try
+
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
+
+import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
+import net.sansa_stack.rdf.spark.model.TripleRDD._
+
 
 object MineRules {
  /**	Algorithm that mines the Rules.
@@ -23,14 +32,14 @@ object MineRules {
    * 
    * 
    * */
-  class Algorithm(k: KB, mHC: Double, mL: Int, mCon: Double) extends Serializable
+  class Algorithm(k: KB, mHC: Double, mL: Int, mCon: Double, hdfsP: String) extends Serializable
   {
    
    val kb: KB = k
    val minHC = mHC
    val maxLen = mL
    val minConf = mCon
-  
+   val hdfsPath = hdfsP
 
    
      def deleteRecursive( path:File): Int={
@@ -70,13 +79,25 @@ return 0
    
    
  def ruleMining (sc:SparkContext, sqlContext:SQLContext): ArrayBuffer[RuleContainer] = {
-   
+  /* 
   var tmpdel = new File ("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent0/")
   /**data home TheresaNathan*/
    while (tmpdel.listFiles() != null) {
             deleteRecursive(tmpdel)
           }
-    
+   var tmpde2 = new File ("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent1/")
+  /**data home TheresaNathan*/
+   while (tmpde2.listFiles() != null) {
+            deleteRecursive(tmpde2)
+          }
+          * 
+          */
+   
+   
+ val fs:FileSystem = FileSystem.get(new URI("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/"), sc.hadoopConfiguration);
+fs.delete(new Path("/Theresa/permanent0/"), true) 
+   fs.delete(new Path("/Theresa/permanent1/"), true) 
+   
  var predicates = kb.getKbGraph().triples.map{x => x.predicate 
      
    }.distinct
@@ -330,7 +351,7 @@ for (i <- 0 to this.maxLen-1){
       
       if (tpAr.length < maxLen){
          var namesFolder = o.map(x => (tpArString+""+x._1.toString().replace(" ", "_").replace("?", "_"), x._1.toString()+ "  " + id.toString())).collect
-         var delFiles = new File ("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent"+(c-2)+"/")
+         var delFiles = new File (hdfsPath+"permanent"+(c-2)+"/")
          
            
      
@@ -345,7 +366,7 @@ for (i <- 0 to this.maxLen-1){
          for(n <- namesFolder){
            var tempDF = sqlContext.sql("SELECT "+stringSELECT+ " FROM outTable WHERE outTable.key = '"+ n._2+"'")
            
-           tempDF.write.parquet("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent"+c+"/"+n._1)
+           tempDF.write.parquet(hdfsPath+"permanent"+c+"/"+n._1)
            
           
             
@@ -386,6 +407,7 @@ for (i <- 0 to this.maxLen-1){
   
   def main(args: Array[String]) = {
     
+  
     /*
      * config:
      * .config("spark.executor.memory", "20g")
@@ -399,20 +421,42 @@ for (i <- 0 to this.maxLen-1){
  
    val sparkSession = SparkSession.builder
 
+     
     .master("spark://139.18.2.34:3077")
-      .appName("SPARK Reasoning")
+    .appName("SPARK Reasoning")
     .config("spark.sql.warehouse.dir", "file:///data/home/mohamed/spark-2.0.1-bin-hadoop2.7/bin/spark-warehouse")
-    
-   
     .getOrCreate()
  //
+    
+  val hdfsPath:String = "hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/"
+    
+    
   val sc = sparkSession.sparkContext
   val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
+  
+  know.sethdfsPath(hdfsPath)
   know.setKbSrc("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/test_data.tsv")
-  know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))
-  know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2)  )
-  val algo = new Algorithm (know, 0.01, 3, 0.1)
+  
+  var text = sc.textFile(know.getKbSrc(), 2).reduce((s1, s2) => s1 + "\n" + s2)
+  .replace("\"", "\\u0022").replace("\\","\\u005C")
+ 
+  val ops = JenaSparkRDDOps(sc)
+  import ops._
+  var tester = fromNTriples(text,"").toSeq
+  
+  var w = tester.map(trp => Atom(RDFTriple(trp.getSubject.toString(), trp.getPredicate.toString(),trp.getObject.toString())))
+  var v = tester.map(trp => RDFTriple(trp.getSubject.toString(), trp.getPredicate.toString(),trp.getObject.toString()))
+ 
+  var rdd = sc.parallelize(v)
+  var rddDF = sc.parallelize(w)
+
+  import sqlContext.implicits._
+  
+  know.setKbGraph(new RDFGraph(rdd))
+  know.setDFTable(rddDF.toDF())
+  
+  val algo = new Algorithm (know, 0.01, 3, 0.1, hdfsPath)
 
     
     var erg = algo.ruleMining(sc, sqlContext)
