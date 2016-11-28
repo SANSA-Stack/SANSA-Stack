@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.amieSpark.mining
 
-import org.apache.jena.graph.Triple
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -30,18 +30,7 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
       )
   }
 
-  /**
-    * Returns an RDD of triples that match with the given input.
-    *
-    * @return RDD of triples
-    */
-  def find(triple: Triple): RDD[RDFTriple] = {
-    find(
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
-    )
-  }
+  
 
   /**
     * Return the union of the current RDF graph with the given RDF graph
