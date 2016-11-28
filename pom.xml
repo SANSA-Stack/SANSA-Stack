@@ -49,6 +49,7 @@
     <module>ml-flink</module>
     <module>ml-spark</module>
     <module>ml-tests</module>
+    <module>ml-clustering</module>
   </modules>
 
   <properties>

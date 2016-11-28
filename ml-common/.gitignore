@@ -39,3 +39,5 @@ build.log
 
 #SHITTY output not in target directory
 build.log
+/.cache-tests
+/.cache-main
