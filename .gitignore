@@ -19,6 +19,7 @@ buildNumber.properties
 .classpath
 deptree.txt
 # IntelliJ config
+*.iml
 .idea
 /bin
 
