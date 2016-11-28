@@ -11,7 +11,7 @@ import org.semanticweb.owlapi.model.OWLAxiom
   * Object containing several constants used by the FunctionalSyntaxParsing
   * trait and the FunctionalSyntaxExpressionBuilder
   */
-package object constants {
+object FunctionalSyntaxParsing {
   /** marker used to store the prefix for the default namespace */
   val _empty = "_EMPTY_"
   // TODO: refine
@@ -85,19 +85,19 @@ trait FunctionalSyntaxPrefixParsing {
     var prefix, uri: String = null
 
     prefixLine.trim match {
-      case constants.prefixPattern(p, u) => {
+      case FunctionalSyntaxParsing.prefixPattern(p, u) => {
         prefix = p
         uri = u
       }
     }
 
-    if (prefix.isEmpty) prefix = constants._empty
+    if (prefix.isEmpty) prefix = FunctionalSyntaxParsing._empty
 
     (prefix, uri)
   }
 
   def isPrefixDeclaration(expression: String): Boolean = {
-    constants.prefixPattern.pattern.matcher(expression).matches()
+    FunctionalSyntaxParsing.prefixPattern.pattern.matcher(expression).matches()
   }
 }
 
@@ -169,9 +169,9 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
       // handle default prefix e.g. :Bar --> http://foo.com/defaultPath#Bar
       // TODO: refine regex
       val pattern = ":[^/][a-zA-Z][0-9a-zA-Z_-]*".r
-      val v: String = "<" + prefixes.get(constants._empty).get
+      val v: String = "<" + prefixes.get(FunctionalSyntaxParsing._empty).get
 
-      if (prefixes.contains(constants._empty)) {
+      if (prefixes.contains(FunctionalSyntaxParsing._empty)) {
         pattern.findAllIn(trimmedExpr).foreach(hit => {
           val full = hit.replace(":".toCharArray, v.toCharArray)
           trimmedExpr = trimmedExpr.replace(hit, full + ">")
