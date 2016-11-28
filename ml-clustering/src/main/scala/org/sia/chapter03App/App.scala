@@ -1,3 +1,7 @@
+
+/**
+ * Test class
+ */
 package org.sia.chapter03App
 
 import org.apache.spark.{SparkConf, SparkContext}
