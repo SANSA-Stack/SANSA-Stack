@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
   */
 class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
 
-  private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def apply(graph: RDFGraph): RDFGraph = {
     logger.info("materializing graph...")
@@ -34,14 +34,14 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
       * yyy rdfs:subClassOf zzz .	  xxx rdfs:subClassOf zzz .
      */
     val subClassOfTriples = extractTriples(triplesRDD, RDFS.subClassOf.getURI) // extract rdfs:subClassOf triples
-    val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples)//mutable.Set()++subClassOfTriples.collect())
+    val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples).setName("rdfs11")//mutable.Set()++subClassOfTriples.collect())
 
     /*
         rdfs5	xxx rdfs:subPropertyOf yyy .
               yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
      */
     val subPropertyOfTriples = extractTriples(triplesRDD, RDFS.subPropertyOf.getURI) // extract rdfs:subPropertyOf triples
-    val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples)//extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
+    val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples).setName("rdfs5")//extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
 
     // a map structure should be more efficient
     val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.subject, t.`object`)).collect)
@@ -61,8 +61,10 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
      */
     val triplesRDFS7 =
       triplesRDD // all triples (s p1 o)
-      .filter(t => subPropertyMapBC.value.contains(t.predicate)) // such that p1 has a super property p2
-      .flatMap(t => subPropertyMapBC.value(t.predicate).map(supProp => RDFTriple(t.subject, supProp, t.`object`))) // create triple (s p2 o)
+        .filter(t => subPropertyMapBC.value.contains(t.predicate)) // such that p1 has a super property p2
+        .flatMap(t => subPropertyMapBC.value(t.predicate)
+        .map(supProp => RDFTriple(t.subject, supProp, t.`object`))) // create triple (s p2 o)
+        .setName("rdfs7")
 
     // add triples
     triplesRDD = triplesRDD.union(triplesRDFS7)
@@ -81,6 +83,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
       triplesRDD
         .filter(t => domainMapBC.value.contains(t.predicate))
         .map(t => RDFTriple(t.subject, RDF.`type`.getURI, domainMapBC.value(t.predicate)))
+        .setName("rdfs2")
 
     /*
    rdfs3	aaa rdfs:range xxx .
@@ -94,6 +97,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
       triplesRDD
         .filter(t => rangeMapBC.value.contains(t.predicate))
         .map(t => RDFTriple(t.`object`, RDF.`type`.getURI, rangeMapBC.value(t.predicate)))
+        .setName("rdfs3")
 
     val triples23 = triplesRDFS2.union(triplesRDFS3)
 
@@ -111,7 +115,9 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
     val triplesRDFS9 =
       typeTriples // all rdf:type triples (s a A)
         .filter(t => subClassOfMapBC.value.contains(t.`object`)) // such that A has a super class B
-        .flatMap(t => subClassOfMapBC.value(t.`object`).map(supCls => RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
+        .flatMap(t => subClassOfMapBC.value(t.`object`)
+        .map(supCls => RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
+        .setName("rdfs9")
 
     // 5. merge triples and remove duplicates
     val allTriples = sc.union(Seq(

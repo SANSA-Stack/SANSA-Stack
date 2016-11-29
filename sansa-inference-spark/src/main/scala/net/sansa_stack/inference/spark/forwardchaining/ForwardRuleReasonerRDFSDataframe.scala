@@ -27,7 +27,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession) extends ForwardRul
   val sqlContext = new SQLContext(session.sparkContext)
   import sqlContext.implicits._
 
-  private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def apply(graph: RDFGraphDataFrame): RDFGraphDataFrame = {
     logger.info("materializing graph...")

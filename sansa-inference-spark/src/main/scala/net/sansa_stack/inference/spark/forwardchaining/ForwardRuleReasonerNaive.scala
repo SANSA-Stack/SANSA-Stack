@@ -19,7 +19,7 @@ import scala.language.{existentials, implicitConversions}
   */
 class ForwardRuleReasonerNaive(sc: SparkContext, rules: Set[Rule]) extends AbstractForwardRuleReasoner[RDD[RDFTriple], RDFGraphNative]{
 
-  private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   val ruleExecutor = new RuleExecutorNative(sc)
 

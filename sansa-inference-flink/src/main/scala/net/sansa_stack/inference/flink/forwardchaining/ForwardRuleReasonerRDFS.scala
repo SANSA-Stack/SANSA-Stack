@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 */
 class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReasoner{
 
-    private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+    private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def apply(graph: RDFGraph): RDFGraph = {
     logger.info("materializing graph...")

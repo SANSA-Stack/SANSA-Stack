@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
   * @author Lorenz Buehmann
   */
 abstract class PlanExecutor[V, G <: AbstractRDFGraph[V, G]]() {
-  protected val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  protected val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def execute(plan: Plan, graph: G): G
 }

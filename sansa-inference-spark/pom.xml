@@ -12,16 +12,20 @@
     <name>Inference API - Spark</name>
     <description>Apache Spark based inference layer for RDF and OWL</description>
 
+    <properties>
+        <spark.deps.scope>compile</spark.deps.scope>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-inference-common</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-inference-tests</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -56,11 +60,13 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <scope>${spark.deps.scope}</scope>
         </dependency>
         <!-- Apache Spark SQL -->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <scope>${spark.deps.scope}</scope>
         </dependency>
 
         <!-- Shapeless lib -->
@@ -120,7 +126,7 @@
         <!-- Logging -->
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
+            <artifactId>scala-logging_${scala.binary.version}</artifactId>
         </dependency>
 
     </dependencies>
@@ -180,4 +186,112 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>dist</id>
+            <activation>
+                <property>
+                    <name>dist</name>
+                </property>
+            </activation>
+            <!-- This profile uses the assembly plugin to create a special "dist" package for BigTop
+                 that contains Spark but not the Hadoop JARs it depends on. -->
+            <build>
+                <plugins>
+                    <!--<plugin>-->
+                        <!--<groupId>org.apache.maven.plugins</groupId>-->
+                        <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                        <!--<version>3.0.0</version>-->
+                        <!--<executions>-->
+                            <!--<execution>-->
+                                <!--<id>dist</id>-->
+                                <!--<phase>package</phase>-->
+                                <!--<goals>-->
+                                    <!--<goal>single</goal>-->
+                                <!--</goals>-->
+                                <!--<configuration>-->
+                                    <!--&lt;!&ndash;<descriptorRefs>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</descriptorRefs>&ndash;&gt;-->
+                                    <!--<descriptors>-->
+                                        <!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
+                                    <!--</descriptors>-->
+                                <!--</configuration>-->
+                            <!--</execution>-->
+                        <!--</executions>-->
+                    <!--</plugin>-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>2.4.3</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactSet>
+                                        <excludes>
+                                            <exclude>org.apache.spark:spark-core_${scala.binary.version}</exclude>
+                                            <exclude>org.apache.spark:spark-sql_${scala.binary.version}</exclude>
+                                            <exclude>org.apache.spark:spark-graphx_${scala.binary.version}</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-server</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-continuation</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-http</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-io</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-util</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-security</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-servlet</exclude>
+                                            <exclude>org.eclipse.jetty:*</exclude>
+                                            <exclude>org.eclipse.*:*</exclude>
+                                            <exclude>org.glassfish.*:*</exclude>
+                                            <exclude>org.netbeans.api:*</exclude>
+                                            <exclude>org.scala-lang:scala-library</exclude>
+                                            <exclude>org.scala-lang:scala-compiler</exclude>
+                                            <exclude>org.scala-lang:scala-reflect</exclude>
+                                        </excludes>
+
+                                    </artifactSet>
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <!-- Avoid a Spark error: Invalid signature file digest for Manifest main attributes-->
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+                                    <finalName>uber-${project.artifactId}-${project.version}</finalName>
+                                    <transformers>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                            <mainClass>net.sansa_stack.inference.spark.RDFGraphMaterializer</mainClass>
+                                        </transformer>
+                                    </transformers>
+                                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Profile that disables inclusion of Spark dependencies. -->
+        <profile>
+            <id>spark-provided</id>
+            <activation>
+                <property>
+                    <name>dist</name>
+                </property>
+            </activation>
+            <properties>
+                <spark.deps.scope>provided</spark.deps.scope>
+            </properties>
+        </profile>
+
+    </profiles>
 </project>

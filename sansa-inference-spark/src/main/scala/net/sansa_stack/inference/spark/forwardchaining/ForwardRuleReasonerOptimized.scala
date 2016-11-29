@@ -18,7 +18,7 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
 (sparkSession: SparkSession, rules: Set[Rule], ruleExecutor: RuleExecutor[V, G])
   extends AbstractForwardRuleReasoner[V, G] {
 
-  private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   var ruleExecutionCnt = 0
   var countCnt = 0

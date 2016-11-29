@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
   */
 object RDFGraphWriter {
 
-  private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def writeToFile(graph: RDFGraph, path: String): Unit = {
     logger.info("writing triples to disk...")

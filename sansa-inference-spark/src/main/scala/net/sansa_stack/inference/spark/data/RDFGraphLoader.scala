@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
   */
 object RDFGraphLoader {
 
-  private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def loadFromFile(path: String, sc: SparkContext, minPartitions: Int = 2): RDFGraph = {
     logger.info("loading triples from disk...")

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
   * @author Lorenz Buehmann
   */
 class PlanExecutorSQL(sparkSession: SparkSession) extends PlanExecutor[DataFrame, RDFGraphDataFrame]{
-  override val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  override val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def execute(plan: Plan, graph: RDFGraphDataFrame): RDFGraphDataFrame = {
     // generate SQL query
