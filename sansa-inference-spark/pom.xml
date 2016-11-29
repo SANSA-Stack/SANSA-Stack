@@ -129,6 +129,12 @@
             <artifactId>scala-logging_${scala.binary.version}</artifactId>
         </dependency>
 
+        <!-- Scopt -->
+        <dependency>
+            <groupId>com.github.scopt</groupId>
+            <artifactId>scopt_${scala.binary.version}</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

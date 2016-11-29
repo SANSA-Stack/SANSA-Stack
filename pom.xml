@@ -220,6 +220,14 @@
         <version>2.3.0</version>
       </dependency>
 
+      <!-- Scopt -->
+      <dependency>
+        <groupId>com.github.scopt</groupId>
+        <artifactId>scopt_${scala.binary.version}</artifactId>
+        <version>3.3.0</version>
+      </dependency>
+
+
     </dependencies>
   </dependencyManagement>
 
