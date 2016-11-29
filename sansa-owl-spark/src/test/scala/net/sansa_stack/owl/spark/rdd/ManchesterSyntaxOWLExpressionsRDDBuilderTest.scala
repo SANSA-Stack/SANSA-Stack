@@ -10,8 +10,8 @@ class ManchesterSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedS
   def rdd = {
     if (_rdd == null) {
       _rdd = ManchesterSyntaxOWLExpressionsRDDBuilder.build(
-//        sc, "src/test/resources/ont_manchester.owl")
-        sc, "hdfs://localhost:9000/ont_manchester.owl")
+        sc, "src/test/resources/ont_manchester.owl")
+//        sc, "hdfs://localhost:9000/ont_manchester.owl")
       _rdd.cache()
     }
 
