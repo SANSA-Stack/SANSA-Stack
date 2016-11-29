@@ -42,7 +42,6 @@ import java.nio.file.Files
 
 
 object MainSansaSparqlServer
-  extends LazyLogging
 {
 
   def main(args: Array[String]): Unit = {
@@ -73,7 +72,6 @@ object MainSansaSparqlServer
       .getOrCreate()
 
 
-
     val triplesString =
       """<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://xmlns.com/foaf/0.1/givenName>	"Guy De" .
         |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/influenced>	<http://dbpedia.org/resource/Tobias_Wolff> .
@@ -89,48 +87,7 @@ object MainSansaSparqlServer
     //val map = graphRdd.partitionGraphByPredicates
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
 
-
-    val config = new Config()
-    val loggerCount = new LoggerCount(logger.underlying)
-
-
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("", "")) //new SqlEscaperBacktick())
-    val sqlEscaper = backendConfig.getSqlEscaper()
-    val typeSerializer = backendConfig.getTypeSerializer()
-
-
-    val ers = SparqlifyUtils.createDefaultExprRewriteSystem()
-    val mappingOps = SparqlifyUtils.createDefaultMappingOps(ers)
-
-
-    val candidateViewSelector = new CandidateViewSelectorSparqlify(mappingOps, new ViewDefinitionNormalizerImpl());
-
-    val views = partitions.map {
-      case (p, rdd) =>
-//
-        println("Processing: " + p)
-
-        val vd = SparqlifyUtils2.createViewDefinition(p);
-        val tableName = vd.getRelation match {
-          case o: SqlOpTable => o.getTableName
-          case _ => throw new RuntimeException("Table name required - instead got: " + vd)
-        }
-
-        val scalaSchema = p.layout.schema
-        val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
-        val df = sparkSession.createDataFrame(rdd, sparkSchema)
-
-        df.createOrReplaceTempView(tableName)
-        config.getViewDefinitions.add(vd)
-    }
-
-    val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
-
-    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
-    //val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
-
-//    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
-
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
 
     val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 
