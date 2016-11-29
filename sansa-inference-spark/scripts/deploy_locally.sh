@@ -51,6 +51,7 @@ fi
 $SPARK_HOME/bin/spark-submit \
   --class net.sansa_stack.inference.spark.RDFGraphMaterializer \
   --master "local[4]" \
-  /home/me/work/projects/scala/SANSA-Inference/sansa-inference-spark/target/uber-sansa-inference-spark-0.1-SNAPSHOT.jar \
+  --name "RDFS Reasoning" \
+  ./target/uber-sansa-inference-spark-0.1-SNAPSHOT.jar \
   $INPUT $OUTPUT
 
