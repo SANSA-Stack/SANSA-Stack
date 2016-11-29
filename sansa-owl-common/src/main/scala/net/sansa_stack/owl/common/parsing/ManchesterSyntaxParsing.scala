@@ -81,6 +81,7 @@ class FakeEntityChecker(defaultPrefix: String) extends OWLEntityChecker {
 object ManchesterSyntaxParsing {
   /** marker used to store the prefix for the default namespace */
   val _empty = "_EMPTY_"
+  val dummyURI = "http://sansa-stack.net/dummy"
   // TODO: refine
   val prefixPattern = "Prefix\\:\\s*([a-zA-Z]*)\\:\\s*<(.*)>".r
   val ontologyPattern = "Ontology\\:\\s*<(.*)>".r

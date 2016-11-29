@@ -11,7 +11,7 @@ object ManchesterSyntaxOWLExpressionsRDDBuilder extends ManchesterSyntaxPrefixPa
     buildAndGetPrefixes(sc, filePath)._1
   }
 
-  private[rdd] def buildAndGetPrefixes(sc: SparkContext, filePath: String): (OWLExpressionsRDD, Map[String, String]) = {
+  private[spark] def buildAndGetPrefixes(sc: SparkContext, filePath: String): (OWLExpressionsRDD, Map[String, String]) = {
     val rawRDD = sc.hadoopFile(
       filePath,
       classOf[ManchesterSyntaxInputFormat],

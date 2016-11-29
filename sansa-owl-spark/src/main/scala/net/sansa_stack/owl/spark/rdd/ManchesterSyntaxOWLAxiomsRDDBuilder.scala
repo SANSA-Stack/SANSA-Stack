@@ -15,8 +15,8 @@ object ManchesterSyntaxOWLAxiomsRDDBuilder extends ManchesterSyntaxParsing {
 
     val expressionsRDD: OWLExpressionsRDD = res._1
     val prefixes: Map[String, String] = res._2
-    val dummyURI = "http://sansa-stack.net/dummy"
-    val defaultPrefix = prefixes.get(ManchesterSyntaxParsing._empty).getOrElse(dummyURI)
+
+    val defaultPrefix = prefixes.getOrElse(ManchesterSyntaxParsing._empty, ManchesterSyntaxParsing.dummyURI)
 
     expressionsRDD.filter(!_.startsWith("Annotations")).flatMap(frame => {
       try makeAxioms(frame, defaultPrefix)
