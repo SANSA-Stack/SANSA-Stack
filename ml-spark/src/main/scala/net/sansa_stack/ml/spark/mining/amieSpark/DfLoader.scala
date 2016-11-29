@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.amieSpark.mining
+package net.sansa_stack.ml.spark.mining.amieSpark
 
 import org.apache.spark.SparkContext
 
@@ -10,7 +10,7 @@ import org.apache.spark.sql.types._
 
 
 import org.slf4j.LoggerFactory
-import net.sansa_stack.ml.spark.amieSpark.mining._
+import net.sansa_stack.ml.spark.mining.amieSpark._
 
 object DfLoader {
   private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))

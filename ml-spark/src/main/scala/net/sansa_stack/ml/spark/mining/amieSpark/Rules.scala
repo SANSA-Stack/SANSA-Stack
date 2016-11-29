@@ -1,6 +1,6 @@
-package net.sansa_stack.ml.spark.amieSpark.mining
+package net.sansa_stack.ml.spark.mining.amieSpark
 
-import net.sansa_stack.ml.spark.amieSpark.mining._
+import net.sansa_stack.ml.spark.mining.amieSpark._
 
 
 import org.apache.spark.SparkConf

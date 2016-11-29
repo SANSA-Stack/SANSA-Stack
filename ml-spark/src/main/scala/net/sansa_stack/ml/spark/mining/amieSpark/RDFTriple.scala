@@ -1,6 +1,6 @@
 
 
-package net.sansa_stack.ml.spark.amieSpark.mining
+package net.sansa_stack.ml.spark.mining.amieSpark
 /**
   * An RDF triple.
   *

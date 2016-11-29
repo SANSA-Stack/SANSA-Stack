@@ -1,10 +1,10 @@
-package net.sansa_stack.ml.spark.amieSpark.mining
+package net.sansa_stack.ml.spark.mining.amieSpark
 
-
+import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import net.sansa_stack.ml.spark.amieSpark.mining._
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import net.sansa_stack.ml.spark.mining.amieSpark._
 
 /**
   * A data structure that comprises a set of triples.
@@ -12,7 +12,7 @@ import net.sansa_stack.ml.spark.amieSpark.mining._
   * @author Lorenz Buehmann
   *
   */
-case class RDFGraph (triples: RDD[RDFTriple]) {
+class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples){
 
   /**
     * Returns an RDD of triples that match with the given input.
@@ -30,34 +30,44 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
       )
   }
 
-  
-
   /**
-    * Return the union of the current RDF graph with the given RDF graph
-    * @param graph the other RDF graph
-    * @return the union of both graphs
+    * Returns an RDD of triples that match with the given input.
+    *
+    * @return RDD of triples
     */
-  def union(graph: RDFGraph): RDFGraph = {
-    RDFGraph(triples.union(graph.triples))
+  def find(triple: Triple): RDD[RDFTriple] = {
+    find(
+      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
+      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
+      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
+    )
   }
 
-  /**
-    * Persist the triples RDD with the default storage level (`MEMORY_ONLY`).
-    */
-  def cache() = {
+  def union(graph: RDFGraphNative): RDFGraphNative = {
+    new RDFGraphNative(triples.union(graph.toRDD()))
+  }
+
+  def cache(): this.type = {
     triples.cache()
     this
   }
 
+  def distinct() = {
+    new RDFGraphNative(triples.distinct())
+  }
+
   /**
     * Return the number of triples.
+ *
     * @return the number of triples
     */
   def size() = {
     triples.count()
   }
 
-  def toDataFrame(sqlContext: SQLContext): DataFrame = {
+  def toRDD() = triples
+
+  def toDataFrame(sparkSession: SparkSession): DataFrame = {
     // convert RDD to DataFrame
     val schemaString = "subject predicate object"
 
@@ -68,10 +78,10 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
     val rowRDD = triples.map(t => Row(t.subject, t.predicate, t.`object`))
 
     // apply the schema to the RDD
-    val triplesDataFrame = sqlContext.createDataFrame(rowRDD, schema)
+    val triplesDataFrame = sparkSession.createDataFrame(rowRDD, schema)
 
     // register the DataFrame as a table
-    triplesDataFrame.registerTempTable("TRIPLES")
+    triplesDataFrame.createOrReplaceTempView("TRIPLES")
 
     triplesDataFrame
   }

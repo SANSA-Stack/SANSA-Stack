@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.amieSpark.mining
+package net.sansa_stack.ml.spark.mining.amieSpark
 
 
 import org.apache.spark.SparkContext
@@ -10,7 +10,7 @@ import scala.collection.mutable.{ArrayBuffer, Map}
 
 import java.io.File
 
-import net.sansa_stack.ml.spark.amieSpark.mining.Rules.RuleContainer
+import net.sansa_stack.ml.spark.mining.amieSpark.Rules.RuleContainer
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.udf
 

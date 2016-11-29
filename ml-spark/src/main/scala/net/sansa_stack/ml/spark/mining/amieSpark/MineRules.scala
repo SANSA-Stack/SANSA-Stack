@@ -1,12 +1,12 @@
-package net.sansa_stack.ml.spark.amieSpark.mining
+package net.sansa_stack.ml.spark.mining.amieSpark
 
 
 import java.io.File
 import java.net.URI
 
 
-import net.sansa_stack.ml.spark.amieSpark.mining.KBObject.KB
-import net.sansa_stack.ml.spark.amieSpark.mining.Rules.RuleContainer
+import net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB
+import net.sansa_stack.ml.spark.mining.amieSpark.Rules.RuleContainer
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession, _}
@@ -19,7 +19,6 @@ import org.apache.hadoop.fs.Path
 
 import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
 import net.sansa_stack.rdf.spark.model.TripleRDD._
-
 
 object MineRules {
  /**	Algorithm that mines the Rules.
@@ -407,7 +406,7 @@ for (i <- 0 to this.maxLen-1){
   
   def main(args: Array[String]) = {
     
-  
+    
     /*
      * config:
      * .config("spark.executor.memory", "20g")

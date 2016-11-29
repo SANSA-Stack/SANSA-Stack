@@ -1,8 +1,8 @@
-package net.sansa_stack.ml.spark.amieSpark.mining
+package net.sansa_stack.ml.spark.mining.amieSpark
 
 import org.apache.jena.graph.Triple
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import net.sansa_stack.ml.spark.amieSpark.mining._
+import net.sansa_stack.ml.spark.mining.amieSpark._
 /**
   * A data structure that comprises a set of triples.
   *
