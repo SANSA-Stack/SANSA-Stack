@@ -1,6 +1,6 @@
 
 /**
- * Test class
+ * Testing
  */
 package org.sia.chapter03App
 
