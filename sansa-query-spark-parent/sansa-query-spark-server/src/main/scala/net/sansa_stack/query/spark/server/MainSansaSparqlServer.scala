@@ -39,6 +39,7 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
 import java.io.File
 import java.nio.file.Files
+import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 
 
 object MainSansaSparqlServer
@@ -91,15 +92,7 @@ object MainSansaSparqlServer
 
     val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 
-    val sparqlStmtParser = SparqlStmtParserImpl.create(Syntax.syntaxARQ, true);
-
-    val ssf = new SparqlServiceFactory() {
-            def createSparqlService(serviceUri: String, datasetDescription: DatasetDescription, httpClient: HttpClient) = {
-                 new SparqlServiceImpl(qef, null);
-            }
-        };
-
-    val server = SparqlServerUtils.startSparqlEndpoint(ssf, sparqlStmtParser, 7531)
+    val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
     server.join()
 //
 //    val q = QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
