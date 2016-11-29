@@ -4,6 +4,7 @@ import java.io.File
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
+import net.sansa_stack.rdf.spark.model.SparkRDDGraphOps
 
 object TripleReader {
 
@@ -32,20 +33,20 @@ object TripleReader {
 
     val sparkSession = SparkSession.builder
       .master("local[*]")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .appName("Triple reader example (" + input + ")")
       .getOrCreate()
 
     val ops = JenaSparkRDDOps(sparkSession.sparkContext)
     import ops._
 
-    val triples = fromNTriples(input, "http://dbpedia.org").toSeq
-    val triplesRDD = sparkContext.parallelize(triples)
+    val it = sparkSession.sparkContext.textFile(input).collect.mkString("\n")
 
- /*   val counts = triplesRDD.flatMap(line => line.split(" "))
-      .map(word => (word, 1))
-      .reduceByKey(_ + _)*/
+    val triples = fromNTriples(it, "http://dbpedia.org").toSeq
+    val triplesRDD = sparkSession.sparkContext.parallelize(triples)
+    triplesRDD.take(5).foreach(println(_))
 
-    triplesRDD.saveAsTextFile(output)
+    //triplesRDD.saveAsTextFile(output)
 
     sparkSession.stop
 
