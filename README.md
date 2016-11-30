@@ -1,4 +1,4 @@
-# Se
+# SANSA Inference Layer
 [![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/)
 
 ## Structure
@@ -31,4 +31,4 @@ Usage: RDFGraphMaterializer [options]
 ```
 ### Example
 
-`RDFGraphMaterializer -i /PATH/TO/FILE/test.nt -o /PATH/TO/OUTPUT_DIRECTORY -p rdfs` will compute the RDFS materialization on the data contained in `test.nt` and write the inferred RDF graph to 
+`RDFGraphMaterializer -i /PATH/TO/FILE/test.nt -o /PATH/TO/OUTPUT_DIRECTORY -p rdfs` will compute the RDFS materialization on the data contained in `test.nt` and write the inferred RDF graph to the given directory.
