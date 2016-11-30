@@ -1,7 +1,13 @@
 *.class
 
+deptree.txt
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
+
+# Eclipse
+.project
+.settings
 
 # Package Files #
 *.jar
