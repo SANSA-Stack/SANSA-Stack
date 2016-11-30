@@ -4,7 +4,6 @@ import java.io.File
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
-import net.sansa_stack.rdf.spark.model.SparkRDDGraphOps
 
 object TripleReader {
 

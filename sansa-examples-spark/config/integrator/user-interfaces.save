@@ -4,7 +4,8 @@
     "type": "user-interfaces",
     "attributes": {
       "label": "Spark Master",
-      "base-url": "http://spark-master.demo.sansa-stack.local"
+      "base-url": "http://spark-master.demo.sansa-stack.local",
+      "append-path": "/"
     }
   },
   {
@@ -30,6 +31,14 @@
       "label": "Hue",
       "base-url": "http://hue.demo.sansa-stack.local",
       "append-path": "/home"
+    }
+  },
+  {
+    "id": 5,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Apache Flink Dashboard",
+      "base-url": "http://flink-master.demo.big-data-europe.local"
     }
   }
 ]

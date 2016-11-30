@@ -53,7 +53,7 @@ services:
 #      - "8088:8088"
 
  master:
-   image: bde2020/spark-master:1.5.1-hadoop2.6 
+   image: bde2020/spark-master:2.0.1-hadoop2.7
    hostname: spark-master
    container_name: spark-master
    networks:
@@ -62,11 +62,11 @@ services:
       - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
       - VIRTUAL_HOST=spark-master.demo.sansa-stack.local
       - VIRTUAL_PORT=8080
- #  env_file:
- #     - ./config/hadoop/hadoop.env
+   env_file:
+      - ./config/hadoop/hadoop.env
 
  worker:
-   image: bde2020/spark-worker:1.5.1-hadoop2.6
+   image: bde2020/spark-worker:2.0.1-hadoop2.7
    hostname: spark-worker
    container_name: spark-worker
    networks:
@@ -75,13 +75,14 @@ services:
      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
      - VIRTUAL_HOST=spark-worker.demo.sansa-stack.local
      - VIRTUAL_PORT=8081
-  # env_file:
-  #   - ./config/hadoop/hadoop.env
+   env_file:
+     - ./config/hadoop/hadoop.env
    links:
      - "master:spark-master"
 
  integratorui:
    image: bde2020/integrator-ui:latest
+#   build: ./config/csswrapper/integrator-ui/
    hostname: integratorui
    container_name: integratorui
    networks:
@@ -92,13 +93,16 @@ services:
       - VIRTUAL_HOST=demo.sansa-stack.local
 
  csswrapper:
-    build: ./csswrapper/
+    build: ./config/csswrapper/
+#    image: bde2020/nginx-proxy-with-css:latest
     hostname: csswrapper
     container_name: csswrapper
     networks:
       - hadoop
     ports:
       - 80:80
+#    volumes:
+#      -  /var/run/docker.sock:/tmp/docker.sock:ro
     links:
       - namenode:namenode
       - filebrowser:filebrowser
@@ -107,7 +111,7 @@ services:
       - integratorui:integratorui
     depends_on:
       - namenode
-      - filebrowser
+      - filebrowser 
       - master
       - worker
       - integratorui
