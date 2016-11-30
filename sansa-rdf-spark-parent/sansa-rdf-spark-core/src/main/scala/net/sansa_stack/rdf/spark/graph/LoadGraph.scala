@@ -38,7 +38,7 @@ object LoadGraph extends Logging {
     org.apache.spark.graphx.Graph(vertices, edges)
 
     new {
-      val graph = org.apache.spark.graphx.Graph(vertices, edges) //Graph(null, null)
+      val graph = org.apache.spark.graphx.Graph(vertices, edges)
       val iriToId = _iriToId
     }
 
