@@ -41,15 +41,20 @@
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/SANSA-Stack/Sem-ML</url>
+    <url>https://github.com/SANSA-Stack/SANSA-ML</url>
   </issueManagement>
 
   <modules>
-    <module>ml-common</module>
-    <module>ml-flink</module>
-    <module>ml-spark</module>
-    <module>ml-tests</module>
-    <module>ml-clustering</module>
+    
+    
+    
+    
+    
+    <module>sansa-ml-common</module>
+    <module>sansa-ml-clustering</module>
+    <module>sansa-ml-flink</module>
+    <module>sansa-ml-spark</module>
+    <module>sansa-ml-tests</module>
   </modules>
 
   <properties>

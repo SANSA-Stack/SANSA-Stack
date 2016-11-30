@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>sansa-ml-parent</artifactId>
-    <groupId>net.sansa_stack</groupId>
+    <groupId>net.sansa-stack</groupId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
   <groupId>net.sansa-stack</groupId>
