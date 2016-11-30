@@ -3,7 +3,6 @@ package net.sansa_stack.examples.spark.rdf
 import java.io.File
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
 import net.sansa_stack.rdf.spark.graph.LoadGraph
 /*
  * Computes the PageRank of Resources from an input .nt file.
@@ -40,7 +39,7 @@ object PageRank {
       .getOrCreate()
 
     val graph = LoadGraph.apply(input, sparkSession.sparkContext).graph
-    
+
     /*
     val pagerank = graph.pageRank(0.00001).vertices
 
@@ -49,7 +48,7 @@ object PageRank {
       .sortBy(50 - _._1)
 
     report.take(50).foreach(println)
-*/
+    */
     sparkSession.stop
 
   }
