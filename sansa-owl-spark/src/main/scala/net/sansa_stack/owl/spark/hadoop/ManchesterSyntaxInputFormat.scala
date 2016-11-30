@@ -19,14 +19,26 @@ class ManchesterSyntaxRecordReader(job: Configuration, split: FileSplit) extends
   fileIn.seek(start)
   private val lineReader: LineReader = new LineReader(fileIn)
   private var readAhead: String = null
+  private var bytesReadAhead = 0
   private var firstRecord = true
 
-  val sectionKeywords: Array[String] =
-    ManchesterOWLSyntax.values().filter(_.isFrameKeyword).map(_.toString) :+
-      ManchesterOWLSyntax.ONTOLOGY.toString :+
-      ManchesterOWLSyntax.PREFIX.toString :+
-      ManchesterOWLSyntax.ANNOTATIONS.toString :+
-      ManchesterOWLSyntax.IMPORT.toString
+  val sectionKeywords: Array[String] = Array(
+    ManchesterOWLSyntax.CLASS,
+    ManchesterOWLSyntax.OBJECT_PROPERTY,
+    ManchesterOWLSyntax.DATA_PROPERTY,
+    ManchesterOWLSyntax.ANNOTATION_PROPERTY,
+    ManchesterOWLSyntax.INDIVIDUAL,
+    ManchesterOWLSyntax.EQUIVALENT_CLASSES,
+    ManchesterOWLSyntax.DISJOINT_CLASSES,
+    ManchesterOWLSyntax.EQUIVALENT_PROPERTIES,
+    ManchesterOWLSyntax.DISJOINT_PROPERTIES,
+    ManchesterOWLSyntax.SAME_INDIVIDUAL,
+    ManchesterOWLSyntax.DIFFERENT_INDIVIDUALS,
+    ManchesterOWLSyntax.DATATYPE,
+    ManchesterOWLSyntax.ONTOLOGY,
+    ManchesterOWLSyntax.PREFIX,
+    ManchesterOWLSyntax.IMPORT
+  ).map(_.toString)
 
   override def next(key: LongWritable, value: Text): Boolean = {
     key.set(pos)
@@ -63,12 +75,14 @@ class ManchesterSyntaxRecordReader(job: Configuration, split: FileSplit) extends
       firstRecord = false
       var bytesRead = lineReader.readLine(tmp)
       pos += bytesRead
+
       lines = lines :+ tmp.toString
       tmp.clear()
 
       while (!isBeginningOfSection(readAhead) && pos < end) {
         bytesRead = lineReader.readLine(tmp)
-        pos += bytesRead
+        pos += bytesReadAhead
+        bytesReadAhead = bytesRead
         if (readAhead != null) lines = lines :+ readAhead
         readAhead = tmp.toString
         tmp.clear()
@@ -97,13 +111,15 @@ class ManchesterSyntaxRecordReader(job: Configuration, split: FileSplit) extends
       null
 
     } else {
+      var bytesRead = 0
       do {
-        val bytesRead = lineReader.readLine(tmp)
-        pos += bytesRead
+        bytesRead = lineReader.readLine(tmp)
+        pos += bytesReadAhead
+        bytesReadAhead = bytesRead
         lines = lines :+ readAhead
         readAhead = tmp.toString
         tmp.clear()
-      } while (!isBeginningOfSection(readAhead) && pos < end)
+      } while (!isBeginningOfSection(readAhead) && (bytesRead > 0))
 
       lines.mkString("\n")
     }
@@ -113,7 +129,7 @@ class ManchesterSyntaxRecordReader(job: Configuration, split: FileSplit) extends
     if (line == null || line.isEmpty) return false
 
     for (kw <- sectionKeywords) {
-      if (line.startsWith(kw)) return true
+      if (line.trim.startsWith(kw)) return true
     }
     false
   }
@@ -126,7 +142,7 @@ class ManchesterSyntaxRecordReader(job: Configuration, split: FileSplit) extends
   */
 class ManchesterSyntaxInputFormat extends TextInputFormat {
   override def getRecordReader(
-      split: InputSplit, job: JobConf, reporter: Reporter): RecordReader[LongWritable, Text] = {
+                                split: InputSplit, job: JobConf, reporter: Reporter): RecordReader[LongWritable, Text] = {
 
     new ManchesterSyntaxRecordReader(job, split.asInstanceOf[FileSplit])
   }
