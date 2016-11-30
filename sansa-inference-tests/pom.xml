@@ -4,10 +4,10 @@
   <parent>
     <artifactId>sansa-inference-parent</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
   <artifactId>sansa-inference-tests</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
   <name>Inference API - Tests</name>
   <description>Contains common data and utils for inference API testing</description>
 
