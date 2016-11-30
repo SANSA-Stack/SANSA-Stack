@@ -8,7 +8,6 @@ import org.semanticweb.owlapi.model.{OWLAsymmetricObjectPropertyAxiom, OWLDataPr
 class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
   lazy val env = ExecutionEnvironment.getExecutionEnvironment
   var _dataSet: OWLAxiomsDataSet = null
-  //
   def dataSet = {
     if (_dataSet == null) {
       _dataSet = FunctionalSyntaxOWLAxiomsDataSetBuilder.build(
