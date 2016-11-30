@@ -34,10 +34,11 @@ object LoadGraph extends Logging {
       case (k, ((si, p), oi)) => Edge(si, oi, p)
     })
 
-    Graph(null, null)//TODO
+    //Graph(null, null)//TODO
+    org.apache.spark.graphx.Graph(vertices, edges)
 
     new {
-      val graph = Graph(null, null)
+      val graph = org.apache.spark.graphx.Graph(vertices, edges)//Graph(null, null)
       val iriToId = _iriToId
     }
 
