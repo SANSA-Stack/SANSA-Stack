@@ -4,14 +4,14 @@
 
 	<parent>
 		<artifactId>sansa-examples-parent</artifactId>
-		<groupId>net.sansa-stack.examples</groupId>
-		<version>0.1-SNAPSHOT</version>
+		<groupId>net.sansa-stack</groupId>
+		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>net.sansa-stack.examples</groupId>
+	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-examples-spark</artifactId>
-	<version>0.1-SNAPSHOT</version>
-	<name>SANSA examples Spark</name>
-	<description>SANSA examples for Apache Spark</description>
+	<version>0.1.0-SNAPSHOT</version>
+	<name>SANSA Examples - Apache Spark</name>
+	<description>SANSA Examples for Apache Spark</description>
 
 	<dependencies>
 		<!-- Scala -->
@@ -47,19 +47,19 @@
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-rdf-spark-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 		<!-- SANSA OWL -->
 		<dependency>
-			<groupId>net.sansa_stack.owl</groupId>
-			<artifactId>owl-spark</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-owl-spark</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 		<!-- SANSA Inference -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-inference-spark</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 		<!-- SANSA Querying -->
 		<dependency>
