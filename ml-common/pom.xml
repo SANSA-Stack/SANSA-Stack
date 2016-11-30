@@ -2,23 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>ml-parent</artifactId>
-    <groupId>net.sansa_stack.ml</groupId>
-    <version>0.1-SNAPSHOT</version>
+    <artifactId>sansa-ml-parent</artifactId>
+    <groupId>net.sansa_stack</groupId>
+    <version>0.1.0-SNAPSHOT</version>
   </parent>
-  <groupId>net.sansa_stack.ml</groupId>
-  <artifactId>ml-common</artifactId>
-  <version>0.1-SNAPSHOT</version>
-  <name>${project.artifactId}</name>
-  <description>My wonderfull scala app</description>
-  <inceptionYear>2015</inceptionYear>
-  <licenses>
-    <license>
-      <name>My License</name>
-      <url>http://....</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+  <groupId>net.sansa-stack</groupId>
+  <artifactId>sansa-ml-common</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>ML API - Common</name>
+  <description>Common objects for the SANSA Machine Learning Layer</description>
+  <inceptionYear>2016</inceptionYear>
 
   <dependencies>
     <dependency>
