@@ -4,17 +4,21 @@ import java.io.File
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
-
-object TripleReader {
+import net.sansa_stack.rdf.spark.graph.LoadGraph
+/*
+ * Computes the PageRank of Resources from an input .nt file.
+ */
+object PageRank {
 
   def main(args: Array[String]) = {
-    if (args.length < 1) {
+    if (args.length < 2) {
       System.err.println(
-        "Usage: Triple reader <input>")
+        "Usage: Resource PageRank <input>")
       System.exit(1)
     }
     val input = args(0)
-    val optionsList = args.drop(1).map { arg =>
+    val output = args(1)
+    val optionsList = args.drop(2).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
         case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
@@ -26,26 +30,26 @@ object TripleReader {
       case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
     }
     println("======================================")
-    println("|        Triple reader example       |")
+    println("|   PageRank of resources example    |")
     println("======================================")
 
     val sparkSession = SparkSession.builder
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Triple reader example (" + input + ")")
+      .appName("Resource PageRank example (" + input + ")")
       .getOrCreate()
 
-    val ops = JenaSparkRDDOps(sparkSession.sparkContext)
-    import ops._
+    val graph = LoadGraph.apply(input, sparkSession.sparkContext).graph
+    
+    /*
+    val pagerank = graph.pageRank(0.00001).vertices
 
-    val it = sparkSession.sparkContext.textFile(input).collect.mkString("\n")
+    val report = pagerank.join(vertices)
+      .map({ case (k, (r, v)) => (r, v, k) })
+      .sortBy(50 - _._1)
 
-    val triples = fromNTriples(it, "http://dbpedia.org").toSeq
-    val triplesRDD = sparkSession.sparkContext.parallelize(triples)
-    triplesRDD.take(5).foreach(println(_))
-
-    //triplesRDD.saveAsTextFile(output)
-
+    report.take(50).foreach(println)
+*/
     sparkSession.stop
 
   }
