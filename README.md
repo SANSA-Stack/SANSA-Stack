@@ -14,3 +14,18 @@ Contains the core Inference API based on Apache Flink.
 
 ### inference-tests
 Contains common test classes and data.
+
+## Usage
+```
+Usage: RDFGraphMaterializer [options]
+
+
+  -i <file> | --input <file>
+        the input file in N-Triple format
+  -o <directory> | --out <directory>
+        the output directory
+  -p {rdfs | owl-horst | owl-el | owl-rl} | --profile {rdfs | owl-horst | owl-el | owl-rl}
+        the reasoning profile
+  --help
+        prints this usage text
+```
