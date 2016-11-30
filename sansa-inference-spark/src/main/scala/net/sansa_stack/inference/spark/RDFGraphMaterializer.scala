@@ -29,7 +29,7 @@ object RDFGraphMaterializer {
     }
   }
 
-  def run(input: File, output: File, profile: ReasoningProfile) = {
+  def run(input: File, output: File, profile: ReasoningProfile): Unit = {
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
 
