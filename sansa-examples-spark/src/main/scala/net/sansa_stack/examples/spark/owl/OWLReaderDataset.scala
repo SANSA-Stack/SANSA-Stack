@@ -62,8 +62,8 @@ object OWLReaderDataset {
           .appName("Dataset reader example (" + input + ")(Manchester syntax)")
           .getOrCreate()
 
-        val rdd = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, input)
-        rdd.take(10).foreach(println(_))
+        val dataset = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, input)
+        dataset.take(10).foreach(println(_))
 
         sparkSession.stop
 
