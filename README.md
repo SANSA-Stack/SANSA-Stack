@@ -1,6 +1,5 @@
 # SANSA-Examples
-===============
-This directory contains a complete stand alone example with Maven build tool.
+This directory contains code examples for various SANSA functionality.
 
 ### [sansa-examples-spark](https://github.com/SANSA-Stack/SANSA-Examples/tree/master/sansa-examples-spark)
 Contains the SANSA Examples for [Apache Spark](http://spark.apache.org/).
