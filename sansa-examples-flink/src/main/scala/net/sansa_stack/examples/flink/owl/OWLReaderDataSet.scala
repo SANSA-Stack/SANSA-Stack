@@ -39,8 +39,8 @@ object OWLReaderDataSet {
 
         val env = ExecutionEnvironment.getExecutionEnvironment
 
-        val dataset = FunctionalSyntaxOWLAxiomsDataSetBuilder.build(env, input)
-        dataset.first(10).print()
+        val dataSet = FunctionalSyntaxOWLAxiomsDataSetBuilder.build(env, input)
+        dataSet.first(10).print()
 
       case "manch" =>
         options.foreach {
@@ -53,8 +53,8 @@ object OWLReaderDataSet {
 
         val env = ExecutionEnvironment.getExecutionEnvironment
 
-        val rdd = ManchesterSyntaxOWLAxiomsDataSetBuilder.build(env, input)
-        rdd.first(10).print()
+        val dataSet = ManchesterSyntaxOWLAxiomsDataSetBuilder.build(env, input)
+        dataSet.first(10).print()
 
       case "owl_xml" =>
         println("Not supported, yet.")
