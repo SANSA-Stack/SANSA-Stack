@@ -28,7 +28,6 @@ object OWLReaderDataset {
 
     syntax match {
       case "fun" =>
-
         options.foreach {
           case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
         }
