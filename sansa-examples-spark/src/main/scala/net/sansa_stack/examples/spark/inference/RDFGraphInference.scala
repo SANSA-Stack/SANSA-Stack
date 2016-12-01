@@ -54,7 +54,7 @@ object RDFGraphInference {
     val sparkSession = SparkSession.builder
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Triple reader example (" + input + ")")
+      .appName("RDF Graph Inference (" + input + ")")
       .getOrCreate()
 
     // load triples from disk
