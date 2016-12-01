@@ -14,12 +14,12 @@ import net.sansa_stack.ml.spark.amieSpark.mining.MineRules.Algorithm
 object MineRules {
 
   def main(args: Array[String]) = {
-    if (args.length < 2) {
+    if (args.length < 1) {
       System.err.println(
         "Usage: Mine Rules <input>")
       System.exit(1)
     }
-    val input = args(0)
+    val input =args(0)//"src/main/resourcesMineRules_sampledata.tsv"
     val optionsList = args.drop(2).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
