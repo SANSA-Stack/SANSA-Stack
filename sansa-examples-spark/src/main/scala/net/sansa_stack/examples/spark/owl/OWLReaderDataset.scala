@@ -1,12 +1,11 @@
 package net.sansa_stack.examples.spark.owl
 
-import java.io.File
-import scala.collection.mutable
+import net.sansa_stack.owl.spark.dataset.{FunctionalSyntaxOWLAxiomsDatasetBuilder, ManchesterSyntaxOWLAxiomsDatasetBuilder}
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.owl.spark.rdd.ManchesterSyntaxOWLAxiomsRDDBuilder
-import net.sansa_stack.owl.spark.dataset.FunctionalSyntaxOWLAxiomsDatasetBuilder
 
-object OWlReaderDataset {
+import scala.collection.mutable
+
+object OWLReaderDataset {
   def main(args: Array[String]) = {
     if (args.length < 1) {
       System.err.println(
@@ -34,9 +33,9 @@ object OWlReaderDataset {
           case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
         }
 
-        println("==============================================")
+        println(".================================================.")
         println("| Dataset OWL reader example (Functional syntax) |")
-        println("==============================================")
+        println("`================================================´")
 
         val sparkSession = SparkSession.builder
           .master("local[*]")
@@ -44,21 +43,19 @@ object OWlReaderDataset {
           .appName("Dataset reader example (" + input + ")(Functional syntax)")
           .getOrCreate()
 
-        val _dataset = FunctionalSyntaxOWLAxiomsDatasetBuilder.build(
-          sparkSession, input)
-        _dataset.take(5).foreach(println(_))
+        val dataset = FunctionalSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, input)
+        dataset.take(10).foreach(println(_))
 
         sparkSession.stop
 
       case "manch" =>
-
         options.foreach {
           case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
         }
 
-        println("==============================================")
+        println(".================================================.")
         println("| Dataset OWL reader example (Manchester syntax) |")
-        println("==============================================")
+        println("`================================================´")
 
         val sparkSession = SparkSession.builder
           .master("local[*]")
@@ -66,24 +63,16 @@ object OWlReaderDataset {
           .appName("Dataset reader example (" + input + ")(Manchester syntax)")
           .getOrCreate()
 
-        println("Not implemented, yet.")
+        val rdd = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, input)
+        rdd.take(10).foreach(println(_))
 
-      /* val _rdd = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(
-          sparkSession, input)
-        _rdd.take(5).foreach(println(_))
-
-        sparkSession.stop*/
+        sparkSession.stop
 
       case "owl_xml" =>
-
-        options.foreach {
-          case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-        }
         println("Not supported, yet.")
+
       case _ =>
         println("Invalid syntax type.")
     }
-
   }
-
 }
