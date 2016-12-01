@@ -1,10 +1,36 @@
 ## Not ready yet.
-# SANSA-Examples docker demo on Apache Spark
-This is a SANSA-Examples docker repo for Apache Spark docker.
+# SANSA-Examples on Apache Spark
+This is a SANSA-Examples repo for Apache Spark.
+
+## Running the application on a Spark standalone cluster
+
+To run the application on a standalone Spark cluster
+
+1. Setup a Spark cluster
+2. Build the application with Maven
+
+  ```
+  git clone https://github.com/SANSA-Stack/SANSA-Examples.git
+  cd SANSA-Examples
+
+  mvn clean package
+
+  ```
+
+3. Submit the application to the Spark cluster
+
+  ```
+  spark-submit \
+		--class net.sansa_stack.examples.spark.<SANSA Layer>.<Example> \
+		--master spark://spark-master:7077 \
+ 		/app/application.jar \
+		SPARK_APPLICATION_ARGUMENTS  
+  ```
 
 ## Running the application on a Spark standalone cluster via Spark Docker using BDE Platform
 
-To run the SANSA-Examples application ona BDE platform, execute the following commands:
+To run the SANSA-Examples application on BDE platform, execute the following commands:
+
 ```
   git clone https://github.com/SANSA-Stack/SANSA-Examples.git
   cd SANSA-Examples
@@ -12,7 +38,8 @@ To run the SANSA-Examples application ona BDE platform, execute the following co
   cd csswrapper/ && make hosts && cd ..
 
   docker network create hadoop
-  docker-compose up -d --build-arg NODE_ENV=production build
+
+  docker-compose up -d
 ```
 Note:To make it run, you may need to modify your /etc/hosts file. There is a Makefile, which will do it automatically for you (you should clean up your /etc/hosts after demo).
 
