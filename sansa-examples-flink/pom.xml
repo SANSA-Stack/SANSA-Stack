@@ -13,6 +13,13 @@
   <description>SANSA examples for Apache Flink</description>
 
   <dependencies>
+    <!-- SANSA -->
+    <dependency>
+      <groupId>net.sansa-stack</groupId>
+      <artifactId>sansa-owl-flink</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+
     <!-- Scala -->
     <dependency>
       <groupId>org.scala-lang</groupId>
