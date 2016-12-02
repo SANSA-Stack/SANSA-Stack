@@ -28,7 +28,7 @@ trait TransitiveReasoner extends Profiler{
     * @param triples the set of triples
     * @return a set containing the transitive closure of the triples
     */
-  def computeTransitiveClosure(triples: mutable.Set[RDFTriple]): mutable.Set[RDFTriple] = {
+  def computeTransitiveClosure(triples: Set[RDFTriple]): Set[RDFTriple] = {
     val tc = addTransitive(triples)
     // recursive call if set changed, otherwise stop and return
     if (tc.size == triples.size) triples else computeTransitiveClosure(tc)
@@ -38,7 +38,7 @@ trait TransitiveReasoner extends Profiler{
   //    s ++ (for ((s1, p1, o1) <- s; (s2, p2, o2) <- s if o1 == s2) yield (s1, p1, o2))
   //  }
 
-  private def addTransitive(triples: mutable.Set[RDFTriple]) = {
+  private def addTransitive(triples: Set[RDFTriple]): Set[RDFTriple] = {
     triples ++ (for (t1 <- triples; t2 <- triples if t1.`object` == t2.subject) yield RDFTriple(t1.subject, t1.predicate, t2.`object`))
   }
 

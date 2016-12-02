@@ -37,7 +37,8 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends Fo
     val equivPropertyTriples = extractTriples(triplesRDD, OWL2.equivalentProperty.getURI) // owl:equivalentProperty
 
 
-    // 1. we have to process owl:equivalentClass and owl:equivalentProperty before computing the transitive closure
+    // 1. we have to process owl:equivalentClass (resp. owl:equivalentProperty) before computing the transitive closure
+    // of rdfs:subClassOf (resp. rdfs:sobPropertyOf)
     // rdfp12a: (?C owl:equivalentClass ?D) -> (?C rdfs:subClassOf ?D )
     // rdfp12b: (?C owl:equivalentClass ?D) -> (?D rdfs:subClassOf ?C )
     subClassOfTriples = sc.union(
@@ -55,14 +56,9 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends Fo
       .distinct()
 
     // 2. we compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
-    // rdfs11: 	(xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) ->	(xxx rdfs:subClassOf zzz)
+    // rdfs11: (xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) ->	(xxx rdfs:subClassOf zzz)
     val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples)
-
-    /*
-        rdfs5	xxx rdfs:subPropertyOf yyy .
-              yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
-     */
-
+    // rdfs5: (xxx rdfs:subPropertyOf yyy), (yyy rdfs:subPropertyOf zzz) -> (xxx rdfs:subPropertyOf zzz)
     val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples)
 
 
@@ -86,7 +82,6 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends Fo
         .filter(t => subClassOfMapBC.value.getOrElse(t.`object`, Set.empty).contains(t.subject))
         .map(t => RDFTriple(t.subject, OWL2.equivalentClass.getURI, t.`object`))
     )
-
     // rdfp13c: (?C rdfs:subPropertyOf ?D ), (?D rdfs:subPropertyOf ?C ) -> (?C owl:equivalentProperty ?D)
     val equivPropTriplesInf = equivPropertyTriples.union(
       subPropertyOfTriplesTrans
@@ -169,6 +164,8 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends Fo
 
 //    println("input rdf:type triples:\n" + typeTriples.collect().mkString("\n"))
 
+    // at this point, we have to perform fix-point iteration, i.e. we process a set of rules until no new data
+    // has been generated
     var newDataInferred = true
     var iteration = 0
 
@@ -270,7 +267,7 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends Fo
           RDFTriple(s, p, o)
         }
         )
-      println(rdfp14a.collect().mkString("\n"))
+//      println(rdfp14a.collect().mkString("\n"))
 
       // rdfp8a: (?P owl:inverseOf ?Q), (?X ?P ?Y) -> (?Y ?Q ?X)
       val rdfp8a = triplesFiltered
