@@ -82,7 +82,7 @@ object TransitivityRuleTest {
 
     val planExecutor1 = new PlanExecutorNative(sc)
     val res2 = planExecutor1.execute(plan, graph)
-    RDFGraphWriter.writeToFile(res2.toRDD(), "/tmp/spark-tests/native")
+    RDFGraphWriter.writeTriplesToFile(res2.toRDD(), "/tmp/spark-tests/native")
 
 
     // 3. the SQL based rule executor
@@ -94,7 +94,7 @@ object TransitivityRuleTest {
     val df = new RDFGraphDataFrame(graph.toDataFrame(sparkSession))
     val planExecutor2 = new PlanExecutorSQL(sparkSession)
     val res3 = planExecutor2.execute(plan, df)
-    RDFGraphWriter.writeToFile(res3.toRDD(), "/tmp/spark-tests/sql")
+    RDFGraphWriter.writeTriplesToFile(res3.toRDD(), "/tmp/spark-tests/sql")
 
     sc.stop()
   }

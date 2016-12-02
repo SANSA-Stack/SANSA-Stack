@@ -23,19 +23,19 @@ object RDFGraphMaterializer {
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.out, config.profile)
+        run(config.in, config.out, config.profile, config.writeToSingleFile, config.sortedOutput)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: File, output: File, profile: ReasoningProfile): Unit = {
+  def run(input: File, output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
 
     // the SPARK config
     val session = SparkSession.builder
-      .appName("SPARK Reasoning")
+      .appName(s"SPARK $profile Reasoning")
       .master("local[4]")
       .config("spark.eventLog.enabled", "true")
       .config("spark.hadoop.validateOutputSpecs", "false") //override output files
@@ -58,13 +58,18 @@ object RDFGraphMaterializer {
     print(inferredGraph.size())
 
     // write triples to disk
-    RDFGraphWriter.writeToFile(inferredGraph, output.getAbsolutePath)
+    RDFGraphWriter.writeGraphToFile(inferredGraph, output.getAbsolutePath, writeToSingleFile, sortedOutput)
 
     session.stop()
   }
 
   // the config object
-  case class Config(in: File = new File("."), out: File = new File("."), profile: ReasoningProfile = ReasoningProfile.RDFS)
+  case class Config(
+                     in: File = new File("."),
+                     out: File = new File("."),
+                     profile: ReasoningProfile = ReasoningProfile.RDFS,
+                     writeToSingleFile: Boolean = false,
+                     sortedOutput: Boolean = false)
 
   // read ReasoningProfile enum
   implicit val profilesRead: scopt.Read[ReasoningProfile.Value] =
@@ -81,6 +86,12 @@ object RDFGraphMaterializer {
     opt[File]('o', "out").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
+
+    opt[Unit]("single-file").optional().action( (_, c) =>
+      c.copy(writeToSingleFile = true)).text("write the output to a single file in the output directory")
+
+    opt[Unit]("sorted").optional().action( (_, c) =>
+      c.copy(sortedOutput = true)).text("sorted output of the triples per file")
 
     opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | owl-horst | owl-el | owl-rl}").
       action((x, c) => c.copy(profile = x)).

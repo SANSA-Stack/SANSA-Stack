@@ -118,13 +118,13 @@ object SetOfRulesTest {
   def runNaive(graph: RDFGraphNative, rules: Seq[Rule]) = {
     val reasoner = new ForwardRuleReasonerNaive(sc, rules.toSet)
     val res = reasoner.apply(graph)
-    RDFGraphWriter.writeToFile(res.toRDD(), "/tmp/spark-tests/naive")
+    RDFGraphWriter.writeTriplesToFile(res.toRDD(), "/tmp/spark-tests/naive")
   }
 
   def runNative(graph: RDFGraphNative, rules: Seq[Rule]) = {
     val reasoner = new ForwardRuleReasonerOptimizedNative(sparkSession, rules.toSet)
     val res = reasoner.apply(graph)
-    RDFGraphWriter.writeToFile(res.toRDD(), "/tmp/spark-tests/optimized-native")
+    RDFGraphWriter.writeTriplesToFile(res.toRDD(), "/tmp/spark-tests/optimized-native")
   }
 
   def runSQL(graph: RDFGraphNative, rules: Seq[Rule]) = {
@@ -133,7 +133,7 @@ object SetOfRulesTest {
 
     val reasoner = new ForwardRuleReasonerOptimizedSQL(sparkSession, rules.toSet)
     val res = reasoner.apply(graphDataframe)
-    RDFGraphWriter.writeToFile(res.toDataFrame(), "/tmp/spark-tests/optimized-sql")
+    RDFGraphWriter.writeDataframeToFile(res.toDataFrame(), "/tmp/spark-tests/optimized-sql")
     reasoner.showExecutionStats()
   }
 }

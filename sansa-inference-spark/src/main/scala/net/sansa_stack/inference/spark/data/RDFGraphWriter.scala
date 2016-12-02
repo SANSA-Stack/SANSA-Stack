@@ -20,26 +20,56 @@ object RDFGraphWriter {
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
-  def writeToFile(graph: RDFGraph, path: String): Unit = {
+  /**
+    * Write the graph to disk in N-Triple format.
+    *
+    * @param graph the RDF graph
+    * @param path the output  directory
+    * @param singleFile whether to put all data into a single file
+    * @param sorted whether to sort the triples by subject, predicate, object
+    */
+  def writeGraphToFile(graph: RDFGraph, path: String, singleFile: Boolean = false, sorted: Boolean = false): Unit = {
+    writeTriplesToFile(graph.triples, path, singleFile, sorted)
+  }
+
+  /**
+    * Write the triples to disk in N-Triple format.
+    *
+    * @param triples the triples
+    * @param path the output  directory
+    * @param singleFile whether to put all data into a single file
+    * @param sorted whether to sort the triples by subject, predicate, object
+    */
+  def writeTriplesToFile(triples: RDD[RDFTriple], path: String, singleFile: Boolean = false, sorted: Boolean = false): Unit = {
     logger.info("writing triples to disk...")
     val startTime  = System.currentTimeMillis()
 
     implicit val ordering = RDFTripleOrdering
 
-    graph.triples.map(t=>(t,t)).sortByKey().map(_._1)
-      .map(t => "<" + t.subject + "> <" + t.predicate + "> <" + t.`object` + "> .") // to N-TRIPLES string
-      .coalesce(1)
-      .saveAsTextFile(path)
+    // sort triples if enabled
+    val tmp = if(sorted) {
+                triples.map(t => (t,t)).sortByKey().map(_._1)
+              } else {
+                triples
+              }
+
+    // convert to N-Triple format
+    var triplesNTFormat = tmp.map(t => "<" + t.subject + "> <" + t.predicate + "> <" + t.`object` + "> .")
+
+    // convert to single file, i.e. move al lto one partition
+    // (might be very expensive and contradicts the Big Data paradigm on Hadoop in general)
+    if(singleFile) {
+      triplesNTFormat = triplesNTFormat.coalesce(1, shuffle = true)
+    }
+
+    // finally, write to disk
+    triplesNTFormat.saveAsTextFile(path)
 
     logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
   }
 
-  def writeToFile(triples: RDD[RDFTriple], path: String): Unit = {
-    writeToFile(RDFGraph(triples), path)
-  }
-
-  def writeToFile(dataFrame: DataFrame, path: String): Unit = {
-    writeToFile(dataFrame.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2))), path)
+  def writeDataframeToFile(dataFrame: DataFrame, path: String, singleFile: Boolean = false, sorted: Boolean = false): Unit = {
+    writeTriplesToFile(dataFrame.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2))), path, singleFile, sorted)
   }
 
   def convertToModel(graph: RDFGraph) : Model = {

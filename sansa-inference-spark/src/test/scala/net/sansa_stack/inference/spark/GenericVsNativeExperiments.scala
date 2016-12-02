@@ -48,8 +48,8 @@ object GenericVsNativeExperiments {
     val targetDir = args(1)
 
     // write triples to disk
-    RDFGraphWriter.writeToFile(infGraphNative.toDataFrame(), targetDir + "/native")
-    RDFGraphWriter.writeToFile(infGraphGeneric.toDataFrame(), targetDir + "/generic")
+    RDFGraphWriter.writeDataframeToFile(infGraphNative.toDataFrame(), targetDir + "/native")
+    RDFGraphWriter.writeDataframeToFile(infGraphGeneric.toDataFrame(), targetDir + "/generic")
 
     session.stop()
 
