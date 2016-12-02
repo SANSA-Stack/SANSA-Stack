@@ -29,7 +29,7 @@ object RDFGraphMaterializer {
     }
   }
 
-  def run(input: File, output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
+  def run(input: Seq[File], output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
 
@@ -45,7 +45,7 @@ object RDFGraphMaterializer {
       .getOrCreate()
 
     // load triples from disk
-    val graph = RDFGraphLoader.loadFromFile(input.getAbsolutePath, session.sparkContext, 4)
+    val graph = RDFGraphLoader.loadFromDisk(input, session.sparkContext, 4)
 
     // create reasoner
     val reasoner = profile match {
@@ -65,7 +65,7 @@ object RDFGraphMaterializer {
 
   // the config object
   case class Config(
-                     in: File = new File("."),
+                     in: Seq[File] = Seq(),
                      out: File = new File("."),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
                      writeToSingleFile: Boolean = false,
@@ -79,9 +79,9 @@ object RDFGraphMaterializer {
   val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
     head("RDFGraphMaterializer", "0.1.0")
 
-    opt[File]('i', "input").required().valueName("<file>").
+    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
       action((x, c) => c.copy(in = x)).
-      text("the input file in N-Triple format")
+      text("path to file or directory that contains the input files (in N-Triple format)")
 
     opt[File]('o', "out").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
@@ -91,7 +91,7 @@ object RDFGraphMaterializer {
       c.copy(writeToSingleFile = true)).text("write the output to a single file in the output directory")
 
     opt[Unit]("sorted").optional().action( (_, c) =>
-      c.copy(sortedOutput = true)).text("sorted output of the triples per file")
+      c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
 
     opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | owl-horst | owl-el | owl-rl}").
       action((x, c) => c.copy(profile = x)).
