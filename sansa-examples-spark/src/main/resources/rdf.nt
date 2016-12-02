@@ -98,3 +98,9 @@
 <http://commons.dbpedia.org/resource/File:Hunebed_013.jpg> <http://commons.dbpedia.org/property/source> "Own picture from Andre Engels."@en .
 <http://commons.dbpedia.org/resource/File:Hunebed_013.jpg> <http://commons.dbpedia.org/property/author> <http://commons.dbpedia.org/resource/User:Andre_Engels> .
 <http://commons.dbpedia.org/resource/File:Hunebed_015.jpg> <http://commons.dbpedia.org/property/description> "Hunebeds  near Drouwen, the Netherlands."@en .
+<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://xmlns.com/foaf/0.1/givenName>	"Guy De" .
+<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/influenced>	<http://dbpedia.org/resource/Tobias_Wolff> .
+<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/influenced>	<http://dbpedia.org/resource/Henry_James> .
+<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Passy> .
+<http://dbpedia.org/resource/Charles_Dickens>	<http://xmlns.com/foaf/0.1/givenName>	"Charles"@en .
+<http://dbpedia.org/resource/Charles_Dickens>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Gads_Hill_Place> .
