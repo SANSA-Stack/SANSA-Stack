@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.flink.data
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, File}
 import java.nio.charset.StandardCharsets
 
 import org.apache.flink.api.common.operators.Order
@@ -29,6 +29,19 @@ object RDFGraphWriter {
     graph.triples.map(t=>(t,t)).sortPartition(1, Order.DESCENDING).map(_._1)
       .map(t => "<" + t.subject + "> <" + t.predicate + "> <" + t.`object` + "> .") // to N-TRIPLES string
       .writeAsText(path, writeMode = FileSystem.WriteMode.OVERWRITE)
+
+    logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
+  }
+
+  def writeToDisk(graph: RDFGraph, path: File): Unit = {
+    logger.info("writing triples to disk...")
+    val startTime  = System.currentTimeMillis()
+
+    implicit val ordering = RDFTripleOrdering
+
+    graph.triples.map(t=>(t,t)).sortPartition(1, Order.DESCENDING).map(_._1)
+      .map(t => "<" + t.subject + "> <" + t.predicate + "> <" + t.`object` + "> .") // to N-TRIPLES string
+      .writeAsText(path.getAbsolutePath, writeMode = FileSystem.WriteMode.OVERWRITE)
 
     logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
   }
