@@ -32,6 +32,7 @@ object RDFGraphMaterializer {
 
     // set up the execution environment
     val env = ExecutionEnvironment.getExecutionEnvironment
+    env.getConfig.disableSysoutLogging()
 
     // make parameters available in the web interface
     env.getConfig.setGlobalJobParameters(params)
@@ -53,7 +54,7 @@ object RDFGraphMaterializer {
     // write triples to disk
     RDFGraphWriter.writeToDisk(inferredGraph, output)
 
-    println(env.getExecutionPlan())
+//    println(env.getExecutionPlan())
 
     // run the program
     env.execute(s"RDF ${profile} Reasoning")
