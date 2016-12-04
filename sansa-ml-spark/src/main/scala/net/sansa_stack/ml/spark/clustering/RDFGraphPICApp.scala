@@ -1,6 +1,5 @@
 package net.sansa_stack.ml.spark.clustering
 
-import org.apache.spark.mllib.clustering.PowerIterationClustering
 import scala.reflect.runtime.universe._
 import scopt.OptionParser
 import org.apache.log4j.{ Level, Logger }
@@ -12,15 +11,12 @@ import java.lang.{ Long => JLong }
 import breeze.linalg.{ squaredDistance, DenseVector, Vector }
 import org.apache.spark.sql.SparkSession
 
-object PowerIterationClustering {
+object RDFGraphPICApp {
 
   case class Params(
-
       input: String = null,
       k: Int = 100,
-
       maxIterations: Int = 400) extends AbstractParams[Params] {
-
   }
   abstract class AbstractParams[T: TypeTag] {
 
@@ -80,20 +76,8 @@ object PowerIterationClustering {
 
     data.collect().foreach(println)
 
-    val splitRdd = data.map(line => line.split("\t"))
-
-    val yourRdd = splitRdd.map(line => {
-      val node1 = line(0).toLong
-      val node2 = line(1).toLong
-      val similarity = line(2).toDouble
-      (node1, node2, similarity)
-    })
-
-    val model = new PowerIterationClustering()
-      .setK(params.k)
-      .setMaxIterations(params.maxIterations)
-      .run(yourRdd)
-
+    val model = RDFGraphClustering(data, params.k, params.maxIterations).run()
+    
     val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
     val assignments = clusters.toList.sortBy { case (k, v) => v.length }
     val assignmentsStr = assignments
