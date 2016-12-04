@@ -8,7 +8,7 @@ import net.sansa_stack.inference.utils.CollectionUtils
 import org.slf4j.LoggerFactory
 
 /**
-* A forward chaining implementation of the OWL Horst entailment regime.
+* A forward chaining implementation of the RDFS entailment regime.
 *
 * @constructor create a new RDFS forward chaining reasoner
 * @param env the Apache Flink execution environment
@@ -22,7 +22,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
 
-    var triplesDS = graph.triples // we cache this RDD because it's used quite often
+    var triplesDS = graph.triples
 
     // RDFS rules dependency was analyzed in \todo(add references) and the same ordering is used here
 
@@ -34,14 +34,14 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       * yyy rdfs:subClassOf zzz .	  xxx rdfs:subClassOf zzz .
       */
     val subClassOfTriples = extractTriples(triplesDS, RDFS.subClassOf.getURI) // extract rdfs:subClassOf triples
-    val subClassOfTriplesTrans = computeTransitiveClosure2(subClassOfTriples)//mutable.Set()++subClassOfTriples.collect())
+    val subClassOfTriplesTrans = computeTransitiveClosureOpt(subClassOfTriples)
 
     /*
         rdfs5	xxx rdfs:subPropertyOf yyy .
               yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
      */
     val subPropertyOfTriples = extractTriples(triplesDS, RDFS.subPropertyOf.getURI) // extract rdfs:subPropertyOf triples
-    val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples)//extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
+    val subPropertyOfTriplesTrans = computeTransitiveClosureOpt(subPropertyOfTriples)
 
     // a map structure should be more efficient
     val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.subject, t.`object`)).collect)

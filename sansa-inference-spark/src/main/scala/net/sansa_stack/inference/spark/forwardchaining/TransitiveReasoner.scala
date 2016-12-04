@@ -101,7 +101,7 @@ trait TransitiveReasoner extends Profiler{
   /**
     * Computes the transitive closure for an RDD of tuples
     *
-    * @param edges the RDD of triples
+    * @param edges the RDD of tuples
     * @return an RDD containing the transitive closure of the tuples
     */
   def computeTransitiveClosure[A:ClassTag](edges: RDD[(A, A)]): RDD[(A, A)] = {

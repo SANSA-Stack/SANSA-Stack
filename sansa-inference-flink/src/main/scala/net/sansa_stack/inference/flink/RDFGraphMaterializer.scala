@@ -38,7 +38,7 @@ object RDFGraphMaterializer {
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromDisk(input(0), env)
-    print(graph.size())
+    println(s"|G| = ${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
@@ -48,13 +48,15 @@ object RDFGraphMaterializer {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    println(s"|G| = $inferredGraph.size()")
+    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
     RDFGraphWriter.writeToDisk(inferredGraph, output)
 
-    env.execute(s"RDF ${profile} Reasoning")
+    println(env.getExecutionPlan())
 
+    // run the program
+    env.execute(s"RDF ${profile} Reasoning")
   }
 
   // the config object
