@@ -2,7 +2,7 @@ package net.sansa_stack.owl.spark.rdd
 
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.scalatest.FunSuite
-import org.semanticweb.owlapi.model.{OWLDataPropertyAssertionAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, SWRLRule, _}
+import org.semanticweb.owlapi.model._
 
 
 class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkContext {
