@@ -1,4 +1,4 @@
-package net.sansa_stack.examples.spark.querying
+package net.sansa_stack.examples.spark.query
 
 import java.io.File
 import scala.collection.mutable

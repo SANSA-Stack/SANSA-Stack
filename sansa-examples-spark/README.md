@@ -11,7 +11,7 @@ To run the application on a standalone Spark cluster
 
   ```
   git clone https://github.com/SANSA-Stack/SANSA-Examples.git
-  cd SANSA-Examples
+  cd SANSA-Examples/sansa-examples-spark
 
   mvn clean package
 
@@ -33,9 +33,9 @@ To run the SANSA-Examples application on BDE platform, execute the following com
 
 ```
   git clone https://github.com/SANSA-Stack/SANSA-Examples.git
-  cd SANSA-Examples
+  cd SANSA-Examples/sansa-examples-spark
 
-  cd csswrapper/ && make hosts && cd ..
+  cd config/csswrapper/ && make hosts && cd .. && cd ..
 
   docker network create hadoop
 
@@ -43,8 +43,8 @@ To run the SANSA-Examples application on BDE platform, execute the following com
 ```
 Note:To make it run, you may need to modify your /etc/hosts file. There is a Makefile, which will do it automatically for you (you should clean up your /etc/hosts after demo).
 
-After BDE platform is up and running, let’s throw some data into our HDFS now by using Hue FileBrowser runing in our network. To perform these actions navigate to 'hue' tab into http://demo.sansa.local. Use “hue” username with any password to login into the FileBrowser (“hue” user is set up as a proxy user for HDFS, see hadoop.env for the configuration parameters). Click on “File Browser” in upper right corner of the screen and use GUI to create /user/root/input and /user/root/output folders and upload the data file into /input folder.
-Go to HDFS tab into http://demo.sansa.local and check if the file exists under the path ‘/user/root/input/yourfile’.
+After BDE platform is up and running, let’s throw some data into our HDFS now by using Hue FileBrowser runing in our network. To perform these actions navigate to 'hue' tab into http://demo.sansa-stack.local. Use “hue” username with any password to login into the FileBrowser (“hue” user is set up as a proxy user for HDFS, see hadoop.env for the configuration parameters). Click on “File Browser” in upper right corner of the screen and use GUI to create /user/root/input and /user/root/output folders and upload the data file into /input folder.
+Go to HDFS tab into http://demo.sansa-stack.local and check if the file exists under the path ‘/user/root/input/yourfile’.
 
 After we have all the configuration needed for our example, let’s run our sansa-examples.
 
