@@ -271,7 +271,7 @@
                                             </excludes>
                                         </filter>
                                     </filters>
-                                    <finalName>uber-${project.artifactId}-${project.version}</finalName>
+                                    <finalName>dist-${project.artifactId}-${project.version}</finalName>
                                     <transformers>
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>net.sansa_stack.inference.spark.RDFGraphMaterializer</mainClass>
