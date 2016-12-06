@@ -98,9 +98,11 @@ under the License.
 		</dependency>
 
 		<!-- Scopt -->
+		<!-- Flink Distribution uses 3.2.0 which leads to conflicts with newer versions -->
 		<dependency>
 			<groupId>com.github.scopt</groupId>
 			<artifactId>scopt_${scala.binary.version}</artifactId>
+			<version>3.2.0</version>
 		</dependency>
 
 	</dependencies>
@@ -127,6 +129,7 @@ under the License.
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<!--<minimizeJar>true</minimizeJar>-->
 							<artifactSet>
 								<excludes>
 									<!-- This list contains all dependencies of flink-dist
@@ -134,6 +137,7 @@ under the License.
 									-->
 									<exclude>org.apache.flink:flink-shaded-*_2.11</exclude>
 									<exclude>org.apache.flink:flink-core_2.11</exclude>
+									<exclude>org.apache.flink:flink-java*</exclude>
 									<exclude>org.apache.flink:flink-java_2.11</exclude>
 									<exclude>org.apache.flink:flink-scala_2.11</exclude>
 									<exclude>org.apache.flink:flink-runtime_2.11</exclude>
@@ -171,49 +175,54 @@ under the License.
 									<exclude>org.gephi:*</exclude>
 									<exclude>org.netbeans.api:*</exclude>
 
-									<!--<exclude>commons-fileupload:commons-fileupload</exclude>-->
-									<!--<exclude>org.apache.avro:avro</exclude>-->
-									<!--<exclude>commons-collections:commons-collections</exclude>-->
-									<!--<exclude>org.codehaus.jackson:jackson-core-asl</exclude>-->
-									<!--<exclude>org.codehaus.jackson:jackson-mapper-asl</exclude>-->
-									<!--<exclude>com.thoughtworks.paranamer:paranamer</exclude>-->
-									<!--<exclude>org.xerial.snappy:snappy-java</exclude>-->
-									<!--<exclude>org.apache.commons:commons-compress</exclude>-->
-									<!--<exclude>org.tukaani:xz</exclude>-->
-									<!--<exclude>com.esotericsoftware.kryo:kryo</exclude>-->
-									<!--<exclude>com.esotericsoftware.minlog:minlog</exclude>-->
-									<!--<exclude>org.objenesis:objenesis</exclude>-->
-									<!--<exclude>com.twitter:chill_*</exclude>-->
-									<!--<exclude>com.twitter:chill-java</exclude>-->
-									<!--<exclude>com.twitter:chill-avro_*</exclude>-->
-									<!--<exclude>com.twitter:chill-bijection_*</exclude>-->
-									<!--<exclude>com.twitter:bijection-core_*</exclude>-->
-									<!--<exclude>com.twitter:bijection-avro_*</exclude>-->
-									<!--<exclude>commons-lang:commons-lang</exclude>-->
-									<!--<exclude>junit:junit</exclude>-->
-									<!--<exclude>de.javakaffee:kryo-serializers</exclude>-->
-									<!--<exclude>joda-time:joda-time</exclude>-->
-									<!--<exclude>org.apache.commons:commons-lang3</exclude>-->
-									<!--<exclude>org.slf4j:slf4j-api</exclude>-->
-									<!--<exclude>org.slf4j:slf4j-log4j12</exclude>-->
-									<!--<exclude>log4j:log4j</exclude>-->
-									<!--<exclude>org.apache.commons:commons-math</exclude>-->
-									<!--<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>-->
-									<!--<exclude>commons-logging:commons-logging</exclude>-->
-									<!--<exclude>org.apache.httpcomponents:httpclient</exclude>-->
-									<!--<exclude>org.apache.httpcomponents:httpcore</exclude>-->
-									<!--<exclude>commons-codec:commons-codec</exclude>-->
-									<!--<exclude>com.fasterxml.jackson.core:jackson-core</exclude>-->
-									<!--<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>-->
-									<!--<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>-->
-									<!--<exclude>org.codehaus.jettison:jettison</exclude>-->
-									<!--<exclude>stax:stax-api</exclude>-->
-									<!--<exclude>com.typesafe:config</exclude>-->
-									<!--<exclude>org.uncommons.maths:uncommons-maths</exclude>-->
+									<exclude>commons-fileupload:commons-fileupload</exclude>
+									<exclude>org.apache.avro:avro</exclude>
+									<exclude>commons-collections:commons-collections</exclude>
+									<exclude>org.codehaus.jackson:jackson-core-asl</exclude>
+									<exclude>org.codehaus.jackson:jackson-mapper-asl</exclude>
+									<exclude>com.thoughtworks.paranamer:paranamer</exclude>
+									<exclude>org.xerial.snappy:snappy-java</exclude>
+									<exclude>org.apache.commons:commons-compress</exclude>
+									<exclude>org.tukaani:xz</exclude>
+									<exclude>com.esotericsoftware.kryo:kryo</exclude>
+									<exclude>com.esotericsoftware.minlog:minlog</exclude>
+									<exclude>org.objenesis:objenesis</exclude>
+									<exclude>com.twitter:chill_*</exclude>
+									<exclude>com.twitter:chill-java</exclude>
+									<exclude>com.twitter:chill-avro_*</exclude>
+									<exclude>com.twitter:chill-bijection_*</exclude>
+									<exclude>com.twitter:bijection-core_*</exclude>
+									<exclude>com.twitter:bijection-avro_*</exclude>
+									<exclude>commons-lang:commons-lang</exclude>
+									<exclude>junit:junit</exclude>
+									<exclude>de.javakaffee:kryo-serializers</exclude>
+									<exclude>joda-time:joda-time</exclude>
+									<exclude>org.apache.commons:commons-lang3</exclude>
+									<exclude>org.slf4j:slf4j-api</exclude>
+									<exclude>org.slf4j:slf4j-log4j12</exclude>
+									<exclude>log4j:log4j</exclude>
+									<exclude>org.apache.commons:commons-math</exclude>
+									<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>
+									<exclude>commons-logging:commons-logging</exclude>
+									<exclude>org.apache.httpcomponents:httpclient</exclude>
+									<exclude>org.apache.httpcomponents:httpcore</exclude>
+									<exclude>commons-codec:commons-codec</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-core</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>
+									<exclude>org.codehaus.jettison:jettison</exclude>
+									<exclude>stax:stax-api</exclude>
+									<exclude>com.typesafe:config</exclude>
+									<exclude>org.uncommons.maths:uncommons-maths</exclude>
 									<!--<exclude>com.github.scopt:scopt_*</exclude>-->
-									<!--<exclude>org.mortbay.jetty:servlet-api</exclude>-->
-									<!--<exclude>commons-io:commons-io</exclude>-->
-									<!--<exclude>commons-cli:commons-cli</exclude>-->
+									<exclude>org.mortbay.jetty:servlet-api</exclude>
+									<exclude>commons-io:commons-io</exclude>
+									<exclude>commons-cli:commons-cli</exclude>
+
+									<exclude>sqlite:*</exclude>
+									<exclude>netbeans:*</exclude>
+									<exclude>org.apache.xmlgraphics:*</exclude>
+									<exclude>mysql:*</exclude>
 								</excludes>
 							</artifactSet>
 							<filters>
@@ -243,6 +252,12 @@ under the License.
 								</transformer>
 							</transformers>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<relocations>
+								<relocation>
+									<pattern>scopt</pattern>
+									<shadedPattern>scopt.shaded</shadedPattern>
+								</relocation>
+							</relocations>
 						</configuration>
 					</execution>
 				</executions>
