@@ -7,6 +7,7 @@ import net.sansa_stack.inference.spark.data.RDFGraph
 import net.sansa_stack.inference.spark.utils.RDDUtils
 import net.sansa_stack.inference.utils.CollectionUtils
 import org.slf4j.LoggerFactory
+import net.sansa_stack.inference.spark.utils.RDDUtils.RDDOps
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -52,8 +53,6 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
     // the assumption here is that the schema is usually much smaller than the instance data
     val subClassOfMapBC = sc.broadcast(subClassOfMap)
     val subPropertyMapBC = sc.broadcast(subPropertyMap)
-
-    import net.sansa_stack.inference.spark.utils.RDDUtils.RDDOps
 
     // split by rdf:type
     val split = triplesRDD.partitionBy(t => t.predicate == RDF.`type`.getURI)

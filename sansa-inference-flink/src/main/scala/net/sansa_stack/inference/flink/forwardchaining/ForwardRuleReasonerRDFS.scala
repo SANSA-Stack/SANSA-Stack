@@ -6,6 +6,7 @@ import org.apache.jena.vocabulary.{RDF, RDFS}
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.utils.CollectionUtils
 import org.slf4j.LoggerFactory
+import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
 
 /**
 * A forward chaining implementation of the RDFS entailment regime.
@@ -48,6 +49,12 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     val subPropertyMap = CollectionUtils.toMultiMap(subPropertyOfTriplesTrans.map(t => (t.subject, t.`object`)).collect)
 
 
+    // split by rdf:type
+    val split = triplesDS.partitionBy(t => t.predicate == RDF.`type`.getURI)
+    var typeTriples = split._1
+    var otherTriples = split._2
+
+
     // 2. SubPropertyOf inheritance according to rdfs7 is computed
 
     /*
@@ -55,12 +62,12 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
             xxx aaa yyy .                   	xxx bbb yyy .
      */
     val triplesRDFS7 =
-    triplesDS // all triples (s p1 o)
+      otherTriples // all triples (s p1 o)
       .filter(t => subPropertyMap.contains(t.predicate)) // such that p1 has a super property p2
       .flatMap(t => subPropertyMap(t.predicate).map(supProp => RDFTriple(t.subject, supProp, t.`object`))) // create triple (s p2 o)
 
     // add triples
-    triplesDS = triplesDS.union(triplesRDFS7)
+    otherTriples = otherTriples.union(triplesRDFS7)
 
     // 3. Domain and Range inheritance according to rdfs2 and rdfs3 is computed
 
@@ -72,7 +79,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     val domainMap = domainTriples.map(t => (t.subject, t.`object`)).collect.toMap
 
     val triplesRDFS2 =
-      triplesDS
+      otherTriples
         .filter(t => domainMap.contains(t.predicate))
         .map(t => RDFTriple(t.subject, RDF.`type`.getURI, domainMap(t.predicate)))
 
@@ -84,16 +91,15 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     val rangeMap = rangeTriples.map(t => (t.subject, t.`object`)).collect().toMap
 
     val triplesRDFS3 =
-      triplesDS
+      otherTriples
         .filter(t => rangeMap.contains(t.predicate))
         .map(t => RDFTriple(t.`object`, RDF.`type`.getURI, rangeMap(t.predicate)))
 
+    // rdfs2 and rdfs3 generated rdf:type triples which we'll add to the existing ones
     val triples23 = triplesRDFS2.union(triplesRDFS3)
 
-    // get rdf:type tuples here as intermediate result
-    val typeTriples = triplesDS
-      .filter(t => t.predicate == RDF.`type`.getURI)
-      .union(triples23)
+    // all rdf:type triples here as intermediate result
+    typeTriples = typeTriples.union(triples23)
 
     // 4. SubClass inheritance according to rdfs9
 
@@ -109,9 +115,10 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     // 5. merge triples and remove duplicates
     val allTriples = env.union(
       Seq(
+        otherTriples,
         subClassOfTriplesTrans,
         subPropertyOfTriplesTrans,
-        triples23,
+        typeTriples,
         triplesRDFS7,
         triplesRDFS9))
       .distinct()

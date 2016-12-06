@@ -46,6 +46,7 @@ object RDFGraphMaterializer {
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromDisk(input, session.sparkContext, 4)
+    println(s"|G| = ${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
@@ -55,7 +56,7 @@ object RDFGraphMaterializer {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    print(inferredGraph.size())
+    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
     RDFGraphWriter.writeGraphToFile(inferredGraph, output.getAbsolutePath, writeToSingleFile, sortedOutput)
