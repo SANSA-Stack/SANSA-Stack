@@ -26,7 +26,7 @@ object RDFGraphMaterializer {
     }
   }
 
-  def run(args: Array[String], input: Seq[File], output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
+  def run(args: Array[String], input: File, output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
     // get params
     val params: ParameterTool = ParameterTool.fromArgs(args)
 
@@ -38,7 +38,7 @@ object RDFGraphMaterializer {
     env.getConfig.setGlobalJobParameters(params)
 
     // load triples from disk
-    val graph = RDFGraphLoader.loadFromDisk(input(0), env)
+    val graph = RDFGraphLoader.loadFromDisk(input, env)
     println(s"|G| = ${graph.size()}")
 
     // create reasoner
@@ -62,7 +62,7 @@ object RDFGraphMaterializer {
 
   // the config object
   case class Config(
-                     in: Seq[File] = Seq(),
+                     in: File = new File("."),
                      out: File = new File("."),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
                      writeToSingleFile: Boolean = false,
@@ -76,7 +76,10 @@ object RDFGraphMaterializer {
   val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
     head("RDFGraphMaterializer", "0.1.0")
 
-    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
+//    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
+//      action((x, c) => c.copy(in = x)).
+//      text("path to file or directory that contains the input files (in N-Triple format)")
+    opt[File]('i', "input").required().valueName("<path>").
       action((x, c) => c.copy(in = x)).
       text("path to file or directory that contains the input files (in N-Triple format)")
 
