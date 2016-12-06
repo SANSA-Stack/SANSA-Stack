@@ -1,11 +1,12 @@
 package net.sansa_stack.examples.flink.inference
 
 import java.io.File
+
 import scala.collection.mutable
 import org.apache.flink.api.scala.ExecutionEnvironment
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.flink.data.RDFGraphLoader
-import net.sansa_stack.inference.flink.forwardchaining.ForwardRuleReasonerRDFS
+import net.sansa_stack.inference.flink.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
 import net.sansa_stack.inference.rules.ReasoningProfile
 import net.sansa_stack.inference.flink.data.RDFGraphWriter
 
@@ -14,7 +15,7 @@ object RDFGraphInference {
  def main(args: Array[String]) {
     if (args.length < 3) {
       System.err.println(
-        "Usage: RDF Graph Inference <input> <output> <reasoner")
+        "Usage: RDFGraphInference <input> <output> <reasoner")
       System.err.println("Supported 'reasoner' as follows:")
       System.err.println("  rdfs                  Forward Rule Reasoner RDFS")
       System.err.println("  owl-horst             Forward Rule Reasoner OWL Horst")
@@ -52,21 +53,22 @@ object RDFGraphInference {
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromFile(new File(input).getAbsolutePath, env)
+    println(s"|G|=${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
       case RDFS => new ForwardRuleReasonerRDFS(env)
+      case OWL_HORST => new ForwardRuleReasonerOWLHorst(env)
     }
-    println(reasoner)
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    print(inferredGraph.size())
+    println(s"|G_inferred|=${inferredGraph.size()}")
 
     // write triples to disk
     RDFGraphWriter.writeToFile(inferredGraph, new File(output).getAbsolutePath)
 
-    env.execute("RDF Graph Inference")
+    env.execute(s"RDF Graph Inference ($profile)")
 
   }
 }

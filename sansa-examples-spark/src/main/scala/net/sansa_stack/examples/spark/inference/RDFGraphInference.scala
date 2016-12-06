@@ -17,7 +17,7 @@ object RDFGraphInference {
   def main(args: Array[String]) = {
     if (args.length < 3) {
       System.err.println(
-        "Usage: RDF Graph Inference <input> <output> <reasoner")
+        "Usage: RDFGraphInference <input> <output> <reasoner")
       System.err.println("Supported 'reasoner' as follows:")
       System.err.println("  rdfs                  Forward Rule Reasoner RDFS")
       System.err.println("  owl-horst             Forward Rule Reasoner OWL Horst")
@@ -54,29 +54,28 @@ object RDFGraphInference {
     val sparkSession = SparkSession.builder
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("RDF Graph Inference (" + input + ")")
+      .config("spark.hadoop.validateOutputSpecs", "false") //override output files
+      .config("spark.default.parallelism", "4")
+      .appName(s"RDF Graph Inference ($profile)")
       .getOrCreate()
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromFile(new File(input).getAbsolutePath, sparkSession.sparkContext, 4)
+    println(s"|G|=${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
       case RDFS      => new ForwardRuleReasonerRDFS(sparkSession.sparkContext)
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(sparkSession.sparkContext)
     }
-    println(reasoner)
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    print(inferredGraph.size())
+    println(s"|G_inferred|=${inferredGraph.size()}")
 
     // write triples to disk
-    RDFGraphWriter.writeToFile(inferredGraph, new File(output).getAbsolutePath)
-
-    //triplesRDD.saveAsTextFile(output)
+    RDFGraphWriter.writeGraphToFile(inferredGraph, new File(output).getAbsolutePath)
 
     sparkSession.stop
-
   }
 }
