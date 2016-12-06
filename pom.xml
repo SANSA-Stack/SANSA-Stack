@@ -85,6 +85,11 @@
             </dependency>
 
             <!-- ML Layer -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sansa-ml-spark</artifactId>
+                <version>${sansa.stack.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

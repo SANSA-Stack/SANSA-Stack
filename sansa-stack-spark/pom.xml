@@ -46,6 +46,10 @@
         </dependency>
 
         <!-- ML Layer -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-ml-spark</artifactId>
+        </dependency>
 
     </dependencies>
 
