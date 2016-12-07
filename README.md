@@ -109,7 +109,7 @@ and for Apache Flink add
 ```scala
 "net.sansa-stack" % "sansa-inference-flink" % VERSION
 ```
-where, `VERSION` is the released version you want to use of the Finatra framework
+where, `VERSION` is the released version you want to use of the Inference API.
 
 ## Usage
 ```
