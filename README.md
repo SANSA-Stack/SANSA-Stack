@@ -90,6 +90,26 @@ For Apache Flink
   <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
+### Using SBT
+SANSA Inference API has not been published on Maven Central yet, thus, you have to add an additional repository as follows
+```scala
+resolvers ++= Seq(
+  "AKSW Maven Releases" at "http://maven.aksw.org/archiva/repository/internal",
+  "AKSW Maven Snapshots" at "http://maven.aksw.org/archiva/repository/snapshots"
+)
+```
+Then you have to add a dependency on either the Apache Spark or the Apache Flink module.
+
+For Apache Spark add
+```scala
+"net.sansa-stack" % "sansa-inference-spark" % VERSION
+```
+
+and for Apache Flink add
+```scala
+"net.sansa-stack" % "sansa-inference-flink" % VERSION
+```
+where, `VERSION` is the released version you want to use of the Finatra framework
 
 ## Usage
 ```
