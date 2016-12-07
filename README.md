@@ -43,7 +43,7 @@ For Apache Flink
   <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
-Using Maven pre-build artifacts
+### Using Maven pre-build artifacts
 
 1. Add AKSW Maven repository to your pom.xml (will be added to Maven Central soon)
 ```xml
