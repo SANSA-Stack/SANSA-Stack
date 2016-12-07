@@ -73,9 +73,9 @@
 		</dependency>
 		<!-- SANSA ML -->
 		<dependency>
-			<groupId>net.sansa_stack.ml</groupId>
-			<artifactId>ml-spark</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-ml-spark</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Test -->
