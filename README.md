@@ -1,6 +1,6 @@
 # SANSA OWL
 
-## <a name="description" href="">Description</a>
+## Description
 SANSA OWL is a library to read OWL files into [Spark](https://spark.apache.org) or [Flink](https://flink.apache.org). It allows files to reside in HDFS as well as in a local file system and distributes them across Spark RDDs/Datasets or Flink DataSets.
 
 ## Package Structure
