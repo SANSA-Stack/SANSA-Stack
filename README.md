@@ -20,10 +20,11 @@ Contains common test classes and data.
 ### From source
 
 To install the SANSA Inference API, you need to download it via Git and install it via Maven.
-
+```shell
 git clone https://github.com/SANSA-Stack/SANSA-Inference.git
 cd SNASA-Inference
 mvn clean install
+```
 Afterwards, you have to add the dependency to your pom.xml
 
 For Apache Spark
