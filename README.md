@@ -1,4 +1,4 @@
-# Spark OWL
+# SANSA OWL
 
 ## Description
 
