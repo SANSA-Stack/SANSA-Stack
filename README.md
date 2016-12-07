@@ -43,3 +43,9 @@ ObjectProperty: bar:prop
 or parsed [OWL API](http://owlapi.sourceforge.net/) axiom objects. We call these intermediate string-based entities 'expressions' and the corresponding distributed data structure 'expressions dataset'. The final data structure holding OWL API axiom objects is called 'axiom dataset'.
 
 ## Usage
+
+The following Scala code shows how to read an OWL file in Functional Syntax (be it a local file or a file residing in HDFS) into a Spark dataset:
+```scala
+val dataset = FunctionalSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, "path/to/functional/syntax/file.owl")
+```
+We also provide builder objects for the other described OWL formats and data structures. The same holds for the Flink implementations. An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#owl-processing). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladoc/spark-owl/).
