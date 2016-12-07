@@ -64,19 +64,7 @@ object MineRules {
     }
 
     def ruleMining(sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[RuleContainer] = {
-      /* 
-  var tmpdel = new File ("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent0/")
-  /**data home TheresaNathan*/
-   while (tmpdel.listFiles() != null) {
-            deleteRecursive(tmpdel)
-          }
-   var tmpde2 = new File ("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/permanent1/")
-  /**data home TheresaNathan*/
-   while (tmpde2.listFiles() != null) {
-            deleteRecursive(tmpde2)
-          }
-          * 
-          */
+  
 
       val fs: FileSystem = FileSystem.get(new URI("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/"), sc.hadoopConfiguration);
       fs.delete(new Path("/Theresa/permanent0/"), true)
@@ -106,35 +94,32 @@ object MineRules {
       }
 
       var outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]] = Map()
-      // var dataFrameRuleParts: DataFrame = null 
+     
       var dataFrameRuleParts: RDD[(RDFTriple, Int, Int)] = null
       var out: ArrayBuffer[RuleContainer] = new ArrayBuffer
 
       for (i <- 0 to this.maxLen - 1) {
 
-        //var t = Try(dataFrameRuleParts.first)
+        
 
         if ((i > 0) && (dataFrameRuleParts != null)) {
           var temp = q.clone
 
           q = new ArrayBuffer
 
-          // count.registerTempTable("countTable")
-          //var all = sqlContext.sql("SELECT key, count FROM countTable WHERE count >= "+ threshold)
 
-          // var step = dataFrameRuleParts.collect.map(y => (y(0).toString(), y.getLong(1)))
 
           var newAtoms1 = dataFrameRuleParts.collect
 
           for (n1 <- newAtoms1) {
 
-            //if(n1._2 >= (kb.getRngSize(n1._1.predicate) * minHC)){ 
+             
             var newRuleC = new RuleContainer
             var newTpArr = temp(n1._3).getRule().clone
             newTpArr += n1._1
             newRuleC.setRule(n1._2, newTpArr, kb, sc, sqlContext)
             q += newRuleC
-            //}
+            
 
           }
 
@@ -318,57 +303,63 @@ object MineRules {
   }
 
   def main(args: Array[String]) = {
+ val know = new KB()
+ 
+   val sparkSession = SparkSession.builder
 
-    /*
-     * config:
-     * .config("spark.executor.memory", "20g")
-     * .config("spark.driver.maxResultSize", "20g")
-     * .config("spark.sql.autoBroadcastJoinThreshold", "300000000")
-     * .config("spark.sql.shuffle.partitions", "100")
-     * .config("spark.sql.warehouse.dir", "file:///C:/Users/Theresa/git/Spark-Sem-ML/inference-spark/spark-warehouse")
-     * .config("spark.sql.crossJoin.enabled", true)
-     */
-    val know = new KB()
+    .master("local[*]")
+    .appName("AMIESpark example")
+       
+    .getOrCreate()
 
-    val sparkSession = SparkSession.builder
+  if (args.length < 2) {
+      System.err.println(
+        "Usage: Triple reader <input> <output>")
+      System.exit(1)
+    }
+  
+    
+  val input = args(0)  
+  val outputPath:String = args(1)
+  val hdfsPath:String = outputPath+"/"
+  
+   
+    
+    
+  val sc = sparkSession.sparkContext
+  val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
-      .master("spark://139.18.2.34:3077")
-      .appName("SPARK Reasoning")
-      .config("spark.sql.warehouse.dir", "file:///data/home/mohamed/spark-2.0.1-bin-hadoop2.7/bin/spark-warehouse")
-      .getOrCreate()
-    //
+  
+  know.sethdfsPath(hdfsPath)
+  know.setKbSrc(input)
+  
+  know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))
+  know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2)  )
+  
+  val algo = new Algorithm (know, 0.01, 3, 0.1, hdfsPath)
 
-    val hdfsPath: String = "hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/"
-
-    val sc = sparkSession.sparkContext
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-
-    know.sethdfsPath(hdfsPath)
-    know.setKbSrc("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/test_data.tsv")
-
-    var text = sc.textFile(know.getKbSrc(), 2).reduce((s1, s2) => s1 + "\n" + s2)
-      .replace("\"", "\\u0022").replace("\\", "\\u005C")
-
-    val ops = JenaSparkRDDOps(sc)
-    import ops._
-    var tester = fromNTriples(text, "").toSeq
-
-    var w = tester.map(trp => Atom(RDFTriple(trp.getSubject.toString(), trp.getPredicate.toString(), trp.getObject.toString())))
-    var v = tester.map(trp => RDFTriple(trp.getSubject.toString(), trp.getPredicate.toString(), trp.getObject.toString()))
-
-    var rdd = sc.parallelize(v)
-    var rddDF = sc.parallelize(w)
-
-    import sqlContext.implicits._
-
-    know.setKbGraph(new RDFGraph(rdd))
-    know.setDFTable(rddDF.toDF())
-
-    val algo = new Algorithm(know, 0.01, 3, 0.1, hdfsPath)
-
-    var erg = algo.ruleMining(sc, sqlContext)
-    println(erg)
-
+    
+    var output = algo.ruleMining(sc, sqlContext)
+    
+      var outString = output.map{x => 
+     var rdfTrp = x.getRule()
+     var temp = ""
+     for (i <-0 to rdfTrp.length-1){
+       if (i==0){
+         temp = rdfTrp(i) + " <= "
+       }
+       else{
+         temp += rdfTrp(i)+ " \u2227 "
+       }
+     }
+    temp =  temp.stripSuffix(" \u2227 ")
+    temp
+   }.toSeq
+   var rddOut = sc.parallelize(outString)
+    
+    
+   rddOut.saveAsTextFile(outputPath +"/testOut")
+  
     sc.stop
 
   }
