@@ -22,7 +22,7 @@ Contains common test classes and data.
 To install the SANSA Inference API, you need to download it via Git and install it via Maven.
 ```shell
 git clone https://github.com/SANSA-Stack/SANSA-Inference.git
-cd SNASA-Inference
+cd SANSA-Inference
 mvn clean install
 ```
 Afterwards, you have to add the dependency to your pom.xml
@@ -52,11 +52,12 @@ Using Maven pre-build artifacts
   <name>University Leipzig, AKSW Maven2 Repository</name>
   <url>http://maven.aksw.org/archiva/repository/snapshots</url>
   <releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
+  <releases>
+	<enabled>false</enabled>
+  </releases>
+  <snapshots>
+	<enabled>true</enabled>
+  </snapshots>
 </repository>
 
 <repository>
@@ -64,11 +65,11 @@ Using Maven pre-build artifacts
   <name>University Leipzig, AKSW Maven2 Internal Repository</name>
   <url>http://maven.aksw.org/archiva/repository/internal</url>
   <releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
+	<enabled>true</enabled>
+  </releases>
+  <snapshots>
+	<enabled>false</enabled>
+  </snapshots>
 </repository>
 ```
 2. Add dependency to your pom.xml
