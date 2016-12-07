@@ -15,6 +15,80 @@ Contains the core Inference API based on Apache Flink.
 ### sansa-inference-tests
 Contains common test classes and data.
 
+
+## Setup
+### From source
+
+To install the SANSA Inference API, you need to download it via Git and install it via Maven.
+
+git clone https://github.com/SANSA-Stack/SANSA-Inference.git
+cd SNASA-Inference
+mvn clean install
+Afterwards, you have to add the dependency to your pom.xml
+
+For Apache Spark
+```xml
+<dependency>
+  <groupId>net.sansa-stack</groupId>
+  <artifactId>sansa-inference-spark</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+For Apache Flink
+```xml
+<dependency>
+  <groupId>net.sansa-stack</groupId>
+  <artifactId>sansa-inference-flink</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+Using Maven pre-build artifacts
+
+1. Add AKSW Maven repository to your pom.xml (will be added to Maven Central soon)
+```xml
+<repository>
+  <id>maven.aksw.snapshots</id>
+  <name>University Leipzig, AKSW Maven2 Repository</name>
+  <url>http://maven.aksw.org/archiva/repository/snapshots</url>
+  <releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+</repository>
+
+<repository>
+  <id>maven.aksw.internal</id>
+  <name>University Leipzig, AKSW Maven2 Internal Repository</name>
+  <url>http://maven.aksw.org/archiva/repository/internal</url>
+  <releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+</repository>
+```
+2. Add dependency to your pom.xml
+
+For Apache Spark
+```xml
+<dependency>
+  <groupId>net.sansa-stack</groupId>
+  <artifactId>sansa-inference-spark</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+For Apache Flink
+```xml
+<dependency>
+  <groupId>net.sansa-stack</groupId>
+  <artifactId>sansa-inference-flink</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
 ## Usage
 ```
 RDFGraphMaterializer 0.1.0
@@ -37,29 +111,3 @@ Usage: RDFGraphMaterializer [options]
 ### Example
 
 `RDFGraphMaterializer -i /PATH/TO/FILE/test.nt -o /PATH/TO/TEST_OUTPUT_DIRECTORY/ -p rdfs` will compute the RDFS materialization on the data contained in `test.nt` and write the inferred RDF graph to the given directory `TEST_OUTPUT_DIRECTORY`.
-
-### From source
-
-To install the SANSA Inference API, you need to download it via Git and install it via Maven.
-
-git clone https://github.com/AKSW/SANSA-Inference.git
-cd SNASA-Inference
-mvn clean install
-Afterwards, you have to add the dependency to your pom.xml
-
-For Apache Spark
-```xml
-<dependency>
-  <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-spark</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
-</dependency>
-```
-For Apache Flink
-```xml
-<dependency>
-  <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-flink</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
-</dependency>
-```
