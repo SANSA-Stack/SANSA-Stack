@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-inference-parent</artifactId>
+        <artifactId>sansa-inference-parent_${scala.binary.version}</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>sansa-inference-spark</artifactId>
+    <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
     <name>Inference API - Spark</name>
@@ -19,12 +19,12 @@
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-inference-common</artifactId>
+            <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-inference-tests</artifactId>
+            <artifactId>sansa-inference-tests_${scala.binary.version}</artifactId>
             <version>${project.parent.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -140,6 +140,8 @@
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
+        <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
