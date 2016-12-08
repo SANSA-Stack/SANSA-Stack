@@ -4,7 +4,7 @@ SANSA-ML is the Machine Learning (ML) library in the SANSA stack (see http://san
 
 The ML layer currently supports the following algorithms:
 * RDF graph clustering
-* Rule mining in RDF graphs (based on (AMIE+)[https://www.mpi-inf.mpg.de/departments/databases-and-information-systems/research/yago-naga/amie/])
+* Rule mining in RDF graphs based on [AMIE+](https://www.mpi-inf.mpg.de/departments/databases-and-information-systems/research/yago-naga/amie/)
 
 Usage example for clusting:
 ```scala
@@ -13,6 +13,6 @@ RDFByModularityClustering(sparkSession.sparkContext, numIterations, input, outpu
 
 Please see https://github.com/SANSA-Stack/SANSA-Examples/tree/master/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml for further examples.
 
-Several further algorithms are in development. Please create pull requests and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
+Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
 
 Support for [Apache Flink](https://flink.apache.org) is planned in future releases.
