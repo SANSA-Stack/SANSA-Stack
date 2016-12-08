@@ -6,6 +6,7 @@
     <groupId>net.sansa-stack</groupId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
+  <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <name>Inference API - Common</name>
