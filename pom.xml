@@ -59,6 +59,12 @@
 				<version>0.1.0</version>
 			</dependency>
 
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+
 			<!-- OWL Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
