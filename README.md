@@ -10,11 +10,11 @@ On SANSA Query Spark the method for partitioning a RDD[Triple] is located in [Rd
 
 * RdfPartition, as the name suggests, represents a partition of the RDF data and defines two methods:
 matches(Triple): Boolean: This method is used to test whether a triple fits into a partition.
-* * Layout => TripleLayout: This method returns the [TripleLayout](https://github.com/SANSA-Stack/SANSA-RDF/blob/develop/src/main/scala/net/sansa_stack/rdf/common/partition/layout/TripleLayout.scala) associated with the partition, as explained below.
-* * urthermore,RdfPartitions are expected to be serializable, and to define equals and hash code.
+  * Layout => TripleLayout: This method returns the [TripleLayout](https://github.com/SANSA-Stack/SANSA-RDF/blob/develop/src/main/scala/net/sansa_stack/rdf/common/partition/layout/TripleLayout.scala) associated with the partition, as explained below.
+  * urthermore,RdfPartitions are expected to be serializable, and to define equals and hash code.
 * TripleLayout instances are used to obtain framework-agnostic compact tabular representations of triples according to a partition. For this purpose it defines the two methods:
-* * fromTriple(triple:Triple): Product: This method must, for a given triple, return its representation as a Product(this is the super class of all scalaTuples)
-* * schema:Type: This method must return the exact scala type of the objects returned by fromTriple, such as typeOf[Tuple2[String,Double]]. Hence, layouts are expected to only yield instances of one specific type.
+  * fromTriple(triple:Triple): Product: This method must, for a given triple, return its representation as a Product(this is the super class of all scalaTuples)
+  * schema:Type: This method must return the exact scala type of the objects returned by fromTriple, such as typeOf[Tuple2[String,Double]]. Hence, layouts are expected to only yield instances of one specific type.
 See the [available layouts](https://github.com/SANSA-Stack/SANSA-RDF/blob/develop/src/main/scala/net/sansa_stack/rdf/common/partition/layout) for details.
 
 ## Usage
