@@ -38,18 +38,20 @@ For Apache Spark
 ```xml
 <dependency>
   <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-spark</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <artifactId>sansa-inference-spark_2.11</artifactId>
+  <version>VERSION</version>
 </dependency>
 ```
-For Apache Flink
+and for Apache Flink
 ```xml
 <dependency>
   <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-flink</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <artifactId>sansa-inference-flink_2.11</artifactId>
+  <version>VERSION</version>
 </dependency>
 ```
+with `VERSION` beeing the released version you want to use.
+
 ### Using Maven pre-build artifacts
 
 1. Add AKSW Maven repository to your pom.xml (will be added to Maven Central soon)
@@ -85,18 +87,19 @@ For Apache Spark
 ```xml
 <dependency>
   <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-spark</artifactId>
+  <artifactId>sansa-inference-spark_2.11</artifactId>
   <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
-For Apache Flink
+and for Apache Flink
 ```xml
 <dependency>
   <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-flink</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <artifactId>sansa-inference-flink_2.11</artifactId>
+  <version>VERSION</version>
 </dependency>
 ```
+with `VERSION` beeing the released version you want to use.
 ### Using SBT
 SANSA Inference API has not been published on Maven Central yet, thus, you have to add an additional repository as follows
 ```scala
@@ -109,14 +112,15 @@ Then you have to add a dependency on either the Apache Spark or the Apache Flink
 
 For Apache Spark add
 ```scala
-"net.sansa-stack" % "sansa-inference-spark" % VERSION
+"net.sansa-stack" % "sansa-inference-spark_2.11" % VERSION
 ```
 
 and for Apache Flink add
 ```scala
-"net.sansa-stack" % "sansa-inference-flink" % VERSION
+"net.sansa-stack" % "sansa-inference-flink_2.11" % VERSION
 ```
-where, `VERSION` is the released version you want to use of the Inference API.
+
+where `VERSION` is the released version you want to use.
 
 ## Usage
 ```
