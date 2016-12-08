@@ -61,8 +61,8 @@
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
-    <outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
-    <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
+    <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
+    <!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
     <plugins>
       <plugin>
         <!-- see http://davidb.github.com/scala-maven-plugin -->

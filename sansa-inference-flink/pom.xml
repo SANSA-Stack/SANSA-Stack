@@ -115,8 +115,8 @@ under the License.
 		except flink and its transitive dependencies. The resulting fat-jar can be executed
 		on a cluster. Change the value of Program-Class if your program entry point changes. -->
 	<build>
-		<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
-		<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
+		<!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
+		<!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
 		<plugins>
 			<!-- We use the maven-shade plugin to create a fat jar that contains all dependencies
 			except flink and it's transitive dependencies. The resulting fat-jar can be executed
