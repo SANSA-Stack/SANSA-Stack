@@ -16,8 +16,7 @@
     <!-- RDF Layer -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>sansa-rdf-spark-parent</artifactId>
-      <type>pom</type>
+      <artifactId>sansa-rdf-flink</artifactId>
     </dependency>
 
     <!-- OWL Layer -->
@@ -27,7 +26,7 @@
     </dependency>
 
     <!-- Query Layer -->
-
+    <!-- no Flink code yet -->
 
     <!-- Inference Layer -->
     <dependency>

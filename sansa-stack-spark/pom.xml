@@ -19,10 +19,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-rdf-spark-parent</artifactId>
-            <version>${sansa.stack.version}</version>
-            <type>pom</type>
         </dependency>
-
 
         <!-- OWL Layer -->
         <dependency>
@@ -34,10 +31,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-query-spark-parent</artifactId>
-            <version>${sansa.stack.version}</version>
-            <type>pom</type>
         </dependency>
-
 
         <!-- Inference Layer -->
         <dependency>
