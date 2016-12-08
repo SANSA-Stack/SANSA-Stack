@@ -80,7 +80,7 @@
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-spark-parent</artifactId>
+				<artifactId>sansa-query-spark-bundle</artifactId>
 				<version>0.1.0</version>
 			</dependency>
 
