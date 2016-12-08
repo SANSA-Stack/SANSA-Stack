@@ -4,11 +4,11 @@
   <parent>
     <artifactId>sansa-ml-parent</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-ml-common</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <name>ML API - Common</name>
   <description>Common objects for the SANSA Machine Learning Layer</description>
   <inceptionYear>2016</inceptionYear>
