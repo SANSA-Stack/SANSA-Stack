@@ -3,8 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-inference-parent_${scala.binary.version}</artifactId>
+        <artifactId>sansa-inference-parent_2.11</artifactId>
         <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
