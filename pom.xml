@@ -87,12 +87,17 @@
 			<!-- Inference Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-inference-spark</artifactId>
+				<artifactId>sansa-inference-parent_${scala.binary.version}</artifactId>
 				<version>0.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-inference-flink</artifactId>
+				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
 				<version>0.1.0</version>
 			</dependency>
 
@@ -146,6 +151,5 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
 
 </project>

@@ -31,7 +31,7 @@
     <!-- Inference Layer -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>sansa-inference-flink</artifactId>
+      <artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
     </dependency>
 
     <!-- ML Layer -->
