@@ -93,7 +93,7 @@ object RDFGraphMaterializer {
     opt[Unit]("sorted").optional().action( (_, c) =>
       c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
 
-    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | owl-horst | owl-el | owl-rl}").
+    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | owl-horst}").
       action((x, c) => c.copy(profile = x)).
       text("the reasoning profile")
 
