@@ -7,6 +7,9 @@ import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.utils.CollectionUtils
 import org.slf4j.LoggerFactory
 import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
+import net.sansa_stack.inference.rules.RDFSLevel._
+
+import scala.collection.mutable
 
 /**
 * A forward chaining implementation of the RDFS entailment regime.
@@ -18,6 +21,8 @@ import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
 class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReasoner{
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
+
+  var level: RDFSLevel = DEFAULT
 
   def apply(graph: RDFGraph): RDFGraph = {
     logger.info("materializing graph...")
@@ -113,7 +118,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       .flatMap(t => subClassOfMap(t.`object`).map(supCls => RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
 
     // 5. merge triples and remove duplicates
-    val allTriples = env.union(
+    var allTriples = env.union(
       Seq(
         otherTriples,
         subClassOfTriplesTrans,
@@ -122,6 +127,44 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
         triplesRDFS7,
         triplesRDFS9))
       .distinct()
+
+
+    // we perform also additional rules if enabled
+    if(level != SIMPLE) {
+      // rdfs1
+
+      // rdf1: (s p o) => (p rdf:type rdf:Property)
+
+      // rdfs4a: (s p o) => (s rdf:type rdfs:Resource)
+      // rdfs4a: (s p o) => (o rdf:type rdfs:Resource)
+      val rdfs4 = allTriples.flatMap(t => Set(
+        RDFTriple(t.subject, RDF.`type`.getURI, RDFS.Resource.getURI),
+        RDFTriple(t.`object`, RDF.`type`.getURI, RDFS.Resource.getURI)
+        //          RDFTriple(t.predicate, RDF.`type`.getURI, RDF.Property.getURI)
+      ))
+
+      //rdfs12: (?x rdf:type rdfs:ContainerMembershipProperty) -> (?x rdfs:subPropertyOf rdfs:member)
+      val rdfs12 = typeTriples
+        .filter(t => t.`object` == RDFS.ContainerMembershipProperty.getURI)
+        .map(t => RDFTriple(t.subject, RDF.`type`.getURI, RDFS.member.getURI))
+
+      // rdfs6: (p rdf:type rdf:Property) => (p rdfs:subPropertyOf p)
+      val rdfs6 = typeTriples
+        .filter(t => t.`object` == RDF.Property.getURI)
+        .map(t => RDFTriple(t.subject, RDFS.subPropertyOf.getURI, t.subject))
+
+      // rdfs8: (s rdf:type rdfs:Class ) => (s rdfs:subClassOf rdfs:Resource)
+      // rdfs10: (s rdf:type rdfs:Class) => (s rdfs:subClassOf s)
+      val rdfs8_10 = typeTriples
+        .filter(t => t.`object` == RDFS.Class.getURI)
+        .flatMap(t => Set(
+                        RDFTriple(t.subject, RDFS.subClassOf.getURI, RDFS.Resource.getURI),
+                        RDFTriple(t.subject, RDFS.subClassOf.getURI, t.subject)))
+
+      val additionalTripleRDDs = mutable.Seq(rdfs4, rdfs6, rdfs8_10)
+
+      allTriples = env.union(Seq(allTriples) ++ additionalTripleRDDs).distinct()
+    }
 
     logger.info("...finished materialization in " + (System.currentTimeMillis() - startTime) + "ms.")
 //    val newSize = allTriples.count()

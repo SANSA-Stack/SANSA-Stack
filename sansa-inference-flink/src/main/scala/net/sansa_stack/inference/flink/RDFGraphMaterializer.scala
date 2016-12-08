@@ -4,8 +4,8 @@ import java.io.File
 
 import net.sansa_stack.inference.flink.data.{RDFGraphLoader, RDFGraphWriter}
 import net.sansa_stack.inference.flink.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
-import net.sansa_stack.inference.rules.ReasoningProfile
 import net.sansa_stack.inference.rules.ReasoningProfile._
+import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment
 
@@ -44,6 +44,11 @@ object RDFGraphMaterializer {
     // create reasoner
     val reasoner = profile match {
       case RDFS => new ForwardRuleReasonerRDFS(env)
+      case RDFS_SIMPLE => {
+        val r = new ForwardRuleReasonerRDFS(env)
+        r.level = RDFSLevel.SIMPLE
+        r
+      }
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(env)
     }
 
@@ -93,7 +98,7 @@ object RDFGraphMaterializer {
     opt[Unit]("sorted").optional().action( (_, c) =>
       c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
 
-    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | owl-horst}").
+    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | rdfs-simple | owl-horst}").
       action((x, c) => c.copy(profile = x)).
       text("the reasoning profile")
 
