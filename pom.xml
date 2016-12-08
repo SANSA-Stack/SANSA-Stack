@@ -55,7 +55,7 @@
 			<!-- RDF Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-parent</artifactId>
+				<artifactId>sansa-rdf-spark-bundle</artifactId>
 				<version>0.1.0</version>
 			</dependency>
 
@@ -124,14 +124,27 @@
 			</snapshots>
 		</repository>
 		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
 			<id>maven.aksw.snapshots</id>
 			<name>AKSW Snapshot Repository</name>
 			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-
 	</repositories>
 
 
