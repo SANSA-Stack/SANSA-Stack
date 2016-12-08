@@ -4,7 +4,7 @@
 
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-rdf-parent</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<packaging>pom</packaging>
 
 	<!-- <name>SANSA Stack - RDF Layer</name> -->
