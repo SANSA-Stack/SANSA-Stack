@@ -19,8 +19,6 @@ object RDFGraphInference {
       System.err.println("Supported 'reasoner' as follows:")
       System.err.println("  rdfs                  Forward Rule Reasoner RDFS")
       System.err.println("  owl-horst             Forward Rule Reasoner OWL Horst")
-      System.err.println("  owl-el                Forward Rule Reasoner OWL EL")
-      System.err.println("  owl-rl                Forward Rule Reasoner OWL RL")
       System.exit(1)
     }
     val input = args(0)
@@ -30,8 +28,6 @@ object RDFGraphInference {
     val profile = argprofile match {
       case "rdfs"      => ReasoningProfile.RDFS
       case "owl-horst" => ReasoningProfile.OWL_HORST
-      case "owl-el"    => ReasoningProfile.OWL_EL
-      case "owl-rl"    => ReasoningProfile.OWL_RL
 
     }
     val optionsList = args.drop(3).map { arg =>
