@@ -14,6 +14,7 @@
 	<modules>
 		<module>sansa-rdf-spark-utils</module>
 		<module>sansa-rdf-spark-core</module>
+		<module>sansa-rdf-spark-bundle</module>
 	</modules>
 
 
