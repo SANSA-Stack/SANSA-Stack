@@ -1,4 +1,3 @@
-## Not ready yet.
 # SANSA-Examples on Apache Spark
 This is a SANSA-Examples repo for Apache Spark.
 
@@ -35,8 +34,8 @@ To run the SANSA-Examples application on BDE platform, execute the following com
   git clone https://github.com/SANSA-Stack/SANSA-Examples.git
   cd SANSA-Examples/sansa-examples-spark
 
-  cd config/csswrapper/ && make hosts && cd .. && cd ..
-
+  make --directory config/csswrapper/ hosts
+  
   docker network create hadoop
 
   docker-compose up -d
@@ -49,6 +48,13 @@ Go to HDFS tab into http://demo.sansa-stack.local and check if the file exists u
 After we have all the configuration needed for our example, let’s run our sansa-examples.
 
 ```
-docker-compose -f sansa-examples.yml up -d --build-arg SPARK_APPLICATION_MAIN_CLASS=net.sansa_stack.examples.spark.rdf.TripleReader 
+docker build --rm=true -t sansa/sansa-examples-spark .
+```
+And then just run this image:
+```
+docker run --name sansa-examples-spark-app --net hadoop --link spark-master:spark-master \
+-e ENABLE_INIT_DAEMON=false \
+-d sansa/sansa-examples-spark
+
 ```
 
