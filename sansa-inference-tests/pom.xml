@@ -4,12 +4,12 @@
   <parent>
     <artifactId>sansa-inference-parent_2.11</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-tests_${scala.binary.version}</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <name>Inference API - Tests</name>
   <description>Contains common data and utils for inference API testing</description>
 
@@ -61,8 +61,8 @@
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
-    <outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>
-    <testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>
+    <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
+    <!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
     <plugins>
       <plugin>
         <!-- see http://davidb.github.com/scala-maven-plugin -->
@@ -82,6 +82,9 @@
             <include>**/*Suite.*</include>
           </includes>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
