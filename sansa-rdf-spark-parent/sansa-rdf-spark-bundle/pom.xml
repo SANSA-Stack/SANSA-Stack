@@ -71,12 +71,14 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+			<version>${project.version}</version>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+			<version>${project.version}</version>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
