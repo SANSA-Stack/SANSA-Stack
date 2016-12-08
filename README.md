@@ -54,7 +54,7 @@ with `VERSION` beeing the released version you want to use.
 
 ### Using Maven pre-build artifacts
 
-1. Add AKSW Maven repository to your pom.xml (will be added to Maven Central soon)
+ 1. Add AKSW Maven repository to your pom.xml (will be added to Maven Central soon)
 ```xml
 <repository>
   <id>maven.aksw.snapshots</id>
@@ -81,14 +81,14 @@ with `VERSION` beeing the released version you want to use.
   </snapshots>
 </repository>
 ```
-2. Add dependency to your pom.xml
+'2'. Add dependency to your pom.xml
 
 For Apache Spark
 ```xml
 <dependency>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-spark_2.11</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>VERSION</version>
 </dependency>
 ```
 and for Apache Flink
