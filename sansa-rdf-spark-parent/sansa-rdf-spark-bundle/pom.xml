@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-rdf-spark-parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.1.0</version>
 	</parent>
 
 	<dependencies>
@@ -71,12 +71,14 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+			<version>${project.version}</version>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+			<version>${project.version}</version>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
