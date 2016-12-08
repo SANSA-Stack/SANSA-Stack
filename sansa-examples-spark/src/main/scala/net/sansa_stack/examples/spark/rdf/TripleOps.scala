@@ -8,17 +8,18 @@ import org.apache.jena.graph.Node_URI
 import net.sansa_stack.rdf.spark.model.TripleRDD
 import org.apache.jena.graph.Node_Literal
 import org.apache.jena.sparql.util.NodeFactoryExtra
+import net.sansa_stack.rdf.spark.io.NTripleReader
 
 object TripleOps {
 
   def main(args: Array[String]) = {
 
-    if (args.length < 1) {
+  /*  if (args.length < 1) {
       System.err.println(
         "Usage: Triple Ops <input>")
       System.exit(1)
-    }
-    val input = args(0)//"src/main/resources/rdf.nt"
+    }*/
+    val input = "src/main/resources/rdf.nt"//args(0)//"src/main/resources/rdf.nt"
     val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
@@ -43,12 +44,8 @@ object TripleOps {
     val ops = JenaSparkRDDOps(sparkSession.sparkContext)
     import ops._
 
-    val it = sparkSession.sparkContext.textFile(input).collect.mkString("\n")
-
-    val triples = fromNTriples(it, "http://dbpedia.org").toSeq
-
-    val triplesRDD = sparkSession.sparkContext.parallelize(triples)
-
+    val triplesRDD = NTripleReader.load(sparkSession, new File(input))
+    
     val graph: TripleRDD = triplesRDD
 
     //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )

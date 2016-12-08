@@ -4,6 +4,7 @@ import java.io.File
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps
+import net.sansa_stack.rdf.spark.io.NTripleReader
 
 /*
  * Computes the PageRank of Resources from an input .nt file.
@@ -16,7 +17,7 @@ object PageRank {
         "Usage: Resource PageRank <input>")
       System.exit(1)
     }
-    val input = args(0)//"src/main/resources/rdf.nt"
+    val input = args(0) //"src/main/resources/rdf.nt"
     val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
@@ -42,10 +43,7 @@ object PageRank {
     val ops = JenaSparkGraphXOps(sparkSession.sparkContext)
     import ops._
 
-    val it = sparkSession.sparkContext.textFile(input).collect.mkString("\n")
-
-    val triples = fromNTriples(it, "http://dbpedia.org").toSeq
-    val triplesRDD = sparkSession.sparkContext.parallelize(triples)
+    val triplesRDD = NTripleReader.load(sparkSession, new File(input))
 
     val graph = makeGraph(triplesRDD)
     val pagerank = graph.pageRank(0.00001).vertices
