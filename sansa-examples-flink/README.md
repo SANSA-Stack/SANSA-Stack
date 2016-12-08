@@ -34,7 +34,7 @@ To run the SANSA-Examples application on BDE platform, execute the following com
   git clone https://github.com/SANSA-Stack/SANSA-Examples.git
   cd SANSA-Examples/sansa-examples-flink
 
-  cd config/csswrapper/ && make hosts && cd .. && cd ..
+  make --directory config/csswrapper/ hosts
 
   docker network create hadoop
 
@@ -48,6 +48,14 @@ Go to HDFS tab into http://demo.sansa-stack.local and check if the file exists u
 After we have all the configuration needed for our example, let’s run our sansa-examples.
 
 ```
-docker-compose -f sansa-examples.yml up -d --build-arg FLINK_APPLICATION_MAIN_CLASS=net.sansa_stack.examples.flink.rdf.TripleReader 
+docker build --rm=true -t sansa/sansa-examples-flink .
+```
+And then just run this image:
+```
+docker run --name flink-entityrank-app --net hadoop --link flink-master:flink-master \
+-e ENABLE_INIT_DAEMON=false \
+-e FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master \
+-e FLINK_MASTER_PORT_6123_TCP_PORT=6123 \
+-d sansa/sansa-examples-flink
 ```
 
