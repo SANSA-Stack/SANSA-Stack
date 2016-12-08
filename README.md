@@ -17,6 +17,13 @@ Contains common test classes and data.
 
 
 ## Setup
+### Prerequisites
+* Maven 3.x
+* Java 8
+* Scala 2.11 (support for Scala 2.10 is planned)
+* Apache Spark 2.x
+* Apache Flink 1.x
+
 ### From source
 
 To install the SANSA Inference API, you need to download it via Git and install it via Maven.
