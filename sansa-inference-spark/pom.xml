@@ -31,24 +31,24 @@
         </dependency>
 
         <!-- RDF Layer -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-rdf-spark-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-rdf-partition-core</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>${project.groupId}</groupId>-->
+            <!--<artifactId>sansa-rdf-spark-core</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>net.sansa-stack</groupId>-->
+            <!--<artifactId>sansa-rdf-partition-core</artifactId>-->
+        <!--</dependency>-->
 
         <!-- Query Layer -->
-        <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-query-spark-sparqlify</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-server-standalone</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>net.sansa-stack</groupId>-->
+            <!--<artifactId>sansa-query-spark-sparqlify</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.aksw.jena-sparql-api</groupId>-->
+            <!--<artifactId>jena-sparql-api-server-standalone</artifactId>-->
+        <!--</dependency>-->
 
         <!-- Scala -->
         <dependency>
