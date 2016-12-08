@@ -33,7 +33,15 @@ object RDFGraphWriter {
     logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
   }
 
-  def writeToDisk(graph: RDFGraph, path: File): Unit = {
+  /**
+    * Write the graph to disk in N-Triple format.
+    *
+    * @param graph the RDF graph
+    * @param path the output  directory
+    * @param singleFile whether to put all data into a single file
+    * @param sorted whether to sort the triples by subject, predicate, object
+    */
+  def writeToDisk(graph: RDFGraph, path: File, singleFile: Boolean = false, sorted: Boolean = false): Unit = {
     logger.info("writing triples to disk...")
     val startTime  = System.currentTimeMillis()
 

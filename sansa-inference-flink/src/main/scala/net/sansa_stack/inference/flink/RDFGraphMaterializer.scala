@@ -57,7 +57,7 @@ object RDFGraphMaterializer {
     println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
-    RDFGraphWriter.writeToDisk(inferredGraph, output)
+    RDFGraphWriter.writeToDisk(inferredGraph, output, writeToSingleFile, sortedOutput)
 
 //    println(env.getExecutionPlan())
 
