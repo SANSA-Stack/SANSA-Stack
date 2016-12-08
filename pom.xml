@@ -54,7 +54,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.version>>=3.0</maven.version>
-    <java.version>>=1.8</java.version>
+    <!--<java.version>>=1.8</java.version>-->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <scala.version>2.11.8</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
@@ -268,13 +268,13 @@
                   <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
                   <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
                 </jvmArgs>
-                <javacArgs>
-                  <javacArg>-source</javacArg>
-                  <javacArg>${java.version}</javacArg>
-                  <javacArg>-target</javacArg>
-                  <javacArg>${java.version}</javacArg>
-                  <javacArg>-Xlint:all,-serial,-path</javacArg>
-                </javacArgs>
+                <!--<javacArgs>-->
+                  <!--<javacArg>-source</javacArg>-->
+                  <!--<javacArg>${java.version}</javacArg>-->
+                  <!--<javacArg>-target</javacArg>-->
+                  <!--<javacArg>${java.version}</javacArg>-->
+                  <!--<javacArg>-Xlint:all,-serial,-path</javacArg>-->
+                <!--</javacArgs>-->
 
               </configuration>
             </execution>
@@ -307,6 +307,9 @@
           <groupId>org.scalatest</groupId>
           <artifactId>scalatest-maven-plugin</artifactId>
           <version>1.0</version>
+          <configuration>
+            <tagsToExclude>net.sansa_stack.test.conformance.IntegrationTestSuite</tagsToExclude>
+          </configuration>
         </plugin>
 
         <!-- Gitflow -->
@@ -336,9 +339,9 @@
                   <requireMavenVersion>
                     <version>${maven.version}</version>
                   </requireMavenVersion>
-                  <requireJavaVersion>
-                    <version>${java.version}</version>
-                  </requireJavaVersion>
+                  <!--<requireJavaVersion>-->
+                    <!--<version>${java.version}</version>-->
+                  <!--</requireJavaVersion>-->
                   <bannedDependencies>
                     <excludes>
                       <!--

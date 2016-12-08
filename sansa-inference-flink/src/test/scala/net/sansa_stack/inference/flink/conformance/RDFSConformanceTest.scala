@@ -1,11 +1,12 @@
 package net.sansa_stack.inference.flink.conformance
 
 import net.sansa_stack.inference.flink.data.RDFGraphWriter
-import net.sansa_stack.test.conformance.RDFSConformanceTestBase
+import net.sansa_stack.test.conformance.{IntegrationTestSuite, RDFSConformanceTestBase}
 import org.apache.jena.rdf.model.Model
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.flink.data.RDFGraph
 import org.apache.flink.api.scala._
+import org.scalatest.Ignore
 
 import scala.collection.mutable
 
@@ -15,6 +16,7 @@ import scala.collection.mutable
   * @author Lorenz Buehmann
   *
   */
+@IntegrationTestSuite
 class RDFSConformanceTest extends RDFSConformanceTestBase with SharedRDFSReasonerContext{
 
   override def computeInferredModel(triples: mutable.HashSet[RDFTriple]): Model = {
