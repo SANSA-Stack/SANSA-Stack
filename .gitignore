@@ -17,6 +17,10 @@ buildNumber.properties
 .cache-main
 .cache-tests
 .classpath
+deptree.txt
+# IntelliJ config
+*.iml
+.idea
 /bin
 
 # filename i use to store output of mvn dependency:tree ~Claus
