@@ -1,11 +1,13 @@
-# Spark-RDF
-RDF Spark Library.
+# SANSA RDF
 
 ## Description
-RDF Spark Library.
+SANSA RDF is a library to read RDF files into [Spark](https://spark.apache.org) or [Flink](https://flink.apache.org). It allows files to reside in HDFS as well as in a local file system and distributes them across Spark RDDs/Datasets or Flink DataSets.
 
-## Spark-RDF main application class
-The main application class is `net.sansa.rdf.spark.App`.
+
+SANSA uses the RDF data model for representing graphs consisting of triples with subject, predicate and object. RDF datasets may contains multiple RDF graphs and record information about each graph, allowing any of the upper layers of sansa (Querying and ML) to make queries that involve information from more than one graph. Instead of directly dealing with RDF datasets, the target RDF datasets need to be converted into an RDD/DataSets of triples. We name such an RDD/DataSets a main dataset. The main dataset is based on an RDD/DataSets data structure, which is a basic building block of the Spark/Flink framework. RDDs/DataSets are in-memory collections of records that can be operated on in parallel on large clusters.
+
+### SANSA RDF Spark
+The main application class is `net.sansa_stack.rdf.spark.App`.
 The application requires as application arguments:
 
 1. path to the input folder containing the data as nt (e.g. `/data/input`)
@@ -29,7 +31,7 @@ To run the application on a standalone Spark cluster
 
   ```
   spark-submit \
-		--class net.sansa.rdf.spark.App \
+		--class net.sansa_stack.rdf.spark.App \
 		--master spark://spark-master:7077 \
  		/app/application.jar \
 		/data/input /data/output  
@@ -70,4 +72,17 @@ docker run --name Spark-RDF --net hadoop --link spark-master:spark-master \
 -d sansa/spark-rdf
 ```
 
+## Usage
 
+The following Scala code shows how to read an RDF file (be it a local file or a file residing in HDFS) into a Spark RDD:
+```scala
+
+import net.sansa_stack.rdf.spark.io.NtripleReader
+ 
+val input = sc.textFile("hdfs://...")
+ 
+val triplesRDD = NTripleReader.load(sparkSession, new File(input))
+ 
+triplesRDD.take(5).foreach(println(_))
+```
+An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#rdf-processing). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
