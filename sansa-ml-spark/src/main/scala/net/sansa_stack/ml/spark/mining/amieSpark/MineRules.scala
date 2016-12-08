@@ -113,14 +113,39 @@ object MineRules {
 
           for (n1 <- newAtoms1) {
 
-             
-            var newRuleC = new RuleContainer
-            var newTpArr = temp(n1._3).getRule().clone
-            newTpArr += n1._1
-            newRuleC.setRule(n1._2, newTpArr, kb, sc, sqlContext)
-            q += newRuleC
-            
-
+			var newRuleC = new RuleContainer   
+			var parent = temp(n1._3)
+			var newTpArr = parent.getRule().clone
+       
+			newTpArr += n1._1
+			var fstTp = newTpArr(0).toString()
+			var counter = 1
+			var sortedNewTpArr = new ArrayBuffer[RDFTriple]
+       
+			if (newTpArr.length >2){
+				sortedNewTpArr = sort(newTpArr.clone)
+			}
+			else {
+				sortedNewTpArr = newTpArr.clone
+			}
+       
+			var dubCheck = fstTp
+       
+       
+			for (i <-1 to newTpArr.length-1){
+				var temp = newTpArr(i).toString
+				dubCheck += sortedNewTpArr(i).toString
+				if (temp == fstTp){
+					counter += 1
+				}
+			}
+			if  ((counter < newTpArr.length)&&(!(dublicate.contains(dubCheck)))){
+				dublicate += dubCheck
+				newRuleC.setRule(minConf,n1._2, parent, newTpArr, sortedNewTpArr, kb, sc, sqlContext)
+				q += newRuleC
+			}
+       
+       
           }
 
         } else if ((i > 0) && (dataFrameRuleParts.isEmpty())) {
@@ -131,10 +156,16 @@ object MineRules {
           for (j <- 0 to q.length - 1) {
 
             val r: RuleContainer = q(j)
-
+			
+			var tp = r.getRule()
+			if (tp.length>2){
+				tp = r.getSortedRule()
+        
+			}
+			
             if (acceptedForOutput(outMap, r, minConf, kb, sc, sqlContext)) {
               out += r
-              var tp = r.getRule()
+              
               if (!(outMap.contains(tp(0).predicate))) {
                 outMap += (tp(0).predicate -> ArrayBuffer((tp, r)))
               } else {
@@ -283,23 +314,42 @@ object MineRules {
 
     def acceptedForOutput(outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]], r: RuleContainer, minConf: Double, k: KB, sc: SparkContext, sqlContext: SQLContext): Boolean = {
 
-      if ((!(r.closed())) || (r.getPcaConfidence(k, sc, sqlContext) < minConf)) {
-        return false
+		if ((!(r.closed())) || (r.getPcaConfidence(k, sc, sqlContext) < minConf)) {
+			return false
 
-      }
+		}
 
-      var parents: ArrayBuffer[RuleContainer] = r.parentsOfRule(outMap, sc)
-
-      for (rp <- parents) {
-        if (r.getPcaConfidence(k, sc, sqlContext) <= rp.getPcaConfidence(k, sc, sqlContext)) {
-          return false
-        }
-
-      }
+		var parents:ArrayBuffer[RuleContainer] = r.parentsOfRule(outMap, sc)
+		if (r.getRule.length>2){
+			for (rp <- parents){
+				if (r.getPcaConfidence() <= rp.getPcaConfidence()){
+					return false
+				}
+     
+			}
+		}
 
       return true
     }
 
+	   def sort(tp:ArrayBuffer[RDFTriple]):ArrayBuffer[RDFTriple]={
+           var out = ArrayBuffer(tp(0))
+           var temp = new ArrayBuffer[Tuple2[String, RDFTriple]]
+   
+           for (i <-1 to tp.length-1){
+             var tempString:String =tp(i).predicate + tp(i).subject + tp(i).`object`
+             temp += Tuple2(tempString,tp(i))
+     
+           }
+           temp = temp.sortBy(_._1)
+           for (t<-temp){
+             out += t._2
+           }
+   
+           return out
+        }
+	
+	
   }
 
   def main(args: Array[String]) = {

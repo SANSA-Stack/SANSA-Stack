@@ -25,14 +25,16 @@ object Rules {
         val name: String =""
        
         var rule: ArrayBuffer[RDFTriple] = new ArrayBuffer
+        var sortedRule:  ArrayBuffer[RDFTriple] = new ArrayBuffer
         
         var headKey = null;
         var support: Long = -1;
         var hashSupport = 0;
-        var parent = null;
+        var parent:RuleContainer = null;
         var bodySize = -1.0;
         var highestVariable:Char = 'b';
         var pcaBodySize = 0.0;
+        var pcaConfidence = 0.0;
         var _stdConfidenceUpperBound = 0.0;
         var _pcaConfidenceUpperBound = 0.0;
         var _pcaConfidenceEstimation = 0.0;
@@ -49,9 +51,15 @@ object Rules {
           return this.rule
         }
         
+        
+        def getSortedRule(): ArrayBuffer[RDFTriple]={
+          return this.sortedRule
+        }        
+        
         /**initializes rule, support, bodySize and sizeHead*/
         def initRule(x: ArrayBuffer[RDFTriple], k: KB, sc: SparkContext, sqlContext:SQLContext){
           this.rule = x
+          
           calcSupport(k,sc,sqlContext)
           setBodySize(k,sc,sqlContext)
           setSizeHead(k)
@@ -59,15 +67,26 @@ object Rules {
          
         }
         
-        def setRule(supp: Long, x: ArrayBuffer[RDFTriple], k: KB, sc: SparkContext, sqlContext:SQLContext){
+        def setRule(threshold: Double, supp: Long, p:RuleContainer, x: ArrayBuffer[RDFTriple],y: ArrayBuffer[RDFTriple], k: KB, sc: SparkContext, sqlContext:SQLContext){
           this.rule = x
+          
+          this.sortedRule = y
+          
           this.support = supp
+          
           setBodySize(k,sc,sqlContext)
           setSizeHead(k)
+          
+        
+          this.parent = p
+          
+         this.setPcaConfidence(threshold,k, sc, sqlContext)
         }
         
        
-        
+        def setRuleArBuf (tp: ArrayBuffer[RDFTriple]){
+          this.rule = tp
+        }
         
         
         /**returns ArrayBuffer with every triplePattern of the body as a RDFTriple*/
@@ -180,13 +199,29 @@ object Rules {
                      }
        
      }
-     
-       maptp.foreach{value => if (value._2 == 1) return false}
+        var counter = 0
+        var isLength = false
+      maptp.foreach{x => counter +=1
+          
+          if (x._2 ==tparr.length){
+          isLength = true  }
+          }
+      if ((isLength)&&(counter == 2)){
+        return false
+      }
+        var max = 0
+        maptp.foreach{value => 
+          if (value._2 == 1) {return false}
+          if (max < value._2){max = value._2}
+          }
+        if (max > 2){
+          return false
+        }
        return true
        
      }
      
-     def getPcaConfidence(k: KB, sc:SparkContext, sqlContext:SQLContext): Double={
+     def setPcaConfidence(threshold: Double, k: KB, sc:SparkContext, sqlContext:SQLContext){
        
        var tparr = this.rule.clone
        val usePcaA = usePcaApprox(tparr)
@@ -196,19 +231,31 @@ object Rules {
        if (usePcaA){
            
          set_pcaConfidenceEstimation(k: KB)
-         return this._pcaConfidenceEstimation
+         if (this._pcaConfidenceEstimation> threshold){
+           
+           this.pcaBodySize = k.cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
+           
+           if (this.pcaBodySize > 0.0){
+             this.pcaConfidence = (support/pcaBodySize)
+           }
+         }
          
        }
        else{
        
          this.pcaBodySize = k.cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
-         
-         return (support/pcaBodySize)
+         if (this.pcaBodySize > 0.0){
+           this.pcaConfidence = (support/pcaBodySize)
+         }
          
        }
        
        
        
+     }
+     
+     def getPcaConfidence(): Double={
+       return this.pcaConfidence
      }
      
      def setPcaBodySize(k: KB, sc:SparkContext){
@@ -246,8 +293,8 @@ object Rules {
          
     def parentsOfRule(outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]], sc: SparkContext):ArrayBuffer[RuleContainer] =  {
       // TODO: create new rules with body in alphabetical order     
-      var parents = new ArrayBuffer[RuleContainer]
-           val r = this.rule.clone
+      var parents = ArrayBuffer(this.parent)
+           val r = this.sortedRule.clone
            
                
            
@@ -533,7 +580,22 @@ object Rules {
            return true
          }     
          
-         
+         def sort(tp:ArrayBuffer[RDFTriple]):ArrayBuffer[RDFTriple]={
+           var out = ArrayBuffer(tp(0))
+           var temp = new ArrayBuffer[Tuple2[String, RDFTriple]]
+   
+           for (i <-1 to tp.length-1){
+             var tempString:String =tp(i).predicate + tp(i).subject + tp(i).`object`
+             temp += Tuple2(tempString,tp(i))
+     
+           }
+           temp = temp.sortBy(_._1)
+           for (t<-temp){
+             out += t._2
+           }
+   
+           return out
+         }
         
      
        //end

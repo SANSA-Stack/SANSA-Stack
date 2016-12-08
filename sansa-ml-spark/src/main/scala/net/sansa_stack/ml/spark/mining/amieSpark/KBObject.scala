@@ -1595,27 +1595,252 @@ for (f <-files){
 	
 	 def cardPlusnegativeExamplesLength(tpAr: ArrayBuffer[RDFTriple], support: Double, sc:SparkContext, sqlContext: SQLContext):Double={
 	   this.dfTable.registerTempTable("kbTable")
+	  
+	 // var card = cardinality(tpAr, sc, sqlContext)
+	   var go = false
+	   var outCount: Double = 0.0
 	   
-	   var card = cardinality(tpAr, sc, sqlContext)
+	    for (i <- 1 to tpAr.length-1){
+	      if ((tpAr(i)._1=="?a")||(tpAr(i)._3=="?a")){
+	        go = true
+	      }
+	    }
+	   
+	   
+	   
+	   if (go){
+	     
+	     
+	   var tpArString = ""
+	   for (tp <-tpAr){
+	     tpArString += tp.toString()
+	   
+	   }
+	   
+	   tpArString = tpArString.replace(" ", "_").replace("?", "_") 
+	   var ex = new File (hdfsPath+"permanent"+(tpAr.length-2)+"/"+tpArString)
+	   var files = ex.listFiles()
+	   if (files == null){
+	     return 0.0
+	   }
+	   
+	   
+	   
+	   
+	   var card = sqlContext.read.parquet(hdfsPath+"permanent"+(tpAr.length-2)+"/"+tpArString)
+	  
 	   card.registerTempTable("cardTable")
 	   
 	   
-	   var head = sqlContext.sql("SELECT rdf FROM kbTable WHERE rdf.predicate ='"+ tpAr(0).predicate+"'")
-	   head.registerTempTable("headTable")
 	   
-	   var negativeEx = sqlContext.sql("SELECT rdf FROM headTable WHERE rdf NOT IN (SELECT tp0 FROM cardTable)")
-	   negativeEx.registerTempTable("negativeExTable")
+	 
+
+	   
+
+	   
+	    var h = sqlContext.sql("SELECT DISTINCT tp0.subject AS sub FROM cardTable")
+	   
+	  
 	   
 	   
+	   var out:DataFrame = null
 	   
-	   var out = sqlContext.sql("SELECT DISTINCT rdf FROM negativeExTable JOIN cardTable ON rdf.subject = tp0.subject")
-	  var outCount: Double = out.count()
 	   
-	   return (outCount + support)
+
+	   if (tpAr.length >2){
+	   
+	   
+	   out = tester(h, tpAr, sc, sqlContext)
+	   }
+	   else {
+	     var abString = ""
+	      if (tpAr(1)._1 == "?a"){
+       abString = "subject"
+       }
+     
+	      else{
+       abString = "`object`"
+       }
+	     
+	     var o = sqlContext.sql("SELECT rdf AS tp0 FROM kbTable WHERE rdf.predicate='"+(tpAr(1)).predicate+"'")
+	      o.registerTempTable("twoLengthT")
+	      h.registerTempTable("subjects")
+	      out = sqlContext.sql("SELECT twoLengthT.tp0 FROM twoLengthT JOIN subjects ON twoLengthT.tp0."+abString+"=subjects.sub")
+	  
+	      /*
+	   if ((tpAr(0).predicate == "directed")&&(tpAr(1).predicate== "produced")&&(tpAr(1).subject== "?a")&&(tpAr(1)._3== "?b")){
+	     h.show(800, false)
+	     
+	     var fjgf = sqlContext.sql("SELECT ")
+	   }
+	   
+	   
+	   */
+	   
+	   }
+	  outCount= out.count()
+	   }
+	   return outCount
 	   
 	   
 	   
 	 }
+	 
+	 
+	
+	 
+	 
+	 
+	 
+	 def tester (subjects: DataFrame, wholeAr: ArrayBuffer[RDFTriple], sc:SparkContext, sqlContext: SQLContext): DataFrame ={
+   val DF = this.dfTable
+    var tpMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
+   DF.registerTempTable("table")
+   var wholeTPARBackup = wholeAr.clone()
+    wholeAr.remove(0)
+  
+    var complete = sqlContext.sql("SELECT rdf AS tp"+0+" FROM table WHERE rdf.predicate = '"+(wholeAr(0)).predicate+"'")
+        
+    
+    for (i <- 1 to wholeAr.length-1){
+      var w = sqlContext.sql("SELECT rdf AS tp"+i+" FROM table WHERE rdf.predicate = '"+(wholeAr(i)).predicate+"'")
+        w.registerTempTable("newColumn")
+        
+        complete.registerTempTable("previousTable")
+        complete = sqlContext.sql("SELECT * FROM previousTable JOIN newColumn")
+    }
+    
+    
+        
+        
+   
+        
+      
+      
+        
+        
+        
+      
+   
+    var varAr: ArrayBuffer[String] = new ArrayBuffer
+   var checkMap: Map[Int, Tuple2[String,String]] = Map()
+   var checkSQLSELECT ="SELECT "
+   
+   var abString = ("","")
+   
+   for(i <- 0 to wholeAr.length-1){
+     var a = wholeAr(i).subject
+     var b = wholeAr(i)._3
+   
+     if ((abString == ("","")) && (a == "?a")){
+       abString = ("subject", "tp"+i)
+     }
+     
+     if ((abString == ("","")) && (b == "?a")){
+       abString = ("`object`", "tp"+i)
+     }
+     
+       checkSQLSELECT += "tp"+i+", "
+       
+     
+     
+     varAr ++= ArrayBuffer(a,b)
+     checkMap += (i -> Tuple2(a,b))
+     
+     if(!(tpMap.contains(a))){
+       tpMap += ((a) -> ArrayBuffer(Tuple2(i,"subject")))
+       
+     }
+     else {
+       var temp = tpMap.get(a).get 
+       temp += Tuple2(i,"subject")
+       tpMap.put(a, temp)
+     }
+     if(!(tpMap.contains(b))){
+       tpMap += ((b) -> ArrayBuffer(Tuple2(i,"`object`")))
+       
+     }
+    
+     else{
+       var temp = tpMap.get(b).get 
+       temp += Tuple2(i,"`object`")
+       tpMap.put(b, temp)
+       
+     }
+   }
+   checkSQLSELECT = checkSQLSELECT.stripSuffix(", ")
+   
+   var cloneTpAr = wholeAr.clone()
+   
+   var removedMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
+   
+    
+   varAr = varAr.distinct
+   var checkSQLWHERE = "WHERE "
+   checkMap.foreach{ab =>
+     var a = ab._2._1
+     var b = ab._2._2
+     
+     if (varAr.contains(a)){
+      
+       varAr -= a
+       var x = tpMap.get(a).get
+       for (k <- x){
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".subject = tp"+k._1+"."+k._2+" AND "
+           
+         }
+         
+       }
+       
+       
+     }
+     
+    
+     
+     if (varAr.contains(b)){
+       
+       
+       varAr -= b
+       var y = tpMap.get(b).get
+       
+       for (k <- y){
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".`object` = tp"+k._1+"."+k._2+" AND "
+          
+         }
+       }
+                
+     }
+     
+   }
+   
+   checkSQLWHERE = checkSQLWHERE.stripSuffix(" AND ")
+  
+   
+   complete.registerTempTable("t")
+   var last = sqlContext.sql(checkSQLSELECT+" FROM t "+checkSQLWHERE)
+   last.registerTempTable("lastTable")
+ 
+   subjects.registerTempTable("keyTable")
+   
+   var out = sqlContext.sql(checkSQLSELECT+" FROM lastTable JOIN keyTable ON lastTable."+abString._2+"."+abString._1+"=keyTable.sub")
+   
+   return out
+   
+   
+ }
+		
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
 	//TODO: solve with DataFrames
 		def cardPlusnegativeExamplesLength(triplesCard: ArrayBuffer[RDFTriple], sc:SparkContext):Double={
       
