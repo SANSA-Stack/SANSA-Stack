@@ -13,6 +13,8 @@ buildNumber.properties
 .preferences
 .project
 
+deptree.txt
+
 ### Java template
 *.class
 
