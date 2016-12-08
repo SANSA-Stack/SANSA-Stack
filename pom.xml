@@ -201,6 +201,13 @@
 					<artifactId>scalatest-maven-plugin</artifactId>
 					<version>1.0</version>
 				</plugin>
+				
+				<!-- Git Flow  -->
+				 <plugin>
+                    <groupId>com.amashchenko.maven.plugin</groupId>
+                    <artifactId>gitflow-maven-plugin</artifactId>
+                    <version>1.3.1</version>
+                </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
