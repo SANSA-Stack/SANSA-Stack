@@ -5,11 +5,11 @@
 	<parent>
 		<artifactId>sansa-ml-parent</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.1.0</version>
 	</parent>
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-ml-spark</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>ML API - Apache Spark</name>
 	<description>RDF/OWL Machine Learning Library for Apache Spark</description>
 
