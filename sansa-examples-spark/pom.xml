@@ -57,7 +57,7 @@
 		<!-- SANSA Inference -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-inference-spark</artifactId>
+			<artifactId>sansa-inference-spark_2.11</artifactId>
 			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 		<!-- SANSA Querying -->

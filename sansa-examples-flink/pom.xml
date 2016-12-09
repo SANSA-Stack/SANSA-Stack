@@ -24,7 +24,7 @@
 		<!-- SANSA Inference -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-inference-flink</artifactId>
+			<artifactId>sansa-inference-flink_2.11</artifactId>
 			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 
