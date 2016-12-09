@@ -360,6 +360,8 @@
     </build>
 
     <profiles>
+        <!-- This profile uses the Maven shade plugin to create a special "dist" package
+                that does not contain Spark etc. -->
         <profile>
             <id>dist</id>
             <activation>
@@ -367,8 +369,6 @@
                     <name>dist</name>
                 </property>
             </activation>
-            <!-- This profile uses the assembly plugin to create a special "dist" package for BigTop
-                 that contains Spark but not the Hadoop JARs it depends on. -->
             <build>
                 <plugins>
                     <!--<plugin>-->
