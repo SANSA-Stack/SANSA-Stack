@@ -7,7 +7,7 @@ import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.utils.RDFTripleOrdering
+import net.sansa_stack.inference.utils.{RDFTripleOrdering, RDFTripleToNTripleString}
 import org.slf4j.LoggerFactory
 
 /**
@@ -54,7 +54,7 @@ object RDFGraphWriter {
               }
 
     // convert to N-Triple format
-    var triplesNTFormat = tmp.map(t => "<" + t.subject + "> <" + t.predicate + "> <" + t.`object` + "> .")
+    var triplesNTFormat = tmp.map(new RDFTripleToNTripleString())
 
     // convert to single file, i.e. move al lto one partition
     // (might be very expensive and contradicts the Big Data paradigm on Hadoop in general)
@@ -73,8 +73,7 @@ object RDFGraphWriter {
   }
 
   def convertToModel(graph: RDFGraph) : Model = {
-    val modelString = graph.triples.map(t =>
-      "<" + t.subject + "> <" + t.predicate + "> <" + t.`object` + "> .") // to N-TRIPLES string
+    val modelString = graph.triples.map(new RDFTripleToNTripleString())
       .collect().mkString("\n")
 
     val model = ModelFactory.createDefaultModel()
