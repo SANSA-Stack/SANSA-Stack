@@ -64,7 +64,6 @@ object MineRules {
     }
 
     def ruleMining(sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[RuleContainer] = {
-  
 
       val fs: FileSystem = FileSystem.get(new URI("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/"), sc.hadoopConfiguration);
       fs.delete(new Path("/Theresa/permanent0/"), true)
@@ -94,59 +93,52 @@ object MineRules {
       }
 
       var outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]] = Map()
-     
+
       var dataFrameRuleParts: RDD[(RDFTriple, Int, Int)] = null
       var out: ArrayBuffer[RuleContainer] = new ArrayBuffer
-	  var dublicate: ArrayBuffer[String]= ArrayBuffer("")
-	  
-      for (i <- 0 to this.maxLen - 1) {
+      var dublicate: ArrayBuffer[String] = ArrayBuffer("")
 
-        
+      for (i <- 0 to this.maxLen - 1) {
 
         if ((i > 0) && (dataFrameRuleParts != null)) {
           var temp = q.clone
 
           q = new ArrayBuffer
 
-
-
           var newAtoms1 = dataFrameRuleParts.collect
 
           for (n1 <- newAtoms1) {
 
-			var newRuleC = new RuleContainer   
-			var parent = temp(n1._3)
-			var newTpArr = parent.getRule().clone
-       
-			newTpArr += n1._1
-			var fstTp = newTpArr(0).toString()
-			var counter = 1
-			var sortedNewTpArr = new ArrayBuffer[RDFTriple]
-       
-			if (newTpArr.length >2){
-				sortedNewTpArr = sort(newTpArr.clone)
-			}
-			else {
-				sortedNewTpArr = newTpArr.clone
-			}
-       
-			var dubCheck = fstTp
-       
-       
-			for (i <-1 to newTpArr.length-1){
-				var temp = newTpArr(i).toString
-				dubCheck += sortedNewTpArr(i).toString
-				if (temp == fstTp){
-					counter += 1
-				}
-			}
-			if  ((counter < newTpArr.length)&&(!(dublicate.contains(dubCheck)))){
-				dublicate += dubCheck
-				newRuleC.setRule(minConf,n1._2, parent, newTpArr, sortedNewTpArr, kb, sc, sqlContext)
-				q += newRuleC
-			}
-       
-       
+            var newRuleC = new RuleContainer
+            var parent = temp(n1._3)
+            var newTpArr = parent.getRule().clone
+
+            newTpArr += n1._1
+            var fstTp = newTpArr(0).toString()
+            var counter = 1
+            var sortedNewTpArr = new ArrayBuffer[RDFTriple]
+
+            if (newTpArr.length > 2) {
+              sortedNewTpArr = sort(newTpArr.clone)
+            } else {
+              sortedNewTpArr = newTpArr.clone
+            }
+
+            var dubCheck = fstTp
+
+            for (i <- 1 to newTpArr.length - 1) {
+              var temp = newTpArr(i).toString
+              dubCheck += sortedNewTpArr(i).toString
+              if (temp == fstTp) {
+                counter += 1
+              }
+            }
+            if ((counter < newTpArr.length) && (!(dublicate.contains(dubCheck)))) {
+              dublicate += dubCheck
+              newRuleC.setRule(minConf, n1._2, parent, newTpArr, sortedNewTpArr, kb, sc, sqlContext)
+              q += newRuleC
+            }
+
           }
 
         } else if ((i > 0) && (dataFrameRuleParts.isEmpty())) {
@@ -157,16 +149,16 @@ object MineRules {
           for (j <- 0 to q.length - 1) {
 
             val r: RuleContainer = q(j)
-			
-			var tp = r.getRule()
-			if (tp.length>2){
-				tp = r.getSortedRule()
-        
-			}
-			
+
+            var tp = r.getRule()
+            if (tp.length > 2) {
+              tp = r.getSortedRule()
+
+            }
+
             if (acceptedForOutput(outMap, r, minConf, kb, sc, sqlContext)) {
               out += r
-              
+
               if (!(outMap.contains(tp(0).predicate))) {
                 outMap += (tp(0).predicate -> ArrayBuffer((tp, r)))
               } else {
@@ -315,102 +307,94 @@ object MineRules {
 
     def acceptedForOutput(outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]], r: RuleContainer, minConf: Double, k: KB, sc: SparkContext, sqlContext: SQLContext): Boolean = {
 
-		if ((!(r.closed())) || (r.getPcaConfidence(k, sc, sqlContext) < minConf)) {
-			return false
+      //if ((!(r.closed())) || (r.getPcaConfidence(k, sc, sqlContext) < minConf)) {
+      if ((!(r.closed())) || (r.getPcaConfidence() < minConf)) {
+        return false
 
-		}
+      }
 
-		var parents:ArrayBuffer[RuleContainer] = r.parentsOfRule(outMap, sc)
-		if (r.getRule.length>2){
-			for (rp <- parents){
-				if (r.getPcaConfidence() <= rp.getPcaConfidence()){
-					return false
-				}
-     
-			}
-		}
+      var parents: ArrayBuffer[RuleContainer] = r.parentsOfRule(outMap, sc)
+      if (r.getRule.length > 2) {
+        for (rp <- parents) {
+          if (r.getPcaConfidence() <= rp.getPcaConfidence()) {
+            return false
+          }
+
+        }
+      }
 
       return true
     }
 
-	   def sort(tp:ArrayBuffer[RDFTriple]):ArrayBuffer[RDFTriple]={
-           var out = ArrayBuffer(tp(0))
-           var temp = new ArrayBuffer[Tuple2[String, RDFTriple]]
-   
-           for (i <-1 to tp.length-1){
-             var tempString:String =tp(i).predicate + tp(i).subject + tp(i).`object`
-             temp += Tuple2(tempString,tp(i))
-     
-           }
-           temp = temp.sortBy(_._1)
-           for (t<-temp){
-             out += t._2
-           }
-   
-           return out
-        }
-	
-	
+    def sort(tp: ArrayBuffer[RDFTriple]): ArrayBuffer[RDFTriple] = {
+      var out = ArrayBuffer(tp(0))
+      var temp = new ArrayBuffer[Tuple2[String, RDFTriple]]
+
+      for (i <- 1 to tp.length - 1) {
+        var tempString: String = tp(i).predicate + tp(i).subject + tp(i).`object`
+        temp += Tuple2(tempString, tp(i))
+
+      }
+      temp = temp.sortBy(_._1)
+      for (t <- temp) {
+        out += t._2
+      }
+
+      return out
+    }
+
   }
 
   def main(args: Array[String]) = {
- val know = new KB()
- 
-   val sparkSession = SparkSession.builder
+    val know = new KB()
 
-    .master("local[*]")
-    .appName("AMIESpark example")
-       
-    .getOrCreate()
+    val sparkSession = SparkSession.builder
 
-  if (args.length < 2) {
+      .master("local[*]")
+      .appName("AMIESpark example")
+
+      .getOrCreate()
+
+    if (args.length < 2) {
       System.err.println(
         "Usage: Triple reader <input> <output>")
       System.exit(1)
     }
-  
-    
-  val input = args(0)  
-  val outputPath:String = args(1)
-  val hdfsPath:String = outputPath+"/"
-  
-   
-    
-    
-  val sc = sparkSession.sparkContext
-  val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
-  
-  know.sethdfsPath(hdfsPath)
-  know.setKbSrc(input)
-  
-  know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))
-  know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2)  )
-  
-  val algo = new Algorithm (know, 0.01, 3, 0.1, hdfsPath)
+    val input = args(0)
+    val outputPath: String = args(1)
+    val hdfsPath: String = outputPath + "/"
 
-    
+    val sc = sparkSession.sparkContext
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+
+    know.sethdfsPath(hdfsPath)
+    know.setKbSrc(input)
+
+    know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))
+    know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2))
+
+    val algo = new Algorithm(know, 0.01, 3, 0.1, hdfsPath)
+
     var output = algo.ruleMining(sc, sqlContext)
-    
-      var outString = output.map{x => 
-     var rdfTrp = x.getRule()
-     var temp = ""
-     for (i <-0 to rdfTrp.length-1){
-       if (i==0){
-         temp = rdfTrp(i) + " <= "
-       }
-       else{
-         temp += rdfTrp(i)+ " \u2227 "
-       }
-     }
-    temp =  temp.stripSuffix(" \u2227 ")
-    temp
-   }.toSeq
-   var rddOut = sc.parallelize(outString)
-    
-    
-   rddOut.saveAsTextFile(outputPath +"/testOut")
-  
+
+    var outString = output.map { x =>
+      var rdfTrp = x.getRule()
+      var temp = ""
+      for (i <- 0 to rdfTrp.length - 1) {
+        if (i == 0) {
+          temp = rdfTrp(i) + " <= "
+        } else {
+          temp += rdfTrp(i) + " \u2227 "
+        }
+      }
+      temp = temp.stripSuffix(" \u2227 ")
+      temp
+    }.toSeq
+    var rddOut = sc.parallelize(outString)
+
+    rddOut.saveAsTextFile(outputPath + "/testOut")
+
     sc.stop
 
   }
