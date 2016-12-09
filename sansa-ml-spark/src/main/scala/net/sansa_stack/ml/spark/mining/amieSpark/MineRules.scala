@@ -65,10 +65,6 @@ object MineRules {
 
     def ruleMining(sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[RuleContainer] = {
 
-      val fs: FileSystem = FileSystem.get(new URI("hdfs://akswnc5.informatik.uni-leipzig.de:54310/Theresa/"), sc.hadoopConfiguration);
-      fs.delete(new Path("/Theresa/permanent0/"), true)
-      fs.delete(new Path("/Theresa/permanent1/"), true)
-
       var predicates = kb.getKbGraph().triples.map { x => x.predicate
 
       }.distinct
