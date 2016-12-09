@@ -67,6 +67,8 @@
 	</dependencies>
 
 	<build>
+		<!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
+		<!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -84,91 +86,70 @@
 					</execution>
 				</executions>
 			</plugin>
+
+
+			<!-- disable surefire -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.3</version>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<useFile>false</useFile>
+					<disableXmlReport>true</disableXmlReport>
+					<!--<forkCount>1</forkCount>-->
+					<!--<reuseForks>false</reuseForks>-->
+
+					<!-- If you have classpath issue like NoDefClassError,... -->
+					<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+					<threadCountSuites>4</threadCountSuites>
+					<includes>
+						<include>**/*Test.*</include>
+						<include>**/*Suite.*</include>
+					</includes>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+
+			<!-- Adding scala source directories to build path -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.12</version>
 				<executions>
+					<!-- Add src/main/scala to eclipse build path -->
 					<execution>
-						<phase>package</phase>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
 						<goals>
-							<goal>shade</goal>
+							<goal>add-source</goal>
 						</goals>
 						<configuration>
-							<artifactSet>
-								<excludes>
-									<exclude>com.esotericsoftware.kryo:kryo</exclude>
-									<exclude>com.esotericsoftware.minlog:minlog</exclude>
-									<exclude>com.fasterxml.jackson.core:jackson*</exclude>
-									<exclude>com.github.scopt:scopt_2.11</exclude>
-									<exclude>com.google.code.findbugs:jsr305</exclude>
-									<exclude>com.google.protobuf:protobuf-java</exclude>
-									<exclude>com.jamesmurty.utils:java-xmlbuilder</exclude>
-									<exclude>com.jcraft:jsch</exclude>
-									<exclude>com.sun.jersey:jersey-core</exclude>
-									<exclude>com.thoughtworks.paranamer:paranamer</exclude>
-									<exclude>com.typesafe:config</exclude>
-									<exclude>com.typesafe.akka:*</exclude>
-									<exclude>com.twitter:chill_2.11</exclude>
-									<exclude>commons-beanutils:commons-beanutils-bean-collections</exclude>
-									<exclude>commons-cli:commons-cli</exclude>
-									<exclude>commons-codec:commons-codec</exclude>
-									<exclude>commons-configuration:commons-configuration</exclude>
-									<exclude>commons-daemon:commons-daemon</exclude>
-									<exclude>commons-digester:commons-digester</exclude>
-									<exclude>commons-el:commons-el</exclude>
-									<exclude>commons-lang:commons-lang</exclude>
-									<exclude>commons-logging:commons-logging</exclude>
-									<exclude>commons-net:commons-net</exclude>
-									<exclude>commons-collections:commons-collections</exclude>
-									<exclude>io.netty:netty*</exclude>
-									<exclude>io.dropwizard.metrics:metrics*</exclude>
-									<exclude>javax.activation:activation</exclude>
-									<exclude>javax.servlet:servlet-api</exclude>
-									<exclude>javax.xml.bind:jaxb-api</exclude>
-									<exclude>javax.xml.stream:stax-api</exclude>
-									<exclude>jline:jline</exclude>
-									<exclude>junit:junit</exclude>
-									<exclude>org.apache.avro:avro</exclude>
-									<exclude>org.apache.commons:commons-compress</exclude>
-									<exclude>org.apache.commons:commons-lang3</exclude>
-									<exclude>org.apache.commons:commons-math3</exclude>
-									<exclude>org.apache.flink:*</exclude>
-									<exclude>org.apache.zookeeper:zookeeper</exclude>
-									<exclude>org.clapper:grizzled-slf4j_2.11</exclude>
-									<exclude>org.codehaus.jackson:jackson-*</exclude>
-									<exclude>org.javassist:javassist</exclude>
-									<exclude>org.mortbay.jetty:jetty-util</exclude>
-									<exclude>org.objenesis:objenesis</exclude>
-									<exclude>org.scala-lang:*</exclude>
-									<exclude>org.uncommons.maths:uncommons-maths</exclude>
-									<exclude>org.xerial.snappy:snappy-java</exclude>
-									<exclude>xmlenc:xmlenc</exclude>
-								</excludes>
-							</artifactSet>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<sources>
+								<source>src/main/scala</source>
+							</sources>
+						</configuration>
+					</execution>
+					<!-- Add src/test/scala to eclipse build path -->
+					<execution>
+						<id>add-test-source</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>add-test-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/test/scala</source>
+							</sources>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
-
 	<profiles>
 		<profile>
-			<!-- A profile that does everything correctly: We set the Flink dependencies 
-				to provided -->
+			<!-- A profile that does everything correctly:
+			We set the Flink dependencies to provided -->
 			<id>build-jar</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
@@ -190,6 +171,162 @@
 					<scope>provided</scope>
 				</dependency>
 			</dependencies>
+		</profile>
+		<profile>
+		<id>dist</id>
+		<activation>
+			<property>
+				<name>dist</name>
+			</property>
+		</activation>
+		<!-- This profile uses the assembly plugin to create a special "dist" package for BigTop
+             that contains Spark but not the Hadoop JARs it depends on. -->
+		<build>
+			<plugins>
+			<!-- We use the maven-shade plugin to create a fat jar that contains all dependencies
+		except flink and it's transitive dependencies. The resulting fat-jar can be executed
+		on a cluster. Change the value of Program-Class if your program entry point changes. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.1</version>
+				<executions>
+					<!-- Run shade goal on package phase -->
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<minimizeJar>true</minimizeJar>
+							<artifactSet>
+								<excludes>
+									<!-- This list contains all dependencies of flink-dist
+									Everything else will be packaged into the fat-jar
+									-->
+									<exclude>org.apache.flink:flink-shaded-*_2.11</exclude>
+									<exclude>org.apache.flink:flink-core_2.11</exclude>
+									<exclude>org.apache.flink:flink-java*</exclude>
+									<exclude>org.apache.flink:flink-java_2.11</exclude>
+									<exclude>org.apache.flink:flink-scala_2.11</exclude>
+									<exclude>org.apache.flink:flink-runtime_2.11</exclude>
+									<exclude>org.apache.flink:flink-optimizer_2.11</exclude>
+									<exclude>org.apache.flink:flink-clients_2.11</exclude>
+									<exclude>org.apache.flink:flink-avro_2.11</exclude>
+									<exclude>org.apache.flink:flink-java-examples_2.11</exclude>
+									<exclude>org.apache.flink:flink-scala-examples_2.11</exclude>
+									<exclude>org.apache.flink:flink-streaming-examples_2.11</exclude>
+									<exclude>org.apache.flink:flink-streaming-java_2.11</exclude>
+
+									<!-- Also exclude very big transitive dependencies of Flink
+
+									WARNING: You have to remove these excludes if your code relies on other
+									versions of these dependencies.
+
+									-->
+
+									<exclude>org.scala-lang:scala-library</exclude>
+									<exclude>org.scala-lang:scala-compiler</exclude>
+									<exclude>org.scala-lang:scala-reflect</exclude>
+									<exclude>com.amazonaws:aws-java-sdk</exclude>
+									<exclude>com.typesafe.akka:akka-actor_*</exclude>
+									<exclude>com.typesafe.akka:akka-remote_*</exclude>
+									<exclude>com.typesafe.akka:akka-slf4j_*</exclude>
+									<exclude>io.netty:netty-all</exclude>
+									<exclude>io.netty:netty</exclude>
+									<exclude>org.eclipse.jetty:jetty-server</exclude>
+									<exclude>org.eclipse.jetty:jetty-continuation</exclude>
+									<exclude>org.eclipse.jetty:jetty-http</exclude>
+									<exclude>org.eclipse.jetty:jetty-io</exclude>
+									<exclude>org.eclipse.jetty:jetty-util</exclude>
+									<exclude>org.eclipse.jetty:jetty-security</exclude>
+									<exclude>org.eclipse.jetty:jetty-servlet</exclude>
+									<exclude>org.gephi:*</exclude>
+									<exclude>org.netbeans.api:*</exclude>
+
+									<exclude>commons-fileupload:commons-fileupload</exclude>
+									<exclude>org.apache.avro:avro</exclude>
+									<exclude>commons-collections:commons-collections</exclude>
+									<exclude>org.codehaus.jackson:jackson-core-asl</exclude>
+									<exclude>org.codehaus.jackson:jackson-mapper-asl</exclude>
+									<exclude>com.thoughtworks.paranamer:paranamer</exclude>
+									<exclude>org.xerial.snappy:snappy-java</exclude>
+									<exclude>org.apache.commons:commons-compress</exclude>
+									<exclude>org.tukaani:xz</exclude>
+									<exclude>com.esotericsoftware.kryo:kryo</exclude>
+									<exclude>com.esotericsoftware.minlog:minlog</exclude>
+									<exclude>org.objenesis:objenesis</exclude>
+									<exclude>com.twitter:chill_*</exclude>
+									<exclude>com.twitter:chill-java</exclude>
+									<exclude>com.twitter:chill-avro_*</exclude>
+									<exclude>com.twitter:chill-bijection_*</exclude>
+									<exclude>com.twitter:bijection-core_*</exclude>
+									<exclude>com.twitter:bijection-avro_*</exclude>
+									<exclude>commons-lang:commons-lang</exclude>
+									<exclude>junit:junit</exclude>
+									<exclude>de.javakaffee:kryo-serializers</exclude>
+									<exclude>joda-time:joda-time</exclude>
+									<exclude>org.apache.commons:commons-lang3</exclude>
+									<exclude>org.slf4j:slf4j-api</exclude>
+									<exclude>org.slf4j:slf4j-log4j12</exclude>
+									<exclude>log4j:log4j</exclude>
+									<exclude>org.apache.commons:commons-math</exclude>
+									<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>
+									<exclude>commons-logging:commons-logging</exclude>
+									<exclude>org.apache.httpcomponents:httpclient</exclude>
+									<exclude>org.apache.httpcomponents:httpcore</exclude>
+									<exclude>commons-codec:commons-codec</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-core</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>
+									<exclude>org.codehaus.jettison:jettison</exclude>
+									<exclude>stax:stax-api</exclude>
+									<exclude>com.typesafe:config</exclude>
+									<exclude>org.uncommons.maths:uncommons-maths</exclude>
+									<!--<exclude>com.github.scopt:scopt_*</exclude>-->
+									<exclude>org.mortbay.jetty:servlet-api</exclude>
+									<exclude>commons-io:commons-io</exclude>
+									<exclude>commons-cli:commons-cli</exclude>
+
+									<exclude>sqlite:*</exclude>
+									<exclude>netbeans:*</exclude>
+									<exclude>org.apache.xmlgraphics:*</exclude>
+									<exclude>mysql:*</exclude>
+								</excludes>
+							</artifactSet>
+							<filters>
+								<filter>
+									<artifact>org.apache.flink:*</artifact>
+									<excludes>
+										<exclude>org/apache/flink/shaded/**</exclude>
+										<exclude>web-docs/**</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<!-- Do not copy the signatures in the META-INF folder.
+									Otherwise, this might cause SecurityExceptions when using the JAR. -->
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<finalName>dist-${project.artifactId}-${project.version}</finalName>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<relocations>
+								<relocation>
+									<pattern>scopt</pattern>
+									<shadedPattern>scopt.shaded</shadedPattern>
+								</relocation>
+							</relocations>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+			</build>
 		</profile>
 	</profiles>
 	<repositories>
