@@ -7,3 +7,6 @@
 
 ex:x1
       owl:sameAs ex:x2 .
+
+      ex:x2
+            owl:sameAs ex:x1 .

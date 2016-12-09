@@ -8,3 +8,7 @@
 ex:p1
       owl:equivalentProperty
               ex:p2 .
+
+              ex:p2
+                    owl:equivalentProperty
+                            ex:p1 .

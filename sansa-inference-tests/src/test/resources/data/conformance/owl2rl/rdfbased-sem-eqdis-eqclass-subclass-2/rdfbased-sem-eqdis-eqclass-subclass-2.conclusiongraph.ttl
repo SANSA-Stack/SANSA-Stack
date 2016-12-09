@@ -7,3 +7,6 @@
 
 ex:c1
       owl:equivalentClass ex:c2 .
+
+      ex:c2
+            owl:equivalentClass ex:c1 .

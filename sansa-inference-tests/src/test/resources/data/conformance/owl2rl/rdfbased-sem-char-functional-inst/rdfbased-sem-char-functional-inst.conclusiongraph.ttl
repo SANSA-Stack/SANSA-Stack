@@ -7,3 +7,6 @@
 
 ex:y1
       owl:sameAs ex:y2 .
+
+      ex:y2
+            owl:sameAs ex:y1 .
