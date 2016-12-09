@@ -97,7 +97,8 @@ object MineRules {
      
       var dataFrameRuleParts: RDD[(RDFTriple, Int, Int)] = null
       var out: ArrayBuffer[RuleContainer] = new ArrayBuffer
-
+	  var dublicate: ArrayBuffer[String]= ArrayBuffer("")
+	  
       for (i <- 0 to this.maxLen - 1) {
 
         
