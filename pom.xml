@@ -141,6 +141,62 @@
 				<version>19.0</version>
 			</dependency>
 
+			<!-- RDF Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark-bundle</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+			<!-- OWL Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-spark</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-flink</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+
+			<!-- Query Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-spark-bundle</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+
+
+			<!-- Inference Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-parent_${scala.binary.version}</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+
+			<!-- ML Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-spark</artifactId>
+				<version>0.1.0</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -227,6 +283,28 @@
 			<id>apache-snapshot</id>
 			<name>Apache repository (snapshots)</name>
 			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
