@@ -5,6 +5,7 @@ import java.io.File
 import org.apache.jena.rdf.model.Model
 import org.junit.runner.RunWith
 import net.sansa_stack.inference.data.RDFTriple
+import org.apache.jena.sparql.util.FmtUtils
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
@@ -40,7 +41,8 @@ abstract class ConformanceTestBase extends FlatSpec with BeforeAndAfterAll {
       val iterator = testCase.inputGraph.listStatements()
       while(iterator.hasNext) {
         val st = iterator.next()
-        triples.add(RDFTriple(st.getSubject.toString, st.getPredicate.toString, st.getObject.toString))
+        triples.add(RDFTriple(st.getSubject.toString, st.getPredicate.toString,
+          if(st.getObject.isLiteral) FmtUtils.stringForNode(st.getObject.asNode()) else st.getObject.toString))
       }
 
       // compute inferred graph
