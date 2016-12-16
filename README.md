@@ -81,7 +81,7 @@ with `VERSION` beeing the released version you want to use.
   </snapshots>
 </repository>
 ```
-'2'. Add dependency to your pom.xml
+2\. Add dependency to your pom.xml
 
 For Apache Spark
 ```xml
