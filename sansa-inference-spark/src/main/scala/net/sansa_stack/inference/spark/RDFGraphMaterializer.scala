@@ -33,6 +33,8 @@ object RDFGraphMaterializer {
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
 
+    val parallelism = 8
+
     // the SPARK config
     val session = SparkSession.builder
       .appName(s"SPARK $profile Reasoning")
@@ -40,19 +42,19 @@ object RDFGraphMaterializer {
       .config("spark.eventLog.enabled", "true")
       .config("spark.hadoop.validateOutputSpecs", "false") //override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.default.parallelism", "4")
+      .config("spark.default.parallelism", parallelism)
       .config(conf)
       .getOrCreate()
 
     // load triples from disk
-    val graph = RDFGraphLoader.loadFromDisk(input, session.sparkContext, 4)
-    println(s"|G| = ${graph.size()}")
+    val graph = RDFGraphLoader.loadFromDisk(input, session, parallelism)
+//    println(s"|G| = ${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
-      case RDFS => new ForwardRuleReasonerRDFS(session.sparkContext)
+      case RDFS => new ForwardRuleReasonerRDFS(session.sparkContext, parallelism)
       case RDFS_SIMPLE => {
-        val r = new ForwardRuleReasonerRDFS(session.sparkContext)
+        val r = new ForwardRuleReasonerRDFS(session.sparkContext, parallelism)
         r.level = RDFSLevel.SIMPLE
         r
       }
@@ -61,7 +63,7 @@ object RDFGraphMaterializer {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    println(s"|G_inf| = ${inferredGraph.size()}")
+//    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
     RDFGraphWriter.writeGraphToFile(inferredGraph, output.getAbsolutePath, writeToSingleFile, sortedOutput)

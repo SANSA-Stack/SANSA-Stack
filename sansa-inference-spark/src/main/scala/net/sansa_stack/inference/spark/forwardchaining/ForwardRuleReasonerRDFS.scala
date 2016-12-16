@@ -19,7 +19,7 @@ import scala.collection.mutable
   * @param sc the Apache Spark context
   * @author Lorenz Buehmann
   */
-class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
+class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends ForwardRuleReasoner{
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
@@ -136,7 +136,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
                           typeTriples,
                           triplesRDFS7,
                           triplesRDFS9))
-                        .distinct()
+                        .distinct(parallelism)
 
     // we perform also additional rules if enabled
     if(level != SIMPLE) {
@@ -172,7 +172,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext) extends ForwardRuleReasoner{
 
       val additionalTripleRDDs = mutable.Seq(rdfs4, rdfs6, rdfs8_10)
 
-      allTriples = sc.union(Seq(allTriples) ++ additionalTripleRDDs).distinct()
+      allTriples = sc.union(Seq(allTriples) ++ additionalTripleRDDs).distinct(parallelism)
     }
 
     logger.info("...finished materialization in " + (System.currentTimeMillis() - startTime) + "ms.")
