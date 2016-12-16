@@ -2,14 +2,13 @@ package net.sansa_stack.inference.spark.data
 
 import java.io.File
 
+import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.inference.data.RDFTriple
-import org.apache.spark.rdd.RDD
 import org.slf4j.LoggerFactory
 
 /**
-  * Loads an RDF graph from disk or a set of triples.
+  * Load an RDF graph from disk.
   *
   * @author Lorenz Buehmann
   *
@@ -18,39 +17,68 @@ object RDFGraphLoader {
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
-  def loadFromFile(path: String, sc: SparkContext, minPartitions: Int = 2): RDFGraph = {
+  /**
+    * Load an RDF graph from a file or directory. The path can also contain multiple paths
+    * and even wildcards, e.g.
+    * "/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"
+    *
+    * @param path the absolute path of the file
+    * @param session the Spark session
+    * @param minPartitions min number of partitions for Hadoop RDDs ([[SparkContext.defaultMinPartitions]])
+    * @return an RDF graph
+    */
+  def loadFromFile(path: String, session: SparkSession, minPartitions: Int = 2): RDFGraph = {
     logger.info("loading triples from disk...")
     val startTime  = System.currentTimeMillis()
 
-    val triples =
-      sc.textFile(path, minPartitions)
-        .map(line => line.replace(">", "").replace("<", "").split("\\s+")) // line to tokens
-        .map(tokens => RDFTriple(tokens(0), tokens(1), tokens(2))) // tokens to triple
+    val triples = session.sparkContext
+      .textFile(path, minPartitions) // read the text file
+      .map(new NTriplesStringToRDFTriple()) // convert to triple object
 
 //    logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
     new RDFGraph(triples)
   }
 
-  def loadFromDisk(paths: Seq[File], sc: SparkContext, minPartitions: Int = 2): RDFGraph = {
+  /**
+    * Load an RDF graph from multiple files.
+    *
+    * @param paths the files
+    * @param session the Spark session
+    * @param minPartitions min number of partitions for Hadoop RDDs ([[SparkContext.defaultMinPartitions]])
+    * @return an RDF graph
+    */
+  def loadFromDisk(paths: Seq[File], session: SparkSession, minPartitions: Int = 2): RDFGraph = {
     logger.info("loading triples from disk...")
     val startTime  = System.currentTimeMillis()
 
-    val triples = sc.textFile(paths.map(p => p.getAbsolutePath).mkString(","))
-      .map(line => line.replace(">", "").replace("<", "").split("\\s+")) // line to tokens
-       .map(tokens => RDFTriple(tokens(0), tokens(1), tokens(2))).cache() // tokens to triple
+    val pathsConcat = paths.map(p => p.getAbsolutePath).mkString(",") // make concatenated string of paths
+
+    val triples = session.sparkContext
+      .textFile(pathsConcat, minPartitions) // read the text files
+      .map(new NTriplesStringToRDFTriple()) // convert to triple object
+//      .repartition(minPartitions)
 
     //    logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
     new RDFGraph(triples)
   }
 
+  /**
+    * Load an RDF graph from a file or directory. The path can also contain multiple paths
+    * and even wildcards, e.g.
+    * "/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"
+    *
+    * @param path the files
+    * @param session the Spark session
+    * @param minPartitions min number of partitions for Hadoop RDDs ([[SparkContext.defaultMinPartitions]])
+    * @return an RDF graph
+    */
   def loadGraphFromFile(path: String, session: SparkSession, minPartitions: Int = 2): RDFGraphNative = {
     logger.info("loading triples from disk...")
     val startTime  = System.currentTimeMillis()
 
-    val triples =
-      session.sparkContext.textFile(path, minPartitions)
-        .map(line => line.replace(">", "").replace("<", "").split("\\s+")) // line to tokens
-        .map(tokens => RDFTriple(tokens(0), tokens(1), tokens(2))) // tokens to triple
+    val triples = session.sparkContext
+      .textFile(path, minPartitions) // read the text file
+      .map(new NTriplesStringToRDFTriple()) // convert to triple object
 
 //    logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
     new RDFGraphNative(triples)

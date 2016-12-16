@@ -61,7 +61,7 @@ object RDDVsDataframeExperiments extends Profiler{
 
   def computeRDD(sourcePath: String): RDFGraph = {
     // load triples from disk
-    val graph = RDFGraphLoader.loadFromFile(sourcePath, session.sparkContext, 4)
+    val graph = RDFGraphLoader.loadFromFile(sourcePath, session, 4)
 
     // create reasoner
     val reasoner = new ForwardRuleReasonerRDFS(session.sparkContext)
