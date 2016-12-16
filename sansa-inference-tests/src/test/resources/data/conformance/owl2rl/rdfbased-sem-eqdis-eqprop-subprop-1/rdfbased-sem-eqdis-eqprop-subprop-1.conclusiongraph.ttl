@@ -10,3 +10,7 @@ ex:p2
 
 ex:p1
       rdfs:subPropertyOf ex:p2 .
+
+ex:p2
+      owl:equivalentProperty
+              ex:p1 .

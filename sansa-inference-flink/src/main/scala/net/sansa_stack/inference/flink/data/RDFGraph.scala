@@ -4,6 +4,7 @@ import net.sansa_stack.inference.flink.utils.DataSetUtils
 import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.jena.graph.Triple
 import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
 
 /**
   * A data structure that comprises a set of triples.
@@ -59,7 +60,7 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
     * @return the difference of both graphs
     */
   def subtract(other: RDFGraph): RDFGraph = {
-    RDFGraph(DataSetUtils.subtract(this.triples, other.triples))
+    RDFGraph(triples.subtract(other.triples))
   }
 
   /**

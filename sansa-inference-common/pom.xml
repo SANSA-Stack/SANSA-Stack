@@ -2,12 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>sansa-inference-parent</artifactId>
+    <artifactId>sansa-inference-parent_2.11</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>sansa-inference-common</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <groupId>net.sansa-stack</groupId>
+  <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
+  <version>0.1.1-SNAPSHOT</version>
   <name>Inference API - Common</name>
   <description>A set of common objects used in the Inference API</description>
 
@@ -81,6 +83,8 @@
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
+    <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
+    <!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
     <plugins>
       <plugin>
         <!-- see http://davidb.github.com/scala-maven-plugin -->

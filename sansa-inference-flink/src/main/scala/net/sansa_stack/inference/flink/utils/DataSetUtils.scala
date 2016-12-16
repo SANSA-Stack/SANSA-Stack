@@ -14,8 +14,24 @@ import scala.reflect.ClassTag
   */
 object DataSetUtils {
 
-  def subtract[T: ClassTag: TypeInformation](first: DataSet[T], second: DataSet[T]): DataSet[T] = {
-    first.coGroup(second).where("*").equalTo("*")(new MinusCoGroupFunction[T](true)).name("subtract")
+  implicit class DataSetOps[T: ClassTag : TypeInformation](dataset: DataSet[T]) {
+
+    /**
+      * Splits an RDD into two parts based on the given filter function. Note, that filtering is done twice on the same
+      * data twice, thus, caching beforehand is recommended!
+      *
+      * @param f the boolean filter function
+      * @return two RDDs
+      */
+    def partitionBy(f: T => Boolean): (DataSet[T], DataSet[T]) = {
+      val passes = dataset.filter(f)
+      val fails = dataset.filter(e => !f(e)) // Flink doesn't have filterNot
+      (passes, fails)
+    }
+
+    def subtract(other: DataSet[T]): DataSet[T] = {
+      dataset.coGroup(other).where("*").equalTo("*")(new MinusCoGroupFunction[T](true)).name("subtract")
+    }
   }
 
 }

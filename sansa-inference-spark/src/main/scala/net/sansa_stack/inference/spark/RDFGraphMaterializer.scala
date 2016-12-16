@@ -3,8 +3,8 @@ package net.sansa_stack.inference.spark
 import java.io.File
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.rules.ReasoningProfile
 import net.sansa_stack.inference.rules.ReasoningProfile._
+import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.spark.data.{RDFGraphLoader, RDFGraphWriter}
 import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
 import org.apache.spark.SparkConf
@@ -46,16 +46,22 @@ object RDFGraphMaterializer {
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromDisk(input, session.sparkContext, 4)
+    println(s"|G| = ${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
       case RDFS => new ForwardRuleReasonerRDFS(session.sparkContext)
+      case RDFS_SIMPLE => {
+        val r = new ForwardRuleReasonerRDFS(session.sparkContext)
+        r.level = RDFSLevel.SIMPLE
+        r
+      }
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(session.sparkContext)
     }
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    print(inferredGraph.size())
+    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
     RDFGraphWriter.writeGraphToFile(inferredGraph, output.getAbsolutePath, writeToSingleFile, sortedOutput)
@@ -93,7 +99,7 @@ object RDFGraphMaterializer {
     opt[Unit]("sorted").optional().action( (_, c) =>
       c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
 
-    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | owl-horst | owl-el | owl-rl}").
+    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | rdfs-simple | owl-horst}").
       action((x, c) => c.copy(profile = x)).
       text("the reasoning profile")
 

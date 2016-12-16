@@ -1,5 +1,6 @@
 package net.sansa_stack.inference.flink
 
+import java.util
 import java.util.Comparator
 
 import com.google.common.collect.ComparisonChain
@@ -49,7 +50,7 @@ class RDFGraphTestCase(mode: TestExecutionMode) extends MultipleProgramsTestBase
       RDFTriple("s1", "p1", "o3")
     )
 
-    TestBaseUtils.compareResultCollections(result.asJava, expected.asJava, new Comparator[RDFTriple] {
+    TestBaseUtils.compareResultCollections(new util.ArrayList(result.asJava), new util.ArrayList(expected.asJava), new Comparator[RDFTriple] {
       override def compare(t1: RDFTriple, t2: RDFTriple): Int =
         ComparisonChain.start()
           .compare(t1.s, t2.s)

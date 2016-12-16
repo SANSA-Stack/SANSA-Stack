@@ -1,20 +1,11 @@
 package net.sansa_stack.inference.spark
 
-import java.io.File
-
-import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
-import org.apache.commons.io.IOUtils
-import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.spark.sql.SparkSession
-
-import scala.collection.JavaConverters._
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-
 /**
   * @author Lorenz Buehmann
   */
+
 object QueryLayerIntegration {
-  def main(args: Array[String]): Unit = {
+/*  def main(args: Array[String]): Unit = {
     val tempDirStr = System.getProperty("java.io.tmpdir")
     if(tempDirStr == null) {
       throw new RuntimeException("Could not obtain temporary directory")
@@ -56,5 +47,5 @@ object QueryLayerIntegration {
     partitions.foreach(p => println(p._1))
   }
 
-
+*/
 }

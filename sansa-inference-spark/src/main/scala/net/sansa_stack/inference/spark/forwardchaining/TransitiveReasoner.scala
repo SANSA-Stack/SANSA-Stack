@@ -50,6 +50,8 @@ trait TransitiveReasoner extends Profiler{
     * @return an RDD containing the transitive closure of the triples
     */
   def computeTransitiveClosure(triples: RDD[RDFTriple]): RDD[RDFTriple] = {
+    if (triples.isEmpty()) return triples
+
     // get the predicate
     val predicate = triples.take(1)(0).predicate
 

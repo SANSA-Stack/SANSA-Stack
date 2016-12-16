@@ -22,11 +22,13 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-inference-parent</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
+		<artifactId>sansa-inference-parent_2.11</artifactId>
+		<version>0.1.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>sansa-inference-flink</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<groupId>net.sansa-stack</groupId>
+	<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>Inference API - Flink</name>
 	<description>Apache Flink based inference layer for RDF and OWL</description>
@@ -34,12 +36,12 @@ under the License.
 	<dependencies>
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-inference-common</artifactId>
+			<artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
 			<version>${parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-inference-tests</artifactId>
+			<artifactId>sansa-inference-tests_${scala.binary.version}</artifactId>
 			<version>${parent.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
@@ -98,9 +100,11 @@ under the License.
 		</dependency>
 
 		<!-- Scopt -->
+		<!-- Flink Distribution uses 3.2.0 which leads to conflicts with newer versions -->
 		<dependency>
 			<groupId>com.github.scopt</groupId>
 			<artifactId>scopt_${scala.binary.version}</artifactId>
+			<version>3.2.0</version>
 		</dependency>
 
 	</dependencies>
@@ -111,139 +115,9 @@ under the License.
 		except flink and its transitive dependencies. The resulting fat-jar can be executed
 		on a cluster. Change the value of Program-Class if your program entry point changes. -->
 	<build>
+		<!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
+		<!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
 		<plugins>
-			<!-- We use the maven-shade plugin to create a fat jar that contains all dependencies
-			except flink and it's transitive dependencies. The resulting fat-jar can be executed
-			on a cluster. Change the value of Program-Class if your program entry point changes. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.1</version>
-				<executions>
-					<!-- Run shade goal on package phase -->
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<artifactSet>
-								<excludes>
-									<!-- This list contains all dependencies of flink-dist
-									Everything else will be packaged into the fat-jar
-									-->
-									<exclude>org.apache.flink:flink-shaded-*_2.11</exclude>
-									<exclude>org.apache.flink:flink-core_2.11</exclude>
-									<exclude>org.apache.flink:flink-java_2.11</exclude>
-									<exclude>org.apache.flink:flink-scala_2.11</exclude>
-									<exclude>org.apache.flink:flink-runtime_2.11</exclude>
-									<exclude>org.apache.flink:flink-optimizer_2.11</exclude>
-									<exclude>org.apache.flink:flink-clients_2.11</exclude>
-									<exclude>org.apache.flink:flink-avro_2.11</exclude>
-									<exclude>org.apache.flink:flink-java-examples_2.11</exclude>
-									<exclude>org.apache.flink:flink-scala-examples_2.11</exclude>
-									<exclude>org.apache.flink:flink-streaming-examples_2.11</exclude>
-									<exclude>org.apache.flink:flink-streaming-java_2.11</exclude>
-
-									<!-- Also exclude very big transitive dependencies of Flink
-
-									WARNING: You have to remove these excludes if your code relies on other
-									versions of these dependencies.
-
-									-->
-
-									<exclude>org.scala-lang:scala-library</exclude>
-									<exclude>org.scala-lang:scala-compiler</exclude>
-									<exclude>org.scala-lang:scala-reflect</exclude>
-									<exclude>com.amazonaws:aws-java-sdk</exclude>
-									<exclude>com.typesafe.akka:akka-actor_*</exclude>
-									<exclude>com.typesafe.akka:akka-remote_*</exclude>
-									<exclude>com.typesafe.akka:akka-slf4j_*</exclude>
-									<exclude>io.netty:netty-all</exclude>
-									<exclude>io.netty:netty</exclude>
-									<exclude>org.eclipse.jetty:jetty-server</exclude>
-									<exclude>org.eclipse.jetty:jetty-continuation</exclude>
-									<exclude>org.eclipse.jetty:jetty-http</exclude>
-									<exclude>org.eclipse.jetty:jetty-io</exclude>
-									<exclude>org.eclipse.jetty:jetty-util</exclude>
-									<exclude>org.eclipse.jetty:jetty-security</exclude>
-									<exclude>org.eclipse.jetty:jetty-servlet</exclude>
-									<exclude>commons-fileupload:commons-fileupload</exclude>
-									<exclude>org.apache.avro:avro</exclude>
-									<exclude>commons-collections:commons-collections</exclude>
-									<exclude>org.codehaus.jackson:jackson-core-asl</exclude>
-									<exclude>org.codehaus.jackson:jackson-mapper-asl</exclude>
-									<exclude>com.thoughtworks.paranamer:paranamer</exclude>
-									<exclude>org.xerial.snappy:snappy-java</exclude>
-									<exclude>org.apache.commons:commons-compress</exclude>
-									<exclude>org.tukaani:xz</exclude>
-									<exclude>com.esotericsoftware.kryo:kryo</exclude>
-									<exclude>com.esotericsoftware.minlog:minlog</exclude>
-									<exclude>org.objenesis:objenesis</exclude>
-									<exclude>com.twitter:chill_*</exclude>
-									<exclude>com.twitter:chill-java</exclude>
-									<exclude>com.twitter:chill-avro_*</exclude>
-									<exclude>com.twitter:chill-bijection_*</exclude>
-									<exclude>com.twitter:bijection-core_*</exclude>
-									<exclude>com.twitter:bijection-avro_*</exclude>
-									<exclude>commons-lang:commons-lang</exclude>
-									<exclude>junit:junit</exclude>
-									<exclude>de.javakaffee:kryo-serializers</exclude>
-									<exclude>joda-time:joda-time</exclude>
-									<exclude>org.apache.commons:commons-lang3</exclude>
-									<!--<exclude>org.slf4j:slf4j-api</exclude>-->
-									<!--<exclude>org.slf4j:slf4j-log4j12</exclude>-->
-									<!--<exclude>log4j:log4j</exclude>-->
-									<exclude>org.apache.commons:commons-math</exclude>
-									<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>
-									<exclude>commons-logging:commons-logging</exclude>
-									<exclude>org.apache.httpcomponents:httpclient</exclude>
-									<exclude>org.apache.httpcomponents:httpcore</exclude>
-									<exclude>commons-codec:commons-codec</exclude>
-									<exclude>com.fasterxml.jackson.core:jackson-core</exclude>
-									<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
-									<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>
-									<exclude>org.codehaus.jettison:jettison</exclude>
-									<exclude>stax:stax-api</exclude>
-									<exclude>com.typesafe:config</exclude>
-									<exclude>org.uncommons.maths:uncommons-maths</exclude>
-									<exclude>com.github.scopt:scopt_*</exclude>
-									<exclude>org.mortbay.jetty:servlet-api</exclude>
-									<exclude>commons-io:commons-io</exclude>
-									<exclude>commons-cli:commons-cli</exclude>
-								</excludes>
-							</artifactSet>
-							<filters>
-								<filter>
-									<artifact>org.apache.flink:*</artifact>
-									<excludes>
-										<exclude>org/apache/flink/shaded/**</exclude>
-										<exclude>web-docs/**</exclude>
-									</excludes>
-								</filter>
-								<filter>
-									<!-- Do not copy the signatures in the META-INF folder.
-									Otherwise, this might cause SecurityExceptions when using the JAR. -->
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<transformers>
-								<!-- add Main-Class to manifest file -->
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>org.sansa.inference.flink.RDFGraphMaterializer</mainClass>
-								</transformer>
-							</transformers>
-							<createDependencyReducedPom>false</createDependencyReducedPom>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -259,6 +133,29 @@ under the License.
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+
+			<!-- disable surefire -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<useFile>false</useFile>
+					<disableXmlReport>true</disableXmlReport>
+					<!--<forkCount>1</forkCount>-->
+					<!--<reuseForks>false</reuseForks>-->
+
+					<!-- If you have classpath issue like NoDefClassError,... -->
+					<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+					<threadCountSuites>4</threadCountSuites>
+					<includes>
+						<include>**/*Test.*</include>
+						<include>**/*Suite.*</include>
+					</includes>
+					<skipTests>true</skipTests>
+				</configuration>
 			</plugin>
 
 			<!-- Adding scala source directories to build path -->
@@ -322,6 +219,168 @@ under the License.
 					<scope>provided</scope>
 				</dependency>
 			</dependencies>
+		</profile>
+		<profile>
+		<id>dist</id>
+		<activation>
+			<property>
+				<name>dist</name>
+			</property>
+		</activation>
+		<!-- This profile uses the assembly plugin to create a special "dist" package for BigTop
+             that contains Spark but not the Hadoop JARs it depends on. -->
+		<build>
+			<plugins>
+			<!-- We use the maven-shade plugin to create a fat jar that contains all dependencies
+		except flink and it's transitive dependencies. The resulting fat-jar can be executed
+		on a cluster. Change the value of Program-Class if your program entry point changes. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.1</version>
+				<executions>
+					<!-- Run shade goal on package phase -->
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<minimizeJar>true</minimizeJar>
+							<artifactSet>
+								<excludes>
+									<!-- This list contains all dependencies of flink-dist
+									Everything else will be packaged into the fat-jar
+									-->
+									<exclude>org.apache.flink:flink-shaded-*_2.11</exclude>
+									<exclude>org.apache.flink:flink-core_2.11</exclude>
+									<exclude>org.apache.flink:flink-java*</exclude>
+									<exclude>org.apache.flink:flink-java_2.11</exclude>
+									<exclude>org.apache.flink:flink-scala_2.11</exclude>
+									<exclude>org.apache.flink:flink-runtime_2.11</exclude>
+									<exclude>org.apache.flink:flink-optimizer_2.11</exclude>
+									<exclude>org.apache.flink:flink-clients_2.11</exclude>
+									<exclude>org.apache.flink:flink-avro_2.11</exclude>
+									<exclude>org.apache.flink:flink-java-examples_2.11</exclude>
+									<exclude>org.apache.flink:flink-scala-examples_2.11</exclude>
+									<exclude>org.apache.flink:flink-streaming-examples_2.11</exclude>
+									<exclude>org.apache.flink:flink-streaming-java_2.11</exclude>
+
+									<!-- Also exclude very big transitive dependencies of Flink
+
+									WARNING: You have to remove these excludes if your code relies on other
+									versions of these dependencies.
+
+									-->
+
+									<exclude>org.scala-lang:scala-library</exclude>
+									<exclude>org.scala-lang:scala-compiler</exclude>
+									<exclude>org.scala-lang:scala-reflect</exclude>
+									<exclude>com.amazonaws:aws-java-sdk</exclude>
+									<exclude>com.typesafe.akka:akka-actor_*</exclude>
+									<exclude>com.typesafe.akka:akka-remote_*</exclude>
+									<exclude>com.typesafe.akka:akka-slf4j_*</exclude>
+									<exclude>io.netty:netty-all</exclude>
+									<exclude>io.netty:netty</exclude>
+									<exclude>org.eclipse.jetty:jetty-server</exclude>
+									<exclude>org.eclipse.jetty:jetty-continuation</exclude>
+									<exclude>org.eclipse.jetty:jetty-http</exclude>
+									<exclude>org.eclipse.jetty:jetty-io</exclude>
+									<exclude>org.eclipse.jetty:jetty-util</exclude>
+									<exclude>org.eclipse.jetty:jetty-security</exclude>
+									<exclude>org.eclipse.jetty:jetty-servlet</exclude>
+									<exclude>org.gephi:*</exclude>
+									<exclude>org.netbeans.api:*</exclude>
+
+									<exclude>commons-fileupload:commons-fileupload</exclude>
+									<exclude>org.apache.avro:avro</exclude>
+									<exclude>commons-collections:commons-collections</exclude>
+									<exclude>org.codehaus.jackson:jackson-core-asl</exclude>
+									<exclude>org.codehaus.jackson:jackson-mapper-asl</exclude>
+									<exclude>com.thoughtworks.paranamer:paranamer</exclude>
+									<exclude>org.xerial.snappy:snappy-java</exclude>
+									<exclude>org.apache.commons:commons-compress</exclude>
+									<exclude>org.tukaani:xz</exclude>
+									<exclude>com.esotericsoftware.kryo:kryo</exclude>
+									<exclude>com.esotericsoftware.minlog:minlog</exclude>
+									<exclude>org.objenesis:objenesis</exclude>
+									<exclude>com.twitter:chill_*</exclude>
+									<exclude>com.twitter:chill-java</exclude>
+									<exclude>com.twitter:chill-avro_*</exclude>
+									<exclude>com.twitter:chill-bijection_*</exclude>
+									<exclude>com.twitter:bijection-core_*</exclude>
+									<exclude>com.twitter:bijection-avro_*</exclude>
+									<exclude>commons-lang:commons-lang</exclude>
+									<exclude>junit:junit</exclude>
+									<exclude>de.javakaffee:kryo-serializers</exclude>
+									<exclude>joda-time:joda-time</exclude>
+									<exclude>org.apache.commons:commons-lang3</exclude>
+									<exclude>org.slf4j:slf4j-api</exclude>
+									<exclude>org.slf4j:slf4j-log4j12</exclude>
+									<exclude>log4j:log4j</exclude>
+									<exclude>org.apache.commons:commons-math</exclude>
+									<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>
+									<exclude>commons-logging:commons-logging</exclude>
+									<exclude>org.apache.httpcomponents:httpclient</exclude>
+									<exclude>org.apache.httpcomponents:httpcore</exclude>
+									<exclude>commons-codec:commons-codec</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-core</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
+									<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>
+									<exclude>org.codehaus.jettison:jettison</exclude>
+									<exclude>stax:stax-api</exclude>
+									<exclude>com.typesafe:config</exclude>
+									<exclude>org.uncommons.maths:uncommons-maths</exclude>
+									<!--<exclude>com.github.scopt:scopt_*</exclude>-->
+									<exclude>org.mortbay.jetty:servlet-api</exclude>
+									<exclude>commons-io:commons-io</exclude>
+									<exclude>commons-cli:commons-cli</exclude>
+
+									<exclude>sqlite:*</exclude>
+									<exclude>netbeans:*</exclude>
+									<exclude>org.apache.xmlgraphics:*</exclude>
+									<exclude>mysql:*</exclude>
+								</excludes>
+							</artifactSet>
+							<filters>
+								<filter>
+									<artifact>org.apache.flink:*</artifact>
+									<excludes>
+										<exclude>org/apache/flink/shaded/**</exclude>
+										<exclude>web-docs/**</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<!-- Do not copy the signatures in the META-INF folder.
+									Otherwise, this might cause SecurityExceptions when using the JAR. -->
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<finalName>dist-${project.artifactId}-${project.version}</finalName>
+							<transformers>
+								<!-- add Main-Class to manifest file -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>net.sansa_stack.inference.flink.RDFGraphMaterializer</mainClass>
+								</transformer>
+							</transformers>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<relocations>
+								<relocation>
+									<pattern>scopt</pattern>
+									<shadedPattern>scopt.shaded</shadedPattern>
+								</relocation>
+							</relocations>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>

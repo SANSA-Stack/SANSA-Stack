@@ -1,0 +1,42 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+rdf:type      rdfs:range rdfs:Class .
+rdfs:Resource  rdf:type  rdfs:Class .
+rdfs:Literal   rdf:type  rdfs:Class .
+rdf:Statement  rdf:type  rdfs:Class .
+rdf:nil        rdf:type  rdf:List .
+rdf:subject    rdf:type  rdf:Property .
+rdf:object     rdf:type  rdf:Property .
+rdf:predicate  rdf:type  rdf:Property .
+rdf:first      rdf:type  rdf:Property .
+rdf:rest       rdf:type  rdf:Property .
+
+rdfs:subPropertyOf rdfs:domain rdf:Property .
+rdfs:subClassOf rdfs:domain rdfs:Class .
+rdfs:domain rdfs:domain rdf:Property .
+rdfs:range rdfs:domain rdf:Property .
+rdf:subject rdfs:domain rdf:Statement .
+rdf:predicate rdfs:domain rdf:Statement .
+rdf:object rdfs:domain rdf:Statement .
+rdf:first rdfs:domain rdf:List .
+rdf:rest rdfs:domain rdf:List .
+
+rdfs:subPropertyOf rdfs:range rdf:Property .
+rdfs:subClassOf rdfs:range rdfs:Class .
+rdfs:domain rdfs:range rdfs:Class .
+rdfs:range rdfs:range rdfs:Class .
+rdf:type rdfs:range rdfs:Class .
+rdfs:comment rdfs:range rdfs:Literal .
+rdfs:label rdfs:range rdfs:Literal .
+rdf:rest rdfs:range rdf:List .
+
+rdf:Alt rdfs:subClassOf rdfs:Container .
+rdf:Bag rdfs:subClassOf rdfs:Container .
+rdf:Seq rdfs:subClassOf rdfs:Container .
+rdfs:ContainerMembershipProperty rdfs:subClassOf rdf:Property .
+
+rdfs:isDefinedBy rdfs:subPropertyOf rdfs:seeAlso .
+
+rdf:XMLLiteral rdf:type rdfs:Datatype .
+rdfs:Datatype rdfs:subClassOf rdfs:Class .
