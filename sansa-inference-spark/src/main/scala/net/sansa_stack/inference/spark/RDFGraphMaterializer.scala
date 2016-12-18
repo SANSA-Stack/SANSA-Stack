@@ -30,10 +30,12 @@ object RDFGraphMaterializer {
   }
 
   def run(input: Seq[File], output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
+    // register the custom classes for Kryo serializer
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
 
-    val parallelism = 8
+    // set the parallelism
+    val parallelism = 4
 
     // the SPARK config
     val session = SparkSession.builder
@@ -45,6 +47,8 @@ object RDFGraphMaterializer {
       .config("spark.default.parallelism", parallelism)
       .config(conf)
       .getOrCreate()
+
+//    println(session.conf.getAll.mkString("\n"))
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromDisk(input, session, parallelism)
