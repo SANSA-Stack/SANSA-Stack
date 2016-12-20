@@ -22,7 +22,7 @@ import scala.language.implicitConversions
   * @param session the Apache Spark session
   * @author Lorenz Buehmann
   */
-class ForwardRuleReasonerRDFSDataframe(session: SparkSession) extends ForwardRuleReasoner{
+class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int = 2) extends TransitiveReasoner(session.sparkContext, parallelism){
 
   val sqlContext = new SQLContext(session.sparkContext)
   import sqlContext.implicits._

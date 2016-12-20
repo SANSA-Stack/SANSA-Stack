@@ -14,7 +14,7 @@ import scala.reflect.ClassTag
   *
   * @author Lorenz Buehmann
   */
-trait ForwardRuleReasoner extends Profiler with TransitiveReasoner{
+trait ForwardRuleReasoner extends Profiler {
 
   /**
     * Applies forward chaining to the given RDF graph and returns a new RDF graph that contains all additional

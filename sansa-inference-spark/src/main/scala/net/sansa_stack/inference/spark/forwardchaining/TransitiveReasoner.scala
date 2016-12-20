@@ -1,11 +1,11 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.utils.Profiler
+import net.sansa_stack.inference.spark.data.RDFGraph
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 
-import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -13,7 +13,38 @@ import scala.reflect.ClassTag
   *
   * @author Lorenz Buehmann
   */
-trait TransitiveReasoner extends Profiler{
+class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val parallelism: Int) extends ForwardRuleReasoner{
+
+  def this(sc: SparkContext, property: String, parallelism: Int) {
+    this(sc, Seq(property), parallelism)
+  }
+
+  def this(sc: SparkContext, parallelism: Int) {
+    this(sc, Seq(), parallelism)
+  }
+
+  /**
+    * Applies forward chaining to the given RDF graph and returns a new RDF graph that contains all additional
+    * triples based on the underlying set of rules.
+    *
+    * @param graph the RDF graph
+    * @return the materialized RDF graph
+    */
+  override def apply(graph: RDFGraph): RDFGraph = {
+    if(properties.isEmpty) {
+      throw new RuntimeException("A list of properties has to be given for the transitive reasoner!")
+    }
+
+    graph.triples.cache()
+
+    // compute TC for each given property
+    val tcRDDs = properties.map(p => computeTransitiveClosure(graph.triples.filter(t => t.predicate == p), p))
+
+    // compute the union of all
+    val triples = sc.union(tcRDDs :+ graph.triples)
+
+    RDFGraph(triples)
+  }
 
   //  def computeTransitiveClosure[A, B, C](s: mutable.Set[(A, B, C)]): mutable.Set[(A, B, C)] = {
   //    val t = addTransitive(s)
@@ -89,9 +120,10 @@ trait TransitiveReasoner extends Profiler{
         subjectObjectPairs = subjectObjectPairs
           .union(subjectObjectPairs.join(objectSubjectPairs).map(x => (x._2._2, x._2._1)))
           .filter(tuple => tuple._1 != tuple._2) // omit (s1, s1)
-          .distinct()
+          .distinct(parallelism)
           .cache()
         nextCount = subjectObjectPairs.count()
+        println(nextCount)
         i += 1
       } while (nextCount != oldCount)
 
@@ -126,7 +158,7 @@ trait TransitiveReasoner extends Profiler{
       // then project the result to obtain the new (x, y) paths.
       tc = tc
         .union(tc.join(edgesReversed).map(x => (x._2._2, x._2._1)))
-        .distinct()
+        .distinct(parallelism)
         .cache()
       nextCount = tc.count()
       i += 1
@@ -185,5 +217,4 @@ trait TransitiveReasoner extends Profiler{
       tc
     }
   }
-
 }

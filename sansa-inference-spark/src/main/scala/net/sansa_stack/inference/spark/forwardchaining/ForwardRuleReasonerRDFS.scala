@@ -17,15 +17,16 @@ import scala.collection.mutable
   *
   * @constructor create a new RDFS forward chaining reasoner
   * @param sc the Apache Spark context
+  * @param parallelism the level of parallelism
   * @author Lorenz Buehmann
   */
-class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends ForwardRuleReasoner{
+class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends TransitiveReasoner(sc, parallelism) {
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   var level: RDFSLevel = DEFAULT
 
-  def apply(graph: RDFGraph): RDFGraph = {
+  override def apply(graph: RDFGraph): RDFGraph = {
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
 

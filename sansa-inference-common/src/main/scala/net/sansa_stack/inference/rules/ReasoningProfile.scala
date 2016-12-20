@@ -7,7 +7,7 @@ package net.sansa_stack.inference.rules
   */
 object ReasoningProfile extends Enumeration {
   type ReasoningProfile = Value
-  val RDFS, RDFS_SIMPLE, OWL_HORST, OWL_RL, OWL_EL = Value
+  val TRANSITIVE, RDFS, RDFS_SIMPLE, OWL_HORST, OWL_RL, OWL_EL = Value
 
   /**
     * Returns the reasoning profile for the given name.

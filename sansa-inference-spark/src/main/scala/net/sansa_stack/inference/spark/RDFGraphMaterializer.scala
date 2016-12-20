@@ -6,7 +6,7 @@ import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.spark.data.{RDFGraphLoader, RDFGraphWriter}
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
+import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
@@ -23,13 +23,14 @@ object RDFGraphMaterializer {
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.out, config.profile, config.writeToSingleFile, config.sortedOutput)
+        run(config.in, config.out, config.profile, config.properties, config.writeToSingleFile, config.sortedOutput)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: Seq[File], output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
+  def run(input: Seq[File], output: File, profile: ReasoningProfile, properties: Seq[String] = Seq(),
+          writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
     // register the custom classes for Kryo serializer
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
@@ -56,6 +57,7 @@ object RDFGraphMaterializer {
 
     // create reasoner
     val reasoner = profile match {
+      case TRANSITIVE => new TransitiveReasoner(session.sparkContext, properties, parallelism)
       case RDFS => new ForwardRuleReasonerRDFS(session.sparkContext, parallelism)
       case RDFS_SIMPLE => {
         val r = new ForwardRuleReasonerRDFS(session.sparkContext, parallelism)
@@ -79,6 +81,7 @@ object RDFGraphMaterializer {
   case class Config(
                      in: Seq[File] = Seq(),
                      out: File = new File("."),
+                     properties: Seq[String] = Seq(),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
                      writeToSingleFile: Boolean = false,
                      sortedOutput: Boolean = false)
@@ -89,15 +92,26 @@ object RDFGraphMaterializer {
 
   // the CLI parser
   val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
+
     head("RDFGraphMaterializer", "0.1.0")
 
     opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
       action((x, c) => c.copy(in = x)).
-      text("path to file or directory that contains the input files (in N-Triple format)")
+      text("path to file or directory that contains the input files (in N-Triples format)")
 
     opt[File]('o', "out").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
+
+    opt[Seq[String]]("properties").optional().valueName("<property1>,<property2>,...").
+      action((x, c) => {
+        c.copy(properties = x)
+      }).
+      text("list of properties for which the transitive closure will be computed (used only for profile 'transitive')")
+
+    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | rdfs-simple | owl-horst | transitive}").
+      action((x, c) => c.copy(profile = x)).
+      text("the reasoning profile")
 
     opt[Unit]("single-file").optional().action( (_, c) =>
       c.copy(writeToSingleFile = true)).text("write the output to a single file in the output directory")
@@ -105,10 +119,10 @@ object RDFGraphMaterializer {
     opt[Unit]("sorted").optional().action( (_, c) =>
       c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
 
-    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | rdfs-simple | owl-horst}").
-      action((x, c) => c.copy(profile = x)).
-      text("the reasoning profile")
-
     help("help").text("prints this usage text")
+
+    checkConfig( c =>
+      if (c.profile == TRANSITIVE && c.properties.isEmpty) failure("Option --properties must not be empty if profile 'transitive' is set")
+      else success )
   }
 }

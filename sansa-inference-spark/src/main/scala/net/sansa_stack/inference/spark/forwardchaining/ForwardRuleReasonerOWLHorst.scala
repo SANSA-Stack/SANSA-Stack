@@ -15,13 +15,13 @@ import org.slf4j.LoggerFactory
   * @param sc the Apache Spark context
   * @author Lorenz Buehmann
   */
-class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends ForwardRuleReasoner{
+class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int = 2) extends TransitiveReasoner(sc, parallelism) {
 
   def this(sc: SparkContext) = this(sc, sc.defaultParallelism)
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
-  def apply(graph: RDFGraph): RDFGraph = {
+  override def apply(graph: RDFGraph): RDFGraph = {
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
 
@@ -45,7 +45,7 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends Fo
       subClassOfTriples,
       equivClassTriples.map(t => RDFTriple(t.subject, RDFS.subClassOf.getURI, t.`object`)),
       equivClassTriples.map(t => RDFTriple(t.`object`, RDFS.subClassOf.getURI, t.subject)))
-      .distinct()
+      .distinct(parallelism)
 
     // rdfp13a: (?C owl:equivalentProperty ?D) -> (?C rdfs:subPropertyOf ?D )
     // rdfp13b: (?C owl:equivalentProperty ?D) -> (?D rdfs:subPropertyOf ?C )
@@ -53,7 +53,7 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int) extends Fo
       subPropertyOfTriples,
       equivPropertyTriples.map(t => RDFTriple(t.subject, RDFS.subPropertyOf.getURI, t.`object`)),
       equivPropertyTriples.map(t => RDFTriple(t.`object`, RDFS.subPropertyOf.getURI, t.subject)))
-      .distinct()
+      .distinct(parallelism)
 
     // 2. we compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
     // rdfs11: (xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) ->	(xxx rdfs:subClassOf zzz)
