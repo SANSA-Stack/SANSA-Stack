@@ -80,8 +80,9 @@ object RDFByModularityClustering {
           vertexDegreesBC,
           clusterMapRDD,
           sc)
+        val clusterMap2 = clusterMapRDD2.collect()
         clusterMapRDD.unpersist()
-        clusterMapRDD = clusterMapRDD2
+        clusterMapRDD = sc.parallelize(clusterMap2)
         stopSign = stopSign2
         // check last entry of clusterAssociations for whether we should stop
         if (stopSign) {
