@@ -102,33 +102,12 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     log.info(s"computing TC for property $predicate...")
 
     profile {
-      // compute the TC
-      var subjectObjectPairs = triples.map(t => (t.subject, t.`object`)).cache()
+      // we only need (s, o)
+      val subjectObjectPairs = triples.map(t => (t.subject, t.`object`)).cache()
 
-      // because join() joins on keys, in addition the pairs are stored in reversed order (o, s)
-      val objectSubjectPairs = subjectObjectPairs.map(t => (t._2, t._1))
+      val tc = computeTransitiveClosure(subjectObjectPairs)
 
-      // the join is iterated until a fixed point is reached
-      var i = 1
-      var oldCount = 0L
-      var nextCount = triples.count()
-      do {
-        log.info(s"iteration $i...")
-        oldCount = nextCount
-        // perform the join (s1, o1) x (o2, s2), obtaining an RDD of (s1=o2, (o1, s2)) pairs,
-        // then project the result to obtain the new (s2, o1) paths.
-        subjectObjectPairs = subjectObjectPairs
-          .union(subjectObjectPairs.join(objectSubjectPairs).map(x => (x._2._2, x._2._1)))
-          .filter(tuple => tuple._1 != tuple._2) // omit (s1, s1)
-          .distinct(parallelism)
-          .cache()
-        nextCount = subjectObjectPairs.count()
-        println(nextCount)
-        i += 1
-      } while (nextCount != oldCount)
-
-      log.info(s"TC for $predicate has " + nextCount + " triples.")
-      subjectObjectPairs.map(p => new RDFTriple(p._1, predicate, p._2))
+      tc.map(p => new RDFTriple(p._1, predicate, p._2))
     }
   }
 
@@ -138,7 +117,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @param edges the RDD of tuples
     * @return an RDD containing the transitive closure of the tuples
     */
-  def computeTransitiveClosure[A:ClassTag](edges: RDD[(A, A)]): RDD[(A, A)] = {
+  def computeTransitiveClosure[A: ClassTag](edges: RDD[(A, A)]): RDD[(A, A)] = {
     log.info("computing TC...")
     // we keep the transitive closure cached
     var tc = edges
@@ -146,6 +125,13 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
 
     // because join() joins on keys, in addition the pairs are stored in reversed order (o, s)
     val edgesReversed = tc.map(t => (t._2, t._1))
+    edgesReversed.cache()
+
+    def f(rdd: RDD[(A, A)]): RDD[(A, A)] =  {
+      rdd.join(edgesReversed).map(x => (x._2._2, x._2._1))
+    }
+
+//    tc = FixpointIteration(10)(tc, f)
 
     // the join is iterated until a fixed point is reached
     var i = 1
@@ -164,7 +150,54 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
       i += 1
     } while (nextCount != oldCount)
 
-    println("TC has " + nextCount + " edges.")
+    log.info("TC has " + nextCount + " edges.")
+    tc
+  }
+
+  /**
+    * Semi-naive computation of the transitive closure `T` for an RDD of tuples `R=(x,y)`.
+    *
+    * {{{
+    * (1) T = R
+    * (2) ∆T = R
+    * (3) while ∆T != ∅ do
+    * (4) ∆T = ∆T ◦ R − T
+    * (5) T = T ∪ ∆T
+    * (6) end
+    * }}}
+    *
+    * @param edges the RDD of tuples `(x,y)`
+    * @return an RDD containing the transitive closure of the tuples
+    */
+  def computeTransitiveClosureSemiNaive[A: ClassTag](edges: RDD[(A, A)]): RDD[(A, A)] = {
+    log.info("computing TC...")
+    // we keep the transitive closure cached
+    var tc = edges
+    tc.cache()
+
+    // because join() joins on keys, in addition the pairs are stored in reversed order (o, s)
+    val edgesReversed = tc.map(t => (t._2, t._1)).cache()
+
+    var deltaTC = tc.repartition(4)
+
+    // the join is iterated until a fixed point is reached
+    var i = 1
+    while(!deltaTC.isEmpty()) {
+      log.info(s"iteration $i...")
+
+      // perform the join (x, y) x (y, x), obtaining an RDD of (x=y, (y, x)) pairs,
+      // then project the result to obtain the new (x, y) paths.
+      deltaTC = deltaTC.join(edgesReversed)
+                        .map(x => (x._2._2, x._2._1))
+                        .subtract(tc).distinct().cache()
+
+      // add to TC
+      tc = tc.union(deltaTC).cache()
+
+      i += 1
+    }
+
+    println("TC has " + tc.count() + " edges.")
     tc
   }
 
