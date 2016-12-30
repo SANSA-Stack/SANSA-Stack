@@ -2,8 +2,29 @@ package net.sansa_stack.inference.utils
 
 import org.slf4j.{Logger, LoggerFactory}
 
+/**
+  * Utility trait for classes that want to log data. Creates a SLF4J logger for the class and allows
+  * logging messages at different levels using methods that only evaluate parameters lazily if the
+  * log level is enabled.
+  */
 trait Logging {
-  lazy val log = LoggerFactory.getLogger(getClass)
+
+  @transient var log_ : Logger = null
+
+  // Method to get or create the logger for this object
+  protected def log: Logger = {
+    if (log_ == null) {
+      log_ = LoggerFactory.getLogger(logName)
+    }
+    log_
+  }
+
+  // Method to get the logger name for this object
+  protected def logName = {
+    // Ignore trailing $'s in the class names for Scala objects
+    this.getClass.getName.stripSuffix("$")
+  }
+
 
   def trace(msg: => String) =                   { if(log.isTraceEnabled) log.trace(msg) }
   def trace(msg: => String, e: Throwable) =     { if(log.isTraceEnabled) log.trace(msg, e) }
@@ -26,6 +47,6 @@ trait Logging {
   def error(msg: => String, o: Any, os: Any*) = { if(log.isErrorEnabled) log.error(msg, o, os) }
 }
 
-object Logging {
+private object Logging {
   implicit def logging2Logger(anything: Logging): Logger = anything.log
 }
