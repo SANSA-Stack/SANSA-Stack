@@ -65,7 +65,7 @@
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
     <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
-    <jsa.subversion>1-SNAPSHOT</jsa.subversion>
+    <jsa.subversion>1-1</jsa.subversion>
     <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
@@ -215,14 +215,14 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>19.0</version>
+        <version>20.0</version>
       </dependency>
 
       <!-- Shapeless lib -->
       <dependency>
         <groupId>com.chuusai</groupId>
         <artifactId>shapeless_${scala.binary.version}</artifactId>
-        <version>2.3.0</version>
+        <version>2.3.2</version>
       </dependency>
 
       <!-- Scopt -->
@@ -251,7 +251,7 @@
         <plugin>
           <groupId>net.alchim31.maven</groupId>
           <artifactId>scala-maven-plugin</artifactId>
-          <version>3.2.1</version>
+          <version>3.2.2</version>
           <executions>
             <execution>
               <goals>
@@ -373,7 +373,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.5</version>
+          <version>1.12</version>
           <executions>
             <execution>
               <id>add-source</id>
@@ -389,8 +389,20 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>com.versioneye</groupId>
+          <artifactId>versioneye-maven-plugin</artifactId>
+          <version>3.11.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>com.versioneye</groupId>
+        <artifactId>versioneye-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
 
   <distributionManagement>
