@@ -42,7 +42,7 @@ object RDFGraphMaterializer {
     val session = SparkSession.builder
       .appName(s"SPARK $profile Reasoning")
       .master("local[4]")
-      .config("spark.eventLog.enabled", "true")
+//      .config("spark.eventLog.enabled", "true")
       .config("spark.hadoop.validateOutputSpecs", "false") //override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.default.parallelism", parallelism)
