@@ -1,9 +1,10 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import net.sansa_stack.inference.utils.Logging
+import scala.reflect.ClassTag
+
 import org.apache.spark.rdd.RDD
 
-import scala.reflect.ClassTag
+import net.sansa_stack.inference.utils.Logging
 
 /**
   * Creates a new RDD by performing bulk iterations using the given step function. The first
@@ -27,7 +28,7 @@ object FixpointIteration extends Logging {
     * RDD contains no elements or when `maxIterations` iterations have been performed.
     *
     **/
-  def apply[T: ClassTag](maxIterations: Int = 10)(rdd: RDD[T], f: RDD[T] => RDD[T]) = {
+  def apply[T: ClassTag](maxIterations: Int = 10)(rdd: RDD[T], f: RDD[T] => RDD[T]): RDD[T] = {
     var newRDD = rdd
     newRDD.cache()
     var i = 1
@@ -36,13 +37,13 @@ object FixpointIteration extends Logging {
     while (nextCount != oldCount) {
       log.info(s"iteration $i...")
       oldCount = nextCount
-      println(s"i:$nextCount")
+      info(s"i:$nextCount")
       newRDD = newRDD
         .union(f(newRDD))
         .distinct(2)
         .cache()
       nextCount = newRDD.count()
-      println(s"i+1:$nextCount")
+      info(s"i+1:$nextCount")
       i += 1
     }
     newRDD

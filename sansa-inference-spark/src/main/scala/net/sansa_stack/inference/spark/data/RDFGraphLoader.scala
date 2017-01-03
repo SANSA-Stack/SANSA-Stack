@@ -2,10 +2,11 @@ package net.sansa_stack.inference.spark.data
 
 import java.io.File
 
-import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
+
+import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
 
 /**
   * Load an RDF graph from disk.
@@ -29,13 +30,13 @@ object RDFGraphLoader {
     */
   def loadFromFile(path: String, session: SparkSession, minPartitions: Int = 2): RDFGraph = {
     logger.info("loading triples from disk...")
-    val startTime  = System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
     val triples = session.sparkContext
       .textFile(path, minPartitions) // read the text file
       .map(new NTriplesStringToRDFTriple()) // convert to triple object
 
-//    logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
+//  logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
     new RDFGraph(triples)
   }
 
@@ -49,7 +50,7 @@ object RDFGraphLoader {
     */
   def loadFromDisk(paths: Seq[File], session: SparkSession, minPartitions: Int = 2): RDFGraph = {
     logger.info("loading triples from disk...")
-    val startTime  = System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
     val pathsConcat = paths.map(p => p.getAbsolutePath).mkString(",") // make concatenated string of paths
 
@@ -58,7 +59,8 @@ object RDFGraphLoader {
       .map(new NTriplesStringToRDFTriple()) // convert to triple object
 //      .repartition(minPartitions)
 
-    //    logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
+    // logger.info("finished loading " + triples.count() + " triples in " +
+    // (System.currentTimeMillis()-startTime) + "ms.")
     new RDFGraph(triples)
   }
 
@@ -74,13 +76,14 @@ object RDFGraphLoader {
     */
   def loadGraphFromFile(path: String, session: SparkSession, minPartitions: Int = 2): RDFGraphNative = {
     logger.info("loading triples from disk...")
-    val startTime  = System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
     val triples = session.sparkContext
       .textFile(path, minPartitions) // read the text file
       .map(new NTriplesStringToRDFTriple()) // convert to triple object
 
-//    logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
+    // logger.info("finished loading " + triples.count() + " triples in " +
+    // (System.currentTimeMillis()-startTime) + "ms.")
     new RDFGraphNative(triples)
   }
 

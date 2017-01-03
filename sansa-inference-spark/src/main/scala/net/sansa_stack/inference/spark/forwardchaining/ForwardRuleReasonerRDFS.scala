@@ -1,16 +1,16 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
+import scala.collection.mutable
+
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.SparkContext
+import org.slf4j.LoggerFactory
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.RDFSLevel._
 import net.sansa_stack.inference.spark.data.RDFGraph
-import net.sansa_stack.inference.spark.utils.RDDUtils
-import net.sansa_stack.inference.utils.CollectionUtils
-import org.slf4j.LoggerFactory
 import net.sansa_stack.inference.spark.utils.RDDUtils.RDDOps
-
-import scala.collection.mutable
+import net.sansa_stack.inference.utils.CollectionUtils
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -38,18 +38,18 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
     // 1. we first compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
 
     /**
-      * rdfs11	xxx rdfs:subClassOf yyy .
-      * yyy rdfs:subClassOf zzz .	  xxx rdfs:subClassOf zzz .
+      * rdfs11 xxx rdfs:subClassOf yyy .
+      * yyy rdfs:subClassOf zzz . xxx rdfs:subClassOf zzz .
      */
     val subClassOfTriples = extractTriples(triplesRDD, RDFS.subClassOf.getURI) // extract rdfs:subClassOf triples
-    val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples, RDFS.subClassOf.getURI).setName("rdfs11")//mutable.Set()++subClassOfTriples.collect())
+    val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples, RDFS.subClassOf.getURI).setName("rdfs11")// mutable.Set()++subClassOfTriples.collect())
 
     /*
         rdfs5	xxx rdfs:subPropertyOf yyy .
               yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
      */
     val subPropertyOfTriples = extractTriples(triplesRDD, RDFS.subPropertyOf.getURI) // extract rdfs:subPropertyOf triples
-    val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples, RDFS.subPropertyOf.getURI).setName("rdfs5")//extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
+    val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples, RDFS.subPropertyOf.getURI).setName("rdfs5")// extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
 
     // a map structure should be more efficient
     val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.subject, t.`object`)).collect)
@@ -153,7 +153,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
         //          RDFTriple(t.predicate, RDF.`type`.getURI, RDF.Property.getURI)
       ))
 
-      //rdfs12: (?x rdf:type rdfs:ContainerMembershipProperty) -> (?x rdfs:subPropertyOf rdfs:member)
+      // rdfs12: (?x rdf:type rdfs:ContainerMembershipProperty) -> (?x rdfs:subPropertyOf rdfs:member)
       val rdfs12 = typeTriples
         .filter(t => t.`object` == RDFS.ContainerMembershipProperty.getURI)
         .map(t => RDFTriple(t.subject, RDF.`type`.getURI, RDFS.member.getURI))

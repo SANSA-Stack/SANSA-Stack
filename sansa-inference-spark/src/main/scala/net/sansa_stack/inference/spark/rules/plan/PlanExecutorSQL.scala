@@ -1,8 +1,9 @@
 package net.sansa_stack.inference.spark.rules.plan
 
-import net.sansa_stack.inference.spark.data.RDFGraphDataFrame
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.LoggerFactory
+
+import net.sansa_stack.inference.spark.data.RDFGraphDataFrame
 
 /**
   * An executor that works on Spark DataFrames.

@@ -3,10 +3,11 @@ package net.sansa_stack.inference.spark.forwardchaining
 import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{RDD, UnionRDD}
+import org.slf4j.LoggerFactory
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.RDFGraph
 import net.sansa_stack.inference.utils.CollectionUtils
-import org.slf4j.LoggerFactory
 
 /**
   * A forward chaining implementation of the OWL Horst entailment regime.
@@ -56,7 +57,7 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int = 2) extend
       .distinct(parallelism)
 
     // 2. we compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
-    // rdfs11: (xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) ->	(xxx rdfs:subClassOf zzz)
+    // rdfs11: (xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) -> (xxx rdfs:subClassOf zzz)
     val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples)
     // rdfs5: (xxx rdfs:subPropertyOf yyy), (yyy rdfs:subPropertyOf zzz) -> (xxx rdfs:subPropertyOf zzz)
     val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples)
@@ -220,7 +221,8 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int = 2) extend
           .union(triplesRDFS3)
           .union(typeTriples)
           .filter(t => subClassOfMapBC.value.contains(t.`object`)) // such that A has a super class B
-          .flatMap(t => subClassOfMapBC.value(t.`object`).map(supCls => RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
+          .flatMap(t => subClassOfMapBC.value(t.`object`).map(supCls =>
+                                          RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
 
 
       // rdfp14b: (?R owl:hasValue ?V),(?R owl:onProperty ?P),(?X rdf:type ?R ) -> (?X ?P ?V )
@@ -295,7 +297,7 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int = 2) extend
 
       val rdfp15_2 = typeTriples
         .filter(triple => someValuesFromMapReversedBC.value.contains(triple.`object`))
-        .map(triple => ((someValuesFromMapReversedBC.value(triple.`object`), triple.subject), Nil)) // -> ((?R, ?A), NIL)
+        .map(triple => ((someValuesFromMapReversedBC.value(triple.`object`), triple.subject), Nil)) // ->((?R,?A), NIL)
 
       val rdfp15 = rdfp15_1
         .join(rdfp15_2)
@@ -307,7 +309,8 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int = 2) extend
       // rdfp16: (?R owl:allValuesFrom ?D), (?R owl:onProperty ?P), (?X ?P ?Y), (?X rdf:type ?R ) -> (?Y rdf:type ?D )
       val rdfp16_1 = triplesFiltered // (?X ?P ?Y)
         .filter(triple => onPropertyMapReversedBC.value.contains(triple.predicate) &&
-                          allValuesFromMapBC.value.keySet.intersect(onPropertyMapReversedBC.value(triple.predicate).toSet).nonEmpty) // (?R owl:allValuesFrom ?D), (?R owl:onProperty ?P)
+                          allValuesFromMapBC.value.keySet.
+                            intersect(onPropertyMapReversedBC.value(triple.predicate).toSet).nonEmpty) // (?R owl:allValuesFrom ?D), (?R owl:onProperty ?P)
         .map(triple => {
           val restrictions = onPropertyMapReversedBC.value(triple.predicate)
           restrictions.map(_r => (triple.subject -> _r, triple.`object`)) // -> ((?X, ?R), ?Y)

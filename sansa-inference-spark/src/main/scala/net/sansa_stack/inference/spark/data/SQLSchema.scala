@@ -7,12 +7,12 @@ package net.sansa_stack.inference.spark.data
   */
 object SQLSchema {
 
-  def triplesTable = "TRIPLES"
+  def triplesTable: String = "TRIPLES"
 
-  def subjectCol = "subject"
+  def subjectCol: String = "subject"
 
-  def predicateCol = "predicate"
+  def predicateCol: String = "predicate"
 
-  def objectCol = "object"
+  def objectCol: String = "object"
 
 }

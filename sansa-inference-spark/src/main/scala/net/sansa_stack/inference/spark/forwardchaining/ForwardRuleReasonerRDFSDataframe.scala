@@ -1,17 +1,14 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import net.sansa_stack.inference.spark.data.RDFGraphDataFrame
+import scala.language.implicitConversions
+
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{Row, SQLContext, SparkSession}
-import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
-import net.sansa_stack.inference.spark.data.RDFGraph
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
-import org.apache.spark.sql.functions._
-import net.sansa_stack.inference.utils.CollectionUtils
 
-import scala.collection.immutable.Seq
-import scala.language.implicitConversions
+import net.sansa_stack.inference.spark.data.{RDFGraph, RDFGraphDataFrame}
+import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 
 
 
@@ -22,7 +19,8 @@ import scala.language.implicitConversions
   * @param session the Apache Spark session
   * @author Lorenz Buehmann
   */
-class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int = 2) extends TransitiveReasoner(session.sparkContext, parallelism){
+class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int = 2)
+  extends TransitiveReasoner(session.sparkContext, parallelism) {
 
   val sqlContext = new SQLContext(session.sparkContext)
   import sqlContext.implicits._
@@ -53,8 +51,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     // 1. we first compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
 
     /**
-      * rdfs11	xxx rdfs:subClassOf yyy .
-      * yyy rdfs:subClassOf zzz .	  xxx rdfs:subClassOf zzz .
+      * rdfs11 xxx rdfs:subClassOf yyy .
+      * yyy rdfs:subClassOf zzz . xxx rdfs:subClassOf zzz .
      */
     val subClassOfTriples = index(RDFS.subClassOf.getURI) // extract rdfs:subClassOf triples
     val subClassOfTriplesTrans = broadcast(computeTransitiveClosure(subClassOfTriples).alias("SC"))
@@ -173,8 +171,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 
 //          explode("objects", "object") {
 //          case Row(classes: Array[Row]) => classes.map(clsRow => clsRow(0).asInstanceOf[String])
-//          case _ => {println("ELSE")
-//            Seq()}
+//          case _ => println("ELSE")
+//            Seq()
 //        }
 //    exploded.show()
 
@@ -218,5 +216,5 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     * @param graph the RDF graph
     * @return the materialized RDF graph
     */
-  override def apply(graph: RDFGraph): RDFGraph = ???
+  override def apply(graph: RDFGraph): RDFGraph = graph
 }

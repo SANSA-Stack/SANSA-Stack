@@ -4,6 +4,7 @@ import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+
 import net.sansa_stack.inference.data.RDFTriple
 
 /**
@@ -22,7 +23,7 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
     * @param o the object
     * @return RDD of triples
     */
-  def find (s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple]= {
+  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple] = {
       triples.filter(t =>
           (s == None || t.subject == s.get) &&
           (p == None || t.predicate == p.get) &&
@@ -55,7 +56,7 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
   /**
     * Persist the triples RDD with the default storage level (`MEMORY_ONLY`).
     */
-  def cache() = {
+  def cache(): RDFGraph = {
     triples.cache()
     this
   }
@@ -64,7 +65,7 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
     * Return the number of triples.
     * @return the number of triples
     */
-  def size() = {
+  def size(): Long = {
     triples.count()
   }
 

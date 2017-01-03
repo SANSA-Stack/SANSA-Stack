@@ -1,13 +1,12 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
+import scala.collection.mutable
+
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.DataFrame
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.RDFGraph
 import net.sansa_stack.inference.utils.Profiler
-
-import scala.collection.mutable
-import scala.reflect.ClassTag
 
 /**
   * A forward chaining based reasoner.
@@ -76,5 +75,4 @@ trait ForwardRuleReasoner extends Profiler {
 
     extractedTriples
   }
-
 }

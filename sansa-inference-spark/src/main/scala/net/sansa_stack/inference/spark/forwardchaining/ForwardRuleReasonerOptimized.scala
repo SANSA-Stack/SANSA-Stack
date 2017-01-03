@@ -1,13 +1,14 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
+import scala.language.{existentials, implicitConversions}
+
 import org.apache.jena.reasoner.rulesys.Rule
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.SparkSession
+import org.slf4j.LoggerFactory
+
 import net.sansa_stack.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator}
 import net.sansa_stack.inference.spark.data.AbstractRDFGraph
 import net.sansa_stack.inference.spark.rules.RuleExecutor
-import org.slf4j.LoggerFactory
-
-import scala.language.{existentials, implicitConversions}
 
 /**
   * An optimized implementation of the forward chaining based reasoner.
@@ -25,18 +26,18 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
   var unionCnt = 0
   var distinctCnt = 0
 
-  def reset() = {
+  def reset(): Unit = {
     ruleExecutionCnt = 0
     countCnt = 0
     unionCnt = 0
     distinctCnt = 0
   }
 
-  def showExecutionStats() = {
-    println("#Executed Rules:" + ruleExecutionCnt)
-    println("#Count Request:" + countCnt)
-    println("#Union Request:" + unionCnt)
-    println("#Distinct Request:" + distinctCnt)
+  def showExecutionStats(): Unit = {
+    info("#Executed Rules:" + ruleExecutionCnt)
+    info("#Count Request:" + countCnt)
+    info("#Union Request:" + unionCnt)
+    info("#Distinct Request:" + distinctCnt)
   }
   /**
     * Applies forward chaining to the given RDF graph and returns a new RDF graph that contains all additional
@@ -102,7 +103,7 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
     var newGraph = graph.cache()
     var iteration = 1
     var oldCount = 0L
-    var nextCount = newGraph.size
+    var nextCount = newGraph.size()
     logger.info(s"initial size:$nextCount")
     do {
       logger.info("Iteration " + iteration)

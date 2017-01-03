@@ -1,9 +1,9 @@
 package net.sansa_stack.inference.spark.rules.plan
 
-import net.sansa_stack.inference.spark.data.RDFGraphNative
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative}
 
@@ -20,7 +20,7 @@ class PlanExecutorNative2(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple],
   def execute(plan: Plan, graph: RDFGraphNative): RDFGraphNative = {
     val logicalPlan = plan.toLogicalPlan(sqlContext)
 
-    println(logicalPlan.toString())
+//    println(logicalPlan.toString())
 
 //    val result = executePlan(logicalPlan, graph.toRDD())
 //
@@ -163,7 +163,7 @@ class PlanExecutorNative2(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple],
 //    def this(triple: RDFTriple) = {
 //      this(mutable.HashMap("S" -> "S"))
 //    }
-//def execute2(plan: Plan, graph: RDFGraphNative): RDFGraphNative = {
+// def execute2(plan: Plan, graph: RDFGraphNative): RDFGraphNative = {
 //  println("JOIN CANDIDATES:\n" + plan.joins.mkString("\n"))
 //
 //  // for each triple pattern compute the relation first
@@ -244,7 +244,7 @@ class PlanExecutorNative2(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple],
 //  }
 //
 //  graph
-//}
+// }
 
 //  def mergeJoins(joins: mutable.Set[Join]) = {
 //    joins.groupBy(join => (join.tp1, join.tp2))

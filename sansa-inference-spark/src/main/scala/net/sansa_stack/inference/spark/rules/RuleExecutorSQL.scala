@@ -1,7 +1,8 @@
 package net.sansa_stack.inference.spark.rules
 
-import net.sansa_stack.inference.spark.data.RDFGraphDataFrame
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
+import net.sansa_stack.inference.spark.data.RDFGraphDataFrame
 import net.sansa_stack.inference.spark.rules.plan.PlanExecutorSQL
 
 /**
@@ -9,6 +10,7 @@ import net.sansa_stack.inference.spark.rules.plan.PlanExecutorSQL
   *
   * @author Lorenz Buehmann
   */
-class RuleExecutorSQL(sparkSession: SparkSession) extends RuleExecutor[DataFrame, RDFGraphDataFrame](new PlanExecutorSQL(sparkSession)){
+class RuleExecutorSQL(sparkSession: SparkSession)
+  extends RuleExecutor[DataFrame, RDFGraphDataFrame](new PlanExecutorSQL(sparkSession)) {
 
 }

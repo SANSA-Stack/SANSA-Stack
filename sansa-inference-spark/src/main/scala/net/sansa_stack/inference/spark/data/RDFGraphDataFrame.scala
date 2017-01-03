@@ -1,7 +1,9 @@
 package net.sansa_stack.inference.spark.data
 
 import org.apache.jena.graph.Triple
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import net.sansa_stack.inference.data.RDFTriple
 
 /**
@@ -10,7 +12,7 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, RDFGraphDataFrame](triples){
+class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, RDFGraphDataFrame](triples) {
 
   /**
     * Returns an RDD of triples that match with the given input.
@@ -20,7 +22,7 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
     * @param o the object
     * @return RDD of triples
     */
-  override def find (s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): DataFrame = {
+  override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): DataFrame = {
     var sql = "SELECT subject, predicate, object FROM TRIPLES"
 
     // corner case is when nothing is set, i.e. all triples will be returned
@@ -67,22 +69,22 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
     this
   }
 
-  def distinct() = {
+  def distinct(): RDFGraphDataFrame = {
     new RDFGraphDataFrame(triples.distinct())
   }
 
   /**
     * Return the number of triples.
- *
+    *
     * @return the number of triples
     */
-  def size() = {
+  def size(): Long = {
     triples.count()
   }
 
   def toDataFrame(sparkSession: SparkSession): DataFrame = triples
 
-  def toRDD() = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
+  def toRDD(): RDD[RDFTriple] = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
 
   def unionAll(graphs: Seq[RDFGraphDataFrame]): RDFGraphDataFrame = {
     // the Dataframe based solution
@@ -91,11 +93,11 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
     // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
     val df: Option[DataFrame] = graphs match {
       case g :: Nil => Some(g.toDataFrame())
-      case g :: _   => Some(g.toDataFrame().sqlContext.createDataFrame(
+      case g :: _ => Some(g.toDataFrame().sqlContext.createDataFrame(
         g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
         g.toDataFrame().schema
       ))
-      case _  => None
+      case _ => None
     }
     new RDFGraphDataFrame(df.get)
   }

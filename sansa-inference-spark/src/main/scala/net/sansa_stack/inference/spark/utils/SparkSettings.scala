@@ -1,7 +1,7 @@
 package net.sansa_stack.inference.spark.utils
 
 import org.apache.spark.storage.StorageLevel
-;
+
 
 /**
   * @author Lorenz Buehmann

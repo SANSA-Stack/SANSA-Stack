@@ -6,9 +6,10 @@ import java.nio.charset.StandardCharsets
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
+import org.slf4j.LoggerFactory
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.utils.{RDFTripleOrdering, RDFTripleToNTripleString}
-import org.slf4j.LoggerFactory
 
 /**
   * Writes an RDF graph to disk.
@@ -42,13 +43,13 @@ object RDFGraphWriter {
     */
   def writeTriplesToFile(triples: RDD[RDFTriple], path: String, singleFile: Boolean = false, sorted: Boolean = false): Unit = {
     logger.info("writing triples to disk...")
-    val startTime  = System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
     implicit val ordering = RDFTripleOrdering
 
     // sort triples if enabled
-    val tmp = if(sorted) {
-                triples.map(t => (t,t)).sortByKey().map(_._1)
+    val tmp = if (sorted) {
+                triples.map(t => (t, t)).sortByKey().map(_._1)
               } else {
                 triples
               }

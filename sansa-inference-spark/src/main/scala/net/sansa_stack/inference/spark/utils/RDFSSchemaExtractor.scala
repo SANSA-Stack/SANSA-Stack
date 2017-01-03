@@ -1,11 +1,11 @@
 package net.sansa_stack.inference.spark.utils
 
-import net.sansa_stack.inference.spark.data.{RDFGraphDataFrame, RDFGraphNative}
 import org.apache.jena.vocabulary.RDFS
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import net.sansa_stack.inference.spark.data._
+
+import net.sansa_stack.inference.spark.data.{RDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.utils.{CollectionUtils, Logging}
 
 /**

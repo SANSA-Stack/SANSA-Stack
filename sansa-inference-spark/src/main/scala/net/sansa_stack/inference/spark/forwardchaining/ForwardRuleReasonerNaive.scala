@@ -1,14 +1,15 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import net.sansa_stack.inference.spark.data.RDFGraphNative
+import scala.language.{existentials, implicitConversions}
+
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.rules.RuleExecutorNative
 import org.slf4j.LoggerFactory
 
-import scala.language.{existentials, implicitConversions}
+import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.spark.data.RDFGraphNative
+import net.sansa_stack.inference.spark.rules.RuleExecutorNative
 
 /**
   * A naive implementation of the forward chaining based reasoner that does fix-point iteration, i.e. it applies
@@ -17,7 +18,8 @@ import scala.language.{existentials, implicitConversions}
   *
   * @author Lorenz Buehmann
   */
-class ForwardRuleReasonerNaive(sc: SparkContext, rules: Set[Rule]) extends AbstractForwardRuleReasoner[RDD[RDFTriple], RDFGraphNative]{
+class ForwardRuleReasonerNaive(sc: SparkContext, rules: Set[Rule])
+  extends AbstractForwardRuleReasoner[RDD[RDFTriple], RDFGraphNative] {
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 

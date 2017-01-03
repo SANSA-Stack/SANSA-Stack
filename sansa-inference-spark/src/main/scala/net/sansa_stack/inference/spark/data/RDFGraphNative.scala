@@ -4,6 +4,7 @@ import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+
 import net.sansa_stack.inference.data.RDFTriple
 
 /**
@@ -12,7 +13,7 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples){
+class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples) {
 
   /**
     * Returns an RDD of triples that match with the given input.
@@ -22,7 +23,7 @@ class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[R
     * @param o the object
     * @return RDD of triples
     */
-  def find (s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple]= {
+  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple] = {
       triples.filter(t =>
           (s == None || t.subject == s.get) &&
           (p == None || t.predicate == p.get) &&
@@ -52,20 +53,20 @@ class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[R
     this
   }
 
-  def distinct() = {
+  def distinct(): RDFGraphNative = {
     new RDFGraphNative(triples.distinct())
   }
 
   /**
     * Return the number of triples.
- *
+    *
     * @return the number of triples
     */
-  def size() = {
+  def size(): Long = {
     triples.count()
   }
 
-  def toRDD() = triples
+  def toRDD(): RDD[RDFTriple] = triples
 
   def toDataFrame(sparkSession: SparkSession): DataFrame = {
     // convert RDD to DataFrame

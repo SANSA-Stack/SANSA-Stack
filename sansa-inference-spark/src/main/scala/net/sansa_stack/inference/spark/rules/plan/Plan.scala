@@ -1,5 +1,7 @@
 package net.sansa_stack.inference.spark.rules.plan
 
+import scala.collection.mutable
+
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.spark.sql.SQLContext
@@ -7,9 +9,8 @@ import org.apache.spark.sql.catalyst.analysis.Analyzer
 import org.apache.spark.sql.catalyst.optimizer.Optimizer
 import org.apache.spark.sql.catalyst.parser.ParserInterface
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import net.sansa_stack.inference.utils.TripleUtils
 
-import scala.collection.mutable
+import net.sansa_stack.inference.utils.TripleUtils
 
 /**
   * An execution plan to process a single rule.
@@ -22,18 +23,18 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
   var idx = 0
 
 
-  def generateJoins() = {
+  def generateJoins(): Unit = {
 
   }
 
-  def addTriplePattern(tp: TriplePattern) = {
+  def addTriplePattern(tp: TriplePattern): Unit = {
 
   }
 
   def toLogicalPlan(sqlContext: SQLContext): LogicalPlan = {
     // convert to SQL query
     val sql = toSQL
-    println("SQL query:" + sql)
+//    println("SQL query:" + sql)
 
     // get session state
     val session = sqlContext.sparkSession
@@ -69,12 +70,12 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
 //    println(logicalPlan.toString())
 
 //    val qe = new QueryExecution(sqlContext, logicalPlan)
-    val optimizedPlan = logicalPlan//DefaultOptimizer.execute(qe.optimizedPlan)
+    val optimizedPlan = logicalPlan// DefaultOptimizer.execute(qe.optimizedPlan)
 
     optimizedPlan
   }
 
-  def toSQL = {
+  def toSQL: String = {
     var sql = "SELECT "
 
     sql += projectionPart() + "\n"
@@ -98,7 +99,7 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
 //    expressions += (if(target.getObject.isVariable) expressionFor(target.getObject, target) else target.getObject.toString)
 
     requiredVars.foreach{ v =>
-      if(v.isVariable) {
+      if (v.isVariable) {
         var done = false
 
         for(tp <- triplePatterns; if !done) {
@@ -159,7 +160,7 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     sql
   }
 
-  def toSQL(tp: Triple) = {
+  def toSQL(tp: Triple): String = {
     var sql = "SELECT "
 
     sql += projectionPart(tp)
@@ -171,12 +172,12 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     sql
   }
 
-  def projectionPart(tp: Triple) = {
+  def projectionPart(tp: Triple): String = {
     subjectColumn() + ", " + predicateColumn() + ", " + objectColumn()
   }
 
-  def projectionPart(tp: Triple, selectedVars: List[Node]) = {
-
+  def projectionPart(tp: Triple, selectedVars: List[Node]): String = {
+    ""
   }
 
   def uniqueAliasFor(tp: Triple): String = {
@@ -190,15 +191,15 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     }
   }
 
-  def joinExpressionFor(tp1: Triple, tp2: Triple, joinVar: Node) = {
+  def joinExpressionFor(tp1: Triple, tp2: Triple, joinVar: Node): String = {
     expressionFor(joinVar, tp1) + "=" + expressionFor(joinVar, tp2)
   }
 
-  def joinExpressionFor(join: Join) = {
+  def joinExpressionFor(join: Join): String = {
     expressionFor(join.joinVar, join.tp1) + "=" + expressionFor(join.joinVar, join.tp2)
   }
 
-  def fromPart(tp: Triple) = {
+  def fromPart(tp: Triple): String = {
     tableName(tp)
   }
 
@@ -216,11 +217,11 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     ret
   }
 
-  def isVarWithName(node: Node) = {
-
+  def isVarWithName(node: Node): Boolean = {
+    false
   }
 
-  def whereParts(tp: Triple) = {
+  def whereParts(tp: Triple): mutable.Set[String] = {
     val res = mutable.Set[String]()
 
     if(!tp.getSubject.isVariable) {
@@ -237,35 +238,35 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     res
   }
 
-  def subjectColumnName(tp: Triple) = {
+  def subjectColumnName(tp: Triple): String = {
     uniqueAliasFor(tp) + "." + subjectColumn()
   }
 
-  def predicateColumnName(tp: Triple) = {
+  def predicateColumnName(tp: Triple): String = {
     uniqueAliasFor(tp) + "." + predicateColumn()
   }
 
-  def objectColumnName(tp: Triple) = {
+  def objectColumnName(tp: Triple): String = {
     uniqueAliasFor(tp) + "." + objectColumn()
   }
 
-  def tableName(tp: Triple) = {
+  def tableName(tp: Triple): String = {
     table() + " " + uniqueAliasFor(tp)
   }
 
-  def table() = {
+  def table(): String = {
     "TRIPLES"
   }
 
-  def subjectColumn() = {
+  def subjectColumn(): String = {
     "subject"
   }
 
-  def predicateColumn() = {
+  def predicateColumn(): String = {
     "predicate"
   }
 
-  def objectColumn() = {
+  def objectColumn(): String = {
     "object"
   }
 

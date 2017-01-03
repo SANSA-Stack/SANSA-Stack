@@ -1,8 +1,8 @@
 package net.sansa_stack.inference.spark.utils
 
-import org.apache.spark.rdd.RDD
-
 import scala.reflect.ClassTag
+
+import org.apache.spark.rdd.RDD
 
 /**
   * Utility class for RDD operations.

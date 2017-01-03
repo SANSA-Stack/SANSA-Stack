@@ -1,19 +1,21 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.RDFGraph
+import scala.reflect.ClassTag
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 
-import scala.reflect.ClassTag
+import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.spark.data.RDFGraph
 
 /**
   * An engine to compute the transitive closure (TC) for a set of triples given in several datastructures.
   *
   * @author Lorenz Buehmann
   */
-class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val parallelism: Int) extends ForwardRuleReasoner{
+class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val parallelism: Int)
+  extends ForwardRuleReasoner {
 
   def this(sc: SparkContext, property: String, parallelism: Int) {
     this(sc, Seq(property), parallelism)
@@ -31,7 +33,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @return the materialized RDF graph
     */
   override def apply(graph: RDFGraph): RDFGraph = {
-    if(properties.isEmpty) {
+    if (properties.isEmpty) {
       throw new RuntimeException("A list of properties has to be given for the transitive reasoner!")
     }
 
@@ -70,7 +72,9 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
   //  }
 
   private def addTransitive(triples: Set[RDFTriple]): Set[RDFTriple] = {
-    triples ++ (for (t1 <- triples; t2 <- triples if t1.`object` == t2.subject) yield RDFTriple(t1.subject, t1.predicate, t2.`object`))
+    triples ++ (
+      for (t1 <- triples; t2 <- triples if t1.`object` == t2.subject)
+      yield RDFTriple(t1.subject, t1.predicate, t2.`object`))
   }
 
   /**
@@ -98,7 +102,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @return an RDD containing the transitive closure of the triples
     */
   def computeTransitiveClosure(triples: RDD[RDFTriple], predicate: String): RDD[RDFTriple] = {
-    if(triples.isEmpty()) return triples
+    if (triples.isEmpty()) return triples
     log.info(s"computing TC for property $predicate...")
 
     profile {
@@ -127,7 +131,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     val edgesReversed = tc.map(t => (t._2, t._1))
     edgesReversed.cache()
 
-    def f(rdd: RDD[(A, A)]): RDD[(A, A)] =  {
+    def f(rdd: RDD[(A, A)]): RDD[(A, A)] = {
       rdd.join(edgesReversed).map(x => (x._2._2, x._2._1))
     }
 
@@ -197,7 +201,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
       i += 1
     }
 
-    println("TC has " + tc.count() + " edges.")
+    log.info("TC has " + tc.count() + " edges.")
     tc
   }
 
@@ -207,7 +211,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @param edges the Dataframe of triples
     * @return a Dataframe containing the transitive closure of the triples
     */
-  def computeTransitiveClosure[A:ClassTag](edges: DataFrame): DataFrame = {
+  def computeTransitiveClosure[A: ClassTag](edges: DataFrame): DataFrame = {
     log.info("computing TC...")
 
     profile {
@@ -229,7 +233,8 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
         // then project the result to obtain the new (x, y) paths.
 
         tc.createOrReplaceTempView("SC")
-        var joined = tc.sqlContext.sql("SELECT A.subject, A.predicate, B.object FROM SC A INNER JOIN SC B ON A.object = B.subject")
+        var joined = tc.sqlContext.
+          sql("SELECT A.subject, A.predicate, B.object FROM SC A INNER JOIN SC B ON A.object = B.subject")
 
         //      joined.explain()
         //      var joined = df1.join(df2, df1("object") === df2("subject"), "inner")

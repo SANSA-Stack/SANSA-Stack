@@ -1,9 +1,8 @@
 package net.sansa_stack.inference.spark.rules.plan
 
-import org.apache.spark.sql.{DataFrame, SQLContext}
-import net.sansa_stack.inference.spark.data.RDFGraph
-import net.sansa_stack.inference.spark.data.AbstractRDFGraph
 import org.slf4j.LoggerFactory
+
+import net.sansa_stack.inference.spark.data.AbstractRDFGraph
 
 /**
   * An executor for a rule execution plan.

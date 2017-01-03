@@ -3,6 +3,7 @@ package net.sansa_stack.inference.spark.data
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import net.sansa_stack.inference.data.RDFTriple
 
 /**

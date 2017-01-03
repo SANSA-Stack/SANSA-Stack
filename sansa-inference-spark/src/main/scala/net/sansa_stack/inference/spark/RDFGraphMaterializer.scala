@@ -2,13 +2,15 @@ package net.sansa_stack.inference.spark
 
 import java.io.File
 
+import org.apache.spark.SparkConf
+import org.apache.spark.scheduler.{SparkListener, SparkListenerApplicationEnd, SparkListenerApplicationStart}
+import org.apache.spark.sql.SparkSession
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.spark.data.{RDFGraphLoader, RDFGraphWriter}
 import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
 
 /**
   * The main entry class to compute the materialization on an RDF graph.
@@ -25,7 +27,9 @@ object RDFGraphMaterializer {
       case Some(config) =>
         run(config.in, config.out, config.profile, config.properties, config.writeToSingleFile, config.sortedOutput)
       case None =>
+        // scalastyle:off println
         println(parser.usage)
+        // scalastyle:on println
     }
   }
 
@@ -43,11 +47,20 @@ object RDFGraphMaterializer {
       .appName(s"SPARK $profile Reasoning")
       .master("local[4]")
 //      .config("spark.eventLog.enabled", "true")
-      .config("spark.hadoop.validateOutputSpecs", "false") //override output files
+      .config("spark.hadoop.validateOutputSpecs", "false") // override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.default.parallelism", parallelism)
       .config(conf)
       .getOrCreate()
+    session.sparkContext.addSparkListener(new SparkListener {
+      override def onApplicationStart(applicationStart: SparkListenerApplicationStart) {
+        println("Spark ApplicationStart: " + applicationStart.appName)
+      }
+
+      override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd) {
+        println("Spark ApplicationEnd: " + applicationEnd.time)
+      }
+    })
 
 //    println(session.conf.getAll.mkString("\n"))
 
@@ -59,11 +72,10 @@ object RDFGraphMaterializer {
     val reasoner = profile match {
       case TRANSITIVE => new TransitiveReasoner(session.sparkContext, properties, parallelism)
       case RDFS => new ForwardRuleReasonerRDFS(session.sparkContext, parallelism)
-      case RDFS_SIMPLE => {
+      case RDFS_SIMPLE =>
         val r = new ForwardRuleReasonerRDFS(session.sparkContext, parallelism)
         r.level = RDFSLevel.SIMPLE
         r
-      }
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(session.sparkContext)
     }
 
