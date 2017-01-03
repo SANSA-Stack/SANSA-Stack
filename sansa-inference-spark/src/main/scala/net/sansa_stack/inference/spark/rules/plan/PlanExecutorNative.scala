@@ -2,19 +2,19 @@ package net.sansa_stack.inference.spark.rules.plan
 
 import java.util
 
-import net.sansa_stack.inference.spark.data.RDFGraphNative
+import scala.collection.JavaConverters._
+import scala.collection.mutable
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.expressions.{Alias, And, AttributeReference, EqualTo, Expression, IsNotNull, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, SubqueryAlias}
 import org.apache.spark.sql.catalyst.plans.{Inner, logical}
-import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.EmptyRDFGraphDataFrame
-import net.sansa_stack.inference.utils.{Logging, Tuple0}
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable
+import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative}
+import net.sansa_stack.inference.utils.{Logging, Tuple0}
 
 /**
   * An executor that works on the the native Scala data structures and uses Spark joins, filters etc.
@@ -63,8 +63,10 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
     trace("JOIN EXPR:" + joinExpressions)
 
     // get left and right join expressions
-    val joinExpressionsLeft = joinExpressions.filter(expr => leftExpressions.exists(leftExpr => leftExpr.semanticEquals(expr)))
-    val joinExpressionsRight = joinExpressions.filter(expr => rightExpressions.exists(rightExpr => rightExpr.semanticEquals(expr)))
+    val joinExpressionsLeft = joinExpressions.filter(expr =>
+      leftExpressions.exists(leftExpr => leftExpr.semanticEquals(expr)))
+    val joinExpressionsRight = joinExpressions.filter(expr =>
+      rightExpressions.exists(rightExpr => rightExpr.semanticEquals(expr)))
     trace("JOIN EXPR L:" + joinExpressionsLeft)
     trace("JOIN EXPR R:" + joinExpressionsRight)
 
@@ -125,7 +127,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
     // if size of projection or ordering is different, or there is an alias var
     if(projectList.size != childExpressions.size ||
       !projectList.equals(childExpressions) ||
-      aliases.nonEmpty){
+      aliases.nonEmpty) {
 
       // get the positions for projection
       val positions = projectList.map(expr => availableExpressionsReal.indexOf(expr.simpleString))
@@ -150,7 +152,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
     // get the available child expressions
     val childExpressions = (child match {
       case logical.Filter(condition, filterChild) => expressionsFor(filterChild)
-      case logical.Join(left, right, Inner, Some(condition)) => {
+      case logical.Join(left, right, Inner, Some(condition)) =>
         var list = new mutable.ListBuffer[Expression]()
         list ++= expressionsFor(left) ++ expressionsFor(right)
         val eCond = expressionsFor(condition, true).map(expr => expr.simpleString)
@@ -160,7 +162,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
         list.foreach{expr =>
           var replace: Option[Expression] = None
           joins.foreach{j =>
-            if(j.right.simpleString == expr.simpleString) {
+            if (j.right.simpleString == expr.simpleString) {
               replace = Some(j.left)
             }
           }
@@ -171,7 +173,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
           }
         }
         for(e <- eRight) {
-          if(eCond.contains(e.simpleString)) {
+          if (eCond.contains(e.simpleString)) {
             list -= e
           }
         }
@@ -181,7 +183,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
         projectList.foreach{expr =>
           var replace: Option[Expression] = None
           joins.foreach{j =>
-            if(j.right.simpleString == expr.simpleString) {
+            if (j.right.simpleString == expr.simpleString) {
               replace = Some(j.left)
             }
           }
@@ -195,8 +197,8 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
 
         list2.toList
         joinConditions = joinConditionsFor(condition)
+
         list
-      }
       case _ => expressionsFor(child)
     })
       .map(expr => expr.asInstanceOf[AttributeReference].simpleString)
@@ -216,7 +218,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
     // if size of projection or ordering is different, or there is an alias var
     if(projectionVars.size != childExpressions.size ||
       !projectionVars.equals(childExpressions) ||
-      aliases.nonEmpty){
+      aliases.nonEmpty) {
 
       val positions = projectionVars.map(expr => availableExpressionsReal.indexOf(expr.simpleString))
 
@@ -275,7 +277,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
     val list = tuple.productIterator.toList
     val mutList = mutable.ListBuffer[(Int, Expression)]()
     mutList ++= aliases
-    val newList = positions.map(pos => if(pos == -1) mutList.remove(0)._2.toString() else list(pos))
+    val newList = positions.map(pos => if (pos == -1) mutList.remove(0)._2.toString() else list(pos))
     newList.toTuple
   }
 
@@ -313,7 +315,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
 //     list.add(joinPositions(i), pair._1.productElement(i))
 //    }
 
-    list.toList.toTuple
+    list.asScala.toList.toTuple
   }
 
   def mergedRDD(tuples: RDD[(Product, (Product, Product))], joinPositions: Seq[Int]): RDD[Product] = {
@@ -347,7 +349,8 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
         projectList.toList
       case logical.Filter(condition, child) =>
         expressionsFor(child)
-      case SubqueryAlias(alias: String, child: LogicalPlan) =>
+      case SubqueryAlias(alias: String, child: LogicalPlan,
+        view: scala.Option[org.apache.spark.sql.catalyst.TableIdentifier]) =>
         expressionsFor(child)
       case _ =>
         logicalPlan.expressions.toList
@@ -381,16 +384,16 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
       case 9 => toTuple9
       case 10 => toTuple10
     }
-    def toTuple1 = elements match {case Seq(a) => new Tuple1(a) }
-    def toTuple2 = elements match {case Seq(a, b) => (a, b) }
-    def toTuple3 = elements match {case Seq(a, b, c) => (a, b, c) }
-    def toTuple4 = elements match {case Seq(a, b, c, d) => (a, b, c, d) }
-    def toTuple5 = elements match {case Seq(a, b, c, d, e) => (a, b, c, d, e) }
-    def toTuple6 = elements match {case Seq(a, b, c, d, e, f) => (a, b, c, d, e, f) }
-    def toTuple7 = elements match {case Seq(a, b, c, d, e, f, g) => (a, b, c, d, e, f, g) }
-    def toTuple8 = elements match {case Seq(a, b, c, d, e, f, g, h) => (a, b, c, d, e, f, g, h) }
-    def toTuple9 = elements match {case Seq(a, b, c, d, e, f, g, h, i) => (a, b, c, d, e, f, g, h, i) }
-    def toTuple10 = elements match {case Seq(a, b, c, d, e, f, g, h, i, j) => (a, b, c, d, e, f, g, h, i, j) }
+    def toTuple1: Product = elements match {case Seq(a) => new Tuple1(a) }
+    def toTuple2: Product = elements match {case Seq(a, b) => (a, b) }
+    def toTuple3: Product = elements match {case Seq(a, b, c) => (a, b, c) }
+    def toTuple4: Product = elements match {case Seq(a, b, c, d) => (a, b, c, d) }
+    def toTuple5: Product = elements match {case Seq(a, b, c, d, e) => (a, b, c, d, e) }
+    def toTuple6: Product = elements match {case Seq(a, b, c, d, e, f) => (a, b, c, d, e, f) }
+    def toTuple7: Product = elements match {case Seq(a, b, c, d, e, f, g) => (a, b, c, d, e, f, g) }
+    def toTuple8: Product = elements match {case Seq(a, b, c, d, e, f, g, h) => (a, b, c, d, e, f, g, h) }
+    def toTuple9: Product = elements match {case Seq(a, b, c, d, e, f, g, h, i) => (a, b, c, d, e, f, g, h, i) }
+    def toTuple10: Product = elements match {case Seq(a, b, c, d, e, f, g, h, i, j) => (a, b, c, d, e, f, g, h, i, j) }
 
   }
 }
