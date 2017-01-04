@@ -1,6 +1,7 @@
 package net.sansa_stack.inference.utils
 
 import com.google.common.collect.ComparisonChain
+
 import net.sansa_stack.inference.data.RDFTriple
 
 /**

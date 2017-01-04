@@ -3,7 +3,6 @@ package net.sansa_stack.inference.spark
 import java.io.File
 
 import org.apache.spark.SparkConf
-import org.apache.spark.scheduler.{SparkListener, SparkListenerApplicationEnd, SparkListenerApplicationStart}
 import org.apache.spark.sql.SparkSession
 
 import net.sansa_stack.inference.data.RDFTriple
@@ -21,7 +20,6 @@ import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHo
   */
 object RDFGraphMaterializer {
 
-
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
@@ -38,6 +36,7 @@ object RDFGraphMaterializer {
     // register the custom classes for Kryo serializer
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
+    conf.set("spark.extraListeners", "net.sansa_stack.inference.spark.utils.CustomSparkListener")
 
     // set the parallelism
     val parallelism = 4
@@ -52,15 +51,6 @@ object RDFGraphMaterializer {
       .config("spark.default.parallelism", parallelism)
       .config(conf)
       .getOrCreate()
-    session.sparkContext.addSparkListener(new SparkListener {
-      override def onApplicationStart(applicationStart: SparkListenerApplicationStart) {
-        println("Spark ApplicationStart: " + applicationStart.appName)
-      }
-
-      override def onApplicationEnd(applicationEnd: SparkListenerApplicationEnd) {
-        println("Spark ApplicationEnd: " + applicationEnd.time)
-      }
-    })
 
 //    println(session.conf.getAll.mkString("\n"))
 

@@ -1,6 +1,7 @@
 package net.sansa_stack.inference.rules
 
 import org.apache.jena.reasoner.rulesys.Rule
+
 import net.sansa_stack.inference.utils.RuleUtils
 
 /**

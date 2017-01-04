@@ -1,7 +1,5 @@
 package scalax.collection.connectivity
 
-import net.sansa_stack.inference.utils.Logging
-
 import scala.collection.mutable.ListBuffer
 import scala.collection.{Set, mutable}
 import scala.math.min
@@ -9,8 +7,10 @@ import scala.reflect.ClassTag
 import scalax.collection.Graph
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef._
-import scalax.collection.edge.LDiEdge
 import scalax.collection.edge.Implicits._
+import scalax.collection.edge.LDiEdge
+
+import net.sansa_stack.inference.utils.Logging
 
 /**
   * Provides algorithms for finding graph components.
@@ -214,7 +214,7 @@ final class GraphComponents[N, E[X] <: EdgeLikeIn[X]](
   */
 object GraphComponents {
 
-  implicit def graphToComponents[N: ClassTag, E[X] <: EdgeLikeIn[X]](g: Graph[N, E]) =
+  implicit def graphToComponents[N: ClassTag, E[X] <: EdgeLikeIn[X]](g: Graph[N, E]): GraphComponents[N, E] =
     new GraphComponents[N, E](g)
 }
 

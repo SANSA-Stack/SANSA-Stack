@@ -1,7 +1,7 @@
 package net.sansa_stack.inference.rules.plan
 
 import org.apache.calcite.jdbc.CalciteSchema
-import org.apache.calcite.plan.{Context, RelOptCluster, RelOptSchema}
+import org.apache.calcite.plan.{Context, RelOptCluster, RelOptPlanner, RelOptSchema}
 import org.apache.calcite.prepare.CalciteCatalogReader
 import org.apache.calcite.rex.RexBuilder
 import org.apache.calcite.schema.SchemaPlus
@@ -20,9 +20,9 @@ class SimpleRelBuilder (
     cluster,
     relOptSchema) {
 
-  def getPlanner = cluster.getPlanner
+  def getPlanner: RelOptPlanner = cluster.getPlanner
 
-  def getCluster = cluster
+  def getCluster: RelOptCluster = cluster
 }
 
 object SimpleRelBuilder {

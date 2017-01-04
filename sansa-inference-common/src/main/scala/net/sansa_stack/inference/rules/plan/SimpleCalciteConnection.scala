@@ -9,8 +9,8 @@ import java.util.concurrent.Executor
 import org.apache.calcite.adapter.java.JavaTypeFactory
 import org.apache.calcite.config.CalciteConnectionConfig
 import org.apache.calcite.jdbc.CalciteConnection
-import org.apache.calcite.linq4j.{Enumerator, Queryable}
 import org.apache.calcite.linq4j.tree.Expression
+import org.apache.calcite.linq4j.{Enumerator, Queryable}
 import org.apache.calcite.schema.SchemaPlus
 import org.apache.calcite.tools.Frameworks
 

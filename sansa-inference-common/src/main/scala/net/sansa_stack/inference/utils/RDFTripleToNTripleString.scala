@@ -7,9 +7,16 @@ import net.sansa_stack.inference.data.RDFTriple
   *
   * @author Lorenz Buehmann
   */
-class RDFTripleToNTripleString extends Function1[RDFTriple, String] with java.io.Serializable {
+class RDFTripleToNTripleString
+    extends Function1[RDFTriple, String]
+    with java.io.Serializable {
   override def apply(t: RDFTriple): String = {
-    val objStr = if(t.`object`.startsWith("http:") || t.`object`.startsWith("ftp:")) s"<${t.`object`}>" else t.`object`
+    val objStr =
+      if (t.`object`.startsWith("http:") || t.`object`.startsWith("ftp:")) {
+        s"<${t.`object`}>"
+      } else {
+        t.`object`
+      }
     s"<${t.subject}> <${t.predicate}> ${objStr} ."
   }
 }

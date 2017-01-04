@@ -2,9 +2,10 @@ package net.sansa_stack.inference.utils
 
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.reasoner.TriplePattern
+import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.jena.vocabulary.OWL2._
 import org.apache.jena.vocabulary.RDFS._
-import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
+
 
 /**
   * Utility class for triples.
@@ -26,7 +27,7 @@ object TripleUtils {
     FunctionalProperty, InverseFunctionalProperty,
     SymmetricProperty, AsymmetricProperty,
     ReflexiveProperty, IrreflexiveProperty, TransitiveProperty,
-    OWL2.Class , RDFS.Class, Restriction
+    OWL2.Class, RDFS.Class, Restriction
   ).map(t => t.asNode())
 
   /**
@@ -62,11 +63,11 @@ object TripleUtils {
     * @param triple the triple
     */
   def position(node: Node, triple: Triple): Int = {
-    val ret = if(triple.subjectMatches(node)) {
+    val ret = if (triple.subjectMatches(node)) {
       1
-    } else if(triple.predicateMatches(node)) {
+    } else if (triple.predicateMatches(node)) {
       2
-    } else if(triple.objectMatches(node)) {
+    } else if (triple.objectMatches(node)) {
       3
     } else {
       -1
@@ -78,7 +79,7 @@ object TripleUtils {
 
 
   implicit class TriplePatternExtension(val tp: TriplePattern) {
-    def toTriple = {
+    def toTriple: Triple = {
       val s = alignVarNode(tp.getSubject)
       val p = alignVarNode(tp.getPredicate)
       val o = alignVarNode(tp.getObject)
@@ -86,10 +87,10 @@ object TripleUtils {
       Triple.create(s, p, o)
     }
 
-    def alignVarNode(node: Node) = {
-      if(node.isVariable) {
+    def alignVarNode(node: Node): Node = {
+      if (node.isVariable) {
         var name = node.getName
-        if(name.startsWith("?")) {
+        if (name.startsWith("?")) {
           name = name.substring(1)
         }
         NodeFactory.createVariable(name)

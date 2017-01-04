@@ -2,21 +2,22 @@ package net.sansa_stack.inference.rules
 
 import java.io.File
 
-import net.sansa_stack.inference.utils.GraphUtils._
-import net.sansa_stack.inference.utils.RuleUtils
-import net.sansa_stack.inference.utils.RuleUtils.RuleExtension
-import org.apache.jena.reasoner.rulesys.Rule
-
 import scala.language.{existentials, implicitConversions}
 import scalax.collection.Graph
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.connectivity.GraphComponents
 import scalax.collection.edge.LDiEdge
 
+import org.apache.jena.reasoner.rulesys.Rule
+
+import net.sansa_stack.inference.utils.GraphUtils._
+import net.sansa_stack.inference.utils.RuleUtils.RuleExtension
+import net.sansa_stack.inference.utils.{Logging, RuleUtils}
+
 /**
   * @author Lorenz Buehmann
   */
-object RuleDependencyGraphAnalyzer {
+object RuleDependencyGraphAnalyzer extends Logging{
 
   /**
     * Analyze a set of rules.
@@ -26,23 +27,23 @@ object RuleDependencyGraphAnalyzer {
   def analyze(rules: Set[Rule]) : Unit = {
 
     // check for rules with the same body
-    for(r1 <- rules; r2 <- rules) {
-      if(r1 != r2 && r1.sameBody(r2)) {
-        println("Same body:\n" + r1 + "\n" + r2)
+    for (r1 <- rules; r2 <- rules) {
+      if (r1 != r2 && r1.sameBody(r2)) {
+        debug("Same body:\n" + r1 + "\n" + r2)
       }
     }
 
     // split into t-rules, a-rules and h-rules first
 
-    println("\n" * 3 + "Analyzing terminological rules...")
+    debug("\n" * 3 + "Analyzing terminological rules...")
     val tRules = rules.filter(RuleUtils.isTerminological)
     computePlan(tRules)
 
-    println("\n" * 3 + "Analyzing assertional rules...")
+    debug("\n" * 3 + "Analyzing assertional rules...")
     val aRules = rules.filter(RuleUtils.isAssertional)
     computePlan(aRules)
 
-    println("\n" * 3 + "Analyzing hybrid rules...")
+    debug("\n" * 3 + "Analyzing hybrid rules...")
     val hRules = rules.filter(RuleUtils.isHybrid)
     computePlan(hRules)
 
@@ -64,20 +65,20 @@ object RuleDependencyGraphAnalyzer {
     // apply topological sort, i.e. we get layers of nodes where each node denotes a subgraph(i.e. set of rules)
     // and nodes in layer n have only predecessors in ancestor layers with at least one of them contained in layer n-1
     sccDag.topologicalSort.fold(
-      cycle => println("Cycle detected:" + cycle),
+      cycle => debug("Cycle detected:" + cycle),
       _.toLayered foreach { layer =>
-        println("---" * 3 + "layer " + layer._1 + "---" * 3)
+        debug("---" * 3 + "layer " + layer._1 + "---" * 3)
         layer._2.foreach(node => {
           val subgraph = node.value
-          print("graph(" + subgraph.nodes.map(_.getName).mkString("|") + ")  ")
+          debug("graph(" + subgraph.nodes.map(_.getName).mkString("|") + ")  ")
         })
-        println()
+        debug("")
       }
     )
     sccDag
   }
 
-  def computePlan(rules: Set[Rule]) : Unit = {
+  def computePlan(rules: Set[Rule]): Unit = {
     // generate the dependency graph
     val graph = RuleDependencyGraphGenerator.generate(rules)
 
@@ -87,14 +88,14 @@ object RuleDependencyGraphAnalyzer {
     // apply topological sort, i.e. we get layers of nodes where each node denotes a subgraph(i.e. set of rules)
     // and nodes in layer n have only predecessors in ancestor layers with at least one of them contained in layer n-1
     sccDag.topologicalSort.fold(
-      cycle => println("Cycle detected:" + cycle),
+      cycle => debug("Cycle detected:" + cycle),
       _.toLayered foreach { layer =>
-        println("---" * 3 + "layer " + layer._1 + "---" * 3)
+        debug("---" * 3 + "layer " + layer._1 + "---" * 3)
         layer._2.foreach(node => {
           val subgraph = node.value
-          print("graph(" + subgraph.nodes.map(_.getName).mkString("|") + ")  ")
+          debug("graph(" + subgraph.nodes.map(_.getName).mkString("|") + ")  ")
         })
-        println()
+        debug("")
       }
     )
   }
@@ -110,24 +111,24 @@ object RuleDependencyGraphAnalyzer {
 //    }
 //  }
 
-  def analyze(g: Graph[Rule, LDiEdge]) = {
+  def analyze(g: Graph[Rule, LDiEdge]): Unit = {
     // check for cycles
     val cycle = g.findCycle
-    println("Cycle found: " + cycle.nonEmpty)
-    println(cycle.getOrElse(println))
+    debug("Cycle found: " + cycle.nonEmpty)
+    debug(cycle.getOrElse("No cyle").toString)
 
     // topological sort
     g.topologicalSort.fold(
-      cycleNode => println("Cycle detected: " + cycleNode.value.getName),
+      cycleNode => debug("Cycle detected: " + cycleNode.value.getName),
       _.toLayered foreach { layer =>
-        println("---" * 3 + "layer " + layer._1 + "---" * 3)
+        debug("---" * 3 + "layer " + layer._1 + "---" * 3)
         layer._2.foreach(node => {
           val rule = node.value
           val ruleType = RuleUtils.entailmentType(rule)
           val isTC = RuleUtils.isTransitiveClosure(rule)
-          print(rule.getName + "(" + ruleType + (if (isTC) ", TC" else "")  + ")->" + node.diSuccessors.map(r => r.value.getName).mkString("|") + " ")
+          debug(rule.getName + "(" + ruleType + (if (isTC) ", TC" else "")  + ")->" + node.diSuccessors.map(r => r.value.getName).mkString("|") + " ")
         })
-        println()
+        debug("")
       }
     )
   }
@@ -146,7 +147,7 @@ object RuleDependencyGraphAnalyzer {
 
 
     filenames.foreach { filename =>
-      println(filename)
+      debug(filename)
 
       // parse the rules
       val rules = RuleUtils.load(filename).toSet

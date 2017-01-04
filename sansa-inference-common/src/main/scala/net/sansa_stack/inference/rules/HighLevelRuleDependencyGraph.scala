@@ -1,11 +1,11 @@
 package net.sansa_stack.inference.rules
 
-import org.apache.jena.reasoner.rulesys.Rule
-
-import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.Graph
+import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.edge.LDiEdge
 import scalax.collection.immutable.DefaultGraphImpl
+
+import org.apache.jena.reasoner.rulesys.Rule
 
 /**
   * A high-level rule dependency graph denotes a DAG such that
@@ -38,14 +38,14 @@ class HighLevelRuleDependencyGraph(iniNodes: Iterable[Graph[Rule, LDiEdge]] = Se
   /**
     * @return the rule dependency graphs contained in this graphs
     */
-  def components() = nodes.toOuter
+  def components(): Set[Graph[Rule, LDiEdge]] = nodes.toOuter
 
   /**
     * Applies topological sort and returns the resulting layers.
-    * Each layer contains its level and a set of rule dependency graphs.
-    * @return the layers
+    * Each layer contains its level and a set of rule dependency graphs (RDGs).
+    * @return the layers, i.e. (layer_number, Set(RDG))
     */
-  def layers() = topologicalSort.right.get.toLayered
+  def layers(): Traversable[(Int, Iterable[RuleDependencyGraph])] = topologicalSort.right.get.toLayered
                   .map(layer => (
                     layer._1,
                     layer._2.map(node => new RuleDependencyGraph(node.value)

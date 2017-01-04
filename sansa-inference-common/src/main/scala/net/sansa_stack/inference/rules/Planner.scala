@@ -1,26 +1,27 @@
 package net.sansa_stack.inference.rules
 
+import scala.collection.mutable
+
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.rulesys.Rule
+
 import net.sansa_stack.inference.rules.plan.{Join, Plan}
-import net.sansa_stack.inference.utils.RuleUtils
 import net.sansa_stack.inference.utils.RuleUtils._
 import net.sansa_stack.inference.utils.TripleUtils._
-
-import scala.collection.mutable
+import net.sansa_stack.inference.utils.{Logging, RuleUtils}
 
 /**
   * @author Lorenz Buehmann
   */
-object Planner {
+object Planner extends Logging{
 
   /**
     * Generates an execution plan for a single rule.
     *
     * @param rule the rule
     */
-  def generatePlan(rule: Rule) = {
-    println("Rule: " + rule)
+  def generatePlan(rule: Rule): Plan = {
+    info("Rule: " + rule)
 
     val body = rule.bodyTriplePatterns().map(tp => tp.toTriple).toSet
 
@@ -29,11 +30,11 @@ object Planner {
 //    process(body.head, body, visited)
 
     // group triple patterns by var
-    val map = new mutable.HashMap[Node, collection.mutable.Set[org.apache.jena.graph.Triple]] () with mutable.MultiMap[Node, org.apache.jena.graph.Triple]
-    body.foreach{tp =>
+    val map = new mutable.HashMap[Node, collection.mutable.Set[org.apache.jena.graph.Triple]]() with mutable.MultiMap[Node, org.apache.jena.graph.Triple]
+    body.foreach { tp =>
       val vars = RuleUtils.varsOf(tp)
-      vars.foreach{v =>
-        map.addBinding(v,tp)
+      vars.foreach { v =>
+        map.addBinding(v, tp)
       }
     }
 
@@ -75,24 +76,26 @@ object Planner {
 
   }
 
-  def process(tp: org.apache.jena.graph.Triple, body: mutable.ListBuffer[org.apache.jena.graph.Triple], visited: mutable.Set[org.apache.jena.graph.Triple]): Unit = {
-    println("TP:" + tp)
+  def process(tp: org.apache.jena.graph.Triple,
+              body: mutable.ListBuffer[org.apache.jena.graph.Triple],
+              visited: mutable.Set[org.apache.jena.graph.Triple]): Unit = {
+    info("TP:" + tp)
     visited += tp
 
     // get vars of current triple pattern
     val vars = varsOf(tp)
-    println("Vars: " + vars)
+    info("Vars: " + vars)
 
     // pick next connected triple pattern
-    vars.foreach{v =>
+    vars.foreach { v =>
       val nextTp = findNextTriplePattern(body, v)
 
-      if(nextTp.isDefined) {
+      if (nextTp.isDefined) {
         val tp2 = nextTp.get
-        println("Next TP:" + tp2)
-        println(new Join(tp, tp2, v))
+        info("Next TP:" + tp2)
+        info(new Join(tp, tp2, v).toString)
 
-        if(!visited.contains(tp2)) {
+        if (!visited.contains(tp2)) {
           process(tp2, body, visited)
         }
       }

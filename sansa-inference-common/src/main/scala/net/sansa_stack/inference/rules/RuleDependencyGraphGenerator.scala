@@ -1,26 +1,22 @@
 package net.sansa_stack.inference.rules
 
+import scala.collection.JavaConverters._
+import scala.language.{existentials, implicitConversions}
+import scalax.collection.GraphPredef._
+import scalax.collection.GraphTraversal.Parameters
+import scalax.collection._
+import scalax.collection.edge.Implicits._
+import scalax.collection.edge._
+
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.RDFS
-import org.jgrapht.alg.CycleDetector
 import org.jgrapht.alg.cycle.TarjanSimpleCycles
-import net.sansa_stack.inference.utils.{GraphUtils, RuleUtils}
+
 import net.sansa_stack.inference.utils.RuleUtils._
 import net.sansa_stack.inference.utils.graph.LabeledEdge
-
-import scala.language.{existentials, implicitConversions}
-import scalax.collection.GraphTraversal.{Parameters, Predecessors, Successors}
-import scalax.collection.edge.Implicits._
-import scalax.collection.GraphPredef._
-import scalax.collection._
-import GraphEdge._
-import edge._
-import edge.LBase._
-import edge.Implicits._
-import scalax.collection.immutable.DefaultGraphImpl
-import scala.collection.JavaConversions._
+import net.sansa_stack.inference.utils.{GraphUtils, Logging, RuleUtils}
 
 /**
   * A generator for a so-called dependency graph based on a given set of rules.
@@ -30,7 +26,7 @@ import scala.collection.JavaConversions._
   *
   * @author Lorenz Buehmann
   */
-object RuleDependencyGraphGenerator {
+object RuleDependencyGraphGenerator extends Logging {
 
   /**
     * Generates the rule dependency graph for a given set of rules.
@@ -39,7 +35,7 @@ object RuleDependencyGraphGenerator {
     * @param f a function that denotes whether a rule r1 depends on another rule r2
     * @return the rule dependency graph
     */
-  def generate(rules: Set[Rule], f:(Rule, Rule) => Option[TriplePattern] = dependsOnSmart, pruned: Boolean = false): RuleDependencyGraph = {
+  def generate(rules: Set[Rule], f: (Rule, Rule) => Option[TriplePattern] = dependsOnSmart, pruned: Boolean = false): RuleDependencyGraph = {
     // create empty graph
     var g = new RuleDependencyGraph()
 
@@ -49,29 +45,28 @@ object RuleDependencyGraphGenerator {
     // 2. add edge for each rule r1 that depends on another rule r2
     for (r1 <- rules; r2 <- rules) {
 
-      val r1r2 = f(r1, r2)// r1 depends on r2
-      if (r1r2.isDefined)
-        g += (r1 ~+> r2)(r1r2.get)
-      else {
+      val r1r2 = f(r1, r2) // r1 depends on r2
+      if (r1r2.isDefined) {
+        g += (r1 ~+> r2) (r1r2.get)
+      } else {
         val r2r1 = f(r2, r1)
-        if (r2r1.isDefined) // r2 depends on r1
-          g += (r2 ~+> r1)(r2r1.get)
+        if (r2r1.isDefined) { // r2 depends on r1
+          g += (r2 ~+> r1) (r2r1.get)
+        }
       }
       val r1r1 = f(r1, r1)
-      if (r1r1.isDefined) // r1 depends on r1, i.e. reflexive dependency
-        g += (r1 ~+> r1)(r1r1.get)
+      if (r1r1.isDefined) { // r1 depends on r1, i.e. reflexive dependency
+        g += (r1 ~+> r1) (r1r1.get)
+      }
     }
 
     // 3. pruning
-    if(pruned) {
-
+    if (pruned) {
       g = removeEdgesWithPredicateAlreadyTC(g)
       g = removeCyclesIfPredicateIsTC(g)
       g = removeEdgesWithCycleOverTCNode(g)
-//      g = prune(g)
-
-
-//      g = prune1(g)
+      //      g = prune(g)
+      //      g = prune1(g)
     }
 
     g
@@ -98,7 +93,7 @@ object RuleDependencyGraphGenerator {
       if (tp2.getPredicate.equals(tp1.getPredicate)) { // matching predicates
         ret = true
       } else {
-        if(tp1.getPredicate.isVariable && tp2.getPredicate.equals(RDFS.subPropertyOf.asNode())) {
+        if (tp1.getPredicate.isVariable && tp2.getPredicate.equals(RDFS.subPropertyOf.asNode())) {
           ret = true
         }
       }
@@ -134,7 +129,7 @@ object RuleDependencyGraphGenerator {
       if (tp2.getPredicate.equals(tp1.getPredicate)) { // matching predicates
         ret = Some(tp2)
       } else {
-        if(tp1.getPredicate.isVariable && tp2.getPredicate.equals(RDFS.subPropertyOf.asNode())) {
+        if (tp1.getPredicate.isVariable && tp2.getPredicate.equals(RDFS.subPropertyOf.asNode())) {
           ret = Some(tp2)
         }
 
@@ -148,27 +143,27 @@ object RuleDependencyGraphGenerator {
     ret
   }
 
-  def prune(graph: RuleDependencyGraph): RuleDependencyGraph = {
 
+  def prune(graph: RuleDependencyGraph): RuleDependencyGraph = {
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
     graph.nodes.foreach(node => {
-      println("#"*20)
-      println(s"NODE:${node.value.getName}")
+      debug("#" * 20)
+      debug(s"NODE:${node.value.getName}")
 
       // get all direct successors
       var successors = node.innerNodeTraverser.withParameters(Parameters(maxDepth = 1)).toList
       // remove node itself, if it's a cyclic node
       successors = successors.filterNot(_.equals(node))
-      println(s"SUCCESSORS:${successors.map(n => n.value.getName)}")
+      debug(s"SUCCESSORS:${successors.map(n => n.value.getName)}")
 
-      if(successors.size > 1) {
+      if (successors.size > 1) {
         // get pairs of successors
         val pairs = successors zip successors.tail
 
         pairs.foreach(pair => {
-          println(s"PAIR:${pair._1.value.getName},${pair._2.value.getName}")
+          debug(s"PAIR:${pair._1.value.getName},${pair._2.value.getName}")
           val n1 = pair._1
           val edge1 = node.innerEdgeTraverser.filter(e => e.source == node && e.target == n1).head
           val n2 = pair._2
@@ -176,39 +171,39 @@ object RuleDependencyGraphGenerator {
 
           // n --p--> n1
           val path1 = node.withSubgraph(edges = !_.equals(edge2)) pathTo n2
-          if(path1.isDefined) {
-            println(s"PATH TO:${n2.value.getName}")
-            println(s"PATH:${path1.get.edges.toList.map(edge => asString(edge))}")
+          if (path1.isDefined) {
+            debug(s"PATH TO:${n2.value.getName}")
+            debug(s"PATH:${path1.get.edges.toList.map(edge => asString(edge))}")
             val edges = path1.get.edges.toList
             edges.foreach(edge => {
-              println(s"EDGE:${asString(edge)}")
+              debug(s"EDGE:${asString(edge)}")
             })
             val last = edges.last.value
 
-            if(last.label == edge2.label) {
-              println("redundant")
+            if (last.label == edge2.label) {
+              debug("redundant")
               redundantEdges :+= edge2
             }
           } else {
-            println(s"NO OTHER PATH FROM ${node.value.getName} TO ${n2.value.getName}")
+            debug(s"NO OTHER PATH FROM ${node.value.getName} TO ${n2.value.getName}")
           }
 
-          val path2 = node.withSubgraph(edges = !_.equals(edge1))  pathTo n1
-          if(path2.isDefined) {
-            println(s"PATH TO:${n1.value.getName}")
-            println(s"PATH:${path2.get.edges.toList.map(edge => asString(edge))}")
+          val path2 = node.withSubgraph(edges = !_.equals(edge1)) pathTo n1
+          if (path2.isDefined) {
+            debug(s"PATH TO:${n1.value.getName}")
+            debug(s"PATH:${path2.get.edges.toList.map(edge => asString(edge))}")
             val edges = path2.get.edges.toList
             edges.foreach(edge => {
-              println(s"EDGE:${asString(edge)}")
+              debug(s"EDGE:${asString(edge)}")
             })
             val last = edges.last.value
 
-            if(last.label == edge1.label) {
-              println("redundant")
+            if (last.label == edge1.label) {
+              debug("redundant")
               redundantEdges :+= edge1
             }
           } else {
-            println(s"NO OTHER PATH FROM ${node.value.getName} TO ${n1.value.getName}")
+            debug(s"NO OTHER PATH FROM ${node.value.getName} TO ${n1.value.getName}")
           }
         })
       }
@@ -223,13 +218,13 @@ object RuleDependencyGraphGenerator {
 
   // get all nodes that depend on a TC node for a predicate p and another node for p
   def removeEdgesWithPredicateAlreadyTC(graph: RuleDependencyGraph): RuleDependencyGraph = {
-    println("removeEdgesWithPredicateAlreadyTC")
+    debug("removeEdgesWithPredicateAlreadyTC")
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
     graph.nodes.foreach(node => {
-      println("#" * 20)
-      println(s"NODE:${node.value.getName}")
+      debug("#" * 20)
+      debug(s"NODE:${node.value.getName}")
 
       // check for nodes that do compute the TC
       val outgoingEdges = node.outgoing.withFilter(e => e.target != node)
@@ -239,7 +234,7 @@ object RuleDependencyGraphGenerator {
         val rule = targetNode.value
         val predicate = e.label.asInstanceOf[TriplePattern].getPredicate
         val isTCNode = RuleUtils.isTransitiveClosure(rule, predicate)
-        println(s"Direct successor:${rule.getName}\t\tisTC = $isTCNode")
+        debug(s"Direct successor:${rule.getName}\t\tisTC = $isTCNode")
 
         // if it depends on a TC node
         if(isTCNode) {
@@ -247,7 +242,7 @@ object RuleDependencyGraphGenerator {
           val samePredicateEdges = outgoingEdges
             .withFilter(e2 => e != e2)
             .withFilter(e2 => e2.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
-          println(s"Redundant edges:${samePredicateEdges.map(e => e.toOuter.source.value.getName + "->" + e.toOuter.target.value.getName)}")
+          debug(s"Redundant edges:${samePredicateEdges.map(e => e.toOuter.source.value.getName + "->" + e.toOuter.target.value.getName)}")
           redundantEdges ++:= samePredicateEdges
 
         }
@@ -266,7 +261,7 @@ object RuleDependencyGraphGenerator {
 
   // for cycles x -p-> y -p-> z -s-> x with y being TC node for p, we can remove edge (z -s-> x)
   def removeEdgesWithCycleOverTCNode(graph: RuleDependencyGraph): RuleDependencyGraph = {
-    println("removeEdgesWithCycleOverTCNode")
+    debug("removeEdgesWithCycleOverTCNode")
 
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
@@ -275,12 +270,12 @@ object RuleDependencyGraphGenerator {
 
     // get cycles of length 3
     val cycleDetector = new TarjanSimpleCycles[Rule, LabeledEdge[Rule, TriplePattern]](g)
-    val cycles = cycleDetector.findSimpleCycles().filter(c => c.size() == 3)
+    val cycles = cycleDetector.findSimpleCycles().asScala.filter(c => c.size() == 3)
 
     cycles.foreach(c => {
-      println(s"cycle:$c")
+      debug(s"cycle:$c")
 
-      val pathNodes = c.map(n => graph get n)
+      val pathNodes = c.asScala.map(n => graph get n)
 
       // get nodes that are TC with same in and out edge
       val anchorNodes = pathNodes.filter(n => {
@@ -299,7 +294,7 @@ object RuleDependencyGraphGenerator {
           case 1 => pathNodes(2).outgoing.filter(e => e.target == pathNodes(0)).head
           case 2 => pathNodes(0).outgoing.filter(e => e.target == pathNodes(1)).head
         }
-        println(s"Redundant edge:${edge}")
+        debug(s"Redundant edge:${edge}")
         redundantEdges +:= edge
 
       }
@@ -320,29 +315,29 @@ object RuleDependencyGraphGenerator {
 
     // for each node n in G
     graph.nodes.foreach(node => {
-      println("#" * 20)
-      println(s"NODE:${node.value.getName}")
+      debug("#" * 20)
+      debug(s"NODE:${node.value.getName}")
 
       // get all nodes that depend on a TC node for a predicate p and produce p
 
       // get all successors
       val successors = node.innerNodeTraverser.filterNot(_.equals(node))
-      println(s"SUCCESSORS:${successors.map(n => n.value.getName)}")
+      debug(s"SUCCESSORS:${successors.map(n => n.value.getName)}")
 
       // check for nodes that do compute the TC
       successors.foreach(n => {
-        println(s"successor:${n.value.getName}")
+        debug(s"successor:${n.value.getName}")
         val rule = n.value
         val edges = node.innerEdgeTraverser.filter(e => e.target == n && e.source != n)
 
         edges.foreach(e => {
           // the predicate that is produced from the successor
           val predicate = e.label.asInstanceOf[TriplePattern].getPredicate
-          println(s"predicate:$predicate")
+          debug(s"predicate:$predicate")
 
           // is the successor a TC node for that predicate
           val isTC = RuleUtils.isTransitiveClosure(rule, predicate)
-          println(isTC)
+          debug(isTC.toString)
 
           if(isTC) {
             // remove edges that produce the same predicate
@@ -352,7 +347,7 @@ object RuleDependencyGraphGenerator {
               .filter(inEdge => inEdge.label.asInstanceOf[TriplePattern].getPredicate.matches(predicate))
               .foreach{
                 inEdge => {
-                println(s"remove edge$inEdge")
+                debug(s"remove edge$inEdge")
                 redundantEdges +:= inEdge
               }
             }
@@ -380,9 +375,9 @@ object RuleDependencyGraphGenerator {
 
       // we only handle cyclic rules
       if(node.innerEdgeTraverser.exists(e => e.source == node && e.target == node)) {
-        println("#" * 20)
-        println(s"NODE:${node.value.getName}")
-        println(s"Rule:${node.value}")
+        debug("#" * 20)
+        debug(s"NODE:${node.value.getName}")
+        debug(s"Rule:${node.value}")
 
         val bodyTPs = rule.bodyTriplePatterns()
         val headTPs = rule.headTriplePatterns()
@@ -402,13 +397,13 @@ object RuleDependencyGraphGenerator {
 
         // check if there is a path in body from the same subject to the same object
         val pathOpt = subjectNode.withSubgraph(edges = !_.equals(headEdge)) pathTo objectNode
-        println(pathOpt)
+        debug(pathOpt.toString)
 
         // check if there is some other triple pattern in body
         if(pathOpt.isDefined) {
           val path = pathOpt.get
           val predicateOpt: Option[Node] = path.length match {
-            case 1 => {
+            case 1 =>
               val p1 = path.edges.head.label.asInstanceOf[Node]
               val p2 = headEdge.label.asInstanceOf[Node]
               val p1Node = ruleGraph.get(p1)
@@ -416,8 +411,7 @@ object RuleDependencyGraphGenerator {
 
               val pEdge = ruleGraph.edges.filter(e => e.source == p1Node && e.target == p2Node).head
               Some(pEdge.label.asInstanceOf[Node])
-            }
-            case 2 => {
+            case 2 =>
               val otherEdges = path.edges.filterNot(e => e.label == headEdge.label)
 
               if(otherEdges.nonEmpty) {
@@ -425,13 +419,12 @@ object RuleDependencyGraphGenerator {
               } else {
                 None
               }
-            }
             case _ => None
           }
 
           if(predicateOpt.isDefined) {
             val predicate = predicateOpt.get
-            println(s"Predicate:$predicate")
+            debug(s"Predicate:$predicate")
 
             // check if predicate TC will be materialized before in the RDG
             val tcMaterialized = node.innerNodeTraverser.filter(n => {
@@ -441,7 +434,7 @@ object RuleDependencyGraphGenerator {
             })
 
             if(tcMaterialized.nonEmpty) {
-              println(s"$predicate already materialized in node(s) ${tcMaterialized.map(n => n.value.getName)}")
+              debug(s"$predicate already materialized in node(s) ${tcMaterialized.map(n => n.value.getName)}")
               val edge = node.innerEdgeTraverser.filter(e =>
                 e.source == node &&
                   e.target == node &&

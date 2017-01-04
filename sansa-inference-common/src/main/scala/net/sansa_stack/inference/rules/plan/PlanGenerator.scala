@@ -2,32 +2,30 @@ package net.sansa_stack.inference.rules.plan
 
 import java.io.PrintWriter
 
+import scala.collection.mutable
+
 import com.google.common.collect.ImmutableList
 import org.apache.calcite.config.Lex
 import org.apache.calcite.plan._
-import org.apache.calcite.plan.volcano.VolcanoPlanner
-import org.apache.calcite.rel.{RelCollationTraitDef, RelNode}
 import org.apache.calcite.rel.`type`.RelDataTypeSystem
 import org.apache.calcite.rel.externalize.RelWriterImpl
 import org.apache.calcite.rel.rules.{FilterJoinRule, ProjectJoinTransposeRule}
-import org.apache.calcite.rel.rules.FilterJoinRule.FilterIntoJoinRule
+import org.apache.calcite.rel.{RelCollationTraitDef, RelNode}
 import org.apache.calcite.schema.SchemaPlus
 import org.apache.calcite.sql.parser.SqlParser
-import org.apache.calcite.sql2rel.RelDecorrelator
 import org.apache.calcite.tools.Frameworks.PlannerAction
-import org.apache.calcite.tools.{Frameworks, Programs, RelBuilder, RuleSets}
+import org.apache.calcite.tools.{Frameworks, RelBuilder, RuleSets}
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.rulesys.Rule
-import net.sansa_stack.inference.utils.RuleUtils
+
+import net.sansa_stack.inference.utils.{Logging, RuleUtils}
 import net.sansa_stack.inference.utils.RuleUtils.RuleExtension
 import net.sansa_stack.inference.utils.TripleUtils._
-
-import scala.collection.mutable
 
 /**
   * @author Lorenz Buehmann
   */
-class PlanGenerator {
+class PlanGenerator extends Logging{
 
   val traitDefs: ImmutableList[RelTraitDef[_ <: RelTrait]] = ImmutableList.of(ConventionTraitDef.INSTANCE, RelCollationTraitDef.INSTANCE)
 
@@ -80,7 +78,7 @@ class PlanGenerator {
   val planner = Frameworks.getPlanner(calciteFrameworkConfig)
 
   def generate(rule: Rule): RelNode = {
-    println(s"Rule:\n$rule")
+    info(s"Rule:\n$rule")
 
     val body = rule.bodyTriplePatterns().map(tp => tp.toTriple).toSet
 
@@ -89,11 +87,11 @@ class PlanGenerator {
     //    process(body.head, body, visited)
 
     // group triple patterns by var
-    val map = new mutable.HashMap[Node, collection.mutable.Set[org.apache.jena.graph.Triple]] () with mutable.MultiMap[Node, org.apache.jena.graph.Triple]
-    body.foreach{tp =>
+    val map = new mutable.HashMap[Node, collection.mutable.Set[org.apache.jena.graph.Triple]]() with mutable.MultiMap[Node, org.apache.jena.graph.Triple]
+    body.foreach { tp =>
       val vars = RuleUtils.varsOf(tp)
-      vars.foreach{v =>
-        map.addBinding(v,tp)
+      vars.foreach { v =>
+        map.addBinding(v, tp)
       }
     }
 
@@ -107,7 +105,7 @@ class PlanGenerator {
     }
 
     val sqlQuery = new Plan(body, rule.headTriplePatterns().toList.head.asTriple(), joins).toSQL
-    println(s"SQL Query:\n$sqlQuery")
+    info(s"SQL Query:\n$sqlQuery")
 
     val sqlNode = planner.parse(sqlQuery)
 
