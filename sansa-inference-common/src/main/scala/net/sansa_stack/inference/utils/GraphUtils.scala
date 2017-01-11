@@ -349,81 +349,81 @@ object GraphUtils {
 
       val fw = new FileWriter(filename)
 
-      exporter.export(fw, g)
+      exporter.exportGraph(g, fw)
 
-      val path = Paths.get(filename)
-      val charset = StandardCharsets.UTF_8
-
-      var content = new String(Files.readAllBytes(path), charset)
-      content = content.replaceAll("vertex_label", "node_label")
-      Files.write(path, content.getBytes(charset))
-
-      // Gephi
-      // Init a project - and therefore a workspace
-      val pc = Lookup.getDefault.lookup(classOf[ProjectController])
-      pc.newProject()
-      val workspace = pc.getCurrentWorkspace
-
-      // Get controllers and models
-      val importController = Lookup.getDefault.lookup(classOf[ImportController])
-
-      // Import file
-      val file = new File(filename)
-      var container = importController.importFile(file)
-      container.getLoader.setEdgeDefault(EdgeDirectionDefault.DIRECTED);   // Force DIRECTED
-      //        container.setAllowAutoNode(false);  //Don't create missing nodes
-
-      // Append imported data to GraphAPI
-      importController.process(container, new DefaultProcessor(), workspace)
-
-      // See if graph is well imported
-      val graphModel = Lookup.getDefault.lookup(classOf[GraphController]).getGraphModel
-      val diGraph = graphModel.getDirectedGraph()
-
-      for(node <- diGraph.getNodes.asScala) {
-        node.setLabel(node.getAttribute("node_label").toString)
-      }
-
-      for(edge <- diGraph.getEdges.asScala) {
-        edge.setLabel(edge.getAttribute("edge_label").toString)
-      }
-
-      // Run YifanHuLayout for 100 passes - The layout always takes the current visible view
-      val layout = new YifanHuLayout(null, new StepDisplacement(1f))
-      layout.setGraphModel(graphModel)
-      layout.resetPropertiesValues()
-      layout.setOptimalDistance(200f)
-
-      //      layout.initAlgo();
+//      val path = Paths.get(filename)
+//      val charset = StandardCharsets.UTF_8
+//
+//      var content = new String(Files.readAllBytes(path), charset)
+//      content = content.replaceAll("vertex_label", "node_label")
+//      Files.write(path, content.getBytes(charset))
+//
+//      // Gephi
+//      // Init a project - and therefore a workspace
+//      val pc = Lookup.getDefault.lookup(classOf[ProjectController])
+//      pc.newProject()
+//      val workspace = pc.getCurrentWorkspace
+//
+//      // Get controllers and models
+//      val importController = Lookup.getDefault.lookup(classOf[ImportController])
+//
+//      // Import file
+//      val file = new File(filename)
+//      var container = importController.importFile(file)
+//      container.getLoader.setEdgeDefault(EdgeDirectionDefault.DIRECTED);   // Force DIRECTED
+//      //        container.setAllowAutoNode(false);  //Don't create missing nodes
+//
+//      // Append imported data to GraphAPI
+//      importController.process(container, new DefaultProcessor(), workspace)
+//
+//      // See if graph is well imported
+//      val graphModel = Lookup.getDefault.lookup(classOf[GraphController]).getGraphModel
+//      val diGraph = graphModel.getDirectedGraph()
+//
+//      for(node <- diGraph.getNodes.asScala) {
+//        node.setLabel(node.getAttribute("node_label").toString)
+//      }
+//
+//      for(edge <- diGraph.getEdges.asScala) {
+//        edge.setLabel(edge.getAttribute("edge_label").toString)
+//      }
+//
+//      // Run YifanHuLayout for 100 passes - The layout always takes the current visible view
+//      val layout = new YifanHuLayout(null, new StepDisplacement(1f))
+//      layout.setGraphModel(graphModel)
+//      layout.resetPropertiesValues()
+//      layout.setOptimalDistance(200f)
+//
+//      //      layout.initAlgo();
 //      for (i <- 0 to 100 if layout.canAlgo()) {
 //        layout.goAlgo();
 //      }
 //      layout.endAlgo();
-
-      val model = Lookup.getDefault.lookup(classOf[PreviewController]).getModel()
-      model.getProperties.putValue(PreviewProperty.SHOW_NODE_LABELS, true)
-      model.getProperties.putValue(PreviewProperty.EDGE_CURVED, false)
-      model.getProperties.putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(java.awt.Color.GRAY))
-      model.getProperties.putValue(PreviewProperty.EDGE_THICKNESS, 0.1f)
-      model.getProperties.putValue(PreviewProperty.NODE_LABEL_FONT, model.getProperties.getFontValue(PreviewProperty.NODE_LABEL_FONT).deriveFont(8))
-
-      model.getProperties.putValue(Item.NODE_LABEL, "Vertex Label")
-      model.getProperties.putValue(PreviewProperty.SHOW_EDGE_LABELS, true)
-      model.getProperties.putValue(PreviewProperty.NODE_LABEL_SHOW_BOX, false)
-
-
-
-      // Export full graph
-      val ec = Lookup.getDefault.lookup(classOf[ExportController])
-      //      ec.exportFile(new File("io_gexf.gexf"));
-
-      // PDF Exporter config and export to Byte array
-      val pdfExporter = ec.getExporter("pdf").asInstanceOf[PDFExporter]
-      pdfExporter.setPageSize(PageSize.A0)
-      pdfExporter.setWorkspace(workspace)
-      val baos = new ByteArrayOutputStream()
-      ec.exportStream(baos, pdfExporter)
-      new FileOutputStream(filename + ".pdf").write(baos.toByteArray)
+//
+//      val model = Lookup.getDefault.lookup(classOf[PreviewController]).getModel()
+//      model.getProperties.putValue(PreviewProperty.SHOW_NODE_LABELS, true)
+//      model.getProperties.putValue(PreviewProperty.EDGE_CURVED, false)
+//      model.getProperties.putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(java.awt.Color.GRAY))
+//      model.getProperties.putValue(PreviewProperty.EDGE_THICKNESS, 0.1f)
+//      model.getProperties.putValue(PreviewProperty.NODE_LABEL_FONT, model.getProperties.getFontValue(PreviewProperty.NODE_LABEL_FONT).deriveFont(8))
+//
+//      model.getProperties.putValue(Item.NODE_LABEL, "Vertex Label")
+//      model.getProperties.putValue(PreviewProperty.SHOW_EDGE_LABELS, true)
+//      model.getProperties.putValue(PreviewProperty.NODE_LABEL_SHOW_BOX, false)
+//
+//
+//
+//      // Export full graph
+//      val ec = Lookup.getDefault.lookup(classOf[ExportController])
+//      //      ec.exportFile(new File("io_gexf.gexf"));
+//
+//      // PDF Exporter config and export to Byte array
+//      val pdfExporter = ec.getExporter("pdf").asInstanceOf[PDFExporter]
+//      pdfExporter.setPageSize(PageSize.A0)
+//      pdfExporter.setWorkspace(workspace)
+//      val baos = new ByteArrayOutputStream()
+//      ec.exportStream(baos, pdfExporter)
+//      new FileOutputStream(filename + ".pdf").write(baos.toByteArray)
     }
   }
 }
