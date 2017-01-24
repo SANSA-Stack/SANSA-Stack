@@ -13,7 +13,7 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples) {
+class RDFGraphNative(override val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples) {
 
   /**
     * Returns an RDD of triples that match with the given input.
@@ -23,11 +23,13 @@ class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[R
     * @param o the object
     * @return RDD of triples
     */
-  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple] = {
-      triples.filter(t =>
+  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphNative = {
+      new RDFGraphNative(
+        triples.filter(t =>
           (s == None || t.subject == s.get) &&
           (p == None || t.predicate == p.get) &&
           (o == None || t.`object` == o.get)
+      )
       )
   }
 
@@ -36,7 +38,7 @@ class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[R
     *
     * @return RDD of triples
     */
-  def find(triple: Triple): RDD[RDFTriple] = {
+  def find(triple: Triple): RDFGraphNative = {
     find(
       if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),

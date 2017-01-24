@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.common
 
-import net.sansa_stack.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator, RuleSets}
+import net.sansa_stack.inference.rules._
 import net.sansa_stack.inference.utils.GraphUtils._
 import net.sansa_stack.inference.utils.RuleUtils
 
@@ -19,17 +19,20 @@ object DependencyGraphTest {
 
     // define the rules
     val rules = RuleSets.OWL_HORST.filter(r => names.contains(r.getName))
+    val profile = ReasoningProfile.OWL_HORST
+//    val rules = RuleSets.RDFS_SIMPLE
+//    val profile = ReasoningProfile.RDFS_SIMPLE
 
     // export graphs
     rules.foreach(rule => RuleUtils.asGraph(rule).export(s"${path}/rule-${rule.getName}.graphml"))
 
     // generate the rule dependency graph
     var dependencyGraph = RuleDependencyGraphGenerator.generate(rules)
-    dependencyGraph.export(s"${path}/rdg-rdfs-simple.graphml")
+    dependencyGraph.export(s"${path}/rdg-${profile}.graphml")
 
     dependencyGraph = RuleDependencyGraphGenerator.generate(rules, pruned = true)
-    dependencyGraph.export(s"${path}/rdg-rdfs-simple-pruned.graphml")
-    dependencyGraph.exportAsPDF(s"${path}/rdg-rdfs-simple-pruned.pdf")
+    dependencyGraph.export(s"${path}/rdg-${profile}-pruned.graphml")
+//    dependencyGraph.exportAsPDF(s"${path}/rdg-${profile}-pruned.pdf")
 
     // generate the high-level dependency graph
     val highLevelDependencyGraph = HighLevelRuleDependencyGraphGenerator.generate(dependencyGraph)

@@ -12,7 +12,7 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, RDFGraphDataFrame](triples) {
+class RDFGraphDataFrame(override val triples: DataFrame) extends AbstractRDFGraph[DataFrame, RDFGraphDataFrame](triples) {
 
   /**
     * Returns an RDD of triples that match with the given input.
@@ -22,7 +22,7 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
     * @param o the object
     * @return RDD of triples
     */
-  override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): DataFrame = {
+  override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataFrame = {
     var sql = "SELECT subject, predicate, object FROM TRIPLES"
 
     // corner case is when nothing is set, i.e. all triples will be returned
@@ -38,7 +38,7 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
       sql += conditions.mkString(" AND ")
     }
 
-    triples.sqlContext.sql(sql)
+    new RDFGraphDataFrame(triples.sqlContext.sql(sql))
   }
 
   /**
@@ -46,7 +46,7 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
     *
     * @return RDD of triples
     */
-  def find(triple: Triple): DataFrame = {
+  def find(triple: Triple): RDFGraphDataFrame = {
     find(
       if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
@@ -64,9 +64,20 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
     new RDFGraphDataFrame(triples.union(graph.toDataFrame()))
   }
 
-  def cache(): this.type = {
-    triples.cache()
-    this
+  def unionAll(graphs: Seq[RDFGraphDataFrame]): RDFGraphDataFrame = {
+    // the Dataframe based solution
+    //        return graphs.reduce(_ union _)
+
+    // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
+    val df: Option[DataFrame] = graphs match {
+      case g :: Nil => Some(g.toDataFrame())
+      case g :: _ => Some(g.toDataFrame().sqlContext.createDataFrame(
+        g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
+        g.toDataFrame().schema
+      ))
+      case _ => None
+    }
+    new RDFGraphDataFrame(df.get)
   }
 
   def distinct(): RDFGraphDataFrame = {
@@ -86,19 +97,8 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
 
   def toRDD(): RDD[RDFTriple] = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
 
-  def unionAll(graphs: Seq[RDFGraphDataFrame]): RDFGraphDataFrame = {
-    // the Dataframe based solution
-//        return graphs.reduce(_ union _)
-
-    // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
-    val df: Option[DataFrame] = graphs match {
-      case g :: Nil => Some(g.toDataFrame())
-      case g :: _ => Some(g.toDataFrame().sqlContext.createDataFrame(
-        g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
-        g.toDataFrame().schema
-      ))
-      case _ => None
-    }
-    new RDFGraphDataFrame(df.get)
+  def cache(): this.type = {
+    triples.cache()
+    this
   }
 }

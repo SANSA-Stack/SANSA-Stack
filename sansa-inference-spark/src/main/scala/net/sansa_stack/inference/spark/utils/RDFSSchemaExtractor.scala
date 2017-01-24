@@ -39,10 +39,10 @@ class RDFSSchemaExtractor(session : SparkSession) extends Logging{
     val index =
       properties.map { p =>
         // get triples (s,p,o)
-        val triples = graph.find(None, Some(p), None)
+        val newGraph = graph.find(None, Some(p), None)
 
         // map to (s,o)
-        val pairs = triples.map(t => (t.s, t.o))
+        val pairs = newGraph.triples.map(t => (t.s, t.o))
 
         // add to index
         (p -> pairs)
@@ -66,10 +66,10 @@ class RDFSSchemaExtractor(session : SparkSession) extends Logging{
     val index =
       properties.map { p =>
         // get triples (s,p,o)
-        val triples = graph.find(None, Some(p), None)
+        val newGraph = graph.find(None, Some(p), None)
 
         // map to (s,o)
-        val pairs = triples.select("subject", "predicate", "object")
+        val pairs = newGraph.triples.select("subject", "predicate", "object")
 
         // add to index
         (p -> pairs)
