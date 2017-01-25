@@ -1,12 +1,12 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import scala.language.implicitConversions
+import net.sansa_stack.inference.data.RDFTriple
 
+import scala.language.implicitConversions
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
-
 import net.sansa_stack.inference.spark.data.{RDFGraph, RDFGraphDataFrame}
 import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 
@@ -55,7 +55,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
       * yyy rdfs:subClassOf zzz . xxx rdfs:subClassOf zzz .
      */
     val subClassOfTriples = index(RDFS.subClassOf.getURI) // extract rdfs:subClassOf triples
-    val subClassOfTriplesTrans = broadcast(computeTransitiveClosure(subClassOfTriples).alias("SC"))
+    val subClassOfTriplesTrans = broadcast(computeTransitiveClosure(subClassOfTriples.as[RDFTriple]).toDF().alias("SC"))
 //    val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.rdd.map(r => (r.getString(0) -> (r.getString(2)))).collect)
 //    val subClassOfMapBC = session.sparkContext.broadcast(subClassOfMap)
 //    val checkSubclass = udf((cls: String) => subClassOfMapBC.value.contains(cls))
@@ -65,7 +65,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
               yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
      */
     val subPropertyOfTriples = index(RDFS.subPropertyOf.getURI) // extract rdfs:subPropertyOf triples
-    val subPropertyOfTriplesTrans = broadcast(computeTransitiveClosure(subPropertyOfTriples).alias("SP"))
+    val subPropertyOfTriplesTrans = broadcast(computeTransitiveClosure(subPropertyOfTriples.as[RDFTriple]).toDF().alias("SP"))
 
 
 //    // a map structure should be more efficient

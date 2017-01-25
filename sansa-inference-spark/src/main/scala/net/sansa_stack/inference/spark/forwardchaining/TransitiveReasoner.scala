@@ -49,13 +49,13 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     RDFGraph(triples)
   }
 
-  def computeTransitiveClosure[A, B](s: Set[(A, B)]): Set[(A, B)] = {
-    val t = addTransitive(s)
+  def computeTransitiveClosurePairs[A, B](s: Set[(A, B)]): Set[(A, B)] = {
+    val t = addTransitivePairs(s)
     // recursive call if set changed, otherwise stop and return
-    if (t.size == s.size) s else computeTransitiveClosure(t)
+    if (t.size == s.size) s else computeTransitiveClosurePairs(t)
   }
 
-  def addTransitive[A, B](s: Set[(A, B)]): Set[(A, B)] = {
+  def addTransitivePairs[A, B](s: Set[(A, B)]): Set[(A, B)] = {
     s ++ (for ((x1, y1) <- s; (x2, y2) <- s if y1 == x2) yield (x1, y2))
   }
 
@@ -218,6 +218,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     */
   def computeTransitiveClosure(edges: Dataset[RDFTriple]): Dataset[RDFTriple] = {
     log.info("computing TC...")
+    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
 
     profile {
       // we keep the transitive closure cached

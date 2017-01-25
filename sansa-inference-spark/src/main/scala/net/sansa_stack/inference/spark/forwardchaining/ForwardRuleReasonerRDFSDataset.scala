@@ -16,10 +16,10 @@ class ForwardRuleReasonerRDFSDataset(session: SparkSession, parallelism: Int = 2
 
   import session.implicits._
 
-  var subprops: Dataset[RDFTuple]
-  var subclasses: Dataset[RDFTuple]
-  var domains: Dataset[RDFTuple]
-  var ranges: Dataset[RDFTuple]
+  var subprops: Dataset[RDFTuple] = _
+  var subclasses: Dataset[RDFTuple] = _
+  var domains: Dataset[RDFTuple] = _
+  var ranges: Dataset[RDFTuple] = _
 
   case class RDFTuple(s: String, o: String)
 
@@ -36,11 +36,11 @@ class ForwardRuleReasonerRDFSDataset(session: SparkSession, parallelism: Int = 2
   override def preprocess(graph: RDFGraphDataset): RDFGraphDataset = {
 
     subprops = broadcast(
-      computeTransitiveClosure(extractTuplesForProperty(graph, RDFS.subPropertyOf)).toSeq.toDF("s", "o").as[RDFTuple]
+      computeTransitiveClosurePairs(extractTuplesForProperty(graph, RDFS.subPropertyOf)).toSeq.toDF("s", "o").as[RDFTuple]
     ).as("subproperties")
 
     subclasses = broadcast(
-      computeTransitiveClosure(extractTuplesForProperty(graph, RDFS.subClassOf)).toSeq.toDF("s", "o").as[RDFTuple]
+      computeTransitiveClosurePairs(extractTuplesForProperty(graph, RDFS.subClassOf)).toSeq.toDF("s", "o").as[RDFTuple]
     ).as("subclasses")
 
     domains = broadcast(graph.triples.filter($"p" === RDFS.domain).select("s", "o").as[RDFTuple]).as("domains")

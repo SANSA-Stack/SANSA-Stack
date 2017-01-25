@@ -42,19 +42,6 @@ class RDFGraphDataFrame(override val triples: DataFrame) extends AbstractRDFGrap
   }
 
   /**
-    * Returns an RDD of triples that match with the given input.
-    *
-    * @return RDD of triples
-    */
-  def find(triple: Triple): RDFGraphDataFrame = {
-    find(
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
-    )
-  }
-
-  /**
     * Return the union of the current RDF graph with the given RDF graph
  *
     * @param graph the other RDF graph
