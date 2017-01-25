@@ -1,10 +1,11 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Dataset}
 
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.RDFGraph
@@ -48,11 +49,15 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     RDFGraph(triples)
   }
 
-  //  def computeTransitiveClosure[A, B, C](s: mutable.Set[(A, B, C)]): mutable.Set[(A, B, C)] = {
-  //    val t = addTransitive(s)
-  //    // recursive call if set changed, otherwise stop and return
-  //    if (t.size == s.size) s else computeTransitiveClosure(t)
-  //  }
+  def computeTransitiveClosure[A, B](s: Set[(A, B)]): Set[(A, B)] = {
+    val t = addTransitive(s)
+    // recursive call if set changed, otherwise stop and return
+    if (t.size == s.size) s else computeTransitiveClosure(t)
+  }
+
+  def addTransitive[A, B](s: Set[(A, B)]): Set[(A, B)] = {
+    s ++ (for ((x1, y1) <- s; (x2, y2) <- s if y1 == x2) yield (x1, y2))
+  }
 
   /**
     * Computes the transitive closure on a set of triples, i.e. it is computed in-memory by the driver.
@@ -211,7 +216,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @param edges the Dataframe of triples
     * @return a Dataframe containing the transitive closure of the triples
     */
-  def computeTransitiveClosure[A: ClassTag](edges: DataFrame): DataFrame = {
+  def computeTransitiveClosure(edges: Dataset[RDFTriple]): Dataset[RDFTriple] = {
     log.info("computing TC...")
 
     profile {
@@ -233,8 +238,9 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
         // then project the result to obtain the new (x, y) paths.
 
         tc.createOrReplaceTempView("SC")
-        var joined = tc.sqlContext.
-          sql("SELECT A.subject, A.predicate, B.object FROM SC A INNER JOIN SC B ON A.object = B.subject")
+        var joined = tc.as("A").join(tc.as("B"), "A.o = B.s").select("A.s", "A.p", "B.o").as[RDFTriple]
+//        tc.sqlContext.
+//          sql("SELECT A.subject, A.predicate, B.object FROM SC A INNER JOIN SC B ON A.object = B.subject")
 
         //      joined.explain()
         //      var joined = df1.join(df2, df1("object") === df2("subject"), "inner")

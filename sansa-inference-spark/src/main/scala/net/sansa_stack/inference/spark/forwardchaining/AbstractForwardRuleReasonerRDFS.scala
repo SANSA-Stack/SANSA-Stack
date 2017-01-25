@@ -29,11 +29,16 @@ abstract class AbstractForwardRuleReasonerRDFS[T, G <: AbstractRDFGraph[T, G]](s
   def rule9(graph: G): G
   def rule11(graph: G): G
 
-  def apply(graph: G): RDFGraph = {
+  def preprocess(graph: G): G
+  def postprocess(graph: G): G
+
+  def apply(graph: G): G = {
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
 
     graph.cache()
+
+    preprocess(graph)
 
     val r7 = rule7(graph)
 
@@ -54,12 +59,13 @@ abstract class AbstractForwardRuleReasonerRDFS[T, G <: AbstractRDFGraph[T, G]](s
     ))
       .distinct()
 
+    postprocess(graph)
 
     logger.info("...finished materialization in " + (System.currentTimeMillis() - startTime) + "ms.")
 //    val newSize = allTriples.count()
 //    logger.info(s"|G_inf|=$newSize")
 
     // return graph with inferred triples
-    new RDFGraph(allTriples.toRDD())
+    allTriples
   }
 }

@@ -14,7 +14,8 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) {
+abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) { self: G =>
+
 
   /**
     * Returns a new RDF graph that contains only triples matching the given input.
@@ -31,7 +32,13 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) 
     *
     * @return a new RDF graph
     */
-  def find(triple: Triple): G
+  def find(triple: Triple): G = {
+    find(
+      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
+      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
+      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
+    )
+  }
 
   /**
     * Returns a new RDF graph that contains the union of the current RDF graph with the given RDF graph.

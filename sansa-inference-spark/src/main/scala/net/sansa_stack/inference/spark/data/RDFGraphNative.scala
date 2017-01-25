@@ -1,6 +1,5 @@
 package net.sansa_stack.inference.spark.data
 
-import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -13,16 +12,9 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphNative(override val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples) {
+class RDFGraphNative(override val triples: RDD[RDFTriple])
+  extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples) {
 
-  /**
-    * Returns an RDD of triples that match with the given input.
-    *
-    * @param s the subject
-    * @param p the predicate
-    * @param o the object
-    * @return RDD of triples
-    */
   def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphNative = {
       new RDFGraphNative(
         triples.filter(t =>
@@ -33,39 +25,29 @@ class RDFGraphNative(override val triples: RDD[RDFTriple]) extends AbstractRDFGr
       )
   }
 
-  /**
-    * Returns an RDD of triples that match with the given input.
-    *
-    * @return RDD of triples
-    */
-  def find(triple: Triple): RDFGraphNative = {
-    find(
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
-    )
-  }
-
   def union(graph: RDFGraphNative): RDFGraphNative = {
     new RDFGraphNative(triples.union(graph.toRDD()))
   }
 
-  def cache(): this.type = {
-    triples.cache()
-    this
+  def unionAll(graphs: Seq[RDFGraphNative]): RDFGraphNative = {
+    //    return graphs.reduceLeft(_ union _)
+    val first = graphs(0)
+    return new RDFGraphNative(
+      first.triples.sparkContext.union(graphs.map(g => g.toRDD()))
+    )
   }
 
   def distinct(): RDFGraphNative = {
     new RDFGraphNative(triples.distinct())
   }
 
-  /**
-    * Return the number of triples.
-    *
-    * @return the number of triples
-    */
   def size(): Long = {
     triples.count()
+  }
+
+  def cache(): this.type = {
+    triples.cache()
+    this
   }
 
   def toRDD(): RDD[RDFTriple] = triples
@@ -89,11 +71,5 @@ class RDFGraphNative(override val triples: RDD[RDFTriple]) extends AbstractRDFGr
     triplesDataFrame
   }
 
-  def unionAll(graphs: Seq[RDFGraphNative]): RDFGraphNative = {
-    //    return graphs.reduceLeft(_ union _)
-    val first = graphs(0)
-    return new RDFGraphNative(
-      first.triples.sparkContext.union(graphs.map(g => g.toRDD()))
-    )
-  }
+
 }
