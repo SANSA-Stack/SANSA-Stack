@@ -22,7 +22,7 @@ import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int = 2)
   extends TransitiveReasoner(session.sparkContext, parallelism) {
 
-  val sqlContext = new SQLContext(session.sparkContext)
+  val sqlContext = session.sqlContext
   import sqlContext.implicits._
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))

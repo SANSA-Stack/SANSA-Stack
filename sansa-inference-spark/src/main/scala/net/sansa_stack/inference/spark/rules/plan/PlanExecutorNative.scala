@@ -349,7 +349,8 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
         projectList.toList
       case logical.Filter(condition, child) =>
         expressionsFor(child)
-      case SubqueryAlias(alias: String, child: LogicalPlan) =>
+      case SubqueryAlias(alias: String, child: LogicalPlan,
+          view: scala.Option[org.apache.spark.sql.catalyst.TableIdentifier]) =>
         expressionsFor(child)
       case _ =>
         logicalPlan.expressions.toList
