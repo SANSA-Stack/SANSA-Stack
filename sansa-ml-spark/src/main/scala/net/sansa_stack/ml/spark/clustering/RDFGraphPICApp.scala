@@ -10,13 +10,14 @@ import java.lang.{ Long => JLong }
 import java.lang.{ Long => JLong }
 import breeze.linalg.{ squaredDistance, DenseVector, Vector }
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.graphx.GraphLoader
 
 object RDFGraphPICApp {
 
   case class Params(
       input: String = null,
-      k: Int = 100,
-      maxIterations: Int = 400) extends AbstractParams[Params] {
+      k: Int = 3,
+      maxIterations: Int = 50) extends AbstractParams[Params] {
   }
   abstract class AbstractParams[T: TypeTag] {
 
@@ -24,7 +25,7 @@ object RDFGraphPICApp {
 
     override def toString: String = {
       val tpe = tag.tpe
-      val allAccessors = tpe.declarations.collect {
+      val allAccessors = tpe.decls.collect {
         case m: MethodSymbol if m.isCaseAccessor => m
       }
       val mirror = runtimeMirror(getClass.getClassLoader)
@@ -72,12 +73,11 @@ object RDFGraphPICApp {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-    val data = sparkSession.sparkContext.textFile("/home/tina/sample.txt")
+    // Load the graph 
+    val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, "/home/tina/sample1.txt")
 
-    data.collect().foreach(println)
+    val model = RDFGraphPICClustering(sparkSession, graph, params.k, params.maxIterations).run()
 
-    val model = RDFGraphClustering(data, params.k, params.maxIterations).run()
-    
     val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
     val assignments = clusters.toList.sortBy { case (k, v) => v.length }
     val assignmentsStr = assignments
@@ -94,4 +94,3 @@ object RDFGraphPICApp {
   }
 
 }
-
