@@ -33,7 +33,7 @@ object RDFGraphMaterializer {
     }
   }
 
-  def run(input: Seq[URI], output: File, profile: ReasoningProfile, properties: Seq[String] = Seq(),
+  def run(input: Seq[URI], output: URI, profile: ReasoningProfile, properties: Seq[String] = Seq(),
           writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
     // register the custom classes for Kryo serializer
     val conf = new SparkConf()
@@ -85,7 +85,7 @@ object RDFGraphMaterializer {
 //    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
-    RDFGraphWriter.writeGraphToFile(inferredGraph, output.getAbsolutePath, writeToSingleFile, sortedOutput)
+    RDFGraphWriter.writeGraphToFile(inferredGraph, output.toString, writeToSingleFile, sortedOutput)
 
     session.stop()
   }
@@ -93,7 +93,7 @@ object RDFGraphMaterializer {
   // the config object
   case class Config(
                      in: Seq[URI] = Seq(),
-                     out: File = new File("."),
+                     out: URI = new URI("."),
                      properties: Seq[String] = Seq(),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
                      writeToSingleFile: Boolean = false,
@@ -112,7 +112,7 @@ object RDFGraphMaterializer {
       action((x, c) => c.copy(in = x)).
       text("path to file or directory that contains the input files (in N-Triples format)")
 
-    opt[File]('o', "out").required().valueName("<directory>").
+    opt[URI]('o', "out").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
 
