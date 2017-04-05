@@ -1,6 +1,7 @@
 package net.sansa_stack.inference.spark.data
 
 import java.io.File
+import java.net.URI
 
 import org.apache.jena.rdf.model.Resource
 import org.apache.spark.SparkContext
@@ -52,11 +53,11 @@ object RDFGraphLoader {
     * @param minPartitions min number of partitions for Hadoop RDDs ([[SparkContext.defaultMinPartitions]])
     * @return an RDF graph
     */
-  def loadFromDisk(paths: Seq[File], session: SparkSession, minPartitions: Int = 2): RDFGraph = {
+  def loadFromDisk(paths: Seq[URI], session: SparkSession, minPartitions: Int = 2): RDFGraph = {
     logger.info("loading triples from disk...")
     val startTime = System.currentTimeMillis()
-
-    val pathsConcat = paths.map(p => p.getAbsolutePath).mkString(",") // make concatenated string of paths
+println("Input Paths: " + paths.mkString(","))
+    val pathsConcat = paths.map(p => p.getPath).mkString(",") // make concatenated string of paths
 
     val triples = session.sparkContext
       .textFile(pathsConcat, minPartitions) // read the text files
@@ -109,9 +110,19 @@ object RDFGraphLoader {
 
     val triples = session.read
       .textFile(paths) // read the text file
-      .select(splitter($"value") as "tokens")
-      .select($"tokens"(0) as "s", $"tokens"(1) as "p", $"tokens"(2) as "o")
-      .as[RDFTriple]
+        .map(s => {
+      val tokens = s.split(" ")
+      RDFTriple(tokens(0), tokens(1), tokens(2))
+    })
+    session.read
+      .textFile(paths) // read the text file
+      .map(s => {
+      val tokens = s.split(" ")
+      RDFTriple(tokens(0), tokens(1), tokens(2))
+    }).toDF().show(10)
+//      .select(splitter($"value") as "tokens")
+//      .select($"tokens"(0) as "s", $"tokens"(1) as "p", $"tokens"(2) as "o")
+//      .as[RDFTriple]
 
 
     // convert to triple object

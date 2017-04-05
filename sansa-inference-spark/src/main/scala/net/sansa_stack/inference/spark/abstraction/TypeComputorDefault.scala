@@ -1,5 +1,6 @@
 package net.sansa_stack.inference.spark.abstraction
 import java.io.File
+import java.net.URI
 
 import scala.collection.mutable
 
@@ -80,7 +81,7 @@ object TypeComputorDefault {
       .config("spark.ui.showConsoleProgress", "false")
       .getOrCreate()
 
-    val graph = RDFGraphLoader.loadFromDisk(Seq(new File(args(0))), session, parallelism)
+    val graph = RDFGraphLoader.loadFromDisk(Seq(URI.create(args(0))), session, parallelism)
 
     val typeComputor = new TypeComputorDefault
 

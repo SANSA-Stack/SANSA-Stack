@@ -1,6 +1,8 @@
 package net.sansa_stack.inference.spark
 
 import java.io.File
+import java.net.URI
+import java.nio.file.{Path, Paths}
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -9,7 +11,7 @@ import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.spark.data.{RDFGraphLoader, RDFGraphWriter}
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
+import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataset, TransitiveReasoner}
 
 /**
   * The main entry class to compute the materialization on an RDF graph.
@@ -31,7 +33,7 @@ object RDFGraphMaterializer {
     }
   }
 
-  def run(input: Seq[File], output: File, profile: ReasoningProfile, properties: Seq[String] = Seq(),
+  def run(input: Seq[URI], output: File, profile: ReasoningProfile, properties: Seq[String] = Seq(),
           writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
     // register the custom classes for Kryo serializer
     val conf = new SparkConf()
@@ -45,17 +47,26 @@ object RDFGraphMaterializer {
     val session = SparkSession.builder
       .appName(s"SPARK $profile Reasoning")
       .master("local[4]")
-//      .config("spark.eventLog.enabled", "true")
+      .config("spark.eventLog.enabled", "true")
       .config("spark.hadoop.validateOutputSpecs", "false") // override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.default.parallelism", parallelism)
+      .config("spark.ui.showConsoleProgress", "false")
       .config(conf)
       .getOrCreate()
 
 //    println(session.conf.getAll.mkString("\n"))
 
+//    val g = RDFGraphLoader.loadGraphFromDiskAsDataset(session, input)
+//    g.triples.toDF().printSchema()
+//    g.triples.show(10)
+//    val g_inf = new ForwardRuleReasonerRDFSDataset(session).apply(g)
+//    println(g_inf.size())
+
     // load triples from disk
     val graph = RDFGraphLoader.loadFromDisk(input, session, parallelism)
+
+
 //    println(s"|G| = ${graph.size()}")
 
     // create reasoner
@@ -81,7 +92,7 @@ object RDFGraphMaterializer {
 
   // the config object
   case class Config(
-                     in: Seq[File] = Seq(),
+                     in: Seq[URI] = Seq(),
                      out: File = new File("."),
                      properties: Seq[String] = Seq(),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
@@ -97,7 +108,7 @@ object RDFGraphMaterializer {
 
     head("RDFGraphMaterializer", "0.1.0")
 
-    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
+    opt[Seq[URI]]('i', "input").required().valueName("<path1>,<path2>,...").
       action((x, c) => c.copy(in = x)).
       text("path to file or directory that contains the input files (in N-Triples format)")
 
