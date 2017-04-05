@@ -57,7 +57,7 @@ object RDFGraphLoader {
     logger.info("loading triples from disk...")
     val startTime = System.currentTimeMillis()
 println("Input Paths: " + paths.mkString(","))
-    val pathsConcat = paths.map(p => p.getPath).mkString(",") // make concatenated string of paths
+    val pathsConcat = paths.mkString(",") // make concatenated string of paths
 
     val triples = session.sparkContext
       .textFile(pathsConcat, minPartitions) // read the text files
