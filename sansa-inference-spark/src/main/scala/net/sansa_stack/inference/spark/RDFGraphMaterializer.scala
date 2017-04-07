@@ -130,8 +130,8 @@ object RDFGraphMaterializer {
     opt[Unit]("sorted").optional().action( (_, c) =>
       c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
 
-    opt[Int]("parallelism").optional().action( (_, c) =>
-      c.copy(parallelism = 4)).text("the degree of parallelism, i.e. the number of Spark partitions used in the Spark operations")
+    opt[Int]("parallelism").optional().action( (x, c) =>
+      c.copy(parallelism = x)).text("the degree of parallelism, i.e. the number of Spark partitions used in the Spark operations")
 
     help("help").text("prints this usage text")
 
