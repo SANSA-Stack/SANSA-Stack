@@ -25,7 +25,7 @@ object RDFGraphMaterializer {
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.out, config.profile, config.properties, config.writeToSingleFile, config.sortedOutput)
+        run(config.in, config.out, config.profile, config.properties, config.writeToSingleFile, config.sortedOutput, config.parallelism)
       case None =>
         // scalastyle:off println
         println(parser.usage)
@@ -34,14 +34,11 @@ object RDFGraphMaterializer {
   }
 
   def run(input: Seq[URI], output: URI, profile: ReasoningProfile, properties: Seq[String] = Seq(),
-          writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
+          writeToSingleFile: Boolean, sortedOutput: Boolean, parallelism: Int): Unit = {
     // register the custom classes for Kryo serializer
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[RDFTriple]))
     conf.set("spark.extraListeners", "net.sansa_stack.inference.spark.utils.CustomSparkListener")
-
-    // set the parallelism
-    val parallelism = 4
 
     // the SPARK config
     val session = SparkSession.builder
@@ -97,7 +94,8 @@ object RDFGraphMaterializer {
                      properties: Seq[String] = Seq(),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
                      writeToSingleFile: Boolean = false,
-                     sortedOutput: Boolean = false)
+                     sortedOutput: Boolean = false,
+                     parallelism: Int = 4)
 
   // read ReasoningProfile enum
   implicit val profilesRead: scopt.Read[ReasoningProfile.Value] =
@@ -131,6 +129,9 @@ object RDFGraphMaterializer {
 
     opt[Unit]("sorted").optional().action( (_, c) =>
       c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
+
+    opt[Int]("parallelism").optional().action( (_, c) =>
+      c.copy(parallelism = 4)).text("the degree of parallelism, i.e. the number of Spark partitions used in the Spark operations")
 
     help("help").text("prints this usage text")
 
