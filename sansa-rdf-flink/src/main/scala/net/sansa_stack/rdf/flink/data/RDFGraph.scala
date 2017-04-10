@@ -41,6 +41,7 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
       if (triple.getObject.isVariable) None else Option(triple.getObject.toString))
   }
+  
 
   /**
    * Returns the union of the current RDF graph with the given RDF graph
