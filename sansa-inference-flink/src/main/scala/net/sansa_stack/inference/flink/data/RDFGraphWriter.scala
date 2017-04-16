@@ -1,12 +1,14 @@
 package net.sansa_stack.inference.flink.data
 
 import java.io.{ByteArrayInputStream, File}
+import java.net.URI
 import java.nio.charset.StandardCharsets
 
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.scala._
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.rdf.model.{Model, ModelFactory}
+
 import net.sansa_stack.inference.utils.{RDFTripleOrdering, RDFTripleToNTripleString}
 import org.slf4j.LoggerFactory
 
@@ -22,11 +24,11 @@ object RDFGraphWriter {
 
   def writeToFile(graph: RDFGraph, path: String): Unit = {
     logger.info("writing triples to disk...")
-    val startTime  = System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
     implicit val ordering = RDFTripleOrdering
 
-    graph.triples.map(t=>(t,t)).sortPartition(1, Order.DESCENDING).map(_._1)
+    graph.triples.map(t => (t, t)).sortPartition(1, Order.DESCENDING).map(_._1)
       .map(new RDFTripleToNTripleString()) // to N-TRIPLES string
       .writeAsText(path, writeMode = FileSystem.WriteMode.OVERWRITE)
 
@@ -41,15 +43,15 @@ object RDFGraphWriter {
     * @param singleFile whether to put all data into a single file
     * @param sorted whether to sort the triples by subject, predicate, object
     */
-  def writeToDisk(graph: RDFGraph, path: File, singleFile: Boolean = false, sorted: Boolean = false): Unit = {
+  def writeToDisk(graph: RDFGraph, path: URI, singleFile: Boolean = false, sorted: Boolean = false): Unit = {
     logger.info("writing triples to disk...")
-    val startTime  = System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
     implicit val ordering = RDFTripleOrdering
 
-    graph.triples.map(t=>(t,t)).sortPartition(1, Order.DESCENDING).map(_._1)
+    graph.triples.map(t => (t, t)).sortPartition(1, Order.DESCENDING).map(_._1)
       .map(new RDFTripleToNTripleString()) // to N-TRIPLES string
-      .writeAsText(path.getAbsolutePath, writeMode = FileSystem.WriteMode.OVERWRITE)
+      .writeAsText(path.toString, writeMode = FileSystem.WriteMode.OVERWRITE)
 
     logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
   }

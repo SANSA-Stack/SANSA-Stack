@@ -1,6 +1,7 @@
 package net.sansa_stack.inference.flink
 
 import java.io.File
+import java.net.URI
 
 import net.sansa_stack.inference.flink.data.{RDFGraphLoader, RDFGraphWriter}
 import net.sansa_stack.inference.flink.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
@@ -26,7 +27,7 @@ object RDFGraphMaterializer {
     }
   }
 
-  def run(args: Array[String], input: File, output: File, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
+  def run(args: Array[String], input: Seq[URI], output: URI, profile: ReasoningProfile, writeToSingleFile: Boolean, sortedOutput: Boolean): Unit = {
     // get params
     val params: ParameterTool = ParameterTool.fromArgs(args)
 
@@ -44,11 +45,10 @@ object RDFGraphMaterializer {
     // create reasoner
     val reasoner = profile match {
       case RDFS => new ForwardRuleReasonerRDFS(env)
-      case RDFS_SIMPLE => {
+      case RDFS_SIMPLE =>
         val r = new ForwardRuleReasonerRDFS(env)
         r.level = RDFSLevel.SIMPLE
         r
-      }
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(env)
     }
 
@@ -59,7 +59,7 @@ object RDFGraphMaterializer {
     // write triples to disk
     RDFGraphWriter.writeToDisk(inferredGraph, output, writeToSingleFile, sortedOutput)
 
-//    println(env.getExecutionPlan())
+    //    println(env.getExecutionPlan())
 
     // run the program
     env.execute(s"RDF ${profile} Reasoning")
@@ -67,8 +67,8 @@ object RDFGraphMaterializer {
 
   // the config object
   case class Config(
-                     in: File = new File("."),
-                     out: File = new File("."),
+                     in: Seq[URI] = Seq(),
+                     out: URI = new URI("."),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
                      writeToSingleFile: Boolean = false,
                      sortedOutput: Boolean = false)
@@ -84,11 +84,11 @@ object RDFGraphMaterializer {
 //    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
 //      action((x, c) => c.copy(in = x)).
 //      text("path to file or directory that contains the input files (in N-Triple format)")
-    opt[File]('i', "input").required().valueName("<path>").
+    opt[Seq[URI]]('i', "input").required().valueName("<path>").
       action((x, c) => c.copy(in = x)).
       text("path to file or directory that contains the input files (in N-Triple format)")
 
-    opt[File]('o', "out").required().valueName("<directory>").
+    opt[URI]('o', "out").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
 
