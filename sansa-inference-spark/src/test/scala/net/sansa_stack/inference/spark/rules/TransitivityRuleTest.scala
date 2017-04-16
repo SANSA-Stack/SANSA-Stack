@@ -109,13 +109,13 @@ object TransitivityRuleTest {
       //  [ prp-trp: (?p rdf:type owl:TransitiveProperty) (?x ?p ?y) (?y ?p ?z) -> (?x ?p ?z) ]
       val rel1 = triplesRDD
         .filter(t =>
-          t.predicate == RDF.`type`.getURI &&
-            t.`object` == OWL2.TransitiveProperty.getURI)
-        .map(t => (t.subject, Nil)) // -> (?p, Nil)
+          t.p == RDF.`type`.getURI &&
+            t.o == OWL2.TransitiveProperty.getURI)
+        .map(t => (t.s, Nil)) // -> (?p, Nil)
       println("REL1\n" + rel1.collect().mkString("\n"))
 
       val rel2 = triplesRDD
-        .map(t => (t.predicate, (t.subject, t.`object`))) // (?p, (?x, ?y))
+        .map(t => (t.p, (t.s, t.o))) // (?p, (?x, ?y))
         .join(rel1) // (?p, ((?x, ?y), Nil))
         .map(e => RDFTriple(e._2._1._1, e._1, e._2._1._2)) // (?x, ?p, ?y)
       println("REL2\n" + rel2.collect().mkString("\n"))

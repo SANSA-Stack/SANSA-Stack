@@ -41,7 +41,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     graph.triples.cache()
 
     // compute TC for each given property
-    val tcRDDs = properties.map(p => computeTransitiveClosure(graph.triples.filter(t => t.predicate == p), p))
+    val tcRDDs = properties.map(p => computeTransitiveClosure(graph.triples.filter(t => t.p == p), p))
 
     // compute the union of all
     val triples = sc.union(tcRDDs :+ graph.triples)
@@ -78,8 +78,8 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
 
   private def addTransitive(triples: Set[RDFTriple]): Set[RDFTriple] = {
     triples ++ (
-      for (t1 <- triples; t2 <- triples if t1.`object` == t2.subject)
-      yield RDFTriple(t1.subject, t1.predicate, t2.`object`))
+      for (t1 <- triples; t2 <- triples if t1.o == t2.s)
+      yield RDFTriple(t1.s, t1.p, t2.o))
   }
 
   /**
@@ -93,7 +93,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     if (triples.isEmpty()) return triples
 
     // get the predicate
-    val predicate = triples.take(1)(0).predicate
+    val predicate = triples.take(1)(0).p
 
     // compute TC
     computeTransitiveClosure(triples, predicate)
@@ -112,7 +112,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
 
     profile {
       // we only need (s, o)
-      val subjectObjectPairs = triples.map(t => (t.subject, t.`object`)).cache()
+      val subjectObjectPairs = triples.map(t => (t.s, t.o)).cache()
 
       val tc = computeTransitiveClosure(subjectObjectPairs)
 
@@ -218,7 +218,9 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     */
   def computeTransitiveClosure(edges: Dataset[RDFTriple]): Dataset[RDFTriple] = {
     log.info("computing TC...")
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
+//    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
+    val spark = edges.sparkSession.sqlContext
+    import spark.implicits._
 
     profile {
       // we keep the transitive closure cached
@@ -239,7 +241,11 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
         // then project the result to obtain the new (x, y) paths.
 
         tc.createOrReplaceTempView("SC")
-        var joined = tc.as("A").join(tc.as("B"), "A.o = B.s").select("A.s", "A.p", "B.o").as[RDFTriple]
+        var joined = tc.as("A").join(tc.as("B"), $"A.o" === $"B.s").select("A.s", "A.p", "B.o").as[RDFTriple]
+//          var joined = tc
+//            .join(edges, tc("o") === edges("s"))
+//            .select(tc("s"), tc("p"), edges("o"))
+//            .as[RDFTriple]
 //        tc.sqlContext.
 //          sql("SELECT A.subject, A.predicate, B.object FROM SC A INNER JOIN SC B ON A.object = B.subject")
 

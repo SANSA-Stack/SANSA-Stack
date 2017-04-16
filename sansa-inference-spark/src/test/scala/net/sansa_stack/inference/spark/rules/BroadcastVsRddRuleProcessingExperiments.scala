@@ -96,7 +96,7 @@ object BroadcastVsRddRuleProcessingExperiments extends Profiler{
     val triplesRDFS7 =
       subPropertyOfTriples.map(t => (t.s, t.o)) // (p1, p2)
       .join(
-        triples.map(t => (t.p, (t.subject, t.`object`))) // (p1, (s, o))
+        triples.map(t => (t.p, (t.s, t.o))) // (p1, (s, o))
       ) // (p1, (p2, (s, o))
       .map(e => RDFTriple(e._2._2._1, e._2._1, e._2._2._2))
 
@@ -108,15 +108,15 @@ object BroadcastVsRddRuleProcessingExperiments extends Profiler{
     val subPropertyOfTriples = triples.filter(t => t.p == RDFS.subPropertyOf.getURI)
 
     // a map structure should be more efficient
-    val subPropertyMap = CollectionUtils.toMultiMap(subPropertyOfTriples.map(t => (t.subject, t.`object`)).collect)
+    val subPropertyMap = CollectionUtils.toMultiMap(subPropertyOfTriples.map(t => (t.s, t.o)).collect)
 
     // broadcast
     val subPropertyMapBC = session.sparkContext.broadcast(subPropertyMap)
 
     val triplesRDFS7 =
       triples // all triples (s p1 o)
-        .filter(t => subPropertyMapBC.value.contains(t.predicate)) // such that p1 has a super property p2
-        .flatMap(t => subPropertyMapBC.value(t.predicate).map(supProp => RDFTriple(t.subject, supProp, t.`object`))) // create triple (s p2 o)
+        .filter(t => subPropertyMapBC.value.contains(t.p)) // such that p1 has a super property p2
+        .flatMap(t => subPropertyMapBC.value(t.p).map(supProp => RDFTriple(t.s, supProp, t.o))) // create triple (s p2 o)
 
     triplesRDFS7
   }

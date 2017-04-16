@@ -39,7 +39,7 @@ trait TransitiveReasoner extends Profiler{
   //  }
 
   def addTransitive(triples: Set[RDFTriple]): Set[RDFTriple] = {
-    triples ++ (for (t1 <- triples; t2 <- triples if t1.`object` == t2.subject) yield RDFTriple(t1.subject, t1.predicate, t2.`object`))
+    triples ++ (for (t1 <- triples; t2 <- triples if t1.o == t2.s) yield RDFTriple(t1.s, t1.p, t2.o))
   }
 
   /**
@@ -55,10 +55,10 @@ trait TransitiveReasoner extends Profiler{
 
     profile {
       // keep the predicate
-      val predicate = triples.first(1).collect().head.predicate
+      val predicate = triples.first(1).collect().head.p
 
       // compute the TC
-      var subjectObjectPairs = triples.map(t => (t.subject, t.`object`))
+      var subjectObjectPairs = triples.map(t => (t.s, t.o))
 
       // because join() joins on keys, in addition the pairs are stored in reversed order (o, s)
       val objectSubjectPairs = subjectObjectPairs.map(t => (t._2, t._1))
@@ -104,10 +104,10 @@ trait TransitiveReasoner extends Profiler{
 
     profile {
       // keep the predicate
-      val predicate = triples.first(1).collect().head.predicate
+      val predicate = triples.first(1).collect().head.p
 
       // convert to tuples needed for the JOIN operator
-      val subjectObjectPairs = triples.map(t => (t.subject, t.`object`))
+      val subjectObjectPairs = triples.map(t => (t.s, t.o))
 
       // compute the TC
       val res = subjectObjectPairs.iterateWithTermination(10) {

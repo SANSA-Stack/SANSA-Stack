@@ -34,7 +34,7 @@ class TypeComputorDefault extends TypeComputor {
 //      .groupByKey()
 
     val ind2IncomingTriples = aboxTriples
-      .filter(t => t.predicate != RDF.`type`.getURI)
+      .filter(t => t.p != RDF.`type`.getURI)
       .map(t => (t.o, (false, t.p, t.s)))
 //      .groupByKey()
 
@@ -86,8 +86,8 @@ object TypeComputorDefault {
     val typeComputor = new TypeComputorDefault
 
     val triples = graph.triples
-      .filter(t => t.predicate != RDF.`type`.getURI || t.`object`.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
-      .filter(t => t.predicate == RDF.`type`.getURI || t.predicate.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
+      .filter(t => t.p != RDF.`type`.getURI || t.o.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
+      .filter(t => t.p == RDF.`type`.getURI || t.p.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
 
 //    triples.cache()
 

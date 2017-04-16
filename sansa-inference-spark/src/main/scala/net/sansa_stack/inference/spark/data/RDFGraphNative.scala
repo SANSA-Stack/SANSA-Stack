@@ -18,9 +18,9 @@ class RDFGraphNative(override val triples: RDD[RDFTriple])
   def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphNative = {
       new RDFGraphNative(
         triples.filter(t =>
-          (s == None || t.subject == s.get) &&
-          (p == None || t.predicate == p.get) &&
-          (o == None || t.`object` == o.get)
+          (s == None || t.s == s.get) &&
+          (p == None || t.p == p.get) &&
+          (o == None || t.o == o.get)
       )
       )
   }
@@ -60,7 +60,7 @@ class RDFGraphNative(override val triples: RDD[RDFTriple])
     val schema = StructType(schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, true)))
 
     // convert triples RDD to rows
-    val rowRDD = triples.map(t => Row(t.subject, t.predicate, t.`object`))
+    val rowRDD = triples.map(t => Row(t.s, t.p, t.o))
 
     // apply the schema to the RDD
     val triplesDataFrame = sparkSession.createDataFrame(rowRDD, schema)

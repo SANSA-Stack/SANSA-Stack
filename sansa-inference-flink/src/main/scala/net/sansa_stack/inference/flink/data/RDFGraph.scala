@@ -24,9 +24,9 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
     */
   def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): DataSet[RDFTriple] = {
     triples.filter(t =>
-        (s == None || t.subject == s.get) &&
-        (p == None || t.predicate == p.get) &&
-        (o == None || t.`object` == o.get)
+        (s == None || t.s == s.get) &&
+        (p == None || t.p == p.get) &&
+        (o == None || t.o == o.get)
     )
   }
 

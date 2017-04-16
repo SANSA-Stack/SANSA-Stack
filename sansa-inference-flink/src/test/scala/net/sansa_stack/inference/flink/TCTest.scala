@@ -98,7 +98,7 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
     log.info("naive computation...")
 
     // convert to tuples
-    val tuples = ds.map(t => (t.subject, t.`object`))
+    val tuples = ds.map(t => (t.s, t.o))
 
     // perform fix point iteration
     var i = 1
@@ -147,7 +147,7 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
     log.info("semi-naive computation...")
 
     // convert to tuples
-    val tuples = ds.map(t => (t.subject, t.`object`))
+    val tuples = ds.map(t => (t.s, t.o))
 
     val maxIterations = 100
     val keyPosition = 0

@@ -32,7 +32,7 @@ trait ForwardRuleReasoner extends Profiler {
     * @return the set of triples that contain the predicate
     */
   def extractTriples(triples: mutable.Set[RDFTriple], predicate: String): mutable.Set[RDFTriple] = {
-    triples.filter(triple => triple.predicate == predicate)
+    triples.filter(triple => triple.p == predicate)
   }
 
   /**
@@ -43,7 +43,7 @@ trait ForwardRuleReasoner extends Profiler {
     * @return the RDD of triples that contain the predicate
     */
   def extractTriples(triples: RDD[RDFTriple], predicate: String): RDD[RDFTriple] = {
-    triples.filter(triple => triple.predicate == predicate)
+    triples.filter(triple => triple.p == predicate)
   }
 
   /**
@@ -62,15 +62,15 @@ trait ForwardRuleReasoner extends Profiler {
     var extractedTriples = triples
 
     if(subject.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.subject == subject.get)
+      extractedTriples = extractedTriples.filter(triple => triple.s == subject.get)
     }
 
     if(predicate.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.predicate == predicate.get)
+      extractedTriples = extractedTriples.filter(triple => triple.p == predicate.get)
     }
 
     if(obj.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.`object` == obj.get)
+      extractedTriples = extractedTriples.filter(triple => triple.o == obj.get)
     }
 
     extractedTriples

@@ -18,7 +18,7 @@ object RDDOperations {
     * @return tuples (s,o)
     */
   def subjObj(triples: RDD[RDFTriple]): RDD[(String, String)] = {
-    triples.map(t => (t.subject, t.`object`))
+    triples.map(t => (t.s, t.o))
   }
 
   /**
@@ -27,7 +27,7 @@ object RDDOperations {
     * @return tuples (o,s)
     */
   def objSubj(triples: RDD[RDFTriple]): RDD[(String, String)] = {
-    triples.map(t => (t.`object`, t.subject))
+    triples.map(t => (t.o, t.s))
   }
 
   /**
@@ -36,7 +36,7 @@ object RDDOperations {
     * @return tuples (s,(p,o))
     */
   def subjKeyPredObj(triples: RDD[RDFTriple]): RDD[(String, (String, String))] = {
-    triples.map(t => t.subject -> (t.predicate, t.`object`))
+    triples.map(t => t.s -> (t.p, t.o))
   }
 
   /**
@@ -45,7 +45,7 @@ object RDDOperations {
     * @return tuples (s,(o,p))
     */
   def subjKeyObjPred(triples: RDD[RDFTriple]): RDD[(String, (String, String))] = {
-    triples.map(t => t.subject -> (t.`object`, t.predicate))
+    triples.map(t => t.s -> (t.o, t.p))
   }
 
   /**
@@ -54,7 +54,7 @@ object RDDOperations {
     * @return tuples (o,(s,p))
     */
   def objKeySubjPred(triples: RDD[RDFTriple]): RDD[(String, (String, String))] = {
-    triples.map(t => t.`object` -> (t.subject, t.predicate))
+    triples.map(t => t.o -> (t.s, t.p))
   }
 
   /**
@@ -63,7 +63,7 @@ object RDDOperations {
     * @return tuples (o,(p,s))
     */
   def objKeyPredSubj(triples: RDD[RDFTriple]): RDD[(String, (String, String))] = {
-    triples.map(t => t.`object` -> (t.predicate, t.subject))
+    triples.map(t => t.o -> (t.p, t.s))
   }
 
   /**
@@ -72,7 +72,7 @@ object RDDOperations {
     * @return tuples (p,(s,o))
     */
   def predKeySubjObj(triples: RDD[RDFTriple]): RDD[(String, (String, String))] = {
-    triples.map(t => t.predicate -> (t.subject, t.`object`))
+    triples.map(t => t.p -> (t.s, t.o))
   }
 
   /**
@@ -81,7 +81,7 @@ object RDDOperations {
     * @return tuples (p,(o,s))
     */
   def predKeyObjSubj(triples: RDD[RDFTriple]): RDD[(String, (String, String))] = {
-    triples.map(t => t.predicate -> (t.`object`, t.subject))
+    triples.map(t => t.p -> (t.o, t.s))
   }
 
   /**
@@ -90,7 +90,7 @@ object RDDOperations {
     * @return tuples ((s,p),o)
     */
   def subjPredKeyObj(triples: RDD[RDFTriple]): RDD[((String, String), String)] = {
-    triples.map(t => (t.subject, t.predicate) -> t.`object`)
+    triples.map(t => (t.s, t.p) -> t.o)
   }
 
   /**
@@ -99,7 +99,7 @@ object RDDOperations {
     * @return tuples ((s,o),p)
     */
   def subjObjKeyPred(triples: RDD[RDFTriple]): RDD[((String, String), String)] = {
-    triples.map(t => (t.subject, t.`object`) -> t.predicate)
+    triples.map(t => (t.s, t.o) -> t.p)
   }
 
   /**
@@ -108,7 +108,7 @@ object RDDOperations {
     * @return tuples ((o,p),s)
     */
   def objPredKeySubj(triples: RDD[RDFTriple]): RDD[((String, String), String)] = {
-    triples.map(t => (t.`object`, t.predicate) -> t.subject)
+    triples.map(t => (t.o, t.p) -> t.s)
   }
 
   /**

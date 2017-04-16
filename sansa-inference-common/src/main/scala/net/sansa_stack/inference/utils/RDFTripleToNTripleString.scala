@@ -12,11 +12,11 @@ class RDFTripleToNTripleString
     with java.io.Serializable {
   override def apply(t: RDFTriple): String = {
     val objStr =
-      if (t.`object`.startsWith("http:") || t.`object`.startsWith("ftp:")) {
-        s"<${t.`object`}>"
+      if (t.o.startsWith("http:") || t.o.startsWith("ftp:")) {
+        s"<${t.o}>"
       } else {
-        t.`object`
+        t.o
       }
-    s"<${t.subject}> <${t.predicate}> ${objStr} ."
+    s"<${t.s}> <${t.p}> ${objStr} ."
   }
 }

@@ -50,12 +50,12 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     val subPropertyOfTriplesTrans = computeTransitiveClosureOpt(subPropertyOfTriples)
 
     // a map structure should be more efficient
-    val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.subject, t.`object`)).collect)
-    val subPropertyMap = CollectionUtils.toMultiMap(subPropertyOfTriplesTrans.map(t => (t.subject, t.`object`)).collect)
+    val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.s, t.o)).collect)
+    val subPropertyMap = CollectionUtils.toMultiMap(subPropertyOfTriplesTrans.map(t => (t.s, t.o)).collect)
 
 
     // split by rdf:type
-    val split = triplesDS.partitionBy(t => t.predicate == RDF.`type`.getURI)
+    val split = triplesDS.partitionBy(t => t.p == RDF.`type`.getURI)
     var typeTriples = split._1
     var otherTriples = split._2
 
@@ -68,8 +68,8 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
      */
     val triplesRDFS7 =
       otherTriples // all triples (s p1 o)
-      .filter(t => subPropertyMap.contains(t.predicate)) // such that p1 has a super property p2
-      .flatMap(t => subPropertyMap(t.predicate).map(supProp => RDFTriple(t.subject, supProp, t.`object`))) // create triple (s p2 o)
+      .filter(t => subPropertyMap.contains(t.p)) // such that p1 has a super property p2
+      .flatMap(t => subPropertyMap(t.p).map(supProp => RDFTriple(t.s, supProp, t.o))) // create triple (s p2 o)
 
     // add triples
     otherTriples = otherTriples.union(triplesRDFS7)
@@ -81,24 +81,24 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
           yyy aaa zzz .	          yyy rdf:type xxx .
      */
     val domainTriples = extractTriples(triplesDS, RDFS.domain.getURI)
-    val domainMap = domainTriples.map(t => (t.subject, t.`object`)).collect.toMap
+    val domainMap = domainTriples.map(t => (t.s, t.o)).collect.toMap
 
     val triplesRDFS2 =
       otherTriples
-        .filter(t => domainMap.contains(t.predicate))
-        .map(t => RDFTriple(t.subject, RDF.`type`.getURI, domainMap(t.predicate)))
+        .filter(t => domainMap.contains(t.p))
+        .map(t => RDFTriple(t.s, RDF.`type`.getURI, domainMap(t.p)))
 
     /*
    rdfs3	aaa rdfs:range xxx .
          yyy aaa zzz .	          zzz rdf:type xxx .
     */
     val rangeTriples = extractTriples(triplesDS, RDFS.range.getURI)
-    val rangeMap = rangeTriples.map(t => (t.subject, t.`object`)).collect().toMap
+    val rangeMap = rangeTriples.map(t => (t.s, t.o)).collect().toMap
 
     val triplesRDFS3 =
       otherTriples
-        .filter(t => rangeMap.contains(t.predicate))
-        .map(t => RDFTriple(t.`object`, RDF.`type`.getURI, rangeMap(t.predicate)))
+        .filter(t => rangeMap.contains(t.p))
+        .map(t => RDFTriple(t.o, RDF.`type`.getURI, rangeMap(t.p)))
 
     // rdfs2 and rdfs3 generated rdf:type triples which we'll add to the existing ones
     val triples23 = triplesRDFS2.union(triplesRDFS3)
@@ -114,8 +114,8 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
      */
     val triplesRDFS9 =
     typeTriples // all rdf:type triples (s a A)
-      .filter(t => subClassOfMap.contains(t.`object`)) // such that A has a super class B
-      .flatMap(t => subClassOfMap(t.`object`).map(supCls => RDFTriple(t.subject, RDF.`type`.getURI, supCls))) // create triple (s a B)
+      .filter(t => subClassOfMap.contains(t.o)) // such that A has a super class B
+      .flatMap(t => subClassOfMap(t.o).map(supCls => RDFTriple(t.s, RDF.`type`.getURI, supCls))) // create triple (s a B)
 
     // 5. merge triples and remove duplicates
     var allTriples = env.union(
@@ -138,28 +138,28 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       // rdfs4a: (s p o) => (s rdf:type rdfs:Resource)
       // rdfs4a: (s p o) => (o rdf:type rdfs:Resource)
       val rdfs4 = allTriples.flatMap(t => Set(
-        RDFTriple(t.subject, RDF.`type`.getURI, RDFS.Resource.getURI),
-        RDFTriple(t.`object`, RDF.`type`.getURI, RDFS.Resource.getURI)
+        RDFTriple(t.s, RDF.`type`.getURI, RDFS.Resource.getURI),
+        RDFTriple(t.o, RDF.`type`.getURI, RDFS.Resource.getURI)
         //          RDFTriple(t.predicate, RDF.`type`.getURI, RDF.Property.getURI)
       ))
 
       //rdfs12: (?x rdf:type rdfs:ContainerMembershipProperty) -> (?x rdfs:subPropertyOf rdfs:member)
       val rdfs12 = typeTriples
-        .filter(t => t.`object` == RDFS.ContainerMembershipProperty.getURI)
-        .map(t => RDFTriple(t.subject, RDF.`type`.getURI, RDFS.member.getURI))
+        .filter(t => t.o == RDFS.ContainerMembershipProperty.getURI)
+        .map(t => RDFTriple(t.s, RDF.`type`.getURI, RDFS.member.getURI))
 
       // rdfs6: (p rdf:type rdf:Property) => (p rdfs:subPropertyOf p)
       val rdfs6 = typeTriples
-        .filter(t => t.`object` == RDF.Property.getURI)
-        .map(t => RDFTriple(t.subject, RDFS.subPropertyOf.getURI, t.subject))
+        .filter(t => t.o == RDF.Property.getURI)
+        .map(t => RDFTriple(t.s, RDFS.subPropertyOf.getURI, t.s))
 
       // rdfs8: (s rdf:type rdfs:Class ) => (s rdfs:subClassOf rdfs:Resource)
       // rdfs10: (s rdf:type rdfs:Class) => (s rdfs:subClassOf s)
       val rdfs8_10 = typeTriples
-        .filter(t => t.`object` == RDFS.Class.getURI)
+        .filter(t => t.o == RDFS.Class.getURI)
         .flatMap(t => Set(
-                        RDFTriple(t.subject, RDFS.subClassOf.getURI, RDFS.Resource.getURI),
-                        RDFTriple(t.subject, RDFS.subClassOf.getURI, t.subject)))
+                        RDFTriple(t.s, RDFS.subClassOf.getURI, RDFS.Resource.getURI),
+                        RDFTriple(t.s, RDFS.subClassOf.getURI, t.s)))
 
       val additionalTripleRDDs = mutable.Seq(rdfs4, rdfs6, rdfs8_10)
 
