@@ -97,6 +97,12 @@ under the License.
 			<artifactId>flink-test-utils_${scala.binary.version}</artifactId>
 			<version>${flink.version}</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.directory.jdbm</groupId>
+					<artifactId>apacheds-jdbm1</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Scopt -->
@@ -245,7 +251,7 @@ under the License.
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<minimizeJar>true</minimizeJar>
+							<!--<minimizeJar>true</minimizeJar>-->
 							<artifactSet>
 								<excludes>
 									<!-- This list contains all dependencies of flink-dist
@@ -264,6 +270,7 @@ under the License.
 									<exclude>org.apache.flink:flink-scala-examples_2.11</exclude>
 									<exclude>org.apache.flink:flink-streaming-examples_2.11</exclude>
 									<exclude>org.apache.flink:flink-streaming-java_2.11</exclude>
+									<exclude>org.apache.flink:*</exclude>
 
 									<!-- Also exclude very big transitive dependencies of Flink
 
@@ -339,6 +346,8 @@ under the License.
 									<exclude>netbeans:*</exclude>
 									<exclude>org.apache.xmlgraphics:*</exclude>
 									<exclude>mysql:*</exclude>
+									<exclude>jfree:*</exclude>
+									<exclude>org.scala-lang.modules:*</exclude>
 								</excludes>
 							</artifactSet>
 							<filters>

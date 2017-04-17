@@ -43,7 +43,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment)
     val subClassOfTriples = extractTriples(triplesDS, RDFS.subClassOf.getURI)
       .name("rdfs:subClassOf") // extract rdfs:subClassOf triples
     val subClassOfTriplesTrans =
-      computeTransitiveClosureOpt(subClassOfTriples).name("rdfs11")
+      computeTransitiveClosureOptSemiNaive(subClassOfTriples).name("rdfs11")
 
     /*
         rdfs5	xxx rdfs:subPropertyOf yyy .
@@ -53,7 +53,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment)
       extractTriples(triplesDS, RDFS.subPropertyOf.getURI)
         .name("rdfs:subPropertyOf") // extract rdfs:subPropertyOf triples
     val subPropertyOfTriplesTrans =
-      computeTransitiveClosureOpt(subPropertyOfTriples).name("rdfs5")
+      computeTransitiveClosureOptSemiNaive(subPropertyOfTriples).name("rdfs5")
 
     // a map structure should be more efficient
     val subClassOfMap = CollectionUtils.toMultiMap(
