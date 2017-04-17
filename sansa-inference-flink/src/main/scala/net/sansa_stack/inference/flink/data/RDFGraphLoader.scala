@@ -36,7 +36,8 @@ object RDFGraphLoader {
     // pass the configuration to the data source
     val triples = env.readTextFile(path.toString).withParameters(parameters)
       .map(line => line.replace(">", "").replace("<", "").split("\\s+")) // line to tokens
-      .map(tokens => RDFTriple(tokens(0), tokens(1), tokens(2))) // tokens to triple
+      .map(tokens => RDFTriple(tokens(0), tokens(1), tokens(2)))
+      .name("triples")  // tokens to triple
 
     RDFGraph(triples)
   }
@@ -45,7 +46,7 @@ object RDFGraphLoader {
 
     val tmp: List[String] = paths.map(path => path.toString).toList
 
-    val triples = tmp.map(f => env.readTextFile(f).map(new NTriplesStringToRDFTriple())).reduce(_ union _)
+    val triples = tmp.map(f => env.readTextFile(f).map(new NTriplesStringToRDFTriple())).reduce(_ union _).name("triples")
 
     RDFGraph(triples)
   }
