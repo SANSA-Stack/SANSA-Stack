@@ -75,8 +75,11 @@ object RDFGraphMaterializer {
 
     //    println(env.getExecutionPlan())
 
+    val jobName = params.get("jobName", s"${profile} Reasoning")
+    println(jobName)
+
     // run the program
-    env.execute(s"${profile} Reasoning")
+    env.execute(jobName)
   }
 
   // the config object
@@ -126,6 +129,8 @@ object RDFGraphMaterializer {
       .text("the reasoning profile")
 
     help("help").text("prints this usage text")
+
   }
+  parser.showUsageOnError
 
 }
