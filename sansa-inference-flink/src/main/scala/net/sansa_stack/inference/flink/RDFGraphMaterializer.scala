@@ -1,13 +1,21 @@
 package net.sansa_stack.inference.flink
 
+import java.io.{File, FileInputStream}
 import java.net.URI
+import java.util.Properties
 
+import scala.io.Source
+
+import com.typesafe.config.ConfigFactory
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.runtime.webmonitor.WebMonitorUtils
 
 import net.sansa_stack.inference.flink.data.{RDFGraphLoader, RDFGraphWriter}
-import net.sansa_stack.inference.flink.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
+import net.sansa_stack.inference.flink.forwardchaining.{
+  ForwardRuleReasonerOWLHorst,
+  ForwardRuleReasonerRDFS
+}
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 
@@ -27,7 +35,9 @@ object RDFGraphMaterializer {
             config.out,
             config.profile,
             config.writeToSingleFile,
-            config.sortedOutput)
+            config.sortedOutput,
+            config.propertiesFile,
+            config.jobName)
       case None =>
         println(parser.usage)
     }
@@ -38,7 +48,13 @@ object RDFGraphMaterializer {
           output: URI,
           profile: ReasoningProfile,
           writeToSingleFile: Boolean,
-          sortedOutput: Boolean): Unit = {
+          sortedOutput: Boolean,
+          propertiesFile: File,
+          jobName: String): Unit = {
+
+    // read reasoner optimization properties
+    val reasonerConf = if (propertiesFile != null) ConfigFactory.parseFile(propertiesFile) else ConfigFactory.load("reasoner")
+
     // get params
     val params: ParameterTool = ParameterTool.fromArgs(args)
 
@@ -55,10 +71,11 @@ object RDFGraphMaterializer {
 
     // create reasoner
     val reasoner = profile match {
-      case RDFS => new ForwardRuleReasonerRDFS(env)
-      case RDFS_SIMPLE =>
+      case RDFS | RDFS_SIMPLE =>
         val r = new ForwardRuleReasonerRDFS(env)
-        r.level = RDFSLevel.SIMPLE
+        r.useSchemaBroadCasting = reasonerConf.getBoolean("reasoner.rdfs.schema.broadcast")
+        r.extractSchemaTriplesInAdvance = reasonerConf.getBoolean("reasoner.rdfs.schema.extractTriplesInAdvance")
+        if (profile == RDFS_SIMPLE) r.level = RDFSLevel.SIMPLE
         r
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(env)
     }
@@ -75,19 +92,21 @@ object RDFGraphMaterializer {
 
     //    println(env.getExecutionPlan())
 
-    val jobName = params.get("jobName", s"${profile} Reasoning")
-    println(jobName)
+    val jn = if (jobName.isEmpty) s"${profile} Reasoning" else jobName
 
     // run the program
-    env.execute(jobName)
+    env.execute(jn)
   }
 
   // the config object
-  case class Config(in: Seq[URI] = Seq(),
-                    out: URI = new URI("."),
-                    profile: ReasoningProfile = ReasoningProfile.RDFS,
-                    writeToSingleFile: Boolean = false,
-                    sortedOutput: Boolean = false)
+  case class Config(
+      in: Seq[URI] = Seq(),
+      out: URI = new URI("."),
+      profile: ReasoningProfile = ReasoningProfile.RDFS,
+      writeToSingleFile: Boolean = false,
+      sortedOutput: Boolean = false,
+      propertiesFile: File = null,
+      jobName: String = "") // new File(getClass.getResource("reasoner.properties").toURI)
 
   // read ReasoningProfile enum
   implicit val profilesRead: scopt.Read[ReasoningProfile.Value] =
@@ -127,6 +146,18 @@ object RDFGraphMaterializer {
       .valueName("{rdfs | rdfs-simple | owl-horst}")
       .action((x, c) => c.copy(profile = x))
       .text("the reasoning profile")
+
+    opt[File]('p', "prop")
+      .optional()
+      .valueName("<path_to_properties_file>")
+      .action((x, c) => c.copy(propertiesFile = x))
+      .text("the (optional) properties file which allows some more advanced options")
+
+    opt[String]('j', "jobName")
+      .optional()
+      .valueName("<name_of_the_Flink_job>")
+      .action((x, c) => c.copy(jobName = x))
+      .text("the name of the Flink job that occurs also in the Web-UI")
 
     help("help").text("prints this usage text")
 
