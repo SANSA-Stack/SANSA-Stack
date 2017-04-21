@@ -49,7 +49,18 @@ object RDFGraphWriter {
 
     implicit val ordering = RDFTripleOrdering
 
-    graph.triples.map(t => (t, t)).sortPartition(1, Order.DESCENDING).map(_._1)
+    // sort triples if enabled
+    val tmp = if (sorted) {
+      graph.triples// .sortPartition(t => t, Order.ASCENDING) // map(t => (t, t)).sortPartition(1, Order.DESCENDING).map(_._1)
+    } else {
+      graph.triples
+    }
+
+    if (singleFile) {
+      tmp.setParallelism(1)
+    }
+
+    tmp
       .map(new RDFTripleToNTripleString()) // to N-TRIPLES string
       .writeAsText(path.toString, writeMode = FileSystem.WriteMode.OVERWRITE)
 
