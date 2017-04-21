@@ -153,6 +153,6 @@ Currently, the following reasoning profiles are supported:
 s
 ###### OWL Horst
 OWL Horst is a fragment of OWL and was proposed by Herman ter Horst [1] defining an "intentional" version of OWL sometimes also referred to as pD\*. It can be materialized using a set of rules that is an extension of the set of RDFS rules. OWL Horst is supposed to be one of the most common OWL flavours for scalable OWL reasoning while bridging the gap between the unfeasible OWL Full and the low expressiveness of RDFS.
-ss
+
 [1] Herman J. ter Horst:
 *Completeness, decidability and complexity of entailment for RDF Schema and a semantic extension involving the OWL vocabulary.* J. Web Sem. 3(2-3): 79-115 (2005)
