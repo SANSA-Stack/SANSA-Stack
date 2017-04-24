@@ -10,6 +10,7 @@ import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.RDFSLevel._
 import net.sansa_stack.inference.spark.data.RDFGraph
 import net.sansa_stack.inference.spark.utils.RDDUtils.RDDOps
+import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 import net.sansa_stack.inference.utils.CollectionUtils
 
 /**
@@ -26,6 +27,8 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
 
   var level: RDFSLevel = DEFAULT
 
+  var extractSchemaTriplesInAdvance: Boolean = true
+
   override def apply(graph: RDFGraph): RDFGraph = {
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
@@ -33,6 +36,11 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
     var triplesRDD = graph.triples.distinct() // we cache this RDD because it's used quite often
     triplesRDD.cache()
     // RDFS rules dependency was analyzed in \todo(add references) and the same ordering is used here
+
+    // as an optimization, we can extract all schema triples first which avoids to run on the whole dataset
+    // for each schema triple later
+    val schemaTriples = if (extractSchemaTriplesInAdvance) new RDFSSchemaExtractor(sc).extract(triplesRDD)
+                        else triplesRDD
 
 
     // 1. we first compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf

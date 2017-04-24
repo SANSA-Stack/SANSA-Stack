@@ -31,9 +31,9 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
 
-    val extractor = new RDFSSchemaExtractor(session)
+    val extractor = new RDFSSchemaExtractor(session.sparkContext)
 
-    var index = extractor.extract(graph)
+    var index = extractor.extractWithIndex(graph)
 
     var triples = graph.toDataFrame(session).alias("DATA")
 
