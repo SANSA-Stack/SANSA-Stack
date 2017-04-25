@@ -2,6 +2,8 @@ package net.sansa_stack.inference.utils
 
 import org.slf4j.{Logger, LoggerFactory}
 
+import scala.language.implicitConversions
+
 /**
   * Utility trait for classes that want to log data. Creates a SLF4J logger for the class and allows
   * logging messages at different levels using methods that only evaluate parameters lazily if the
