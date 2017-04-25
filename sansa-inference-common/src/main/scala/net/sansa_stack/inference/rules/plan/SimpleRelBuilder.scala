@@ -57,7 +57,7 @@ object SimpleRelBuilder {
     val relOptSchema = new CalciteCatalogReader(
       calciteSchema,
       config.getParserConfig.caseSensitive(),
-      defaultRelOptSchema.getSchemaName,
+      defaultRelOptSchema.getSchemaPaths.get(0),
       typeFactory)
 
     new SimpleRelBuilder(config.getContext, cluster, relOptSchema)
