@@ -54,10 +54,10 @@ object BroadcastVsRddRuleProcessingExperiments extends Profiler{
 
   }
 
-  def run(name: String, f: RDD[RDFTriple] => RDD[RDFTriple]) = {
-    session = sessionBuilder.appName(name).getOrCreate()
+  def run(name: String, f: RDD[RDFTriple] => RDD[RDFTriple]): Long = {
+    var session = sessionBuilder.appName(name).getOrCreate()
 
-    val triples = RDFGraphLoader.loadFromFile(sourcePath, session, 4).triples
+    val triples = RDFGraphLoader.loadFromDisk(session, sourcePath, 4).triples
     triples.cache()
 
     val cnt = profile {
@@ -69,10 +69,10 @@ object BroadcastVsRddRuleProcessingExperiments extends Profiler{
     cnt
   }
 
-  def runIter(name: String, f: RDD[RDFTriple] => RDD[RDFTriple]) = {
+  def runIter(name: String, f: RDD[RDFTriple] => RDD[RDFTriple]): Long = {
     session = sessionBuilder.appName(name).getOrCreate()
 
-    val triples = RDFGraphLoader.loadFromFile(sourcePath, session, 4).triples
+    val triples = RDFGraphLoader.loadFromDisk(session, sourcePath, 4).triples
     triples.cache()
 
     val cnt = profile {

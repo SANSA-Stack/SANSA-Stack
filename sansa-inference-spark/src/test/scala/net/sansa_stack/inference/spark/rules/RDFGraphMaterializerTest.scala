@@ -46,7 +46,7 @@ object RDFGraphMaterializerTest {
     val inferredGraph = reasoner.apply(graph)
 
     // write triples to disk
-    RDFGraphWriter.writeGraphToFile(inferredGraph, args(0))
+    RDFGraphWriter.writeToDisk(inferredGraph, args(0))
 
     sc.stop()
 

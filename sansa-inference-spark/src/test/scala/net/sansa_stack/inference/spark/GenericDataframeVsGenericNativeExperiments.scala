@@ -47,7 +47,7 @@ object GenericDataframeVsGenericNativeExperiments {
     session = sessionBuilder.appName("generic-rdd").getOrCreate()
 
     // load triples from disk
-    var graph = RDFGraphLoader.loadGraphFromFile(args(0), session, 4)//generateData(1)
+    var graph = RDFGraphLoader.loadFromDiskAsRDD(session, args(0), 4)//generateData(1)
 
     val infGraphNative = native(graph)
 
@@ -57,7 +57,7 @@ object GenericDataframeVsGenericNativeExperiments {
 
     session = sessionBuilder.appName("generic-dataframe").getOrCreate()
 
-    graph = RDFGraphLoader.loadGraphFromFile(args(0), session, 4)
+    graph = RDFGraphLoader.loadFromDiskAsRDD(session, args(0), 4)
 
     val infGraphDataframe = dataframe(new RDFGraphDataFrame(graph.toDataFrame(session)))
 

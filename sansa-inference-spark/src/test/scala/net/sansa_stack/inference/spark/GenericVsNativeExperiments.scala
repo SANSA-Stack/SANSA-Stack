@@ -36,7 +36,7 @@ object GenericVsNativeExperiments {
     }
 
     // load triples from disk
-    val graph = RDFGraphLoader.loadGraphDataFrameFromFile(args(0), session, 4)
+    val graph = RDFGraphLoader.loadFromDiskAsDataFrame(session, args(0), 4)
 
     val infGraphNative = native(graph)
 
@@ -48,8 +48,8 @@ object GenericVsNativeExperiments {
     val targetDir = args(1)
 
     // write triples to disk
-    RDFGraphWriter.writeDataframeToFile(infGraphNative.toDataFrame(), targetDir + "/native")
-    RDFGraphWriter.writeDataframeToFile(infGraphGeneric.toDataFrame(), targetDir + "/generic")
+    RDFGraphWriter.writeDataframeToDisk(infGraphNative.toDataFrame(), targetDir + "/native")
+    RDFGraphWriter.writeDataframeToDisk(infGraphGeneric.toDataFrame(), targetDir + "/generic")
 
     session.stop()
 

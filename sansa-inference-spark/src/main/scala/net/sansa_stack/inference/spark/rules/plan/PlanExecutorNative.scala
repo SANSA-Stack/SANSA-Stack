@@ -7,7 +7,7 @@ import scala.collection.mutable
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.catalyst.expressions.{Alias, And, AttributeReference, EqualTo, Expression, IsNotNull, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, SubqueryAlias}
 import org.apache.spark.sql.catalyst.plans.{Inner, logical}
@@ -23,7 +23,7 @@ import net.sansa_stack.inference.utils.{Logging, Tuple0}
   */
 class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], RDFGraphNative] with Logging{
 
-  val sqlContext = new SQLContext(sc)
+  val sqlContext = SparkSession.builder().getOrCreate().sqlContext
   val emptyGraph = EmptyRDFGraphDataFrame.get(sqlContext)
 
   def execute(plan: Plan, graph: RDFGraphNative): RDFGraphNative = {

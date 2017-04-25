@@ -83,7 +83,7 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
     val triplesDataFrame = sqlContext.createDataFrame(rowRDD, schema)
 
     // register the DataFrame as a table
-    triplesDataFrame.registerTempTable("TRIPLES")
+    triplesDataFrame.createOrReplaceTempView("TRIPLES")
 
     triplesDataFrame
   }

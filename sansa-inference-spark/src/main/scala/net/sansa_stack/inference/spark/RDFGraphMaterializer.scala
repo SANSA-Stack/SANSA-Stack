@@ -1,8 +1,6 @@
 package net.sansa_stack.inference.spark
 
-import java.io.File
 import java.net.URI
-import java.nio.file.{Path, Paths}
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -49,21 +47,18 @@ object RDFGraphMaterializer {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.default.parallelism", parallelism)
       .config("spark.ui.showConsoleProgress", "false")
+      .config("spark.sql.shuffle.partitions", parallelism)
       .config(conf)
       .getOrCreate()
 
 //    println(session.conf.getAll.mkString("\n"))
 
-//    val g = RDFGraphLoader.loadGraphFromDiskAsDataset(session, input)
-//    g.triples.toDF().printSchema()
-//    g.triples.show(10)
+//    val g = RDFGraphLoader.loadFromDiskAsDataset(session, input).distinct()
 //    val g_inf = new ForwardRuleReasonerRDFSDataset(session).apply(g)
-//    println(g_inf.size())
+//    println(s"|G_inf| = ${g_inf.size()}")
 
     // load triples from disk
-    val graph = RDFGraphLoader.loadFromDisk(input, session, parallelism)
-
-
+    val graph = RDFGraphLoader.loadFromDisk(session, input, parallelism)
 //    println(s"|G| = ${graph.size()}")
 
     // create reasoner
@@ -82,7 +77,7 @@ object RDFGraphMaterializer {
 //    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
-    RDFGraphWriter.writeGraphToFile(inferredGraph, output.toString, writeToSingleFile, sortedOutput)
+    RDFGraphWriter.writeToDisk(inferredGraph, output.toString, writeToSingleFile, sortedOutput)
 
     session.stop()
   }

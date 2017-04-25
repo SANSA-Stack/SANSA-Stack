@@ -81,7 +81,7 @@ object TypeComputorDefault {
       .config("spark.ui.showConsoleProgress", "false")
       .getOrCreate()
 
-    val graph = RDFGraphLoader.loadFromDisk(Seq(URI.create(args(0))), session, parallelism)
+    val graph = RDFGraphLoader.loadFromDisk(session, Seq(URI.create(args(0))), parallelism)
 
     val typeComputor = new TypeComputorDefault
 
