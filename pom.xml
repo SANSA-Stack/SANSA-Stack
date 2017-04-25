@@ -561,12 +561,12 @@
     <!-- the profile used for deployment to Sonatype Maven repository -->
     <profile>
       <id>ossrh</id>
-      <!--<distributionManagement>-->
-        <!--<repository>-->
-          <!--<id>ossrh</id>-->
-          <!--<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
-        <!--</repository>-->
-      <!--</distributionManagement>-->
+      <distributionManagement>
+        <repository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
       <build>
         <plugins>
           <plugin>
