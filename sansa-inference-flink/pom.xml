@@ -106,11 +106,9 @@ under the License.
 		</dependency>
 
 		<!-- Scopt -->
-		<!-- Flink Distribution uses 3.2.0 which leads to conflicts with newer versions -->
 		<dependency>
 			<groupId>com.github.scopt</groupId>
 			<artifactId>scopt_${scala.binary.version}</artifactId>
-			<version>3.5.0</version>
 		</dependency>
 
 	</dependencies>
@@ -146,7 +144,6 @@ under the License.
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
 				<configuration>
 					<useFile>false</useFile>
 					<disableXmlReport>true</disableXmlReport>
@@ -242,7 +239,6 @@ under the License.
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.1</version>
 				<executions>
 					<!-- Run shade goal on package phase -->
 					<execution>
