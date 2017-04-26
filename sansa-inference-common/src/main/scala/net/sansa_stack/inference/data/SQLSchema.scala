@@ -1,7 +1,7 @@
-package net.sansa_stack.inference.spark.data.model
+package net.sansa_stack.inference.data
 
 /**
-  * The SQL schema used for RDF triples in a Dataframe.
+  * The SQL schema used for an RDF graph.
   *
   * @param triplesTable the name of the triples table
   * @param subjectCol   the name of the subject column
