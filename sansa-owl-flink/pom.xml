@@ -13,6 +13,9 @@
     <artifactId>sansa-owl-flink</artifactId>
     <version>0.1.0</version>
 
+    <name>SANSA OWL layer - Flink</name>
+    <description>A library to read OWL files into Flink.</description>
+
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>

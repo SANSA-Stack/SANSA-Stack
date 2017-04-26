@@ -12,6 +12,9 @@
     <artifactId>sansa-owl-spark</artifactId>
     <version>0.1.0</version>
 
+    <name>SANSA OWL layer - SPARK</name>
+    <description>A library to read OWL files into Spark.</description>
+
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
