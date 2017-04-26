@@ -1,10 +1,11 @@
 package net.sansa_stack.inference.spark
 
-import net.sansa_stack.inference.spark.data.RDFGraphDataFrame
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.{RDFGraph, RDFGraphLoader, RDFGraphWriter}
+import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
+import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame}
 import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOptimizedSQL, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataframe}
 import net.sansa_stack.inference.utils.{Profiler, RuleUtils}
 

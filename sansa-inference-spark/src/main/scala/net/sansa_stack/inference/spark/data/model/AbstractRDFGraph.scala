@@ -1,10 +1,10 @@
-package net.sansa_stack.inference.spark.data
+package net.sansa_stack.inference.spark.data.model
 
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
 
 /**
   * A data structure that comprises a collection of triples. Note, due to the implementation of the Spark
@@ -71,7 +71,7 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) 
 
 
 
-  def toDataFrame(sparkSession: SparkSession = null): DataFrame
+  def toDataFrame(sparkSession: SparkSession = null, schema: SQLSchema = SQLSchemaDefault): DataFrame
 
   def toRDD(): RDD[RDFTriple]
 

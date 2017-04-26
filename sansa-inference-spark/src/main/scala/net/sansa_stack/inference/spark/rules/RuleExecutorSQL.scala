@@ -2,7 +2,7 @@ package net.sansa_stack.inference.spark.rules
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import net.sansa_stack.inference.spark.data.RDFGraphDataFrame
+import net.sansa_stack.inference.spark.data.model.RDFGraphDataFrame
 import net.sansa_stack.inference.spark.rules.plan.PlanExecutorSQL
 
 /**

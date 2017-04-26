@@ -5,7 +5,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative}
+import net.sansa_stack.inference.spark.data.model.{EmptyRDFGraphDataFrame, RDFGraphNative}
 
 /**
   * An executor that works on the the native Scala data structures and uses Spark joins, filters etc.

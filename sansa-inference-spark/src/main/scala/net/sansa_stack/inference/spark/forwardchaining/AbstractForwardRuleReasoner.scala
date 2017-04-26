@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import net.sansa_stack.inference.spark.data.AbstractRDFGraph
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraph
 import net.sansa_stack.inference.utils.Logging
 
 /**

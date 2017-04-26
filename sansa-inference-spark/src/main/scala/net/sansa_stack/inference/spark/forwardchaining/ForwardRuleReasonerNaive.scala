@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.RDFGraphNative
+import net.sansa_stack.inference.spark.data.model.RDFGraphNative
 import net.sansa_stack.inference.spark.rules.RuleExecutorNative
 
 /**

@@ -1,15 +1,17 @@
 package net.sansa_stack.inference.spark.rules
 
-import net.sansa_stack.inference.spark.data.{RDFGraphDataFrame, RDFGraphNative}
 import org.apache.jena.vocabulary.{OWL2, RDF}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data._
 import net.sansa_stack.inference.spark.rules.plan.{PlanExecutorNative, PlanExecutorSQL}
 import net.sansa_stack.inference.utils.RuleUtils
-
 import scala.collection.mutable
+
+import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphNative}
+import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.

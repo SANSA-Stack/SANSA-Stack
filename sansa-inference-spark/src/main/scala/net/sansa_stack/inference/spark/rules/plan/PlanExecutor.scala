@@ -2,7 +2,7 @@ package net.sansa_stack.inference.spark.rules.plan
 
 import org.slf4j.LoggerFactory
 
-import net.sansa_stack.inference.spark.data.AbstractRDFGraph
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraph
 
 /**
   * An executor for a rule execution plan.

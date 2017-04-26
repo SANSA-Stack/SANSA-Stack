@@ -7,7 +7,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.{RDFGraph, RDFGraphDataFrame, RDFGraphNative}
+import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.utils.{CollectionUtils, Logging}
 
 /**
@@ -103,7 +103,7 @@ class RDFSSchemaExtractor(sc : SparkContext) extends Logging{
         val newGraph = graph.find(None, Some(p), None)
 
         // map to (s,o)
-        val pairs = newGraph.triples.select("subject", "predicate", "object")
+        val pairs = newGraph.triples.select(graph.schema.subjectCol, graph.schema.predicateCol, graph.schema.objectCol)
 
         // add to index
         (p -> pairs)

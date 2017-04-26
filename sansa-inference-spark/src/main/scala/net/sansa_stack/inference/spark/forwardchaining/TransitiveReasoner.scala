@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset}
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.RDFGraph
+import net.sansa_stack.inference.spark.data.model.RDFGraph
 
 /**
   * An engine to compute the transitive closure (TC) for a set of triples given in several datastructures.

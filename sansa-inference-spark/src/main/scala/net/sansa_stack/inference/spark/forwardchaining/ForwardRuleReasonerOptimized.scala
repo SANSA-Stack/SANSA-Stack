@@ -7,7 +7,7 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator}
-import net.sansa_stack.inference.spark.data.AbstractRDFGraph
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraph
 import net.sansa_stack.inference.spark.rules.RuleExecutor
 
 /**

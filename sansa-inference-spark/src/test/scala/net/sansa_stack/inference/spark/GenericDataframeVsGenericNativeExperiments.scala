@@ -1,16 +1,16 @@
 package net.sansa_stack.inference.spark
 
-import net.sansa_stack.inference.spark.data.{RDFGraphDataFrame, RDFGraphNative}
-import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOptimizedSQL
-import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
+import scala.collection.mutable
+
+import org.apache.jena.vocabulary.RDFS
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.RuleSets
-import net.sansa_stack.inference.spark.data.{RDFGraphLoader, RDFGraphNative, RDFGraphWriter}
+import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
+import net.sansa_stack.inference.spark.data.model.{RDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOptimizedNative, ForwardRuleReasonerOptimizedSQL}
-
-import scala.collection.mutable
 
 /**
   * @author Lorenz Buehmann

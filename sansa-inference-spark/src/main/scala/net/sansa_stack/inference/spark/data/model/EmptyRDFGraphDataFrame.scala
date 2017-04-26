@@ -1,4 +1,4 @@
-package net.sansa_stack.inference.spark.data
+package net.sansa_stack.inference.spark.data.model
 
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}

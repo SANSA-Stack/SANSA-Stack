@@ -1,13 +1,14 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
 import net.sansa_stack.inference.data.RDFTriple
-
 import scala.language.implicitConversions
+
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
-import net.sansa_stack.inference.spark.data.{RDFGraph, RDFGraphDataFrame}
+
+import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame}
 import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 
 
@@ -30,6 +31,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
   def apply(graph: RDFGraphDataFrame): RDFGraphDataFrame = {
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
+
+    val sqlSchema = graph.schema
 
     val extractor = new RDFSSchemaExtractor(session.sparkContext)
 
@@ -96,8 +99,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
      */
     val triplesRDFS7 =
       triples // all triples (s p1 o)
-      .join(subPropertyOfTriplesTrans, $"DATA.predicate" === $"SP.subject", "inner") // such that p1 has a super property p2
-      .select($"DATA.subject", $"SP.object", $"DATA.object") // create triple (s p2 o)
+      .join(subPropertyOfTriplesTrans, $"DATA.${sqlSchema.predicateCol}" === $"SP.${sqlSchema.subjectCol}", "inner") // such that p1 has a super property p2
+      .select($"DATA.${sqlSchema.subjectCol}", $"SP.${sqlSchema.objectCol}", $"DATA.${sqlSchema.objectCol}") // create triple (s p2 o)
 
 //    val triplesRDFS7 =
 //      triples // all triples (s p1 o)
@@ -120,8 +123,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 
     val triplesRDFS2 =
       triples
-        .join(domainTriples, $"DATA.predicate" === $"DOM.subject", "inner")
-        .select($"DATA.subject", $"DOM.object") // (yyy, xxx)
+        .join(domainTriples, $"DATA.${sqlSchema.predicateCol}" === $"DOM.${sqlSchema.subjectCol}", "inner")
+        .select($"DATA.${sqlSchema.subjectCol}", $"DOM.${sqlSchema.objectCol}") // (yyy, xxx)
 //    triples.createOrReplaceTempView("DATA")
 //    domainTriples.createOrReplaceTempView("DOM")
 //    val triplesRDFS2 = session.sql("SELECT A.subject, B.object FROM DATA A INNER JOIN DOM B ON A.predicate=B.subject")
@@ -135,15 +138,15 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 
     val triplesRDFS3 =
       triples
-        .join(rangeTriples, $"DATA.predicate" === $"RAN.subject", "inner")
-        .select($"DATA.object", $"RAN.object") // (zzz, xxx)
+        .join(rangeTriples, $"DATA.${sqlSchema.predicateCol}" === $"RAN.${sqlSchema.subjectCol}", "inner")
+        .select($"DATA.${sqlSchema.objectCol}", $"RAN.${sqlSchema.objectCol}") // (zzz, xxx)
 
     val tuples23 = triplesRDFS2.union(triplesRDFS3)
 
     // get rdf:type tuples here as intermediate result
     val typeTuples = triples
-      .where("predicate='" + RDF.`type`.getURI + "'")
-      .select("subject", "object")
+      .where(s"${sqlSchema.predicateCol} = '${RDF.`type`.getURI} '")
+      .select(sqlSchema.subjectCol, sqlSchema.objectCol)
       .union(tuples23)
       .alias("TYPES")
 
@@ -154,8 +157,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
           zzz rdf:type xxx .	        zzz rdf:type yyy .
      */
     val tripleRDFS9 = typeTuples
-      .join(subClassOfTriplesTrans, $"TYPES.object" === $"SC.subject", "inner")
-      .select($"TYPES.subject", $"SC.object") // (zzz, yyy)
+      .join(subClassOfTriplesTrans, $"TYPES.${sqlSchema.objectCol}" === $"SC.${sqlSchema.subjectCol}", "inner")
+      .select($"TYPES.${sqlSchema.subjectCol}", $"SC.${sqlSchema.objectCol}") // (zzz, yyy)
 
 //    val triplesRDFS9 =
 //      typeTuples
@@ -193,7 +196,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     val allTriples =
       tuples23.union(tripleRDFS9)
         .withColumn("const", lit(RDF.`type`.getURI))
-        .select("subject", "const", "object")
+        .select(sqlSchema.subjectCol, "const", sqlSchema.objectCol)
       .union(subClassOfTriplesTrans)
       .union(subPropertyOfTriplesTrans)
       .union(triplesRDFS7)

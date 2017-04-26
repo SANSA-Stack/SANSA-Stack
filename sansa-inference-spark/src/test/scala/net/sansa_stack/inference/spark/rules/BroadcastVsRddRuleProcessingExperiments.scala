@@ -4,8 +4,9 @@ import org.apache.jena.vocabulary.RDFS
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.RDFGraphLoader
+import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.utils.{CollectionUtils, Profiler}
 
 /**

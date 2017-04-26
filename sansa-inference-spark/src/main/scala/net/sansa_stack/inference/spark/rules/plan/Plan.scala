@@ -10,6 +10,7 @@ import org.apache.spark.sql.catalyst.optimizer.Optimizer
 import org.apache.spark.sql.catalyst.parser.ParserInterface
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
+import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.utils.TripleUtils
 
 /**
@@ -22,6 +23,7 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
   val aliases = new mutable.HashMap[Triple, String]()
   var idx = 0
 
+  var schema: SQLSchema = SQLSchemaDefault
 
   def generateJoins(): Unit = {
 
@@ -160,7 +162,9 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     sql
   }
 
-  def toSQL(tp: Triple): String = {
+  def toSQL(tp: Triple, sqlSchema: SQLSchema = SQLSchemaDefault): String = {
+    schema = sqlSchema
+
     var sql = "SELECT "
 
     sql += projectionPart(tp)
@@ -254,21 +258,13 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
     table() + " " + uniqueAliasFor(tp)
   }
 
-  def table(): String = {
-    "TRIPLES"
-  }
+  def table(): String = schema.triplesTable
 
-  def subjectColumn(): String = {
-    "subject"
-  }
+  def subjectColumn(): String = schema.subjectCol
 
-  def predicateColumn(): String = {
-    "predicate"
-  }
+  def predicateColumn(): String = schema.predicateCol
 
-  def objectColumn(): String = {
-    "object"
-  }
+  def objectColumn(): String = schema.objectCol
 
 
 }

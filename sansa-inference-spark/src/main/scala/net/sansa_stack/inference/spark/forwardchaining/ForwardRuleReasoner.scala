@@ -5,7 +5,7 @@ import scala.collection.mutable
 import org.apache.spark.rdd.RDD
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.RDFGraph
+import net.sansa_stack.inference.spark.data.model.RDFGraph
 import net.sansa_stack.inference.utils.Profiler
 
 /**

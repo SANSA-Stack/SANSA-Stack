@@ -1,4 +1,4 @@
-package net.sansa_stack.inference.spark.data
+package net.sansa_stack.inference.spark.data.loader
 
 import java.net.URI
 
@@ -9,6 +9,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
 import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
 
 /**

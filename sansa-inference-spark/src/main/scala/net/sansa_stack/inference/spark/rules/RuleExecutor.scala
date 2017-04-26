@@ -2,7 +2,7 @@ package net.sansa_stack.inference.spark.rules
 
 import org.apache.jena.reasoner.rulesys.Rule
 
-import net.sansa_stack.inference.spark.data.AbstractRDFGraph
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraph
 import net.sansa_stack.inference.spark.rules.plan.PlanExecutor
 
 /**

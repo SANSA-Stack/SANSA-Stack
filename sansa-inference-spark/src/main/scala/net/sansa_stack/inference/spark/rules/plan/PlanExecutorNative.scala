@@ -13,7 +13,7 @@ import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, SubqueryAlias}
 import org.apache.spark.sql.catalyst.plans.{Inner, logical}
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.{EmptyRDFGraphDataFrame, RDFGraphNative}
+import net.sansa_stack.inference.spark.data.model.{EmptyRDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.utils.{Logging, Tuple0}
 
 /**

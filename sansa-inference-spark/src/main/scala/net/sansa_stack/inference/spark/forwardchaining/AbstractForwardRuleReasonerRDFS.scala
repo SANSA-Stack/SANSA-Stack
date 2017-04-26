@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.rules.RDFSLevel._
-import net.sansa_stack.inference.spark.data.{AbstractRDFGraph, RDFGraph}
+import net.sansa_stack.inference.spark.data.model.{AbstractRDFGraph, RDFGraph}
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -40,22 +40,57 @@ abstract class AbstractForwardRuleReasonerRDFS[T, G <: AbstractRDFGraph[T, G]](s
 
     preprocess(graph)
 
-    val r7 = rule7(graph)
+    // split into rdf:type triples and other instance data
+    var types = graph.find(None, Some(RDF.`type`.getURI), None)
+    var others = graph.find(None, Some("!" + RDF.`type`.getURI), None)
 
-    val r2 = rule2(r7)
-    val r3 = rule3(r7)
+//    println("triples:" + graph.size())
+//    println("types:" + types.size())
+//    println("others:" + others.size())
+
+    /*
+        rdfs5	xxx rdfs:subPropertyOf yyy .
+              yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
+     */
+    val r5 = rule5(graph)
+
+    /*
+     rdfs7	aaa rdfs:subPropertyOf bbb .
+           xxx aaa yyy .                   	xxx bbb yyy .
+    */
+    val r7 = rule7(others)
+    others = others.union(r7)
+
+    val r2 = rule2(others)
+    val r3 = rule3(others)
     val r23 = r2.union(r3)
 
-    val types = r23.union(graph.find(None, Some(RDF.`type`.getURI), None))
-    val r5 = rule5(graph)
+    types = r23.union(types)
+
+
+    val r11 = rule11(graph)
+
+    /*
+      rdfs9	xxx rdfs:subClassOf yyy .
+         zzz rdf:type xxx .	        zzz rdf:type yyy .
+    */
     val r9 = rule9(types)
 
+//    println("r7:" + r7.size())
+//    println("r2:" + r2.size())
+//    println("r3:" + r3.size())
+//    println("types:" + types.size())
+//    println("r5:" + r5.size())
+//    println("r9:" + r9.size())
+//    println("types=" + r9.union(types).distinct().size())
+
     // 5. merge triples and remove duplicates
-    var allTriples = graph.unionAll(Seq(
-      r7,
+    var allTriples = r9.unionAll(Seq(
       r9,
-      r23,
-      r5
+      types,
+      r5,
+      r11,
+      others
     ))
       .distinct()
 

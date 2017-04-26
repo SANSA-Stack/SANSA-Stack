@@ -1,10 +1,9 @@
-package net.sansa_stack.inference.spark.data
+package net.sansa_stack.inference.spark.data.model
 
-import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
 
 /**
   * A data structure that comprises a set of triples.
@@ -12,7 +11,8 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphDataFrame(override val triples: DataFrame) extends AbstractRDFGraph[DataFrame, RDFGraphDataFrame](triples) {
+class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema = SQLSchemaDefault)
+    extends AbstractRDFGraph[DataFrame, RDFGraphDataFrame](triples) {
 
   /**
     * Returns an RDD of triples that match with the given input.
@@ -23,17 +23,17 @@ class RDFGraphDataFrame(override val triples: DataFrame) extends AbstractRDFGrap
     * @return RDD of triples
     */
   override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataFrame = {
-    var sql = "SELECT subject, predicate, object FROM TRIPLES"
+    var sql = s"SELECT ${schema.subjectCol}, ${schema.predicateCol}, ${schema.objectCol} FROM ${schema.triplesTable}"
 
     // corner case is when nothing is set, i.e. all triples will be returned
-    if(s.isDefined || p.isDefined || o.isDefined) {
+    if (s.isDefined || p.isDefined || o.isDefined) {
       sql += " WHERE "
 
       val conditions = scala.collection.mutable.ListBuffer[String]()
 
-      if(s.isDefined) conditions += "subject = '" + s.get + "'"
-      if(p.isDefined) conditions += "predicate = '" + p.get + "'"
-      if(o.isDefined) conditions += "object = '" + o.get + "'"
+      if (s.isDefined) conditions += s"${schema.subjectCol} = '${s.get}'"
+      if (p.isDefined) conditions += s"${schema.predicateCol} = '${p.get}'"
+      if (o.isDefined) conditions += s"${schema.objectCol} = '${o.get}'"
 
       sql += conditions.mkString(" AND ")
     }
@@ -43,7 +43,7 @@ class RDFGraphDataFrame(override val triples: DataFrame) extends AbstractRDFGrap
 
   /**
     * Return the union of the current RDF graph with the given RDF graph
- *
+    *
     * @param graph the other RDF graph
     * @return the union of both graphs
     */
@@ -58,10 +58,15 @@ class RDFGraphDataFrame(override val triples: DataFrame) extends AbstractRDFGrap
     // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
     val df: Option[DataFrame] = graphs match {
       case g :: Nil => Some(g.toDataFrame())
-      case g :: _ => Some(g.toDataFrame().sqlContext.createDataFrame(
-        g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
-        g.toDataFrame().schema
-      ))
+      case g :: _ =>
+        Some(
+          g.toDataFrame()
+            .sqlContext
+            .createDataFrame(
+              g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
+              g.toDataFrame().schema
+            )
+        )
       case _ => None
     }
     new RDFGraphDataFrame(df.get)
@@ -80,7 +85,7 @@ class RDFGraphDataFrame(override val triples: DataFrame) extends AbstractRDFGrap
     triples.count()
   }
 
-  def toDataFrame(sparkSession: SparkSession): DataFrame = triples
+  def toDataFrame(sparkSession: SparkSession, schema: SQLSchema = SQLSchemaDefault): DataFrame = triples
 
   def toRDD(): RDD[RDFTriple] = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
 

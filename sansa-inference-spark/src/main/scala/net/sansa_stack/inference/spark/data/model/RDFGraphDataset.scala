@@ -1,9 +1,9 @@
-package net.sansa_stack.inference.spark.data
+package net.sansa_stack.inference.spark.data.model
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
 
 /**
   * A data structure that comprises a set of triples.
@@ -18,7 +18,15 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
     var result = triples
 
     if (s.isDefined) result = triples.filter(triples("s") === s.get)
-    if (p.isDefined) result = triples.filter(triples("p") === p.get)
+    if (p.isDefined) result = {
+      val test =
+        if (p.get.startsWith("!")) {
+          !(triples("p") === p.get.substring(1))
+        } else {
+          (triples("p") === p.get)
+        }
+      triples.filter(test)
+    }
     if (o.isDefined) result = triples.filter(triples("o") === o.get)
 
     new RDFGraphDataset(result)
@@ -30,7 +38,7 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
 
   def unionAll(graphs: Seq[RDFGraphDataset]): RDFGraphDataset = {
     // the Dataframe based solution
-    //        return graphs.reduce(_ union _)
+    return graphs.reduce(_ union _)
 
     // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
     val df: Option[DataFrame] = graphs match {
@@ -42,7 +50,9 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
       case _ => None
     }
 
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
+    val spark = graphs(0).triples.sparkSession.sqlContext
+    import spark.implicits._
+//    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
     new RDFGraphDataset(df.get.as[RDFTriple])
   }
 
@@ -59,7 +69,7 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
     this
   }
 
-  def toDataFrame(sparkSession: SparkSession): DataFrame = triples.toDF()
+  def toDataFrame(sparkSession: SparkSession, schema: SQLSchema = SQLSchemaDefault): DataFrame = triples.toDF()
 
   def toRDD(): RDD[RDFTriple] = triples.rdd
 }

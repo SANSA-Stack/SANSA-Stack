@@ -1,4 +1,4 @@
-package net.sansa_stack.inference.spark.data
+package net.sansa_stack.inference.spark.data.model
 
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD

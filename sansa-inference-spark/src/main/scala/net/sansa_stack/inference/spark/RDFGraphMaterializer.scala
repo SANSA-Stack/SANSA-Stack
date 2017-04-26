@@ -8,7 +8,8 @@ import org.apache.spark.sql.SparkSession
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
-import net.sansa_stack.inference.spark.data.{RDFGraphLoader, RDFGraphWriter}
+import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
+import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
 import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataset, TransitiveReasoner}
 
 /**

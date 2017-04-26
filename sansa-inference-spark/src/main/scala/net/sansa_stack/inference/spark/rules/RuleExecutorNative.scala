@@ -4,7 +4,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.spark.data.RDFGraphNative
+import net.sansa_stack.inference.spark.data.model.RDFGraphNative
 import net.sansa_stack.inference.spark.rules.plan.PlanExecutorNative
 
 /**

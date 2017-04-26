@@ -1,4 +1,4 @@
-package net.sansa_stack.inference.spark.data
+package net.sansa_stack.inference.spark.data.writer
 
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
@@ -9,6 +9,7 @@ import org.apache.spark.sql.DataFrame
 import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.spark.data.model.RDFGraph
 import net.sansa_stack.inference.utils.{RDFTripleOrdering, RDFTripleToNTripleString}
 
 /**
