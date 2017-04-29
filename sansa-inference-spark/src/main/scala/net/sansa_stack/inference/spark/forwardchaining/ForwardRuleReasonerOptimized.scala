@@ -52,13 +52,13 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
     var newGraph = graph.cache()
 
     // generate the rule dependency graph
-    val dependencyGraph = RuleDependencyGraphGenerator.generate(rules)
+    val dependencyGraph = RuleDependencyGraphGenerator.generate(rules, pruned = true)
 
     // generate the high-level dependency graph
     val highLevelDependencyGraph = HighLevelRuleDependencyGraphGenerator.generate(dependencyGraph)
 
     // apply topological sort and get the layers
-    val layers = highLevelDependencyGraph.layers()
+    val layers = highLevelDependencyGraph.layers().foldLeft(List[(Int, scala.Iterable[RuleDependencyGraph])]())((b, a) => a :: b)
 
     // each layer contains a set of rule dependency graphs
     // for each layer we process those
@@ -84,12 +84,53 @@ abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
 
     var newGraph = graph
 
-    layer._2.foreach{rdg =>
+    val processedRDGs = layer._2.map{rdg =>
       logger.info("Processing dependency graph " + rdg.printNodes())
-      newGraph = newGraph.union(applyRules(rdg.rules().toSeq, newGraph)).distinct().cache()
-      unionCnt += 1
-      distinctCnt += 1
+      applyRules(rdg, newGraph)
     }
+
+    newGraph = newGraph.unionAll(processedRDGs.toSeq).distinct().cache()
+    unionCnt += 1
+    distinctCnt += 1
+
+    newGraph
+  }
+
+  /**
+    * Apply the set of rules on the given graph by doing fix-point iteration.
+    *
+    * @param rdg the rule dependency graph
+    * @param graph the RDF graph
+    */
+  def applyRules(rdg: RuleDependencyGraph, graph: G): G = {
+    var newGraph = graph.cache()
+
+    val rules = rdg.rules().toSeq
+
+    if(rdg.hasCycle()) {
+      var newGraph = graph.cache()
+      var iteration = 1
+      var oldCount = 0L
+      var nextCount = newGraph.size()
+      logger.info(s"initial size:$nextCount")
+
+      do {
+        logger.info("Iteration " + iteration)
+        iteration += 1
+        oldCount = nextCount
+
+        newGraph = newGraph.union(applyRulesOnce(rules, newGraph)).distinct().cache()
+        unionCnt += 1
+        distinctCnt += 1
+
+        nextCount = newGraph.size()
+        logger.info(s"new size:$nextCount")
+        countCnt += 1
+      } while (nextCount != oldCount)
+    } else {
+      newGraph = newGraph.union(applyRulesOnce(rules, newGraph))
+    }
+
     newGraph
   }
 
