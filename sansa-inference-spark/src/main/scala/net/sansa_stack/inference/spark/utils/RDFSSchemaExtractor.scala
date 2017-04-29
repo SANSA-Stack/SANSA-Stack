@@ -22,7 +22,7 @@ import net.sansa_stack.inference.utils.{CollectionUtils, Logging}
   *
   * @author Lorenz Buehmann
   */
-class RDFSSchemaExtractor(sc : SparkContext) extends Logging{
+class RDFSSchemaExtractor() extends Logging with Serializable {
 
   val properties = Set(RDFS.subClassOf, RDFS.subPropertyOf, RDFS.domain, RDFS.range).map(p => p.getURI)
 
@@ -121,7 +121,7 @@ class RDFSSchemaExtractor(sc : SparkContext) extends Logging{
     * @return a mapping from the corresponding schema property to the broadcast variable that wraps the multimap
     *         with s-o pairs
     */
-  def extractWithIndexAndDistribute(graph: RDFGraphNative): Map[String, Broadcast[Map[String, Set[String]]]] = {
+  def extractWithIndexAndDistribute(sc : SparkContext, graph: RDFGraphNative): Map[String, Broadcast[Map[String, Set[String]]]] = {
     val schema = extractWithIndex(graph)
 
     log.info("Started schema distribution...")

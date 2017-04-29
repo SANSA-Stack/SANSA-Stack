@@ -39,7 +39,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
 
     // as an optimization, we can extract all schema triples first which avoids to run on the whole dataset
     // for each schema triple later
-    val schemaTriples = if (extractSchemaTriplesInAdvance) new RDFSSchemaExtractor(sc).extract(triplesRDD)
+    val schemaTriples = if (extractSchemaTriplesInAdvance) new RDFSSchemaExtractor().extract(triplesRDD)
                         else triplesRDD
 
 

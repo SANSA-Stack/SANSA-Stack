@@ -34,7 +34,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 
     val sqlSchema = graph.schema
 
-    val extractor = new RDFSSchemaExtractor(session.sparkContext)
+    val extractor = new RDFSSchemaExtractor()
 
     var index = extractor.extractWithIndex(graph)
 
@@ -145,7 +145,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 
     // get rdf:type tuples here as intermediate result
     val typeTuples = triples
-      .where(s"${sqlSchema.predicateCol} = '${RDF.`type`.getURI} '")
+      .where(s"${sqlSchema.predicateCol} = '${RDF.`type`.getURI}'")
       .select(sqlSchema.subjectCol, sqlSchema.objectCol)
       .union(tuples23)
       .alias("TYPES")
@@ -156,7 +156,7 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     rdfs9	xxx rdfs:subClassOf yyy .
           zzz rdf:type xxx .	        zzz rdf:type yyy .
      */
-    val tripleRDFS9 = typeTuples
+    val tuplesRDFS9 = typeTuples
       .join(subClassOfTriplesTrans, $"TYPES.${sqlSchema.objectCol}" === $"SC.${sqlSchema.subjectCol}", "inner")
       .select($"TYPES.${sqlSchema.subjectCol}", $"SC.${sqlSchema.objectCol}") // (zzz, yyy)
 
@@ -184,22 +184,24 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 //        .withColumn("const", lit(RDF.`type`.getURI))
 //        .select("DATA.subject", "const", "SC.object")
 //        .select($"TYPES.subject", $"SC.object") // (zzz, yyy)
+//    println("existing types:" + existingTypes.count())
 //    println("SC:" + subClassOfTriplesTrans.count())
 //    println("SP:" + subPropertyOfTriplesTrans.count())
 //    println("TYPES:" + typeTuples.count())
 //    println("R7:" + triplesRDFS7.count())
 //    println("R2:" + triplesRDFS2.count())
 //    println("R3:" + triplesRDFS3.count())
-//    println("R9:" + triplesRDFS9.count())
+//    println("R9:" + tuplesRDFS9.count())
 
     // 5. merge triples and remove duplicates
     val allTriples =
-      tuples23.union(tripleRDFS9)
+      typeTuples.union(tuples23).union(tuplesRDFS9)
         .withColumn("const", lit(RDF.`type`.getURI))
         .select(sqlSchema.subjectCol, "const", sqlSchema.objectCol)
       .union(subClassOfTriplesTrans)
       .union(subPropertyOfTriplesTrans)
       .union(triplesRDFS7)
+      .union(triples)
       .distinct()
 //        .selectExpr("subject", "'" + RDF.`type`.getURI + "' as predicate", "object")
 //    allTriples.explain()
