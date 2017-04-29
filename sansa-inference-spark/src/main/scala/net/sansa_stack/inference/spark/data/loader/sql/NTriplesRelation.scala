@@ -1,0 +1,37 @@
+package net.sansa_stack.inference.spark.data.loader.sql
+
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.sources.{BaseRelation, TableScan}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+
+import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
+
+class NTriplesRelation(location: String, userSchema: StructType)
+                      (@transient val sqlContext: SQLContext)
+    extends BaseRelation
+      with TableScan
+      with Serializable {
+    override def schema: StructType = {
+      if (this.userSchema != null) {
+        this.userSchema
+      }
+      else {
+        StructType(
+          Seq(
+            StructField("s", StringType, true),
+            StructField("p", StringType, true),
+            StructField("o", StringType, true)
+        ))
+      }
+    }
+    override def buildScan(): RDD[Row] = {
+      val rdd = sqlContext
+        .sparkContext
+        .textFile(location)
+
+      val rows = rdd.map(new NTriplesStringToRDFTriple()).map(t => Row.fromSeq(Seq(t.s, t.p, t.o)))
+
+      rows
+    }
+  }

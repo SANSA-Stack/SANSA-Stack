@@ -5,10 +5,13 @@ import java.net.URI
 import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, SchemaRelationProvider, TableScan}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Dataset, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
 import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
 
@@ -192,7 +195,15 @@ object RDFGraphLoader {
     * @param minPartitions min number of partitions for Hadoop RDDs ([[SparkContext.defaultMinPartitions]])
     * @return an RDF graph based on a [[org.apache.spark.sql.DataFrame]]
     */
-  def loadFromDiskAsDataFrame(session: SparkSession, path: String, minPartitions: Int): RDFGraphDataFrame = {
-    new RDFGraphDataFrame(loadFromDiskAsRDD(session, path, minPartitions).toDataFrame(session))
+  def loadFromDiskAsDataFrame(session: SparkSession, path: String, minPartitions: Int, sqlSchema: SQLSchema = SQLSchemaDefault): RDFGraphDataFrame = {
+    val df = session
+      .read
+      .format("net.sansa_stack.inference.spark.data.loader.sql")
+      .load(path)
+
+    // register the DataFrame as a table
+    df.createOrReplaceTempView(sqlSchema.triplesTable)
+
+    new RDFGraphDataFrame(df)
   }
 }
