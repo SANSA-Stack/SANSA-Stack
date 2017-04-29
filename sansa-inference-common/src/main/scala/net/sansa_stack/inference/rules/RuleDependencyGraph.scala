@@ -1,5 +1,6 @@
 package net.sansa_stack.inference.rules
 
+import scala.collection.mutable
 import scalax.collection.Graph
 import scalax.collection.edge.LDiEdge
 import scalax.collection.mutable.DefaultGraphImpl
@@ -47,5 +48,26 @@ class RuleDependencyGraph(iniNodes: Iterable[Rule] = Set[Rule](),
       layer._2.map(node => node.value
       ))
     )
+
+  /**
+    * Returns all nodes that are connected by an edge to itself.
+    *
+    * @return
+    */
+  def loopNodes(): mutable.Set[NodeBase] = {
+    nodes.filter(n => n.outgoing.map(_.target).contains(n))
+  }
+
+  /**
+    * Returns true if there is a cycle in the graph, i.e. either
+    *
+    * - there is a path n1 -> n2 ->  ... -> n1 or
+    * - a loop, i.e. an edge that connects a vertex to itself.
+    *
+    * @return
+    */
+  def hasCycle(): Boolean = {
+    loopNodes().nonEmpty || findCycle.isDefined
+  }
 
 }

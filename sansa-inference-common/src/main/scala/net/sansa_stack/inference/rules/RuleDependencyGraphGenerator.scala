@@ -7,6 +7,7 @@ import scalax.collection.GraphTraversal.Parameters
 import scalax.collection._
 import scalax.collection.edge.Implicits._
 import scalax.collection.edge._
+import scalax.collection.mutable.DefaultGraphImpl
 
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
@@ -54,6 +55,8 @@ object RuleDependencyGraphGenerator extends Logging {
           g += (r2 ~+> r1) (r2r1.get)
         }
       }
+
+      // cycles?
       val r1r1 = f(r1, r1)
       if (r1r1.isDefined) { // r1 depends on r1, i.e. reflexive dependency
         g += (r1 ~+> r1) (r1r1.get)
@@ -65,7 +68,7 @@ object RuleDependencyGraphGenerator extends Logging {
       g = removeEdgesWithPredicateAlreadyTC(g)
       g = removeCyclesIfPredicateIsTC(g)
       g = removeEdgesWithCycleOverTCNode(g)
-      //      g = prune(g)
+            g = prune(g)
       //      g = prune1(g)
     }
 
@@ -143,9 +146,10 @@ object RuleDependencyGraphGenerator extends Logging {
     ret
   }
 
-
   def prune(graph: RuleDependencyGraph): RuleDependencyGraph = {
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+//    graph.outerNodeTraverser.foreach(n => println(n))
 
     // for each node n in G
     graph.nodes.foreach(node => {
@@ -214,6 +218,27 @@ object RuleDependencyGraphGenerator extends Logging {
 
     new RuleDependencyGraph(newNodes, newEdges)
 
+  }
+
+  def removeRedundantEdges(graph: RuleDependencyGraph): RuleDependencyGraph = {
+    debug("removeRedundantEdges")
+    var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+    // for each node n in G
+    graph.nodes.foreach(node => {
+      debug("#" * 20)
+      debug(s"NODE:${node.value.getName}")
+
+      // check for nodes that do compute the TC
+      val outgoingEdges = node.outgoing.withFilter(e => e.target != node)
+
+      outgoingEdges.foreach(e => {
+        val targetNode = e.target
+
+      })
+    })
+
+    graph
   }
 
   // get all nodes that depend on a TC node for a predicate p and another node for p
@@ -366,7 +391,7 @@ object RuleDependencyGraphGenerator extends Logging {
   }
 
   def removeCyclesIfPredicateIsTC(graph: RuleDependencyGraph): RuleDependencyGraph = {
-
+    debug("removeCyclesIfPredicateIsTC")
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
@@ -463,4 +488,6 @@ object RuleDependencyGraphGenerator extends Logging {
     val e = edge.toOuter
     "[" + e.source.getName + " ~> " + e.target.getName + "] '" + e.label
   }
+
+//  override def debug(msg: => String): Unit = println(msg)
 }
