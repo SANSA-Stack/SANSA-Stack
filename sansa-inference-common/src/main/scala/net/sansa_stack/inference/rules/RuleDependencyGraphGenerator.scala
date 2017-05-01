@@ -29,14 +29,22 @@ import net.sansa_stack.inference.utils.{GraphUtils, Logging, RuleUtils}
   */
 object RuleDependencyGraphGenerator extends Logging {
 
+  sealed trait RuleDependencyDirection
+  case object ConsumerProducer extends RuleDependencyDirection
+  case object ProducerConsumer extends RuleDependencyDirection
+
   /**
     * Generates the rule dependency graph for a given set of rules.
     *
     * @param rules the set of rules
-    * @param f a function that denotes whether a rule r1 depends on another rule r2
+    * @param f a function that denotes whether a rule `r1` depends on another rule `r2`
     * @return the rule dependency graph
     */
-  def generate(rules: Set[Rule], f: (Rule, Rule) => Option[TriplePattern] = dependsOnSmart, pruned: Boolean = false): RuleDependencyGraph = {
+  def generate(rules: Set[Rule],
+               f: (Rule, Rule) => Option[TriplePattern] = dependsOnSmart,
+               pruned: Boolean = false,
+               dependencyDirection: RuleDependencyDirection = ConsumerProducer): RuleDependencyGraph = {
+
     // create empty graph
     var g = new RuleDependencyGraph()
 
@@ -48,11 +56,21 @@ object RuleDependencyGraphGenerator extends Logging {
 
       val r1r2 = f(r1, r2) // r1 depends on r2
       if (r1r2.isDefined) {
-        g += (r1 ~+> r2) (r1r2.get)
+        val edgeLabel = r1r2.get
+        val edge = dependencyDirection match {
+          case ConsumerProducer => (r1 ~+> r2) (edgeLabel)
+          case ProducerConsumer => (r2 ~+> r1) (edgeLabel)
+        }
+        g += edge
       } else {
         val r2r1 = f(r2, r1)
         if (r2r1.isDefined) { // r2 depends on r1
-          g += (r2 ~+> r1) (r2r1.get)
+          val edgeLabel = r2r1.get
+          val edge = dependencyDirection match {
+            case ConsumerProducer => (r2 ~+> r1) (edgeLabel)
+            case ProducerConsumer => (r1 ~+> r2) (edgeLabel)
+          }
+          g += edge
         }
       }
 
@@ -68,7 +86,7 @@ object RuleDependencyGraphGenerator extends Logging {
       g = removeEdgesWithPredicateAlreadyTC(g)
       g = removeCyclesIfPredicateIsTC(g)
       g = removeEdgesWithCycleOverTCNode(g)
-            g = prune(g)
+//            g = prune(g)
       //      g = prune1(g)
     }
 
@@ -257,7 +275,9 @@ object RuleDependencyGraphGenerator extends Logging {
       outgoingEdges.foreach(e => {
         val targetNode = e.target
         val rule = targetNode.value
-        val predicate = e.label.asInstanceOf[TriplePattern].getPredicate
+        val edgeLabel = e.label
+        val predicate = edgeLabel.asInstanceOf[TriplePattern].getPredicate
+        // check if the target node computes the TC for the current edge predicate
         val isTCNode = RuleUtils.isTransitiveClosure(rule, predicate)
         debug(s"Direct successor:${rule.getName}\t\tisTC = $isTCNode")
 
@@ -467,6 +487,7 @@ object RuleDependencyGraphGenerator extends Logging {
               ).head
               //            val edge = (node ~+> node)(head)
               redundantEdges +:= edge
+              debug(s"remove edge $edge")
             }
 
           }
@@ -489,5 +510,5 @@ object RuleDependencyGraphGenerator extends Logging {
     "[" + e.source.getName + " ~> " + e.target.getName + "] '" + e.label
   }
 
-//  override def debug(msg: => String): Unit = println(msg)
+  override def debug(msg: => String): Unit = println(msg)
 }
