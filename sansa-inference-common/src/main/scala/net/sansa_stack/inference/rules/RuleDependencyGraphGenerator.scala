@@ -1,5 +1,7 @@
 package net.sansa_stack.inference.rules
 
+import java.util.stream.Collectors
+
 import scala.collection.JavaConverters._
 import scala.language.{existentials, implicitConversions}
 import scalax.collection.GraphPredef._
@@ -13,6 +15,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.RDFS
+import org.jgrapht.alg.CycleDetector
 import org.jgrapht.alg.cycle.TarjanSimpleCycles
 
 import net.sansa_stack.inference.utils.RuleUtils._
@@ -82,13 +85,24 @@ object RuleDependencyGraphGenerator extends Logging {
     }
 
     // 3. pruning
-    if (pruned) {
-      g = removeEdgesWithPredicateAlreadyTC(g)
-      g = removeCyclesIfPredicateIsTC(g)
-      g = removeEdgesWithCycleOverTCNode(g)
-//            g = prune(g)
-      //      g = prune1(g)
+    val pruningRules = List(
+      removeLoops _,
+      removeEdgesWithPredicateAlreadyTC _,
+      removeCyclesIfPredicateIsTC _,
+      removeEdgesWithCycleOverTCNode _
+      ,removeCycles _
+//      ,prune _
+    )
+
+    for((rule, i) <- pruningRules.zipWithIndex) g = {
+      println(s"$i." + "*" * 40)
+      rule.apply(g)
     }
+    var cnt = 1
+    pruningRules.foreach(rule => {
+
+
+    })
 
     g
   }
@@ -164,13 +178,73 @@ object RuleDependencyGraphGenerator extends Logging {
     ret
   }
 
+  def removeLoops(graph: RuleDependencyGraph): RuleDependencyGraph = {
+    debug("removing non-TC loops")
+    var edges2Remove = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+    graph.nodes.toSeq.foreach(node => {
+
+      val loopEdge = node.outgoing.find(_.target == node)
+
+      if(loopEdge.isDefined) {
+
+        val edge = loopEdge.get
+
+        val rule = node.value
+
+        val isTC = RuleUtils.isTransitiveClosure(rule, edge.label.asInstanceOf[TriplePattern].getPredicate)
+
+        if(!isTC) {
+          edges2Remove :+= edge
+          debug(s"loop of node $node")
+        }
+      }
+    })
+
+    val newNodes = graph.nodes.map(node => node.value)
+    val newEdges = graph.edges.clone().filterNot(e => edges2Remove.contains(e)).map(edge => edge.toOuter)
+
+    new RuleDependencyGraph(newNodes, newEdges)
+  }
+
+  def removeCycles(graph: RuleDependencyGraph): RuleDependencyGraph = {
+    debug("removing redundant cycles")
+    var edges2Remove = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+
+
+    // convert to JGraphT graph for algorithms not contained in Scala Graph API
+    val g = GraphUtils.asJGraphtRuleSetGraph(graph)
+
+
+    val cycleDetector = new CycleDetector[Rule, LabeledEdge[Rule, TriplePattern]](g)
+
+    val cycleDetector2 = new TarjanSimpleCycles[Rule, LabeledEdge[Rule, TriplePattern]](g)
+    val allCycles = cycleDetector2.findSimpleCycles()
+
+    graph.nodes.toSeq.foreach(node => {
+      debug(s"NODE ${node.value}")
+
+      // get cycles of length 3
+      val cycles = cycleDetector.findCyclesContainingVertex(node.value)
+      debug(cycles.asScala.mkString(","))
+
+      debug(allCycles.asScala.filter(cycle => cycle.contains(node.value)).map(cycle => cycle.asScala.map(rule => rule.getName)).mkString("\n"))
+
+    })
+
+    val newNodes = graph.nodes.map(node => node.value)
+    val newEdges = graph.edges.clone().filterNot(e => edges2Remove.contains(e)).map(edge => edge.toOuter)
+
+    new RuleDependencyGraph(newNodes, newEdges)
+  }
+
   def prune(graph: RuleDependencyGraph): RuleDependencyGraph = {
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
 //    graph.outerNodeTraverser.foreach(n => println(n))
 
     // for each node n in G
-    graph.nodes.foreach(node => {
+    graph.nodes.toSeq.foreach(node => {
       debug("#" * 20)
       debug(s"NODE:${node.value.getName}")
 
@@ -178,7 +252,7 @@ object RuleDependencyGraphGenerator extends Logging {
       var successors = node.innerNodeTraverser.withParameters(Parameters(maxDepth = 1)).toList
       // remove node itself, if it's a cyclic node
       successors = successors.filterNot(_.equals(node))
-      debug(s"SUCCESSORS:${successors.map(n => n.value.getName)}")
+      debug(s"DIRECT SUCCESSORS:${successors.map(n => n.value.getName).mkString(", ")}")
 
       if (successors.size > 1) {
         // get pairs of successors
@@ -188,14 +262,14 @@ object RuleDependencyGraphGenerator extends Logging {
           debug(s"PAIR:${pair._1.value.getName},${pair._2.value.getName}")
           val n1 = pair._1
           val edge1 = node.innerEdgeTraverser.filter(e => e.source == node && e.target == n1).head
+
           val n2 = pair._2
           val edge2 = node.innerEdgeTraverser.filter(e => e.source == node && e.target == n2).head
 
           // n --p--> n1
           val path1 = node.withSubgraph(edges = !_.equals(edge2)) pathTo n2
           if (path1.isDefined) {
-            debug(s"PATH TO:${n2.value.getName}")
-            debug(s"PATH:${path1.get.edges.toList.map(edge => asString(edge))}")
+            debug(s"PATH TO ${n2.value.getName}: ${path1.get.edges.toList.map(edge => asString(edge))}")
             val edges = path1.get.edges.toList
             edges.foreach(edge => {
               debug(s"EDGE:${asString(edge)}")
@@ -203,7 +277,7 @@ object RuleDependencyGraphGenerator extends Logging {
             val last = edges.last.value
 
             if (last.label == edge2.label) {
-              debug("redundant")
+              debug(s"redundant edge $edge2")
               redundantEdges :+= edge2
             }
           } else {
@@ -221,7 +295,7 @@ object RuleDependencyGraphGenerator extends Logging {
             val last = edges.last.value
 
             if (last.label == edge1.label) {
-              debug("redundant")
+              debug(s"redundant edge $edge1")
               redundantEdges :+= edge1
             }
           } else {
@@ -243,7 +317,7 @@ object RuleDependencyGraphGenerator extends Logging {
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
-    graph.nodes.foreach(node => {
+    graph.nodes.toSeq.foreach(node => {
       debug("#" * 20)
       debug(s"NODE:${node.value.getName}")
 
@@ -265,7 +339,7 @@ object RuleDependencyGraphGenerator extends Logging {
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
-    graph.nodes.foreach(node => {
+    graph.nodes.toSeq.foreach(node => {
       debug("#" * 20)
       debug(s"NODE:${node.value.getName}")
 
@@ -359,7 +433,7 @@ object RuleDependencyGraphGenerator extends Logging {
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
-    graph.nodes.foreach(node => {
+    graph.nodes.toSeq.foreach(node => {
       debug("#" * 20)
       debug(s"NODE:${node.value.getName}")
 
@@ -370,7 +444,7 @@ object RuleDependencyGraphGenerator extends Logging {
       debug(s"SUCCESSORS:${successors.map(n => n.value.getName)}")
 
       // check for nodes that do compute the TC
-      successors.foreach(n => {
+      successors.toSeq.foreach(n => {
         debug(s"successor:${n.value.getName}")
         val rule = n.value
         val edges = node.innerEdgeTraverser.filter(e => e.target == n && e.source != n)
@@ -415,7 +489,7 @@ object RuleDependencyGraphGenerator extends Logging {
     var redundantEdges = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
     // for each node n in G
-    graph.nodes.foreach(node => {
+    graph.nodes.toSeq.foreach(node => {
       val rule = node.value
 
       // we only handle cyclic rules
