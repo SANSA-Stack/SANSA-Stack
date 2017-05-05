@@ -2,6 +2,7 @@ package net.sansa_stack.inference.rules
 
 import java.util.stream.Collectors
 
+import scala.collection
 import scala.collection.JavaConverters._
 import scala.language.{existentials, implicitConversions}
 import scalax.collection.GraphPredef._
@@ -10,8 +11,10 @@ import scalax.collection._
 import scalax.collection.edge.Implicits._
 import scalax.collection.edge._
 import scalax.collection.mutable.DefaultGraphImpl
+import scalax.collection.GraphPredef._
+import scalax.collection.GraphEdge._
 
-import org.apache.jena.graph.Node
+import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.RDFS
@@ -21,6 +24,8 @@ import org.jgrapht.alg.cycle.TarjanSimpleCycles
 import net.sansa_stack.inference.utils.RuleUtils._
 import net.sansa_stack.inference.utils.graph.LabeledEdge
 import net.sansa_stack.inference.utils.{GraphUtils, Logging, RuleUtils}
+import collection.mutable.{ArrayBuffer, Buffer}
+import scala.collection.mutable.HashMap
 
 /**
   * A generator for a so-called dependency graph based on a given set of rules.
@@ -228,7 +233,71 @@ object RuleDependencyGraphGenerator extends Logging {
       val cycles = cycleDetector.findCyclesContainingVertex(node.value)
       debug(cycles.asScala.mkString(","))
 
-      debug(allCycles.asScala.filter(cycle => cycle.contains(node.value)).map(cycle => cycle.asScala.map(rule => rule.getName)).mkString("\n"))
+      // cycles that contain the current node
+      val cyclesWithNode: Buffer[Buffer[Rule]] = allCycles.asScala.filter(cycle => cycle.contains(node.value)).map(cycle => cycle.asScala)
+
+      // cycles that use the same property
+      val cyclesWithNodeSameProp = cyclesWithNode.map(cycle => {
+
+        debug("Cycle: " + cycle.mkString(", "))
+        var pairsOfRules = cycle zip cycle.tail
+        pairsOfRules :+= (cycle.last, cycle(0))
+
+        val edges = pairsOfRules.map(e => {
+          val node1 = graph get e._1
+          val node2 = graph get e._2
+
+          node1.outgoing.filter(_.target == node2)
+        }).flatten
+        debug("Edges: " + edges.mkString(", "))
+
+        var predicates = edges.map(_.label.asInstanceOf[TriplePattern].getPredicate)
+        if(predicates.forall(_.isVariable)) predicates = ArrayBuffer(NodeFactory.createVariable("p"))
+debug("predicates:" + predicates)
+        val samePred = predicates.size == 1
+        if (samePred) Some(predicates(0), edges) else None
+      }).filter(_.isDefined).map(_.get).groupBy(e => e._1).mapValues(e => e.map(x => x._2).toList)
+
+      val tmp: Map[Node, Map[Int, List[Buffer[graph.EdgeT]]]] = cyclesWithNodeSameProp.mapValues(value => value.map(cycle => (cycle.size, cycle)).groupBy(_._1).mapValues(e => e.map(x => x._2).toList))
+
+        tmp.foreach(predicate2Cycles => {
+          debug("predicate: " + predicate2Cycles._1)
+        predicate2Cycles._2.foreach(entry => {
+          debug(s"length ${entry._1}")
+          val prop2Cycle = entry._2
+          var pairsOfCycles = prop2Cycle zip prop2Cycle.tail
+          pairsOfCycles.foreach(pair => {
+            debug(pair._1.map(_.source) + " ???? " + pair._2.map(_.source))
+
+            if(pair._1.map(_.source).toSet == pair._2.map(_.source).toSet) {
+              debug("redundant cycle " + pair._1.map(_.source.value.getName))
+            }
+          })
+        })
+      })
+      // check for cycles over the same nodes via the same predicate in multiple directions
+//      val grouped = cyclesWithNodeSameProp.groupBy(_._2)
+//      grouped.foreach(e => {
+//        debug(s"length ${e._1}")
+//        val predicate2Cycles = e._2
+//
+//        predicate2Cycles.foreach(predicate2CyclesEntry => {
+//          val prop2Cycle = predicate2CyclesEntry._2
+//          var pairsOfCycles = prop2Cycle zip prop2Cycle.tail
+//          pairsOfCycles.foreach(pair => {
+//            debug(pair._1.map(_.source) + " ???? " + pair._2.map(_.source))
+//
+//            if(pair._1.map(_.source) == pair._2.map(_.source)) {
+//              debug("redundant cycle " + pair._1.map(_.source.value.getName))
+//            }
+//          })
+//        })
+//
+//
+//      })
+
+//      debug(cyclesWithNodeSameProp.map(prop2Cycle =>
+//        s"${prop2Cycle._1} => ${prop2Cycle._2.map(edge => (edge.source.value.getName, edge.target.value.getName))}").mkString("\n"))
 
     })
 
