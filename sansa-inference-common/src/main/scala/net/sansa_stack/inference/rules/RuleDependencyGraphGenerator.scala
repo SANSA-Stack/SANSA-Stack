@@ -38,14 +38,16 @@ import scala.collection.mutable.HashMap
 object RuleDependencyGraphGenerator extends Logging {
 
   sealed trait RuleDependencyDirection
+
   case object ConsumerProducer extends RuleDependencyDirection
+
   case object ProducerConsumer extends RuleDependencyDirection
 
   /**
     * Generates the rule dependency graph for a given set of rules.
     *
     * @param rules the set of rules
-    * @param f a function that denotes whether a rule `r1` depends on another rule `r2`
+    * @param f     a function that denotes whether a rule `r1` depends on another rule `r2`
     * @return the rule dependency graph
     */
   def generate(rules: Set[Rule],
@@ -95,19 +97,14 @@ object RuleDependencyGraphGenerator extends Logging {
       removeEdgesWithPredicateAlreadyTC _,
       removeCyclesIfPredicateIsTC _,
       removeEdgesWithCycleOverTCNode _
-      ,removeCycles _
-//      ,prune _
+      , removeCycles _
+      , prune _
     )
 
-    for((rule, i) <- pruningRules.zipWithIndex) g = {
-      println(s"$i." + "*" * 40)
-      rule.apply(g)
-    }
-    var cnt = 1
-    pruningRules.foreach(rule => {
-
-
-    })
+//    for ((rule, i) <- pruningRules.zipWithIndex) g = {
+//      println(s"$i." + "*" * 40)
+//      rule.apply(g)
+//    }
 
     g
   }
@@ -121,7 +118,7 @@ object RuleDependencyGraphGenerator extends Logging {
     * @param rule2 the second rule
     * @return whether the first rule depends on the second rule
     */
-  def dependsOn(rule1: Rule, rule2: Rule) : Boolean = {
+  def dependsOn(rule1: Rule, rule2: Rule): Boolean = {
     // head of rule2
     val head2TriplePatterns = rule2.headTriplePatterns()
     // body of rule1
@@ -152,7 +149,7 @@ object RuleDependencyGraphGenerator extends Logging {
     * @param rule2 the second rule
     * @return the triple pattern on which `rule1` depends
     */
-  def dependsOnSmart(rule1: Rule, rule2: Rule) : Option[TriplePattern] = {
+  def dependsOnSmart(rule1: Rule, rule2: Rule): Option[TriplePattern] = {
     // R1: B1 -> H1
     // R2: B2 -> H2
     // R2 -> R1 = ?  , i.e. H2 ∩ B1
@@ -173,7 +170,7 @@ object RuleDependencyGraphGenerator extends Logging {
           ret = Some(tp2)
         }
 
-        if(tp1.getPredicate.isVariable && tp2.getPredicate.isVariable) {
+        if (tp1.getPredicate.isVariable && tp2.getPredicate.isVariable) {
           ret = Some(tp2)
         }
       }
@@ -191,7 +188,7 @@ object RuleDependencyGraphGenerator extends Logging {
 
       val loopEdge = node.outgoing.find(_.target == node)
 
-      if(loopEdge.isDefined) {
+      if (loopEdge.isDefined) {
 
         val edge = loopEdge.get
 
@@ -199,7 +196,7 @@ object RuleDependencyGraphGenerator extends Logging {
 
         val isTC = RuleUtils.isTransitiveClosure(rule, edge.label.asInstanceOf[TriplePattern].getPredicate)
 
-        if(!isTC) {
+        if (!isTC) {
           edges2Remove :+= edge
           debug(s"loop of node $node")
         }
@@ -212,10 +209,26 @@ object RuleDependencyGraphGenerator extends Logging {
     new RuleDependencyGraph(newNodes, newEdges)
   }
 
+  def sameElements(this1: Traversable[_], that: Traversable[_]): Boolean = {
+    this1.size == that.size && {
+      val thisList = this1.to[List]
+      // thisList.indexOf(that.head) may fail due to asymmetric equality
+      val idx = thisList.indexWhere(_ == that.head)
+      if (idx >= 0) {
+        val thisDoubled = thisList ++ thisList.tail
+        val thatList = that.to[List]
+        (thisDoubled startsWith(thatList, idx)) ||
+          (thisDoubled startsWith(thatList.reverse, idx))
+      }
+      else false
+    }
+  }
+
   def removeCycles(graph: RuleDependencyGraph): RuleDependencyGraph = {
     debug("removing redundant cycles")
-    var edges2Remove = Seq[Graph[Rule, LDiEdge]#EdgeT]()
+    var edges2Remove = collection.mutable.Set[Graph[Rule, LDiEdge]#EdgeT]()
 
+    graph.findCycle
 
     // convert to JGraphT graph for algorithms not contained in Scala Graph API
     val g = GraphUtils.asJGraphtRuleSetGraph(graph)
@@ -237,13 +250,16 @@ object RuleDependencyGraphGenerator extends Logging {
       val cyclesWithNode: Buffer[Buffer[Rule]] = allCycles.asScala.filter(cycle => cycle.contains(node.value)).map(cycle => cycle.asScala)
 
       // cycles that use the same property
-      val cyclesWithNodeSameProp = cyclesWithNode.map(cycle => {
+      val cyclesWithNodeSameProp: Map[Node, scala.List[Buffer[graph.EdgeT]]] = cyclesWithNode.map(cycle => {
 
         debug("Cycle: " + cycle.mkString(", "))
+
+        // pairs of rules (r1, r2)
         var pairsOfRules = cycle zip cycle.tail
         pairsOfRules :+= (cycle.last, cycle(0))
 
-        val edges = pairsOfRules.map(e => {
+        // map to list of edges
+        val edges: Buffer[graph.EdgeT] = pairsOfRules.map(e => {
           val node1 = graph get e._1
           val node2 = graph get e._2
 
@@ -251,30 +267,56 @@ object RuleDependencyGraphGenerator extends Logging {
         }).flatten
         debug("Edges: " + edges.mkString(", "))
 
+        // map to edge labels, i.e. the predicates
         var predicates = edges.map(_.label.asInstanceOf[TriplePattern].getPredicate)
         if(predicates.forall(_.isVariable)) predicates = ArrayBuffer(NodeFactory.createVariable("p"))
-debug("predicates:" + predicates)
+        debug("predicates:" + predicates)
+
+        // return predicate if it's commonly used for all edges
         val samePred = predicates.size == 1
         if (samePred) Some(predicates(0), edges) else None
       }).filter(_.isDefined).map(_.get).groupBy(e => e._1).mapValues(e => e.map(x => x._2).toList)
+
+      var removedCycles: collection.mutable.Set[Buffer[graph.EdgeT]] = collection.mutable.Set()
 
       val tmp: Map[Node, Map[Int, List[Buffer[graph.EdgeT]]]] = cyclesWithNodeSameProp.mapValues(value => value.map(cycle => (cycle.size, cycle)).groupBy(_._1).mapValues(e => e.map(x => x._2).toList))
 
         tmp.foreach(predicate2Cycles => {
           debug("predicate: " + predicate2Cycles._1)
-        predicate2Cycles._2.foreach(entry => {
-          debug(s"length ${entry._1}")
-          val prop2Cycle = entry._2
-          var pairsOfCycles = prop2Cycle zip prop2Cycle.tail
-          pairsOfCycles.foreach(pair => {
-            debug(pair._1.map(_.source) + " ???? " + pair._2.map(_.source))
 
-            if(pair._1.map(_.source).toSet == pair._2.map(_.source).toSet) {
-              debug("redundant cycle " + pair._1.map(_.source.value.getName))
-            }
-          })
+          predicate2Cycles._2.foreach(entry => {
+            debug(s"length ${entry._1}")
+
+            val prop2Cycle = entry._2
+            var pairsOfCycles = prop2Cycle zip prop2Cycle.tail
+            pairsOfCycles.foreach(pair => {
+              val cycle1 = pair._1
+              val cycle2 = pair._2
+
+              val cycle1Nodes = cycle1.map(_.source).toSet
+              val cycle2Nodes = cycle2.map(_.source).toSet
+
+              debug(cycle1Nodes.map(_.value.getName).mkString(", ") + " ???? " + cycle2Nodes.map(_.value.getName).mkString(", "))
+
+              // check if both cycles contain the same nodes
+              if(cycle1Nodes == cycle2Nodes) {
+                debug("redundant cycle " + pair._1.map(_.source.value.getName))
+
+                // we can remove cycle1 if cycle2 wasn't removed before
+                if (!removedCycles.exists(c => sameElements(c, cycle2))) {
+                  removedCycles += cycle1
+                }
+              }
+            })
         })
       })
+
+      removedCycles.map(c => c.map(_.asInstanceOf[Graph[Rule, LDiEdge]#EdgeT])).foreach(c =>
+        {
+          edges2Remove ++= c
+        })
+
+
       // check for cycles over the same nodes via the same predicate in multiple directions
 //      val grouped = cyclesWithNodeSameProp.groupBy(_._2)
 //      grouped.foreach(e => {
@@ -336,10 +378,11 @@ debug("predicates:" + predicates)
           val edge2 = node.innerEdgeTraverser.filter(e => e.source == node && e.target == n2).head
 
           // n --p--> n1
-          val path1 = node.withSubgraph(edges = !_.equals(edge2)) pathTo n2
+          val path1 = node.withSubgraph(edges = e => !e.equals(edge2) && !redundantEdges.contains(e)) pathTo n2
           if (path1.isDefined) {
             debug(s"PATH TO ${n2.value.getName}: ${path1.get.edges.toList.map(edge => asString(edge))}")
             val edges = path1.get.edges.toList
+
             edges.foreach(edge => {
               debug(s"EDGE:${asString(edge)}")
             })
@@ -353,7 +396,7 @@ debug("predicates:" + predicates)
             debug(s"NO OTHER PATH FROM ${node.value.getName} TO ${n2.value.getName}")
           }
 
-          val path2 = node.withSubgraph(edges = !_.equals(edge1)) pathTo n1
+          val path2 = node.withSubgraph(edges = e => !e.equals(edge1) && !redundantEdges.contains(e)) pathTo n1
           if (path2.isDefined) {
             debug(s"PATH TO:${n1.value.getName}")
             debug(s"PATH:${path2.get.edges.toList.map(edge => asString(edge))}")
