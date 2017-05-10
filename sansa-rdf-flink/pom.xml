@@ -55,11 +55,6 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-parent</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-partition-core</artifactId>
 			<version>0.1.0</version>
 		</dependency>
