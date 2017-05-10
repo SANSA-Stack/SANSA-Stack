@@ -58,6 +58,12 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-spark-core</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-spark-utils</artifactId>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
