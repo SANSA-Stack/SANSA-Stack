@@ -1,17 +1,15 @@
 package net.sansa_stack.examples.spark.query
 
-import java.io.File
-import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
+import java.net.URI
+
+import net.sansa_stack.query.spark.server.SparqlifyUtils3
+import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
 import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
-import net.sansa_stack.query.spark.server.SparqlifyUtils3
-import org.apache.jena.riot.RDFDataMgr
-import org.apache.jena.riot.Lang
-import org.apache.commons.io.IOUtils
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import org.apache.spark.sql.SparkSession
+
+import scala.collection.mutable
 
 /*
  * Run SPARQL queries over Spark using Sparqlify approach.
@@ -49,7 +47,7 @@ object Sparklify {
       .appName("Sparklify example (" + input + ")")
       .getOrCreate()
 
-    val graphRdd = NTripleReader.load(sparkSession, new File(input))
+    val graphRdd = NTripleReader.load(sparkSession, URI.create(input))
     
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)

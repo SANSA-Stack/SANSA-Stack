@@ -1,9 +1,11 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.io.File
-import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
+import java.net.URI
+
 import net.sansa_stack.rdf.spark.io.NTripleReader
+import org.apache.spark.sql.SparkSession
+
+import scala.collection.mutable
 
 object TripleReader {
 
@@ -35,7 +37,7 @@ object TripleReader {
       .appName("Triple reader example (" + input + ")")
       .getOrCreate()
 
-    val triplesRDD = NTripleReader.load(sparkSession, new File(input))
+    val triplesRDD = NTripleReader.load(sparkSession, URI.create(input))
 
     triplesRDD.take(5).foreach(println(_))
 

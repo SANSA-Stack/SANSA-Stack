@@ -1,10 +1,12 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.io.File
-import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps
 import net.sansa_stack.rdf.spark.io.NTripleReader
+import net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps
+import org.apache.spark.sql.SparkSession
+import java.net.{URI => JavaURI}
+
+
+import scala.collection.mutable
 
 /*
  * Computes the PageRank of Resources from an input .nt file.
@@ -43,7 +45,7 @@ object PageRank {
     val ops = JenaSparkGraphXOps(sparkSession.sparkContext)
     import ops._
 
-    val triplesRDD = NTripleReader.load(sparkSession, new File(input))
+    val triplesRDD = NTripleReader.load(sparkSession, JavaURI.create(input))
 
     val graph = makeGraph(triplesRDD)
     val pagerank = graph.pageRank(0.00001).vertices

@@ -1,6 +1,8 @@
 package net.sansa_stack.examples.spark.rdf
 
 import java.io.File
+import java.net.URI
+
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.io.NTripleReader
@@ -36,7 +38,7 @@ object TripleWriter {
       .appName("Triple writer example (" + input + ")")
       .getOrCreate()
 
-    val triplesRDD = NTripleReader.load(sparkSession, new File(input))
+    val triplesRDD = NTripleReader.load(sparkSession, URI.create(input))
 
     triplesRDD.saveAsTextFile(output)
 

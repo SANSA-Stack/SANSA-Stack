@@ -1,6 +1,7 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.io.File
+import java.net.{URI => JavaURI}
+
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
@@ -44,7 +45,7 @@ object TripleOps {
     val ops = JenaSparkRDDOps(sparkSession.sparkContext)
     import ops._
 
-    val triplesRDD = NTripleReader.load(sparkSession, new File(input))
+    val triplesRDD = NTripleReader.load(sparkSession, JavaURI.create(input))
     
     val graph: TripleRDD = triplesRDD
 
