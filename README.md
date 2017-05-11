@@ -45,3 +45,4 @@ make cli-rule-mining
 
 # Notes
 * The instructions from this repo were tested on Ubuntu 16.04 with Docker engine 17.03.
+Maintained by [Ivan Ermilov](https://github.com/earthquakesan/)
