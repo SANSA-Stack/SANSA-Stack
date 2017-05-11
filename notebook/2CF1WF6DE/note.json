@@ -1,0 +1,78 @@
+{
+  "paragraphs": [
+    {
+      "text": "import java.io.File\nimport scala.collection.mutable\nimport org.apache.spark.sql.SparkSession\nimport net.sansa_stack.rdf.spark.model.JenaSparkRDDOps\nimport net.sansa_stack.inference.spark.RDFGraphMaterializer\nimport net.sansa_stack.inference.spark.data.RDFGraphLoader\nimport net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerRDFS\nimport net.sansa_stack.inference.rules.ReasoningProfile\nimport net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOWLHorst\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.data.RDFGraphWriter\n\n// load triples from disk\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval output \u003d \"hdfs://namenode:8020/data/output/\"\nval argprofile \u003d \"rdfs\"\nval profile \u003d argprofile match {\n  case \"rdfs\"      \u003d\u003e ReasoningProfile.RDFS\n  case \"owl-horst\" \u003d\u003e ReasoningProfile.OWL_HORST\n}\n\nval graph \u003d RDFGraphLoader.loadFromFile(new File(input).getAbsolutePath, sc, 4)\nprintln(s\"|G|\u003d${graph.size()}\")\n\n// create reasoner\nval reasoner \u003d profile match {\n  case RDFS      \u003d\u003e new ForwardRuleReasonerRDFS(sc)\n  case OWL_HORST \u003d\u003e new ForwardRuleReasonerOWLHorst(sc)\n}\n\n// compute inferred graph\nval inferredGraph \u003d reasoner.apply(graph)\nprintln(s\"|G_inferred|\u003d${inferredGraph.size()}\")\n\n// write triples to disk\nRDFGraphWriter.writeGraphToFile(inferredGraph, new File(output).getAbsolutePath)",
+      "user": "anonymous",
+      "dateUpdated": "May 11, 2017 12:04:23 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nimport java.io.File\n\nimport scala.collection.mutable\n\nimport org.apache.spark.sql.SparkSession\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkRDDOps\n\nimport net.sansa_stack.inference.spark.RDFGraphMaterializer\n\nimport net.sansa_stack.inference.spark.data.RDFGraphLoader\n\nimport net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerRDFS\n\nimport net.sansa_stack.inference.rules.ReasoningProfile\n\nimport net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOWLHorst\n\nimport net.sansa_stack.inference.rules.ReasoningProfile._\n\nimport net.sansa_stack.inference.spark.data.RDFGraphWriter\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\noutput: String \u003d hdfs://namenode:8020/data/output/\n\nargprofile: String \u003d rdfs\n\nprofile: net.sansa_stack.inference.rules.ReasoningProfile.Value \u003d RDFS\n\ngraph: net.sansa_stack.inference.spark.data.RDFGraph \u003d RDFGraph(MapPartitionsRDD[25] at map at RDFGraphLoader.scala:28)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\njava.lang.IllegalArgumentException: java.net.URISyntaxException: Expected scheme-specific part at index 5: hdfs:\n  at org.apache.hadoop.fs.Path.initialize(Path.java:205)\n  at org.apache.hadoop.fs.Path.\u003cinit\u003e(Path.java:171)\n  at org.apache.hadoop.fs.Path.\u003cinit\u003e(Path.java:93)\n  at org.apache.hadoop.fs.Globber.glob(Globber.java:211)\n  at org.apache.hadoop.fs.FileSystem.globStatus(FileSystem.java:1676)\n  at org.apache.hadoop.mapred.FileInputFormat.singleThreadedListStatus(FileInputFormat.java:259)\n  at org.apache.hadoop.mapred.FileInputFormat.listStatus(FileInputFormat.java:229)\n  at org.apache.hadoop.mapred.FileInputFormat.getSplits(FileInputFormat.java:315)\n  at org.apache.spark.rdd.HadoopRDD.getPartitions(HadoopRDD.scala:202)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:252)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:250)\n  at scala.Option.getOrElse(Option.scala:121)\n  at org.apache.spark.rdd.RDD.partitions(RDD.scala:250)\n  at org.apache.spark.rdd.MapPartitionsRDD.getPartitions(MapPartitionsRDD.scala:35)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:252)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:250)\n  at scala.Option.getOrElse(Option.scala:121)\n  at org.apache.spark.rdd.RDD.partitions(RDD.scala:250)\n  at org.apache.spark.rdd.MapPartitionsRDD.getPartitions(MapPartitionsRDD.scala:35)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:252)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:250)\n  at scala.Option.getOrElse(Option.scala:121)\n  at org.apache.spark.rdd.RDD.partitions(RDD.scala:250)\n  at org.apache.spark.rdd.MapPartitionsRDD.getPartitions(MapPartitionsRDD.scala:35)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:252)\n  at org.apache.spark.rdd.RDD$$anonfun$partitions$2.apply(RDD.scala:250)\n  at scala.Option.getOrElse(Option.scala:121)\n  at org.apache.spark.rdd.RDD.partitions(RDD.scala:250)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1965)\n  at org.apache.spark.rdd.RDD.count(RDD.scala:1158)\n  at net.sansa_stack.inference.spark.data.RDFGraph.size(RDFGraph.scala:68)\n  ... 52 elided\nCaused by: java.net.URISyntaxException: Expected scheme-specific part at index 5: hdfs:\n  at java.net.URI$Parser.fail(URI.java:2848)\n  at java.net.URI$Parser.failExpecting(URI.java:2854)\n  at java.net.URI$Parser.parse(URI.java:3057)\n  at java.net.URI.\u003cinit\u003e(URI.java:746)\n  at org.apache.hadoop.fs.Path.initialize(Path.java:202)\n  ... 82 more\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1494503001288_-816991434",
+      "id": "20170511-114321_696797203",
+      "dateCreated": "May 11, 2017 11:43:21 AM",
+      "dateStarted": "May 11, 2017 12:04:23 PM",
+      "dateFinished": "May 11, 2017 12:04:26 PM",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "user": "anonymous",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1494503177314_1156213819",
+      "id": "20170511-114617_1529428228",
+      "dateCreated": "May 11, 2017 11:46:17 AM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Inference",
+  "id": "2CF1WF6DE",
+  "angularObjects": {
+    "2CG8J6PMC:shared_process": [],
+    "2CJ7BHHY4:shared_process": [],
+    "2CJ53XF3T:shared_process": [],
+    "2CJ91WSMS:shared_process": [],
+    "2CHRJ4ED5:shared_process": [],
+    "2CGQCZKKU:shared_process": [],
+    "2CJAYHY6H:shared_process": [],
+    "2CHD4FMZM:shared_process": [],
+    "2CJ52YCA8:shared_process": [],
+    "2CHN8NJ6V:shared_process": [],
+    "2CFWQ38ZB:shared_process": [],
+    "2CGS2F3PY:shared_process": [],
+    "2CGRFBUNZ:shared_process": [],
+    "2CJUM7XAZ:shared_process": [],
+    "2CG7V7TS9:shared_process": [],
+    "2CJNF1N75:shared_process": [],
+    "2CJ75B163:shared_process": [],
+    "2CFEUMGW8:shared_process": [],
+    "2CHJ6HZ7K:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}

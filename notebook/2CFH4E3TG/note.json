@@ -1,0 +1,127 @@
+{
+  "paragraphs": [
+    {
+      "text": "import net.sansa_stack.owl.spark.dataset.FunctionalSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\nval dataset \u003d FunctionalSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
+      "user": "anonymous",
+      "dateUpdated": "May 11, 2017 12:10:18 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nimport net.sansa_stack.owl.spark.dataset.FunctionalSyntaxOWLAxiomsDatasetBuilder\n\ninput: String \u003d hdfs://namenode:8020/data/ont_functional.owl\n\ndataset: net.sansa_stack.owl.spark.dataset.OWLAxiomsDataset \u003d [value: binary]\nDeclaration(Annotation(\u003chttp://ex.com/foo#ann\u003e \"some annotation\"^^xsd:string) Class(\u003chttp://ex.com/bar#Cls1\u003e))\nDeclaration(Class(\u003chttp://ex.com/bar#Cls2\u003e))\nDeclaration(Datatype(\u003chttp://ex.com/bar#dtype1\u003e))\nDeclaration(Datatype(\u003chttp://ex.com/bar#dtype2\u003e))\nDeclaration(ObjectProperty(\u003chttp://ex.com/bar#objProp1\u003e))\nDeclaration(ObjectProperty(\u003chttp://ex.com/bar#objProp2\u003e))\nDeclaration(DataProperty(\u003chttp://ex.com/bar#dataProp1\u003e))\nDeclaration(DataProperty(\u003chttp://ex.com/bar#dataProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1494492505471_454897908",
+      "id": "20170511-084825_834127049",
+      "dateCreated": "May 11, 2017 8:48:25 AM",
+      "dateStarted": "May 11, 2017 12:10:18 PM",
+      "dateFinished": "May 11, 2017 12:10:20 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "import net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_manchester.owl\"\n\nval dataset \u003d ManchesterSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
+      "user": "anonymous",
+      "dateUpdated": "May 11, 2017 12:04:04 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nimport net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\ninput: String \u003d hdfs://namenode:8020/data/ont_manchester.owl\n\ndataset: net.sansa_stack.owl.spark.dataset.OWLAxiomsDataset \u003d [value: binary]\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nSubAnnotationPropertyOf(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#annProp2\u003e)\nAnnotationPropertyRange(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls2\u003e)\nAnnotationPropertyDomain(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls1\u003e)\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#hasTitle\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#label\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/default#description\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#ann\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#hasName\u003e))\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1494494430280_1062578933",
+      "id": "20170511-092030_318054404",
+      "dateCreated": "May 11, 2017 9:20:30 AM",
+      "dateStarted": "May 11, 2017 12:04:04 PM",
+      "dateFinished": "May 11, 2017 12:04:06 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "user": "anonymous",
+      "dateUpdated": "May 11, 2017 9:50:18 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala",
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1494496140789_-1258622693",
+      "id": "20170511-094900_58929009",
+      "dateCreated": "May 11, 2017 9:49:00 AM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "OWL",
+  "id": "2CFH4E3TG",
+  "angularObjects": {
+    "2CG8J6PMC:shared_process": [],
+    "2CJ7BHHY4:shared_process": [],
+    "2CJ53XF3T:shared_process": [],
+    "2CJ91WSMS:shared_process": [],
+    "2CHRJ4ED5:shared_process": [],
+    "2CGQCZKKU:shared_process": [],
+    "2CJAYHY6H:shared_process": [],
+    "2CHD4FMZM:shared_process": [],
+    "2CJ52YCA8:shared_process": [],
+    "2CHN8NJ6V:shared_process": [],
+    "2CFWQ38ZB:shared_process": [],
+    "2CGS2F3PY:shared_process": [],
+    "2CGRFBUNZ:shared_process": [],
+    "2CJUM7XAZ:shared_process": [],
+    "2CG7V7TS9:shared_process": [],
+    "2CJNF1N75:shared_process": [],
+    "2CJ75B163:shared_process": [],
+    "2CFEUMGW8:shared_process": [],
+    "2CHJ6HZ7K:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}
