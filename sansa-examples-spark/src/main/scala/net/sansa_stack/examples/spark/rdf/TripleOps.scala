@@ -1,6 +1,6 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.net.{URI => JavaURI}
+import java.net.{ URI => JavaURI }
 
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
@@ -15,12 +15,12 @@ object TripleOps {
 
   def main(args: Array[String]) = {
 
-  /*  if (args.length < 1) {
+    if (args.length < 1) {
       System.err.println(
         "Usage: Triple Ops <input>")
       System.exit(1)
-    }*/
-    val input = "src/main/resources/rdf.nt"//args(0)//"src/main/resources/rdf.nt"
+    }
+    val input = args(0) //"src/main/resources/rdf.nt"
     val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
@@ -46,7 +46,7 @@ object TripleOps {
     import ops._
 
     val triplesRDD = NTripleReader.load(sparkSession, JavaURI.create(input))
-    
+
     val graph: TripleRDD = triplesRDD
 
     //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
