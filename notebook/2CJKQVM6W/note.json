@@ -3,15 +3,16 @@
     {
       "text": "import net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\nimport org.apache.spark.sql.SparkSession\nimport java.net.{URI \u003d\u003e JavaURI}\n\nval ops \u003d JenaSparkGraphXOps(sc)\nimport ops._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triplesRDD \u003d NTripleReader.load(spark, JavaURI.create(input))\n\nval graph \u003d makeGraph(triplesRDD)\nval pagerank \u003d graph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(graph.vertices)\n  .map({ case (k, (r, v)) \u003d\u003e (r, v, k) })\n  .sortBy(50 - _._1)\n\nreport.take(50).foreach(println)\n",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 12:13:48 PM",
+      "dateUpdated": "May 11, 2017 2:02:28 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "text",
+          "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/text"
       },
       "settings": {
         "params": {},
@@ -22,7 +23,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\n\nimport org.apache.spark.sql.SparkSession\n\nimport java.net.{URI\u003d\u003eJavaURI}\n\nops: net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps \u003d net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps$$anon$2@1a7ecf29\n\nimport ops._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\n\n\n\n\n\u003cconsole\u003e:120: error: type mismatch;\n found   : java.net.URI\n required: java.io.File\n       val triplesRDD \u003d NTripleReader.load(spark, JavaURI.create(input))\n                                                                ^\n"
+            "data": "\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\n\nimport org.apache.spark.sql.SparkSession\n\nimport java.net.{URI\u003d\u003eJavaURI}\n\nops: net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps \u003d net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps$$anon$2@650b3c09\n\nimport ops._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[2] at map at NTripleReader.scala:38\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\norg.apache.spark.SparkException: Task not serializable\n  at org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:298)\n  at org.apache.spark.util.ClosureCleaner$.org$apache$spark$util$ClosureCleaner$$clean(ClosureCleaner.scala:288)\n  at org.apache.spark.util.ClosureCleaner$.clean(ClosureCleaner.scala:108)\n  at org.apache.spark.SparkContext.clean(SparkContext.scala:2101)\n  at org.apache.spark.rdd.RDD$$anonfun$map$1.apply(RDD.scala:370)\n  at org.apache.spark.rdd.RDD$$anonfun$map$1.apply(RDD.scala:369)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:151)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:112)\n  at org.apache.spark.rdd.RDD.withScope(RDD.scala:362)\n  at org.apache.spark.rdd.RDD.map(RDD.scala:369)\n  at net.sansa_stack.rdf.spark.model.GraphXGraphOps$class.makeGraph(GraphXGraphOps.scala:58)\n  at net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps$$anon$2.makeGraph(JenaSparkRDD.scala:43)\n  ... 50 elided\nCaused by: java.io.NotSerializableException: net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps$$anon$2\nSerialization stack:\n\t- object not serializable (class: net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps$$anon$2, value: net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps$$anon$2@650b3c09)\n\t- field (class: net.sansa_stack.rdf.spark.model.GraphXGraphOps$$anonfun$3, name: $outer, type: interface net.sansa_stack.rdf.spark.model.GraphXGraphOps)\n\t- object (class net.sansa_stack.rdf.spark.model.GraphXGraphOps$$anonfun$3, \u003cfunction1\u003e)\n  at org.apache.spark.serializer.SerializationDebugger$.improveException(SerializationDebugger.scala:40)\n  at org.apache.spark.serializer.JavaSerializationStream.writeObject(JavaSerializer.scala:46)\n  at org.apache.spark.serializer.JavaSerializerInstance.serialize(JavaSerializer.scala:100)\n  at org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:295)\n  ... 61 more\n"
           }
         ]
       },
@@ -30,34 +31,35 @@
       "jobName": "paragraph_1494502177238_-837776097",
       "id": "20170511-112937_204523727",
       "dateCreated": "May 11, 2017 11:29:37 AM",
-      "dateStarted": "May 11, 2017 12:13:48 PM",
-      "dateFinished": "May 11, 2017 12:13:49 PM",
+      "dateStarted": "May 11, 2017 2:02:28 PM",
+      "dateFinished": "May 11, 2017 2:02:32 PM",
       "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "import java.net.{URI \u003d\u003e JavaURI}\n\nimport scala.collection.mutable\nimport org.apache.spark.sql.SparkSession\nimport net.sansa_stack.rdf.spark.model.JenaSparkRDDOps\nimport org.apache.jena.graph.Node_URI\nimport net.sansa_stack.rdf.spark.model.TripleRDD\nimport org.apache.jena.graph.Node_Literal\nimport org.apache.jena.sparql.util.NodeFactoryExtra\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nval ops \u003d JenaSparkRDDOps(sc)\nimport ops._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triplesRDD \u003d NTripleReader.load(spark, JavaURI.create(input))\n    \nval graph: TripleRDD \u003d triplesRDD\n\n//Triples filtered by subject ( \"http://dbpedia.org/resource/Charles_Dickens\" )\nprintln(\"All triples related to Dickens:\\n\" + graph.find(URI(\"http://dbpedia.org/resource/Charles_Dickens\"), ANY, ANY).collect().mkString(\"\\n\"))\n\n//Triples filtered by predicate ( \"http://dbpedia.org/ontology/influenced\" )\nprintln(\"All triples for predicate influenced:\\n\" + graph.find(ANY, URI(\"http://dbpedia.org/ontology/influenced\"), ANY).collect().mkString(\"\\n\"))\n\n//Triples filtered by object ( \u003chttp://dbpedia.org/resource/Henry_James\u003e )\nprintln(\"All triples influenced by Henry_James:\\n\" + graph.find(ANY, ANY, URI(\"\u003chttp://dbpedia.org/resource/Henry_James\u003e\")).collect().mkString(\"\\n\"))\n\nprintln(\"Number of triples: \" + graph.find(ANY, ANY, ANY).distinct.count())\nprintln(\"Number of subjects: \" + graph.getSubjects.distinct.count())\nprintln(\"Number of predicates: \" + graph.getPredicates.distinct.count())\nprintln(\"Number of objects: \" + graph.getPredicates.distinct.count())\n\nval subjects \u003d graph.filterSubjects(_.isURI()).collect.mkString(\"\\n\")\n\nval predicates \u003d graph.filterPredicates(_.isVariable()).collect.mkString(\"\\n\")\nval objects \u003d graph.filterObjects(_.isLiteral()).collect.mkString(\"\\n\")\n\ngraph.getTriples.take(5).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 12:02:15 PM",
+      "dateUpdated": "May 11, 2017 2:04:37 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "text",
+          "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/text"
       },
       "settings": {
         "params": {},
         "forms": {}
       },
       "results": {
-        "code": "ERROR",
+        "code": "SUCCESS",
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport java.net.{URI\u003d\u003eJavaURI}\n\nimport scala.collection.mutable\n\nimport org.apache.spark.sql.SparkSession\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkRDDOps\n\nimport org.apache.jena.graph.Node_URI\n\nimport net.sansa_stack.rdf.spark.model.TripleRDD\n\nimport org.apache.jena.graph.Node_Literal\n\nimport org.apache.jena.sparql.util.NodeFactoryExtra\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nops: net.sansa_stack.rdf.spark.model.JenaSparkRDDOps{val sparkContext: org.apache.spark.SparkContext} \u003d net.sansa_stack.rdf.spark.model.JenaSparkRDDOps$$anon$1@2addf594\n\nimport ops._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\n\n\n\n\n\u003cconsole\u003e:54: error: type mismatch;\n found   : java.net.URI\n required: java.io.File\n       val triplesRDD \u003d NTripleReader.load(spark, JavaURI.create(input))\n                                                                ^\n"
+            "data": "\nimport java.net.{URI\u003d\u003eJavaURI}\n\nimport scala.collection.mutable\n\nimport org.apache.spark.sql.SparkSession\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkRDDOps\n\nimport org.apache.jena.graph.Node_URI\n\nimport net.sansa_stack.rdf.spark.model.TripleRDD\n\nimport org.apache.jena.graph.Node_Literal\n\nimport org.apache.jena.sparql.util.NodeFactoryExtra\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nops: net.sansa_stack.rdf.spark.model.JenaSparkRDDOps{val sparkContext: org.apache.spark.SparkContext} \u003d net.sansa_stack.rdf.spark.model.JenaSparkRDDOps$$anon$1@1b037362\n\nimport ops._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[5] at map at NTripleReader.scala:38\n\ngraph: net.sansa_stack.rdf.spark.model.TripleRDD \u003d net.sansa_stack.rdf.spark.model.TripleRDD@db4b1a9\nAll triples related to Dickens:\nhttp://dbpedia.org/resource/Charles_Dickens @http://xmlns.com/foaf/0.1/givenName \"Charles\"@en\nhttp://dbpedia.org/resource/Charles_Dickens @http://dbpedia.org/ontology/deathPlace http://dbpedia.org/resource/Gads_Hill_Place\nAll triples for predicate influenced:\nhttp://dbpedia.org/resource/Guy_de_Maupassant @http://dbpedia.org/ontology/influenced http://dbpedia.org/resource/Tobias_Wolff\nhttp://dbpedia.org/resource/Guy_de_Maupassant @http://dbpedia.org/ontology/influenced http://dbpedia.org/resource/Henry_James\nAll triples influenced by Henry_James:\n\nNumber of triples: 106\nNumber of subjects: 36\nNumber of predicates: 24\nNumber of objects: 24\n\n\n\n\n\n\nsubjects: String \u003d\nhttp://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/File:Hunebed_003.jpg @http://commons.dbpedia.org/property/description \"Hunebed D24 near Bronneger, August 2004.\"...\npredicates: String \u003d \"\"\n\n\n\n\n\n\nobjects: String \u003d\nhttp://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/File:Hunebed_003.jpg @http://commons.dbpedia.org/property/description \"Hunebed D24 near Bronneger, August 2004.\"@...http://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\n"
           }
         ]
       },
@@ -65,34 +67,35 @@
       "jobName": "paragraph_1494502374155_1707028104",
       "id": "20170511-113254_407515474",
       "dateCreated": "May 11, 2017 11:32:54 AM",
-      "dateStarted": "May 11, 2017 12:02:15 PM",
-      "dateFinished": "May 11, 2017 12:02:18 PM",
-      "status": "ERROR",
+      "dateStarted": "May 11, 2017 2:04:37 PM",
+      "dateFinished": "May 11, 2017 2:04:52 PM",
+      "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "import java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport scala.collection.mutable\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triplesRDD \u003d NTripleReader.load(spark, URI.create(input))\n\ntriplesRDD.take(5).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 12:02:28 PM",
+      "dateUpdated": "May 11, 2017 2:04:57 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "text",
+          "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/text"
       },
       "settings": {
         "params": {},
         "forms": {}
       },
       "results": {
-        "code": "ERROR",
+        "code": "SUCCESS",
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport scala.collection.mutable\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\n\n\n\n\n\u003cconsole\u003e:57: error: type mismatch;\n found   : java.net.URI\n required: java.io.File\n       val triplesRDD \u003d NTripleReader.load(spark, URI.create(input))\n                                                            ^\n"
+            "data": "\nimport java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport scala.collection.mutable\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[30] at map at NTripleReader.scala:38\nhttp://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\n"
           }
         ]
       },
@@ -100,34 +103,35 @@
       "jobName": "paragraph_1494502575554_-559403428",
       "id": "20170511-113615_436801361",
       "dateCreated": "May 11, 2017 11:36:15 AM",
-      "dateStarted": "May 11, 2017 12:02:29 PM",
-      "dateFinished": "May 11, 2017 12:02:29 PM",
-      "status": "ERROR",
+      "dateStarted": "May 11, 2017 2:04:57 PM",
+      "dateFinished": "May 11, 2017 2:04:59 PM",
+      "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "import java.io.File\nimport java.net.URI\n\nimport scala.collection.mutable\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triplesRDD \u003d NTripleReader.load(spark, URI.create(input))\n\ntriplesRDD.saveAsTextFile(output)",
+      "text": "import java.io.File\nimport java.net.URI\n\nimport scala.collection.mutable\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval output \u003d \"hdfs://namenode:8020/output\"\nval triplesRDD \u003d NTripleReader.load(spark, URI.create(input))\n\ntriplesRDD.saveAsTextFile(output)",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 12:02:33 PM",
+      "dateUpdated": "May 11, 2017 2:05:46 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "text",
+          "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/text"
       },
       "settings": {
         "params": {},
         "forms": {}
       },
       "results": {
-        "code": "ERROR",
+        "code": "SUCCESS",
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport java.io.File\n\nimport java.net.URI\n\nimport scala.collection.mutable\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\n\n\n\n\n\u003cconsole\u003e:61: error: type mismatch;\n found   : java.net.URI\n required: java.io.File\n       val triplesRDD \u003d NTripleReader.load(spark, URI.create(input))\n                                                            ^\n"
+            "data": "\nimport java.io.File\n\nimport java.net.URI\n\nimport scala.collection.mutable\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\noutput: String \u003d hdfs://namenode:8020/output\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[36] at map at NTripleReader.scala:38\n"
           }
         ]
       },
@@ -135,9 +139,9 @@
       "jobName": "paragraph_1494502673367_-1601197825",
       "id": "20170511-113753_1124962198",
       "dateCreated": "May 11, 2017 11:37:53 AM",
-      "dateStarted": "May 11, 2017 12:02:33 PM",
-      "dateFinished": "May 11, 2017 12:02:34 PM",
-      "status": "ERROR",
+      "dateStarted": "May 11, 2017 2:05:46 PM",
+      "dateFinished": "May 11, 2017 2:05:49 PM",
+      "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
@@ -158,25 +162,25 @@
   "name": "RDF",
   "id": "2CJKQVM6W",
   "angularObjects": {
-    "2CG8J6PMC:shared_process": [],
-    "2CJ7BHHY4:shared_process": [],
-    "2CJ53XF3T:shared_process": [],
-    "2CJ91WSMS:shared_process": [],
-    "2CHRJ4ED5:shared_process": [],
-    "2CGQCZKKU:shared_process": [],
-    "2CJAYHY6H:shared_process": [],
-    "2CHD4FMZM:shared_process": [],
-    "2CJ52YCA8:shared_process": [],
-    "2CHN8NJ6V:shared_process": [],
-    "2CFWQ38ZB:shared_process": [],
-    "2CGS2F3PY:shared_process": [],
-    "2CGRFBUNZ:shared_process": [],
-    "2CJUM7XAZ:shared_process": [],
-    "2CG7V7TS9:shared_process": [],
-    "2CJNF1N75:shared_process": [],
-    "2CJ75B163:shared_process": [],
-    "2CFEUMGW8:shared_process": [],
-    "2CHJ6HZ7K:shared_process": []
+    "2CGHKSHQE:shared_process": [],
+    "2CJ2XGWS5:shared_process": [],
+    "2CJVJ7H25:shared_process": [],
+    "2CFDQ88J1:shared_process": [],
+    "2CF4FNTUQ:shared_process": [],
+    "2CF62TZ57:shared_process": [],
+    "2CFX24SPE:shared_process": [],
+    "2CG9ZF4HU:shared_process": [],
+    "2CJK51V3F:shared_process": [],
+    "2CFVMS3NN:shared_process": [],
+    "2CHCF37RD:shared_process": [],
+    "2CGNA8VJR:shared_process": [],
+    "2CJ2RETPG:shared_process": [],
+    "2CFFRTQZB:shared_process": [],
+    "2CG3ENR1N:shared_process": [],
+    "2CFBN49Y8:shared_process": [],
+    "2CH3B7K9P:shared_process": [],
+    "2CGBGHEW1:shared_process": [],
+    "2CHQC624J:shared_process": []
   },
   "config": {},
   "info": {}
