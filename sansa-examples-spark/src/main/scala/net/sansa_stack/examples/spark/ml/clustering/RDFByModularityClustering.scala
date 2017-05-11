@@ -3,7 +3,7 @@ package net.sansa_stack.examples.spark.ml.clustering
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
-import net.sansa_stack.ml.spark.clustering.RDFByModularityClustering
+import net.sansa_stack.ml.spark.clustering.{ RDFByModularityClustering => RDFByModularityClusteringAlg }
 
 object RDFByModularityClusteringExample {
 
@@ -37,7 +37,7 @@ object RDFByModularityClusteringExample {
       .getOrCreate()
     Logger.getRootLogger.setLevel(Level.ERROR)
 
-    RDFByModularityClustering(sparkSession.sparkContext, numIterations, graphFile, outputFile)
+    RDFByModularityClusteringAlg(sparkSession.sparkContext, numIterations, graphFile, outputFile)
 
     sparkSession.stop
 
