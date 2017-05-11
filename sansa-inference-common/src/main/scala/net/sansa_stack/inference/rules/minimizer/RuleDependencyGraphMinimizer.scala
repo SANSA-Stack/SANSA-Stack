@@ -33,11 +33,13 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
   def batches: Seq[Batch] = Seq(
     Batch("Default Minimization", Once,
       RemoveLoops,
-      RemoveCyclesInBothDirections,
-      RemoveCyclesIfPredicateIsTC,
-      RemoveEdgesWithCycleOverTCNode,
-      RemoveEdgesWithPredicateAlreadyTC,
-      RemoveEdgeIfLongerPathToSameNodeExists))
+            RemoveEdgesWithCycleOverTCNode,
+            RemoveEdgesWithPredicateAlreadyTC,
+            RemoveEdgeIfLongerPathToSameNodeExists,
+      RemoveCyclesInBothDirections
+//      RemoveCyclesIfPredicateIsTC,
+
+    ))
 
   object RemoveLoops extends MinimizationRule {
     def apply(graph: RuleDependencyGraph): RuleDependencyGraph = {
@@ -45,6 +47,7 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
       var edges2Remove = Seq[Graph[Rule, LDiEdge]#EdgeT]()
 
       graph.nodes.toSeq.foreach(node => {
+        debug(s"node " + node.value.getName)
 
         val loopEdge = node.outgoing.find(_.target == node)
 
@@ -284,19 +287,20 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
         val allCycles = cycleDetector2.findSimpleCycles()
 
         graph.nodes.toSeq.foreach(node => {
-          debug(s"NODE ${node.value}")
+          debug(s"NODE ${node.value.getName}")
 
           // get cycles of length 3
-          val cycles = cycleDetector.findCyclesContainingVertex(node.value)
-          debug(cycles.asScala.mkString(","))
+//          val cycles = cycleDetector.findCyclesContainingVertex(node.value)
+//          debug(cycles.asScala.mkString(","))
 
           // cycles that contain the current node
           val cyclesWithNode: Buffer[Buffer[Rule]] = allCycles.asScala.filter(cycle => cycle.contains(node.value)).map(cycle => cycle.asScala)
+          debug("Cycles: " + cyclesWithNode.map(c => c.map(r => r.getName)).mkString(","))
 
           // cycles that use the same property
           val cyclesWithNodeSameProp: Map[Node, scala.List[Buffer[graph.EdgeT]]] = cyclesWithNode.map(cycle => {
 
-            debug("Cycle: " + cycle.mkString(", "))
+            debug("Cycle: " + cycle.map(r => r.getName).mkString(", "))
 
             // pairs of rules (r1, r2)
             var pairsOfRules = cycle zip cycle.tail
@@ -367,6 +371,8 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
 
         new RuleDependencyGraph(newNodes, newEdges)
     }
+
+    override def debug(msg: => String): Unit = println(msg)
   }
 
   object RemoveEdgeIfLongerPathToSameNodeExists extends MinimizationRule {
@@ -445,6 +451,7 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
 
     }
   }
+
 
 
 
