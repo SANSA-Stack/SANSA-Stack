@@ -54,7 +54,6 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-owl-spark</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 
 		<!-- SANSA Inference -->
@@ -242,6 +241,14 @@
 								</filter>
 							</filters>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<transformers>
+								<transformer
+										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<!-- add Main-Class to manifest file -->
+								<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+								<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
+								<!-- </transformer> -->
+							</transformers>
 						</configuration>
 					</execution>
 				</executions>

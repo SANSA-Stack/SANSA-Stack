@@ -1,14 +1,12 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.io.File
-import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
-import org.apache.jena.graph.Node_URI
-import net.sansa_stack.rdf.spark.model.TripleRDD
-import org.apache.jena.graph.Node_Literal
-import org.apache.jena.sparql.util.NodeFactoryExtra
+import java.net.{URI => JavaURI}
+
 import net.sansa_stack.rdf.spark.io.NTripleReader
+import net.sansa_stack.rdf.spark.model.{JenaSparkRDDOps, TripleRDD}
+import org.apache.spark.sql.SparkSession
+
+import scala.collection.mutable
 
 object TripleOps {
 
@@ -44,8 +42,8 @@ object TripleOps {
     val ops = JenaSparkRDDOps(sparkSession.sparkContext)
     import ops._
 
-    val triplesRDD = NTripleReader.load(sparkSession, new File(input))
-
+    val triplesRDD = NTripleReader.load(sparkSession, JavaURI.create(input))
+    
     val graph: TripleRDD = triplesRDD
 
     //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
