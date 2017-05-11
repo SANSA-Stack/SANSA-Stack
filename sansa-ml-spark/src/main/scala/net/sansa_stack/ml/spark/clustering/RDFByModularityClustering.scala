@@ -6,6 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkConf, SparkContext }
 
 import scala.util.control.Breaks._
+import java.io.StringWriter
 
 /**
  * Created by hpetzka on 09.11.2016.
@@ -94,7 +95,7 @@ object RDFByModularityClustering {
 
     val clusters = clusterMapRDD.collect()
 
-    val writer = new java.io.PrintWriter(new java.io.File(outputFile))
+    val writer = new StringWriter
     var counter = 0
     println("The computed clusters are:")
     for (list <- clusters) {
@@ -110,6 +111,9 @@ object RDFByModularityClustering {
       writer.write("\n \n")
 
     }
+
+    val cClustersInfo: RDD[String] = sc.parallelize(Seq(writer.toString()))
+    WriteToFile(cClustersInfo, outputFile, (true, 1))
 
   }
 
@@ -184,6 +188,12 @@ object RDFByModularityClustering {
     })
     1.0 / numEdges * summand.fold(0.0)((a: Double, b: Double) => a - b)
   }
+
+  def WriteToFile[T](rdd: RDD[T], file: String, coalesce: (Boolean, Int) = (false, 0)) =
+    coalesce._1 match {
+      case true  => rdd.coalesce(coalesce._2).saveAsTextFile(file)
+      case false => rdd.saveAsTextFile(file)
+    }
 
 }
 
