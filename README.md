@@ -149,9 +149,22 @@ Usage: RDFGraphMaterializer [options]
 
 Currently, the following reasoning profiles are supported:
 
-###### RDFS
-s
-###### OWL Horst
+##### RDFS
+
+###### RDFS Simple
+
+A fragment of RDFS that covers the most relevant vocabulary, prove that it
+preserves the original RDFS semantics, and avoids vocabulary and axiomatic
+information that only serves to reason about the structure of the language
+itself and not about the data it describes.
+It is composed of the reserved vocabulary
+`rdfs:subClassOf`, `rdfs:subPropertyOf`, `rdf:type`, `rdfs:domain` and `rdfs:range`.
+
+More details can be found in
+
+Sergio Muñoz, Jorge Pérez, Claudio Gutierrez:
+    *Simple and Efficient Minimal RDFS.* J. Web Sem. 7(3): 220-234 (2009)
+##### OWL Horst
 OWL Horst is a fragment of OWL and was proposed by Herman ter Horst [1] defining an "intentional" version of OWL sometimes also referred to as pD\*. It can be materialized using a set of rules that is an extension of the set of RDFS rules. OWL Horst is supposed to be one of the most common OWL flavours for scalable OWL reasoning while bridging the gap between the unfeasible OWL Full and the low expressiveness of RDFS.
 
 [1] Herman J. ter Horst:
