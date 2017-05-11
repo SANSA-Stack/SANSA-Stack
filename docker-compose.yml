@@ -91,7 +91,7 @@ services:
       CORE_CONF_fs_defaultFS: "hdfs://namenode:8020"
       SPARK_MASTER: "spark://spark-master:7077"
       MASTER: "spark://spark-master:7077"
-      SPARK_SUBMIT_OPTIONS: "--jars /opt/sansa-examples/jars/sansa-examples-spark.jar"
+      SPARK_SUBMIT_OPTIONS: "--jars /opt/sansa-examples/jars/sansa-examples-spark.jar --conf spark.serializer=org.apache.spark.serializer.KryoSerializer"
     depends_on:
       spark-master:
         condition: service_healthy
