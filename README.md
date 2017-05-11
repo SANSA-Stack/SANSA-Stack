@@ -19,6 +19,8 @@ When start-up is done you will be able to access the following interfaces:
 * http://localhost/ (Zeppelin)
 Go on and open [Zeppelin](http://localhost), choose any available notebook and try to execute it.
 
+![Apache Zeppelin OWL](./docs/images/Zeppelin_OWL_Screenshot.png "Apache Zeppelin Running OWL Examples")
+
 # Executing Examples From Command Line
 It is also possible to execute the applications from the command line. Get SANSA-Examples jar and start the cluster if you already have not done it:
 ```
