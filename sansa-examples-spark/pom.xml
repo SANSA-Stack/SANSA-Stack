@@ -91,8 +91,13 @@
 		<!-- Logging -->
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
-			<version>2.1.2</version>
+			<artifactId>scala-logging_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Scopt -->
+		<dependency>
+			<groupId>com.github.scopt</groupId>
+			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
 	</dependencies>
@@ -243,7 +248,7 @@
 							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<transformers>
 								<transformer
-										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 								<!-- add Main-Class to manifest file -->
 								<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
 								<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
