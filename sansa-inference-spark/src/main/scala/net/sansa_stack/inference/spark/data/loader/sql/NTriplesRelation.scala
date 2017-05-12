@@ -30,7 +30,9 @@ class NTriplesRelation(location: String, userSchema: StructType)
         .sparkContext
         .textFile(location)
 
-      val rows = rdd.map(new NTriplesStringToRDFTriple()).map(t => Row.fromSeq(Seq(t.s, t.p, t.o)))
+      val converter = new NTriplesStringToRDFTriple()
+
+      val rows = rdd.flatMap(x => converter.apply(x)).map(t => Row.fromSeq(Seq(t.s, t.p, t.o)))
 
       rows
     }

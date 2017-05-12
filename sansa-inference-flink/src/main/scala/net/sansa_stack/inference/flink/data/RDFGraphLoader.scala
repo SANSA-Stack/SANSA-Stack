@@ -46,7 +46,9 @@ object RDFGraphLoader {
 
     val tmp: List[String] = paths.map(path => path.toString).toList
 
-    val triples = tmp.map(f => env.readTextFile(f).map(new NTriplesStringToRDFTriple())).reduce(_ union _).name("triples")
+    val converter = new NTriplesStringToRDFTriple()
+
+    val triples = tmp.map(f => env.readTextFile(f).flatMap(line => converter.apply(line))).reduce(_ union _).name("triples")
 
     RDFGraph(triples)
   }

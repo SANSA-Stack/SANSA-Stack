@@ -5,10 +5,7 @@ import java.net.URI
 import scala.language.implicitConversions
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, SchemaRelationProvider, TableScan}
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{Dataset, Row, SQLContext, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
@@ -41,9 +38,11 @@ object RDFGraphLoader {
     logger.info("loading triples from disk...")
     val startTime = System.currentTimeMillis()
 
+    val converter = new NTriplesStringToRDFTriple()
+
     val triples = session.sparkContext
       .textFile(path, minPartitions) // read the text file
-      .map(new NTriplesStringToRDFTriple()) // convert to triple object
+      .flatMap(line => converter.apply(line)) // convert to triple object
 //      .repartition(minPartitions)
 
 //  logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
@@ -88,9 +87,11 @@ object RDFGraphLoader {
     logger.info("loading triples from disk...")
     val startTime = System.currentTimeMillis()
 
+    val converter = new NTriplesStringToRDFTriple()
+
     val triples = session.sparkContext
       .textFile(path, minPartitions) // read the text file
-      .map(new NTriplesStringToRDFTriple()) // convert to triple object
+      .flatMap(line => converter.apply(line)) // convert to triple object
 
     // logger.info("finished loading " + triples.count() + " triples in " +
     // (System.currentTimeMillis()-startTime) + "ms.")
