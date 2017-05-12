@@ -1,9 +1,10 @@
 package net.sansa_stack.inference.spark.data.model
 
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
 
 /**
   * A data structure that comprises a set of triples.
@@ -22,7 +23,7 @@ class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema =
     * @param o the object
     * @return RDD of triples
     */
-  override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataFrame = {
+  override def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): RDFGraphDataFrame = {
     var sql = s"SELECT ${schema.subjectCol}, ${schema.predicateCol}, ${schema.objectCol} FROM ${schema.triplesTable}"
 
     // corner case is when nothing is set, i.e. all triples will be returned
@@ -87,7 +88,7 @@ class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema =
 
   def toDataFrame(sparkSession: SparkSession, schema: SQLSchema = SQLSchemaDefault): DataFrame = triples
 
-  def toRDD(): RDD[RDFTriple] = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
+  def toRDD(): RDD[Triple] = triples.rdd.map(row => Triple.create(row.getString(0), row.getString(1), row.getString(2)))
 
   def cache(): this.type = {
     triples.cache()

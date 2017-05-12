@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.spark.data.model
 
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -25,7 +25,7 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) 
     * @param o the object
     * @return a new RDF graph
     */
-  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): G
+  def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): G
 
   /**
     * Returns a new RDF graph that contains only triples matching the given input.
@@ -34,9 +34,9 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) 
     */
   def find(triple: Triple): G = {
     find(
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
+      if (triple.getSubject.isVariable) None else Option(triple.getSubject),
+      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate),
+      if (triple.getObject.isVariable) None else Option(triple.getObject)
     )
   }
 

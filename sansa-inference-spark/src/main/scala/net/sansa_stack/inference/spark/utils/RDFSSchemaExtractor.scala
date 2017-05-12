@@ -6,9 +6,11 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.utils.{CollectionUtils, Logging}
+
+import org.apache.jena.graph.{Node, Triple}
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
 
 /**
   * An extractor of the schema for RDFS.
@@ -24,7 +26,7 @@ import net.sansa_stack.inference.utils.{CollectionUtils, Logging}
   */
 class RDFSSchemaExtractor() extends Logging with Serializable {
 
-  val properties = Set(RDFS.subClassOf, RDFS.subPropertyOf, RDFS.domain, RDFS.range).map(p => p.getURI)
+  val properties = Set(RDFS.subClassOf, RDFS.subPropertyOf, RDFS.domain, RDFS.range).map(p => p.asNode())
 
   /**
     * Extracts the RDF graph containing only the schema triples from the RDF graph.
@@ -48,7 +50,7 @@ class RDFSSchemaExtractor() extends Logging with Serializable {
     * @param triples the triples
     * @return the schema triples
     */
-  def extract(triples: RDD[RDFTriple]): RDD[RDFTriple] = {
+  def extract(triples: RDD[Triple]): RDD[Triple] = {
     log.info("Started schema extraction...")
 
     val filteredTriples = triples.filter(t => properties.contains(t.p))
@@ -66,7 +68,7 @@ class RDFSSchemaExtractor() extends Logging with Serializable {
     * @param graph the RDF graph
     * @return a mapping from the corresponding schema property to the RDD of s-o pairs
     */
-  def extractWithIndex(graph: RDFGraphNative): Map[String, RDD[(String, String)]] = {
+  def extractWithIndex(graph: RDFGraphNative): Map[Node, RDD[(Node, Node)]] = {
     log.info("Started schema extraction...")
 
     // for each schema property p
@@ -93,7 +95,7 @@ class RDFSSchemaExtractor() extends Logging with Serializable {
     * @param graph the RDF graph
     * @return a mapping from the corresponding schema property to the Dataframe of s-o pairs
     */
-  def extractWithIndex(graph: RDFGraphDataFrame): Map[String, DataFrame] = {
+  def extractWithIndex(graph: RDFGraphDataFrame): Map[Node, DataFrame] = {
     log.info("Started schema extraction...")
 
     // for each schema property p
@@ -121,7 +123,7 @@ class RDFSSchemaExtractor() extends Logging with Serializable {
     * @return a mapping from the corresponding schema property to the broadcast variable that wraps the multimap
     *         with s-o pairs
     */
-  def extractWithIndexAndDistribute(sc : SparkContext, graph: RDFGraphNative): Map[String, Broadcast[Map[String, Set[String]]]] = {
+  def extractWithIndexAndDistribute(sc : SparkContext, graph: RDFGraphNative): Map[Node, Broadcast[Map[Node, Set[Node]]]] = {
     val schema = extractWithIndex(graph)
 
     log.info("Started schema distribution...")

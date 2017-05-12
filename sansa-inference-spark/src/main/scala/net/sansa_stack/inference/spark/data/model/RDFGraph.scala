@@ -1,11 +1,13 @@
 package net.sansa_stack.inference.spark.data.model
 
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
+
+
 
 /**
   * A data structure that comprises a set of triples.
@@ -13,7 +15,7 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   *
   */
-case class RDFGraph (triples: RDD[RDFTriple]) {
+case class RDFGraph (triples: RDD[Triple]) {
 
   /**
     * Returns an RDD of triples that match with the given input.
@@ -23,11 +25,11 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
     * @param o the object
     * @return RDD of triples
     */
-  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple] = {
+  def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): RDD[Triple] = {
       triples.filter(t =>
-          (s == None || t.s == s.get) &&
-          (p == None || t.p == p.get) &&
-          (o == None || t.o == o.get)
+          (s == None || t.getSubject == s.get) &&
+          (p == None || t.getPredicate == p.get) &&
+          (o == None || t.getObject == o.get)
       )
   }
 
@@ -36,11 +38,11 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
     *
     * @return RDD of triples
     */
-  def find(triple: Triple): RDD[RDFTriple] = {
+  def find(triple: Triple): RDD[Triple] = {
     find(
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
+      if (triple.getSubject.isVariable) None else Option(triple.getSubject),
+      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate),
+      if (triple.getObject.isVariable) None else Option(triple.getObject)
     )
   }
 
@@ -68,6 +70,8 @@ case class RDFGraph (triples: RDD[RDFTriple]) {
   def size(): Long = {
     triples.count()
   }
+
+
 
   def toDataFrame(sqlContext: SQLContext): DataFrame = {
     // convert RDD to DataFrame
