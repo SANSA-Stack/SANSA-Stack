@@ -200,7 +200,7 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-spark</artifactId>
-				<version>0.1.0</version>
+				<version>0.1.1-SNAPSHOT</version>
 			</dependency>
 
 		</dependencies>

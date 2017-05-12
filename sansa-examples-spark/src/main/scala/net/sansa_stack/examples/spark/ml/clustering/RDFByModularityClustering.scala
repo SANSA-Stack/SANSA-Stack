@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
 import net.sansa_stack.ml.spark.clustering.{ RDFByModularityClustering => RDFByModularityClusteringAlg }
 
-object RDFByModularityClusteringExample {
+object RDFByModularityClustering {
 
   def main(args: Array[String]) = {
     if (args.length < 3) {
