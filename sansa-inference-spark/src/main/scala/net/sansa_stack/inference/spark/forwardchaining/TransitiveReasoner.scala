@@ -1,24 +1,24 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import scala.collection.mutable
 import scala.reflect.ClassTag
 
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.Dataset
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.model.RDFGraph
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
 
 /**
   * An engine to compute the transitive closure (TC) for a set of triples given in several datastructures.
   *
   * @author Lorenz Buehmann
   */
-class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val parallelism: Int)
+class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parallelism: Int)
   extends ForwardRuleReasoner {
 
-  def this(sc: SparkContext, property: String, parallelism: Int) {
+  def this(sc: SparkContext, property: Node, parallelism: Int) {
     this(sc, Seq(property), parallelism)
   }
 
@@ -66,7 +66,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @param triples the set of triples
     * @return a set containing the transitive closure of the triples
     */
-  def computeTransitiveClosure(triples: Set[RDFTriple]): Set[RDFTriple] = {
+  def computeTransitiveClosure(triples: Set[Triple]): Set[Triple] = {
     val tc = addTransitive(triples)
     // recursive call if set changed, otherwise stop and return
     if (tc.size == triples.size) triples else computeTransitiveClosure(tc)
@@ -76,10 +76,10 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
   //    s ++ (for ((s1, p1, o1) <- s; (s2, p2, o2) <- s if o1 == s2) yield (s1, p1, o2))
   //  }
 
-  private def addTransitive(triples: Set[RDFTriple]): Set[RDFTriple] = {
+  private def addTransitive(triples: Set[Triple]): Set[Triple] = {
     triples ++ (
       for (t1 <- triples; t2 <- triples if t1.o == t2.s)
-      yield RDFTriple(t1.s, t1.p, t2.o))
+      yield Triple.create(t1.s, t1.p, t2.o))
   }
 
   /**
@@ -89,7 +89,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @param triples the RDD of triples
     * @return an RDD containing the transitive closure of the triples
     */
-  def computeTransitiveClosure(triples: RDD[RDFTriple]): RDD[RDFTriple] = {
+  def computeTransitiveClosure(triples: RDD[Triple]): RDD[Triple] = {
     if (triples.isEmpty()) return triples
 
     // get the predicate
@@ -106,7 +106,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @param predicate the predicate
     * @return an RDD containing the transitive closure of the triples
     */
-  def computeTransitiveClosure(triples: RDD[RDFTriple], predicate: String): RDD[RDFTriple] = {
+  def computeTransitiveClosure(triples: RDD[Triple], predicate: Node): RDD[Triple] = {
     if (triples.isEmpty()) return triples
     log.info(s"computing TC for property $predicate...")
 
@@ -116,7 +116,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
 
       val tc = computeTransitiveClosure(subjectObjectPairs)
 
-      tc.map(p => new RDFTriple(p._1, predicate, p._2))
+      tc.map(p => Triple.create(p._1, predicate, p._2))
     }
   }
 
@@ -216,7 +216,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
     * @param edges the Dataframe of triples
     * @return a Dataframe containing the transitive closure of the triples
     */
-  def computeTransitiveClosure(edges: Dataset[RDFTriple]): Dataset[RDFTriple] = {
+  def computeTransitiveClosure(edges: Dataset[Triple]): Dataset[Triple] = {
     log.info("computing TC...")
 //    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
     val spark = edges.sparkSession.sqlContext
@@ -241,7 +241,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[String], val para
         // then project the result to obtain the new (x, y) paths.
 
         tc.createOrReplaceTempView("SC")
-        var joined = tc.as("A").join(tc.as("B"), $"A.o" === $"B.s").select("A.s", "A.p", "B.o").as[RDFTriple]
+        var joined = tc.as("A").join(tc.as("B"), $"A.o" === $"B.s").select("A.s", "A.p", "B.o").as[Triple]
 //          var joined = tc
 //            .join(edges, tc("o") === edges("s"))
 //            .select(tc("s"), tc("p"), edges("o"))

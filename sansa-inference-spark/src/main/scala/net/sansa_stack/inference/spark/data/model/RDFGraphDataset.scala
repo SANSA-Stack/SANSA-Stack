@@ -3,7 +3,9 @@ package net.sansa_stack.inference.spark.data.model
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
+
+import org.apache.jena.graph.{Node, Triple}
 
 /**
   * A data structure that comprises a set of triples.
@@ -11,17 +13,17 @@ import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphDataset(override val triples: Dataset[RDFTriple])
-  extends AbstractRDFGraph[Dataset[RDFTriple], RDFGraphDataset](triples) {
+class RDFGraphDataset(override val triples: Dataset[Triple])
+  extends AbstractRDFGraph[Dataset[Triple], RDFGraphDataset](triples) {
 
-  override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataset = {
+  override def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): RDFGraphDataset = {
     var result = triples
 
     if (s.isDefined) result = triples.filter(triples("s") === s.get)
     if (p.isDefined) result = {
       val test =
-        if (p.get.startsWith("!")) {
-          !(triples("p") === p.get.substring(1))
+        if (p.get.getURI.startsWith("!")) {
+          !(triples("p") === p.get.getURI.substring(1))
         } else {
           (triples("p") === p.get)
         }
@@ -53,7 +55,7 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
     val spark = graphs(0).triples.sparkSession.sqlContext
     import spark.implicits._
 //    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
-    new RDFGraphDataset(df.get.as[RDFTriple])
+    new RDFGraphDataset(df.get.as[Triple])
   }
 
   def distinct(): RDFGraphDataset = {
@@ -71,5 +73,5 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
 
   def toDataFrame(sparkSession: SparkSession, schema: SQLSchema = SQLSchemaDefault): DataFrame = triples.toDF()
 
-  def toRDD(): RDD[RDFTriple] = triples.rdd
+  def toRDD(): RDD[Triple] = triples.rdd
 }
