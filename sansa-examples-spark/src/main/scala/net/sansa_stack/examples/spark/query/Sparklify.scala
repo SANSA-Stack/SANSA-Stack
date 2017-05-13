@@ -2,10 +2,10 @@ package net.sansa_stack.examples.spark.query
 
 import java.net.URI
 
-import net.sansa_stack.query.spark.server.SparqlifyUtils3
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
+import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
+import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.spark.sql.SparkSession
 
