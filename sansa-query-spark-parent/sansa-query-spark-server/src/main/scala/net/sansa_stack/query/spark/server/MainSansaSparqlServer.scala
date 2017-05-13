@@ -40,6 +40,7 @@ import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
 import java.io.File
 import java.nio.file.Files
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import net.sansa_stack.rdf.spark.sparqlify.SparqlifyUtils3
 
 
 object MainSansaSparqlServer

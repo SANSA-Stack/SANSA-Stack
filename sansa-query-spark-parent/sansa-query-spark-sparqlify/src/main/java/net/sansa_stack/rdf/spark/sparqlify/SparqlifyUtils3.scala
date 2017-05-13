@@ -1,24 +1,26 @@
-package net.sansa_stack.query.spark.server
+package net.sansa_stack.rdf.spark.sparqlify
 
-import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
-import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
-import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
-import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
-import org.apache.spark.sql.catalyst.ScalaReflection
-import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
-import org.aksw.sparqlify.util.SqlBackendConfig
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
-import org.apache.spark.sql.types.StructType
+import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.config.syntax.Config
+import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
+import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
+import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
 import org.aksw.sparqlify.util.SparqlifyUtils
+import org.aksw.sparqlify.util.SqlBackendConfig
 import org.aksw.sparqlify.validation.LoggerCount
-import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
-import org.apache.spark.sql.SparkSession
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.types.StructType
+
+import com.typesafe.scalalogging.LazyLogging
+
+import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
+
 
 object SparqlifyUtils3
   extends LazyLogging

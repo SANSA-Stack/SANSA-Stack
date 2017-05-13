@@ -7,11 +7,13 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 
+.cache-tests
 
 .settings
 .classpath
 .preferences
 .project
+
 
 deptree.txt
 
