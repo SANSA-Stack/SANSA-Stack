@@ -14,7 +14,7 @@ import scala.util.hashing.MurmurHash3
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
-  extends RDFGraphOps[Rdf] { this: RDFNodeOps[Rdf] =>
+  extends RDFGraphOps[Rdf] with Serializable { this: RDFNodeOps[Rdf] =>
 
   protected val sparkContext: SparkContext
 
