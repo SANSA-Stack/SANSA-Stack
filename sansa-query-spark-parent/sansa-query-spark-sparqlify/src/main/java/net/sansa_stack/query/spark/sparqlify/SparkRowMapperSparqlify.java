@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.sparqlify;
+package net.sansa_stack.query.spark.sparqlify;
 
 import java.io.Serializable;
 

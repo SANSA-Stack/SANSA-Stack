@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.sparqlify;
+package net.sansa_stack.query.spark.sparqlify;
 
 import org.aksw.jena_sparql_api.views.RestrictedExpr;
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite;

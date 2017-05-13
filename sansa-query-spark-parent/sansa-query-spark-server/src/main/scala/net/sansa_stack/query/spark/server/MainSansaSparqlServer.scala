@@ -28,10 +28,10 @@ import org.apache.spark.sql.types.StructType
 import com.typesafe.scalalogging.LazyLogging
 
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
-import net.sansa_stack.rdf.spark.sparqlify.BasicTableInfoProviderSpark
-import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
-import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
+import net.sansa_stack.query.spark.sparqlify.BasicTableInfoProviderSpark
+import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
+import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
+import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 
 import scala.collection.JavaConverters._
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
@@ -40,7 +40,6 @@ import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
 import java.io.File
 import java.nio.file.Files
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
-import net.sansa_stack.rdf.spark.sparqlify.SparqlifyUtils3
 
 
 object MainSansaSparqlServer

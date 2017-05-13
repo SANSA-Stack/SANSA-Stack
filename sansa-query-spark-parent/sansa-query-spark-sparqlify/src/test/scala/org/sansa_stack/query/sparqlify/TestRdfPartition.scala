@@ -1,4 +1,4 @@
-package org.sansa_stack.rdf.partition
+package org.sansa_stack.query.sparqlify
 
 import org.scalatest._
 
@@ -8,10 +8,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import java.io.ByteArrayInputStream
 import scala.collection.JavaConverters._
+import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3;
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark
+import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import org.apache.jena.query.ResultSetFormatter
-import net.sansa_stack.rdf.spark.sparqlify.SparqlifyUtils3
 
 class TestRdfPartition extends FlatSpec {
 
