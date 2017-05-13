@@ -46,7 +46,7 @@ object RDFGraphLoader {
 //      .repartition(minPartitions)
 
 //  logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
-    new RDFGraph(triples)
+    RDFGraph(triples)
   }
 
   /**

@@ -74,7 +74,7 @@ object NTriplesStringToRDFTriple {
   def main(args: Array[String]): Unit = {
     val s1 = "<> <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> ."
     val s2 = "_:genid32 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> ."
-    val s3 = "<http://example.org/a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> ."
+    val s3 = "<http://example.org/a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>  <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> ."
     val s4 = "<http://example.org/a> <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> \"3\"^^<http://ex.org/int> ."
 
     println(new NTriplesStringToRDFTriple().apply(s1))
