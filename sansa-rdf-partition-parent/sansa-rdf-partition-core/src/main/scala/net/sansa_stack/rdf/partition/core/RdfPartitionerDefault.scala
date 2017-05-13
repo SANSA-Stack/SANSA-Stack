@@ -10,6 +10,8 @@ import org.apache.jena.vocabulary.RDF
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.partition.layout.TripleLayoutStringLang
+import net.sansa_stack.rdf.partition.layout.TripleLayoutStringDatatype
+import net.sansa_stack.rdf.partition.layout.TripleLayoutStringDatatype
 
 
 object RdfPartitionerDefault
@@ -100,7 +102,9 @@ object RdfPartitionerDefault
       case w if(w == classOf[java.lang.Byte] || w == classOf[java.lang.Short] || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long]) => TripleLayoutLong
       case w if(w == classOf[java.lang.Float] || w == classOf[java.lang.Double]) => TripleLayoutDouble
       case w if(w == classOf[String]) => TripleLayoutString
-      case _ => throw new RuntimeException("Unsupported object type: " + dtypeIri)
+      case _ => TripleLayoutStringDatatype
+      
+      //case _ => throw new RuntimeException("Unsupported object type: " + dtypeIri)
     }
   }
 }

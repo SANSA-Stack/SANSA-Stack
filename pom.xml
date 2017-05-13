@@ -103,6 +103,12 @@
 				<version>${flink.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.scalatest</groupId>
+				<artifactId>scalatest_${scala.compat.version}</artifactId>
+				<version>3.0.3</version>
+			</dependency>
+
 
 			<!-- <dependency> -->
 			<!-- <groupId>${project.groupId}</groupId> -->
