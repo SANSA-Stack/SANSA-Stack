@@ -26,7 +26,7 @@ class TestRdfPartition extends FlatSpec {
       .appName("Partitioner test")
       .getOrCreate()
 
-    val rdfStr: String = """<http://ex.org/Nile> <http://ex.org/length> "6.8"^^<http://ex.org/km> ."""
+    val rdfStr: String = """<http://ex.org/Nile> <http://ex.org/length> "6800"^^<http://ex.org/km> ."""
     var triples: List[Triple] = RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(rdfStr.getBytes), Lang.NTRIPLES, null).asScala.toList
     
     val graphRdd = sparkSession.sparkContext.parallelize(triples)
