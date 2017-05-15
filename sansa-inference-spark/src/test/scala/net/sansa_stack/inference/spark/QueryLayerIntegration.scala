@@ -23,7 +23,7 @@ object QueryLayerIntegration {
       .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.rdf.spark.sparqlify.KryoRegistratorSparqlify"
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"
       ))
       .config("spark.default.parallelism", "4")
       .config("spark.sql.shuffle.partitions", "4")
