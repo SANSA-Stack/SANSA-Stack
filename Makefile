@@ -1,5 +1,6 @@
 default:
-	wget https://dl.dropboxusercontent.com/u/4882345/sansa-releases/2017-05-11-sansa-examples-spark.jar -O examples/jars/sansa-examples-spark.jar
+	mkdir -p examples/jars
+	wget https://dl.dropboxusercontent.com/u/4882345/sansa-releases/2017-05-15-sansa-examples-spark.jar -O examples/jars/sansa-examples-spark.jar
 
 load-data:
 	docker run -it --rm -v $(shell pwd)/examples/data:/data --net spark-net -e "CORE_CONF_fs_defaultFS=hdfs://namenode:8020" bde2020/hadoop-namenode:1.1.0-hadoop2.8-java8 hdfs dfs -copyFromLocal /data /data
@@ -12,6 +13,11 @@ up:
 down:
 	docker-compose down
 	docker network rm spark-net
+
+restart:
+	docker-compose stop zeppelin
+	docker-compose rm zeppelin
+	docker-compose up -d zeppelin
 
 build-cli:
 	docker-compose -f docker-compose-app.yml build
@@ -36,7 +42,7 @@ cli-sparklify: build-cli
 
 cli-owl-reader-manchester: build-cli
 	docker-compose -f docker-compose-app.yml up owl-reader-manchester
-	
+
 cli-owl-reader-functional: build-cli
 	docker-compose -f docker-compose-app.yml up owl-reader-functional
 
