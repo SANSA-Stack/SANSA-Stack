@@ -43,7 +43,7 @@ object Sparklify {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.rdf.spark.sparqlify.KryoRegistratorSparqlify"))
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
       .appName("Sparklify example (" + input + ")")
       .getOrCreate()
 
