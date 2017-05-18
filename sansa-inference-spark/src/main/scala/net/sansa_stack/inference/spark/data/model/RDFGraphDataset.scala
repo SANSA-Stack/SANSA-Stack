@@ -3,8 +3,8 @@ package net.sansa_stack.inference.spark.data.model
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
-
+import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import org.apache.jena.graph.{Node, Triple}
 
 /**
@@ -13,17 +13,17 @@ import org.apache.jena.graph.{Node, Triple}
   * @author Lorenz Buehmann
   *
   */
-class RDFGraphDataset(override val triples: Dataset[Triple])
-  extends AbstractRDFGraph[Dataset[Triple], RDFGraphDataset](triples) {
+class RDFGraphDataset(override val triples: Dataset[RDFTriple])
+  extends AbstractRDFGraphSpark[Dataset, String, RDFTriple, RDFGraphDataset](triples) {
 
-  override def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): RDFGraphDataset = {
+  override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataset = {
     var result = triples
 
     if (s.isDefined) result = triples.filter(triples("s") === s.get)
     if (p.isDefined) result = {
       val test =
-        if (p.get.getURI.startsWith("!")) {
-          !(triples("p") === p.get.getURI.substring(1))
+        if (p.get.startsWith("!")) {
+          !(triples("p") === p.get.substring(1))
         } else {
           (triples("p") === p.get)
         }
@@ -73,5 +73,5 @@ class RDFGraphDataset(override val triples: Dataset[Triple])
 
   def toDataFrame(sparkSession: SparkSession, schema: SQLSchema = SQLSchemaDefault): DataFrame = triples.toDF()
 
-  def toRDD(): RDD[Triple] = triples.rdd
+  def toRDD(): RDD[RDFTriple] = triples.rdd
 }

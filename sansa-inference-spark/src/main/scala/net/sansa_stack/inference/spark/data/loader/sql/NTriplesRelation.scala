@@ -5,6 +5,8 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
+
 import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
 
 class NTriplesRelation(location: String, userSchema: StructType)

@@ -10,7 +10,7 @@ import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.RuleSets
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.model.{RDFGraphDataFrame, RDFGraphNative}
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOptimizedNative, ForwardRuleReasonerOptimizedSQL}
+import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOptimizedNative
 
 /**
   * @author Lorenz Buehmann
@@ -75,7 +75,7 @@ object GenericDataframeVsGenericNativeExperiments {
 
   }
 
-  def generateData(scale: Integer) = {
+  def generateData(scale: Integer): RDFGraphNative = {
     println("generating data...")
     val triples = new mutable.HashSet[RDFTriple]()
     val ns = "http://ex.org/"
