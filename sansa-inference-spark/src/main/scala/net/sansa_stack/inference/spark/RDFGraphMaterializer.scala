@@ -2,6 +2,7 @@ package net.sansa_stack.inference.spark
 
 import java.net.URI
 
+import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
@@ -10,7 +11,7 @@ import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataset, TransitiveReasoner}
+import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
 
 /**
   * The main entry class to compute the materialization on an RDF graph.
@@ -32,7 +33,7 @@ object RDFGraphMaterializer {
     }
   }
 
-  def run(input: Seq[URI], output: URI, profile: ReasoningProfile, properties: Seq[String] = Seq(),
+  def run(input: Seq[URI], output: URI, profile: ReasoningProfile, properties: Seq[Node] = Seq(),
           writeToSingleFile: Boolean, sortedOutput: Boolean, parallelism: Int): Unit = {
     // register the custom classes for Kryo serializer
     val conf = new SparkConf()
@@ -87,7 +88,7 @@ object RDFGraphMaterializer {
   case class Config(
                      in: Seq[URI] = Seq(),
                      out: URI = new URI("."),
-                     properties: Seq[String] = Seq(),
+                     properties: Seq[Node] = Seq(),
                      profile: ReasoningProfile = ReasoningProfile.RDFS,
                      writeToSingleFile: Boolean = false,
                      sortedOutput: Boolean = false,
@@ -96,6 +97,10 @@ object RDFGraphMaterializer {
   // read ReasoningProfile enum
   implicit val profilesRead: scopt.Read[ReasoningProfile.Value] =
     scopt.Read.reads(ReasoningProfile forName _.toLowerCase())
+
+  // read ReasoningProfile enum
+  implicit val nodeRead: scopt.Read[Node] =
+    scopt.Read.reads(NodeFactory.createURI(_))
 
   // the CLI parser
   val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
@@ -110,7 +115,7 @@ object RDFGraphMaterializer {
       action((x, c) => c.copy(out = x)).
       text("the output directory")
 
-    opt[Seq[String]]("properties").optional().valueName("<property1>,<property2>,...").
+    opt[Seq[Node]]("properties").optional().valueName("<property1>,<property2>,...").
       action((x, c) => {
         c.copy(properties = x)
       }).

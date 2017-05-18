@@ -221,6 +221,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
 //    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
     val spark = edges.sparkSession.sqlContext
     import spark.implicits._
+    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Triple]
 
     profile {
       // we keep the transitive closure cached

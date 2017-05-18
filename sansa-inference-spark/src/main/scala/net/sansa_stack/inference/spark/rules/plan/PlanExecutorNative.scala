@@ -5,6 +5,7 @@ import java.util
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, SparkSession}
@@ -38,10 +39,10 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], 
     // map to RDF triples
     val newGraph = new RDFGraphNative(
       result.map(t =>
-        RDFTriple(
-          t.productElement(0).asInstanceOf[String],
-          t.productElement(1).asInstanceOf[String],
-          t.productElement(2).asInstanceOf[String]))
+        Triple.create(
+          t.productElement(0).asInstanceOf[Node],
+          t.productElement(1).asInstanceOf[Node],
+          t.productElement(2).asInstanceOf[Node]))
     )
 
     // return new graph

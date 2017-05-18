@@ -1,13 +1,12 @@
 package net.sansa_stack.inference.spark.rules
 
-import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOptimizedSQL
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.spark.sql.SparkSession
 
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data._
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerNaive, ForwardRuleReasonerOptimizedNative, ForwardRuleReasonerOptimizedSQL}
+import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerNaive, ForwardRuleReasonerOptimizedNative}
 import net.sansa_stack.inference.utils.RuleUtils
 import scala.collection.mutable
 

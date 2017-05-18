@@ -6,7 +6,7 @@ import org.apache.spark.sql.SparkSession
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame}
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOptimizedSQL, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataframe}
+import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerRDFS
 import net.sansa_stack.inference.utils.{Profiler, RuleUtils}
 
 /**
