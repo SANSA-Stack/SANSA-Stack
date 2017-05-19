@@ -12,6 +12,7 @@ import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3;
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import org.apache.jena.query.ResultSetFormatter
+import net.sansa_stack.rdf.spark.io.NTripleReader
 
 class TestRdfPartition extends FlatSpec {
 
@@ -26,10 +27,13 @@ class TestRdfPartition extends FlatSpec {
       .appName("Partitioner test")
       .getOrCreate()
 
-    val rdfStr: String = """<http://ex.org/Nile> <http://ex.org/length> "6800"^^<http://ex.org/km> ."""
-    var triples: List[Triple] = RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(rdfStr.getBytes), Lang.NTRIPLES, null).asScala.toList
-    
+    //val rdfStr: String = """<http://ex.org/Nile> <http://ex.org/length> "6800"^^<http://ex.org/km> ."""
+    val triples: List[Triple] = RDFDataMgr.createIteratorTriples(getClass.getResourceAsStream("/dbpedia-01.nt"), Lang.NTRIPLES, null).asScala.toList
     val graphRdd = sparkSession.sparkContext.parallelize(triples)
+
+    //val graphRdd = NTripleReader.load(sparkSession, "classpath:dbpedia-01.nt")
+      
+    
 
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)

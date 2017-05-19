@@ -20,10 +20,11 @@ import com.typesafe.scalalogging.LazyLogging
 
 import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.partition.sparqlify.SparqlifyUtils2
+import com.typesafe.scalalogging.StrictLogging
 
 
 object SparqlifyUtils3
-  extends LazyLogging
+  extends StrictLogging
 {
   def createSparqlSqlRewriter(sparkSession: SparkSession, partitions: Map[RdfPartitionDefault, RDD[Row]]): SparqlSqlStringRewriter = {
     val config = new Config()
@@ -44,9 +45,11 @@ object SparqlifyUtils3
     val views = partitions.map {
       case (p, rdd) =>
 //
-        println("Processing: " + p)
+        logger.debug("Processing RdfPartition: " + p)
 
-        val vd = SparqlifyUtils2.createViewDefinition(p);
+        val vd = SparqlifyUtils2.createViewDefinition(p)
+        logger.debug("Created view definition: " + vd)
+        
         val tableName = vd.getRelation match {
           case o: SqlOpTable => o.getTableName
           case _ => throw new RuntimeException("Table name required - instead got: " + vd)

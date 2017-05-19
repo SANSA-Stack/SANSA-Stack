@@ -12,6 +12,12 @@
 
 
 	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-test-resources</artifactId>
+			<!-- 				<classifier>${scala.classifier}</classifier>				 -->
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>

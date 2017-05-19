@@ -148,6 +148,13 @@
 		<dependencies>
 
 			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-rdf-test-resources</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.compat.version}</classifier> -->
+			</dependency>
+
+			<dependency>
 				<groupId>org.aksw.sparqlify</groupId>
 				<artifactId>sparqlify-core</artifactId>
 				<version>0.8.0</version>
