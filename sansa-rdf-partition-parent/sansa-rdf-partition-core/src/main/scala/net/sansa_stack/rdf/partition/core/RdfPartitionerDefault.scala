@@ -101,8 +101,9 @@ object RdfPartitionerDefault
     v match {
       case w if(w == classOf[java.lang.Byte] || w == classOf[java.lang.Short] || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long]) => TripleLayoutLong
       case w if(w == classOf[java.lang.Float] || w == classOf[java.lang.Double]) => TripleLayoutDouble
-      case w if(w == classOf[String]) => TripleLayoutString
-      case _ => TripleLayoutStringDatatype
+      //case w if(w == classOf[String]) => TripleLayoutString
+      case w => TripleLayoutString
+      //case _ => TripleLayoutStringDatatype
       
       //case _ => throw new RuntimeException("Unsupported object type: " + dtypeIri)
     }

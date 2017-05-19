@@ -35,6 +35,7 @@
 	</scm>
 
 	<modules>
+		<module>sansa-rdf-test-resources</module>
 		<module>sansa-rdf-partition-parent</module>
 		<module>sansa-rdf-spark-parent</module>
 		<module>sansa-rdf-kryo-parent</module>
@@ -43,6 +44,13 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-test-resources</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
