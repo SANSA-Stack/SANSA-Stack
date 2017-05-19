@@ -14,7 +14,7 @@ import scala.util.hashing.MurmurHash3
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
  */
 trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
-  extends RDFGraphOps[Rdf] { this: RDFNodeOps[Rdf] =>
+  extends RDFGraphOps[Rdf] with Serializable { this: RDFNodeOps[Rdf] =>
 
   protected val sparkContext: SparkContext
 
@@ -55,24 +55,24 @@ trait GraphXGraphOps[Rdf <: SparkGraphX{ type Blah = Rdf }]
   }
 
   def makeGraph(triples: RDD[Rdf#Triple]): Rdf#Graph = {
-    val spo: RDD[(Rdf#Node, (Rdf#URI, Rdf#Node))] = triples.map {
-      case Triple(s, p, o) => (s, (p, o))
+    val spo: RDD[(Rdf#Node, (Rdf#URI, Rdf#Node))] = triples.map(fromTriple).map {
+      case (s, p, o) => (s, (p, o))
     }
 
     val vertexIDs = spo.flatMap {
-      case (s: Rdf#Node, (p: Rdf#URI, o: Rdf#Node)) =>
+      case (s, (p, o)) =>
         Seq(s, p.asInstanceOf[Rdf#Node], o)
     }.zipWithUniqueId()
 
     val vertices: RDD[(VertexId, Rdf#Node)] = vertexIDs.map(v => (v._2, v._1))
 
     val subjectMappedEdges = spo.join(vertexIDs).map {
-      case (s: Rdf#Node, ((p: Rdf#URI, o: Rdf#Node), sid: Long)) =>
+      case (s, ((p, o), sid)) =>
         (o, (sid, p))
     }
 
     val subjectObjectMappedEdges: RDD[Edge[Rdf#URI]] = subjectMappedEdges.join(vertexIDs).map {
-      case (o: Rdf#Node, ((sid: Long, p: Rdf#URI), oid: Long)) =>
+      case (o, ((sid, p), oid)) =>
         Edge(sid, oid, p)
     }
 
