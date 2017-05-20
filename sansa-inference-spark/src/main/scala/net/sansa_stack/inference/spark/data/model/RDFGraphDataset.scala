@@ -42,20 +42,20 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
     // the Dataframe based solution
     return graphs.reduce(_ union _)
 
-    // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
-    val df: Option[DataFrame] = graphs match {
-      case g :: Nil => Some(g.toDataFrame())
-      case g :: _ => Some(g.toDataFrame().sqlContext.createDataFrame(
-        g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
-        g.toDataFrame().schema
-      ))
-      case _ => None
-    }
-
-    val spark = graphs(0).triples.sparkSession.sqlContext
-    import spark.implicits._
+//    // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
+//    val df: Option[DataFrame] = graphs match {
+//      case g :: Nil => Some(g.toDataFrame())
+//      case g :: _ => Some(g.toDataFrame().sqlContext.createDataFrame(
+//        g.toDataFrame().sqlContext.sparkContext.union(graphs.map(_.toDataFrame().rdd)),
+//        g.toDataFrame().schema
+//      ))
+//      case _ => None
+//    }
+//
+//    val spark = graphs(0).triples.sparkSession.sqlContext
+//    import spark.implicits._
 //    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
-    new RDFGraphDataset(df.get.as[Triple])
+//    new RDFGraphDataset(df.get.as[RDFTriple])
   }
 
   def distinct(): RDFGraphDataset = {

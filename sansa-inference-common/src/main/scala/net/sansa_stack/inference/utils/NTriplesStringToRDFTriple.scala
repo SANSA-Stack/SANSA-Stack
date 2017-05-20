@@ -13,9 +13,10 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   */
 class NTriplesStringToRDFTriple
-    extends Function1[String, Triple]
+    extends Function1[String, RDFTriple]
     with java.io.Serializable {
-  override def apply(s: String): Triple = {
-    RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(s.getBytes), Lang.NTRIPLES, null).next()
+  override def apply(s: String): RDFTriple = {
+    val t = RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(s.getBytes), Lang.NTRIPLES, null).next()
+    RDFTriple(t.getSubject.toString, t.getPredicate.toString, t.getObject.toString)
   }
 }

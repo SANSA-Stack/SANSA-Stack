@@ -8,8 +8,9 @@ package net.sansa_stack.inference.data
   * @author Lorenz Buehmann
   *
   */
-abstract class AbstractRDFGraph[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraph[D, N, T, G]](val triples: D[T]) {
-  self: G =>
+abstract class AbstractRDFGraph[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraph[D, N, T, G]](
+  val triples: D[T]
+) { self: G =>
 
   /**
     * Returns a new RDF graph that contains only triples matching the given input.
