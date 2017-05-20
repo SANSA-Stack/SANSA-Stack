@@ -10,7 +10,7 @@ import net.sansa_stack.inference.data._
   *
   * @author Lorenz Buehmann
   */
-trait SparkGraphExtensions[N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraph[N, T, G]] {
+trait SparkGraphExtensions[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraph[D, N, T, G]] {
 
   /**
     * Convert the current graph to a Dataframe of RDF triples.

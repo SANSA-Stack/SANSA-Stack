@@ -1,6 +1,7 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import net.sansa_stack.inference.spark.data.model.AbstractRDFGraph
+import net.sansa_stack.inference.data.RDF
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark
 import net.sansa_stack.inference.utils.Logging
 
 /**
@@ -8,7 +9,8 @@ import net.sansa_stack.inference.utils.Logging
   *
   * @author Lorenz Buehmann
   */
-abstract class AbstractForwardRuleReasoner[V, G <: AbstractRDFGraph[V, G]] extends Logging {
+abstract class AbstractForwardRuleReasoner[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]]
+    extends Logging {
 
   /**
     * Applies forward chaining to the given RDF graph and returns a new RDF graph that contains all additional
@@ -17,5 +19,5 @@ abstract class AbstractForwardRuleReasoner[V, G <: AbstractRDFGraph[V, G]] exten
     * @param graph the RDF graph
     * @return the materialized RDF graph
     */
-  def apply(graph: G) : G
+  def apply(graph: G): G
 }

@@ -13,5 +13,5 @@ import net.sansa_stack.inference.data._
 abstract class AbstractRDFGraphSpark[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]](
   override val triples: D[T]
 ) extends AbstractRDFGraph[D, N, T, G](triples)
-    with SparkGraphExtensions[N, T, G] { self: G =>
+    with SparkGraphExtensions[D, N, T, G] { self: G =>
 }

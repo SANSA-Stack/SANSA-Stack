@@ -2,7 +2,8 @@ package net.sansa_stack.inference.spark.rules
 
 import org.apache.jena.reasoner.rulesys.Rule
 
-import net.sansa_stack.inference.spark.data.model.AbstractRDFGraph
+import net.sansa_stack.inference.data.RDF
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark
 import net.sansa_stack.inference.spark.rules.plan.PlanExecutor
 
 /**
@@ -10,7 +11,9 @@ import net.sansa_stack.inference.spark.rules.plan.PlanExecutor
   *
   * @author Lorenz Buehmann
   */
-class RuleExecutor[V, G <: AbstractRDFGraph[V, G]](planExecutor: PlanExecutor[V, G]) {
+class RuleExecutor[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]](
+  planExecutor: PlanExecutor[D, N, T, G]
+) {
 
   val planGenerator = Planner
 

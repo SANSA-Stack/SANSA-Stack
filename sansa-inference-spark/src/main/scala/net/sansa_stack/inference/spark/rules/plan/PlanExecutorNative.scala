@@ -8,12 +8,11 @@ import scala.collection.mutable
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.expressions.{Alias, And, AttributeReference, EqualTo, Expression, IsNotNull, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, SubqueryAlias}
 import org.apache.spark.sql.catalyst.plans.{Inner, logical}
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.model.{EmptyRDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.utils.{Logging, Tuple0}
 
@@ -22,7 +21,7 @@ import net.sansa_stack.inference.utils.{Logging, Tuple0}
   *
   * @author Lorenz Buehmann
   */
-class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[RDFTriple], RDFGraphNative] with Logging{
+class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[RDD[Triple], Node, Triple, RDFGraphNative] with Logging{
 
   val sqlContext = SparkSession.builder().getOrCreate().sqlContext
   val emptyGraph = EmptyRDFGraphDataFrame.get(sqlContext)

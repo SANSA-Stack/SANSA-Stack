@@ -1,11 +1,12 @@
 package net.sansa_stack.inference.spark.forwardchaining
 
-import org.apache.jena.vocabulary.RDF
+import org.apache.jena.vocabulary.{RDF => JenaRDF}
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 
+import net.sansa_stack.inference.data.RDF
 import net.sansa_stack.inference.rules.RDFSLevel._
-import net.sansa_stack.inference.spark.data.model.{AbstractRDFGraph, RDFGraph}
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -15,7 +16,8 @@ import net.sansa_stack.inference.spark.data.model.{AbstractRDFGraph, RDFGraph}
   * @param parallelism the level of parallelism
   * @author Lorenz Buehmann
   */
-abstract class AbstractForwardRuleReasonerRDFS[T, G <: AbstractRDFGraph[T, G]](session: SparkSession, parallelism: Int = 2)
+abstract class AbstractForwardRuleReasonerRDFS[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]]
+(session: SparkSession, parallelism: Int = 2)
   extends TransitiveReasoner(session.sparkContext, parallelism) {
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
@@ -41,8 +43,8 @@ abstract class AbstractForwardRuleReasonerRDFS[T, G <: AbstractRDFGraph[T, G]](s
     preprocess(graph)
 
     // split into rdf:type triples and other instance data
-    var types = graph.find(None, Some(RDF.`type`.getURI), None)
-    var others = graph.find(None, Some("!" + RDF.`type`.getURI), None)
+    var types = graph.find(None, Some(JenaRDF.`type`.getURI), None)
+    var others = graph.find(None, Some("!" + JenaRDF.`type`.getURI), None)
 
 //    println("triples:" + graph.size())
 //    println("types:" + types.size())

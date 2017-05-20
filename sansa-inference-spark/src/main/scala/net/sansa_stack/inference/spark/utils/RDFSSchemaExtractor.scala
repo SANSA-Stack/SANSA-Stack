@@ -102,7 +102,7 @@ class RDFSSchemaExtractor() extends Logging with Serializable {
     val index =
       properties.map { p =>
         // get triples (s,p,o)
-        val newGraph = graph.find(None, Some(p), None)
+        val newGraph = graph.find(None, Some(p.getURI), None)
 
         // map to (s,o)
         val pairs = newGraph.triples.select(graph.schema.subjectCol, graph.schema.predicateCol, graph.schema.objectCol)
