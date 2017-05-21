@@ -14,7 +14,7 @@ import org.apache.jena.graph.{Node, Triple}
   *
   */
 class RDFGraphDataset(override val triples: Dataset[RDFTriple])
-  extends AbstractRDFGraphSpark[Dataset, String, RDFTriple, RDFGraphDataset](triples) {
+    extends AbstractRDFGraphSpark[Dataset, String, RDFTriple, RDFGraphDataset](triples) {
 
   override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataset = {
     var result = triples
@@ -33,6 +33,12 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
 
     new RDFGraphDataset(result)
   }
+
+  override def find(triple: RDFTriple): RDFGraphDataset = find(
+    if (triple.s.startsWith("?")) None else Some(triple.s),
+    if (triple.p.startsWith("?")) None else Some(triple.p),
+    if (triple.o.startsWith("?")) None else Some(triple.o)
+  )
 
   def union(graph: RDFGraphDataset): RDFGraphDataset = {
     new RDFGraphDataset(triples.union(graph.triples))
@@ -58,6 +64,11 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
 //    new RDFGraphDataset(df.get.as[RDFTriple])
   }
 
+  override def intersection(graph: RDFGraphDataset): RDFGraphDataset =
+    new RDFGraphDataset(triples.intersect(graph.triples))
+
+  override def difference(graph: RDFGraphDataset): RDFGraphDataset = new RDFGraphDataset(triples.except(graph.triples))
+
   def distinct(): RDFGraphDataset = {
     new RDFGraphDataset(triples.distinct())
   }
@@ -74,4 +85,5 @@ class RDFGraphDataset(override val triples: Dataset[RDFTriple])
   def toDataFrame(sparkSession: SparkSession, schema: SQLSchema = SQLSchemaDefault): DataFrame = triples.toDF()
 
   def toRDD(): RDD[RDFTriple] = triples.rdd
+
 }
