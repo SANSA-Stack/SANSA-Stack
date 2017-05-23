@@ -7,22 +7,22 @@
 **Table of Contents**
 
 - [SANSA Inference Layer](#)
-	- [Structure](#Structure)
+	- [Structure](#structure)
 		- [sansa-inference-common](#sansa-inference-common)
 		- [sansa-inference-spark](#sansa-inference-spark)
 		- [sansa-inference-flink](#sansa-inference-flink)
 		- [sansa-inference-tests](#sansa-inference-tests)
-	- [Setup](#Setup)
-		- [Prerequisites](#Prerequisites)
-		- [From source](#From-source)
+	- [Setup](#setup)
+		- [Prerequisites](#prerequisites)
+		- [From source](#from-source)
 		- [Using Maven pre-build artifacts](#)
-		- [Using SBT](#Using-SBT)
-	- [Usage](#Usage)
-		- [Example](#Example)
+		- [Using SBT](#using-SBT)
+	- [Usage](#usage)
+		- [Example](#example)
 	- [Supported Reasoning Profiles](#)
-				- [RDFS](#RDFS)
-					- [RDFS Simple](#RDFS-Simple)
-				- [OWL Horst](#OWL-Horst)
+				- [RDFS](#rdfs)
+					- [RDFS Simple](#rdfs-simple)
+				- [OWL Horst](#owl-horst)
 
 
 ## Structure
