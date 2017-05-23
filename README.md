@@ -1,26 +1,29 @@
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
-- [SANSA Inference Layer](#)
-	- [Structure](#)
-		- [sansa-inference-common](#)
-		- [sansa-inference-spark](#)
-		- [sansa-inference-flink](#)
-		- [sansa-inference-tests](#)
-	- [Setup](#)
-		- [Prerequisites](#)
-		- [From source](#)
-		- [Using Maven pre-build artifacts](#)
-		- [Using SBT](#)
-	- [Usage](#)
-		- [Example](#)
-	- [Supported Reasoning Profiles](#)
-				- [RDFS](#)
-					- [RDFS Simple](#)
-				- [OWL Horst](#)
 
 # SANSA Inference Layer
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-inference-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-inference-parent_2.11)
 [![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/)
+
+**Table of Contents**
+
+- [SANSA Inference Layer](#)
+	- [Structure](#Structure)
+		- [sansa-inference-common](#sansa-inference-common)
+		- [sansa-inference-spark](#sansa-inference-spark)
+		- [sansa-inference-flink](#sansa-inference-flink)
+		- [sansa-inference-tests](#sansa-inference-tests)
+	- [Setup](#Setup)
+		- [Prerequisites](#Prerequisites)
+		- [From source](#From-source)
+		- [Using Maven pre-build artifacts](#)
+		- [Using SBT](#Using-SBT)
+	- [Usage](#Usage)
+		- [Example](#Example)
+	- [Supported Reasoning Profiles](#)
+				- [RDFS](#RDFS)
+					- [RDFS Simple](#RDFS-Simple)
+				- [OWL Horst](#OWL-Horst)
+
 
 ## Structure
 ### sansa-inference-common
