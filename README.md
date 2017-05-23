@@ -143,25 +143,29 @@ Usage: RDFGraphMaterializer [options]
 ```
 This can easily be used when submitting the Job to Spark (resp. Flink), e.g. for Spark
 
-```
-/PATH/TO/SPARK/spark-submit [spark-options] /PATH/TO/INFERENCE-SPARK-DISTRIBUTION/FILE.jar [inference-api-arguments]
+```bash
+/PATH/TO/SPARK/sbin/spark-submit [spark-options] /PATH/TO/INFERENCE-SPARK-DISTRIBUTION/FILE.jar [inference-api-arguments]
 ```
 
 and for Flink
 
-```
+```bash
 /PATH/TO/FLINK/bin/flink run [flink-options] /PATH/TO/INFERENCE-FLINK-DISTRIBUTION/FILE.jar [inference-api-arguments]
 ```
 
-In addition, we also provide Shell scripts that wrap the Spark (resp. Flink) deployment and can be used with
-```
+In addition, we also provide Shell scripts that wrap the Spark (resp. Flink) deployment and can be used by first
+setting the environment variable `SPARK_HOME` (resp. `FLINK_HOME`) and then calling
+```bash
 /PATH/TO/INFERENCE-DISTRIBUTION/bin/cli [inference-api-arguments]
 ```
-(Note that setting Spark (resp. Flink) options isn't supported here and has to be done via the corresponding config files)
+(Note, that setting Spark (resp. Flink) options isn't supported here and has to be done via the corresponding config files)
 
 ### Example
 
-`RDFGraphMaterializer -i /PATH/TO/FILE/test.nt -o /PATH/TO/TEST_OUTPUT_DIRECTORY/ -p rdfs` will compute the RDFS materialization on the data contained in `test.nt` and write the inferred RDF graph to the given directory `TEST_OUTPUT_DIRECTORY`.
+```bash
+RDFGraphMaterializer -i /PATH/TO/FILE/test.nt -o /PATH/TO/TEST_OUTPUT_DIRECTORY/ -p rdfs
+```
+will compute the RDFS materialization on the data contained in `test.nt` and write the inferred RDF graph to the given directory `TEST_OUTPUT_DIRECTORY`.
 
 ## Supported Reasoning Profiles
 
