@@ -124,24 +124,41 @@ and for Apache Flink add
 where `VERSION` is the released version you want to use.
 
 ## Usage
+Besides using the Inference API in your application code, we also provide a command line interface with various options that allow for a convenient way to use the core reasoning algorithms:
 ```
 RDFGraphMaterializer 0.1.0
 Usage: RDFGraphMaterializer [options]
- 
- 
-  -i <file> | --input <file>
-        the input file in N-Triple format
-  -o <directory> | --out <directory>
-        the output directory
-  --single-file
-        write the output to a single file in the output directory
-  --sorted
-        sorted output of the triples (per file)
-  -p {rdfs | owl-horst} | --profile {rdfs | owl-horst}
-        the reasoning profile
-  --help
-        prints this usage text
+
+  -i, --input <path1>,<path2>,...
+                           path to file or directory that contains the input files (in N-Triples format)
+  -o, --out <directory>    the output directory
+  --properties <property1>,<property2>,...
+                           list of properties for which the transitive closure will be computed (used only for profile 'transitive')
+  -p, --profile {rdfs | rdfs-simple | owl-horst | transitive}
+                           the reasoning profile
+  --single-file            write the output to a single file in the output directory
+  --sorted                 sorted output of the triples (per file)
+  --parallelism <value>    the degree of parallelism, i.e. the number of Spark partitions used in the Spark operations
+  --help                   prints this usage text
 ```
+This can easily be used when submitting the Job to Spark (resp. Flink), e.g. for Spark
+
+```
+/PATH/TO/SPARK/spark-submit [spark-options] /PATH/TO/INFERENCE-SPARK-DISTRIBUTION/FILE.jar [inference-api-arguments]
+```
+
+and for Flink
+
+```
+/PATH/TO/FLINK/bin/flink run [flink-options] /PATH/TO/INFERENCE-FLINK-DISTRIBUTION/FILE.jar [inference-api-arguments]
+```
+
+In addition, we also provide Shell scripts that wrap the Spark (resp. Flink) deployment and can be used with
+```
+/PATH/TO/INFERENCE-DISTRIBUTION/bin/cli [inference-api-arguments]
+```
+(Note that setting Spark (resp. Flink) options isn't supported here and has to be done via the corresponding config files)
+
 ### Example
 
 `RDFGraphMaterializer -i /PATH/TO/FILE/test.nt -o /PATH/TO/TEST_OUTPUT_DIRECTORY/ -p rdfs` will compute the RDFS materialization on the data contained in `test.nt` and write the inferred RDF graph to the given directory `TEST_OUTPUT_DIRECTORY`.
