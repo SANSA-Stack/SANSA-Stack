@@ -398,8 +398,8 @@
         <profile>
             <id>dist-package</id>
             <build>
+                <finalName>SANSA-Inference-Spark-${project.version}</finalName>
                 <plugins>
-
                     <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
@@ -548,6 +548,8 @@
                                     <finalName>dist-${project.artifactId}-${project.version}</finalName>
                                     <outputDirectory>${project.build.directory}/shaded</outputDirectory>
                                     <transformers>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>net.sansa_stack.inference.spark.RDFGraphMaterializer</mainClass>
                                         </transformer>
@@ -564,6 +566,7 @@
                             <descriptors>
                                 <descriptor>src/assembly/assembly-bin.xml</descriptor>
                             </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                         <executions>
                             <execution>

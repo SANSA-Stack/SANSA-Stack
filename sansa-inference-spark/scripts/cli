@@ -26,11 +26,11 @@ INFERENCE_LIB_JAR=VERSION_TMP
 # the path to the Inference distribution Jar file relative to the current
 INFERENCE_LIB=$DIR/../lib/$INFERENCE_LIB_JAR
 
-# check whether environment variable FLINK_HOME was set
-if [ -z "${FLINK_HOME}" ]; then
-    echo "You have to set the environment variable FLINK_HOME, which maps to the home directory of the Flink distribution."
+# check whether environment variable SPARK_HOME was set
+if [ -z "${SPARK_HOME}" ]; then
+    echo "You have to set the environment variable SPARK_HOME, which maps to the home directory of the Spark distribution."
     exit 1
 fi 
 
-# submit the Flink job
-exec "${FLINK_HOME}"/bin/flink run "$INFERENCE_LIB" "$@"
+# submit the Spark job
+exec "${SPARK_HOME}"/bin/spark-submit "$INFERENCE_LIB" "$@"
