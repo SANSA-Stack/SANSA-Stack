@@ -15,8 +15,7 @@ import scala.util.Try
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 
-import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
-import net.sansa_stack.rdf.spark.model.TripleRDD._
+
 import net.sansa_stack.ml.spark.mining.amieSpark.DfLoader.Atom
 
 object MineRules {
@@ -39,30 +38,7 @@ object MineRules {
     val minConf = mCon
     val hdfsPath = hdfsP
 
-    def deleteRecursive(path: File): Int = {
-
-      var files = path.listFiles()
-      if (files != null) {
-        for (f <- files) {
-          if (f.isDirectory()) {
-
-            deleteRecursive(f)
-            f.delete()
-          } else {
-
-            f.delete()
-
-          }
-        }
-
-        path.delete()
-
-      }
-
-      return 0
-
-    }
-
+   
     def ruleMining(sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[RuleContainer] = {
 
       var predicates = kb.getKbGraph().triples.map { x => x.predicate
@@ -90,7 +66,7 @@ object MineRules {
 
       var outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]] = Map()
 
-      var dataFrameRuleParts: RDD[(RDFTriple, Int, Int)] = null
+       var dataFrameRuleParts: ArrayBuffer[Tuple3[RDFTriple, Int, Long]] = new ArrayBuffer()
       var out: ArrayBuffer[RuleContainer] = new ArrayBuffer
       var dublicate: ArrayBuffer[String] = ArrayBuffer("")
 
@@ -101,12 +77,20 @@ object MineRules {
 
           q = new ArrayBuffer
 
-          var newAtoms1 = dataFrameRuleParts.collect
+        
+     
+  
+
+
+          
+          
+          
+          var newAtoms1 = dataFrameRuleParts
 
           for (n1 <- newAtoms1) {
 
             var newRuleC = new RuleContainer
-            var parent = temp(n1._3)
+            var parent = temp(n1._2)
             var newTpArr = parent.getRule().clone
 
             newTpArr += n1._1
@@ -131,13 +115,15 @@ object MineRules {
             }
             if ((counter < newTpArr.length) && (!(dublicate.contains(dubCheck)))) {
               dublicate += dubCheck
-              newRuleC.setRule(minConf, n1._2, parent, newTpArr, sortedNewTpArr, kb, sc, sqlContext)
+              newRuleC.setRule(minConf, n1._3, parent, newTpArr, sortedNewTpArr, kb, sc, sqlContext)
               q += newRuleC
             }
 
           }
+dataFrameRuleParts = new ArrayBuffer()
 
-        } else if ((i > 0) && (dataFrameRuleParts.isEmpty())) {
+
+        } else if ((i > 0) && (dataFrameRuleParts.isEmpty )) {
           q = new ArrayBuffer
         }
 
@@ -216,86 +202,23 @@ object MineRules {
       return x
     }
 
-    def refine(c: Int, id: Int, r: RuleContainer, dataFrameRuleParts: RDD[(RDFTriple, Int, Int)], sc: SparkContext, sqlContext: SQLContext): RDD[(RDFTriple, Int, Int)] = {
+    def refine(c: Int, id: Int, r: RuleContainer, dataFrameRuleParts:ArrayBuffer[Tuple3[RDFTriple, Int, Long]], sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[Tuple3[RDFTriple, Int, Long]]= {
 
       var out: DataFrame = null
-      var OUT: RDD[(RDFTriple, Int, Int)] = dataFrameRuleParts
-      //var count2:RDD[(String, Int)] = null 
-      var path = new File("test_table/")
-      var temp = 0
+      var OUT:  ArrayBuffer[Tuple3[RDFTriple, Int, Long]] = dataFrameRuleParts
+     
 
-      val tpAr = r.getRule()
-      var tpArString = ""
-      var stringSELECT = ""
-      for (tp <- 0 to tpAr.length - 1) {
-        tpArString += tpAr(tp).toString
-        stringSELECT += "tp" + tp + ", "
+      
+     
 
-      }
-      tpArString = tpArString.replace(" ", "_").replace("?", "_")
-      stringSELECT += "tp" + tpAr.length
-
-      var z: Try[Row] = null
-      if ((tpAr.length != maxLen - 1) && (temp == 0)) {
         var a = kb.addDanglingAtom(c, id, minHC, r, sc, sqlContext)
-
-        z = Try(a.first())
-        if ((!(z.isFailure)) && (z.isSuccess)) {
-
-          out = a
-
-        }
-
-      }
-
-      var b = kb.addClosingAtom(c, id, minHC, r, sc, sqlContext)
-
-      var t = Try(b.first)
-
-      if ((!(t.isFailure)) && (t.isSuccess) && (temp == 0)) {
-
-        if (out == null) {
-          out = b
-        } else {
-          out = out.unionAll(b)
-
-        }
-
-      }
-
-      var count: RDD[(String, Int)] = null
-      var o: RDD[(RDFTriple, Int, Int)] = null
-
-      if (((!(t.isFailure)) && (t.isSuccess)) || ((z != null) && (!(z.isFailure)) && (z.isSuccess))) {
-        count = out.rdd.map(x => (x(r.getRule().length + 1).toString(), 1)).reduceByKey(_ + _)
-
-        o = count.map(q => (q._1.split("\\s+"), q._2)).map { token =>
-          Tuple3(RDFTriple(token._1(0), token._1(1), token._1(2)), token._2, token._1(3).toInt)
-        }.filter(n1 => (n1._2 >= (kb.getRngSize(n1._1.predicate) * minHC)))
-
-        if (OUT == null) {
-          OUT = o
-        } else {
-          OUT = OUT.union(o)
-        }
-
-        if (tpAr.length < maxLen) {
-          var namesFolder = o.map(x => (tpArString + "" + x._1.toString().replace(" ", "_").replace("?", "_"), x._1.toString() + "  " + id.toString())).collect
-          var delFiles = new File(hdfsPath + "permanent" + (c - 2) + "/")
-
-          while (delFiles.listFiles() != null) {
-            deleteRecursive(delFiles)
-          }
-
-          out.registerTempTable("outTable")
-          for (n <- namesFolder) {
-            var tempDF = sqlContext.sql("SELECT " + stringSELECT + " FROM outTable WHERE outTable.key = '" + n._2 + "'")
-
-            tempDF.write.parquet(hdfsPath + "permanent" + c + "/" + n._1)
-
-          }
-        }
-      }
+       
+         OUT ++= a
+          
+        
+        var b = kb.addClosingAtom(c, id, minHC, r, sc, sqlContext)
+        
+        OUT ++=b
 
       return OUT
 
@@ -364,6 +287,7 @@ object MineRules {
     val sc = sparkSession.sparkContext
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
+    
     know.sethdfsPath(hdfsPath)
     know.setKbSrc(input)
 

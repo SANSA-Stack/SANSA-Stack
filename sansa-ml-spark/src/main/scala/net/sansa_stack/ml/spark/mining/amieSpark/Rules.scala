@@ -135,7 +135,7 @@ object Rules {
            if ((this.rule.length-1) > 1){
            var body = this.rule.clone
            body.remove(0)
-           var mapList =k.cardinality(body,sc,sqlContext)
+           var mapList =k.dfFromIndexingTable(body, sqlContext)
            
            
            this.bodySize = mapList.count()
@@ -155,7 +155,7 @@ object Rules {
            
            if (this.rule.length > 1){
           
-             val mapList = k.cardinality(this.rule,sc,sqlContext)
+             val mapList = k.dfFromIndexingTable(this.rule,sqlContext)
            
            this.support = mapList.count()
            }
@@ -233,7 +233,7 @@ object Rules {
          set_pcaConfidenceEstimation(k: KB)
          if (this._pcaConfidenceEstimation> threshold){
            
-           this.pcaBodySize = k.cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
+           this.pcaBodySize = k.plusNegativeExamplesIndexingTLength(tparr, support, sc, sqlContext)
            
            if (this.pcaBodySize > 0.0){
              this.pcaConfidence = (support/pcaBodySize)
@@ -242,8 +242,8 @@ object Rules {
          
        }
        else{
-       
-         this.pcaBodySize = k.cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
+       //cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
+         this.pcaBodySize = k.plusNegativeExamplesIndexingTLength(tparr, support, sc, sqlContext)
          if (this.pcaBodySize > 0.0){
            this.pcaConfidence = (support/pcaBodySize)
          }
@@ -258,11 +258,12 @@ object Rules {
        return this.pcaConfidence
      }
      
-     def setPcaBodySize(k: KB, sc:SparkContext){
+     def setPcaBodySize(k: KB, sc:SparkContext, sqlContext: SQLContext){
        val tparr = this.rule
        
        
-       val out = k.cardPlusnegativeExamplesLength(tparr,sc)
+       val out = k.plusNegativeExamplesIndexingTLength(tparr, support, sc, sqlContext)
+       //cardPlusnegativeExamplesLength(tparr,sc)
       
        
        
