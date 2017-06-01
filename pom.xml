@@ -19,8 +19,8 @@
 		<scala.version>2.11.7</scala.version>
 		<scala.compat.version>2.11</scala.compat.version>
 		<scala.classifier>${scala.compat.version}</scala.classifier>
-		<flink.version>1.1.3</flink.version>
-		<spark.version>2.0.1</spark.version>
+		<flink.version>1.2.1</flink.version>
+		<spark.version>2.1.1</spark.version>
 		<jena.version>3.1.1</jena.version>
 		<jsa.subversion>1</jsa.subversion>
 
@@ -59,12 +59,12 @@
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
-                        <dependency>
-                                <groupId>${project.groupId}</groupId>
-                                <artifactId>sansa-rdf-kryo-sparqlify</artifactId>
-                                <version>${project.version}</version>
-                                <!-- <classifier>${scala.classifier}</classifier> -->
-                        </dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
@@ -87,12 +87,12 @@
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
-                        <dependency>
-                                <groupId>${project.groupId}</groupId>
-                                <artifactId>sansa-rdf-partition-sparqlify</artifactId>
-                                <version>${project.version}</version>
-                                <!-- <classifier>${scala.classifier}</classifier> -->
-                        </dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
 
 			<!-- Apache Flink -->
 			<dependency>
@@ -108,6 +108,11 @@
 			<dependency>
 				<groupId>org.apache.flink</groupId>
 				<artifactId>flink-clients_${scala.compat.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-gelly_${scala.compat.version}</artifactId>
 				<version>${flink.version}</version>
 			</dependency>
 
@@ -158,7 +163,7 @@
 				<version>${jena.version}</version>
 			</dependency>
 
-			<!-- Jena's (newer) vesion of jackson conflicts with hadoop's and causes
+			<!-- Jena's (newer) vesion of jackson conflicts with hadoop's and causes 
 				it to crash -->
 			<dependency>
 				<groupId>org.apache.jena</groupId>
@@ -330,7 +335,7 @@
 					</executions>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -371,12 +376,8 @@
 
 
 	<distributionManagement>
-<!--
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
--->
+		<!-- <repository> <id>ossrh</id> <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> 
+			</repository> -->
 		<repository>
 			<id>maven.aksw.internal</id>
 			<name>AKSW Release Repository</name>
