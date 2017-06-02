@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>sansa-ml-parent</artifactId>
+		<artifactId>sansa-ml-parent_${scala.binary.version}</artifactId>
 		<groupId>net.sansa-stack</groupId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-ml-flink</artifactId>
+	<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
 	<version>0.1.1-SNAPSHOT</version>
 	<name>ML API - Apache Flink</name>
 	<description>RDF/OWL Machine Learning Library for Apache Flink</description>

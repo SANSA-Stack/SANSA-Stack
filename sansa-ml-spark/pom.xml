@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>sansa-ml-parent</artifactId>
+		<artifactId>sansa-ml-parent_${scala.binary.version}</artifactId>
 		<groupId>net.sansa-stack</groupId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-ml-spark</artifactId>
+	<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
 	<version>0.1.1-SNAPSHOT</version>
 	<name>ML API - Apache Spark</name>
 	<description>RDF/OWL Machine Learning Library for Apache Spark</description>
