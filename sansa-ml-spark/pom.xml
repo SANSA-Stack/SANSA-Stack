@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>sansa-ml-parent_${scala.binary.version}</artifactId>
+		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
