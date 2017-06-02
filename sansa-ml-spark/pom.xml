@@ -17,7 +17,7 @@
 		<!-- ML Common -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-ml-common</artifactId>
+			<artifactId>sansa-ml-common_${scala.binary.version}</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 
