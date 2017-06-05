@@ -8,8 +8,8 @@ import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
 
 import scala.reflect.ClassTag
 import org.apache.flink.api.scala._
-import org.apache.flink.api.table.Row
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.types.Row
 
 object RdfPartitionUtilsFlink extends Serializable {
 

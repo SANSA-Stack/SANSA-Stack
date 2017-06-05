@@ -44,8 +44,7 @@
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table_${scala.compat.version}</artifactId>
-			<version>${flink.version}</version>
+			<artifactId>flink-table_2.10</artifactId>
 		</dependency>
 
 		<!-- Apache JENA 3.x -->
