@@ -57,6 +57,7 @@ class PlanGenerator extends Logging{
   val clusters: Array[RelOptCluster] = Array(null)
   val relOptSchemas: Array[RelOptSchema] = Array(null)
   val rootSchemas: Array[SchemaPlus] = Array(null)
+
   Frameworks.withPlanner(new PlannerAction[Void] {
     override def apply(
                         cluster: RelOptCluster,

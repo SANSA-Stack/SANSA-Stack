@@ -1,6 +1,7 @@
 package net.sansa_stack.inference.common
 
 import net.sansa_stack.inference.rules._
+import net.sansa_stack.inference.rules.minimizer.DefaultRuleDependencyGraphMinimizer
 import net.sansa_stack.inference.utils.GraphUtils._
 import net.sansa_stack.inference.utils.RuleUtils
 
@@ -18,10 +19,12 @@ object DependencyGraphTest {
 //    val names = Seq("rdfs5", "rdfs7", "rdfp3", "rdfp4") // property TC rule + some instance rules
 
     // define the rules
-    val rules = RuleSets.OWL_HORST.filter(r => names.contains(r.getName))
+    val rules = RuleSets.OWL_HORST//.filter(r => names.contains(r.getName))
     val profile = ReasoningProfile.OWL_HORST
 //    val rules = RuleSets.RDFS_SIMPLE
 //    val profile = ReasoningProfile.RDFS_SIMPLE
+
+    val minimizer = new DefaultRuleDependencyGraphMinimizer()
 
     // export graphs
     rules.foreach(rule => RuleUtils.asGraph(rule).export(s"${path}/rule-${rule.getName}.graphml"))
@@ -30,7 +33,7 @@ object DependencyGraphTest {
     var dependencyGraph = RuleDependencyGraphGenerator.generate(rules)
     dependencyGraph.export(s"${path}/rdg-${profile}.graphml")
 
-    dependencyGraph = RuleDependencyGraphGenerator.generate(rules, pruned = true)
+    dependencyGraph = minimizer.execute(dependencyGraph) // RuleDependencyGraphGenerator.generate(rules, pruned = true)
     dependencyGraph.export(s"${path}/rdg-${profile}-pruned.graphml")
 //    dependencyGraph.exportAsPDF(s"${path}/rdg-${profile}-pruned.pdf")
 
@@ -51,6 +54,8 @@ object DependencyGraphTest {
 
     layer._2.foreach{rdg =>
       println("Processing dependency graph " + rdg.printNodes())
+      println(rdg.isCyclic)
+      rdg.nodes.foreach(n => println(n findSuccessor (_.outDegree >= 1)))
     }
   }
 }

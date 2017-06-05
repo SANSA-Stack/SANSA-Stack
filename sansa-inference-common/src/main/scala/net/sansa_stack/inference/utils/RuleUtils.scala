@@ -8,9 +8,11 @@ import scalax.collection.mutable.Graph
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
+import org.jgrapht.alg.cycle.TarjanSimpleCycles
 
 import net.sansa_stack.inference.rules.RuleEntailmentType
 import net.sansa_stack.inference.rules.RuleEntailmentType._
+import net.sansa_stack.inference.utils.graph.LabeledEdge
 
 /**
   * Utility class for rules.
@@ -318,6 +320,18 @@ object RuleUtils {
         bodyPredicates.intersect(headPredicates).nonEmpty
 
     }
+
+    val g = GraphUtils.asJGraphtRuleGraph(asGraph(rule))
+
+    // get cycles of length > 2
+    val cycleDetector = new TarjanSimpleCycles[Node, LabeledEdge[Node, String]](g)
+    val cycles = cycleDetector.findSimpleCycles().asScala.filter(c => c.size() == 2)
+
+    cycles.foreach(c => {
+      println(c)
+    })
+
+    true
   }
 
   /**

@@ -8,7 +8,7 @@
         {
           name: 'Triples',
           type: 'custom',
-          factory: 'org.sansa.inference.rules.plan.TriplesTableFactory'
+          factory: 'net.sansa_stack.inference.rules.plan.TriplesTableFactory'
         }
       ]
     }
