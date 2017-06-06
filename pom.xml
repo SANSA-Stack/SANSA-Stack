@@ -119,6 +119,13 @@
                 <version>1.6.1</version>
             </dependency>
 
+            <!-- parsing dependencies -->
+            <dependency>
+                <groupId>org.scala-lang.modules</groupId>
+                <artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
+                <version>1.0.6</version>
+            </dependency>
+
             <!-- Testing dependencies -->
             <dependency>
                 <groupId>junit</groupId>

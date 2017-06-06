@@ -30,6 +30,12 @@
             <artifactId>owlapi-apibinding</artifactId>
         </dependency>
 
+        <!-- parsing dependencies -->
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
+        </dependency>
+
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.scalatest</groupId>
