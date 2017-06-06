@@ -122,6 +122,20 @@
 			</dependency>
 
 
+			<!-- Apache Spark -->
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-streaming_${scala.compat.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-streaming-kafka_${scala.compat.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>		
+			
+
 			<dependency>
 				<groupId>org.scalatest</groupId>
 				<artifactId>scalatest_${scala.compat.version}</artifactId>

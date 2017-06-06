@@ -15,19 +15,19 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-kryo-jena</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-spark-utils</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-partition-core</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 
@@ -44,6 +44,17 @@
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-graphx_${scala.compat.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming_${scala.compat.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming-kafka_${scala.compat.version}</artifactId>
+			<version>1.6.3</version>
 		</dependency>
 
 		<!-- Test -->
