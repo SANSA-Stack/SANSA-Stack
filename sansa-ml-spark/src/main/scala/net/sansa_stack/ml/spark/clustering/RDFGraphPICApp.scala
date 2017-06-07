@@ -74,7 +74,7 @@ object RDFGraphPICApp {
     Logger.getRootLogger.setLevel(Level.WARN)
 
     // Load the graph 
-    val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, "/home/tina/sample1.txt")
+    val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, "src/main/resources/Cluster/sample1.txt")
 
     val model = RDFGraphPICClustering(sparkSession, graph, params.k, params.maxIterations).run()
 
