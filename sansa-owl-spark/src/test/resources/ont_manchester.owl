@@ -82,7 +82,7 @@ ObjectProperty: bar:asymmObjProp
 ObjectProperty: bar:invObjProp1
 
     EquivalentTo: 
-         inverse (bar:objProp1)
+         inverse bar:objProp1
     
     Characteristics: 
         InverseFunctional
@@ -139,6 +139,8 @@ ObjectProperty: bar:subObjProp1
 DataProperty: bar:dataProp1
 
     Characteristics: 
+        Annotations:
+            comment "This annotation is required"
         Functional
     
     Domain: 
@@ -193,18 +195,16 @@ Class: bar:AllProp1Cls1
 Class: bar:Cl1OrNegate
 
     DisjointUnionOf: 
+        Annotations:
+            comment "This annotation is required"
         bar:Cls1, bar:ComplementCls1
     
     
 Class: bar:Cls1
 
-    Annotations: 
-        bar:label "Class 1"
-    
-    SubClassOf: 
-        bar:UnionCls
-    
     HasKey: 
+        Annotations:
+            comment "This annotation is required"
         bar:dataProp1
     
     
@@ -223,7 +223,7 @@ Class: bar:ComplementCls1
 Class: bar:DataAllIntGT10
 
     EquivalentTo: 
-        bar:dataProp2 only xsd:integer[>= 10]
+        bar:dataProp2 only xsd:integer [>= 10]
     
     
 Class: bar:DataExact5Prop1
@@ -271,7 +271,7 @@ Class: bar:Exact5Prop1Cls1
 Class: bar:HasSelfProp1
 
     EquivalentTo: 
-        bar:objProp1 some  Self 
+        bar:objProp1 Self 
     
     
 Class: bar:HasValProp1IndivB
