@@ -34,7 +34,7 @@ object BorderFlow {
     Logger.getRootLogger.setLevel(Level.WARN)
     
      // Load the graph 
-    val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, "/Users/tinaboroukhian/Desktop/sample1.txt")
+    val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, "src/main/resources/Cluster/sample1.txt")
     
      val edg = graph.edges.collect()
      
