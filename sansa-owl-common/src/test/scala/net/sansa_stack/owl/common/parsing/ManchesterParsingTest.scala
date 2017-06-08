@@ -14,6 +14,18 @@ import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
 class ManchesterParsingTest extends FunSuite {
   def p = ManchesterParser
   val df = OWLManager.getOWLDataFactory
+  val noAnnotations = List.empty[OWLAnnotation]
+
+  def setupParserPrefixes = {
+    p.prefixes.clear()
+    p.prefixes.put("", "http://ex.com/default#")
+    p.prefixes.put("foo", "http://ex.com/foo#")
+    p.prefixes.put("bar", "http://ex.com/bar#")
+    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
+    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+  }
+
+  def clearParserPrefixes = p.prefixes.clear()
 
   test("The scheme parser should work correctly") {
     val fn = p.scheme
@@ -1909,7 +1921,6 @@ class ManchesterParsingTest extends FunSuite {
     val hasKeyAxiom = new OWLHasKeyAxiomImpl(cls, properties, annotations)
     assert(parsed.contains(hasKeyAxiom))
 
-
     p.prefixes.clear()
   }
 
@@ -2809,5 +2820,588 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     p.prefixes.clear()
+  }
+
+  test("The annotation property frame parser should work correctly") {
+    p.prefixes.clear()
+    p.prefixes.put("", "http://ex.com/default#")
+    p.prefixes.put("bar", "http://ex.com/bar#")
+    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
+    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+
+    val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
+
+    var prefix = "http://ex.com/default#"
+    var annProp = df.getOWLAnnotationProperty(prefix + "prop")
+    var annPropFrameStr =
+      """AnnotationProperty: prop
+        |    Annotations:
+        |        comment "A comment",
+        |        title "Annotation Property XYZ"
+      """.stripMargin
+    var parsed = p.checkParsed(p.annotationPropertyFrame, annPropFrameStr)
+
+    var expectedAxiom: OWLAxiom = new OWLDeclarationAxiomImpl(annProp, noAnnotations)
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
+      annProp.getIRI,
+      df.getOWLAnnotationProperty(prefix + "comment"),
+      df.getOWLLiteral("A comment"),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
+      annProp.getIRI,
+      df.getOWLAnnotationProperty(prefix + "title"),
+      df.getOWLLiteral("Annotation Property XYZ"),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    prefix = "http://ex.com/default#"
+    annProp = df.getOWLAnnotationProperty(prefix + "prop")
+    annPropFrameStr =
+      """AnnotationProperty: prop
+        |    Annotations:
+        |        comment "A comment"
+        |    Annotations:
+        |        title "Annotation Property XYZ"
+      """.stripMargin
+    parsed = p.checkParsed(p.annotationPropertyFrame, annPropFrameStr)
+
+    expectedAxiom = new OWLDeclarationAxiomImpl(annProp, noAnnotations)
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
+      annProp.getIRI,
+      df.getOWLAnnotationProperty(prefix + "comment"),
+      df.getOWLLiteral("A comment"),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
+      annProp.getIRI,
+      df.getOWLAnnotationProperty(prefix + "title"),
+      df.getOWLLiteral("Annotation Property XYZ"),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    prefix = "http://ex.com/default#"
+    annProp = df.getOWLAnnotationProperty(prefix + "prop")
+    annPropFrameStr =
+      """AnnotationProperty: prop
+        |    Annotations:
+        |        label "Whatever"
+        |    Domain:
+        |        Annotations:
+        |            comment "Some comment"
+        |        someIRI
+        |    Range:
+        |        anotherIRI
+        |    SubPropertyOf:
+        |        Annotations:
+        |            comment "Blah"
+        |        anotherProp
+      """.stripMargin
+    parsed = p.checkParsed(p.annotationPropertyFrame, annPropFrameStr)
+
+    expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
+      annProp.getIRI,
+      df.getOWLAnnotationProperty(prefix + "label"),
+      df.getOWLLiteral("Whatever"),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLAnnotationPropertyDomainAxiomImpl(
+      annProp,
+      IRI.create(prefix + "someIRI"),
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Some comment")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    parsed = p.checkParsed(p.annotationPropertyFrame, annPropFrameStr)
+
+    expectedAxiom = new OWLAnnotationPropertyRangeAxiomImpl(
+      annProp,
+      IRI.create(prefix + "anotherIRI"),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLSubAnnotationPropertyOfAxiomImpl(
+      annProp,
+      df.getOWLAnnotationProperty(prefix + "anotherProp"),
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Blah"),
+          noAnnotations
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    p.prefixes.clear
+  }
+
+  test("The annotation property domain parser should work correctly") {
+    p.prefixes.clear()
+    p.prefixes.put("", "http://ex.com/default#")
+    p.prefixes.put("bar", "http://ex.com/bar#")
+    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
+    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+    val noAnnotations = List.empty[OWLAnnotation]
+
+    var prefix = "http://ex.com/default#"
+    var domainStr = """Domain: SomeClass"""
+    var expected = List((
+      IRI.create(prefix + "SomeClass"),
+      noAnnotations
+    ))
+    assert(p.checkParsed(p.annotationPropertyDomain, domainStr) == expected)
+
+    domainStr =
+      """Domain:
+        |    Annotations:
+        |        comment "Some comment"
+        |    SomeClass""".stripMargin
+    expected = List((
+      IRI.create(prefix + "SomeClass"),
+      List(new OWLAnnotationImpl(
+        df.getOWLAnnotationProperty(prefix + "comment"),
+        df.getOWLLiteral("Some comment"),
+        noAnnotations.asJavaCollection.stream()
+      ))
+    ))
+    assert(p.checkParsed(p.annotationPropertyDomain, domainStr) == expected)
+
+    p.prefixes.clear()
+  }
+
+  test("The individual frame parser should work correctly") {
+    setupParserPrefixes
+
+    var prefix = "http://ex.com/default#"
+    var indiv = df.getOWLNamedIndividual(prefix + "someIndiv")
+    var individualFrameStr =
+      """Individual: someIndiv
+        |    Annotations:
+        |        comment "Some comment"
+        |    Types:
+        |        Annotations:
+        |            comment "A plain class"
+        |        ClassABC,
+        |
+        |        Annotations:
+        |            comment "A class expression"
+        |        objProp min 3,
+        |        anotherProp some RangeClass
+        |    Facts:
+        |        Annotations:
+        |            comment "Object property fact"
+        |        objProp anotherIndiv,
+        |        Annotations:
+        |            comment "Data property fact"
+        |        dataProp 23,
+        |        Annotations:
+        |            comment "Negative object property fact"
+        |        not objProp anUnrelatedIndiv
+        |    SameAs:
+        |        Annotations:
+        |            comment "Whatever"
+        |        sameIndiv, sameAgainIndiv
+        |    DifferentFrom:
+        |        aDifferentIndiv
+      """.stripMargin
+    var parsed = p.checkParsed(p.individualFrame, individualFrameStr)
+    var expectedAxiom: OWLAxiom = new OWLDeclarationAxiomImpl(
+      indiv,
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
+      indiv.getIRI,
+      df.getOWLAnnotationProperty(prefix + "comment"),
+      df.getOWLLiteral("Some comment"),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLClassAssertionAxiomImpl(
+      indiv,
+      df.getOWLClass(prefix + "ClassABC"),
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("A plain class")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLClassAssertionAxiomImpl(
+      indiv,
+      df.getOWLObjectMinCardinality(
+        3,
+        df.getOWLObjectProperty(prefix + "objProp")
+      ),
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("A class expression")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLClassAssertionAxiomImpl(
+      indiv,
+      df.getOWLObjectSomeValuesFrom(
+        df.getOWLObjectProperty(prefix + "anotherProp"),
+        df.getOWLClass(prefix + "RangeClass")
+      ),
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLObjectPropertyAssertionAxiomImpl(
+      indiv,
+      df.getOWLObjectProperty(prefix + "objProp"),
+      df.getOWLNamedIndividual(prefix + "anotherIndiv"),
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Object property fact")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLDataPropertyAssertionAxiomImpl(
+      indiv,
+      df.getOWLDataProperty(prefix + "dataProp"),
+      df.getOWLLiteral(23),
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Data property fact")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLNegativeObjectPropertyAssertionAxiomImpl(
+      indiv,
+      df.getOWLObjectProperty(prefix + "objProp"),
+      df.getOWLNamedIndividual(prefix + "anUnrelatedIndiv"),
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Negative object property fact")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLSameIndividualAxiomImpl(
+      List(
+        indiv,
+        df.getOWLNamedIndividual(prefix + "sameIndiv")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Whatever")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLSameIndividualAxiomImpl(
+      List(
+        indiv,
+        df.getOWLNamedIndividual(prefix + "sameAgainIndiv")
+      ).asJavaCollection,
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    expectedAxiom = new OWLDifferentIndividualsAxiomImpl(
+      List(
+        indiv,
+        df.getOWLNamedIndividual(prefix + "aDifferentIndiv")
+      ).asJavaCollection,
+      noAnnotations
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    individualFrameStr =
+      """Individual: foo:indivA
+        |
+        |    Types:
+        |        bar:Cls1
+        |
+        |    Facts:
+        |     bar:objProp1  foo:indivB,
+        |     bar:dataProp1  "ABCD",
+        |      not  bar:dataProp2  23
+        |
+        |    SameAs:
+        |        foo:sameAsIndivA
+        |
+        |    DifferentFrom:
+        |        foo:indivB
+        |
+      """.stripMargin
+    parsed = p.checkParsed(p.individualFrame, individualFrameStr)
+
+    p.prefixes.clear()
+  }
+
+  test("The disjoint classes parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var disjointClassesStr =
+      """DisjointClasses:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    prop min 2, Class2,
+      """.stripMargin
+    var parsed = p.checkParsed(p.disjointClasses, disjointClassesStr)
+    var expectedAxiom = new OWLDisjointClassesAxiomImpl(
+      List(
+        df.getOWLObjectMinCardinality(
+          2,
+          df.getOWLObjectProperty(prefix + "prop")
+        ),
+        df.getOWLClass(prefix + "Class2")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
+  }
+
+  test("The equivalent classes parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var equivClassesStr =
+      """EquivalentClasses:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    prop min 2, Class2,
+      """.stripMargin
+    var parsed = p.checkParsed(p.equivalentClasses, equivClassesStr)
+    var expectedAxiom = new OWLEquivalentClassesAxiomImpl(
+      List(
+        df.getOWLObjectMinCardinality(
+          2,
+          df.getOWLObjectProperty(prefix + "prop")
+        ),
+        df.getOWLClass(prefix + "Class2")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
+  }
+
+  test("The equivalent object properties parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var equivPropertiesStr =
+      """EquivalentProperties:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    prop1, prop2, prop3
+      """.stripMargin
+    var parsed = p.checkParsed(p.equivalentObjectProperties, equivPropertiesStr)
+    var expectedAxiom = new OWLEquivalentObjectPropertiesAxiomImpl(
+      List(
+        df.getOWLObjectProperty(prefix + "prop1"),
+        df.getOWLObjectProperty(prefix + "prop2"),
+        df.getOWLObjectProperty(prefix + "prop3")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
+  }
+
+  test("The disjoint object properties parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var disjPropertiesStr =
+      """DisjointProperties:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    prop1, prop2, prop3
+      """.stripMargin
+    var parsed = p.checkParsed(p.disjointObjectProperties, disjPropertiesStr)
+    var expectedAxiom = new OWLDisjointObjectPropertiesAxiomImpl(
+      List(
+        df.getOWLObjectProperty(prefix + "prop1"),
+        df.getOWLObjectProperty(prefix + "prop2"),
+        df.getOWLObjectProperty(prefix + "prop3")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
+  }
+
+  test("The equivalent data properties parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var equivPropertiesStr =
+      """EquivalentProperties:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    prop1, prop2, prop3
+      """.stripMargin
+    var parsed = p.checkParsed(p.equivalentDataProperties, equivPropertiesStr)
+    var expectedAxiom = new OWLEquivalentDataPropertiesAxiomImpl(
+      List(
+        df.getOWLDataProperty(prefix + "prop1"),
+        df.getOWLDataProperty(prefix + "prop2"),
+        df.getOWLDataProperty(prefix + "prop3")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
+  }
+
+  test("The disjoint data properties parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var disjPropertiesStr =
+      """DisjointProperties:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    prop1, prop2, prop3
+      """.stripMargin
+    var parsed = p.checkParsed(p.disjointDataProperties, disjPropertiesStr)
+    var expectedAxiom = new OWLDisjointDataPropertiesAxiomImpl(
+      List(
+        df.getOWLDataProperty(prefix + "prop1"),
+        df.getOWLDataProperty(prefix + "prop2"),
+        df.getOWLDataProperty(prefix + "prop3")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
+  }
+
+  test("The same individual parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var sameIndivStr =
+      """SameIndividual:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    indiv1, indiv2, indiv3
+      """.stripMargin
+    var parsed = p.checkParsed(p.sameIndividual, sameIndivStr)
+    var expectedAxiom = new OWLSameIndividualAxiomImpl(
+      List(
+        df.getOWLNamedIndividual(prefix + "indiv1"),
+        df.getOWLNamedIndividual(prefix + "indiv2"),
+        df.getOWLNamedIndividual(prefix + "indiv3")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
+  }
+
+  test("The different individuals parser should work correctly") {
+    setupParserPrefixes
+
+    val prefix = "http://ex.com/default#"
+    var differentIndivsStr =
+      """DifferentIndividuals:
+        |    Annotations:
+        |        comment "Required annotation"
+        |    indiv1, indiv2, indiv3
+      """.stripMargin
+    var parsed = p.checkParsed(p.differentIndividuals, differentIndivsStr)
+    var expectedAxiom = new OWLDifferentIndividualsAxiomImpl(
+      List(
+        df.getOWLNamedIndividual(prefix + "indiv1"),
+        df.getOWLNamedIndividual(prefix + "indiv2"),
+        df.getOWLNamedIndividual(prefix + "indiv3")
+      ).asJavaCollection,
+      List(
+        df.getOWLAnnotation(
+          df.getOWLAnnotationProperty(prefix + "comment"),
+          df.getOWLLiteral("Required annotation")
+        )
+      ).asJavaCollection
+    )
+    assert(parsed.contains(expectedAxiom))
+
+    clearParserPrefixes
   }
 }

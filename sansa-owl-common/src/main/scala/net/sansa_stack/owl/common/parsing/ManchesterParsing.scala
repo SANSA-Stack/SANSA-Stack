@@ -1,14 +1,14 @@
 package net.sansa_stack.owl.common.parsing
 
 import java.io
+import java.util.stream
 import java.util.stream.Collectors
 
 import org.semanticweb.owlapi.model._
-import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet, XSDVocabulary}
+import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet}
 import uk.ac.manchester.cs.owl.owlapi._
 
 import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
-import scala.reflect.macros.whitebox
 
 
 object PropertyCharacteristic extends Enumeration {
@@ -344,7 +344,7 @@ class ManchesterParsing extends IRIParsing {
   def restrictionValue: Parser[OWLLiteral] = literal
 
   def datatypeRestriction: Parser[OWLDatatypeRestriction] =
-    datatype ~ whiteSpace ~ openingBracket ~ whiteSpace.? ~ facet ~
+    datatype ~ whiteSpace.? ~ openingBracket ~ whiteSpace.? ~ facet ~
       whiteSpace ~ restrictionValue ~ { whiteSpace.? ~ comma ~ whiteSpace.? ~
       facet ~ whiteSpace ~ restrictionValue }.* ~ whiteSpace.? ~
       closingBracket ^^ { raw => {
@@ -365,10 +365,10 @@ class ManchesterParsing extends IRIParsing {
   }
 
   def dataAtomic: Parser[OWLDataRange] =
-    datatype |
     openingCurlyBrace ~ whiteSpace.? ~ literalList ~ whiteSpace.? ~ closingCurlyBrace ^^ {
-      raw => new OWLDataOneOfImpl(raw._1._1._2.asJavaCollection) } |
+        raw => new OWLDataOneOfImpl(raw._1._1._2.asJavaCollection) } |
     datatypeRestriction |
+    datatype |
     openingParen ~ whiteSpace.? ~ dataRange ~ whiteSpace.? ~ closingParen ^^ { _._1._1._2 }
 
   def dataPrimary: Parser[OWLDataRange] = { "not" ~ whiteSpace }.? ~ dataAtomic ^^ { raw =>
@@ -847,9 +847,13 @@ class ManchesterParsing extends IRIParsing {
       { whiteSpace ~ { inverseOf ^^ { ObjectPropertyInverseOfDetails(_) } } } |
       { whiteSpace ~ { subPropertyChain ^^ { ObjectPropertySubPropertyChainDetails(_) } } }
     }.* ^^ { raw => {
-        val objProperty = raw._1._2
+        val objProperty: OWLObjectProperty = raw._1._2
         val objPropDetails: List[ObjectPropertyDetails] = raw._2.map(_._2)
-        var axioms = List.empty[OWLAxiom]
+        var axioms: List[OWLAxiom] = List(
+          new OWLDeclarationAxiomImpl(
+            objProperty, List.empty[OWLAnnotation].asJavaCollection
+          )
+        )
 
         axioms ++= objPropDetails.flatMap(d =>
           d match {
@@ -1013,7 +1017,11 @@ class ManchesterParsing extends IRIParsing {
     }.* ^^ { raw => {
         val dataProperty: OWLDataProperty = raw._1._2
         val dataPropDetails: List[DataPropertyDetails] = raw._2.map(_._2)
-        var axioms = List.empty[OWLAxiom]
+        var axioms: List[OWLAxiom] = List(
+          new OWLDeclarationAxiomImpl(
+            dataProperty, List.empty[OWLAnnotation].asJavaCollection
+          )
+        )
 
         axioms ++= dataPropDetails.flatMap(d =>
           d match {
@@ -1071,11 +1079,377 @@ class ManchesterParsing extends IRIParsing {
       }
     }
 
-  def annotationPropertyFrame: Parser[List[OWLAxiom]] = ???
+  sealed abstract class AnnotationPropertyDetails(details: List[io.Serializable])
 
-  def individualFrame: Parser[List[OWLAxiom]] = ???
+  case class AnnotationPropertyAnnotationDetails(details: List[OWLAnnotation]) extends AnnotationPropertyDetails(details)
 
-  def misc: Parser[List[OWLAxiom]] = ???
+  case class AnnotationPropertyDomainDetails(details: List[(IRI, List[OWLAnnotation])]) extends AnnotationPropertyDetails(details)
+
+  def iriAnnotatedList: Parser[List[(IRI, List[OWLAnnotation])]] =
+    { annotations ~ whiteSpace }.? ~ iri ~
+      { whiteSpace.? ~ comma ~ whiteSpace.? ~ { annotations ~ whiteSpace }.? ~ iri }.* ^^ { raw =>
+      unravelAnnotatedList(List.empty, raw._1._1, raw._1._2, raw._2)
+    }
+
+  def annotationPropertyDomain: Parser[List[(IRI, List[OWLAnnotation])]] =
+    "Domain:" ~ whiteSpace ~ iriAnnotatedList ^^ { _._2 }
+
+  case class AnnotationPropertyRangeDetails(details: List[(IRI, List[OWLAnnotation])]) extends AnnotationPropertyDetails(details)
+
+  def annotationPropertyRange: Parser[List[(IRI, List[OWLAnnotation])]] =
+    "Range:" ~ whiteSpace ~ iriAnnotatedList ^^ { _._2 }
+
+  case class AnnotationPropertySubPropertyOfDetails(details: List[(OWLAnnotationProperty, List[OWLAnnotation])]) extends AnnotationPropertyDetails(details)
+
+  def annotationPropertyIRIAnnotatedList: Parser[List[(OWLAnnotationProperty, List[OWLAnnotation])]] =
+    { annotations ~ whiteSpace }.? ~ annotationPropertyIRI ~
+      { whiteSpace.? ~ comma ~ whiteSpace.? ~ { annotations ~ whiteSpace }.? ~
+        annotationPropertyIRI }.* ^^ { raw =>
+      unravelAnnotatedList(List.empty, raw._1._1, raw._1._2, raw._2)
+    }
+
+  def annotationPropertySubPropertyOf: Parser[List[(OWLAnnotationProperty, List[OWLAnnotation])]] =
+    "SubPropertyOf:" ~ whiteSpace ~ annotationPropertyIRIAnnotatedList ^^ { _._2 }
+
+  /**
+    * Since the specs (https://www.w3.org/TR/owl2-manchester-syntax/#annotationPropertyFrame)
+    * say an annotation property frame should look like this
+    *
+    *   annotationPropertyFrame ::=
+    *       'AnnotationProperty:' annotationPropertyIRI {
+    *           'Annotations:' annotationAnnotatedList } |
+    *           'Domain:' IRIAnnotatedList |
+    *           'Range:' IRIAnnotatedList |
+    *           'SubPropertyOf:' annotationPropertyIRIAnnotatedList
+    *
+    * (which means either annotations, or one domain, or one range, or one
+    * subproperty of part) but give an example that violates this rule:
+    *
+    *    AnnotationProperty: creator
+    *        Annotations: ...
+    *        Domain: Person ,...
+    *        Range: integer ,...
+    *        SubPropertyOf: initialCreator ,...
+    *
+    * I assume spec should be
+    *
+    *   annotationPropertyFrame ::=
+    *       'AnnotationProperty:' annotationPropertyIRI {
+    *           'Annotations:' annotationAnnotatedList |
+    *           'Domain:' IRIAnnotatedList |
+    *           'Range:' IRIAnnotatedList |
+    *           'SubPropertyOf:' annotationPropertyIRIAnnotatedList
+    *        }
+    */
+  def annotationPropertyFrame: Parser[List[OWLAxiom]] =
+    "AnnotationProperty:" ~ whiteSpace ~ annotationPropertyIRI ~ {
+      { whiteSpace ~ { annotations ^^ { AnnotationPropertyAnnotationDetails(_) } } } |
+      { whiteSpace ~ { annotationPropertyDomain ^^ { AnnotationPropertyDomainDetails(_) } } } |
+      { whiteSpace ~ { annotationPropertyRange ^^ { AnnotationPropertyRangeDetails(_) } } } |
+      { whiteSpace ~ { annotationPropertySubPropertyOf ^^ { AnnotationPropertySubPropertyOfDetails(_) } } }
+    }.* ^^ { raw => {
+      val annotationProperty: OWLAnnotationProperty = raw._1._2
+      val annotationPropDetails: List[AnnotationPropertyDetails] = raw._2.map(_._2)
+      var axioms: List[OWLAxiom] = List(
+        new OWLDeclarationAxiomImpl(
+          annotationProperty, List.empty[OWLAnnotation].asJavaCollection
+        )
+      )
+
+      axioms ++= annotationPropDetails.flatMap {
+        case AnnotationPropertyAnnotationDetails(details) =>
+          details.map(d =>
+            new OWLAnnotationAssertionAxiomImpl(
+              annotationProperty.getIRI,
+              d.getProperty,
+              d.getValue,
+              d.annotations().collect(Collectors.toList())
+            )
+          )
+        case AnnotationPropertyDomainDetails(details) =>
+          details.map(d =>
+            new OWLAnnotationPropertyDomainAxiomImpl(
+              annotationProperty,
+              d._1,
+              d._2.asJavaCollection
+            )
+          )
+        case AnnotationPropertyRangeDetails(details) =>
+          details.map(d =>
+            new OWLAnnotationPropertyRangeAxiomImpl(
+              annotationProperty,
+              d._1,
+              d._2.asJavaCollection
+            )
+          )
+        case AnnotationPropertySubPropertyOfDetails(details) =>
+          details.map(d =>
+            new OWLSubAnnotationPropertyOfAxiomImpl(
+              annotationProperty,
+              d._1,
+              d._2.asJavaCollection
+            )
+          )
+      }
+
+      axioms
+    }
+  }
+
+  sealed abstract class IndividualDetails(details: List[io.Serializable])
+
+  case class IndividualAnnotationDetails(details: List[OWLAnnotation]) extends IndividualDetails(details)
+
+  def individualAnnotations: Parser[List[OWLAnnotation]] =
+    "Annotations:" ~ whiteSpace ~ annotationAnnotatedList ^^ { _._2 }
+
+  case class IndividualTypesDetails(details: List[(OWLClassExpression, List[OWLAnnotation])]) extends IndividualDetails(details)
+
+  def individualTypes: Parser[List[(OWLClassExpression, List[OWLAnnotation])]] =
+    "Types:" ~ whiteSpace ~ descriptionAnnotatedList ^^ { _._2 }
+
+  case class IndividualFactsDetails(details: List[((Boolean, OWLProperty, OWLPropertyAssertionObject), List[OWLAnnotation])]) extends IndividualDetails(details)
+
+  def objectPropertyFact: Parser[(OWLObjectProperty, OWLIndividual)] =
+    objectPropertyIRI ~ whiteSpace ~ individual ^^ { raw => (raw._1._1, raw._2) }
+
+  def dataPropertyFact: Parser[(OWLDataProperty, OWLLiteral)] =
+    dataPropertyIRI ~ whiteSpace ~ literal ^^ { raw => (raw._1._1, raw._2)}
+
+  def fact: Parser[(Boolean, OWLProperty, OWLPropertyAssertionObject)] =
+    { "not" ~ whiteSpace }.? ~ {
+      objectPropertyFact | dataPropertyFact
+    } ^^ { raw => raw._1 match {
+      case Some(_) => (false, raw._2._1, raw._2._2)
+      case None => (true, raw._2._1, raw._2._2)
+    }}
+
+  def factAnnotatedList: Parser[List[((Boolean, OWLProperty, OWLPropertyAssertionObject), List[OWLAnnotation])]] =
+    { annotations ~ whiteSpace }.? ~ fact ~ {
+      whiteSpace.? ~ comma ~ whiteSpace.? ~ { annotations ~ whiteSpace }.? ~ fact
+    }.* ^^ { raw =>
+      unravelAnnotatedList(List.empty, raw._1._1, raw._1._2, raw._2)
+    }
+
+  def individualFacts: Parser[List[((Boolean, OWLProperty, OWLPropertyAssertionObject), List[OWLAnnotation])]] =
+    "Facts:" ~ whiteSpace ~ factAnnotatedList ^^ { _._2 }
+
+  case class IndividualSameAsDetails(details: List[(OWLIndividual, List[OWLAnnotation])]) extends IndividualDetails(details)
+
+  def individualAnnotatedList: Parser[List[(OWLIndividual, List[OWLAnnotation])]] =
+    { annotations ~ whiteSpace }.? ~ individual ~ {
+      whiteSpace.? ~ comma ~ whiteSpace.? ~ { annotations ~ whiteSpace }.? ~ individual
+    }.* ^^ { raw =>
+      unravelAnnotatedList(List.empty, raw._1._1, raw._1._2, raw._2)
+    }
+
+  def individualSameAs: Parser[List[(OWLIndividual, List[OWLAnnotation])]] =
+    "SameAs:" ~ whiteSpace ~ individualAnnotatedList ^^ { _._2 }
+
+  case class IndividualDifferentFromDetails(details: List[(OWLIndividual, List[OWLAnnotation])]) extends IndividualDetails(details)
+
+  def individualDifferentFrom: Parser[List[(OWLIndividual, List[OWLAnnotation])]] =
+    "DifferentFrom:" ~ whiteSpace ~ individualAnnotatedList ^^ { _._2 }
+
+  def individualFrame: Parser[List[OWLAxiom]] =
+    "Individual:" ~ whiteSpace ~ individualIRI ~ {
+      { whiteSpace ~ { individualAnnotations ^^ { IndividualAnnotationDetails(_) } } } |
+      { whiteSpace ~ { individualTypes ^^ { IndividualTypesDetails(_) } } } |
+      { whiteSpace ~ { individualFacts ^^ { IndividualFactsDetails(_) } } } |
+      { whiteSpace ~ { individualSameAs ^^ { IndividualSameAsDetails(_) } } } |
+      { whiteSpace ~ { individualDifferentFrom ^^ { IndividualDifferentFromDetails(_) } } }
+    }.* ^^ { raw => {
+        val indiv: OWLNamedIndividual = raw._1._2
+        val indivDetails: List[IndividualDetails] = raw._2.map(_._2)
+        var axioms: List[OWLAxiom] = List(
+          new OWLDeclarationAxiomImpl(indiv, List.empty[OWLAnnotation].asJavaCollection)
+        )
+
+        axioms ++= indivDetails.flatMap {
+          case IndividualAnnotationDetails(details) => details.map(d =>
+            new OWLAnnotationAssertionAxiomImpl(
+              indiv.getIRI,
+              d.getProperty,
+              d.getValue,
+              d.annotations().collect(Collectors.toList())
+            )
+          )
+          case IndividualTypesDetails(details) => details.map(d =>
+            new OWLClassAssertionAxiomImpl(
+              indiv,
+              d._1,
+              d._2.asJavaCollection
+            )
+          )
+          case IndividualFactsDetails(details) => details.map(d => {
+            val positiveAssertion: Boolean = d._1._1
+            val prop = d._1._2
+            val value = d._1._3
+            val annotations = d._2
+
+            if (positiveAssertion)
+              prop match {
+                case prop: OWLObjectProperty =>
+                  new OWLObjectPropertyAssertionAxiomImpl(
+                    indiv,
+                    prop,
+                    value.asInstanceOf[OWLIndividual],
+                    annotations.asJavaCollection
+                  )
+                case prop: OWLDataProperty =>
+                  new OWLDataPropertyAssertionAxiomImpl(
+                    indiv,
+                    prop,
+                    value.asInstanceOf[OWLLiteral],
+                    annotations.asJavaCollection
+                  )
+              }
+            else
+              prop match {
+                case prop: OWLObjectProperty =>
+                  new OWLNegativeObjectPropertyAssertionAxiomImpl(
+                    indiv,
+                    prop,
+                    value.asInstanceOf[OWLIndividual],
+                    annotations.asJavaCollection
+                  )
+                case prop: OWLDataProperty =>
+                  new OWLNegativeDataPropertyAssertionAxiomImpl(
+                    indiv,
+                    prop,
+                    value.asInstanceOf[OWLLiteral],
+                    annotations.asJavaCollection
+                  )
+              }
+          })
+          case IndividualSameAsDetails(details) => details.map(d =>
+            new OWLSameIndividualAxiomImpl(
+              List(indiv, d._1).asJavaCollection,
+              d._2.asJavaCollection
+            )
+          )
+          case IndividualDifferentFromDetails(details) => details.map(d =>
+            new OWLDifferentIndividualsAxiomImpl(
+              List(indiv, d._1).asJavaCollection,
+              d._2.asJavaCollection
+            )
+          )
+        }
+        axioms
+      }
+    }
+
+  def equivalentClasses: Parser[List[OWLAxiom]] =
+    "EquivalentClasses:" ~ whiteSpace ~ annotations ~ whiteSpace ~ description2List ^^ { raw =>
+      val annotations: List[OWLAnnotation] = raw._1._1._2
+      val descriptions: List[OWLClassExpression] = raw._2._1 :: raw._2._2
+      List(new OWLEquivalentClassesAxiomImpl(descriptions.asJavaCollection, annotations.asJavaCollection))
+    }
+
+  def disjointClasses: Parser[List[OWLAxiom]] =
+    "DisjointClasses:" ~ whiteSpace ~ annotations ~ whiteSpace ~ description2List ^^ { raw =>
+      val annotations: List[OWLAnnotation] = raw._1._1._2
+      val descriptions: List[OWLClassExpression] = raw._2._1 :: raw._2._2
+
+      List(new OWLDisjointClassesAxiomImpl(descriptions.asJavaCollection, annotations.asJavaCollection))
+    }
+
+  def objectPropertyExpressionList: Parser[List[OWLObjectPropertyExpression]] =
+    objectPropertyExpression ~
+      { whiteSpace.? ~ comma ~ whiteSpace.? ~ objectPropertyExpression }.*  ^^ { raw =>
+      raw._1 :: raw._2.map(_._2)
+    }
+
+  def objectPropertyExpression2List: Parser[List[OWLObjectPropertyExpression]] =
+    objectPropertyExpression ~ whiteSpace.? ~ comma ~ whiteSpace.? ~
+      objectPropertyExpressionList ^^ { raw => raw._1._1._1._1 :: raw._2 }
+
+  def equivalentObjectProperties: Parser[List[OWLAxiom]] =
+    "EquivalentProperties:" ~ whiteSpace ~ annotations ~ whiteSpace ~
+      objectPropertyExpression2List ^^ { raw =>
+      List(
+        new OWLEquivalentObjectPropertiesAxiomImpl(
+          raw._2.asJavaCollection,
+          raw._1._1._2.asJavaCollection
+        )
+      )
+    }
+
+  def disjointObjectProperties: Parser[List[OWLAxiom]] =
+    "DisjointProperties:" ~ whiteSpace ~ annotations ~ whiteSpace ~
+      objectPropertyExpression2List ^^ { raw =>
+      List(
+        new OWLDisjointObjectPropertiesAxiomImpl(
+          raw._2.asJavaCollection,
+          raw._1._1._2.asJavaCollection
+        )
+      )
+    }
+
+  def dataPropertyExpressionList: Parser[List[OWLDataPropertyExpression]] =
+    dataPropertyExpression ~
+      { whiteSpace.? ~ comma ~ whiteSpace.? ~ dataPropertyExpression }.* ^^ { raw =>
+      raw._1 :: raw._2.map(_._2)
+    }
+
+  def dataProperty2List: Parser[List[OWLDataPropertyExpression]] =
+    dataPropertyExpression ~ whiteSpace.? ~ comma ~ whiteSpace.? ~
+      dataPropertyExpressionList ^^ { raw => raw._1._1._1._1 :: raw._2 }
+
+  def equivalentDataProperties: Parser[List[OWLAxiom]] =
+    "EquivalentProperties:" ~ whiteSpace ~ annotations ~ whiteSpace ~
+      dataProperty2List ^^ { raw =>
+      List(
+        new OWLEquivalentDataPropertiesAxiomImpl(
+          raw._2.asJavaCollection,
+          raw._1._1._2.asJavaCollection
+        )
+      )
+    }
+
+  def disjointDataProperties: Parser[List[OWLAxiom]] =
+    "DisjointProperties:" ~ whiteSpace ~ annotations ~ whiteSpace ~
+      dataProperty2List ^^ { raw =>
+      List(
+        new OWLDisjointDataPropertiesAxiomImpl(
+          raw._2.asJavaCollection,
+          raw._1._1._2.asJavaCollection
+        )
+      )
+    }
+
+  def individual2List: Parser[List[OWLIndividual]] =
+    individual ~ whiteSpace.? ~ comma ~ whiteSpace.? ~ individualList ^^ { raw =>
+      raw._1._1._1._1 :: raw._2
+    }
+
+  def sameIndividual: Parser[List[OWLAxiom]] =
+    "SameIndividual:" ~ whiteSpace ~ annotations ~ whiteSpace ~
+      individual2List ^^ { raw =>
+      List(
+        new OWLSameIndividualAxiomImpl(
+          raw._2.asJavaCollection,
+          raw._1._1._2.asJavaCollection
+        )
+      )
+    }
+
+  def differentIndividuals: Parser[List[OWLAxiom]] =
+    "DifferentIndividuals:" ~ whiteSpace ~ annotations ~ whiteSpace ~
+      individual2List ^^ { raw =>
+      List(
+        new OWLDifferentIndividualsAxiomImpl(
+          raw._2.asJavaCollection,
+          raw._1._1._2.asJavaCollection
+        )
+      )
+    }
+
+  // FIXME: equivalentDataProperties and disjointDataProperties will never match since already matched by equivalentObjectProperties and disjointObjectProperties, respectively
+  def misc: Parser[List[OWLAxiom]] =
+    equivalentClasses | disjointClasses | equivalentObjectProperties |
+      disjointObjectProperties | equivalentDataProperties |
+      disjointDataProperties | sameIndividual | differentIndividuals
 
   def frame: Parser[List[OWLAxiom]] = datatypeFrame | classFrame |
     objectPropertyFrame | dataPropertyFrame | annotationPropertyFrame |
