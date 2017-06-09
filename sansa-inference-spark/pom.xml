@@ -304,7 +304,7 @@
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>commons-net:commons-net</exclude>
                                             <exclude>io.dropwizard.metrics:metrics*</exclude>
-                                            <exckude>io.netty:netty*</exckude>
+                                            <exclude>io.netty:netty*</exclude>
                                             <exclude>javax.activation:activation</exclude>
                                             <exclude>javax.annotation:javax.annotation-api</exclude>
                                             <exclude>javax.servlet:javax.servlet-api</exclude>
