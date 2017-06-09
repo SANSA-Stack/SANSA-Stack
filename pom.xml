@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 
 	<!-- <name>${project.artifactId}</name> -->
-	<description>RDF Spark Library</description>
+	<description>SANSA Query Library</description>
 	<inceptionYear>2015</inceptionYear>
 
 	<properties>
@@ -29,12 +29,13 @@
 
 	<modules>
 		<module>sansa-query-spark-parent</module>
+		<module>sansa-query-flink-parent</module>
 	</modules>
 
 	<scm>
-		<url>https://github.com/SANSA-Stack/Spark-RDF</url>
-		<connection>scm:git:git://github.com/SANSA-Stack/Spark-RDF.git</connection>
-		<developerConnection>scm:git:git@github.com:SANSA-Stack/Spark-RDF.git</developerConnection>
+		<url>https://github.com/SANSA-Stack/SANSA-Query</url>
+		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-Query.git</connection>
+		<developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-Query.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 

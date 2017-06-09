@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>sansa-query-flink-parent</artifactId>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-query-parent</artifactId>
+		<version>0.1.1-SNAPSHOT</version>
+	</parent>
+
+	<modules>
+		<module>sansa-query-flink-sparqlify</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink-utils</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-flink-sparqlify</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.scalatest</groupId>
+				<artifactId>scalatest_${scala.compat.version}</artifactId>
+				<version>3.0.3</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+
+</project>

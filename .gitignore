@@ -38,6 +38,8 @@ hs_err_pid*
 
 .cache-main
 .iml
+.idea
+*.iml
 
 stat*.txt
 
