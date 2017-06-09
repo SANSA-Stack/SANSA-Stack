@@ -11,7 +11,8 @@ import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
 object TripleLayoutLong
   extends TripleLayout
 {
-  def schema = typeOf[(String, Long)]
+  def schema = typeOf[StringLong]
+  def cc = StringLong
 
   def fromTriple(t: Triple): (String, Long) = {
     val s = t.getSubject
@@ -22,5 +23,9 @@ object TripleLayoutLong
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
     (sStr, v.longValue)
+  }
+
+  def fromTripleToC(t: Triple): StringLong = {
+    cc.tupled(fromTriple(t))
   }
 }

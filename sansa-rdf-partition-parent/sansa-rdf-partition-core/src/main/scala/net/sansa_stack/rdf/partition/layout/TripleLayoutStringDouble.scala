@@ -12,7 +12,7 @@ object TripleLayoutDouble
   extends TripleLayout
 {
   def schema = typeOf[(String, Double)]
-  //val foo = universe
+  def cc = StringDouble
 
   def fromTriple(t: Triple): (String, Double) = {
     val s = t.getSubject
@@ -23,6 +23,10 @@ object TripleLayoutDouble
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
     (sStr, v.doubleValue)
+  }
+
+  override def fromTripleToC(triple: Triple): StringDouble = {
+    cc.tupled(fromTriple(triple))
   }
 }
 

@@ -13,6 +13,7 @@ object TripleLayoutString
   extends TripleLayout
 {
   def schema = typeOf[(String, String)]
+  def cc = StringString
 
   def fromTriple(t: Triple): (String, String) = {
     val s = t.getSubject
@@ -28,5 +29,9 @@ object TripleLayoutString
     }
 
     result
+  }
+
+  override def fromTripleToC(triple: Triple): StringString = {
+    cc.tupled(fromTriple(triple))
   }
 }
