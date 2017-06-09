@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>sansa-examples-parent</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>2016-12</version>
+		<version>2017-06-SNAPSHOT</version>
 	</parent>
 	<artifactId>sansa-examples-spark</artifactId>
 	<name>SANSA Examples - Apache Spark</name>
