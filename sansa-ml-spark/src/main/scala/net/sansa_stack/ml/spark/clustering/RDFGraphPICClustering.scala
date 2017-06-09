@@ -19,17 +19,27 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
   /*
    * Computes different similarities function for a given graph @graph.
    */
-  
+ 
     //****************************************************************************************************
     //****collect the edges***************
-    val edge = graph.edges.collect()
+    val edg = graph.edges.collect()
+    var simJaccard = 0.0
+
     //***** collecting neighbors**********
-    val neighbors = graph.collectNeighborIds(EdgeDirection.Either)
+    val neighbor = graph.collectNeighborIds(EdgeDirection.Either)
 
     //************************************
 
-    val vertices = graph.vertices.distinct()
-    val v1 = vertices.id
+    val vertex = graph.vertices.distinct()
+    val v1 = vertex.id
+
+    // ***********************jaccard similarity function ************************************
+    def jaccard[A](a: Set[A], b: Set[A]): Double = {
+
+      if (a.isEmpty || b.isEmpty) { return 0.0 }
+      a.intersect(b).size / a.union(b).size.toDouble
+    }
+    //**************************************************************
 
     //*********** similarity of Strategies based on Information Theory****************************
 
@@ -68,11 +78,17 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
       }
 
     }
+    //******************************************************* Lin similarity ***************************************************************
+    def simLin(e: Long, d: Long): Double = {
+      if (ic(e) > 0.0 || ic(d) > 0.0) {
+        (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
+      } else { return 0.0 }
+    }
     //***************************************************************************************************
     //difference of 2 sets : uses in below similarities
-    def difference(a: Long, b: Long): Double = {
-      val ansec = neighbors.lookup(a).distinct.head.toSet
-      val ansec1 = neighbors.lookup(b).distinct.head.toSet
+    def n(a: Long, b: Long): Double = {
+      val ansec = neighbor.lookup(a).distinct.head.toSet
+      val ansec1 = neighbor.lookup(b).distinct.head.toSet
       if (ansec.isEmpty) { return 0.0 }
       val differ = ansec.diff(ansec1)
       if (differ.isEmpty) { return 0.0 }
@@ -80,78 +96,57 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
       differ.size.toDouble
     }
     // intersection of 2 sets
-    def intersection(a: Long, b: Long): Double = {
-      val inters = neighbors.lookup(a).distinct.head.toSet
-      val inters1 = neighbors.lookup(b).distinct.head.toSet
+    def in(a: Long, b: Long): Double = {
+      val inters = neighbor.lookup(a).distinct.head.toSet
+      val inters1 = neighbor.lookup(b).distinct.head.toSet
       if (inters.isEmpty || inters1.isEmpty) { return 0.0 }
       val rst = inters.intersect(inters1).toArray
       if (rst.isEmpty) { return 0.0 }
 
       rst.size.toDouble
     }
-    // Union of 2 sets
-    def union(a: Long, b: Long): Double = {
-      val inters = neighbors.lookup(a).distinct.head.toSet
-      val inters1 = neighbors.lookup(b).distinct.head.toSet
-      val rst = inters.union(inters1).toArray
-      if (rst.isEmpty) { return 0.0 }
-
-      rst.size.toDouble
-    }
     //logarithm base 2 
     val LOG2 = math.log(2)
-    val log2 = { x: Double => math.log(x) / LOG2 }
-    //******************************************************* Lin similarity ***************************************************************
-       def simLin(e: Long, d: Long): Double = {
-          if (ic(e) > 0.0 || ic(d) > 0.0) {
-            (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
-          } else { return 0.0 }
-        }
-    // ***********************Jaccard similarity function ************************************
-    def simJaccard(a: Long, b: Long): Double = {
-      intersection(a, b) / union(a, b).toDouble
 
-    }
+    val log2 = { x: Double => math.log(x) / LOG2 }
     //************************************ Batet similarity*********************************************************
     def simBatet(a: Long, b: Long): Double = {
-      val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
+      val cal = 1 + ((n(a, b) + n(b, a)) / (n(a, b) + n(b, a) + in(a, b))).abs
       log2(cal.toDouble)
     }
 
     //************************************************* Rodríguez and Egenhofer similarity***********************************
-    var g = 0.8
+    var g = 0.5
     def simRE(a: Long, b: Long): Double = {
-      (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
+      (in(a, b) / ((g * n(a, b)) + ((1 - g) * n(b, a)) + in(a, b))).toDouble.abs
     }
     //************************************************************the contrast model similarity****************************************
-    var gamma = 0.3
-    var alpha = 0.3
-    var beta = 0.3
+    var y = 0.3
+    var al = 0.3
+    var be = 0.3
     def simCM(a: Long, b: Long): Double = {
-      ((gamma * intersection(a, b)) - (alpha * difference(a, b)) - (beta * difference(b, a))).toDouble.abs
+      ((y * in(a, b)) - (al * n(a, b)) - (be * n(b, a))).toDouble.abs
     }
 
     //********************************************************the ratio model similarity***********************************************************
     var alph = 0.5
     var beth = 0.5
     def simRM(a: Long, b: Long): Double = {
-      ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
+      ((in(a, b)) / ((alph * n(a, b)) + (beth * n(b, a)) + in(a, b))).toDouble.abs
     }
 
     //*************************************************************************************************************************
 
-    val ver = edge.map { x =>
+    val ver = edg.map { x =>
       {
         val x1 = x.dstId.toLong
         val x2 = x.srcId.toLong
-        val allneighbor = neighbors.lookup(x1).distinct.head
-        val allneighbor1 = neighbors.lookup(x2).distinct.head
+        val allneighbor = neighbor.lookup(x1).distinct.head
+        val allneighbor1 = neighbor.lookup(x2).distinct.head
 
-          simJaccard = (jaccard(allneighbor.toSet, allneighbor1.toSet))
+        simJaccard = (jaccard(allneighbor.toSet, allneighbor1.toSet))
         // below for applying jaccard similarity use "simi" and for applying similarity of Strategies based on Information Theory use "sim(x1,x2).abs"          
-        //(x1, x2, jaccard(x1, x2).abs)
-        //(x1, x2, simBatet(x1, x2).abs)
-         (x1, x2, simJaccard.abs)
+        (x1, x2, simJaccard.abs)
       }
     }
 
