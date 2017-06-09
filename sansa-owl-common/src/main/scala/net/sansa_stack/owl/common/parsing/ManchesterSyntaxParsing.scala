@@ -119,7 +119,7 @@ trait ManchesterSyntaxParsing {
     val parser = ManchesterParser
     parser.prefixes.put("", defaultPrefix)
 
-    parser.checkParsed(parser.frame, frame).toSet
+    parser.parseFrame(frame).toSet
   }
 }
 

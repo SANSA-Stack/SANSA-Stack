@@ -327,7 +327,7 @@ trait IRIParsing extends RegexParsers {
   def twohundredToTwohundredfourtynine: Parser[String] =
     "2" ~ "[0-4]".r ~ digit ^^ { raw => raw._1._1 + raw._1._2 + raw._2 }
 
-  def twohundredfiftyToTwohundredfiftyfive =
+  def twohundredfiftyToTwohundredfiftyfive: Parser[String] =
     "25" ~ "[0-5]".r ^^ {raw => raw._1 + raw._2 }
 
   def decOctet: Parser[String] =
@@ -449,21 +449,21 @@ trait IRIParsing extends RegexParsers {
 //      { { pn_chars | dot }.* ~ pn_chars }.? ^^ { toString(_) }
 //  def pn_local: Parser[String] = { pn_chars_u | digit } ~ { pn_chars | dot }.* ^^ { toString(_) }
   def pn_local: Parser[String] = pn_local_non_digit_start | pn_local_at_least_one_non_digit_char
+
   def pn_local_non_digit_start: Parser[String] =
     pn_chars_u ~ { pn_chars | dot }.* ^^ { toString(_) }
+
   def pn_local_at_least_one_non_digit_char: Parser[String] =
-    { pn_chars_u | digit } ~ { pn_chars | dot }.* ~ pn_chars ~ { pn_chars | dot }.* ^^ { toString(_) }
+    { pn_chars_u | digit } ~ { pn_chars | dot }.* ~ pn_chars ~
+      { pn_chars | dot }.* ^^ { toString(_) }
 
   // = PNAME_LN ::= PNAME_NS PN_LOCAL
   def abbreviatedIRI: Parser[IRI] = pname_ns ~ pn_local ^^ { raw => {
-    // TODO: add warning or do something meaningful in case prefix is unknown
-//    val prefix = raw._1 match {
-//      case Some(prefixStr) => prefixes.getOrElse(prefixStr.replace(":", ""), prefixStr)
-//      case None => prefixes.getOrElse("", "")
-//    }
-    val prefix = prefixes.getOrElse(raw._1.replace(":", ""), raw._1)
-    IRI.create(prefix, raw._2.toString)
-  }}
+      // TODO: add warning or do something meaningful in case prefix is unknown
+      val prefix = prefixes.getOrElse(raw._1.replace(":", ""), raw._1)
+      IRI.create(prefix, raw._2.toString)
+    }
+  }
 
   // TODO: check whether these are specific for Manchester OWL syntax
   private val dtypeBuiltinKeywords: List[String] = List(
@@ -474,7 +474,8 @@ trait IRIParsing extends RegexParsers {
     "SubClassOf", "DisjointUnionOf", "HasKey", "Annotations", "Domain", "Range")
 
   def notAManchesterOWLKeyword: Parser[String] = pn_local ^? {
-    case iriStr if !keywords.contains(iriStr) => iriStr }
+    case iriStr if !keywords.contains(iriStr) => iriStr
+  }
 
   def simpleIRI: Parser[IRI] = notAManchesterOWLKeyword ^^ { raw =>
     /* Add default prefix if it is defined. */

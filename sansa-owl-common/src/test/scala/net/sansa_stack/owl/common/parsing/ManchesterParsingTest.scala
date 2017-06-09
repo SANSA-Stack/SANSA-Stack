@@ -22,6 +22,8 @@ class ManchesterParsingTest extends FunSuite {
     p.prefixes.put("foo", "http://ex.com/foo#")
     p.prefixes.put("bar", "http://ex.com/bar#")
     p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
+    p.prefixes.put("owl", "http://www.w3.org/2002/07/owl#")
+    p.prefixes.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
     p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
   }
 
@@ -51,140 +53,140 @@ class ManchesterParsingTest extends FunSuite {
   test("The IPv6 address parser should work correctly") {
     val fn = p.ipv6address
 
-    val a01 = "::"
-    assert(p.checkParsed(fn, a01) == a01)
+    var address = "::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a02 = "1234::"
-    assert(p.checkParsed(fn, a02) == a02)
+    address = "1234::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a03 = "1234:5678::"
-    assert(p.checkParsed(fn, a03) == a03)
+    address = "1234:5678::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a04 = "1234:5678:90ab::"
-    assert(p.checkParsed(fn, a04) == a04)
+    address = "1234:5678:90ab::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a05 = "1234:5678:90ab:cdef::"
-    assert(p.checkParsed(fn, a05) == a05)
+    address = "1234:5678:90ab:cdef::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a06 = "1234:5678:90ab:cdef:fedc::"
-    assert(p.checkParsed(fn, a06) == a06)
+    address = "1234:5678:90ab:cdef:fedc::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a07 = "1234:5678:90ab:cdef:fedc:ba09::"
-    assert(p.checkParsed(fn, a07) == a07)
+    address = "1234:5678:90ab:cdef:fedc:ba09::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a08 = "1234:5678:90ab:cdef:fedc:ba09:8765::"
-    assert(p.checkParsed(fn, a08) == a08)
+    address = "1234:5678:90ab:cdef:fedc:ba09:8765::"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a09 = "::1"
-    assert(p.checkParsed(fn, a09) == a09)
+    address = "::1"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a10 = "::23"
-    assert(p.checkParsed(fn, a10) == a10)
+    address = "::23"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a11 = "::10ff"
-    assert(p.checkParsed(fn, a11) == a11)
+    address = "::10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a12 = "1234::10ff"
-    assert(p.checkParsed(fn, a12) == a12)
+    address = "1234::10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a13 = "1234:5678::10ff"
-    assert(p.checkParsed(fn, a13) == a13)
+    address = "1234:5678::10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a14 = "1234:5678:90ab::10ff"
-    assert(p.checkParsed(fn, a14) == a14)
+    address = "1234:5678:90ab::10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a15 = "1234:5678:90ab:cdef::10ff"
-    assert(p.checkParsed(fn, a15) == a15)
+    address = "1234:5678:90ab:cdef::10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a16 = "1234:5678:90ab:cdef:fedc::10ff"
-    assert(p.checkParsed(fn, a16) == a16)
+    address = "1234:5678:90ab:cdef:fedc::10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a17 = "1234:5678:90ab:cdef:fedc:ba09::10ff"
-    assert(p.checkParsed(fn, a17) == a17)
+    address = "1234:5678:90ab:cdef:fedc:ba09::10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a18 = "::11ee:10ff"
-    assert(p.checkParsed(fn, a18) == a18)
+    address = "::11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a19 = "1234::11ee:10ff"
-    assert(p.checkParsed(fn, a19) == a19)
+    address = "1234::11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a20 = "1234:5678::11ee:10ff"
-    assert(p.checkParsed(fn, a20) == a20)
+    address = "1234:5678::11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a21 = "1234:5678:90ab::11ee:10ff"
-    assert(p.checkParsed(fn, a21) == a21)
+    address = "1234:5678:90ab::11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a22 = "1234:5678:90ab:cdef::11ee:10ff"
-    assert(p.checkParsed(fn, a22) == a22)
+    address = "1234:5678:90ab:cdef::11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a23 = "1234:5678:90ab:cdef:fedc::11ee:10ff"
-    assert(p.checkParsed(fn, a23) == a23)
+    address = "1234:5678:90ab:cdef:fedc::11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a24 = "::12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a24) == a24)
+    address = "::12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a25 = "1234::12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a25) == a25)
+    address = "1234::12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a26 = "1234:5678::12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a26) == a26)
+    address = "1234:5678::12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a27 = "1234:5678:90ab::12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a27) == a27)
+    address = "1234:5678:90ab::12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a28 = "1234:5678:90ab:cdef::12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a28) == a28)
+    address = "1234:5678:90ab:cdef::12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a29 = "::13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a29) == a29)
+    address = "::13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a30 = "1234::13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a30) == a30)
+    address = "1234::13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a31 = "1234:5678::13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a31) == a31)
+    address = "1234:5678::13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a32 = "1234:5678:90ab::13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a32) == a32)
+    address = "1234:5678:90ab::13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a33 = "::14bb:13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a33) == a33)
+    address = "::14bb:13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a34 = "1234::14bb:13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a34) == a34)
+    address = "1234::14bb:13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a35 = "1234:5678::14bb:13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a35) == a35)
+    address = "1234:5678::14bb:13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a36 = "::15aa:14bb:13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a36) == a36)
+    address = "::15aa:14bb:13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a37 = "1234::15aa:14bb:13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a37) == a37)
+    address = "1234::15aa:14bb:13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a38 = "1799:1600:15aa:14bb:13cc:12dd:11ee:10ff"
-    assert(p.checkParsed(fn, a38) == a38)
+    address = "1799:1600:15aa:14bb:13cc:12dd:11ee:10ff"
+    assert(p.checkParsed(fn, address) == address)
   }
 
   test("The IPv4 address parser should work correctly") {
     val fn = p.ipv4address
-    val a01 = "1.2.3.4"
-    assert(p.checkParsed(fn, a01) == a01)
+    var address = "1.2.3.4"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a02 = "12.34.56.78"
-    assert(p.checkParsed(fn, a02) == a02)
+    address = "12.34.56.78"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a03 = "112.123.134.145"
-    assert(p.checkParsed(fn, a03) == a03)
+    address = "112.123.134.145"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a04 = "212.223.234.245"
-    assert(p.checkParsed(fn, a04) == a04)
+    address = "212.223.234.245"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a05 = "0.0.0.0"
-    assert(p.checkParsed(fn, a05) == a05)
+    address = "0.0.0.0"
+    assert(p.checkParsed(fn, address) == address)
 
-    val a06 = "255.255.255.255"
-    assert(p.checkParsed(fn, a06) == a06)
+    address = "255.255.255.255"
+    assert(p.checkParsed(fn, address) == address)
   }
 
   def quoted(iriStr: String) = "<" + iriStr + ">"
@@ -645,6 +647,7 @@ class ManchesterParsingTest extends FunSuite {
     val prefix2 = "http://dbpedia.org/resource/"
 
     val defaultPrefix = "http://dl-learner.org/whatever#"
+    clearParserPrefixes
     p.prefixes.put(prefix1Abbr, prefix1)
     p.prefixes.put(prefix2Abbr, prefix2)
     p.prefixes.put("", defaultPrefix)
@@ -661,7 +664,7 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.checkParsed(p.abbreviatedIRI, ":" + localPart) ==
       IRI.create(defaultPrefix, localPart))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The non-negatve integer parser should work correctly") {
@@ -685,7 +688,7 @@ class ManchesterParsingTest extends FunSuite {
   }
 
   test("The datatype parser should work correctly") {
-    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
+    setupParserPrefixes
 
     assert(p.checkParsed(p.datatype, "xsd:nonNegativeInteger") ==
       df.getOWLDatatype(OWL2Datatype.XSD_NON_NEGATIVE_INTEGER))
@@ -698,11 +701,11 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.checkParsed(p.datatype, "string") ==
       df.getOWLDatatype(OWL2Datatype.XSD_STRING))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The typed literal parser should work correctly") {
-    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
+    setupParserPrefixes
 
     assert(p.checkParsed(p.typedLiteral, "\"23\"^^xsd:integer") ==
       df.getOWLLiteral("23", OWL2Datatype.XSD_INTEGER))
@@ -714,12 +717,13 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.checkParsed(p.typedLiteral, "\"" + lexValue + "\"^^string") ==
       df.getOWLLiteral(lexValue, OWL2Datatype.XSD_STRING))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The parser for string literals with language tag should work correctly") {
     assert(p.checkParsed(p.stringLiteralWithLanguage, "\"foo\"@en") ==
       df.getOWLLiteral("foo", "en"))
+
     assert(p.checkParsed(p.stringLiteralWithLanguage, "\"bar\"@sgn-CH-DE") ==
       df.getOWLLiteral("bar", "sgn-CH-DE"))
   }
@@ -815,14 +819,7 @@ class ManchesterParsingTest extends FunSuite {
   }
 
   test("The annotations parser should work correctly") {
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("foo", "http://ex.com/foo#")
-    p.prefixes.put("owl", "http://www.w3.org/2002/07/owl#")
-    p.prefixes.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
-    p.prefixes.put("xml", "http://www.w3.org/XML/1998/namespace")
-    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
+    setupParserPrefixes
 
     var annotationsStr =
       """Annotations:
@@ -841,9 +838,10 @@ class ManchesterParsingTest extends FunSuite {
       df.getOWLAnnotationProperty(IRI.create("http://ex.com/foo#hasName"))
 
     val annVal1 = df.getOWLLiteral("Title")
-    val annVal2 = df.getOWLLiteral("""A longer
-                                     |description running over
-                                     |several lines""".stripMargin)
+    val annVal2 = df.getOWLLiteral(
+      """A longer
+        |description running over
+        |several lines""".stripMargin)
     val annVal3 = df.getOWLLiteral("Name")
 
     val emptyJavaList = List.empty[OWLAnnotation].asJavaCollection
@@ -901,14 +899,12 @@ class ManchesterParsingTest extends FunSuite {
     assert(secondOuterAnnotation.annotations().count() == 2)
     assert(secondOuterAnnotation.getProperty ==
       new OWLAnnotationPropertyImpl(IRI.create("http://ex.com/bar#label")))
+
+    clearParserPrefixes
   }
 
   test("The datatype frame parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-
-    val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
+    setupParserPrefixes
 
     var dtypeFrameStr = """Datatype: string"""
     var parsed = p.checkParsed(p.datatypeFrame, dtypeFrameStr)
@@ -929,6 +925,7 @@ class ManchesterParsingTest extends FunSuite {
         |        title "Blah"
       """.stripMargin
     parsed = p.checkParsed(p.datatypeFrame, dtypeFrameStr)
+
     expectedAxiom = new OWLDeclarationAxiomImpl(
       df.getStringOWLDatatype,
       List(
@@ -953,6 +950,7 @@ class ManchesterParsingTest extends FunSuite {
         |        title "Blah"
       """.stripMargin
     parsed = p.checkParsed(p.datatypeFrame, dtypeFrameStr)
+
     expectedAxiom = new OWLDeclarationAxiomImpl(
       df.getStringOWLDatatype,
       List(
@@ -1018,11 +1016,11 @@ class ManchesterParsingTest extends FunSuite {
     )
     assert(parsed.contains(expectedAxiom))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The prefix declaration parser should work correctly") {
-    p.prefixes.clear()
+    clearParserPrefixes
 
     var prefixDeclString = "Prefix: : <http://ex.com/default#>"
     p.checkParsed(p.prefixDeclaration, prefixDeclString)
@@ -1042,28 +1040,35 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.prefixes.size == 3)
     assert(p.prefixes("foo") == "http://ex.com/foo#")
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The data type restriction parser should work correctly") {
     val int = df.getOWLDatatype(OWL2Datatype.XSD_INTEGER)
 
     var dtypeRestrStr = "integer [>= 0]"
-    var facetRestr1 = new OWLFacetRestrictionImpl(OWLFacet.MIN_INCLUSIVE, df.getOWLLiteral(0))
+
+    var facetRestr1 =
+      new OWLFacetRestrictionImpl(OWLFacet.MIN_INCLUSIVE, df.getOWLLiteral(0))
+
     var dtypeRestr = new OWLDatatypeRestrictionImpl(
       int, List[OWLFacetRestriction](facetRestr1).asJavaCollection)
+
     assert(p.checkParsed(p.datatypeRestriction, dtypeRestrStr) == dtypeRestr)
 
     dtypeRestrStr = "integer [>= 0,< 100]"
-    facetRestr1 = new OWLFacetRestrictionImpl(OWLFacet.MIN_INCLUSIVE, df.getOWLLiteral(0))
-    var facetRestr2 = new OWLFacetRestrictionImpl(OWLFacet.MAX_EXCLUSIVE, df.getOWLLiteral(100))
+    facetRestr1 =
+      new OWLFacetRestrictionImpl(OWLFacet.MIN_INCLUSIVE, df.getOWLLiteral(0))
+
+    var facetRestr2 =
+      new OWLFacetRestrictionImpl(OWLFacet.MAX_EXCLUSIVE, df.getOWLLiteral(100))
+
     dtypeRestr = new OWLDatatypeRestrictionImpl(
       int, List[OWLFacetRestriction](facetRestr1, facetRestr2).asJavaCollection)
     assert(p.checkParsed(p.datatypeRestriction, dtypeRestrStr) == dtypeRestr)
 
     dtypeRestrStr = "integer [ >= 0, < 100 ]"
     assert(p.checkParsed(p.datatypeRestriction, dtypeRestrStr) == dtypeRestr)
-
   }
 
   test("The atomic data parser should work correctly") {
@@ -1083,7 +1088,10 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.checkParsed(p.dataAtomic, atomicDataStr) == dataRange)
 
     atomicDataStr = "(integer or string)"
-    val ranges: List[OWLDataRange] = List(df.getIntegerOWLDatatype, df.getStringOWLDatatype)
+
+    val ranges: List[OWLDataRange] =
+      List(df.getIntegerOWLDatatype, df.getStringOWLDatatype)
+
     dataRange = new OWLDataUnionOfImpl(ranges.asJavaCollection)
     assert(p.checkParsed(p.dataAtomic, atomicDataStr) == dataRange)
 
@@ -1107,7 +1115,12 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.checkParsed(p.dataConjunction, dataConjunctionStr) == dataRange)
 
     dataConjunctionStr = "integer and decimal"
-    var ranges = List[OWLDataRange](df.getIntegerOWLDatatype, df.getOWLDatatype(OWL2Datatype.XSD_DECIMAL))
+    var ranges =
+      List[OWLDataRange](
+        df.getIntegerOWLDatatype,
+        df.getOWLDatatype(OWL2Datatype.XSD_DECIMAL)
+      )
+
     dataRange = new OWLDataIntersectionOfImpl(ranges.asJavaCollection)
     assert(p.checkParsed(p.dataConjunction, dataConjunctionStr) == dataRange)
 
@@ -1118,9 +1131,7 @@ class ManchesterParsingTest extends FunSuite {
   }
 
   test("The inverse object property parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var invPropStr = "inverse someProp"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#someProp"))
@@ -1137,13 +1148,11 @@ class ManchesterParsingTest extends FunSuite {
     inverse = df.getOWLObjectInverseOf(prop)
     assert(p.checkParsed(p.inverseObjectProperty, invPropStr) == inverse)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The ObjectSomeValuesFrom restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "objProp some Cls"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1163,13 +1172,11 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLObjectSomeValuesFrom(prop, cls)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The ObjectAllValuesFrom restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "objProp only Cls"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1189,13 +1196,11 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLObjectAllValuesFrom(prop, cls)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The ObjectHasValue restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "objProp value someIndividual"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1215,13 +1220,11 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLObjectHasValue(prop, indiv)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The ObjectHasSelf restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "objProp Self"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1238,13 +1241,11 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLObjectHasSelf(prop)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The ObjectMinCardinality restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "objProp min 3"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1280,13 +1281,11 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLObjectMinCardinality(3, prop, cls)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The ObjectMaxCardinality restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "objProp max 3"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1302,7 +1301,6 @@ class ManchesterParsingTest extends FunSuite {
     prop = df.getOWLObjectProperty(IRI.create("http://ex.com/foo#objProp"))
     restr = df.getOWLObjectMaxCardinality(3, prop)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
-
 
     restrStr = "objProp max 3 Cls"
     prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1322,13 +1320,11 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLObjectMaxCardinality(3, prop, cls)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The ObjectExactCardinality restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "objProp exactly 3"
     var prop = df.getOWLObjectProperty(IRI.create("http://ex.com/default#objProp"))
@@ -1364,18 +1360,16 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLObjectExactCardinality(3, prop, cls)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The DataSomeValuesFrom restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "dataProp some not { 1, 2, 3 }"
     var dataProp = df.getOWLDataProperty(IRI.create("http://ex.com/default#dataProp"))
-    var literals = List(df.getOWLLiteral(1), df.getOWLLiteral(2), df.getOWLLiteral(3))
-    var dataRange = df.getOWLDataComplementOf(
+    val literals = List(df.getOWLLiteral(1), df.getOWLLiteral(2), df.getOWLLiteral(3))
+    val dataRange = df.getOWLDataComplementOf(
       df.getOWLDataOneOf(literals.asJavaCollection.stream()))
     var restr = df.getOWLDataSomeValuesFrom(dataProp, dataRange)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
@@ -1390,18 +1384,16 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLDataSomeValuesFrom(dataProp, dataRange)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The DataAllValuesFrom restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "dataProp only not { 1, 2, 3 }"
     var dataProp = df.getOWLDataProperty(IRI.create("http://ex.com/default#dataProp"))
-    var literals = List(df.getOWLLiteral(1), df.getOWLLiteral(2), df.getOWLLiteral(3))
-    var dataRange = df.getOWLDataComplementOf(
+    val literals = List(df.getOWLLiteral(1), df.getOWLLiteral(2), df.getOWLLiteral(3))
+    val dataRange = df.getOWLDataComplementOf(
       df.getOWLDataOneOf(literals.asJavaCollection.stream()))
     var restr = df.getOWLDataAllValuesFrom(dataProp, dataRange)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
@@ -1416,17 +1408,15 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLDataAllValuesFrom(dataProp, dataRange)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The DataHasValue restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "dataProp value 23"
     var dataProp = df.getOWLDataProperty(IRI.create("http://ex.com/default#dataProp"))
-    var literal = df.getOWLLiteral(23)
+    val literal = df.getOWLLiteral(23)
     var restr = df.getOWLDataHasValue(dataProp, literal)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
@@ -1440,7 +1430,7 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLDataHasValue(dataProp, literal)
     assert(p.checkParsed(p.restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   /**
@@ -1450,9 +1440,7 @@ class ManchesterParsingTest extends FunSuite {
     * or 'someObjProp exactly 3'
     */
   test("The DataMinCardinality restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "dataProp min 3"
     var dataProp = df.getOWLDataProperty(IRI.create("http://ex.com/default#dataProp"))
@@ -1485,7 +1473,7 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLDataMinCardinality(3, dataProp, df.getStringOWLDatatype)
     assert(p.checkParsed(p.dataMinCardinality_restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   /**
@@ -1495,9 +1483,7 @@ class ManchesterParsingTest extends FunSuite {
     * or 'someObjProp exactly 3'
     */
   test("The DataMaxCardinality restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "dataProp max 3"
     var dataProp = df.getOWLDataProperty(IRI.create("http://ex.com/default#dataProp"))
@@ -1530,7 +1516,7 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLDataMaxCardinality(3, dataProp, df.getStringOWLDatatype)
     assert(p.checkParsed(p.dataMaxCardinality_restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   /**
@@ -1540,9 +1526,7 @@ class ManchesterParsingTest extends FunSuite {
     * or 'someObjProp exactly 3'
     */
   test("The DataExactCardinality restriction parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
+    setupParserPrefixes
 
     var restrStr = "dataProp exactly 3"
     var dataProp = df.getOWLDataProperty(IRI.create("http://ex.com/default#dataProp"))
@@ -1575,13 +1559,12 @@ class ManchesterParsingTest extends FunSuite {
     restr = df.getOWLDataExactCardinality(3, dataProp, df.getStringOWLDatatype)
     assert(p.checkParsed(p.dataExactCardinality_restriction, restrStr) == restr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The description parser should work correctly") {
     // 'description' = disjunction of conjunctions
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
+    setupParserPrefixes
 
     var descrString = "Cls1"
     val ce1 = df.getOWLClass("http://ex.com/default#Cls1")
@@ -1598,14 +1581,11 @@ class ManchesterParsingTest extends FunSuite {
     descr = df.getOWLObjectUnionOf(List(ce1, ce2, ce3).asJavaCollection.stream())
     assert(p.checkParsed(p.description, descrString) == descr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The EquivalentTo part of the class frame parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+    setupParserPrefixes
 
     var eqToStr =
       """EquivalentTo:
@@ -1672,26 +1652,11 @@ class ManchesterParsingTest extends FunSuite {
     resultList = List((ce, List.empty))
     assert(p.checkParsed(p.equivalentTo, eqToStr) == resultList)
 
-//    eqToStr =
-//      """EquivalentTo:
-//        |   someProp exactly 1 SomeClass
-//      """.stripMargin
-//    ce = df.getOWLClass("http://ex.com/whatever#SomeClass")
-//    prop = df.getOWLObjectProperty("http://ex.com/whatever#someProp")
-//    ce = df.getOWLObjectSomeValuesFrom(prop, ce)
-//    resultList = List((ce, List.empty))
-//    assert(p.checkParsed(p.equivalentTo, eqToStr) == resultList)
-
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The HasKey parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
-
-    val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
+    setupParserPrefixes
 
     var prefix = "http://ex.com/default#"
     var hasKeyStr =
@@ -1711,7 +1676,6 @@ class ManchesterParsingTest extends FunSuite {
       df.getOWLObjectProperty(prefix, "dProp")
     )
     assert(parsed == (List(annotation), properties))
-
 
     prefix = "http://ex.com/bar#"
     hasKeyStr =
@@ -1790,7 +1754,7 @@ class ManchesterParsingTest extends FunSuite {
     )
     assert(parsed == (List(annotation), properties))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   def debugSave(axioms: List[OWLAxiom], format: OWLDocumentFormatImpl, filePath: String) = {
@@ -1801,11 +1765,8 @@ class ManchesterParsingTest extends FunSuite {
   }
 
   test("The class frame parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+    setupParserPrefixes
 
-    val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
     var classFrameStr =
       """Class: SomeClass
         |    Annotations:
@@ -1846,7 +1807,7 @@ class ManchesterParsingTest extends FunSuite {
     )
     assert(parsed.contains(annAxiom))
 
-    var subClassOfAxiom = new OWLSubClassOfAxiomImpl(
+    val subClassOfAxiom = new OWLSubClassOfAxiomImpl(
       cls,
       df.getOWLObjectExactCardinality(1, df.getOWLObjectProperty(prefix + "someProp")),
       noAnnotations
@@ -1921,16 +1882,11 @@ class ManchesterParsingTest extends FunSuite {
     val hasKeyAxiom = new OWLHasKeyAxiomImpl(cls, properties, annotations)
     assert(parsed.contains(hasKeyAxiom))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The object property domain parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
-
-    val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
+    setupParserPrefixes
 
     var prefix = "http://ex.com/default#"
     var domainStr =
@@ -1964,7 +1920,6 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed(0)._2 == expectedAnnotations)
     assert(parsed(0)._1 == expectedDomain)
 
-
     prefix = "http://ex.com/bar#"
     domainStr =
       """Domain:
@@ -1996,7 +1951,6 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.length == 1)
     assert(parsed(0)._2 == expectedAnnotations)
     assert(parsed(0)._1 == expectedDomain)
-
 
     prefix = "http://ex.com/blah#"
     domainStr =
@@ -2030,20 +1984,16 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed(0)._2 == expectedAnnotations)
     assert(parsed(0)._1 == expectedDomain)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The object property frame parser should work correctly") {
     // I'm well aware that a property cannot have all the properties made up in the test
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+    setupParserPrefixes
 
-    val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
-
-    var prefix = "http://ex.com/default#"
-    var objProp = df.getOWLObjectProperty(prefix + "objProp")
-    var objPropFrameStr =
+    val prefix = "http://ex.com/default#"
+    val objProp = df.getOWLObjectProperty(prefix + "objProp")
+    val objPropFrameStr =
       """ObjectProperty: objProp
         |    Annotations:
         |        comment "Some comment",
@@ -2084,7 +2034,7 @@ class ManchesterParsingTest extends FunSuite {
         |        chainProp1 o chainProp2 o
         |          inverse inverseChainProp3 o chainProp4
       """.stripMargin
-    var parsed: List[OWLAxiom] = p.checkParsed(p.objectPropertyFrame, objPropFrameStr)
+    val parsed: List[OWLAxiom] = p.checkParsed(p.objectPropertyFrame, objPropFrameStr)
 
     var expectedAxiom: OWLAxiom = new OWLAnnotationAssertionAxiomImpl(
       objProp.getIRI,
@@ -2250,16 +2200,12 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
 //    debugSave(parsed, new ManchesterSyntaxDocumentFormat, "/tmp/owl_trials/ont.owl")
-
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The object property characteristics parser should work correctly") {
     // I'm well aware that a property cannot have all the properties made up in the test
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+    setupParserPrefixes
 
     var prefix = "http://ex.com/default#"
     var characteristicsStr =
@@ -2386,7 +2332,6 @@ class ManchesterParsingTest extends FunSuite {
     )
     assert(parsed.contains((PropertyCharacteristic.Transitive, annotations)))
 
-
     prefix = "http://ex.com/bar#"
     characteristicsStr =
       """Characteristics:
@@ -2510,7 +2455,6 @@ class ManchesterParsingTest extends FunSuite {
       )
     )
     assert(parsed.contains((PropertyCharacteristic.Transitive, annotations)))
-
 
     prefix = "http://ex.com/whatever#"
     characteristicsStr =
@@ -2636,22 +2580,17 @@ class ManchesterParsingTest extends FunSuite {
     )
     assert(parsed.contains((PropertyCharacteristic.Transitive, annotations)))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
-  // --------------------------------------------------------------------------
 
   test("The data property frame parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+    setupParserPrefixes
 
     val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
 
-    var prefix = "http://ex.com/default#"
-    var dataProp = df.getOWLDataProperty(prefix + "prop")
-    var dataPropFrameStr =
+    val prefix = "http://ex.com/default#"
+    val dataProp = df.getOWLDataProperty(prefix + "prop")
+    val dataPropFrameStr =
       """DataProperty: prop
         |    Annotations:
         |        comment "Some comment",
@@ -2685,7 +2624,7 @@ class ManchesterParsingTest extends FunSuite {
         |    DisjointWith:
         |        disjProp1, disjProp2
       """.stripMargin
-    var parsed = p.checkParsed(p.dataPropertyFrame, dataPropFrameStr)
+    val parsed = p.checkParsed(p.dataPropertyFrame, dataPropFrameStr)
 
     var expectedAxiom: OWLAxiom = new OWLAnnotationAssertionAxiomImpl(
       dataProp.getIRI,
@@ -2819,17 +2758,11 @@ class ManchesterParsingTest extends FunSuite {
     )
     assert(parsed.contains(expectedAxiom))
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The annotation property frame parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
-
-    val noAnnotations = List.empty[OWLAnnotation].asJavaCollection
+    setupParserPrefixes
 
     var prefix = "http://ex.com/default#"
     var annProp = df.getOWLAnnotationProperty(prefix + "prop")
@@ -2951,18 +2884,13 @@ class ManchesterParsingTest extends FunSuite {
     )
     assert(parsed.contains(expectedAxiom))
 
-    p.prefixes.clear
+    clearParserPrefixes
   }
 
   test("The annotation property domain parser should work correctly") {
-    p.prefixes.clear()
-    p.prefixes.put("", "http://ex.com/default#")
-    p.prefixes.put("bar", "http://ex.com/bar#")
-    p.prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#")
-    p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
-    val noAnnotations = List.empty[OWLAnnotation]
+    setupParserPrefixes
 
-    var prefix = "http://ex.com/default#"
+    val prefix = "http://ex.com/default#"
     var domainStr = """Domain: SomeClass"""
     var expected = List((
       IRI.create(prefix + "SomeClass"),
@@ -2985,14 +2913,14 @@ class ManchesterParsingTest extends FunSuite {
     ))
     assert(p.checkParsed(p.annotationPropertyDomain, domainStr) == expected)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The individual frame parser should work correctly") {
     setupParserPrefixes
 
-    var prefix = "http://ex.com/default#"
-    var indiv = df.getOWLNamedIndividual(prefix + "someIndiv")
+    val prefix = "http://ex.com/default#"
+    val indiv = df.getOWLNamedIndividual(prefix + "someIndiv")
     var individualFrameStr =
       """Individual: someIndiv
         |    Annotations:
@@ -3166,21 +3094,21 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     parsed = p.checkParsed(p.individualFrame, individualFrameStr)
 
-    p.prefixes.clear()
+    clearParserPrefixes
   }
 
   test("The disjoint classes parser should work correctly") {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var disjointClassesStr =
+    val disjointClassesStr =
       """DisjointClasses:
         |    Annotations:
         |        comment "Required annotation"
         |    prop min 2, Class2,
       """.stripMargin
-    var parsed = p.checkParsed(p.disjointClasses, disjointClassesStr)
-    var expectedAxiom = new OWLDisjointClassesAxiomImpl(
+    val parsed = p.checkParsed(p.disjointClasses, disjointClassesStr)
+    val expectedAxiom = new OWLDisjointClassesAxiomImpl(
       List(
         df.getOWLObjectMinCardinality(
           2,
@@ -3204,14 +3132,14 @@ class ManchesterParsingTest extends FunSuite {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var equivClassesStr =
+    val equivClassesStr =
       """EquivalentClasses:
         |    Annotations:
         |        comment "Required annotation"
         |    prop min 2, Class2,
       """.stripMargin
-    var parsed = p.checkParsed(p.equivalentClasses, equivClassesStr)
-    var expectedAxiom = new OWLEquivalentClassesAxiomImpl(
+    val parsed = p.checkParsed(p.equivalentClasses, equivClassesStr)
+    val expectedAxiom = new OWLEquivalentClassesAxiomImpl(
       List(
         df.getOWLObjectMinCardinality(
           2,
@@ -3235,14 +3163,14 @@ class ManchesterParsingTest extends FunSuite {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var equivPropertiesStr =
+    val equivPropertiesStr =
       """EquivalentProperties:
         |    Annotations:
         |        comment "Required annotation"
         |    prop1, prop2, prop3
       """.stripMargin
-    var parsed = p.checkParsed(p.equivalentObjectProperties, equivPropertiesStr)
-    var expectedAxiom = new OWLEquivalentObjectPropertiesAxiomImpl(
+    val parsed = p.checkParsed(p.equivalentObjectProperties, equivPropertiesStr)
+    val expectedAxiom = new OWLEquivalentObjectPropertiesAxiomImpl(
       List(
         df.getOWLObjectProperty(prefix + "prop1"),
         df.getOWLObjectProperty(prefix + "prop2"),
@@ -3264,14 +3192,14 @@ class ManchesterParsingTest extends FunSuite {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var disjPropertiesStr =
+    val disjPropertiesStr =
       """DisjointProperties:
         |    Annotations:
         |        comment "Required annotation"
         |    prop1, prop2, prop3
       """.stripMargin
-    var parsed = p.checkParsed(p.disjointObjectProperties, disjPropertiesStr)
-    var expectedAxiom = new OWLDisjointObjectPropertiesAxiomImpl(
+    val parsed = p.checkParsed(p.disjointObjectProperties, disjPropertiesStr)
+    val expectedAxiom = new OWLDisjointObjectPropertiesAxiomImpl(
       List(
         df.getOWLObjectProperty(prefix + "prop1"),
         df.getOWLObjectProperty(prefix + "prop2"),
@@ -3293,14 +3221,14 @@ class ManchesterParsingTest extends FunSuite {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var equivPropertiesStr =
+    val equivPropertiesStr =
       """EquivalentProperties:
         |    Annotations:
         |        comment "Required annotation"
         |    prop1, prop2, prop3
       """.stripMargin
-    var parsed = p.checkParsed(p.equivalentDataProperties, equivPropertiesStr)
-    var expectedAxiom = new OWLEquivalentDataPropertiesAxiomImpl(
+    val parsed = p.checkParsed(p.equivalentDataProperties, equivPropertiesStr)
+    val expectedAxiom = new OWLEquivalentDataPropertiesAxiomImpl(
       List(
         df.getOWLDataProperty(prefix + "prop1"),
         df.getOWLDataProperty(prefix + "prop2"),
@@ -3322,14 +3250,14 @@ class ManchesterParsingTest extends FunSuite {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var disjPropertiesStr =
+    val disjPropertiesStr =
       """DisjointProperties:
         |    Annotations:
         |        comment "Required annotation"
         |    prop1, prop2, prop3
       """.stripMargin
-    var parsed = p.checkParsed(p.disjointDataProperties, disjPropertiesStr)
-    var expectedAxiom = new OWLDisjointDataPropertiesAxiomImpl(
+    val parsed = p.checkParsed(p.disjointDataProperties, disjPropertiesStr)
+    val expectedAxiom = new OWLDisjointDataPropertiesAxiomImpl(
       List(
         df.getOWLDataProperty(prefix + "prop1"),
         df.getOWLDataProperty(prefix + "prop2"),
@@ -3351,14 +3279,14 @@ class ManchesterParsingTest extends FunSuite {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var sameIndivStr =
+    val sameIndivStr =
       """SameIndividual:
         |    Annotations:
         |        comment "Required annotation"
         |    indiv1, indiv2, indiv3
       """.stripMargin
-    var parsed = p.checkParsed(p.sameIndividual, sameIndivStr)
-    var expectedAxiom = new OWLSameIndividualAxiomImpl(
+    val parsed = p.checkParsed(p.sameIndividual, sameIndivStr)
+    val expectedAxiom = new OWLSameIndividualAxiomImpl(
       List(
         df.getOWLNamedIndividual(prefix + "indiv1"),
         df.getOWLNamedIndividual(prefix + "indiv2"),
@@ -3380,14 +3308,14 @@ class ManchesterParsingTest extends FunSuite {
     setupParserPrefixes
 
     val prefix = "http://ex.com/default#"
-    var differentIndivsStr =
+    val differentIndivsStr =
       """DifferentIndividuals:
         |    Annotations:
         |        comment "Required annotation"
         |    indiv1, indiv2, indiv3
       """.stripMargin
-    var parsed = p.checkParsed(p.differentIndividuals, differentIndivsStr)
-    var expectedAxiom = new OWLDifferentIndividualsAxiomImpl(
+    val parsed = p.checkParsed(p.differentIndividuals, differentIndivsStr)
+    val expectedAxiom = new OWLDifferentIndividualsAxiomImpl(
       List(
         df.getOWLNamedIndividual(prefix + "indiv1"),
         df.getOWLNamedIndividual(prefix + "indiv2"),
