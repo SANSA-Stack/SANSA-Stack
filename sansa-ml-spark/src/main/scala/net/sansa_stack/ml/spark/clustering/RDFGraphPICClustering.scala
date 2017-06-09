@@ -19,7 +19,7 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
   /*
    * Computes different similarities function for a given graph @graph.
    */
-  def SimilaritesInPIC(): RDD[(Long, Long, Double)] = {
+  
     //****************************************************************************************************
     //****collect the edges***************
     val edge = graph.edges.collect()
@@ -33,47 +33,41 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
 
     //*********** similarity of Strategies based on Information Theory****************************
 
-    //    val vertexCount = vertices.count()
-    //    var icc = 0.0
-    //    val logC = MathUtils.log(10.0, vertexCount.toDouble)
-    //
-    //    def informationContent(a: Long): Double = {
-    //      if (a == 0) { return 0.0 }
-    //      1 - (MathUtils.log(10.0, a.toDouble) / logC)
-    //
-    //    }
-    //    //val ic = informationContent(vertexId)
-    //
-    //    def ic(a: Long): Double = {
-    //      val d = neighbors.lookup(a).distinct.head.toSet
-    //      if (d.isEmpty) { return 0.0 }
-    //      else {
-    //        //wrong
-    //        val iC = d.size.toLong
-    //        val sumIC = informationContent(iC)
-    //        return sumIC.abs
-    //      }
-    //    }
-    //
-    //    def mostICA(a: Long, b: Long): Double = {
-    //
-    //      val an = neighbors.lookup(a).distinct.head.toSet
-    //      val an1 = neighbors.lookup(b).distinct.head.toSet
-    //      if (an.isEmpty || an1.isEmpty) { return 0.0 }
-    //      val commonNeighbor = an.intersect(an1).toArray
-    //      commonNeighbor.toArray
-    //      if (commonNeighbor.isEmpty) { return 0.0 }
-    //      else {
-    //        //wrong
-    ////        val neighborICs = List.fill(commonNeighbor.size)(0)
-    ////        for(0:commonNeighbor.size
-    ////        val icmica = commonNeighbor.size.toLong
-    ////        val sumMICA = informationContent(neighbor.lookup(commonNeighbor.head).distinct.head.count(1))
-    //        return 0 //sumMICA
-    //      }
-    //
-    //    }
+    val c = vertex.count()
+    var icc = 0.0
+    val logC = MathUtils.log(10.0, c.toDouble)
 
+    def informationContent(a: Long): Double = {
+      if (a == 0) { return 0.0 }
+      1 - (MathUtils.log(10.0, a.toDouble) / logC)
+
+    }
+    //val ic = informationContent(vertexId)
+
+    def ic(a: Long): Double = {
+      val d = neighbor.lookup(a).distinct.head.toSet
+      if (d.isEmpty) { return 0.0 }
+      else {
+        val iC = d.size.toLong
+        val sumIC = informationContent(iC)
+        return sumIC.abs
+      }
+    }
+
+    def mostICA(a: Long, b: Long): Double = {
+
+      val an = neighbor.lookup(a).distinct.head.toSet
+      val an1 = neighbor.lookup(b).distinct.head.toSet
+      if (an.isEmpty || an1.isEmpty) { return 0.0 }
+      val int = an.intersect(an1).toArray
+      if (int.isEmpty) { return 0.0 }
+      else {
+        val icmica = int.size.toLong
+        val sumMICA = informationContent(icmica)
+        return sumMICA
+      }
+
+    }
     //***************************************************************************************************
     //difference of 2 sets : uses in below similarities
     def difference(a: Long, b: Long): Double = {
@@ -108,11 +102,11 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
     val LOG2 = math.log(2)
     val log2 = { x: Double => math.log(x) / LOG2 }
     //******************************************************* Lin similarity ***************************************************************
-    //    def simLin(e: Long, d: Long): Double = {
-    //      if (ic(e) > 0.0 || ic(d) > 0.0) {
-    //        (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
-    //      } else { return 0.0 }
-    //    }
+       def simLin(e: Long, d: Long): Double = {
+          if (ic(e) > 0.0 || ic(d) > 0.0) {
+            (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
+          } else { return 0.0 }
+        }
     // ***********************Jaccard similarity function ************************************
     def simJaccard(a: Long, b: Long): Double = {
       intersection(a, b) / union(a, b).toDouble
@@ -153,17 +147,18 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
         val allneighbor = neighbors.lookup(x1).distinct.head
         val allneighbor1 = neighbors.lookup(x2).distinct.head
 
-        //  simJaccard = (jaccard(allneighbor.toSet, allneighbor1.toSet))
+          simJaccard = (jaccard(allneighbor.toSet, allneighbor1.toSet))
         // below for applying jaccard similarity use "simi" and for applying similarity of Strategies based on Information Theory use "sim(x1,x2).abs"          
         //(x1, x2, jaccard(x1, x2).abs)
         //(x1, x2, simBatet(x1, x2).abs)
-        (x1, x2, simRE(x1, x2).abs)
+         (x1, x2, simJaccard.abs)
       }
     }
 
     ver.foreach { x => println(x) }
+     def SimilaritesInPIC(): RDD[(Long, Long, Double)] = {
     sparkSession.sparkContext.parallelize(ver)
-  }
+     }
 
   def pic() = {
     val pic = new PowerIterationClustering()
