@@ -20,13 +20,7 @@
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink-utils</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink-core</artifactId>
+				<artifactId>sansa-rdf-flink</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

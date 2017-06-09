@@ -20,7 +20,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-flink-utils</artifactId>
+			<artifactId>sansa-rdf-flink</artifactId>
 		</dependency>
 
 		<dependency>
@@ -33,11 +33,6 @@
 			<artifactId>sansa-rdf-partition-sparqlify</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-flink-core</artifactId>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
