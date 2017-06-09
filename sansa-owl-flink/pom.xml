@@ -5,18 +5,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>sansa-owl-parent</artifactId>
+        <artifactId>sansa-owl-parent_${scala.binary.version}</artifactId>
         <groupId>net.sansa-stack</groupId>
         <version>0.1.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-owl-flink</artifactId>
+    <artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
     <version>0.1.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-owl-common</artifactId>
+            <artifactId>sansa-owl-common_${scala.binary.version}</artifactId>
             <version>${project.version}</version>
         </dependency>
 
