@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>sansa-owl-parent_${scala.binary.version}</artifactId>
+        <artifactId>sansa-owl-parent_2.11</artifactId>
         <groupId>net.sansa-stack</groupId>
         <version>0.1.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+    <artifactId>sansa-owl-flink_2.11</artifactId>
     <version>0.1.1-SNAPSHOT</version>
 
     <dependencies>
@@ -29,11 +29,15 @@
         <!-- Apache Flink dependencies -->
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-scala_${scala.binary.version}</artifactId>
+            <artifactId>flink-scala_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-clients_${scala.binary.version}</artifactId>
+            <artifactId>flink-clients_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-hadoop-compatibility_${scala.binary.version}</artifactId>
         </dependency>
 
         <!-- OWL API dependencies -->
@@ -46,6 +50,12 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>
+        </dependency>
+        
+        <!-- Logging dependencies -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
         </dependency>
     </dependencies>
 
@@ -108,6 +118,9 @@
                                 <configuration>
                                     <artifactSet>
                                         <excludes>
+                                            <exclude>com.data-artisans:flakka-actor</exclude>
+                                            <exclude>com.data-artisans:flakka-remote_2.11</exclude>
+                                            <exclude>com.data-artisans:flakka-slf4j_2.11</exclude>
                                             <exclude>com.esotericsoftware.kryo:kryo</exclude>
                                             <exclude>com.esotericsoftware.minlog:minlog</exclude>
                                             <exclude>com.fasterxml.jackson.core:jackson*</exclude>
@@ -119,8 +132,8 @@
                                             <exclude>com.sun.jersey:jersey-core</exclude>
                                             <exclude>com.thoughtworks.paranamer:paranamer</exclude>
                                             <exclude>com.typesafe:config</exclude>
-                                            <exclude>com.typesafe.akka:*</exclude>
                                             <exclude>com.twitter:chill_2.11</exclude>
+                                            <exclude>com.twitter:com.twitter:chill-java</exclude>
                                             <exclude>commons-beanutils:commons-beanutils-bean-collections</exclude>
                                             <exclude>commons-cli:commons-cli</exclude>
                                             <exclude>commons-codec:commons-codec</exclude>
@@ -133,7 +146,6 @@
                                             <exclude>commons-net:commons-net</exclude>
                                             <exclude>commons-collections:commons-collections</exclude>
                                             <exclude>io.netty:netty*</exclude>
-                                            <exclude>io.dropwizard.metrics:metrics*</exclude>
                                             <exclude>javax.activation:activation</exclude>
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.xml.bind:jaxb-api</exclude>
@@ -153,7 +165,6 @@
                                             <exclude>org.objenesis:objenesis</exclude>
                                             <exclude>org.scala-lang:*</exclude>
                                             <exclude>org.uncommons.maths:uncommons-maths</exclude>
-                                            <exclude>org.xerial.snappy:snappy-java</exclude>
                                             <exclude>xmlenc:xmlenc</exclude>
                                         </excludes>
                                     </artifactSet>

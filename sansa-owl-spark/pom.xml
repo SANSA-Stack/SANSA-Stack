@@ -5,11 +5,11 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-owl-parent_${scala.binary.version}</artifactId>
+        <artifactId>sansa-owl-parent_2.11</artifactId>
         <version>0.1.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+    <artifactId>sansa-owl-spark_2.11</artifactId>
     <version>0.1.1-SNAPSHOT</version>
 
     <dependencies>
@@ -28,11 +28,11 @@
         <!-- Spark dependencies -->
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <artifactId>spark-core_2.11</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <artifactId>spark-sql_2.11</artifactId>
         </dependency>
 
         <!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
@@ -191,6 +191,7 @@
                                             <exclude>org.apache.commons:commons-lang3</exclude>
                                             <exclude>org.apache.commons:commons-math3</exclude>
                                             <exclude>org.apache.commons:commons-compress</exclude>
+                                            <exclude>org.apache.commons:commons-crypto</exclude>
                                             <exclude>org.apache.curator:curator*</exclude>
                                             <exclude>org.apache.directory.api:*</exclude>
                                             <exclude>org.apache.directory.server:*</exclude>
@@ -198,7 +199,6 @@
                                             <exclude>org.apache.htrace:htrace-core</exclude>
                                             <exclude>org.apache.httpcomponents:*</exclude>
                                             <exclude>org.apache.ivy:ivy</exclude>
-                                            <exclude>org.apache.mesos:mesos</exclude>
                                             <exclude>org.apache.parquet:parquet*</exclude>
                                             <exclude>org.apache.spark:*</exclude>
                                             <exclude>org.apache.xbean:xbean-asm5-shaded</exclude>
@@ -207,7 +207,7 @@
                                             <exclude>org.codehaus.janino:*</exclude>
                                             <exclude>org.codehaus.jettison:jettison</exclude>
                                             <exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
-                                            <exckude>org.glassfish.hk2*</exckude>
+                                            <exclude>org.glassfish.hk2*</exclude>
                                             <exclude>org.glassfish.jersey*</exclude>
                                             <exclude>org.javassist:javassist</exclude>
                                             <exclude>org.json4s:json4s*</exclude>
