@@ -6,23 +6,23 @@ import scala.reflect.runtime.universe.typeOf
 
 import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.partition.schema.SchemaStringStringType
 
 
 // Layout for custom datatypes - (subject, object lexical form, object datatype)
 object TripleLayoutStringDatatype
   extends TripleLayout
 {
-  def schema = typeOf[(String, String, String)]
-  def cc = StringStringType
+  override def schema = typeOf[SchemaStringStringType]
 
-  def fromTriple(t: Triple): (String, String, String) = {
+  override def fromTriple(t: Triple): SchemaStringStringType = {
     val s = t.getSubject
     val o = t.getObject
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
     val result = if(o.isLiteral()) {
-      (sStr, o.getLiteralLexicalForm, o.getLiteralDatatypeURI)
+      SchemaStringStringType(sStr, o.getLiteralLexicalForm, o.getLiteralDatatypeURI)
     } else {
       throw new RuntimeException("Layout only for literals")
     }
@@ -30,7 +30,4 @@ object TripleLayoutStringDatatype
     result
   }
 
-  override def fromTripleToC(triple: Triple): StringStringType = {
-    cc.tupled(fromTriple(triple))
-  }
 }

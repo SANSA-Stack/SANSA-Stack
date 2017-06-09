@@ -1,36 +1,32 @@
 package net.sansa_stack.rdf.partition.layout
 
-import scala.reflect.runtime.universe.Type
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.typeOf
 
-
 import org.apache.jena.graph.Triple
+
 import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.partition.schema.SchemaStringStringLang
 
 
 // Layout for plain literals with language tag
 object TripleLayoutStringLang
   extends TripleLayout
 {
-  def schema = typeOf[(String, String, String)]
-  def cc = StringStringLang
+  override def schema = typeOf[SchemaStringStringLang]
 
-  def fromTriple(t: Triple): (String, String, String) = {
+  override def fromTriple(t: Triple): SchemaStringStringLang = {
     val s = t.getSubject
     val o = t.getObject
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
     val result = if(o.isLiteral()) {
-      (sStr, o.getLiteralLexicalForm, o.getLiteralLanguage)
+      SchemaStringStringLang(sStr, o.getLiteralLexicalForm, o.getLiteralLanguage)
     } else {
       throw new RuntimeException("Layout only for literals")
     }
 
     result
-  }
-
-  override def fromTripleToC(triple: Triple): StringStringLang = {
-    cc.tupled(fromTriple(triple))
   }
 }

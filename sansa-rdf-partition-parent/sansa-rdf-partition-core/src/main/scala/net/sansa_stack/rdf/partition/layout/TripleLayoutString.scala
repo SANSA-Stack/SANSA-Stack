@@ -6,32 +6,28 @@ import scala.reflect.runtime.universe.typeOf
 
 import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.partition.schema.SchemaStringString
 
 
 // Layout which can be used for blank nodes, IRIs, and plain iterals without language tag
 object TripleLayoutString
   extends TripleLayout
 {
-  def schema = typeOf[(String, String)]
-  def cc = StringString
+  override def schema = typeOf[SchemaStringString]
 
-  def fromTriple(t: Triple): (String, String) = {
+  override def fromTriple(t: Triple): SchemaStringString = {
     val s = t.getSubject
     val o = t.getObject
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
     val result = if(o.isLiteral()) {
-      (sStr, o.getLiteralLexicalForm)
+      SchemaStringString(sStr, o.getLiteralLexicalForm)
     } else {
       val oStr = RdfPartitionerDefault.getUriOrBNodeString(o)
-      (sStr, oStr)
+      SchemaStringString(sStr, oStr)
     }
 
     result
-  }
-
-  override def fromTripleToC(triple: Triple): StringString = {
-    cc.tupled(fromTriple(triple))
   }
 }

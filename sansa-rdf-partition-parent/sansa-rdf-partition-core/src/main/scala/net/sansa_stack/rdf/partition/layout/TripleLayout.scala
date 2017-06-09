@@ -8,5 +8,4 @@ import org.apache.jena.graph.Triple
 trait TripleLayout {
   def schema: Type
   def fromTriple(triple: Triple): Product
-  def fromTripleToC(triple: Triple): Product
 }
