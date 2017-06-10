@@ -61,6 +61,7 @@
 		<spark.version>2.1.1</spark.version>
 		<flink.version>1.3.0</flink.version>
 		<jena.version>3.1.1</jena.version>
+		<sansa.version>0.1.1-SNAPSHOT</sansa.version>
 	</properties>
 
 	<dependencyManagement>
@@ -151,31 +152,31 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark-bundle</artifactId>
-				<version>0.1.1-SNAPSHOT</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink</artifactId>
-				<version>0.1.1-SNAPSHOT</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<!-- OWL Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-spark</artifactId>
-				<version>0.1.0</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-flink</artifactId>
-				<version>0.1.0</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-query-spark-bundle</artifactId>
-				<version>0.1.1-SNAPSHOT</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 
@@ -183,24 +184,24 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-parent_${scala.binary.version}</artifactId>
-				<version>0.1.1-SNAPSHOT</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-				<version>0.1.1-SNAPSHOT</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
-				<version>0.1.1-SNAPSHOT</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- ML Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-spark</artifactId>
-				<version>0.1.1-SNAPSHOT</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 		</dependencies>

@@ -46,7 +46,6 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-spark-bundle</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- SANSA OWL -->
@@ -55,28 +54,24 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-owl-spark</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- SANSA Inference -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- SANSA Querying -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-query-spark-bundle</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- SANSA ML -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-ml-spark</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Test -->
