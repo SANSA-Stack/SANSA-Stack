@@ -13,6 +13,10 @@
 
 	<dependencies>
 		<!-- SANSA RDF -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-flink</artifactId>
+		</dependency>
 
 		<!-- SANSA OWL -->
 		<dependency>

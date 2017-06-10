@@ -2,7 +2,7 @@ package net.sansa_stack.examples.flink.rdf
 
 import scala.collection.mutable
 import org.apache.flink.api.scala.ExecutionEnvironment
-import net.sansa_stack.inference.flink.data.RDFGraphLoader
+import net.sansa_stack.rdf.flink.data.RDFGraphLoader
 
 object TripleReader {
  def main(args: Array[String]) {
