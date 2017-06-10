@@ -21,7 +21,7 @@
 		<!-- SANSA OWL -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-owl-flink</artifactId>
+			<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA Inference -->
