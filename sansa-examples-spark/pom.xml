@@ -71,7 +71,7 @@
 		<!-- SANSA ML -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-ml-spark</artifactId>
+			<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Test -->

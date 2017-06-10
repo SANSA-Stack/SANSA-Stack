@@ -7,13 +7,12 @@ import org.apache.flink.api.scala._
 
 object TripleOps {
   def main(args: Array[String]) {
-    /*  if (args.length < 1) {
+    if (args.length < 1) {
       System.err.println(
         "Usage: Triple Ops <input>")
       System.exit(1)
-    }*/
-
-    val input = "src/main/resources/rdf.nt" //args(0) //
+    }
+    val input = args(0) // "src/main/resources/rdf.nt"
     val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
@@ -30,6 +29,7 @@ object TripleOps {
     println("======================================")
 
     val env = ExecutionEnvironment.getExecutionEnvironment
+    
     val rdfgraph = RDFGraphLoader.loadFromFile(input, env)
     rdfgraph.triples.collect().take(4).foreach(println(_))
     //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )

@@ -33,6 +33,10 @@
 		<!-- SANSA Query -->
 
 		<!-- SANSA ML -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+			</dependency>
 
 		<!-- Scala -->
 		<dependency>
