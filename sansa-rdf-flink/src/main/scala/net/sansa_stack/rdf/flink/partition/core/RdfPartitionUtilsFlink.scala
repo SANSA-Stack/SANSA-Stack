@@ -26,11 +26,7 @@ object RdfPartitionUtilsFlink extends Serializable {
         graphRdd
         .filter(t => p.matches(t))
         //.map(t => new Row(p.layout.fromTriple(t).productArity)))
-      .map(t => p.layout.fromTriple(t)
-      //.persist())
-        )
-      )
-
+        .map(t => p.layout.fromTriple(t)))
     }
     array
   }

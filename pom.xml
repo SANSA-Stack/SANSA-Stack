@@ -112,12 +112,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.flink</groupId>
-				<artifactId>flink-gelly_${scala.compat.version}</artifactId>
+				<artifactId>flink-gelly-scala_${scala.compat.version}</artifactId>
 				<version>${flink.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.flink</groupId>
-				<artifactId>flink-table_2.10</artifactId>
+				<artifactId>flink-table_${scala.compat.version}</artifactId>
 				<version>${flink.version}</version>
 			</dependency>
 
