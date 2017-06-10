@@ -3,11 +3,11 @@ package net.sansa_stack.examples.spark.inference
 import java.io.File
 import java.net.URI
 
-import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
+import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
+import net.sansa_stack.inference.spark.forwardchaining.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataset, TransitiveReasoner }
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
@@ -20,8 +20,9 @@ object RDFGraphInference {
         "Usage: RDFGraphInference <input> <output> <reasoner")
       System.err.println("Supported 'reasoner' as follows:")
       System.err.println("  rdfs                  Forward Rule Reasoner RDFS (Full)")
-      System.err.println("  rdfs-simple                  Forward Rule Reasoner RDFS (Simple)")
+      System.err.println("  rdfs-simple           Forward Rule Reasoner RDFS (Simple)")
       System.err.println("  owl-horst             Forward Rule Reasoner OWL Horst")
+      System.err.println("  transitive            Forward Rule Transitive Reasoner")
       System.exit(1)
     }
     val input = args(0) //"src/main/resources/rdf.nt"
@@ -29,9 +30,10 @@ object RDFGraphInference {
     val argprofile = args(2) //"rdfs"
 
     val profile = argprofile match {
-      case "rdfs"      => ReasoningProfile.RDFS
-      case "rdfs-simple"      => ReasoningProfile.RDFS_SIMPLE
-      case "owl-horst" => ReasoningProfile.OWL_HORST
+      case "rdfs"        => ReasoningProfile.RDFS
+      case "rdfs-simple" => ReasoningProfile.RDFS_SIMPLE
+      case "owl-horst"   => ReasoningProfile.OWL_HORST
+      case "transitive"  => ReasoningProfile.TRANSITIVE
 
     }
     val optionsList = args.drop(3).map { arg =>
@@ -66,13 +68,13 @@ object RDFGraphInference {
 
     // create reasoner
     val reasoner = profile match {
-      case RDFS => new ForwardRuleReasonerRDFS(sparkSession.sparkContext, parallelism)
+      case TRANSITIVE => new TransitiveReasoner(sparkSession.sparkContext, parallelism)
+      case RDFS       => new ForwardRuleReasonerRDFS(sparkSession.sparkContext, parallelism)
       case RDFS_SIMPLE =>
-        val r = new ForwardRuleReasonerRDFS(sparkSession.sparkContext, parallelism)
+        var r = new ForwardRuleReasonerRDFS(sparkSession.sparkContext, parallelism) //.level.+(RDFSLevel.SIMPLE)
         r.level = RDFSLevel.SIMPLE
         r
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(sparkSession.sparkContext)
-      case RDFS      => new ForwardRuleReasonerRDFS(sparkSession.sparkContext)
     }
 
     // compute inferred graph
