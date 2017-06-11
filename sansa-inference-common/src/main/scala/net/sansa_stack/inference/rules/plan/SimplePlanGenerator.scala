@@ -82,7 +82,7 @@ class SimplePlanGenerator(schema: SchemaPlus) {
     */
   def generateLogicalPlan(rules: Seq[Rule]): RelNode = {
     // generate SQL query
-    val sqlQuery = rules.map(sqlGenerator.generateSQLQuery _).mkString(" UNION ")
+    val sqlQuery = rules.map(sqlGenerator.generateSQLQuery _).mkString("\tUNION \n")
 
     // parse to SQL node
     val sqlNode = Try(planner.parse(sqlQuery))

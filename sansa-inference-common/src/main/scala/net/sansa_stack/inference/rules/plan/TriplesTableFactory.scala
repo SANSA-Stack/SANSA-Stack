@@ -33,9 +33,9 @@ class TriplesTableFactory extends TableFactory[Table] {
     val protoRowType = new RelProtoDataType() {
       override def apply(a0: RelDataTypeFactory): RelDataType = {
         a0.builder()
-          .add("subject", SqlTypeName.VARCHAR, 200)
-          .add("predicate", SqlTypeName.VARCHAR, 200)
-          .add("object", SqlTypeName.VARCHAR, 200)
+          .add("s", SqlTypeName.VARCHAR, 200)
+          .add("p", SqlTypeName.VARCHAR, 200)
+          .add("o", SqlTypeName.VARCHAR, 200)
           .build()
       }
     }
