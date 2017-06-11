@@ -100,6 +100,11 @@
 				<artifactId>flink-clients_${scala.binary.version}</artifactId>
 				<version>${flink.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-gelly-scala_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
 
 			<!-- Apache JENA 3.x -->
 			<dependency>
