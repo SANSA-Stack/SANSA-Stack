@@ -9,6 +9,7 @@ import org.apache.flink.api.common.operators.Order
 
 import java.io.StringWriter
 import scala.util.control.Breaks._
+import org.apache.flink.util.Collector
 
 object RDFByModularityClustering {
 
@@ -115,8 +116,8 @@ object RDFByModularityClustering {
         _ match {
           case (list1, list2) =>
             var check_connection = false
-            for (x <- list1.asInstanceOf[List[String]]) {
-              for (y <- list2.asInstanceOf[List[String]]) {
+            for (x <- list1) {
+              for (y <- list2) {
                 if (edgesBC.contains((x, y)) || edgesBC.contains((y, x))) {
                   check_connection = true
                 }
@@ -136,14 +137,30 @@ object RDFByModularityClustering {
       })
 
     val ((bestList1, bestList2), bestQ: Double): ((List[String], List[String]), Double) = {
-      val s = deltaQDataSet.coGroup(pairsOfClustersDataSet).where(0).equalTo(1)
+
+      val s = deltaQDataSet.groupBy(0).sortGroup(1, Order.ASCENDING).reduceGroup {
+        (in, out: Collector[((List[String], List[String]), Double)]) =>
+          var prev: (String, String) = null
+          for (t <- in) {
+            if (prev == null || prev != t)
+              out.collect(t)
+          }
+      }
+
+      /*   val ss = deltaQDataSet.map(f => (f._1.toString(), f._2.toString())).coGroup(pairsOfClustersDataSet.map(f => (f._1.toString(), f._2.toString()))).where(0).equalTo(0)
         .sortFirstGroup(0, Order.DESCENDING)
-        .sortSecondGroup(1, Order.ASCENDING).sortSecondGroup(0, Order.ASCENDING) // {
+        .sortSecondGroup(1, Order.ASCENDING).sortSecondGroup(0, Order.ASCENDING)
+      */
+
+      /* val s = deltaQDataSet.coGroup(pairsOfClustersDataSet).where(0).equalTo(0)
+        .sortFirstGroup(0, Order.DESCENDING)
+        .sortSecondGroup(1, Order.ASCENDING).sortSecondGroup(0, Order.ASCENDING) */ // {
       //      {
       //        (bestL1: List[String], bestL2: List[String], out: ((List[String], List[String]), Double)) =>
       //          bestL1.buffered.head
       //      }
-      s.collect().asInstanceOf[((List[String], List[String]), Double)]
+      s.collect().head
+      //ss.collect().asInstanceOf[((List[String], List[String]), Double)]
 
     }
 
