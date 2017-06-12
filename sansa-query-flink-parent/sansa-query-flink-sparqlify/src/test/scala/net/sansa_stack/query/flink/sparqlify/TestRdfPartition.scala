@@ -8,6 +8,7 @@ import org.apache.flink.table.api.TableEnvironment
 import org.apache.flink.table.api.scala._
 import org.apache.flink.types.Row
 import org.apache.jena.graph.Triple
+import org.apache.jena.query.ResultSetFormatter
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.scalatest._
 
@@ -24,6 +25,8 @@ class TestRdfPartition extends FlatSpec {
     val dsAll: DataSet[Triple] = env.fromCollection(triples)
     val partition: Map[RdfPartitionDefault, DataSet[_ <: Product]] = RdfPartitionUtilsFlink.partitionGraph(dsAll)
     val views = SparqlifyUtils3.createSparqlSqlRewriter(env, flinkTable, partition)
+    val qef = new QueryExecutionFactorySparqlifyFlink(flinkTable, rewriter)
+    println(ResultSetFormatter.asText(qef.createQueryExecution("SELECT * { ?s ?p ?o }").execSelect()))
 
     flinkTable.scan("deathPlace").printSchema();
     val res = flinkTable.sql(
