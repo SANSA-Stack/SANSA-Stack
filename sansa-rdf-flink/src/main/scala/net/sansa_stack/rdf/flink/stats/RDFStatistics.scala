@@ -70,7 +70,7 @@ class Classes_Defined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Ser
 }
 object Classes_Defined {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment)= new Classes_Defined(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Classes_Defined(rdfgraph, env).Voidify()
 }
 
 class PropertiesDefined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -112,20 +112,78 @@ class PropertyUsage(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
     var triplesString = new Array[String](1)
     triplesString(0) = "\nvoid:propertyPartition "
 
-    val properties =  env.fromCollection(PostProc())
+    val properties = env.fromCollection(PostProc())
     val vp = properties.map(t => "[ \nvoid:property " + "<" + t._1 + ">; \nvoid:triples " + t._2 + ";\n], ")
 
     var pl_a = new Array[String](1)
     pl_a(0) = "\nvoid:properties " + Action().map(f => f._1).distinct().count
-    val c_p =  env.fromCollection(triplesString)
-    val p =  env.fromCollection(pl_a)
+    val c_p = env.fromCollection(triplesString)
+    val p = env.fromCollection(pl_a)
     p.union(c_p).union(vp)
   }
 }
 object PropertyUsage {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment)  = new PropertyUsage(rdfgraph, env).Voidify()
-
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new PropertyUsage(rdfgraph, env).Voidify()
 }
+
+class DistinctEntities(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+
+  def Filter() = rdfgraph.triples.filter(f =>
+    (f.getSubject.isURI() && f.getPredicate.isURI() && f.getObject.isURI()))
+
+  def Action() = Filter().distinct()
+
+  def PostProc() = Action().count()
+
+  def Voidify() = {
+    var ents = new Array[String](1)
+    ents(0) = "\nvoid:entities  " + PostProc() + ";"
+    env.fromCollection(ents)
+  }
+}
+object DistinctEntities {
+
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctEntities(rdfgraph, env).Voidify()
+}
+
+class DistinctSubjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+
+  def Filter() = rdfgraph.triples.filter(f => f.getSubject.isURI())
+
+  def Action() = Filter().distinct()
+
+  def PostProc() = Action().count()
+
+  def Voidify() = {
+    var ents = new Array[String](1)
+    ents(0) = "\nvoid:distinctSubjects  " + PostProc() + ";"
+    env.fromCollection(ents)
+  }
+}
+object DistinctSubjects {
+
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctSubjects(rdfgraph, env).Voidify()
+}
+
+class DistinctObjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+
+  def Filter() = rdfgraph.triples.filter(f => f.getObject.isURI())
+
+  def Action() = Filter().distinct()
+
+  def PostProc() = Action().count()
+
+  def Voidify() = {
+    var ents = new Array[String](1)
+    ents(0) = "\nvoid:distinctObjects  " + PostProc() + ";"
+    env.fromCollection(ents)
+  }
+}
+object DistinctObjects {
+
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctObjects(rdfgraph, env).Voidify()
+}
+
 
 
