@@ -8,9 +8,48 @@ import net.sansa_stack.rdf.flink.model.RDFTriple
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.api.scala._
+import java.io.PrintWriter
+import java.io.File
 
-class RDFStatistics {
+class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
+  def run(): DataSet[String] = {
+    Used_Classes(rdfgraph, env)
+      .union(DistinctEntities(rdfgraph, env))
+      .union(DistinctSubjects(rdfgraph, env))
+      .union(DistinctObjects(rdfgraph, env))
+      .union(PropertyUsage(rdfgraph, env))
+      .union(SPO_Vocabularies(rdfgraph, env))
+  }
+
+  def voidify(stats: DataSet[String], source: String, fn: String): Unit = {
+    val pw = new PrintWriter(new File(fn))
+
+    val prefix = """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                    @prefix void: <http://rdfs.org/ns/void#> .
+                    @prefix void-ext: <http://stats.lod2.eu/rdf/void-ext/> .
+                    @prefix qb: <http://purl.org/linked-data/cube#> .
+                    @prefix dcterms: <http://purl.org/dc/terms/> .
+                    @prefix ls-void: <http://stats.lod2.eu/rdf/void/> .
+                    @prefix ls-qb: <http://stats.lod2.eu/rdf/qb/> .
+                    @prefix ls-cr: <http://stats.lod2.eu/rdf/qb/criteria/> .
+                    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                    @prefix xstats: <http://example.org/XStats#> .
+                    @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+                    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ."""
+
+    val src = "\n<http://stats.lod2.eu/rdf/void/?source=" + source + ">\n"
+    val end = "\na void:Dataset ."
+
+    val voidify = prefix.concat(src).concat(stats.setParallelism(1).collect().mkString).concat(end)
+    pw.println(voidify)
+    pw.close
+  }
+
+}
+
+object RDFStatistics {
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new RDFStatistics(rdfgraph, env).run()
 }
 
 class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -218,7 +257,7 @@ class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object SPO_Vocabularies {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment)  = new SPO_Vocabularies(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new SPO_Vocabularies(rdfgraph, env).Voidify()
 }
 
 
