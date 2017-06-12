@@ -48,3 +48,27 @@ object Used_Classes {
   def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Used_Classes(rdfgraph, env).Voidify()
 
 }
+
+class Classes_Defined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+
+  //?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
+  def Filter() = rdfgraph.triples.filter(f =>
+    (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.RDFS_CLASS))
+      || (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.OWL_CLASS))
+      && !f.getSubject.isURI())
+
+  //M[?o]++ 
+  def Action() = Filter().map(_.getSubject).distinct()
+
+  def PostProc() = Action().count()
+
+  def Voidify() = {
+    var cd = new Array[String](1)
+    cd(0) = "\nvoid:classes  " + PostProc() + ";"
+    env.fromCollection(cd)
+  }
+}
+object Classes_Defined {
+
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment)= new Classes_Defined(rdfgraph, env).Voidify()
+}
