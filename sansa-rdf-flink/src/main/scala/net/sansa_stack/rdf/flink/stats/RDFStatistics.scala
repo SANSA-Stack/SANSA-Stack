@@ -185,5 +185,42 @@ object DistinctObjects {
   def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctObjects(rdfgraph, env).Voidify()
 }
 
+class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+
+  def Filter() = rdfgraph.triples
+
+  def Action(node: org.apache.jena.graph.Node) = Filter().map(f => node.getNameSpace())
+
+  def SubjectVocabulariesAction() = Filter().filter(f => f.getSubject.isURI()).map(f => (f.getSubject.getNameSpace()))
+  def SubjectVocabulariesPostProc() = SubjectVocabulariesAction()
+    .map(f => (f, 1)).groupBy(0)
+    .sum(1)
+
+  def PredicateVocabulariesAction() = Filter().filter(f => f.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace()))
+  def PredicateVocabulariesPostProc() = PredicateVocabulariesAction()
+    .map(f => (f, 1)).groupBy(0)
+    .sum(1)
+
+  def ObjectVocabulariesAction() = Filter().filter(f => f.getObject.isURI()).map(f => (f.getObject.getNameSpace()))
+  def ObjectVocabulariesPostProc() = ObjectVocabulariesAction()
+    .map(f => (f, 1)).groupBy(0)
+    .sum(1)
+
+  def PostProc(node: org.apache.jena.graph.Node) = Filter().map(f => node.getNameSpace())
+    .map(f => (f, 1)).groupBy(0)
+    .sum(1)
+
+  def Voidify() = {
+    var ents = new Array[String](1)
+    ents(0) = "\nvoid:vocabulary  <" + SubjectVocabulariesAction().union(PredicateVocabulariesAction()).union(ObjectVocabulariesAction()).distinct().collect.take(15).mkString(">, <") + ">;"
+    env.fromCollection(ents)
+  }
+}
+object SPO_Vocabularies {
+
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment)  = new SPO_Vocabularies(rdfgraph, env).Voidify()
+}
+
+
 
 
