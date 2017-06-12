@@ -47,7 +47,7 @@ object QueryExecutionSparqlifyFlink {
     val dataset = flinkTable.sql(sqlQueryStr)
     //		System.out.println("SqlQueryStr: " + sqlQueryStr);
     //		System.out.println("VarDef: " + rewrite.getVarDefinition());
-    val rowMapper = new FlinkRowMapperSparqlify(varDef, dataset.getSchema)
+    val rowMapper = new FlinkRowMapperSparqlify(varDef, dataset.getSchema.getColumnNames)
     //Function<Row, Binding> fn = x -> rowMapper.apply(x);
     //org.apache.spark.api.java.function.Function<Row, Binding> y = x -> rowMapper.apply(x);
     //val z = JavaKryoSerializationWrapper.wrap(rowMapper)

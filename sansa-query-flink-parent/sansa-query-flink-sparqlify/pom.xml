@@ -33,6 +33,11 @@
 			<artifactId>sansa-rdf-partition-sparqlify</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-kryo-jena</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
