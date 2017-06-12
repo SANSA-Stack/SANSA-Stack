@@ -45,6 +45,7 @@ class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializa
     val end = "\na void:Dataset ."
 
     val voidify = prefix.concat(src).concat(stats.coalesce(1, true).collect().mkString).concat(end)
+    println("\n" +voidify)
     pw.println(voidify)
     pw.close
   }
@@ -52,7 +53,7 @@ class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializa
 }
 
 object RDFStatistics {
-  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark).run()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark)//.run()
 }
 
 class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializable {

@@ -42,6 +42,7 @@ class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
     val end = "\na void:Dataset ."
 
     val voidify = prefix.concat(src).concat(stats.setParallelism(1).collect().mkString).concat(end)
+    println("\n" + voidify)
     pw.println(voidify)
     pw.close
   }
@@ -49,7 +50,7 @@ class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
 }
 
 object RDFStatistics {
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new RDFStatistics(rdfgraph, env).run()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new RDFStatistics(rdfgraph, env)//.run()
 }
 
 class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
