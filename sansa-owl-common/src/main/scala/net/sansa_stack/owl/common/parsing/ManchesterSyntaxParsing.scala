@@ -105,14 +105,21 @@ trait ManchesterSyntaxParsing {
   val encounteredErrMsgPattern = "Encountered (.*) at line".r
   val expectedPatternErrMsgPattern = "Expected one of:\\s(.*)$".r
 
-  @throws(classOf[OWLParserException])
-  def makeAxioms(frame: String, defaultPrefix: String): Set[OWLAxiom] = {
-    val parser = OWLManager.createManchesterParser()
-    parser.setDefaultOntology(OWLManager.createOWLOntologyManager().createOntology(IRI.create(defaultPrefix)))
-    parser.setOWLEntityChecker(new FakeEntityChecker(defaultPrefix))
-    parser.setStringToParse(frame)
+//  @throws(classOf[OWLParserException])
+//  def makeAxioms(frame: String, defaultPrefix: String): Set[OWLAxiom] = {
+//    val parser = OWLManager.createManchesterParser()
+//    parser.setDefaultOntology(OWLManager.createOWLOntologyManager().createOntology(IRI.create(defaultPrefix)))
+//    parser.setOWLEntityChecker(new FakeEntityChecker(defaultPrefix))
+//    parser.setStringToParse(frame)
+//
+//    parser.parseFrames().asScala.map(_.getAxiom).toSet
+//  }
 
-    parser.parseFrames().asScala.map(_.getAxiom).toSet
+  def makeAxioms(frame: String, defaultPrefix: String): Set[OWLAxiom] = {
+    val parser = ManchesterParser
+    parser.prefixes.put("", defaultPrefix)
+
+    parser.parseFrame(frame).toSet
   }
 }
 

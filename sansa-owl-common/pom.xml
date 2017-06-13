@@ -6,12 +6,12 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-owl-parent</artifactId>
-        <version>0.1.0</version>
+        <artifactId>sansa-owl-parent_2.11</artifactId>
+        <version>0.2.0</version>
     </parent>
 
-    <artifactId>sansa-owl-common</artifactId>
-    <version>0.1.0</version>
+    <artifactId>sansa-owl-common_2.11</artifactId>
+    <version>0.2.0</version>
 
     <dependencies>
         <!-- Scala dependencies -->
@@ -28,6 +28,12 @@
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>
             <artifactId>owlapi-apibinding</artifactId>
+        </dependency>
+
+        <!-- parsing dependencies -->
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
         </dependency>
 
         <!-- Testing dependencies -->

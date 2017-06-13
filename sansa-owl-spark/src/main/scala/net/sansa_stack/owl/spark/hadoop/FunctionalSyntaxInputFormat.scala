@@ -5,7 +5,6 @@ import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.{FileSplit, InputSplit, JobConf, RecordReader, Reporter, TextInputFormat}
 import org.apache.hadoop.util.LineReader
-import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxParserConstants._
 
 
 /**
@@ -34,49 +33,24 @@ class FunctionalSyntaxRecordReader(
   private val lineReader: LineReader = new LineReader(fileIn)
   private var firstLine = true
   private val sectionKeywords: Array[String] = Array(
-    tokenImage(COMMENT_START),  // "#"
-    // tokenImage(CLOSEPAR),  // ")"  TODO
-    tokenImage(ONTOLOGY),  // "Ontology"
-    tokenImage(IMPORT),  // "Import"
-    tokenImage(SUBCLASSOF),  // "SubClassOf"
-    tokenImage(EQUIVALENTCLASSES),  // "EquivalentClasses"
-    tokenImage(DISJOINTCLASSES),  // "DisjointClasses"
-    tokenImage(DISJOINTUNION),  // "DisjointUnion"
-    tokenImage(ANNOTATION),  // "Annotation"
-    tokenImage(ANNOTATIONASSERTION),  // "AnnotationAssertion"
-    tokenImage(SUBANNOTATIONPROPERTYOF),  // "SubAnnotationPropertyOf"
-    tokenImage(ANNOTATIONPROPERTYDOMAIN),  // "AnnotationPropertyDomain"
-    tokenImage(ANNOTATIONPROPERTYRANGE),  // "AnnotationPropertyRange"
-    tokenImage(HASKEY),  // "HasKey"
-    tokenImage(DECLARATION),  // "Declaration"
-    tokenImage(INVERSEOBJECTPROPERTIES),  // "InverseObjectProperties"
-    tokenImage(SUBOBJECTPROPERTYOF),  // "SubObjectPropertyOf"
-    tokenImage(EQUIVALENTOBJECTPROPERTIES),  // "EquivalentObjectProperties"
-    tokenImage(DISJOINTOBJECTPROPERTIES),  // "DisjointObjectProperties"
-    tokenImage(OBJECTPROPERTYDOMAIN),  // "ObjectPropertyDomain"
-    tokenImage(OBJECTPROPERTYRANGE),  // "ObjectPropertyRange"
-    tokenImage(FUNCTIONALOBJECTPROPERTY),  // "FunctionalObjectProperty"
-    tokenImage(INVERSEFUNCTIONALOBJECTPROPERTY),  // "InverseFunctionalObjectProperty"
-    tokenImage(REFLEXIVEOBJECTPROPERTY),  // "ReflexiveObjectProperty"
-    tokenImage(IRREFLEXIVEOBJECTPROPERTY),  // "IrreflexiveObjectProperty"
-    tokenImage(SYMMETRICOBJECTPROPERTY),  // "SymmetricObjectProperty"
-    tokenImage(ASYMMETRICOBJECTPROPERTY),  // "AsymmetricObjectProperty"
-    tokenImage(TRANSITIVEOBJECTPROPERTY),  // "TransitiveObjectProperty"
-    tokenImage(SUBDATAPROPERTYOF),  // "SubDataPropertyOf"
-    tokenImage(EQUIVALENTDATAPROPERTIES),  // "EquivalentDataProperties"
-    tokenImage(DISJOINTDATAPROPERTIES),  // "DisjointDataProperties"
-    tokenImage(DATAPROPERTYDOMAIN),  // "DataPropertyDomain"
-    tokenImage(DATAPROPERTYRANGE),  // "DataPropertyRange"
-    tokenImage(FUNCTIONALDATAPROPERTY),  // "FunctionalDataProperty"
-    tokenImage(SAMEINDIVIDUAL),  // "SameIndividual"
-    tokenImage(DIFFERENTINDIVIDUALS),  // "DifferentIndividuals"
-    tokenImage(CLASSASSERTION),  // "ClassAssertion"
-    tokenImage(OBJECTPROPERTYASSERTION),  // "ObjectPropertyAssertion"
-    tokenImage(NEGATIVEOBJECTPROPERTYASSERTION),  // "NegativeObjectPropertyAssertion"
-    tokenImage(DATAPROPERTYASSERTION),  // "DataPropertyAssertion"
-    tokenImage(NEGATIVEDATAPROPERTYASSERTION),  // "NegativeDataPropertyAssertion"
-    tokenImage(PREFIX)  // "Prefix"
-  ).map(s => s.substring(1, s.length - 1))  // trim off quotes
+    "#",
+    // ")",  TODO
+    "Ontology", "Import", "SubClassOf", "EquivalentClasses", "DisjointClasses",
+    "DisjointUnion", "Annotation", "AnnotationAssertion",
+    "SubAnnotationPropertyOf", "AnnotationPropertyDomain",
+    "AnnotationPropertyRange", "HasKey", "Declaration",
+    "InverseObjectProperties", "SubObjectPropertyOf",
+    "EquivalentObjectProperties", "DisjointObjectProperties",
+    "ObjectPropertyDomain", "ObjectPropertyRange", "FunctionalObjectProperty",
+    "InverseFunctionalObjectProperty", "ReflexiveObjectProperty",
+    "IrreflexiveObjectProperty", "SymmetricObjectProperty",
+    "AsymmetricObjectProperty", "TransitiveObjectProperty", "SubDataPropertyOf",
+    "EquivalentDataProperties", "DisjointDataProperties", "DataPropertyDomain",
+    "DataPropertyRange", "FunctionalDataProperty", "SameIndividual",
+    "DifferentIndividuals", "ClassAssertion", "ObjectPropertyAssertion",
+    "NegativeObjectPropertyAssertion", "DataPropertyAssertion",
+    "NegativeDataPropertyAssertion", "Prefix"
+  )
 
   /**
     * @return Boolean which determines whether an OWL axiom expression could be
