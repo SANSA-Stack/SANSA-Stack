@@ -16,7 +16,7 @@ abstract class OWLHorstConformanceTestBase extends ConformanceTestBase {
 
   behavior of "conformance of OWL Horst entailment rules"
 
-  override def testCaseIds = Set(
+  override def testCaseIds: Set[String] = Set(
     "rdfbased-sem-rdfs-domain-cond",
     "rdfbased-sem-rdfs-range-cond",
     "rdfbased-sem-rdfs-subclass-cond",
@@ -29,9 +29,9 @@ abstract class OWLHorstConformanceTestBase extends ConformanceTestBase {
     "rdfbased-sem-char-symmetric-inst",
     "rdfbased-sem-char-transitive-inst",
     "rdfbased-sem-inv-inst",
-    "rdfbased-sem-eqdis-eqclass-subclass-1",
+    "rdfbased-sem-eqdis-eqclass-subclass-1", // the test works but returns more correct triples than specified
     "rdfbased-sem-eqdis-eqclass-subclass-2",
-    "rdfbased-sem-eqdis-eqprop-subprop-1",
+    "rdfbased-sem-eqdis-eqprop-subprop-1", // the test works but returns more correct triples than specified
     "rdfbased-sem-eqdis-eqprop-subprop-2",
     "rdfbased-sem-restrict-hasvalue-inst-obj",
     "rdfbased-sem-restrict-hasvalue-inst-subj",
@@ -39,5 +39,5 @@ abstract class OWLHorstConformanceTestBase extends ConformanceTestBase {
     "rdfbased-sem-restrict-allvalues-inst-obj"
   )
 
-  override def testsCasesFolder = new File(this.getClass.getClassLoader.getResource("data/conformance/owl2rl").getPath)
+  override def testsCasesFolder: File = new File(this.getClass.getClassLoader.getResource("data/conformance/owl2rl").getPath)
 }

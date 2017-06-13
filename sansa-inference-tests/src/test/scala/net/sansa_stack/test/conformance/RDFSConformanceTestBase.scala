@@ -24,5 +24,5 @@ abstract class RDFSConformanceTestBase extends ConformanceTestBase {
     "rdfbased-sem-rdfs-subprop-cond",
     "rdfbased-sem-rdfs-subprop-trans")
 
-  override def testsCasesFolder = new File(this.getClass.getClassLoader.getResource("data/conformance/rdfs").getPath)
+  override def testsCasesFolder: File = new File(this.getClass.getClassLoader.getResource("data/conformance/rdfs").getPath)
 }

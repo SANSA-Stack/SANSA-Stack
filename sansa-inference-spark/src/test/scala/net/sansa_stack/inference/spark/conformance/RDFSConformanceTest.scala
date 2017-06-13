@@ -1,11 +1,12 @@
 package net.sansa_stack.inference.spark.conformance
 
+import java.io.File
+
 import net.sansa_stack.test.conformance.RDFSConformanceTestBase
 import org.apache.jena.rdf.model.Model
-
 import net.sansa_stack.inference.data.RDFTriple
-import scala.collection.mutable
 
+import scala.collection.mutable
 import net.sansa_stack.inference.spark.data.model.RDFGraph
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
 
