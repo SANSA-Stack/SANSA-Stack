@@ -1,41 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>sansa-stack-parent</artifactId>
-    <groupId>net.sansa-stack</groupId>
-    <version>2016-12</version>
-  </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>sansa-stack-parent</artifactId>
+		<groupId>net.sansa-stack</groupId>
+		<version>2016-12</version>
+	</parent>
 
-  <artifactId>sansa-stack-flink</artifactId>
-  <packaging>pom</packaging>
-  <name>SANSA-Stack Flink</name>
+	<artifactId>sansa-stack-flink</artifactId>
+	<packaging>pom</packaging>
+	<name>SANSA-Stack Flink</name>
 
-  <dependencies>
+	<dependencies>
 
-    <!-- RDF Layer -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>sansa-rdf-flink</artifactId>
-    </dependency>
+		<!-- RDF Layer -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+		</dependency>
 
-    <!-- OWL Layer -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>sansa-owl-flink</artifactId>
-    </dependency>
+		<!-- OWL Layer -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+		</dependency>
 
-    <!-- Query Layer -->
-    <!-- no Flink code yet -->
+		<!-- Query Layer -->
+		<!-- no Flink code yet -->
 
-    <!-- Inference Layer -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
-    </dependency>
+		<!-- Inference Layer -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+		</dependency>
 
-    <!-- ML Layer -->
-    <!-- no Flink code yet -->
+		<!-- ML Layer -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+		</dependency>
 
-  </dependencies>
+	</dependencies>
 </project>
