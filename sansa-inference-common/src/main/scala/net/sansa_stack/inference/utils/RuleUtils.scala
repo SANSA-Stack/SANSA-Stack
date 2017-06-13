@@ -1,18 +1,17 @@
 package net.sansa_stack.inference.utils
 
-import scala.collection.JavaConverters._
-import scalax.collection.edge.Implicits._
-import scalax.collection.edge.LDiEdge
-import scalax.collection.mutable.Graph
-
+import net.sansa_stack.inference.rules.RuleEntailmentType
+import net.sansa_stack.inference.rules.RuleEntailmentType._
+import net.sansa_stack.inference.utils.graph.LabeledEdge
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.jgrapht.alg.cycle.TarjanSimpleCycles
 
-import net.sansa_stack.inference.rules.RuleEntailmentType
-import net.sansa_stack.inference.rules.RuleEntailmentType._
-import net.sansa_stack.inference.utils.graph.LabeledEdge
+import scala.collection.JavaConverters._
+import scalax.collection.edge.Implicits._
+import scalax.collection.edge.LDiEdge
+import scalax.collection.mutable.Graph
 
 /**
   * Utility class for rules.
@@ -275,6 +274,17 @@ object RuleUtils {
     * @return whether it's cyclic or not
     */
   def isCyclic(rule: Rule) : Boolean = {
+    val body = rule.bodyTriplePatterns()
+    val head = rule.headTriplePatterns()
+
+    // sanity check that there is only a single head TP
+    if(head.size > 1) {
+      throw new IllegalArgumentException("Rules with more than one triple pattern in the head are not supported yet!")
+    }
+
+    // if there is only a single body TP, we can terminate here and return FALSE
+    if(body.size == 1) return false
+
     // get the type of the rule
     val ruleType = entailmentType(rule)
 
@@ -321,14 +331,21 @@ object RuleUtils {
 
     }
 
+    // we generate a graph for the rule (we use a JGraphT graph which provides better cycle detection)
     val g = GraphUtils.asJGraphtRuleGraph(asGraph(rule))
 
     // get cycles of length > 2
     val cycleDetector = new TarjanSimpleCycles[Node, LabeledEdge[Node, String]](g)
-    val cycles = cycleDetector.findSimpleCycles().asScala.filter(c => c.size() == 2)
+    val cycles = cycleDetector.findSimpleCycles().asScala.filter(c => c.size() > 2)
+
+    // we can terminate if there are no cycles with length > 2
+    if(cycles.isEmpty) return false
+
+    // we have to check for cycles that share the same predicate with the head
 
     cycles.foreach(c => {
-      println(c)
+      val nodes = c.asScala.toList
+      val pairs = nodes zip nodes.tail
     })
 
     true
