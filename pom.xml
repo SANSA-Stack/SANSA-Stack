@@ -3,24 +3,41 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-query-parent</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<artifactId>sansa-query-parent_2.11</artifactId>
+	<version>0.2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
+	<name>sansa-query-parent</name>
+	<url>http://sansa-stack.net/</url>
+	<licenses>
+          <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <distribution>repo</distribution>
+          </license>
+	</licenses>
 
 	<!-- <name>${project.artifactId}</name> -->
 	<description>SANSA Query Library</description>
+	<organization>
+          <name>Smart Data Analytics (SDA) research group</name>
+          <url>http://sda.tech</url>
+	</organization>
+
 	<inceptionYear>2015</inceptionYear>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<sansa.version>0.2.0</sansa.version>
 		<encoding>UTF-8</encoding>
 
-		<scala.version>2.11.7</scala.version>
+		<scala.version>2.11.8</scala.version>
 		<scala.compat.version>2.11</scala.compat.version>
+		<scala.binary.version>2.11</scala.binary.version>
 		<scala.classifier>${scala.compat.version}</scala.classifier>
 
-		<spark.version>2.0.1</spark.version>
+		<spark.version>2.1.1</spark.version>
+		<flink.version>1.3.0</flink.version>
 		<jena.version>3.1.1</jena.version>
 		<jsa.subversion>1</jsa.subversion>
 
@@ -36,9 +53,37 @@
 		<url>https://github.com/SANSA-Stack/SANSA-Query</url>
 		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-Query.git</connection>
 		<developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-Query.git</developerConnection>
-		<tag>HEAD</tag>
 	</scm>
 
+	<issueManagement>
+	  <system>GitHub</system>
+	  <url>https://github.com/SANSA-Stack/SANSA-Query</url>
+	</issueManagement>
+	
+	<developers>
+          <developer>
+            <id>Aklakan</id>
+            <name>Claus Stadler</name>
+            <email>cstadler@informatik.uni-leipzig.de</email>
+            <organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+            <organizationUrl>http://aksw.org</organizationUrl>
+            <roles>
+              <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+          </developer>
+          <developer>
+            <id>sbin</id>
+            <name>Simon Bin</name>
+            <email>sbin@informatik.uni-leipzig.de</email>
+            <organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+            <organizationUrl>http://aksw.org</organizationUrl>
+            <roles>
+              <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+          </developer>
+	</developers>
 
 	<profiles>
 		<profile>
@@ -93,6 +138,17 @@
 								</configuration>
 							</execution>
 						</executions>
+					</plugin>
+					<plugin>
+					  <groupId>org.sonatype.plugins</groupId>
+					  <artifactId>nexus-staging-maven-plugin</artifactId>
+					  <version>1.6.7</version>
+					  <extensions>true</extensions>
+					  <configuration>
+					    <serverId>ossrh</serverId>
+					    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+					  </configuration>
 					</plugin>
 				</plugins>
 			</build>
@@ -150,8 +206,8 @@
 
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
-				<artifactId>sansa-rdf-test-resources</artifactId>
-				<version>${project.version}</version>
+				<artifactId>sansa-rdf-test-resources_${scala.compat.version}</artifactId>
+				<version>${sansa.version}</version>
 				<!-- <classifier>${scala.compat.version}</classifier> -->
 			</dependency>
 
@@ -177,8 +233,8 @@
 
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
-				<artifactId>sansa-rdf-common-partition</artifactId>
-				<version>${project.version}</version>
+				<artifactId>sansa-rdf-common-partition_${scala.compat.version}</artifactId>
+				<version>${sansa.version}</version>
 				<!-- <classifier>${scala.compat.version}</classifier> -->
 			</dependency>
 
@@ -233,6 +289,12 @@
 							<goal>testCompile</goal>
 						</goals>
 					</execution>
+					<execution>
+					  <id>attach-javadocs</id>
+					  <goals>
+					    <goal>doc-jar</goal>
+					  </goals>
+					</execution>
 					<!-- <execution> -->
 					<!-- <goals> -->
 					<!-- <goal>add-source</goal> -->
@@ -243,6 +305,33 @@
 					<!-- </goals> -->
 					<!-- </execution> -->
 				</executions>
+			</plugin>
+
+			<plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-source-plugin</artifactId>
+                          <executions>
+                            <execution>
+                              <phase>verify</phase>
+                              <id>attach-sources</id>
+                              <goals>
+                                <goal>jar</goal>
+                              </goals>
+                            </execution>
+                          </executions>
+			</plugin>
+
+			<plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-javadoc-plugin</artifactId>
+                          <executions>
+                            <execution>
+                              <id>attach-javadocs</id>
+                              <goals>
+                                <goal>jar</goal>
+                              </goals>
+                            </execution>
+                          </executions>
 			</plugin>
 
 			<plugin>
@@ -369,16 +458,15 @@
 
 
 	<distributionManagement>
-<!-- 		<repository> -->
-<!-- 			<id>ossrh</id> -->
-<!-- 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> -->
-<!-- 		</repository> -->
-		<repository>
-			<id>maven.aksw.internal</id>
-			<name>AKSW Release Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/internal</url>
-		</repository>
-
+ 		<repository>
+ 			<id>ossrh</id>
+ 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+ 		</repository>
+		<!-- <repository> -->
+		<!-- 	<id>maven.aksw.internal</id> -->
+		<!-- 	<name>AKSW Release Repository</name> -->
+		<!-- 	<url>http://maven.aksw.org/archiva/repository/internal</url> -->
+		<!-- </repository> -->
 		<snapshotRepository>
 			<id>maven.aksw.snapshots</id>
 			<name>AKSW Snapshot Repository</name>
