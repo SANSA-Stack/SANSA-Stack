@@ -6,6 +6,15 @@
 	<artifactId>sansa-query-parent_2.11</artifactId>
 	<version>0.1.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
+	<name>sansa-query-parent</name>
+	<url>http://sansa-stack.net/</url>
+	<licenses>
+          <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+            <distribution>repo</distribution>
+          </license>
+	</licenses>
 
 	<!-- <name>${project.artifactId}</name> -->
 	<description>SANSA Query Library</description>
