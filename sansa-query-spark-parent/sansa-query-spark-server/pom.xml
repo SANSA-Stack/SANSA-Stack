@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-spark-server</artifactId>
+	<artifactId>sansa-query-spark-server_2.11</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-query-spark-parent</artifactId>
+		<artifactId>sansa-query-spark-parent_2.11</artifactId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 
@@ -14,13 +14,13 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-core</artifactId>
+			<artifactId>sansa-rdf-spark-core_${scala.compat.version}</artifactId>
 <!-- 			<classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-query-spark-sparqlify</artifactId>
+			<artifactId>sansa-query-spark-sparqlify_${scala.compat.version}</artifactId>
 <!-- 			<classifier>${scala.classifier}</classifier> -->
 		</dependency>
 

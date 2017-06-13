@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-spark-bundle</artifactId>
+	<artifactId>sansa-query-spark-bundle_2.11</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-query-spark-parent</artifactId>
+		<artifactId>sansa-query-spark-parent_2.11</artifactId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 
@@ -42,43 +42,43 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-bundle</artifactId>
-			<version>${project.version}</version>
+			<artifactId>sansa-rdf-spark-bundle_${scala.compat.version}</artifactId>
+			<version>${sansa.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-utils</artifactId>
-			<version>${project.version}</version>
+			<artifactId>sansa-rdf-spark-utils_${scala.compat.version}</artifactId>
+			<version>${sansa.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-core</artifactId>
-			<version>${project.version}</version>
+			<artifactId>sansa-rdf-spark-core_${scala.compat.version}</artifactId>
+			<version>${sansa.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
-			<version>${project.version}</version>
+			<artifactId>sansa-rdf-kryo-sparqlify_${scala.compat.version}</artifactId>
+			<version>${sansa.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-partition-sparqlify</artifactId>
-			<version>${project.version}</version>
+			<artifactId>sansa-rdf-partition-sparqlify_${scala.compat.version}</artifactId>
+			<version>${sansa.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-query-spark-server</artifactId>
+			<artifactId>sansa-query-spark-server_${scala.compat.version}</artifactId>
 			<version>${project.version}</version>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
