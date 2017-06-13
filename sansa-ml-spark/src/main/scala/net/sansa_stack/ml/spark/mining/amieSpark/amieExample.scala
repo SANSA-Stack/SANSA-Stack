@@ -32,16 +32,16 @@ object amieExample {
 
     .master("spark://172.18.160.16:3077")
       .appName("SPARK Reasoning")
-    .config("spark.sql.warehouse.dir", "file:///data/home/MohamedMami/spark-2.1.0-bin-hadoop2.7/bin/spark-warehouse")
+    .config("spark.sql.warehouse.dir", "/spark-2.1.0-bin-hadoop2.7/bin/spark-warehouse")
     
    
     .getOrCreate()
  
     
-  val hdfsPath:String = "hdfs://akswnc5.aksw.uni-leipzig.de:54310/Theresa/"
+  val hdfsPath:String = "<hdfspath>"
    // val hdfsPath = "file:///data/home/TheresaNathan/"  
   val outputPath = "file:///data/home/TheresaNathan/"  
-  val inputFile = "hdfs://akswnc5.aksw.uni-leipzig.de:54310/Theresa/shortTest.tsv"    
+  val inputFile = "/shortTest.tsv"    
   
   
   

@@ -8,7 +8,7 @@
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+	<artifactId>sansa-ml-flink_2.11</artifactId>
 	<version>0.1.1-SNAPSHOT</version>
 	<name>ML API - Apache Flink</name>
 	<description>RDF/OWL Machine Learning Library for Apache Flink</description>

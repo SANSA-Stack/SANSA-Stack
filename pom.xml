@@ -61,6 +61,7 @@
 		<spark.version>2.1.1</spark.version>
 		<flink.version>1.3.0</flink.version>
 		<jena.version>3.1.1</jena.version>
+		<sansa.version>0.2.0</sansa.version>
 	</properties>
 
 	<dependencyManagement>
@@ -70,6 +71,19 @@
 				<groupId>org.scala-lang</groupId>
 				<artifactId>scala-library</artifactId>
 				<version>${scala.version}</version>
+			</dependency>
+
+			<!-- SANSA RDF -->
+			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-rdf-spark-core_${scala.binary.version}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+			<!-- SANSA OWL -->
+			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- Apache Spark Core -->
@@ -239,6 +253,17 @@
 			<url>https://repository.apache.org/content/repositories/snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 		<repository>

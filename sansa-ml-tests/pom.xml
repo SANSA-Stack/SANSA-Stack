@@ -7,7 +7,7 @@
     <version>0.1.1-SNAPSHOT</version>
   </parent>
   <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-ml-tests_${scala.binary.version}</artifactId>
+  <artifactId>sansa-ml-tests_2.11</artifactId>
   <version>0.1.1-SNAPSHOT</version>
   <name>SANSA ML Tests</name>
   <description>Contains common data and utils for ML API testing</description>
