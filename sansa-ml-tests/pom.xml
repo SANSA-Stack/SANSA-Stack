@@ -4,11 +4,11 @@
   <parent>
     <artifactId>sansa-ml-parent_2.11</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
   </parent>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-ml-tests_2.11</artifactId>
-  <version>0.2.0</version>
+  <version>0.2.1-SNAPSHOT</version>
   <name>SANSA ML Tests</name>
   <description>Contains common data and utils for ML API testing</description>
   <inceptionYear>2016</inceptionYear>
