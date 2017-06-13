@@ -13,11 +13,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-rdf-parent</artifactId>
+		<artifactId>sansa-rdf-parent_2.11</artifactId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sansa-rdf-flink</artifactId>
+	<artifactId>sansa-rdf-flink_2.11</artifactId>
 
 	<name>SANSA RDF API - Flink</name>
 	<description>Apache Flink for RDF Layer</description>
@@ -58,7 +58,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-partition-core</artifactId>
+			<artifactId>sansa-rdf-partition-core_${scala.compat.version}</artifactId>
 		</dependency>
 		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>sansa-rdf-partition-parent</artifactId> 
 			<version>0.1.1-SNAPSHOT</version> </dependency> -->

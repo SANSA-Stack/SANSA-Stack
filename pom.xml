@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-rdf-parent</artifactId>
+	<artifactId>sansa-rdf-parent_2.11</artifactId>
 	<version>0.1.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
@@ -47,49 +47,49 @@
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-test-resources</artifactId>
+				<artifactId>sansa-rdf-test-resources_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-kryo-jena</artifactId>
+				<artifactId>sansa-rdf-kryo-jena_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+				<artifactId>sansa-rdf-kryo-sparqlify_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-utils</artifactId>
+				<artifactId>sansa-rdf-spark-utils_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-core</artifactId>
+				<artifactId>sansa-rdf-spark-core_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-core</artifactId>
+				<artifactId>sansa-rdf-partition-core_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+				<artifactId>sansa-rdf-partition-sparqlify_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
