@@ -4,7 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.clustering.{ PowerIterationClusteringModel, PowerIterationClustering }
 import org.apache.spark.graphx.{ Graph, EdgeDirection }
 import scala.math.BigDecimal
-import org.apache.commons.math.util.MathUtils
+import org.apache.commons.math3.util.MathUtils
 import org.apache.spark.sql.SparkSession
 
 class RDFGraphPICClustering(@transient val sparkSession: SparkSession,

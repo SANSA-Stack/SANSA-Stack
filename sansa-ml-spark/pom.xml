@@ -14,6 +14,7 @@
 	<description>RDF/OWL Machine Learning Library for Apache Spark</description>
 
 	<dependencies>
+	
 		<!-- ML Common -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
@@ -54,7 +55,19 @@
 			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
 		</dependency>
-
+		<!-- SANSA OWL -->
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-owl-spark</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+		
+		<!-- HermiT reasoner -->
+		<dependency>
+		    <groupId>com.hermit-reasoner</groupId>
+		    <artifactId>org.semanticweb.hermit</artifactId>
+		    <version>1.3.8.1</version>
+		</dependency>
 		<!-- Apache JENA 3.x -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
