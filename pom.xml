@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-rdf-parent</artifactId>
-	<version>0.1.0</version>
+	<artifactId>sansa-rdf-parent_2.11</artifactId>
+	<version>0.2.0</version>
 	<packaging>pom</packaging>
 
 	<!-- <name>SANSA Stack - RDF Layer</name> -->
@@ -16,11 +16,11 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 
-		<scala.version>2.11.7</scala.version>
+		<scala.version>2.11.8</scala.version>
 		<scala.compat.version>2.11</scala.compat.version>
 		<scala.classifier>${scala.compat.version}</scala.classifier>
-		<flink.version>1.1.3</flink.version>
-		<spark.version>2.0.1</spark.version>
+		<flink.version>1.3.0</flink.version>
+		<spark.version>2.1.1</spark.version>
 		<jena.version>3.1.1</jena.version>
 		<jsa.subversion>1</jsa.subversion>
 
@@ -35,6 +35,7 @@
 	</scm>
 
 	<modules>
+		<module>sansa-rdf-test-resources</module>
 		<module>sansa-rdf-partition-parent</module>
 		<module>sansa-rdf-spark-parent</module>
 		<module>sansa-rdf-kryo-parent</module>
@@ -46,45 +47,52 @@
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-kryo-jena</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
-                        <dependency>
-                                <groupId>${project.groupId}</groupId>
-                                <artifactId>sansa-rdf-kryo-sparqlify</artifactId>
-                                <version>${project.version}</version>
-                                <!-- <classifier>${scala.classifier}</classifier> -->
-                        </dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-utils</artifactId>
+				<artifactId>sansa-rdf-test-resources_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-core</artifactId>
+				<artifactId>sansa-rdf-kryo-jena_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-core</artifactId>
+				<artifactId>sansa-rdf-kryo-sparqlify_${scala.compat.version}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
-                        <dependency>
-                                <groupId>${project.groupId}</groupId>
-                                <artifactId>sansa-rdf-partition-sparqlify</artifactId>
-                                <version>${project.version}</version>
-                                <!-- <classifier>${scala.classifier}</classifier> -->
-                        </dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark-utils_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark-core_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-partition-core_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-partition-sparqlify_${scala.compat.version}</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
 
 			<!-- Apache Flink -->
 			<dependency>
@@ -101,6 +109,37 @@
 				<groupId>org.apache.flink</groupId>
 				<artifactId>flink-clients_${scala.compat.version}</artifactId>
 				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-gelly-scala_${scala.compat.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-table_${scala.compat.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+
+
+			<!-- Apache Spark -->
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-streaming_${scala.compat.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-streaming-kafka-0-10_${scala.compat.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>		
+			
+
+			<dependency>
+				<groupId>org.scalatest</groupId>
+				<artifactId>scalatest_${scala.compat.version}</artifactId>
+				<version>3.0.3</version>
 			</dependency>
 
 
@@ -144,7 +183,7 @@
 				<version>${jena.version}</version>
 			</dependency>
 
-			<!-- Jena's (newer) vesion of jackson conflicts with hadoop's and causes
+			<!-- Jena's (newer) vesion of jackson conflicts with hadoop's and causes 
 				it to crash -->
 			<dependency>
 				<groupId>org.apache.jena</groupId>
@@ -316,7 +355,7 @@
 					</executions>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -357,12 +396,8 @@
 
 
 	<distributionManagement>
-<!--
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
--->
+		<!-- <repository> <id>ossrh</id> <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> 
+			</repository> -->
 		<repository>
 			<id>maven.aksw.internal</id>
 			<name>AKSW Release Repository</name>

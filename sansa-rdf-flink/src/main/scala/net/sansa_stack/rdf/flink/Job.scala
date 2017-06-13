@@ -5,6 +5,7 @@ import java.io.File
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment
 import net.sansa_stack.rdf.flink.data.{RDFGraphLoader,RDFGraphWriter}
+import net.sansa_stack.rdf.flink.graph.LoadGraph
 
 object Job {
 
@@ -30,6 +31,11 @@ object Job {
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromFile(input.getAbsolutePath, env)
+    
+    val gelly_graph = LoadGraph(graph, env)
+    val res = gelly_graph.reverse().getEdges.collect().toList
+    
+    res.foreach(println(_))
 
     val t = graph.getPredicates
     t.print()

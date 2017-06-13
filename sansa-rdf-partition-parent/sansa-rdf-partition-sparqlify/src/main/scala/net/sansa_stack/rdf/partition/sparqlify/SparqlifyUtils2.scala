@@ -29,9 +29,16 @@ object SparqlifyUtils2 {
 
     //println("Counting the dataset: " + ds.count())
     val pred = p.predicate
-    val tableName = pred.substring(pred.lastIndexOf("/") + 1)
+    val predPart = pred.substring(pred.lastIndexOf("/") + 1)
     val pn = NodeFactory.createURI(p.predicate)
 
+    
+    val dt = p.datatype
+    val dtPart = if(dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
+    val langPart = if(p.langTagPresent) "_lang" else ""
+    
+    val tableName = predPart + dtPart.replace("#", "_") + langPart
+    
     val quad = new Quad(Quad.defaultGraphIRI, Vars.s, pn, Vars.o)
     val quadPattern = new QuadPattern()
     quadPattern.add(quad)

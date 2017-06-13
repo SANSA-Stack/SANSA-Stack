@@ -2,32 +2,32 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-spark-core</artifactId>
+	<artifactId>sansa-rdf-spark-core_2.11</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-rdf-spark-parent</artifactId>
-		<version>0.1.0</version>
+		<artifactId>sansa-rdf-spark-parent_2.11</artifactId>
+		<version>0.2.0</version>
 	</parent>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-kryo-jena</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<artifactId>sansa-rdf-kryo-jena_${scala.compat.version}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-utils</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<artifactId>sansa-rdf-spark-utils_${scala.compat.version}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-partition-core</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<artifactId>sansa-rdf-partition-core_${scala.compat.version}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 
@@ -46,10 +46,26 @@
 			<artifactId>spark-graphx_${scala.compat.version}</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming_${scala.compat.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-streaming-kafka-0-10_${scala.compat.version}</artifactId>
+		</dependency>
+
 		<!-- Test -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_${scala.compat.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
 

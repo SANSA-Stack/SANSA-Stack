@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark.io
 
-import java.io.{ByteArrayInputStream, File}
+import java.io.ByteArrayInputStream
+import java.net.URI
 
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.{Lang, RDFDataMgr}
@@ -9,21 +10,32 @@ import org.apache.spark.sql.SparkSession
 
 
 /**
-  * An N-Triple reader. One triple per line is assumed.
+  * An N-Triples reader. One triple per line is assumed.
   *
   * @author Lorenz Buehmann
   */
 object NTripleReader {
 
   /**
-    * Loads an N-Triple file into an RDD.
+    * Loads an N-Triples file into an RDD.
     *
     * @param session the Spark session
-    * @param file    the path to the N-Triple file
+    * @param path    the path to the N-Triples file(s)
     * @return the RDD of triples
     */
-  def load(session: SparkSession, file: File): RDD[Triple] = {
-    session.sparkContext.textFile(file.getAbsolutePath).map(line =>
+  def load(session: SparkSession, path: URI): RDD[Triple] = {
+    load(session, path.toString)
+  }
+
+  /**
+    * Loads an N-Triples file into an RDD.
+    *
+    * @param session the Spark session
+    * @param path    the path to the N-Triples file(s)
+    * @return the RDD of triples
+    */
+  def load(session: SparkSession, path: String): RDD[Triple] = {
+    session.sparkContext.textFile(path).map(line =>
       RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.getBytes), Lang.NTRIPLES, null).next())
   }
 
@@ -42,7 +54,7 @@ object NTripleReader {
       .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
 
-    val rdd = NTripleReader.load(sparkSession, new File(args(0)))
+    val rdd = NTripleReader.load(sparkSession, URI.create(args(0)))
 
     println(rdd.take(10).mkString("\n"))
   }
