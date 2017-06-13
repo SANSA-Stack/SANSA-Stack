@@ -42,25 +42,31 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int = 2) extend
     // of rdfs:subClassOf (resp. rdfs:sobPropertyOf)
     // rdfp12a: (?C owl:equivalentClass ?D) -> (?C rdfs:subClassOf ?D )
     // rdfp12b: (?C owl:equivalentClass ?D) -> (?D rdfs:subClassOf ?C )
-    subClassOfTriples = sc.union(
-      subClassOfTriples,
-      equivClassTriples.map(t => RDFTriple(t.s, RDFS.subClassOf.getURI, t.o)),
-      equivClassTriples.map(t => RDFTriple(t.o, RDFS.subClassOf.getURI, t.s)))
+    subClassOfTriples = sc
+      .union(
+        subClassOfTriples,
+        equivClassTriples.map(t => RDFTriple(t.s, RDFS.subClassOf.getURI, t.o)),
+        equivClassTriples.map(t => RDFTriple(t.o, RDFS.subClassOf.getURI, t.s))
+      )
       .distinct(parallelism)
 
     // rdfp13a: (?C owl:equivalentProperty ?D) -> (?C rdfs:subPropertyOf ?D )
     // rdfp13b: (?C owl:equivalentProperty ?D) -> (?D rdfs:subPropertyOf ?C )
-    subPropertyOfTriples = sc.union(
-      subPropertyOfTriples,
-      equivPropertyTriples.map(t => RDFTriple(t.s, RDFS.subPropertyOf.getURI, t.o)),
-      equivPropertyTriples.map(t => RDFTriple(t.o, RDFS.subPropertyOf.getURI, t.s)))
+    subPropertyOfTriples = sc
+      .union(
+        subPropertyOfTriples,
+        equivPropertyTriples.map(t => RDFTriple(t.s, RDFS.subPropertyOf.getURI, t.o)),
+        equivPropertyTriples.map(t => RDFTriple(t.o, RDFS.subPropertyOf.getURI, t.s))
+      )
       .distinct(parallelism)
 
     // 2. we compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
     // rdfs11: (xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) -> (xxx rdfs:subClassOf zzz)
     val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples)
+      .filter(t => t.s != t.o) // omit (c1 rdfs:subClassOf c1) triples
     // rdfs5: (xxx rdfs:subPropertyOf yyy), (yyy rdfs:subPropertyOf zzz) -> (xxx rdfs:subPropertyOf zzz)
     val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples)
+      .filter(t => t.s != t.o) // omit (p1 rdfs:subPropertyOf p1) triples
 
 
     // we put all into maps which should be more efficient later on
