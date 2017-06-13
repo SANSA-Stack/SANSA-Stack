@@ -282,6 +282,8 @@
                   <arg>-feature</arg>
                   <arg>-dependencyfile</arg>
                   <arg>${project.build.directory}/.scala_dependencies</arg>
+		  <arg>-Xmax-classfile-name</arg>
+                  <arg>128</arg>
                 </args>
                 <jvmArgs>
                   <jvmArg>-Xms1024m</jvmArg>
@@ -339,7 +341,24 @@
           <groupId>com.amashchenko.maven.plugin</groupId>
           <artifactId>gitflow-maven-plugin</artifactId>
           <version>1.5.0</version>
+
+          <configuration>
+            <installProject>false</installProject>
+            <verbose>false</verbose>
+
+            <gitFlowConfig>
+              <productionBranch>master</productionBranch>
+              <developmentBranch>develop</developmentBranch>
+              <featureBranchPrefix>feature/</featureBranchPrefix>
+              <releaseBranchPrefix>release/</releaseBranchPrefix>
+              <hotfixBranchPrefix>hotfix/</hotfixBranchPrefix>
+              <supportBranchPrefix>support/</supportBranchPrefix>
+              <versionTagPrefix>v</versionTagPrefix>
+              <origin>origin</origin>
+            </gitFlowConfig>
+          </configuration>
         </plugin>
+
         <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
@@ -699,6 +718,17 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.8</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
           </plugin>
         </plugins>
       </build>
