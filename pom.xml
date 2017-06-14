@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-examples-parent</artifactId>
-	<version>2017-06-SNAPSHOT</version>
+	<version>2017-06</version>
 	<packaging>pom</packaging>
 	<name>SANSA-Examples - Parent</name>
 	<description>SANSA examples</description>
@@ -61,7 +61,7 @@
 		<spark.version>2.1.1</spark.version>
 		<flink.version>1.3.0</flink.version>
 		<jena.version>3.1.1</jena.version>
-		<sansa.version>0.1.1-SNAPSHOT</sansa.version>
+		<sansa.version>0.2.0</sansa.version>
 	</properties>
 
 	<dependencyManagement>
@@ -151,13 +151,13 @@
 			<!-- RDF Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-bundle</artifactId>
+				<artifactId>sansa-rdf-spark-bundle_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink</artifactId>
+				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 			<!-- OWL Layer -->
@@ -175,7 +175,7 @@
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-spark-bundle</artifactId>
+				<artifactId>sansa-query-spark-bundle_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 

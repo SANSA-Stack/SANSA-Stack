@@ -15,7 +15,7 @@
 		<!-- SANSA RDF -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-flink</artifactId>
+			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
