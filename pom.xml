@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-examples-parent</artifactId>
+	<artifactId>sansa-examples-parent_2.11</artifactId>
 	<version>2017-06</version>
 	<packaging>pom</packaging>
 	<name>SANSA-Examples - Parent</name>

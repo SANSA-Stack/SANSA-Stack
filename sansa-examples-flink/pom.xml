@@ -3,11 +3,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>sansa-examples-parent</artifactId>
+		<artifactId>sansa-examples-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>2017-06-SNAPSHOT</version>
+		<version>2017-06</version>
 	</parent>
-	<artifactId>sansa-examples-flink</artifactId>
+	<artifactId>sansa-examples-flink_2.11</artifactId>
 	<name>SANSA Examples - Apache Flink</name>
 	<description>SANSA examples for Apache Flink</description>
 
