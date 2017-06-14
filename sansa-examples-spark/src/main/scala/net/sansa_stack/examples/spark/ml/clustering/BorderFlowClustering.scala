@@ -3,20 +3,17 @@ package net.sansa_stack.examples.spark.ml.clustering
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
-import net.sansa_stack.ml.spark.clustering.{ RDFByModularityClustering => RDFByModularityClusteringAlg }
+import net.sansa_stack.ml.spark.clustering.BorderFlow
 
-object RDFByModularityClustering {
-
+object BorderFlowClustering {
   def main(args: Array[String]) = {
-    if (args.length < 3) {
+    if (args.length < 1) {
       System.err.println(
-        "Usage: RDFByModularityClustering <input> <output> <numIterations>")
+        "Usage: BorderFlow <input> ")
       System.exit(1)
     }
-    val graphFile = args(0) //"src/main/resources/Clustering_sampledata.nt",
-    val outputFile = args(1)
-    val numIterations = args(2).toInt
-    val optionsList = args.drop(3).map { arg =>
+    val input = args(0) //"src/main/resources/BorderFlow_Sample1.txt"
+    val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
         case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
@@ -28,19 +25,17 @@ object RDFByModularityClustering {
       case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
     }
     println("============================================")
-    println("| RDF By Modularity Clustering example     |")
+    println("| Border Flow example                      |")
     println("============================================")
 
-    val sparkSession = SparkSession.builder
+    val spark = SparkSession.builder
       .master("local[*]")
-      .appName(" RDF By Modularity Clustering example (" + graphFile + ")")
+      .appName(" BorderFlow example (" + input + ")")
       .getOrCreate()
     Logger.getRootLogger.setLevel(Level.ERROR)
 
-    RDFByModularityClusteringAlg(sparkSession.sparkContext, numIterations, graphFile, outputFile)
+    BorderFlow(spark, input)
 
-    sparkSession.stop
-
+    spark.stop
   }
-
 }

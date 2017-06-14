@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>sansa-examples-parent</artifactId>
+		<artifactId>sansa-examples-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>2016-12</version>
+		<version>2017-06</version>
 	</parent>
-	<artifactId>sansa-examples-spark</artifactId>
+	<artifactId>sansa-examples-spark_2.11</artifactId>
 	<name>SANSA Examples - Apache Spark</name>
 	<description>SANSA Examples for Apache Spark</description>
 
@@ -31,6 +31,11 @@
 			<artifactId>spark-sql_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
+			<version>${spark.version}</version>
+		</dependency>
 
 		<!-- Apache JENA 3.x -->
 		<dependency>
@@ -45,7 +50,7 @@
 			<version>0.1.0-SNAPSHOT</version> </dependency> -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-bundle</artifactId>
+			<artifactId>sansa-rdf-spark-bundle_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
@@ -53,8 +58,7 @@
 			<version>0.1.0-SNAPSHOT</version> </dependency> -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-owl-spark</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA Inference -->
@@ -66,13 +70,13 @@
 		<!-- SANSA Querying -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-query-spark-bundle</artifactId>
+			<artifactId>sansa-query-spark-bundle_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA ML -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-ml-spark</artifactId>
+			<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Test -->
@@ -92,8 +96,13 @@
 		<!-- Logging -->
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
-			<version>2.1.2</version>
+			<artifactId>scala-logging_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Scopt -->
+		<dependency>
+			<groupId>com.github.scopt</groupId>
+			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
 	</dependencies>
@@ -242,6 +251,15 @@
 								</filter>
 							</filters>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+
+								<!-- add Main-Class to manifest file -->
+								<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+								<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
+								<!-- </transformer> -->
+							</transformers>
 						</configuration>
 					</execution>
 				</executions>

@@ -1,21 +1,22 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.net.URI
-
-import net.sansa_stack.rdf.spark.io.NTripleReader
 import org.apache.spark.sql.SparkSession
-
+import java.net.URI
+import net.sansa_stack.rdf.spark.io.NTripleReader
 import scala.collection.mutable
+import java.io.File
+import net.sansa_stack.rdf.spark.stats.RDFStatistics
 
-object TripleReader {
-
+object RDFStats {
   def main(args: Array[String]) = {
-    if (args.length < 1) {
+    if (args.length < 2) {
       System.err.println(
-        "Usage: Triple reader <input>")
+        "Usage: RDF Statistics <input> <output>")
       System.exit(1)
     }
-    val input = args(0)
+    val input = args(0)//"src/main/resources/rdf.nt"
+    val rdf_stats_file = new File(input).getName
+    val output = args(1)
     val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
@@ -28,23 +29,23 @@ object TripleReader {
       case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
     }
     println("======================================")
-    println("|        Triple reader example       |")
+    println("|        RDF Statistic example       |")
     println("======================================")
 
     val sparkSession = SparkSession.builder
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Triple reader example (" + input + ")")
+      .appName("RDF Dataset Statistics example (" + rdf_stats_file + ")")
       .getOrCreate()
 
-    val triplesRDD = NTripleReader.load(sparkSession, URI.create(input))
+    val triples = NTripleReader.load(sparkSession, URI.create(input))
 
-    triplesRDD.take(5).foreach(println(_))
-
-    //triplesRDD.saveAsTextFile(output)
+    // compute  criterias
+    val rdf_statistics = RDFStatistics(triples, sparkSession)
+    val stats = rdf_statistics.run()
+    rdf_statistics.voidify(stats, rdf_stats_file, output)
 
     sparkSession.stop
 
   }
-
 }

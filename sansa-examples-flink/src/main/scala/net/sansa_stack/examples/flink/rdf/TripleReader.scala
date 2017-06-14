@@ -1,15 +1,11 @@
-package net.sansa_stack.examples.spark.rdf
-
-import java.net.URI
-
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import org.apache.spark.sql.SparkSession
+package net.sansa_stack.examples.flink.rdf
 
 import scala.collection.mutable
+import org.apache.flink.api.scala.ExecutionEnvironment
+import net.sansa_stack.rdf.flink.data.RDFGraphLoader
 
 object TripleReader {
-
-  def main(args: Array[String]) = {
+ def main(args: Array[String]) {
     if (args.length < 1) {
       System.err.println(
         "Usage: Triple reader <input>")
@@ -31,20 +27,10 @@ object TripleReader {
     println("|        Triple reader example       |")
     println("======================================")
 
-    val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Triple reader example (" + input + ")")
-      .getOrCreate()
+    val env = ExecutionEnvironment.getExecutionEnvironment
 
-    val triplesRDD = NTripleReader.load(sparkSession, URI.create(input))
+    val rdfgraph = RDFGraphLoader.loadFromFile(input, env)
 
-    triplesRDD.take(5).foreach(println(_))
-
-    //triplesRDD.saveAsTextFile(output)
-
-    sparkSession.stop
-
+    rdfgraph.triples.first(10).print()
   }
-
 }

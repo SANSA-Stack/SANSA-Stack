@@ -3,22 +3,25 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>sansa-examples-parent</artifactId>
+		<artifactId>sansa-examples-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>2016-12</version>
+		<version>2017-06</version>
 	</parent>
-	<artifactId>sansa-examples-flink</artifactId>
+	<artifactId>sansa-examples-flink_2.11</artifactId>
 	<name>SANSA Examples - Apache Flink</name>
 	<description>SANSA examples for Apache Flink</description>
 
 	<dependencies>
 		<!-- SANSA RDF -->
-		
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+		</dependency>
+
 		<!-- SANSA OWL -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-owl-flink</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA Inference -->
@@ -26,10 +29,14 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
 		</dependency>
-		
+
 		<!-- SANSA Query -->
-		
+
 		<!-- SANSA ML -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+			</dependency>
 
 		<!-- Scala -->
 		<dependency>
@@ -55,7 +62,13 @@
 		<!-- Logging -->
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging-slf4j_${scala.binary.version}</artifactId>
+			<artifactId>scala-logging_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Scopt -->
+		<dependency>
+			<groupId>com.github.scopt</groupId>
+			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Test -->

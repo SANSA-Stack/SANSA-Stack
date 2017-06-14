@@ -1,21 +1,16 @@
-package net.sansa_stack.examples.spark.rdf
-
-import java.io.File
-import java.net.URI
-
+package net.sansa_stack.examples.flink.rdf
 import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import org.apache.flink.api.scala.ExecutionEnvironment
+import net.sansa_stack.rdf.flink.data.{RDFGraphLoader, RDFGraphWriter}
 
 object TripleWriter {
-
-  def main(args: Array[String]) = {
+  def main(args: Array[String]) {
     if (args.length < 2) {
       System.err.println(
         "Usage: Triple writer <input> <output>")
       System.exit(1)
     }
-    val input = args(0)
+    val input = args(0) //"src/main/resources/rdf.nt" 
     val output = args(1)
     val optionsList = args.drop(2).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
@@ -32,18 +27,12 @@ object TripleWriter {
     println("|        Triple writer example       |")
     println("======================================")
 
-    val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Triple writer example (" + input + ")")
-      .getOrCreate()
+    val env = ExecutionEnvironment.getExecutionEnvironment
 
-    val triplesRDD = NTripleReader.load(sparkSession, URI.create(input))
+    val rdfgraph = RDFGraphLoader.loadFromFile(input, env)
 
-    triplesRDD.saveAsTextFile(output)
+    RDFGraphWriter.writeToFile(rdfgraph, output)
 
-    sparkSession.stop
-
+    env.execute(s"Triple writer example ($input)")
   }
-
 }
