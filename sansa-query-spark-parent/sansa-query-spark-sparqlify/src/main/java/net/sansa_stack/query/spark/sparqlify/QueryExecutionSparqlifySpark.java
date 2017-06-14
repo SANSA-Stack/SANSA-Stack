@@ -18,38 +18,42 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
 
 public class QueryExecutionSparqlifySpark
-	extends QueryExecutionBaseSelect
+    extends QueryExecutionBaseSelect
 {
-	public QueryExecutionSparqlifySpark(
-			Query query,
-			QueryExecutionFactory subFactory,
-			SparkSession sparkSession,
-			SparqlSqlStringRewriter sparqlSqlRewriter
-			) {
-		super(query, subFactory);
-		this.sparkSession = sparkSession;
-		this.sparqlSqlRewriter = sparqlSqlRewriter;
-	}
+    public QueryExecutionSparqlifySpark(
+            Query query,
+            QueryExecutionFactory subFactory,
+            SparkSession sparkSession,
+            SparqlSqlStringRewriter sparqlSqlRewriter
+            ) {
+        super(query, subFactory);
+        this.sparkSession = sparkSession;
+        this.sparqlSqlRewriter = sparqlSqlRewriter;
+    }
 
-	protected SparkSession sparkSession;
-	protected SparqlSqlStringRewriter sparqlSqlRewriter;
+    protected SparkSession sparkSession;
+    protected SparqlSqlStringRewriter sparqlSqlRewriter;
 
     @Override
     protected ResultSetCloseable executeCoreSelect(Query query) {
-		SparqlSqlStringRewrite rewrite = sparqlSqlRewriter.rewrite(query);
-		List<Var> resultVars = rewrite.getProjectionOrder();
+        SparqlSqlStringRewrite rewrite = sparqlSqlRewriter.rewrite(query);
+        List<Var> resultVars = rewrite.getProjectionOrder();
 
-    	JavaRDD<Binding> rdd = QueryExecutionUtilsSpark.createQueryExecution(sparkSession, rewrite, query);
-    	Iterator<Binding> it = rdd.toLocalIterator();
+        JavaRDD<Binding> rdd = QueryExecutionUtilsSpark.createQueryExecution(sparkSession, rewrite, query);
+        Iterator<Binding> it = rdd.toLocalIterator();
 
-    	ResultSet tmp = ResultSetUtils.create2(resultVars, it);
-    	ResultSetCloseable result = new ResultSetCloseable(tmp);
-    	return result;
+        ResultSet tmp = ResultSetUtils.create2(resultVars, it);
+        ResultSetCloseable result = new ResultSetCloseable(tmp);
+        return result;
     }
 
-	@Override
-	protected QueryExecution executeCoreSelectX(Query query) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    protected QueryExecution executeCoreSelectX(Query query) {
+        throw new UnsupportedOperationException();
+    }
 
+    @Override
+    public long getTimeout1() {
+        return -1;
+    }
 }

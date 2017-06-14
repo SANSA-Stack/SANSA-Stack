@@ -16,6 +16,8 @@ import scala.collection.JavaConverters._
 class TestRdfPartition extends FlatSpec {
 
   "A partitioner" should "support custom datatypes" in {
+    ExecutionEnvironment.getExecutionEnvironment.getConfig
+    
     val env = ExecutionEnvironment.getExecutionEnvironment
     val flinkTable = TableEnvironment.getTableEnvironment(env)
     val triples = RDFDataMgr.createIteratorTriples(getClass.getResourceAsStream("/dbpedia-01.nt"), Lang.NTRIPLES, null).asScala
