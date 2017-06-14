@@ -80,6 +80,7 @@
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
     <CodeCacheSize>512m</CodeCacheSize>
+    <gpg.keyname>AKSW</gpg.keyname>
   </properties>
 
   <prerequisites>
@@ -646,6 +647,8 @@
                     <arg>-feature</arg>
                     <arg>-dependencyfile</arg>
                     <arg>${project.build.directory}/.scala_dependencies</arg>
+                    <arg>-Xmax-classfile-name</arg>
+                    <arg>128</arg>
                   </args>
                   <jvmArgs>
                     <jvmArg>-Xms1024m</jvmArg>
@@ -735,6 +738,7 @@
     </profile>
 
   </profiles>
+
 
 
 </project>
