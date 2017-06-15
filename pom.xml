@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-parent_2.11</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
+  <version>0.2.0</version>
   <packaging>pom</packaging>
   <name>Inference API - Parent</name>
 
@@ -71,7 +71,7 @@
     <spark.version>2.1.1</spark.version>
     <flink.version>1.3.0</flink.version>
     <jena.version>3.1.1</jena.version>
-    <sansa.stack.version>0.1.0-SNAPSHOT</sansa.stack.version>
+    <sansa.stack.version>0.2.0</sansa.stack.version>
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
     <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
@@ -80,6 +80,7 @@
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
     <CodeCacheSize>512m</CodeCacheSize>
+    <gpg.keyname>AKSW</gpg.keyname>
   </properties>
 
   <prerequisites>
@@ -461,6 +462,12 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
+
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
 
@@ -646,6 +653,8 @@
                     <arg>-feature</arg>
                     <arg>-dependencyfile</arg>
                     <arg>${project.build.directory}/.scala_dependencies</arg>
+                    <arg>-Xmax-classfile-name</arg>
+                    <arg>128</arg>
                   </args>
                   <jvmArgs>
                     <jvmArg>-Xms1024m</jvmArg>
@@ -735,6 +744,7 @@
     </profile>
 
   </profiles>
+
 
 
 </project>

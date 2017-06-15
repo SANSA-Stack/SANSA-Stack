@@ -4,12 +4,12 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-inference-parent_2.11</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.2.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.2.0</version>
 
     <name>Inference API - Spark</name>
     <description>Apache Spark based inference layer for RDF and OWL</description>
@@ -182,7 +182,7 @@
               <configuration>
                 <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                 <junitxml>.</junitxml>
-                <filereports>WDF TestSuite.txt</filereports>
+                <filereports>SANSA-TestSuite.txt</filereports>
               </configuration>
               <executions>
                 <execution>
@@ -229,11 +229,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.2</version>
+                <!--<version>3.0.1</version>-->
                 <executions>
                     <execution>
                         <id>unpack</id>
-                        <phase>generate-resources</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>unpack-dependencies</goal>
                         </goals>
@@ -241,7 +241,7 @@
                             <includeGroupIds>${project.groupId}</includeGroupIds>
                             <includeArtifactIds>sansa-inference-tests_${scala.binary.version}</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
-                            <overWrite>true</overWrite>
+                            <overWriteIfNewer>true</overWriteIfNewer>
                             <outputDirectory>${project.build.directory}/core-resources</outputDirectory>
                             <excludes>org/**,META-INF/**,rebel.xml</excludes>
                             <overWriteReleases>true</overWriteReleases>
