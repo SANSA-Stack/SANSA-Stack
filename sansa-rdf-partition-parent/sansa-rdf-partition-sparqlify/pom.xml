@@ -2,19 +2,19 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+	<artifactId>sansa-rdf-partition-sparqlify_2.11</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-rdf-partition-parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<artifactId>sansa-rdf-partition-parent_2.11</artifactId>
+		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-partition-core</artifactId>
+			<artifactId>sansa-rdf-partition-core${scala.version.suffix}</artifactId>
 <!-- 				<classifier>${scala.classifier}</classifier>				 -->
 		</dependency>
 
@@ -25,7 +25,7 @@
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_2.11</artifactId>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
 

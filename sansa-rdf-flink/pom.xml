@@ -13,11 +13,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-rdf-parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<artifactId>sansa-rdf-parent_2.11</artifactId>
+		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sansa-rdf-flink</artifactId>
+	<artifactId>sansa-rdf-flink_2.11</artifactId>
 
 	<name>SANSA RDF API - Flink</name>
 	<description>Apache Flink for RDF Layer</description>
@@ -26,25 +26,24 @@
 		<!-- Apache Flink -->
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-scala_${scala.compat.version}</artifactId>
+			<artifactId>flink-scala_${scala.binary.version}</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-streaming-scala_${scala.compat.version}</artifactId>
+			<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-clients_${scala.compat.version}</artifactId>
+			<artifactId>flink-clients_${scala.binary.version}</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-gelly-scala</artifactId>
-			<version>0.10.1</version>
+			<artifactId>flink-gelly-scala_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table_2.10</artifactId>
+			<artifactId>flink-table_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Apache JENA 3.x -->
@@ -59,7 +58,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-partition-core</artifactId>
+			<artifactId>sansa-rdf-partition-core${scala.version.suffix}</artifactId>
 		</dependency>
 		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>sansa-rdf-partition-parent</artifactId> 
 			<version>0.1.1-SNAPSHOT</version> </dependency> -->

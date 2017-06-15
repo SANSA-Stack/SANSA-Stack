@@ -4,6 +4,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.Triple
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.utils.StatsPrefixes
+import java.io.PrintWriter
+import java.io.File
 
 /**
  * A Distributed implementation of RDF Statisctics.
@@ -23,10 +25,35 @@ class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializa
       .union(SPO_Vocabularies(triples, spark))
   }
 
+  def voidify(stats: RDD[String], source: String, fn: String): Unit = {
+    val pw = new PrintWriter(new File(fn))
+
+    val prefix = """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                    @prefix void: <http://rdfs.org/ns/void#> .
+                    @prefix void-ext: <http://stats.lod2.eu/rdf/void-ext/> .
+                    @prefix qb: <http://purl.org/linked-data/cube#> .
+                    @prefix dcterms: <http://purl.org/dc/terms/> .
+                    @prefix ls-void: <http://stats.lod2.eu/rdf/void/> .
+                    @prefix ls-qb: <http://stats.lod2.eu/rdf/qb/> .
+                    @prefix ls-cr: <http://stats.lod2.eu/rdf/qb/criteria/> .
+                    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                    @prefix xstats: <http://example.org/XStats#> .
+                    @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+                    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ."""
+
+    val src = "\n<http://stats.lod2.eu/rdf/void/?source=" + source + ">\n"
+    val end = "\na void:Dataset ."
+
+    val voidify = prefix.concat(src).concat(stats.coalesce(1, true).collect().mkString).concat(end)
+    println("\n" +voidify)
+    pw.println(voidify)
+    pw.close
+  }
+
 }
 
 object RDFStatistics {
-  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark).run()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark)//.run()
 }
 
 class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializable {
