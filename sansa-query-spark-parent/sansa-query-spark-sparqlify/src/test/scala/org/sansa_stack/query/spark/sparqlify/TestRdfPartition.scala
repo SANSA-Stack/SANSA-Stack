@@ -23,6 +23,7 @@ import benchmark.testdriver.LocalSPARQLParameterPool
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
 import org.apache.jena.query.Query
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
+import org.apache.jena.graph.Node
 
 class TestRdfPartition extends FlatSpec {
 
@@ -55,7 +56,8 @@ class TestRdfPartition extends FlatSpec {
       .getOrCreate()
 
     //val rdfStr: String = """<http://ex.org/Nile> <http://ex.org/length> "6800"^^<http://ex.org/km> ."""
-    val triples: List[Triple] = RDFDataMgr.createIteratorTriples(getClass.getResourceAsStream("/dbpedia-01.nt"), Lang.NTRIPLES, null).asScala.toList
+    //val triples: List[Triple] = //RDFDataMgr.createIteratorTriples(getClass.getResourceAsStream("/dbpedia-01.nt"), Lang.NTRIPLES, null).asScala.toList
+    val triples = model.getGraph.find(Node.ANY, Node.ANY, Node.ANY).toList.asScala
     val graphRdd = sparkSession.sparkContext.parallelize(triples)
 
     //val graphRdd = NTripleReader.load(sparkSession, "classpath:dbpedia-01.nt")

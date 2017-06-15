@@ -2,13 +2,13 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sansa-query-spark-parent</artifactId>
+    <artifactId>sansa-query-spark-parent_2.11</artifactId>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-query-parent</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <artifactId>sansa-query-parent_2.11</artifactId>
+        <version>0.2.1-SNAPSHOT</version>
     </parent>
 
     <modules>
@@ -22,21 +22,21 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-spark-utils</artifactId>
+                <artifactId>sansa-rdf-spark-utils${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
                 <!-- <classifier>${scala.classifier}</classifier> -->
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-spark-core</artifactId>
+                <artifactId>sansa-rdf-spark-core${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
                 <!-- <classifier>${scala.classifier}</classifier> -->
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+                <artifactId>sansa-rdf-kryo-sparqlify${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
                 <!-- <classifier>${scala.classifier}</classifier> -->
             </dependency>
@@ -44,49 +44,47 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-partition-sparqlify</artifactId>
+                <artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
                 <!-- <classifier>${scala.classifier}</classifier> -->
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-query-spark-sparqlify</artifactId>
+                <artifactId>sansa-query-spark-sparqlify${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-query-spark-server</artifactId>
+                <artifactId>sansa-query-spark-server${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_${scala.compat.version}</artifactId>
+                <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.compat.version}</artifactId>
+                <artifactId>spark-sql_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-graphx_${scala.compat.version}</artifactId>
+                <artifactId>spark-graphx_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.compat.version}</artifactId>
+                <artifactId>scalatest_${scala.binary.version}</artifactId>
                 <version>3.0.3</version>
             </dependency>
 
         </dependencies>
     </dependencyManagement>
-
-
 </project>
