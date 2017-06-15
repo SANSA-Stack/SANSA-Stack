@@ -4,12 +4,12 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-inference-parent_2.11</artifactId>
-        <version>0.2.0</version>
+        <version>0.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
 
     <name>Inference API - Spark</name>
     <description>Apache Spark based inference layer for RDF and OWL</description>
