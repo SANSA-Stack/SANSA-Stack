@@ -71,7 +71,7 @@
     <spark.version>2.1.1</spark.version>
     <flink.version>1.3.0</flink.version>
     <jena.version>3.1.1</jena.version>
-    <sansa.stack.version>0.1.0-SNAPSHOT</sansa.stack.version>
+    <sansa.stack.version>0.2.0</sansa.stack.version>
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
     <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
@@ -462,6 +462,12 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
+
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
 
