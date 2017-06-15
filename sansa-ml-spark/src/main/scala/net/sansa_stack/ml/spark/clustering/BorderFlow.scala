@@ -42,63 +42,100 @@ object BorderFlow {
 
     val nx = sort.map(_._2).collect()
 
-    def fOmega(x: List[Long], v: Long): Double = {
-      var numberFlow = 0
-      val nv = neighbor.lookup(v).distinct.head.toSet
-      val nvX = nv.intersect(X.toSet)
-      val nvx = nvX.toList.diff(x).size
-      val surat = x.map(f => {
-        for (k <- 0 until x.length) yield {
-
-          val xk = x(k)
-          val bX = neighbor.lookup(xk).distinct.head.toSet
-          val bxX = bX.intersect(X.toSet)
-          //println(bX)
-          val flow = if (bxX.toList.diff(x).size > 0 && bxX.toList.diff(x).contains(v)) { numberFlow = numberFlow.+(1) }
-
-        }
-      })
-
-      (1 / (numberFlow.toDouble / nvx.toDouble))
-
-    }
-
-    def cluster(a: List[Long]): List[Long] = {
+    //computing f(X,V) for Heuristics BorderFlow
+      
+      def fOmega(x: List[Long] , v:Long) : Double = {
+         var numberFlow = 0
+         val nv = neighborSort.lookup(v).distinct.head.toSet
+         val nvX = nv.intersect(X.toSet)
+         val nvx = nvX.toList.diff(x).size
+        
+         
+          for(k <- 0 until x.length) yield{
+            if(x.length>0){
+           
+           val xk = x(k)
+           val bX = neighborSort.lookup(xk).distinct.head.toSet
+           val bxX = bX.intersect(X.toSet)
+           
+           if(bxX.toList.diff(x).size > 0 && bxX.toList.diff(x).contains(v)) {
+             numberFlow = numberFlow + 1
+             }
+           
+            }       
+           
+         }
+        
+        ( 1/(numberFlow.toDouble/ nvx.toDouble))
+    
+  }
+    def heuristicsCluster(a: List[Long] , b: Double) : List[Long] = {
       var nj = 0.0
-      var minF = 10000000.0
+      var minF = b
       var appends = a
-
-      appends.map(f => {
-        val nX = neighbor.lookup(f).distinct.head
-        val nxX = nX.intersect(X)
-        val nXa = nxX.diff(appends)
-        if (nXa.size == 0) return appends
-        nXa.map(x => {
-          val f = fOmega(appends, x)
-
-          if (f < minF) {
-            minF = f
-            nj = x
-
-            appends = appends.::(nj.toLong)
-
-            cluster(appends)
-          } else return {
-
-            (appends)
+      
+      
+      
+      if(minF == 0.0) return appends
+      
+     
+      
+      
+      def neighborsOfList(c: List[Long]) : List[Long] = {
+        
+        var listN : List[Long] = List()
+        
+        for(k <- 0 until c.length) yield{
+       val nX = neighborSort.lookup(c(k)).distinct.head
+       
+       val nxX = nX.intersect(X)
+       val nXa = nxX.diff(c).toList
+       listN = listN.union(nXa).distinct
+       
+        
+        }
+        
+        (listN)
+      }
+      
+      
+      val neighborsOfX = neighborsOfList(appends) 
+     
+       if(neighborsOfX.size <= 0) return appends
+       else{
+        for(k <- 0 until neighborsOfX.length) yield{
+         
+         val f = fOmega(appends,neighborsOfX(k))
+         
+         
+          if(f < minF) {minF = f
+                       nj = neighborsOfX(k)
+                       
+                       
+                       }
+         
+         
           }
-
-        })
-      })
-
-      (appends)
-
-    }
+       
+    
+     
+      appends = appends.::(nj.toLong)
+                    
+                       heuristicsCluster(appends , minF)
+     
+   
+       }
+     
+   }
+      
+      
+   
+   
 
     def makeClusters(a: List[Long]): List[Long] = {
 
       val element = a.take(1)
-      val clusters = cluster(element)
+      val clusters = heuristicsCluster(element,100000000.0)
 
       X = X.diff(clusters)
 
