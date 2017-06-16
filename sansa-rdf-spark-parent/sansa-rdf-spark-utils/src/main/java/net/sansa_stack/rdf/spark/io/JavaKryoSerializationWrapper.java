@@ -1,11 +1,11 @@
 package net.sansa_stack.rdf.spark.io;
 
+import scala.reflect.ClassTag;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
-import scala.reflect.ClassTag;
 
 /**
  * A wrapper around some unserializable objects that make them both Java
@@ -25,7 +25,7 @@ public class JavaKryoSerializationWrapper<T> implements Serializable {
 
 		Class<?> clazz = value.getClass();
 		this.classTag = scala.reflect.ClassTag$.MODULE$.apply(clazz);
-		System.out.println("ClassTag: " + classTag);
+//		System.out.println("ClassTag: " + classTag);
 
 	}
 
