@@ -1,5 +1,9 @@
 package org.sansa_stack.query.flink.sparqlify
 
+import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.{Kryo, Serializer}
+import com.google.common.collect.HashMultimap
+import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import net.sansa_stack.query.flink.sparqlify.{QueryExecutionFactorySparqlifyFlink, SparqlifyUtils3}
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
 import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
@@ -10,8 +14,21 @@ import org.apache.jena.query.ResultSetFormatter
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.scalatest._
 import net.sansa_stack.rdf.spark.io.JenaKryoSerializers._
+import net.sansa_stack.rdf.spark.io.RestrictedExprSerializer
+import org.aksw.jena_sparql_api.views.RestrictedExpr
+import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 
 import scala.collection.JavaConverters._
+
+class BindingSerializer extends Serializer[Binding] {
+  override def write(kryo: Kryo, output: Output, obj: Binding) {
+    //output.writeString(obj.getName)
+  }
+
+  override def read(kryo: Kryo, input: Input, objClass: Class[Binding]): Binding = {
+    new BindingHashMap()
+  }
+}
 
 class TestRdfPartition extends FlatSpec {
 
@@ -19,8 +36,10 @@ class TestRdfPartition extends FlatSpec {
     ExecutionEnvironment.getExecutionEnvironment.getConfig
     
     val env = ExecutionEnvironment.getExecutionEnvironment
+    env.getConfig.addDefaultKryoSerializer(classOf[Binding], classOf[BindingSerializer])
+    env.getConfig.addDefaultKryoSerializer(classOf[HashMultimap[_,_]], classOf[HashMultimapSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
-    env.getConfig.registerTypeWithKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
+    //env.getConfig.registerTypeWithKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
     env.getConfig.registerKryoType(classOf[net.sansa_stack.rdf.partition.core.RdfPartitionDefault])
     env.getConfig.registerKryoType(classOf[Array[net.sansa_stack.rdf.partition.core.RdfPartitionDefault]])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node], classOf[NodeSerializer])
@@ -33,6 +52,7 @@ class TestRdfPartition extends FlatSpec {
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_URI], classOf[NodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_Literal], classOf[NodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Triple], classOf[TripleSerializer])
+    env.getConfig.addDefaultKryoSerializer(classOf[RestrictedExpr], classOf[RestrictedExprSerializer])
     env.getConfig.registerKryoType(classOf[Array[org.apache.jena.graph.Triple]])
     env.getConfig.registerKryoType(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
 

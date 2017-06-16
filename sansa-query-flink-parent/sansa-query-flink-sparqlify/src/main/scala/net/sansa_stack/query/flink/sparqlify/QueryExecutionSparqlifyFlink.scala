@@ -1,9 +1,14 @@
 package net.sansa_stack.query.flink.sparqlify
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.util
+
+import com.esotericsoftware.kryo.io.{Input, Output}
 import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, QueryExecutionFactory, ResultSetCloseable}
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
+import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}
 import org.apache.flink.table.api.scala.{BatchTableEnvironment, _}
 import org.apache.flink.types.Row
@@ -48,10 +53,34 @@ object QueryExecutionSparqlifyFlink {
     //		System.out.println("SqlQueryStr: " + sqlQueryStr);
     //		System.out.println("VarDef: " + rewrite.getVarDefinition());
     val rowMapper = new FlinkRowMapperSparqlify(varDef, dataset.getSchema.getColumnNames)
+    println(rowMapper)
+    val config = flinkEnv.getConfig
     //Function<Row, Binding> fn = x -> rowMapper.apply(x);
     //org.apache.spark.api.java.function.Function<Row, Binding> y = x -> rowMapper.apply(x);
-    //val z = JavaKryoSerializationWrapper.wrap(rowMapper)
-    val result = dataset.toDataSet[Row].map(rowMapper)
+    val kryo = new KryoSerializer[FlinkRowMapperSparqlify](classOf[FlinkRowMapperSparqlify], config).getKryo
+
+    val byteStream = new ByteArrayOutputStream()
+    val kryoOut = new Output(byteStream)
+    kryo.writeClassAndObject(kryoOut, rowMapper)
+    kryoOut.close()
+    byteStream.flush()
+    val bytes = byteStream.toByteArray
+    println("byte size="+bytes.length)
+    println(util.Arrays.toString(bytes))
+    dataset.printSchema()
+    val result = dataset.toDataSet[Row].map(row => {
+      val kryo = new KryoSerializer[FlinkRowMapperSparqlify](classOf[FlinkRowMapperSparqlify], config).getKryo
+
+      println("byte size="+bytes.length)
+      val input = new Input(new ByteArrayInputStream(bytes))
+      val rowMapper2 = kryo.readClassAndObject(input).asInstanceOf[FlinkRowMapperSparqlify]
+      input.close()
+      println(rowMapper2)
+      println(row)
+      val result = rowMapper2.map(row)
+      println(result)
+      result
+    })
     result
   }
 }
