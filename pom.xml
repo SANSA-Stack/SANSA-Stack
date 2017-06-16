@@ -41,7 +41,7 @@
 		<module>sansa-rdf-partition-parent</module>
 		<module>sansa-rdf-spark-parent</module>
 		<module>sansa-rdf-kryo-parent</module>
-		<module>sansa-rdf-flink</module>
+		<module>sansa-rdf-flink-parent</module>
 	</modules>
 
 	<dependencyManagement>
