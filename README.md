@@ -1,4 +1,7 @@
 # SANSA RDF
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-rdf-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-rdf-parent_2.11)
+[![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20RDF/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20RDF/job/develop/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Description
 SANSA RDF is a library to read RDF files into [Spark](https://spark.apache.org) or [Flink](https://flink.apache.org). It allows files to reside in HDFS as well as in a local file system and distributes them across Spark RDDs/Datasets or Flink DataSets.
@@ -42,15 +45,15 @@ To run the application on a standalone Spark cluster
 To run the application, execute the following steps:
 
 1. Setup a Spark cluster as described on http://github.com/big-data-europe/docker-spark.
-2. Build the Docker image: 
+2. Build the Docker image:
 `docker build --rm=true -t sansa/spark-rdf .`
-3. Run the Docker container: 
+3. Run the Docker container:
 `docker run --name Spark-RDF -e ENABLE_INIT_DAEMON=false --link spark-master:spark-master  -d sansa/spark-rdf`
 
 ## Running the application on a Spark standalone cluster via Spark/HDFS Workbench
 
 Spark/HDFS Workbench Docker Compose file contains HDFS Docker (one namenode and two datanodes), Spark Docker (one master and one worker) and HUE Docker as an HDFS File browser to upload files into HDFS easily. Then, this workbench will play a role as for Spark-RDF application to perform computations.
-Let's get started and deploy our pipeline with Docker Compose. 
+Let's get started and deploy our pipeline with Docker Compose.
 Run the pipeline:
 
   ```
@@ -78,11 +81,11 @@ The following Scala code shows how to read an RDF file (be it a local file or a 
 ```scala
 
 import net.sansa_stack.rdf.spark.io.NtripleReader
- 
+
 val input = sc.textFile("hdfs://...")
- 
+
 val triplesRDD = NTripleReader.load(sparkSession, new File(input))
- 
+
 triplesRDD.take(5).foreach(println(_))
 ```
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#rdf-processing). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
