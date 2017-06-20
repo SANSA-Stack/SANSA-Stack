@@ -2,52 +2,52 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-flink-sparqlify</artifactId>
+	<artifactId>sansa-query-flink-sparqlify_2.11</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-query-flink-parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<artifactId>sansa-query-flink-parent_2.11</artifactId>
+		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-test-resources</artifactId>
+			<artifactId>sansa-rdf-test-resources${scala.version.suffix}</artifactId>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-flink</artifactId>
+			<artifactId>sansa-rdf-flink-core${scala.version.suffix}</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+			<artifactId>sansa-rdf-kryo-sparqlify${scala.version.suffix}</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+			<artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-kryo-jena</artifactId>
+			<artifactId>sansa-rdf-kryo-jena${scala.version.suffix}</artifactId>
 		</dependency>
 
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${scala.compat.version}</artifactId>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging_${scala.compat.version}</artifactId>
+			<artifactId>scala-logging_${scala.binary.version}</artifactId>
 			<version>3.5.0</version>
 		</dependency>
 
