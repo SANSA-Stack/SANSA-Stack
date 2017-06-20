@@ -2,13 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-flink-parent</artifactId>
+	<artifactId>sansa-query-flink-parent_2.11</artifactId>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-query-parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<artifactId>sansa-query-parent_2.11</artifactId>
+		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 
 	<modules>
@@ -20,37 +20,37 @@
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink</artifactId>
+				<artifactId>sansa-rdf-flink-core${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-kryo-sparqlify</artifactId>
+				<artifactId>sansa-rdf-kryo-sparqlify${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-kryo-jena</artifactId>
+				<artifactId>sansa-rdf-kryo-jena${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-sparqlify</artifactId>
+				<artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-flink-sparqlify</artifactId>
+				<artifactId>sansa-query-flink-sparqlify${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.scalatest</groupId>
-				<artifactId>scalatest_${scala.compat.version}</artifactId>
+				<artifactId>scalatest_${scala.binary.version}</artifactId>
 				<version>3.0.3</version>
 			</dependency>
 
