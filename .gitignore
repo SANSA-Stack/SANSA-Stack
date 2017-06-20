@@ -7,6 +7,12 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 
+
+# Temporary files created by BSBM - should update bsbm to not generate those
+dataset.nt
+steadystate.tsv
+
+
 .cache-tests
 
 .settings
