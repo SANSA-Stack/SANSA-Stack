@@ -15,6 +15,8 @@ import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
 import org.apache.flink.table.api.scala.BatchTableEnvironment
 
 import scala.reflect.runtime.universe.typeOf
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 
 object SparqlifyUtils3
   extends StrictLogging
@@ -24,7 +26,7 @@ object SparqlifyUtils3
     val loggerCount = new LoggerCount(logger.underlying)
 
 
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringFlink(), new SqlEscaperBase("", "")) //new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringFlink(), new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
 

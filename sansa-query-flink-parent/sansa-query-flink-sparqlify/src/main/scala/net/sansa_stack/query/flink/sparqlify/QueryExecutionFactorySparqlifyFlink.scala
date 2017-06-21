@@ -15,4 +15,5 @@ class QueryExecutionFactorySparqlifyFlink(val flinkEnv: ExecutionEnvironment, va
   override def getState: String = flinkEnv.getIdString
 
   override def createQueryExecution(query: Query): QueryExecution = new QueryExecutionSparqlifyFlink(query, this, sparqlSqlRewriter, flinkEnv, flinkTable)
+
 }

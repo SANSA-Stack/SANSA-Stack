@@ -42,13 +42,20 @@ class QueryExecutionSparqlifyFlink( query: Query,
     val result = new ResultSetCloseable(tmp)
     result
   }
+
+  override def getTimeout1(): Long = -1
+
 }
 
 object QueryExecutionSparqlifyFlink {
 
   def createQueryExecution(flinkEnv: ExecutionEnvironment, flinkTable: BatchTableEnvironment, rewrite: SparqlSqlStringRewrite, query: Query): DataSet[Binding] = {
     val varDef = rewrite.getVarDefinition.getMap
-    val sqlQueryStr = rewrite.getSqlQueryString
+    val sqlQueryStr = rewrite.getSqlQueryString.replace("SELECT true WHERE FALSE", "SELECT true FROM `empty_table` WHERE false")
+
+
+    println("SQL Query: " + sqlQueryStr)
+
     val dataset = flinkTable.sql(sqlQueryStr)
     //		System.out.println("SqlQueryStr: " + sqlQueryStr);
     //		System.out.println("VarDef: " + rewrite.getVarDefinition());
