@@ -1,22 +1,22 @@
-package org.sansa_stack.query.flink.sparqlify
+package net.sansa_stack.query.flink.sparqlify
 
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import net.sansa_stack.query.flink.sparqlify.{QueryExecutionFactorySparqlifyFlink, SparqlifyUtils3}
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
 import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.spark.io.JenaKryoSerializers._
+import net.sansa_stack.rdf.spark.io.RestrictedExprSerializer
+import org.aksw.jena_sparql_api.views.RestrictedExpr
+import org.aksw.sparqlify.util.SparqlifyCoreInit
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
 import org.apache.flink.table.api.TableEnvironment
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.ResultSetFormatter
 import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.scalatest._
-import net.sansa_stack.rdf.spark.io.JenaKryoSerializers._
-import net.sansa_stack.rdf.spark.io.RestrictedExprSerializer
-import org.aksw.jena_sparql_api.views.RestrictedExpr
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.scalatest._
 
 import scala.collection.JavaConverters._
 
@@ -34,7 +34,7 @@ class TestRdfPartition extends FlatSpec {
 
   "A partitioner" should "support custom datatypes" in {
     ExecutionEnvironment.getExecutionEnvironment.getConfig
-    
+    SparqlifyCoreInit.initSparqlifyFunctions()
     val env = ExecutionEnvironment.getExecutionEnvironment
     env.getConfig.addDefaultKryoSerializer(classOf[Binding], classOf[BindingSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[HashMultimap[_,_]], classOf[HashMultimapSerializer])
