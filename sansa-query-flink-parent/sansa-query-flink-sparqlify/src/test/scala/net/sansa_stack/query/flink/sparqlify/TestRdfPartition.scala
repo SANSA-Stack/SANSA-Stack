@@ -1,7 +1,5 @@
 package net.sansa_stack.query.flink.sparqlify
 
-import com.esotericsoftware.kryo.io.{Input, Output}
-import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
@@ -15,20 +13,9 @@ import org.apache.flink.table.api.TableEnvironment
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.ResultSetFormatter
 import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 import org.scalatest._
 
 import scala.collection.JavaConverters._
-
-class BindingSerializer extends Serializer[Binding] {
-  override def write(kryo: Kryo, output: Output, obj: Binding) {
-    //output.writeString(obj.getName)
-  }
-
-  override def read(kryo: Kryo, input: Input, objClass: Class[Binding]): Binding = {
-    new BindingHashMap()
-  }
-}
 
 class TestRdfPartition extends FlatSpec {
 
@@ -36,7 +23,7 @@ class TestRdfPartition extends FlatSpec {
     ExecutionEnvironment.getExecutionEnvironment.getConfig
     SparqlifyCoreInit.initSparqlifyFunctions()
     val env = ExecutionEnvironment.getExecutionEnvironment
-    env.getConfig.addDefaultKryoSerializer(classOf[Binding], classOf[BindingSerializer])
+    //env.getConfig.addDefaultKryoSerializer(classOf[Binding], classOf[BindingSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[HashMultimap[_,_]], classOf[HashMultimapSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
     //env.getConfig.registerTypeWithKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
@@ -63,8 +50,6 @@ class TestRdfPartition extends FlatSpec {
     val dsAll: DataSet[Triple] = env.fromCollection(triples)
     val partition: Map[RdfPartitionDefault, DataSet[_ <: Product]] = RdfPartitionUtilsFlink.partitionGraph(dsAll)
     val views = SparqlifyUtils3.createSparqlSqlRewriter(env, flinkTable, partition)
-
-//    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(env, flinkTable, partition)
     val qef = new QueryExecutionFactorySparqlifyFlink(env, flinkTable, views)
     println(ResultSetFormatter.asText(qef.createQueryExecution("SELECT * { ?s ?p ?o }").execSelect()))
 
