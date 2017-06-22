@@ -61,7 +61,7 @@
 		<spark.version>2.1.1</spark.version>
 		<flink.version>1.3.0</flink.version>
 		<jena.version>3.1.1</jena.version>
-		<sansa.version>0.2.0</sansa.version>
+		<sansa.version>0.2.1-SNAPSHOT</sansa.version>
 	</properties>
 
 	<dependencyManagement>
