@@ -48,7 +48,7 @@ class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializa
     println("\n" + voidify)
     pw.write(voidify)
     val vidifyStats = spark.sparkContext.parallelize(Seq(pw.toString()))
-    vidifyStats.coalesce(1, true).saveAsTextFile(output)
+    vidifyStats.coalesce(1, shuffle = true).saveAsTextFile(output)
     //pw.close
   }
 

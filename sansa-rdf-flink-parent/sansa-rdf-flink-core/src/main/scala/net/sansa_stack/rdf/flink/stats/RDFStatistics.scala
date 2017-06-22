@@ -8,8 +8,9 @@ import net.sansa_stack.rdf.flink.model.RDFTriple
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.api.scala._
-import java.io.PrintWriter
+import java.io.StringWriter
 import java.io.File
+import org.apache.flink.core.fs.FileSystem
 
 class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
@@ -22,8 +23,8 @@ class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
       .union(SPO_Vocabularies(rdfgraph, env))
   }
 
-  def voidify(stats: DataSet[String], source: String, fn: String): Unit = {
-    val pw = new PrintWriter(new File(fn))
+  def voidify(stats: DataSet[String], source: String, output: String): Unit = {
+    val pw = new StringWriter
 
     val prefix = """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
                     @prefix void: <http://rdfs.org/ns/void#> .
@@ -43,14 +44,15 @@ class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
 
     val voidify = prefix.concat(src).concat(stats.setParallelism(1).collect().mkString).concat(end)
     println("\n" + voidify)
-    pw.println(voidify)
-    pw.close
+    pw.write(voidify)
+    val vidifyStats = env.fromCollection(Seq(pw.toString()))
+    vidifyStats.writeAsText(output, writeMode = FileSystem.WriteMode.OVERWRITE).setParallelism(1)
   }
 
 }
 
 object RDFStatistics {
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new RDFStatistics(rdfgraph, env)//.run()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new RDFStatistics(rdfgraph, env) //.run()
 }
 
 class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
