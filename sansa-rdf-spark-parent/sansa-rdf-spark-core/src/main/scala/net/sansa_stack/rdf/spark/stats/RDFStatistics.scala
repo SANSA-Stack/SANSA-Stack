@@ -4,7 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.Triple
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.utils.StatsPrefixes
-import java.io.PrintWriter
+import java.io.StringWriter
 import java.io.File
 
 /**
@@ -25,8 +25,8 @@ class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializa
       .union(SPO_Vocabularies(triples, spark))
   }
 
-  def voidify(stats: RDD[String], source: String, fn: String): Unit = {
-    val pw = new PrintWriter(new File(fn))
+  def voidify(stats: RDD[String], source: String, output: String): Unit = {
+    val pw = new StringWriter
 
     val prefix = """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
                     @prefix void: <http://rdfs.org/ns/void#> .
@@ -45,15 +45,17 @@ class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializa
     val end = "\na void:Dataset ."
 
     val voidify = prefix.concat(src).concat(stats.coalesce(1, true).collect().mkString).concat(end)
-    println("\n" +voidify)
-    pw.println(voidify)
-    pw.close
+    println("\n" + voidify)
+    pw.write(voidify)
+    val vidifyStats = spark.sparkContext.parallelize(Seq(pw.toString()))
+    vidifyStats.coalesce(1, true).saveAsTextFile(output)
+    //pw.close
   }
 
 }
 
 object RDFStatistics {
-  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark)//.run()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark) //.run()
 }
 
 class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializable {
