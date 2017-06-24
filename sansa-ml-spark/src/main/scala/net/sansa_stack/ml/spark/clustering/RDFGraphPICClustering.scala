@@ -71,6 +71,70 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
     // Logarithm base 2 
     val LOG2 = math.log(2)
     val log2 = { x: Double => math.log(x) / LOG2 }
+	  
+	  
+	  val vertexCount = vertices.count()
+	  
+	  
+	  // Similarity based on Information Theory
+	  
+	  
+     var icc = 0.0
+    val logC = MathUtils.log(10.0, vertexCount.toDouble)
+ 
+     def informationContent(a: Long): Double = {
+      if (a == 0) { return 0.0 }
+       1 - (MathUtils.log(10.0, a.toDouble) / logC)
+ 
+     }
+     
+	  def sigmaIc(a : List[Long]) : Double ={
+   var sigma = 0.0
+    for(k <- 0 until a.length) yield{
+      
+      val s = informationContent(a(k))
+      sigma = sigma.+(s)
+      
+      
+    }
+   
+   sigma
+   
+   
+ } 
+ 
+     def ic(a: Long): Double = {
+       val d = neighbors.lookup(a).distinct.head.toSet
+       if (d.isEmpty) { return 0.0 }
+      else {
+ 
+         return sigmaIc(d.toList)
+       }
+     }
+ 
+    def mostICA(a: Long, b: Long): Double = {
+ 
+       val an = neighbors.lookup(a).distinct.head.toSet
+       val an1 = neighbors.lookup(b).distinct.head.toSet
+       if (an.isEmpty || an1.isEmpty) { return 0.0 }
+       val commonNeighbor = an.intersect(an1).toArray
+      
+      if (commonNeighbor.isEmpty) { return 0.0 }
+      else {
+        return sigmaIc(commonNeighbor.toList)
+      }
+ 
+     }
+  
+    
+    /*
+			 * Lin similarity measure 
+			 */ 
+     def simLin(e: Long, d: Long): Double = {
+      if (ic(e) > 0.0 || ic(d) > 0.0) {
+         (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
+       } else { return 0.0 }
+     }
 
     /*
 			 * Jaccard similarity measure 
