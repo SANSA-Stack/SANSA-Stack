@@ -91,8 +91,8 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
 	  def sigmaIc(a : List[Long]) : Double ={
    var sigma = 0.0
     for(k <- 0 until a.length) yield{
-      
-      val s = informationContent(a(k))
+      val d = neighbors.lookup(a(k)).distinct.head.toSet
+      val s = informationContent(d.size.toLong)
       sigma = sigma.+(s)
       
       
@@ -114,20 +114,7 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
      
 	  
 	  
-	  def sigmaMICA(a : List[Long]) : Double ={
-   var sigma = 0.0
-    for(k <- 0 until a.length) yield{
-      
-      val s = ic(a(k))
-      sigma = sigma.+(s)
-      
-      
-    }
-   
-   sigma
-   
-   
- } 
+	
     def mostICA(a: Long, b: Long): Double = {
  
        val an = neighbors.lookup(a).distinct.head.toSet
@@ -137,7 +124,7 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
       
       if (commonNeighbor.isEmpty) { return 0.0 }
       else {
-        return sigmaMICA(commonNeighbor.toList)
+        return sigmaIc(commonNeighbor.toList)
       }
  
      }
