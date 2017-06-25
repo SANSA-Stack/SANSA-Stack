@@ -3,15 +3,18 @@ package net.sansa_stack.inference.spark.data.loader
 import java.net.URI
 
 import scala.language.implicitConversions
-
 import org.apache.jena.graph.Triple
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, SchemaRelationProvider, TableScan}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Dataset, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
-
 import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
-import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
+import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
+import org.apache.spark.sql.{Dataset, SparkSession}
+import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
 
 /**
   * A class that provides methods to load an RDF graph from disk.
@@ -39,11 +42,9 @@ object RDFGraphLoader {
     logger.info("loading triples from disk...")
     val startTime = System.currentTimeMillis()
 
-    val converter = new NTriplesStringToRDFTriple()
-
     val triples = session.sparkContext
       .textFile(path, minPartitions) // read the text file
-      .flatMap(line => converter.apply(line)) // convert to triple object
+      .map(new NTriplesStringToJenaTriple()) // convert to triple object
 //      .repartition(minPartitions)
 
 //  logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
@@ -88,11 +89,11 @@ object RDFGraphLoader {
     logger.info("loading triples from disk...")
     val startTime = System.currentTimeMillis()
 
-    val converter = new NTriplesStringToRDFTriple()
+    val converter = new NTriplesStringToJenaTriple()
 
     val triples = session.sparkContext
       .textFile(path, minPartitions) // read the text file
-      .flatMap(line => converter.apply(line)) // convert to triple object
+      .map(line => converter.apply(line)) // convert to triple object
 
     // logger.info("finished loading " + triples.count() + " triples in " +
     // (System.currentTimeMillis()-startTime) + "ms.")
@@ -128,7 +129,7 @@ object RDFGraphLoader {
       Array(splitted(0), splitted(1), splitted(2))
     })
 
-//    implicit val rdfTripleEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
+    implicit val rdfTripleEncoder = org.apache.spark.sql.Encoders.kryo[Triple]
     val spark = session.sqlContext
     import spark.implicits._
 
@@ -136,8 +137,8 @@ object RDFGraphLoader {
 
     val triples = session.read
       .textFile(path) // read the text file
-      .map(new NTriplesStringToRDFTriple())
-      .as[RDFTriple]//(rdfTripleEncoder)
+      .map(new NTriplesStringToJenaTriple())
+      .as[Triple](rdfTripleEncoder)
       .as("triples")
     // (rdfTripleEncoder)
     //    val rowRDD = session.sparkContext

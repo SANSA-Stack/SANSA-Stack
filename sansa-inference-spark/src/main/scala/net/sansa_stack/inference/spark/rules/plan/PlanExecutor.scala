@@ -10,7 +10,7 @@ import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark
   *
   * @author Lorenz Buehmann
   */
-abstract class PlanExecutor[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]]() {
+abstract class PlanExecutor[D[C], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]]() {
   protected val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   def execute(plan: Plan, graph: G): G
