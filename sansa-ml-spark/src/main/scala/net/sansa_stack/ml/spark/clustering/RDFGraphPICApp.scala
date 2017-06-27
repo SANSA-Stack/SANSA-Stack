@@ -11,6 +11,17 @@ import java.lang.{ Long => JLong }
 import breeze.linalg.{ squaredDistance, DenseVector, Vector }
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.graphx.GraphLoader
+import org.apache.jena.datatypes.{RDFDatatype, TypeMapper}
+import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
+import org.apache.jena.riot.writer.NTriplesWriter
+import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.graph.{Node_ANY, Node_Blank, Node_Literal, Node_URI, Node => JenaNode, Triple => JenaTriple}
+import org.apache.jena.vocabulary.RDF
+import java.io.ByteArrayInputStream
+import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.spark.SparkContext._
+import org.apache.spark.graphx._
+import org.apache.spark.rdd.RDD
 
 object RDFGraphPICApp {
 
@@ -75,6 +86,38 @@ object RDFGraphPICApp {
 
     // Load the graph 
     val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, "src/main/resources/Cluster/sample1.txt")
+    // Load the RDF dataset 
+    val RDFfile = sparkSession.sparkContext.textFile("/Users/tinaboroukhian/Desktop/Clustering_sampledata.txt").map(line =>
+      RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.getBytes), Lang.NTRIPLES, null).next())
+   
+      val r = RDFfile.map(f => {
+        val s =f.getSubject.getURI
+        val p = f.getPredicate.getURI
+        val o = f.getObject.getURI
+        
+        (s,p,o)
+        })
+       
+        
+       val v11 =r.map(f => f._1)
+       val v22 = r.map(f => f._3)
+       val indexedmap = ( v11.union(v22)).distinct().zipWithIndex()
+       
+      
+      val vertices: RDD[(VertexId, String)] = indexedmap.map(x => (x._2, x._1))
+      val _iriToId: RDD[(String, VertexId)] = indexedmap.map(x => (x._1, x._2))
+        
+      val tuples = r.keyBy(f => f._1).join(indexedmap).map({
+         case (k, ((s, p, o), si)) => (o, (si, p))
+       })
+    
+      val edgess: RDD[Edge[String]] = tuples.join(indexedmap).map({
+        case (k, ((si, p), oi)) => Edge(si, oi, p)
+    })
+    
+    
+    val graph1 = org.apache.spark.graphx.Graph(vertices, edgess)
+     
 
     val model = RDFGraphPICClustering(sparkSession, graph, params.k, params.maxIterations).run()
 
