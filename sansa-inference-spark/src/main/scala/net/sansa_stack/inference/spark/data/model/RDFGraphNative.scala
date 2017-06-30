@@ -4,8 +4,7 @@ import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-
-import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.data.{Jena, SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.TripleUtils._
 
 /**
@@ -15,7 +14,7 @@ import net.sansa_stack.inference.spark.data.model.TripleUtils._
   *
   */
 class RDFGraphNative(override val triples: RDD[Triple])
-    extends AbstractRDFGraphSpark[RDD, Node, Triple, RDFGraphNative](triples) {
+    extends AbstractRDFGraphSpark[Jena, RDD[Triple], RDFGraphNative](triples) {
 
   override def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): RDFGraphNative = {
     new RDFGraphNative(

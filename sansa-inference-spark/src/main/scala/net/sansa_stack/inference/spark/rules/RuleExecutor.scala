@@ -11,8 +11,8 @@ import net.sansa_stack.inference.spark.rules.plan.PlanExecutor
   *
   * @author Lorenz Buehmann
   */
-class RuleExecutor[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]](
-  planExecutor: PlanExecutor[D, N, T, G]
+class RuleExecutor[Rdf <: RDF, D, N <: Rdf#Node, T <: Rdf#Triple, G <: AbstractRDFGraphSpark[Rdf, D, G]](
+  planExecutor: PlanExecutor[Rdf, D, N, T, G]
 ) {
 
   val planGenerator = Planner

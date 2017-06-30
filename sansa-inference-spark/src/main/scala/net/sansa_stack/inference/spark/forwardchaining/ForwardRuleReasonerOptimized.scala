@@ -16,9 +16,9 @@ import net.sansa_stack.inference.spark.rules.RuleExecutor
   *
   * @author Lorenz Buehmann
   */
-abstract class ForwardRuleReasonerOptimized[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]]
-(sparkSession: SparkSession, rules: Set[Rule], ruleExecutor: RuleExecutor[D, N, T, G])
-  extends AbstractForwardRuleReasoner[D, N, T, G] {
+abstract class ForwardRuleReasonerOptimized[Rdf <: RDF, D, N <: Rdf#Node, T <: Rdf#Triple, G <: AbstractRDFGraphSpark[Rdf, D, G]]
+(sparkSession: SparkSession, rules: Set[Rule], ruleExecutor: RuleExecutor[Rdf, D, N, T, G])
+  extends AbstractForwardRuleReasoner[Rdf, D, G] {
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 

@@ -18,7 +18,7 @@ object TriplesSchema {
 
     val triplesSchema = Resources.toString(TriplesSchema.getClass.getClassLoader.getResource("schema.json"), Charset.defaultCharset())
 
-    // ModelHandler reads the sales schema and load the schema to connection's root schema and sets the default schema
+    // ModelHandler reads the triples schema and load the schema to connection's root schema and sets the default schema
     new ModelHandler(connection, "inline:" + triplesSchema)
 
 

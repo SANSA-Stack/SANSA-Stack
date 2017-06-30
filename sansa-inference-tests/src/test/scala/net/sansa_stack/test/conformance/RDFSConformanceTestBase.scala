@@ -2,6 +2,7 @@ package net.sansa_stack.test.conformance
 
 import java.io.File
 
+import net.sansa_stack.inference.data.{Jena, RDF, RDFOps}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -12,7 +13,8 @@ import org.scalatest.junit.JUnitRunner
   *
   */
 @RunWith(classOf[JUnitRunner])
-abstract class RDFSConformanceTestBase extends ConformanceTestBase {
+abstract class RDFSConformanceTestBase[Rdf <: RDF](override val rdfOps: RDFOps[Rdf])
+  extends ConformanceTestBase[Rdf](rdfOps) {
 
   behavior of "conformance of RDFS(simple) entailment rules"
 

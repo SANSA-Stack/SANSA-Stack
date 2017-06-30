@@ -10,8 +10,8 @@ import net.sansa_stack.inference.data._
   * @author Lorenz Buehmann
   *
   */
-abstract class AbstractRDFGraphSpark[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraphSpark[D, N, T, G]](
-  override val triples: D[T]
-) extends AbstractRDFGraph[D, N, T, G](triples)
-    with SparkGraphExtensions[D, N, T, G] { self: G =>
+abstract class AbstractRDFGraphSpark[Rdf <: RDF, D, G <: AbstractRDFGraphSpark[Rdf, D, G]](
+  override val triples: D
+) extends AbstractRDFGraph[Rdf, D, G](triples)
+    with SparkGraphExtensions[Rdf, D, G] { self: G =>
 }

@@ -40,9 +40,9 @@ object GenericVsNativeExperiments {
     // load triples from disk
     var graph = RDFGraphLoader.loadFromDiskAsDataFrame(session, args(0), 4)
 
-    val infGraphNative = native(session, graph)
+//    val infGraphNative = native(session, graph)
 
-    println("Native: " + infGraphNative.size())
+//    println("Native: " + infGraphNative.size())
     session.stop()
 
 
@@ -65,24 +65,24 @@ object GenericVsNativeExperiments {
 
   }
 
-  def native(session: SparkSession, graph: RDFGraphDataFrame): RDFGraphDataFrame = {
-    // create reasoner
-    val reasoner = new ForwardRuleReasonerRDFSDataframe(session)
-
-    // compute inferred graph
-    val inferredGraph = reasoner.apply(graph)
-
-    inferredGraph
-  }
-
-  def generic(session: SparkSession, graph: RDFGraphDataFrame): RDFGraphDataFrame = {
-    // create reasoner
-    val rules = RuleUtils.load("rdfs-simple.rules").toSet
-    val reasoner = new ForwardRuleReasonerOptimizedSQL(session, rules)
-
-    // compute inferred graph
-    val inferredGraph = reasoner.apply(graph)
-
-    inferredGraph
-  }
+//  def native(session: SparkSession, graph: RDFGraphDataFrame): RDFGraphDataFrame = {
+//    // create reasoner
+//    val reasoner = new ForwardRuleReasonerRDFSDataframe(session)
+//
+//    // compute inferred graph
+//    val inferredGraph = reasoner.apply(graph)
+//
+//    inferredGraph
+//  }
+//
+//  def generic(session: SparkSession, graph: RDFGraphDataFrame): RDFGraphDataFrame = {
+//    // create reasoner
+//    val rules = RuleUtils.load("rdfs-simple.rules").toSet
+//    val reasoner = new ForwardRuleReasonerOptimizedSQL(session, rules)
+//
+//    // compute inferred graph
+//    val inferredGraph = reasoner.apply(graph)
+//
+//    inferredGraph
+//  }
 }

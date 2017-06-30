@@ -2,6 +2,7 @@ package net.sansa_stack.test.conformance
 
 import java.io.File
 
+import net.sansa_stack.inference.data.{JenaOps, RDF, RDFOps}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -12,7 +13,8 @@ import org.scalatest.junit.JUnitRunner
   *
   */
 @RunWith(classOf[JUnitRunner])
-abstract class OWLHorstConformanceTestBase extends ConformanceTestBase {
+abstract class OWLHorstConformanceTestBase[Rdf <: RDF](override val rdfOps: RDFOps[Rdf])
+  extends ConformanceTestBase[Rdf](rdfOps) {
 
   behavior of "conformance of OWL Horst entailment rules"
 
