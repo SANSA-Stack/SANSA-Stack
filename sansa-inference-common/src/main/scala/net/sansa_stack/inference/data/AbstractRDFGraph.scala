@@ -8,8 +8,8 @@ package net.sansa_stack.inference.data
   * @author Lorenz Buehmann
   *
   */
-abstract class AbstractRDFGraph[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraph[D, N, T, G]](
-  val triples: D[T]
+abstract class AbstractRDFGraph[Rdf<: RDF, D, G <: AbstractRDFGraph[Rdf, D, G]](
+  val triples: D
 ) { self: G =>
 
   /**
@@ -20,14 +20,24 @@ abstract class AbstractRDFGraph[D[T], N <: RDF#Node, T <: RDF#Triple, G <: Abstr
     * @param o the object
     * @return a new RDF graph
     */
-  def find(s: Option[N] = None, p: Option[N] = None, o: Option[N] = None): G
+  def find(s: Option[Rdf#Node] = None, p: Option[Rdf#Node] = None, o: Option[Rdf#Node] = None): G
+
+//  /**
+//    * Returns a new RDF graph that contains only triples matching the given input.
+//    *
+//    * @param filter the filter function
+//    * @return a new RDF graph
+//    */
+//  def find(filter: (Rdf#Triple) => Boolean): G
+//
+//  def find(subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, obj: Rdf#NodeMatch): G
 
   /**
     * Returns a new RDF graph that contains only triples matching the given input.
     *
     * @return a new RDF graph
     */
-  def find(triple: T): G
+  def find(triple: Rdf#Triple): G
 
   /**
     * Returns a new RDF graph that contains the union of the current RDF graph with the given RDF graph.

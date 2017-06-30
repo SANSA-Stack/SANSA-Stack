@@ -2,8 +2,7 @@ package net.sansa_stack.inference.spark.data.model
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
-import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault, SimpleRDF}
 
 /**
   * A data structure that comprises a set of triples.
@@ -12,7 +11,7 @@ import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
   *
   */
 class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema = SQLSchemaDefault)
-    extends AbstractRDFGraphSpark[DataFrame, String, RDFTriple, RDFGraphDataFrame](triples) {
+    extends AbstractRDFGraphSpark[SimpleRDF, DataFrame, RDFGraphDataFrame](triples) {
 
   override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataFrame = {
     var sql = s"SELECT ${schema.subjectCol}, ${schema.predicateCol}, ${schema.objectCol} FROM ${schema.triplesTable}"

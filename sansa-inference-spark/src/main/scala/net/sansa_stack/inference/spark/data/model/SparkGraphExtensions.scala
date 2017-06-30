@@ -10,7 +10,7 @@ import net.sansa_stack.inference.data._
   *
   * @author Lorenz Buehmann
   */
-trait SparkGraphExtensions[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRDFGraph[D, N, T, G]] {
+trait SparkGraphExtensions[Rdf <: RDF, D, G <: AbstractRDFGraph[Rdf, D, G]] {
 
   /**
     * Convert the current graph to a Dataframe of RDF triples.
@@ -26,7 +26,7 @@ trait SparkGraphExtensions[D[T], N <: RDF#Node, T <: RDF#Triple, G <: AbstractRD
     *
     * @return RDD of RDF triples
     */
-  def toRDD(): RDD[T]
+  def toRDD(): RDD[Rdf#Triple]
 
   /**
     * Persist the triples RDD with the default storage level (`MEMORY_ONLY`).

@@ -4,7 +4,7 @@ import java.io.File
 
 import org.apache.jena.rdf.model.Model
 import org.junit.runner.RunWith
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{RDF, RDFOps, RDFTriple}
 import org.apache.jena.shared.PrefixMapping
 import org.apache.jena.sparql.util.{FmtUtils, PrefixMapping2}
 import org.scalatest.junit.JUnitRunner
@@ -19,7 +19,7 @@ import scala.collection.mutable
   *
   */
 @RunWith(classOf[JUnitRunner])
-abstract class ConformanceTestBase extends FlatSpec with BeforeAndAfterAll {
+abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends FlatSpec with BeforeAndAfterAll {
 
   behavior of ""
 
@@ -41,14 +41,19 @@ abstract class ConformanceTestBase extends FlatSpec with BeforeAndAfterAll {
     println(testCase.id)
 
     testCase.id should "produce the same graph" in {
-      val triples = new mutable.HashSet[RDFTriple]()
+      val triples = new mutable.HashSet[Rdf#Triple]()
 
       // convert to internal triples
       val iterator = testCase.inputGraph.listStatements()
       while(iterator.hasNext) {
         val st = iterator.next()
-        triples.add(RDFTriple(st.getSubject.toString, st.getPredicate.toString,
-          if(st.getObject.isLiteral) FmtUtils.stringForNode(st.getObject.asNode()) else st.getObject.toString))
+        triples.add(
+          rdfOps.makeTriple(
+            rdfOps.makeUri(st.getSubject.toString),
+            rdfOps.makeUri(st.getPredicate.toString),
+          if(st.getObject.isLiteral)
+            rdfOps.makeLiteral(st.getObject.asLiteral().getLexicalForm, rdfOps.makeUri(st.getObject.asLiteral().getDatatypeURI))
+          else rdfOps.makeUri(st.getObject.toString)))
       }
 
       // compute inferred graph
@@ -76,6 +81,6 @@ abstract class ConformanceTestBase extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  def computeInferredModel(triples: mutable.HashSet[RDFTriple]): Model
+  def computeInferredModel(triples: mutable.HashSet[Rdf#Triple]): Model
 
 }

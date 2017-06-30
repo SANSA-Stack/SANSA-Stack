@@ -2,8 +2,7 @@ package net.sansa_stack.inference.spark.data.model
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-
-import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.data.{Jena, RDFTriple, SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import org.apache.jena.graph.{Node, Triple}
 
@@ -14,7 +13,7 @@ import org.apache.jena.graph.{Node, Triple}
   *
   */
 class RDFGraphDataset(override val triples: Dataset[Triple])
-    extends AbstractRDFGraphSpark[Dataset, Node, Triple, RDFGraphDataset](triples) {
+    extends AbstractRDFGraphSpark[Jena, Dataset[Triple], RDFGraphDataset](triples) {
 
   override def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): RDFGraphDataset = {
     new RDFGraphDataset(

@@ -37,7 +37,7 @@ object RDFGraphMaterializer {
           writeToSingleFile: Boolean, sortedOutput: Boolean, parallelism: Int): Unit = {
     // register the custom classes for Kryo serializer
     val conf = new SparkConf()
-    conf.registerKryoClasses(Array(classOf[RDFTriple]))
+    conf.registerKryoClasses(Array(classOf[org.apache.jena.graph.Triple]))
     conf.set("spark.extraListeners", "net.sansa_stack.inference.spark.utils.CustomSparkListener")
 
     // the SPARK config

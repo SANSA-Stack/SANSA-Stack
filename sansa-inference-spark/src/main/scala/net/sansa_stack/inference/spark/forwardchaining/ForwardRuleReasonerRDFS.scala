@@ -34,7 +34,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
     logger.info("materializing graph...")
     val startTime = System.currentTimeMillis()
 
-    var triplesRDD = graph.triples.distinct() // we cache this RDD because it's used quite often
+    var triplesRDD = graph.triples// .distinct() // we cache this RDD because it's used quite often
     triplesRDD.cache()
     // RDFS rules dependency was analyzed in \todo(add references) and the same ordering is used here
 
