@@ -75,7 +75,7 @@
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
     <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
-    <jsa.subversion>1-1</jsa.subversion>
+    <jsa.subversion>1</jsa.subversion>
     <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
