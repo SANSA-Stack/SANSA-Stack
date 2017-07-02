@@ -3,17 +3,20 @@ package net.sansa_stack.inference.spark.data.loader
 import java.net.URI
 
 import scala.language.implicitConversions
+
 import org.apache.jena.graph.Triple
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, SchemaRelationProvider, TableScan}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Dataset, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
+
 import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
 import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
 import org.apache.spark.sql.{Dataset, SparkSession}
+
 import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
 
 /**
@@ -208,5 +211,30 @@ object RDFGraphLoader {
     df.createOrReplaceTempView(sqlSchema.triplesTable)
 
     new RDFGraphDataFrame(df)
+  }
+
+  def main(args: Array[String]): Unit = {
+    import net.sansa_stack.inference.spark.data.loader.sql.ntriples._
+
+    val conf = new SparkConf()
+    conf.registerKryoClasses(Array(classOf[org.apache.jena.graph.Triple]))
+    conf.set("spark.extraListeners", "net.sansa_stack.inference.spark.utils.CustomSparkListener")
+
+    // the SPARK config
+    val session = SparkSession.builder
+      .appName(s"SPARK N-Triples Loading")
+      .master("local[4]")
+      .config("spark.eventLog.enabled", "true")
+      .config("spark.hadoop.validateOutputSpecs", "false") // override output files
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .config("spark.default.parallelism", 4)
+      .config("spark.ui.showConsoleProgress", "false")
+      .config("spark.sql.shuffle.partitions", 4)
+      .config(conf)
+      .getOrCreate()
+
+    session.read.ntriples("/tmp/lubm/10").show(10)
+    session.read.ntriples("/tmp/lubm/10").select("s", "o").show(10)
+
   }
 }
