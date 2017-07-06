@@ -2,22 +2,18 @@ package net.sansa_stack.inference.spark.data.loader
 
 import java.net.URI
 
-import scala.language.implicitConversions
-
+import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
+import net.sansa_stack.inference.utils.NTriplesStringToJenaTriple
+import org.apache.hadoop.io.{LongWritable, Text}
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.graph.Triple
+import org.apache.jena.riot.Lang
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.sources.{BaseRelation, RelationProvider, SchemaRelationProvider, TableScan}
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{Dataset, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 
-import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
-import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
-import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
-import org.apache.spark.sql.{Dataset, SparkSession}
-
-import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
+import scala.language.implicitConversions
 
 /**
   * A class that provides methods to load an RDF graph from disk.
@@ -134,7 +130,6 @@ object RDFGraphLoader {
 
     implicit val rdfTripleEncoder = org.apache.spark.sql.Encoders.kryo[Triple]
     val spark = session.sqlContext
-    import spark.implicits._
 
 
 
@@ -214,27 +209,56 @@ object RDFGraphLoader {
   }
 
   def main(args: Array[String]): Unit = {
-    import net.sansa_stack.inference.spark.data.loader.sql.ntriples._
+    import net.sansa_stack.inference.spark.data.loader.sql.rdf._
+
+    val path = args(0)
+    val lang = args(1) match {
+      case "turtle" => Lang.TURTLE
+      case "ntriples" => Lang.NTRIPLES
+      case _ => null
+    }
+
+    val numThreads = if (args.length > 2)  args(2).toInt else 4
+    val parallelism = if (args.length > 3)  args(3).toInt else 4
 
     val conf = new SparkConf()
     conf.registerKryoClasses(Array(classOf[org.apache.jena.graph.Triple]))
     conf.set("spark.extraListeners", "net.sansa_stack.inference.spark.utils.CustomSparkListener")
-
+    conf.set("textinputformat.record.delimiter", ".\n")
     // the SPARK config
     val session = SparkSession.builder
-      .appName(s"SPARK N-Triples Loading")
-      .master("local[4]")
+      .appName(s"SPARK ${lang.getLabel} Loading")
+      .master(s"local[$numThreads]")
       .config("spark.eventLog.enabled", "true")
       .config("spark.hadoop.validateOutputSpecs", "false") // override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.default.parallelism", 4)
+      .config("spark.default.parallelism", parallelism)
       .config("spark.ui.showConsoleProgress", "false")
-      .config("spark.sql.shuffle.partitions", 4)
+      .config("spark.sql.shuffle.partitions", parallelism)
       .config(conf)
       .getOrCreate()
 
-    session.read.ntriples("/tmp/lubm/10").show(10)
-    session.read.ntriples("/tmp/lubm/10").select("s", "o").show(10)
 
+    val triples = session.read.rdf(lang)(path)
+    triples.show(10)
+    println(triples.count())
+
+//    import net.sansa_stack.inference.spark.data.loader.rdd.rdf._
+//
+//    val triplesRDD = session.sparkContext.rdf(lang)
+//    triples.show(10)
+//    println(triples.count())
+//
+//    val triples = session.read.ntriples(path)
+//
+//    import session.implicits._
+//
+//    triples.show(10)
+//    triples.select("s", "o").show(10)
+//    println(triples.count())
+//    println(triples.distinct().count())
+//    triples.as("t1").join(triples.as("t2"), $"t1.o" === $"t2.s", "inner").show(10)
+
+    session.stop()
   }
 }
