@@ -1,6 +1,8 @@
 package net.sansa_stack.ml.spark.classification
+
 import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, ManchesterSyntaxOWLAxiomsRDDBuilder}
 import net.sansa_stack.owl.spark.rdd.OWLExpressionsRDD
+import net.sansa_stack.ml.spark.classification.KB.KB
 import org.apache.spark.sql.SparkSession
 import scala.reflect.runtime.universe._
 import scopt.OptionParser
@@ -9,18 +11,16 @@ import org.apache.spark.sql.SparkSession
 
 object TermDecisionTrees {
   
- 
-  
 /*
  * The main file to call Terminological Decision Trees for Classification 
  */
 
-  //var kb: KnowledgeBase = _ 
-  
   def main(args: Array[String]) = {
     
     val input ="src/main/resources/Classification/ont_functional.owl"
-
+   
+    val kb: KB = new KB(input)
+    
     val syntax = "fun"
     
     syntax match {
@@ -39,12 +39,12 @@ object TermDecisionTrees {
  * Call owl axion builder to read the classes and object properties and print
  */
        val rdd = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession.sparkContext, input)
-
        rdd.take(100).foreach(println(_))
-          
-          
        
-        sparkSession.stop
+       
+          
+      
+       sparkSession.stop
 
       case "manch" =>
         
@@ -58,12 +58,10 @@ object TermDecisionTrees {
           .appName("OWL reader example (" + input + ")(Manchester syntax)")
           .getOrCreate()
 
-       //val rdd = ManchesterSyntaxOWLAxiomsRDDBuilder.build(sparkSession.sparkContext, input)
-       //rdd.take(10).foreach(println(_))
-
+       val rdd = ManchesterSyntaxOWLAxiomsRDDBuilder.build(sparkSession.sparkContext, input)
+       rdd.take(10).foreach(println(_))
         
-          
-     sparkSession.stop
+       sparkSession.stop
         
       case "owl_xml" =>
         println("Not supported, yet.") 
