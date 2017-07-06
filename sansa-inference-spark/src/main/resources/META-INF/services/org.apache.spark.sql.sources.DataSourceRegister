@@ -1,1 +1,2 @@
 net.sansa_stack.inference.spark.data.loader.sql.NTriplesDataSource
+net.sansa_stack.inference.spark.data.loader.sql.TurtleDataSource
