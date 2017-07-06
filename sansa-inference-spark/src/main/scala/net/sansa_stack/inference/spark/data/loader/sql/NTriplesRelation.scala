@@ -106,7 +106,6 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
     * @return
     */
   private def parseJena(s: String): Try[org.apache.jena.graph.Triple] = {
-    log.debug("Parsing N-Triples with Jena API ...")
     // always close the streams
     cleanly(new ByteArrayInputStream(s.getBytes))(_.close()) { is =>
       val profile = RiotLib.dftProfile
@@ -133,8 +132,6 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
     * @return
     */
   private def parseRegexPattern(s: String): (String, String, String) = {
-    log.debug("Parsing N-Triples with REGEX pattern ...")
-
     val matcher = pattern.matcher(s)
 
     if (matcher.matches) {
@@ -166,7 +163,6 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
     * @return
     */
   private def parseRegexSplit(s: String): (String, String, String) = {
-    log.debug("Parsing N-Triples with simple whitespace split ...")
     val s1 = s.trim
     val split = s1.substring(0, s1.lastIndexOf('.')).split("\\s", 3)
     var obj = split(2).trim
