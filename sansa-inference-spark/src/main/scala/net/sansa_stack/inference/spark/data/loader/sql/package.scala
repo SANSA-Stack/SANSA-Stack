@@ -12,6 +12,7 @@ package object rdf {
     * the `DataFrameWriter`
     */
   implicit class RDFDataFrameWriter[T](writer: DataFrameWriter[T]) {
+    def rdf: String => Unit = writer.format("ntriples").save
     def ntriples: String => Unit = writer.format("ntriples").save
   }
 

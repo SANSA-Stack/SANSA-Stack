@@ -5,11 +5,9 @@ import java.net.URI
 import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
 import net.sansa_stack.inference.utils.NTriplesStringToJenaTriple
-import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
 
@@ -241,7 +239,11 @@ object RDFGraphLoader {
 
     val triples = session.read.rdf(lang)(path)
     triples.show(10)
-    println(triples.count())
+//    println(triples.count())
+
+    triples
+      .filter("p == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'")
+      .write.mode(SaveMode.Append).rdf("/tmp/lubm/out")
 
 //    import net.sansa_stack.inference.spark.data.loader.rdd.rdf._
 //
