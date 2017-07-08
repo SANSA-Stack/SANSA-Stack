@@ -49,7 +49,7 @@
         <developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-Query.git</developerConnection>
     </scm>
 
- 
+
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/SANSA-Stack/SANSA-Query</url>
@@ -266,6 +266,12 @@
 
                 </exclusions>
                 <!-- <classifier>${scala.compat.version}</classifier> -->
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
             </dependency>
 
         </dependencies>

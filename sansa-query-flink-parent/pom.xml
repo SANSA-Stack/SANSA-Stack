@@ -13,7 +13,8 @@
 
     <modules>
         <module>sansa-query-flink-sparqlify</module>
-    </modules>
+        <module>sansa-query-flink-playground</module>
+     </modules>
 
     <dependencyManagement>
         <dependencies>

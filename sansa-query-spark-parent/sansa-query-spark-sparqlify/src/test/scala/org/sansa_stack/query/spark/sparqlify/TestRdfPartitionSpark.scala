@@ -25,7 +25,7 @@ import org.apache.jena.query.Query
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
 import org.apache.jena.graph.Node
 
-class TestRdfPartition extends FlatSpec {
+class TestRdfPartitionSpark extends FlatSpec {
 
   "A partitioner" should "support custom datatypes" in {
 
@@ -75,14 +75,30 @@ class TestRdfPartition extends FlatSpec {
       .end()
       .create()
 
+            val str = """
+PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
 
-    val testDriver = new TestDriver();
-    testDriver.processProgramParameters(Array[String]("http://example.org/foobar/sparql"))
-    testDriver.setParameterPool(new LocalSPARQLParameterPool(testDriverParams, testDriver.getSeed))
-    testDriver.setServer(new SPARQLConnection2(qef))
+SELECT ?label ?comment ?producer ?productFeature ?propertyTextual1 ?propertyTextual2 ?propertyTextual3
+ ?propertyNumeric1 ?propertyNumeric2 ?propertyTextual4 ?propertyTextual5 ?propertyNumeric4
+WHERE {
+    <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> rdfs:label ?label .
+    <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> rdfs:comment ?comment .
+}
+"""
 
-    testDriver.init();
-    testDriver.run()
+    println(ResultSetFormatter.asText(qef.createQueryExecution(str).execSelect()))
+
+
+//    val testDriver = new TestDriver();
+//    testDriver.processProgramParameters(Array[String]("http://example.org/foobar/sparql"))
+//    testDriver.setParameterPool(new LocalSPARQLParameterPool(testDriverParams, testDriver.getSeed))
+//    testDriver.setServer(new SPARQLConnection2(qef))
+//
+//    testDriver.init();
+//    testDriver.run()
 
     //println(ResultSetFormatter.asText(qef.createQueryExecution("SELECT * { ?s ?p ?o }").execSelect()))
 
