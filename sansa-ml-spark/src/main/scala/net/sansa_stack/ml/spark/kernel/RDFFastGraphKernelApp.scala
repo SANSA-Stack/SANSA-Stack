@@ -4,10 +4,16 @@ import java.io.File
 
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleRDD
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.types.StringType
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.SparkContext._
+
 
 
 object RDFFastGraphKernelApp {
@@ -19,24 +25,19 @@ object RDFFastGraphKernelApp {
       .appName("fast graph kernel")
       .getOrCreate()
 
+    Logger.getRootLogger.setLevel(Level.WARN)
+
 //    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_complete.nt"
+//    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
+
     val input = "sansa-ml-spark/src/main/resources/kernel/sample.nt"
     val tripleRDD = new TripleRDD(NTripleReader.load(sparkSession, new File(input)))
-    val instances = tripleRDD.getSubjects.distinct()
-//    instances.map(f => f).foreach(println(_))
-//    tripleRDD.getTriples.foreach(println(_))
-
-    val featureSet = RDFFastGraphKernel(tripleRDD, instances, 2 ).kernelCompute()
-//
-    featureSet.foreach(println(_))
 
 
-//    val tokenizer = new Tokenizer().setInputCol("instance").setOutputCol("path")
-//    val hashingTF = new HashingTF().setNumFeatures(1000).setInputCol(tokenizer.getOutputCol).setOutputCol("features")
-//    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.01)
-//    val pipeline = new Pipeline().setStages(Array(tokenizer, hashingTF, lr))
-//
-//    triplesRDD.take(5).foreach(println(_))
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, 3)
+    rdfFastGraphKernel.compute()
+
+
     sparkSession.stop
 
   }
