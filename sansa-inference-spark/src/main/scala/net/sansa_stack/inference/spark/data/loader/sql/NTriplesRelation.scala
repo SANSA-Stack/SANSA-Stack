@@ -123,8 +123,10 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
        |<([^>]+)>
        |\s*
        |(<([^>]+)>|(.*))
-       |\s*\.$
+       |\s*\.
     """.stripMargin.replaceAll("\n", "").trim)
+
+  println(pattern)
 
   /**
     * Parse with REGEX pattern
@@ -134,9 +136,11 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
   private def parseRegexPattern(s: String): (String, String, String) = {
     val matcher = pattern.matcher(s)
 
+    println(matcher.matches() + "---" + s)
+
     if (matcher.matches) {
-      //      for(i <- 0 to matcher.groupCount())
-      //        println(i + ":" + matcher.group(i))
+//            for(i <- 0 to matcher.groupCount())
+//              println(i + ":" + matcher.group(i))
 
       val subject = if (matcher.group(2) == null) {
         matcher.group(1)
