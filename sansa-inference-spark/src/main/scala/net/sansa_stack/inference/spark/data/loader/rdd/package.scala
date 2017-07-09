@@ -1,19 +1,40 @@
 package net.sansa_stack.inference.spark.data.loader.rdd
 
-import net.sansa_stack.inference.utils.NTriplesStringToJenaTriple
+import org.apache.hadoop.fs.Path
+
+import net.sansa_stack.inference.utils.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.DataFrameWriter
+import org.apache.spark.sql.{DataFrameWriter, SaveMode}
 
 package object rdf {
 
   /**
     * Adds methods, `ntriples` and `turtle`, to SparkContext that allows to write N-Triples and Turtle files
     */
-  implicit class RDFDataFrameWriter[T](writer: DataFrameWriter[T]) {
-    def ntriples: String => Unit = writer.format("ntriples").save
+  implicit class RDFWriter[T](triples: RDD[Triple]) {
+
+    val converter = new JenaTripleToNTripleString()
+
+    def saveAsNTriplesFile(path: String, mode: SaveMode = SaveMode.ErrorIfExists): Unit = {
+
+      val fsPath = new Path(path)
+      val fs = fsPath.getFileSystem(triples.sparkContext.hadoopConfiguration)
+
+      mode match {
+        case SaveMode.Append => sys.error("Append mode is not supported by " + this.getClass.getCanonicalName); sys.exit(1)
+        case SaveMode.Overwrite => fs.delete(fsPath, true)
+        case SaveMode.ErrorIfExists => sys.error("Given path: " + path + " already exists!!"); sys.exit(1)
+        case SaveMode.Ignore => sys.exit()
+      }
+
+      triples
+        .map(converter) // map to N-Triples string
+        .saveAsTextFile(path)
+    }
+
   }
 
   /**

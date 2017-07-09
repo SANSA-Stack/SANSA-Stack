@@ -10,8 +10,9 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
-
 import scala.language.implicitConversions
+
+import org.apache.jena.vocabulary.RDF
 
 /**
   * A class that provides methods to load an RDF graph from disk.
@@ -239,17 +240,21 @@ object RDFGraphLoader {
 
     val triples = session.read.rdf(lang)(path)
     triples.show(10)
-//    println(triples.count())
-
+    println(triples.count())
     triples
       .filter("p == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type'")
       .write.mode(SaveMode.Append).rdf("/tmp/lubm/out")
 
-//    import net.sansa_stack.inference.spark.data.loader.rdd.rdf._
-//
-//    val triplesRDD = session.sparkContext.rdf(lang)
-//    triples.show(10)
-//    println(triples.count())
+
+
+    import net.sansa_stack.inference.spark.data.loader.rdd.rdf._
+
+    val triplesRDD = session.sparkContext.rdf(lang)(path)
+    triples.show(10)
+    println(triples.count())
+    triplesRDD
+      .filter(_.predicateMatches(RDF.`type`.asNode()))
+      .saveAsNTriplesFile("/tmp/lubm/out")
 //
 //    val triples = session.read.ntriples(path)
 //
