@@ -30,7 +30,9 @@ object RDFFastGraphKernelApp {
 //    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_complete.nt"
 //    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
 
-    val input = "sansa-ml-spark/src/main/resources/kernel/sample.nt"
+//    val input = "sansa-ml-spark/src/main/resources/kernel/sample.nt"
+    val input = "sansa-ml-spark/src/main/resources/kernel/Lexicon_NamedRockUnit_10000l.nt"
+//    val input = "sansa-ml-spark/src/main/resources/kernel/rdf2.nt"
     val tripleRDD = new TripleRDD(NTripleReader.load(sparkSession, new File(input)))
 
 

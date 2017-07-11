@@ -44,15 +44,12 @@ class RDFFastGraphKernel (@transient val sparkSession: SparkSession,
 
   val tripleIntIterable: Iterable[(Int, Int, Int)] = tripleRDD.getTriples.map(f =>
     (getUriIndexOrSet(f.getSubject.toString), getUriIndexOrSet(f.getPredicate.toString), getUriIndexOrSet(f.getObject.toString)))
+
   val tripleIntRDD: RDD[Row] =  sparkSession.sparkContext.parallelize(tripleIntIterable.toList).map(f => Row(f._1, f._2, f._3))
   val tripleStruct: StructType = new StructType(Array(StructField("s", IntegerType), StructField("p", IntegerType), StructField("o", IntegerType) ))
   val tripleDF: DataFrame = sparkSession.createDataFrame(tripleIntRDD, tripleStruct);
 
-  val instanceRDD: RDD[Int] = tripleRDD.getSubjects.distinct.map(f => getUriIndexOrSet(f.toString))
-
-  import sparkSession.sqlContext.implicits._
-  val instanceDF: DataFrame = instanceRDD.toDF()
-
+  val instanceDF: DataFrame = tripleDF.select("s").distinct().toDF("instance")
 
   def compute(): Unit = {
     val sqlContext = sparkSession.sqlContext
@@ -61,9 +58,9 @@ class RDFFastGraphKernel (@transient val sparkSession: SparkSession,
     tripleDF.createOrReplaceTempView("triples")
 
     var df = sqlContext.sql(
-      "select i.value as instance, CONCAT(t.p, ',', t.o) as path, t.o " +
+      "select i.instance as instance, CONCAT(t.p, ',', t.o) as path, t.o " +
         "from instances i left join triples t " +
-        "where i.value = t.s")
+        "where i.instance = t.s")
     df.createOrReplaceTempView("df")
 
     for (i <- 2 to maxDepth) {
@@ -75,7 +72,7 @@ class RDFFastGraphKernel (@transient val sparkSession: SparkSession,
       intermediateDF.createOrReplaceTempView("df")
     }
 
-    df.show()
+    df.show(1000)
 
   }
 
