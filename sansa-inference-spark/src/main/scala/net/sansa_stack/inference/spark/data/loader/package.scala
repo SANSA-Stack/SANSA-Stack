@@ -12,6 +12,14 @@ import net.sansa_stack.inference.utils.{JenaTripleToNTripleString, Logging, NTri
 
 package object rdf {
 
+  /**
+    * The mode for parsing N-Triples.
+    */
+  object ParseMode extends Enumeration {
+    type ParseMode = Value
+    val REGEX, SPLIT, JENA = Value
+  }
+
   // the DataFrame methods
 
   /**

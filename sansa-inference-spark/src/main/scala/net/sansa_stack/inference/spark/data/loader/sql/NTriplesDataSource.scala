@@ -1,12 +1,15 @@
 package net.sansa_stack.inference.spark.data.loader.sql
 
 import com.typesafe.config.{Config, ConfigFactory}
+import net.sansa_stack.inference.spark.data.rdf.ParseMode
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 /**
+  * The data source for handling N-Triples, i.e. reading from and writing to disk.
+  *
   * @author Lorenz Buehmann
   */
 class NTriplesDataSource
@@ -19,15 +22,18 @@ class NTriplesDataSource
 
   override def shortName(): String = "ntriples"
 
+  // Used for reading from file without a given schema
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String]): BaseRelation =
-    new NTriplesRelation(parameters("path"), null, conf.getString("rdf.ntriples.parser"))(sqlContext)
+    new NTriplesRelation(parameters("path"), null, ParseMode.withName(conf.getString("rdf.ntriples.parser").toUpperCase))(sqlContext)
 
+  // Used for reading from file with a given schema
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String],
                               schema: StructType): BaseRelation =
-    new NTriplesRelation(parameters("path"), schema, conf.getString("rdf.ntriples.parser"))(sqlContext)
+    new NTriplesRelation(parameters("path"), schema, ParseMode.withName(conf.getString("rdf.ntriples.parser").toUpperCase))(sqlContext)
 
+  // Used for writing to disk
   override def createRelation(sqlContext: SQLContext,
                               mode: SaveMode,
                               parameters: Map[String, String],
