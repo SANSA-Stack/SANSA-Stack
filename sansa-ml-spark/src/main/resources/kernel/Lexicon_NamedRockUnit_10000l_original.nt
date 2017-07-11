@@ -4270,7 +4270,8 @@
 <http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHL> <http://data.bgs.ac.uk/ref/Lexicon/hasLowerBoundaryDefinition> "Lower boundary taken at the junction of the shales with underlying calcareous mudstones with limestone nodules; the boundary is unconformable in places. Locally base taken at junction with rhyolitic tuff of the underlying High Haume Volcanic Formation."@en .
 <http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHL> <http://data.bgs.ac.uk/ref/Lexicon/hasGeographicalDistribution> "Northern England throughout the outcrop of the Windermere Supergroup."@en .
 <http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHL> <http://data.bgs.ac.uk/ref/Lexicon/hasLithologyDescription> "Dark blue-grey shales, distinguished from underlying formations of the Coniston Limestone Group by its lower calcareous content and the near absence of limestone nodules. Dark silty mudstones are commonly pervasively bioturbated."@en .
-<http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHL> <http://data.bgs.ac.uk/ref/Lexicon/hasSummary> "&lt;P&gt;Summary about the Ashgill Formation.&lt;/P&gt;"@en .
+<http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHL> <http://data.bgs.ac.uk/ref/Lexicon/hasSummary> "&lt;P&gt;Summary about the Ashgill Formation.&lt;/P&gt;
+"@en .
 <http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHL> <http://data.bgs.ac.uk/ref/Lexicon/hasThicknessDescription> "c.20m at type section, thins eastwards to less than 2m in Longsleddale. 125 to 215m in Ulverston District, generally &lt;25m elsewhere."@en .
 <http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHL> <http://data.bgs.ac.uk/ref/Lexicon/hasUpperBoundaryDefinition> "Base of overlying Skelgill Formation - black graptolitic mudstone."@en .
 <http://data.bgs.ac.uk/id/Lexicon/NamedRockUnit/AHM> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
