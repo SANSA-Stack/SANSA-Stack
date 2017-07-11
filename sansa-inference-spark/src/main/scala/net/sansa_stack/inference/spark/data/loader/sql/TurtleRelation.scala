@@ -26,8 +26,6 @@ class TurtleRelation(location: String, userSchema: StructType)
       with PrunedScan
       with Serializable {
 
-    val mode = "jena1"
-
     override def schema: StructType = {
       if (this.userSchema != null) {
         this.userSchema
@@ -50,16 +48,26 @@ class TurtleRelation(location: String, userSchema: StructType)
       val confHadoop = new org.apache.hadoop.mapreduce.Job().getConfiguration
       confHadoop.set("textinputformat.record.delimiter", ".\n")
 
-      val usgRDD = sqlContext.sparkContext.newAPIHadoopFile(
+      // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
+      val turtleRDD = sqlContext.sparkContext.newAPIHadoopFile(
         location, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], confHadoop)
+        .filter(!_._2.toString.trim.isEmpty)
         .map{ case (_, v) => v.toString }
 
-      val prefixes = usgRDD.filter(_.startsWith("@prefix"))
+//      turtleRDD.collect().foreach(chunk => println("Chunk" + chunk))
 
+      // 2. we need the prefixes - two options:
+      // a) assume that all prefixes occur in the beginning of the document
+      // b) filter all lines that contain the prefixes
+      val prefixes = turtleRDD.filter(_.startsWith("@prefix"))
+
+      // we broadcast the prefixes
       val prefixesBC = sqlContext.sparkContext.broadcast(prefixes.collect())
 
-      val rows = usgRDD.flatMap(ttl => {
+      // use the Jena Turtle parser to get the triples
+      val rows = turtleRDD.flatMap(ttl => {
         cleanly(new ByteArrayInputStream((prefixesBC.value.mkString("\n") + ttl).getBytes))(_.close()) { is =>
+          // parse the text snippet with Jena
           val iter = RDFDataMgr.createIteratorTriples(is, Lang.TURTLE, null).asScala
 
           iter.map(t => Row.fromTuple((t.getSubject.toString, t.getPredicate.toString, t.getObject.toString))).toSeq
@@ -77,7 +85,10 @@ class TurtleRelation(location: String, userSchema: StructType)
     // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
     val turtleRDD = sqlContext.sparkContext.newAPIHadoopFile(
       location, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], confHadoop)
-      .map{ case (_, v) => v.toString }
+      .filter(!_._2.toString.trim.isEmpty)
+      .map{ case (_, v) => v.toString.trim }
+
+//    turtleRDD.collect().foreach(chunk => println("Chunk:" + chunk))
 
     // 2. we need the prefixes - two options:
     // a) assume that all prefixes occur in the beginning of the document
@@ -89,7 +100,9 @@ class TurtleRelation(location: String, userSchema: StructType)
 
     // use the Jena Turtle parser to get the triples
     val rows = turtleRDD.flatMap(ttl => {
+//      println("snippet:" + prefixesBC.value.mkString("\n") + ttl)
       cleanly(new ByteArrayInputStream((prefixesBC.value.mkString("\n") + ttl).getBytes))(_.close()) { is =>
+        // parse the text snippet with Jena
         val iter = RDFDataMgr.createIteratorTriples(is, Lang.TURTLE, null).asScala
 
         iter.map(t => Row.fromTuple((t.getSubject.toString, t.getPredicate.toString, t.getObject.toString))).toSeq
