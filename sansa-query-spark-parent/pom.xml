@@ -15,6 +15,7 @@
         <module>sansa-query-spark-sparqlify</module>
         <module>sansa-query-spark-server</module>
         <module>sansa-query-spark-bundle</module>
+        <module>sansa-query-spark-playground</module>
     </modules>
 
     <dependencyManagement>
@@ -79,11 +80,11 @@
                 <version>${spark.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>3.0.3</version>
-            </dependency>
+<!--             <dependency> -->
+<!--                 <groupId>org.scalatest</groupId> -->
+<!--                 <artifactId>scalatest_${scala.binary.version}</artifactId> -->
+<!--                 <version>3.0.3</version> -->
+<!--             </dependency> -->
 
         </dependencies>
     </dependencyManagement>

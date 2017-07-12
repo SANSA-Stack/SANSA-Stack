@@ -35,39 +35,23 @@ public class TestCalciteJoin {
 
     @Test
     public void testCalciteJoin() throws Exception {
-//    public static void main(String[] args) throws Exception {
-
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);
 
-//        SchemaPlus schema = rootSchema.add("s", new AbstractSchema());
-//        Table table =
-        //        final TableFunction table = TableFunctionImpl.create(MAZE_METHOD);
-//        schema.add("Maze", table);
-//        final TableFunction table2 = TableFunctionImpl.create(SOLVE_METHOD);
-//        schema.add("Solve", table2);
-//        final String sql;
-
-        //ReflectiveSchema.Factory.create(rootSchema, );
-
         rootSchema.add("s", new ReflectiveSchema(new TestSchema()));
-//        System.out.println(rootSchema);
 
         Frameworks.ConfigBuilder configBuilder = Frameworks.newConfigBuilder();
-        // set defaultSchema
         configBuilder.defaultSchema(rootSchema);
-        // build configuration
         FrameworkConfig frameworkConfig = configBuilder.build();
 
-        // get parser config builder and modify set SQL case sensitive to false
         SqlParser.ConfigBuilder parserConfig = SqlParser.configBuilder(frameworkConfig.getParserConfig());
         parserConfig
             .setCaseSensitive(false)
             .setConfig(parserConfig.build());
 
-        // get planner
         Planner planner = Frameworks.getPlanner(frameworkConfig);
-        // parse SQL statement
-        SqlNode sqlNode = planner.parse("SELECT * FROM \"s\".\"rdf\" \"a\", \"s\".\"rdf\" \"b\" WHERE \"a\".\"s\" = 5 and \"b\".\"s\" = 5");
+
+        // SELECT s.rdf a, s.rdf b WHERE a.s = 5 AND b.s = 5
+        SqlNode sqlNode = planner.parse("SELECT * FROM \"s\".\"rdf\" \"a\", \"s\".\"rdf\" \"b\" WHERE \"a\".\"s\" = 5 AND \"b\".\"s\" = 5");
         planner.validate(sqlNode);
         RelRoot relRoot = planner.rel(sqlNode);
         RelNode relNode = relRoot.project();
