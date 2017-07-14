@@ -5,9 +5,6 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.scalatest._
 
-/**
-  * @author Lorenz Buehmann
-  */
 class TestSparkSqlJoin extends FlatSpec {
 
   "SPARK SQL processor" should "be capable of handling transitive join conditions" in {
@@ -34,6 +31,11 @@ class TestSparkSqlJoin extends FlatSpec {
     val df = spark.createDataFrame(dataRDD, schema).as("TRIPLES")
     df.createOrReplaceTempView("TRIPLES")
 
+
+    println("First Query")
+    spark.sql("SELECT A.s FROM TRIPLES A, TRIPLES B WHERE A.s = B.s AND A.s = 'dbr:Leipzig'").show(10)
+
+    println("Second Query")
     spark.sql("SELECT A.s FROM TRIPLES A, TRIPLES B WHERE A.s = 'dbr:Leipzig' AND B.s = 'dbr:Leipzig'").show(10)
   }
 
