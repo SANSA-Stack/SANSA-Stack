@@ -46,7 +46,7 @@ object NTripleReader {
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       //.config("spark.kryo.registrationRequired", "true")
-      .config("spark.eventLog.enabled", "true")
+//      .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"
       ))
