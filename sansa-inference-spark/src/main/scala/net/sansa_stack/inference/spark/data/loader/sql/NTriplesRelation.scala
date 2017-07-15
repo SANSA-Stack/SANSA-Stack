@@ -3,6 +3,7 @@ package net.sansa_stack.inference.spark.data.loader.sql
 import java.io.ByteArrayInputStream
 import java.util.regex.Pattern
 
+import net.sansa_stack.inference.spark.data.rdf.ParseMode.{ParseMode, _}
 import net.sansa_stack.inference.utils.Logging
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.lang.LangNTriples
@@ -21,15 +22,20 @@ import scala.util.{Failure, Success, Try}
   * @param location
   * @param userSchema
   * @param sqlContext
-  * @param mode how to parse each line in the N-Triples file (DEFAULT: regex)
+  * @param mode how to parse each line in the N-Triples file (DEFAULT: [[ParseMode]].`REGEX`)
   */
-class NTriplesRelation(location: String, userSchema: StructType, val mode: String = "regex")
+class NTriplesRelation(location: String, userSchema: StructType, val mode: ParseMode = REGEX)
                       (@transient val sqlContext: SQLContext)
   extends BaseRelation
     with TableScan
     with PrunedScan
     with Serializable
     with Logging {
+
+  /**
+    * Whether to skip blank lines or throw an exception.
+    */
+  val skipBlankLines = true
 
   override def schema: StructType = {
     if (this.userSchema != null) {
@@ -51,9 +57,9 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
       .textFile(location)
 
     val rows = mode match {
-      case "regex" => rdd.map(line => Row.fromTuple(parseRegexPattern(line)))
-      case "split" => rdd.map(line => Row.fromSeq(line.split(" ").toList))
-      case "jena" => rdd.map(parseJena(_).get).map(t => Row.fromSeq(Seq(t.getSubject.toString, t.getPredicate.toString, t.getObject.toString)))
+      case REGEX => rdd.map(line => Row.fromTuple(parseRegexPattern(line)))
+      case SPLIT => rdd.map(line => Row.fromSeq(line.split(" ").toList))
+      case JENA => rdd.map(parseJena(_).get).map(t => Row.fromSeq(Seq(t.getSubject.toString, t.getPredicate.toString, t.getObject.toString)))
     }
     rows
   }
@@ -75,11 +81,27 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
     )
 
     // apply different line processing based on the configured parsing mode
-    val rows = mode match {
-      case "regex" => rdd.map(line => Row.fromSeq(extractFromTriple(parseRegexPattern(line))))
-      case "split" => rdd.map(line => Row.fromSeq(extractFromTriple(parseRegexSplit(line))))
-      case "jena" => rdd.map(line => Row.fromSeq(extractFromJenaTriple(parseJena(line).get).map(_.toString)))
+    val tuples = mode match {
+      case REGEX => rdd.map(line => {
+        val tripleOpt = parseRegexPattern(line)
+        if(tripleOpt.isDefined) {
+          Some(extractFromTriple(tripleOpt.get))
+        } else {
+          None
+        }
+      })
+      case SPLIT => rdd.map(line => Some(extractFromTriple(parseRegexSplit(line))))
+      case JENA => rdd.map(line => Some(extractFromJenaTriple(parseJena(line).get).map(_.toString)))
     }
+
+    val rows = tuples.flatMap(t => {
+      if (t.isDefined) {
+        Some(Row.fromSeq(t.get))
+      } else {
+        // TODO error handling
+        None
+      }
+    })
 
     rows
   }
@@ -123,42 +145,50 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Strin
        |<([^>]+)>
        |\s*
        |(<([^>]+)>|(.*))
-       |\s*\.
+       |\s*[.]\s*(#.*)?$
     """.stripMargin.replaceAll("\n", "").trim)
-
-  println(pattern)
 
   /**
     * Parse with REGEX pattern
     * @param s
     * @return
     */
-  private def parseRegexPattern(s: String): (String, String, String) = {
-    val matcher = pattern.matcher(s)
-
-    println(matcher.matches() + "---" + s)
-
-    if (matcher.matches) {
-//            for(i <- 0 to matcher.groupCount())
-//              println(i + ":" + matcher.group(i))
-
-      val subject = if (matcher.group(2) == null) {
-        matcher.group(1)
-      } else {
-        matcher.group(2)
-      }
-
-      val obj = if (matcher.group(6) == null) {
-        matcher.group(7).trim
-      } else {
-        matcher.group(6)
-      }
-
-      (subject, matcher.group(4), obj)
+  private def parseRegexPattern(s: String): Option[(String, String, String)] = {
+    // skip blank lines
+    if (s.trim.isEmpty) {
+      None
     } else {
-      throw new Exception(s"WARN: Illegal N-Triples syntax. Ignoring triple $s")
-    }
 
+      val matcher = pattern.matcher(s)
+
+//      println(matcher.matches() + "---" + s)
+
+      if (matcher.matches) {
+        //            for(i <- 0 to matcher.groupCount())
+        //              println(i + ":" + matcher.group(i))
+
+        // parse the subject
+        val subject = if (matcher.group(2) == null) { // this means it's a blank node captured in group 1 (or 3)
+          matcher.group(1)
+        } else { // it is a URI
+          matcher.group(2)
+        }
+
+        // parse the predicate
+        val predicate = matcher.group(4)
+
+        // parse the object
+        val obj = if (matcher.group(6) == null) { // this means it is a literal
+          matcher.group(7).trim
+        } else { // it is a URI
+          matcher.group(6)
+        }
+
+        Some((subject, predicate, obj))
+      } else {
+        throw new Exception(s"WARN: Illegal N-Triples syntax. Ignoring triple $s")
+      }
+    }
   }
 
   /**
