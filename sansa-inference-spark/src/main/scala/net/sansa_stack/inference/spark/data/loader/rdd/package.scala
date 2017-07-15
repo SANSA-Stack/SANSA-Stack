@@ -12,7 +12,7 @@ import org.apache.spark.sql.{DataFrameWriter, SaveMode}
 package object rdf {
 
   /**
-    * Adds methods, `ntriples` and `turtle`, to SparkContext that allows to write N-Triples and Turtle files
+    * Adds methods, `ntriples` and `turtle`, to [[RDD]] that allows to write N-Triples and Turtle files
     */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
@@ -38,7 +38,7 @@ package object rdf {
   }
 
   /**
-    * Adds methods, `rdf`, `ntriples` and `turtle`, to SparkContext that allows to read N-Triples and Turtle files
+    * Adds methods, `rdf`, `ntriples` and `turtle`, to [[SparkContext]] that allows to read N-Triples and Turtle files
     */
   implicit class RDFReader(sc: SparkContext) {
     /**
