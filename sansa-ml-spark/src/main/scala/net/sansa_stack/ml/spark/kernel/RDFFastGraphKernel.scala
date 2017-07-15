@@ -10,6 +10,10 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import scala.collection.mutable
 
+import org.apache.spark.sql.functions._
+//import org.apache.spark.sql.Dataset
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
+
 class RDFFastGraphKernel (@transient val sparkSession: SparkSession,
                           val tripleRDD: TripleRDD,
                           val maxDepth: Int) extends Serializable {
@@ -27,21 +31,7 @@ class RDFFastGraphKernel (@transient val sparkSession: SparkSession,
     }
     index
   }
-
-  var path2index: Map[List[Int], Int] = Map.empty[List[Int], Int]
-  var index2path: Map[Int, List[Int]] = Map.empty[Int, List[Int]]
-  def getPathIndexOrSet (path: List[Int]) : Int = {
-    var index : Int = 0
-    if (path2index.keys.exists(_ == path)) {
-      index = path2index(path)
-    } else {
-      index = path2index.size + 1
-      path2index += (path -> index)
-      index2path += (index -> path)
-    }
-    index
-  }
-
+  
   val tripleIntIterable: Iterable[(Int, Int, Int)] = tripleRDD.getTriples.map(f =>
     (getUriIndexOrSet(f.getSubject.toString), getUriIndexOrSet(f.getPredicate.toString), getUriIndexOrSet(f.getObject.toString)))
 
@@ -73,7 +63,22 @@ class RDFFastGraphKernel (@transient val sparkSession: SparkSession,
     }
 
     df.show(1000)
-
+    println("Aggregate paths")
+    //o is not needed anymore
+    val df2 = df.drop("o")
+    //aggregate paths (Strings to Array[String])
+    val aggdf = df2.orderBy("instance").groupBy("instance").agg(collect_list("path") as "paths")
+    aggdf.show(1000)
+    println("compute cvm")
+    val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("index").fit(aggdf)
+    val cvTrans = cvModel.transform(aggdf)
+    // Output can be large, use false to show the whole columns
+    // Note: The paths in the output are not ordered
+    cvTrans.show(false)
+    
+    // Alternatively print each line
+    println("Print foreach")
+    cvTrans.foreach(println(_))
   }
 
 }
