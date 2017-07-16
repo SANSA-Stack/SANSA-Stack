@@ -130,6 +130,12 @@
         <version>${scala.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>2.7.2</version>
+      </dependency>
+
       <!-- Apache Spark Core -->
       <dependency>
         <groupId>org.apache.spark</groupId>
