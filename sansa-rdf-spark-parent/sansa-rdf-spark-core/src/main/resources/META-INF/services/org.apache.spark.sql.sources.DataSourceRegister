@@ -1,0 +1,2 @@
+net.sansa_stack.rdf.spark.io.ntriples.NTriplesDataSource
+net.sansa_stack.rdf.spark.io.turtle.TurtleDataSource

@@ -45,7 +45,7 @@ class TurtleRelation(location: String, userSchema: StructType)
 
     override def buildScan(): RDD[Row] = {
 
-      val confHadoop = new org.apache.hadoop.mapreduce.Job().getConfiguration
+      val confHadoop =  org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
       confHadoop.set("textinputformat.record.delimiter", ".\n")
 
       // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
@@ -79,7 +79,7 @@ class TurtleRelation(location: String, userSchema: StructType)
     }
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] = {
-    val confHadoop = new org.apache.hadoop.mapreduce.Job().getConfiguration
+    val confHadoop =  org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
     confHadoop.set("textinputformat.record.delimiter", ".\n")
 
     // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
