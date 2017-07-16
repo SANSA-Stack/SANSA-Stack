@@ -122,7 +122,7 @@
         <dependency>
             <groupId>com.holdenkarau</groupId>
             <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
-            <version>2.1.0_0.6.0</version>
+            <version>${spark.version}_0.7.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
