@@ -213,7 +213,7 @@ package object rdf {
         }.get
       })
     }
-  }
+
 
 
 
