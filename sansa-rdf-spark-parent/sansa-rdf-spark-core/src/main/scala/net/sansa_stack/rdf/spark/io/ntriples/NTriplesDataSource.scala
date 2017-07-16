@@ -37,23 +37,40 @@ class NTriplesDataSource
                               mode: SaveMode,
                               parameters: Map[String, String],
                               data: DataFrame): BaseRelation = {
-    val path = parameters.getOrElse("path", "./output/") // can throw an exception/error, it's just for this tutorial
+    val path = checkPath(parameters) // maybe throw an exception/error?
     val fsPath = new Path(path)
     val fs = fsPath.getFileSystem(sqlContext.sparkContext.hadoopConfiguration)
 
-    mode match {
-      case SaveMode.Append => sys.error("Append mode is not supported by " + this.getClass.getCanonicalName); sys.exit(1)
-      case SaveMode.Overwrite => fs.delete(fsPath, true)
-      case SaveMode.ErrorIfExists => sys.error("Given path: " + path + " already exists!!"); sys.exit(1)
-      case SaveMode.Ignore => sys.exit()
+    val doSave = if (fs.exists(fsPath)) {
+      mode match {
+        case SaveMode.Append =>
+          sys.error(s"Append mode is not supported by ${this.getClass.getCanonicalName} !")
+        case SaveMode.Overwrite =>
+          fs.delete(fsPath, true)
+          true
+        case SaveMode.ErrorIfExists =>
+          sys.error(s"Given path $path already exists!")
+        case SaveMode.Ignore => false
+        case _ =>
+          throw new IllegalStateException(s"Unsupported save mode ${mode} ")
+      }
+    } else {
+      true
     }
 
-    val ntriplesRDD = data.rdd.map(row => {
-      row.toSeq.map(value => value.toString).mkString(" ") + " ."
-    })
+    // save only if there was no failure with the path before
+    if(doSave) {
+      val ntriplesRDD = data.rdd.map(row => {
+        row.toSeq.map(value => value.toString).mkString(" ") + " ."
+      })
 
-    ntriplesRDD.saveAsTextFile(path)
+      ntriplesRDD.saveAsTextFile(path)
+    }
 
     createRelation(sqlContext, parameters, data.schema)
+  }
+
+  private def checkPath(parameters: Map[String, String]): String = {
+    parameters.getOrElse("path", sys.error("'path' must be specified for N-Triples data."))
   }
 }
