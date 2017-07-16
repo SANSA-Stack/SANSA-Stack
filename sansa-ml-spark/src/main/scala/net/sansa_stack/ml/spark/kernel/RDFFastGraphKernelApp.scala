@@ -27,22 +27,74 @@ object RDFFastGraphKernelApp {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-//    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_complete.nt"
-//    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
-
-//    val input = "sansa-ml-spark/src/main/resources/kernel/sample.nt"
-    val input = "sansa-ml-spark/src/main/resources/kernel/Lexicon_NamedRockUnit_10000l.nt"
-//    val input = "sansa-ml-spark/src/main/resources/kernel/rdf2.nt"
-    val tripleRDD = new TripleRDD(NTripleReader.load(sparkSession, new File(input)))
-
-
-    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, 3)
-    rdfFastGraphKernel.compute()
+    testSample(sparkSession)
+//    experimentAffiliationPrediction(sparkSession)
 
 
     sparkSession.stop
-
   }
 
+
+
+  def testSample(sparkSession: SparkSession): Unit = {
+//    val input = "sansa-ml-spark/src/main/resources/kernel/sample.nt"
+    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
+
+    val tripleRDD = new TripleRDD(NTripleReader.load(sparkSession, new File(input)))
+    val propertyToPredict = "http://swrc.ontoware.org/ontology#affiliation"
+
+
+    tripleRDD.filterPredicates(_.equals(propertyToPredict)).foreach(println(_))
+
+//    val propertyToPredict = ""
+
+//    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, 4, propertyToPredict)
+//    rdfFastGraphKernel.showDataSets()
+//    val data = rdfFastGraphKernel.computeLabeledFeatureVectors()
+
+    sparkSession.stop
+  }
+
+
+
+  def experimentAffiliationPrediction(sparkSession: SparkSession): Unit = {
+    //    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_complete.nt"
+    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
+
+    val tripleRDD = new TripleRDD(NTripleReader.load(sparkSession, new File(input)))
+    val filteredRDD = new TripleRDD(tripleRDD.filterPredicates(!_.equals("http://swrc.ontoware.org/ontology#employs")))
+
+    val propertyToPredict = "http://swrc.ontoware.org/ontology#affiliation"
+
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, filteredRDD, 2, propertyToPredict)
+    rdfFastGraphKernel.showDataSets()
+    val data = rdfFastGraphKernel.computeLabeledFeatureVectors()
+
+
+
+
+        // Some stuff for SVM:
+
+        // Split data into training (60%) and test (40%).
+    val splits = data.randomSplit(Array(0.09, 0.01, 0.09, 0.01, 0.09, 0.01), seed = 11L)
+    val training = splits(0).cache()
+    val test = splits(1)
+
+    println("data")
+    println(data.count())
+//    data.foreach(println(_))
+    println("training")
+    println(training.count())
+//    training.foreach(println(_))
+    println("test")
+    println(test.count())
+//    test.foreach(println(_))
+
+    //val numIterations = 100
+    //val model = SVMWithSGD.train(training, numIterations)
+
+
+    sparkSession.stop
+  }
 
 }
