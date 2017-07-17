@@ -22,6 +22,8 @@ object KBObject{
     var kbGraph: RDFGraph = null
     var dfTable:DataFrame = null
     
+    var dfMap:Map[String,DataFrame]= Map()
+    
     var hdfsPath:String = "" 
     
     var subject2predicate2object: Map[String,Map[String,Map[String,Int]]] = Map()
@@ -50,48 +52,83 @@ object KBObject{
       this.hdfsPath = hdfsP
     }
 	
-	 def deleteRecursive( path:File){
-    var files = path.listFiles()
-if(files != null){
-for (f <-files){
-  if(f.isDirectory()) {
-          deleteRecursive(f)
-          
-          
-                     
-            f.delete()
-            
-         }
-         else {
-           f.delete()
-}
-}
-    path.delete()
- }
+	 
  
 
  
+ def setDfMap(name: String, df:DataFrame){
+   this.dfMap += name -> df
  }
     
- def parquetToDF (path: File, sqlContext:SQLContext): DataFrame={
-   var x:DataFrame = null
-      
-        var tester = path.listFiles()
-        if (tester != null){
-        for(te <- tester){  
-          var part =sqlContext.read.option("mergeSchema", "false").parquet(te.toString)
-          if (x == null){
-            x = part
-          }
-          else{
-            x = x.union(part)
-          }
-        }
-        }
-   return x 
+
+ def tpArString(tpAr:ArrayBuffer[RDFTriple]):String={
+    var str = ""
+	   for (tp <-tpAr){
+	     str += tp.toString()
+	   }
+	   
+	   str = str.replace(" ", "_").replace("?", "_") 
+	   return str
  }
+ 
+ 
+     def calcName(whole: ArrayBuffer[RDFTriple]):String={
     
       
+      
+      var countMap: Map[String,Int] = Map()
+      var numberMap: Map[String, Int] = Map()
+      var counter:Int = 1
+      for (w <- whole){
+        if (countMap.contains(w._1)){
+          var temp = countMap.remove(w._1).get +1
+          countMap += (w._1 -> temp)
+        }
+        else {
+          countMap += (w._1 -> 1)
+        }
+         if (countMap.contains(w._3)){
+          var temp = countMap.remove(w._3).get +1
+          countMap += (w._3 -> temp)
+        }
+        else {
+          countMap += (w._3 -> 1)
+        }
+         if (!(numberMap.contains(w._1))){
+           numberMap += (w._1 -> counter)
+           counter+= 1
+         }
+         if (!(numberMap.contains(w._3))){
+           numberMap += (w._3 -> counter)
+           counter+= 1
+         }
+        
+      }
+      
+      var out = ""
+      for (wh <- whole){
+        var a = ""
+        var b = ""
+        if (countMap(wh._1)>1){
+          a = numberMap(wh._1).toString
+        }
+        else {
+          a="0"
+        }
+        
+        if (countMap(wh._3)>1){
+          b = numberMap(wh._3).toString
+        }
+        else {
+          b="0"
+        }
+        
+        out += a +"_"+wh._2 + "_" + b + "_"
+      }
+      out = out.stripSuffix("_")
+      return out
+    }
+ 
     
     def getRngSize(rel: String):Double={
       
@@ -607,266 +644,10 @@ for (f <-files){
 	  return false
 	}
 	
-	def selectDistinctQueries(x: String, triplesCard: ArrayBuffer[RDFTriple]):ArrayBuffer[ArrayBuffer[RDFTriple]]={
-	   var result:ArrayBuffer[ArrayBuffer[RDFTriple]]= new ArrayBuffer
-	  val k = this.kbGraph
-	  
-	  
-	  var min:RDFTriple = triplesCard(0)
-	  var minSize = this.relationSize.get(triplesCard(0).predicate).get
-	  var index = 0
-	  
-	  var mapList = new  ArrayBuffer[Map[String,String]]
-	  
-	  for (i <- 1 to triplesCard.length-1){
-	    if (this.relationSize.get(triplesCard(i).predicate).get < minSize){
-	      minSize = this.relationSize.get(triplesCard(i).predicate).get
-	      min = triplesCard(i)
-	      index = i
-	      
-	    }
-	  }
-	  
-	  
-	  var a = min._1
-	  var b = min._3
-	  var t = ""
-	  var iRight = ""
-	  
-	 	  var y: Array[RDFTriple] = Array()
-	  
-	  if (!(a.startsWith("?"))){
-	     y = k.find(Some(a),Some(min.predicate),None).collect
-	  }
-	  else if(!(b.startsWith("?"))){
-	     y = k.find(None,Some(min.predicate),Some(b)).collect
-	  }
-	  else {
-	     y = k.find(None,Some(min.predicate),None).collect
-	  }
-	  
-	  if ((x == a)||(x == b)){
-	    
-	      for (i <-y){
-	        if (a == x){
-	           t = a
-	           iRight = i._1
-	        }
-	        else {
-	          t = b
-	           iRight = i._3
-	        }
-	        var temp:ArrayBuffer[RDFTriple] = new ArrayBuffer
-	        var exploreFurther = true
-	        for (j <- triplesCard){ 
-	       
-	          var test = true
-	          var atestLeft = (this.predicate2subject2object.get(j._2).get.get(iRight).isEmpty)
-	          var atestRight = (this.predicate2object2subject.get(j._2).get.get(iRight).isEmpty)
-	      
-	                               
-	      
-	      
-	      
-	          if ((!(j._1.startsWith("?")))&&(!(j._3.startsWith("?")))){
-	            test = false
-	        
-	          }
-	      
-	      
-	          if (test){
-	      
-	            if ((t.startsWith("?"))&&((j._1 == t)&&(!(atestLeft)))){
-	              temp += new RDFTriple(iRight,j._2,j._3)
-	        
-	            }
-	            else if ((t.startsWith("?"))&&((j._3 == t)&&(!(atestRight)))){
-	              temp += new RDFTriple(j._1,j._2,iRight)
-	        
-	            }
-	      
-	     
-	      
-	            else if ((t.startsWith("?"))&&(((j._1 == t)&&(atestLeft))||((j._3 == t)&&(atestRight)))){
-	              exploreFurther = false
-	            }
-	           
-	  
-	          }
-	      
-	      
-	      
-	    
-	    
-	        }
-	    
-	        if (exploreFurther){
-	          if (bindingExists(temp)){
-	       
-	            result += temp
-	     
-	          }
-	        }
-	  }
-	  
-	    
-	   
-	    
-	  }
-	  else{
-	    triplesCard.remove(index)
-	    
-	     for (i <-y){
-	     var temp:ArrayBuffer[RDFTriple] = new ArrayBuffer
-	    var exploreFurther = true
-	    for (j <- triplesCard){ 
-	       
-	      var test = true
-	      var atestLeft = (this.predicate2subject2object.get(j._2).get.get(i._1).isEmpty)
-	      var atestRight = (this.predicate2object2subject.get(j._2).get.get(i._1).isEmpty)
-	      
-	      var btestRight = (this.predicate2object2subject.get(j._2).get.get(i._3).isEmpty)
-	      var btestLeft = (this.predicate2subject2object.get(j._2).get.get(i._3).isEmpty)
-	      
-	      if(((a.startsWith("?")&&(b.startsWith("?"))))&&
-	          (((j._1 == a)&&(j._3 == b)&&(!(atestLeft))&&(!(btestRight)))||
-	          ((j._1 == b)&&(j._3 == a)&&(!(atestRight))&&(!(btestLeft))))){
-	        test = false
-	        
-	      }
-	      
-	      if ((!(j._1.startsWith("?")))&&(!(j._3.startsWith("?")))){
-	        test = false
-	        
-	      }
-	      
-	      
-	      if (test){
-	      
-	      if ((a.startsWith("?"))&&((j._1 == a)&&(!(atestLeft)))){
-	        temp += new RDFTriple(i._1,j._2,j._3)
-	        
-	      }
-	       else if ((a.startsWith("?"))&&((j._3 == a)&&(!(atestRight)))){
-	        temp += new RDFTriple(j._1,j._2,i._1)
-	        
-	      }
-	      
-	     
-	      
-	      
-	      else if ((b.startsWith("?"))&&((j._3 == b)&&(!(btestRight)))){
-	        temp += new RDFTriple(j._1,j._2,i._3)
-	       
-	      }
-	      else if ((b.startsWith("?"))&&((j._1 == b)&&(!(btestLeft)))){
-	        temp += new RDFTriple(i._3,j._2,j._3)
-	      }
-	      else if ((b.startsWith("?"))&&(((j._3 == b)&&(btestRight))||((j._1 == b)&&(btestLeft)))){
-	        exploreFurther = false
-	      }
-	      else if ((a.startsWith("?"))&&(((j._1 == a)&&(atestLeft))||((j._3 == a)&&(atestRight)))){
-	        exploreFurther = false
-	      }
-	      else {
-	        
-	        temp += j
-	        
-	      } 
-	      
-	  
-	      }
-	      
-	      
-	      
-	    
-	    
-	    }
-	    
-	   if (exploreFurther){
-	     if (bindingExists(temp)){
-	       
-	       result ++= selectDistinctQueries(x, temp)
-	     
-	     }
-	   }
-	   
-	  
-	  }
-	  }
-	    
-	    
-	   
-	  
-	  
-	  
-	  return result
-	}
 	
 	
-	def countProjectionQueries(x: String, minHC: Double, tpAr:ArrayBuffer[RDFTriple], RXY: Tuple2[String,String], sc: SparkContext, sqlContext: SQLContext):Map[String,Int] ={
-	  var out:Map[String,Int] = Map()
-	  val head = tpAr(0)
-	  val k = this.kbGraph
-	  if ((x == RXY._1)||(x == RXY._2)){
-	    
-	    this.relationSize.foreach{
-	      rel =>
-	        var instAr= k.find(None,Some(rel._1),None)
-	        
-	        instAr.map{ i =>
-	          var temp:ArrayBuffer[RDFTriple] = new ArrayBuffer
-	           
-	          for (t <- tpAr){
-	            if (t.subject == RXY._1) {
-	              temp += RDFTriple(i.subject, t.predicate, t.`object`)
-	            }
-	            else if (t.`object` == RXY._2){
-	              temp += RDFTriple(t.subject, t.predicate, i.`object`)
-	            }
-	            else if ((t.subject == RXY._1) &&(t.`object` == RXY._2)){
-	              temp += RDFTriple(i.subject, t.predicate, i.`object`)
-	            }
-	            else {
-	              temp += t
-	            }
-	            
-	          }
-	          
-	          if (bindingExists(temp)){
-	            if (x == RXY._1){
-	              if (out.get(i.subject).isEmpty){
-	                out += (i.subject -> 1)
-	              }
-	              else{
-	                out.put(i.subject, out.get(i.subject).get +1)
-	              }
-	              
-	            }
-	            if (x == RXY._2){
-	              if (out.get(i.`object`).isEmpty){
-	                out += (i.`object` -> 1)
-	              }
-	              else{
-	                out.put(i.`object`, out.get(i.`object`).get +1)
-	              }
-	            }
-	            
-	          }
-	         i 
-	        }
-	    }
-	    
-	  }
-	  else{
-	    
-	  }
-	  
-	  
-	  return out
-	  
-	  
-	}
+	
+	
 	
 	
 	def varCount(tpAr: ArrayBuffer[RDFTriple]):  ArrayBuffer[Tuple2[String,String]]={
@@ -888,7 +669,7 @@ for (f <-files){
 	  
 	  return out2
 	}
-		def countProjectionQueriesDF(posit: Int, id: Int, operator:String,minHC: Double, tpAr:ArrayBuffer[RDFTriple], RXY: ArrayBuffer[Tuple2[String,String]], sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[Tuple3[RDFTriple, Int, Long]]=
+		def countProjectionQueriesDF(posit: Int, id: Int, operator:String,minHC: Double, tpAr:ArrayBuffer[RDFTriple], RXY: ArrayBuffer[Tuple2[String,String]], sc: SparkContext, sqlContext: SQLContext): DataFrame=
 		{
 	  
 	  val threshold = minHC * this.relationSize.get(tpAr(0).predicate).get
@@ -896,12 +677,27 @@ for (f <-files){
 	 
 	  val variables = varCount(tpAr)
 	  
-	 var whole: ArrayBuffer[Tuple3[RDFTriple, Int, Long]]= new ArrayBuffer()
+	 var whole:DataFrame = null
 	 var counter = 0
 
 	 
+	 var tpArDF: DataFrame = null
+	 if (posit == 0){
+	   val DF = this.dfTable
+    
+   DF.registerTempTable("table")
+   
+    
+      tpArDF = sqlContext.sql("SELECT rdf AS tp0 FROM table WHERE rdf.predicate = '"+tpAr(0).predicate+"'")
+	   
+	 }
+	 else{
+	  
+	  
+	   tpArDF = dfMap.get(calcName(tpAr)).get
+	 }
 	 
-	 
+	  tpArDF.cache()
 	  this.relationSize.foreach{ x =>
 	    for (i <-RXY){
 	      var go = true
@@ -926,54 +722,10 @@ for (f <-files){
 	      
 	      if ((this.bindingExists(temp.clone()))&&(go)){
 	       
-	    //    var part = dfFromIndexingTable(temp, sqlContext)
-	       
-	     /**      var seq:Seq[String] = Seq((temp.last.toString()  + "  " + id.toString()))
-            import sqlContext.implicits._
-             var key:DataFrame = seq.toDF("key")
-   
-  
-   part.registerTempTable("lastTable")
-   key.registerTempTable("keyTable")
-
-   var partWithKey = sqlContext.sql("SELECT * FROM lastTable JOIN keyTable")
-	        
-	        */
-	        var name = calcName(temp)
-	        
-	        var generatedCount = sqlContext.read.option("mergeSchema", "false").parquet(hdfsPath+"count/"+name)
-	        
-	        generatedCount.createOrReplaceTempView("generatedCountTable")
-	        
-	       
-	        var predsKey = ""
-	        for (t <- temp){
-	          predsKey += t.predicate +"_"
-	        }
-	        
-	        predsKey = predsKey.stripSuffix("_")
-	         
-	        var filter = sqlContext.sql("SELECT count FROM generatedCountTable WHERE predicates='"+predsKey+"'")
+	        var part = this.cardinalityQueries(id,tpArDF,temp, sc, sqlContext)
 	        
 	        
-	        var count = filter.rdd.map(x=> x(0).toString.toLong).collect
-	       var tresh = this.getRngSize(temp(0)predicate) * minHC
-	          
-	       if ((!(count.isEmpty))&&(count(0) >= tresh)){
-	       whole += Tuple3(temp.last, id, count(0))
-	       }
 	        
-	        
-   
-	       /** if (whole == null){
-	          whole = partWithKey
-	        }
-	        
-	        else {
-	          whole = whole.union(partWithKey)
-	        }
-	        */
-	      /*  
 	      if (whole == null){
 	        whole = part
 	      }
@@ -981,16 +733,9 @@ for (f <-files){
 	      else{
 	        whole = whole.unionAll(part)
 	      }
-	      * 
-	      * 
-	      */
-	       
+	        counter += 1
 	      }
-	      
-	      
 	    }
-	    
-	   
 	    
 	  }
 	
@@ -1003,6 +748,10 @@ for (f <-files){
 		
 		
 		
+	
+		
+		
+		
 		
 		
 		
@@ -1012,76 +761,68 @@ for (f <-files){
 		
 		def cardinalityQueries (id: Int, tpArDF: DataFrame, wholeAr: ArrayBuffer[RDFTriple], sc:SparkContext, sqlContext: SQLContext): DataFrame ={
    val DF = this.dfTable
-    
+    var tpMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
    DF.registerTempTable("table")
    tpArDF.registerTempTable("tpArTable")
     
   
-        var w = sqlContext.sql("SELECT sub0 AS sub"+(wholeAr.length-1)+", pr0 AS pr"+(wholeAr.length-1)+", ob0 AS ob"+(wholeAr.length-1)+" FROM table WHERE pr0 = '"+(wholeAr.last).predicate+"'")
+        var w = sqlContext.sql("SELECT rdf AS tp"+(wholeAr.length-1)+" FROM table WHERE rdf.predicate = '"+(wholeAr.last).predicate+"'")
         w.registerTempTable("newColumn")
         
    
         
       
+        var  v = sqlContext.sql("SELECT * FROM tpArTable JOIN newColumn")
         
         
         
-        
-      var tpMap:Map[String, ArrayBuffer[String]] = Map()
+      
    
-   
+    var varAr: ArrayBuffer[String] = new ArrayBuffer
    var checkMap: Map[Int, Tuple2[String,String]] = Map()
-  var lastA = wholeAr.last.subject
-  var lastB = wholeAr.last.`object`
-   var varAr = ArrayBuffer(lastA, lastB)
-   
-   var joinAB = Tuple2("", "")
+   var checkSQLSELECT ="SELECT "
    
    for(i <- 0 to wholeAr.length-1){
      var a = wholeAr(i).subject
      var b = wholeAr(i)._3
    
+       checkSQLSELECT += "tp"+i+", "
        
-       
      
      
-     
+     varAr ++= ArrayBuffer(a,b)
      checkMap += (i -> Tuple2(a,b))
-     if ((a == lastA)||(a==lastB)){ 
-       if(!(tpMap.contains(a))){
-         tpMap += ((a) -> ArrayBuffer("sub"+ i))
-       
-       }
-       else {
-         var temp = tpMap.get(a).get 
-         temp += "sub"+i
-         tpMap.put(a, temp)
-       }
-     }
      
-     if ((b == lastA)||(b == lastB)){
-       if(!(tpMap.contains(b))){
-         tpMap += ((b) -> ArrayBuffer("ob"+i))
-         
-       }
-    
-       else{
-         var temp = tpMap.get(b).get 
-         temp += "ob"+i
-         tpMap.put(b, temp)
+     if(!(tpMap.contains(a))){
+       tpMap += ((a) -> ArrayBuffer(Tuple2(i,"subject")))
        
-       }
+     }
+     else {
+       var temp = tpMap.get(a).get 
+       temp += Tuple2(i,"subject")
+       tpMap.put(a, temp)
+     }
+     if(!(tpMap.contains(b))){
+       tpMap += ((b) -> ArrayBuffer(Tuple2(i,"`object`")))
+       
+     }
+    
+     else{
+       var temp = tpMap.get(b).get 
+       temp += Tuple2(i,"`object`")
+       tpMap.put(b, temp)
+       
      }
    }
-   
+   checkSQLSELECT = checkSQLSELECT.stripSuffix(", ")
    
    var cloneTpAr = wholeAr.clone()
    
    var removedMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
    
     
-   
-   var checkSQLWHERE = ""
+   varAr = varAr.distinct
+   var checkSQLWHERE = "WHERE "
    checkMap.foreach{ab =>
      var a = ab._2._1
      var b = ab._2._2
@@ -1090,21 +831,10 @@ for (f <-files){
       
        varAr -= a
        var x = tpMap.get(a).get
-       
-       
        for (k <- x){
-         if(k.takeRight(1).toInt != ab._1){
-           if ((joinAB == Tuple2("", ""))&&((k.takeRight(1).toInt == wholeAr.length-1)||(ab._1 == wholeAr.length-1))){
-             if ((k.takeRight(1).toInt == wholeAr.length-1)){
-               joinAB = ("sub"+ab._1,k)
-             }
-             if (ab._1 == wholeAr.length-1){
-               joinAB = (k, "sub"+ab._1)
-             }
-           }
-           else{
-             checkSQLWHERE += "sub"+ab._1+" = "+k+" AND "
-           }
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".subject = tp"+k._1+"."+k._2+" AND "
+           
          }
          
        }
@@ -1116,24 +846,14 @@ for (f <-files){
      
      if (varAr.contains(b)){
        
-       varAr -= b
        
+       varAr -= b
        var y = tpMap.get(b).get
-       var counter = 0
+       
        for (k <- y){
-         if(k.takeRight(1).toInt != ab._1){
-           if ((joinAB == Tuple2("", ""))&&((k.takeRight(1).toInt == wholeAr.length-1)||(ab._1 == wholeAr.length-1))){
-             if ((k.takeRight(1).toInt == wholeAr.length-1)){
-               joinAB = ("ob"+ab._1,k)
-             }
-             if (ab._1 == wholeAr.length-1){
-               joinAB = (k, "ob"+ab._1)
-             }
-           }
-           
-           else{
-             checkSQLWHERE += "ob"+ab._1+" = "+k+" AND "
-           }
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".`object` = tp"+k._1+"."+k._2+" AND "
+          
          }
        }
                 
@@ -1146,117 +866,98 @@ for (f <-files){
     import sqlContext.implicits._
    var key:DataFrame = seq.toDF("key")
    
-   
-   //var  v = sqlContext.sql("SELECT * FROM tpArTable JOIN newColumn  ON "+ checkSQLWHERE)
-   var v = w.join(tpArDF, tpArDF(joinAB._1) === w(joinAB._2))
-   
    v.registerTempTable("t")
-   var last = sqlContext.sql("SELECT * FROM t WHERE "+checkSQLWHERE)
+   var last = sqlContext.sql(checkSQLSELECT+" FROM t "+checkSQLWHERE)
+   
+   this.setDfMap(calcName(wholeAr), last)
+   
    last.registerTempTable("lastTable")
    key.registerTempTable("keyTable")
-   var out = sqlContext.sql("SELECT * FROM lastTable JOIN keyTable")
+   var out = sqlContext.sql(checkSQLSELECT+", keyTable.key FROM lastTable JOIN keyTable")
    
    return out
    
    
  }
 		
+		/**
+		 * used in setBodySize and calcSupport
+		 */
 		
-		
-	 def cardinality (wholeAr: ArrayBuffer[RDFTriple], sc:SparkContext, sqlContext: SQLContext): DataFrame ={
-  val DF = this.dfTable
-    
+	 def cardinality (tpAr: ArrayBuffer[RDFTriple], sc:SparkContext, sqlContext: SQLContext): DataFrame ={
+ var name = calcName(tpAr)
+	   
+	   
+	if(dfMap.contains(name)){
+	  return dfMap.get(name).get
+  }
+  else {  
+	   val DF = this.dfTable
+    var tpMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
    DF.registerTempTable("table")
-   var wholeTPARBackup = wholeAr.clone()
-    wholeAr.remove(0)
-  
-    var complete = sqlContext.sql("SELECT * FROM table WHERE pr0 = '"+(wholeAr(0)).predicate+"'")
-        
+   
     
-    for (i <- 1 to wholeAr.length-1){
-      var w = sqlContext.sql("SELECT sub0 AS sub"+i+", pr0 AS pr"+i+", ob0 AS ob"+i+" FROM table WHERE pr0 = '"+(wholeAr(i)).predicate+"'")
+      var v = sqlContext.sql("SELECT rdf AS tp0 FROM table WHERE rdf.predicate = '"+tpAr(0).predicate+"'")
+      
+      for (k <- 1 to tpAr.length-1){
+        var w = sqlContext.sql("SELECT rdf AS tp"+k+" FROM table WHERE rdf.predicate = '"+tpAr(k).predicate+"'")
         w.registerTempTable("newColumn")
         
-        complete.registerTempTable("previousTable")
-        complete = sqlContext.sql("SELECT * FROM previousTable JOIN newColumn")
-    }
-    
-  var name = ""
-  for (rdftp <-wholeAr){
-    name+=rdftp.toString
-  }
-    
-    name = name.replace(" ", "_").replace("?", "_")     
-        complete.write.parquet(hdfsPath + "cardinalityBody/" + name)
+        var tempO = v
+        tempO.registerTempTable("previous")
+        
+        var sqlString = ""
+         for (re <- 0 to k-1){
+           sqlString += "previous.tp"+re+", "
+         }
+        
+        v = sqlContext.sql("SELECT "+sqlString+"newColumn.tp"+k+" FROM previous JOIN newColumn")
+        
+      }
    
-        
-       var abString = ""
-      
-        
-        
-        
-      
-
-  
-      var tpMap:Map[String, ArrayBuffer[String]] = Map()
-   
-   
+    var varAr: ArrayBuffer[String] = new ArrayBuffer
    var checkMap: Map[Int, Tuple2[String,String]] = Map()
-  var lastA = wholeAr.last.subject
-  var lastB = wholeAr.last.`object`
-   var varAr = new ArrayBuffer[String]
-   for(i <- 0 to wholeAr.length-1){
-     var a = wholeAr(i).subject
-     var b = wholeAr(i)._3
+   var checkSQLSELECT ="SELECT "
    
-     varAr ++= ArrayBuffer(a,b)  
-          if ((abString == "") && (a == "?a")){
-       abString = "sub"+1
-     }
+   for(i <- 0 to tpAr.length-1){
+     var a = tpAr(i).subject
+     var b = tpAr(i)._3
      
-     if ((abString == "") && (b == "?a")){
-       abString = "ob"+i
-     }
+     checkSQLSELECT += "tp"+i+", "
      
-     
-     
-     
+     varAr ++= ArrayBuffer(a,b)
      checkMap += (i -> Tuple2(a,b))
-    
-       if(!(tpMap.contains(a))){
-         tpMap += ((a) -> ArrayBuffer("sub"+ i))
+     
+     if(!(tpMap.contains(a))){
+       tpMap += ((a) -> ArrayBuffer(Tuple2(i,"subject")))
        
-       }
-       else {
-         var temp = tpMap.get(a).get 
-         temp += "sub"+i
-         tpMap.put(a, temp)
-       }
-     
-     
-     
-       if(!(tpMap.contains(b))){
-         tpMap += ((b) -> ArrayBuffer("ob"+i))
-         
-       }
-    
-       else{
-         var temp = tpMap.get(b).get 
-         temp += "ob"+i
-         tpMap.put(b, temp)
+     }
+     else {
+       var temp = tpMap.get(a).get 
+       temp += Tuple2(i,"subject")
+       tpMap.put(a, temp)
+     }
+     if(!(tpMap.contains(b))){
+       tpMap += ((b) -> ArrayBuffer(Tuple2(i,"`object`")))
        
-       }
-     
+     }
+    
+     else{
+       var temp = tpMap.get(b).get 
+       temp += Tuple2(i,"`object`")
+       tpMap.put(b, temp)
+       
+     }
    }
+   checkSQLSELECT = checkSQLSELECT.stripSuffix(", ")
    
-   
-   var cloneTpAr = wholeAr.clone()
+   var cloneTpAr = tpAr.clone()
    
    var removedMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
    
     
-   
-   var checkSQLWHERE = ""
+   varAr = varAr.distinct
+   var checkSQLWHERE = "WHERE "
    checkMap.foreach{ab =>
      var a = ab._2._1
      var b = ab._2._2
@@ -1266,8 +967,8 @@ for (f <-files){
        varAr -= a
        var x = tpMap.get(a).get
        for (k <- x){
-         if(k.takeRight(1).toInt != ab._1){
-           checkSQLWHERE += "sub"+ab._1+" = "+k+" AND "
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".subject = tp"+k._1+"."+k._2+" AND "
            
          }
          
@@ -1280,13 +981,13 @@ for (f <-files){
      
      if (varAr.contains(b)){
        
-       varAr -= b
        
+       varAr -= b
        var y = tpMap.get(b).get
        
        for (k <- y){
-         if(k.takeRight(1).toInt != ab._1){
-           checkSQLWHERE += "ob"+ab._1+" = "+k+" AND "
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".`object` = tp"+k._1+"."+k._2+" AND "
           
          }
        }
@@ -1296,11 +997,10 @@ for (f <-files){
    }
    
    checkSQLWHERE = checkSQLWHERE.stripSuffix(" AND ")
-   
-   complete.registerTempTable("t")
-   var out = sqlContext.sql("SELECT * FROM t WHERE "+checkSQLWHERE)
+   v.registerTempTable("t")
+   var out = sqlContext.sql(checkSQLSELECT+" FROM t "+checkSQLWHERE)
    return out
-   
+	 }
    
  }
 	
@@ -1310,35 +1010,25 @@ for (f <-files){
 	 // var card = cardinality(tpAr, sc, sqlContext)
 	   var go = false
 	   var outCount: Double = 0.0
-	   
+	   var tpsString = calcName(tpAr)
 	    for (i <- 1 to tpAr.length-1){
 	      if ((tpAr(i)._1=="?a")||(tpAr(i)._3=="?a")){
 	        go = true
 	      }
 	    }
 	   
-	   
+	   if (dfMap.get(tpsString) == None){
+	     return outCount
+	   }
 	   
 	   if (go){
 	     
 	     
-	   var tpArString = ""
-	   for (tp <-tpAr){
-	     tpArString += tp.toString()
-	   
-	   }
-	   
-	   tpArString = tpArString.replace(" ", "_").replace("?", "_") 
-	   var ex = new File (hdfsPath+"precomputed"+(tpAr.length-2)+"/"+tpArString)
-	   var files = ex.listFiles()
-	   if (files == null){
-	     return 0.0
-	   }
+
 	   
 	   
 	   
-	   
-	   var card = sqlContext.read.option("mergeSchema", "false").parquet(hdfsPath+"precomputed"+(tpAr.length-2)+"/"+tpArString)
+	   var card = dfMap.get(tpsString).get
 	  
 	   card.registerTempTable("cardTable")
 	   
@@ -1349,7 +1039,7 @@ for (f <-files){
 	   
 
 	   
-	    var h = sqlContext.sql("SELECT DISTINCT sub0 AS sub FROM cardTable")
+	    var h = sqlContext.sql("SELECT DISTINCT tp0.subject AS sub FROM cardTable")
 	   
 	  
 	   
@@ -1361,22 +1051,22 @@ for (f <-files){
 	   if (tpAr.length >2){
 	   
 	   
-	   out = tester(h, tpAr, sc, sqlContext)
+	   out = negatveExampleBuilder(h, tpAr, sc, sqlContext)
 	   }
 	   else {
 	     var abString = ""
 	      if (tpAr(1)._1 == "?a"){
-       abString = "sub0"
+       abString = "subject"
        }
      
 	      else{
-       abString = "ob0"
+       abString = "`object`"
        }
 	     
-	     var o = sqlContext.sql("SELECT * FROM kbTable WHERE pr0='"+(tpAr(1)).predicate+"'")
+	     var o = sqlContext.sql("SELECT rdf AS tp0 FROM kbTable WHERE rdf.predicate='"+(tpAr(1)).predicate+"'")
 	      o.registerTempTable("twoLengthT")
 	      h.registerTempTable("subjects")
-	      out = sqlContext.sql("SELECT twoLengthT.sub0, twoLengthT.pr0, twoLengthT.ob0 FROM twoLengthT JOIN subjects ON twoLengthT."+abString+"=subjects.sub")
+	      out = sqlContext.sql("SELECT twoLengthT.tp0 FROM twoLengthT JOIN subjects ON twoLengthT.tp0."+abString+"=subjects.sub")
 	  
 	      /*
 	   if ((tpAr(0).predicate == "directed")&&(tpAr(1).predicate== "produced")&&(tpAr(1).subject== "?a")&&(tpAr(1)._3== "?b")){
@@ -1403,92 +1093,91 @@ for (f <-files){
 	 
 	 
 	 
-	 def tester (subjects: DataFrame, wholeAr: ArrayBuffer[RDFTriple], sc:SparkContext, sqlContext: SQLContext): DataFrame ={
+	 def negatveExampleBuilder (subjects: DataFrame, wholeAr: ArrayBuffer[RDFTriple], sc:SparkContext, sqlContext: SQLContext): DataFrame ={
    val DF = this.dfTable
-    
+    var tpMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
    DF.registerTempTable("table")
    var wholeTPARBackup = wholeAr.clone()
     wholeAr.remove(0)
   
-    var name = ""
-  for (rdftp <-wholeAr){
-    name+=rdftp.toString
-  }
+    var complete = sqlContext.sql("SELECT rdf AS tp"+0+" FROM table WHERE rdf.predicate = '"+(wholeAr(0)).predicate+"'")
+        
     
-    name = name.replace(" ", "_").replace("?", "_")     
-        var complete = sqlContext.read.option("mergeSchema", "false").parquet(hdfsPath + "cardinalityBody/" + name)
+    for (i <- 1 to wholeAr.length-1){
+      var w = sqlContext.sql("SELECT rdf AS tp"+i+" FROM table WHERE rdf.predicate = '"+(wholeAr(i)).predicate+"'")
+        w.registerTempTable("newColumn")
+        
+        complete.registerTempTable("previousTable")
+        complete = sqlContext.sql("SELECT * FROM previousTable JOIN newColumn")
+    }
+    
     
         
         
    
         
-       var abString = ""
+      
       
         
         
         
       
-
-  
-      var tpMap:Map[String, ArrayBuffer[String]] = Map()
    
-   
+    var varAr: ArrayBuffer[String] = new ArrayBuffer
    var checkMap: Map[Int, Tuple2[String,String]] = Map()
-  var lastA = wholeAr.last.subject
-  var lastB = wholeAr.last.`object`
-   var varAr = new ArrayBuffer[String]
+   var checkSQLSELECT ="SELECT "
+   
+   var abString = ("","")
+   
    for(i <- 0 to wholeAr.length-1){
      var a = wholeAr(i).subject
      var b = wholeAr(i)._3
    
-     varAr ++= ArrayBuffer(a,b)  
-          if ((abString == "") && (a == "?a")){
-       abString = "sub"+1
+     if ((abString == ("","")) && (a == "?a")){
+       abString = ("subject", "tp"+i)
      }
      
-     if ((abString == "") && (b == "?a")){
-       abString = "ob"+i
+     if ((abString == ("","")) && (b == "?a")){
+       abString = ("`object`", "tp"+i)
      }
      
+       checkSQLSELECT += "tp"+i+", "
+       
      
      
-     
+     varAr ++= ArrayBuffer(a,b)
      checkMap += (i -> Tuple2(a,b))
-    
-       if(!(tpMap.contains(a))){
-         tpMap += ((a) -> ArrayBuffer("sub"+ i))
+     
+     if(!(tpMap.contains(a))){
+       tpMap += ((a) -> ArrayBuffer(Tuple2(i,"subject")))
        
-       }
-       else {
-         var temp = tpMap.get(a).get 
-         temp += "sub"+i
-         tpMap.put(a, temp)
-       }
-     
-     
-     
-       if(!(tpMap.contains(b))){
-         tpMap += ((b) -> ArrayBuffer("ob"+i))
-         
-       }
-    
-       else{
-         var temp = tpMap.get(b).get 
-         temp += "ob"+i
-         tpMap.put(b, temp)
+     }
+     else {
+       var temp = tpMap.get(a).get 
+       temp += Tuple2(i,"subject")
+       tpMap.put(a, temp)
+     }
+     if(!(tpMap.contains(b))){
+       tpMap += ((b) -> ArrayBuffer(Tuple2(i,"`object`")))
        
-       }
-     
+     }
+    
+     else{
+       var temp = tpMap.get(b).get 
+       temp += Tuple2(i,"`object`")
+       tpMap.put(b, temp)
+       
+     }
    }
-   
+   checkSQLSELECT = checkSQLSELECT.stripSuffix(", ")
    
    var cloneTpAr = wholeAr.clone()
    
    var removedMap:Map[String, ArrayBuffer[Tuple2[Int,String]]] = Map()
    
     
-   
-   var checkSQLWHERE = ""
+   varAr = varAr.distinct
+   var checkSQLWHERE = "WHERE "
    checkMap.foreach{ab =>
      var a = ab._2._1
      var b = ab._2._2
@@ -1498,8 +1187,8 @@ for (f <-files){
        varAr -= a
        var x = tpMap.get(a).get
        for (k <- x){
-         if(k.takeRight(1).toInt != ab._1){
-           checkSQLWHERE += "sub"+ab._1+" = "+k+" AND "
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".subject = tp"+k._1+"."+k._2+" AND "
            
          }
          
@@ -1512,13 +1201,13 @@ for (f <-files){
      
      if (varAr.contains(b)){
        
-       varAr -= b
        
+       varAr -= b
        var y = tpMap.get(b).get
        
        for (k <- y){
-         if(k.takeRight(1).toInt != ab._1){
-           checkSQLWHERE += "ob"+ab._1+" = "+k+" AND "
+         if(k._1 != ab._1){
+           checkSQLWHERE += "tp"+ab._1+".`object` = tp"+k._1+"."+k._2+" AND "
           
          }
        }
@@ -1528,14 +1217,15 @@ for (f <-files){
    }
    
    checkSQLWHERE = checkSQLWHERE.stripSuffix(" AND ")
+  
    
    complete.registerTempTable("t")
-   var last = sqlContext.sql("SELECT * FROM t WHERE "+checkSQLWHERE)
+   var last = sqlContext.sql(checkSQLSELECT+" FROM t "+checkSQLWHERE)
    last.registerTempTable("lastTable")
  
    subjects.registerTempTable("keyTable")
    
-   var out = sqlContext.sql("SELECT * FROM lastTable JOIN keyTable ON lastTable."+abString+"=keyTable.sub")
+   var out = sqlContext.sql(checkSQLSELECT+" FROM lastTable JOIN keyTable ON lastTable."+abString._2+"."+abString._1+"=keyTable.sub")
    
    return out
    
@@ -1551,7 +1241,8 @@ for (f <-files){
 	 
 	 
 	 
-
+	 
+	//TODO: solve with DataFrames
 		def cardPlusnegativeExamplesLength(triplesCard: ArrayBuffer[RDFTriple], sc:SparkContext):Double={
       
     
@@ -1661,7 +1352,7 @@ for (f <-files){
       
     }
     
-    def addDanglingAtom(c: Int, id: Int, minHC:Double, rule: RuleContainer, sc: SparkContext, sqlContext:SQLContext): ArrayBuffer[Tuple3[RDFTriple, Int, Long]]= 
+    def addDanglingAtom(c: Int, id: Int, minHC:Double, rule: RuleContainer, sc: SparkContext, sqlContext:SQLContext):DataFrame= 
     {
       val tpAr = rule.getRule()
       var RXY:ArrayBuffer[Tuple2[String,String]] = new ArrayBuffer
@@ -1691,7 +1382,7 @@ for (f <-files){
     
     
     
-    def addClosingAtom(c: Int, id: Int, minHC: Double, rule: RuleContainer, sc: SparkContext, sqlContext:SQLContext):  ArrayBuffer[Tuple3[RDFTriple, Int, Long]] =
+    def addClosingAtom(c: Int, id: Int, minHC: Double, rule: RuleContainer, sc: SparkContext, sqlContext:SQLContext): DataFrame =
     {
       val tpAr = rule.getRule()
       var RXY:ArrayBuffer[Tuple2[String,String]] = new ArrayBuffer
@@ -1738,228 +1429,13 @@ for (f <-files){
     }
     
     
-    /*
     
-    def addInstantiatedAtom(id: Int, minHC:Double, rule: RuleContainer, sc: SparkContext, sqlContext:SQLContext): DataFrame ={
-      val tpAr = rule.getRule()
-     
-      var RXY:ArrayBuffer[Tuple2[String,String]] = new ArrayBuffer
-     
-      val notC = rule.notClosed()
-      
-      val variables = rule.getVariableList()
-      val freshVar = "?" + (rule.getHighestVariable() + 1).toChar.toString
-      
-      if (notC.isEmpty){
-        for(v <- variables){
-          RXY ++= ArrayBuffer(Tuple2(v,freshVar), Tuple2(freshVar, v))
-          
-        }
-      }
-      else{
-        for (nc <- notC.get){
-          RXY ++= ArrayBuffer(Tuple2(nc,freshVar), Tuple2(freshVar, nc))
-        }
-      }
-       
-       var x = this.countProjectionQueriesDFOI(id, minHC, tpAr, RXY, sc, sqlContext)
-      return x
-
-    }
+    
+   
     
 
-*/
-   def dfFromIndexingTable(wholeTpAr:ArrayBuffer[RDFTriple], sqlContext: SQLContext):DataFrame = {
-    
-    var name = calcName(wholeTpAr)
-    var df: DataFrame = sqlContext.read.option("mergeSchema", "false").parquet(hdfsPath+"precomputed"+(wholeTpAr.length - 1)+"/"+name)
-    
-    df.createOrReplaceTempView("dfTable")
-    
-    var checkSQLWHERE:String = ""
-    
-    for (w <- 0 to wholeTpAr.length -1){
-      checkSQLWHERE += "pr"+ w + "='" + wholeTpAr(w)._2 +"'"+ " AND "
-    }
-    
-    checkSQLWHERE = checkSQLWHERE.stripSuffix(" AND ")
-    
-    var filter = sqlContext.sql("SELECT * FROM dfTable WHERE "+ checkSQLWHERE)
-   
-    
-    return filter
-    
-    
-   }
-   
-   
-   
-    
-    def calcName(tpAr: ArrayBuffer[RDFTriple]):String={
-     var whole = tpAr.clone() 
       
-      
-      var countMap: Map[String,Int] = Map()
-      var numberMap: Map[String, Int] = Map()
-      var counter:Int = 1
-      for (w <- whole){
-        if (countMap.contains(w._1)){
-          var temp = countMap.remove(w._1).get +1
-          countMap += (w._1 -> temp)
-        }
-        else {
-          countMap += (w._1 -> 1)
-        }
-         if (countMap.contains(w._3)){
-          var temp = countMap.remove(w._3).get +1
-          countMap += (w._3 -> temp)
-        }
-        else {
-          countMap += (w._3 -> 1)
-        }
-         if (!(numberMap.contains(w._1))){
-           numberMap += (w._1 -> counter)
-           counter+= 1
-         }
-         if (!(numberMap.contains(w._3))){
-           numberMap += (w._3 -> counter)
-           counter+= 1
-         }
-        
-      }
-      
-      var out = ""
-      for (wh <- whole){
-        var a = ""
-        var b = ""
-        if (countMap(wh._1)>1){
-          a = numberMap(wh._1).toString
-        }
-        else {
-          a="0"
-        }
-        
-        if (countMap(wh._3)>1){
-          b = numberMap(wh._3).toString
-        }
-        else {
-          b="0"
-        }
-        
-        out += a + b + "_"
-      }
-      out = out.stripSuffix("_")
-      return out
-    } 
  
-   def plusNegativeExamplesIndexingTLength(tpAr: ArrayBuffer[RDFTriple], support: Double, sc:SparkContext, sqlContext: SQLContext):Double={
-	   this.dfTable.registerTempTable("kbTable")
-	  
-	 // var card = cardinality(tpAr, sc, sqlContext)
-	   var go = false
-	   var outCount: Double = 0.0
-	   var tpArBody = tpAr.clone()
-	   tpArBody.remove(0)
-	   
-	   var tpArBodyName = calcName(tpArBody)
-	   
-	   
-	   
-	   
-	    for (i <- 0 to tpArBody.length-1){
-	      if ((tpAr(i)._1=="?a")||(tpAr(i)._3=="?a")){
-	        go = true
-	      }
-	    }
-	   
-	   
-	   
-	   if (go){
-	     
-	     
-	   
-	   var bodyDf = dfFromIndexingTable(tpArBody, sqlContext)
-	   bodyDf.createOrReplaceTempView("bodyDfTable")
-	   
-	   
-	   
-	   var card = dfFromIndexingTable(tpAr, sqlContext)
-	   card.createOrReplaceTempView("cardTable")
-	   
-	   
-	   
-	 
-
-	   
-
-	   
-	    var subjects = sqlContext.sql("SELECT DISTINCT sub0 AS sub FROM cardTable")
-	   
-	  
-	   
-	   
-	
-	   
-	   
-
-	  
-	     var abString = ""
-	     
-	   for (i <- 0 to tpArBody.length -1){
-	     if ((abString == "") && (tpAr(i)._1 == "?a")){
-         abString = "sub"+i
-       }
-     
-       if ((abString == "") && (tpAr(i)._3 == "?a")){
-         abString = "ob"+i
-       }
-	   }
-     
-	   
-	   //h
-	    subjects.registerTempTable("keyTable")
-   
-    var out = sqlContext.sql("SELECT * FROM bodyDfTable JOIN keyTable ON bodyDfTable."+abString+"=keyTable.sub")
-	   //h
-     /*
-	     var o = sqlContext.sql("SELECT * FROM kbTable WHERE pr0='"+(tpAr(1)).predicate+"'")
-	      o.registerTempTable("twoLengthT")
-	      subjects.registerTempTable("subjects")
-	      out = sqlContext.sql("SELECT twoLengthT.sub0, twoLengthT.pr0, twoLengthT.ob0 FROM twoLengthT JOIN subjects ON twoLengthT."+abString+"=subjects.sub")
-	  
-	      
-	   if ((tpAr(0).predicate == "directed")&&(tpAr(1).predicate== "produced")&&(tpAr(1).subject== "?a")&&(tpAr(1)._3== "?b")){
-	     h.show(800, false)
-	     
-	     var fjgf = sqlContext.sql("SELECT ")
-	   }
-	   
-	   
-	   */
-	   
-	   
-	  outCount= out.count()
-	   }
-	   return outCount
-	   
-	   
-	   
-	 }
-    
-    
-    def nameString(tpAr: ArrayBuffer[RDFTriple]): String = {
-      	   var tpArString = ""
-	   for (tp <-tpAr){
-	     tpArString += tp.toString()
-	   
-	   }
-	   
-    tpArString = tpArString.replace(" ", "_").replace("?", "_") 
-    return tpArString
-    }
-    
-    
-    
     
   }
   

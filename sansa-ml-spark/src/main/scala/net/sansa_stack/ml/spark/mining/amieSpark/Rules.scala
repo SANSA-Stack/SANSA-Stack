@@ -135,7 +135,7 @@ object Rules {
            if ((this.rule.length-1) > 1){
            var body = this.rule.clone
            body.remove(0)
-           var mapList =k.dfFromIndexingTable(body, sqlContext)
+           var mapList =k.cardinality(body,sc,sqlContext)
            
            
            this.bodySize = mapList.count()
@@ -155,7 +155,7 @@ object Rules {
            
            if (this.rule.length > 1){
           
-             val mapList = k.dfFromIndexingTable(this.rule,sqlContext)
+             val mapList = k.cardinality(this.rule,sc,sqlContext)
            
            this.support = mapList.count()
            }
@@ -233,7 +233,7 @@ object Rules {
          set_pcaConfidenceEstimation(k: KB)
          if (this._pcaConfidenceEstimation> threshold){
            
-           this.pcaBodySize = k.plusNegativeExamplesIndexingTLength(tparr, support, sc, sqlContext)
+           this.pcaBodySize = k.cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
            
            if (this.pcaBodySize > 0.0){
              this.pcaConfidence = (support/pcaBodySize)
@@ -242,8 +242,8 @@ object Rules {
          
        }
        else{
-       //cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
-         this.pcaBodySize = k.plusNegativeExamplesIndexingTLength(tparr, support, sc, sqlContext)
+       
+         this.pcaBodySize = k.cardPlusnegativeExamplesLength(tparr,this.support,sc,sqlContext)
          if (this.pcaBodySize > 0.0){
            this.pcaConfidence = (support/pcaBodySize)
          }
@@ -258,12 +258,11 @@ object Rules {
        return this.pcaConfidence
      }
      
-     def setPcaBodySize(k: KB, sc:SparkContext, sqlContext: SQLContext){
+     def setPcaBodySize(k: KB, sc:SparkContext){
        val tparr = this.rule
        
        
-       val out = k.plusNegativeExamplesIndexingTLength(tparr, support, sc, sqlContext)
-       //cardPlusnegativeExamplesLength(tparr,sc)
+       val out = k.cardPlusnegativeExamplesLength(tparr,sc)
       
        
        
@@ -307,6 +306,18 @@ object Rules {
          
              var filtered = rel.filter(x => (x._1.length == r.length-1)) 
           
+            /* 
+             for (f <- filtered){
+               var bool = true
+               for (ff <- f._1){
+                 if (!(r.contains(ff))){
+                   bool = false
+                 }
+               }
+               if (bool){
+                 parents += f._2
+               }
+             }*/
              
                
                for (l <- 1 to r.length-1){
@@ -321,6 +332,7 @@ object Rules {
                }
                
              
+           
            
            return parents
            
@@ -537,49 +549,7 @@ object Rules {
          }
          
       
-         
-          def samePartialRule(x: ArrayBuffer[RDFTriple], y: ArrayBuffer[RDFTriple]):Boolean={
-           var varMap: Map[String,String] = Map()
-           
-           var a:ArrayBuffer[RDFTriple] = new ArrayBuffer 
-         var b:ArrayBuffer[RDFTriple] = new ArrayBuffer 
-         
-           if ( x.length <=  y.length){
-            a = x
-            b = y
-         }
-         else{
-           a = y
-           b = x
-           
-         }
-           
-           
-             for(i <- 0 to a.length-1){
-               if (a(i)._2 != b(i)._2){return false}
-               
-               if (!(varMap.contains(a(i)._1))){ 
-                       varMap += (a(i)._1 -> b(i)._1)
-                     }
-                  
-                   if (!(varMap.contains(a(i)._3))){ 
-                       varMap += (a(i)._3 -> b(i)._3)
-                     }
-                   
-                    
-                      if (!((varMap.get(a(i)._1)==Some(b(i)._1)) && (varMap.get(a(i)._3)==Some(b(i)._3)))){
-                        return false 
-                      } 
-             
-               
-             
-           }
-           
-           
-           
-           
-           return true
-         }     
+   
          
          def sort(tp:ArrayBuffer[RDFTriple]):ArrayBuffer[RDFTriple]={
            var out = ArrayBuffer(tp(0))

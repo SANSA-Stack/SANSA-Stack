@@ -15,7 +15,7 @@ import net.sansa_stack.ml.spark.mining.amieSpark._
 object DfLoader {
   private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
   
-    case class Atom (sub0:String, pr0:String, ob0:String )
+    case class Atom (rdf:RDFTriple)
    
    def loadFromFileDF(path: String, sc: SparkContext, sqlContext:SQLContext, minPartitions: Int = 2): DataFrame = {
    logger.info("loading triples from disk...")
@@ -31,7 +31,7 @@ object DfLoader {
    val triples =
       sc.textFile(path, minPartitions)
         .map(line => line.replace("<", "").replace(">", "").split("\\s+")) // line to tokens
-        .map(tokens => Atom(tokens(0), tokens(1), tokens(2).stripSuffix(".")))// tokens to triple
+        .map(tokens => Atom(RDFTriple(tokens(0), tokens(1), tokens(2).stripSuffix("."))))// tokens to triple
         .toDF()
          //val triples = sqlContext.createDataFrame(x, y)
      logger.info("finished loading DF " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
