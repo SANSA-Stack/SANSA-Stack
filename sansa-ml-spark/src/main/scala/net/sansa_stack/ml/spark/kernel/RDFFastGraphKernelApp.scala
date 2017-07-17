@@ -4,16 +4,12 @@ import java.io.File
 
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleRDD
+import org.apache.jena.graph
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
-import org.apache.spark.sql.types.{StructField, StructType}
-import org.apache.spark.sql.{Row, SparkSession}
-import org.apache.spark.SparkContext._
-
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest}
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.rdd.RDD
 
 
 object RDFFastGraphKernelApp {
@@ -27,30 +23,8 @@ object RDFFastGraphKernelApp {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-    testSample(sparkSession)
-//    experimentAffiliationPrediction(sparkSession)
+    experimentAffiliationPrediction(sparkSession)
 
-
-    sparkSession.stop
-  }
-
-
-
-  def testSample(sparkSession: SparkSession): Unit = {
-//    val input = "sansa-ml-spark/src/main/resources/kernel/sample.nt"
-    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
-
-    val tripleRDD = new TripleRDD(NTripleReader.load(sparkSession, new File(input)))
-    val propertyToPredict = "http://swrc.ontoware.org/ontology#affiliation"
-
-
-    tripleRDD.filterPredicates(_.equals(propertyToPredict)).foreach(println(_))
-
-//    val propertyToPredict = ""
-
-//    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, 4, propertyToPredict)
-//    rdfFastGraphKernel.showDataSets()
-//    val data = rdfFastGraphKernel.computeLabeledFeatureVectors()
 
     sparkSession.stop
   }
@@ -61,40 +35,73 @@ object RDFFastGraphKernelApp {
     //    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_complete.nt"
     val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
 
-    val tripleRDD = new TripleRDD(NTripleReader.load(sparkSession, new File(input)))
-    val filteredRDD = new TripleRDD(tripleRDD.filterPredicates(!_.equals("http://swrc.ontoware.org/ontology#employs")))
 
-    val propertyToPredict = "http://swrc.ontoware.org/ontology#affiliation"
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val tripleRDD: TripleRDD = new TripleRDD(triples)
 
-    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, filteredRDD, 2, propertyToPredict)
-    rdfFastGraphKernel.showDataSets()
-    val data = rdfFastGraphKernel.computeLabeledFeatureVectors()
+    // it should be in Scala Iterable, to make sure setting unique indices
+    tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://swrc.ontoware.org/ontology#affiliation")
+        .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
+    tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://swrc.ontoware.org/ontology#employs")
+      .foreach(f => Uri2Index.setInstanceAndLabel(f.getObject.toString, f.getSubject.toString))
 
-
-
-
-        // Some stuff for SVM:
-
-        // Split data into training (60%) and test (40%).
-    val splits = data.randomSplit(Array(0.09, 0.01, 0.09, 0.01, 0.09, 0.01), seed = 11L)
-    val training = splits(0).cache()
-    val test = splits(1)
-
-    println("data")
-    println(data.count())
-//    data.foreach(println(_))
-    println("training")
-    println(training.count())
-//    training.foreach(println(_))
-    println("test")
-    println(test.count())
-//    test.foreach(println(_))
-
-    //val numIterations = 100
-    //val model = SVMWithSGD.train(training, numIterations)
+    val filteredTripleRDD: TripleRDD = new TripleRDD(triples
+      .filter(_.getPredicate.getURI != "http://swrc.ontoware.org/ontology#affiliation")
+      .filter(_.getPredicate.getURI != "http://swrc.ontoware.org/ontology#employs")
+    )
 
 
-    sparkSession.stop
+    // TODO: remove instances which belongs the least class
+    val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
+//    instanceDF.show(20)
+//    instanceDF.printSchema()
+
+
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, 2)
+    rdfFastGraphKernel.computeFeatures()
+    val data = rdfFastGraphKernel.getMLFeatureVectors
+
+    predictMultiClassProcess(data)
+  }
+
+
+
+
+  def predictMultiClassProcess(data: DataFrame): Unit = {
+    // Some stuff for SVM:
+
+    // Split data into training and test.
+    val splits: Array[Dataset[Row]] = data.randomSplit(Array(0.4, 0.1, 0.4, 0.1), seed = 11L)
+    val training: Dataset[Row] = splits(0)
+    val test: Dataset[Row] = splits(1)
+
+    println("training, test count", training.count(), test.count())
+
+
+    val classifier = new LogisticRegression()
+      .setMaxIter(10)
+      .setTol(1E-6)
+      .setFitIntercept(true)
+
+
+    // instantiate the One Vs Rest Classifier.
+    val ovr = new OneVsRest().setClassifier(classifier)
+
+    // train the multiclass model.
+    val ovrModel = ovr.fit(training)
+
+    // score the model on test data.
+    val predictions = ovrModel.transform(test)
+
+    // obtain evaluator.
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setMetricName("accuracy")
+
+    // compute the classification error on test data.
+    val accuracy = evaluator.evaluate(predictions)
+    println(s"Test Error = ${1 - accuracy}")
+
+
   }
 
 }
