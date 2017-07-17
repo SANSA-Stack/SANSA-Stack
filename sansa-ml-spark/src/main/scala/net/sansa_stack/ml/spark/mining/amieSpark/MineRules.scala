@@ -15,7 +15,6 @@ import scala.util.Try
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 
-
 import net.sansa_stack.ml.spark.mining.amieSpark.DfLoader.Atom
 
 object MineRules {
@@ -38,58 +37,52 @@ object MineRules {
     val minConf = mCon
     val hdfsPath = hdfsP
 
-def calcName(whole: ArrayBuffer[RDFTriple]):String={
-    
-      
-      
-      var countMap: Map[String,Int] = Map()
+    def calcName(whole: ArrayBuffer[RDFTriple]): String = {
+
+      var countMap: Map[String, Int] = Map()
       var numberMap: Map[String, Int] = Map()
-      var counter:Int = 1
-      for (w <- whole){
-        if (countMap.contains(w._1)){
-          var temp = countMap.remove(w._1).get +1
+      var counter: Int = 1
+      for (w <- whole) {
+        if (countMap.contains(w._1)) {
+          var temp = countMap.remove(w._1).get + 1
           countMap += (w._1 -> temp)
-        }
-        else {
+        } else {
           countMap += (w._1 -> 1)
         }
-         if (countMap.contains(w._3)){
-          var temp = countMap.remove(w._3).get +1
+        if (countMap.contains(w._3)) {
+          var temp = countMap.remove(w._3).get + 1
           countMap += (w._3 -> temp)
-        }
-        else {
+        } else {
           countMap += (w._3 -> 1)
         }
-         if (!(numberMap.contains(w._1))){
-           numberMap += (w._1 -> counter)
-           counter+= 1
-         }
-         if (!(numberMap.contains(w._3))){
-           numberMap += (w._3 -> counter)
-           counter+= 1
-         }
-        
+        if (!(numberMap.contains(w._1))) {
+          numberMap += (w._1 -> counter)
+          counter += 1
+        }
+        if (!(numberMap.contains(w._3))) {
+          numberMap += (w._3 -> counter)
+          counter += 1
+        }
+
       }
-      
+
       var out = ""
-      for (wh <- whole){
+      for (wh <- whole) {
         var a = ""
         var b = ""
-        if (countMap(wh._1)>1){
+        if (countMap(wh._1) > 1) {
           a = numberMap(wh._1).toString
+        } else {
+          a = "0"
         }
-        else {
-          a="0"
-        }
-        
-        if (countMap(wh._3)>1){
+
+        if (countMap(wh._3) > 1) {
           b = numberMap(wh._3).toString
+        } else {
+          b = "0"
         }
-        else {
-          b="0"
-        }
-        
-        out += a +"_"+wh._2 + "_" + b + "_"
+
+        out += a + "_" + wh._2 + "_" + b + "_"
       }
       out = out.stripSuffix("_")
       return out
@@ -169,7 +162,7 @@ def calcName(whole: ArrayBuffer[RDFTriple]):String={
 
           }
 
-        } else if ((i > 0) &&((dataFrameRuleParts == null)|| (dataFrameRuleParts.isEmpty()))) {
+        } else if ((i > 0) && ((dataFrameRuleParts == null) || (dataFrameRuleParts.isEmpty()))) {
           q = new ArrayBuffer
         }
 
@@ -214,8 +207,6 @@ def calcName(whole: ArrayBuffer[RDFTriple]):String={
       return out
     }
 
-
-
     /**
      * exploring the search space by iteratively extending rules using a set of mining operators:
      * - add dangling atom
@@ -233,14 +224,14 @@ def calcName(whole: ArrayBuffer[RDFTriple]):String={
       var temp = 0
 
       val tpAr = r.getRule()
-      
+
       var stringSELECT = ""
       for (tp <- 0 to tpAr.length - 1) {
-        
+
         stringSELECT += "tp" + tp + ", "
 
       }
-     
+
       stringSELECT += "tp" + tpAr.length
 
       var z: Try[Row] = null
@@ -287,13 +278,12 @@ def calcName(whole: ArrayBuffer[RDFTriple]):String={
           OUT = OUT.union(o)
         }
 
-
       }
 
       return OUT
 
     }
-    
+
     /**
      * checks if rule is a useful output
      *
