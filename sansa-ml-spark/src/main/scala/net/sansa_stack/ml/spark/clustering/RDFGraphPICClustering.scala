@@ -4,7 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.clustering.{ PowerIterationClusteringModel, PowerIterationClustering }
 import org.apache.spark.graphx.{ Graph, EdgeDirection }
 import scala.math.BigDecimal
-import org.apache.commons.math.util.MathUtils
+import org.apache.commons.math3.util.MathUtils
 import org.apache.spark.sql.SparkSession
 
 class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
@@ -17,140 +17,177 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
   }
 
   /*
-   * Computes different similarities function for a given graph @graph.
-   */
+	 * Computes different similarities function for a given graph @graph.
+	 */
   def SimilaritesInPIC(): RDD[(Long, Long, Double)] = {
-    //****************************************************************************************************
-    //****collect the edges***************
-    val edg = graph.edges.collect()
-    var simJaccard = 0.0
-
-    //***** collecting neighbors**********
-    val neighbor = graph.collectNeighborIds(EdgeDirection.Either)
-
-    //************************************
-
-    val vertex = graph.vertices.distinct()
-    val v1 = vertex.id
-
-    // ***********************jaccard similarity function ************************************
-    def jaccard[A](a: Set[A], b: Set[A]): Double = {
-
-      if (a.isEmpty || b.isEmpty) { return 0.0 }
-      a.intersect(b).size / a.union(b).size.toDouble
-    }
-    //**************************************************************
-
-    //*********** similarity of Strategies based on Information Theory****************************
-
-    val c = vertex.count()
-    var icc = 0.0
-    val logC = MathUtils.log(10.0, c.toDouble)
-
-    def informationContent(a: Long): Double = {
-      if (a == 0) { return 0.0 }
-      1 - (MathUtils.log(10.0, a.toDouble) / logC)
-
-    }
-    //val ic = informationContent(vertexId)
-
-    def ic(a: Long): Double = {
-      val d = neighbor.lookup(a).distinct.head.toSet
-      if (d.isEmpty) { return 0.0 }
-      else {
-        val iC = d.size.toLong
-        val sumIC = informationContent(iC)
-        return sumIC.abs
-      }
-    }
-
-    def mostICA(a: Long, b: Long): Double = {
-
-      val an = neighbor.lookup(a).distinct.head.toSet
-      val an1 = neighbor.lookup(b).distinct.head.toSet
-      if (an.isEmpty || an1.isEmpty) { return 0.0 }
-      val int = an.intersect(an1).toArray
-      if (int.isEmpty) { return 0.0 }
-      else {
-        val icmica = int.size.toLong
-        val sumMICA = informationContent(icmica)
-        return sumMICA
-      }
-
-    }
-    //******************************************************* Lin similarity ***************************************************************
-    def simLin(e: Long, d: Long): Double = {
-      if (ic(e) > 0.0 || ic(d) > 0.0) {
-        (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
-      } else { return 0.0 }
-    }
-    //***************************************************************************************************
-    //difference of 2 sets : uses in below similarities
-    def n(a: Long, b: Long): Double = {
-      val ansec = neighbor.lookup(a).distinct.head.toSet
-      val ansec1 = neighbor.lookup(b).distinct.head.toSet
+    /*
+	 * Collect all the edges of the graph
+	*/
+    val edge = graph.edges.collect()
+    /*
+	 * Collect neighbor IDs of all the vertices
+	 */
+    val neighbors = graph.collectNeighborIds(EdgeDirection.Either)
+    /*
+	 * Collect distinct vertices of the graph
+	 */
+    val vertices = graph.vertices.distinct()
+    /*
+	 * Difference between two set of vertices, used in different similarity measures
+	 */
+    def difference(a: Long, b: Long): Double = {
+      val ansec = neighbors.lookup(a).distinct.head.toSet
+      val ansec1 = neighbors.lookup(b).distinct.head.toSet
       if (ansec.isEmpty) { return 0.0 }
       val differ = ansec.diff(ansec1)
       if (differ.isEmpty) { return 0.0 }
 
       differ.size.toDouble
     }
-    // intersection of 2 sets
-    def in(a: Long, b: Long): Double = {
-      val inters = neighbor.lookup(a).distinct.head.toSet
-      val inters1 = neighbor.lookup(b).distinct.head.toSet
+
+    /*
+	 * Intersection of two set of vertices, used in different similarity measures
+	 */
+    def intersection(a: Long, b: Long): Double = {
+      val inters = neighbors.lookup(a).distinct.head.toSet
+      val inters1 = neighbors.lookup(b).distinct.head.toSet
       if (inters.isEmpty || inters1.isEmpty) { return 0.0 }
       val rst = inters.intersect(inters1).toArray
+      if (rst.isEmpty) { return 0.0 }
+      rst.size.toDouble
+    }
+
+    /*
+			 * Union of two set of vertices, used in different similarity measures
+			 */
+    def union(a: Long, b: Long): Double = {
+      val inters = neighbors.lookup(a).distinct.head.toSet
+      val inters1 = neighbors.lookup(b).distinct.head.toSet
+      val rst = inters.union(inters1).toArray
       if (rst.isEmpty) { return 0.0 }
 
       rst.size.toDouble
     }
-    //logarithm base 2 
+    // Logarithm base 2 
     val LOG2 = math.log(2)
-
     val log2 = { x: Double => math.log(x) / LOG2 }
-    //************************************ Batet similarity*********************************************************
-    def simBatet(a: Long, b: Long): Double = {
-      val cal = 1 + ((n(a, b) + n(b, a)) / (n(a, b) + n(b, a) + in(a, b))).abs
-      log2(cal.toDouble)
+
+    val vertexCount = vertices.count()
+
+    // Similarity based on Information Theory
+
+    var icc = 0.0
+    //val logC = MathUtils.log(10.0, vertexCount.toDouble)
+    val logC = math.log(vertexCount.toDouble)
+
+    def informationContent(a: Long): Double = {
+      if (a == 0) { return 0.0 }
+      //      1 - (MathUtils.log(10.0, a.toDouble) / logC)
+      1 - (math.log(a.toDouble) / logC)
+
     }
 
-    //************************************************* Rodríguez and Egenhofer similarity***********************************
-    var g = 0.5
-    def simRE(a: Long, b: Long): Double = {
-      (in(a, b) / ((g * n(a, b)) + ((1 - g) * n(b, a)) + in(a, b))).toDouble.abs
-    }
-    //************************************************************the contrast model similarity****************************************
-    var y = 0.3
-    var al = 0.3
-    var be = 0.3
-    def simCM(a: Long, b: Long): Double = {
-      ((y * in(a, b)) - (al * n(a, b)) - (be * n(b, a))).toDouble.abs
-    }
+    def sigmaIc(a: List[Long]): Double = {
+      var sigma = 0.0
+      for (k <- 0 until a.length) yield {
+        val d = neighbors.lookup(a(k)).distinct.head.toSet
+        val s = informationContent(d.size.toLong)
+        sigma = sigma.+(s)
 
-    //********************************************************the ratio model similarity***********************************************************
-    var alph = 0.5
-    var beth = 0.5
-    def simRM(a: Long, b: Long): Double = {
-      ((in(a, b)) / ((alph * n(a, b)) + (beth * n(b, a)) + in(a, b))).toDouble.abs
+      }
+
+      sigma
+
     }
 
-    //*************************************************************************************************************************
+    def ic(a: Long): Double = {
+      val d = neighbors.lookup(a).distinct.head.toSet
+      if (d.isEmpty) { return 0.0 }
+      else {
 
-    val ver = edg.map { x =>
-      {
-        val x1 = x.dstId.toLong
-        val x2 = x.srcId.toLong
-        val allneighbor = neighbor.lookup(x1).distinct.head
-        val allneighbor1 = neighbor.lookup(x2).distinct.head
-
-        simJaccard = (jaccard(allneighbor.toSet, allneighbor1.toSet))
-        // below for applying jaccard similarity use "simi" and for applying similarity of Strategies based on Information Theory use "sim(x1,x2).abs"          
-        (x1, x2, simBatet(x1, x2).abs)
+        return sigmaIc(d.toList)
       }
     }
 
-    ver.foreach { x => println(x) }
+    def mostICA(a: Long, b: Long): Double = {
+
+      val an = neighbors.lookup(a).distinct.head.toSet
+      val an1 = neighbors.lookup(b).distinct.head.toSet
+      if (an.isEmpty || an1.isEmpty) { return 0.0 }
+      val commonNeighbor = an.intersect(an1).toArray
+
+      if (commonNeighbor.isEmpty) { return 0.0 }
+      else {
+        return sigmaIc(commonNeighbor.toList)
+      }
+
+    }
+
+    /*
+			 * Lin similarity measure 
+			 */
+    def simLin(e: Long, d: Long): Double = {
+      if (ic(e) > 0.0 || ic(d) > 0.0) {
+        (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
+      } else { return 0.0 }
+    }
+
+    /*
+			 * Jaccard similarity measure 
+			 */
+    def simJaccard(a: Long, b: Long): Double = {
+      intersection(a, b) / union(a, b).toDouble
+
+    }
+    /*
+			 * Batet similarity measure 
+			 */
+    def simBatet(a: Long, b: Long): Double = {
+      val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
+      log2(cal.toDouble)
+    }
+    /*
+			 * Rodríguez and Egenhofer similarity measure
+			 */
+
+    var g = 0.8
+    def simRE(a: Long, b: Long): Double = {
+      (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
+    }
+    /*
+			 * The Contrast model similarity
+			 */
+    var gamma = 0.3
+    var alpha = 0.3
+    var beta = 0.3
+    def simCM(a: Long, b: Long): Double = {
+      ((gamma * intersection(a, b)) - (alpha * difference(a, b)) - (beta * difference(b, a))).toDouble.abs
+    }
+    /*
+			 * The Ratio model similarity
+			 */
+    var alph = 0.5
+    var beth = 0.5
+    def simRM(a: Long, b: Long): Double = {
+      ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
+    }
+
+    /*
+			 * Calculate similarities between different pair of vertices in the given graph
+			 */
+
+    val ver = edge.map { x =>
+      {
+        val x1 = x.dstId.toLong
+        val x2 = x.srcId.toLong
+        val allneighbor = neighbors.lookup(x1).distinct.head
+        val allneighbor1 = neighbors.lookup(x2).distinct.head
+        //(x1, x2, jaccard(x1, x2).abs)
+        //(x1, x2, simBatet(x1, x2).abs)
+        (x1, x2, simRE(x1, x2).abs)
+      }
+    }
+
     sparkSession.sparkContext.parallelize(ver)
   }
 
@@ -164,20 +201,20 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
   def model = pic.run(clusterRdd())
 
   /*
-   * Cluster the graph data into two classes using PowerIterationClustering
-   */
+			 * Cluster the graph data into two classes using PowerIterationClustering
+			 */
   def run() = model
 
   /*
-   * Save the model.
-   * @path - path for a model.
-   */
+			 * Save the model.
+			 * @path - path for a model.
+			 */
   def save(path: String) = model.save(sparkSession.sparkContext, path)
 
   /*
-   * Load the model.
-   * @path - the given model.
-   */
+			 * Load the model.
+			 * @path - the given model.
+			 */
   def load(path: String) = PowerIterationClusteringModel.load(sparkSession.sparkContext, path)
 
 }

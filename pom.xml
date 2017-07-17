@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-ml-parent</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<artifactId>sansa-ml-parent_2.11</artifactId>
+	<version>0.2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>ML API - Parent</name>
 	<description>RDF/OWL Machine Learning Library for Big Data</description>
@@ -59,8 +59,9 @@
 		<scala.version>2.11.8</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
 		<spark.version>2.1.1</spark.version>
-		<flink.version>1.2.1</flink.version>
+		<flink.version>1.3.0</flink.version>
 		<jena.version>3.1.1</jena.version>
+		<sansa.version>0.2.0</sansa.version>
 	</properties>
 
 	<dependencyManagement>
@@ -70,6 +71,19 @@
 				<groupId>org.scala-lang</groupId>
 				<artifactId>scala-library</artifactId>
 				<version>${scala.version}</version>
+			</dependency>
+
+			<!-- SANSA RDF -->
+			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-rdf-spark-core_${scala.binary.version}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+			<!-- SANSA OWL -->
+			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- Apache Spark Core -->
@@ -98,6 +112,11 @@
 			<dependency>
 				<groupId>org.apache.flink</groupId>
 				<artifactId>flink-clients_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-gelly-scala_${scala.binary.version}</artifactId>
 				<version>${flink.version}</version>
 			</dependency>
 
@@ -234,6 +253,17 @@
 			<url>https://repository.apache.org/content/repositories/snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 		<repository>

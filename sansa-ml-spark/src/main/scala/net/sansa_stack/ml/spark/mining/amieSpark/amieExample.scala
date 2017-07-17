@@ -27,17 +27,18 @@ object amieExample {
 
     .master("spark://172.18.160.16:3077")
       .appName("SPARK Reasoning")
-    .config("spark.sql.warehouse.dir", "file:///data/home/MohamedMami/spark-2.1.0-bin-hadoop2.7/bin/spark-warehouse")
+    .config("spark.sql.warehouse.dir", "/spark-2.1.0-bin-hadoop2.7/bin/spark-warehouse")
     
    
     .getOrCreate()
  
     
-  val hdfsPath:String = args(0)
-  
-  val outputPath =hdfsPath
-  val inputFile = hdfsPath + args(1)
-    
+
+  val hdfsPath:String = "<hdfspath>"
+   // val hdfsPath = "file:///data/home/TheresaNathan/"  
+  val outputPath = "file:///data/home/TheresaNathan/"  
+  val inputFile = "/shortTest.tsv"    
+
   
   
   

@@ -1,6 +1,9 @@
 # SANSA-ML
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-ml-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-ml-parent_2.11)
+[![Build Status](https://ci.aksw.org/jenkins/job/SANSA-ML/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA-ML//job/develop/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-SANSA-ML is the Machine Learning (ML) library in the SANSA stack (see http://sansa-stack.net). Algorithms in this repository perform various machine learning tasks directly on [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework)/[OWL](https://en.wikipedia.org/wiki/Web_Ontology_Language) input data. While most machine learning algorithms are based on processing simple features, the machine learning algorithms in SANSA-ML exploit the graph structure and semantics of the background knowledge specified using the RDF and OWL standards. In many cases, this allows to obtain either more accurate or more human-understandable results. In contrast to most other algorithms supporting background knowledge, they scale horizontally using [Apache Spark](https://spark.apache.org). 
+SANSA-ML is the Machine Learning (ML) library in the SANSA stack (see http://sansa-stack.net). Algorithms in this repository perform various machine learning tasks directly on [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework)/[OWL](https://en.wikipedia.org/wiki/Web_Ontology_Language) input data. While most machine learning algorithms are based on processing simple features, the machine learning algorithms in SANSA-ML exploit the graph structure and semantics of the background knowledge specified using the RDF and OWL standards. In many cases, this allows to obtain either more accurate or more human-understandable results. In contrast to most other algorithms supporting background knowledge, they scale horizontally using [Apache Spark](https://spark.apache.org).
 
 The ML layer currently supports the following algorithms:
 * RDF graph clustering
@@ -14,5 +17,3 @@ RDFByModularityClustering(sparkSession.sparkContext, numIterations, input, outpu
 Please see https://github.com/SANSA-Stack/SANSA-Examples/tree/master/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml for further examples.
 
 Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
-
-Support for [Apache Flink](https://flink.apache.org) is planned in future releases.
