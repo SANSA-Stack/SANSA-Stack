@@ -30,7 +30,7 @@ object Uri2Index {
     if (uri2label.keys.exists(_.equals(labelUri))) {
       label = uri2label(labelUri)
     } else {
-      label = (uri2label.size + 1).toDouble
+      label = (uri2label.size).toDouble
       uri2label += (labelUri -> label)
       label2uri += (label -> labelUri)
     }
@@ -158,7 +158,7 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
     * */
     val dataML: DataFrame = computeFeatures()
     val dataForML: DataFrame = dataML.drop("instance").drop("paths")
-
+    Uri2Index.label2uri.foreach(println(_))
     dataForML
   }
 
@@ -172,7 +172,7 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
           val features = f.getAs[SparseVector](1)
           LabeledPoint(label, features)
         }
-
+    
     dataForMLLib
   }
 

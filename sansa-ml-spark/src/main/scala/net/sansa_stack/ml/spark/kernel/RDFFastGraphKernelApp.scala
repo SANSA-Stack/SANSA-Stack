@@ -11,6 +11,10 @@ import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.rdd.RDD
 
+import org.apache.spark.mllib.classification.{LogisticRegressionWithLBFGS}
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.ml.tuning.CrossValidator
+
 
 object RDFFastGraphKernelApp {
 
@@ -32,8 +36,8 @@ object RDFFastGraphKernelApp {
 
 
   def experimentAffiliationPrediction(sparkSession: SparkSession): Unit = {
-    //    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_complete.nt"
-    val input = "sansa-ml-spark/src/main/resources/kernel/aifb-fixed_no_schema.nt"
+   //val input = "src/main/resources/kernel/aifb-fixed_complete4.nt"
+   val input = "src/main/resources/kernel/aifb-fixed_no_schema4.nt"
 
 
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
@@ -57,16 +61,73 @@ object RDFFastGraphKernelApp {
 //    instanceDF.printSchema()
 
 
-    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, 2)
+    //val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, 2)
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, filteredTripleRDD, instanceDF, 2)
     rdfFastGraphKernel.computeFeatures()
-    val data = rdfFastGraphKernel.getMLFeatureVectors
-
-    predictMultiClassProcess(data)
+    //val data = rdfFastGraphKernel.getMLFeatureVectors
+    //data.show(1000)
+    val data = rdfFastGraphKernel.getMLLibLabeledPoints
+    //println("MLLIB")
+    //data.foreach(println(_))
+    var testerr = 0.0
+    for(seed <- 1 to 10){
+      testerr += predictMultiClassProcessMLLIB(data,seed)
+    }
+    println("AVERAGE ERROR")
+    println(testerr/10)
   }
 
+def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Double = {
+    // Some stuff for SVM:
+
+    // Split data into training and test.
+    val splits: Array[RDD[LabeledPoint]] = data.randomSplit(Array(0.9, 0.1), seed)
+    val training: RDD[LabeledPoint] = splits(0)
+    val test: RDD[LabeledPoint] = splits(1)
+
+    println("training, test count", training.count(), test.count())
 
 
+    //val classifier = new LogisticRegression()
+    //  .setMaxIter(10)
+    //  .setTol(1E-6)
+    //  .setFitIntercept(true)
+    
+    val ovrModel = new LogisticRegressionWithLBFGS().setNumClasses(4).run(training)
 
+
+    // instantiate the One Vs Rest Classifier.
+    //val ovr = new OneVsRest().setClassifier(classifier)
+
+    // train the multiclass model.
+    //val ovrModel = ovr.fit(training)
+
+    // score the model on test data.
+    //val predictions = ovrModel.transform(test)
+    val predictions = test.map{ point =>
+      val prediction = ovrModel.predict(point.features)
+      (point.label, prediction)
+    }
+    //println("show test")
+    //test.show(20)
+    println("show predictions")
+    val trainErr = predictions.filter(f => f._1 != f._2).count.toDouble/test.count
+    predictions.foreach(println(_))
+    println(trainErr)
+    println(predictions.filter(f => f._1 != f._2).count.toDouble)
+    println(test.count)
+    // obtain evaluator.
+    //val evaluator = new MulticlassClassificationEvaluator()
+    //  .setMetricName("accuracy")
+
+    // compute the classification error on test data.
+    //val accuracy = evaluator.evaluate(predictions)
+    //println(s"Test Error = ${1 - accuracy}")
+
+    trainErr
+  }
+
+/*
   def predictMultiClassProcess(data: DataFrame): Unit = {
     // Some stuff for SVM:
 
@@ -78,20 +139,27 @@ object RDFFastGraphKernelApp {
     println("training, test count", training.count(), test.count())
 
 
-    val classifier = new LogisticRegression()
-      .setMaxIter(10)
-      .setTol(1E-6)
-      .setFitIntercept(true)
+    //val classifier = new LogisticRegression()
+    //  .setMaxIter(10)
+    //  .setTol(1E-6)
+    //  .setFitIntercept(true)
+    
+    val ovrModel = new LogisticRegressionWithLBFGS().setNumClasses(5).run(training)
 
 
     // instantiate the One Vs Rest Classifier.
-    val ovr = new OneVsRest().setClassifier(classifier)
+    //val ovr = new OneVsRest().setClassifier(classifier)
 
     // train the multiclass model.
-    val ovrModel = ovr.fit(training)
+    //val ovrModel = ovr.fit(training)
 
     // score the model on test data.
-    val predictions = ovrModel.transform(test)
+    //val predictions = ovrModel.transform(test)
+    val predictions = ovrModel.transform(training)
+    println("show test")
+    test.show(20)
+    println("show predictions")
+    predictions.show(200)
 
     // obtain evaluator.
     val evaluator = new MulticlassClassificationEvaluator()
@@ -103,5 +171,5 @@ object RDFFastGraphKernelApp {
 
 
   }
-
+*/
 }
