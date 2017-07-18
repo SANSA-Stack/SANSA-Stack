@@ -26,6 +26,7 @@ object SchemaCompleteness {
     val p2_o = dataset.filter(f =>
       f.getPredicate.getLiteralLexicalForm.contains("rdf:type")
         && f.getObject.isURI()).cache()
+        
     val S = p2_o.map(_.getPredicate).distinct()
     val SC = p2_o.map(_.getObject).distinct()
     val S_intersection_SC = S.intersection(SC).distinct()

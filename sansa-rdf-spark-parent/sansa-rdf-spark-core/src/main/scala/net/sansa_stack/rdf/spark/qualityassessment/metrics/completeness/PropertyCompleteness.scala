@@ -16,7 +16,7 @@ object PropertyCompleteness {
   @transient var spark: SparkSession = _
   val subject = DatasetUtils.getSubjectClassURI()
   val property = DatasetUtils.getPropertyURI()
-
+  
   def apply(dataset: RDD[Triple]) = {
 
     /*
