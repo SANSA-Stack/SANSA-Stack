@@ -11,7 +11,7 @@ import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.rdd.RDD
 
-import org.apache.spark.mllib.classification.{LogisticRegressionWithLBFGS}
+import org.apache.spark.mllib.classification.{LogisticRegressionWithLBFGS,LogisticRegressionWithSGD}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.ml.tuning.CrossValidator
 
@@ -27,8 +27,8 @@ object RDFFastGraphKernelApp {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-    experimentAffiliationPrediction(sparkSession)
-
+    //experimentAffiliationPrediction(sparkSession)
+    experimentThemePrediction(sparkSession)
 
     sparkSession.stop
   }
@@ -76,8 +76,62 @@ object RDFFastGraphKernelApp {
     println("AVERAGE ERROR")
     println(testerr/10)
   }
+  
+  def experimentThemePrediction(sparkSession: SparkSession): Unit = {
+   //val input = "src/main/resources/kernel/aifb-fixed_complete4.nt"
+    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t10.nt"
 
-def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Double = {
+
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val tripleRDD: TripleRDD = new TripleRDD(triples)
+
+    // it should be in Scala Iterable, to make sure setting unique indices
+    println("Set Instance And Label")
+    val t0 = System.nanoTime()
+    tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
+        .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
+    val t1 = System.nanoTime()
+    println("Elapsed time: " + (t1 - t0) + "ns")
+    println("Filter Triple RDD")
+    val filteredTripleRDD: TripleRDD = new TripleRDD(triples
+      .filter(_.getPredicate.getURI != "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
+    )
+    val t2 = System.nanoTime()
+    println("Elapsed time: " + (t2 - t1) + "ns")
+    println("Get Instance Labels DF")
+    val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
+    val t3 = System.nanoTime()
+    println("Elapsed time: " + (t3 - t2) + "ns")
+    println("Compute Features")
+    Uri2Index.label2uri.foreach(println(_))
+    println("now u2l")
+    Uri2Index.uri2label.foreach(println(_))
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, filteredTripleRDD, instanceDF, 2)
+    rdfFastGraphKernel.computeFeatures()
+    val t4 = System.nanoTime()
+    println("Elapsed time: " + (t4 - t3) + "ns")
+    //val data = rdfFastGraphKernel.getMLFeatureVectors
+    //data.show(10000)
+    val data = rdfFastGraphKernel.getMLLibLabeledPoints
+    //println("MLLIB")
+    //data.foreach(println(_))
+    var testerr = 0.0
+    // Changed Loop to "1 to 1" for fast tests
+    for(seed <- 1 to 1){
+      testerr += predictMultiClassProcessMLLIB(data,2,seed)
+    }
+    val t5 = System.nanoTime()
+    println("Elapsed time: " + (t1 - t0) + "ns")
+    println("Elapsed time: " + (t2 - t1) + "ns")
+    println("Elapsed time: " + (t3 - t2) + "ns")
+    println("Elapsed time: " + (t4 - t3) + "ns")
+    println("Elapsed time: " + (t5 - t4) + "ns")
+    println("AVERAGE ERROR")
+    println(testerr/1)
+    println("TOTAL TIME: " + (t5-t0) + "ns")
+  }
+
+def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], NumClasses : Int = 2, seed: Long = 0): Double = {
     // Some stuff for SVM:
 
     // Split data into training and test.
@@ -93,8 +147,8 @@ def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Doub
     //  .setTol(1E-6)
     //  .setFitIntercept(true)
     
-    val ovrModel = new LogisticRegressionWithLBFGS().setNumClasses(4).run(training)
-
+    //val ovrModel = new LogisticRegressionWithLBFGS().setNumClasses(NumClasses).run(training)
+    val ovrModel = new LogisticRegressionWithSGD().run(training)
 
     // instantiate the One Vs Rest Classifier.
     //val ovr = new OneVsRest().setClassifier(classifier)
@@ -112,7 +166,7 @@ def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Doub
     //test.show(20)
     println("show predictions")
     val trainErr = predictions.filter(f => f._1 != f._2).count.toDouble/test.count
-    predictions.foreach(println(_))
+    //predictions.foreach(println(_))
     println(trainErr)
     println(predictions.filter(f => f._1 != f._2).count.toDouble)
     println(test.count)
