@@ -116,7 +116,7 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
     instanceDF.createOrReplaceTempView("instances")
     tripleIntDF.createOrReplaceTempView("triples")
 
-    println("Generating Paths from each instance")
+//    println("Generating Paths from each instance")
     // Generate Paths from each instance
     var pathDF = sqlContext.sql(
       "SELECT i.instance AS instance, i.label AS label, CONCAT(t.p, ',', t.o) AS path, t.o " +
@@ -135,16 +135,16 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
       intermediateDF.createOrReplaceTempView("df")
     }
 
-    println("Aggregate paths")
+//    println("Aggregate paths")
     //aggregate paths (Strings to Array[String])
     val aggDF = pathDF.drop("o").orderBy("instance").groupBy("instance", "label").agg(collect_list("path") as "paths")
 //    aggDF.show(100)
 
-    println("Compute CountVectorizerModel")
+//    println("Compute CountVectorizerModel")
     val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(aggDF)
     val dataML = cvModel.transform(aggDF)
 
-    dataML.printSchema()
+//    dataML.printSchema()
     dataML.show(20)
 
     dataML
@@ -158,12 +158,11 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
     * */
     val dataML: DataFrame = computeFeatures()
     val dataForML: DataFrame = dataML.drop("instance").drop("paths")
-    Uri2Index.label2uri.foreach(println(_))
+//    Uri2Index.label2uri.foreach(println(_))
     dataForML
   }
 
   def getMLLibLabeledPoints: RDD[LabeledPoint] = {
-    println("Conversion to correct SparsVector for SVM")
     val dataML: DataFrame = MLUtils.convertVectorColumnsFromML(computeFeatures().drop("instance").drop("paths"), "features")
 
     //  Map to RDD[LabeledPoint] for SVM-support
@@ -186,8 +185,6 @@ object RDFFastGraphKernel {
             instanceDF: DataFrame,
             maxDepth: Int
            ): RDFFastGraphKernel = {
-
-
 
     new RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, maxDepth)
   }
