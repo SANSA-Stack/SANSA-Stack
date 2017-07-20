@@ -17,12 +17,12 @@ import java.io.File
 class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
   def run(): RDD[String] = {
-    Used_Classes(triples, spark)
-      .union(DistinctEntities(triples, spark))
-      .union(DistinctSubjects(triples, spark))
-      .union(DistinctObjects(triples, spark))
-      .union(PropertyUsage(triples, spark))
-      .union(SPO_Vocabularies(triples, spark))
+    Used_Classes(triples, spark).Voidify()
+      .union(DistinctEntities(triples, spark).Voidify)
+      .union(DistinctSubjects(triples, spark).Voidify)
+      .union(DistinctObjects(triples, spark).Voidify)
+      .union(PropertyUsage(triples, spark).Voidify)
+      .union(SPO_Vocabularies(triples, spark).Voidify)
   }
 
   def voidify(stats: RDD[String], source: String, output: String): Unit = {
@@ -91,7 +91,7 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
 }
 object Used_Classes {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new Used_Classes(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new Used_Classes(triples, spark)
 
 }
 
@@ -116,7 +116,7 @@ class Classes_Defined(triples: RDD[Triple], spark: SparkSession) extends Seriali
 }
 object Classes_Defined {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new Classes_Defined(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new Classes_Defined(triples, spark)
 }
 
 class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -137,7 +137,7 @@ class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Seria
 }
 object PropertiesDefined {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertiesDefined(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertiesDefined(triples, spark)
 }
 
 class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -178,7 +178,7 @@ class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializa
 }
 object PropertyUsage {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertyUsage(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertyUsage(triples, spark)
 
 }
 
@@ -199,7 +199,7 @@ class DistinctEntities(triples: RDD[Triple], spark: SparkSession) extends Serial
 }
 object DistinctEntities {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctEntities(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctEntities(triples, spark)
 }
 
 class DistinctSubjects(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -218,7 +218,7 @@ class DistinctSubjects(triples: RDD[Triple], spark: SparkSession) extends Serial
 }
 object DistinctSubjects {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctSubjects(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctSubjects(triples, spark)
 }
 
 class DistinctObjects(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -237,7 +237,7 @@ class DistinctObjects(triples: RDD[Triple], spark: SparkSession) extends Seriali
 }
 object DistinctObjects {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctObjects(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctObjects(triples, spark)
 }
 
 class SPO_Vocabularies(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -269,6 +269,6 @@ class SPO_Vocabularies(triples: RDD[Triple], spark: SparkSession) extends Serial
 }
 object SPO_Vocabularies {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new SPO_Vocabularies(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new SPO_Vocabularies(triples, spark)
 }
 
