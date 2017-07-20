@@ -9,7 +9,8 @@ import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.mllib.regression.LabeledPoint
 
-
+import org.apache.spark.ml.attribute.Attribute
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
 
 object Uri2Index {
   /*
@@ -146,6 +147,46 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
 
 //    dataML.printSchema()
     dataML.show(20)
+
+    dataML
+  }
+  
+  def computeFeatures2(): DataFrame = {
+    /*
+    * Return dataframe schema
+    * root
+      |-- instance: integer (nullable = true)
+      |-- label: double (nullable = true)
+      |-- paths: array (nullable = true)
+      |    |-- element: string (containsNull = true)
+      |-- features: vector (nullable = true)
+    * */
+    
+    val pathDF: DataFrame = sparkSession.sparkContext
+    .parallelize(tripleRDD.getTriples.map(f => (f.getSubject.toString,f.getPredicate.toString,f.getObject.toString)).toList)
+    .map(f => if(f._2 != "http://data.bgs.ac.uk/ref/Lexicon/hasTheme") (f._1,-1,f._2+f._3) else (f._1,f._3.hashCode(),"")).toDF("s", "hash_label", "path")
+
+//    println("Aggregate paths")
+    //aggregate paths (Strings to Array[String])
+    //aggregate hash_labels to maximum per subject and filter unassigned subjects
+    val aggDF = pathDF.orderBy("s").groupBy("s").agg(max("hash_label") as "hash_label",collect_list("path") as "paths").filter("hash_label>=0")
+    //cast hash_label from int to string to use StringIndexer later on
+    .selectExpr("s","cast(hash_label as string) hash_label","paths")
+    aggDF.show(100)
+
+//    println("Compute CountVectorizerModel")
+    val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(aggDF)
+    val dataML = cvModel.transform(aggDF).drop("paths")
+
+//    dataML.printSchema()
+    dataML.show(100)
+
+    val indexer = new StringIndexer()
+    .setInputCol("hash_label")
+    .setOutputCol("label")
+    .fit(dataML)
+    val indexed = indexer.transform(dataML).drop("hash_label")
+    indexed.show(100)
 
     dataML
   }

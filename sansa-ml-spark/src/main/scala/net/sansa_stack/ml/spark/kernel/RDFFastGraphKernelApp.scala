@@ -15,16 +15,17 @@ import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
 import org.apache.spark.mllib.evaluation.MulticlassMetrics
 
 object RDFFastGraphKernelApp {
 
   def main(args: Array[String]): Unit = {
-    val taskNum: Int = scala.io.StdIn.readLine("Task Number?(1=Affiliation, 2=Lithogenesis, 3=Multi-contract, 4=Theme) ").toInt
+    /*val taskNum: Int = scala.io.StdIn.readLine("Task Number?(1=Affiliation, 2=Lithogenesis, 3=Multi-contract, 4=Theme) ").toInt
     val depth: Int = scala.io.StdIn.readLine("Depth? ").toInt
     val algorithm: Int = scala.io.StdIn.readLine("Algorithm?(1=LogisticRegressionWithLBFGS, 2=RandomForest, 3=LogisticRegression) ").toInt
     val iteration: Int = scala.io.StdIn.readLine("How many iterations or folding on validation? ").toInt
-
+	*/
     val sparkSession = SparkSession.builder
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -33,7 +34,19 @@ object RDFFastGraphKernelApp {
       .getOrCreate()
 
     Logger.getRootLogger.setLevel(Level.WARN)
-    val t0 = System.nanoTime
+    
+    // TEST
+    // Minimal example, but some other unnecessary functions are still called
+    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t10.nt"
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val tripleRDD: TripleRDD = new TripleRDD(triples)
+    val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, 1)
+    println("Try faster version")
+    // The full computation of feature vectors (not yet prepared for ML/MLLIB) happens in computeFeatures2
+    rdfFastGraphKernel.computeFeatures2()
+    
+    /*val t0 = System.nanoTime
 
     if (taskNum == 1) {
       experimentAffiliationPrediction(sparkSession, depth, algorithm, iteration)
@@ -51,7 +64,7 @@ object RDFFastGraphKernelApp {
     println("taskNum: " + taskNum)
     println("depth: " + depth)
     println("algorithm: " + algorithm)
-    println("iteration: " + iteration)
+    println("iteration: " + iteration)*/
     sparkSession.stop
   }
 
@@ -381,4 +394,3 @@ object RDFFastGraphKernelApp {
 
 
 }
-
