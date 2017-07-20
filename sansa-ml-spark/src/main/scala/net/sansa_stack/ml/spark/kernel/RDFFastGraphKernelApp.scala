@@ -15,6 +15,11 @@ import org.apache.spark.mllib.classification.{LogisticRegressionWithLBFGS}
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.ml.tuning.CrossValidator
 
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
+
 
 object RDFFastGraphKernelApp {
 
@@ -27,8 +32,8 @@ object RDFFastGraphKernelApp {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-    experimentAffiliationPrediction(sparkSession)
-
+//    experimentAffiliationPrediction(sparkSession)
+    experimentMultiContractPrediction(sparkSession)
 
     sparkSession.stop
   }
@@ -63,12 +68,13 @@ object RDFFastGraphKernelApp {
 
     //val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, 2)
     val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, filteredTripleRDD, instanceDF, 2)
-    rdfFastGraphKernel.computeFeatures()
+//    rdfFastGraphKernel.computeFeatures()
     //val data = rdfFastGraphKernel.getMLFeatureVectors
     //data.show(1000)
     val data = rdfFastGraphKernel.getMLLibLabeledPoints
     //println("MLLIB")
     //data.foreach(println(_))
+    data.cache()
     var testerr = 0.0
     for(seed <- 1 to 10){
       testerr += predictMultiClassProcessMLLIB(data,seed)
@@ -77,7 +83,7 @@ object RDFFastGraphKernelApp {
     println(testerr/10)
   }
 
-def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Double = {
+  def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Double = {
     // Some stuff for SVM:
 
     // Split data into training and test.
@@ -127,6 +133,103 @@ def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Doub
     trainErr
   }
 
+
+
+
+
+  def experimentMultiContractPrediction(sparkSession: SparkSession): Unit = {
+    val input = "src/main/resources/kernel/LDMC_Task2_train.nt"
+
+
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val tripleRDD: TripleRDD = new TripleRDD(triples)
+
+    //"... http://example.com/multicontract ..."
+    // it should be in Scala Iterable, to make sure setting unique indices
+    tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://example.com/multicontract")
+      .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
+
+    val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
+    // instanceDF.groupBy("label").count().show()
+    // +-----+-----+
+    // |label|count|
+    // +-----+-----+
+    // |  0.0|   40|
+    // |  1.0|  168|
+    // +-----+-----+
+
+
+
+    val filteredTripleRDD: TripleRDD = new TripleRDD(triples.filter(_.getPredicate.getURI != "http://example.com/multicontract"))
+
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, filteredTripleRDD, instanceDF, 2)
+//    val data = rdfFastGraphKernel.getMLFeatureVectors
+    val data = rdfFastGraphKernel.computeFeatures().collect()
+
+//    randomForestPredict(data)
+
+
+  }
+
+  def randomForestPredict(data: DataFrame): Unit = {
+    // Index labels, adding metadata to the label column.
+    // Fit on whole dataset to include all labels in index.
+    val labelIndexer = new StringIndexer()
+      .setInputCol("label")
+      .setOutputCol("indexedLabel")
+      .fit(data)
+    // Automatically identify categorical features, and index them.
+    // Set maxCategories so features with > 4 distinct values are treated as continuous.
+    val featureIndexer = new VectorIndexer()
+      .setInputCol("features")
+      .setOutputCol("indexedFeatures")
+      .setMaxCategories(4)
+      .fit(data)
+
+    // Split the data into training and test sets (30% held out for testing).
+    val Array(trainingData, testData) = data.randomSplit(Array(0.7, 0.3))
+
+    // Train a RandomForest model.
+    val rf = new RandomForestClassifier()
+      .setLabelCol("indexedLabel")
+      .setFeaturesCol("indexedFeatures")
+      .setNumTrees(10)
+
+    // Convert indexed labels back to original labels.
+    val labelConverter = new IndexToString()
+      .setInputCol("prediction")
+      .setOutputCol("predictedLabel")
+      .setLabels(labelIndexer.labels)
+
+    // Chain indexers and forest in a Pipeline.
+    val pipeline = new Pipeline()
+      .setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
+
+    // Train model. This also runs the indexers.
+    val model = pipeline.fit(trainingData)
+
+    // Make predictions.
+    val predictions = model.transform(testData)
+
+    // Select example rows to display.
+    predictions.select("predictedLabel", "label", "features").show(5)
+
+    // Select (prediction, true label) and compute test error.
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("indexedLabel")
+      .setPredictionCol("prediction")
+      .setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictions)
+    println("Test Error = " + (1.0 - accuracy))
+
+    val rfModel = model.stages(2).asInstanceOf[RandomForestClassificationModel]
+    println("Learned classification forest model:\n" + rfModel.toDebugString)
+
+  }
+
+
+
+
 /*
   def predictMultiClassProcess(data: DataFrame): Unit = {
     // Some stuff for SVM:
@@ -173,3 +276,4 @@ def predictMultiClassProcessMLLIB(data: RDD[LabeledPoint], seed: Long = 0): Doub
   }
 */
 }
+
