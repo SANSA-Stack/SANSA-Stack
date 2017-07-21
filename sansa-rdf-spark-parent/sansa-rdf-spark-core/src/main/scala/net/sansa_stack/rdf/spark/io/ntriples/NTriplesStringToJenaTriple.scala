@@ -6,7 +6,7 @@ import org.apache.jena.graph.Triple
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 
 /**
-  * Convert an N-Triples line to an RDFTriple object.
+  * Convert an N-Triples line to a Jena [[Triple]] object.
   *
   * @author Lorenz Buehmann
   */
