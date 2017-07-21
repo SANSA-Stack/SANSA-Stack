@@ -106,7 +106,7 @@ object RDFFastGraphKernelApp {
 
   def experimentThemePrediction(sparkSession: SparkSession, iteration: Int): Unit = {
 
-    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t10.nt"
+    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t.nt"
 
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
     val tripleRDD: TripleRDD = new TripleRDD(triples)

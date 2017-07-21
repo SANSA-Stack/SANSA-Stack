@@ -86,7 +86,7 @@ object RDFFastTreeGraphKernelApp {
 
 
     val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
-//    instanceDF.groupBy("label").count().show()
+    instanceDF.groupBy("label").count().show()
 //    +-----+-----+
 //    |label|count|
 //    +-----+-----+
@@ -128,7 +128,7 @@ object RDFFastTreeGraphKernelApp {
     val t2 = System.nanoTime
 
     val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
-    // instanceDF.groupBy("label").count().show()
+    instanceDF.groupBy("label").count().show()
     // +-----+-----+
     // |label|count|
     // +-----+-----+
@@ -152,7 +152,7 @@ object RDFFastTreeGraphKernelApp {
 
   def experimentThemePrediction(sparkSession: SparkSession, depth: Int, algorithm: Int, iteration: Int): Unit = {
     //val input = "src/main/resources/kernel/aifb-fixed_complete4.nt"
-    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t10.nt"
+    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t.nt"
 
 
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
@@ -170,7 +170,7 @@ object RDFFastTreeGraphKernelApp {
     val t2 = System.nanoTime
 
     val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
-//    instanceDF.groupBy("label").count().show()
+    instanceDF.groupBy("label").count().show()
 //    +-----+-----+
 //    |label|count|
 //    +-----+-----+
@@ -194,7 +194,7 @@ object RDFFastTreeGraphKernelApp {
   }
 
 
-  def processPrediction(rdfFastTreeGraphKernel: RDFFastTreeGraphKernel, numClasses: Int = 2, algorithm:Int = 1, iteration: Int = 1): Unit = {
+  def processPrediction(rdfFastTreeGraphKernel: RDFFastTreeGraphKernel, numClasses: Int = 2, algorithm:Int = 1, iteration: Int = 2): Unit = {
     val t0 = System.nanoTime
     var t1 = System.nanoTime
     if (algorithm == 1) {
@@ -233,7 +233,7 @@ object RDFFastTreeGraphKernelApp {
   }
 
 
-  def predictLogisticRegressionMLLIB(data: RDD[LabeledPoint], numClasses : Int = 2, maxIteration: Int = 1): Unit = {
+  def predictLogisticRegressionMLLIB(data: RDD[LabeledPoint], numClasses : Int = 2, maxIteration: Int = 2): Unit = {
 
     // Split data into training and test.
     val splits: Array[RDD[LabeledPoint]] = data.randomSplit(Array(0.8, 0.2))
@@ -277,8 +277,8 @@ object RDFFastTreeGraphKernelApp {
 
 
     // score the model on test data.
-    println("show predictions")
-    predictions.foreach(println(_))
+//    println("show predictions")
+//    predictions.foreach(println(_))
     println("accuracy: " + accuracy)
 
     val trainErr = predictions.filter(f => f._1 != f._2).count.toDouble/test.count

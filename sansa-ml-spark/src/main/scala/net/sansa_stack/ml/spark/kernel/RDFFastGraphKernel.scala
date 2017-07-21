@@ -58,6 +58,7 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
     dataML.printSchema()
     dataML.show(20)
 
+    dataML.select("instance", "label").groupBy("label").count().show()
 
     dataML
   }
