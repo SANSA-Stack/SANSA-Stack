@@ -37,14 +37,39 @@ object RDFFastGraphKernelApp {
     
     // TEST
     // Minimal example, but some other unnecessary functions are still called
-    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t10.nt"
+    val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t.nt"
+    println("Reading to triples")
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    println("TO RDD")
     val tripleRDD: TripleRDD = new TripleRDD(triples)
-    val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
-    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, 1)
     println("Try faster version")
+    val th0 = System.nanoTime
+    tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
+      .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
+    
+    val filteredTripleRDD: TripleRDD = new TripleRDD(triples
+      .filter(_.getPredicate.getURI != "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
+    )
+
+    val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
+    //val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, filteredTripleRDD, instanceDF, 1)
     // The full computation of feature vectors (not yet prepared for ML/MLLIB) happens in computeFeatures2
-    rdfFastGraphKernel.computeFeatures2()
+    //rdfFastGraphKernel.computeFeatures2()
+    //val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    //val tripleRDD: TripleRDD = new TripleRDD(triples)
+    //val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
+    val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, instanceDF, 1)
+    val th1 = System.nanoTime
+    val t0 = System.nanoTime
+    val data = rdfFastGraphKernel.getMLLibLabeledPoints
+    val t1 = System.nanoTime
+    data.take(100).foreach(println(_))
+    val tp0 = System.nanoTime
+    predictLogisticRegressionMLLIB(data,2,1)
+    val tp1 = System.nanoTime
+    printTime("Overhead",th0,th1)
+    printTime("FV",t0,t1)
+    printTime("Prediction",tp0,tp1)
     
     /*val t0 = System.nanoTime
 
