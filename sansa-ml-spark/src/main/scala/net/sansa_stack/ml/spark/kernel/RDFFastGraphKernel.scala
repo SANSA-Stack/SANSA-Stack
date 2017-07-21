@@ -1,16 +1,13 @@
 package net.sansa_stack.ml.spark.kernel
 
 import net.sansa_stack.rdf.spark.model.TripleRDD
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions._
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, StringIndexer}
 import org.apache.spark.mllib.linalg.SparseVector
-import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.mllib.regression.LabeledPoint
-
-import org.apache.spark.ml.attribute.Attribute
-import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 
 class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
