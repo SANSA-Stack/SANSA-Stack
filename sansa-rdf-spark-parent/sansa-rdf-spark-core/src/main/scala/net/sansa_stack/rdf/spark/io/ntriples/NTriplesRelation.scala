@@ -17,6 +17,8 @@ import org.apache.spark.sql.{Row, SQLContext}
 
 import scala.util.{Failure, Success, Try}
 
+import net.sansa_stack.rdf.spark.io.rdf._
+
 /**
   * A custom relation that represents N-Triples.
   *
@@ -60,7 +62,7 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Parse
     val rows = mode match {
       case REGEX => rdd.map(line => Row.fromTuple(parseRegexPattern(line)))
       case SPLIT => rdd.map(line => Row.fromSeq(line.split(" ").toList))
-      case JENA => rdd.map(parseJena(_).get).map(t => Row.fromSeq(Seq(t.getSubject.toString, t.getPredicate.toString, t.getObject.toString)))
+      case JENA => rdd.map(parseJena(_).get).map(toRow(_))
     }
     rows
   }
