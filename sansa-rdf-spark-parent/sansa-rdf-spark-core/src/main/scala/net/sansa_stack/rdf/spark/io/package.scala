@@ -219,6 +219,10 @@ package object rdf {
 
 
 
+
+
+
+
   def cleanly[A, B](resource: A)(cleanup: A => Unit)(doWork: A => B): Try[B] = {
     try {
       Success(doWork(resource))
