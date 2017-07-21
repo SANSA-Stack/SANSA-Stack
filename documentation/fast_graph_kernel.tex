@@ -1,0 +1,148 @@
+% easychair.tex,v 3.2 2012/05/15
+%
+% Select appropriate paper format in your document class as
+% instructed by your conference organizers. Only withtimes
+% and notimes can be used in proceedings created by EasyChair
+%
+% The available formats are 'letterpaper' and 'a4paper' with
+% the former being the default if omitted as in the example
+% below.
+%
+\documentclass{easychair}
+%\documentclass[debug]{easychair}
+%\documentclass[verbose]{easychair}
+%\documentclass[notimes]{easychair}
+%\documentclass[withtimes]{easychair}
+%\documentclass[a4paper]{easychair}
+%\documentclass[letterpaper]{easychair}
+
+% This provides the \BibTeX macro
+\usepackage{doc}
+% \usepackage{makeidx}
+
+% In order to save space or manage large tables or figures in a
+% landcape-like text, you can use the rotating and pdflscape
+% packages. Uncomment the desired from the below.
+%
+% \usepackage{rotating}
+% \usepackage{pdflscape}
+
+% If you plan on including some algorithm specification, we recommend
+% the below package. Read more details on the custom options of the
+% package documentation.
+%
+% \usepackage{algorithm2e}
+
+%\makeindex
+
+%% Document
+%%
+\begin{document}
+
+%% Front Matter
+%%
+% Regular title as in the article class.
+%
+\title{Efficient Graph Kernels for RDF data using Spark}
+
+% \titlerunning{} has to be set to either the main title or its shorter
+% version for the running heads. When processed by
+% EasyChair, this command is mandatory: a document without \titlerunning
+% will be rejected by EasyChair
+
+\titlerunning{Efficient Graph Kernels for RDF data using Spark}
+
+% Authors are joined by \and. Their affiliations are given by \inst, which indexes
+% into the list defined using \institute
+%
+\author{
+Bernhard Japes\inst{1}
+\and
+Shinho Kang\inst{2}
+}
+
+% Institutes for affiliations are also joined by \and,
+\institute{
+  Informatik III, Universit\"at Bonn,
+  Germany\\
+  \email{bernhard.japes@uni-bonn.de}
+\and
+   Informatik III, Universit\"at Bonn,
+   Germany\\
+   \email{TODO}\\
+ }
+%  \authorrunning{} has to be set for the shorter version of the authors' names;
+% otherwise a warning will be rendered in the running heads. When processed by
+% EasyChair, this command is mandatory: a document without \authorrunning
+% will be rejected by EasyChair
+
+\authorrunning{Bernhard and Shinho}
+
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+In this paper we study the application of graph kernels for RDF data using the popular Apache Spark\footnote{http://spark.apache.org} engine in combination with the SANSA-Stack\footnote{http://www.sansa-stack.net} data flow utilities.
+We focus on an implementation of the Intersection Tree Path (ITP) Kernel, published by Gerben Klaas Dirk de Vries and Steven de Rooij in \cite{FGK}, that is based on the concept of constructing a tree for each instance and counting the number of paths in that tree.
+
+TODO: Add further information about implementation and/or results
+
+\end{abstract}
+
+\setcounter{tocdepth}{2}
+\pagestyle{empty}
+
+%------------------------------------------------------------------------------
+\section{Introduction}
+\label{sect:Introduction}
+
+
+%------------------------------------------------------------------------------
+\section{Approach}
+\label{sect:Approach}
+
+
+%------------------------------------------------------------------------------
+\section{Implementation}
+\label{sect:Implementation}
+
+
+%------------------------------------------------------------------------------
+\section{Evaluation}
+\label{sect:Evaluation}
+
+
+%------------------------------------------------------------------------------
+\section{Conclusion}
+\label{sect:Conclusion}
+
+\subsection{Project timeline}
+
+\subsection{Further ideas}
+
+
+%------------------------------------------------------------------------------
+
+
+%------------------------------------------------------------------------------
+% Refs:
+%
+\label{sect:bib}
+\bibliographystyle{plain}
+%\bibliographystyle{alpha}
+%\bibliographystyle{unsrt}
+%\bibliographystyle{abbrv}
+\bibliography{fast_graph_kernel}
+
+%------------------------------------------------------------------------------
+% Index
+%\printindex
+
+%------------------------------------------------------------------------------
+\end{document}
+
+% EOF

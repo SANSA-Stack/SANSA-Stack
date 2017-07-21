@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2014)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: fast_graph_kernel.aux
+The style file: plain.bst
+Database file #1: fast_graph_kernel.bib
+You've used 1 entry,
+            2118 wiz_defined-function locations,
+            506 strings with 4244 characters,
+and the built_in function-call counts, 452 in all, are:
+= -- 49
+> -- 13
+< -- 1
++ -- 6
+- -- 4
+* -- 27
+:= -- 72
+add.period$ -- 4
+call.type$ -- 1
+change.case$ -- 5
+chr.to.int$ -- 0
+cite$ -- 1
+duplicate$ -- 21
+empty$ -- 37
+format.name$ -- 4
+if$ -- 102
+int.to.chr$ -- 0
+int.to.str$ -- 1
+missing$ -- 1
+newline$ -- 8
+num.names$ -- 2
+pop$ -- 5
+preamble$ -- 1
+purify$ -- 4
+quote$ -- 0
+skip$ -- 17
+stack$ -- 0
+substring$ -- 30
+swap$ -- 8
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 4
+warning$ -- 0
+while$ -- 5
+width$ -- 2
+write$ -- 16
