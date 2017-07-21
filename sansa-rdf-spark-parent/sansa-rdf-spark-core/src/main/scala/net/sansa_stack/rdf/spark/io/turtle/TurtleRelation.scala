@@ -12,6 +12,8 @@ import org.apache.spark.sql.{Row, SQLContext}
 
 import scala.util.{Failure, Success, Try}
 
+import net.sansa_stack.rdf.spark.io.rdf._
+
 /**
   * A custom relation that represents RDF triples loaded from files in Turtle syntax.
   *
@@ -44,9 +46,11 @@ class TurtleRelation(location: String, userSchema: StructType)
   import scala.collection.JavaConverters._
 
     override def buildScan(): RDD[Row] = {
-
-      val confHadoop =  org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
+      // setup custom input format + Turtle specific delimiter
+      val job = org.apache.hadoop.mapreduce.Job.getInstance()
+      val confHadoop = job.getConfiguration
       confHadoop.set("textinputformat.record.delimiter", ".\n")
+      job.setInputFormatClass(classOf[TurtleInputFormat])
 
       // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
       val turtleRDD = sqlContext.sparkContext.newAPIHadoopFile(
@@ -70,7 +74,7 @@ class TurtleRelation(location: String, userSchema: StructType)
           // parse the text snippet with Jena
           val iter = RDFDataMgr.createIteratorTriples(is, Lang.TURTLE, null).asScala
 
-          iter.map(t => Row.fromTuple((t.getSubject.toString, t.getPredicate.toString, t.getObject.toString))).toSeq
+          iter.map(toRow(_)).toSeq
         }.get
 
       })
@@ -79,16 +83,20 @@ class TurtleRelation(location: String, userSchema: StructType)
     }
 
   override def buildScan(requiredColumns: Array[String]): RDD[Row] = {
-    val confHadoop =  org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
+    // setup custom input format + Turtle specific delimiter
+    val job = org.apache.hadoop.mapreduce.Job.getInstance()
+    val confHadoop = job.getConfiguration
     confHadoop.set("textinputformat.record.delimiter", ".\n")
+    job.setInputFormatClass(classOf[TurtleInputFormat])
 
     // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
     val turtleRDD = sqlContext.sparkContext.newAPIHadoopFile(
-      location, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], confHadoop)
-      .filter(!_._2.toString.trim.isEmpty)
+      location, classOf[TurtleInputFormat], classOf[LongWritable], classOf[Text], confHadoop)
+      .filter(!_._2.toString.startsWith("#")) // skip comment lines
+      .filter(!_._2.toString.trim.isEmpty) // skip empty lines
       .map{ case (_, v) => v.toString.trim }
 
-//    turtleRDD.collect().foreach(chunk => println("Chunk:" + chunk))
+    turtleRDD.collect().foreach(chunk => println("Chunk:" + chunk))
 
     // 2. we need the prefixes - two options:
     // a) assume that all prefixes occur in the beginning of the document
@@ -105,7 +113,7 @@ class TurtleRelation(location: String, userSchema: StructType)
         // parse the text snippet with Jena
         val iter = RDFDataMgr.createIteratorTriples(is, Lang.TURTLE, null).asScala
 
-        iter.map(t => Row.fromTuple((t.getSubject.toString, t.getPredicate.toString, t.getObject.toString))).toSeq
+        iter.map(toRow(_)).toSeq
       }.get
 
     })
@@ -130,4 +138,6 @@ class TurtleRelation(location: String, userSchema: StructType)
       }
     }
   }
+
+
 }
