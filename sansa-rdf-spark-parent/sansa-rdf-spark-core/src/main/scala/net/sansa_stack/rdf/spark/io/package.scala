@@ -1,19 +1,22 @@
 package net.sansa_stack.rdf.spark.io
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, Closeable, IOException}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
-import net.sansa_stack.rdf.spark.utils.Logging
+import net.sansa_stack.rdf.spark.utils.{Logging, Utils}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+import org.apache.spark.sql.streaming.DataStreamReader
 
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -21,6 +24,28 @@ import scala.util.{Failure, Success, Try}
   * [[RDD]].
   */
 package object rdf {
+
+  /**
+    * Converts a Jena [[Triple]] to a Spark SQL [[Row]] with three columns.
+    * @param triple the triple
+    * @return the row
+    */
+  def toRow(triple: org.apache.jena.graph.Triple): Row = {
+    toRow(Seq(triple.getSubject, triple.getPredicate, triple.getObject))
+  }
+
+  /**
+    * Converts a list Jena [[Node]] objects to a Spark SQL [[Row]].
+    * @param nodes the nodes
+    * @return the row
+    */
+  def toRow(nodes: Seq[Node]): Row = {
+    // we use the Jena rendering
+    Row.fromSeq(nodes.map(n => {
+      if (n.isBlank) FmtUtils.stringForNode(n) else n.toString()
+
+    }))
+  }
 
 
 
@@ -48,6 +73,7 @@ package object rdf {
     def rdf(lang: Lang): String => DataFrame = lang match {
       case i if lang == Lang.NTRIPLES => ntriples
       case j if lang == Lang.TURTLE => turtle
+      case j if lang == Lang.RDFXML => rdfxml
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
     /**
@@ -63,7 +89,14 @@ package object rdf {
       * @return a [[DataFrame]][(String, String, String)]
       */
     def turtle: String => DataFrame = reader.format("turtle").load
+
+    /**
+      * Load RDF data in RDF/XML syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
+      * @return a [[DataFrame]][(String, String, String)]
+      */
+    def rdfxml(path: String): DataFrame = reader.format("rdfxml").load(path)
   }
+
 
 
   // the RDD methods
@@ -169,6 +202,10 @@ package object rdf {
 //      println(prefixesBC.value.mkString(", "))
 
       turtleRDD.flatMap(ttl => {
+        Utils.tryWithResource(new ByteArrayInputStream((prefixesBC.value.mkString("\n") + ttl).getBytes)) {
+          is =>
+            RDFDataMgr.createIteratorTriples(is, Lang.TURTLE, null).asScala.toSeq
+        }
         cleanly(new ByteArrayInputStream((prefixesBC.value.mkString("\n") + ttl).getBytes))(_.close()) { is =>
           // parse the text snippet with Jena and return the triples
           RDFDataMgr.createIteratorTriples(is, Lang.TURTLE, null).asScala.toSeq
@@ -177,6 +214,10 @@ package object rdf {
       })
     }
   }
+
+
+
+
 
   def cleanly[A, B](resource: A)(cleanup: A => Unit)(doWork: A => B): Try[B] = {
     try {
@@ -194,4 +235,6 @@ package object rdf {
       }
     }
   }
+
+
 }
