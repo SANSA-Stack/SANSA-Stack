@@ -58,17 +58,17 @@ object RDFFastTreeGraphKernelApp_v2 {
     val input = "src/main/resources/kernel/aifb-fixed_no_schema4.nt"
 
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val filteredTriples = triples
+      .filter(_.getPredicate.toString != "http://swrc.ontoware.org/ontology#affiliation")
+      .filter(_.getPredicate.toString != "http://swrc.ontoware.org/ontology#employs")
+    val excludedTriples = triples
+      .filter(_.getPredicate.toString == "http://swrc.ontoware.org/ontology#affiliation")
 
     val t0 = System.nanoTime
 
-    val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, triples)
-    import sparkSession.implicits._
-
-    val filteredTriplesDF =
-      tripleDF.filter($"predicate" === "http://swrc.ontoware.org/ontology#affiliation")
-        .union(tripleDF.filter($"predicate" === "http://swrc.ontoware.org/ontology#employs")
-          .select($"object".alias("subject"), $"predicate", $"subject".alias("object") ) )
-    val instanceDF = RDFFastTreeGraphKernelUtil.getInstanceAndLabelDF(filteredTriplesDF)
+    val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, filteredTriples)
+    val tripleForInstanceDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, excludedTriples)
+    val instanceDF = RDFFastTreeGraphKernelUtil.getInstanceAndLabelDF(tripleForInstanceDF)
     instanceDF.groupBy("label").count().show()
     //    +-----+-----+
     //    |label|count|
@@ -81,10 +81,7 @@ object RDFFastTreeGraphKernelApp_v2 {
 
     val t1 = System.nanoTime
 
-    val filterTripleDF = tripleDF.where("predicate <> 'http://swrc.ontoware.org/ontology#affiliation'" )
-      .where("predicate <> 'http://swrc.ontoware.org/ontology#employs'" )
-
-    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, filterTripleDF, instanceDF, depth)
+    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
 
     val t2 = System.nanoTime
 
@@ -100,15 +97,16 @@ object RDFFastTreeGraphKernelApp_v2 {
     val input = "src/main/resources/kernel/LDMC_Task2_train.nt"
 
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val filteredTriples = triples
+      .filter(_.getPredicate.toString != "http://example.com/multicontract")
+    val excludedTriples = triples
+      .filter(_.getPredicate.toString == "http://example.com/multicontract")
 
     val t0 = System.nanoTime
 
-    val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, triples)
-    import sparkSession.implicits._
-
-    val filteredTriplesDF = tripleDF.filter($"predicate" === "http://example.com/multicontract")
-
-    val instanceDF = RDFFastTreeGraphKernelUtil.getInstanceAndLabelDF(filteredTriplesDF)
+    val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, filteredTriples)
+    val tripleForInstanceDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, excludedTriples)
+    val instanceDF = RDFFastTreeGraphKernelUtil.getInstanceAndLabelDF(tripleForInstanceDF)
     instanceDF.groupBy("label").count().show()
     // +-----+-----+
     // |label|count|
@@ -118,9 +116,8 @@ object RDFFastTreeGraphKernelApp_v2 {
     // +-----+-----+
 
     val t1 = System.nanoTime
-    val filterTripleDF = tripleDF.where("predicate <> 'http://example.com/multicontract'")
 
-    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, filterTripleDF, instanceDF, depth)
+    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
 
     val t2 = System.nanoTime
 
@@ -138,15 +135,13 @@ object RDFFastTreeGraphKernelApp_v2 {
     val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t.nt"
 
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
-
+    val filteredTriples = triples.filter(_.getPredicate.toString != "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
+    val excludedTriples = triples.filter(_.getPredicate.toString == "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
     val t0 = System.nanoTime
 
-    val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, triples)
-    import sparkSession.implicits._
-
-    val filteredTriplesDF = tripleDF.filter($"predicate" === "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
-
-    val instanceDF = RDFFastTreeGraphKernelUtil.getInstanceAndLabelDF(filteredTriplesDF)
+    val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, filteredTriples)
+    val tripleForInstanceDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, excludedTriples)
+    val instanceDF = RDFFastTreeGraphKernelUtil.getInstanceAndLabelDF(tripleForInstanceDF)
     instanceDF.groupBy("label").count().show()
     //    +-----+-----+
     //    |label|count|
@@ -155,9 +150,8 @@ object RDFFastTreeGraphKernelApp_v2 {
     //    |  1.0|  137|
     //    +-----+-----+
     val t1 = System.nanoTime
-    val filterTripleDF = tripleDF.where("predicate <> 'http://data.bgs.ac.uk/ref/Lexicon/hasTheme'")
 
-    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, filterTripleDF, instanceDF, depth)
+    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
 
     val t2 = System.nanoTime
 
