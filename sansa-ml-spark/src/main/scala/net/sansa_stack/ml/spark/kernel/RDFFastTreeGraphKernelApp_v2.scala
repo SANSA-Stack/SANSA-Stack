@@ -3,18 +3,13 @@ package net.sansa_stack.ml.spark.kernel
 import java.io.File
 
 import net.sansa_stack.rdf.spark.io.NTripleReader
-import net.sansa_stack.rdf.spark.model.TripleRDD
 import org.apache.jena.graph
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{LogisticRegression, RandomForestClassifier}
-import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.mllib.classification.{LogisticRegressionModel, LogisticRegressionWithLBFGS}
 import org.apache.spark.mllib.evaluation.MulticlassMetrics
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.SparkSession
 
 object RDFFastTreeGraphKernelApp_v2 {
 

@@ -1,6 +1,5 @@
 package net.sansa_stack.ml.spark.kernel
 
-import net.sansa_stack.rdf.spark.model.TripleRDD
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, StringIndexer}
 import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.mllib.regression.LabeledPoint

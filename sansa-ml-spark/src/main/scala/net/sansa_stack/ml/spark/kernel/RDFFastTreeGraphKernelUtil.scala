@@ -1,13 +1,7 @@
 package net.sansa_stack.ml.spark.kernel
 
-import net.sansa_stack.rdf.spark.model.TripleRDD
 import org.apache.jena.graph
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, StringIndexer}
-import org.apache.spark.mllib.linalg.SparseVector
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
