@@ -118,7 +118,7 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
     var pathDF = sqlContext.sql(
       "SELECT i.instance AS instance, i.label AS label, CONCAT(t.p, ',', t.o) AS path, t.o " +
         "FROM instances i LEFT JOIN triples t " +
-        "ON i.instance = t.s")
+        "WHERE i.instance = t.s")
     pathDF.createOrReplaceTempView("df")
 
     for (i <- 2 to maxDepth) {
@@ -126,7 +126,7 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
       val intermediateDF = sqlContext.sql(
         "SELECT instance, label, CONCAT(df.path, ',', t.p, ',', t.o) AS path, t.o " +
           "FROM df LEFT JOIN triples t " +
-          "ON df.o = t.s")
+          "WHERE df.o = t.s")
 
       pathDF = pathDF.union(intermediateDF)
       intermediateDF.createOrReplaceTempView("df")
