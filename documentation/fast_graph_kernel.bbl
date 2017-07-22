@@ -1,10 +1,34 @@
 \begin{thebibliography}{1}
 
+\bibitem{deVries2013}
+Gerben K.~D. de~Vries.
+\newblock {\em A Fast Approximation of the Weisfeiler-Lehman Graph Kernel for
+  RDF Data}, pages 606--621.
+\newblock Springer Berlin Heidelberg, Berlin, Heidelberg, 2013.
+
 \bibitem{FGK}
 Gerben Klaas~Dirk De~Vries and Steven De~Rooij.
 \newblock A fast and simple graph kernel for rdf.
 \newblock In {\em Proceedings of the 2013 International Conference on Data
   Mining on Linked Data - Volume 1082}, DMoLD'13, pages 23--34, Aachen,
   Germany, Germany, 2013. CEUR-WS.org.
+
+\bibitem{Huang2011}
+Yi~Huang, Volker Tresp, Markus Bundschus, Achim Rettinger, and Hans-Peter
+  Kriegel.
+\newblock {\em Multivariate Prediction for Learning on the Semantic Web}, pages
+  92--104.
+\newblock Springer Berlin Heidelberg, Berlin, Heidelberg, 2011.
+
+\bibitem{Rettinger2009}
+Achim Rettinger, Matthias Nickles, and Volker Tresp.
+\newblock {\em Statistical Relational Learning with Formal Ontologies}, pages
+  286--301.
+\newblock Springer Berlin Heidelberg, Berlin, Heidelberg, 2009.
+
+\bibitem{Shawe-Taylor2004}
+John Shawe-Taylor and Nello Cristianini.
+\newblock {\em Kernel Methods for Pattern Analysis}.
+\newblock Cambridge University Press, New York, NY, USA, 2004.
 
 \end{thebibliography}
