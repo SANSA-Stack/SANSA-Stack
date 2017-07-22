@@ -1,16 +1,16 @@
 package net.sansa_stack.inference.spark
 
 import scala.collection.mutable
-
 import org.apache.jena.vocabulary.RDFS
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-
 import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.RuleSets
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.model.{RDFGraphDataFrame, RDFGraphNative}
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOptimizedNative, ForwardRuleReasonerOptimizedSQL}
+import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOptimizedNative
+import org.apache.jena.Jena
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 
 /**
   * @author Lorenz Buehmann
@@ -55,17 +55,17 @@ object GenericDataframeVsGenericNativeExperiments {
 
     session.stop()
 
-    session = sessionBuilder.appName("generic-dataframe").getOrCreate()
-
-    graph = RDFGraphLoader.loadFromDiskAsRDD(session, args(0), 4)
-
-    val infGraphDataframe = dataframe(new RDFGraphDataFrame(graph.toDataFrame(session)))
-
-    println("Dataframe: " + infGraphDataframe.size())
-
-    session.stop()
-
-    val targetDir = args(1)
+//    session = sessionBuilder.appName("generic-dataframe").getOrCreate()
+//
+//    graph = RDFGraphLoader.loadFromDiskAsRDD(session, args(0), 4)
+//
+//    val infGraphDataframe = dataframe(new RDFGraphDataFrame(graph.toDataFrame(session)))
+//
+//    println("Dataframe: " + infGraphDataframe.size())
+//
+//    session.stop()
+//
+//    val targetDir = args(1)
 
     // write triples to disk
 //    RDFGraphWriter.writeToFile(infGraphNative.toDataFrame(session), targetDir + "/native")
@@ -75,20 +75,21 @@ object GenericDataframeVsGenericNativeExperiments {
 
   }
 
-  def generateData(scale: Integer) = {
+  def generateData(scale: Integer): RDFGraphNative = {
     println("generating data...")
-    val triples = new mutable.HashSet[RDFTriple]()
+
+    val triples = new mutable.HashSet[Triple]()
     val ns = "http://ex.org/"
-    val p1 = ns + "p1"
-    val p2 = ns + "p2"
-    val p3 = ns + "p3"
-    triples += RDFTriple(p1, RDFS.subPropertyOf.getURI, p2)
-    triples += RDFTriple(p2, RDFS.subPropertyOf.getURI, p3)
+    val p1 = NodeFactory.createURI(ns + "p1")
+    val p2 = NodeFactory.createURI(ns + "p2")
+    val p3 = NodeFactory.createURI(ns + "p3")
+    triples += Triple.create(p1, RDFS.subPropertyOf.asNode(), p2)
+    triples += Triple.create(p2, RDFS.subPropertyOf.asNode(), p3)
 
     var begin = 1
     var end = 10 * scale
     for (i <- begin to end) {
-      triples += RDFTriple(ns + "x" + i, p1, ns + "y" + i)
+      triples += Triple.create(NodeFactory.createURI(ns + "x" + i), p1, NodeFactory.createURI(ns + "y" + i))
 //      triples += RDFTriple(ns + "y" + i, p1, ns + "z" + i)
     }
 
@@ -125,13 +126,13 @@ object GenericDataframeVsGenericNativeExperiments {
     inferredGraph
   }
 
-  def dataframe(graph: RDFGraphDataFrame): RDFGraphDataFrame = {
-    // create reasoner
-    val reasoner = new ForwardRuleReasonerOptimizedSQL(session, rules)
-
-    // compute inferred graph
-    val inferredGraph = reasoner.apply(graph)
-
-    inferredGraph
-  }
+//  def dataframe(graph: RDFGraphDataFrame): RDFGraphDataFrame = {
+//    // create reasoner
+//    val reasoner = new ForwardRuleReasonerOptimizedSQL(session, rules)
+//
+//    // compute inferred graph
+//    val inferredGraph = reasoner.apply(graph)
+//
+//    inferredGraph
+//  }
 }

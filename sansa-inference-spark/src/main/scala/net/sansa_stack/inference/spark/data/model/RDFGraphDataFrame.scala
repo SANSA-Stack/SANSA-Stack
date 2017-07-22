@@ -2,8 +2,7 @@ package net.sansa_stack.inference.spark.data.model
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
-import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault, SimpleRDF}
 
 /**
   * A data structure that comprises a set of triples.
@@ -12,16 +11,8 @@ import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
   *
   */
 class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema = SQLSchemaDefault)
-    extends AbstractRDFGraph[DataFrame, RDFGraphDataFrame](triples) {
+    extends AbstractRDFGraphSpark[SimpleRDF, DataFrame, RDFGraphDataFrame](triples) {
 
-  /**
-    * Returns an RDD of triples that match with the given input.
-    *
-    * @param s the subject
-    * @param p the predicate
-    * @param o the object
-    * @return RDD of triples
-    */
   override def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDFGraphDataFrame = {
     var sql = s"SELECT ${schema.subjectCol}, ${schema.predicateCol}, ${schema.objectCol} FROM ${schema.triplesTable}"
 
@@ -41,17 +32,17 @@ class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema =
     new RDFGraphDataFrame(triples.sqlContext.sql(sql))
   }
 
-  /**
-    * Return the union of the current RDF graph with the given RDF graph
-    *
-    * @param graph the other RDF graph
-    * @return the union of both graphs
-    */
-  def union(graph: RDFGraphDataFrame): RDFGraphDataFrame = {
+  override def find(triple: RDFTriple): RDFGraphDataFrame = find(
+    if (triple.s.startsWith("?")) None else Some(triple.s),
+    if (triple.p.startsWith("?")) None else Some(triple.p),
+    if (triple.o.startsWith("?")) None else Some(triple.o)
+  )
+
+  override def union(graph: RDFGraphDataFrame): RDFGraphDataFrame = {
     new RDFGraphDataFrame(triples.union(graph.toDataFrame()))
   }
 
-  def unionAll(graphs: Seq[RDFGraphDataFrame]): RDFGraphDataFrame = {
+  override def unionAll(graphs: Seq[RDFGraphDataFrame]): RDFGraphDataFrame = {
     // the Dataframe based solution
     //        return graphs.reduce(_ union _)
 
@@ -72,7 +63,13 @@ class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema =
     new RDFGraphDataFrame(df.get)
   }
 
-  def distinct(): RDFGraphDataFrame = {
+  override def intersection(graph: RDFGraphDataFrame): RDFGraphDataFrame =
+    new RDFGraphDataFrame(this.triples.intersect(graph.triples))
+
+  override def difference(graph: RDFGraphDataFrame): RDFGraphDataFrame =
+    new RDFGraphDataFrame(this.triples.except(graph.triples))
+
+  override def distinct(): RDFGraphDataFrame = {
     new RDFGraphDataFrame(triples.distinct())
   }
 
@@ -93,4 +90,8 @@ class RDFGraphDataFrame(override val triples: DataFrame, val schema: SQLSchema =
     triples.cache()
     this
   }
+
+
+
+
 }

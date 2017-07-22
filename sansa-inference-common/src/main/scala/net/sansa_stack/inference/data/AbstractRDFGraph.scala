@@ -1,10 +1,4 @@
-package net.sansa_stack.inference.spark.data.model
-
-import org.apache.jena.graph.Triple
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
-
-import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
+package net.sansa_stack.inference.data
 
 /**
   * A data structure that comprises a collection of triples. Note, due to the implementation of the Spark
@@ -14,8 +8,9 @@ import net.sansa_stack.inference.data.{RDFTriple, SQLSchema, SQLSchemaDefault}
   * @author Lorenz Buehmann
   *
   */
-abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) { self: G =>
-
+abstract class AbstractRDFGraph[Rdf<: RDF, D, G <: AbstractRDFGraph[Rdf, D, G]](
+  val triples: D
+) { self: G =>
 
   /**
     * Returns a new RDF graph that contains only triples matching the given input.
@@ -25,20 +20,24 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) 
     * @param o the object
     * @return a new RDF graph
     */
-  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): G
+  def find(s: Option[Rdf#Node] = None, p: Option[Rdf#Node] = None, o: Option[Rdf#Node] = None): G
+
+//  /**
+//    * Returns a new RDF graph that contains only triples matching the given input.
+//    *
+//    * @param filter the filter function
+//    * @return a new RDF graph
+//    */
+//  def find(filter: (Rdf#Triple) => Boolean): G
+//
+//  def find(subject: Rdf#NodeMatch, predicate: Rdf#NodeMatch, obj: Rdf#NodeMatch): G
 
   /**
     * Returns a new RDF graph that contains only triples matching the given input.
     *
     * @return a new RDF graph
     */
-  def find(triple: Triple): G = {
-    find(
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
-    )
-  }
+  def find(triple: Rdf#Triple): G
 
   /**
     * Returns a new RDF graph that contains the union of the current RDF graph with the given RDF graph.
@@ -57,6 +56,22 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) 
   def unionAll(graphs: Seq[G]): G
 
   /**
+    * Returns a new RDF graph that contains the intersection of the current RDF graph with the given RDF graph.
+    *
+    * @param graph the other RDF graph
+    * @return the intersection of both RDF graphs
+    */
+  def intersection(graph: G): G
+
+  /**
+    * Returns a new RDF graph that contains the difference between the current RDF graph and the given RDF graph.
+    *
+    * @param graph the other RDF graph
+    * @return the difference of both RDF graphs
+    */
+  def difference(graph: G): G
+
+  /**
     * Returns a new RDF graph that does not contain duplicate triples.
     */
   def distinct(): G
@@ -67,22 +82,4 @@ abstract class AbstractRDFGraph[T, G <: AbstractRDFGraph[T, G]](val triples: T) 
     * @return the number of triples in the RDF graph
     */
   def size(): Long
-
-
-
-
-  def toDataFrame(sparkSession: SparkSession = null, schema: SQLSchema = SQLSchemaDefault): DataFrame
-
-  def toRDD(): RDD[RDFTriple]
-
-  /**
-    * Persist the triples RDD with the default storage level (`MEMORY_ONLY`).
-    */
-  def cache(): G
-
-//  /**
-//    * Broadcast the graph
-//    */
-//  def broadcast(): G
-
 }

@@ -3,7 +3,7 @@ package net.sansa_stack.inference.flink.conformance
 import net.sansa_stack.inference.flink.data.RDFGraphWriter
 import net.sansa_stack.test.conformance.{IntegrationTestSuite, RDFSConformanceTestBase}
 import org.apache.jena.rdf.model.Model
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{RDFTriple, SimpleRDFOps}
 import net.sansa_stack.inference.flink.data.RDFGraph
 import org.apache.flink.api.scala._
 import org.scalatest.Ignore
@@ -17,7 +17,7 @@ import scala.collection.mutable
   *
   */
 @IntegrationTestSuite
-class RDFSConformanceTest extends RDFSConformanceTestBase with SharedRDFSReasonerContext{
+class RDFSConformanceTest extends RDFSConformanceTestBase(rdfOps = new SimpleRDFOps) with SharedRDFSReasonerContext{
 
   override def computeInferredModel(triples: mutable.HashSet[RDFTriple]): Model = {
     // distribute triples

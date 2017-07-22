@@ -8,15 +8,17 @@ import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
+
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
+import org.apache.jena.graph.{Node, Triple}
 
 /**
   * @author Lorenz Buehmann
   */
 class TypeComputorDefault extends TypeComputor {
 
-  override def computeTypes(aboxTriples: RDD[RDFTriple]): RDD[((Set[String], Set[String], Set[String]), Iterable[String])] = {
+  override def computeTypes(aboxTriples: RDD[Triple]): RDD[((Set[Node], Set[Node], Set[Node]), Iterable[Node])] = {
 
     val ind2OutgoingTriples = aboxTriples
       .map(t => (t.s, (true, t.p, t.o)))
@@ -34,7 +36,7 @@ class TypeComputorDefault extends TypeComputor {
 //      .groupByKey()
 
     val ind2IncomingTriples = aboxTriples
-      .filter(t => t.p != RDF.`type`.getURI)
+      .filter(t => t.p != RDF.`type`.asNode())
       .map(t => (t.o, (false, t.p, t.s)))
 //      .groupByKey()
 
@@ -44,7 +46,7 @@ class TypeComputorDefault extends TypeComputor {
       .map(e => {
         val ind = e._1
 
-        val types = e._2.filter(pair => pair._2 == RDF.`type`.getURI).map(pair => pair._3).toSet
+        val types = e._2.filter(pair => pair._2 == RDF.`type`.asNode()).map(pair => pair._3).toSet
 
         val propertiesIn = e._2.filter(entry => !entry._1).map(entry => entry._2).toSet
         val propertiesOut = e._2.filter(entry => entry._1).map(entry => entry._2).toSet
@@ -86,8 +88,8 @@ object TypeComputorDefault {
     val typeComputor = new TypeComputorDefault
 
     val triples = graph.triples
-      .filter(t => t.p != RDF.`type`.getURI || t.o.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
-      .filter(t => t.p == RDF.`type`.getURI || t.p.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
+      .filter(t => t.p != RDF.`type`.asNode() || t.o.getURI.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
+      .filter(t => t.p == RDF.`type`.asNode() || t.p.getURI.startsWith("http://swat.cse.lehigh.edu/onto/univ-bench.owl#"))
 
 //    triples.cache()
 

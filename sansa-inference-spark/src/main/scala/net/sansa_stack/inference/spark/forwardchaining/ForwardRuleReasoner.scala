@@ -2,10 +2,11 @@ package net.sansa_stack.inference.spark.forwardchaining
 
 import scala.collection.mutable
 
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.rdd.RDD
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.data.model.RDFGraph
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import net.sansa_stack.inference.utils.Profiler
 
 /**
@@ -31,7 +32,7 @@ trait ForwardRuleReasoner extends Profiler {
     * @param predicate the predicate
     * @return the set of triples that contain the predicate
     */
-  def extractTriples(triples: mutable.Set[RDFTriple], predicate: String): mutable.Set[RDFTriple] = {
+  def extractTriples(triples: mutable.Set[Triple], predicate: Node): mutable.Set[Triple] = {
     triples.filter(triple => triple.p == predicate)
   }
 
@@ -42,7 +43,7 @@ trait ForwardRuleReasoner extends Profiler {
     * @param predicate the predicate
     * @return the RDD of triples that contain the predicate
     */
-  def extractTriples(triples: RDD[RDFTriple], predicate: String): RDD[RDFTriple] = {
+  def extractTriples(triples: RDD[Triple], predicate: Node): RDD[Triple] = {
     triples.filter(triple => triple.p == predicate)
   }
 
@@ -55,10 +56,10 @@ trait ForwardRuleReasoner extends Profiler {
     * @param obj the object
     * @return the RDD of triples that match
     */
-  def extractTriples(triples: RDD[RDFTriple],
-                     subject: Option[String],
-                     predicate: Option[String],
-                     obj: Option[String]): RDD[RDFTriple] = {
+  def extractTriples(triples: RDD[Triple],
+                     subject: Option[Node],
+                     predicate: Option[Node],
+                     obj: Option[Node]): RDD[Triple] = {
     var extractedTriples = triples
 
     if(subject.isDefined) {

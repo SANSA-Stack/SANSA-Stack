@@ -4,12 +4,12 @@
   <parent>
     <artifactId>sansa-inference-parent_2.11</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.2.1-SNAPSHOT</version>
+    <version>0.2.1-jena-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-tests_${scala.binary.version}</artifactId>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.2.1-jena-SNAPSHOT</version>
   <name>Inference API - Tests</name>
   <description>Contains common data and utils for inference API testing</description>
 

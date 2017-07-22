@@ -3,12 +3,13 @@ package net.sansa_stack.inference.spark.rules
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.spark.{SparkConf, SparkContext}
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerRDFS
 import scala.collection.mutable
 
 import net.sansa_stack.inference.spark.data.model.RDFGraph
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
+
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 
 /**
   * The class to compute the materialization of a given RDF graph.
@@ -29,11 +30,11 @@ object RDFGraphMaterializerTest {
     val m = ModelFactory.createDefaultModel()
     m.read(RDFGraphMaterializerTest.getClass.getClassLoader.getResourceAsStream("data/owl-horst-minimal2.ttl"), null, "TURTLE")
 
-    val triples = new mutable.HashSet[RDFTriple]()
+    val triples = new mutable.HashSet[Triple]()
     val iter = m.listStatements()
     while(iter.hasNext) {
       val st = iter.next()
-      triples.add(RDFTriple(st.getSubject.toString, st.getPredicate.toString, st.getObject.toString))
+      triples.add(st.asTriple())
     }
 
 

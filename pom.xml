@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-parent_2.11</artifactId>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.2.1-jena-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Inference API - Parent</name>
 
@@ -66,7 +66,7 @@
     <!--<java.version>>=1.8</java.version>-->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <scala.version>2.11.8</scala.version>
+    <scala.version>2.11.11</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
     <spark.version>2.2.0</spark.version>
     <flink.version>1.3.1</flink.version>
@@ -75,7 +75,7 @@
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
     <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
-    <jsa.subversion>1-1</jsa.subversion>
+    <jsa.subversion>1</jsa.subversion>
     <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
@@ -128,6 +128,12 @@
         <groupId>org.scala-lang</groupId>
         <artifactId>scala-library</artifactId>
         <version>${scala.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>2.7.2</version>
       </dependency>
 
       <!-- Apache Spark Core -->
@@ -246,6 +252,14 @@
         <artifactId>scopt_${scala.binary.version}</artifactId>
         <version>3.6.0</version>
       </dependency>
+
+      <!-- Config API -->
+      <dependency>
+        <groupId>com.typesafe</groupId>
+        <artifactId>config</artifactId>
+        <version>1.3.1</version>
+      </dependency>
+
 
 
     </dependencies>
