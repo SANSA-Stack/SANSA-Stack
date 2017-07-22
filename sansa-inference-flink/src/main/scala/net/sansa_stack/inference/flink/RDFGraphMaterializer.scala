@@ -9,6 +9,7 @@ import scala.io.Source
 import com.typesafe.config.ConfigFactory
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.flink.configuration.Configuration
 import org.apache.flink.runtime.webmonitor.WebMonitorUtils
 
 import net.sansa_stack.inference.flink.data.{RDFGraphLoader, RDFGraphWriter}
@@ -53,14 +54,20 @@ object RDFGraphMaterializer {
           jobName: String): Unit = {
 
     // read reasoner optimization properties
-    val reasonerConf = if (propertiesFile != null) ConfigFactory.parseFile(propertiesFile) else ConfigFactory.load("reasoner")
+    val reasonerConf =
+      if (propertiesFile != null) ConfigFactory.parseFile(propertiesFile)
+      else ConfigFactory.load("reasoner")
 
     // get params
     val params: ParameterTool = ParameterTool.fromArgs(args)
 
+    val conf = new Configuration()
+    conf.setInteger("taskmanager.network.numberOfBuffers", 3000)
+
     // set up the execution environment
     val env = ExecutionEnvironment.getExecutionEnvironment
     env.getConfig.disableSysoutLogging()
+//    env.setParallelism(4)
 
     // make parameters available in the web interface
     env.getConfig.setGlobalJobParameters(params)
@@ -74,7 +81,8 @@ object RDFGraphMaterializer {
       case RDFS | RDFS_SIMPLE =>
         val r = new ForwardRuleReasonerRDFS(env)
         r.useSchemaBroadCasting = reasonerConf.getBoolean("reasoner.rdfs.schema.broadcast")
-        r.extractSchemaTriplesInAdvance = reasonerConf.getBoolean("reasoner.rdfs.schema.extractTriplesInAdvance")
+        r.extractSchemaTriplesInAdvance =
+          reasonerConf.getBoolean("reasoner.rdfs.schema.extractTriplesInAdvance")
         if (profile == RDFS_SIMPLE) r.level = RDFSLevel.SIMPLE
         r
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(env)
@@ -82,13 +90,10 @@ object RDFGraphMaterializer {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-//    println(s"|G_inf| = ${inferredGraph.size()}")
+    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
-    RDFGraphWriter.writeToDisk(inferredGraph,
-                               output,
-                               writeToSingleFile,
-                               sortedOutput)
+//    RDFGraphWriter.writeToDisk(inferredGraph, output, writeToSingleFile, sortedOutput)
 
     //    println(env.getExecutionPlan())
 
