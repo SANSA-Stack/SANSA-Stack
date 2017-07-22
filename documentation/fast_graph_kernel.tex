@@ -31,7 +31,10 @@
 % the below package. Read more details on the custom options of the
 % package documentation.
 %
-% \usepackage{algorithm2e}
+%\usepackage{algorithm2e}
+\usepackage[ruled,vlined]{algorithm2e}
+%\newcommand{\algorithmstyle}[1]{\renewcommand{\algocf@style}{#1}}
+\DontPrintSemicolon
 
 %\makeindex
 
@@ -99,12 +102,39 @@ TODO: Add further information about implementation and/or results
 %------------------------------------------------------------------------------
 \section{Introduction}
 \label{sect:Introduction}
+The increasing availability of structured data and the rise of the semantic web pose new challenges for machine learning and data mining. As an official standard, the \textit{Resource Description Framework} (RDF) is commonly used to represent those graphs, which led to research on how to use the RDF structure to predict links and labels of instances efficiently. Most of the current approaches to mining structured graph-data focus on specific semantic properties and are individually designed for different problems \cite{Rettinger2009, Huang2011}.
 
+Kernels, however, have already been proven to be useful as a much more flexible approach for Pattern Analysis in different areas \cite{Shawe-Taylor2004}, which resulted in further research on specific graph kernels for RDF. The main drawback of most of these graph kernels, including the state-of-the-art \textit{Weisfeiler-Lehman} (WL) RDF kernel, is their computation time as shown in \cite{deVries2013}. In \cite{FGK} Gerben Klaas Dirk de Vries and Steven de Rooij present a \textit{Fast and Simple Graph Kernel for RDF} with just a slightly worse prediction performance than the WL graph kernel, but the huge upside of being 10 times faster in practice. Their idea of a fast and simple, but scalable kernel also seems to be promising for big data applications. However several adaptions of their algorithm are required to ensure consistent computations on distributed data sets using the Apache Spark engine.
 
 %------------------------------------------------------------------------------
 \section{Approach}
 \label{sect:Approach}
+The graph kernel...
 
+\begin{algorithm}[ITP]
+ \KwData{a set of RDF triples $R$, a set of instances $I$ and a max depth $d_{max}$ }
+ \KwResult{a set of feature vectors F corresponding to the instances I}
+ \textbf{Comment:} $pathMap$ is a global map between paths of vertices and edges and integers\;
+ \;
+ - set $pathIdx = 1$\;
+ - for each $i \in I$\; \Indp
+ - create a new feature vector $fv$\;
+ - do $processVertex(i,i,[],fv,d_{max})$\;
+ - add $fv$ to $F$\; \Indm
+ \;
+ \textbf{function} $processVertex(v,root,path,fv,d)$\; \Indp
+ - if $d = 0$, return \;
+ - for each $(v,p,o) \in R$\; \Indp
+ - if $o$ is $root$, set $path = [path,p,rootID]$\;
+ - else, $path = [path, p, o]$\;
+ - if $pathMap(path)$ is undifned\; \Indp
+ - set $pathMap(path) = pathIdx$
+ - set$pathIdx = pathIdx + 1$\; \Indm
+ - set $fv(pathMap(path)) = fv(pathMap(path)) + 1$\;
+ - do $processVertex(o,root,path,fv,d-1)$\;
+ \;
+\caption{The Intersection Tree Path Kernel as introduced in \cite{FGK}}
+\end{algorithm}
 
 %------------------------------------------------------------------------------
 \section{Implementation}
