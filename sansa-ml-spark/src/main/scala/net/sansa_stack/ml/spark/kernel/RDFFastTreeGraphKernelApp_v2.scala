@@ -81,7 +81,10 @@ object RDFFastTreeGraphKernelApp_v2 {
 
     val t1 = System.nanoTime
 
-    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
+    val filterTripleDF = tripleDF.filter($"predicate" =!= "http://swrc.ontoware.org/ontology#affiliation")
+      .filter($"predicate" =!= "http://swrc.ontoware.org/ontology#employs")
+
+    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, filterTripleDF, instanceDF, depth)
 
     val t2 = System.nanoTime
 
@@ -115,8 +118,9 @@ object RDFFastTreeGraphKernelApp_v2 {
     // +-----+-----+
 
     val t1 = System.nanoTime
+    val filterTripleDF = tripleDF.filter($"predicate" =!= "http://example.com/multicontract")
 
-    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
+    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, filterTripleDF, instanceDF, depth)
 
     val t2 = System.nanoTime
 
@@ -151,8 +155,9 @@ object RDFFastTreeGraphKernelApp_v2 {
     //    |  1.0|  137|
     //    +-----+-----+
     val t1 = System.nanoTime
+    val filterTripleDF = tripleDF.filter($"predicate" =!= "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
 
-    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
+    val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, filterTripleDF, instanceDF, depth)
 
     val t2 = System.nanoTime
 
