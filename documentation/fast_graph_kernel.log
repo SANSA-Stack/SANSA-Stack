@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2015.5.9)  23 JUL 2017 13:06
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2015.5.9)  23 JUL 2017 17:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -646,20 +646,20 @@ Package caption Info: listings package is loaded.
 (./fast_graph_kernel.aux)
 \openout1 = `fast_graph_kernel.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 46.
-LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
 
 (/usr/local/texlive/2014/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -733,9 +733,9 @@ Package lastpage Info: Please have a look at the pageslts package at
 (lastpage)             or
 (lastpage)             http://www.ctan.org/tex-archive/ 
 (lastpage)             install/macros/latex/contrib/pageslts.tds.zip
-(lastpage)             ! on input line 46.
+(lastpage)             ! on input line 40.
 \AtBeginShipoutBox=\box82
-Package hyperref Info: Link coloring OFF on input line 46.
+Package hyperref Info: Link coloring OFF on input line 40.
 (/usr/local/texlive/2014/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 
@@ -744,9 +744,9 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count185
 )
-LaTeX Info: Redefining \ref on input line 46.
-LaTeX Info: Redefining \pageref on input line 46.
-LaTeX Info: Redefining \nameref on input line 46.
+LaTeX Info: Redefining \ref on input line 40.
+LaTeX Info: Redefining \pageref on input line 40.
+LaTeX Info: Redefining \nameref on input line 40.
 
 (./fast_graph_kernel.out) (./fast_graph_kernel.out)
 \@outlinefile=\write3
@@ -754,83 +754,80 @@ LaTeX Info: Redefining \nameref on input line 46.
 
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Try loading font information for U+lasy on input line 91.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 85.
 
 (/usr/local/texlive/2014/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
 
-Package caption Warning: \label without proper \caption on input line 119.
+Package caption Warning: \label without proper \caption on input line 113.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `alg:ITP' on page 1 undefined on input line 116.
+LaTeX Warning: Reference `alg:ITP' on page 1 undefined on input line 110.
 
 [1
 
 
 {/usr/local/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 
-Package caption Warning: \label without proper \caption on input line 156.
+Package caption Warning: \label without proper \caption on input line 149.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `alg:FTGK' on page 2 undefined on input line 146.
+LaTeX Warning: Reference `alg:FTGK' on page 2 undefined on input line 140.
 
 [2]
 
-Package caption Warning: \label without proper \caption on input line 184.
+Package caption Warning: \label without proper \caption on input line 177.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `alg:FGK' on page 3 undefined on input line 181.
-
-[3]
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 219.
+LaTeX Warning: Reference `alg:FastGK' on page 3 undefined on input line 174.
 
 
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 231.
+Underfull \vbox (badness 4595) has occurred while \output is active []
+
+ [3]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 244.
+LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `tbp') on input line 258.
+LaTeX Warning: `h' float specifier changed to `ht'.
 
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [4]
-(./fast_graph_kernel.bbl
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [5])
-
+[4] [5] (./fast_graph_kernel.bbl [6]) 
 AED: lastpage setting LastPage
-[6]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 306.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 306.
+[7]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 310.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 310.
  (./fast_graph_kernel.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 306.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 306.
-Package rerunfilecheck Info: File `fast_graph_kernel.out' has not changed.
-(rerunfilecheck)             Checksum: E61972723474B486421F57E80A6E30EF;637.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 310.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 310.
 
+
+Package rerunfilecheck Warning: File `fast_graph_kernel.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `fast_graph_kernel.out':
+(rerunfilecheck)             Before: C98E4C75FE82AE9AEF8354C2A4807B49;550
+(rerunfilecheck)             After:  D2D9F1895295CED67959966C346950B9;607.
 
 LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 306.
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 310.
  ) 
 Here is how much of TeX's memory you used:
- 16265 strings out of 493117
- 271950 string characters out of 6135434
- 387425 words of memory out of 5000000
- 19542 multiletter control sequences out of 15000+600000
+ 16264 strings out of 493117
+ 271933 string characters out of 6135434
+ 387354 words of memory out of 5000000
+ 19540 multiletter control sequences out of 15000+600000
  12375 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  46i,15n,45p,10374b,497s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -849,10 +846,10 @@ e/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2
 14/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/201
 4/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/2014/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on fast_graph_kernel.pdf (6 pages, 213307 bytes).
+Output written on fast_graph_kernel.pdf (7 pages, 216010 bytes).
 PDF statistics:
- 183 PDF objects out of 1000 (max. 8388607)
- 158 compressed objects within 2 object streams
- 38 named destinations out of 1000 (max. 500000)
- 89 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 189 PDF objects out of 1000 (max. 8388607)
+ 163 compressed objects within 2 object streams
+ 39 named destinations out of 1000 (max. 500000)
+ 81 words of extra memory for PDF output out of 10000 (max. 10000000)
 
