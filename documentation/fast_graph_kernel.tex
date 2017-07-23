@@ -36,6 +36,8 @@
 %\newcommand{\algorithmstyle}[1]{\renewcommand{\algocf@style}{#1}}
 \DontPrintSemicolon
 
+\usepackage{minibox}
+\usepackage{caption}
 
 %\makeindex
 
@@ -202,7 +204,72 @@ In contrast to the RDFFastTreeGraphKernel that is still using some non paralleli
 \section{Implementation}
 \label{sect:Implementation}
 
+We implemented the RDFFastTreeKernel as a component of the SANSA-ML library of SANSA-Stack, so that SANSA-Stack users can apply RDFFastTreeKernel to their ML workflow. Our focus was not only implementing the kernel as proposed in the paper \cite{FGK}, but also keeping the computational benefits of distributed operations. For that reason, we have tried several different implementations and ultimately three different kernel implementations have remained.
 
+\minibox[frame]{\textbf{Source Location:}\\
+SANSA-ML/sansa-ml-spark/src/main/scala/net.sansa\_stack.ml.spark/kernel/\\
+\\
+\textbf{Package:}\\
+Net.sansa\_stack.ml.spark.kernel}
+%SANSA-ML/sansa-ml-spark/src/main / scala / net.sansa_stack.ml.spark / kernel /\linebreak}
+%Package:\linebreak
+%Net.sansa_stack.ml.spark.kernel}
+
+\subsection{RDFFastGraphKernel}
+\begin{table}[]
+\centering
+\caption*{Class Input}
+\begin{tabular}{|l|l|}
+\hline
+sparkSession: \textit{SparkSession} & Spark session should be passed           \\ \hline
+tripleRDD: \textit{TripleRDD}       & Loaded \textit{TripleRDD} object                  \\ \hline
+predicateToPredict: \textit{String} & Target predicate of link-prediction task \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{RDFFastTreeGraphKernel}
+\begin{table}[]
+\centering
+\caption*{Class Input}
+\begin{tabular}{|l|l|}
+\hline
+sparkSession: \textit{SparkSession} & Spark session should be passed                                                                                                \\ \hline
+tripleRDD: \textit{TripleRDD}       & \begin{tabular}[c]{@{}l@{}}Loaded \textit{TripleRDD} object in which the \\ prediction target related triples are excluded\end{tabular} \\ \hline
+instanceDF: \textit{DataFrame}       & Known instances and labels (classes)                                                                                          \\ \hline
+maxDepth: \textit{Int}              & Maximum depth of subtrees                                                                                                     \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{RDFFastTreeGraphKernel\_v2}
+\begin{table}[]
+\centering
+\caption*{Class Input}
+\begin{tabular}{|l|l|}
+\hline
+sparkSession: \textit{SparkSession} & Spark session should be passed                                                                                                \\ \hline
+tripleRDD: \textit{TripleRDD}       & \begin{tabular}[c]{@{}l@{}}Loaded \textit{TripleRDD} object in which the \\ prediction target related triples are excluded\end{tabular} \\ \hline
+instanceDF: \textit{DataFrame}       & \begin{tabular}[c]{@{}l@{}} \textit{DataFrame} that contains instances and \\ labels from the loaded triples                                                \end{tabular} \\ \hline
+maxDepth: \textit{Int}              & Maximum depth of subtrees                                                                                                     \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Class functions}
+Since all three classes/objects are based on the same kernel approach, they do have the same class functions.\\
+\begin{table}[]
+\centering
+\label{my-label}
+\begin{tabular}{|l|c|l|}
+\hline
+Function              & Input & Output                                                                                                                                                                                         \\ \hline
+computeFeatures       & -     & \begin{tabular}[c]{@{}l@{}}DataFrame\\ root\\     $|$-- instance: integer\\     $|$-- paths: array\\     $|$    $|$-- element: string\\     $|$-- label: double\\     $|$-- features: vector\end{tabular} \\ \hline
+getMLFeatureVectors   & -     & \begin{tabular}[c]{@{}l@{}}DataFrame\\ root\\     $|$-- label: double\\     $|$-- features: vector\end{tabular}                                                                                    \\ \hline
+getMLLibLabeledPoints & -     & RDD{[}LabeledPoint{]}                                                                                                                                                                          \\ \hline
+\end{tabular}
+\end{table}
+\\
+\textbf{computeFeatures:} Construction of linked paths from each instance and computation of feature vector is done in this function.\\
+\textbf{getMLFeatureVectors:} Wrapper of computeFeatures, which provides data in structure for DataFrame-based Spark ML models.\\
+\textbf{getMLLibLabeledPoints:} Wrapper of computeFeatures, which provides data in structure for RDD-based Spark MLlib models.
 %------------------------------------------------------------------------------
 \section{Evaluation}
 \label{sect:Evaluation}
