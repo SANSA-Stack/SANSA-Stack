@@ -31,13 +31,11 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
     tripleDF.createOrReplaceTempView("triples")
 
     // Generate Paths from each instance
-    var pathDF = sqlContext.sql(
-      "SELECT i.instance AS instance, i.label AS label, CONCAT(t.predicate, ',', t.object) AS path, t.object " +
-        "FROM instances i LEFT JOIN triples t " +
-        "WHERE i.instance = t.subject")
+    var pathDF = sqlContext.sql("SELECT instance, label, '' as path, instance as object FROM instances")
+
     pathDF.createOrReplaceTempView("df")
 
-    for (i <- 2 to maxDepth) {
+    for (i <- 1 to maxDepth) {
       // TODO: break the loop when there's no more new paths
       val intermediateDF = sqlContext.sql(
         "SELECT instance, label, CONCAT(df.path, ',', t.predicate, ',', t.object) AS path, t.object " +
