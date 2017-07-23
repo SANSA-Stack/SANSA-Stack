@@ -31,34 +31,35 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
     * */
     
     val pathDF: DataFrame = sparkSession.sparkContext
-      .parallelize(tripleRDD.getTriples.map(f => (f.getSubject.toString,f.getPredicate.toString,f.getObject.toString)).toList)
-      .map(f => if(f._2 != predicateToPredict) (f._1,-1,f._2+f._3) else (f._1,f._3.hashCode(),""))
-      .toDF("instance", "hash_label", "path")
+      .parallelize(tripleRDD.getTriples
+        .map(f => (f.getSubject.toString,f.getPredicate.getURI,f.getObject.toString))
+        .toList)
+      .map(f => if (f._2 != predicateToPredict) (f._1,"",f._2+f._3) else (f._1,f._3,""))
+      .toDF("instance", "class", "path")
 
     //aggregate paths (Strings to Array[String])
     //aggregate hash_labels to maximum per subject and filter unassigned subjects
     val aggDF = pathDF.orderBy("instance")
       .groupBy("instance")
-      .agg(max("hash_label") as "hash_label",collect_list("path") as "paths")
-      .filter("hash_label>=0")
+      .agg(max("class") as "class",collect_list("path") as "paths")
+      .filter("class <> ''")
       //cast hash_label from int to string to use StringIndexer later on
-      .selectExpr("instance","cast(hash_label as string) hash_label","paths")
-
+      .selectExpr("instance","class","paths")
 
     val indexer = new StringIndexer()
-    .setInputCol("hash_label")
+    .setInputCol("class")
     .setOutputCol("label")
     .fit(aggDF)
-    val indexedDF = indexer.transform(aggDF).drop("hash_label")
+    val indexedDF = indexer.transform(aggDF).drop("class")
 
 
     val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(indexedDF)
     val dataML = cvModel.transform(indexedDF)
 
-    dataML.printSchema()
-    dataML.show(20)
-
     dataML.select("instance", "label").groupBy("label").count().show()
+
+//    dataML.printSchema()
+//    dataML.show(20, truncate = false)
 
     dataML
   }
