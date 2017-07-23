@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2014)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: fast_graph_kernel.aux
+The style file: plain.bst
+Database file #1: fast_graph_kernel.bib
+Warning--can't use both author and editor fields in deVries2013
+Warning--can't use both author and editor fields in Huang2011
+Warning--can't use both author and editor fields in Rettinger2009
+You've used 6 entries,
+            2118 wiz_defined-function locations,
+            547 strings with 5930 characters,
+and the built_in function-call counts, 2755 in all, are:
+= -- 276
+> -- 127
+< -- 5
++ -- 52
+- -- 44
+* -- 187
+:= -- 423
+add.period$ -- 20
+call.type$ -- 6
+change.case$ -- 36
+chr.to.int$ -- 0
+cite$ -- 9
+duplicate$ -- 118
+empty$ -- 207
+format.name$ -- 44
+if$ -- 608
+int.to.chr$ -- 0
+int.to.str$ -- 6
+missing$ -- 10
+newline$ -- 33
+num.names$ -- 12
+pop$ -- 54
+preamble$ -- 1
+purify$ -- 34
+quote$ -- 0
+skip$ -- 90
+stack$ -- 0
+substring$ -- 171
+swap$ -- 48
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 16
+warning$ -- 3
+while$ -- 27
+width$ -- 7
+write$ -- 76
+(There were 3 warnings)
