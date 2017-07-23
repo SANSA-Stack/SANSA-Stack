@@ -8,6 +8,7 @@ SANSA-ML is the Machine Learning (ML) library in the SANSA stack (see http://san
 The ML layer currently supports the following algorithms:
 * RDF graph clustering
 * Rule mining in RDF graphs based on [AMIE+](https://www.mpi-inf.mpg.de/departments/databases-and-information-systems/research/yago-naga/amie/)
+* RDF graph kernel based on [A Fast and Simple Graph Kernel for RDF](http://ceur-ws.org/Vol-1082/paper2.pdf)
 
 Usage example for clusting:
 ```scala
