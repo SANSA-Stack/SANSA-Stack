@@ -57,7 +57,7 @@ object RDFFastTreeGraphKernelApp {
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
-    // Note: it should be in Scala Iterable, to make sure setting unique indices
+    // Note: it should be in Scala Iterable, to ensure the setting of unique indices
     tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://swrc.ontoware.org/ontology#affiliation")
         .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
     tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://swrc.ontoware.org/ontology#employs")
@@ -104,8 +104,7 @@ object RDFFastTreeGraphKernelApp {
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
-    //"... http://example.com/multicontract ..."
-    // it should be in Scala Iterable, to make sure setting unique indices
+    // Note: it should be in Scala Iterable, to ensure the setting of unique indices
     tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://example.com/multicontract")
       .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
     val filteredTripleRDD: TripleRDD = new TripleRDD(triples.filter(_.getPredicate.getURI != "http://example.com/multicontract"))
@@ -146,7 +145,7 @@ object RDFFastTreeGraphKernelApp {
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
-    // it should be in Scala Iterable, to make sure setting unique indices
+    // Note: it should be in Scala Iterable, to ensure the setting of unique indices
     tripleRDD.getTriples.filter(_.getPredicate.getURI == "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
       .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
 
