@@ -15,7 +15,6 @@ import scala.util.Try
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 
-
 import net.sansa_stack.ml.spark.mining.amieSpark.DfLoader.Atom
 
 object MineRules {
@@ -38,7 +37,57 @@ object MineRules {
     val minConf = mCon
     val hdfsPath = hdfsP
 
-   
+    def calcName(whole: ArrayBuffer[RDFTriple]): String = {
+
+      var countMap: Map[String, Int] = Map()
+      var numberMap: Map[String, Int] = Map()
+      var counter: Int = 1
+      for (w <- whole) {
+        if (countMap.contains(w._1)) {
+          var temp = countMap.remove(w._1).get + 1
+          countMap += (w._1 -> temp)
+        } else {
+          countMap += (w._1 -> 1)
+        }
+        if (countMap.contains(w._3)) {
+          var temp = countMap.remove(w._3).get + 1
+          countMap += (w._3 -> temp)
+        } else {
+          countMap += (w._3 -> 1)
+        }
+        if (!(numberMap.contains(w._1))) {
+          numberMap += (w._1 -> counter)
+          counter += 1
+        }
+        if (!(numberMap.contains(w._3))) {
+          numberMap += (w._3 -> counter)
+          counter += 1
+        }
+
+      }
+
+      var out = ""
+      for (wh <- whole) {
+        var a = ""
+        var b = ""
+        if (countMap(wh._1) > 1) {
+          a = numberMap(wh._1).toString
+        } else {
+          a = "0"
+        }
+
+        if (countMap(wh._3) > 1) {
+          b = numberMap(wh._3).toString
+        } else {
+          b = "0"
+        }
+
+        out += a + "_" + wh._2 + "_" + b + "_"
+      }
+      out = out.stripSuffix("_")
+      return out
+    }
+
     def ruleMining(sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[RuleContainer] = {
 
       var predicates = kb.getKbGraph().triples.map { x => x.predicate
@@ -66,7 +115,7 @@ object MineRules {
 
       var outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]] = Map()
 
-       var dataFrameRuleParts: ArrayBuffer[Tuple3[RDFTriple, Int, Long]] = new ArrayBuffer()
+      var dataFrameRuleParts: RDD[(RDFTriple, Int, Int)] = null
       var out: ArrayBuffer[RuleContainer] = new ArrayBuffer
       var dublicate: ArrayBuffer[String] = ArrayBuffer("")
 
@@ -77,20 +126,12 @@ object MineRules {
 
           q = new ArrayBuffer
 
-        
-     
-  
-
-
-          
-          
-          
-          var newAtoms1 = dataFrameRuleParts
+          var newAtoms1 = dataFrameRuleParts.collect
 
           for (n1 <- newAtoms1) {
 
             var newRuleC = new RuleContainer
-            var parent = temp(n1._2)
+            var parent = temp(n1._3)
             var newTpArr = parent.getRule().clone
 
             newTpArr += n1._1
@@ -115,15 +156,13 @@ object MineRules {
             }
             if ((counter < newTpArr.length) && (!(dublicate.contains(dubCheck)))) {
               dublicate += dubCheck
-              newRuleC.setRule(minConf, n1._3, parent, newTpArr, sortedNewTpArr, kb, sc, sqlContext)
+              newRuleC.setRule(minConf, n1._2, parent, newTpArr, sortedNewTpArr, kb, sc, sqlContext)
               q += newRuleC
             }
 
           }
-dataFrameRuleParts = new ArrayBuffer()
 
-
-        } else if ((i > 0) && (dataFrameRuleParts.isEmpty )) {
+        } else if ((i > 0) && ((dataFrameRuleParts == null) || (dataFrameRuleParts.isEmpty()))) {
           q = new ArrayBuffer
         }
 
@@ -169,15 +208,6 @@ dataFrameRuleParts = new ArrayBuffer()
     }
 
     /**
-     * checks if rule is a useful output
-     *
-     * @param out output
-     * @param r rule
-     * @param minConf min. confidence
-     *
-     */
-
-    /**
      * exploring the search space by iteratively extending rules using a set of mining operators:
      * - add dangling atom
      * - add instantiated atom
@@ -185,45 +215,83 @@ dataFrameRuleParts = new ArrayBuffer()
      *
      */
 
-    def parquetToDF(path: File, sqlContext: SQLContext): DataFrame = {
-      var x: DataFrame = null
-
-      var tester = path.listFiles()
-      if (tester != null) {
-        for (te <- tester) {
-          var part = sqlContext.read.parquet(te.toString)
-          if (x == null) {
-            x = part
-          } else {
-            x = x.union(part)
-          }
-        }
-      }
-      return x
-    }
-
-    def refine(c: Int, id: Int, r: RuleContainer, dataFrameRuleParts:ArrayBuffer[Tuple3[RDFTriple, Int, Long]], sc: SparkContext, sqlContext: SQLContext): ArrayBuffer[Tuple3[RDFTriple, Int, Long]]= {
+    def refine(c: Int, id: Int, r: RuleContainer, dataFrameRuleParts: RDD[(RDFTriple, Int, Int)], sc: SparkContext, sqlContext: SQLContext): RDD[(RDFTriple, Int, Int)] = {
 
       var out: DataFrame = null
-      var OUT:  ArrayBuffer[Tuple3[RDFTriple, Int, Long]] = dataFrameRuleParts
-     
+      var OUT: RDD[(RDFTriple, Int, Int)] = dataFrameRuleParts
+      //var count2:RDD[(String, Int)] = null 
+      var path = new File("test_table/")
+      var temp = 0
 
-      
-     
+      val tpAr = r.getRule()
 
+      var stringSELECT = ""
+      for (tp <- 0 to tpAr.length - 1) {
+
+        stringSELECT += "tp" + tp + ", "
+
+      }
+
+      stringSELECT += "tp" + tpAr.length
+
+      var z: Try[Row] = null
+      if ((tpAr.length != maxLen - 1) && (temp == 0)) {
         var a = kb.addDanglingAtom(c, id, minHC, r, sc, sqlContext)
-       
-         OUT ++= a
-          
-        
-        var b = kb.addClosingAtom(c, id, minHC, r, sc, sqlContext)
-        
-        OUT ++=b
+
+        z = Try(a.first())
+        if ((!(z.isFailure)) && (z.isSuccess)) {
+
+          out = a
+
+        }
+
+      }
+
+      var b = kb.addClosingAtom(c, id, minHC, r, sc, sqlContext)
+
+      var t = Try(b.first)
+
+      if ((!(t.isFailure)) && (t.isSuccess) && (temp == 0)) {
+
+        if (out == null) {
+          out = b
+        } else {
+          out = out.unionAll(b)
+
+        }
+
+      }
+
+      var count: RDD[(String, Int)] = null
+      var o: RDD[(RDFTriple, Int, Int)] = null
+
+      if (((!(t.isFailure)) && (t.isSuccess)) || ((z != null) && (!(z.isFailure)) && (z.isSuccess))) {
+        count = out.rdd.map(x => (x(r.getRule().length + 1).toString(), 1)).reduceByKey(_ + _)
+
+        o = count.map(q => (q._1.split("\\s+"), q._2)).map { token =>
+          Tuple3(RDFTriple(token._1(0), token._1(1), token._1(2)), token._2, token._1(3).toInt)
+        }.filter(n1 => (n1._2 >= (kb.getRngSize(n1._1.predicate) * minHC)))
+
+        if (OUT == null) {
+          OUT = o
+        } else {
+          OUT = OUT.union(o)
+        }
+
+      }
 
       return OUT
 
     }
 
+    /**
+     * checks if rule is a useful output
+     *
+     * @param out output
+     * @param r rule
+     * @param minConf min. confidence
+     *
+     */
     def acceptedForOutput(outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]], r: RuleContainer, minConf: Double, k: KB, sc: SparkContext, sqlContext: SQLContext): Boolean = {
 
       //if ((!(r.closed())) || (r.getPcaConfidence(k, sc, sqlContext) < minConf)) {
@@ -287,7 +355,6 @@ dataFrameRuleParts = new ArrayBuffer()
     val sc = sparkSession.sparkContext
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
 
-    
     know.sethdfsPath(hdfsPath)
     know.setKbSrc(input)
 

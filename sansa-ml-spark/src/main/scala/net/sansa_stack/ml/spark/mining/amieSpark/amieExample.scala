@@ -10,19 +10,14 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import java.net.URI
 
+
+import java.io.File
+
 object amieExample {
   
   def main(args: Array[String]) = {
     
-    /*
-     * config:
-     * .config("spark.executor.memory", "20g")
-     * .config("spark.driver.maxResultSize", "20g")
-     * .config("spark.sql.autoBroadcastJoinThreshold", "300000000")
-     * .config("spark.sql.shuffle.partitions", "100")
-     * .config("spark.sql.warehouse.dir", "file:///C:/Users/Theresa/git/Spark-Sem-ML/inference-spark/spark-warehouse")
-     * .config("spark.sql.crossJoin.enabled", true)
-     */
+    
     
       
 
@@ -38,10 +33,11 @@ object amieExample {
     .getOrCreate()
  
     
-  val hdfsPath:String = "hdfs://akswnc5.aksw.uni-leipzig.de:54310/Theresa/"
-   // val hdfsPath = "file:///data/home/TheresaNathan/"  
-  val outputPath = "file:///data/home/TheresaNathan/"  
-  val inputFile = "hdfs://akswnc5.aksw.uni-leipzig.de:54310/Theresa/shortTest.tsv"    
+  val hdfsPath:String = args(0)
+  
+  val outputPath =hdfsPath
+  val inputFile = hdfsPath + args(1)
+    
   
   
   
@@ -55,13 +51,10 @@ object amieExample {
   
   know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))
   know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2)  )
-  /*
-   val fs:FileSystem = FileSystem.get(new URI("hdfs://2001:638:902:2007:92b1:1cff:fefd:7e26:54310/Theresa/"), sc.hadoopConfiguration);
-    fs.delete(new Path("precomputed0/"), true) 
-   fs.delete(new Path("precomputed1/"), true) 
+  
    
-    
-    */
+ 
+  
   
   val algo = new Algorithm (know, 0.01, 3, 0.1, hdfsPath)
 
@@ -80,9 +73,11 @@ object amieExample {
       temp = temp.stripSuffix(" \u2227 ")
       temp
     }.toSeq
-    var rddOut = sc.parallelize(outString)
+    
+    outString.foreach(println)
+    var rddOut = sc.parallelize(outString).repartition(1)
 
-    rddOut.saveAsTextFile(outputPath + "/testOut")
+    rddOut.saveAsTextFile(outputPath + "testOut")
   
     sc.stop
 

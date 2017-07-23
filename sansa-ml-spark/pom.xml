@@ -5,15 +5,16 @@
 	<parent>
 		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<artifactId>sansa-ml-spark_2.11</artifactId>
+	<version>0.2.1-SNAPSHOT</version>
 	<name>ML API - Apache Spark</name>
 	<description>RDF/OWL Machine Learning Library for Apache Spark</description>
 
 	<dependencies>
+
 		<!-- ML Common -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
@@ -22,11 +23,15 @@
 		</dependency>
 
 		<!-- SANSA RDF -->
-
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-rdf-spark-core</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<artifactId>sansa-rdf-spark-core_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- SANSA OWL -->
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Scala -->
@@ -55,6 +60,12 @@
 			<version>${spark.version}</version>
 		</dependency>
 
+		<!-- HermiT reasoner -->
+		<dependency>
+			<groupId>com.hermit-reasoner</groupId>
+			<artifactId>org.semanticweb.hermit</artifactId>
+			<version>1.3.8.1</version>
+		</dependency>
 		<!-- Apache JENA 3.x -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -346,6 +357,17 @@
 			<url>https://repository.apache.org/content/repositories/snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 		<repository>

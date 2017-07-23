@@ -5,11 +5,11 @@
 	<parent>
 		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.2.1-SNAPSHOT</version>
 	</parent>
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<artifactId>sansa-ml-flink_2.11</artifactId>
+	<version>0.2.1-SNAPSHOT</version>
 	<name>ML API - Apache Flink</name>
 	<description>RDF/OWL Machine Learning Library for Apache Flink</description>
 
@@ -37,6 +37,10 @@
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-clients_${scala.binary.version}</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-gelly-scala_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Logging -->
