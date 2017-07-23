@@ -11,8 +11,9 @@ import org.apache.spark.sql.SparkSession
 object RDFFastTreeGraphKernelApp_v2 {
 
   def main(args: Array[String]): Unit = {
-    val taskNum: Int = scala.io.StdIn.readLine("Task Number?(1=Affiliation, 2=Lithogenesis, 3=Multi-contract, 4=Theme) ").toInt
+    val taskNum: Int = scala.io.StdIn.readLine("Task Number?(1=Affiliation, 3=Multi-contract, 4=Theme) ").toInt
     val depth: Int = scala.io.StdIn.readLine("Depth? ").toInt
+    val iteration: Int = scala.io.StdIn.readLine("How many iterations or folding on validation? ").toInt
 
     val sparkSession = SparkSession.builder
       .master("local[*]")
@@ -27,15 +28,15 @@ object RDFFastTreeGraphKernelApp_v2 {
     val t0 = System.nanoTime
 
     if (taskNum == 1) {
-      experimentAffiliationPrediction(sparkSession, depth, 10)
+      experimentAffiliationPrediction(sparkSession, depth, iteration)
     }
 
     if (taskNum == 3) {
-      experimentMultiContractPrediction(sparkSession, depth, 10)
+      experimentMultiContractPrediction(sparkSession, depth, iteration)
     }
 
     if (taskNum == 4) {
-      experimentThemePrediction(sparkSession, depth, 10)
+      experimentThemePrediction(sparkSession, depth, iteration)
     }
 
     RDFFastTreeGraphKernelUtil.printTime("Total: ", t0, System.nanoTime)

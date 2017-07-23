@@ -12,7 +12,7 @@ import org.apache.spark.sql.SparkSession
 object RDFFastGraphKernelApp {
 
   def main(args: Array[String]): Unit = {
-    val taskNum: Int = scala.io.StdIn.readLine("Task Number?(1=Affiliation, 2=Lithogenesis, 3=Multi-contract, 4=Theme) ").toInt
+    val taskNum: Int = scala.io.StdIn.readLine("Task Number?(1=Affiliation, 3=Multi-contract, 4=Theme) ").toInt
     val iteration: Int = scala.io.StdIn.readLine("How many iterations or folding on validation? ").toInt
 
     val sparkSession = SparkSession.builder
