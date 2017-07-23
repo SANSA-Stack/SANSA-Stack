@@ -20,6 +20,8 @@ object RDFFastKernelTest {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
+//    NOTE:
+//    Remove or add comments to create the desired test procedure
 
 //    tripleNums(sparkSession)
 
