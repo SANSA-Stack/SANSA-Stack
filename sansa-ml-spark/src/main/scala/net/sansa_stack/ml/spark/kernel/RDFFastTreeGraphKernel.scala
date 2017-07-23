@@ -111,6 +111,7 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
     * */
     val sqlContext = sparkSession.sqlContext
 
+    tripleIntDF.cache()
     instanceDF.createOrReplaceTempView("instances")
     tripleIntDF.createOrReplaceTempView("triples")
 

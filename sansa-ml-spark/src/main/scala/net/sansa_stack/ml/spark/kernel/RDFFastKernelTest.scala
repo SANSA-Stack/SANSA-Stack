@@ -28,12 +28,13 @@ object RDFFastKernelTest {
 //    doMultiContract(sparkSession)
 
 //    doTheme(sparkSession, "10")
-    doTheme(sparkSession, "20")
-    doTheme(sparkSession, "40")
-    doTheme(sparkSession, "60")
-    doTheme(sparkSession, "80")
-    doTheme(sparkSession, "")
+//    doTheme(sparkSession, "20")
+//    doTheme(sparkSession, "40")
+//    doTheme(sparkSession, "60")
+//    doTheme(sparkSession, "80")
+//    doTheme(sparkSession, "")
 
+    doDepthExperiment(sparkSession)
 
     sparkSession.stop()
   }
@@ -70,6 +71,51 @@ object RDFFastKernelTest {
 
 
 
+  }
+
+  def doDepthExperiment(sparkSession: SparkSession): Unit = {
+//    println("## Affiliation Prediction")
+//    println("# Fast Tree Graph Kernel Depth 1")
+//    RDFFastTreeGraphKernelApp.experimentAffiliationPrediction(sparkSession, 1, 1)
+
+//    println("# Fast Tree Graph Kernel Depth 2")
+//    RDFFastTreeGraphKernelApp.experimentAffiliationPrediction(sparkSession, 2, 1)
+
+//    println("# Fast Tree Graph Kernel Depth 3")
+//    RDFFastTreeGraphKernelApp.experimentAffiliationPrediction(sparkSession, 3, 1)
+
+//    println("# Fast Tree Graph Kernel V2 Depth 1")
+//    RDFFastTreeGraphKernelApp_v2.experimentAffiliationPrediction(sparkSession, 1, 1)
+
+//    println("# Fast Tree Graph Kernel V2 Depth 2")
+//    RDFFastTreeGraphKernelApp_v2.experimentAffiliationPrediction(sparkSession, 2, 1)
+
+//    println("# Fast Tree Graph Kernel V2 Depth 3")
+//    RDFFastTreeGraphKernelApp_v2.experimentAffiliationPrediction(sparkSession, 3, 1)
+
+
+    println("")
+    println("## Theme Prediction 10%")
+
+    RDFFastGraphKernelApp.experimentThemePrediction(sparkSession, 1, "10")
+//    println("# Fast Tree Graph Kernel Depth 1")
+//    RDFFastTreeGraphKernelApp.experimentThemePrediction(sparkSession, 1, 1, "10")
+//
+//    println("# Fast Tree Graph Kernel Depth 2")
+//    RDFFastTreeGraphKernelApp.experimentThemePrediction(sparkSession, 2, 1, "10")
+//
+//    println("# Fast Tree Graph Kernel Depth 3")
+//    RDFFastTreeGraphKernelApp.experimentThemePrediction(sparkSession, 3, 1, "10")
+//
+//    println("# Fast Tree Graph Kernel V2 Depth 1")
+//    RDFFastTreeGraphKernelApp_v2.experimentThemePrediction(sparkSession, 1, 1, "10")
+//
+//    println("# Fast Tree Graph Kernel V2 Depth 2")
+//    RDFFastTreeGraphKernelApp_v2.experimentThemePrediction(sparkSession, 2, 1, "10")
+//
+//
+//    println("# Fast Tree Graph Kernel V2 Depth 3")
+//    RDFFastTreeGraphKernelApp_v2.experimentThemePrediction(sparkSession, 3, 1, "10")
   }
 
   def doAffiliation(sparkSession: SparkSession): Unit = {
