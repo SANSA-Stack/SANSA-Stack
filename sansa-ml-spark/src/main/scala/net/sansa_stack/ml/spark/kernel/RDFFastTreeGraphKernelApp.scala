@@ -54,7 +54,7 @@ object RDFFastTreeGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
     // Note: it should be in Scala Iterable, to make sure setting unique indices
@@ -101,7 +101,7 @@ object RDFFastTreeGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
     //"... http://example.com/multicontract ..."
@@ -143,7 +143,7 @@ object RDFFastTreeGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
     // it should be in Scala Iterable, to make sure setting unique indices

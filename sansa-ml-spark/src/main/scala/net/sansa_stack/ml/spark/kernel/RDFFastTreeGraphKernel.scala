@@ -141,8 +141,6 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
     val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(aggDF)
     val dataML = cvModel.transform(aggDF)
 
-//    dataML.printSchema()
-//    dataML.show(20)
 
     dataML
   }

@@ -9,7 +9,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-object RDFFastKernelTest {
+object RDFFastKernelEvaluationApp {
   def main(args: Array[String]): Unit = {
     val sparkSession = SparkSession.builder
       .master("local[*]")
@@ -41,25 +41,25 @@ object RDFFastKernelTest {
 
   def tripleNums(sparkSession: SparkSession): Unit = {
     val input1 = "src/main/resources/kernel/aifb-fixed_no_schema4.nt"
-    val triples1: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input1))
+    val triples1: RDD[graph.Triple] = NTripleReader.load(sparkSession, input1)
 
     val input2 = "src/main/resources/kernel/LDMC_Task2_train.nt"
-    val triples2: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input2))
+    val triples2: RDD[graph.Triple] = NTripleReader.load(sparkSession, input2)
 
     val input31 = "src/main/resources/kernel/Lexicon_NamedRockUnit_t20.nt"
-    val triples31: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input31))
+    val triples31: RDD[graph.Triple] = NTripleReader.load(sparkSession, input31)
 
     val input32 = "src/main/resources/kernel/Lexicon_NamedRockUnit_t40.nt"
-    val triples32: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input32))
+    val triples32: RDD[graph.Triple] = NTripleReader.load(sparkSession, input32)
 
     val input33 = "src/main/resources/kernel/Lexicon_NamedRockUnit_t60.nt"
-    val triples33: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input33))
+    val triples33: RDD[graph.Triple] = NTripleReader.load(sparkSession, input33)
 
     val input34 = "src/main/resources/kernel/Lexicon_NamedRockUnit_t80.nt"
-    val triples34: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input34))
+    val triples34: RDD[graph.Triple] = NTripleReader.load(sparkSession, input34)
 
     val input35 = "src/main/resources/kernel/Lexicon_NamedRockUnit_t.nt"
-    val triples35: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input35))
+    val triples35: RDD[graph.Triple] = NTripleReader.load(sparkSession, input35)
 
     println("affiliation: " +  triples1.count())
     println("multi-contract: " +  triples2.count())

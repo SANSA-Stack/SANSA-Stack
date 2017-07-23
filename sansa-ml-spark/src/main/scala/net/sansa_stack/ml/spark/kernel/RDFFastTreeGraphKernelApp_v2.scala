@@ -54,7 +54,7 @@ object RDFFastTreeGraphKernelApp_v2 {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val filteredTriples = triples
       .filter(_.getPredicate.getURI != "http://swrc.ontoware.org/ontology#affiliation")
       .filter(_.getPredicate.getURI != "http://swrc.ontoware.org/ontology#employs")
@@ -97,7 +97,7 @@ object RDFFastTreeGraphKernelApp_v2 {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val filteredTriples = triples
       .filter(_.getPredicate.getURI != "http://example.com/multicontract")
     val excludedTriples = triples
@@ -141,7 +141,7 @@ object RDFFastTreeGraphKernelApp_v2 {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val filteredTriples = triples.filter(_.getPredicate.getURI != "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
     val excludedTriples = triples.filter(_.getPredicate.getURI == "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
 

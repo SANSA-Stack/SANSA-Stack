@@ -50,7 +50,7 @@ object RDFFastGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
       .filter(_.getPredicate.getURI != "http://swrc.ontoware.org/ontology#employs")
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
@@ -75,7 +75,7 @@ object RDFFastGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
 
@@ -100,7 +100,7 @@ object RDFFastGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
+    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
     val tripleRDD: TripleRDD = new TripleRDD(triples)
 
     val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")

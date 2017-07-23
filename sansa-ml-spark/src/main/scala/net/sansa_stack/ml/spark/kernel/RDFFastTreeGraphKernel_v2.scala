@@ -48,8 +48,6 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
       intermediateDF.createOrReplaceTempView("df")
     }
 
-//    println("pathDF")
-//    pathDF.show(truncate = false)
 
     // indexing on path
     val indexer = new StringIndexer()
@@ -63,18 +61,11 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
       .agg(collect_list("pathIndex") as "paths")
       .toDF("instance", "label", "paths")
 
-//    println("aggDF")
-//    aggDF.show(truncate = false)
-//    aggDF.printSchema()
 
     // CountVectorize the aggregated paths
     val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(aggDF)
     val dataML = cvModel.transform(aggDF)
 
-//    println("dataML")
-//    dataML.show(truncate = false)
-
-    //    dataML.printSchema()
 
     dataML
 
