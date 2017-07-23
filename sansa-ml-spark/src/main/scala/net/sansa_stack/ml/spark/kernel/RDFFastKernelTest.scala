@@ -25,9 +25,14 @@ object RDFFastKernelTest {
 
 //    doAffiliation(sparkSession)
 
-    doMultiContract(sparkSession)
+//    doMultiContract(sparkSession)
 
 //    doTheme(sparkSession, "10")
+    doTheme(sparkSession, "20")
+    doTheme(sparkSession, "40")
+    doTheme(sparkSession, "60")
+    doTheme(sparkSession, "80")
+    doTheme(sparkSession, "")
 
 
     sparkSession.stop()

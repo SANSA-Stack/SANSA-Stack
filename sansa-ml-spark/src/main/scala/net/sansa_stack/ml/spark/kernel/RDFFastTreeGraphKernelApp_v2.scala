@@ -94,13 +94,14 @@ object RDFFastTreeGraphKernelApp_v2 {
   def experimentMultiContractPrediction(sparkSession: SparkSession, depth: Int, iteration: Int): Unit = {
     val input = "src/main/resources/kernel/LDMC_Task2_train.nt"
 
+    val t0 = System.nanoTime
+
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
     val filteredTriples = triples
       .filter(_.getPredicate.getURI != "http://example.com/multicontract")
     val excludedTriples = triples
       .filter(_.getPredicate.getURI == "http://example.com/multicontract")
 
-    val t0 = System.nanoTime
 
     val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, filteredTriples)
     val tripleForInstanceDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, excludedTriples)
@@ -113,11 +114,20 @@ object RDFFastTreeGraphKernelApp_v2 {
     // |  1.0|  168|
     // +-----+-----+
 
-    val t1 = System.nanoTime
 
     val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
+    val data = rdfFastTreeGraphKernel.getMLLibLabeledPoints
+
+    val t1 = System.nanoTime
+
+    RDFFastTreeGraphKernelUtil.printTime("Initialization", t0, t1)
+
+    RDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data,2,iteration)
 
     val t2 = System.nanoTime
+
+
+    RDFFastTreeGraphKernelUtil.printTime("Run Prediction", t1, t2)
 
 
 
@@ -128,28 +138,36 @@ object RDFFastTreeGraphKernelApp_v2 {
   def experimentThemePrediction(sparkSession: SparkSession, depth: Int, iteration: Int, fraction: String = ""): Unit = {
     val input = "src/main/resources/kernel/Lexicon_NamedRockUnit_t" + fraction + ".nt"
 
+    val t0 = System.nanoTime
+
     val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, new File(input))
     val filteredTriples = triples.filter(_.getPredicate.getURI != "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
     val excludedTriples = triples.filter(_.getPredicate.getURI == "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
-    val t0 = System.nanoTime
 
     val tripleDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, filteredTriples)
     val tripleForInstanceDF = RDFFastTreeGraphKernelUtil.triplesToDF(sparkSession, excludedTriples)
     val instanceDF = RDFFastTreeGraphKernelUtil.getInstanceAndLabelDF(tripleForInstanceDF)
-    instanceDF.groupBy("label").count().show()
+//    instanceDF.groupBy("label").count().show()
     //    +-----+-----+
     //    |label|count|
     //    +-----+-----+
     //    |  0.0| 1005|
     //    |  1.0|  137|
     //    +-----+-----+
-    val t1 = System.nanoTime
 
     val rdfFastTreeGraphKernel = RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, depth)
+    val data = rdfFastTreeGraphKernel.getMLLibLabeledPoints
+
+    val t1 = System.nanoTime
+
+    RDFFastTreeGraphKernelUtil.printTime("Initialization", t0, t1)
+
+    RDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data,2,iteration)
 
     val t2 = System.nanoTime
 
 
+    RDFFastTreeGraphKernelUtil.printTime("Run Prediction", t1, t2)
 
 
 

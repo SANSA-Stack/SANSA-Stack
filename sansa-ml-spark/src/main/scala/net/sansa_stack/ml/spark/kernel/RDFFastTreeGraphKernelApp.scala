@@ -155,7 +155,7 @@ object RDFFastTreeGraphKernelApp {
     )
 
     val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
-    instanceDF.groupBy("label").count().show()
+//    instanceDF.groupBy("label").count().show()
 //    +-----+-----+
 //    |label|count|
 //    +-----+-----+

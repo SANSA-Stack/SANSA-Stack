@@ -56,7 +56,7 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
     val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(indexedDF)
     val dataML = cvModel.transform(indexedDF)
 
-    dataML.select("instance", "label").groupBy("label").count().show()
+//    dataML.select("instance", "label").groupBy("label").count().show()
 
 //    dataML.printSchema()
 //    dataML.show(20, truncate = false)
