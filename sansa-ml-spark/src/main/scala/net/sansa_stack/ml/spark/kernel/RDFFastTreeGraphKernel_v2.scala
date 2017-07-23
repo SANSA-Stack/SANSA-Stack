@@ -30,13 +30,13 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
     instanceDF.createOrReplaceTempView("instances")
     tripleDF.createOrReplaceTempView("triples")
 
-    // Generate Paths from each instance
+    // Generate Paths for each instance
     var pathDF = sqlContext.sql("SELECT instance, label, '' as path, instance as object FROM instances")
 
     pathDF.createOrReplaceTempView("df")
 
     for (i <- 1 to maxDepth) {
-      // TODO: break the loop when there's no more new paths
+      // TODO: break the loop when there are no further new paths
       val intermediateDF = sqlContext.sql(
         "SELECT instance, label, CONCAT(df.path, ',', t.predicate, ',', t.object) AS path, t.object " +
           "FROM df LEFT JOIN triples t " +
@@ -47,7 +47,7 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
     }
 
 
-    // indexing on path
+    // Indexing on path
     val indexer = new StringIndexer()
       .setInputCol("path")
       .setOutputCol("pathIndex")
@@ -85,7 +85,6 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
   def getMLLibLabeledPoints: RDD[LabeledPoint] = {
     val dataML: DataFrame = MLUtils.convertVectorColumnsFromML(computeFeatures().drop("instance").drop("paths"), "features")
 
-    //  Map to RDD[LabeledPoint] for SVM-support
     val dataForMLLib = dataML.rdd.map { f =>
       val label = f.getDouble(0)
       val features = f.getAs[SparseVector](1)
