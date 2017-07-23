@@ -145,7 +145,10 @@ This can be achieved by using a different representation of the constructed tree
 
 Based on all the paths created and stored in $pathDF$ we can now compute the trees by aggregating paths and collecting them as an Array[\textit{String}] for each subject. Now those Array[\textit{String}] can not only be interpreted as a tree in form of a list of paths, but also as a regular text document using paths as a vocabulary.  In doing so we can make use of the \textit{Spark ML CountVectorizer} that is designed to convert a collection of text documents to vectors of token counts, extracting the vocabulary in form of a sparse representation. This basically replaces the $pathMap$ with the huge upside of performing parallelized on distributed data. 
 
-The Array[\textit{String}] of each subject is transformed to a sparse vector containing information which paths are part of the tree with a consistent mapping for all subjects covering all the occurring paths. These sparse vectors can be used as feature vectors for different machine learning algorithms. 
+The Array[\textit{String}] of each subject is transformed to a sparse vector containing information which paths are part of the tree with a consistent mapping for all subjects covering all the occurring paths. These sparse vectors can be used as feature vectors for different machine learning algorithms of the \textit{Spark ML} and {MLlib} libraries like logistic regression or random forests.
+
+TODO: Maybe add to evaluation and use only a reference instead.
+We have tested this algorithm on the datasets used in the experiments of \cite{FGK}. This includes the affiliation prediction experiment in which we predict the affiliations for people in the AIFB research institute based on the data from their semantic portal. Also tested was the multi-contract prediction using data from the linked data data-mining challenge 2013\footnote{http://keg.vse.cz/dmold2013/data-description.html}. Here the task is to predict whether a contract has the property that it is a multicontract. As a final prediction experiment we try to replicate the geological theme prediction experiment using the named rock units in the British Geological Survey\footnote{http://data.bgs.ac.uk/} data
 
 \begin{algorithm}
  \label{alg:FTGK}
@@ -173,6 +176,28 @@ The Array[\textit{String}] of each subject is transformed to a sparse vector con
 \caption{The RDFFastTreeGraphKernel}
 \end{algorithm}
 
+Based on our first experiments with the RDFFastTreeGraphKernel and the results in \cite{FGK} we want to further optimize the algorithm. In fact we do not always need to construct trees with a high depth $d_{max}$, and can instead use trees with $d_{max}=1$ without loosing too much prediction accuracy. This allows us to simplify the Initialization massively by skipping the iterative and not properly optimized Scala-mappings required for tree construction and instead only operate on a slightly modified DataFrame which results in a simplified RDFFastGraphKernel as shown in algorithm \ref{alg:FGK}.
+
+\begin{algorithm}
+ \label{alg:FGK}
+ \KwData{a TripleRDD $R$, a \textit{String} predicateToPredict}
+ \KwResult{a set of feature vectors F corresponding to the instances of R}
+ \;
+
+\textbf{Construct the paths and assign classes}\; \Indp
+- create a new $pathDF$ with columns ($instance,class,path$) by mapping $R$ to a DF\; \Indp
+- if a row ($s,p,o$) in $R$ contains the predicateToPredict we map to ($s,o,""$)\;
+- else we map the row ($s,p,o$) to ($s,"",p+o$) and store the path\; \Indm \Indm
+ \;
+ \textbf{Construct the feature vectors:}\; \Indp
+ - aggregate the rows of $pathDF$ for each $s$, set $class$ to the only non-empty entry, and collect all the $path$ as a list in a new column $paths$ of type Array[\textit{String}]\;
+ - use the \textit{Spark ML StringIndexer} to transform the set of classes to numerical labels\;
+ - use the \textit{Spark ML CountVectorizer} to transform this set of Array[\textit{String}] to sparse feature vectors per subject\;
+ \;
+\caption{The RDFFastGraphKernel}
+\end{algorithm}
+
+In contrast to the RDFFastTreeGraphKernel that is still using some non parallelized Scala utilities, the RDFFastGraphKernel is fully parallelized and only utilizing Spark functions for RDD and DataFrames. This is reducing the computation time massively and allows an efficient computation of feature vectors for big datasets. Since we are only operating with $d_{max}=1$, those feature vectors only contain information about the direct surroundings of instances. In some cases this information may not be enough for classification algorithms, however our tests show that the dimensionality reduction of feature vectors associated with this loss of information can also be beneficial for classification.
 %------------------------------------------------------------------------------
 \section{Implementation}
 \label{sect:Implementation}
