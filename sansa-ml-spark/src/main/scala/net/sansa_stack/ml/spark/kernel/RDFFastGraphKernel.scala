@@ -37,30 +37,24 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
       .map(f => if (f._2 != predicateToPredict) (f._1,"",f._2+f._3) else (f._1,f._3,""))
       .toDF("instance", "class", "path")
 
-    //aggregate paths (Strings to Array[String])
-    //aggregate hash_labels to maximum per subject and filter unassigned subjects
+    // Aggregate paths (Strings to Array[String])
+    // Aggregate class labels and filter unassigned subjects
     val aggDF = pathDF.orderBy("instance")
       .groupBy("instance")
       .agg(max("class") as "class",collect_list("path") as "paths")
       .filter("class <> ''")
-      //cast hash_label from int to string to use StringIndexer later on
       .selectExpr("instance","class","paths")
-
+    
+    // Transform class to a numerical label
     val indexer = new StringIndexer()
     .setInputCol("class")
     .setOutputCol("label")
     .fit(aggDF)
     val indexedDF = indexer.transform(aggDF).drop("class")
 
-
     val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(indexedDF)
     val dataML = cvModel.transform(indexedDF)
-
-//    dataML.select("instance", "label").groupBy("label").count().show()
-
-//    dataML.printSchema()
-//    dataML.show(20, truncate = false)
-
+    
     dataML
   }
 
@@ -72,13 +66,13 @@ class RDFFastGraphKernel(@transient val sparkSession: SparkSession,
     * */
     val dataML: DataFrame = computeFeatures()
     val dataForML: DataFrame = dataML.drop("instance").drop("paths")
+    
     dataForML
   }
 
   def getMLLibLabeledPoints: RDD[LabeledPoint] = {
     val dataML: DataFrame = MLUtils.convertVectorColumnsFromML(computeFeatures().drop("instance").drop("paths"), "features")
 
-    //  Map to RDD[LabeledPoint] for SVM-support
     val dataForMLLib = dataML.rdd.map { f =>
           val label = f.getDouble(0)
           val features = f.getAs[SparseVector](1)

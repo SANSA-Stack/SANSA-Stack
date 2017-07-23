@@ -63,8 +63,6 @@ object RDFFastGraphKernelApp {
     RDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data,4,iteration)
 
     val t2 = System.nanoTime
-
-
     RDFFastTreeGraphKernelUtil.printTime("Run Prediction", t1, t2)
 
   }
@@ -88,7 +86,6 @@ object RDFFastGraphKernelApp {
     RDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data,2,iteration)
 
     val t2 = System.nanoTime
-
     RDFFastTreeGraphKernelUtil.printTime("Run Prediction", t1, t2)
 
   }
@@ -112,7 +109,6 @@ object RDFFastGraphKernelApp {
     RDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data,2,iteration)
 
     val t2 = System.nanoTime
-
     RDFFastTreeGraphKernelUtil.printTime("Run Prediction", t1, t2)
 
   }

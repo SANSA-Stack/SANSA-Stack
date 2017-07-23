@@ -12,7 +12,7 @@ import org.apache.spark.mllib.regression.LabeledPoint
 
 object Uri2Index {
   /*
-  * Object to store indices of uris and labels.
+  * Object to store indices of URIs and labels.
   * */
   var uri2int: Map[String, Int] = Map.empty[String, Int]
   var int2uri: Map[Int, String] = Map.empty[Int, String]
@@ -53,7 +53,7 @@ object Uri2Index {
   }
 
   /*
-  * To get/set Uri Index
+  * To get/set URI Index
   * */
   def getUriIndexOrSet(uri: String): Int = {
     var index: Int = 0
@@ -69,7 +69,7 @@ object Uri2Index {
   }
 
   /*
-  * To get/set Uris' indices of a tirple
+  * To get/set URIs' indices of a tirple
   * */
   def getUriIndexOrSetT(triple: (String, String, String)): (Int, Int, Int) = {
     val index1: Int = getUriIndexOrSet(triple._1)
@@ -115,7 +115,7 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
     instanceDF.createOrReplaceTempView("instances")
     tripleIntDF.createOrReplaceTempView("triples")
 
-    // Generate Paths from each instance
+    // Generate Paths for each instance
     var pathDF = sqlContext.sql(
       "SELECT i.instance AS instance, i.label AS label, CONCAT(t.p, ',', t.o) AS path, t.o " +
         "FROM instances i LEFT JOIN triples t " +
@@ -123,7 +123,7 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
     pathDF.createOrReplaceTempView("df")
 
     for (i <- 2 to maxDepth) {
-      // TODO: break the loop when there's no more new paths
+      // TODO: break the loop when there are no further new paths
       val intermediateDF = sqlContext.sql(
         "SELECT instance, label, CONCAT(df.path, ',', t.p, ',', t.o) AS path, t.o " +
           "FROM df LEFT JOIN triples t " +
@@ -134,7 +134,7 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
     }
 
 
-    //aggregate paths (Strings to Array[String])
+    // Aggregate paths (Strings to Array[String])
     val aggDF = pathDF.drop("o").orderBy("instance").groupBy("instance", "label").agg(collect_list("path") as "paths")
 
     // CountVectorize the aggregated paths
@@ -161,7 +161,6 @@ class RDFFastTreeGraphKernel(@transient val sparkSession: SparkSession,
   def getMLLibLabeledPoints: RDD[LabeledPoint] = {
     val dataML: DataFrame = MLUtils.convertVectorColumnsFromML(computeFeatures().drop("instance").drop("paths"), "features")
 
-    //  Map to RDD[LabeledPoint] for SVM-support
     val dataForMLLib = dataML.rdd.map { f =>
           val label = f.getDouble(0)
           val features = f.getAs[SparseVector](1)
