@@ -86,6 +86,11 @@
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-tdb</artifactId>
+            <version>${jena.version}</version>
+        </dependency>
 
         <!-- Graph API -->
         <dependency>
