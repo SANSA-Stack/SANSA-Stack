@@ -4,7 +4,7 @@ import net.sansa_stack.inference.flink.data.RDFGraphWriter
 import net.sansa_stack.test.conformance.{IntegrationTestSuite, OWLHorstConformanceTestBase}
 import org.apache.flink.api.scala._
 import org.apache.jena.rdf.model.Model
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{RDFTriple, SimpleRDFOps}
 import net.sansa_stack.inference.flink.data.{RDFGraph, RDFGraphWriter}
 import org.scalatest.Ignore
 
@@ -17,7 +17,7 @@ import scala.collection.mutable
   *
   */
 @IntegrationTestSuite
-class OWLHorstConformanceTest extends OWLHorstConformanceTestBase with SharedOWLHorstReasonerContext{
+class OWLHorstConformanceTest extends OWLHorstConformanceTestBase(rdfOps = new SimpleRDFOps) with SharedOWLHorstReasonerContext{
 
   override def computeInferredModel(triples: mutable.HashSet[RDFTriple]): Model = {
     // distribute triples

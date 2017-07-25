@@ -1,19 +1,18 @@
 package net.sansa_stack.inference.spark.rules
 
-import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOptimizedSQL
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.spark.sql.SparkSession
-
-import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.data.{JenaOps, RDFTriple}
 import net.sansa_stack.inference.spark.data._
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerNaive, ForwardRuleReasonerOptimizedNative, ForwardRuleReasonerOptimizedSQL}
+import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerNaive, ForwardRuleReasonerOptimizedNative}
 import net.sansa_stack.inference.utils.RuleUtils
-import scala.collection.mutable
 
+import scala.collection.mutable
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.model.{RDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -54,7 +53,7 @@ object SetOfRulesTest {
 
 //    runNaive(graph, rules)
 //    runNative(graph, rules)
-    runSQL(graph, rules)
+//    runSQL(graph, rules)
 
     sc.stop()
   }
@@ -66,48 +65,51 @@ object SetOfRulesTest {
     g
   }
 
-  def generateData(scale: Integer) = {
+  private def generateData(scale: Integer) = {
     println("generating data...")
-    val triples = new mutable.HashSet[RDFTriple]()
+    val rdfOps = new JenaOps
+
+    val triples = new mutable.HashSet[Triple]()
     val ns = "http://ex.org/"
-    val p1 = ns + "p1"
-    val p2 = ns + "p2"
-    val p3 = ns + "p3"
-    val c1 = ns + "C1"
-    val c2 = ns + "C2"
-    triples += RDFTriple(p1, RDF.`type`.getURI, OWL2.TransitiveProperty.getURI)
-    triples += RDFTriple(p2, RDF.`type`.getURI, OWL2.TransitiveProperty.getURI)
-    triples += RDFTriple(p1, RDFS.subPropertyOf.getURI, p2)
-    triples += RDFTriple(c1, RDFS.subClassOf.getURI, c2)
+
+    val p1 = rdfOps.makeUri(ns + "p1")
+    val p2 = rdfOps.makeUri(ns + "p2")
+    val p3 = rdfOps.makeUri(ns + "p3")
+    val c1 = rdfOps.makeUri(ns + "c1")
+    val c2 = rdfOps.makeUri(ns + "c2")
+    triples += rdfOps.makeTriple(p1, rdfOps.makeUri(RDF.`type`.getURI), rdfOps.makeUri(OWL2.TransitiveProperty.getURI))
+    triples += rdfOps.makeTriple(p2, rdfOps.makeUri(RDF.`type`.getURI), rdfOps.makeUri(OWL2.TransitiveProperty.getURI))
+    triples += rdfOps.makeTriple(p1, rdfOps.makeUri(RDFS.subPropertyOf.getURI), p2)
+    triples += rdfOps.makeTriple(c1, rdfOps.makeUri(RDFS.subClassOf.getURI), c2)
 
     var begin = 1
     var end = 10 * scale
     for (i <- begin to end) {
-      triples += RDFTriple(ns + "x" + i, p1, ns + "y" + i)
-      triples += RDFTriple(ns + "y" + i, p1, ns + "z" + i)
+      triples += rdfOps.makeTriple(rdfOps.makeUri(ns + "x" + i), p1, rdfOps.makeUri(ns + "y" + i))
+      triples += rdfOps.makeTriple(rdfOps.makeUri(ns + "y" + i), p1, rdfOps.makeUri(ns + "z" + i))
     }
 
     begin = end + 1
     end = begin + 10 * scale
     for (i <- begin to end) {
       // should not produce (?x_i, p1, ?z_i) as p1 and p2 are used
-      triples += RDFTriple(ns + "x" + i, p1, ns + "y" + i)
-      triples += RDFTriple(ns + "y" + i, p2, ns + "z" + i)
+      triples += rdfOps.makeTriple(rdfOps.makeUri(ns + "x" + i), p1, rdfOps.makeUri(ns + "y" + i))
+      triples += rdfOps.makeTriple(rdfOps.makeUri(ns + "y" + i), p2, rdfOps.makeUri(ns + "z" + i))
     }
 
     begin = end + 1
     end = begin + 10 * scale
     for (i <- begin to end) {
       // should not produce (?x_i, p3, ?z_i) as p3 is not transitive
-      triples += RDFTriple(ns + "x" + i, p3, ns + "y" + i)
-      triples += RDFTriple(ns + "y" + i, p3, ns + "z" + i)
+      triples += rdfOps.makeTriple(rdfOps.makeUri(ns + "x" + i), p3, rdfOps.makeUri(ns + "y" + i))
+      triples += rdfOps.makeTriple(rdfOps.makeUri(ns + "y" + i), p3, rdfOps.makeUri(ns + "z" + i))
     }
 
     // C1(c_i)
     begin = 1
     end = 10 * scale
     for (i <- begin to end) {
-      triples += RDFTriple(ns + "c" + i, RDF.`type`.getURI, c1)
+      triples += rdfOps.makeTriple(rdfOps.makeUri(ns + "c" + i), rdfOps.makeUri(RDF.`type`.getURI), c1)
     }
 
     // make RDD
@@ -118,25 +120,25 @@ object SetOfRulesTest {
     new RDFGraphNative(triplesRDD)
   }
 
-  def runNaive(graph: RDFGraphNative, rules: Seq[Rule]) = {
+  def runNaive(graph: RDFGraphNative, rules: Seq[Rule]): Unit = {
     val reasoner = new ForwardRuleReasonerNaive(sc, rules.toSet)
     val res = reasoner.apply(graph)
     RDFGraphWriter.writeTriplesToDisk(res.toRDD(), "/tmp/spark-tests/naive")
   }
 
-  def runNative(graph: RDFGraphNative, rules: Seq[Rule]) = {
+  def runNative(graph: RDFGraphNative, rules: Seq[Rule]): Unit = {
     val reasoner = new ForwardRuleReasonerOptimizedNative(sparkSession, rules.toSet)
     val res = reasoner.apply(graph)
     RDFGraphWriter.writeTriplesToDisk(res.toRDD(), "/tmp/spark-tests/optimized-native")
   }
 
-  def runSQL(graph: RDFGraphNative, rules: Seq[Rule]) = {
-    // create Dataframe based graph
-    val graphDataframe = new RDFGraphDataFrame(graph.toDataFrame(sparkSession)).cache()
-
-    val reasoner = new ForwardRuleReasonerOptimizedSQL(sparkSession, rules.toSet)
-    val res = reasoner.apply(graphDataframe)
-    RDFGraphWriter.writeDataframeToDisk(res.toDataFrame(), "/tmp/spark-tests/optimized-sql")
-    reasoner.showExecutionStats()
-  }
+//  def runSQL(graph: RDFGraphNative, rules: Seq[Rule]) = {
+//    // create Dataframe based graph
+//    val graphDataframe = new RDFGraphDataFrame(graph.toDataFrame(sparkSession)).cache()
+//
+//    val reasoner = new ForwardRuleReasonerOptimizedSQL(sparkSession, rules.toSet)
+//    val res = reasoner.apply(graphDataframe)
+//    RDFGraphWriter.writeDataframeToDisk(res.toDataFrame(), "/tmp/spark-tests/optimized-sql")
+//    reasoner.showExecutionStats()
+//  }
 }

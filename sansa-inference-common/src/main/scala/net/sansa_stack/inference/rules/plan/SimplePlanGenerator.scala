@@ -61,8 +61,10 @@ class SimplePlanGenerator(schema: SchemaPlus) {
     * @return the root node of the logical plan
     */
   def generateLogicalPlan(rule: Rule): RelNode = {
+    planner.close()
     // generate SQL query
     val sqlQuery = sqlGenerator.generateSQLQuery(rule)
+    println(sqlQuery)
 
     // parse to SQL node
     val sqlNode = Try(planner.parse(sqlQuery))
@@ -81,8 +83,16 @@ class SimplePlanGenerator(schema: SchemaPlus) {
     * @return the root node of the logical plan
     */
   def generateLogicalPlan(rules: Seq[Rule]): RelNode = {
+    planner.close()
     // generate SQL query
-    val sqlQuery = rules.map(sqlGenerator.generateSQLQuery _).mkString("\tUNION \n")
+//    val sqlQuery = rules.map(sqlGenerator.generateSQLQuery _).mkString("\tUNION \n")
+//    val sqlQuery = " select * from triples a, triples b where a.s='foo' and b.s='foo' "
+    val sqlQuery =
+      """
+        |SELECT rel0.s, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', rel1.o
+        | FROM TRIPLES rel1 INNER JOIN TRIPLES rel0 ON rel1.s=rel0.s
+        | WHERE rel1.p='http://www.w3.org/2000/01/rdf-schema#domain'
+      """.stripMargin
 
     // parse to SQL node
     val sqlNode = Try(planner.parse(sqlQuery))
@@ -102,6 +112,10 @@ object SimplePlanGenerator {
     val planGenerator = new SimplePlanGenerator(TriplesSchema.get())
 
     val rules = RuleUtils.load("rules/rdfs-simple.rules")
+    rules.foreach(rule => {
+      println(rule)
+      planGenerator.generateLogicalPlan(rule).explain(new RelWriterImpl(new PrintWriter(System.out)))
+    })
 
     val plan = planGenerator.generateLogicalPlan(Seq(rules(0), rules(1)))
 

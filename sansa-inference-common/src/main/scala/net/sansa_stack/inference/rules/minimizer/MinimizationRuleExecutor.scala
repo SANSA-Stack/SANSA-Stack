@@ -64,6 +64,10 @@ abstract class MinimizationRuleExecutor extends Logging {
       while (continue) {
         curGraph = batch.rules.foldLeft(curGraph) {
           case (graph, rule) =>
+            debug(
+              s"""
+                 |=== Applying Rule ${rule.ruleName} ===
+                """.stripMargin)
             val startTime = System.nanoTime()
             val result = rule(graph)
             val runTime = System.nanoTime() - startTime
@@ -108,4 +112,6 @@ abstract class MinimizationRuleExecutor extends Logging {
 
     curGraph
   }
+
+  override def debug(msg: => String): Unit = println(msg)
 }

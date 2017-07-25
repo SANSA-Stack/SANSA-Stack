@@ -6,8 +6,9 @@ import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 
+import net.sansa_stack.inference.data.RDF
 import net.sansa_stack.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator}
-import net.sansa_stack.inference.spark.data.model.AbstractRDFGraph
+import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark
 import net.sansa_stack.inference.spark.rules.RuleExecutor
 
 /**
@@ -15,9 +16,9 @@ import net.sansa_stack.inference.spark.rules.RuleExecutor
   *
   * @author Lorenz Buehmann
   */
-abstract class ForwardRuleReasonerOptimized[V, G <: AbstractRDFGraph[V, G]]
-(sparkSession: SparkSession, rules: Set[Rule], ruleExecutor: RuleExecutor[V, G])
-  extends AbstractForwardRuleReasoner[V, G] {
+abstract class ForwardRuleReasonerOptimized[Rdf <: RDF, D, N <: Rdf#Node, T <: Rdf#Triple, G <: AbstractRDFGraphSpark[Rdf, D, G]]
+(sparkSession: SparkSession, rules: Set[Rule], ruleExecutor: RuleExecutor[Rdf, D, N, T, G])
+  extends AbstractForwardRuleReasoner[Rdf, D, G] {
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 
