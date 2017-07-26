@@ -9,14 +9,14 @@ import net.sansa_stack.rdf.spark.stats.RDFStatistics
 
 object RDFStats {
   def main(args: Array[String]) = {
-   /* if (args.length < 2) {
+    if (args.length < 2) {
       System.err.println(
         "Usage: RDF Statistics <input> <output>")
       System.exit(1)
-    }*/
-    val input = "src/main/resources/rdf.nt"//args(0)//"src/main/resources/rdf.nt"
+    }
+    val input = args(0) //"src/main/resources/rdf.nt"
     val rdf_stats_file = new File(input).getName
-    val output = "src/main/resources/rdfstats"//args(1)
+    val output = args(1)
     val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
