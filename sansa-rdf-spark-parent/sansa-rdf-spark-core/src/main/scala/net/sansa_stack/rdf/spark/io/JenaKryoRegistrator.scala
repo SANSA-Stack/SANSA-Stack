@@ -1,10 +1,8 @@
 package net.sansa_stack.rdf.spark.io
 
 import com.esotericsoftware.kryo.Kryo
-import net.sansa_stack.rdf.spark.io.JenaKryoSerializers._
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.spark.model.TripleRDD
+import net.sansa_stack.rdf.spark.io.JenaKryoSerializers._
 import org.apache.spark.serializer.KryoRegistrator
 
 /**
