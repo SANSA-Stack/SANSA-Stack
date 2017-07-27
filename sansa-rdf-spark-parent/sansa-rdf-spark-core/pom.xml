@@ -30,6 +30,12 @@
 			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
