@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.spark.io.turtle
 
 import java.io.ByteArrayInputStream
 
+import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.riot.{Lang, RDFDataMgr}
@@ -11,8 +12,8 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
 
 import scala.util.{Failure, Success, Try}
-
 import net.sansa_stack.rdf.spark.io.rdf._
+
 
 /**
   * A custom relation that represents RDF triples loaded from files in Turtle syntax.
@@ -21,7 +22,8 @@ import net.sansa_stack.rdf.spark.io.rdf._
   * @param userSchema
   * @param sqlContext
   */
-class TurtleRelation(location: String, userSchema: StructType)
+@Experimental
+private[turtle] class TurtleRelation(location: String, userSchema: StructType)
                     (@transient val sqlContext: SQLContext)
     extends BaseRelation
       with TableScan
