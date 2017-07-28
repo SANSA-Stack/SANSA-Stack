@@ -1,29 +1,26 @@
 package org.sansa_stack.query.spark.sparqlify
 
+import java.io.ByteArrayInputStream
+
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
-import org.apache.jena.graph.Triple
-import org.apache.spark.rdd.RDD
+import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
+import org.apache.jena.query.Query
 import org.apache.spark.sql.SparkSession
 import org.scalatest._
 
-import benchmark.testdriver.SPARQLConnection2
-import benchmark.testdriver.TestDriver
+import benchmark.generator.Generator
+import benchmark.serializer.SerializerModel
 import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
+import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
 import org.apache.jena.query.ResultSetFormatter
 import org.apache.jena.riot.RDFDataMgr
+import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
-import benchmark.generator.Generator
-import benchmark.serializer.SerializerModel
-import org.apache.jena.riot.RDFFormat
-import benchmark.testdriver.LocalSPARQLParameterPool
-import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
-import org.apache.jena.query.Query
-import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
-import org.apache.jena.graph.Node
+
 
 class TestRdfPartitionSpark extends FlatSpec {
 
@@ -57,7 +54,12 @@ class TestRdfPartitionSpark extends FlatSpec {
 
     //val rdfStr: String = """<http://ex.org/Nile> <http://ex.org/length> "6800"^^<http://ex.org/km> ."""
     //val triples: List[Triple] = //RDFDataMgr.createIteratorTriples(getClass.getResourceAsStream("/dbpedia-01.nt"), Lang.NTRIPLES, null).asScala.toList
-    val triples = model.getGraph.find(Node.ANY, Node.ANY, Node.ANY).toList.asScala
+
+    val rdfStr: String = """<http://example.org/#Spiderman> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://example.org/#Superhero> ."""
+    val triples: List[Triple] = RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(rdfStr.getBytes), Lang.NTRIPLES, null).asScala.toList
+
+
+    //val triples = model.getGraph.find(Node.ANY, Node.ANY, Node.ANY).toList.asScala
     val graphRdd = sparkSession.sparkContext.parallelize(triples)
 
     //val graphRdd = NTripleReader.load(sparkSession, "classpath:dbpedia-01.nt")
@@ -75,7 +77,7 @@ class TestRdfPartitionSpark extends FlatSpec {
       .end()
       .create()
 
-            val str = """
+            var str = """
 PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
 PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -88,6 +90,8 @@ WHERE {
     <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> rdfs:comment ?comment .
 }
 """
+
+    str = "SELECT * { ?s ?p ?o }"
 
     println(ResultSetFormatter.asText(qef.createQueryExecution(str).execSelect()))
 
