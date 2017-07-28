@@ -28,7 +28,7 @@ class RDFReader(implicit val session: SparkSession) {
     * @return the [[RDD]] of triples
     */
   def load(path: URI, lang: RDFLang.Value): RDD[Triple] = {
-    session.sparkContext.rdf()
+//    session.sparkContext.rdf()
     load(session, path.toString)
   }
 

@@ -163,7 +163,7 @@ object WholeFileRdfXmlDataSource extends RdfXmlDataSource[PortableDataStream] {
     def partitionedFileString(ignored: Any): UTF8String = {
       ScalaUtils.tryWithResource(createInputStream(conf, file.filePath)) { inputStream =>
         UTF8String.fromBytes(ByteStreams.toByteArray(inputStream))
-      }
+      }.get // TODO handle errors
     }
 
     parser.parse(
