@@ -1,5 +1,6 @@
 package net.sansa_stack.rdf.spark.io.turtle
 
+import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path, Seekable}
 import org.apache.hadoop.io.compress._
@@ -9,11 +10,13 @@ import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext
 import org.apache.hadoop.util.LineReader
 import org.apache.log4j.Logger
 import org.slf4j.LoggerFactory
+
 import util.control.Breaks._
 
 /**
   * @author Lorenz Buehmann
   */
+@Experimental
 class TurtleRecordReader(val recordDelimiterBytes: Array[Byte]) extends RecordReader[LongWritable, Text]{
 
   val LOG = LoggerFactory.getLogger(classOf[TurtleRecordReader])

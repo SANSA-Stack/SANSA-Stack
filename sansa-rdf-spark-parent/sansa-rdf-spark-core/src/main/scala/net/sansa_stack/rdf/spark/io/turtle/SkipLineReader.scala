@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.spark.io.turtle
 
 import java.io.InputStream
 
+import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream
 import org.apache.hadoop.io.Text
@@ -9,9 +10,11 @@ import org.apache.hadoop.mapreduce.lib.input.{SplitLineReader, UncompressedSplit
 import org.apache.hadoop.util.LineReader
 
 /**
+  *
   * @author Lorenz Buehmann
   */
-class SkipLineReader(in: FSDataInputStream, conf: Configuration,
+@Experimental
+private[turtle] class SkipLineReader(in: FSDataInputStream, conf: Configuration,
                      recordDelimiterBytes: Array[Byte], splitLength: Long)
   extends SplitLineReader(in, conf, recordDelimiterBytes) {
 

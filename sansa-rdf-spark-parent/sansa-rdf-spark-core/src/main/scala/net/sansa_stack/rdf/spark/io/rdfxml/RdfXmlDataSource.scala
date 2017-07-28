@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.io.rdfxml
 import java.io.InputStream
 
 import com.google.common.io.ByteStreams
-import net.sansa_stack.rdf.spark.utils.Utils
+import net.sansa_stack.rdf.spark.utils.ScalaUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
@@ -161,7 +161,7 @@ object WholeFileRdfXmlDataSource extends RdfXmlDataSource[PortableDataStream] {
                          file: PartitionedFile,
                          parser: JenaParser): Iterator[InternalRow] = {
     def partitionedFileString(ignored: Any): UTF8String = {
-      Utils.tryWithResource(createInputStream(conf, file.filePath)) { inputStream =>
+      ScalaUtils.tryWithResource(createInputStream(conf, file.filePath)) { inputStream =>
         UTF8String.fromBytes(ByteStreams.toByteArray(inputStream))
       }
     }
