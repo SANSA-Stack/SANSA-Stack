@@ -19,7 +19,7 @@ class TripleRDD(@transient graphRDD: JenaSparkRDD#Graph) extends Serializable wi
     graphRDD.map(_.getSubject)
 
   def getPredicates: RDD[JenaSparkRDD#URI] =
-    graphRDD.map(_.getPredicate)
+    graphRDD.map(_.getPredicate.asInstanceOf[Node_URI])
 
   def getObjects: RDD[JenaSparkRDD#Node] =
     graphRDD.map(_.getObject)
