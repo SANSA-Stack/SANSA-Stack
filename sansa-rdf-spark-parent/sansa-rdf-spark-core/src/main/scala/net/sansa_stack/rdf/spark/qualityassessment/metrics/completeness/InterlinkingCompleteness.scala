@@ -4,6 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils
+import net.sansa_stack.rdf.spark.utils.Vocabularies
 
 /*
  * This metric measures the interlinking completeness. Since any resource of a
@@ -31,9 +32,9 @@ object InterlinkingCompleteness extends Serializable {
   def apply(dataset: RDD[Triple]) = {
 
     /*
-   * isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
-    union
-    isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
+   		* isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
+    			union
+   		  isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
    */
 
     val Interlinked =
@@ -48,10 +49,16 @@ object InterlinkingCompleteness extends Serializable {
     val numSubj = Interlinked.map(_.getSubject).distinct().count()
     val numObj = Interlinked.map(_.getSubject).distinct().count()
 
-    val numResources = Interlinked.count();
+    val numResources = numSubj + numObj
     val numInterlinkedResources = Interlinked.count()
 
-    val value = numInterlinkedResources / numResources;
+    val value = if (numResources > 0)
+      numInterlinkedResources / numResources;
+    else 0
+
+    def dcatify() = "<addProperty>$value<Add[rp[ery>"
+
+    value
   }
 
   /*

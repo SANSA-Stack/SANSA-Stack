@@ -15,12 +15,12 @@ import org.apache.flink.core.fs.FileSystem
 class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
   def run(): DataSet[String] = {
-    Used_Classes(rdfgraph, env)
-      .union(DistinctEntities(rdfgraph, env))
-      .union(DistinctSubjects(rdfgraph, env))
-      .union(DistinctObjects(rdfgraph, env))
-      .union(PropertyUsage(rdfgraph, env))
-      .union(SPO_Vocabularies(rdfgraph, env))
+    Used_Classes(rdfgraph, env).Voidify
+      .union(DistinctEntities(rdfgraph, env).Voidify)
+      .union(DistinctSubjects(rdfgraph, env).Voidify)
+      .union(DistinctObjects(rdfgraph, env).Voidify)
+      .union(PropertyUsage(rdfgraph, env).Voidify)
+      .union(SPO_Vocabularies(rdfgraph, env).Voidify)
   }
 
   def voidify(stats: DataSet[String], source: String, output: String): Unit = {
@@ -87,7 +87,7 @@ class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serial
 }
 object Used_Classes {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Used_Classes(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Used_Classes(rdfgraph, env)
 
 }
 
@@ -112,7 +112,7 @@ class Classes_Defined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Ser
 }
 object Classes_Defined {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Classes_Defined(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Classes_Defined(rdfgraph, env)
 }
 
 class PropertiesDefined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -133,7 +133,7 @@ class PropertiesDefined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends S
 }
 object PropertiesDefined {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new PropertiesDefined(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new PropertiesDefined(rdfgraph, env)
 }
 
 class PropertyUsage(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -166,7 +166,7 @@ class PropertyUsage(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
 }
 object PropertyUsage {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new PropertyUsage(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new PropertyUsage(rdfgraph, env)
 }
 
 class DistinctEntities(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -186,7 +186,7 @@ class DistinctEntities(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object DistinctEntities {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctEntities(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctEntities(rdfgraph, env)
 }
 
 class DistinctSubjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -205,7 +205,7 @@ class DistinctSubjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object DistinctSubjects {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctSubjects(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctSubjects(rdfgraph, env)
 }
 
 class DistinctObjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -224,7 +224,7 @@ class DistinctObjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Ser
 }
 object DistinctObjects {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctObjects(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctObjects(rdfgraph, env)
 }
 
 class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
@@ -260,7 +260,7 @@ class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object SPO_Vocabularies {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new SPO_Vocabularies(rdfgraph, env).Voidify()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new SPO_Vocabularies(rdfgraph, env)
 }
 
 
