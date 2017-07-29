@@ -6,6 +6,7 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.zip.ZipInputStream
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.rdf.spark.io.index.TriplesIndexer
 import org.apache.jena.rdf.model.{ModelFactory, ResourceFactory}
 import org.apache.jena.riot.Lang
 import org.apache.jena.vocabulary.RDF
@@ -30,6 +31,10 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
     val cnt = triples.count()
     assert(cnt == 9)
+
+    triples.show(false)
+
+    new TriplesIndexer().index(triples).show()
   }
 
   test("loading Turtle file into DataFrame should result in 12 triples") {
