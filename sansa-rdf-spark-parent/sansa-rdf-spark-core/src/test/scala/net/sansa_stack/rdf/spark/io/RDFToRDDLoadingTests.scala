@@ -1,5 +1,7 @@
 package net.sansa_stack.rdf.spark.io
 
+import java.nio.file.Paths
+
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
@@ -32,6 +34,24 @@ class RDFToRDDLoadingTests extends FunSuite with SharedSparkContext {
 
     val cnt = triples.count()
     assert(cnt == 12)
+  }
+
+  test("loading RDF/XML file into RDD should result in 9 triples") {
+    val path = getClass.getResource("/loader/data.rdf").getPath
+
+    val triples = sc.rdfxml(path)
+
+    val cnt = triples.count()
+    assert(cnt == 9)
+  }
+
+  test("loading RDF/XML file into RDD should result in 122 triples") {
+    val path = Paths.get("/tmp/lubm/100").toAbsolutePath.toString
+
+    val triples = sc.rdfxml(path)
+
+    val cnt = triples.count()
+    println(cnt)
   }
 
 }

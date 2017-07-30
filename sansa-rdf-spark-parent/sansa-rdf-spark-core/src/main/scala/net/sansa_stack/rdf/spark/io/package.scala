@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream
 
 import com.typesafe.config.{Config, ConfigFactory}
 import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
+import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
@@ -174,6 +175,15 @@ package object rdf {
       if(allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
 
       rdd.map(new NTriplesStringToJenaTriple())
+    }
+
+    def rdfxml: String => RDD[Triple] = path => {
+      val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
+      confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
+
+      sc.newAPIHadoopFile(
+        path, classOf[RiotFileInputFormat], classOf[LongWritable], classOf[Triple], confHadoop)
+        .map{case (_, v) => v}
     }
 
     /**
