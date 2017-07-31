@@ -34,7 +34,7 @@ make load-data
 ```
 Go on and open [Zeppelin](http://localhost), choose any available notebook and try to execute it.
 
-![Apache Zeppelin OWL](./docs/images/Zeppelin_OWL_Screenshot.png "Apache Zeppelin Running OWL Examples")
+![Apache Zeppelin RDF](./docs/images/Zeppelin_RDF_Screenshot.png "Apache Zeppelin Running RDF Examples")
 
 To restart Zeppelin without restarting the whole stack:
 ```
@@ -54,6 +54,7 @@ make cli-triples-reader
 make cli-triple-ops
 make cli-triples-writer
 make cli-pagerank
+make cli-rdf-stats
 make cli-inferencing
 make cli-sparklify
 make cli-owl-reader-manchester
