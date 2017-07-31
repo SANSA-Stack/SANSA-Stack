@@ -4,12 +4,12 @@
   <parent>
     <artifactId>sansa-inference-parent_2.11</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.2.1-jena-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
-  <version>0.2.1-jena-SNAPSHOT</version>
+  <version>0.3.0-SNAPSHOT</version>
   <name>Inference API - Common</name>
   <description>A set of common objects used in the Inference API</description>
 
