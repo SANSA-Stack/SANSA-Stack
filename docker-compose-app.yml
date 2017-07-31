@@ -36,6 +36,16 @@ services:
     volumes:
       - ./examples/data:/data
       - ./output:/output
+  rdf-stats:
+    build: ./examples
+    networks:
+      - spark-net
+    environment:
+      SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.rdf.RDFStats"
+      SPARK_APPLICATION_ARGS: "/data/rdf.nt /output/output_folder"
+    volumes:
+      - ./examples/data:/data
+      - ./output:/output
   # Fails
   pagerank:
     build: ./examples

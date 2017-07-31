@@ -34,6 +34,9 @@ cli-triples-writer: build-cli
 cli-pagerank: build-cli
 	docker-compose -f docker-compose-app.yml up pagerank
 
+cli-rdf-stats: build-cli
+		docker-compose -f docker-compose-app.yml up rdf-stats
+
 cli-inferencing: build-cli
 	docker-compose -f docker-compose-app.yml up inferencing
 
