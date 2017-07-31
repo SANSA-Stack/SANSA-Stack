@@ -103,6 +103,54 @@
       "progressUpdateIntervalMs": 500
     },
     {
+      "text": "import net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\nimport org.apache.spark.sql.SparkSession\nimport java.net.{URI \u003d\u003e JavaURI}\nimport net.sansa_stack.rdf.spark.stats._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triplesRDD \u003d NTripleReader.load(spark, JavaURI.create(input))\n\nval propertyDist \u003d PropertyUsage(triplesRDD, spark).PostProc()\n                                .map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + propertyDist.mkString(\"\\n\"))",
+      "user": "anonymous",
+      "dateUpdated": "Jul 31, 2017 10:15:50 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\n\nimport org.apache.spark.sql.SparkSession\n\nimport java.net.{URI\u003d\u003eJavaURI}\n\nimport net.sansa_stack.rdf.spark.stats._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[133] at map at NTripleReader.scala:39\n\npropertyDist: Array[String] \u003d Array(author\t25, source\t18, description\t17, date\t11, permission\t4, fr\t3, de\t3, eo\t2, es\t2, version\t2, influenced\t2, en\t2, otherVersions\t2, deathPlace\t2, givenName\t2, hidetitle\t1, mk\t1, wikidata\t1, gallery\t1, width\t1, sv\t1, inline\t1, artist\t1, year\t1)\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "Property Distribution\tFrequency\n author\t25\nsource\t18\ndescription\t17\ndate\t11\npermission\t4\nfr\t3\nde\t3\neo\t2\nes\t2\nversion\t2\ninfluenced\t2\nen\t2\notherVersions\t2\ndeathPlace\t2\ngivenName\t2\nhidetitle\t1\nmk\t1\nwikidata\t1\ngallery\t1\nwidth\t1\nsv\t1\ninline\t1\nartist\t1\nyear\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1501496020213_206112619",
+      "id": "20170731-101340_79632211",
+      "dateCreated": "Jul 31, 2017 10:13:40 AM",
+      "dateStarted": "Jul 31, 2017 10:15:45 AM",
+      "dateFinished": "Jul 31, 2017 10:15:48 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
       "user": "anonymous",
       "config": {},
       "settings": {
@@ -110,9 +158,9 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1501496020213_206112619",
-      "id": "20170731-101340_79632211",
-      "dateCreated": "Jul 31, 2017 10:13:40 AM",
+      "jobName": "paragraph_1501496145833_-86361131",
+      "id": "20170731-101545_1335119985",
+      "dateCreated": "Jul 31, 2017 10:15:45 AM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
