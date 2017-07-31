@@ -1,9 +1,9 @@
 {
   "paragraphs": [
     {
-      "text": "import java.io.File\nimport java.net.URI\n\nimport net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport net.sansa_stack.inference.spark.data.writer.RDFGraphWriter\nimport net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}\nimport org.apache.spark.sql.SparkSession\n\n// load triples from disk\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval output \u003d \"hdfs://namenode:8020/data/output/\"\nval argprofile \u003d \"rdfs\"\nval profile \u003d argprofile match {\n  case \"rdfs\"      \u003d\u003e ReasoningProfile.RDFS\n  case \"owl-horst\" \u003d\u003e ReasoningProfile.OWL_HORST\n}\n\n// the degree of parallelism\nval parallelism \u003d 4\n\n// load triples from disk\nval graph \u003d RDFGraphLoader.loadFromDisk(spark, URI.create(input), parallelism)\nprintln(s\"|G|\u003d${graph.size()}\")\n\n// create reasoner\nval reasoner \u003d profile match {\n  case RDFS \u003d\u003e new ForwardRuleReasonerRDFS(sc, parallelism)\n  case RDFS_SIMPLE \u003d\u003e\n    val r \u003d new ForwardRuleReasonerRDFS(sc, parallelism)\n    r.level \u003d RDFSLevel.SIMPLE\n    r\n  case OWL_HORST \u003d\u003e new ForwardRuleReasonerOWLHorst(sc)\n  case RDFS      \u003d\u003e new ForwardRuleReasonerRDFS(sc)\n}\n\n// compute inferred graph\nval inferredGraph \u003d reasoner.apply(graph)\nprintln(s\"|G_inferred|\u003d${inferredGraph.size()}\")\n\n// write triples to disk\nRDFGraphWriter.writeToDisk(inferredGraph, output)",
+      "text": "import java.io.File\nimport java.net.URI\n\nimport net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport net.sansa_stack.inference.spark.data.writer.RDFGraphWriter\nimport net.sansa_stack.inference.spark.forwardchaining.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataset, TransitiveReasoner }\nimport org.apache.spark.sql.SparkSession\n\n// load triples from disk\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval output \u003d \"hdfs://namenode:8020/data/output/\"\nval argprofile \u003d \"rdfs\"\n\nval profile \u003d argprofile match {\n      case \"rdfs\"        \u003d\u003e ReasoningProfile.RDFS\n      case \"rdfs-simple\" \u003d\u003e ReasoningProfile.RDFS_SIMPLE\n      case \"owl-horst\"   \u003d\u003e ReasoningProfile.OWL_HORST\n      case \"transitive\"  \u003d\u003e ReasoningProfile.TRANSITIVE\n\n}\n\n// the degree of parallelism\nval parallelism \u003d 4\n\n// load triples from disk\nval graph \u003d RDFGraphLoader.loadFromDisk(spark, URI.create(input), parallelism)\nprintln(s\"|G|\u003d${graph.size()}\")\n\n// create reasoner\nval reasoner \u003d profile match {\n   case TRANSITIVE \u003d\u003e new TransitiveReasoner(spark.sparkContext, parallelism)\n   case RDFS       \u003d\u003e new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)\n   case RDFS_SIMPLE \u003d\u003e\n   var r \u003d new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism) //.level.+(RDFSLevel.SIMPLE)\n     r.level \u003d RDFSLevel.SIMPLE\n     r\n   case OWL_HORST \u003d\u003e new ForwardRuleReasonerOWLHorst(spark.sparkContext)\n}\n\n// compute inferred graph\nval inferredGraph \u003d reasoner.apply(graph)\nprintln(s\"|G_inferred|\u003d${inferredGraph.size()}\")\n\n// write triples to disk\nRDFGraphWriter.writeToDisk(inferredGraph, output)",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 2:12:31 PM",
+      "dateUpdated": "Jul 31, 2017 12:15:50 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -19,21 +19,21 @@
         "forms": {}
       },
       "results": {
-        "code": "ERROR",
+        "code": "SUCCESS",
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport java.io.File\n\nimport java.net.URI\n\nimport net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}\n\nimport net.sansa_stack.inference.rules.ReasoningProfile._\n\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\n\nimport net.sansa_stack.inference.spark.data.writer.RDFGraphWriter\n\nimport net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}\n\nimport org.apache.spark.sql.SparkSession\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\noutput: String \u003d hdfs://namenode:8020/data/output/\n\nargprofile: String \u003d rdfs\n\nprofile: net.sansa_stack.inference.rules.ReasoningProfile.Value \u003d RDFS\n\nparallelism: Int \u003d 4\n\ngraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[60] at map at RDFGraphLoader.scala:46)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\norg.apache.spark.SparkException: Job aborted due to stage failure: Task 3 in stage 21.0 failed 4 times, most recent failure: Lost task 3.3 in stage 21.0 (TID 44, 172.28.0.5, executor 0): java.lang.ArrayIndexOutOfBoundsException: 2\n\tat net.sansa_stack.inference.utils.NTriplesStringToRDFTriple.apply(NTriplesStringToRDFTriple.scala:15)\n\tat net.sansa_stack.inference.utils.NTriplesStringToRDFTriple.apply(NTriplesStringToRDFTriple.scala:10)\n\tat scala.collection.Iterator$$anon$11.next(Iterator.scala:409)\n\tat org.apache.spark.util.Utils$.getIteratorSize(Utils.scala:1762)\n\tat org.apache.spark.rdd.RDD$$anonfun$count$1.apply(RDD.scala:1158)\n\tat org.apache.spark.rdd.RDD$$anonfun$count$1.apply(RDD.scala:1158)\n\tat org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:1951)\n\tat org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:1951)\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:87)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:99)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:322)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)\n\tat java.lang.Thread.run(Thread.java:745)\n\nDriver stacktrace:\n  at org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1435)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1423)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1422)\n  at scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n  at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:48)\n  at org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:1422)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:802)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:802)\n  at scala.Option.foreach(Option.scala:257)\n  at org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:802)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:1650)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1605)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1594)\n  at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:48)\n  at org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:628)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1925)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1938)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1951)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1965)\n  at org.apache.spark.rdd.RDD.count(RDD.scala:1158)\n  at net.sansa_stack.inference.spark.data.model.RDFGraph.size(RDFGraph.scala:69)\n  ... 60 elided\nCaused by: java.lang.ArrayIndexOutOfBoundsException: 2\n  at net.sansa_stack.inference.utils.NTriplesStringToRDFTriple.apply(NTriplesStringToRDFTriple.scala:15)\n  at net.sansa_stack.inference.utils.NTriplesStringToRDFTriple.apply(NTriplesStringToRDFTriple.scala:10)\n  at scala.collection.Iterator$$anon$11.next(Iterator.scala:409)\n  at org.apache.spark.util.Utils$.getIteratorSize(Utils.scala:1762)\n  at org.apache.spark.rdd.RDD$$anonfun$count$1.apply(RDD.scala:1158)\n  at org.apache.spark.rdd.RDD$$anonfun$count$1.apply(RDD.scala:1158)\n  at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:1951)\n  at org.apache.spark.SparkContext$$anonfun$runJob$5.apply(SparkContext.scala:1951)\n  at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:87)\n  at org.apache.spark.scheduler.Task.run(Task.scala:99)\n  at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:322)\n  ... 3 more\n"
+            "data": "\nimport java.io.File\n\nimport java.net.URI\n\nimport net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}\n\nimport net.sansa_stack.inference.rules.ReasoningProfile._\n\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\n\nimport net.sansa_stack.inference.spark.data.writer.RDFGraphWriter\n\nimport net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataset, TransitiveReasoner}\n\nimport org.apache.spark.sql.SparkSession\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\noutput: String \u003d hdfs://namenode:8020/data/output/\n\nargprofile: String \u003d rdfs\n\nprofile: net.sansa_stack.inference.rules.ReasoningProfile.Value \u003d RDFS\n\nparallelism: Int \u003d 4\n\ngraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[92] at flatMap at RDFGraphLoader.scala:45)\n|G|\u003d106\n\nreasoner: net.sansa_stack.inference.spark.forwardchaining.TransitiveReasoner \u003d net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerRDFS@24708342\n\ninferredGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[132] at distinct at ForwardRuleReasonerRDFS.scala:209)\n|G_inferred|\u003d195\n"
           }
         ]
       },
       "apps": [],
-      "jobName": "paragraph_1494503001288_-816991434",
-      "id": "20170511-114321_696797203",
-      "dateCreated": "May 11, 2017 11:43:21 AM",
-      "dateStarted": "May 11, 2017 2:12:31 PM",
-      "dateFinished": "May 11, 2017 2:12:34 PM",
-      "status": "ERROR",
+      "jobName": "paragraph_1501502646527_985634075",
+      "id": "20170731-120406_1649830490",
+      "dateCreated": "Jul 31, 2017 12:04:06 PM",
+      "dateStarted": "Jul 31, 2017 12:15:50 PM",
+      "dateFinished": "Jul 31, 2017 12:15:57 PM",
+      "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
@@ -44,9 +44,9 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1494503177314_1156213819",
-      "id": "20170511-114617_1529428228",
-      "dateCreated": "May 11, 2017 11:46:17 AM",
+      "jobName": "paragraph_1501503287502_-938762787",
+      "id": "20170731-121447_2118263645",
+      "dateCreated": "Jul 31, 2017 12:14:47 PM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
@@ -54,25 +54,25 @@
   "name": "Inference",
   "id": "2CF1WF6DE",
   "angularObjects": {
-    "2CGHKSHQE:shared_process": [],
-    "2CJ2XGWS5:shared_process": [],
-    "2CJVJ7H25:shared_process": [],
-    "2CFDQ88J1:shared_process": [],
-    "2CF4FNTUQ:shared_process": [],
-    "2CF62TZ57:shared_process": [],
-    "2CFX24SPE:shared_process": [],
-    "2CG9ZF4HU:shared_process": [],
-    "2CJK51V3F:shared_process": [],
-    "2CFVMS3NN:shared_process": [],
-    "2CHCF37RD:shared_process": [],
-    "2CGNA8VJR:shared_process": [],
-    "2CJ2RETPG:shared_process": [],
-    "2CFFRTQZB:shared_process": [],
-    "2CG3ENR1N:shared_process": [],
-    "2CFBN49Y8:shared_process": [],
-    "2CH3B7K9P:shared_process": [],
-    "2CGBGHEW1:shared_process": [],
-    "2CHQC624J:shared_process": []
+    "2CRMMX5VQ:shared_process": [],
+    "2CQZ261AQ:shared_process": [],
+    "2CRGYZEAS:shared_process": [],
+    "2CQVD872K:shared_process": [],
+    "2CS6T2Y9S:shared_process": [],
+    "2CPXKVEJT:shared_process": [],
+    "2CQF9JN54:shared_process": [],
+    "2CRF44JPN:shared_process": [],
+    "2CPECD6PQ:shared_process": [],
+    "2CPS4UVBP:shared_process": [],
+    "2CR8N18WD:shared_process": [],
+    "2CQT8QKA5:shared_process": [],
+    "2CPAYNTH2:shared_process": [],
+    "2CRDH3XVW:shared_process": [],
+    "2CQ6C383H:shared_process": [],
+    "2CNHZU4WQ:shared_process": [],
+    "2CPKKHR6C:shared_process": [],
+    "2CR8BAWV7:shared_process": [],
+    "2CP61ZSFU:shared_process": []
   },
   "config": {},
   "info": {}
