@@ -180,6 +180,7 @@ package object rdf {
     def rdfxml: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
       confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
+      confHadoop.setInt("sansa.rdf.parser.numthreads", 4)
 
       sc.newAPIHadoopFile(
         path, classOf[RiotFileInputFormat], classOf[LongWritable], classOf[Triple], confHadoop)
