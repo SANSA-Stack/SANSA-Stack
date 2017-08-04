@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.utils
 
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.jena.graph.{Node, NodeFactory, Node_Variable, Triple}
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.jena.vocabulary.OWL2._
@@ -96,6 +96,26 @@ object TripleUtils {
         NodeFactory.createVariable(name)
       }
       node
+    }
+
+    /**
+      * @return all nodes of the triple pattern
+      */
+    def nodes(): Seq[Node] = {
+      var nodes: Seq[Node] = Seq()
+
+      nodes +:= tp.getSubject
+      nodes +:= tp.getPredicate
+      nodes +:= tp.getObject
+
+      nodes
+    }
+
+    /**
+      * @return all var nodes of the triple pattern
+      */
+    def vars(): Seq[Node] = {
+      nodes.filter(_.isVariable)
     }
   }
 
