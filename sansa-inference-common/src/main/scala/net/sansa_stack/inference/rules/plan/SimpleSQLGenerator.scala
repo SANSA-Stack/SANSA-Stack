@@ -78,6 +78,7 @@ class SimpleSQLGenerator(val sqlSchema: SQLSchema = SQLSchemaDefault) extends SQ
     //    expressions += (if(target.getPredicate.isVariable) expressionFor(target.getPredicate, target) else target.getPredicate.toString)
     //    expressions += (if(target.getObject.isVariable) expressionFor(target.getObject, target) else target.getObject.toString)
 
+    var i = 0
     requiredVars.foreach{ v =>
       if (v.isVariable) {
         var done = false
@@ -86,18 +87,29 @@ class SimpleSQLGenerator(val sqlSchema: SQLSchema = SQLSchemaDefault) extends SQ
           val expr = expressionFor(v, tp)
 
           if(expr != "NULL") {
-            expressions += expr
+            expressions += withAlias(expr, i)
             done = true
           }
         }
       } else {
-        expressions += "'" + v.toString + "'"
+        val expr = "'" + v.toString + "'"
+        expressions += withAlias(expr, i)
       }
+      i += 1
     }
 
     sql += expressions.mkString(", ")
 
     sql
+  }
+
+  private def withAlias(expr: String, i: Int): String = {
+    val appendix = i match {
+        case 0 => "s"
+        case 1 => "p"
+        case 2 => "o"
+    }
+    expr + " AS " + appendix
   }
 
   private def fromPart(body: Set[Triple]): String = {

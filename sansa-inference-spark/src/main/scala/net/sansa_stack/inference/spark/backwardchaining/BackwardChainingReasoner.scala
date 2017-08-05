@@ -42,23 +42,6 @@ class BackwardChainingReasoner(val rules: Set[Rule], val graph: RDFGraph) extend
     val rdd = processTree(tree)
 //    println(rdd.count())
 
-
-
-//    rules.foreach(r => {
-//      // check if the head is more general than the triple in question
-//      var head = r.headTriplePatterns()
-//
-//      head.foreach(headTP => {
-//        val subsumes = headTP.subsumes(tp)
-//
-//        if(subsumes) {
-//          val boundRule = createBinding(r, headTP, tp)
-//          println(boundRule.bodyTriplePatterns().mkString(";"))
-//        }
-//      })
-//
-//    })
-
     false
   }
 
@@ -105,7 +88,6 @@ class BackwardChainingReasoner(val rules: Set[Rule], val graph: RDFGraph) extend
 
         case filter: BindableFilter =>
           val operands = filter.getCondition.asInstanceOf[RexCall].getOperands
-          operands.get(0).
 
         case _ =>
       }
@@ -244,31 +226,6 @@ class BackwardChainingReasoner(val rules: Set[Rule], val graph: RDFGraph) extend
 
   }
 
-  def join(rdd1: RDD[Triple], rdd2: RDD[Triple],
-           idx1: Int, idx2: Int,
-           selectIndexes: Seq[Int],
-           targetTP: TriplePattern): RDD[Triple] = {
-    val tmp1 = idx1 match {
-      case 1 => rdd1.map(t => (t.getSubject, (t.getPredicate, t.getObject)))
-      case 2 => rdd1.map(t => (t.getPredicate, (t.getSubject, t.getObject)))
-      case 3 => rdd1.map(t => (t.getObject, (t.getSubject, t.getPredicate)))
-      case _ => throw new IllegalArgumentException(s"$idx1 is not supported for triples")
-    }
-
-    val tmp2 = idx2 match {
-      case 1 => rdd2.map(t => (t.getSubject, (t.getPredicate, t.getObject)))
-      case 2 => rdd2.map(t => (t.getPredicate, (t.getSubject, t.getObject)))
-      case 3 => rdd2.map(t => (t.getObject, (t.getSubject, t.getPredicate)))
-      case _ => throw new IllegalArgumentException(s"$idx2 is not supported for triples")
-    }
-
-    val joined = tmp1.join(tmp2)
-
-
-
-
-    rdd1
-  }
 
 }
 
