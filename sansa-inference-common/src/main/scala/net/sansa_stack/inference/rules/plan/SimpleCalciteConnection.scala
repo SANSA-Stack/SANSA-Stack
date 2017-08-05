@@ -20,7 +20,7 @@ import org.apache.calcite.tools.Frameworks
 class SimpleCalciteConnection extends CalciteConnection{
 
   val rootSchema = Frameworks.createRootSchema(true)
-  var schema: String = ""
+  var schema: String = null
 
   override def config(): CalciteConnectionConfig = null
 
@@ -32,7 +32,7 @@ class SimpleCalciteConnection extends CalciteConnection{
 
   override def getProperties: Properties = null
 
-  override def setSchema(schema: String): Unit = {}
+  override def setSchema(s: String): Unit = schema = s
 
   override def setAutoCommit(autoCommit: Boolean): Unit = {}
 

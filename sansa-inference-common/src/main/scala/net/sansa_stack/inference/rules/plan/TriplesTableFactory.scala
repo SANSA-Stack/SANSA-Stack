@@ -7,6 +7,7 @@ import scala.collection.JavaConverters._
 import org.apache.calcite.DataContext
 import org.apache.calcite.linq4j.{Enumerable, Linq4j}
 import org.apache.calcite.rel.`type`.{RelDataType, RelDataTypeFactory, RelProtoDataType}
+import org.apache.calcite.rex.RexNode
 import org.apache.calcite.schema.Schema.TableType
 import org.apache.calcite.schema._
 import org.apache.calcite.sql.`type`.SqlTypeName
@@ -28,7 +29,7 @@ class TriplesTableFactory extends TableFactory[Table] {
 
   }
 
-  class TriplesTable(val rows: List[Array[AnyRef]]) extends ScannableTable {
+  class TriplesTable(val rows: List[Array[AnyRef]]) extends ScannableTable with FilterableTable with ProjectableFilterableTable {
 
     val protoRowType = new RelProtoDataType() {
       override def apply(a0: RelDataTypeFactory): RelDataType = {
@@ -42,10 +43,16 @@ class TriplesTableFactory extends TableFactory[Table] {
 
     override def scan(root: DataContext): Enumerable[Array[AnyRef]] = Linq4j.asEnumerable(rows.asJava)
 
+    override def scan(root: DataContext, filters: util.List[RexNode]): Enumerable[Array[AnyRef]] = Linq4j.asEnumerable(rows.asJava)
+
+    override def scan(root: DataContext, filters: util.List[RexNode], projects: Array[Int]): Enumerable[Array[AnyRef]] = Linq4j.asEnumerable(rows.asJava)
+
     override def getStatistic: Statistic = Statistics.UNKNOWN
 
     override def getJdbcTableType: TableType = Schema.TableType.TABLE
 
     override def getRowType(typeFactory: RelDataTypeFactory): RelDataType = protoRowType.apply(typeFactory)
+
+
   }
 }

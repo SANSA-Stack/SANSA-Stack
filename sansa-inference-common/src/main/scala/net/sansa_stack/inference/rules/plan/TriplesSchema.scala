@@ -24,6 +24,6 @@ object TriplesSchema {
 
     connection.getRootSchema.getSubSchema(connection.getSchema)
 
-    connection.getRootSchema.getSubSchema("TRIPLES")
+//    connection.getRootSchema.getSubSchema("TRIPLES")
   }
 }
