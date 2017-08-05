@@ -2,6 +2,9 @@ package net.sansa_stack.inference.spark.backwardchaining
 
 import java.io.PrintWriter
 
+import org.apache.calcite.interpreter.Bindables.{BindableFilter, BindableJoin, BindableProject}
+import org.apache.calcite.rel.{RelNode, RelVisitor}
+
 import net.sansa_stack.inference.rules.RuleSets
 import net.sansa_stack.inference.rules.plan.{SimplePlanGenerator, SimpleSQLGenerator, TriplesSchema}
 import net.sansa_stack.inference.spark.backwardchaining.tree.{AndNode, OrNode}
@@ -13,11 +16,14 @@ import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.reasoner.rulesys.impl.BindingVector
 import org.apache.jena.vocabulary.RDF
+
 import net.sansa_stack.inference.utils.RuleUtils._
 import net.sansa_stack.inference.utils.TripleUtils._
 import org.apache.calcite.rel.externalize.RelWriterImpl
+import org.apache.calcite.rex.RexCall
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.catalyst.plans.logical.Project
 
 /**
   * @author Lorenz Buehmann
@@ -56,6 +62,8 @@ class BackwardChainingReasoner(val rules: Set[Rule], val graph: RDFGraph) extend
     false
   }
 
+  val planGenerator = new SimplePlanGenerator(TriplesSchema.get())
+
   private def processTree(tree: AndNode): RDD[Triple] = {
     // 1. look for asserted triples in the graph
     var rdd = graph.triples // lookup(tree.element)
@@ -63,6 +71,8 @@ class BackwardChainingReasoner(val rules: Set[Rule], val graph: RDFGraph) extend
     // 2. process the inference rules that can infer the triple pattern
     tree.children.foreach(child => {
       println(s"processing rule ${child.element}")
+
+      processRule(child.element)
 
       val targetTp = child.element.headTriplePatterns().head
 
@@ -80,6 +90,35 @@ class BackwardChainingReasoner(val rules: Set[Rule], val graph: RDFGraph) extend
     })
 
     rdd
+  }
+
+  class RDDRelVisitor(rdd: RDD[Triple]) extends RelVisitor {
+    override def visit(node: RelNode, ordinal: Int, parent: RelNode): Unit = {
+      println(node)
+
+      val rdd = node match {
+        case project: BindableProject =>
+
+
+        case join: BindableJoin =>
+
+
+        case filter: BindableFilter =>
+          val operands = filter.getCondition.asInstanceOf[RexCall].getOperands
+          operands.get(0).
+
+        case _ =>
+      }
+
+      super.visit(node, ordinal, parent)
+    }
+
+    override def go(node: RelNode): RelNode = super.go(node)
+  }
+
+  private def processRule(rule: Rule) = {
+    val plan = planGenerator.generateLogicalPlan(rule)
+    new RDDRelVisitor(graph.triples).go(plan)
   }
 
   private def selectedVars(body: TriplePattern, head: TriplePattern): Seq[Int] = {
