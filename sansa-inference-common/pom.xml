@@ -97,8 +97,8 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>src/main/scala,src/main/resources</sourceDirectory>
-    <testSourceDirectory>src/test/scala</testSourceDirectory>
+    <!--<sourceDirectory>src/main/scala,src/main/resources</sourceDirectory>-->
+    <!--<testSourceDirectory>src/test/scala</testSourceDirectory>-->
     <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
     <!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
     <plugins>

@@ -18,8 +18,10 @@ abstract class Node[T, C <: Node[_, _]](val element: T, var children: Seq[C] = S
   override def toString: String = print(0)
 
   def print(indent: Int): String = {
-    renderElement() + "\n" + children.map(c => "---" * indent + c.print(indent + 1)).mkString("\n")
+    indentS(renderElement(), indent) + "\n" + children.map(c => "---" * indent + c.print(indent + 1)).mkString("\n")
   }
+
+  def indentS(s: String, i: Int): String = "---" * i + s
 
   def renderElement(): String = element.toString
 }

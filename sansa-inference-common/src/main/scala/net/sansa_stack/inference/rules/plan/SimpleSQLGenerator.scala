@@ -22,7 +22,7 @@ class SimpleSQLGenerator(val sqlSchema: SQLSchema = SQLSchemaDefault) extends SQ
   var idx = 0
 
   def generateSQLQuery(rule: Rule): String = {
-    info(s"Rule:\n$rule")
+    debug(s"Rule:\n$rule")
 
     reset()
 
