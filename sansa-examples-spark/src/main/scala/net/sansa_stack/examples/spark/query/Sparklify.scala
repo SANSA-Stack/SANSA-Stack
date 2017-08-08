@@ -8,8 +8,10 @@ import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.spark.sql.SparkSession
+import java.awt.Desktop
 
 import scala.collection.mutable
+import java.awt.Desktop
 
 /*
  * Run SPARQL queries over Spark using Sparqlify approach.
@@ -22,7 +24,7 @@ object Sparklify {
         "Usage: Sparklify <input> ")
       System.exit(1)
     }
-    val input =args(0)
+    val input = args(0)
     val optionsList = args.drop(1).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
@@ -48,11 +50,19 @@ object Sparklify {
       .getOrCreate()
 
     val graphRdd = NTripleReader.load(sparkSession, URI.create(input))
-    
+
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
+    
+    val port = 7531
+    
     val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
-    val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
+    val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
+    
+    if (Desktop.isDesktopSupported()) {
+      Desktop.getDesktop().browse(new URI("http://localhost:" + port + "/sparql"));
+    }
+
     server.join()
     sparkSession.stop
 
