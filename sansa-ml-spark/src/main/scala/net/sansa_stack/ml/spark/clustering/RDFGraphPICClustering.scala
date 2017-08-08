@@ -6,20 +6,35 @@ import org.apache.spark.graphx.{ Graph, EdgeDirection }
 import scala.math.BigDecimal
 import org.apache.commons.math3.util.MathUtils
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.graphx._
 
 class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
-                            val graph: Graph[Int, Int],
+                            val graph: Graph[String, String],
                             private val k: Int,
-                            private val maxIterations: Int) extends Serializable {
+                            private val maxIterations: Int
+                            ) extends Serializable {
+  /*
+	 * undirected graph : orient =0
+	 * directed graph : orient =1.
+	 * 
+	 * Jaccard similarity measure : selectYourSimilarity = 0
+	 * Batet similarity measure : selectYourSimilarity = 1
+	 * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
+	 * The Contrast model similarity : selectYourSimilarity = 3
+	 * The Ratio model similarity : selectYourSimilarity = 4
+	 */
+   val orient = 0
+   val selectYourSimilarity = 0
 
   def clusterRdd(): RDD[(Long, Long, Double)] = {
-    SimilaritesInPIC
+    SimilaritesInPIC(orient,selectYourSimilarity)
   }
+   
 
   /*
 	 * Computes different similarities function for a given graph @graph.
 	 */
-  def SimilaritesInPIC(): RDD[(Long, Long, Double)] = {
+  def SimilaritesInPIC(e: Int, f:Int): RDD[(Long, Long, Double)] = {
     /*
 	 * Collect all the edges of the graph
 	*/
@@ -27,7 +42,15 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
     /*
 	 * Collect neighbor IDs of all the vertices
 	 */
-    val neighbors = graph.collectNeighborIds(EdgeDirection.Either)
+    def neighbor(d: Int): VertexRDD[Array[VertexId]]={
+      var neighbor: VertexRDD[Array[VertexId]] = graph.collectNeighborIds(EdgeDirection.Either)
+      
+       if(d==1){
+        neighbor = graph.collectNeighborIds(EdgeDirection.Out)
+      }
+       neighbor
+    }
+    val neighbors = neighbor(e)
     /*
 	 * Collect distinct vertices of the graph
 	 */
@@ -68,127 +91,78 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
 
       rst.size.toDouble
     }
-    // Logarithm base 2 
+   /*
+			 * computing algorithm based 2 
+			 */
     val LOG2 = math.log(2)
     val log2 = { x: Double => math.log(x) / LOG2 }
 
-    val vertexCount = vertices.count()
-
-    // Similarity based on Information Theory
-
-    var icc = 0.0
-    //val logC = MathUtils.log(10.0, vertexCount.toDouble)
-    val logC = math.log(vertexCount.toDouble)
-
-    def informationContent(a: Long): Double = {
-      if (a == 0) { return 0.0 }
-      //      1 - (MathUtils.log(10.0, a.toDouble) / logC)
-      1 - (math.log(a.toDouble) / logC)
-
-    }
-
-    def sigmaIc(a: List[Long]): Double = {
-      var sigma = 0.0
-      for (k <- 0 until a.length) yield {
-        val d = neighbors.lookup(a(k)).distinct.head.toSet
-        val s = informationContent(d.size.toLong)
-        sigma = sigma.+(s)
-
-      }
-
-      sigma
-
-    }
-
-    def ic(a: Long): Double = {
-      val d = neighbors.lookup(a).distinct.head.toSet
-      if (d.isEmpty) { return 0.0 }
-      else {
-
-        return sigmaIc(d.toList)
-      }
-    }
-
-    def mostICA(a: Long, b: Long): Double = {
-
-      val an = neighbors.lookup(a).distinct.head.toSet
-      val an1 = neighbors.lookup(b).distinct.head.toSet
-      if (an.isEmpty || an1.isEmpty) { return 0.0 }
-      val commonNeighbor = an.intersect(an1).toArray
-
-      if (commonNeighbor.isEmpty) { return 0.0 }
-      else {
-        return sigmaIc(commonNeighbor.toList)
-      }
-
-    }
-
-    /*
-			 * Lin similarity measure 
-			 */
-    def simLin(e: Long, d: Long): Double = {
-      if (ic(e) > 0.0 || ic(d) > 0.0) {
-        (2.0.abs * (mostICA(e, d)).abs) / (ic(e).abs + ic(d).abs)
-      } else { return 0.0 }
-    }
+    def selectSimilarity(a: Long, b: Long, c: Int): Double ={
+      var s = 0.0
+      if(c ==0){
 
     /*
 			 * Jaccard similarity measure 
 			 */
-    def simJaccard(a: Long, b: Long): Double = {
-      intersection(a, b) / union(a, b).toDouble
+    
+     s = intersection(a, b) / union(a, b).toDouble
 
     }
+      if(c ==1){
     /*
 			 * Batet similarity measure 
 			 */
-    def simBatet(a: Long, b: Long): Double = {
+    
       val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
-      log2(cal.toDouble)
+      s = log2(cal.toDouble)
     }
+      
+      if(c ==2){
     /*
 			 * Rodríguez and Egenhofer similarity measure
 			 */
 
     var g = 0.8
-    def simRE(a: Long, b: Long): Double = {
-      (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
+    
+      s = (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
     }
+      if(c ==3){
     /*
 			 * The Contrast model similarity
 			 */
     var gamma = 0.3
     var alpha = 0.3
     var beta = 0.3
-    def simCM(a: Long, b: Long): Double = {
-      ((gamma * intersection(a, b)) - (alpha * difference(a, b)) - (beta * difference(b, a))).toDouble.abs
+   
+     s = ((gamma * intersection(a, b)) - (alpha * difference(a, b)) - (beta * difference(b, a))).toDouble.abs
     }
+      if(c ==4){
     /*
 			 * The Ratio model similarity
 			 */
     var alph = 0.5
     var beth = 0.5
-    def simRM(a: Long, b: Long): Double = {
-      ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
+    
+     s = ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
+    
+      }
+      s
     }
-
     /*
 			 * Calculate similarities between different pair of vertices in the given graph
 			 */
 
-    val ver = edge.map { x =>
+    val weightedGraph = edge.map { x =>
       {
-        val x1 = x.dstId.toLong
-        val x2 = x.srcId.toLong
-        val allneighbor = neighbors.lookup(x1).distinct.head
-        val allneighbor1 = neighbors.lookup(x2).distinct.head
-        //(x1, x2, jaccard(x1, x2).abs)
-        //(x1, x2, simBatet(x1, x2).abs)
-        (x1, x2, simRE(x1, x2).abs)
+        val x2 = x.dstId.toLong
+        val x1 = x.srcId.toLong
+        
+        (x1, x2, selectSimilarity(x1, x2, f))
       }
     }
 
-    sparkSession.sparkContext.parallelize(ver)
+    weightedGraph.foreach(x => println(x))
+    sparkSession.sparkContext.parallelize(weightedGraph)
   }
 
   def pic() = {
@@ -220,5 +194,5 @@ class RDFGraphPICClustering(@transient val sparkSession: SparkSession,
 }
 
 object RDFGraphPICClustering {
-  def apply(sparkSession: SparkSession, graph: Graph[Int, Int], k: Int, maxIterations: Int) = new RDFGraphPICClustering(sparkSession, graph, k, maxIterations)
+  def apply(sparkSession: SparkSession, graph: Graph[String, String], k: Int, maxIterations: Int) = new RDFGraphPICClustering(sparkSession, graph, k, maxIterations)
 }
