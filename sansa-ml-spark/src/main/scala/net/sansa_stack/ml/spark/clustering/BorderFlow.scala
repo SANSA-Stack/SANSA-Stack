@@ -34,18 +34,7 @@ import java.io._
 
 object BorderFlow {
   def apply(spark: SparkSession, edgesInputPath: String) = {
-  /*def main(args: Array[String]) {
-
   
-  val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName(s"BorderFlow ")
-      .getOrCreate()
-
-    Logger.getRootLogger.setLevel(Level.WARN)
-    * 
-    */
     
      
   /*
@@ -833,60 +822,7 @@ def nul(c:List[List[Long]]) : List[List[Long]] = {
 
   bigList = reassignment(bigList,X)
   bigList = nul(bigList)
-   def avgA(c: List[Long], d:Long, l:Int) : Double = {
-    var sumA = 0.0
-    val sizeC = c.length
-     
-     
-    for(k <- 0 until c.length){
-     val scd = selectSimilarity(c(k), d, l)
-     sumA = sumA + scd
-    }
-    sizeC/sumA
-  }
-  
-  
-  
-  def avgB(c: List[Long], d:Long, l:Int) : Double = {
-    var sumB = 0.0
-    val sizeC = c.length
-    for(k <- 0 until c.length){
-     val scd = selectSimilarity(c(k), d, l)
-     sumB = sumB + scd
-    }
-    sizeC/sumB
-  }
-  
-  
-  def AiBi(m: List[List[Long]] , n: List[Long]) : List[Double] = {
-    var Ai = 0.0
-    var Bi = 0.0
-    var avg: List[Double] = List()
-    var ab: List[Double] = List()
    
-    var sx: List[Double] = List()
-    for(k <- 0 until n.length){
-      for(p <- 0 until m.length){
-       
-        if(m(p).contains(n(k))){
-          Ai = avgA(m(p), n(k), f)
-        }
-        else{
-          avg = avg.::(avgB(m(p), n(k), f))
-        }
-      }
-      val bi = avg.max
-      ab = ab.::(bi)
-      ab = ab.::(Ai)
-      val si = (bi - Ai) / (ab.max)
-      sx = sx.::(si)
-       
-      }
-    sx
-  }
-  
-  val evaluate = AiBi( bigList,X)
-  println(s"evaluate: $evaluate\n")
   println(s"List of Cluster assignments after Hardening: $bigList\n")
    
    bigList
