@@ -22,6 +22,8 @@ import org.apache.spark.rdd.PairRDDFunctions
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
+import java.io.StringWriter
+ import java.io._
 
 object RDFGraphPICApp {
 
@@ -84,8 +86,7 @@ object RDFGraphPICApp {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-    // Load the graph 
-    val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, "src/main/resources/Cluster/sample1.txt")
+    
     // Load the RDF dataset 
     val RDFfile = sparkSession.sparkContext.textFile("/Users/tinaboroukhian/Desktop/Clustering_sampledata.txt").map(line =>
       RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.getBytes), Lang.NTRIPLES, null).next())
@@ -116,23 +117,45 @@ object RDFGraphPICApp {
     })
     
     
-    val graph1 = org.apache.spark.graphx.Graph(vertices, edgess)
+    val graph = org.apache.spark.graphx.Graph(vertices, edgess)
      
-
+   
     val model = RDFGraphPICClustering(sparkSession, graph, params.k, params.maxIterations).run()
+    
+    val file = "PIC.txt"
 
-    val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
-    val assignments = clusters.toList.sortBy { case (k, v) => v.length }
-    val assignmentsStr = assignments
-      .map {
-        case (k, v) =>
-          s"$k -> ${v.sorted.mkString("[", ",", "]")}"
-      }.mkString(",")
-    val sizesStr = assignments.map {
-      _._2.size
-    }.sorted.mkString("(", ",", ")")
+    val pw = new PrintWriter(new File(file))
+    
+   
+val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
+     val assignments = clusters.toList.sortBy { case (k, v) => v.length}
+     val assignmentsStr = assignments
+       .map { case (k, v) =>
+       s"$k -> ${v.sorted.mkString("[", ",", "]")}"
+     }.mkString(",")
+     val sizesStr = assignments.map {
+       _._2.size
+     }.sorted.mkString("(", ",", ")")
     println(s"Cluster assignments: $assignmentsStr\ncluster sizes: $sizesStr")
-
+     def makerdf(a: List[Long]) : List[String] ={
+       var listuri : List[String] = List()
+       val b:List[VertexId] = a
+       for(i <- 0 until b.length ){
+          vertices.collect().map(v => {
+            if(b(i)==v._1) listuri = listuri.::(v._2)
+          })
+        
+         
+       }
+       listuri
+      
+     }
+     val listCluster = assignments.map(f => f._2.toList)
+     val m = listCluster.map(f => makerdf(f))
+     println(s"RDF Cluster assignments: $m\n")
+     pw.println(s"RDF Cluster assignments: $m\n")
+      pw.close
+ 
     sparkSession.sparkContext.stop()
   }
 
