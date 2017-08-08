@@ -485,7 +485,7 @@ object silviaClustering {
    
    
     val cluster1 = mergeMaxSim(edgeList)
-    //println(s" Cluster assignments: $cluster1\n")
+   
     
     var unionList: List[Long] = List()
     var unionList1: List[List[Long]] = List()
@@ -541,8 +541,7 @@ object silviaClustering {
     C
    }
     val hardening = subset(unionList1)
-   // println(s" Cluster assignments: $unionList1\n")
-   // println(s" Cluster assignments1: $hardening\n")
+  
     
     
     val hardening1 = subset(hardening).sortBy(_.length).reverse
@@ -567,7 +566,7 @@ object silviaClustering {
  
   val hardening2 = takeAllElements(hardening1,vArray)
   
- //println(s" Cluster assignments1: $hardening2\n")
+ 
  
   def omegaCluster( v:Long , c: List[Long]) : Double = {
          
@@ -627,75 +626,7 @@ def nul(c:List[List[Long]]) : List[List[Long]] = {
   val hardening3 = reassignment(hardening2,vArray)
   val hardening4 = nul(hardening3)
   
-  /* 
-  def avgA(c: List[Long], d:Long, l:Int) : Double = {
-    var sumA = 0.0
-    val sizeC = c.length
-     
-     
-    for(k <- 0 until c.length){
-     val scd = selectSimilarity(c(k), d, l)
-     sumA = sumA + scd
-    }
-    sizeC/sumA
-  }
-  
-  
-  
-  def avgB(c: List[Long], d:Long, l:Int) : Double = {
-    var sumB = 0.0
-    val sizeC = c.length
-    for(k <- 0 until c.length){
-     val scd = selectSimilarity(c(k), d, l)
-     sumB = sumB + scd
-    }
-    sizeC/sumB
-  }
-  def SI(a: Double, b: Double): Double ={
-    var s = 0.0
-    if(a > b){
-      s = 1 - (b/a)
-    }
-    if(a == b){
-      s = 0.0
-    }
-    if(a < b){
-     s = a/(b - 1)
-    }
-    s
-  }
-  
-  def AiBi(m: List[List[Long]] , n: List[Long]) : List[Double] = {
-    var Ai = 0.0
-    var Bi = 0.0
-    var avg: List[Double] = List()
-    var ab: List[Double] = List()
-   
-    var sx: List[Double] = List()
-    for(k <- 0 until n.length){
-      for(p <- 0 until m.length){
-       
-        if(m(p).contains(n(k))){
-          Ai = avgA(m(p), n(k), f)
-        }
-        else{
-          avg = avg.::(avgB(m(p), n(k), f))
-        }
-      }
-      val bi = avg.max
-      val v =SI(Ai,bi)
-      sx = sx.::(v)
-       
-      }
-    sx
-  }
-  
-  val evaluate = AiBi( hardening4,vArray)
-  println(s"evaluate: $evaluate\n")
-  * 
-  */
-  
-  //println(s" Cluster assignments2: $unionList1\n")
+ 
   
   if(g == 0){
     result = hardening4}
