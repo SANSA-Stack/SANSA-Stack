@@ -1,5 +1,7 @@
 package net.sansa_stack.ml.spark.clustering
 
+
+
 import scala.reflect.runtime.universe._
 import scopt.OptionParser
 import org.apache.log4j.{ Level, Logger }
@@ -8,7 +10,7 @@ import org.apache.spark.sql.SparkSession
 object BorderFlowApp {
 
   case class Params(
-      input: String = "src/main/resources/Cluster/sample1.txt") extends AbstractParams[Params] {
+      input: String = "/Users/tinaboroukhian/Desktop/Clustering_sampledata.txt") extends AbstractParams[Params] {
   }
   abstract class AbstractParams[T: TypeTag] {
 
