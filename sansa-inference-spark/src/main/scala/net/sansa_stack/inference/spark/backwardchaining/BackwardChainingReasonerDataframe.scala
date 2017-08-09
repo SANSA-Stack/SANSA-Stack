@@ -1,6 +1,8 @@
 package net.sansa_stack.inference.spark.backwardchaining
 
 
+import java.net.URI
+
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
@@ -13,6 +15,7 @@ import net.sansa_stack.inference.rules.plan.SimpleSQLGenerator
 import net.sansa_stack.inference.spark.backwardchaining.BackwardChainingReasonerDataframe.time
 import net.sansa_stack.inference.spark.backwardchaining.tree.{AndNode, OrNode}
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
+import net.sansa_stack.inference.spark.utils.NTriplesToParquetConverter.{DEFAULT_NUM_THREADS, DEFAULT_PARALLELISM}
 import net.sansa_stack.inference.utils.RuleUtils._
 import net.sansa_stack.inference.utils.{Logging, TripleUtils}
 
@@ -386,15 +389,20 @@ class BackwardChainingReasonerDataframe(
 
 object BackwardChainingReasonerDataframe {
 
+  val DEFAULT_PARALLELISM = 200
+  val DEFAULT_NUM_THREADS = 4
 
   def main(args: Array[String]): Unit = {
+    if (args.length == 0) sys.error("USAGE: BackwardChainingReasonerDataframe <INPUT_PATH>+ <NUM_THREADS>? <PARALLELISM>?")
 
-    val parallelism = 200
+    val inputPath = args(0)
+    val numThreads = if (args.length > 1)  args(1).toInt else DEFAULT_NUM_THREADS
+    val parallelism = if (args.length > 2)  args(2).toInt else DEFAULT_PARALLELISM
 
     // the SPARK config
     val session = SparkSession.builder
       .appName(s"Spark Backward Chaining")
-      .master("local[4]")
+      .master(s"local[$numThreads]")
             .config("spark.eventLog.enabled", "true")
       .config("spark.hadoop.validateOutputSpecs", "false") // override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -403,13 +411,11 @@ object BackwardChainingReasonerDataframe {
       .config("spark.sql.shuffle.partitions", parallelism)
       .config("spark.sql.autoBroadcastJoinThreshold", "10485760")
         .config("parquet.enable.summary-metadata", "false")
-        .config("spark.local.dir", "/home/user/work/datasets/spark/tmp")
+//        .config("spark.local.dir", "/home/user/work/datasets/spark/tmp")
       .getOrCreate()
 
     import session.implicits._
 //    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
-
-    val path = "/home/user/work/datasets/lubm/1000/univ-bench.nt"//args(0)
 
 //    val triples = RDFGraphLoader.loadFromDisk(session, path)
 //      .triples.map(t => RDFTriple(t.getSubject.toString(), t.getPredicate.toString(), t.getObject.toString()))
@@ -419,7 +425,7 @@ object BackwardChainingReasonerDataframe {
 //    val graph = session.createDataset(triples)//.cache()
 //    graph.write.mode(SaveMode.Append).parquet(tableDir)
 
-    val graph = session.read.parquet(args(0)).as[RDFTriple].cache()
+    val graph = session.read.parquet(inputPath).as[RDFTriple].cache()
     graph.createOrReplaceTempView("TRIPLES")
 
     // compute size here to have it cached
@@ -445,61 +451,61 @@ object BackwardChainingReasonerDataframe {
       NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#Person"))
     compare(tp, reasoner)
 
-//    // :s rdf:type VAR
-//    tp = Triple.create(
-//      NodeFactory.createURI("http://www.Department0.University0.edu/FullProfessor0"),
-//      RDF.`type`.asNode(),
-//      NodeFactory.createVariable("o"))
-//    compare(tp, reasoner)
-//
-//    // VAR :p VAR
-//    tp = Triple.create(
-//      NodeFactory.createVariable("s"),
-//      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#degreeFrom"),
-//      NodeFactory.createVariable("o"))
-//    compare(tp, reasoner)
-//
-//    // :s :p VAR
-//    tp = Triple.create(
-//      NodeFactory.createURI("http://www.Department4.University3.edu/GraduateStudent40"),
-//      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#degreeFrom"),
-//      NodeFactory.createVariable("o"))
-//    compare(tp, reasoner)
-//
-//    // VAR :p :o
-//    tp = Triple.create(
-//      NodeFactory.createVariable("s"),
-//      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#degreeFrom"),
-//      NodeFactory.createURI("http://www.University801.edu"))
-//    compare(tp, reasoner)
-//
-//    // :s VAR :o
-//    tp = Triple.create(
-//      NodeFactory.createURI("http://www.Department4.University3.edu/GraduateStudent40"),
-//      NodeFactory.createVariable("p"),
-//      NodeFactory.createURI("http://www.University801.edu"))
-//    compare(tp, reasoner)
-//
-//    // :s VAR VAR where :s is a resource
-//    tp = Triple.create(
-//      NodeFactory.createURI("http://www.Department4.University3.edu/GraduateStudent40"),
-//      NodeFactory.createVariable("p"),
-//      NodeFactory.createVariable("o"))
-//    compare(tp, reasoner)
-//
-//    // :s VAR VAR where :s is a class
-//    tp = Triple.create(
-//      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#Book"),
-//      NodeFactory.createVariable("p"),
-//      NodeFactory.createVariable("o"))
-//    compare(tp, reasoner)
-//
-//    // :s VAR VAR where :s is a property
-//    tp = Triple.create(
-//      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#undergraduateDegreeFrom"),
-//      NodeFactory.createVariable("p"),
-//      NodeFactory.createVariable("o"))
-//    compare(tp, reasoner)
+    // :s rdf:type VAR
+    tp = Triple.create(
+      NodeFactory.createURI("http://www.Department0.University0.edu/FullProfessor0"),
+      RDF.`type`.asNode(),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner)
+
+    // VAR :p VAR
+    tp = Triple.create(
+      NodeFactory.createVariable("s"),
+      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#degreeFrom"),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner)
+
+    // :s :p VAR
+    tp = Triple.create(
+      NodeFactory.createURI("http://www.Department4.University3.edu/GraduateStudent40"),
+      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#degreeFrom"),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner)
+
+    // VAR :p :o
+    tp = Triple.create(
+      NodeFactory.createVariable("s"),
+      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#degreeFrom"),
+      NodeFactory.createURI("http://www.University801.edu"))
+    compare(tp, reasoner)
+
+    // :s VAR :o
+    tp = Triple.create(
+      NodeFactory.createURI("http://www.Department4.University3.edu/GraduateStudent40"),
+      NodeFactory.createVariable("p"),
+      NodeFactory.createURI("http://www.University801.edu"))
+    compare(tp, reasoner)
+
+    // :s VAR VAR where :s is a resource
+    tp = Triple.create(
+      NodeFactory.createURI("http://www.Department4.University3.edu/GraduateStudent40"),
+      NodeFactory.createVariable("p"),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner)
+
+    // :s VAR VAR where :s is a class
+    tp = Triple.create(
+      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#Book"),
+      NodeFactory.createVariable("p"),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner)
+
+    // :s VAR VAR where :s is a property
+    tp = Triple.create(
+      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#undergraduateDegreeFrom"),
+      NodeFactory.createVariable("p"),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner)
 
     session.stop()
   }
