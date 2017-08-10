@@ -445,6 +445,12 @@
                                                 <exclude>META-INF/maven/**</exclude>
                                             </excludes>
                                         </filter>
+                                        <filter>
+                                            <artifact>org.apache.jena:*</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
                                     </filters>
                                     <finalName>dist-${project.artifactId}-${project.version}</finalName>
                                     <transformers>
@@ -531,7 +537,7 @@
                                     <goal>shade</goal>
                                 </goals>
                                 <configuration>
-                                    <minimizeJar>true</minimizeJar>
+                                    <!--<minimizeJar>true</minimizeJar>-->
                                     <artifactSet>
                                         <excludes>
                                             <exclude>org.apache.spark:spark-core_${scala.binary.version}</exclude>
@@ -628,6 +634,12 @@
                                                 <exclude>META-INF/*.RSA</exclude>
                                                 <exclude>META-INF/maven/**</exclude>
                                             </excludes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>org.apache.jena:*</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
                                         </filter>
                                     </filters>
                                     <finalName>dist-${project.artifactId}-${project.version}</finalName>
