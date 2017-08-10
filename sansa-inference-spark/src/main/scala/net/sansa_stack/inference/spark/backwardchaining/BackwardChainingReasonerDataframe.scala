@@ -18,11 +18,12 @@ import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.utils.NTriplesToParquetConverter.{DEFAULT_NUM_THREADS, DEFAULT_PARALLELISM}
 import net.sansa_stack.inference.utils.RuleUtils._
 import net.sansa_stack.inference.utils.{Logging, TripleUtils}
+import org.apache.jena.rdf.model.Resource
 
 import scala.concurrent.duration.FiniteDuration
 
 
-//case class RDFTriple(s: Node, p: Node, o: Node)
+// case class RDFTriple(s: Node, p: Node, o: Node)
 case class RDFTriple(s: String, p: String, o: String)
 
 /**
@@ -34,19 +35,17 @@ class BackwardChainingReasonerDataframe(
                                          val graph: Dataset[RDFTriple]) extends Logging {
 
   import org.apache.spark.sql.functions._
+  private implicit def resourceToNodeConverter(resource: Resource): Node = resource.asNode()
 
   val precomputeSchema: Boolean = true
 
-  var schema: Map[Node, Dataset[RDFTriple]] = Map()
+  lazy val schema: Map[Node, Dataset[RDFTriple]] = if (precomputeSchema) extractWithIndex(graph) else Map()
 
   def isEntailed(triple: Triple): Boolean = {
     isEntailed(new TriplePattern(triple))
   }
 
   def isEntailed(tp: TriplePattern): Boolean = {
-
-    if (precomputeSchema) schema = extractWithIndex(graph)
-
     val tree = buildTree(new AndNode(tp), Seq())
     println(tree.toString)
 
@@ -88,6 +87,26 @@ class BackwardChainingReasonerDataframe(
 
   private def lookup(tp: TriplePattern): Dataset[RDFTriple] = {
     lookup(tp.asTriple())
+  }
+
+  private def lookupSimple(tp: Triple): Dataset[RDFTriple] = {
+    info(s"Lookup data for $tp")
+    val s = tp.getSubject.toString()
+    val p = tp.getPredicate.toString()
+    val o = tp.getObject.toString()
+
+    var filteredGraph = graph
+
+    if(tp.getSubject.isConcrete) {
+      filteredGraph.filter(t => t.s.equals(s))
+    }
+    if(tp.getPredicate.isConcrete) {
+      filteredGraph = filteredGraph.filter(t => t.p.equals(p))
+    }
+    if(tp.getObject.isConcrete) {
+      filteredGraph = filteredGraph.filter(t => t.o.equals(o))
+    }
+    filteredGraph
   }
 
   private def lookup(tp: Triple): Dataset[RDFTriple] = {
@@ -196,7 +215,11 @@ class BackwardChainingReasonerDataframe(
     dataset.sparkSession.sql(sql).as[RDFTriple]
   }
 
-  val properties = Set(RDFS.subClassOf, RDFS.subPropertyOf, RDFS.domain, RDFS.range).map(p => p.asNode())
+  val properties = Set(
+    (RDFS.subClassOf, true, "SCO"),
+    (RDFS.subPropertyOf, true, "SPO"),
+    (RDFS.domain, false, "DOM"),
+    (RDFS.range, false, "RAN"))
   val DUMMY_VAR = NodeFactory.createVariable("VAR");
 
   /**
@@ -211,18 +234,25 @@ class BackwardChainingReasonerDataframe(
 
     // for each schema property p
     val index =
-      properties.map { p =>
+      properties.map { entry =>
+        val p = entry._1
+        val tc = entry._2
+        val alias = entry._3
+
         // get triples (s, p, o)
-        var triples = lookup(new TriplePattern(DUMMY_VAR, p, DUMMY_VAR))
+        var triples = lookupSimple(Triple.create(DUMMY_VAR, p, DUMMY_VAR))
+
+        // compute TC if necessary
+        if (tc) triples = computeTC(triples)
 
         // broadcast the triples
-        triples = broadcast(triples)
+        triples = broadcast(triples).alias(alias)
 
         // register as a table
         triples.createOrReplaceTempView(FmtUtils.stringForNode(p).replace(":", "_"))
 
         // add to index
-        (p -> triples)
+        (p.asNode() -> triples)
       }
     log.info("Finished schema extraction.")
 
@@ -232,17 +262,10 @@ class BackwardChainingReasonerDataframe(
   def query(tp: Triple): Dataset[RDFTriple] = {
     import org.apache.spark.sql.functions._
 
-    val domain = broadcast(graph.filter(t => t.p == RDFS.domain.toString)).alias("DOMAIN")
-    domain.createOrReplaceTempView("DOMAIN")
-
-    val range = broadcast(graph.filter(t => t.p == RDFS.range.toString)).alias("RANGE")
-    range.createOrReplaceTempView("RANGE")
-
-    val sco = broadcast(graph.filter(t => t.p == RDFS.subClassOf.toString)).alias("SCO")
-    sco.createOrReplaceTempView("SCO")
-
-    val spo = broadcast(graph.filter(t => t.p == RDFS.subPropertyOf.toString)).alias("SPO")
-    spo.createOrReplaceTempView("SPO")
+    val domain = schema.getOrElse(RDFS.domain, broadcast(graph.filter(t => t.p == RDFS.domain.toString)).alias("DOMAIN"))
+    val range = schema.getOrElse(RDFS.range, broadcast(graph.filter(t => t.p == RDFS.range.toString)).alias("RANGE"))
+    val sco = schema.getOrElse(RDFS.subClassOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subClassOf.toString))).alias("SCO"))
+    val spo = schema.getOrElse(RDFS.subPropertyOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subPropertyOf.toString))).alias("SPO"))
 
     // asserted triples
     var ds = lookup(tp)
@@ -325,11 +348,11 @@ class BackwardChainingReasonerDataframe(
           .select(types("s").alias("s"), lit(RDF.`type`.toString).alias("p"), sco("o").alias("o"))
           .as[RDFTriple]
 
-//        println(s"|rdf:type|=${ds.count()}")
-//        println(s"|rdfs2|=${rdfs2.count()}")
-//        println(s"|rdfs3|=${rdfs3.count()}")
-//        println(s"|rdf:type/rdfs2/rdfs3/|=${types.count()}")
-//        println(s"|rdfs9|=${rdfs9.count()}")
+//        log.info(s"|rdf:type|=${ds.count()}")
+//        log.info(s"|rdfs2|=${rdfs2.count()}")
+//        log.info(s"|rdfs3|=${rdfs3.count()}")
+//        log.info(s"|rdf:type/rdfs2/rdfs3/|=${types.count()}")
+//        log.info(s"|rdfs9|=${rdfs9.count()}")
 
 
 
@@ -384,10 +407,46 @@ class BackwardChainingReasonerDataframe(
     ds.distinct()
   }
 
+  /**
+    * Computes the transitive closure for a Dataset of triples. The assumption is that this Dataset is already
+    * filter by a single predicate.
+    *
+    * @param ds the Dataset of triples
+    * @return a Dataset containing the transitive closure of the triples
+    */
+  private def computeTC(ds: Dataset[RDFTriple]): Dataset[RDFTriple] = {
+    var tc = ds
+    tc.cache()
 
+    // the join is iterated until a fixed point is reached
+    var i = 1
+    var oldCount = 0L
+    var nextCount = tc.count()
+    do {
+      log.info(s"iteration $i...")
+      oldCount = nextCount
+
+      val joined = tc.alias("A")
+                  .join(tc.alias("B"), $"A.o" === $"B.s")
+                  .select($"A.s", $"A.p", $"B.o")
+                  .as[RDFTriple]
+
+      tc = tc
+        .union(joined)
+        .distinct()
+        .cache()
+      nextCount = tc.count()
+      i += 1
+    } while (nextCount != oldCount)
+
+    tc.unpersist()
+
+    log.info("TC has " + nextCount + " edges.")
+    tc
+  }
 }
 
-object BackwardChainingReasonerDataframe {
+object BackwardChainingReasonerDataframe extends Logging{
 
   val DEFAULT_PARALLELISM = 200
   val DEFAULT_NUM_THREADS = 4
@@ -430,7 +489,7 @@ object BackwardChainingReasonerDataframe {
 
     // compute size here to have it cached
     time {
-      println(s"|G|=${graph.count()}")
+      log.info(s"|G|=${graph.count()}")
     }
 
     val rules = RuleSets.RDFS_SIMPLE
@@ -455,6 +514,20 @@ object BackwardChainingReasonerDataframe {
     tp = Triple.create(
       NodeFactory.createURI("http://www.Department0.University0.edu/FullProfessor0"),
       RDF.`type`.asNode(),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner)
+
+    // :s rdfs:subClassOf VAR
+    tp = Triple.create(
+      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#ClericalStaff"),
+      RDFS.subClassOf.asNode(),
+      NodeFactory.createVariable("o"))
+    compare(tp, reasoner, true)
+
+    // :s rdfs:subPropertyOf VAR
+    tp = Triple.create(
+      NodeFactory.createURI("http://swat.cse.lehigh.edu/onto/univ-bench.owl#headOf"),
+      RDFS.subPropertyOf.asNode(),
       NodeFactory.createVariable("o"))
     compare(tp, reasoner)
 
@@ -510,15 +583,15 @@ object BackwardChainingReasonerDataframe {
     session.stop()
   }
 
-  def compare(tp: Triple, reasoner: BackwardChainingReasonerDataframe): Unit = {
+  def compare(tp: Triple, reasoner: BackwardChainingReasonerDataframe, show: Boolean = false): Unit = {
     time {
       val triples = reasoner.query(tp)
       println(triples.count())
-//      println(triples.show(false))
+      if (show) triples.show(false)
     }
 
 //    time {
-//      println(reasoner.isEntailed(tp))
+//      log.info(reasoner.isEntailed(tp))
 //    }
   }
 
@@ -527,7 +600,7 @@ object BackwardChainingReasonerDataframe {
     val t0 = System.nanoTime()
     val result = block    // call-by-name
     val t1 = System.nanoTime()
-    println("Elapsed time: " + FiniteDuration(t1 - t0, "ns").pretty)
+    log.info("Elapsed time: " + FiniteDuration(t1 - t0, "ns").pretty)
     result
   }
 }
@@ -570,8 +643,8 @@ object PrettyDuration {
     }
 
     def abbreviate(unit: TimeUnit): String = unit match {
-      case NANOSECONDS  => "ns"
-      case MICROSECONDS  => "Î¼s"
+      case NANOSECONDS   => "ns"
+      case MICROSECONDS  => "micros"
       case MILLISECONDS  => "ms"
       case SECONDS       => "s"
       case MINUTES       => "min"
