@@ -614,7 +614,7 @@
                                             <exclude>xmlenc:xmlenc</exclude>
                                             <exclude>org.gephi:*</exclude>
                                             <exclude>org.jfree:*</exclude>
-                                            <exclude>com.itextpdf:*</exclude
+                                            <exclude>com.itextpdf:*</exclude>
                                         </excludes>
 
                                     </artifactSet>
@@ -633,8 +633,7 @@
                                     <finalName>dist-${project.artifactId}-${project.version}</finalName>
                                     <outputDirectory>${project.build.directory}/shaded</outputDirectory>
                                     <transformers>
-                                        <transformer
-                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>net.sansa_stack.inference.spark.RDFGraphMaterializer</mainClass>
                                         </transformer>
