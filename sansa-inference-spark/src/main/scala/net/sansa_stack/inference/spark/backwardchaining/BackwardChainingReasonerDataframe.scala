@@ -84,13 +84,13 @@ class BackwardChainingReasonerDataframe(
     lookup(tp.asTriple())
   }
 
-  private def lookupSimple(tp: Triple): Dataset[RDFTriple] = {
+  private def lookupSimple(tp: Triple, triples: Dataset[RDFTriple] = graph): Dataset[RDFTriple] = {
     info(s"Lookup data for $tp")
     val s = tp.getSubject.toString()
     val p = tp.getPredicate.toString()
     val o = tp.getObject.toString()
 
-    var filteredGraph = graph
+    var filteredGraph = triples
 
     if(tp.getSubject.isConcrete) {
       filteredGraph.filter(t => t.s.equals(s))
@@ -215,6 +215,9 @@ class BackwardChainingReasonerDataframe(
     (RDFS.subPropertyOf, true, "SPO"),
     (RDFS.domain, false, "DOM"),
     (RDFS.range, false, "RAN"))
+
+
+
   val DUMMY_VAR = NodeFactory.createVariable("VAR")
 
   /**
@@ -227,6 +230,15 @@ class BackwardChainingReasonerDataframe(
   def extractWithIndex(graph: Dataset[RDFTriple]): Map[Node, Dataset[RDFTriple]] = {
     log.info("Started schema extraction...")
 
+    val bcProperties = session.sparkContext.broadcast(Set(
+      RDFS.subClassOf,
+      RDFS.subPropertyOf,
+      RDFS.domain,
+      RDFS.range).map(_.toString))
+
+
+    val schemaTriples = graph.filter(t => bcProperties.value.contains(t.p)).cache()
+
     // for each schema property p
     val index =
       properties.map { entry =>
@@ -235,7 +247,7 @@ class BackwardChainingReasonerDataframe(
         val alias = entry._3
 
         // get triples (s, p, o)
-        var triples = lookupSimple(Triple.create(DUMMY_VAR, p, DUMMY_VAR))
+        var triples = lookupSimple(Triple.create(DUMMY_VAR, p, DUMMY_VAR), schemaTriples)
 
         // compute TC if necessary
         if (tc) triples = computeTC(triples)
@@ -270,8 +282,15 @@ class BackwardChainingReasonerDataframe(
 
       if (tp.getPredicate.matches(RDF.`type`.asNode())) { // rdf:type data
 
-        // get all non rdf:type triples first
-        var instanceTriples = graph.filter(_.p != RDF.`type`.toString)
+        var instanceTriples = graph
+
+        // if s is concrete, we filter first
+        if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
+          instanceTriples = instanceTriples.filter(t => t.s == tp.getSubject.toString() || t.o == tp.getSubject.toString())
+        }
+
+        // get all non rdf:type triples
+        instanceTriples = instanceTriples.filter(_.p != RDF.`type`.toString)
 
         // enrich the instance data with super properties, i.e. rdfs5
         if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
