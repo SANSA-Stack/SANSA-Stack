@@ -1,24 +1,19 @@
 package net.sansa_stack.inference.spark.backwardchaining
 
 
-import java.net.URI
-
+import net.sansa_stack.inference.rules.RuleSets
+import net.sansa_stack.inference.rules.plan.SimpleSQLGenerator
+import net.sansa_stack.inference.spark.backwardchaining.tree.{AndNode, OrNode}
+import net.sansa_stack.inference.utils.RuleUtils._
+import net.sansa_stack.inference.utils.{Logging, TripleUtils}
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.jena.rdf.model.Resource
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.reasoner.rulesys.impl.BindingVector
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.{RDF, RDFS}
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
-import net.sansa_stack.inference.rules.RuleSets
-import net.sansa_stack.inference.rules.plan.SimpleSQLGenerator
-import net.sansa_stack.inference.spark.backwardchaining.BackwardChainingReasonerDataframe.time
-import net.sansa_stack.inference.spark.backwardchaining.tree.{AndNode, OrNode}
-import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
-import net.sansa_stack.inference.spark.utils.NTriplesToParquetConverter.{DEFAULT_NUM_THREADS, DEFAULT_PARALLELISM}
-import net.sansa_stack.inference.utils.RuleUtils._
-import net.sansa_stack.inference.utils.{Logging, TripleUtils}
-import org.apache.jena.rdf.model.Resource
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -47,11 +42,11 @@ class BackwardChainingReasonerDataframe(
 
   def isEntailed(tp: TriplePattern): Boolean = {
     val tree = buildTree(new AndNode(tp), Seq())
-    println(tree.toString)
+    log.info(tree.toString)
 
     val triples = processTree(tree)
     triples.explain(true)
-    println(triples.distinct().count())
+    log.info(triples.distinct().count().toString)
 
     false
   }
@@ -66,7 +61,7 @@ class BackwardChainingReasonerDataframe(
 
     // 2. process the inference rules that can infer the triple pattern
     val inferredTriples = tree.children.map(child => {
-      println(s"processing rule ${child.element}")
+      log.info(s"processing rule ${child.element}")
 
       // first process the children, i.e. we get the data for each triple pattern in the body of the rule
       val childrenTriples: Seq[Dataset[RDFTriple]] = child.children.map(processTree(_))
@@ -142,7 +137,7 @@ class BackwardChainingReasonerDataframe(
 
     rules.filterNot(visited.contains(_)).foreach(r => {
       // check if the head is more general than the triple in question
-      var head = r.headTriplePatterns()
+      val head = r.headTriplePatterns()
 
       head.foreach(headTP => {
         val subsumes = headTP.subsumes(tp)
@@ -210,7 +205,7 @@ class BackwardChainingReasonerDataframe(
 
     val tableName = s"TRIPLES_${rule.getName}"
     sql = sql.replace("TRIPLES", tableName)
-    println(s"SQL NEW: $sql")
+    log.info(s"SQL NEW: $sql")
     dataset.createOrReplaceTempView(tableName)
     dataset.sparkSession.sql(sql).as[RDFTriple]
   }
@@ -220,7 +215,7 @@ class BackwardChainingReasonerDataframe(
     (RDFS.subPropertyOf, true, "SPO"),
     (RDFS.domain, false, "DOM"),
     (RDFS.range, false, "RAN"))
-  val DUMMY_VAR = NodeFactory.createVariable("VAR");
+  val DUMMY_VAR = NodeFactory.createVariable("VAR")
 
   /**
     * Computes the triples for each schema property p, e.g. `rdfs:subClassOf` and returns it as mapping from p
@@ -470,6 +465,7 @@ object BackwardChainingReasonerDataframe extends Logging{
       .config("spark.sql.shuffle.partitions", parallelism)
       .config("spark.sql.autoBroadcastJoinThreshold", "10485760")
         .config("parquet.enable.summary-metadata", "false")
+//      .config("spark.sql.cbo.enabled", "true")path
 //        .config("spark.local.dir", "/home/user/work/datasets/spark/tmp")
       .getOrCreate()
 
@@ -480,9 +476,7 @@ object BackwardChainingReasonerDataframe extends Logging{
 //      .triples.map(t => RDFTriple(t.getSubject.toString(), t.getPredicate.toString(), t.getObject.toString()))
 ////      .triples.map(t => RDFTriple(FmtUtils.stringForNode(t.getSubject), FmtUtils.stringForNode(t.getPredicate), FmtUtils.stringForNode(t.getObject)))
 //
-//    val tableDir = "/home/user/work/datasets/lubm/table/1000"
 //    val graph = session.createDataset(triples)//.cache()
-//    graph.write.mode(SaveMode.Append).parquet(tableDir)
 
     val graph = session.read.parquet(inputPath).as[RDFTriple].cache()
     graph.createOrReplaceTempView("TRIPLES")
