@@ -1,11 +1,7 @@
 package net.sansa_stack.inference.spark.backwardchaining
 
+import scala.concurrent.duration.FiniteDuration
 
-import net.sansa_stack.inference.rules.RuleSets
-import net.sansa_stack.inference.rules.plan.SimpleSQLGenerator
-import net.sansa_stack.inference.spark.backwardchaining.tree.{AndNode, OrNode}
-import net.sansa_stack.inference.utils.RuleUtils._
-import net.sansa_stack.inference.utils.{CollectionUtils, Logging, TripleUtils}
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.rdf.model.Resource
 import org.apache.jena.reasoner.TriplePattern
@@ -13,23 +9,21 @@ import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.reasoner.rulesys.impl.BindingVector
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.{RDF, RDFS}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import scala.collection.mutable
-import scala.concurrent.duration.FiniteDuration
-
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
+import net.sansa_stack.inference.rules.RuleSets
+import net.sansa_stack.inference.rules.plan.SimpleSQLGenerator
+import net.sansa_stack.inference.spark.backwardchaining.tree.{AndNode, OrNode}
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
+import net.sansa_stack.inference.utils.RuleUtils._
+import net.sansa_stack.inference.utils.{CollectionUtils, Logging, TripleUtils}
 
-
-// case class RDFTriple(s: Node, p: Node, o: Node)
-case class RDFTriple(s: String, p: String, o: String)
 
 /**
   * @author Lorenz Buehmann
   */
-class BackwardChainingReasonerDataframe(
+class BackwardChainingReasonerDataset(
                                          val session: SparkSession,
                                          val rules: Set[Rule],
                                          val graph: Dataset[RDFTriple]) extends Logging {
@@ -40,6 +34,10 @@ class BackwardChainingReasonerDataframe(
   val precomputeSchema: Boolean = true
 
   lazy val schema: Map[Node, Dataset[RDFTriple]] = if (precomputeSchema) extractWithIndex(graph) else Map()
+  lazy val domain = schema.getOrElse(RDFS.domain, broadcast(graph.filter(t => t.p == RDFS.domain.toString)).alias("DOMAIN"))
+  lazy val range = schema.getOrElse(RDFS.range, broadcast(graph.filter(t => t.p == RDFS.range.toString)).alias("RANGE"))
+  lazy val sco = schema.getOrElse(RDFS.subClassOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subClassOf.toString))).alias("SCO"))
+  lazy val spo = schema.getOrElse(RDFS.subPropertyOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subPropertyOf.toString))).alias("SPO"))
 
   def isEntailed(triple: Triple): Boolean = {
     isEntailed(new TriplePattern(triple))
@@ -272,172 +270,177 @@ class BackwardChainingReasonerDataframe(
   }
 
   def query(tp: Triple): Dataset[RDFTriple] = {
-    import org.apache.spark.sql.functions._
-
-    val domain = schema.getOrElse(RDFS.domain, broadcast(graph.filter(t => t.p == RDFS.domain.toString)).alias("DOMAIN"))
-    val range = schema.getOrElse(RDFS.range, broadcast(graph.filter(t => t.p == RDFS.range.toString)).alias("RANGE"))
-    val sco = schema.getOrElse(RDFS.subClassOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subClassOf.toString))).alias("SCO"))
-    val spo = schema.getOrElse(RDFS.subPropertyOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subPropertyOf.toString))).alias("SPO"))
 
     // asserted triples
     var ds = lookup(tp)
 
     // inferred triples
-    if(tp.getPredicate.isConcrete) {
-
+    if(tp.getPredicate.isConcrete) { // predicate is known
       if (tp.getPredicate.matches(RDF.`type`.asNode())) { // rdf:type data
+        ds = ds.union(queryPredicateRdfType(tp, ds))
+      } else if (tp.predicateMatches(RDFS.subClassOf.asNode())) { // rdfs:subClassOf
 
-        var instanceTriples = graph
+      } else if (tp.predicateMatches(RDFS.subPropertyOf.asNode())) { // rdfs:subPropertyOf
 
-        // if s is concrete, we filter first
-        if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
-          instanceTriples = instanceTriples.filter(t => t.s == tp.getSubject.toString() || t.o == tp.getSubject.toString())
-        }
-
-        // get all non rdf:type triples
-        instanceTriples = instanceTriples.filter(_.p != RDF.`type`.toString)
-
-        // enrich the instance data with super properties, i.e. rdfs5
-        if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
-          instanceTriples = instanceTriples.filter(t => t.s == tp.getSubject.toString() || t.o == tp.getSubject.toString())
-        }
-        val spoBC = session.sparkContext.broadcast(
-          CollectionUtils.toMultiMap(spo.select("s", "o").collect().map(r => (r.getString(0), r.getString(1))))
-        )
-        val rdfs7 = instanceTriples.flatMap(t => spoBC.value.getOrElse(t.p, Set[String]()).map(supProp => RDFTriple(t.s, supProp, t.o)))
-
-//        val rdfs7 = spo
-//          .join(instanceTriples.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
-//          .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.s".alias("o"))
-//          .as[RDFTriple]
-//        instanceTriples = instanceTriples.union(rdfs7).cache()
-
-        // rdfs2 (domain)
-        var dom = if (tp.getObject.isConcrete) domain.filter(_.o == tp.getObject.toString()) else domain
-        dom = dom.alias("DOM")
-        var data = if (tp.getSubject.isConcrete) {
-//          // asserted triples :s ?p ?o
-//          val asserted = instanceTriples.filter(t => t.s == tp.getSubject.toString()).cache()
-//          // join with super properties
-//          val inferred = spo
-//            .join(asserted.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
-//            .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.s".alias("o"))
-//            .as[RDFTriple]
-//          asserted.union(inferred)
-          instanceTriples
-        } else {
-          instanceTriples
-        }
-
-        val rdftype = RDF.`type`.toString
-
-//        val rdfs2 = dom
-//          .join(data.alias("DATA"), $"DOM.s" === $"DATA.p", "inner")
-//          .select($"DATA.s", lit(RDF.`type`.toString).alias("p"), dom("o").alias("o"))
-//          .as[RDFTriple]
-        val domBC = session.sparkContext.broadcast(
-          CollectionUtils.toMultiMap(dom.select("s", "o").collect().map(r => (r.getString(0), r.getString(1))))
-        )
-        val rdfs2 = data.flatMap(t => domBC.value.getOrElse(t.p, Set[String]()).map(o => RDFTriple(t.s, rdftype, o)))
-
-        // rdfs3 (range)
-        var ran = if (tp.getObject.isConcrete) range.filter(_.o == tp.getObject.toString()) else range
-        ran = ran.alias("RAN")
-        data = if (tp.getSubject.isConcrete) {
-//          // asserted triples ?o ?p :s
-//          val asserted = instanceTriples.filter(t => t.o == tp.getSubject.toString()).cache()
-//          // join with super properties
-//          val inferred = spo
-//            .join(asserted.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
-//            .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.o".alias("o"))
-//            .as[RDFTriple]
-//          asserted.union(inferred)
-          instanceTriples
-        } else {
-          instanceTriples
-        }
-//        val rdfs3 = ran
-//          .join(data.alias("DATA"), $"RAN.s" === $"DATA.p", "inner")
-//          .select($"DATA.o".alias("s"), lit(RDF.`type`.toString).alias("p"), ran("o").alias("o"))
-//          .as[RDFTriple]
-        val ranBC = session.sparkContext.broadcast(CollectionUtils.toMultiMap(ran.select("s", "o").collect().map(r => (r.getString(0), r.getString(1)))))
-        val rdfs3 = data.flatMap(t => ranBC.value.getOrElse(t.p, Set[String]()).map(o => RDFTriple(t.o, rdftype, o)))
-
-        // all rdf:type triples
-        val types = rdfs2
-          .union(rdfs3)
-          .union(ds)
-          .alias("TYPES")
-
-        // rdfs9 (subClassOf)
-        val scoTmp =
-          if (tp.getObject.isURI) {
-            sco.filter(_.o == tp.getObject.toString())
-          } else {
-            sco
-          }
-        val rdfs9 = scoTmp.alias("SCO")
-          .join(types, $"SCO.s" === $"TYPES.o", "inner")
-          .select(types("s").alias("s"), lit(RDF.`type`.toString).alias("p"), sco("o").alias("o"))
-          .as[RDFTriple]
-
-//        log.info(s"|rdf:type|=${ds.count()}")
-//        log.info(s"|rdfs2|=${rdfs2.count()}")
-//        log.info(s"|rdfs3|=${rdfs3.count()}")
-//        log.info(s"|rdf:type/rdfs2/rdfs3/|=${types.count()}")
-//        log.info(s"|rdfs9|=${rdfs9.count()}")
-
-
-
-        // add all rdf:type triples to result
-        ds = ds
-          .union(rdfs9)
-          .union(types)
-//          .repartition(200)
-
-      } else if (tp.predicateMatches(RDFS.subClassOf.asNode())) {
-
-      } else if (tp.predicateMatches(RDFS.subPropertyOf.asNode())) {
-
-      } else { // instance data (s,p,o) with p!=rdf:type => we only have to cover subPropertyOf rule
-        // filter instance data if subject or object was given
-        val instanceData =
-          if (tp.getSubject.isConcrete) {
-              graph.filter(_.s == tp.getSubject.toString())
-          } else if (tp.getObject.isConcrete) {
-              graph.filter(_.o == tp.getObject.toString())
-          } else {
-              graph
-          }
-
-        // get all subproperties of p
-        val subProperties = spo.filter(_.o == tp.getPredicate.toString()).alias("SPO")
-
-        val rdfs7 = subProperties
-          .join(instanceData.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
-          .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.o".alias("o"))
-          .as[RDFTriple]
-
-        ds = ds.union(rdfs7)
+      } else { // instance data (s,p,o) with p!=rdf:type
+        ds = ds.union(queryPredicateSomeProp(tp, ds))
       }
-    } else {
-
-      val instanceData = ds
-
-      if(tp.getSubject.isConcrete) {
-
-        val tmp = spo
-          .join(instanceData.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
-          .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.o".alias("o"))
-          .as[RDFTriple]
-
-        ds = ds.union(tmp)
-      }
+    } else { // predicate is VAR
+      ds = ds.union(queryPredicateVar(tp, ds))
     }
 
 //    ds.explain()
 
     ds.distinct()
+  }
+
+  private def queryPredicateRdfType(tp: Triple, assertedTriples: Dataset[RDFTriple]): Dataset[RDFTriple] = {
+    var instanceTriples = graph
+
+    // if s is concrete, we filter first
+    if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
+      instanceTriples = instanceTriples.filter(t => t.s == tp.getSubject.toString() || t.o == tp.getSubject.toString())
+    }
+
+    // get all non rdf:type triples
+    instanceTriples = instanceTriples.filter(_.p != RDF.`type`.toString)
+
+    // enrich the instance data with super properties, i.e. rdfs5
+    if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
+      instanceTriples = instanceTriples.filter(t => t.s == tp.getSubject.toString() || t.o == tp.getSubject.toString())
+    }
+    val spoBC = session.sparkContext.broadcast(
+      CollectionUtils.toMultiMap(spo.select("s", "o").collect().map(r => (r.getString(0), r.getString(1))))
+    )
+    val rdfs7 = instanceTriples.flatMap(t => spoBC.value.getOrElse(t.p, Set[String]()).map(supProp => RDFTriple(t.s, supProp, t.o)))
+
+    //        val rdfs7 = spo
+    //          .join(instanceTriples.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
+    //          .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.s".alias("o"))
+    //          .as[RDFTriple]
+    //        instanceTriples = instanceTriples.union(rdfs7).cache()
+
+    // rdfs2 (domain)
+    var dom = if (tp.getObject.isConcrete) domain.filter(_.o == tp.getObject.toString()) else domain
+    dom = dom.alias("DOM")
+    var data = if (tp.getSubject.isConcrete) {
+      //          // asserted triples :s ?p ?o
+      //          val asserted = instanceTriples.filter(t => t.s == tp.getSubject.toString()).cache()
+      //          // join with super properties
+      //          val inferred = spo
+      //            .join(asserted.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
+      //            .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.s".alias("o"))
+      //            .as[RDFTriple]
+      //          asserted.union(inferred)
+      instanceTriples
+    } else {
+      instanceTriples
+    }
+
+    val rdftype = RDF.`type`.toString
+
+    //        val rdfs2 = dom
+    //          .join(data.alias("DATA"), $"DOM.s" === $"DATA.p", "inner")
+    //          .select($"DATA.s", lit(RDF.`type`.toString).alias("p"), dom("o").alias("o"))
+    //          .as[RDFTriple]
+    val domBC = session.sparkContext.broadcast(
+      CollectionUtils.toMultiMap(dom.select("s", "o").collect().map(r => (r.getString(0), r.getString(1))))
+    )
+    val rdfs2 = data.flatMap(t => domBC.value.getOrElse(t.p, Set[String]()).map(o => RDFTriple(t.s, rdftype, o)))
+
+    // rdfs3 (range)
+    var ran = if (tp.getObject.isConcrete) range.filter(_.o == tp.getObject.toString()) else range
+    ran = ran.alias("RAN")
+    data = if (tp.getSubject.isConcrete) {
+      //          // asserted triples ?o ?p :s
+      //          val asserted = instanceTriples.filter(t => t.o == tp.getSubject.toString()).cache()
+      //          // join with super properties
+      //          val inferred = spo
+      //            .join(asserted.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
+      //            .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.o".alias("o"))
+      //            .as[RDFTriple]
+      //          asserted.union(inferred)
+      instanceTriples
+    } else {
+      instanceTriples
+    }
+    //        val rdfs3 = ran
+    //          .join(data.alias("DATA"), $"RAN.s" === $"DATA.p", "inner")
+    //          .select($"DATA.o".alias("s"), lit(RDF.`type`.toString).alias("p"), ran("o").alias("o"))
+    //          .as[RDFTriple]
+    val ranBC = session.sparkContext.broadcast(CollectionUtils.toMultiMap(ran.select("s", "o").collect().map(r => (r.getString(0), r.getString(1)))))
+    val rdfs3 = data.flatMap(t => ranBC.value.getOrElse(t.p, Set[String]()).map(o => RDFTriple(t.o, rdftype, o)))
+
+    // all rdf:type triples
+    val types = rdfs2
+      .union(rdfs3)
+      .union(assertedTriples)
+      .alias("TYPES")
+
+    // rdfs9 (subClassOf)
+    val scoTmp =
+      if (tp.getObject.isURI) {
+        sco.filter(_.o == tp.getObject.toString())
+      } else {
+        sco
+      }
+    val rdfs9 = scoTmp.alias("SCO")
+      .join(types, $"SCO.s" === $"TYPES.o", "inner")
+      .select(types("s").alias("s"), lit(RDF.`type`.toString).alias("p"), sco("o").alias("o"))
+      .as[RDFTriple]
+
+    //        log.info(s"|rdf:type|=${ds.count()}")
+    //        log.info(s"|rdfs2|=${rdfs2.count()}")
+    //        log.info(s"|rdfs3|=${rdfs3.count()}")
+    //        log.info(s"|rdf:type/rdfs2/rdfs3/|=${types.count()}")
+    //        log.info(s"|rdfs9|=${rdfs9.count()}")
+    types.union(rdfs9)
+  }
+
+  private def queryPredicateSubClassOf(tp: Triple, assertedTriples: Dataset[RDFTriple]): Dataset[RDFTriple] = {
+    assertedTriples
+  }
+
+  private def queryPredicateSubPropertyOf(tp: Triple, assertedTriples: Dataset[RDFTriple]): Dataset[RDFTriple] = {
+    assertedTriples
+  }
+
+  private def queryPredicateSomeProp(tp: Triple, assertedTriples: Dataset[RDFTriple]): Dataset[RDFTriple] = {
+    // filter instance data if subject or object was given
+    val instanceData =
+      if (tp.getSubject.isConcrete) {
+        assertedTriples.filter(_.s == tp.getSubject.toString())
+      } else if (tp.getObject.isConcrete) {
+        assertedTriples.filter(_.o == tp.getObject.toString())
+      } else {
+        assertedTriples
+      }
+
+    // get all subproperties of p
+    val subProperties = spo.filter(_.o == tp.getPredicate.toString()).alias("SPO")
+
+    val rdfs7 = subProperties
+      .join(instanceData.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
+      .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.o".alias("o"))
+      .as[RDFTriple]
+
+    rdfs7
+  }
+
+  private def queryPredicateVar(tp: Triple, assertedTriples: Dataset[RDFTriple]): Dataset[RDFTriple] = {
+
+    val inf =
+      if (tp.getSubject.isConcrete) {
+      val tmp = spo
+        .join(assertedTriples.alias("DATA"), $"SPO.s" === $"DATA.p", "inner")
+        .select($"DATA.s".alias("s"), $"SPO.o".alias("p"), $"DATA.o".alias("o"))
+        .as[RDFTriple]
+
+      tmp
+    } else {
+        assertedTriples
+      }
+    inf
   }
 
   /**
@@ -479,14 +482,14 @@ class BackwardChainingReasonerDataframe(
   }
 }
 
-object BackwardChainingReasonerDataframe extends Logging{
+object BackwardChainingReasonerDataset extends Logging{
 
   val DEFAULT_PARALLELISM = 200
   val DEFAULT_NUM_THREADS = 4
 
   def loadRDD(session: SparkSession, path: String): RDD[RDFTriple] = {
     RDFGraphLoader
-      .loadFromDisk(session, path, 20)
+      .loadFromDisk(session, path)
       .triples.map(t => RDFTriple(t.getSubject.toString(), t.getPredicate.toString(), t.getObject.toString()))
   }
 
@@ -496,7 +499,6 @@ object BackwardChainingReasonerDataframe extends Logging{
   }
 
   def loadDatasetFromParquet(session: SparkSession, path: String): Dataset[RDFTriple] = {
-    import session.implicits._
     session.read.parquet(path).as[RDFTriple]
   }
 
@@ -509,7 +511,7 @@ object BackwardChainingReasonerDataframe extends Logging{
   }
 
   def main(args: Array[String]): Unit = {
-    if (args.length == 0) sys.error("USAGE: BackwardChainingReasonerDataframe <INPUT_PATH>+ <NUM_THREADS>? <PARALLELISM>?")
+    if (args.length == 0) sys.error("USAGE: BackwardChainingReasonerDataset <INPUT_PATH>+ <NUM_THREADS>? <PARALLELISM>?")
 
     val inputPath = args(0)
     val parquet = if (args.length > 1) args(1).toBoolean else false
@@ -550,7 +552,7 @@ object BackwardChainingReasonerDataframe extends Logging{
 
       ).contains(r.getName))
 
-    val reasoner = new BackwardChainingReasonerDataframe(session, rules, graph)
+    val reasoner = new BackwardChainingReasonerDataset(session, rules, graph)
 
     // VAR rdf:type URI
     var tp = Triple.create(
@@ -632,10 +634,10 @@ object BackwardChainingReasonerDataframe extends Logging{
     session.stop()
   }
 
-  def compare(tp: Triple, reasoner: BackwardChainingReasonerDataframe, show: Boolean = false): Unit = {
+  def compare(tp: Triple, reasoner: BackwardChainingReasonerDataset, show: Boolean = false): Unit = {
     time {
       val triples = reasoner.query(tp)
-      println(triples.count())
+      log.info(triples.count().toString)
       if (show) triples.show(false)
     }
 
@@ -653,7 +655,4 @@ object BackwardChainingReasonerDataframe extends Logging{
     result
   }
 }
-
-object TripleSchema extends StructType("s p o".split(" ").map(fieldName => StructField(fieldName, StringType, nullable = false)))
-
 
