@@ -499,6 +499,7 @@ object BackwardChainingReasonerDataset extends Logging{
   }
 
   def loadDatasetFromParquet(session: SparkSession, path: String): Dataset[RDFTriple] = {
+    import session.implicits._
     session.read.parquet(path).as[RDFTriple]
   }
 
