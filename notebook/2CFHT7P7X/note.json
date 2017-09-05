@@ -1,38 +1,28 @@
 {
   "paragraphs": [
     {
-      "text": "import java.net.URI\n\nimport net.sansa_stack.query.spark.server.SparqlifyUtils3\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark\nimport net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\nimport org.apache.spark.sql.SparkSession\n\nimport scala.collection.mutable\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval graphRdd \u003d NTripleReader.load(spark, URI.create(input))\n    \nval partitions \u003d RdfPartitionUtilsSpark.partitionGraph(graphRdd)\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)\nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create\nserver.join()",
+      "text": "import java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark\nimport net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\nimport org.apache.spark.sql.SparkSession\n\nimport scala.collection.mutable\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval graphRdd \u003d NTripleReader.load(spark, URI.create(input))\n    \nval partitions \u003d RdfPartitionUtilsSpark.partitionGraph(graphRdd)\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)\n    \nval port \u003d 7531\n    \nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()\n\nserver.join()",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 12:13:26 PM",
+      "dateUpdated": "Sep 5, 2017 11:04:14 AM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "text",
+          "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/text"
       },
       "settings": {
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "\nimport java.net.URI\n\nimport net.sansa_stack.query.spark.server.SparqlifyUtils3\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark\n\nimport net.sansa_stack.rdf.spark.sparqlify.QueryExecutionFactorySparqlifySpark\n\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\n\nimport org.apache.spark.sql.SparkSession\n\nimport scala.collection.mutable\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\n\n\n\n\n\u003cconsole\u003e:111: error: type mismatch;\n found   : java.net.URI\n required: java.io.File\n       val graphRdd \u003d NTripleReader.load(spark, URI.create(input))\n                                                          ^\n"
-          }
-        ]
-      },
       "apps": [],
-      "jobName": "paragraph_1494502925383_-1130686026",
-      "id": "20170511-114205_1228512259",
-      "dateCreated": "May 11, 2017 11:42:05 AM",
-      "dateStarted": "May 11, 2017 12:13:26 PM",
-      "dateFinished": "May 11, 2017 12:13:27 PM",
-      "status": "ERROR",
+      "jobName": "paragraph_1504609209863_-361690439",
+      "id": "20170905-110009_242595472",
+      "dateCreated": "Sep 5, 2017 11:00:09 AM",
+      "status": "READY",
       "progressUpdateIntervalMs": 500
     },
     {
@@ -43,9 +33,9 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1494502984366_-1784866425",
-      "id": "20170511-114304_475907795",
-      "dateCreated": "May 11, 2017 11:43:04 AM",
+      "jobName": "paragraph_1504609454929_46480527",
+      "id": "20170905-110414_340589980",
+      "dateCreated": "Sep 5, 2017 11:04:14 AM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
@@ -53,25 +43,25 @@
   "name": "Query",
   "id": "2CFHT7P7X",
   "angularObjects": {
-    "2CG8J6PMC:shared_process": [],
-    "2CJ7BHHY4:shared_process": [],
-    "2CJ53XF3T:shared_process": [],
-    "2CJ91WSMS:shared_process": [],
-    "2CHRJ4ED5:shared_process": [],
-    "2CGQCZKKU:shared_process": [],
-    "2CJAYHY6H:shared_process": [],
-    "2CHD4FMZM:shared_process": [],
-    "2CJ52YCA8:shared_process": [],
-    "2CHN8NJ6V:shared_process": [],
-    "2CFWQ38ZB:shared_process": [],
-    "2CGS2F3PY:shared_process": [],
-    "2CGRFBUNZ:shared_process": [],
-    "2CJUM7XAZ:shared_process": [],
-    "2CG7V7TS9:shared_process": [],
-    "2CJNF1N75:shared_process": [],
-    "2CJ75B163:shared_process": [],
-    "2CFEUMGW8:shared_process": [],
-    "2CHJ6HZ7K:shared_process": []
+    "2CSPXCMRY:shared_process": [],
+    "2CSKP5VAA:shared_process": [],
+    "2CUYT4ETA:shared_process": [],
+    "2CSSBFJ5X:shared_process": [],
+    "2CSWQ58XV:shared_process": [],
+    "2CU2SVQ1D:shared_process": [],
+    "2CTW4FFSG:shared_process": [],
+    "2CSPNWV22:shared_process": [],
+    "2CT9YX9KM:shared_process": [],
+    "2CUGPE5CQ:shared_process": [],
+    "2CSD9SU2Z:shared_process": [],
+    "2CUFDVXC1:shared_process": [],
+    "2CU7XG9XZ:shared_process": [],
+    "2CV7K1VVF:shared_process": [],
+    "2CS78V4XF:shared_process": [],
+    "2CSMHVZ3K:shared_process": [],
+    "2CT8K35W7:shared_process": [],
+    "2CUKTCNEC:shared_process": [],
+    "2CUE8FK1P:shared_process": []
   },
   "config": {},
   "info": {}
