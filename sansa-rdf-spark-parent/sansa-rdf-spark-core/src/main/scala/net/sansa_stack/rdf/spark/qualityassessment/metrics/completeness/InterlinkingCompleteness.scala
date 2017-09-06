@@ -114,18 +114,3 @@ object InterlinkingCompleteness extends Serializable {
 	*/
   def isExternal(node: Node) = !prefixes.contains(node.getLiteralLexicalForm)
 }
-
-class test {
-  def main(args: Array[String]) = {
-
-    val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .getOrCreate()
-
-    val quads = NQuadReader.load(sparkSession, "/home/gezim/Downloads/external_links_simple.nq")
-
-    val cl = InterlinkingCompleteness(quads)
-  }
-
-}
