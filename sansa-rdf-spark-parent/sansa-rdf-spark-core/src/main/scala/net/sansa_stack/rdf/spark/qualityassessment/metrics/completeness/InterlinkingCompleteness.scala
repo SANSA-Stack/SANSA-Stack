@@ -3,8 +3,11 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
+import org.apache.jena.sparql.core.Quad
 import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils
 import net.sansa_stack.rdf.spark.utils.Vocabularies
+import net.sansa_stack.rdf.spark.io.NQuadReader
+import shapeless.TypeCase
 
 /*
  * This metric measures the interlinking completeness. Since any resource of a
@@ -29,14 +32,54 @@ object InterlinkingCompleteness extends Serializable {
   @transient var spark: SparkSession = _
   val prefixes = DatasetUtils.getPrefixes()
 
-  def apply(dataset: RDD[Triple]) = {
+  def apply[T](dataset: RDD[T]) = dataset match {
+    case triples: RDD[Triple] => assertTriples(triples)
+    case quads: RDD[Quad]     => assertQuads(quads)
+    case _                    => throw new IllegalArgumentException(s"${dataset} type not supported yet!")
+
+  }
+
+  def assertTriples(dataset: RDD[Triple]): Long = {
 
     /*
    		* isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
     			union
    		  isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
    */
+    println("triples")
 
+    val Interlinked =
+      dataset.filter(f =>
+        f.getSubject.isURI() && isInternal(f.getSubject) && f.getObject.isURI() && isExternal(f.getObject))
+        .union(
+          dataset.filter(f =>
+            f.getSubject.isURI() && isExternal(f.getSubject) && f.getObject.isURI() && isInternal(f.getObject)))
+
+    Interlinked.cache()
+
+    val numSubj = Interlinked.map(_.getSubject).distinct().count()
+    val numObj = Interlinked.map(_.getSubject).distinct().count()
+
+    val numResources = numSubj + numObj
+    val numInterlinkedResources = Interlinked.count()
+
+    val value = if (numResources > 0)
+      numInterlinkedResources / numResources;
+    else 0
+
+    def dcatify() = "<addProperty>$value<Add[rp[ery>"
+
+    value
+  }
+
+  def assertQuads(dataset: RDD[Quad]) = {
+
+    /*
+   		* isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
+    			union
+   		  isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
+   */
+    println("quads")
     val Interlinked =
       dataset.filter(f =>
         f.getSubject.isURI() && isInternal(f.getSubject) && f.getObject.isURI() && isExternal(f.getObject))
@@ -70,4 +113,19 @@ object InterlinkingCompleteness extends Serializable {
 	*  Checks if a resource ?node is local
 	*/
   def isExternal(node: Node) = !prefixes.contains(node.getLiteralLexicalForm)
+}
+
+class test {
+  def main(args: Array[String]) = {
+
+    val sparkSession = SparkSession.builder
+      .master("local[*]")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .getOrCreate()
+
+    val quads = NQuadReader.load(sparkSession, "/home/gezim/Downloads/external_links_simple.nq")
+
+    val cl = InterlinkingCompleteness(quads)
+  }
+
 }
