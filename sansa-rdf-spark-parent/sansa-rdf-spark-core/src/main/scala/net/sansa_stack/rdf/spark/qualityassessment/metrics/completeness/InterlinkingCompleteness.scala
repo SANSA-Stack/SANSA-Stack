@@ -32,14 +32,7 @@ object InterlinkingCompleteness extends Serializable {
   @transient var spark: SparkSession = _
   val prefixes = DatasetUtils.getPrefixes()
 
-  def apply[T](dataset: RDD[T]) = dataset match {
-    case triples: RDD[Triple] => assertTriples(triples)
-    case quads: RDD[Quad]     => assertQuads(quads)
-    case _                    => throw new IllegalArgumentException(s"${dataset} type not supported yet!")
-
-  }
-
-  def assertTriples(dataset: RDD[Triple]): Long = {
+  def apply(dataset: RDD[Triple]): Long = {
 
     /*
    		* isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
@@ -72,45 +65,13 @@ object InterlinkingCompleteness extends Serializable {
     value
   }
 
-  def assertQuads(dataset: RDD[Quad]) = {
-
-    /*
-   		* isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
-    			union
-   		  isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
-   */
-    println("quads")
-    val Interlinked =
-      dataset.filter(f =>
-        f.getSubject.isURI() && isInternal(f.getSubject) && f.getObject.isURI() && isExternal(f.getObject))
-        .union(
-          dataset.filter(f =>
-            f.getSubject.isURI() && isExternal(f.getSubject) && f.getObject.isURI() && isInternal(f.getObject)))
-
-    Interlinked.cache()
-
-    val numSubj = Interlinked.map(_.getSubject).distinct().count()
-    val numObj = Interlinked.map(_.getSubject).distinct().count()
-
-    val numResources = numSubj + numObj
-    val numInterlinkedResources = Interlinked.count()
-
-    val value = if (numResources > 0)
-      numInterlinkedResources / numResources;
-    else 0
-
-    def dcatify() = "<addProperty>$value<Add[rp[ery>"
-
-    value
-  }
+  /*
+	*  Checks if a resource ?node is local
+	*/
+  def isInternal(node: Node) = prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
 
   /*
 	*  Checks if a resource ?node is local
 	*/
-  def isInternal(node: Node) = prefixes.contains(node.getLiteralLexicalForm)
-
-  /*
-	*  Checks if a resource ?node is local
-	*/
-  def isExternal(node: Node) = !prefixes.contains(node.getLiteralLexicalForm)
+  def isExternal(node: Node) = !prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
 }
