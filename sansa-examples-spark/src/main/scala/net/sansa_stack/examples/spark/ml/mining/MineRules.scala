@@ -73,7 +73,7 @@ object MineRules {
       temp = temp.stripSuffix(" \u2227 ")
       temp
     }.toSeq
-    var rddOut = sparkSession.sparkContext.parallelize(outString)
+    var rddOut = sparkSession.sparkContext.parallelize(outString).repartition(1)
 
     rddOut.saveAsTextFile(outputPath + "/testOut")
 
