@@ -6,6 +6,7 @@ import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.utils.StatsPrefixes
 import java.io.StringWriter
 import java.io.File
+import net.sansa_stack.inference.spark.data.model.RDFGraph
 
 /**
  * A Distributed implementation of RDF Statisctics.
@@ -94,6 +95,45 @@ object Used_Classes {
   def apply(triples: RDD[Triple], spark: SparkSession) = new Used_Classes(triples, spark)
 
 }
+
+class ClassDistribution(graph: RDFGraph, spark: SparkSession) extends Serializable {
+
+  def isURI(node:String) =node.startsWith("http://") 
+  //?p=rdf:type && isIRI(?o)
+  def Filter() = graph.triples.filter(f =>
+    f.p.equals(StatsPrefixes.RDF_TYPE) && isURI(f.o))
+
+  //M[?o]++ 
+  def Action() = Filter().map(_.o)
+    .map(f => (f, 1))
+    .reduceByKey(_ + _)
+    .cache()
+
+  //top(M,100)
+  def PostProc() = Action().sortBy(_._2, false)
+    .take(100)
+
+  def Voidify() = {
+
+    var triplesString = new Array[String](1)
+    triplesString(0) = "\nvoid:classPartition "
+
+    val classes = spark.sparkContext.parallelize(PostProc())
+    val vc = classes.map(t => "[ \nvoid:class " + "<" + t._1 + ">; \nvoid:triples " + t._2 + ";\n], ")
+
+    var cl_a = new Array[String](1)
+    cl_a(0) = "\nvoid:classes " + Action().map(f => f._1).distinct().count
+    val c_p = spark.sparkContext.parallelize(triplesString)
+    val c = spark.sparkContext.parallelize(cl_a)
+    c.union(c_p).union(vc)
+  }
+}
+object ClassDistribution {
+
+  def apply(graph: RDFGraph, spark: SparkSession) = new ClassDistribution(graph, spark)
+
+}
+
 
 class Classes_Defined(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
