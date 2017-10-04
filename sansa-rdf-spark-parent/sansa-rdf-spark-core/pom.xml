@@ -105,6 +105,27 @@
 			<artifactId>config</artifactId>
 		</dependency>
 
+		<!-- MXNet -->
+		<dependency>
+				<groupId>ml.dmlc.mxnet</groupId>
+				<artifactId>mxnet-spark_${scala.binary.version}</artifactId>
+			</dependency>
+		<dependency>
+			<groupId>ml.dmlc.mxnet</groupId>
+			<artifactId>mxnet-full_${scala.binary.version}-${platform}</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>ml.dmlc.mxnet</groupId>
+					<artifactId>libmxnet-scala-linux-x86_64-cpu</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>args4j</groupId>
+			<artifactId>args4j</artifactId>
+		</dependency>
+
+
 	</dependencies>
 
 </project>
