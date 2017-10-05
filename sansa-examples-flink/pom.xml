@@ -33,10 +33,10 @@
 		<!-- SANSA Query -->
 
 		<!-- SANSA ML -->
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
-			</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+		</dependency>
 
 		<!-- Scala -->
 		<dependency>
@@ -93,6 +93,8 @@
 	</dependencies>
 
 	<build>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
