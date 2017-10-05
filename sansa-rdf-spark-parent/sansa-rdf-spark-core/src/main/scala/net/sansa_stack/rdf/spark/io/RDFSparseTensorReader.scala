@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.kge
+package net.sansa_stack.rdf.spark.io
 
 import net.sansa_stack.rdf.spark.model.{JenaSparkRDD, JenaSparkRDDOps}
 import net.sansa_stack.rdf.spark.model.TripleRDD._
