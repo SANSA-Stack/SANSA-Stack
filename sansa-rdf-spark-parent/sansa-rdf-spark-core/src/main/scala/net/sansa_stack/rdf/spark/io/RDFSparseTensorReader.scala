@@ -6,7 +6,6 @@ import net.sansa_stack.rdf.spark.model.JenaSparkRDD
 import org.apache.jena.graph.Node_URI
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import ml.dmlc.mxnet._
 
 /**
  * Created by nilesh
