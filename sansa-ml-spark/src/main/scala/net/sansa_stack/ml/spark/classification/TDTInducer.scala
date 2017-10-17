@@ -10,6 +10,7 @@ import scala.collection
 
 import org.semanticweb.owlapi.model.OWLClassExpression
 import org.semanticweb.owlapi.model.OWLIndividual
+import org.semanticweb.owlapi.model.OWLNamedIndividual
 import org.semanticweb.HermiT.Reasoner
 
 import org.apache.spark.rdd.RDD
@@ -18,7 +19,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 import net.sansa_stack.ml.spark.classification._
 import net.sansa_stack.ml.spark.classification.KB.KB
-import net.sansa_stack.ml.spark.classification.TDTClassifier.TDTClassifier
+import net.sansa_stack.ml.spark.classification.TDTClassifiers.TDTClassifiers
 
 /*
  * Class for the induction of Terminological Decision Tree
@@ -37,52 +38,53 @@ object TDTInducer {
 			val sc = new SparkContext(conf)
 
 
-class TDTInducer(var kb: KB, var nConcepts: Int) {
+class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) {
 
 //for each query concept induce an ensemble
   var trees: Array[DLTree] = new Array[DLTree](nConcepts)
 
-  var cl: TDTClassifier = new TDTClassifier(kb)
+  var cl: TDTClassifiers = new TDTClassifiers(kb, sc)
 
   
   /*
    * Function for training 
    */
-  def training(results: Array[Array[Int]], trainingExs: Array[Integer],
+  def training(results: Array[Array[Int]], trainingExs: RDD[Integer],
                         testConcepts: Array[OWLClassExpression],
                         negTestConcepts: Array[OWLClassExpression]): Unit = {
   
     val op: RefinementOperator = new RefinementOperator(kb)
     val reasoner: Reasoner = kb.getReasoner
-    val allExamples: RDD[OWLIndividual] = kb.getIndividuals
+    val allExamples: RDD[OWLNamedIndividual] = kb.getIndividuals
 
-    val trainingExsSet: HashSet[Integer] = new HashSet[Integer](Arrays.asList(trainingExs: _*))
+    //val trainingExsSet: HashSet[Integer] = new HashSet[Integer](Arrays.asList(trainingExs: _*))
 
-    val length: Int = if (testConcepts != null) testConcepts.length else 1
+    val length: Int = if (testConcepts != null) testConcepts.size else 1
     
     for (c <- 0 until length) {
       
       val posExs: ArrayList[Integer] = new ArrayList[Integer]()
-      val pos = sc.parallelize(posExs.asScala)
+      val pos = sc.sparkContext.parallelize(posExs.asScala)
       
       val negExs: ArrayList[Integer] = new ArrayList[Integer]()
-      val neg = sc.parallelize(negExs.asScala)
+      val neg = sc.sparkContext.parallelize(negExs.asScala)
       
       val undExs: ArrayList[Integer] = new ArrayList[Integer]()
-      val und = sc.parallelize(undExs.asScala)
+      val und = sc.sparkContext.parallelize(undExs.asScala)
       
       println("--- Query Concept #%d \n", c)
       
+      // These instances should be divided into negative instances, positive and uncertain 
       splitting(trainingExs, results, c, pos, neg, und)
       
-      var prPos: Double = pos.count.toDouble / (trainingExs.length)
-      var prNeg: Double = neg.count.toDouble / (trainingExs.length)
+      var prPos: Double = pos.count.toDouble / (trainingExs.count.toInt)
+      var prNeg: Double = neg.count.toDouble / (trainingExs.count.toInt)
       println("Training set composition: " + pos.count() + " - " + neg.count() + "-" + und.count())
       
       val normSum: Double = prPos + prNeg
       if (normSum == 0) {
-        prPos = .5
-        prNeg = .5
+        prPos = 0.5
+        prNeg = 0.5
       } else {
         prPos = prPos / normSum
         prNeg = prNeg / normSum
@@ -90,36 +92,36 @@ class TDTInducer(var kb: KB, var nConcepts: Int) {
       println("New learning problem prepared.\n", c)
       println("Learning a tree ")
       trees(c) = cl.induceDLTree(kb.getDataFactory.getOWLThing, pos, neg, und, 50, prPos, prNeg)
-   
+
     }
-
-// These instances should be divided into negative instances, positive and uncertain 
-
   }
 
   /*
    * Function for splitting the training examples into positive, negative and undefined examples
    */
   
-  def splitting(trainingExs: Array[Integer], classifications: Array[Array[Int]], c: Int,
+  def splitting(trainingExs: RDD[Integer], classifications: Array[Array[Int]], c: Int,
                 posExs: RDD[Integer],
                 negExs: RDD[Integer],
                 undExs: RDD[Integer]): Unit = {
     
     var BINARYCLASSIFICATION : Boolean = false
-    val T : List[Integer]= new ArrayList[Integer]
+    val TList : List[Integer]= new ArrayList[Integer]
+    var T = sc.sparkContext.parallelize(TList.asScala)
     
-    for (e <- 0 until trainingExs.length) {
- 
-      T.add(trainingExs(e))
-      val Train = sc.parallelize(T.asScala)
+    var TExs = trainingExs.zipWithIndex()
+    for (e <- 0 until trainingExs.count.toInt) {
       
-      if (classifications(c)(trainingExs(e)) == +1) posExs.union(Train)
+     var index = TExs.lookup(e)
+      //T.union(index)
+      //val Train = sc.sparkContext.parallelize(T.asScala)
+      
+      /*if (classifications(c)(TExs.lookup(e)) == +1) posExs.union(T)
       else if (!BINARYCLASSIFICATION) {
-          if (classifications(c)(trainingExs(e)) == -1)
-            negExs.union(Train)
-          else undExs.union(Train)
-      } else negExs.union(Train)
+          if (classifications(c)(TExs.lookup(e)) == -1)
+            negExs.union(T)
+          else undExs.union(T)
+      } else negExs.union(T)*/
     }
   }
 
@@ -145,12 +147,12 @@ class TDTInducer(var kb: KB, var nConcepts: Int) {
     labels
   }
 
-  def getComplexityValues(): Array[Double] = {
+  def getComplexityValues(sc: SparkSession): Array[Double] = {
 
     // a measure to express the model complexity (e.g. the number of nodes in a tree)
     val complexityValue: Array[Double] = Array.ofDim[Double](trees.length)
     for (i <- 0 until trees.length) {
-      val current: Double = trees(i).getComplexityMeasure
+      val current: Double = trees(i).getComplexityMeasure(sc)
       complexityValue(i) = current
     }
     complexityValue
