@@ -189,7 +189,7 @@ object KB{
           }
 
         } // e loop 
-        println("\n"+ p + n)
+        println("\n Pos: \t"+ p + "Neg: " + n)
       } //c loop
 
       classify
@@ -276,7 +276,7 @@ object KB{
       Examples = individuals
     }
 
-       def getRandomConcept(): OWLClassExpression = {
+    def getRandomConcept(): OWLClassExpression = {
       // randomly choose one of the concepts present 
       var newConcept: OWLClassExpression = null
 
@@ -284,23 +284,16 @@ object KB{
       if (!BinaryCassification) {
         do {
           // case A:  ALC and more expressive ontologies
-          //newConcept = Concepts.zipWithIndex().filter(_._2 == KB.generator.nextInt(Concepts.count.toInt)).map(_._1).first()
           newConcept = Concepts.takeSample(true, 1)(0)
-          //println("new con: " + newConcept)
-          // newConcept = Concepts[KB.generator.nextInt(Concepts.count.toInt)]
-          
+                   
           if (KB.generator.nextDouble() < 0.7) {
             val newConceptBase: OWLClassExpression = getRandomConcept
             if (KB.generator.nextDouble() < 0.1) {
               if (KB.generator.nextDouble()  < 0) { // new role restriction
-
-                //val role: OWLObjectProperty = Roles.zipWithIndex.filter(_._2== KB.generator.nextInt(Roles.count.toInt)).map(_._1).first()
-                val role : OWLObjectProperty = Roles.takeSample(true, 1)(0)
-                //Roles.map(x => KB.generator.nextInt(Roles.count.asInstanceOf[Int])).asInstanceOf[OWLObjectProperty]
-                // role = allRoles[KnowledgeBase.generator.nextInt(allRoles.length)]
-                
+                 val role : OWLObjectProperty = Roles.takeSample(true, 1)(0)
+                                
                 newConcept =
-                  if (KB.generator.nextDouble() < 0.7)
+                  if (KB.generator.nextDouble() < 0.5)
                     dataFactory.getOWLObjectAllValuesFrom(role, newConceptBase)
                   else dataFactory.getOWLObjectSomeValuesFrom(role, newConceptBase)
               } else
@@ -316,17 +309,13 @@ object KB{
         do {
            newConcept = Concepts.takeSample(true, 1)(0)
           
-          // newConcept = Concepts.zipWithIndex().filter(_._2 == KB.generator.nextInt(Concepts.count.toInt)).map(_._1).first()
-          //Concepts.map(x => KB.generator.nextInt(Concepts.count.asInstanceOf[Int])).asInstanceOf[OWLClassExpression]
-
           if (KB.generator.nextDouble() < d) {
             val newConceptBase: OWLClassExpression = getRandomConcept
             if (KB.generator.nextDouble() < d)
               if (KB.generator.nextDouble() < 0.1) { // new role restriction
                            
                 val role : OWLObjectProperty = Roles.takeSample(true, 1)(0)
-                //val role: OWLObjectProperty = Roles.zipWithIndex.filter(_._2== KB.generator.nextInt(Roles.count.toInt)).map(_._1).first()
-                //Roles.map(x => KB.generator.nextInt(Roles.count.asInstanceOf[Int])).asInstanceOf[OWLObjectProperty]
+     
                 newConcept =
                   if (KB.generator.nextDouble() < d)
                     dataFactory.getOWLObjectAllValuesFrom(role, newConceptBase)

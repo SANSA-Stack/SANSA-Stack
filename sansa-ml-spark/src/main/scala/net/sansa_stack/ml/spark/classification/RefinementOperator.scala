@@ -5,6 +5,8 @@ import java.util.HashSet
 import java.util.Iterator
 import java.util.Collection
 import java.util.Set
+import java.util.stream.Stream
+import java.util.stream.Collectors
 import scala.collection.JavaConverters._
 import scala.util.Random
 
@@ -31,12 +33,9 @@ object RefinementOperator {
  */
 class RefinementOperator(var kb: KB) {
 
-	private var Concepts: RDD[OWLClassExpression] = kb.getClasses
-
+  private var Concepts: RDD[OWLClass] = kb.getClasses
 	private var Roles: RDD[OWLObjectProperty] = kb.getRoles
-
 	private var Properties: RDD[OWLDataProperty] = kb.getDataProperties
-
 	private var dataFactory: OWLDataFactory = kb.getDataFactory
 	
 	/*
@@ -48,7 +47,7 @@ class RefinementOperator(var kb: KB) {
 			var newConcept: OWLClassExpression = null
 			do{
 				if (generator.nextDouble() < 0.5)
-						newConcept = Concepts.map(x => generator.nextInt(Concepts.count.asInstanceOf[Int])).asInstanceOf[OWLClassExpression]
+						newConcept = Concepts.takeSample(true, 1)(0)
 				else {
 						// new concept restriction 
 						var newConceptBase: OWLClassExpression = null
@@ -57,14 +56,14 @@ class RefinementOperator(var kb: KB) {
 										getRandomConcept(kb)
 								else {
 										val c = Concepts.zipWithIndex().map{case (x,y) => (y,x)}
-										val nconcept = c.lookup(generator.nextInt(Concepts.count.asInstanceOf[Int])).asInstanceOf[OWLClassExpression]
+										val nconcept = c.lookup(generator.nextInt(Concepts.count.toInt)).asInstanceOf[OWLClassExpression]
 										nconcept
 								}
 
 								if (generator.nextDouble() < 0.5) {
 
 									val r = Roles.zipWithIndex().map{case (x,y) => (y,x)}
-									val role = r.lookup(generator.nextInt(Roles.count.asInstanceOf[Int])).asInstanceOf[OWLObjectProperty]
+									val role = r.lookup(generator.nextInt(Roles.count.toInt)).asInstanceOf[OWLObjectProperty]
 
 									newConcept =
 											if (generator.nextDouble() < 0.5)
@@ -76,7 +75,9 @@ class RefinementOperator(var kb: KB) {
 
 									val o = Properties.zipWithIndex().map{case (x,y) => (y,x)}
 									val owlDataProperty: OWLDataProperty = o.lookup(generator.nextInt(Properties.count.asInstanceOf[Int])).asInstanceOf[OWLDataProperty]
-									val inds: ArrayList[OWLNamedIndividual] = new ArrayList[OWLNamedIndividual]()
+									val individuals: Set[OWLNamedIndividual] = owlDataProperty.individualsInSignature().collect(Collectors.toSet())
+									
+									val inds: ArrayList[OWLNamedIndividual] = new ArrayList[OWLNamedIndividual](individuals)
 									val dPV: Set[OWLLiteral] = new HashSet[OWLLiteral]()
 									for(i <- 0 until inds.size())
 									{
@@ -94,8 +95,8 @@ class RefinementOperator(var kb: KB) {
 
 									val R = Roles.zipWithIndex().map{case (x,y) => (y,x)}
 									val owlDataProperty: OWLObjectProperty = R.lookup(generator.nextInt(Roles.count.asInstanceOf[Int])).asInstanceOf[OWLObjectProperty]
-
-									val inds: ArrayList[OWLIndividual] = new ArrayList[OWLIndividual]()
+	                val individuals: Set[OWLNamedIndividual] = owlDataProperty.individualsInSignature().collect(Collectors.toSet())
+									val inds: ArrayList[OWLIndividual] = new ArrayList[OWLIndividual](individuals)
 									val objValues: Set[OWLIndividual] = new HashSet[OWLIndividual]()
 
 									for(i <- 0 until inds.size())
@@ -130,7 +131,7 @@ def getRandomConcept(k: KB): OWLClassExpression = {
 		val generator: Random = new Random()
 		do{
 			val n = Concepts.zipWithIndex().map{case (x,y) => (y,x)}
-			newConcept = n.lookup(generator.nextInt(Concepts.count.asInstanceOf[Int])).asInstanceOf[OWLClassExpression]
+			newConcept = n.lookup(generator.nextInt(Concepts.count.toInt)).asInstanceOf[OWLClassExpression]
 
 			if (generator.nextDouble() < 0.2)
 					newConcept
@@ -145,7 +146,7 @@ def getRandomConcept(k: KB): OWLClassExpression = {
 				  if (generator.nextDouble() < 0.75) {    // new role restriction
 
 						val r = Roles.zipWithIndex().map{case (x,y) => (y,x)}
-						val role = r.lookup(generator.nextInt(Roles.count.asInstanceOf[Int])).asInstanceOf[OWLObjectProperty]
+						val role = r.lookup(generator.nextInt(Roles.count.toInt)).asInstanceOf[OWLObjectProperty]
 
 						newConcept =
 								if (generator.nextDouble() < 0.5)
@@ -154,7 +155,7 @@ def getRandomConcept(k: KB): OWLClassExpression = {
 										kb.getDataFactory.getOWLObjectSomeValuesFrom(role, newConceptBase)
 				  }
 			}      
-		} while (newConcept == null || kb.getReasoner.getInstances(newConcept, false).getFlattened().size() == 0);
+		} while (newConcept == null || kb.getReasoner.getInstances(newConcept, false).entities().count().toInt == 0);
   
 		newConcept
   }

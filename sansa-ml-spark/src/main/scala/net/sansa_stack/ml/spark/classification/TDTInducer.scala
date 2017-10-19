@@ -28,16 +28,6 @@ import net.sansa_stack.ml.spark.classification.TDTClassifiers.TDTClassifiers
 object TDTInducer {
     var stream: PrintStream = _
     
-    val sparkSession = SparkSession.builder
-			.master("local[*]")
-			.config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-			.appName("Terminological Decision Tree Inducer")
-			.getOrCreate()
-
-			val conf = new SparkConf().setAppName("TDTInducer").setMaster("local[*]")  // local mode
-			val sc = new SparkContext(conf)
-
-
 class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) {
 
 //for each query concept induce an ensemble
@@ -147,7 +137,7 @@ class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) {
     labels
   }
 
-  def getComplexityValues(sc: SparkSession): Array[Double] = {
+ /* def getComplexityValues(sc: SparkSession): Array[Double] = {
 
     // a measure to express the model complexity (e.g. the number of nodes in a tree)
     val complexityValue: Array[Double] = Array.ofDim[Double](trees.length)
@@ -156,7 +146,7 @@ class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) {
       complexityValue(i) = current
     }
     complexityValue
-  }
+  }*/
 
 }
 }
