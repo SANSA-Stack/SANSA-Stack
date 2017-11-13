@@ -17,7 +17,7 @@ object RDFStats {
     val input = args(0) //"src/main/resources/rdf.nt"
     val rdf_stats_file = new File(input).getName
     val output = args(1)
-    val optionsList = args.drop(1).map { arg =>
+    val optionsList = args.drop(2).map { arg =>
       arg.dropWhile(_ == '-').split('=') match {
         case Array(opt, v) => (opt -> v)
         case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
