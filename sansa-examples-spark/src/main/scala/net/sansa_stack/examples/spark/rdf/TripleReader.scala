@@ -9,42 +9,47 @@ import scala.collection.mutable
 
 object TripleReader {
 
-  def main(args: Array[String]) = {
-    if (args.length < 1) {
-      System.err.println(
-        "Usage: Triple reader <input>")
-      System.exit(1)
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in)
+      case None =>
+        println(parser.usage)
     }
-    val input = args(0)
-    val optionsList = args.drop(1).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
+  }
 
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-    }
+  def run(input: String): Unit = {
+
+    val spark = SparkSession.builder
+      .appName(s"Triple reader example  $input")
+      .master("local[*]")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .getOrCreate()
+
     println("======================================")
     println("|        Triple reader example       |")
     println("======================================")
 
-    val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Triple reader example (" + input + ")")
-      .getOrCreate()
-
-    val triplesRDD = NTripleReader.load(sparkSession, URI.create(input))
+    val triplesRDD = NTripleReader.load(spark, URI.create(input))
 
     triplesRDD.take(5).foreach(println(_))
 
     //triplesRDD.saveAsTextFile(output)
 
-    sparkSession.stop
+    spark.stop
 
   }
 
+  case class Config(in: String = "")
+
+  val parser = new scopt.OptionParser[Config]("Triple reader example") {
+
+    head(" Triple reader example")
+
+    opt[String]('i', "input").required().valueName("<path>").
+      action((x, c) => c.copy(in = x)).
+      text("path to file that contains the data (in N-Triples format)")
+      
+    help("help").text("prints this usage text")
+  }
 }
