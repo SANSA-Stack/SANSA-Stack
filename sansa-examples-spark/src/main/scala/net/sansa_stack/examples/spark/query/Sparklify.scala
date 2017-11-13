@@ -18,54 +18,59 @@ import java.awt.Desktop
  */
 object Sparklify {
 
-  def main(args: Array[String]) = {
-    if (args.length < 1) {
-      System.err.println(
-        "Usage: Sparklify <input> ")
-      System.exit(1)
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in)
+      case None =>
+        println(parser.usage)
     }
-    val input = args(0)
-    val optionsList = args.drop(1).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
+  }
+  def run(input: String): Unit = {
 
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-    }
     println("======================================")
     println("|   Sparklify example                |")
     println("======================================")
 
-    val sparkSession = SparkSession.builder
+    val spark = SparkSession.builder
+      .appName(s"Sparklify example ( $input )")
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", String.join(", ",
+      .config("spark.kryo.registrator", String.join(
+        ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
-      .appName("Sparklify example (" + input + ")")
       .getOrCreate()
 
-    val graphRdd = NTripleReader.load(sparkSession, URI.create(input))
+    val graphRdd = NTripleReader.load(spark, URI.create(input))
 
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
-    
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
+
     val port = 7531
-    
-    val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
+
+    val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
     val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
-    
+
     if (Desktop.isDesktopSupported()) {
       Desktop.getDesktop().browse(new URI("http://localhost:" + port + "/sparql"));
     }
 
     server.join()
-    sparkSession.stop
+    spark.stop
 
+  }
+
+  case class Config(in: String = "")
+
+  val parser = new scopt.OptionParser[Config]("Sparklify example") {
+
+    head(" Sparklify example")
+
+    opt[String]('i', "input").required().valueName("<path>").
+      action((x, c) => c.copy(in = x)).
+      text("path to file that contains the data (in N-Triples format)")
+    help("help").text("prints this usage text")
   }
 
 }
