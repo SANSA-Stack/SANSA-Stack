@@ -1,89 +1,122 @@
 package net.sansa_stack.examples.spark.inference
 
-import java.io.File
 import java.net.URI
 
-import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }
-import net.sansa_stack.inference.rules.ReasoningProfile._
-import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
-import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
-import net.sansa_stack.inference.spark.forwardchaining.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, ForwardRuleReasonerRDFSDataset, TransitiveReasoner }
+import org.apache.jena.graph.{ Node, NodeFactory }
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.mutable
+import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.rules.ReasoningProfile._
+import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }
+import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
+import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
+import net.sansa_stack.inference.spark.forwardchaining.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner }
 
 object RDFGraphInference {
 
-  def main(args: Array[String]) = {
-    if (args.length < 3) {
-      System.err.println(
-        "Usage: RDFGraphInference <input> <output> <reasoner")
-      System.err.println("Supported 'reasoner' as follows:")
-      System.err.println("  rdfs                  Forward Rule Reasoner RDFS (Full)")
-      System.err.println("  rdfs-simple           Forward Rule Reasoner RDFS (Simple)")
-      System.err.println("  owl-horst             Forward Rule Reasoner OWL Horst")
-      System.err.println("  transitive            Forward Rule Transitive Reasoner")
-      System.exit(1)
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in, config.out, config.profile, config.properties, config.writeToSingleFile, config.sortedOutput, config.parallelism)
+      case None =>
+        println(parser.usage)
     }
-    val input = args(0) //"src/main/resources/rdf.nt"
-    val output = args(1) //"src/main/resources/res/"
-    val argprofile = args(2) //"rdfs"
+  }
 
-    val profile = argprofile match {
-      case "rdfs"        => ReasoningProfile.RDFS
-      case "rdfs-simple" => ReasoningProfile.RDFS_SIMPLE
-      case "owl-horst"   => ReasoningProfile.OWL_HORST
-      case "transitive"  => ReasoningProfile.TRANSITIVE
+  def run(input: Seq[URI], output: URI, profile: ReasoningProfile, properties: Seq[Node] = Seq(),
+          writeToSingleFile: Boolean, sortedOutput: Boolean, parallelism: Int): Unit = {
 
-    }
-    val optionsList = args.drop(3).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
-
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-    }
-    println("======================================")
-    println("|        RDF Graph Inference         |")
-    println("======================================")
-
-    val sparkSession = SparkSession.builder
+    // the SPARK config
+    val spark = SparkSession.builder
+      .appName(s"SPARK $profile Reasoning")
       .master("local[*]")
+      .config("spark.hadoop.validateOutputSpecs", "false") // override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.hadoop.validateOutputSpecs", "false") //override output files
-      .config("spark.default.parallelism", "4")
-      .appName(s"RDF Graph Inference ($profile)")
+      .config("spark.default.parallelism", parallelism)
+      .config("spark.ui.showConsoleProgress", "false")
+      .config("spark.sql.shuffle.partitions", parallelism)
       .getOrCreate()
 
-    // the degree of parallelism
-    val parallelism = 4
-
     // load triples from disk
-    val graph = RDFGraphLoader.loadFromDisk(sparkSession, URI.create(input), parallelism)
-    println(s"|G|=${graph.size()}")
+    val graph = RDFGraphLoader.loadFromDisk(spark, input, parallelism)
+    println(s"|G| = ${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
-      case TRANSITIVE => new TransitiveReasoner(sparkSession.sparkContext, parallelism)
-      case RDFS       => new ForwardRuleReasonerRDFS(sparkSession.sparkContext, parallelism)
+      case TRANSITIVE => new TransitiveReasoner(spark.sparkContext, properties, parallelism)
+      case RDFS       => new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)
       case RDFS_SIMPLE =>
-        var r = new ForwardRuleReasonerRDFS(sparkSession.sparkContext, parallelism) //.level.+(RDFSLevel.SIMPLE)
+        val r = new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)
         r.level = RDFSLevel.SIMPLE
         r
-      case OWL_HORST => new ForwardRuleReasonerOWLHorst(sparkSession.sparkContext)
+      case OWL_HORST => new ForwardRuleReasonerOWLHorst(spark.sparkContext)
     }
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    println(s"|G_inferred|=${inferredGraph.size()}")
+    println(s"|G_inf| = ${inferredGraph.size()}")
 
     // write triples to disk
-    RDFGraphWriter.writeToDisk(inferredGraph, output)
+    RDFGraphWriter.writeToDisk(inferredGraph, output.toString, writeToSingleFile, sortedOutput)
 
-    sparkSession.stop
+    spark.stop()
+  }
+
+  // the config object
+  case class Config(
+    in:                Seq[URI]         = Seq(),
+    out:               URI              = new URI("."),
+    properties:        Seq[Node]        = Seq(),
+    profile:           ReasoningProfile = ReasoningProfile.RDFS,
+    writeToSingleFile: Boolean          = false,
+    sortedOutput:      Boolean          = false,
+    parallelism:       Int              = 4)
+
+  // read ReasoningProfile enum
+  implicit val profilesRead: scopt.Read[ReasoningProfile.Value] =
+    scopt.Read.reads(ReasoningProfile forName _.toLowerCase())
+
+  // read ReasoningProfile enum
+  implicit val nodeRead: scopt.Read[Node] =
+    scopt.Read.reads(NodeFactory.createURI(_))
+
+  // the CLI parser
+  val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
+
+    head("RDFGraphMaterializer", "0.1.0")
+
+    opt[Seq[URI]]('i', "input").required().valueName("<path1>,<path2>,...").
+      action((x, c) => c.copy(in = x)).
+      text("path to file or directory that contains the input files (in N-Triples format)")
+
+    opt[URI]('o', "out").required().valueName("<directory>").
+      action((x, c) => c.copy(out = x)).
+      text("the output directory")
+
+    opt[Seq[Node]]("properties").optional().valueName("<property1>,<property2>,...").
+      action((x, c) => {
+        c.copy(properties = x)
+      }).
+      text("list of properties for which the transitive closure will be computed (used only for profile 'transitive')")
+
+    opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | rdfs-simple | owl-horst | transitive}").
+      action((x, c) => c.copy(profile = x)).
+      text("the reasoning profile")
+
+    opt[Unit]("single-file").optional().action((_, c) =>
+      c.copy(writeToSingleFile = true)).text("write the output to a single file in the output directory")
+
+    opt[Unit]("sorted").optional().action((_, c) =>
+      c.copy(sortedOutput = true)).text("sorted output of the triples (per file)")
+
+    opt[Int]("parallelism").optional().action((x, c) =>
+      c.copy(parallelism = x)).text("the degree of parallelism, i.e. the number of Spark partitions used in the Spark operations")
+
+    help("help").text("prints this usage text")
+
+    checkConfig(c =>
+      if (c.profile == TRANSITIVE && c.properties.isEmpty) failure("Option --properties must not be empty if profile 'transitive' is set")
+      else success)
   }
 }
