@@ -22,6 +22,16 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty-util</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- SANSA Inference -->
