@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.flink.partition.core.semantic
+package net.sansa_stack.rdf.flink.partition.semantic
 
 import org.apache.flink.api.scala.DataSet
 import net.sansa_stack.rdf.flink.data.RDFGraph
