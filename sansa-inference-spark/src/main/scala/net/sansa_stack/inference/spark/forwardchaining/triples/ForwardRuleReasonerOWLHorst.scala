@@ -1,14 +1,13 @@
-package net.sansa_stack.inference.spark.forwardchaining
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
+import net.sansa_stack.inference.spark.data.model.RDFGraph
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
+import net.sansa_stack.inference.utils.CollectionUtils
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.slf4j.LoggerFactory
-
-import net.sansa_stack.inference.spark.data.model.RDFGraph
-import net.sansa_stack.inference.spark.data.model.TripleUtils._
-import net.sansa_stack.inference.utils.CollectionUtils
 
 /**
   * A forward chaining implementation of the OWL Horst entailment regime.

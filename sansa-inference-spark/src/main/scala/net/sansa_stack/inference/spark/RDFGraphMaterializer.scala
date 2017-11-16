@@ -2,16 +2,14 @@ package net.sansa_stack.inference.spark
 
 import java.net.URI
 
-import org.apache.jena.graph.{Node, NodeFactory}
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
+import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
+import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
 
 /**
   * The main entry class to compute the materialization on an RDF graph.

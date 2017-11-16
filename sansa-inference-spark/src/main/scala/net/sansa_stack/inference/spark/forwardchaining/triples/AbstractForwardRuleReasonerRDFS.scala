@@ -1,10 +1,10 @@
-package net.sansa_stack.inference.spark.forwardchaining
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
-import org.apache.spark.sql.SparkSession
-import org.slf4j.LoggerFactory
 import net.sansa_stack.inference.data.{RDF, RDFOps, RDFVocab}
 import net.sansa_stack.inference.rules.RDFSLevel._
 import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark
+import org.apache.spark.sql.SparkSession
+import org.slf4j.LoggerFactory
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.

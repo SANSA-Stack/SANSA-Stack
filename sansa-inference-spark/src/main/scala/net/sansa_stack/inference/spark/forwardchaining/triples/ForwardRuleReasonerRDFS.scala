@@ -1,11 +1,4 @@
-package net.sansa_stack.inference.spark.forwardchaining
-
-import scala.collection.mutable
-
-import org.apache.jena.graph.Triple
-import org.apache.jena.vocabulary.{RDF, RDFS}
-import org.apache.spark.SparkContext
-import org.slf4j.LoggerFactory
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
 import net.sansa_stack.inference.rules.RDFSLevel._
 import net.sansa_stack.inference.spark.data.model.RDFGraph
@@ -13,6 +6,12 @@ import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import net.sansa_stack.inference.spark.utils.RDDUtils.RDDOps
 import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 import net.sansa_stack.inference.utils.CollectionUtils
+import org.apache.jena.graph.Triple
+import org.apache.jena.vocabulary.{RDF, RDFS}
+import org.apache.spark.SparkContext
+import org.slf4j.LoggerFactory
+
+import scala.collection.mutable
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.

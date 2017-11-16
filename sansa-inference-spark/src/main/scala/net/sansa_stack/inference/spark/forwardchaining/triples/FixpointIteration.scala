@@ -1,10 +1,9 @@
-package net.sansa_stack.inference.spark.forwardchaining
-
-import scala.reflect.ClassTag
-
-import org.apache.spark.rdd.RDD
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
 import net.sansa_stack.inference.utils.Logging
+import org.apache.spark.rdd.RDD
+
+import scala.reflect.ClassTag
 
 /**
   * Creates a new RDD by performing bulk iterations using the given step function. The first

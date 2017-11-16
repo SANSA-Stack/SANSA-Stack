@@ -8,7 +8,7 @@ import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.rules.RuleSets
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.model.{RDFGraphDataFrame, RDFGraphNative}
-import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerOptimizedNative
+import net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerOptimizedNative
 import org.apache.jena.Jena
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 

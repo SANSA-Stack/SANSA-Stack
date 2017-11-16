@@ -1,7 +1,7 @@
 package net.sansa_stack.inference.spark.conformance
 
 import com.holdenkarau.spark.testing.SharedSparkContext
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasoner, ForwardRuleReasonerOWLHorst}
+import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasoner, ForwardRuleReasonerOWLHorst}
 import org.scalatest.Suite
 
 /**

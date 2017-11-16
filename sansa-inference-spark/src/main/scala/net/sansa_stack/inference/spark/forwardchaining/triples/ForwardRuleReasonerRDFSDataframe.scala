@@ -1,17 +1,16 @@
-package net.sansa_stack.inference.spark.forwardchaining
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
 import net.sansa_stack.inference.data.RDFTriple
-import scala.language.implicitConversions
-
+import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame}
+import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 import org.apache.jena.riot.Lang
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{Dataset, SQLContext, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.slf4j.LoggerFactory
 
-import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame}
-import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
+import scala.language.implicitConversions
 
 
 
