@@ -81,6 +81,7 @@
     <MaxPermGen>512m</MaxPermGen>
     <CodeCacheSize>512m</CodeCacheSize>
     <gpg.keyname>AKSW</gpg.keyname>
+    <owlapi.version>5.1.0</owlapi.version>
   </properties>
 
   <prerequisites>
@@ -175,6 +176,28 @@
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-arq</artifactId>
         <version>${jena.version}</version>
+      </dependency>
+
+      <!-- OWL API -->
+      <dependency>
+        <groupId>net.sourceforge.owlapi</groupId>
+        <artifactId>owlapi-api</artifactId>
+        <version>${owlapi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.owlapi</groupId>
+        <artifactId>owlapi-apibinding</artifactId>
+        <version>${owlapi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.owlapi</groupId>
+        <artifactId>owlapi-impl</artifactId>
+        <version>${owlapi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.owlapi</groupId>
+        <artifactId>owlapi-parsers</artifactId>
+        <version>${owlapi.version}</version>
       </dependency>
 
       <!-- Graph API -->
@@ -297,7 +320,7 @@
                   <arg>-feature</arg>
                   <arg>-dependencyfile</arg>
                   <arg>${project.build.directory}/.scala_dependencies</arg>
-		  <arg>-Xmax-classfile-name</arg>
+                  <arg>-Xmax-classfile-name</arg>
                   <arg>128</arg>
                 </args>
                 <jvmArgs>
@@ -756,9 +779,5 @@
         </plugins>
       </build>
     </profile>
-
   </profiles>
-
-
-
 </project>
