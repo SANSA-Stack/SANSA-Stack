@@ -1,77 +1,63 @@
 package net.sansa_stack.examples.spark.owl
 
-import net.sansa_stack.owl.spark.dataset.{FunctionalSyntaxOWLAxiomsDatasetBuilder, ManchesterSyntaxOWLAxiomsDatasetBuilder}
+import net.sansa_stack.owl.spark.dataset.{ FunctionalSyntaxOWLAxiomsDatasetBuilder, ManchesterSyntaxOWLAxiomsDatasetBuilder }
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
 
 object OWLReaderDataset {
-  def main(args: Array[String]) = {
-    if (args.length < 1) {
-      System.err.println(
-        "Usage: Dataset OWL reader <input> <syntax>")
-      System.err.println("Supported 'Syntax' as follows:")
-      System.err.println("  fun               Functional syntax")
-      System.err.println("  manch             Manchester syntax")
-      System.err.println("  owl_xml           OWL/XML")
-      System.exit(1)
+
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in, config.syntax)
+      case None =>
+        println(parser.usage)
     }
-    val input = args(0)
-    val syntax = args(1)
-    val optionsList = args.drop(2).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
+  }
 
-    syntax match {
-      case "fun" =>
-        options.foreach {
-          case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-        }
+  def run(input: String, syntax: String): Unit = {
 
-        println(".================================================.")
-        println("| Dataset OWL reader example (Functional syntax) |")
-        println("`================================================´")
+    println(".============================================.")
+    println("| Dataset OWL reader example (" + syntax + " syntax)|")
+    println("`============================================´")
 
-        val sparkSession = SparkSession.builder
-          .master("local[*]")
-          .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-          .appName("Dataset reader example (" + input + ")(Functional syntax)")
-          .getOrCreate()
+    val spark = SparkSession.builder
+      .appName(s"Dataset OWL reader ( $input + )($syntax)")
+      .master("local[*]")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .getOrCreate()
 
-        val dataset = FunctionalSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, input)
-        dataset.take(10).foreach(println(_))
-
-        sparkSession.stop
-
-      case "manch" =>
-        options.foreach {
-          case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-        }
-
-        println(".================================================.")
-        println("| Dataset OWL reader example (Manchester syntax) |")
-        println("`================================================´")
-
-        val sparkSession = SparkSession.builder
-          .master("local[*]")
-          .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-          .appName("Dataset reader example (" + input + ")(Manchester syntax)")
-          .getOrCreate()
-
-        val dataset = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, input)
-        dataset.take(10).foreach(println(_))
-
-        sparkSession.stop
-
+    val dataset = syntax match {
+      case "fun"   => FunctionalSyntaxOWLAxiomsDatasetBuilder.build(spark, input)
+      case "manch" => ManchesterSyntaxOWLAxiomsDatasetBuilder.build(spark, input)
       case "owl_xml" =>
-        println("Not supported, yet.")
-
+        throw new RuntimeException("'" + syntax + "' - Not supported, yet.")
       case _ =>
-        println("Invalid syntax type.")
+        throw new RuntimeException("Invalid syntax type: '" + syntax + "'")
     }
+
+    dataset.take(10).foreach(println(_))
+
+  }
+
+  case class Config(
+    in:     String = "",
+    syntax: String = "")
+
+  // the CLI parser
+  val parser = new scopt.OptionParser[Config]("Dataset OWL reader example") {
+
+    head("Dataset OWL reader example")
+
+    opt[String]('i', "input").required().valueName("<path>").
+      action((x, c) => c.copy(in = x)).
+      text("path to file that contains the data")
+
+    opt[String]('s', "syntax").required().valueName("{fun | manch | owl_xml}").
+      action((x, c) => c.copy(syntax = x)).
+      text("the syntax format")
+
+    help("help").text("prints this usage text")
   }
 }

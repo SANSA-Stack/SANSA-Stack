@@ -29,8 +29,12 @@ object OWLReaderRDD {
       .getOrCreate()
 
     val rdd = syntax match {
-      case fun   => FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark.sparkContext, input)
-      case manch => ManchesterSyntaxOWLAxiomsRDDBuilder.build(spark.sparkContext, input)
+      case "fun"   => FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark.sparkContext, input)
+      case "manch" => ManchesterSyntaxOWLAxiomsRDDBuilder.build(spark.sparkContext, input)
+      case "owl_xml" =>
+        throw new RuntimeException("'" + syntax + "' - Not supported, yet.")
+      case _ =>
+        throw new RuntimeException("Invalid syntax type: '" + syntax + "'")
     }
 
     rdd.take(10).foreach(println(_))
@@ -50,7 +54,7 @@ object OWLReaderRDD {
       action((x, c) => c.copy(in = x)).
       text("path to file that contains the data")
 
-    opt[String]('s', "syntax").required().valueName("{fun | manch}").
+    opt[String]('s', "syntax").required().valueName("{fun | manch | owl_xml}").
       action((x, c) => c.copy(syntax = x)).
       text("the syntax format")
 
