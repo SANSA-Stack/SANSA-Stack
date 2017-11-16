@@ -1,4 +1,3 @@
-
 // packages
 package net.sansa_stack.semantic_partitioning
 
