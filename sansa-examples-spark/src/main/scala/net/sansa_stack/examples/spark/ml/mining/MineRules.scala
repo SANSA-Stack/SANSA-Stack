@@ -2,7 +2,6 @@ package net.sansa_stack.examples.spark.ml.mining
 
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
 import net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB
 import net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }
 import net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm
@@ -10,55 +9,45 @@ import net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm
 
 /*
  * Mine Rules
- * 
+ *
  */
 object MineRules {
 
-  def main(args: Array[String]) = {
-    if (args.length < 1) {
-      System.err.println(
-        "Usage: Mine Rules <input> <output>")
-      System.exit(1)
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in, config.out)
+      case None =>
+        println(parser.usage)
     }
-    val input = args(0) //"src/main/resourcesMineRules_sampledata.tsv"
-    val outputPath = args(1)
-    val hdfsPath = outputPath + "/"
+  }
 
-    val optionsList = args.drop(2).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
+  def run(input: String, outputPath: String): Unit = {
 
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-    }
     println("======================================")
     println("|        Mines the Rules example     |")
     println("======================================")
 
-    val sparkSession = SparkSession.builder
+    val spark = SparkSession.builder
+      .appName(s" Mines the Rules example ( $input )")
       .master("local[*]")
-      .appName(" Mines the Rules example (" + input + ")")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
-
-    val ops = JenaSparkRDDOps(sparkSession.sparkContext)
-    import ops._
+      
+    val hdfsPath = outputPath + "/"
 
     val know = new KB()
     know.sethdfsPath(hdfsPath)
     know.setKbSrc(input)
 
-    know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sparkSession.sparkContext, 2))
-    know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sparkSession.sparkContext, sparkSession.sqlContext, 2))
+    know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))
+    know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, spark.sparkContext, spark.sqlContext, 2))
 
     val algo = new Algorithm(know, 0.01, 3, 0.1, hdfsPath)
 
     //var erg = algo.ruleMining(sparkSession.sparkContext, sparkSession.sqlContext)
     //println(erg)
-    var output = algo.ruleMining(sparkSession.sparkContext, sparkSession.sqlContext)
+    var output = algo.ruleMining(spark.sparkContext, spark.sqlContext)
 
     var outString = output.map { x =>
       var rdfTrp = x.getRule()
@@ -73,12 +62,27 @@ object MineRules {
       temp = temp.stripSuffix(" \u2227 ")
       temp
     }.toSeq
-    var rddOut = sparkSession.sparkContext.parallelize(outString).repartition(1)
+    var rddOut = spark.sparkContext.parallelize(outString).repartition(1)
 
     rddOut.saveAsTextFile(outputPath + "/testOut")
-
-    sparkSession.stop
-
   }
 
+  case class Config(
+    in:  String = "",
+    out: String = "")
+
+  val parser = new scopt.OptionParser[Config]("Mines the Rules example") {
+
+    head("Mines the Rules example")
+
+    opt[String]('i', "input").required().valueName("<path>").
+      action((x, c) => c.copy(in = x)).
+      text("path to file that contains the data")
+
+    opt[String]('o', "out").required().valueName("<directory>").
+      action((x, c) => c.copy(out = x)).
+      text("the output directory")
+
+    help("help").text("prints this usage text")
+  }
 }
