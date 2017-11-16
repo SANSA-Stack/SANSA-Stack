@@ -11,7 +11,7 @@ import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
-import net.sansa_stack.inference.spark.forwardchaining.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner }
+import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
 
 object RDFGraphInference {
 
