@@ -1,5 +1,5 @@
 // packages
-package net.sansa_stack.semantic_partitioning
+package net.sansa_stack.rdf.spark.partition.semantic
 
 // imports
 import java.util.concurrent.TimeUnit
