@@ -33,11 +33,15 @@ class BackwardChainingReasonerDataset(
 
   val precomputeSchema: Boolean = true
 
-  lazy val schema: Map[Node, Dataset[RDFTriple]] = if (precomputeSchema) extractWithIndex(graph) else Map()
-  lazy val domain = schema.getOrElse(RDFS.domain, broadcast(graph.filter(t => t.p == RDFS.domain.toString)).alias("DOMAIN"))
-  lazy val range = schema.getOrElse(RDFS.range, broadcast(graph.filter(t => t.p == RDFS.range.toString)).alias("RANGE"))
-  lazy val sco = schema.getOrElse(RDFS.subClassOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subClassOf.toString))).alias("SCO"))
-  lazy val spo = schema.getOrElse(RDFS.subPropertyOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subPropertyOf.toString))).alias("SPO"))
+  private lazy val schema: Map[Node, Dataset[RDFTriple]] = if (precomputeSchema) extractWithIndex(graph) else Map()
+  private lazy val domain: Dataset[RDFTriple] = datasetForPredicate(RDFS.domain, "DOMAIN")
+  private lazy val range: Dataset[RDFTriple] = datasetForPredicate(RDFS.range, "RANGE")
+  private lazy val sco: Dataset[RDFTriple] = datasetForPredicate(RDFS.subClassOf, "SCO")
+  private lazy val spo: Dataset[RDFTriple] = datasetForPredicate(RDFS.subPropertyOf, "SPO")
+
+  private def datasetForPredicate(predicate: Node, alias: String): Dataset[RDFTriple] = {
+    schema.getOrElse(predicate, broadcast(graph.filter(t => t.p == predicate.toString)).alias("DOMAIN"))
+  }
 
   def isEntailed(triple: Triple): Boolean = {
     isEntailed(new TriplePattern(triple))
