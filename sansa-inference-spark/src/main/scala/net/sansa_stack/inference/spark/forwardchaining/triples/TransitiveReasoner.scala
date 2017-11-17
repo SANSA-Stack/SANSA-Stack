@@ -1,14 +1,13 @@
-package net.sansa_stack.inference.spark.forwardchaining
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
-import scala.reflect.ClassTag
-
+import net.sansa_stack.inference.spark.data.model.RDFGraph
+import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 
-import net.sansa_stack.inference.spark.data.model.RDFGraph
-import net.sansa_stack.inference.spark.data.model.TripleUtils._
+import scala.reflect.ClassTag
 
 /**
   * An engine to compute the transitive closure (TC) for a set of triples given in several datastructures.

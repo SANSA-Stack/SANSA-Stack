@@ -3,12 +3,10 @@ package net.sansa_stack.inference.spark.rules
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.spark.{SparkConf, SparkContext}
 
-import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasonerRDFS
 import scala.collection.mutable
-
 import net.sansa_stack.inference.spark.data.model.RDFGraph
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
-
+import net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 
 /**

@@ -2,8 +2,8 @@ package net.sansa_stack.inference.spark.conformance
 
 import com.holdenkarau.spark.testing.SharedSparkContext
 import net.sansa_stack.inference.rules.RDFSLevel
-import net.sansa_stack.inference.spark.forwardchaining.{ForwardRuleReasoner, ForwardRuleReasonerRDFS}
-import org.scalatest.{BeforeAndAfterAll, Suite}
+import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasoner, ForwardRuleReasonerRDFS}
+import org.scalatest.Suite
 
 /**
   * Test context to share an RDFS reasoner.

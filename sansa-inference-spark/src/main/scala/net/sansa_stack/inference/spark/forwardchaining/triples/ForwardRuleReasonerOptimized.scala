@@ -1,15 +1,14 @@
-package net.sansa_stack.inference.spark.forwardchaining
-
-import scala.language.{existentials, implicitConversions}
-
-import org.apache.jena.reasoner.rulesys.Rule
-import org.apache.spark.sql.SparkSession
-import org.slf4j.LoggerFactory
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
 import net.sansa_stack.inference.data.RDF
 import net.sansa_stack.inference.rules.{HighLevelRuleDependencyGraphGenerator, RuleDependencyGraph, RuleDependencyGraphGenerator}
 import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark
 import net.sansa_stack.inference.spark.rules.RuleExecutor
+import org.apache.jena.reasoner.rulesys.Rule
+import org.apache.spark.sql.SparkSession
+import org.slf4j.LoggerFactory
+
+import scala.language.{existentials, implicitConversions}
 
 /**
   * An optimized implementation of the forward chaining based reasoner.

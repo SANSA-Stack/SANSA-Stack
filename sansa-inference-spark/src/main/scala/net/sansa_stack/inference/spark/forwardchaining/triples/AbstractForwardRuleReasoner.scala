@@ -1,4 +1,4 @@
-package net.sansa_stack.inference.spark.forwardchaining
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
 import net.sansa_stack.inference.data.RDF
 import net.sansa_stack.inference.spark.data.model.AbstractRDFGraphSpark

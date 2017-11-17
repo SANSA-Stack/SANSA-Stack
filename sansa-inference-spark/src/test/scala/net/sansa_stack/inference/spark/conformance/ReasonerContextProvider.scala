@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.spark.conformance
 
-import net.sansa_stack.inference.spark.forwardchaining.ForwardRuleReasoner
+import net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasoner
 
 /**
   * Provides a reasoner.

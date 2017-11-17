@@ -1,15 +1,15 @@
-package net.sansa_stack.inference.spark.forwardchaining
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
-import scala.language.{existentials, implicitConversions}
+import net.sansa_stack.inference.data.Jena
+import net.sansa_stack.inference.spark.data.model.RDFGraphNative
+import net.sansa_stack.inference.spark.rules.RuleExecutorNative
+import org.apache.jena.graph.Triple
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.slf4j.LoggerFactory
-import net.sansa_stack.inference.data.{Jena}
-import net.sansa_stack.inference.spark.data.model.RDFGraphNative
-import net.sansa_stack.inference.spark.rules.RuleExecutorNative
 
-import org.apache.jena.graph.{Node, Triple}
+import scala.language.{existentials, implicitConversions}
 
 /**
   * A naive implementation of the forward chaining based reasoner that does fix-point iteration, i.e. it applies

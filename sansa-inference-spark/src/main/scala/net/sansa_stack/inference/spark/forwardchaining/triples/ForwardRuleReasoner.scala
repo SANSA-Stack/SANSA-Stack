@@ -1,13 +1,12 @@
-package net.sansa_stack.inference.spark.forwardchaining
-
-import scala.collection.mutable
-
-import org.apache.jena.graph.{Node, Triple}
-import org.apache.spark.rdd.RDD
+package net.sansa_stack.inference.spark.forwardchaining.triples
 
 import net.sansa_stack.inference.spark.data.model.RDFGraph
 import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import net.sansa_stack.inference.utils.Profiler
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.spark.rdd.RDD
+
+import scala.collection.mutable
 
 /**
   * A forward chaining based reasoner.
