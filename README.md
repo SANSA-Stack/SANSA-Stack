@@ -2,6 +2,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-rdf-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-rdf-parent_2.11)
 [![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20RDF/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20RDF/job/develop/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
 ## Description
 SANSA RDF is a library to read RDF files into [Spark](https://spark.apache.org) or [Flink](https://flink.apache.org). It allows files to reside in HDFS as well as in a local file system and distributes them across Spark RDDs/Datasets or Flink DataSets.
