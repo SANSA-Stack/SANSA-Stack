@@ -120,7 +120,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
 
     val triplesRDFS3 =
       otherTriples
-        .filter(t => rangeMapBC.value.contains(t.p))
+        .filter(t => !t.getObject.isLiteral && rangeMapBC.value.contains(t.p)) // check for non-literals here
         .map(t => Triple.create(t.o, RDF.`type`.asNode(), rangeMapBC.value(t.p)))
         .setName("rdfs3")
 
@@ -179,12 +179,20 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
       // rdf1: (s p o) => (p rdf:type rdf:Property)
 
       // rdfs4a: (s p o) => (s rdf:type rdfs:Resource)
-      // rdfs4a: (s p o) => (o rdf:type rdfs:Resource)
-      val rdfs4 = allTriples.flatMap(t => Set(
-        Triple.create(t.s, RDF.`type`.asNode(), RDFS.Resource.asNode()),
-        Triple.create(t.o, RDF.`type`.asNode, RDFS.Resource.asNode)
-        //          RDFTriple(t.predicate, RDF.`type`.getURI, RDF.Property.getURI)
-      ))
+      // rdfs4b: (s p o) => (o rdf:type rdfs:Resource) // filter by literals
+     // TODO not sure which version is more effcient, using a FILTER + UNION, or doing it via faltMap but creating Set objects
+//      val rdfs4 = allTriples.map(t => Triple.create(t.s, RDF.`type`.asNode(), RDFS.Resource.asNode()))
+//                    .union(
+//                  allTriples.filter(!_.getObject.isLiteral).map(t => Triple.create(t.o, RDF.`type`.asNode(), RDFS.Resource.asNode())))
+
+      val rdfs4 = allTriples.flatMap(t => {
+        var set = Set(Triple.create(t.s, RDF.`type`.asNode(), RDFS.Resource.asNode()))
+
+        if (!t.getObject.isLiteral) {
+          set += Triple.create(t.o, RDF.`type`.asNode, RDFS.Resource.asNode)
+        }
+        set
+      })
 
       // rdfs12: (?x rdf:type rdfs:ContainerMembershipProperty) -> (?x rdfs:subPropertyOf rdfs:member)
       val rdfs12 = typeTriples
