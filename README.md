@@ -22,9 +22,9 @@
 	- [Usage](#usage)
 		- [Example](#example)
 	- [Supported Reasoning Profiles](#)
-				- [RDFS](#rdfs)
-					- [RDFS Simple](#rdfs-simple)
-				- [OWL Horst](#owl-horst)
+		- [RDFS](#rdfs)
+		- [RDFS Simple](#rdfs-simple)
+		- [OWL Horst](#owl-horst)
 
 
 ## Structure
@@ -46,7 +46,7 @@ Contains common test classes and data.
 ### Prerequisites
 * Maven 3.x
 * Java 8
-* Scala 2.11 (support for Scala 2.10 is planned)
+* Scala 2.11 (support for Scala 2.12 once Spark moved to Scala 2.12 as well)
 * Apache Spark 2.x
 * Apache Flink 1.x
 
@@ -151,7 +151,7 @@ where `VERSION` is the released version you want to use.
 ## Usage
 Besides using the Inference API in your application code, we also provide a command line interface with various options that allow for a convenient way to use the core reasoning algorithms:
 ```
-RDFGraphMaterializer 0.1.0
+RDFGraphMaterializer 0.2.0
 Usage: RDFGraphMaterializer [options]
 
   -i, --input <path1>,<path2>,...
