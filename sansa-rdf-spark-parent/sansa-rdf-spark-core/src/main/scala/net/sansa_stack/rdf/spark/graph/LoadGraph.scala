@@ -10,7 +10,6 @@ import net.sansa_stack.rdf.spark.model.JenaSparkRDDOps
 import net.sansa_stack.rdf.spark.model.TripleRDD._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.inference.spark.data.model.RDFGraph
 
 object LoadGraph extends Logging {
 
@@ -87,29 +86,6 @@ object LoadGraph extends Logging {
    */
   def asString(triples: RDD[Triple]): Graph[String, String] = {
     val rs = triples.map(triple => (triple.getSubject.getURI, triple.getPredicate.getURI, triple.getObject.getURI))
-    val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
-
-    val vertices: RDD[(VertexId, String)] = indexedMap.map(x => (x._2, x._1))
-    val _nodeToId: RDD[(String, VertexId)] = indexedMap.map(x => (x._1, x._2))
-
-    val tuples = rs.keyBy(_._1).join(indexedMap).map({
-      case (k, ((s, p, o), si)) => (o, (si, p))
-    })
-
-    val edges: RDD[Edge[String]] = tuples.join(indexedMap).map({
-      case (k, ((si, p), oi)) => Edge(si, oi, p)
-    })
-
-    org.apache.spark.graphx.Graph(vertices, edges)
-  }
-  
-   /**
-   * Constructs GraphX graph from RDD of triples
-   * @param triples rdd of triples
-   * @return object of LoadGraph which contains the constructed  ''graph''.
-   */
-  def fromRDFGraph(graph: RDFGraph): Graph[String, String] = {
-    val rs = graph.triples.map(triple => (triple.s, triple.p, triple.o))
     val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
 
     val vertices: RDD[(VertexId, String)] = indexedMap.map(x => (x._2, x._1))
