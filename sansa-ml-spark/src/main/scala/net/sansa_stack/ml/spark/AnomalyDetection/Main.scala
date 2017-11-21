@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.anomaly
+package net.sansa_stack.ml.spark.AnomalyDetection
 
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import java.net.{ URI => JavaURI }
