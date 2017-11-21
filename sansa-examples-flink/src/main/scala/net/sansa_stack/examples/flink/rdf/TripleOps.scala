@@ -7,30 +7,23 @@ import org.apache.flink.api.scala._
 
 object TripleOps {
   def main(args: Array[String]) {
-    if (args.length < 1) {
-      System.err.println(
-        "Usage: Triple Ops <input>")
-      System.exit(1)
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in)
+      case None =>
+        println(parser.usage)
     }
-    val input = args(0) // "src/main/resources/rdf.nt"
-    val optionsList = args.drop(1).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
+  }
 
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-    }
+  def run(input: String): Unit = {
+
     println("======================================")
     println("|        Triple Ops example       |")
     println("======================================")
-
     val env = ExecutionEnvironment.getExecutionEnvironment
-    
+
     val rdfgraph = RDFGraphLoader.loadFromFile(input, env)
+
     rdfgraph.triples.collect().take(4).foreach(println(_))
     //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
     println("All triples related to Dickens:\n" + rdfgraph.find(Some("http://commons.dbpedia.org/resource/Category:Places"), None, None).collect().mkString("\n"))
@@ -45,5 +38,20 @@ object TripleOps {
     println("Number of subjects: " + rdfgraph.getSubjects.map(_.toString).distinct().count)
     println("Number of predicates: " + rdfgraph.getPredicates.map(_.toString).distinct.count())
     println("Number of objects: " + rdfgraph.getPredicates.map(_.toString).distinct.count())
+
   }
+  // the config object
+  case class Config(in: String = "")
+
+  // the CLI parser
+  val parser = new scopt.OptionParser[Config]("Triple Ops example") {
+
+    head(" Triple Ops example")
+
+    opt[String]('i', "input").required().valueName("<path>").
+      action((x, c) => c.copy(in = x)).
+      text("path to file that contains the data (in N-Triples format)")
+    help("help").text("prints this usage text")
+  }
+
 }
