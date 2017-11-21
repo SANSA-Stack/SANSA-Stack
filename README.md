@@ -1,6 +1,7 @@
 # SANSA-Examples
 [![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20Examples/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20Examples/job/develop/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
 This directory contains code examples for various SANSA functionality.
 
