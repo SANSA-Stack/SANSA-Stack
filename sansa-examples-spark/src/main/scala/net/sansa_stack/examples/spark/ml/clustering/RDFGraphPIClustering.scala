@@ -11,26 +11,26 @@ import org.apache.spark.rdd.RDD
 import net.sansa_stack.ml.spark.clustering.{ RDFGraphPICClustering => RDFGraphPICClusteringAlg }
 
 object RDFGraphPIClustering {
-  def main(args: Array[String]) = {
-    if (args.length < 3) {
-      System.err.println(
-        "Usage: RDFGraphPIClustering <input> <k> <numIterations>")
-      System.exit(1)
-    }
-    val input = args(0) //"src/main/resources/Clustering_sampledata.nt"
-    val k = args(1).toInt
-    val numIterations = args(2).toInt
-    val optionsList = args.drop(3).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
 
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in, config.k, config.maxIterations)
+      case None =>
+        println(parser.usage)
     }
+  }
+
+  def run(input: String, k: Int, maxIterations: Int): Unit = {
+
+    val spark = SparkSession.builder
+      .appName(s"Power Iteration Clustering example ( $input )")
+      .master("local[*]")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .getOrCreate()
+
+    Logger.getRootLogger.setLevel(Level.ERROR)
+
     println("============================================")
     println("| Power Iteration Clustering   example     |")
     println("============================================")
@@ -41,10 +41,10 @@ object RDFGraphPIClustering {
       .getOrCreate()
     Logger.getRootLogger.setLevel(Level.ERROR)
 
-    // Load the graph 
+    // Load the graph
     //val graph = GraphLoader.edgeListFile(sparkSession.sparkContext, input)
 
-    // Load the RDF dataset 
+    // Load the RDF dataset
     val RDFfile = sparkSession.sparkContext.textFile(input).map(line =>
       RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.getBytes), Lang.NTRIPLES, null).next())
 
@@ -73,7 +73,7 @@ object RDFGraphPIClustering {
 
     val graph = org.apache.spark.graphx.Graph(vertices, edgess)
 
-    val model = RDFGraphPICClusteringAlg(sparkSession, graph, k, numIterations).run()
+    val model = RDFGraphPICClusteringAlg(sparkSession, graph, k, maxIterations).run()
 
     val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
     val assignments = clusters.toList.sortBy { case (k, v) => v.length }
@@ -87,7 +87,30 @@ object RDFGraphPIClustering {
     }.sorted.mkString("(", ",", ")")
     println(s"Cluster assignments: $assignmentsStr\ncluster sizes: $sizesStr")
 
-    sparkSession.stop
+    spark.stop
+
   }
 
+  case class Config(in: String = "", k: Int = 3, maxIterations: Int = 50)
+
+  val defaultParams = Config()
+
+  val parser = new scopt.OptionParser[Config]("RDFGraphPIClustering") {
+
+    head("PowerIterationClusteringExample: an example PIC app using concentric circles.")
+
+    opt[String]('i', "input").required().valueName("<path>")
+      .text(s"path to file that contains the input files (in N-Triple format)")
+      .action((x, c) => c.copy(in = x))
+
+    opt[Int]('k', "k")
+      .text(s"number of circles (/clusters), default: ${defaultParams.k}")
+      .action((x, c) => c.copy(k = x))
+
+    opt[Int]("maxIterations")
+      .text(s"number of iterations, default: ${defaultParams.maxIterations}")
+      .action((x, c) => c.copy(maxIterations = x))
+
+    help("help").text("prints this usage text")
+  }
 }
