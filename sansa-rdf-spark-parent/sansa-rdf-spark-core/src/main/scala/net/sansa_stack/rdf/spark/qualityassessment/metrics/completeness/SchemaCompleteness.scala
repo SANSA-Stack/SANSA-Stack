@@ -24,18 +24,19 @@ object SchemaCompleteness {
    */
 
     val p2_o = dataset.filter(f =>
-      f.getPredicate.getLiteralLexicalForm.contains("rdf:type")
+      f.getPredicate.getLocalName.equals("type")
         && f.getObject.isURI()).cache()
-        
-    val S = p2_o.map(_.getPredicate).distinct()
-    val SC = p2_o.map(_.getObject).distinct()
-    val S_intersection_SC = S.intersection(SC).distinct()
+
+    val S = p2_o.map(_.getPredicate).distinct().cache()
+    val SC = dataset.map(_.getObject).distinct().cache()
+
+    val S_intersection_SC = S.intersection(SC).distinct
 
     val SC_count = SC.count()
     val S_intersection_SC_count = S_intersection_SC.count()
 
-    if (SC_count > 0) S_intersection_SC_count / SC_count
-    else 0
+    if (SC_count > 0) S_intersection_SC_count.toDouble / SC_count.toDouble
+    else 0.00
   }
 
 }
