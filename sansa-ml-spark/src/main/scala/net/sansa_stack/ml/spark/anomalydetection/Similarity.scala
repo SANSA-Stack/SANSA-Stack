@@ -1,8 +1,8 @@
-package net.sansa_stack.ml.spark.AnomalyDetection
-
+package net.sansa_stack.ml.spark.anomalydetection
 
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.Node
+
 object Similarity {
   def sim(seq1: Seq[Node], seq2: Seq[Node]): Double = {
     

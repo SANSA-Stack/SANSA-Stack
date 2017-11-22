@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.AnomalyDetection
+package net.sansa_stack.ml.spark.anomalydetection
 
 
 import org.apache.jena.graph.Node
