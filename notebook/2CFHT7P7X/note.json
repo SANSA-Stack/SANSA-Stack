@@ -1,9 +1,39 @@
 {
   "paragraphs": [
     {
-      "text": "import java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark\nimport net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\nimport org.apache.spark.sql.SparkSession\n\nimport scala.collection.mutable\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval graphRdd \u003d NTripleReader.load(spark, URI.create(input))\n    \nval partitions \u003d RdfPartitionUtilsSpark.partitionGraph(graphRdd)\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)\n    \nval port \u003d 7531\n    \nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()\n\nserver.join()",
+      "text": "import java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark\nimport net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\nimport org.apache.spark.sql.SparkSession\n\nimport scala.collection.mutable\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval graphRdd \u003d NTripleReader.load(spark, URI.create(input))\n    \nval partitions \u003d RdfPartitionUtilsSpark.partitionGraph(graphRdd)\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)\n    \nval port \u003d 7531\n    \nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()\n\n\nserver.join()",
       "user": "anonymous",
-      "dateUpdated": "Sep 5, 2017 12:25:10 PM",
+      "dateUpdated": "Nov 22, 2017 11:02:11 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1504609209863_-361690439",
+      "id": "20170905-110009_242595472",
+      "dateCreated": "Sep 5, 2017 11:00:09 AM",
+      "dateStarted": "Nov 22, 2017 10:59:36 AM",
+      "dateFinished": "Sep 5, 2017 12:26:16 PM",
+      "status": "RUNNING",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "\n",
+      "user": "anonymous",
+      "dateUpdated": "Nov 22, 2017 11:03:17 AM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -18,71 +48,10 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "\nimport java.net.URI\n\n\n\n\u003cconsole\u003e:26: error: object sansa_stack is not a member of package net\n       import net.sansa_stack.rdf.spark.io.NTripleReader\n                  ^\n"
-          }
-        ]
-      },
       "apps": [],
-      "jobName": "paragraph_1504609209863_-361690439",
-      "id": "20170905-110009_242595472",
-      "dateCreated": "Sep 5, 2017 11:00:09 AM",
-      "dateStarted": "Sep 5, 2017 12:25:10 PM",
-      "dateFinished": "Sep 5, 2017 12:26:16 PM",
-      "status": "ERROR",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "ls",
-      "user": "anonymous",
-      "dateUpdated": "Nov 20, 2017 11:07:47 AM",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "text",
-          "editOnDblClick": false
-        },
-        "editorMode": "ace/mode/text"
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "\n\n\n\u003cconsole\u003e:26: error: not found: value ls\n       ls\n       ^\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1504609454929_46480527",
-      "id": "20170905-110414_340589980",
-      "dateCreated": "Sep 5, 2017 11:04:14 AM",
-      "dateStarted": "Nov 20, 2017 11:07:47 AM",
-      "dateFinished": "Nov 20, 2017 11:08:08 AM",
-      "status": "ERROR",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "user": "anonymous",
-      "config": {},
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "apps": [],
-      "jobName": "paragraph_1511176067716_1296985295",
-      "id": "20171120-110747_1287112129",
-      "dateCreated": "Nov 20, 2017 11:07:47 AM",
+      "jobName": "paragraph_1511348574973_-104865431",
+      "id": "20171122-110254_218685772",
+      "dateCreated": "Nov 22, 2017 11:02:54 AM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
@@ -90,24 +59,25 @@
   "name": "Query",
   "id": "2CFHT7P7X",
   "angularObjects": {
-    "2D2CH8UVM:shared_process": [],
-    "2CZ465SSD:shared_process": [],
-    "2D19YWEDQ:shared_process": [],
-    "2CYDPD4E4:shared_process": [],
-    "2CXKWNZWJ:shared_process": [],
-    "2CYP49WNW:shared_process": [],
-    "2CZB2WFDD:shared_process": [],
-    "2D22NXAD6:shared_process": [],
-    "2CYJ96SSF:shared_process": [],
-    "2CXXXDV73:shared_process": [],
-    "2CZTX7AVS:shared_process": [],
-    "2CXDJFSQN:shared_process": [],
-    "2D28ECVVE:shared_process": [],
-    "2CZ5H7NXY:shared_process": [],
-    "2D1XJTW8N:shared_process": [],
-    "2CXM58XTY:shared_process": [],
-    "2CYFYVNRS:shared_process": [],
-    "2D2CXE2K4:shared_process": []
+    "2D18APTV8:shared_process": [],
+    "2D2EMU5PH:shared_process": [],
+    "2CXYXRE5K:shared_process": [],
+    "2D28XDTPE:shared_process": [],
+    "2D1YWP16U:shared_process": [],
+    "2CY15NCSZ:shared_process": [],
+    "2D2DGZJMS:shared_process": [],
+    "2D264WF7T:shared_process": [],
+    "2CYTQRMYX:shared_process": [],
+    "2D151AHUB:shared_process": [],
+    "2D1WGB4BT:shared_process": [],
+    "2CYXRDR9G:shared_process": [],
+    "2CZ36UBX4:shared_process": [],
+    "2CXNZP79A:shared_process": [],
+    "2CY7RH9SB:shared_process": [],
+    "2D1CSGFBP:shared_process": [],
+    "2D25ZX4D6:shared_process": [],
+    "2CZ9URJCM:shared_process": [],
+    "2CYQ83189:shared_process": []
   },
   "config": {},
   "info": {}
