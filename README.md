@@ -26,7 +26,7 @@ make up
 ```
 When start-up is done you will be able to access the following interfaces:
 * http://localhost:8080/ (Spark Master)
-* http://localhost:8088/ (Hue HDFS Filebrowser)
+* http://localhost:8088/home (Hue HDFS Filebrowser)
 * http://localhost/ (Zeppelin)
 To load the data to your cluster simply do:
 ```
