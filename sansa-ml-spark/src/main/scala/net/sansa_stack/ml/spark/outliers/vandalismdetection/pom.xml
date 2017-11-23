@@ -1,0 +1,116 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>xmlpro</groupId>
+	<artifactId>xmlpro</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>scala-tools.org</id>
+			<name>Scala-tools Maven2 Repository</name>
+			<url>http://scala-tools.org/repo-releases</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<dependencies>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.10 -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_2.10</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+
+
+
+		<!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.10.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-streaming -->
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-streaming</artifactId>
+			<version>1.1.2</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-core -->
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+			<version>0.20.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-mapreduce-client-core -->
+		<!--<dependency> <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-mapreduce-client-core</artifactId> 
+			<version>2.8.2</version> </dependency> -->
+
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql_2.10 -->
+		<!--<dependency> <groupId>org.apache.spark</groupId> <artifactId>spark-sql_2.10</artifactId> 
+			<version>1.0.0</version> </dependency> -->
+
+		<!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql_2.10 -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_2.10</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>commons-graph</groupId>
+			<artifactId>commons-graph</artifactId>
+			<version>0.8</version>
+		</dependency>
+		<!-- kkkkkkkk -->
+
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.10.0-M3</version>
+		</dependency>
+
+
+
+
+
+	</dependencies>
+	<repositories>
+
+		<repository>
+			<id>repository.jboss.org-public</id>
+			<name>JBoss repository</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
+		</repository>
+
+		<repository>
+			<id>Repo ID</id>
+			<layout>default</layout>
+			<name>Java.net Maven repo</name>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<url>http://download.java.net/maven/2/</url>
+		</repository>
+		<repository>
+			<id>maven2-repository.dev.java.net</id>
+			<name>Java.net Repository for Maven</name>
+			<url>http://download.java.net/maven/2/
+            </url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+
+	</repositories>
+
+
+
+</project>
