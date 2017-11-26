@@ -16,7 +16,7 @@ object ConceptsGenerator{
 
     protected var reasoner: Reasoner = kb.getReasoner
     protected var dataFactory: OWLDataFactory = kb.getDataFactory
-    protected var allExamples: RDD[OWLNamedIndividual] = kb.getIndividuals
+    protected var allExamples: RDD[OWLIndividual] = kb.getIndividuals
   
     def generateQueryConcepts(numConceptsToGenerate: Int, sc: SparkSession): Array[OWLClassExpression] = {
       

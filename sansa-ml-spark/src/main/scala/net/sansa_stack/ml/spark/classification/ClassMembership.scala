@@ -25,7 +25,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 object ClassMembership {
 
     protected var kb: KB = _
-    protected var allExamples: RDD[OWLNamedIndividual] = _
+    protected var allExamples: RDD[OWLIndividual] = _
     protected var testConcepts: Array[OWLClassExpression] = _
     protected var negTestConcepts: Array[OWLClassExpression] = _
     protected var classification: RDD[Array[Int]] = _
@@ -57,65 +57,66 @@ class ClassMembership (k: KB, sc: SparkSession){
 
     
  def bootstrap(nFolds: Int, className: String, spark: SparkSession): Unit = {
-    println(nFolds + "-fold BOOTSTRAP Experiment on ontology: ")
-    val classifierClass: Class[_] = ClassLoader.getSystemClassLoader.loadClass(className)
-    val nOfConcepts: Int = if (testConcepts != null) testConcepts.size else 1
-    
-    var Generator: Random = new Random()
-    val ntestExs: Array[Int] = Array.ofDim[Int](nFolds)
+   
+      println(nFolds + "-fold BOOTSTRAP Experiment on ontology: ")
+      val classifierClass: Class[_] = ClassLoader.getSystemClassLoader.loadClass(className)
+      val nOfConcepts: Int = if (testConcepts != null) testConcepts.size else 1
+      
+      var Generator: Random = new Random()
+      val ntestExs: Array[Int] = Array.ofDim[Int](nFolds)
     
     // main loop on the folds
-    for (f <- 0 until nFolds) {
-      println("\n\nFold #" + f)
-      println(" ******************************************************************")
-      val trainingExsSet: Set[Integer] = new HashSet[Integer]()
-      var trainRDD = spark.sparkContext.parallelize(trainingExsSet.asScala.toSeq)
-      
-      val testingExsSet: Set[Integer] = new HashSet[Integer]()
-      var testRDD = spark.sparkContext.parallelize(testingExsSet.asScala.toSeq)
-      
-      var rand1 = new ArrayList[Integer]
-      for (r <- 0 until allExamples.count.toInt)
-        rand1.add(Generator.nextInt(allExamples.count.toInt))  
-  
-       var newRDD = spark.sparkContext.parallelize(rand1.asScala)
-       trainRDD.union(newRDD) 
+      for (f <- 0 until nFolds) {
+        println("\n\nFold #" + f)
+        println(" ******************************************************************")
+        val trainingExsSet: Set[Integer] = new HashSet[Integer]()
+        var trainRDD = spark.sparkContext.parallelize(trainingExsSet.asScala.toSeq)
+        
+        val testingExsSet: Set[Integer] = new HashSet[Integer]()
+        var testRDD = spark.sparkContext.parallelize(testingExsSet.asScala.toSeq)
+        
+        var rand1 = new ArrayList[Integer]
+        for (r <- 0 until allExamples.count.toInt)
+            rand1.add(Generator.nextInt(allExamples.count.toInt))  
+    
+        var newRDD = spark.sparkContext.parallelize(rand1.asScala)
+        trainRDD.union(newRDD) 
         //trainingExsSet.add(Generator.nextInt(allExamples.count.toInt))
-       
-      var r = 0 to allExamples.count.toInt
-      var rand2 = spark.sparkContext.parallelize(r)
-      
-      if (!trainRDD.collect().contains(rand2))
-        testRDD.union(rand2.asInstanceOf[RDD[Integer]])
-       
-       /*for (r <- 0 until allExamples.count.toInt){
-         if (!trainRDD.collect().contains(r))
-            testRDD.union(r)
-       }*/
          
-      
-      /*var trainingExs: Array[Integer] = Array.ofDim[Integer](0)
-      var testExs: Array[Integer] = Array.ofDim[Integer](0)
-      
-      trainingExs = trainingExsSet.toArray(trainingExs)
-      testExs = testingExsSet.toArray(testExs)*/
-      
-      ntestExs(f) = testRDD.count.toInt
-
-      // training phase: using all examples but those in the f-th partition
-      println("Training is starting...")
-      
-      val cl : TDTInducer = new TDTInducer(kb, kb.Concepts.count().toInt, spark)
-      
-      /*val cl: TDTInducer = (classifierClass.getConstructor(classOf[KB], classOf[Int]))
-      .newInstance(kb, nOfConcepts).asInstanceOf[TDTInducer]*/
-      
-      val results: Array[Array[Int]] = kb.getClassMembershipResult
-     // cl.training(results, trainingExs, testConcepts, negTestConcepts)
-     cl.training(results, trainRDD, testConcepts, negTestConcepts)
-
-
-      //val labels: Array[Array[Int]] = cl.test(f, testRDD, testConcepts)
+        var r = 0 to allExamples.count.toInt
+        var rand2 = spark.sparkContext.parallelize(r)
+        
+        if (!trainRDD.collect().contains(rand2))
+          testRDD.union(rand2.asInstanceOf[RDD[Integer]])
+         
+         /*for (r <- 0 until allExamples.count.toInt){
+           if (!trainRDD.collect().contains(r))
+              testRDD.union(r)
+         }*/
+           
+        
+        /*var trainingExs: Array[Integer] = Array.ofDim[Integer](0)
+        var testExs: Array[Integer] = Array.ofDim[Integer](0)
+        
+        trainingExs = trainingExsSet.toArray(trainingExs)
+        testExs = testingExsSet.toArray(testExs)*/
+        
+        ntestExs(f) = testRDD.count.toInt
+  
+        // training phase: using all examples but those in the f-th partition
+        println("Training is starting...")
+        
+        val cl : TDTInducer = new TDTInducer(kb, kb.Concepts.count().toInt, spark)
+        
+        /*val cl: TDTInducer = (classifierClass.getConstructor(classOf[KB], classOf[Int]))
+        .newInstance(kb, nOfConcepts).asInstanceOf[TDTInducer]*/
+        
+        val results: Array[Array[Int]] = kb.getClassMembershipResult
+       // cl.training(results, trainingExs, testConcepts, negTestConcepts)
+       cl.training(results, trainRDD, testConcepts, negTestConcepts)
+  
+  
+        //val labels: Array[Array[Int]] = cl.test(f, testRDD, testConcepts)
 
     }
 
