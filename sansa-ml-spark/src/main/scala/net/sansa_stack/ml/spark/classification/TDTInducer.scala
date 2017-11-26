@@ -45,7 +45,7 @@ class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) {
   
     val op: RefinementOperator = new RefinementOperator(kb)
     val reasoner: Reasoner = kb.getReasoner
-    val allExamples: RDD[OWLNamedIndividual] = kb.getIndividuals
+    val allExamples: RDD[OWLIndividual] = kb.getIndividuals
 
     //val trainingExsSet: HashSet[Integer] = new HashSet[Integer](Arrays.asList(trainingExs: _*))
 
@@ -53,13 +53,13 @@ class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) {
     
     for (c <- 0 until length) {
       
-      val posExs: ArrayList[Integer] = new ArrayList[Integer]()
+      val posExs: ArrayList[String] = new ArrayList[String]()
       val pos = sc.sparkContext.parallelize(posExs.asScala)
       
-      val negExs: ArrayList[Integer] = new ArrayList[Integer]()
+      val negExs: ArrayList[String] = new ArrayList[String]()
       val neg = sc.sparkContext.parallelize(negExs.asScala)
       
-      val undExs: ArrayList[Integer] = new ArrayList[Integer]()
+      val undExs: ArrayList[String] = new ArrayList[String]()
       val und = sc.sparkContext.parallelize(undExs.asScala)
       
       println("--- Query Concept #%d \n", c)
@@ -91,9 +91,9 @@ class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) {
    */
   
   def splitting(trainingExs: RDD[Integer], classifications: Array[Array[Int]], c: Int,
-                posExs: RDD[Integer],
-                negExs: RDD[Integer],
-                undExs: RDD[Integer]): Unit = {
+                posExs: RDD[String],
+                negExs: RDD[String],
+                undExs: RDD[String]): Unit = {
     
     var BINARYCLASSIFICATION : Boolean = false
     val TList : List[Integer]= new ArrayList[Integer]
