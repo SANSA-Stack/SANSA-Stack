@@ -8,7 +8,6 @@ import java.util.Random
 import java.util.stream.Stream
 import java.util.stream.Collectors
 import java.util.stream.IntStream
-//import java.util.Set
 
 import scala.collection.JavaConversions._
 import collection.JavaConverters._
@@ -19,6 +18,7 @@ import scala.collection.immutable.Set
 
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.apibinding.OWLManager
+import org.semanticweb.owlapi.model.HasDataPropertiesInSignature
 import org.semanticweb.owlapi.model.OWLClassExpression
 import org.semanticweb.owlapi.model.OWLDataFactory
 import org.semanticweb.owlapi.model.OWLDataProperty
@@ -39,6 +39,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{ SparkConf, SparkContext }
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
+
 object KB{
   val d: Double = 0.3
   var generator: Random = new Random(2)
@@ -56,11 +57,11 @@ object KB{
     var Concepts: RDD[OWLClass] = _
     var Roles: RDD[OWLObjectProperty] = _
     var dataFactory: OWLDataFactory = _
-    var Examples: RDD[OWLNamedIndividual] = _
+    var Examples: RDD[OWLIndividual] = _
 
     //  Date property: property, values and domains
     var dataPropertiesValue: RDD[RDD[OWLLiteral]] = _
-    var properties: RDD[OWLDataProperty] = _
+    var Properties: RDD[OWLDataProperty] = _
     var domain: Array[Array[OWLIndividual]] = _
     var classifications: Array[Array[Int]] = _
     var choiceDataP: Random = new Random(1)
@@ -76,8 +77,7 @@ object KB{
       val owlFile: File = new File(UrlOwlFile)
 
       manager = OWLManager.createOWLOntologyManager()
-      //println("manager:" + manager)
-
+      
       var ontology: OWLOntology = manager.loadOntologyFromOntologyDocument(owlFile)
       println("\nLoading ontology: \n----------------\n" + ontology)
 
@@ -89,47 +89,63 @@ object KB{
 
       // The data factory provides a point for creating OWL API objects such as classes, properties and individuals.
       dataFactory = manager.getOWLDataFactory
-      //println("\nDataFactory: " + dataFactory)
-
+      
+      // Reasoner configuration
       var con: Configuration = new Configuration()
       var reasonerFactory: OWLReasonerFactory = new StructuralReasonerFactory()
       reasoner = reasonerFactory.createReasoner(ontology)
         
       hermit  = new Reasoner(con, ontology) 
 
-      println("\n\nConcepts\n-------\n")
-     
+      // --------- Concepts Extraction -----------------
+      
       val Concepts2: RDD[OWLClass] = rdd.flatMap {
         case axiom: HasClassesInSignature => axiom.classesInSignature().iterator().asScala
         case _ => null
       }.filter(_ != null).distinct()
+      
       Concepts = Concepts2
-      Concepts.take(20).foreach(println(_))
+      println("\n\nConcepts\n-------\n")
+      //Concepts.take(20).foreach(println(_))
       
       var nconcepts : Int = Concepts.count.toInt 
       println("\nNumber of concepts: " + nconcepts)
-                    
-      println("\nProperties\n----------")
-            
+              
+      // --------- Object Properties Extraction -----------------
+      
       val Roles2: RDD[OWLObjectProperty] = rdd.map {
         case axiom: HasProperty[OWLObjectProperty] => axiom.getProperty
         case _ => null
       }.filter(_ != null).distinct()
       
       Roles = Roles2
-      Roles.take(10).foreach(println(_))
+      println("\nObject Properties\n----------")
+      // Roles.take(10).foreach(println(_))
       
       var nprop : Int = Roles.count.toInt 
       println("\nNumber of properties: " + nprop)
       
-      println("\nIndividuals\n-----------")
+      // -------- Data Properties Extraction --------
+      
+      val Properties2 : RDD[OWLDataProperty] = rdd.flatMap {
+        case axiom: HasDataPropertiesInSignature => axiom.dataPropertiesInSignature().iterator().asScala
+        case _ => null
+      }.filter(_ != null).distinct()
+      
+      Properties = Properties2
+      println("\nData Properties\n----------")
+      Properties.take(10).foreach(println(_))
+      
+      // --------- Individual Extraction ------------
+      
       val Examples2 : RDD[OWLNamedIndividual] = rdd.flatMap {
         case axiom : HasIndividualsInSignature => axiom.individualsInSignature().collect(Collectors.toSet()).asScala
         case _ => null
       }.filter(_ != null).distinct()
       
-      Examples=Examples2
-      Examples.take(50).foreach(println(_))
+      Examples=Examples2.asInstanceOf[RDD[OWLIndividual]]
+      println("\nIndividuals\n-----------")
+      // Examples.take(50).foreach(println(_))
       var nEx : Int = Examples.count.toInt 
       println("\nNumber of Individuals: " + nEx)
       
@@ -160,7 +176,7 @@ object KB{
     }
 
     def getClassMembershipResult(testConcepts: Array[OWLClassExpression], negTestConcepts: Array[OWLClassExpression],
-                                 examples: RDD[OWLNamedIndividual]): RDD[Array[Int]] = {
+                                 examples: RDD[OWLIndividual]): RDD[Array[Int]] = {
 
       println("\nClassifying all examples \n ------------ ")
 
@@ -235,9 +251,9 @@ object KB{
 
     def getClasses(): RDD[OWLClass] = Concepts
 
-    def getIndividuals(): RDD[OWLNamedIndividual] = Examples
+    def getIndividuals(): RDD[OWLIndividual] = Examples
     
-    def getDataProperties(): RDD[OWLDataProperty] = properties
+    def getDataProperties(): RDD[OWLDataProperty] = Properties
 
     def getDomains(): Array[Array[OWLIndividual]] = domain
     
@@ -254,7 +270,7 @@ object KB{
       val queryProperty: Array[Int] = Array.ofDim[Int](numQueryProperty)
       var dataTypeProperty: Int = 0
       while (dataTypeProperty < numQueryProperty) {
-        val query: Int = choiceDataP.nextInt(properties.count.asInstanceOf[Int])
+        val query: Int = choiceDataP.nextInt(Properties.count.asInstanceOf[Int])
         if (domain(query).length > 1) {
           // creation of dataProperty used for the test
           queryProperty(dataTypeProperty) = query
@@ -272,7 +288,7 @@ object KB{
       RulesTest
     }
 
-    def updateExamples(individuals: RDD[OWLNamedIndividual]): Unit = {
+    def updateExamples(individuals: RDD[OWLIndividual]): Unit = {
       Examples = individuals
     }
 
@@ -341,13 +357,13 @@ object KB{
 
       // delete the non functional properties   
       var prop = Array.ofDim[OWLDataProperty](lista.size)
-      properties = sparkSession.sparkContext.parallelize(prop)
+      Properties = sparkSession.sparkContext.parallelize(prop)
 
       if (lista.isEmpty)
         throw new RuntimeException("There are functional properties")
 
       lista.toArray(prop)
-      val Length = properties.count.asInstanceOf[Int]
+      val Length = Properties.count.asInstanceOf[Int]
       var domain = Array.ofDim[OWLIndividual](Length, Length)
       var dataPropertiesValue = Array.ofDim[OWLLiteral](Length, Length)
 
