@@ -73,22 +73,21 @@
 		</dependency>
 
 		<!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
-		<!-- <dependency> <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-mapreduce-client-core</artifactId> 
-			<version>${hadoop.version}</version> </dependency> <dependency> <groupId>org.apache.hadoop</groupId> 
-			<artifactId>hadoop-common</artifactId> <version>${hadoop.version}</version> 
-			</dependency> -->
-
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-mapreduce-client-core</artifactId>
+			<version>${hadoop.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>${hadoop.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-streaming</artifactId>
 			<version>${hadoop.version}</version>
-			<!-- <exclusions> <exclusion> <groupId>javax.servlet</groupId> <artifactId>*</artifactId> 
-				</exclusion> </exclusions> -->
 		</dependency>
-
-		<!-- <dependency> <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-client</artifactId> 
-			<version>${hadoop.version}</version> <exclusions> <exclusion> <groupId>javax.servlet</groupId> 
-			<artifactId>*</artifactId> </exclusion> </exclusions> </dependency> -->
 
 		<!-- Apache JENA 3.x -->
 		<dependency>
