@@ -61,6 +61,14 @@
 			<artifactId>sansa-rdf-partition-core${scala.version.suffix}</artifactId>
 
 		</dependency>
+		
+		<!-- Scala -->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>${scala.version}</version>
+		</dependency>
+		
 		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>sansa-rdf-partition-parent</artifactId>
 			<version>0.1.1-SNAPSHOT</version> </dependency> -->
 
