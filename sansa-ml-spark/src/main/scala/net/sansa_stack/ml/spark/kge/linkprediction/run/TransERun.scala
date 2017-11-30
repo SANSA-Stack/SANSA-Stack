@@ -1,13 +1,17 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.run
 
-import org.apache.spark.sql._
+/**
+ * Created by lpfgarcia on 14/11/2017.
+ */
 
+import org.apache.spark.sql._
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
-import net.sansa_stack.ml.spark.kge.linkprediction.dataset.Dataset
+import net.sansa_stack.ml.spark.kge.linkprediction.dataframe.Triples
+import net.sansa_stack.ml.spark.kge.linkprediction.convertor.ByIndex
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Holdout
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
-import net.sansa_stack.ml.spark.kge.linkprediction.prediction.Evaluate
 
 object TransERun {
 
@@ -18,17 +22,24 @@ object TransERun {
     .appName("Tensor").getOrCreate
 
   def main(args: Array[String]) = {
-    
-    val train = new Dataset("train.txt", "\t", "false", sk)    
-    val model = new TransE(train, 1, 50, "L1", sk)
- 
+
+    val table = new Triples("kge", "/home/lpfgarcia/Desktop/tensor/data/train.txt", sk)
+    println(table.triples.show())
+    val data = new ByIndex(table.triples, sk).df
+
+    println(data.show())
+
+    val (train, test) = new Holdout(data, 0.6f).crossValidation()
+
+    println(train.show())
+    println(test.show())
+
+    var model = new TransE(train, 100, 20, 1, "L1", sk)
     model.run()
-    
-    val test = new Dataset("test.txt", "\t", "false", sk)
-    val predict = new Evaluate(model, test.df, sk)
-    
+
+    val predict = new net.sansa_stack.ml.spark.kge.linkprediction.prediction.TransE(model, test, sk)
     println(predict)
-  
+
   }
-  
+
 }
