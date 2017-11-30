@@ -49,7 +49,6 @@
 		<module>sansa-ml-common</module>
 		<module>sansa-ml-flink</module>
 		<module>sansa-ml-spark</module>
-		<module>sansa-ml-tests</module>
 	</modules>
 
 	<properties>
