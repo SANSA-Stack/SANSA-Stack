@@ -117,17 +117,14 @@
 				<executions>
 					<execution>
 						<goals>
+							<goal>add-source</goal>
 							<goal>compile</goal>
 							<goal>testCompile</goal>
 						</goals>
-						</execution>
+					</execution>
 				</executions>
-				<configuration>
-					<scalaVersion>${scala.version}</scalaVersion>
-					<recompileMode>incremental</recompileMode>
-				</configuration>
 			</plugin>
-			</plugins>
+		</plugins>
 	</build>
 
 </project>
