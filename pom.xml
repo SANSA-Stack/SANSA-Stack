@@ -60,6 +60,7 @@
 		<scala.binary.version>2.11</scala.binary.version>
 		<spark.version>2.2.0</spark.version>
 		<flink.version>1.3.2</flink.version>
+		<hadoop.version>2.7.0</hadoop.version>
 		<jena.version>3.5.0</jena.version>
 		<sansa.version>0.2.1-SNAPSHOT</sansa.version>
 		<sansa.inference.version>0.3.0-SNAPSHOT</sansa.inference.version>
@@ -103,6 +104,23 @@
 				<version>${flink.version}</version>
 			</dependency>
 
+			<!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-mapreduce-client-core</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-common</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-streaming</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+
 			<!-- Apache JENA 3.x -->
 			<dependency>
 				<groupId>org.apache.jena</groupId>
@@ -143,11 +161,8 @@
 			</dependency>
 
 			<!-- Guava -->
-		<!-- 	<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>19.0</version>
-			</dependency> -->
+			<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava</artifactId> 
+				<version>19.0</version> </dependency> -->
 
 			<!-- RDF Layer -->
 			<dependency>
