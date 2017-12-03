@@ -1,5 +1,5 @@
 // package
-package net.sansa_stack.semantic_partitioning
+package net.sansa_stack.query.spark.semantic
 
 // imports
 import scala.collection.mutable.ArrayBuffer
