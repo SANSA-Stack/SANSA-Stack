@@ -1,16 +1,14 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
 import Array._
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.List;
-import com.google.common.base.Splitter;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.{Arrays, ArrayList, Collections, HashMap}
+import java.util.regex.{Matcher, Pattern}
+import java.util.List
+import com.google.common.base.Splitter
+import java.io.{BufferedReader, ByteArrayInputStream, FileReader}
+import org.apache.jena.graph.Triple
+import org.apache.jena.rdf.model.ModelFactory
+import org.apache.commons.lang3.StringUtils
 
 object VandalismDetection extends Serializable {
 

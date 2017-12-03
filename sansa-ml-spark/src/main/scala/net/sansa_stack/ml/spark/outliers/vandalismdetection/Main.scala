@@ -4,6 +4,8 @@ import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{ DoubleType, StringType, StructField, StructType }
 import org.apache.hadoop.mapred.JobConf
+import java.util.Scanner
+import net.sansa_stack.ml.spark.outliers.vandalismdetection.VandalismDetection._
 
 object Main extends App {
 
@@ -117,8 +119,6 @@ object Main extends App {
       RevisionTagewikidata.take(7).foreach(println)
       
 	  
-	   val algorithm = VandalismDetection
-       import algorithm._
 
 	 	  
       // ABend the revision in one line string
