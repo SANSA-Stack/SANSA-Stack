@@ -36,7 +36,7 @@ import org.semanticweb.HermiT.Configuration
 import org.semanticweb.HermiT.Reasoner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.{ SparkConf, SparkContext }
+//import org.apache.spark.{ SparkConf, SparkContext }
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
 
@@ -106,7 +106,7 @@ object KB{
       
       Concepts = Concepts2
       println("\n\nConcepts\n-------\n")
-      //Concepts.take(20).foreach(println(_))
+      Concepts.take(20).foreach(println(_))
       
       var nconcepts : Int = Concepts.count.toInt 
       println("\nNumber of concepts: " + nconcepts)
@@ -120,10 +120,10 @@ object KB{
       
       Roles = Roles2
       println("\nObject Properties\n----------")
-      // Roles.take(10).foreach(println(_))
+      Roles.take(10).foreach(println(_))
       
-      var nprop : Int = Roles.count.toInt 
-      println("\nNumber of properties: " + nprop)
+      var nobjprop : Int = Roles.count.toInt 
+      println("\nNumber of object properties: " + nobjprop)
       
       // -------- Data Properties Extraction --------
       
@@ -136,6 +136,9 @@ object KB{
       println("\nData Properties\n----------")
       Properties.take(10).foreach(println(_))
       
+      var ndataprop : Int = Properties.count.toInt 
+      println("\nNumber of data properties: " + ndataprop)
+      
       // --------- Individual Extraction ------------
       
       val Examples2 : RDD[OWLNamedIndividual] = rdd.flatMap {
@@ -145,7 +148,8 @@ object KB{
       
       Examples=Examples2.asInstanceOf[RDD[OWLIndividual]]
       println("\nIndividuals\n-----------")
-      // Examples.take(50).foreach(println(_))
+      Examples.take(50).foreach(println(_))
+      
       var nEx : Int = Examples.count.toInt 
       println("\nNumber of Individuals: " + nEx)
       
