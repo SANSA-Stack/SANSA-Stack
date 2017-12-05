@@ -1,15 +1,11 @@
 package net.sansa_stack.ml.spark.classification 
 
-import java.io.File
-import java.net.URI
 import java.util.ArrayList
-import java.util.stream.Collectors
 import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
+import org.semanticweb.owlapi.model.OWLClassExpression
 
 import net.sansa_stack.ml.spark.classification.KB.KB
-import net.sansa_stack.ml.spark.classification.ClassMembership.ClassMembership
-import net.sansa_stack.ml.spark.classification.TDTInducer.TDTInducer
 import net.sansa_stack.ml.spark.classification.TDTClassifiers.TDTClassifiers
 
 import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
@@ -18,7 +14,6 @@ import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import scopt.OptionParser
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 
 object TermDecisionTrees {
@@ -80,6 +75,9 @@ object TermDecisionTrees {
     
     val c : TDTClassifiers = new TDTClassifiers (kb, sparkSession)
     val tree : DLTree = c.induceDLTree(kb.getDataFactory.getOWLThing, PosExamples, NegExamples, UndExamples, 50, perPos, perNeg)
+    
+    val Root: OWLClassExpression = tree.getRoot()
+    println("Root of the tree is: " + Root)
   
     sparkSession.stop
 

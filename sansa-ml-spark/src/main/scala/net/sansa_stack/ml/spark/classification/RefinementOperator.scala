@@ -66,6 +66,7 @@ class RefinementOperator(var kb: KB) {
 											else
 												kb.getDataFactory.getOWLObjectSomeValuesFrom(role, newConceptBase)
 								}
+								
 								else if ((generator.nextDouble() < 0.75)) {
 
 									val dataProperty: OWLDataProperty = Properties.takeSample(true, 1)(0)
@@ -87,8 +88,6 @@ class RefinementOperator(var kb: KB) {
 												kb.getDataFactory.getOWLDataHasValue(dataProperty, values.get(generator.nextInt(values.size)))
 										else kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
 								}
-								
-								
 								
 								else if ((generator.nextDouble() < 0.9)) {
 
@@ -117,7 +116,7 @@ class RefinementOperator(var kb: KB) {
 					newConcept.getNNF
   }
 
-
+  
 /**
  * @param k
  * @return
@@ -130,9 +129,6 @@ def getRandomConcept(k: KB): OWLClassExpression = {
 		var newConcept: OWLClassExpression = null
 		val generator: Random = new Random()
 		do{
-			/*val n = Concepts.zipWithIndex().map{case (x,y) => (y,x)}
-			newConcept = n.lookup(generator.nextInt(Concepts.count.toInt)).asInstanceOf[OWLClassExpression]*/
-
 		  newConcept = Concepts.takeSample(true, 1)(0)
 			if (generator.nextDouble() < 0.20)
 					newConcept
@@ -145,10 +141,8 @@ def getRandomConcept(k: KB): OWLClassExpression = {
 								newConcept
 
 				  if (generator.nextDouble() < 0.75) {    // new role restriction
-
-						/*val r = Roles.zipWithIndex().map{case (x,y) => (y,x)}
-						val role = r.lookup(generator.nextInt(Roles.count.toInt)).asInstanceOf[OWLObjectProperty]*/
-					  val role : OWLObjectProperty = Roles.takeSample(true, 1)(0)
+  
+				    val role : OWLObjectProperty = Roles.takeSample(true, 1)(0)
 						
 					  newConcept =
 								if (generator.nextDouble() < 0.5)
