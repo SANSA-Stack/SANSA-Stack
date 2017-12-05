@@ -1,6 +1,9 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.convertor
 
 /**
+ * ByIndex Class
+ * -------------
+ *
  * Created by lpfgarcia on 27/11/2017.
  */
 

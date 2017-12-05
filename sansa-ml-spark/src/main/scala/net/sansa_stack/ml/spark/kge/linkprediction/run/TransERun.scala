@@ -5,12 +5,14 @@ package net.sansa_stack.ml.spark.kge.linkprediction.run
  */
 
 import org.apache.spark.sql._
+
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
 import net.sansa_stack.ml.spark.kge.linkprediction.dataframe.Triples
 import net.sansa_stack.ml.spark.kge.linkprediction.convertor.ByIndex
 import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Holdout
+import net.sansa_stack.ml.spark.kge.linkprediction.prediction.PredictTransE
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
 
 object TransERun {
@@ -24,20 +26,17 @@ object TransERun {
   def main(args: Array[String]) = {
 
     val table = new Triples("kge", "/home/lpfgarcia/Desktop/tensor/data/train.txt", sk)
-    println(table.triples.show())
-    val data = new ByIndex(table.triples, sk).df
+    val data = new ByIndex(table.triples, sk)
 
-    println(data.show())
-
-    val (train, test) = new Holdout(data, 0.6f).crossValidation()
+    val (train, test) = new Holdout(data.df, 0.6f).crossValidation()
 
     println(train.show())
     println(test.show())
 
-    var model = new TransE(train, 100, 20, 1, "L1", sk)
+    var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", sk)
     model.run()
 
-    val predict = new net.sansa_stack.ml.spark.kge.linkprediction.prediction.TransE(model, test, sk)
+    val predict = new PredictTransE(model, test).ranking()
     println(predict)
 
   }

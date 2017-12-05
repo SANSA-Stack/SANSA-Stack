@@ -1,6 +1,9 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.prediction
 
 /**
+ * Predict Abstract Class
+ * ----------------------
+ *
  * Created by lpfgarcia on 14/11/2017.
  */
 
@@ -8,26 +11,26 @@ import org.apache.spark.sql._
 
 abstract class Predict(test: DataFrame) {
 
-  var left = Seq[Float]()
-  var right = Seq[Float]()
+  var l, r = Seq[Float]()
 
-  def leftRank(row: Row): Float
+  def left(row: Row, i: Int) = {
+    Row(i, row.getInt(1), row.getInt(2))
+  }
 
-  def rightRank(row: Row): Float
+  def right(row: Row, i: Int) = {
+    Row(row.getInt(0), row.getInt(1), i)
+  }
+
+  def rank(row: Row, spo: String): Float
 
   def ranking() = {
 
     test.collect().map { row =>
-      left = leftRank(row) +: left
-      right = rightRank(row) +: right
+      l = rank(row, "l") +: l
+      r = rank(row, "r") +: r
     }
 
-    (left, right)
-  }
-
-  def meanRanking() {
-    (left.sum / left.length,
-      right.sum / right.length)
+    (l, r)
   }
 
 }

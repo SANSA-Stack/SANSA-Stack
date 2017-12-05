@@ -1,6 +1,12 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.models
 
 /**
+ * DistMult: diagonal bilinear model
+ * ---------------------------------
+ *
+ * Yang, Bishan, et al.
+ * Learning multi-relational semantics using neural-embedding models." arXiv:1411.4072 (2014).
+ *
  * Created by lpfgarcia on 20/11/2017.
  */
 
@@ -10,8 +16,8 @@ import com.intel.analytics.bigdl.optim.Adam
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-class DistMult(train: DataFrame, batch: Int, k: Int, sk: SparkSession)
-    extends Models(train: DataFrame, batch: Int, k: Int, sk: SparkSession) {
+class DistMult(train: DataFrame, ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession)
+    extends Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
 
   val epochs = 100
   val rate = 0.01f
@@ -32,7 +38,7 @@ class DistMult(train: DataFrame, batch: Int, k: Int, sk: SparkSession)
 
       e = normalize(e)
       val pos = subset(train)
-      val neg = generate(pos)
+      val neg = negative(pos)
 
       def delta(x: Tensor[Float]) = {
         (dist(neg) - dist(pos) + 1, x)
