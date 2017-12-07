@@ -9,7 +9,7 @@ package net.sansa_stack.ml.spark.kge.linkprediction.prediction
 
 import org.apache.spark.sql._
 
-abstract class Predict(test: DataFrame) {
+abstract class Evaluate(test: DataFrame) {
 
   def left(row: Row, i: Int) = {
     Row(i, row.getInt(1), row.getInt(2))
@@ -24,7 +24,7 @@ abstract class Predict(test: DataFrame) {
   def ranking() = {
 
     var l, r = Seq[Integer]()
-  
+
     test.collect().map { row =>
       l = rank(row, "l") +: l
       r = rank(row, "r") +: r
@@ -33,7 +33,7 @@ abstract class Predict(test: DataFrame) {
     (l, r)
   }
 
-  def hits10() = {
+  def rawHits10() = {
 
     var l, r = Seq[Boolean]()
 
