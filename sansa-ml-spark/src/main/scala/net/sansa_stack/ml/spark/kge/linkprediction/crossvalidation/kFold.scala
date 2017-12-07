@@ -1,15 +1,22 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
 
 /**
+ * k-fold Cross Validation
+ * -----------------------
+ *
  * Created by lpfgarcia on 24/11/2017.
  */
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.IntegerType
 
+import net.sansa_stack.ml.spark.kge.linkprediction.dataframe._
+
 case class kException(info: String) extends Exception
 
-class kFold(data: DataFrame, k: Int, sk: SparkSession) extends CrossValidation[Seq[DataFrame]] {
+case class withIndex(Subject: Int, Predicate: Int, Object: Int, k: Int)
+
+class kFold(data: Dataset[IntegerRecord], k: Int, sk: SparkSession) extends CrossValidation[Seq[Dataset[IntegerRecord]]] {
 
   import sk.implicits._
 
@@ -21,15 +28,20 @@ class kFold(data: DataFrame, k: Int, sk: SparkSession) extends CrossValidation[S
 
   def crossValidation() = {
 
-    val tmp = data.rdd.zip(fold).map(r => Row.fromSeq(r._1.toSeq ++ Seq(r._2)))
-    val df = sk.createDataFrame(tmp, data.schema.add("k", IntegerType))
+    val df = data.toDF().rdd.zip(fold).map { r =>
+      Seq(r._1(0), r._1(1), r._1(2), r._2)
+    }.toDF()
 
     val train = for (i <- 1 to k) yield {
-      df.filter($"k" =!= i).drop("k")
+      df.filter($"k" =!= i).drop("k").map { i =>
+        IntegerRecord(i.getInt(0), i.getInt(1), i.getInt(2))
+      }
     }
 
     val test = for (i <- 1 to k) yield {
-      df.filter($"k" === i).drop("k")
+      df.filter($"k" === i).drop("k").map { i =>
+        IntegerRecord(i.getInt(0), i.getInt(1), i.getInt(2))
+      }
     }
 
     (train, test)
