@@ -9,32 +9,18 @@ package net.sansa_stack.ml.spark.kge.linkprediction.convertor
 
 import org.apache.spark.sql._
 
-class ByIndex(data: DataFrame, sk: SparkSession) extends Convertor(data: DataFrame) {
+import net.sansa_stack.ml.spark.kge.linkprediction.dataframe._
 
-  val (e, r) = (entities(), relations())
+class ByIndex(data: Dataset[StringRecord], sk: SparkSession) extends Convertor(data: Dataset[StringRecord]) {
+
   val df = numeric()
-
-  def entities() = {
-    (data.select("Subject").collect.map(_.getString(0)) ++
-      data.select("Object").collect.map(_.getString(0))).distinct
-  }
-
-  def relations() = {
-    (data.select("Predicate").collect.map(_.getString(0))).distinct
-  }
 
   import sk.implicits._
 
   def numeric() = {
-
-    var df = Seq[(Int, Int, Int)]()
-
-    data.collect().map { i =>
-      df = (e.indexOf(i.getString(0)).toInt + 1, r.indexOf(i.getString(1)).toInt + 1,
-        e.indexOf(i.getString(2)).toInt + 1) +: df
+    data.map { i =>
+      IntegerRecord(e.indexOf(i.Subject) + 1, r.indexOf(i.Object) + 1, e.indexOf(i.Predicate) + 1)
     }
-
-    df.toDF()
   }
 
 }

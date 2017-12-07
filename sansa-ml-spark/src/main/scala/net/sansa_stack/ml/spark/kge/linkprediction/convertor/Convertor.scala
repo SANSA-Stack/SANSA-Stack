@@ -9,8 +9,20 @@ package net.sansa_stack.ml.spark.kge.linkprediction.convertor
 
 import org.apache.spark.sql._
 
-abstract class Convertor(data: DataFrame) {
+import net.sansa_stack.ml.spark.kge.linkprediction.dataframe._
 
-  def numeric(): DataFrame
+abstract class Convertor(data: Dataset[StringRecord]) {
+
+  val (e, r) = (entities(), relations())
+
+  def entities() = {
+    data.select("Subject").union(data.select("Object")).distinct().collect()
+  }
+
+  def relations() = {
+    data.select("Predicate").distinct().collect()
+  }
+
+  def numeric(): Dataset[IntegerRecord]
 
 }
