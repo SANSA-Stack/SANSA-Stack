@@ -13,5 +13,5 @@ object Evaluate {
     (left.sum / left.length,
       right.sum / right.length)
   }
-
+  
 }

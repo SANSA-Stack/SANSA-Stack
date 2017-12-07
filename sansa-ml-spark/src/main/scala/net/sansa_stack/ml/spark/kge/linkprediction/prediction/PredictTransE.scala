@@ -30,5 +30,5 @@ class PredictTransE(model: TransE, test: DataFrame) extends Predict(test: DataFr
 
     x.sorted.indexOf(y)
   }
-
+  
 }
