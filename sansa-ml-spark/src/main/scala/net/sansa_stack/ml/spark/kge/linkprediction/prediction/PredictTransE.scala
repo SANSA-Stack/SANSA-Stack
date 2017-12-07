@@ -11,7 +11,7 @@ import org.apache.spark.sql._
 
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
 
-class PredictTransE(model: TransE, test: DataFrame) extends Predict(test: DataFrame) {
+class PredictTransE(model: TransE, test: DataFrame) extends Evaluate(test: DataFrame) {
 
   def rank(row: Row, spo: String) = {
 

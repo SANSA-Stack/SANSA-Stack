@@ -25,19 +25,19 @@ object TransERun {
 
   def main(args: Array[String]) = {
 
-    val table = new Triples("kge", "/home/lpfgarcia/Desktop/tensor/data/train.txt", sk)
-    val data = new ByIndex(table.triples, sk)
+    //val table = new Triples("kge", "/home/lpfgarcia/Desktop/tensor/data/train.txt", sk)
+    //val data = new ByIndex(table.triples, sk)
 
-    val (train, test) = new Holdout(data.df, 0.6f).crossValidation()
+    //val (train, test) = new Holdout(data.df, 0.6f).crossValidation()
 
-    println(train.show())
-    println(test.show())
+    //println(train.show())
+    //println(test.show())
 
-    var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", sk)
-    model.run()
+    //var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", sk)
+    //model.run()
 
-    val predict = new PredictTransE(model, test).ranking()
-    println(predict)
+    //val predict = new PredictTransE(model, test).ranking()
+    //println(predict)
 
   }
 
