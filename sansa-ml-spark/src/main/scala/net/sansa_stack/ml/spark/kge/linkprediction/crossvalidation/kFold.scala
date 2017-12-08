@@ -28,20 +28,16 @@ class kFold(data: Dataset[IntegerRecord], k: Int, sk: SparkSession) extends Cros
 
   def crossValidation() = {
 
-    val df = data.toDF().rdd.zip(fold).map { r =>
-      Seq(r._1(0), r._1(1), r._1(2), r._2)
-    }.toDF()
+    val df = sk.createDataFrame(data.rdd.zip(fold).map { r =>
+      withIndex(r._1.Subject, r._1.Predicate, r._1.Object, r._2)
+    })
 
     val train = for (i <- 1 to k) yield {
-      df.filter($"k" =!= i).drop("k").map { i =>
-        IntegerRecord(i.getInt(0), i.getInt(1), i.getInt(2))
-      }
+      df.filter($"k" =!= i).drop("k").as[IntegerRecord]
     }
 
     val test = for (i <- 1 to k) yield {
-      df.filter($"k" === i).drop("k").map { i =>
-        IntegerRecord(i.getInt(0), i.getInt(1), i.getInt(2))
-      }
+      df.filter($"k" === i).drop("k").as[IntegerRecord]
     }
 
     (train, test)
