@@ -19,7 +19,8 @@ class ByIndex(data: Dataset[StringRecord], sk: SparkSession) extends Convertor(d
 
   def numeric() = {
     data.map { i =>
-      IntegerRecord(e.indexOf(i.Subject) + 1, r.indexOf(i.Object) + 1, e.indexOf(i.Predicate) + 1)
+      IntegerRecord(e.indexOf(Row(i.Subject)) + 1, r.indexOf(Row(i.Predicate)) + 1,
+        e.indexOf(Row(i.Object)) + 1)
     }
   }
 
