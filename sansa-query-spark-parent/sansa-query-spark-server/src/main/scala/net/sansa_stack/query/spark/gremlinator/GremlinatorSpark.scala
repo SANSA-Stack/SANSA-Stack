@@ -23,17 +23,15 @@ object GremlinatorSpark {
 
   def apply(sparql: String) = {
 
-    val gremlinquery = QuaryTranslator(sparql)
-
-    val traversalRes = run(gremlinquery)
-
-    traversalRes
-  }
-
-  def run(gremlinQuery: String, lang: String = "gremlin-groovy") = {
-
     val gremlinSpark = Spark.create(spark.sparkContext)
     val sparkComputerConnection = GraphFactory.open(getSparkConfig) //spark.conf.getAll.toString())
+
+    val gremlinquery = QuaryTranslator(sparql, sparkComputerConnection)
+    
+    run(sparkComputerConnection,gremlinquery.toString())
+  }
+
+  def run(sparkComputerConnection:Graph, gremlinQuery: String, lang: String = "gremlin-groovy") = {
 
     val sparkGraphComputer = getSparkGraphComputer(sparkComputerConnection)
 
@@ -46,7 +44,7 @@ object GremlinatorSpark {
       .submit()
       .get()
 
-    traversalSource
+    traversalSource.graph().traversal()
     //traversalSource.graph().compute().submit().get
   }
 
