@@ -41,6 +41,12 @@
 			<version>3.3.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>io.github.litmus-benchmark-suite</groupId>
+			<artifactId>gremlinator</artifactId>
+			<version>1.0</version>
+		</dependency>
+
 	</dependencies>
 
 </project>
