@@ -2,7 +2,6 @@ package net.sansa_stack.owl.flink.dataset
 
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
-import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntax
 
 
 class ManchesterSyntaxOWLExpressionsDataSetBuilderTest extends FunSuite {

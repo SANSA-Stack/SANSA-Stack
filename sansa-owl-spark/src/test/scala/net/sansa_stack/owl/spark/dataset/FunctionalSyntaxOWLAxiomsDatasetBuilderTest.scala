@@ -7,7 +7,12 @@ import org.semanticweb.owlapi.model._
 
 
 class FunctionalSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSparkContext {
-  lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master).getOrCreate()
+  lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
+    .config(
+      "spark.kryo.registrator",
+      "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
+    .getOrCreate()
+
   var _dataset: OWLAxiomsDataset = null
   def dataset = {
     if (_dataset == null) {
