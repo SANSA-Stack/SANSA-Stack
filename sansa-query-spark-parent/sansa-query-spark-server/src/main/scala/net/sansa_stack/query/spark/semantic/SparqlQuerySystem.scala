@@ -1,16 +1,14 @@
-// package
 package net.sansa_stack.query.spark.semantic
 
-// imports
 import scala.collection.mutable.ArrayBuffer
 import java.util.Scanner
 import java.io.File
-import java.util.concurrent.TimeUnit
 import java.io._
 import com.google.common.collect.ArrayListMultimap
 import scala.collection.JavaConversions._
 import java.util.StringTokenizer
 import org.apache.spark.rdd._
+import net.sansa_stack.query.spark.semantic.utils.Helpers._
 
 /*
  * QuerySystem - query on semantic partition data
@@ -66,11 +64,11 @@ class QuerySystem(
             }
 
             // end process time
-            this.queryTime(System.nanoTime() - startTime)
+            _queriesProcessTime.append(queryTime((System.nanoTime() - startTime),symbol))
         }
 
         // overall process time
-        this.overallQueriesTime()
+        overallQueriesTime(_queriesProcessTime)
     }
 
     // -------------------------------
@@ -470,7 +468,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT, PREDICATE and OBJECT
-        val tripleData = this.fetchTripleSPO(triple)
+        val tripleData = fetchTripleSPO(triple,symbol)
         val tripleSubject = tripleData(0)
         val triplePredicate = tripleData(1)
         val tripleObject = tripleData(2)
@@ -705,7 +703,7 @@ class QuerySystem(
             val triple = _WhereTriples(qID)(i)
 
             // fetch SUBJECT and OBJECT
-            val tripleData = this.fetchTripleSPO(triple)
+            val tripleData = fetchTripleSPO(triple,symbol)
             val tripleSubject = tripleData(0)
             val tripleObject = tripleData(2)
 
@@ -728,7 +726,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT and OBJECT
-        val tripleData = this.fetchTripleSPO(triple)
+        val tripleData = fetchTripleSPO(triple,symbol)
         val tripleSubject = tripleData(0)
         val tripleObject = tripleData(2)
 
@@ -917,65 +915,4 @@ class QuerySystem(
         }
     }
 
-    // -------
-    // Helpers
-    // -------
-
-    // fetch SUBJECT, PREDICATE and OBJECT
-    def fetchTripleSPO(triple: String): ArrayBuffer[String] = {
-        // return list
-        val tripleData: ArrayBuffer[String] = ArrayBuffer()
-
-        // fetch indices
-        val locationPoint1 = triple.indexOf(this.symbol("blank"))
-        val locationPoint2 = triple.lastIndexOf(this.symbol("blank"))
-
-        // WHERE clause: SUBJECT, PREDICATE and OBJECT
-        val tripleSubject = triple.substring(0, locationPoint1).trim()
-        val triplePredicate = triple.substring(locationPoint1, locationPoint2).trim()
-        val tripleObject = triple.substring(locationPoint2, triple.length()).trim()
-
-        // append data
-        tripleData.append(tripleSubject)
-        tripleData.append(triplePredicate)
-        tripleData.append(tripleObject)
-
-        tripleData
-    }
-
-    // total query process time
-    def queryTime(processedTime: Long): Unit = {
-        val milliseconds = TimeUnit.MILLISECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
-        val seconds = Math.floor(milliseconds/1000d + .5d).toInt
-        val minutes = TimeUnit.MINUTES.convert(processedTime, TimeUnit.NANOSECONDS)
-
-        if (milliseconds >= 0) {
-            println("Processed Time (MILLISECONDS): " + milliseconds)
-
-            if (seconds > 0) {
-                println("Processed Time (SECONDS): " + seconds + " approx.")
-
-                if (minutes > 0) {
-                    println("Processed Time (MINUTES): " + minutes)
-                }
-            }
-        }
-
-        // append query time
-        _queriesProcessTime.append(milliseconds)
-
-        println(this.symbol("newline"))
-    }
-
-    // overall queries process time
-    def overallQueriesTime(): Unit = {
-        val milliseconds: Long = _queriesProcessTime.sum
-        val seconds = Math.floor(milliseconds/1000d + .5d).toInt
-
-        if (milliseconds >= 1000) {
-            println("--> Overall Process Time: " + milliseconds + "ms (" + seconds + "secs approx.)")
-        } else {
-            println("--> Overall Process Time: " + milliseconds + "ms")
-        }
-    }
 }
