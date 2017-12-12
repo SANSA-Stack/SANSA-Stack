@@ -11,7 +11,7 @@ import scala.language.implicitConversions
   */
 trait Logging {
 
-  @transient var log_ : Logger = null
+  @transient private var log_ : Logger = null
 
   // Method to get or create the logger for this object
   protected def log: Logger = {
