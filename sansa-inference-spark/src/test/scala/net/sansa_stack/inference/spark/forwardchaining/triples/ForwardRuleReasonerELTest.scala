@@ -37,7 +37,6 @@ class ForwardRuleReasonerELTest extends FunSuite with SharedSparkContext {
   }
 
   private def uri(uriString: String) = NodeFactory.createURI(uriString)
-  private def bNode = NodeFactory.createBlankNode()
 
   test("Subclass-of relations with intersections as subclass should be extracted correctly") {
     val ttlStr =

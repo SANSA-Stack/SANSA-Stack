@@ -54,8 +54,6 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
   private val logger = com.typesafe.scalalogging.Logger(
     LoggerFactory.getLogger(this.getClass.getName))
 
-  var extractSchemaTriplesInAdvance: Boolean = false
-
   // ------------------ <rule definitions> ------------------------------------
   case class Rule(name: String, getInferredTriples: RDD[Triple] => RDD[Triple]) {
     private var influencedRules: List[Rule] = List.empty
@@ -284,16 +282,8 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
 
     val startTime = System.currentTimeMillis()
 
-    val triplesRDD = graph.triples
+    var triplesRDD = graph.triples
     triplesRDD.cache()
-
-    // as an optimization, we can extract all schema triples first which avoids
-    // to run on the whole dataset for each schema triple later
-    var schemaTriples = if (extractSchemaTriplesInAdvance) {
-      new RDFSSchemaExtractor().extract(triplesRDD)
-    } else {
-      triplesRDD
-    }
 
     // TODO: optimze order!
     val rulesQueue: mutable.Queue[Rule] =
@@ -303,21 +293,21 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
     var inferredTriples: RDD[Triple] = null
     while (rulesQueue.nonEmpty) {
       rule = rulesQueue.dequeue()
-      inferredTriples = rule.getInferredTriples(schemaTriples)
+      inferredTriples = rule.getInferredTriples(triplesRDD)
       logger.info("---- Inferred " + inferredTriples.count() + " triples")
 
       if (!inferredTriples.isEmpty()) {
         // Check whether something new was inferred
-        val oldCount = schemaTriples.count()
-        schemaTriples = schemaTriples.union(inferredTriples).distinct(parallelism)
-        val newCount = schemaTriples.count()
+        val oldCount = triplesRDD.count()
+        triplesRDD = triplesRDD.union(inferredTriples).distinct(parallelism)
+        val newCount = triplesRDD.count()
         if (newCount > oldCount) {
           rule.getInfluencedRules().foreach(rulesQueue.enqueue(_))
         }
       }
     }
 
-    RDFGraph(schemaTriples)
+    RDFGraph(triplesRDD)
   }
 
   /**
@@ -325,8 +315,7 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
     * i.e. SubClass \sqsubseteq SuperClass .
     * These relations are returned as pairs (SubClass, SuperClass).
     *
-    * @param triples The RDD with the triples `.apply( )` was called with (or
-    *                just the schema part of it)
+    * @param triples Input Triple RDD
     * @return An RDD of pairs of the shape (SubClass, SuperClass)
     */
   private def extractAtomicSubClassOf(triples: RDD[Triple]): RDD[(Node, Node)] = {
@@ -346,8 +335,7 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
     * The extistential restrictions are returned as triplets of the form
     * (_:1, property, FillerClass).
     *
-    * @param triples The RDD with the triples `.apply( )` was called with (or
-    *                just the schema part of it)
+    * @param triples Input Triple RDD
     * @return An RDD of triplets holding the blank node, the property and the
     *         filler class
     */
@@ -372,8 +360,7 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
     * only be called from within ForwardRuleReasonerEL. Otherwise the caching
     * (as it is implemented right) now won't work.
     *
-    * @param triples The RDD with the triples `.apply( )` was called with (or
-    *                just the schema part of it)
+    * @param triples Input Triple RDD
     * @return An RDD of triplets of the shape (Class1, Class2, SuperClass)
     */
   private[triples] def extractIntersectionSCORelations(triples: RDD[Triple]): RDD[(Node, Node, Node)] = {
@@ -408,15 +395,10 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
   /**
     * Extracts subclass-of relations with an existential restrictions as
     * subclass, i.e. \exists property.FillerClass \sqsubseteq SuperClass .
-    * These relarions are returned as triplets
+    * These relations are returned as triplets
     * (property, FillerClass, SuperClass).
     *
-    * This method is not part of the ForwardRuleReasoner interface and should
-    * only be called from within ForwardRuleReasonerEL. Otherwise the caching
-    * (as it is implemented right) now won't work.
-    *
-    * @param triples The RDD with the triples `.apply( )` was called with (or
-    *                just the schema part of it)
+    * @param triples Input Triple RDD
     * @return An RDD of triplets of the shape (property, FillerClass, SuperClass)
     */
   private[triples] def extractExistentialSCORelations(triples: RDD[Triple]): RDD[(Node, Node, Node)] = {
@@ -433,12 +415,7 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
     * These relations are returned as triplets
     * (SubClass, property, FillerClass).
     *
-    * This method is not part of the ForwardRuleReasoner interface and should
-    * only be called from within ForwardRuleReasonerEL. Otherwise the caching
-    * (as it is implemented right) now won't work.
-    *
-    * @param triples The RDD with the triples `.apply( )` was called with (or
-    *                just the schema part of it)
+    * @param triples Input Triple RDD
     * @return An RDD of triplets of the shape (SubClass, property, FillerClass)
     */
   private[triples] def extractSCOExistentialRelations(triples: RDD[Triple]): RDD[(Node, Node, Node)] = {
@@ -453,11 +430,7 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
     * Extracts subproperty-of relations, i.e. subProp \sqsubseteq superProp .
     * The relations are returned as pairs (subProp, superProp).
     *
-    * This method is not part of the ForwardRuleReasoner interface and should
-    * only be called from within ForwardRuleReasonerEL.
-    *
-    * @param triples The RDD with the triples `.apply( )` was called with (or
-    *                just the schema part of it)
+    * @param triples Input Triple RDD
     * @return An RDD of pairs of the shape (subProp, superProp)
     */
   private[triples] def extractSubPropertyOfRelations(triples: RDD[Triple]): RDD[(Node, Node)] = {
@@ -481,8 +454,7 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
     * This method is not part of the ForwardRuleReasoner interface and should
     * only be called from within ForwardRuleReasonerEL.
     *
-    * @param triples The RDD with the triples `.apply( )` was called with (or
-    *                just the schema part of it)
+    * @param triples Input Triple RDD
     * @return An RDD of triplets of
     */
   private[triples] def extractPropertyChainRelations(triples: RDD[Triple]): RDD[(Node, Node, Node)] = {
