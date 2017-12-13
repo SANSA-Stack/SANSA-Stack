@@ -46,16 +46,17 @@
 	</modules>
 
 
-	<dependencies>
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-reflect</artifactId>
-		</dependency>
-	</dependencies>
+<!-- Unsuccessful attempt to force m2e-scala plugin to use the correct scala library container -->
+<!-- 	<dependencies> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.scala-lang</groupId> -->
+<!-- 			<artifactId>scala-library</artifactId> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.scala-lang</groupId> -->
+<!-- 			<artifactId>scala-reflect</artifactId> -->
+<!-- 		</dependency> -->
+<!-- 	</dependencies> -->
 
 	<dependencyManagement>
 		<dependencies>
