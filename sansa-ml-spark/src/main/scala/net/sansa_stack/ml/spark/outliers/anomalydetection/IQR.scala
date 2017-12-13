@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.outliers.anomalydetection
 
-mport org.apache.spark.sql._
+import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.Node
