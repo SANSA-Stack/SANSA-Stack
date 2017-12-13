@@ -2,7 +2,7 @@ package net.sansa_stack.ml.spark.kge.linkprediction.triples
 
 /**
  * Triples Class
- * ------------------------
+ * -------------
  *
  * Created by Hamed Shariat Yazdi
  */
@@ -26,8 +26,8 @@ class Triples(filePath: String, delimiter: String = "\t", header: Boolean = fals
     StructField("Predicate", IntegerType, true),
     StructField("Object", IntegerType, true)))
 
-  val (e, r) = (getEntities(), getRelations())
   val triples = readFromFile()
+  val (e, r) = (getEntities(), getRelations())
 
   def getEntities() = {
     triples.select($"Subject").union(triples.select($"Object")).distinct().collect()
