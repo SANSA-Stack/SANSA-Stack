@@ -34,7 +34,10 @@ class TransE(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: In
     case _    => L1 _
   }
 
+  import sk.implicits._
+
   def dist(data: Dataset[IntegerTriples]) = {
+
     val aux = data.collect().map { i =>
       e(i.Subject) + r(i.Predicate) - e(i.Object)
     }.reduce((a, b) => a + b)
@@ -42,8 +45,8 @@ class TransE(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: In
     myL(aux)
   }
 
-  def dist(data: IntegerTriples) = {
-    e(data.Subject) + r(data.Predicate) - e(data.Object)
+  def dist(row: IntegerTriples) = {
+    e(row.Subject) + r(row.Predicate) - e(row.Object)
   }
 
   def run() = {
