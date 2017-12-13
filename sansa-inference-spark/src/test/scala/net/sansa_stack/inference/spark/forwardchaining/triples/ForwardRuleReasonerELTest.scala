@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.spark.forwardchaining.triples
 
-import java.io.StringReader
+import java.io.{File, FileReader, StringReader}
 
 import com.holdenkarau.spark.testing.SharedSparkContext
 import net.sansa_stack.inference.spark.data.model.RDFGraph
@@ -19,6 +19,7 @@ class ForwardRuleReasonerELTest extends FunSuite with SharedSparkContext {
   private val rdfs = "http://www.w3.org/2000/01/rdf-schema#"
   private val owl = "http://www.w3.org/2002/07/owl#"
   private val ex = "http://ex.com/"
+  private val snsa = "http://sansa-stack.net/ontologies/inference/el-example.owl#"
 
   private val prefixDeclStr =
     """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -619,16 +620,123 @@ class ForwardRuleReasonerELTest extends FunSuite with SharedSparkContext {
     }))
   }
 
-  ignore("Overall reasoning should give expected results") {
-    import net.sansa_stack.inference.spark.data.loader.rdd.rdf._
-    val graph: RDFGraph = RDFGraph(sc.ntriples("/tmp/pizza.nt"))
+  test("Overall reasoning should give expected results") {
+    val parser = RDFParser.create().source(
+      new FileReader(new File("src/test/resources/el_ontology.nt"))).lang(Lang.NTRIPLES).build()
+    val sink = new CollectorStreamTriples
+    parser.parse(sink)
+    val nttrpls = sc.parallelize(sink.getCollected.asScala.toSeq)
 
     val reasoner = new ForwardRuleReasonerEL(sc, 4)
+    val inferredRDFGraph = reasoner(RDFGraph(nttrpls))
+    val inferredTriples = inferredRDFGraph.triples.collect()
 
-//    println("Initial size: " + graph.size())
+    // CR1: C \sqsubseteq C1, C1 \sqsubseteq D => C \sqsubseteq D
+    val cr1_c = uri(snsa + "CR1_C")
+    val cr1_d = uri(snsa + "CR1_D")
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.subjectMatches(cr1_c)
+          && triple.predicateMatches(RDFS.subClassOf.asNode())
+          && triple.objectMatches(cr1_d))))
 
-    val res = reasoner(graph)
-    res.triples.saveAsTextFile("/tmp/lalalalala")
-//    println("Size after inference: " + res.size())
+    // CR2: C \sqsubseteq C1, C\sqsubseteq C2, C1 \sqcap C2 \sqsubseteq D
+    //                                               => C \sqsubseteq D
+    val cr2_c = uri(snsa + "CR2_C")
+    val cr2_d = uri(snsa + "CR2_D")
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.subjectMatches(cr2_c)
+          && triple.predicateMatches(RDFS.subClassOf.asNode())
+          && triple.objectMatches(cr2_d))))
+
+    // CR3: C \squbseteq C1, C1 \sqsubseteq \exists r.D
+    //                                         => C \sqsubseteq \exists r.D
+    val cr3_c = uri(snsa + "CR3_C")
+    val cr3_r = uri(snsa + "cr3_r")
+    val cr3_d = uri(snsa + "CR3_D")
+    // C rdfs:subClassOf _:23 .
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.subjectMatches(cr3_c)
+          && triple.predicateMatches(RDFS.subClassOf.asNode())
+          && triple.getObject.isBlank)))
+    // _:23 owl:onProperty r .
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.getSubject.isBlank
+          && triple.predicateMatches(OWL2.onProperty.asNode())
+          && triple.objectMatches(cr3_r))))
+    // _:23 owl:someValuesFrom D
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.getSubject.isBlank
+          && triple.predicateMatches(OWL2.someValuesFrom.asNode())
+          && triple.objectMatches(cr3_d))))
+
+    // CR4: C \sqsubseteq \exists r.D, D \sqsubseteq D2,
+    //      \exists r.D2 \sqsubseteq E          => C \sqsubseteq E
+    val cr4_c = uri(snsa + "CR4_C")
+    val cr4_e = uri(snsa + "CR4_E")
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.subjectMatches(cr4_c)
+          && triple.predicateMatches(RDFS.subClassOf.asNode())
+          && triple.objectMatches(cr4_e))))
+
+    // CR5: C \sqsubseteq \exists r.D, D \sqsubseteq \bot => C \sqsubseteq \bot
+    val cr5_c = uri(snsa + "CR5_C")
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.subjectMatches(cr5_c)
+          && triple.predicateMatches(RDFS.subClassOf.asNode())
+          && triple.objectMatches(OWL2.Nothing.asNode()))))
+
+    // CR10: C \sqsubseteq \exists r.D, r \sqsubseteq s => C \sqsubseteq \exists s.D
+    val cr10_c = uri(snsa + "CR10_C")
+    val cr10_s = uri(snsa + "cr10_s")
+    val cr10_d = uri(snsa + "CR10_D")
+    // C rdfs:subClassOf _:23
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.subjectMatches(cr10_c)
+          && triple.predicateMatches(RDFS.subClassOf.asNode())
+          && triple.getObject.isBlank)))
+    // _:23 owl:onProperty s
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.getSubject.isBlank
+          && triple.predicateMatches(OWL2.onProperty.asNode())
+          && triple.objectMatches(cr10_s))))
+    // _:23 owl:someValuesFrom D
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.getSubject.isBlank
+          && triple.predicateMatches(OWL2.someValuesFrom.asNode())
+          && triple.objectMatches(cr10_d))))
+
+    // CR11: C \sqsubseteq \exists r1.D, D \sqsubseteq \exists r2.E,
+    //       r1 o r2 \sqsubseteq r3 => C \sqsubseteq \exists r3.E
+    val cr11_c = uri(snsa + "CR11_C")
+    val cr11_r3 = uri(snsa + "cr11_r3")
+    val cr11_e = uri(snsa + "CR11_E")
+    // C rdfs:subClassOf _:23
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.subjectMatches(cr11_c)
+          && triple.predicateMatches(RDFS.subClassOf.asNode())
+          && triple.getObject.isBlank)))
+    // _:23 owl:onProperty r3
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.getSubject.isBlank
+          && triple.predicateMatches(OWL2.onProperty.asNode())
+          && triple.objectMatches(cr11_r3))))
+    // _:23 owl:someValuesFrom E
+    assert(
+      inferredTriples.exists(triple =>
+        (triple.getSubject.isBlank
+          && triple.predicateMatches(OWL2.someValuesFrom.asNode())
+          && triple.objectMatches(cr11_e))))
   }
 }

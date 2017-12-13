@@ -121,7 +121,9 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
         val c1 = e._1
         val r = e._2
         val d = e._3
-        val bNode = NodeFactory.createBlankNode()
+        // TODO: revise
+        val hash = (c1.hashCode() * r.hashCode()) % d.hashCode()
+        val bNode = NodeFactory.createBlankNode(hash.toString)
 
         // C1 rdf:subClassOf _:23 .
         val trpl1 = Triple.create(c1, RDFS.subClassOf.asNode(), bNode)
@@ -205,7 +207,9 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
       val s = e._2._1
       val c = e._2._2._1
       val d = e._2._2._2
-      val bNode = NodeFactory.createBlankNode()
+      // TODO: Revise
+      val hash = (s.hashCode() * c.hashCode()) % d.hashCode()
+      val bNode = NodeFactory.createBlankNode(hash.toString)
 
       // C rdfs:subClassOf _:23 .
       val trpl1 = Triple.create(c, RDFS.subClassOf.asNode(), bNode)
@@ -254,7 +258,9 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
         val c = entry._2._2._1
         val r3 = entry._2._1
         val e = entry._2._2._2
-        val bNode = NodeFactory.createBlankNode()
+        // TODO: revise
+        val hash = (c.hashCode() * r3.hashCode()) % e.hashCode()
+        val bNode = NodeFactory.createBlankNode(hash.toString)
         // C \sqsubseteq \exists r2.E
 
         // C rdfs:subClassOf _:23 .
@@ -299,8 +305,10 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
       if (!inferredTriples.isEmpty()) {
         // Check whether something new was inferred
         val oldCount = triplesRDD.count()
+        logger.debug("Old overall count: " + oldCount)
         triplesRDD = triplesRDD.union(inferredTriples).distinct(parallelism)
         val newCount = triplesRDD.count()
+        logger.debug("New overall count: " + newCount)
         if (newCount > oldCount) {
           rule.getInfluencedRules().foreach(rulesQueue.enqueue(_))
         }
