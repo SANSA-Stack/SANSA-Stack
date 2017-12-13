@@ -1,61 +1,54 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.Triples
+package net.sansa_stack.ml.spark.kge.linkprediction.triples
 
-
-import org.apache.spark._
-import org.apache.spark.rdd._
 import org.apache.spark.sql._
-//import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
-import scala.reflect.api.materializeTypeTag
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
 
+class Triples(filePath: String, delimiter: String = "\t", header: Boolean = false,
+              numeric: Boolean = false, spark: SparkSession) {
 
-class Triples ( name: String, 
-		filePathTriples : String,
-		spark : SparkSession) {
+  import spark.implicits._
 
-
-	import spark.implicits._  // to be able to work with """spark.sql("blah blah").as[String].rdd"""
-
-	val schema = StructType(Array(
+  val stringSchema = StructType(Array(
     StructField("Subject", StringType, true),
     StructField("Predicate", StringType, true),
     StructField("Object", StringType, true)))
-			
-	implicit 	val encoder = RowEncoder(schema)
 
-	var triples : Dataset[RecordStringTriples] = readFromFile()
-	
+  val integerSchema = StructType(Array(
+    StructField("Subject", IntegerType, true),
+    StructField("Predicate", IntegerType, true),
+    StructField("Object", IntegerType, true)))
 
-	def readFromFile(delimiter : String = "\t", 
-	                 header : Boolean = false) : Dataset[RecordStringTriples] = {
+  val (e, r) = (getEntities(), getRelations())
+  val triples = readFromFile()
 
-			triples = spark.read.format("com.databricks.spark.csv")
-					.option("header", header.toString() )
-					.option("inferSchema",false)
-					.option("delimiter", delimiter)
-					.schema(schema)
-					.load(filePathTriples)
-					.as[RecordStringTriples]
+  def getEntities() = {
+    triples.select($"Subject").union(triples.select($"Object")).distinct().collect()
+  }
 
-			return triples
-	}
+  def getRelations() = {
+    triples.select("Predicate").distinct().collect()
+  }
 
+  def readFromFile() = {
 
-	def getAllDistinctEntities() : Dataset[String] = {
+    val schema = numeric match {
+      case true => integerSchema
+      case _    => stringSchema
+    }
 
-	  val query = triples.select($"Subject")
-	                     .union(triples.select($"Object"))
-	                     .distinct()
-	                   
-	  return query.withColumnRenamed(query.columns(0),"Entities").as[String]
-	}
+    var data = spark.read.format("com.databricks.spark.csv")
+      .option("header", header.toString())
+      .option("inferSchema", false)
+      .option("delimiter", delimiter)
+      .schema(schema)
+      .load(filePath)
 
-	def getAllDistinctPredicates() : Dataset[String] = {
+    if (numeric) {
+      data.as[IntegerTriples]
+    }
 
-		val query = triples.select("Predicate").distinct()
-		
-		return query.withColumnRenamed(query.columns(0),"Predicates").as[String]
-	}
+    data.as[StringTriples]
+  }
+
 }
