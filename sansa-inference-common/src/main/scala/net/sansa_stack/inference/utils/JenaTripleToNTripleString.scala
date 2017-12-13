@@ -12,12 +12,21 @@ class JenaTripleToNTripleString
     extends ((Triple) => String)
     with java.io.Serializable {
   override def apply(t: Triple): String = {
+    val subStr =
+      if (t.getSubject.isBlank) {
+        s"_:${t.getSubject}"
+      } else {
+        s"<${t.getSubject}"
+      }
+
     val objStr =
       if (t.getObject.isLiteral) {
         t.getObject
+      } else if (t.getObject.isBlank) {
+        s"_:${t.getObject}"
       } else {
         s"<${t.getObject}>"
       }
-    s"<${t.getSubject}> <${t.getPredicate}> ${objStr} ."
+    s"${subStr} <${t.getPredicate}> ${objStr} ."
   }
 }
