@@ -4,7 +4,7 @@ package net.sansa_stack.ml.spark.kge.linkprediction.convertor
  * Convertor Abstract Class
  * ------------------------
  *
- * Convertor Trait
+ * Trait for the Convertor
  *
  * Created by Hamed Shariat Yazdi
  */
@@ -15,11 +15,11 @@ import net.sansa_stack.ml.spark.kge.linkprediction.triples._
 
 trait Convertor {
 
-  val (e, r) = (entities(), relations())
+  val (e, r) = (getEntities(), getRelations())
 
-  def entities(): Array[Row]
+  def getEntities(): Array[Row]
 
-  def relations(): Array[Row]
+  def getRelations(): Array[Row]
 
   def numeric(): Dataset[IntegerTriples]
 
