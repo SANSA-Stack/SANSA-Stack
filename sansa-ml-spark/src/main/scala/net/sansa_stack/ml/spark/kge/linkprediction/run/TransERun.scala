@@ -27,6 +27,8 @@ object TransERun {
 
     val table = new Triples("/home/lpfgarcia/Desktop/SANSA-ML/data/train.txt", "\t", false, false, spark)
 
+    print(table.triples.show())
+
     val data = new ByIndex(table.triples, spark)
 
     print(data.triples.show())
@@ -36,11 +38,11 @@ object TransERun {
     println(train.show())
     println(test.show())
 
-    var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", spark)
-    model.run()
+    //var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", spark)
+    //model.run()
 
-    val predict = new PredictTransE(model, test).ranking()
-    println(predict)
+    //val predict = new PredictTransE(model, test).ranking()
+    //println(predict)
 
   }
 
