@@ -103,6 +103,12 @@
 				<version>${scala.version}</version>
 			</dependency>
 
+                        <dependency>
+                                <groupId>org.scala-lang</groupId>
+                                <artifactId>scalap</artifactId>
+                                <version>${scala.version}</version>
+                        </dependency>
+
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
