@@ -9,9 +9,9 @@ package net.sansa_stack.ml.spark.kge.linkprediction.convertor
 
 import org.apache.spark.sql._
 
-import net.sansa_stack.ml.spark.kge.linkprediction.dataframe._
+import net.sansa_stack.ml.spark.kge.linkprediction.triples._
 
-abstract class Convertor(data: Dataset[StringRecord]) {
+abstract class Convertor(data: Dataset[StringTriples]) {
 
   val (e, r) = (entities(), relations())
 
@@ -23,6 +23,6 @@ abstract class Convertor(data: Dataset[StringRecord]) {
     data.select("Predicate").distinct().collect()
   }
 
-  def numeric(): Dataset[IntegerRecord]
+  def numeric(): Dataset[IntegerTriples]
 
 }
