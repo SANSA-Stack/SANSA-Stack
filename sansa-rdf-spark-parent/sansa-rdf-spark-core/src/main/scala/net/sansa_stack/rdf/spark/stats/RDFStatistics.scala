@@ -68,7 +68,7 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
   def Action() = Filter().map(_.getObject)
     .map(f => (f, 1))
     .reduceByKey(_ + _)
-    .cache()
+    //.cache()
 
   //top(M,100)
   def PostProc() = Action().sortBy(_._2, false)
@@ -148,7 +148,7 @@ class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializa
   def Action() = Filter().map(_.getPredicate)
     .map(f => (f, 1))
     .reduceByKey(_ + _)
-    .cache()
+    //.cache()
 
   //top(M,100)
   def PostProc() = Action().sortBy(_._2, false)
@@ -246,15 +246,15 @@ class SPO_Vocabularies(triples: RDD[Triple], spark: SparkSession) extends Serial
 
   def Action(node: org.apache.jena.graph.Node) = Filter().map(f => node.getNameSpace()).cache()
 
-  def SubjectVocabulariesAction() = Filter().filter(f => f.getSubject.isURI()).map(f => (f.getSubject.getNameSpace())).cache
+  def SubjectVocabulariesAction() = Filter().filter(_.getSubject.isURI()).map(f => (f.getSubject.getNameSpace())).cache
   def SubjectVocabulariesPostProc() = SubjectVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
-  def PredicateVocabulariesAction() = Filter().filter(f => f.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace())).cache
+  def PredicateVocabulariesAction() = Filter().filter(_.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace())).cache
   def PredicateVocabulariesPostProc() = PredicateVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
-  def ObjectVocabulariesAction() = Filter().filter(f => f.getObject.isURI()).map(f => (f.getObject.getNameSpace())).cache
+  def ObjectVocabulariesAction() = Filter().filter(_.getObject.isURI()).map(f => (f.getObject.getNameSpace())).cache
   def ObjectVocabulariesPostProc() = ObjectVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 

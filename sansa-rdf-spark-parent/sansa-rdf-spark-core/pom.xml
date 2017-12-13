@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-rdf-spark-parent_2.11</artifactId>
-		<version>0.2.1-SNAPSHOT</version>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -27,6 +27,12 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-partition-core${scala.version.suffix}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
@@ -55,6 +61,18 @@
 			<artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-mllib_2.11</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>8.1.0</version>
+		</dependency>
+
 		<!-- Test -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -74,6 +92,19 @@
 			<artifactId>scalatest_${scala.binary.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.holdenkarau</groupId>
+			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-hive_${scala.binary.version}</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- JENA API -->
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -107,6 +138,7 @@
 
 	</dependencies>
 
+<!--
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -114,6 +146,7 @@
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
+
 				<executions>
 					<execution>
 						<goals>
@@ -126,5 +159,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
+-->
 </project>
