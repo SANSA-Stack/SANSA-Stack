@@ -35,6 +35,18 @@
 			<version>9.4.5.v20170502</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>spark-gremlin</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.litmus-benchmark-suite</groupId>
+			<artifactId>gremlinator</artifactId>
+			<version>1.0</version>
+		</dependency>
+
 	</dependencies>
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>
