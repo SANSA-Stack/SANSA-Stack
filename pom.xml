@@ -199,11 +199,22 @@
 	<dependencyManagement>
 		<dependencies>
 
-
 			<!-- Scala -->
 			<dependency>
 				<groupId>org.scala-lang</groupId>
 				<artifactId>scala-library</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-reflect</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scalap</artifactId>
 				<version>${scala.version}</version>
 			</dependency>
 
@@ -407,7 +418,8 @@
 							</goals>
 							<configuration>
 								<sources>
-									<source>src/main/scala_${scala.binary.version}</source>
+									<source>src/main/scala</source>
+<!-- 									<source>src/main/scala_${scala.binary.version}</source> -->
 								</sources>
 							</configuration>
 						</execution>
@@ -466,41 +478,6 @@
 							</configuration>
 						</execution>
 					</executions>
-				</plugin>
-
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											net.alchim31.maven
-										</groupId>
-										<artifactId>
-											scala-maven-plugin
-										</artifactId>
-										<versionRange>
-											[3.2.0,)
-										</versionRange>
-										<goals>
-											<goal>testCompile</goal>
-											<goal>compile</goal>
-											<goal>add-source</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
 				</plugin>
 
 			</plugins>
