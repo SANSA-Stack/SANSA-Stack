@@ -4,11 +4,12 @@ package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
  * k-fold Cross Validation
  * -----------------------
  *
- * Created by lpfgarcia on 24/11/2017.
+ * k-fold Cross Validation technique
+ *
+ * Created by lpfgarcia
  */
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.IntegerType
 
 import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
 import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
@@ -17,7 +18,8 @@ case class kException(info: String) extends Exception
 
 case class withIndex(Subject: Int, Predicate: Int, Object: Int, k: Int)
 
-class kFold(data: Dataset[IntegerTriples], k: Int, sk: SparkSession) extends CrossValidation[Seq[Dataset[IntegerTriples]]] {
+class kFold(data: Dataset[IntegerTriples], k: Int, sk: SparkSession)
+    extends CrossValidation[Seq[Dataset[IntegerTriples]]] {
 
   import sk.implicits._
 

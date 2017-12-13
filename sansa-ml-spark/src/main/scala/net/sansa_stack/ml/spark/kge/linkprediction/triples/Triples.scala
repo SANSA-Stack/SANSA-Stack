@@ -4,7 +4,7 @@ package net.sansa_stack.ml.spark.kge.linkprediction.triples
  * Triples Class
  * -------------
  *
- * Read the file and return an object with entities, relations and triples
+ * Read the file and return an class with entities, relations and triples
  *
  * Created by Hamed Shariat Yazdi
  */

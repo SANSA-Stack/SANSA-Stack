@@ -14,6 +14,9 @@ import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Holdout
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
 import net.sansa_stack.ml.spark.kge.linkprediction.prediction.PredictTransE
 import net.sansa_stack.ml.spark.kge.linkprediction.triples._
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.kFold
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Bootstrapping
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Holdout
 
 object TransERun {
 
@@ -21,7 +24,7 @@ object TransERun {
   Logger.getLogger("akka").setLevel(Level.OFF)
 
   val spark = SparkSession.builder.master("local")
-    .appName("Tensor").getOrCreate
+    .appName("kge").getOrCreate
 
   def main(args: Array[String]) = {
 
@@ -35,7 +38,10 @@ object TransERun {
 
     val (train, test) = new Holdout(data.triples, 0.6f).crossValidation()
 
+    
+    println("Trinamento:")
     println(train.show())
+    println("Teste:")
     println(test.show())
 
     //var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", spark)

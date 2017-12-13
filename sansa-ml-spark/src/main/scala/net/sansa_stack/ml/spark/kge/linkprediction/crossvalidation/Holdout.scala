@@ -4,7 +4,9 @@ package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
  * Hould Out
  * ---------
  *
- * Created by lpfgarcia on 24/11/2017.
+ * Hould Out technique
+ *
+ * Created by lpfgarcia
  */
 
 import org.apache.spark.sql._
