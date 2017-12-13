@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.common.utils
+package net.sansa_stack.rdf.partition.utils
 
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.NodeFactory

@@ -42,6 +42,7 @@
 		<module>sansa-rdf-spark-parent</module>
 		<module>sansa-rdf-kryo-parent</module>
 		<module>sansa-rdf-flink-parent</module>
+		<module>sansa-rdf-common</module>
 	</modules>
 
 	<dependencyManagement>
@@ -92,6 +93,13 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+				<!-- <classifier>${scala.classifier}</classifier> -->
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
