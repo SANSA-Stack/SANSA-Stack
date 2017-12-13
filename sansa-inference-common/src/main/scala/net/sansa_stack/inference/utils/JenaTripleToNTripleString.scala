@@ -14,9 +14,9 @@ class JenaTripleToNTripleString
   override def apply(t: Triple): String = {
     val subStr =
       if (t.getSubject.isBlank) {
-        s"_:${t.getSubject}"
+        s"_:${t.getSubject.getBlankNodeLabel}"
       } else {
-        s"<${t.getSubject}"
+        s"<${t.getSubject.getURI}>"
       }
 
     val objStr =
@@ -30,3 +30,4 @@ class JenaTripleToNTripleString
     s"${subStr} <${t.getPredicate}> ${objStr} ."
   }
 }
+
