@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-query-spark-parent_2.11</artifactId>
-		<version>0.2.1-SNAPSHOT</version>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
@@ -15,13 +15,13 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-spark-core${scala.version.suffix}</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-query-spark-sparqlify${scala.version.suffix}</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
@@ -32,9 +32,35 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-xml</artifactId>
-			<version>8.1.17.v20150415</version>
+			<version>9.4.5.v20170502</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>spark-gremlin</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.litmus-benchmark-suite</groupId>
+			<artifactId>gremlinator</artifactId>
+			<version>1.0</version>
 		</dependency>
 
 	</dependencies>
+	<build>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
 
 </project>

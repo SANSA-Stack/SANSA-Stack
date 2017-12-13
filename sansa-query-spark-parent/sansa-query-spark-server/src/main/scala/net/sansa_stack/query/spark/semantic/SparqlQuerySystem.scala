@@ -1,16 +1,14 @@
-// package
 package net.sansa_stack.query.spark.semantic
 
-// imports
 import scala.collection.mutable.ArrayBuffer
 import java.util.Scanner
 import java.io.File
-import java.util.concurrent.TimeUnit
 import java.io._
 import com.google.common.collect.ArrayListMultimap
 import scala.collection.JavaConversions._
 import java.util.StringTokenizer
 import org.apache.spark.rdd._
+import net.sansa_stack.query.spark.semantic.utils.Helpers._
 
 /*
  * QuerySystem - query on semantic partition data
@@ -28,40 +26,54 @@ class QuerySystem(
                      queryResultPath: String,
                      numOfFilesPartition: Int
                  ) extends Serializable {
-    var _selectVariables: ArrayBuffer[ArrayBuffer[String]] = ArrayBuffer()
-    var _whereVariables: ArrayBuffer[ArrayBuffer[String]] = ArrayBuffer()
-    var _WhereTriples: ArrayBuffer[ArrayBuffer[String]] = ArrayBuffer()
-    var _numOfWhereClauseTriples: ArrayBuffer[Int] = ArrayBuffer()
+    var _selectVariables: Map[Int, ArrayBuffer[String]] = Map()
+    var _whereVariables: Map[Int, ArrayBuffer[String]] = Map()
+    var _WhereTriples: Map[Int, ArrayBuffer[String]] = Map()
+    var _numOfWhereClauseTriples: Map[Int, Int] = Map()
     var _queriesLimit: Map[Int, Int] = Map()
+    var _unionQueries: Map[Int, Map[String, Boolean]] = Map()
     var _queriesProcessTime: ArrayBuffer[Long] = ArrayBuffer()
 
-    var outputRDD: RDD[(String, List[String])] = _
     var workingTripleRDD: RDD[(String, List[String])] = _
     var workingPartialRDD: RDD[(String, List[String])] = _
+    var unionOutputRDD: RDD[String] = _
 
     def run(): Unit = {
         // parse queries
         for (qID <- this.fetchQueries.indices) {
-            // parse query
-            this.queryParser(this.fetchQueries(qID), qID)
-
+            // assemble queries
+            val refactoredQueries = this.refactorUnionQueries(this.fetchQueries(qID), qID)
+            
             // start process time
             val startTime = System.nanoTime()
 
-            // query engine
-            this.queryEngine(qID)
+            // iterate refactored UNION queries
+            for (qUID <- refactoredQueries.indices) {
+                // case: UNION
+                _unionQueries = Map(qID -> Map(
+                    "isUnion" -> (refactoredQueries.length > 1),
+                    "first" -> (qUID == 0),
+                    "last" -> (qUID == (refactoredQueries.length - 1)))
+                )
+
+                // parse query
+                this.queryParser(refactoredQueries(qUID), qID)
+
+                // query engine
+                this.queryEngine(qID)
+            }
 
             // end process time
-            this.queryTime(System.nanoTime() - startTime)
+            _queriesProcessTime.append(queryTime((System.nanoTime() - startTime),symbol))
         }
 
         // overall process time
-        this.overallQueriesTime()
+        overallQueriesTime(_queriesProcessTime)
     }
 
-    /********************************
-    * Parse Queries & Store Variables
-    * *******************************/
+    // -------------------------------
+    // Parse Queries & Store Variables
+    // -------------------------------
 
     // fetch queries from input file
     def fetchQueries: ArrayBuffer[ArrayBuffer[String]] = {
@@ -109,6 +121,97 @@ class QuerySystem(
         }
 
         queryList
+    }
+
+    // refactor UNION queries
+    def refactorUnionQueries(query: ArrayBuffer[String], qID: Int): ArrayBuffer[ArrayBuffer[String]] = {
+        var queriesList: ArrayBuffer[ArrayBuffer[String]] = ArrayBuffer()
+        var selectLine: String = ""
+        var triplesList: ArrayBuffer[String] = ArrayBuffer()
+        var singleQueryP1: ArrayBuffer[String] = ArrayBuffer()
+        var singleQueryP2: ArrayBuffer[String] = ArrayBuffer()
+        var singleQueryP3: ArrayBuffer[String] = ArrayBuffer()
+        var j = 0
+        var isEnd = false
+
+        // iterate
+        for (_ <- query.indices by j+1) {
+            var line = query(j)
+
+            // common part: before triples
+            if (line.toUpperCase.contains("SELECT") || line.toUpperCase.contains("WHERE")) {
+                singleQueryP1 += line
+                j += 1
+
+                if (line.toUpperCase.contains("SELECT")) selectLine = line
+            }
+
+            // query: multi triple
+            if (line.startsWith(this.symbol("bracket-left")) && !line.endsWith(this.symbol("bracket-right"))) {
+                j += 1
+
+                while (!line.startsWith(this.symbol("bracket-right"))) {
+                    line = query(j)
+                    j += 1
+
+                    if (!line.startsWith(this.symbol("bracket-right"))) {
+                        singleQueryP2 += line
+                        triplesList += line
+                    }
+                }
+
+                line = query(j)
+                queriesList += singleQueryP1.union(singleQueryP2)
+                singleQueryP2 = ArrayBuffer()
+            }
+
+            // query: single triple
+            if (line.startsWith(this.symbol("bracket-left")) && line.endsWith(this.symbol("bracket-right"))) {
+                val tokens = line.split(this.symbol("blank"))
+                val triple = tokens(1) + this.symbol("blank") + tokens(2) + this.symbol("blank") + tokens(3) + this.symbol("blank") + tokens(4)
+
+                singleQueryP2 += triple
+                queriesList += singleQueryP1.union(singleQueryP2)
+                triplesList += triple
+                singleQueryP2 = ArrayBuffer()
+                j += 1
+            }
+
+            // skip UNION
+            if (line.toUpperCase.equals("UNION")) j += 1
+
+            // common part: after triples
+            if (line.equals(this.symbol("bracket-right")) && !isEnd) {
+                singleQueryP3 += line
+
+                while (j < query.size - 1) {
+                    j += 1
+                    line = query(j)
+                    singleQueryP3 += line
+                }
+
+                // block entry after first time
+                isEnd = true
+            }
+        }
+
+        // set queries
+        if (queriesList.isEmpty) {
+            queriesList += query
+        } else {
+            for (i <- queriesList.indices) {
+                queriesList(i) = queriesList(i) ++ singleQueryP3
+            }
+
+            // case: Union
+            if (!selectLine.contains(this.symbol("asterisk"))) {
+                val selectVariables = this.lineParser(selectLine).filter(_.nonEmpty)
+                val whereVariables = this.fetchWhereVariables(triplesList).filter(_.nonEmpty)
+                this.validateSelectVariables(selectVariables, whereVariables, qID)
+            }
+        }
+
+        queriesList
     }
 
     // parse queries
@@ -178,19 +281,20 @@ class QuerySystem(
         val WhereTriples = this.fetchWhereTriples(whereLines, whereVariables)
 
         // append variables: SELECT clause
-        _selectVariables.append(selectVariables)
+        _selectVariables += (qID -> selectVariables)
 
         // append variables: WHERE clause
-        _whereVariables.append(whereVariables)
-
-        // validate SELECT clause variables
-        this.validateSelectVariables(selectVariables, qID)
+        _whereVariables += (qID -> whereVariables)
 
         // append WHERE triples
-        _WhereTriples.append(WhereTriples)
+        _WhereTriples += (qID -> WhereTriples)
+
+        // validate SELECT clause variables
+        if (!selectLine.contains(this.symbol("asterisk")) && !_unionQueries(qID)("isUnion"))
+            this.validateSelectVariables(selectVariables, _whereVariables(qID), qID)
 
         // append number of clause in a query
-        _numOfWhereClauseTriples.append(WhereTriples.size)
+        _numOfWhereClauseTriples += (qID -> WhereTriples.size)
     }
 
     // parse line and store SELECT and WHERE clause variables
@@ -198,38 +302,36 @@ class QuerySystem(
         var line: String = lineParse
         var varList: ArrayBuffer[String] = ArrayBuffer()
 
-        // split line at location: ?
-        var locationPoint = line.indexOf(this.symbol("question-mark"))
+        // case: SELECT *
+        if (!line.contains(this.symbol("asterisk"))) {
+            // split line at location: ?
+            var locationPoint = line.indexOf(this.symbol("question-mark"))
 
-        // one or more SELECT variables
-        while (locationPoint >= 0) {
-            // skip: SELECT (left with all variables)
-            line = line.substring(locationPoint)
+            // one or more SELECT or WHERE variables
+            while (locationPoint >= 0) {
+                // skip: SELECT (left with all variables)
+                line = line.substring(locationPoint)
 
-            // split line at location: blank space
-            locationPoint = line.indexOf(this.symbol("blank"))
+                // split line at location: blank space
+                locationPoint = line.indexOf(this.symbol("blank"))
 
-            // when there is no more variables found after split
-            if (locationPoint == -1) {
-                // set location point to end of line
-                locationPoint = line.length()
+                // when there is no more variables found after split
+                if (locationPoint == -1) {
+                    // set location point to end of line
+                    locationPoint = line.length()
+                }
+
+                // set value to a variable
+                var variable = line.substring(0, locationPoint)
+
+                // add variable to the list
+                varList += variable
+
+                // set next location point
+                line = line.substring(locationPoint)
+                locationPoint = line.indexOf(this.symbol("question-mark"))
             }
-
-            // set value to a variable
-            var variable = line.substring(0, locationPoint)
-
-            // validate variable (WHERE clause)
-            while (variable.endsWith(this.symbol("bracket-right"))) {
-                variable = variable.substring(0, variable.length() - 1)
-            }
-
-            // add variable to the list
-            varList += variable
-
-            // set next location point
-            line = line.substring(locationPoint)
-            locationPoint = line.indexOf(this.symbol("question-mark"))
-        }
+        } else varList += this.symbol("asterisk")
 
         // filter out duplicates
         varList = this.removeDuplicates(varList)
@@ -318,23 +420,26 @@ class QuerySystem(
     }
 
     // validate SELECT clause variables
-    def validateSelectVariables(list: ArrayBuffer[String], qID: Int): Unit = {
+    def validateSelectVariables(selectVariables: ArrayBuffer[String], whereVariables: ArrayBuffer[String], qID: Int): Unit = {
         // SELECT clause variables must be in WHERE clause
-        list.foreach(variable => {
-            if (!_whereVariables(qID).contains(variable)) {
+        selectVariables.foreach(variable => {
+            if (!whereVariables.contains(variable)) {
                 // exception: SELECT variable is not found in WHERE clause
                 throw new IllegalStateException("Query No. " + qID + ": SELECT clause variables must be in WHERE clause: " + variable)
             }
         })
     }
 
-    /****************
-    * Process Queries
-    * ***************/
+    // ---------------
+    // Process Queries
+    // ---------------
 
     // query engine
     def queryEngine(qID: Int): Unit = {
-        println("Query No: " + (qID + 1))
+        if (_unionQueries(qID)("first")) {
+            if (_unionQueries(qID)("first") == _unionQueries(qID)("last")) println("Query No: " + (qID + 1))
+            else println("Query No: " + (qID + 1) + " - UNION")
+        }
 
         // validate number of WHERE clause triples
         if (_numOfWhereClauseTriples(qID) == 1) {
@@ -350,9 +455,9 @@ class QuerySystem(
         }
     }
 
-    /****************************************************
-    * Process Query: with only one triple in WHERE clause
-    * ***************************************************/
+    // ---------------------------------------------------
+    // Process Query: with only one triple in WHERE clause
+    // ---------------------------------------------------
 
     // process first triple
     def runFirstTriple(qID: Int, clauseNum: Int = 0, isRemainingTriples: Boolean = false, varJoinList: ArrayBuffer[String] = null): Unit = {
@@ -363,26 +468,21 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT, PREDICATE and OBJECT
-        val tripleData = this.fetchTripleSPO(triple)
+        val tripleData = fetchTripleSPO(triple,symbol)
         val tripleSubject = tripleData(0)
         val triplePredicate = tripleData(1)
         val tripleObject = tripleData(2)
 
         // process partition data
-        outputRDD = partitionData
+        val tmpRDD = partitionData
             .flatMap(line => {
                 val lineArray = line.split(this.symbol("space"))
-                var firstTime: Boolean = true
-
                 val output = for (i <- 1 until (lineArray.length - 1)) yield {
                     var line: String = ""
 
                     // odd numbers
                     if (i % 2 != 0) {
                         if (lineArray(i) == triplePredicate) {
-                            if (firstTime) {
-                                firstTime = false
-                            }
                             line = lineArray(0) + this.symbol("space") + lineArray(i) + this.symbol("space") + lineArray(i + 1)
                         }
                     }
@@ -456,28 +556,36 @@ class QuerySystem(
             })
             .filter(_._1.nonEmpty)
 
+        // case: UNION
+        if (_unionQueries(qID)("isUnion") && numOfWhereClauseTriples == 1) {
+            if (_unionQueries(qID)("first")) unionOutputRDD = tmpRDD.map(key => key._1)
+            else unionOutputRDD = unionOutputRDD.union(tmpRDD.map(key => key._1))
+        }
+
         // only triple query: display output
-        if (outputRDD.partitions.nonEmpty && numOfWhereClauseTriples == 1) {
+        if (tmpRDD.partitions.nonEmpty && numOfWhereClauseTriples == 1 && _unionQueries(qID)("last")) {
             val resultPath = this.queryResultPath + "/" + qID + "/"
+
+            // case: UNION
+            var outputRDD = tmpRDD.map(key => key._1) // key is the output in case of just one triple query
+            if (_unionQueries(qID)("isUnion")) outputRDD = unionOutputRDD
 
             // check limit
             if (_queriesLimit.get(qID).isDefined) {
                 outputRDD
-                    .map(key => key._1) // key is the output in case of just one triple query
                     .repartition(this.numOfFilesPartition)
                     .mapPartitions(_.take(_queriesLimit(qID)))
                     .saveAsTextFile(resultPath)
             } else {
                 outputRDD
-                    .map(key => key._1) // key is the output in case of just one triple query
                     .repartition(this.numOfFilesPartition)
                     .saveAsTextFile(resultPath)
             }
         }
 
         // multi triples query: set RDD
-        if (numOfWhereClauseTriples > 1 && !isRemainingTriples) workingPartialRDD = outputRDD
-        if (numOfWhereClauseTriples > 1 && isRemainingTriples) workingTripleRDD = outputRDD
+        if (numOfWhereClauseTriples > 1 && !isRemainingTriples) workingPartialRDD = tmpRDD
+        if (numOfWhereClauseTriples > 1 && isRemainingTriples) workingTripleRDD = tmpRDD
     }
 
     // set output: query with only one WHERE clause triple
@@ -486,36 +594,48 @@ class QuerySystem(
 
         // set output result
         _selectVariables(qID).foreach(selectVariable => {
-            // equal variables: SUBJECT and OBJECT with SELECT variables
-            if (tripleSubject.equals(selectVariable) && tripleObject.equals(selectVariable)) {
-                // equal variables: SUBJECT and OBJECT
-                if (tripleSubject.equals(tripleObject)) {
-                    val subjectURI = new String(lineSubject.getBytes(), 0, lineSubject.getBytes().length)
-                    if (key.nonEmpty) {
-                        key += this.symbol("space") + subjectURI
+            // case: SELECT *
+            if (!selectVariable.equals(this.symbol("asterisk"))) {
+                // equal variables: SUBJECT and OBJECT with SELECT variables
+                if (tripleSubject.equals(selectVariable) && tripleObject.equals(selectVariable)) {
+                    // equal variables: SUBJECT and OBJECT
+                    if (tripleSubject.equals(tripleObject)) {
+                        val subjectURI = new String(lineSubject.getBytes(), 0, lineSubject.getBytes().length)
+                        if (key.nonEmpty) {
+                            key += this.symbol("space") + subjectURI
+                        } else {
+                            key = subjectURI
+                        }
+                    }
+                } else {
+                    // equal variable: SUBJECT with SELECT variables
+                    if (tripleSubject.equals(selectVariable)) {
+                        val subjectURI = new String(lineSubject.getBytes(), 0, lineSubject.getBytes().length)
+                        if (key.nonEmpty) {
+                            key += this.symbol("space") + subjectURI
+                        } else {
+                            key = subjectURI
+                        }
                     } else {
-                        key = subjectURI
+                        // equal variable: OBJECT with SELECT variables
+                        if (tripleObject.equals(selectVariable)) {
+                            val objectURI = new String(lineObject.getBytes(), 0, lineObject.getBytes().length)
+                            if (key.nonEmpty) {
+                                key += this.symbol("space") + objectURI
+                            } else {
+                                key = objectURI
+                            }
+                        }
                     }
                 }
             } else {
-                // equal variable: SUBJECT with SELECT variables
-                if (tripleSubject.equals(selectVariable)) {
+                if (tripleSubject.contains(this.symbol("question-mark"))) {
                     val subjectURI = new String(lineSubject.getBytes(), 0, lineSubject.getBytes().length)
-                    if (key.nonEmpty) {
-                        key += this.symbol("space") + subjectURI
-                    } else {
-                        key = subjectURI
-                    }
-                } else {
-                    // equal variable: OBJECT with SELECT variables
-                    if (tripleObject.equals(selectVariable)) {
-                        val objectURI = new String(lineObject.getBytes(), 0, lineObject.getBytes().length)
-                        if (key.nonEmpty) {
-                            key += this.symbol("space") + objectURI
-                        } else {
-                            key = objectURI
-                        }
-                    }
+                    key = subjectURI
+                }
+                if (tripleObject.contains(this.symbol("question-mark"))) {
+                    val objectURI = new String(lineObject.getBytes(), 0, lineObject.getBytes().length)
+                    key += this.symbol("space") + objectURI
                 }
             }
         })
@@ -523,9 +643,9 @@ class QuerySystem(
         key
     }
 
-    /**********************************************************
-    * Process Query: with only multiple triples in WHERE clause
-    * *********************************************************/
+    // ---------------------------------------------------------
+    // Process Query: with only multiple triples in WHERE clause
+    // ---------------------------------------------------------
 
     // process all triples of a query
     def runAllTriplesOfQuery(qID: Int): Unit = {
@@ -583,7 +703,7 @@ class QuerySystem(
             val triple = _WhereTriples(qID)(i)
 
             // fetch SUBJECT and OBJECT
-            val tripleData = this.fetchTripleSPO(triple)
+            val tripleData = fetchTripleSPO(triple,symbol)
             val tripleSubject = tripleData(0)
             val tripleObject = tripleData(2)
 
@@ -606,7 +726,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT and OBJECT
-        val tripleData = this.fetchTripleSPO(triple)
+        val tripleData = fetchTripleSPO(triple,symbol)
         val tripleSubject = tripleData(0)
         val tripleObject = tripleData(2)
 
@@ -632,7 +752,7 @@ class QuerySystem(
     // process remaining triples
     def runRemainingTriples(qID: Int, clauseNum: Int, varJoinList: ArrayBuffer[String]): Unit = {
         // process remaining triple
-        this.runFirstTriple(qID, clauseNum, isRemainingTriples = true, varJoinList)
+        this.runFirstTriple(qID, clauseNum = clauseNum, isRemainingTriples = true, varJoinList = varJoinList)
 
         // set output: work on processed triples
         this.setRemainingPartialOutput(varJoinList)
@@ -693,17 +813,13 @@ class QuerySystem(
                             key = key + this.symbol("blank")
                         }
 
-                        key = key + variable
-                        key = key + this.symbol("blank")
-                        key = key + itr.nextToken
+                        key = key + variable + this.symbol("blank") + itr.nextToken
                     } else {
                         if (value.length() != 0) {
                             value = value + this.symbol("blank")
                         }
 
-                        value = value + this.symbol("blank") + variable
-                        value = value + this.symbol("blank")
-                        value = value + itr.nextToken
+                        value = value + this.symbol("blank") + variable + this.symbol("blank") + itr.nextToken
                     }
                 }
 
@@ -748,7 +864,7 @@ class QuerySystem(
 
     // display multi triples output
     def displayMultiTriplesOutput(selectVariables: ArrayBuffer[String], qID: Int): Unit = {
-        val tmpRDD = workingPartialRDD.map(line => {
+        var tmpRDD = workingPartialRDD.map(line => {
             val processLine = line._1
             val itr = new StringTokenizer(processLine)
             var outputResult: String = ""
@@ -758,7 +874,7 @@ class QuerySystem(
                 val variable = itr.nextToken
 
                 // if variable exists in SELECT variables
-                if (selectVariables.contains(variable)) {
+                if (selectVariables.contains(variable) || selectVariables.contains(this.symbol("asterisk"))) {
                     val next = itr.nextToken()
                     if (outputResult.length() > 0) {
                         outputResult = outputResult.concat(this.symbol("space"))
@@ -772,9 +888,18 @@ class QuerySystem(
             outputResult
         })
 
+        // case: UNION
+        if (_unionQueries(qID)("isUnion")) {
+            if (_unionQueries(qID)("first")) unionOutputRDD = tmpRDD
+            else unionOutputRDD = unionOutputRDD.union(tmpRDD)
+        }
+
         // output result to file
-        if (tmpRDD.partitions.nonEmpty) {
+        if (tmpRDD.partitions.nonEmpty && _unionQueries(qID)("last")) {
             val resultPath = this.queryResultPath + "/" + qID + "/"
+
+            // case: UNION
+            if (_unionQueries(qID)("isUnion")) tmpRDD = unionOutputRDD
 
             // check limit
             if (_queriesLimit.get(qID).isDefined) {
@@ -790,65 +915,4 @@ class QuerySystem(
         }
     }
 
-    /********
-    * Helpers
-    * *******/
-
-    // fetch SUBJECT, PREDICATE and OBJECT
-    def fetchTripleSPO(triple: String): ArrayBuffer[String] = {
-        // return list
-        val tripleData: ArrayBuffer[String] = ArrayBuffer()
-
-        // fetch indices
-        val locationPoint1 = triple.indexOf(this.symbol("blank"))
-        val locationPoint2 = triple.lastIndexOf(this.symbol("blank"))
-
-        // WHERE clause: SUBJECT, PREDICATE and OBJECT
-        val tripleSubject = triple.substring(0, locationPoint1).trim()
-        val triplePredicate = triple.substring(locationPoint1, locationPoint2).trim()
-        val tripleObject = triple.substring(locationPoint2, triple.length()).trim()
-
-        // append data
-        tripleData.append(tripleSubject)
-        tripleData.append(triplePredicate)
-        tripleData.append(tripleObject)
-
-        tripleData
-    }
-
-    // total query process time
-    def queryTime(processedTime: Long): Unit = {
-        val milliseconds = TimeUnit.MILLISECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
-        val seconds = Math.floor(milliseconds/1000d + .5d).toInt
-        val minutes = TimeUnit.MINUTES.convert(processedTime, TimeUnit.NANOSECONDS)
-
-        if (milliseconds >= 0) {
-            println("Processed Time (MILLISECONDS): " + milliseconds)
-
-            if (seconds > 0) {
-                println("Processed Time (SECONDS): " + seconds + " approx.")
-
-                if (minutes > 0) {
-                    println("Processed Time (MINUTES): " + minutes)
-                }
-            }
-        }
-
-        // append query time
-        _queriesProcessTime.append(milliseconds)
-
-        println(this.symbol("newline"))
-    }
-
-    // overall queries process time
-    def overallQueriesTime(): Unit = {
-        val milliseconds: Long = _queriesProcessTime.sum
-        val seconds = Math.floor(milliseconds/1000d + .5d).toInt
-
-        if (milliseconds >= 1000) {
-            println("--> Overall Process Time: " + milliseconds + "ms (" + seconds + "secs approx.)")
-        } else {
-            println("--> Overall Process Time: " + milliseconds + "ms")
-        }
-    }
 }
