@@ -3,7 +3,6 @@ package net.sansa_stack.inference.utils
 import java.io.{ByteArrayOutputStream, File, FileOutputStream, FileWriter}
 
 import scalax.collection.edge.LDiEdge
-
 import com.itextpdf.text.PageSize
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
@@ -19,13 +18,12 @@ import org.gephi.layout.plugin.force.yifanHu.YifanHuLayout
 import org.gephi.preview.api.{Item, PreviewController, PreviewProperty}
 import org.gephi.preview.types.EdgeColor
 import org.gephi.project.api.ProjectController
-import org.jgrapht.DirectedGraph
+import org.jgrapht.{DirectedGraph, Graph}
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector
-import org.jgrapht.ext._
-import org.jgrapht.graph._
 import org.openide.util.Lookup
-
-import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator};
+import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
+import org.jgrapht.graph.{DefaultDirectedGraph, DirectedPseudograph}
+import org.jgrapht.io.{ComponentNameProvider, GraphMLExporter, IntegerComponentNameProvider};
 
 /**
   * @author Lorenz Buehmann
@@ -52,8 +50,8 @@ object GraphUtils {
     * @param graph the 'Graph for Scala' graph
     * @return the JGraphT graph
     */
-  def asJGraphtRuleGraph(graph: scalax.collection.mutable.Graph[Node, LDiEdge]): DirectedGraph[Node, LabeledEdge[Node, String]] = {
-    val g: DirectedGraph[Node, LabeledEdge[Node, String]] = new DefaultDirectedGraph[Node, LabeledEdge[Node, String]](classOf[LabeledEdge[Node, String]])
+  def asJGraphtRuleGraph(graph: scalax.collection.mutable.Graph[Node, LDiEdge]): Graph[Node, LabeledEdge[Node, String]] = {
+    val g: Graph[Node, LabeledEdge[Node, String]] = new DefaultDirectedGraph[Node, LabeledEdge[Node, String]](classOf[LabeledEdge[Node, String]])
 
     val edges = graph.edges.toList
 
@@ -89,7 +87,7 @@ object GraphUtils {
     * @param graph the 'Graph for Scala' graph
     * @return the JGraphT graph
     */
-  def asJGraphtRuleSetGraph(graph: scalax.collection.mutable.Graph[Rule, LDiEdge]): DirectedGraph[Rule, LabeledEdge[Rule, TriplePattern]] = {
+  def asJGraphtRuleSetGraph(graph: scalax.collection.mutable.Graph[Rule, LDiEdge]): Graph[Rule, LabeledEdge[Rule, TriplePattern]] = {
     val g = new DefaultDirectedGraph[Rule, LabeledEdge[Rule, TriplePattern]](classOf[LabeledEdge[Rule, TriplePattern]])
 
     val edges = graph.edges.toList
@@ -119,7 +117,7 @@ object GraphUtils {
       */
     def export(filename: String, showInFlowDirection: Boolean = false): Unit = {
 
-      val g: DirectedGraph[Rule, LabeledEdge[Rule, TriplePattern]] = asJGraphtRuleSetGraph(graph)
+      val g: Graph[Rule, LabeledEdge[Rule, TriplePattern]] = asJGraphtRuleSetGraph(graph)
 
       // In order to be able to export edge and node labels and IDs,
       // we must implement providers for them
@@ -219,7 +217,7 @@ object GraphUtils {
           pdfExporter.setWorkspace(workspace)
           val baos = new ByteArrayOutputStream()
           ec.exportStream(baos, pdfExporter)
-          new FileOutputStream(filename + ".pdf").write(baos.toByteArray())
+          new FileOutputStream(filename + ".pdf").write(baos.toByteArray)
         }
   }
 
@@ -302,7 +300,7 @@ object GraphUtils {
       */
     def export(filename: String): Unit = {
 
-      val g: DirectedGraph[Node, LabeledEdge[Node, Node]] = new DirectedPseudograph[Node, LabeledEdge[Node, Node]](classOf[LabeledEdge[Node, Node]])
+      val g: Graph[Node, LabeledEdge[Node, Node]] = new DirectedPseudograph[Node, LabeledEdge[Node, Node]](classOf[LabeledEdge[Node, Node]])
 
       val edges = graph.edges.toList
 
