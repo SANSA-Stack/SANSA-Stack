@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
+package net.sansa_stack.ml.spark.kge.linkprediction.run
 
 
 import org.apache.spark.SparkConf
@@ -18,9 +18,10 @@ import org.apache.spark.sql.functions._
 
 import org.springframework.util.StopWatch
 
-import net.sansa_stack.ml.spark.kge.linkprediction.NewDesign._
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.Triples
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples._
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.Triples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.RecordStringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.convertor.ByIndexConverter
 
 
 object runTesting extends App {
@@ -74,7 +75,7 @@ object runTesting extends App {
 //  println("\n \n ----------")
 //  e1.foreach(x=>println(x))
   val n = 10
-  val conv = new ByIndexConvertor(trp,spark)
+  val conv = new ByIndexConverter(trp,spark)
   
 //  val id1 = conv.entities.select("ID").sample(false,0.2).take(n)
 //  val ind1 = id1.map( row => row(0).asInstanceOf[Long]).toSeq.toDS()

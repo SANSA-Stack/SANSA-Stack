@@ -1,5 +1,11 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.Triples
+package net.sansa_stack.ml.spark.kge.linkprediction.triples
 
+/**
+ * Triples Class
+ * ------------------------
+ *
+ * Created by Hamed Shariat Yazdi
+ */
 
 import org.apache.spark._
 import org.apache.spark.rdd._
@@ -8,7 +14,7 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types._
 import scala.reflect.api.materializeTypeTag
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.RecordStringTriples
 
 
 class Triples ( name: String, 

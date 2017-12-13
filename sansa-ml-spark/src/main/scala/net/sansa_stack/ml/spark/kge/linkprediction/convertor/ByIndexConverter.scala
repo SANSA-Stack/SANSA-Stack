@@ -1,14 +1,21 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
+package net.sansa_stack.ml.spark.kge.linkprediction.convertor
+
+/**
+ * ByIndexConverter class
+ * 
+ * Created by: Hamed Shariat Yazdi
+ * 
+ */
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._ 
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.Triples
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordLongTriples
+import org.apache.spark.sql.functions._
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.Triples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.RecordStringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.RecordLongTriples
 
 
-class ByIndexConvertor(
+class ByIndexConverter(
     triples : Triples,
     spark : SparkSession) extends ConvertorTrait {
 

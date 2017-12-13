@@ -1,4 +1,11 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.Triples
+package net.sansa_stack.ml.spark.kge.linkprediction.triples
+
+/**
+ * Required triples case classes
+ * ------------------------
+ *
+ * Created by Hamed Shariat Yazdi
+ */
 
 case class RecordStringTriples(Subject: String, Predicate: String, Object: String)
 

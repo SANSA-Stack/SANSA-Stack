@@ -1,9 +1,15 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
+package net.sansa_stack.ml.spark.kge.linkprediction.convertor
 
-import net.sansa_stack.ml.spark.kge.linkprediction.NewDesign._
+/**
+ * Converter Trait
+ * 
+ * Created by: Hamed Shariat Yazdi
+ * 
+ */
+
 import org.apache.spark.sql._
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
-import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordLongTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.RecordStringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.RecordLongTriples
 
 trait ConvertorTrait {
   
