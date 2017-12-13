@@ -62,11 +62,13 @@
                 <version>${project.version}</version>
             </dependency>
 
+<!--
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
+-->
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -79,6 +81,21 @@
                 <artifactId>spark-graphx_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
+
+
+            <!-- Use jena's http client dependencies instead those of spark -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <scope>provided</scope>
+            </dependency>
+
 
 <!--             <dependency> -->
 <!--                 <groupId>org.scalatest</groupId> -->
