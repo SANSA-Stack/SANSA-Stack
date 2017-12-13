@@ -96,6 +96,13 @@
 				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
+			<!-- Scala -->
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-library</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
+
 			<!-- Apache Flink -->
 			<dependency>
 				<groupId>org.apache.flink</groupId>
@@ -247,6 +254,11 @@
 			</plugin>
 
 			<plugin>
+				  <groupId>org.codehaus.mojo</groupId>
+				  <artifactId>build-helper-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
@@ -272,32 +284,75 @@
 					</configuration>
 				</plugin>
 
+			
+				<!-- Scala Maven -->
 				<plugin>
 					<groupId>net.alchim31.maven</groupId>
 					<artifactId>scala-maven-plugin</artifactId>
 					<version>3.2.2</version>
-					<!-- <configuration> -->
-					<!-- <recompileMode>incremental</recompileMode> -->
-					<!-- </configuration> -->
 					<executions>
 						<execution>
 							<goals>
-								<goal>add-source</goal>
 								<goal>compile</goal>
 								<goal>testCompile</goal>
 							</goals>
+							<configuration>
+								<scalaVersion>${scala.version}</scalaVersion>
+								<recompileMode>incremental</recompileMode>
+								<useZincServer>true</useZincServer>
+								<args>
+									<arg>-unchecked</arg>
+									<arg>-deprecation</arg>
+									<arg>-feature</arg>
+									<arg>-dependencyfile</arg>
+									<arg>${project.build.directory}/.scala_dependencies</arg>
+									<arg>-Xmax-classfile-name</arg>
+									<arg>128</arg>
+								</args>
+								<jvmArgs>
+									<jvmArg>-Xms1024m</jvmArg>
+									<jvmArg>-Xmx1024m</jvmArg>
+									<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+									<jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+									<jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+								</jvmArgs>
+								<!--<javacArgs> -->
+								<!--<javacArg>-source</javacArg> -->
+								<!--<javacArg>${java.version}</javacArg> -->
+								<!--<javacArg>-target</javacArg> -->
+								<!--<javacArg>${java.version}</javacArg> -->
+								<!--<javacArg>-Xlint:all,-serial,-path</javacArg> -->
+								<!--</javacArgs> -->
+			
+							</configuration>
 						</execution>
-						<!-- <execution> -->
-						<!-- <goals> -->
-						<!-- <goal>add-source</goal> -->
-						<!-- <configuration> -->
-						<!-- <sourceDir>src/main/scala</sourceDir> -->
-						<!-- <testSourceDir>src/main/test</testSourceDir> -->
-						<!-- </configuration> -->
-						<!-- </goals> -->
-						<!-- </execution> -->
 					</executions>
+					<configuration>
+						<scalaVersion>${scala.version}</scalaVersion>
+						<recompileMode>incremental</recompileMode>
+					</configuration>
 				</plugin>
+
+				<plugin>
+				  <groupId>org.codehaus.mojo</groupId>
+				  <artifactId>build-helper-maven-plugin</artifactId>
+				  <version>3.0.0</version>
+				  <executions>
+				    <execution>
+				      <id>add-source</id>
+				      <phase>generate-sources</phase>
+				      <goals>
+				        <goal>add-source</goal>
+				      </goals>
+				      <configuration>
+				        <sources>
+				          <source>src/main/scala_${scala.binary.version}</source>
+				        </sources>
+				      </configuration>
+				    </execution>
+				  </executions>
+				</plugin>
+
 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
