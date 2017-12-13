@@ -2,16 +2,16 @@ package net.sansa_stack.ml.spark.outliers.anomalydetection
 
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.Node
-
 object Similarity {
-  def sim(seq1: Seq[Node], seq2: Seq[Node]): Double = {
-    
+  def sim(seq1: Seq[String], seq2: Seq[String]): Double = {
+
     val sparkSession = SparkSession.builder
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .appName("Jacard Similarity")
       .getOrCreate()
-      
+    
+   
     val broadcastSeq1 = sparkSession.sparkContext.broadcast(seq1)
     val broadcastSeq2 = sparkSession.sparkContext.broadcast(seq2)
 
@@ -23,6 +23,7 @@ object Similarity {
     val union_count = broadcastSet1.union(broadcastSet2).size
     val jSimilarity = intersect_cnt / (union_count).toDouble
    
+    
     jSimilarity
   }
 }
