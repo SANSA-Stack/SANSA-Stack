@@ -16,10 +16,5 @@
 		<module>sansa-rdf-kryo-sparqlify</module>
 	</modules>
 
-	<dependencyManagement>
-		<dependencies>
-		</dependencies>
-	</dependencyManagement>
-
 </project>
 
