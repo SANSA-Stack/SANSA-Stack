@@ -19,6 +19,8 @@ import org.apache.spark.sql.functions._
 import org.springframework.util.StopWatch
 
 import net.sansa_stack.ml.spark.kge.linkprediction.NewDesign._
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.Triples
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
 
 
 object runTesting extends App {

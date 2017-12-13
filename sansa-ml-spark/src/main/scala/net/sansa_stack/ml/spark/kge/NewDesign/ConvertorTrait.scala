@@ -2,6 +2,8 @@ package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
 
 import net.sansa_stack.ml.spark.kge.linkprediction.NewDesign._
 import org.apache.spark.sql._
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordLongTriples
 
 trait ConvertorTrait {
   

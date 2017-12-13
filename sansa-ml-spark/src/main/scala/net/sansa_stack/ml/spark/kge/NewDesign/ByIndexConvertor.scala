@@ -3,6 +3,9 @@ package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._ 
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.Triples
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordLongTriples
 
 
 class ByIndexConvertor(

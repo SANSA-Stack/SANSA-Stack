@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
+package net.sansa_stack.ml.spark.kge.linkprediction.Triples
 
 case class RecordStringTriples(Subject: String, Predicate: String, Object: String)
 

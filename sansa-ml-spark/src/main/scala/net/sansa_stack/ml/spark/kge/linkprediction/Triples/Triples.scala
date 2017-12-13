@@ -1,17 +1,14 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
+package net.sansa_stack.ml.spark.kge.linkprediction.Triples
 
 
 import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.spark.sql._
-import scala.util.Random
-import org.apache.spark.sql.functions._
+//import org.apache.spark.sql.functions._
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
-import scala.concurrent.forkjoin.ThreadLocalRandom
 import org.apache.spark.sql.types._
-import org.apache.spark.rdd.RDD.rddToPairRDDFunctions
-import scala.collection.Seq
 import scala.reflect.api.materializeTypeTag
+import net.sansa_stack.ml.spark.kge.linkprediction.Triples.RecordStringTriples
 
 
 class Triples ( name: String, 
