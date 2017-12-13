@@ -10,13 +10,14 @@ package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.IntegerType
 
-import net.sansa_stack.ml.spark.kge.linkprediction.dataframe._
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
 
 case class kException(info: String) extends Exception
 
 case class withIndex(Subject: Int, Predicate: Int, Object: Int, k: Int)
 
-class kFold(data: Dataset[IntegerRecord], k: Int, sk: SparkSession) extends CrossValidation[Seq[Dataset[IntegerRecord]]] {
+class kFold(data: Dataset[IntegerTriples], k: Int, sk: SparkSession) extends CrossValidation[Seq[Dataset[IntegerTriples]]] {
 
   import sk.implicits._
 
@@ -33,11 +34,11 @@ class kFold(data: Dataset[IntegerRecord], k: Int, sk: SparkSession) extends Cros
     })
 
     val train = for (i <- 1 to k) yield {
-      df.filter($"k" =!= i).drop("k").as[IntegerRecord]
+      df.filter($"k" =!= i).drop("k").as[IntegerTriples]
     }
 
     val test = for (i <- 1 to k) yield {
-      df.filter($"k" === i).drop("k").as[IntegerRecord]
+      df.filter($"k" === i).drop("k").as[IntegerTriples]
     }
 
     (train, test)

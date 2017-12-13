@@ -9,9 +9,10 @@ package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
 
 import org.apache.spark.sql._
 
-import net.sansa_stack.ml.spark.kge.linkprediction.dataframe._
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
 
-class Bootstrapping(data: Dataset[IntegerRecord]) extends CrossValidation[Dataset[IntegerRecord]] {
+class Bootstrapping(data: Dataset[IntegerTriples]) extends CrossValidation[Dataset[IntegerTriples]] {
 
   def crossValidation() = {
     val train = data.sample(true, 1)

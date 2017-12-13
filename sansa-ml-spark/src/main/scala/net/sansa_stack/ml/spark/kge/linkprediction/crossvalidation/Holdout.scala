@@ -9,11 +9,12 @@ package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
 
 import org.apache.spark.sql._
 
-import net.sansa_stack.ml.spark.kge.linkprediction.dataframe._
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
 
 case class rateException(info: String) extends Exception
 
-class Holdout(data: Dataset[IntegerRecord], rate: Float) extends CrossValidation[Dataset[IntegerRecord]] {
+class Holdout(data: Dataset[IntegerTriples], rate: Float) extends CrossValidation[Dataset[IntegerTriples]] {
 
   if (rate < 0 || rate >= 1)
     throw new rateException("Rate value should be higher than 0 and lower than 1")
