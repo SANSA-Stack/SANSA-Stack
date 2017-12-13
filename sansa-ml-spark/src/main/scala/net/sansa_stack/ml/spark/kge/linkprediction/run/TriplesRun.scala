@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.kge.linkprediction.NewDesign
+package net.sansa_stack.ml.spark.kge.linkprediction.run
 
 import scala.util.Random
 
