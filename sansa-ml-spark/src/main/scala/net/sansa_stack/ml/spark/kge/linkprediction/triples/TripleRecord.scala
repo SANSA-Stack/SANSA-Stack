@@ -2,7 +2,9 @@ package net.sansa_stack.ml.spark.kge.linkprediction.triples
 
 /**
  * Required triples case classes
- * ------------------------
+ * -----------------------------
+ *
+ * Case classes for the Triples
  *
  * Created by Hamed Shariat Yazdi
  */
