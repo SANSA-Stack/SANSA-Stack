@@ -16,7 +16,10 @@ import com.intel.analytics.bigdl.optim.Adam
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-class DistMult(train: DataFrame, ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession)
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
+
+class DistMult(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession)
     extends Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
 
   val epochs = 100
@@ -24,9 +27,9 @@ class DistMult(train: DataFrame, ne: Int, nr: Int, batch: Int, k: Int, sk: Spark
 
   var opt = new Adam(learningRate = rate)
 
-  def dist(data: DataFrame) = {
+  def dist(data: Dataset[IntegerTriples]) = {
     val aux = data.collect().map { i =>
-      e(i.getInt(0)) * r(i.getInt(1)) * e(i.getInt(2))
+      e(i.Subject) * r(i.Predicate) * e(i.Object)
     }.reduce((a, b) => a + b)
 
     L2(aux)

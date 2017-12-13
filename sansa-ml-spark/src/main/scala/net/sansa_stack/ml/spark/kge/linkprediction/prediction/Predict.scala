@@ -9,25 +9,28 @@ package net.sansa_stack.ml.spark.kge.linkprediction.prediction
 
 import org.apache.spark.sql._
 
-abstract class Evaluate(test: DataFrame) {
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
 
-  def left(row: Row, i: Int) = {
-    Row(i, row.getInt(1), row.getInt(2))
+abstract class Evaluate(test: Dataset[IntegerTriples]) {
+
+  def left(row: IntegerTriples, i: Int) = {
+    IntegerTriples(i, row.Predicate, row.Object)
   }
 
-  def right(row: Row, i: Int) = {
-    Row(row.getInt(0), row.getInt(1), i)
+  def right(row: IntegerTriples, i: Int) = {
+    IntegerTriples(row.Subject, row.Predicate, i)
   }
 
-  def rank(row: Row, spo: String): Integer
+  def rank(row: IntegerTriples, spo: String): Integer
 
   def ranking() = {
 
     var l, r = Seq[Integer]()
 
-    test.collect().map { row =>
-      l = rank(row, "l") +: l
-      r = rank(row, "r") +: r
+    test.collect().map { i =>
+      l = rank(i, "l") +: l
+      r = rank(i, "r") +: r
     }
 
     (l, r)

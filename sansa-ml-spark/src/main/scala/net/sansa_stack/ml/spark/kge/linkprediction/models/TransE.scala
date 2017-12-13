@@ -18,7 +18,10 @@ import com.intel.analytics.bigdl.optim.Adam
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-class TransE(train: DataFrame, ne: Int, nr: Int, batch: Int, k: Int, margin: Float, L: String, sk: SparkSession)
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
+
+class TransE(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: Int, margin: Float, L: String, sk: SparkSession)
     extends Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
 
   val epochs = 1000
@@ -31,16 +34,16 @@ class TransE(train: DataFrame, ne: Int, nr: Int, batch: Int, k: Int, margin: Flo
     case _    => L1 _
   }
 
-  def dist(data: DataFrame) = {
+  def dist(data: Dataset[IntegerTriples]) = {
     val aux = data.collect().map { i =>
-      e(i.getInt(0)) + r(i.getInt(1)) - e(i.getInt(2))
+      e(i.Subject) + r(i.Predicate) - e(i.Object)
     }.reduce((a, b) => a + b)
 
     myL(aux)
   }
 
-  def dist(data: Row) = {
-    e(data.getInt(0)) + r(data.getInt(1)) - e(data.getInt(2))
+  def dist(data: IntegerTriples) = {
+    e(data.Subject) + r(data.Predicate) - e(data.Object)
   }
 
   def run() = {

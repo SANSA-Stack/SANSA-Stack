@@ -11,9 +11,12 @@ import org.apache.spark.sql._
 
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
 
-class PredictTransE(model: TransE, test: DataFrame) extends Evaluate(test: DataFrame) {
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
 
-  def rank(row: Row, spo: String) = {
+class PredictTransE(model: TransE, test: Dataset[IntegerTriples]) extends Evaluate(test: Dataset[IntegerTriples]) {
+
+  def rank(row: IntegerTriples, spo: String) = {
 
     var x = Seq[Float]()
     val y = model.myL(model.dist(row))
@@ -30,5 +33,5 @@ class PredictTransE(model: TransE, test: DataFrame) extends Evaluate(test: DataF
 
     x.sorted.indexOf(y)
   }
-  
+
 }

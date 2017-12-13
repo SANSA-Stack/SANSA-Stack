@@ -16,6 +16,9 @@ import com.intel.analytics.bigdl.nn.Power
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
+import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
+
 abstract class Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
 
   val Ne = ne
@@ -36,21 +39,20 @@ abstract class Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
 
   val seed = new Random(System.currentTimeMillis())
 
-  def tuple(aux: Row) = {
+  def tuple(aux: IntegerTriples) = {
     if (seed.nextBoolean()) {
-      (seed.nextInt(Ne) + 1, aux.getInt(1), aux.getInt(2))
+      IntegerTriples(seed.nextInt(Ne) + 1, aux.Predicate, aux.Object)
     } else {
-      (aux.getInt(0), aux.getInt(1), seed.nextInt(Ne) + 1)
+      IntegerTriples(aux.Subject, aux.Predicate, seed.nextInt(Ne) + 1)
     }
   }
 
-  def negative(data: DataFrame) = {
-    data.collect().map(i =>
-      tuple(i)).toSeq.toDF()
+  def negative(data: Dataset[IntegerTriples]) = {
+    data.map(i => tuple(i))
   }
 
-  def subset(data: DataFrame) = {
-    data.sample(false, 2 * (batch.toDouble / data.count().toDouble)).limit(batch).toDF()
+  def subset(data: Dataset[IntegerTriples]) = {
+    data.sample(false, 2 * (batch.toDouble / data.count().toDouble)).limit(batch)
   }
 
   def L1(vec: Tensor[Float]) = {
