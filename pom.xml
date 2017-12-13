@@ -62,8 +62,7 @@
 		<flink.version>1.4.0</flink.version>
 		<hadoop.version>2.7.0</hadoop.version>
 		<jena.version>3.5.0</jena.version>
-		<sansa.version>0.2.1-SNAPSHOT</sansa.version>
-		<sansa.inference.version>0.3.0-SNAPSHOT</sansa.inference.version>
+		<sansa.version>0.3.0-SNAPSHOT</sansa.version>
 	</properties>
 
 	<dependencyManagement>
@@ -173,7 +172,7 @@
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+				<artifactId>sansa-rdf-flink-core_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 			<!-- OWL Layer -->
@@ -200,17 +199,17 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-parent_${scala.binary.version}</artifactId>
-				<version>${sansa.inference.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.inference.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.inference.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- ML Layer -->

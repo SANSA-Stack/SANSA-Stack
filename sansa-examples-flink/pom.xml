@@ -15,7 +15,7 @@
 		<!-- SANSA RDF -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+			<artifactId>sansa-rdf-flink-core_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
@@ -52,7 +52,6 @@
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<version>${scala.version}</version>
 		</dependency>
 
 		<!-- Apache Flink -->
@@ -85,7 +84,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
