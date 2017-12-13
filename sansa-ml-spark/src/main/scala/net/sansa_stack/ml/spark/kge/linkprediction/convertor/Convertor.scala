@@ -4,24 +4,22 @@ package net.sansa_stack.ml.spark.kge.linkprediction.convertor
  * Convertor Abstract Class
  * ------------------------
  *
- * Created by lpfgarcia on 27/11/2017.
+ * Convertor Trait
+ *
+ * Created by Hamed Shariat Yazdi
  */
 
 import org.apache.spark.sql._
 
 import net.sansa_stack.ml.spark.kge.linkprediction.triples._
 
-abstract class Convertor(data: Dataset[StringTriples]) {
+trait Convertor {
 
   val (e, r) = (entities(), relations())
 
-  def entities() = {
-    data.select("Subject").union(data.select("Object")).distinct().collect()
-  }
+  def entities(): Array[Row]
 
-  def relations() = {
-    data.select("Predicate").distinct().collect()
-  }
+  def relations(): Array[Row]
 
   def numeric(): Dataset[IntegerTriples]
 
