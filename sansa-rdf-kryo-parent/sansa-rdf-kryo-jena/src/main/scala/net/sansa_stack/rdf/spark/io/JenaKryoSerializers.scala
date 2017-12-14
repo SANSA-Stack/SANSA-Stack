@@ -1,17 +1,12 @@
 package net.sansa_stack.rdf.spark.io
 
-import org.apache.jena.graph.{ Node => JenaNode, Triple => JenaTriple, _ }
+import com.esotericsoftware.kryo.{Kryo, Serializer}
+import com.esotericsoftware.kryo.io.{Input, Output}
+import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
 import org.apache.jena.riot.system.RiotLib
-import org.apache.jena.sparql.util.FmtUtils
-
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
-import org.apache.jena.rdf.model.impl.NTripleReader
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.Expr
-import org.apache.jena.sparql.util.ExprUtils
+import org.apache.jena.sparql.util.{ExprUtils, FmtUtils}
 
 /**
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
@@ -97,11 +92,13 @@ object JenaKryoSerializers {
 
   class ExprSerializer extends Serializer[Expr] {
     override def write(kryo: Kryo, output: Output, obj: Expr) {
-      output.writeString("" + obj)
+      val str = ExprUtils.fmtSPARQL(obj)
+      output.writeString(str)
     }
 
     override def read(kryo: Kryo, input: Input, objClass: Class[Expr]): Expr = {
-      ExprUtils.parse(input.readString())
+      val str = input.readString()
+      ExprUtils.parse(str)
     }
   }
 

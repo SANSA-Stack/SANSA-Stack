@@ -4,7 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.Triple
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.utils.StatsPrefixes
-import java.io.PrintWriter
+import java.io.StringWriter
 import java.io.File
 
 /**
@@ -17,16 +17,16 @@ import java.io.File
 class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
   def run(): RDD[String] = {
-    Used_Classes(triples, spark)
-      .union(DistinctEntities(triples, spark))
-      .union(DistinctSubjects(triples, spark))
-      .union(DistinctObjects(triples, spark))
-      .union(PropertyUsage(triples, spark))
-      .union(SPO_Vocabularies(triples, spark))
+    Used_Classes(triples, spark).Voidify()
+      .union(DistinctEntities(triples, spark).Voidify)
+      .union(DistinctSubjects(triples, spark).Voidify)
+      .union(DistinctObjects(triples, spark).Voidify)
+      .union(PropertyUsage(triples, spark).Voidify)
+      .union(SPO_Vocabularies(triples, spark).Voidify)
   }
 
-  def voidify(stats: RDD[String], source: String, fn: String): Unit = {
-    val pw = new PrintWriter(new File(fn))
+  def voidify(stats: RDD[String], source: String, output: String): Unit = {
+    val pw = new StringWriter
 
     val prefix = """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
                     @prefix void: <http://rdfs.org/ns/void#> .
@@ -45,15 +45,17 @@ class RDFStatistics(triples: RDD[Triple], spark: SparkSession) extends Serializa
     val end = "\na void:Dataset ."
 
     val voidify = prefix.concat(src).concat(stats.coalesce(1, true).collect().mkString).concat(end)
-    println("\n" +voidify)
-    pw.println(voidify)
-    pw.close
+    println("\n" + voidify)
+    pw.write(voidify)
+    val vidifyStats = spark.sparkContext.parallelize(Seq(pw.toString()))
+    vidifyStats.coalesce(1, shuffle = true).saveAsTextFile(output)
+    //pw.close
   }
 
 }
 
 object RDFStatistics {
-  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark)//.run()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new RDFStatistics(triples, spark) //.run()
 }
 
 class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -66,7 +68,7 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
   def Action() = Filter().map(_.getObject)
     .map(f => (f, 1))
     .reduceByKey(_ + _)
-    .cache()
+    //.cache()
 
   //top(M,100)
   def PostProc() = Action().sortBy(_._2, false)
@@ -89,7 +91,7 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
 }
 object Used_Classes {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new Used_Classes(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new Used_Classes(triples, spark)
 
 }
 
@@ -114,7 +116,7 @@ class Classes_Defined(triples: RDD[Triple], spark: SparkSession) extends Seriali
 }
 object Classes_Defined {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new Classes_Defined(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new Classes_Defined(triples, spark)
 }
 
 class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -135,7 +137,7 @@ class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Seria
 }
 object PropertiesDefined {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertiesDefined(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertiesDefined(triples, spark)
 }
 
 class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -146,7 +148,7 @@ class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializa
   def Action() = Filter().map(_.getPredicate)
     .map(f => (f, 1))
     .reduceByKey(_ + _)
-    .cache()
+    //.cache()
 
   //top(M,100)
   def PostProc() = Action().sortBy(_._2, false)
@@ -176,7 +178,7 @@ class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializa
 }
 object PropertyUsage {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertyUsage(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new PropertyUsage(triples, spark)
 
 }
 
@@ -197,7 +199,7 @@ class DistinctEntities(triples: RDD[Triple], spark: SparkSession) extends Serial
 }
 object DistinctEntities {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctEntities(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctEntities(triples, spark)
 }
 
 class DistinctSubjects(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -216,7 +218,7 @@ class DistinctSubjects(triples: RDD[Triple], spark: SparkSession) extends Serial
 }
 object DistinctSubjects {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctSubjects(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctSubjects(triples, spark)
 }
 
 class DistinctObjects(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -235,7 +237,7 @@ class DistinctObjects(triples: RDD[Triple], spark: SparkSession) extends Seriali
 }
 object DistinctObjects {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctObjects(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new DistinctObjects(triples, spark)
 }
 
 class SPO_Vocabularies(triples: RDD[Triple], spark: SparkSession) extends Serializable {
@@ -244,15 +246,15 @@ class SPO_Vocabularies(triples: RDD[Triple], spark: SparkSession) extends Serial
 
   def Action(node: org.apache.jena.graph.Node) = Filter().map(f => node.getNameSpace()).cache()
 
-  def SubjectVocabulariesAction() = Filter().filter(f => f.getSubject.isURI()).map(f => (f.getSubject.getNameSpace())).cache
+  def SubjectVocabulariesAction() = Filter().filter(_.getSubject.isURI()).map(f => (f.getSubject.getNameSpace())).cache
   def SubjectVocabulariesPostProc() = SubjectVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
-  def PredicateVocabulariesAction() = Filter().filter(f => f.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace())).cache
+  def PredicateVocabulariesAction() = Filter().filter(_.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace())).cache
   def PredicateVocabulariesPostProc() = PredicateVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
-  def ObjectVocabulariesAction() = Filter().filter(f => f.getObject.isURI()).map(f => (f.getObject.getNameSpace())).cache
+  def ObjectVocabulariesAction() = Filter().filter(_.getObject.isURI()).map(f => (f.getObject.getNameSpace())).cache
   def ObjectVocabulariesPostProc() = ObjectVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
@@ -267,6 +269,6 @@ class SPO_Vocabularies(triples: RDD[Triple], spark: SparkSession) extends Serial
 }
 object SPO_Vocabularies {
 
-  def apply(triples: RDD[Triple], spark: SparkSession) = new SPO_Vocabularies(triples, spark).Voidify()
+  def apply(triples: RDD[Triple], spark: SparkSession) = new SPO_Vocabularies(triples, spark)
 }
 

@@ -7,14 +7,28 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-rdf-partition-parent_2.11</artifactId>
-		<version>0.2.0</version>
+		<version>0.3.0</version>
 	</parent>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-partition-core_${scala.compat.version}</artifactId>
+			<artifactId>sansa-rdf-partition-core${scala.version.suffix}</artifactId>
 <!-- 				<classifier>${scala.classifier}</classifier>				 -->
 		</dependency>
 
@@ -25,7 +39,7 @@
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_2.11</artifactId>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
 

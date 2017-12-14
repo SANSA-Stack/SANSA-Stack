@@ -7,24 +7,24 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-rdf-spark-parent_2.11</artifactId>
-		<version>0.2.0</version>
+		<version>0.3.0</version>
 	</parent>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_${scala.compat.version}</artifactId>
+			<artifactId>spark-core_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-sql_${scala.compat.version}</artifactId>
+			<artifactId>spark-sql_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-graphx_${scala.compat.version}</artifactId>
+			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Test -->
@@ -51,7 +51,7 @@
 
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging_${scala.compat.version}</artifactId>
+			<artifactId>scala-logging_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<dependency>

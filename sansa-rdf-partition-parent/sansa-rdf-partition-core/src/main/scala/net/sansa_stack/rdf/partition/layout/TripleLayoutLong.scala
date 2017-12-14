@@ -6,14 +6,15 @@ import scala.reflect.runtime.universe.typeOf
 
 import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.partition.schema.SchemaStringLong
 
 
 object TripleLayoutLong
   extends TripleLayout
 {
-  def schema = typeOf[(String, Long)]
+  override def schema = typeOf[SchemaStringLong]
 
-  def fromTriple(t: Triple): (String, Long) = {
+  override def fromTriple(t: Triple): SchemaStringLong = {
     val s = t.getSubject
     val o = t.getObject
     val v = if(o.isLiteral() && o.getLiteralValue.isInstanceOf[Number])
@@ -21,6 +22,6 @@ object TripleLayoutLong
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
-    (sStr, v.longValue)
+    SchemaStringLong(sStr, v.longValue)
   }
 }
