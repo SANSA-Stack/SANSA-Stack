@@ -61,7 +61,7 @@
 		<spark.binary.version>2.2</spark.binary.version>
 		<flink.version>1.4.0</flink.version>
 		<jena.version>3.5.0</jena.version>
-		<sansa.version>0.2.0</sansa.version>
+		<sansa.version>0.3.0-SNAPSHOT</sansa.version>
 	</properties>
 
 	<dependencyManagement>
@@ -79,6 +79,7 @@
 				<artifactId>sansa-rdf-spark-core_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
+			
 			<!-- SANSA OWL -->
 			<dependency>
 				<groupId>net.sansa-stack</groupId>

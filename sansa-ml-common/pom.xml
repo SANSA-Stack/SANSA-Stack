@@ -6,9 +6,7 @@
     <groupId>net.sansa-stack</groupId>
     <version>0.3.0-SNAPSHOT</version>
   </parent>
-  <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-ml-common_2.11</artifactId>
-  <version>0.3.0-SNAPSHOT</version>
   <name>ML API - Common</name>
   <description>Common objects for the SANSA Machine Learning Layer</description>
   <inceptionYear>2016</inceptionYear>
@@ -17,14 +15,12 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
     </dependency>
 
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -49,7 +45,6 @@
         <!-- see http://davidb.github.com/scala-maven-plugin -->
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
-        <version>3.2.0</version>
         <executions>
           <execution>
             <goals>
@@ -68,7 +63,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.18.1</version>
         <configuration>
           <useFile>false</useFile>
           <disableXmlReport>true</disableXmlReport>
