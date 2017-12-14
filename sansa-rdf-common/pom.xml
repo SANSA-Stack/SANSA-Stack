@@ -1,45 +1,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <artifactId>sansa-rdf-parent_2.11</artifactId>
-        <groupId>net.sansa-stack</groupId>
-        <version>0.3.0</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>sansa-rdf-common_2.11</artifactId>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>sansa-rdf-parent_2.11</artifactId>
+		<groupId>net.sansa-stack</groupId>
+		<version>0.3.0</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>sansa-rdf-common_2.11</artifactId>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+		</dependency>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.specs</groupId>
+			<artifactId>specs</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
-        <dependency>
-            <groupId>org.specs</groupId>
-            <artifactId>specs</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
 
-    <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-             </plugin>
-
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>
