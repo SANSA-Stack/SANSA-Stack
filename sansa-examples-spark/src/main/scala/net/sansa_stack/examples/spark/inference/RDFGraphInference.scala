@@ -63,7 +63,6 @@ object RDFGraphInference {
     spark.stop()
   }
 
-  // the config object
   case class Config(
     in:                Seq[URI]         = Seq(),
     out:               URI              = new URI("."),
