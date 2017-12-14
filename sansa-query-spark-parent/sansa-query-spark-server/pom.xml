@@ -29,12 +29,13 @@
 			<artifactId>jena-sparql-api-server-standalone</artifactId>
 		</dependency>
 
+<!--
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-xml</artifactId>
 			<version>9.4.5.v20170502</version>
 		</dependency>
-
+-->
 		<dependency>
 			<groupId>org.apache.tinkerpop</groupId>
 			<artifactId>spark-gremlin</artifactId>
@@ -47,6 +48,13 @@
 			<version>1.0</version>
 		</dependency>
 
+		<!-- Override transitive tdb version via litmus-->
+                <dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+                        <version>${jena.version}</version>
+			<type>pom</type>
+                </dependency>
 	</dependencies>
 
 

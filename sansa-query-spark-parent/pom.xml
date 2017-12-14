@@ -20,6 +20,9 @@
 
     <dependencyManagement>
         <dependencies>
+        	
+        
+        
 
             <dependency>
                 <groupId>${project.groupId}</groupId>

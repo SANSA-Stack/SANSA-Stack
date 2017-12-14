@@ -31,7 +31,7 @@ object SparqlifyUtils3
     val loggerCount = new LoggerCount(logger.underlying)
 
 
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("", "")) //new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) //new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
 
@@ -59,7 +59,7 @@ object SparqlifyUtils3
         val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
         val df = sparkSession.createDataFrame(rdd, sparkSchema)
 
-        df.createOrReplaceTempView(tableName)
+        df.createOrReplaceTempView(sqlEscaper.escapeTableName(tableName))
         config.getViewDefinitions.add(vd)
     }
 

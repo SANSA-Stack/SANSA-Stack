@@ -22,6 +22,7 @@ steadystate.tsv
 
 
 deptree.txt
+dups.txt
 
 ### Java template
 *.class
