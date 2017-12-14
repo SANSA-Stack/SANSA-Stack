@@ -48,17 +48,18 @@
 	</modules>
 
 
-<!-- Unsuccessful attempt to force m2e-scala plugin to use the correct scala library container -->
-<!-- 	<dependencies> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.scala-lang</groupId> -->
-<!-- 			<artifactId>scala-library</artifactId> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.scala-lang</groupId> -->
-<!-- 			<artifactId>scala-reflect</artifactId> -->
-<!-- 		</dependency> -->
-<!-- 	</dependencies> -->
+	<!-- Unsuccessful attempt to force m2e-scala plugin to use the correct scala 
+		library container -->
+	<!-- <dependencies> -->
+	<!-- <dependency> -->
+	<!-- <groupId>org.scala-lang</groupId> -->
+	<!-- <artifactId>scala-library</artifactId> -->
+	<!-- </dependency> -->
+	<!-- <dependency> -->
+	<!-- <groupId>org.scala-lang</groupId> -->
+	<!-- <artifactId>scala-reflect</artifactId> -->
+	<!-- </dependency> -->
+	<!-- </dependencies> -->
 
 	<dependencyManagement>
 		<dependencies>
@@ -66,21 +67,21 @@
 
 			<dependency>
 				<groupId>org.mortbay.jetty</groupId>
-				<artifactId>jetty</artifactId>				
+				<artifactId>jetty</artifactId>
 				<scope>provided</scope>
 			</dependency>
 
 			<dependency>
 				<groupId>org.mortbay.jetty</groupId>
-				<artifactId>jetty-util</artifactId>				
+				<artifactId>jetty-util</artifactId>
 				<scope>provided</scope>
 			</dependency>
 
-                        <dependency>
-                                <groupId>org.eclipse.jetty</groupId>
-                                <artifactId>jetty-util</artifactId>
-                                <version>${jetty.version}</version>
-                        </dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-util</artifactId>
+				<version>${jetty.version}</version>
+			</dependency>
 
 
 
@@ -235,13 +236,8 @@
 				</exclusions>
 			</dependency>
 
-<!--
-                        <dependency>
-                                <groupId>org.aksw.jena-sparql-api</groupId>
-                                <artifactId>jena-sparql-api-core</artifactId>
-                                <version>${jsa.version}</version>
-                        </dependency>
--->
+			<!-- <dependency> <groupId>org.aksw.jena-sparql-api</groupId> <artifactId>jena-sparql-api-core</artifactId> 
+				<version>${jsa.version}</version> </dependency> -->
 
 			<!-- Test -->
 			<dependency>
@@ -284,13 +280,8 @@
 				</exclusions>
 			</dependency>
 
-<!--
-                        <dependency>
-                                <groupId>org.apache.jena</groupId>
-                                <artifactId>jena-sdb</artifactId>
-                                <version>${jena.version}</version>
-                        </dependency>
--->
+			<!-- <dependency> <groupId>org.apache.jena</groupId> <artifactId>jena-sdb</artifactId> 
+				<version>${jena.version}</version> </dependency> -->
 
 
 			<dependency>
@@ -331,12 +322,8 @@
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
 			</plugin>
-<!--
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-			</plugin>
--->
+			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId> 
+				</plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -498,38 +485,69 @@
 
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
-<!-- 				<plugin> -->
-<!-- 					<groupId>org.eclipse.m2e</groupId> -->
-<!-- 					<artifactId>lifecycle-mapping</artifactId> -->
-<!-- 					<version>1.0.0</version> -->
-<!-- 					<configuration> -->
-<!-- 						<lifecycleMappingMetadata> -->
-<!-- 							<pluginExecutions> -->
-<!-- 								<pluginExecution> -->
-<!-- 									<pluginExecutionFilter> -->
-<!-- 										<groupId> -->
-<!-- 											net.alchim31.maven -->
-<!-- 										</groupId> -->
-<!-- 										<artifactId> -->
-<!-- 											scala-maven-plugin -->
-<!-- 										</artifactId> -->
-<!-- 										<versionRange> -->
-<!-- 											[3.2.0,) -->
-<!-- 										</versionRange> -->
-<!-- 										<goals> -->
-<!-- 											<goal>testCompile</goal> -->
-<!-- 											<goal>compile</goal> -->
-<!-- 											<goal>add-source</goal> -->
-<!-- 										</goals> -->
-<!-- 									</pluginExecutionFilter> -->
-<!-- 									<action> -->
-<!-- 										<ignore></ignore> -->
-<!-- 									</action> -->
-<!-- 								</pluginExecution> -->
-<!-- 							</pluginExecutions> -->
-<!-- 						</lifecycleMappingMetadata> -->
-<!-- 					</configuration> -->
-<!-- 				</plugin> -->
+				<!-- <plugin> -->
+				<!-- <groupId>org.eclipse.m2e</groupId> -->
+				<!-- <artifactId>lifecycle-mapping</artifactId> -->
+				<!-- <version>1.0.0</version> -->
+				<!-- <configuration> -->
+				<!-- <lifecycleMappingMetadata> -->
+				<!-- <pluginExecutions> -->
+				<!-- <pluginExecution> -->
+				<!-- <pluginExecutionFilter> -->
+				<!-- <groupId> -->
+				<!-- net.alchim31.maven -->
+				<!-- </groupId> -->
+				<!-- <artifactId> -->
+				<!-- scala-maven-plugin -->
+				<!-- </artifactId> -->
+				<!-- <versionRange> -->
+				<!-- [3.2.0,) -->
+				<!-- </versionRange> -->
+				<!-- <goals> -->
+				<!-- <goal>testCompile</goal> -->
+				<!-- <goal>compile</goal> -->
+				<!-- <goal>add-source</goal> -->
+				<!-- </goals> -->
+				<!-- </pluginExecutionFilter> -->
+				<!-- <action> -->
+				<!-- <ignore></ignore> -->
+				<!-- </action> -->
+				<!-- </pluginExecution> -->
+				<!-- </pluginExecutions> -->
+				<!-- </lifecycleMappingMetadata> -->
+				<!-- </configuration> -->
+				<!-- </plugin> -->
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.6</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+							<configuration>
+								<keyname>AKSW</keyname>
+								<passphraseServerId>${gpg.keyname}</passphraseServerId>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>1.6.8</version>
+					<extensions>true</extensions>
+					<configuration>
+						<serverId>ossrh</serverId>
+						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+						<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					</configuration>
+				</plugin>
 
 			</plugins>
 		</pluginManagement>
@@ -585,26 +603,26 @@
 
 		<profile>
 			<id>release</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+
 			<build>
 				<plugins>
+
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-								<configuration>
-									<keyname>AKSW</keyname>
-									<passphraseServerId>${gpg.keyname}</passphraseServerId>
-								</configuration>
-							</execution>
-						</executions>
 					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+					</plugin>
+
 				</plugins>
 			</build>
 		</profile>
