@@ -87,17 +87,17 @@
 
 
             <!-- Use jena's http client dependencies instead those of spark -->
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpcore</artifactId>
-                <scope>provided</scope>
-            </dependency>
+<!--             <dependency> -->
+<!--                 <groupId>org.apache.httpcomponents</groupId> -->
+<!--                 <artifactId>httpcore</artifactId> -->
+<!--                 <scope>provided</scope> -->
+<!--             </dependency> -->
 
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <scope>provided</scope>
-            </dependency>
+<!--             <dependency> -->
+<!--                 <groupId>commons-httpclient</groupId> -->
+<!--                 <artifactId>commons-httpclient</artifactId> -->
+<!--                 <scope>provided</scope> -->
+<!--             </dependency> -->
 
 
 <!--             <dependency> -->

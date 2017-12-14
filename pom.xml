@@ -36,6 +36,9 @@
 		<jsa.subversion>2</jsa.subversion>
 
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
+
+
+		<httpcomponents.version>4.5.3</httpcomponents.version>
 	</properties>
 
 	<modules>
@@ -185,6 +188,27 @@
 
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- http components -->
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpcore</artifactId>
+				<version>4.4.6</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${httpcomponents.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient-cache</artifactId>
+				<version>${httpcomponents.version}</version>
+			</dependency>
+
+
 
 			<dependency>
 				<groupId>org.mortbay.jetty</groupId>
