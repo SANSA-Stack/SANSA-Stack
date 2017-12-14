@@ -405,8 +405,8 @@
               <supportBranchPrefix>support/</supportBranchPrefix>
               <versionTagPrefix>v</versionTagPrefix>
               <origin>origin</origin>
-              <pushRemote>false</pushRemote>
             </gitFlowConfig>
+            <pushRemote>false</pushRemote>
           </configuration>
         </plugin>
 
