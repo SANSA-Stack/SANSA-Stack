@@ -5,6 +5,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.Node
 object IQR {
+  
   def iqr(sampleData: List[Double], cluster: RDD[Set[(Node, Node, Object)]]) {
     val sparkSession = SparkSession.builder()
       .master("local")

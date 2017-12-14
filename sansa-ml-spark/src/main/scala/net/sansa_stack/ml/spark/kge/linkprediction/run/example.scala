@@ -1,9 +1,9 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.run
 
 import org.apache.spark.sql._
-import  net.sansa_stack.ml.spark.kge.linkprediction._
-import net.sansa_stack.ml.spark.kge.linkprediction.triples.Triples
-import net.sansa_stack.ml.spark.kge.linkprediction.convertor.ByIndex
+import net.sansa_stack.rdf.spark.kge.triples.Triples
+import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
+import net.sansa_stack.rdf.spark.kge.crossvalidation.Holdout
 
 object example extends App {
 
@@ -27,11 +27,13 @@ object example extends App {
   // converting the original data to indexData 
   val indexedData = new ByIndex(data.triples, spark)
   
+  val rumericalData = indexedData.numeric()
+  
   // getting 10 distinct (s,p,o) in their numeric (indexed) form and print them
   indexedData.numeric.take(10).foreach(println)
   
   // using the holdout cross validation technique to get 60% of data as training and the rest as testing  
-  val (train, test) = new Holdout(data.triples, 0.6f).crossValidation()
+  val (train, test) = new Holdout(rumericalData, 0.6f).crossValidation()
   
   println("<< DONE >>")
 }
