@@ -41,7 +41,10 @@ object SparqlifyUtils2 {
 
     //println("Counting the dataset: " + ds.count())
     val pred = p.predicate
-    val predPart = pred.substring(pred.lastIndexOf("/") + 1)
+    
+    // For now let's just use the full predicate as the uri
+    //val predPart = pred.substring(pred.lastIndexOf("/") + 1)
+    val predPart = pred;
     val pn = NodeFactory.createURI(p.predicate)
 
 
@@ -49,7 +52,7 @@ object SparqlifyUtils2 {
     val dtPart = if(dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
     val langPart = if(p.langTagPresent) "_lang" else ""
 
-    val tableName = (predPart + dtPart + langPart).replace("#", "__").replace("-", "_")
+    val tableName = (predPart + dtPart + langPart) //.replace("#", "__").replace("-", "_")
 
     val quad = new Quad(Quad.defaultGraphIRI, Vars.s, pn, Vars.o)
     val quadPattern = new QuadPattern()
