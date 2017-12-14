@@ -9,8 +9,8 @@ import org.apache.log4j.Level
 
 import org.springframework.util.StopWatch
 
-import net.sansa_stack.ml.spark.kge.linkprediction.triples._
-import net.sansa_stack.ml.spark.kge.linkprediction.convertor.ByIndex
+import net.sansa_stack.rdf.spark.kge.triples._
+import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
 
 object runTesting extends App {
 

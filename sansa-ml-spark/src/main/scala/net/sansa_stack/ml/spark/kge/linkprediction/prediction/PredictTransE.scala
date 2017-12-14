@@ -11,8 +11,7 @@ import org.apache.spark.sql._
 
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
 
-import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
-import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
+import net.sansa_stack.rdf.spark.kge.triples.{StringTriples,IntegerTriples}
 
 class PredictTransE(model: TransE, test: Dataset[IntegerTriples]) extends Evaluate(test: Dataset[IntegerTriples]) {
 

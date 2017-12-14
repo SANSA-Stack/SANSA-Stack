@@ -16,8 +16,7 @@ import com.intel.analytics.bigdl.nn.Power
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
-import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
+import net.sansa_stack.rdf.spark.kge.triples.{StringTriples,IntegerTriples}
 
 abstract class Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
 

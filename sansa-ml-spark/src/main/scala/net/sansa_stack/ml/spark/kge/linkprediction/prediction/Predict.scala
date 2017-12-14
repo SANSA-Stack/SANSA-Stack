@@ -9,8 +9,7 @@ package net.sansa_stack.ml.spark.kge.linkprediction.prediction
 
 import org.apache.spark.sql._
 
-import net.sansa_stack.ml.spark.kge.linkprediction.triples.StringTriples
-import net.sansa_stack.ml.spark.kge.linkprediction.triples.IntegerTriples
+import net.sansa_stack.rdf.spark.kge.triples.{StringTriples,IntegerTriples}
 
 abstract class Evaluate(test: Dataset[IntegerTriples]) {
 
