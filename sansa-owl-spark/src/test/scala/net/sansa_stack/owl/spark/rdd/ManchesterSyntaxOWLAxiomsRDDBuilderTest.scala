@@ -28,6 +28,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     _rdd
   }
 
+  // TODO: Update comments, since new axiom 'AnnotationProperty: comment' was added
   /* *|Annotations:
    *  |    bar:hasTitle "Title",
    *  |    description "A longer
@@ -429,7 +430,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
    *
    */
   test("The number of axioms should match") {
-    val expectedNumberOfAxioms = 110
+    val expectedNumberOfAxioms = 111
     assert(rdd.count() == expectedNumberOfAxioms)
   }
 
@@ -484,6 +485,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     assert(subAnnPropOfAxiom.getSubProperty == expectedSubProperty)
   }
 
+  // TODO: Update comments, since new axiom 'AnnotationProperty: comment' was added
   test("Declaration axioms should be created correctly") {
     // Declaration(AnnotationProperty(<http://ex.com/bar#annProp1>))
     // Declaration(AnnotationProperty(<http://ex.com/bar#annProp2>))
@@ -534,7 +536,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     // Declaration(NamedIndividual(<http://ex.com/foo#indivA>))
     // Declaration(NamedIndividual(<http://ex.com/foo#indivB>))
     // Declaration(NamedIndividual(<http://ex.com/foo#sameAsIndivA>))
-    val expectedNumberOfAxioms = 49
+    val expectedNumberOfAxioms = 50
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDeclarationAxiom])
 
     assert(filteredRDD.count() == expectedNumberOfAxioms)

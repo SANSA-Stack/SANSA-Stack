@@ -19,7 +19,7 @@ class ManchesterSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedS
   }
 
   test("The total number of frames should be correct") {
-    val total = 49
+    val total = 50
     assert(rdd.count() == total)
   }
 
@@ -30,7 +30,7 @@ class ManchesterSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedS
   }
 
   test("The number of AnnotationProperty frames should be correct") {
-    val expectedNumAnnoPropertyFrames = 7
+    val expectedNumAnnoPropertyFrames = 8
     val actualNumAnnoPropertyFrames =
       rdd.filter(_.trim.startsWith("AnnotationProperty:")).count()
 

@@ -14,13 +14,18 @@ import scala.collection.JavaConverters._
 
 
 class ManchesterSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSparkContext {
-  lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master).getOrCreate()
+  lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
+    .config(
+      "spark.kryo.registrator",
+      "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
+    .getOrCreate()
   val dataFactory = OWLManager.getOWLDataFactory
   var _dataset: OWLAxiomsDataset = null
   def dataset = {
     if (_dataset == null) {
       _dataset = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(
-        spark, "src/test/resources/ont_manchester.owl")
+//        spark, "src/test/resources/ont_manchester.owl")
+        spark, "hdfs://localhost:54310/ont_manchester.owl")
       _dataset.cache()
     }
     _dataset

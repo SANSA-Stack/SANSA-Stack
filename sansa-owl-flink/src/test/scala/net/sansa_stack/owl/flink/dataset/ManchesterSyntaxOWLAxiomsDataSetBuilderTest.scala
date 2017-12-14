@@ -2,6 +2,7 @@ package net.sansa_stack.owl.flink.dataset
 
 import java.util.stream.Collectors
 
+import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
@@ -14,6 +15,10 @@ import scala.collection.JavaConverters._
 
 class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
   lazy val env = ExecutionEnvironment.getExecutionEnvironment
+  env.getConfig.addDefaultKryoSerializer(
+    Class.forName("java.util.Collections$UnmodifiableCollection"),
+    classOf[UnmodifiableCollectionsSerializer]
+  )
   val dataFactory = OWLManager.getOWLDataFactory
   var _dataSet: OWLAxiomsDataSet = null
   def dataSet = {

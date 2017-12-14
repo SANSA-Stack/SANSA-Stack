@@ -1,12 +1,18 @@
 package net.sansa_stack.owl.flink.dataset
 
+import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.model.{OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLFunctionalObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, OWLInverseObjectPropertiesAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLNegativeDataPropertyAssertionAxiom, OWLNegativeObjectPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLReflexiveObjectPropertyAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, SWRLRule, _}
 
 
 class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
-  lazy val env = ExecutionEnvironment.getExecutionEnvironment
+  val env = ExecutionEnvironment.getExecutionEnvironment
+  env.getConfig.addDefaultKryoSerializer(
+    Class.forName("java.util.Collections$UnmodifiableCollection"),
+    classOf[UnmodifiableCollectionsSerializer]
+  )
+
   var _dataSet: OWLAxiomsDataSet = null
   def dataSet = {
     if (_dataSet == null) {

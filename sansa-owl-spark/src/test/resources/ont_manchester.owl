@@ -48,6 +48,9 @@ AnnotationProperty: foo:ann
     
 AnnotationProperty: foo:hasName
 
+
+AnnotationProperty: comment
+
     
 Datatype: bar:dtype1
 

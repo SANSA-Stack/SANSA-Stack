@@ -20,7 +20,7 @@ class ManchesterSyntaxOWLExpressionsDatasetBuilderTest extends FunSuite with Sha
   }
 
   test("The total number of frames should be correct") {
-    val total = 49
+    val total = 50
     assert(dataset.count() == total)
   }
 
@@ -31,7 +31,7 @@ class ManchesterSyntaxOWLExpressionsDatasetBuilderTest extends FunSuite with Sha
   }
 
   test("The number of AnnotationProperty frames should be correct") {
-    val expectedNumAnnoPropertyFrames = 7
+    val expectedNumAnnoPropertyFrames = 8
     val actualNumAnnoPropertyFrames =
       dataset.filter(_.trim.startsWith("AnnotationProperty:")).count()
 
