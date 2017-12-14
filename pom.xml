@@ -4,7 +4,7 @@
 
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-rdf-parent_2.11</artifactId>
-	<version>0.3.0-SNAPSHOT</version>
+	<version>0.3.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<!-- <name>SANSA Stack - RDF Layer</name> -->
@@ -29,6 +29,7 @@
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
 		<jetty.version>9.4.8.v20171121</jetty.version>
+		<mortbay.jetty.version>6.1.26</mortbay.jetty.version>
 	</properties>
 
 	<scm>
@@ -68,13 +69,15 @@
 			<dependency>
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>jetty</artifactId>
-				<scope>provided</scope>
+				<!-- <scope>provided</scope> -->
+				<version>${mortbay.jetty.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
-				<scope>provided</scope>
+				<!-- <scope>provided</scope> -->
+				<version>${mortbay.jetty.version}</version>
 			</dependency>
 
 			<dependency>
@@ -82,8 +85,6 @@
 				<artifactId>jetty-util</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
-
-
 
 			<!-- Scala -->
 			<dependency>
