@@ -5,7 +5,6 @@ import org.apache.spark.sql.SparkSession
 import net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB
 import net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }
 import net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm
-import net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm
 
 /*
  * Mine Rules
