@@ -7,11 +7,11 @@
     <parent>
         <artifactId>sansa-owl-parent_2.11</artifactId>
         <groupId>net.sansa-stack</groupId>
-        <version>0.3.0</version>
+        <version>0.3.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-owl-flink_2.11</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
