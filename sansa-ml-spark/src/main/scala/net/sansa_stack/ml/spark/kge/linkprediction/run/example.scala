@@ -30,6 +30,8 @@ object example extends App {
   // getting 10 distinct (s,p,o) in their numeric (indexed) form and print them
   indexedData.numeric.take(10).foreach(println)
   
+  // using the holdout cross validation technique to get 60% of data as training and the rest as testing  
+  val (train, test) = new Holdout(data.triples, 0.6f).crossValidation()
   
   println("<< DONE >>")
 }
