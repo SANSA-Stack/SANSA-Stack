@@ -33,7 +33,7 @@
 		<flink.version>1.4.0</flink.version>
 
 		<jena.version>3.5.0</jena.version>
-		<jsa.subversion>2-SNAPSHOT</jsa.subversion>
+		<jsa.subversion>2</jsa.subversion>
 
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 	</properties>
@@ -262,7 +262,7 @@
 			<dependency>
 				<groupId>org.aksw.sparqlify</groupId>
 				<artifactId>sparqlify-core</artifactId>
-				<version>0.8.3-SNAPSHOT</version>
+				<version>0.8.3</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.aksw.sparqlify</groupId>
