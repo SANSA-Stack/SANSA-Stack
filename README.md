@@ -12,7 +12,19 @@ The ML layer currently supports the following algorithms:
   * Border Flow
   * Link based clustering
   * Modularity based clustering
+  * Silvia Link Clustering
 * Rule mining in RDF graphs based on [AMIE+](https://www.mpi-inf.mpg.de/departments/databases-and-information-systems/research/yago-naga/amie/)
+* Semantic similarity measures:
+  * Jaccard similarity,
+  * Rodríguez and Egenhofer similarity
+  * Tversky Ratio Model
+  * Batet Similarity
+* Knowledge graph embedding approaches: 
+  * TransE (beta status)
+  * DistMult (beta status)
+* Terminological Decision Trees for the classification of concepts(beta status)
+* Anomaly detection (beta status)
+
 
 Usage example for clusting:
 ```scala
