@@ -33,7 +33,6 @@ object TripleWriter {
     in:  String = "",
     out: String = "")
 
-  // the CLI parser
   val parser = new scopt.OptionParser[Config]("Triple writer example ") {
 
     head("Triple writer example ")

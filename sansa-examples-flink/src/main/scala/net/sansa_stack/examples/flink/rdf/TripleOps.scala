@@ -40,10 +40,8 @@ object TripleOps {
     println("Number of objects: " + rdfgraph.getPredicates.map(_.toString).distinct.count())
 
   }
-  // the config object
   case class Config(in: String = "")
 
-  // the CLI parser
   val parser = new scopt.OptionParser[Config]("Triple Ops example") {
 
     head(" Triple Ops example")
