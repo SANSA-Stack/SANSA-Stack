@@ -310,7 +310,11 @@ class ForwardRuleReasonerEL (sc: SparkContext, parallelism: Int = 2) extends Tra
         val newCount = triplesRDD.count()
         logger.debug("New overall count: " + newCount)
         if (newCount > oldCount) {
-          rule.getInfluencedRules().foreach(rulesQueue.enqueue(_))
+          rule.getInfluencedRules().foreach(rule => {
+            if (!rulesQueue.contains(rule)) {
+              rulesQueue.enqueue(rule)
+            }
+          })
         }
       }
     }
