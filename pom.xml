@@ -48,14 +48,14 @@
 	</properties>
 
 	<scm>
-		<url>https://github.com/SANSA-Stack/Sansa-RDF</url>
-		<connection>scm:git:git://github.com/SANSA-Stack/Sansa-RDF.git</connection>
-		<developerConnection>scm:git:git@github.com:SANSA-Stack/Sansa-RDF.git</developerConnection>
+		<url>https://github.com/SANSA-Stack/SANSA-RDF</url>
+		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-RDF.git</connection>
+		<developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-RDF.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
-		<url>https://github.com/SANSA-Stack/Sansa-RDF/issues</url>
+		<url>https://github.com/SANSA-Stack/SANSA-RDF/issues</url>
 		<system>GitHub</system>
 	</issueManagement>
 
@@ -506,13 +506,6 @@
 							<plugin>
 								<groupId>net.alchim31.maven</groupId>
 								<artifactId>scala-maven-plugin</artifactId>
-<!-- 								<version>3.3.1</version> -->
-<!-- 								<configuration> -->
-<!-- 									<jvmArgs> -->
-<!-- 										<jvmArg>-Xms64m</jvmArg> -->
-<!-- 										<jvmArg>-Xmx1024m</jvmArg> -->
-<!-- 									</jvmArgs> -->
-<!-- 								</configuration> -->
 							</plugin>
 						</reportPlugins>
 					</configuration>
