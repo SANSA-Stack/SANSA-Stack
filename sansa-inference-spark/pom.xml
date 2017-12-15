@@ -90,6 +90,7 @@
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-tdb</artifactId>
             <version>${jena.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- OWL API -->
@@ -127,9 +128,11 @@
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-ext</artifactId>
         </dependency>
+        <!-- only used for debugging/visualization of rule graphs, thus, scope is 'provided' to be omitted in Maven shade execution -->
         <dependency>
             <groupId>org.gephi</groupId>
             <artifactId>gephi-toolkit</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Test -->
@@ -180,7 +183,7 @@
             <artifactId>scala-logging_${scala.binary.version}</artifactId>
         </dependency>
 
-        <!-- Scopt -->
+        <!-- Scopt CLI API-->
         <dependency>
             <groupId>com.github.scopt</groupId>
             <artifactId>scopt_${scala.binary.version}</artifactId>
@@ -190,6 +193,13 @@
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
+        </dependency>
+
+        <!-- disable Calcite deps in Maven shade - isn't used right now, might change in future -->
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>
@@ -431,7 +441,7 @@
                                             <exclude>org.codehaus.janino:*</exclude>
                                             <exclude>org.codehaus.jettison:jettison</exclude>
                                             <exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
-                                            <exckude>org.glassfish.hk2*</exckude>
+                                            <exclude>org.glassfish.hk2*</exclude>
                                             <exclude>org.glassfish.jersey*</exclude>
                                             <exclude>org.javassist:javassist</exclude>
                                             <exclude>org.json4s:json4s*</exclude>
@@ -448,6 +458,8 @@
                                             <exclude>org.gephi:*</exclude>
                                             <exclude>org.jfree:*</exclude>
                                             <exclude>com.itextpdf:*</exclude>
+                                            <exclude>org.apache.poi:*</exclude>
+                                            <exclude>org.apache.batik:*</exclude>
                                         </excludes>
 
                                     </artifactSet>
@@ -586,7 +598,7 @@
                                             <exclude>commons-logging:commons-logging</exclude>
                                             <exclude>commons-net:commons-net</exclude>
                                             <exclude>io.dropwizard.metrics:metrics*</exclude>
-                                            <exckude>io.netty:netty*</exckude>
+                                            <exclude>io.netty:netty*</exclude>
                                             <exclude>javax.activation:activation</exclude>
                                             <exclude>javax.annotation:javax.annotation-api</exclude>
                                             <exclude>javax.servlet:javax.servlet-api</exclude>
@@ -621,7 +633,7 @@
                                             <exclude>org.codehaus.janino:*</exclude>
                                             <exclude>org.codehaus.jettison:jettison</exclude>
                                             <exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
-                                            <exckude>org.glassfish.hk2*</exckude>
+                                            <exclude>org.glassfish.hk2*</exclude>
                                             <exclude>org.glassfish.jersey*</exclude>
                                             <exclude>org.javassist:javassist</exclude>
                                             <exclude>org.json4s:json4s*</exclude>
@@ -638,6 +650,9 @@
                                             <exclude>org.gephi:*</exclude>
                                             <exclude>org.jfree:*</exclude>
                                             <exclude>com.itextpdf:*</exclude>
+                                             <exclude>org.apache.poi:*</exclude>
+                                            <exclude>org.apache.batik:*</exclude>
+                                            <exclude>org.xerial:sqlite-jdbc</exclude>
                                         </excludes>
 
                                     </artifactSet>
