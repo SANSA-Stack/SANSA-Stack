@@ -22,25 +22,25 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>sansa-rdf-flink-core${scala.version.suffix}</artifactId>
-                <version>${project.version}</version>
+                <version>${sansa.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>sansa-rdf-kryo-sparqlify${scala.version.suffix}</artifactId>
-                <version>${project.version}</version>
+                <version>${sansa.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>sansa-rdf-kryo-jena${scala.version.suffix}</artifactId>
-                <version>${project.version}</version>
+                <version>${sansa.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
-                <version>${project.version}</version>
+                <version>${sansa.version}</version>
             </dependency>
 
             <dependency>
