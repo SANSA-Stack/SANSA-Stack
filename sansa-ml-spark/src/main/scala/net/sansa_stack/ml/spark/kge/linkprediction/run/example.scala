@@ -1,9 +1,11 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.run
 
 import org.apache.spark.sql._
+
 import net.sansa_stack.rdf.spark.kge.triples.Triples
 import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
-import net.sansa_stack.rdf.spark.kge.crossvalidation.Holdout
+
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Holdout
 
 object example extends App {
 

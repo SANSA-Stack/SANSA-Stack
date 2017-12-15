@@ -10,11 +10,12 @@ import org.apache.log4j.Logger
 import org.apache.log4j.Level
 
 import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
-import net.sansa_stack.rdf.spark.kge.crossvalidation.Holdout
+import net.sansa_stack.rdf.spark.kge.triples._
+
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Holdout
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.{kFold,Bootstrapping,Holdout}
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
 import net.sansa_stack.ml.spark.kge.linkprediction.prediction.PredictTransE
-import net.sansa_stack.rdf.spark.kge.triples._
-import net.sansa_stack.rdf.spark.kge.crossvalidation.{kFold,Bootstrapping,Holdout}
 
 object TransERun {
 
