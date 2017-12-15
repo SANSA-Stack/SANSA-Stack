@@ -7,7 +7,7 @@
 	<version>0.3.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<!-- <name>${project.artifactId}</name> -->
+	<name>SANSA Stack - Query Layer - Parent</name>
 	<description>SANSA Query Library</description>
 	<inceptionYear>2015</inceptionYear>
 
@@ -15,6 +15,11 @@
 		<name>Smart Data Analytics (SDA) research group</name>
 		<url>http://sda.tech</url>
 	</organization>
+
+	<modules>
+		<module>sansa-query-spark-parent</module>
+		<module>sansa-query-flink-parent</module>
+	</modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -41,22 +46,24 @@
 		<httpcomponents.version>4.5.3</httpcomponents.version>
 	</properties>
 
-	<modules>
-		<module>sansa-query-spark-parent</module>
-		<module>sansa-query-flink-parent</module>
-	</modules>
-
 	<scm>
 		<url>https://github.com/SANSA-Stack/SANSA-Query</url>
 		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-Query.git</connection>
 		<developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-Query.git</developerConnection>
 	</scm>
 
-
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/SANSA-Stack/SANSA-Query</url>
+		<url>https://github.com/SANSA-Stack/SANSA-Query/issues</url>
 	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<developers>
 		<developer>
@@ -95,7 +102,6 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.9.1</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
@@ -343,18 +349,28 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+
+			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
 			</plugin>
 
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-			</plugin>
-
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
+				<artifactId>maven-site-plugin</artifactId>
 			</plugin>
 
 			<plugin>
@@ -366,18 +382,6 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>com.amashchenko.maven.plugin</groupId>
-					<artifactId>gitflow-maven-plugin</artifactId>
-					<version>1.3.1</version>
-					<configuration>
-						<gitFlowConfig>
-							<versionTagPrefix>v</versionTagPrefix>
-						</gitFlowConfig>
-						<pushRemote>false</pushRemote>
-					</configuration>
-				</plugin>
-
-				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.6.0</version>
@@ -385,6 +389,54 @@
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
 					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.18.1</version>
+					<configuration>
+						<useFile>false</useFile>
+						<disableXmlReport>true</disableXmlReport>
+						<!-- If you have classpath issue like NoDefClassError,... -->
+						<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+						<includes>
+							<include>**/*Test.*</include>
+							<include>**/*Suite.*</include>
+						</includes>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.0.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.10.4</version>
+					<configuration>
+						<failOnError>false</failOnError>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 
 
@@ -438,40 +490,31 @@
 				</plugin>
 
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>3.0.0</version>
-					<executions>
-						<execution>
-							<id>add-source</id>
-							<phase>generate-sources</phase>
-							<goals>
-								<goal>add-source</goal>
-							</goals>
-							<configuration>
-								<sources>
-									<source>src/main/scala</source>
-									<!-- <source>src/main/scala_${scala.binary.version}</source> -->
-								</sources>
-							</configuration>
-						</execution>
-					</executions>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.6</version>
+					<configuration>
+						<reportPlugins>
+							<plugin>
+								<artifactId>maven-project-info-reports-plugin</artifactId>
+								<version>2.9</version>
+							</plugin>
+							<plugin>
+								<groupId>net.alchim31.maven</groupId>
+								<artifactId>scala-maven-plugin</artifactId>
+							</plugin>
+						</reportPlugins>
+					</configuration>
 				</plugin>
 
-
 				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.18.1</version>
+					<groupId>com.amashchenko.maven.plugin</groupId>
+					<artifactId>gitflow-maven-plugin</artifactId>
+					<version>1.8.0</version>
 					<configuration>
-						<useFile>false</useFile>
-						<disableXmlReport>true</disableXmlReport>
-						<!-- If you have classpath issue like NoDefClassError,... -->
-						<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
-						<includes>
-							<include>**/*Test.*</include>
-							<include>**/*Suite.*</include>
-						</includes>
+						<gitFlowConfig>
+							<versionTagPrefix>v</versionTagPrefix>
+						</gitFlowConfig>
 					</configuration>
 				</plugin>
 
@@ -530,6 +573,7 @@
 						</execution>
 					</executions>
 				</plugin>
+				
 				<plugin>
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nexus-staging-maven-plugin</artifactId>
