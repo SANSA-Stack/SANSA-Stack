@@ -7,21 +7,21 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-query-spark-parent_2.11</artifactId>
-		<version>0.2.0</version>
+		<version>0.3.0</version>
 	</parent>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-core_${scala.compat.version}</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<artifactId>sansa-rdf-spark-core${scala.version.suffix}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-query-spark-sparqlify_${scala.compat.version}</artifactId>
-<!-- 			<classifier>${scala.classifier}</classifier> -->
+			<artifactId>sansa-query-spark-sparqlify${scala.version.suffix}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
 		<dependency>
@@ -29,6 +29,28 @@
 			<artifactId>jena-sparql-api-server-standalone</artifactId>
 		</dependency>
 
+		<!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-xml</artifactId> 
+			<version>9.4.5.v20170502</version> </dependency> -->
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>spark-gremlin</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.litmus-benchmark-suite</groupId>
+			<artifactId>gremlinator</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<!-- Override transitive tdb version via litmus -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<version>${jena.version}</version>
+			<type>pom</type>
+		</dependency>
 	</dependencies>
+
 
 </project>

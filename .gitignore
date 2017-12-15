@@ -7,6 +7,12 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 
+
+# Temporary files created by BSBM - should update bsbm to not generate those
+dataset.nt
+steadystate.tsv
+
+
 .cache-tests
 
 .settings
@@ -16,6 +22,7 @@ buildNumber.properties
 
 
 deptree.txt
+dups.txt
 
 ### Java template
 *.class
@@ -38,6 +45,8 @@ hs_err_pid*
 
 .cache-main
 .iml
+.idea
+*.iml
 
 stat*.txt
 

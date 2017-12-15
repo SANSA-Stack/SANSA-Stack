@@ -1,4 +1,8 @@
 # SANSA Query
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-query-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-query-parent_2.11)
+[![Build Status](https://ci.aksw.org/jenkins/job/SANSA-Query/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA-Query/job/develop/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
 ## Description
 SANSA Query is a library to perform queries directly into [Spark](https://spark.apache.org) or [Flink](https://flink.apache.org). It allows files to reside in HDFS as well as in a local file system and distributes executions across Spark RDDs/DataFrames or Flink DataSets.
@@ -23,11 +27,17 @@ See the [available layouts](https://github.com/SANSA-Stack/SANSA-RDF/tree/develo
 The following Scala code shows how to query an RDF file SPARQL syntax (be it a local file or a file residing in HDFS):
 ```scala
 
-val graphRdd = NTripleReader.load(sparkSession, new File("path/to/rdf.nt"))
+val graphRdd = NTripleReader.load(spark, new File("path/to/rdf.nt"))
 
 val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
-val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
+val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
 
-val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
+val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
+
+val port = 7531
+val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
+server.join()
+
+
 ```
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
