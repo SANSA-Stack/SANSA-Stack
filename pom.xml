@@ -26,7 +26,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 
-		<sansa.version>0.2.0</sansa.version>
+		<sansa.version>0.3.0</sansa.version>
 
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
@@ -249,14 +249,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>net.sansa-stack</groupId>
-				<artifactId>sansa-rdf-test-resources${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.compat.version}</classifier> -->
-			</dependency>
-
-
-			<dependency>
 				<groupId>org.aksw.bsbm</groupId>
 				<artifactId>bsbm-jsa</artifactId>
 				<version>3.1.1</version>
@@ -299,8 +291,19 @@
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
 				<artifactId>sansa-rdf-common-partition${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.compat.version}</classifier> -->
+				<version>${sansa.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-rdf-test-resources${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
 			</dependency>
 
 
@@ -309,16 +312,9 @@
 				<artifactId>jena-sparql-api-server-standalone</artifactId>
 				<version>${jsa.version}</version>
 				<exclusions>
-<!--
-					<exclusion>
-						<groupId>xml-apis</groupId>
-						<artifactId>xml-apis</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.eclipse.jetty</groupId>
-						<artifactId>jetty-xml</artifactId>
-					</exclusion>
--->
+					<!-- <exclusion> <groupId>xml-apis</groupId> <artifactId>xml-apis</artifactId> 
+						</exclusion> <exclusion> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-xml</artifactId> 
+						</exclusion> -->
 
 				</exclusions>
 				<!-- <classifier>${scala.compat.version}</classifier> -->
@@ -573,7 +569,7 @@
 						</execution>
 					</executions>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.sonatype.plugins</groupId>
 					<artifactId>nexus-staging-maven-plugin</artifactId>
