@@ -55,7 +55,8 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.rdf").getPath
     val lang: Lang = Lang.TURTLE
 
-    val triples = sqlCtx.read.option("wholeFile", false).rdfxml(path)
+    //This test only works when "wholeFile" is set to true
+    val triples = sqlCtx.read.option("wholeFile", true).rdfxml(path)
 
     val cnt = triples.count()
     assert(cnt == 9)
@@ -151,7 +152,9 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
   test("bla") {
     import scala.collection.JavaConversions._
     val sourceModel = ModelFactory.createDefaultModel()
-    sourceModel.read(new FileInputStream(new File("/home/user/work/datasets/TurtleTests/turtle-subm-14.ttl")), null, "TURTLE")
+    val turtleFile = new File(scala.collection.JavaConversions.getClass.getResource("/loader/data.ttl").getPath)
+    val fileInputStream = new FileInputStream(turtleFile)
+    sourceModel.read(fileInputStream, null, "TURTLE")
 
     sourceModel.listStatements().toSeq.foreach(st => {
       val s = st.getSubject
