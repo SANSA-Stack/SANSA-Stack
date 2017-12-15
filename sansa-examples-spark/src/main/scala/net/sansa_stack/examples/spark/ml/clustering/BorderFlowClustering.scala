@@ -6,36 +6,44 @@ import org.apache.log4j.{ Level, Logger }
 import net.sansa_stack.ml.spark.clustering.BorderFlow
 
 object BorderFlowClustering {
-  def main(args: Array[String]) = {
-    if (args.length < 1) {
-      System.err.println(
-        "Usage: BorderFlow <input> ")
-      System.exit(1)
-    }
-    val input = args(0) //"src/main/resources/BorderFlow_Sample1.txt"
-    val optionsList = args.drop(1).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
 
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in)
+      case None =>
+        println(parser.usage)
     }
+  }
+
+  def run(input: String): Unit = {
+
+    val spark = SparkSession.builder
+      .appName(s"BorderFlow example ( $input )")
+      .master("local[*]")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .getOrCreate()
+
     println("============================================")
     println("| Border Flow example                      |")
     println("============================================")
 
-    val spark = SparkSession.builder
-      .master("local[*]")
-      .appName(" BorderFlow example (" + input + ")")
-      .getOrCreate()
-    Logger.getRootLogger.setLevel(Level.ERROR)
-
     BorderFlow(spark, input)
 
     spark.stop
+
+  }
+
+  case class Config(in: String = "")
+
+  val parser = new scopt.OptionParser[Config]("BorderFlow") {
+
+    head("BorderFlow: an example BorderFlow app.")
+
+    opt[String]('i', "input").required().valueName("<path>").
+      action((x, c) => c.copy(in = x)).
+      text("path to file contains the input files")
+
+    help("help").text("prints this usage text")
   }
 }

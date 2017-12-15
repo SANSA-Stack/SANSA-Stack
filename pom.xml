@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-examples-parent_2.11</artifactId>
-	<version>2017-06</version>
+	<version>2017-12-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>SANSA-Examples - Parent</name>
 	<description>SANSA examples</description>
@@ -56,12 +56,13 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<scala.version>2.11.8</scala.version>
+		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
-		<spark.version>2.1.1</spark.version>
-		<flink.version>1.3.0</flink.version>
-		<jena.version>3.1.1</jena.version>
-		<sansa.version>0.2.0</sansa.version>
+		<spark.version>2.2.1</spark.version>
+		<flink.version>1.4.0</flink.version>
+		<hadoop.version>2.7.0</hadoop.version>
+		<jena.version>3.5.0</jena.version>
+		<sansa.version>0.3.0</sansa.version>
 	</properties>
 
 	<dependencyManagement>
@@ -100,6 +101,23 @@
 				<groupId>org.apache.flink</groupId>
 				<artifactId>flink-clients_${scala.binary.version}</artifactId>
 				<version>${flink.version}</version>
+			</dependency>
+
+			<!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-mapreduce-client-core</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-common</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-streaming</artifactId>
+				<version>${hadoop.version}</version>
 			</dependency>
 
 			<!-- Apache JENA 3.x -->
@@ -142,11 +160,8 @@
 			</dependency>
 
 			<!-- Guava -->
-			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>19.0</version>
-			</dependency>
+			<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava</artifactId> 
+				<version>19.0</version> </dependency> -->
 
 			<!-- RDF Layer -->
 			<dependency>
@@ -157,7 +172,7 @@
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+				<artifactId>sansa-rdf-flink-core_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 			<!-- OWL Layer -->

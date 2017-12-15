@@ -1,50 +1,40 @@
 package net.sansa_stack.examples.spark.rdf
 
-
-import java.net.{URI => JavaURI}
+import java.net.{ URI => JavaURI }
 import net.sansa_stack.rdf.spark.io.NTripleReader
-import net.sansa_stack.rdf.spark.model.{JenaSparkRDDOps, TripleRDD}
+import net.sansa_stack.rdf.spark.model.{ JenaSparkRDDOps, TripleRDD }
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
 
 object TripleOps {
 
-  def main(args: Array[String]) = {
+  def main(args: Array[String]) {
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        run(config.in)
+      case None =>
+        println(parser.usage)
+    }
+  }
 
-    if (args.length < 1) {
-      System.err.println(
-        "Usage: Triple Ops <input>")
-      System.exit(1)
-    }
-    val input = args(0) //"src/main/resources/rdf.nt"
-    val optionsList = args.drop(1).map { arg =>
-      arg.dropWhile(_ == '-').split('=') match {
-        case Array(opt, v) => (opt -> v)
-        case _             => throw new IllegalArgumentException("Invalid argument: " + arg)
-      }
-    }
-    val options = mutable.Map(optionsList: _*)
+  def run(input: String): Unit = {
 
-    options.foreach {
-      case (opt, _) => throw new IllegalArgumentException("Invalid option: " + opt)
-    }
+    val spark = SparkSession.builder
+      .appName(s"Triple Ops example  $input")
+      .master("local[*]")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .getOrCreate()
+
     println("======================================")
     println("|        Triple Ops example       |")
     println("======================================")
 
-    val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Triple Ops example (" + input + ")")
-      .getOrCreate()
-
-    val ops = JenaSparkRDDOps(sparkSession.sparkContext)
+    val ops = JenaSparkRDDOps(spark.sparkContext)
     import ops._
 
-    val triplesRDD = NTripleReader.load(sparkSession, JavaURI.create(input))
+    val triplesRDD = NTripleReader.load(spark, JavaURI.create(input))
 
-    
     val graph: TripleRDD = triplesRDD
 
     //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
@@ -68,8 +58,20 @@ object TripleOps {
 
     //graph.getTriples.take(5).foreach(println(_))
 
-    sparkSession.stop
+    spark.stop
 
   }
+  // the config object
+  case class Config(in: String = "")
 
+  // the CLI parser
+  val parser = new scopt.OptionParser[Config]("Triple Ops example") {
+
+    head(" Triple Ops example")
+
+    opt[String]('i', "input").required().valueName("<path>").
+      action((x, c) => c.copy(in = x)).
+      text("path to file that contains the data (in N-Triples format)")
+    help("help").text("prints this usage text")
+  }
 }

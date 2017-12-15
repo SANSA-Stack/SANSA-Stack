@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>sansa-examples-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>2017-06</version>
+		<version>2017-12-SNAPSHOT</version>
 	</parent>
 	<artifactId>sansa-examples-flink_2.11</artifactId>
 	<name>SANSA Examples - Apache Flink</name>
@@ -15,13 +15,23 @@
 		<!-- SANSA RDF -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+			<artifactId>sansa-rdf-flink-core_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty-util</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- SANSA Inference -->
@@ -33,16 +43,15 @@
 		<!-- SANSA Query -->
 
 		<!-- SANSA ML -->
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
-			</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+		</dependency>
 
 		<!-- Scala -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<version>${scala.version}</version>
 		</dependency>
 
 		<!-- Apache Flink -->
@@ -75,7 +84,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -93,6 +101,8 @@
 	</dependencies>
 
 	<build>
+		<sourceDirectory>src/main/scala</sourceDirectory>
+		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
