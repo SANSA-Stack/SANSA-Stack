@@ -9,6 +9,7 @@
 
 	<name>SANSA Stack - Query Layer - Parent</name>
 	<description>SANSA Query Library</description>
+	<url>https://github.com/SANSA-Stack/SANSA-Query</url>
 	<inceptionYear>2015</inceptionYear>
 
 	<organization>
@@ -212,20 +213,6 @@
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient-cache</artifactId>
 				<version>${httpcomponents.version}</version>
-			</dependency>
-
-
-
-			<dependency>
-				<groupId>org.mortbay.jetty</groupId>
-				<artifactId>jetty</artifactId>
-				<!-- <scope>provided</scope> -->
-			</dependency>
-
-			<dependency>
-				<groupId>org.mortbay.jetty</groupId>
-				<artifactId>jetty-util</artifactId>
-				<!-- <scope>provided</scope> -->
 			</dependency>
 
 
