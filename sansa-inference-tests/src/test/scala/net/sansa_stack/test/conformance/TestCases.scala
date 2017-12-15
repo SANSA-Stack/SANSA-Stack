@@ -21,6 +21,7 @@ object TestCases {
     * @return test cases
     */
   def loadTestCases(directory: File, ids: Set[String] = Set.empty): Seq[TestCase] = {
+    println("loading test cases ...")
 
     val testCases = new ListBuffer[TestCase]()
 
@@ -45,7 +46,7 @@ object TestCases {
       val entailmentType = (metadata \\ "entry").filter(n => n.attribute("key").get.text == "testcase.type").text
 
       // currently we support only entailment test cases
-      if(entailmentType == "POSITIVE_ENTAILMENT") {
+      if (entailmentType == "POSITIVE_ENTAILMENT") {
         // load input data
         val inputGraph = RDFDataMgr.loadModel(files.filter(_.getName.endsWith(".premisegraph.ttl")).head.getPath)
 
@@ -54,7 +55,9 @@ object TestCases {
 
         testCases += TestCase(id, description, entailmentType, inputGraph, outputGraph)
       }
+
     }
+    println(s"loaded ${testCases.size} test cases")
 
     testCases
   }

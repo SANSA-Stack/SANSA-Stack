@@ -1,8 +1,6 @@
 package net.sansa_stack.test.conformance
 
-import java.io.File
-
-import net.sansa_stack.inference.data.{JenaOps, RDF, RDFOps}
+import net.sansa_stack.inference.data.{RDF, RDFOps}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -17,6 +15,8 @@ abstract class OWLHorstConformanceTestBase[Rdf <: RDF](override val rdfOps: RDFO
   extends ConformanceTestBase[Rdf](rdfOps) {
 
   behavior of "conformance of OWL Horst entailment rules"
+
+  override def testCasesPath: String = "data/conformance/owl2rl"
 
   override def testCaseIds: Set[String] = Set(
     "rdfbased-sem-rdfs-domain-cond",
@@ -40,6 +40,4 @@ abstract class OWLHorstConformanceTestBase[Rdf <: RDF](override val rdfOps: RDFO
     "rdfbased-sem-restrict-somevalues-inst-subj",
     "rdfbased-sem-restrict-allvalues-inst-obj"
   )
-
-  override def testsCasesFolder: File = new File(this.getClass.getClassLoader.getResource("data/conformance/owl2rl").getPath)
 }

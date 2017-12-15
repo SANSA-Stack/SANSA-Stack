@@ -287,8 +287,8 @@
                 <!--<version>3.0.1</version>-->
                 <executions>
                     <execution>
-                        <id>unpack</id>
-                        <phase>package</phase>
+                        <id>resource-dependencies</id>
+                        <phase>install</phase>
                         <goals>
                             <goal>unpack-dependencies</goal>
                         </goals>
@@ -297,7 +297,7 @@
                             <includeArtifactIds>sansa-inference-tests_${scala.binary.version}</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
                             <overWriteIfNewer>true</overWriteIfNewer>
-                            <outputDirectory>${project.build.directory}/core-resources</outputDirectory>
+                            <outputDirectory>${project.build.directory}/test-classes</outputDirectory>
                             <excludes>org/**,META-INF/**,rebel.xml</excludes>
                             <overWriteReleases>true</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>

@@ -1,8 +1,6 @@
 package net.sansa_stack.test.conformance
 
-import java.io.File
-
-import net.sansa_stack.inference.data.{Jena, RDF, RDFOps}
+import net.sansa_stack.inference.data.{RDF, RDFOps}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -18,6 +16,8 @@ abstract class RDFSConformanceTestBase[Rdf <: RDF](override val rdfOps: RDFOps[R
 
   behavior of "conformance of RDFS(simple) entailment rules"
 
+  override def testCasesPath: String = "data/conformance/rdfs"
+
   override def testCaseIds: Set[String] = Set(
     "rdfbased-sem-rdfs-domain-cond",
     "rdfbased-sem-rdfs-range-cond",
@@ -25,6 +25,4 @@ abstract class RDFSConformanceTestBase[Rdf <: RDF](override val rdfOps: RDFOps[R
     "rdfbased-sem-rdfs-subclass-trans",
     "rdfbased-sem-rdfs-subprop-cond",
     "rdfbased-sem-rdfs-subprop-trans")
-
-  override def testsCasesFolder: File = new File(this.getClass.getClassLoader.getResource("data/conformance/rdfs").getPath)
 }
