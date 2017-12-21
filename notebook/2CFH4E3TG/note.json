@@ -1,9 +1,10 @@
 {
   "paragraphs": [
     {
+      "title": "Dataset OWL reader example (Functional syntax)",
       "text": "import net.sansa_stack.owl.spark.dataset.FunctionalSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\nval dataset \u003d FunctionalSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "Dec 21, 2017 2:12:19 PM",
+      "dateUpdated": "Dec 21, 2017 2:18:18 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -13,7 +14,8 @@
           "editOnDblClick": false
         },
         "editorMode": "ace/mode/scala",
-        "tableHide": false
+        "tableHide": false,
+        "title": true
       },
       "settings": {
         "params": {},
@@ -38,9 +40,10 @@
       "progressUpdateIntervalMs": 500
     },
     {
+      "title": "Dataset OWL reader example (Manchester syntax)",
       "text": "import net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_manchester.owl\"\n\nval dataset \u003d ManchesterSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "Dec 21, 2017 2:13:33 PM",
+      "dateUpdated": "Dec 21, 2017 2:18:27 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -50,7 +53,8 @@
           "editOnDblClick": false
         },
         "editorMode": "ace/mode/scala",
-        "tableHide": false
+        "tableHide": false,
+        "title": true
       },
       "settings": {
         "params": {},

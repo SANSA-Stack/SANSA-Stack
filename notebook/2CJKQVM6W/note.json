@@ -4,7 +4,7 @@
       "title": "PageRank of resources example",
       "text": "import net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\nimport org.apache.spark.sql.SparkSession\nimport java.net.{URI \u003d\u003e JavaURI}\n\nimport net.sansa_stack.rdf.spark.graph.LoadGraph\nimport org.apache.spark.graphx.Graph\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triplesRDD \u003d NTripleReader.load(spark, JavaURI.create(input))\n\nval graph \u003d LoadGraph(triplesRDD)\nval pagerank \u003d graph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(graph.vertices)\n  .map({ case (k, (r, v)) \u003d\u003e (r, v, k) })\n  .sortBy(50 - _._1)\n\nval rankedreport \u003d report.map(f \u003d\u003e f._2 + \"\\t\" + f._1 )\nprintln(\"%table resource\\t rank\\n \" + rankedreport.take(50).mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "Dec 20, 2017 2:08:19 PM",
+      "dateUpdated": "Dec 21, 2017 2:16:32 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -33,7 +33,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\n\nimport org.apache.spark.sql.SparkSession\n\nimport java.net.{URI\u003d\u003eJavaURI}\n\nimport net.sansa_stack.rdf.spark.graph.LoadGraph\n\nimport org.apache.spark.graphx.Graph\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[3] at map at NTripleReader.scala:39\n\ngraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@3821baf7\n\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[88] at RDD at VertexRDD.scala:57\n\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[99] at sortBy at \u003cconsole\u003e:41\n\nrankedreport: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[100] at map at \u003cconsole\u003e:41\n"
+            "data": "\nimport net.sansa_stack.rdf.spark.io.NTripleReader\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkGraphXOps\n\nimport org.apache.spark.sql.SparkSession\n\nimport java.net.{URI\u003d\u003eJavaURI}\n\nimport net.sansa_stack.rdf.spark.graph.LoadGraph\n\nimport org.apache.spark.graphx.Graph\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[23] at map at NTripleReader.scala:39\n\ngraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@78ee4e45\n\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[108] at RDD at VertexRDD.scala:57\n\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[119] at sortBy at \u003cconsole\u003e:43\n\nrankedreport: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[120] at map at \u003cconsole\u003e:43\n"
           },
           {
             "type": "TABLE",
@@ -45,8 +45,8 @@
       "jobName": "paragraph_1501495930621_-1758570151",
       "id": "20170731-101210_1262676205",
       "dateCreated": "Jul 31, 2017 10:12:10 AM",
-      "dateStarted": "Dec 20, 2017 2:08:19 PM",
-      "dateFinished": "Dec 20, 2017 2:09:02 PM",
+      "dateStarted": "Dec 21, 2017 2:16:32 PM",
+      "dateFinished": "Dec 21, 2017 2:16:57 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -192,25 +192,25 @@
   "name": "RDF",
   "id": "2CJKQVM6W",
   "angularObjects": {
-    "2D1HC81ZH:shared_process": [],
-    "2D4E9TFPZ:shared_process": [],
-    "2D33A1HHH:shared_process": [],
-    "2D4MAXAHR:shared_process": [],
-    "2D256NHFN:shared_process": [],
-    "2D1QEAZTP:shared_process": [],
-    "2D4SVPQG5:shared_process": [],
-    "2D3REUB7K:shared_process": [],
-    "2D2DY195J:shared_process": [],
-    "2D2BKZZVU:shared_process": [],
-    "2D3C1TPSB:shared_process": [],
-    "2D31YRQKC:shared_process": [],
-    "2D4G8C9UH:shared_process": [],
-    "2D34ADCDE:shared_process": [],
-    "2D32YNXMD:shared_process": [],
-    "2D47V25NB:shared_process": [],
-    "2D4M1MW5E:shared_process": [],
-    "2D1QKBR98:shared_process": [],
-    "2D31M5Q98:shared_process": []
+    "2D1WUJY9X:shared_process": [],
+    "2D1WDY2WJ:shared_process": [],
+    "2D1QX2GJB:shared_process": [],
+    "2D2AWPCWV:shared_process": [],
+    "2D1QJDBMG:shared_process": [],
+    "2D3CN1UC4:shared_process": [],
+    "2D4KNTQDW:shared_process": [],
+    "2D3HZZ4ST:shared_process": [],
+    "2D4A3263Y:shared_process": [],
+    "2D2N8RQ2G:shared_process": [],
+    "2D4KZJ4NK:shared_process": [],
+    "2D1Q36CTM:shared_process": [],
+    "2D2R6BND9:shared_process": [],
+    "2D1G9KCPZ:shared_process": [],
+    "2CZZ2KS1E:shared_process": [],
+    "2D4C8ZV8Y:shared_process": [],
+    "2D2UP88N2:shared_process": [],
+    "2D18YQ8QY:shared_process": [],
+    "2CZX9ZE2B:shared_process": []
   },
   "config": {},
   "info": {}
