@@ -3,16 +3,16 @@
     {
       "text": "import net.sansa_stack.owl.spark.dataset.FunctionalSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\nval dataset \u003d FunctionalSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 2:06:01 PM",
+      "dateUpdated": "Dec 21, 2017 2:12:19 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "text",
+          "language": "scala",
           "editOnDblClick": false
         },
-        "editorMode": "ace/mode/text",
+        "editorMode": "ace/mode/scala",
         "tableHide": false
       },
       "settings": {
@@ -32,24 +32,24 @@
       "jobName": "paragraph_1494492505471_454897908",
       "id": "20170511-084825_834127049",
       "dateCreated": "May 11, 2017 8:48:25 AM",
-      "dateStarted": "May 11, 2017 2:06:01 PM",
-      "dateFinished": "May 11, 2017 2:06:08 PM",
+      "dateStarted": "Dec 21, 2017 2:12:19 PM",
+      "dateFinished": "Dec 21, 2017 2:13:29 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "import net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_manchester.owl\"\n\nval dataset \u003d ManchesterSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 2:06:11 PM",
+      "dateUpdated": "Dec 21, 2017 2:13:33 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "text",
+          "language": "scala",
           "editOnDblClick": false
         },
-        "editorMode": "ace/mode/text",
+        "editorMode": "ace/mode/scala",
         "tableHide": false
       },
       "settings": {
@@ -61,7 +61,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\ninput: String \u003d hdfs://namenode:8020/data/ont_manchester.owl\n\ndataset: net.sansa_stack.owl.spark.dataset.OWLAxiomsDataset \u003d [value: binary]\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nSubAnnotationPropertyOf(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#annProp2\u003e)\nAnnotationPropertyRange(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls2\u003e)\nAnnotationPropertyDomain(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls1\u003e)\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#hasTitle\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#label\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/default#description\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#ann\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#hasName\u003e))\n"
+            "data": "\nimport net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\ninput: String \u003d hdfs://namenode:8020/data/ont_manchester.owl\n\ndataset: net.sansa_stack.owl.spark.dataset.OWLAxiomsDataset \u003d [value: binary]\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nSubAnnotationPropertyOf(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#annProp2\u003e)\nAnnotationPropertyDomain(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls1\u003e)\nAnnotationPropertyRange(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls2\u003e)\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#hasTitle\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#label\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/default#description\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#ann\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#hasName\u003e))\n"
           }
         ]
       },
@@ -69,8 +69,8 @@
       "jobName": "paragraph_1494494430280_1062578933",
       "id": "20170511-092030_318054404",
       "dateCreated": "May 11, 2017 9:20:30 AM",
-      "dateStarted": "May 11, 2017 2:06:11 PM",
-      "dateFinished": "May 11, 2017 2:06:13 PM",
+      "dateStarted": "Dec 21, 2017 2:13:33 PM",
+      "dateFinished": "Dec 21, 2017 2:13:38 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -102,25 +102,25 @@
   "name": "OWL",
   "id": "2CFH4E3TG",
   "angularObjects": {
-    "2CGHKSHQE:shared_process": [],
-    "2CJ2XGWS5:shared_process": [],
-    "2CJVJ7H25:shared_process": [],
-    "2CFDQ88J1:shared_process": [],
-    "2CF4FNTUQ:shared_process": [],
-    "2CF62TZ57:shared_process": [],
-    "2CFX24SPE:shared_process": [],
-    "2CG9ZF4HU:shared_process": [],
-    "2CJK51V3F:shared_process": [],
-    "2CFVMS3NN:shared_process": [],
-    "2CHCF37RD:shared_process": [],
-    "2CGNA8VJR:shared_process": [],
-    "2CJ2RETPG:shared_process": [],
-    "2CFFRTQZB:shared_process": [],
-    "2CG3ENR1N:shared_process": [],
-    "2CFBN49Y8:shared_process": [],
-    "2CH3B7K9P:shared_process": [],
-    "2CGBGHEW1:shared_process": [],
-    "2CHQC624J:shared_process": []
+    "2D1WUJY9X:shared_process": [],
+    "2D1WDY2WJ:shared_process": [],
+    "2D1QX2GJB:shared_process": [],
+    "2D2AWPCWV:shared_process": [],
+    "2D1QJDBMG:shared_process": [],
+    "2D3CN1UC4:shared_process": [],
+    "2D4KNTQDW:shared_process": [],
+    "2D3HZZ4ST:shared_process": [],
+    "2D4A3263Y:shared_process": [],
+    "2D2N8RQ2G:shared_process": [],
+    "2D4KZJ4NK:shared_process": [],
+    "2D1Q36CTM:shared_process": [],
+    "2D2R6BND9:shared_process": [],
+    "2D1G9KCPZ:shared_process": [],
+    "2CZZ2KS1E:shared_process": [],
+    "2D4C8ZV8Y:shared_process": [],
+    "2D2UP88N2:shared_process": [],
+    "2D18YQ8QY:shared_process": [],
+    "2CZX9ZE2B:shared_process": []
   },
   "config": {},
   "info": {}
