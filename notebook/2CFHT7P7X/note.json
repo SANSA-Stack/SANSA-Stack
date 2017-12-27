@@ -1,20 +1,22 @@
 {
   "paragraphs": [
     {
+      "title": "Sparklify example",
       "text": "import java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark\nimport net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\nimport org.apache.spark.sql.SparkSession\n\nimport scala.collection.mutable\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval graphRdd \u003d NTripleReader.load(spark, URI.create(input))\n    \nval partitions \u003d RdfPartitionUtilsSpark.partitionGraph(graphRdd)\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)\n    \nval port \u003d 7531\n    \nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()\n\n\nserver.join()",
       "user": "anonymous",
-      "dateUpdated": "Dec 21, 2017 2:21:44 PM",
+      "dateUpdated": "Dec 27, 2017 2:11:56 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala",
+          "language": "text",
           "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala",
+        "editorMode": "ace/mode/text",
         "editorHide": false,
-        "tableHide": false
+        "tableHide": false,
+        "title": true
       },
       "settings": {
         "params": {},
@@ -24,7 +26,7 @@
       "jobName": "paragraph_1504609209863_-361690439",
       "id": "20170905-110009_242595472",
       "dateCreated": "Sep 5, 2017 11:00:09 AM",
-      "dateStarted": "Nov 22, 2017 10:59:36 AM",
+      "dateStarted": "Dec 21, 2017 2:21:44 PM",
       "dateFinished": "Sep 5, 2017 12:26:16 PM",
       "status": "ABORT",
       "errorMessage": "",
@@ -58,27 +60,7 @@
   ],
   "name": "Query",
   "id": "2CFHT7P7X",
-  "angularObjects": {
-    "2D1WUJY9X:shared_process": [],
-    "2D1WDY2WJ:shared_process": [],
-    "2D1QX2GJB:shared_process": [],
-    "2D2AWPCWV:shared_process": [],
-    "2D1QJDBMG:shared_process": [],
-    "2D3CN1UC4:shared_process": [],
-    "2D4KNTQDW:shared_process": [],
-    "2D3HZZ4ST:shared_process": [],
-    "2D4A3263Y:shared_process": [],
-    "2D2N8RQ2G:shared_process": [],
-    "2D4KZJ4NK:shared_process": [],
-    "2D1Q36CTM:shared_process": [],
-    "2D2R6BND9:shared_process": [],
-    "2D1G9KCPZ:shared_process": [],
-    "2CZZ2KS1E:shared_process": [],
-    "2D4C8ZV8Y:shared_process": [],
-    "2D2UP88N2:shared_process": [],
-    "2D18YQ8QY:shared_process": [],
-    "2CZX9ZE2B:shared_process": []
-  },
+  "angularObjects": {},
   "config": {},
   "info": {}
 }
