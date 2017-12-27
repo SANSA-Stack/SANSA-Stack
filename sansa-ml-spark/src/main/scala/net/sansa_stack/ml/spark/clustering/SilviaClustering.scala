@@ -35,36 +35,6 @@ object SilviaClustering {
     Logger.getRootLogger.setLevel(Level.WARN)
 
     // Load the graph
-    /*
-
-    val RDFfile = spark.sparkContext.textFile(input).map(line =>
-      RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.getBytes), Lang.NTRIPLES, null).next())
-
-    val r = RDFfile.map(f => {
-      val s = f.getSubject.getURI
-      val p = f.getPredicate.getURI
-      val o = f.getObject.getURI
-
-      (s, p, o)
-    })
-
-    val v1 = r.map(f => f._1)
-    val v2 = r.map(f => f._3)
-    val indexedmap = (v1.union(v2)).distinct().zipWithIndex()
-
-    val vertices: RDD[(VertexId, String)] = indexedmap.map(x => (x._2, x._1))
-    val _iriToId: RDD[(String, VertexId)] = indexedmap.map(x => (x._1, x._2))
-
-    val tuples = r.keyBy(f => f._1).join(indexedmap).map({
-      case (k, ((s, p, o), si)) => (o, (si, p))
-    })
-
-    val edgess: RDD[Edge[String]] = tuples.join(indexedmap).map({
-      case (k, ((si, p), oi)) => Edge(si, oi, p)
-    })
-
-    val graph = org.apache.spark.graphx.Graph(vertices, edgess)
-    */
 
     val triplesRDD = NTripleReader.load(spark, URI.create(input))
 

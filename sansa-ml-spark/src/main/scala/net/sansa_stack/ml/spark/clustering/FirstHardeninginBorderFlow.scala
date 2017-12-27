@@ -1,11 +1,8 @@
 package net.sansa_stack.ml.spark.clustering
 
-
-
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{ Graph, EdgeDirection }
 import scala.math.BigDecimal
-import org.apache.commons.math.util.MathUtils
 import org.apache.spark.sql.SparkSession
 import scala.reflect.runtime.universe._
 import scopt.OptionParser
