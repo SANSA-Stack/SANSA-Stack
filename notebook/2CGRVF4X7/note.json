@@ -1,28 +1,31 @@
 {
   "paragraphs": [
     {
+      "title": "RDF By Modularity Clustering example",
       "text": "import scala.collection.mutable\nimport org.apache.spark.sql.SparkSession\nimport org.apache.log4j.{ Level, Logger }\nimport net.sansa_stack.ml.spark.clustering.RDFByModularityClustering\n\nval graphFile \u003d \"hdfs://namenode:8020/data/Clustering_sampledata.nt\"\nval outputFile \u003d \"hdfs://namenode:8020/data/clustering.out\"\nval numIterations \u003d 10\n\nRDFByModularityClustering(sc, numIterations, graphFile, outputFile)",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 12:09:39 PM",
+      "dateUpdated": "Dec 27, 2017 2:16:00 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "scala",
+          "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/scala",
+        "title": true
       },
       "settings": {
         "params": {},
         "forms": {}
       },
       "results": {
-        "code": "ERROR",
+        "code": "SUCCESS",
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport scala.collection.mutable\n\nimport org.apache.spark.sql.SparkSession\n\nimport org.apache.log4j.{Level, Logger}\n\nimport net.sansa_stack.ml.spark.clustering.RDFByModularityClustering\n\ngraphFile: String \u003d hdfs://namenode:8020/data/Clustering_sampledata.nt\n\noutputFile: String \u003d hdfs://namenode:8020/data/clustering.out\n\nnumIterations: Int \u003d 10\nThe number of nodes in the knowledge graph is 8 and the number of edges is 13.\nThe first ten edges of the graph look like the following: \n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user1\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user6\u003e)\n(\u003chttp://twitter/user2\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user3\u003e,\u003chttp://twitter/user4\u003e)\n(\u003chttp://twitter/user4\u003e,\u003chttp://twitter/user5\u003e)\n(\u003chttp://twitter/user5\u003e,\u003chttp://twitter/user6\u003e)\nStarting iteration\n\n1\n2\n3\n4\n5\n6\n7\n\n\n\n\n\n\n\n\njava.io.FileNotFoundException: hdfs:/namenode:8020/data/clustering.out (No such file or directory)\n  at java.io.FileOutputStream.open0(Native Method)\n  at java.io.FileOutputStream.open(FileOutputStream.java:270)\n  at java.io.FileOutputStream.\u003cinit\u003e(FileOutputStream.java:213)\n  at java.io.FileOutputStream.\u003cinit\u003e(FileOutputStream.java:162)\n  at java.io.PrintWriter.\u003cinit\u003e(PrintWriter.java:263)\n  at net.sansa_stack.ml.spark.clustering.RDFByModularityClustering$.apply(RDFByModularityClustering.scala:97)\n  ... 52 elided\n"
+            "data": "\nimport scala.collection.mutable\n\nimport org.apache.spark.sql.SparkSession\n\nimport org.apache.log4j.{Level, Logger}\n\nimport net.sansa_stack.ml.spark.clustering.RDFByModularityClustering\n\ngraphFile: String \u003d hdfs://namenode:8020/data/Clustering_sampledata.nt\n\noutputFile: String \u003d hdfs://namenode:8020/data/clustering.out\n\nnumIterations: Int \u003d 10\nThe number of nodes in the knowledge graph is 8 and the number of edges is 13.\nThe first ten edges of the graph look like the following: \n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user1\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user6\u003e)\n(\u003chttp://twitter/user2\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user3\u003e,\u003chttp://twitter/user4\u003e)\n(\u003chttp://twitter/user4\u003e,\u003chttp://twitter/user5\u003e)\n(\u003chttp://twitter/user5\u003e,\u003chttp://twitter/user6\u003e)\nStarting iteration\n\n1\n2\n3\n4\n5\n6\n7\nThe computed clusters are:\nCluster1  contains:\n\u003chttp://twitter/user4\u003e, \u003chttp://twitter/user5\u003e, \u003chttp://twitter/user6\u003e, \u003chttp://twitter/user7\u003e, \n\nCluster2  contains:\n\u003chttp://twitter/user0\u003e, \u003chttp://twitter/user2\u003e, \u003chttp://twitter/user3\u003e, \u003chttp://twitter/user1\u003e, \n\n"
           }
         ]
       },
@@ -30,23 +33,26 @@
       "jobName": "paragraph_1494503254565_1530513202",
       "id": "20170511-114734_1804790867",
       "dateCreated": "May 11, 2017 11:47:34 AM",
-      "dateStarted": "May 11, 2017 12:09:39 PM",
-      "dateFinished": "May 11, 2017 12:09:42 PM",
-      "status": "ERROR",
+      "dateStarted": "Dec 27, 2017 2:16:00 PM",
+      "dateFinished": "Dec 27, 2017 2:17:19 PM",
+      "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "import scala.collection.mutable\nimport net.sansa_stack.rdf.spark.model.JenaSparkRDDOps\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\nimport net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\nval input \u003d \"hdfs://namenode:8020/data/resourcesMineRules_sampledata.tsv\"\nval outputPath \u003d \"hdfs://namenode:8020/output\"\nval hdfsPath \u003d outputPath + \"/\"\n\nval ops \u003d JenaSparkRDDOps(sc)\nimport ops._\n\nval know \u003d new KB()\nknow.sethdfsPath(hdfsPath)\nknow.setKbSrc(input)\n\nknow.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))\nknow.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2))\n\nval algo \u003d new Algorithm(know, 0.01, 3, 0.1, hdfsPath)\n\n//var erg \u003d algo.ruleMining(sc, sqlContext)\n//println(erg)\nvar output \u003d algo.ruleMining(sc, sqlContext)\n\nvar outString \u003d output.map { x \u003d\u003e\n  var rdfTrp \u003d x.getRule()\n  var temp \u003d \"\"\n  for (i \u003c- 0 to rdfTrp.length - 1) {\n    if (i \u003d\u003d 0) {\n      temp \u003d rdfTrp(i) + \" \u003c\u003d \"\n    } else {\n      temp +\u003d rdfTrp(i) + \" \\u2227 \"\n    }\n  }\n  temp \u003d temp.stripSuffix(\" \\u2227 \")\n  temp\n}.toSeq\nvar rddOut \u003d sparkSession.sparkContext.parallelize(outString)\nrddOut.saveAsTextFile(outputPath + \"/testOut\")",
+      "title": "Mines the Rules example",
+      "text": "import scala.collection.mutable\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\nimport net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\nval input \u003d \"hdfs://namenode:8020/data/MineRules_sampledata.tsv\"\nval outputPath \u003d \"hdfs://namenode:8020/output\"\nval hdfsPath \u003d outputPath + \"/\"\n\nval know \u003d new KB()\nknow.sethdfsPath(hdfsPath)\nknow.setKbSrc(input)\n\nknow.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))\nknow.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, spark.sparkContext, spark.sqlContext, 2))\n\nval algo \u003d new Algorithm(know, 0.01, 3, 0.1, hdfsPath)\n\nvar output \u003d algo.ruleMining(spark.sparkContext, spark.sqlContext)\nvar outString \u003d output.map { x \u003d\u003e\n    var rdfTrp \u003d x.getRule()\n    var temp \u003d \"\"\n    for (i \u003c- 0 to rdfTrp.length - 1) {\n      if (i \u003d\u003d 0) {\n        temp \u003d rdfTrp(i) + \" \u003c\u003d \"\n      } else {\n        temp +\u003d rdfTrp(i) + \" \\u2227 \"\n      }\n    }\n    temp \u003d temp.stripSuffix(\" \\u2227 \")\n    temp\n  }.toSeq\n  \nvar rddOut \u003d spark.sparkContext.parallelize(outString).repartition(1)\n\nrddOut.saveAsTextFile(outputPath + \"/testOut\")",
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 12:09:59 PM",
+      "dateUpdated": "Dec 27, 2017 2:22:56 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "scala",
+          "editOnDblClick": false
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/scala",
+        "title": true
       },
       "settings": {
         "params": {},
@@ -57,7 +63,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport scala.collection.mutable\n\nimport net.sansa_stack.rdf.spark.model.JenaSparkRDDOps\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.{RDFGraphLoader, DfLoader}\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\ninput: String \u003d hdfs://namenode:8020/data/resourcesMineRules_sampledata.tsv\n\noutputPath: String \u003d hdfs://namenode:8020/output\n\nhdfsPath: String \u003d hdfs://namenode:8020/output/\n\nops: net.sansa_stack.rdf.spark.model.JenaSparkRDDOps{val sparkContext: org.apache.spark.SparkContext} \u003d net.sansa_stack.rdf.spark.model.JenaSparkRDDOps$$anon$1@29a1c41\n\nimport ops._\n\nknow: net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB \u003d net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB@120c52b6\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\njava.lang.IncompatibleClassChangeError: Implementing class\n  at java.lang.ClassLoader.defineClass1(Native Method)\n  at java.lang.ClassLoader.defineClass(ClassLoader.java:763)\n  at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)\n  at java.net.URLClassLoader.defineClass(URLClassLoader.java:467)\n  at java.net.URLClassLoader.access$100(URLClassLoader.java:73)\n  at java.net.URLClassLoader$1.run(URLClassLoader.java:368)\n  at java.net.URLClassLoader$1.run(URLClassLoader.java:362)\n  at java.security.AccessController.doPrivileged(Native Method)\n  at java.net.URLClassLoader.findClass(URLClassLoader.java:361)\n  at java.lang.ClassLoader.loadClass(ClassLoader.java:424)\n  at java.lang.ClassLoader.loadClass(ClassLoader.java:357)\n  at java.lang.ClassLoader.defineClass1(Native Method)\n  at java.lang.ClassLoader.defineClass(ClassLoader.java:763)\n  at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)\n  at java.net.URLClassLoader.defineClass(URLClassLoader.java:467)\n  at java.net.URLClassLoader.access$100(URLClassLoader.java:73)\n  at java.net.URLClassLoader$1.run(URLClassLoader.java:368)\n  at java.net.URLClassLoader$1.run(URLClassLoader.java:362)\n  at java.security.AccessController.doPrivileged(Native Method)\n  at java.net.URLClassLoader.findClass(URLClassLoader.java:361)\n  at java.lang.ClassLoader.loadClass(ClassLoader.java:424)\n  at java.lang.ClassLoader.loadClass(ClassLoader.java:357)\n  at com.typesafe.scalalogging.slf4j.Logger$.apply(Logger.scala:31)\n  at net.sansa_stack.ml.spark.mining.amieSpark.RDFGraphLoader$.\u003cinit\u003e(RDFGraphLoader.scala:17)\n  at net.sansa_stack.ml.spark.mining.amieSpark.RDFGraphLoader$.\u003cclinit\u003e(RDFGraphLoader.scala)\n  ... 54 elided\n"
+            "data": "\nimport scala.collection.mutable\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.{RDFGraphLoader, DfLoader}\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\ninput: String \u003d hdfs://namenode:8020/data/MineRules_sampledata.tsv\n\noutputPath: String \u003d hdfs://namenode:8020/output\n\nhdfsPath: String \u003d hdfs://namenode:8020/output/\n\nknow: net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB \u003d net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB@7fc0c30d\n\nalgo: net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm \u003d net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm@5e16d284\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\norg.apache.spark.SparkException: Job 236 cancelled part of cancelled job group zeppelin-20170511-114911_1382631593\n  at org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1435)\n  at org.apache.spark.scheduler.DAGScheduler.handleJobCancellation(DAGScheduler.scala:1375)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleJobGroupCancelled$1.apply$mcVI$sp(DAGScheduler.scala:788)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleJobGroupCancelled$1.apply(DAGScheduler.scala:788)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleJobGroupCancelled$1.apply(DAGScheduler.scala:788)\n  at scala.collection.mutable.HashSet.foreach(HashSet.scala:78)\n  at org.apache.spark.scheduler.DAGScheduler.handleJobGroupCancelled(DAGScheduler.scala:788)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:1625)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1605)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1594)\n  at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:48)\n  at org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:628)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1925)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1938)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1951)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1965)\n  at org.apache.spark.rdd.RDD$$anonfun$collect$1.apply(RDD.scala:936)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:151)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:112)\n  at org.apache.spark.rdd.RDD.withScope(RDD.scala:362)\n  at org.apache.spark.rdd.RDD.collect(RDD.scala:935)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.bindingExists(KBObject.scala:469)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$bindingExists$2.apply(KBObject.scala:558)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$bindingExists$2.apply(KBObject.scala:506)\n  at scala.collection.IndexedSeqOptimized$class.foreach(IndexedSeqOptimized.scala:33)\n  at scala.collection.mutable.ArrayOps$ofRef.foreach(ArrayOps.scala:186)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.bindingExists(KBObject.scala:506)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1$$anonfun$apply$3.apply(KBObject.scala:631)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1$$anonfun$apply$3.apply(KBObject.scala:613)\n  at scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n  at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:48)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1.apply(KBObject.scala:613)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1.apply(KBObject.scala:612)\n  at scala.collection.mutable.HashMap$$anonfun$foreach$1.apply(HashMap.scala:99)\n  at scala.collection.mutable.HashMap$$anonfun$foreach$1.apply(HashMap.scala:99)\n  at scala.collection.mutable.HashTable$class.foreachEntry(HashTable.scala:230)\n  at scala.collection.mutable.HashMap.foreachEntry(HashMap.scala:40)\n  at scala.collection.mutable.HashMap.foreach(HashMap.scala:99)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.countProjectionQueriesDF(KBObject.scala:612)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.addClosingAtom(KBObject.scala:1191)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm.refine(MineRules.scala:250)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm$$anonfun$ruleMining$1$$anonfun$apply$mcVI$sp$1.apply$mcVI$sp(MineRules.scala:197)\n  at scala.collection.immutable.Range.foreach$mVc$sp(Range.scala:160)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm$$anonfun$ruleMining$1.apply$mcVI$sp(MineRules.scala:170)\n  at scala.collection.immutable.Range.foreach$mVc$sp(Range.scala:160)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm.ruleMining(MineRules.scala:122)\n  ... 46 elided\n"
           }
         ]
       },
@@ -65,8 +71,8 @@
       "jobName": "paragraph_1494503351941_-977125242",
       "id": "20170511-114911_1382631593",
       "dateCreated": "May 11, 2017 11:49:11 AM",
-      "dateStarted": "May 11, 2017 12:09:59 PM",
-      "dateFinished": "May 11, 2017 12:10:02 PM",
+      "dateStarted": "Dec 27, 2017 2:21:02 PM",
+      "dateFinished": "Dec 27, 2017 2:22:50 PM",
       "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
@@ -88,25 +94,25 @@
   "name": "Machine Learning",
   "id": "2CGRVF4X7",
   "angularObjects": {
-    "2CG8J6PMC:shared_process": [],
-    "2CJ7BHHY4:shared_process": [],
-    "2CJ53XF3T:shared_process": [],
-    "2CJ91WSMS:shared_process": [],
-    "2CHRJ4ED5:shared_process": [],
-    "2CGQCZKKU:shared_process": [],
-    "2CJAYHY6H:shared_process": [],
-    "2CHD4FMZM:shared_process": [],
-    "2CJ52YCA8:shared_process": [],
-    "2CHN8NJ6V:shared_process": [],
-    "2CFWQ38ZB:shared_process": [],
-    "2CGS2F3PY:shared_process": [],
-    "2CGRFBUNZ:shared_process": [],
-    "2CJUM7XAZ:shared_process": [],
-    "2CG7V7TS9:shared_process": [],
-    "2CJNF1N75:shared_process": [],
-    "2CJ75B163:shared_process": [],
-    "2CFEUMGW8:shared_process": [],
-    "2CHJ6HZ7K:shared_process": []
+    "2D4ERZXXW:shared_process": [],
+    "2D4EPAJD4:shared_process": [],
+    "2D3BKJA7V:shared_process": [],
+    "2D22Q8VER:shared_process": [],
+    "2D4BARTEP:shared_process": [],
+    "2D4VXHXBJ:shared_process": [],
+    "2D1HR4PUY:shared_process": [],
+    "2D28CYVNT:shared_process": [],
+    "2D3KBK32J:shared_process": [],
+    "2D376ADYX:shared_process": [],
+    "2D4ZA8GES:shared_process": [],
+    "2D5974FPG:shared_process": [],
+    "2D1RKBFHH:shared_process": [],
+    "2D4J5PAAQ:shared_process": [],
+    "2D55HQ7RC:shared_process": [],
+    "2D3H8E9AU:shared_process": [],
+    "2D271H4X8:shared_process": [],
+    "2D37JTAJZ:shared_process": [],
+    "2D4M2X1ES:shared_process": []
   },
   "config": {},
   "info": {}
