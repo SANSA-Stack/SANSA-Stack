@@ -10,13 +10,13 @@ object BorderFlowClustering {
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in)
+        run(config.in, config.)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: String): Unit = {
+  def run(input: String, algName:String): Unit = {
 
     val spark = SparkSession.builder
       .appName(s"BorderFlow example ( $input )")
@@ -27,14 +27,20 @@ object BorderFlowClustering {
     println("============================================")
     println("| Border Flow example                      |")
     println("============================================")
-
-    BorderFlow(spark, input)
+    
+    val borderflow = algName match {
+      case "borderflow"       => BorderFlow(spark, input)
+      case "firsthardening" => FirstHardeninginBorderFlow(spark, input, output)
+      case _ =>
+        throw new RuntimeException("'" + algName + "' - Not supported, yet.")
+    }
+    
 
     spark.stop
 
   }
 
-  case class Config(in: String = "")
+  case class Config(in: String = "", alg:String ="borderflow")
 
   val parser = new scopt.OptionParser[Config]("BorderFlow") {
 
@@ -43,6 +49,10 @@ object BorderFlowClustering {
     opt[String]('i', "input").required().valueName("<path>").
       action((x, c) => c.copy(in = x)).
       text("path to file contains the input files")
+      
+    opt[String]('a', "algName").required().valueName("{borderflow | firsthardening }").
+      action((x, c) => c.copy(alg = x)).
+      text("BorderFlow algorithm type")
 
     help("help").text("prints this usage text")
   }
