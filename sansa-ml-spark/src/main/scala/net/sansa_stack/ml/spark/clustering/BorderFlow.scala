@@ -61,7 +61,7 @@ object BorderFlow {
 	 *
 	 */
     val orient = 1
-    val selectYourSimilarity = 0
+    val selectYourSimilarity = 1
 
     def clusterRdd(): List[List[Long]] = {
       graphXinBorderFlow(orient, selectYourSimilarity)
