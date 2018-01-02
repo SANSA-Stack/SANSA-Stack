@@ -34,7 +34,7 @@ object LiteralNumericRangeChecker {
    */
 
     val s2 = dataset.filter(f =>
-      f.getPredicate.getLiteralLexicalForm.contains("rdf:type")
+      f.getPredicate.getLocalName.contains("type")
         && f.getSubject.getLiteralLexicalForm.contains(subject)).cache()
 
     val s = s2.filter(f => f.getPredicate.getLiteralLexicalForm.contains(property)

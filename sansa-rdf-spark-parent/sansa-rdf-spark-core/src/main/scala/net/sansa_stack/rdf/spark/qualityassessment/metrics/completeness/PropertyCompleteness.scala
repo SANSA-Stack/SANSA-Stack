@@ -30,7 +30,7 @@ object PropertyCompleteness {
    */
 
     val s2 = dataset.filter(f =>
-      f.getPredicate.getLiteralLexicalForm.contains("rdf:type")
+      f.getPredicate.getLocalName.contains("type")
         && f.getObject.getLiteralLexicalForm.contains(subject)).cache()
     val s = s2.filter(_.getPredicate.getLiteralLexicalForm.contains(property))
 

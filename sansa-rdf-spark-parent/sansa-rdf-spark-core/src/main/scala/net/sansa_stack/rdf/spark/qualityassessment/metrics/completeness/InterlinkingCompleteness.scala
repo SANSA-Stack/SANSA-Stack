@@ -39,8 +39,6 @@ object InterlinkingCompleteness extends Serializable {
     			union
    		  isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
    */
-    println("triples")
-
     val Interlinked =
       dataset.filter(f =>
         f.getSubject.isURI() && isInternal(f.getSubject) && f.getObject.isURI() && isExternal(f.getObject))
