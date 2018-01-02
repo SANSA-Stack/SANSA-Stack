@@ -4,7 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
 import org.apache.jena.sparql.core.Quad
-import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils
+import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
 import net.sansa_stack.rdf.spark.utils.Vocabularies
 import net.sansa_stack.rdf.spark.io.NQuadReader
 import shapeless.TypeCase
@@ -30,7 +30,6 @@ import shapeless.TypeCase
  */
 object InterlinkingCompleteness extends Serializable {
   @transient var spark: SparkSession = _
-  val prefixes = DatasetUtils.getPrefixes()
 
   def apply(dataset: RDD[Triple]): Long = {
 

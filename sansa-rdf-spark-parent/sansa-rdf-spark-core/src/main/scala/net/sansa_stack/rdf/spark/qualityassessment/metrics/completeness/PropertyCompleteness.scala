@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
-import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils
+import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
 
 /**
  * This metric measures the property completeness by checking
@@ -14,8 +14,6 @@ import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils
 object PropertyCompleteness {
 
   @transient var spark: SparkSession = _
-  val subject = DatasetUtils.getSubjectClassURI()
-  val property = DatasetUtils.getPropertyURI()
   
   def apply(dataset: RDD[Triple]) = {
 

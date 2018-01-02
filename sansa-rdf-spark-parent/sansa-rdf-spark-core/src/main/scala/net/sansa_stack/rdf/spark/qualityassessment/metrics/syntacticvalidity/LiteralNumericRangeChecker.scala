@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
 import org.apache.spark.rdd.RDD
-import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils
+import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
 
 /**
  * Check if the incorrect numeric range for the given predicate and given class of subjects.
@@ -14,12 +14,6 @@ import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils
 object LiteralNumericRangeChecker {
 
   @transient var spark: SparkSession = _
-
-  val subject = DatasetUtils.getSubjectClassURI()
-  val property = DatasetUtils.getPropertyURI()
-
-  val lowerBound = DatasetUtils.getLowerBound();
-  val upperBound = DatasetUtils.getUpperBound();
 
   def apply(dataset: RDD[Triple]) = {
 
@@ -42,6 +36,8 @@ object LiteralNumericRangeChecker {
 
     val S = s.distinct().count()
     val S2 = s2.distinct().count()
+    
+    println("subject: " + subject + ", property:" + property + ", upperBound: " + upperBound)
 
     val accuracy = if (S2 > 0) S / S2 else 0
 
