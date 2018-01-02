@@ -43,6 +43,9 @@ object BorderFlow {
     val input = URI.create(edgesInputPath)
     val output = input.getPath.substring(0, input.getPath.lastIndexOf("/")) + "/output"
 
+    val outputevlhard = output + "/outputevlhard"
+    val outputevlsoft = output + "/outputevlsoft"
+
     val triplesRDD = NTripleReader.load(spark, input)
 
     val graph = LoadGraph.asString(triplesRDD)
@@ -840,16 +843,16 @@ object BorderFlow {
 
       val evaluate = AiBi(bigList, X)
 
-      val av = evaluate.sum/evaluate.size
-      val evaluateString : List[String] = List(av.toString())
+      val av = evaluate.sum / evaluate.size
+      val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
-      
+
       evaluateStringRDD.saveAsTextFile(outputevlhard.mkString("\n"))
-  
-      val avsoft = evaluateSoft.sum/evaluateSoft.size
-      val evaluateStringS : List[String] = List(avsoft.toString())
+
+      val avsoft = evaluateSoft.sum / evaluateSoft.size
+      val evaluateStringS: List[String] = List(avsoft.toString())
       val evaluateStringRDDS = spark.sparkContext.parallelize(evaluateStringS)
-      
+
       evaluateStringRDDS.saveAsTextFile(outputevlsoft.mkString("\n"))
       //println(s"averagesoft: $avsoft\n")
 
