@@ -3,14 +3,14 @@ package net.sansa_stack.examples.spark.ml.clustering
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
-import net.sansa_stack.ml.spark.clustering.BorderFlow
+import net.sansa_stack.ml.spark.clustering.{BorderFlow,FirstHardeninginBorderFlow}
 
 object BorderFlowClustering {
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.)
+        run(config.in, config.alg)
       case None =>
         println(parser.usage)
     }
@@ -30,11 +30,10 @@ object BorderFlowClustering {
     
     val borderflow = algName match {
       case "borderflow"       => BorderFlow(spark, input)
-      case "firsthardening" => FirstHardeninginBorderFlow(spark, input, output)
+      case "firsthardening" => FirstHardeninginBorderFlow(spark, input)
       case _ =>
         throw new RuntimeException("'" + algName + "' - Not supported, yet.")
     }
-    
 
     spark.stop
 
