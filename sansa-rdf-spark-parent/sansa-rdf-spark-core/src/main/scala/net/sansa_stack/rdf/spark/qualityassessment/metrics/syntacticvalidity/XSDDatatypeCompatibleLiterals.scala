@@ -10,21 +10,18 @@ import org.apache.spark.rdd.RDD
  *
  */
 object XSDDatatypeCompatibleLiterals {
+  implicit class XSDDatatypeCompatibleLiteralsFunctions(dataset: RDD[Triple]) extends Serializable {
+    def assessXSDDatatypeCompatibleLiterals() = {
 
-  @transient var spark: SparkSession = _
-
-  def apply(dataset: RDD[Triple]) = {
-
-    /*
+      /*
    * isLiteral(?o)&&getDatatype(?o) && isLexicalFormCompatibleWithDatatype(?o)
    */
+      val noMalformedDatatypeLiterals = dataset.filter(f => f.getObject.isLiteral() && isLexicalFormCompatibleWithDatatype(f.getObject))
+      noMalformedDatatypeLiterals.map(_.getObject).distinct().count()
 
-    val noMalformedDatatypeLiterals = dataset.filter(f => f.getObject.isLiteral() && isLexicalFormCompatibleWithDatatype(f.getObject))
+    }
 
-    noMalformedDatatypeLiterals.map(_.getObject).distinct().count()
+    def isLexicalFormCompatibleWithDatatype(node: Node) = node.getLiteralDatatype().isValid(node.getLiteralLexicalForm)
 
   }
-
-  def isLexicalFormCompatibleWithDatatype(node: Node) = node.getLiteralDatatype().isValid(node.getLiteralLexicalForm)
-
 }

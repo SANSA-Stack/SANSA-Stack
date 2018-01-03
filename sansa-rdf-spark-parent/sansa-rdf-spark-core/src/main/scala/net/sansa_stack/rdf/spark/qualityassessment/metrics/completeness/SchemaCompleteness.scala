@@ -10,10 +10,8 @@ import org.apache.jena.graph.{ Triple, Node }
  * relations in the gold standard.
  */
 object SchemaCompleteness {
-  @transient var spark: SparkSession = _
-
-  def apply(dataset: RDD[Triple]) = {
-
+implicit class SchemaCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
+ def assessSchemaCompleteness() = {
     /*
      -->Rule->Filter-->
    		select (?p2, o) where ?s p=rdf:type isIRI(?o); ?p2 ?o2
@@ -39,4 +37,5 @@ object SchemaCompleteness {
     else 0.00
   }
 
+}
 }

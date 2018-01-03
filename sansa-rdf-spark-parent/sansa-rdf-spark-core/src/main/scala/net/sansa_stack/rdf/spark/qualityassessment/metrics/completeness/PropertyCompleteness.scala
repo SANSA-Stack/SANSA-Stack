@@ -12,31 +12,29 @@ import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
  * whether instances of the given RDF class contain the specified RDF predicate.
  */
 object PropertyCompleteness {
+  implicit class PropertyCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
+    def assessPropertyCompleteness() = {
 
-  @transient var spark: SparkSession = _
-  
-  def apply(dataset: RDD[Triple]) = {
-
-    /*
+      /*
      -->Rule->Filter-->
    		"select (?s) where ?s p=rdf:type o=Type; p2=Property ?o2
 			select (?s2) where ?s2 p=rdf:type o=Type"
 			-->Action-->
-			S+=?s && S2+=?s2	
+			S+=?s && S2+=?s2
 			-->Post-processing-->
 			|S| / |S2|
    */
+      val s2 = dataset.filter(f =>
+        f.getPredicate.getLocalName.contains("type")
+          && f.getObject.getLiteralLexicalForm.contains(subject)).cache()
+      val s = s2.filter(_.getPredicate.getLiteralLexicalForm.contains(property))
 
-    val s2 = dataset.filter(f =>
-      f.getPredicate.getLocalName.contains("type")
-        && f.getObject.getLiteralLexicalForm.contains(subject)).cache()
-    val s = s2.filter(_.getPredicate.getLiteralLexicalForm.contains(property))
+      val S = s.map(_.getSubject).distinct().count()
+      val S2 = s2.map(_.getSubject).distinct().count()
 
-    val S = s.map(_.getSubject).distinct().count()
-    val S2 = s2.map(_.getSubject).distinct().count()
+      if (S2 > 0) S / S2
+      else 0
+    }
 
-    if (S2 > 0) S / S2
-    else 0
   }
-
 }

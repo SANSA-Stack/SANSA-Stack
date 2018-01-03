@@ -12,35 +12,33 @@ import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
  * The range is specified by the user by indicating the lower and the upper bound of the value.
  */
 object LiteralNumericRangeChecker {
+  implicit class LiteralNumericRangeCheckerFunctions(dataset: RDD[Triple]) extends Serializable {
+    def assessLiteralNumericRangeChecker() = {
 
-  @transient var spark: SparkSession = _
-
-  def apply(dataset: RDD[Triple]) = {
-
-    /*
+      /*
    		 -->Rule->Filter-->
    		"select COUNT(?s) where ?s rdf:type o=Type .
 			select COUNT(?s2) where ?s2 p=rdf:type o=Type ?s <"+ property +"> ?o . FILTER (?o > "+ lowerBound +" && ?o < "+ upperBound +") ."
 			-->Action-->
-			S+=?s && S2+=?s2	
+			S+=?s && S2+=?s2
 			-->Post-processing-->
 			|S| / |S2|
    */
+      val s2 = dataset.filter(f =>
+        f.getPredicate.getLocalName.contains("type")
+          && f.getSubject.getLiteralLexicalForm.contains(subject)).cache()
 
-    val s2 = dataset.filter(f =>
-      f.getPredicate.getLocalName.contains("type")
-        && f.getSubject.getLiteralLexicalForm.contains(subject)).cache()
+      val s = s2.filter(f => f.getPredicate.getLiteralLexicalForm.contains(property)
+        && (f.getObject.getLiteralValue.toString().toDouble > lowerBound && f.getObject.getLiteralValue.toString().toDouble < upperBound))
 
-    val s = s2.filter(f => f.getPredicate.getLiteralLexicalForm.contains(property)
-      && (f.getObject.getLiteralValue.toString().toDouble > lowerBound && f.getObject.getLiteralValue.toString().toDouble < upperBound))
+      val S = s.distinct().count()
+      val S2 = s2.distinct().count()
 
-    val S = s.distinct().count()
-    val S2 = s2.distinct().count()
-    
-    println("subject: " + subject + ", property:" + property + ", upperBound: " + upperBound)
+      println("subject: " + subject + ", property:" + property + ", upperBound: " + upperBound)
 
-    val accuracy = if (S2 > 0) S / S2 else 0
+      val accuracy = if (S2 > 0) S / S2 else 0
 
-    accuracy
+      accuracy
+    }
   }
 }

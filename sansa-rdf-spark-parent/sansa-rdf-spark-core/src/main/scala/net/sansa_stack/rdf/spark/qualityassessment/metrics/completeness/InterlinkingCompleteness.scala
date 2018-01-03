@@ -3,11 +3,7 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
-import org.apache.jena.sparql.core.Quad
 import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
-import net.sansa_stack.rdf.spark.utils.Vocabularies
-import net.sansa_stack.rdf.spark.io.NQuadReader
-import shapeless.TypeCase
 
 /*
  * This metric measures the interlinking completeness. Since any resource of a
@@ -28,47 +24,45 @@ import shapeless.TypeCase
  * 
  * Zaveri et. al [http://www.semantic-web-journal.net/system/files/swj414.pdf]
  */
-object InterlinkingCompleteness extends Serializable {
-  @transient var spark: SparkSession = _
-
-  def apply(dataset: RDD[Triple]): Long = {
-
-    /*
+object InterlinkingCompleteness {
+  implicit class InterlinkingCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
+    def assessInterlinkingCompleteness() = {
+      /*
    		* isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
     			union
    		  isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
    */
-    val Interlinked =
-      dataset.filter(f =>
-        f.getSubject.isURI() && isInternal(f.getSubject) && f.getObject.isURI() && isExternal(f.getObject))
-        .union(
-          dataset.filter(f =>
-            f.getSubject.isURI() && isExternal(f.getSubject) && f.getObject.isURI() && isInternal(f.getObject)))
+      val Interlinked =
+        dataset.filter(f =>
+          f.getSubject.isURI() && isInternal(f.getSubject) && f.getObject.isURI() && isExternal(f.getObject))
+          .union(
+            dataset.filter(f =>
+              f.getSubject.isURI() && isExternal(f.getSubject) && f.getObject.isURI() && isInternal(f.getObject)))
 
-    Interlinked.cache()
+      Interlinked.cache()
 
-    val numSubj = Interlinked.map(_.getSubject).distinct().count()
-    val numObj = Interlinked.map(_.getSubject).distinct().count()
+      val numSubj = Interlinked.map(_.getSubject).distinct().count()
+      val numObj = Interlinked.map(_.getSubject).distinct().count()
 
-    val numResources = numSubj + numObj
-    val numInterlinkedResources = Interlinked.count()
+      val numResources = numSubj + numObj
+      val numInterlinkedResources = Interlinked.count()
 
-    val value = if (numResources > 0)
-      numInterlinkedResources / numResources;
-    else 0
+      val value = if (numResources > 0)
+        numInterlinkedResources / numResources;
+      else 0
 
-    def dcatify() = "<addProperty>$value<Add[rp[ery>"
+      value
+    }
 
-    value
+    /*
+	*  Checks if a resource ?node is local
+	*/
+    def isInternal(node: Node) = prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
+
+    /*
+	*  Checks if a resource ?node is local
+	*/
+    def isExternal(node: Node) = !prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
+
   }
-
-  /*
-	*  Checks if a resource ?node is local
-	*/
-  def isInternal(node: Node) = prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
-
-  /*
-	*  Checks if a resource ?node is local
-	*/
-  def isExternal(node: Node) = !prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
 }
