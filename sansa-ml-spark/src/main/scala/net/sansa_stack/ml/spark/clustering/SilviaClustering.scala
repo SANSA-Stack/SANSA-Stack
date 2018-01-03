@@ -730,7 +730,7 @@ object SilviaClustering {
       val evaluateString: List[String] = List(avsoft.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
-      evaluateStringRDD.saveAsTextFile(outputeval.mkString("\n"))
+      evaluateStringRDD.saveAsTextFile(outputeval)
 
       if (g == 0) {
         result = hardening4
@@ -759,7 +759,7 @@ object SilviaClustering {
     //println(s"RDF Cluster assignments: $rdf\n")
     val rdfRDD = spark.sparkContext.parallelize(rdf)
 
-    rdfRDD.saveAsTextFile(output.mkString("\n"))
+    rdfRDD.saveAsTextFile(output)
 
   }
 }
