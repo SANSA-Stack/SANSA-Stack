@@ -34,8 +34,6 @@ object LiteralNumericRangeChecker {
       val S = s.distinct().count()
       val S2 = s2.distinct().count()
 
-      println("subject: " + subject + ", property:" + property + ", upperBound: " + upperBound)
-
       val accuracy = if (S2 > 0) S / S2 else 0
 
       accuracy
