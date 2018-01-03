@@ -43,8 +43,15 @@ object RDFQualityAssessment {
 
     val syntacticvalidity_XSDDatatypeCompatibleLiterals = triples.assessXSDDatatypeCompatibleLiterals()
 
-    val AssessQualityStr = s"completeness_schema:$completeness_schema \n completeness_interlinking:$completeness_interlinking \n completeness_property:$completeness_property \n"
-    println(s"AssessQuality for $rdf_quality_file : $AssessQualityStr")
+    val AssessQualityStr = s"""
+      completeness_schema:$completeness_schema
+      completeness_interlinking:$completeness_interlinking 
+      completeness_property:$completeness_property
+      syntacticvalidity_literalnumeric:$syntacticvalidity_literalnumeric 
+      syntacticvalidity_XSDDatatypeCompatibleLiterals:$syntacticvalidity_XSDDatatypeCompatibleLiterals
+      """
+
+    println(s"\n AssessQuality for $rdf_quality_file :\n $AssessQualityStr")
   }
 
   case class Config(
