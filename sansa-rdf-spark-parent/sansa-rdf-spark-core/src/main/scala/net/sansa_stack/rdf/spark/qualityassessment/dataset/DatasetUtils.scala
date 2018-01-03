@@ -1,50 +1,37 @@
 package net.sansa_stack.rdf.spark.qualityassessment.dataset
 
 import com.typesafe.config.{ Config, ConfigFactory }
-
 /*
  *
  */
 object DatasetUtils {
 
-  @transient lazy val conf: Config = ConfigFactory.load("metrics.properties")
+  @transient lazy val conf: Config = ConfigFactory.load("metrics.conf")
+  
+  
+  val prefixes = conf.getStringList("rdf.qualityassessment.dataset.prefixes")
 
-  val prefixes = conf.getList("rdf.qualityassessment.dataset.prefixes")
-
-  val subject: String = conf.getString("rdf.qualityassessment.dataset.subject")
-  val property: String = conf.getString("rdf.qualityassessment.dataset.property")
-
-  val lowerBound: Double = conf.getDouble("rdf.qualityassessment.dataset.lowerBound")
-  val upperBound: Double = conf.getDouble("rdf.qualityassessment.dataset.upperBound")
-
-  /*def setPrefixes(prefixes: List[String]) {
-    _prefixes = prefixes;
-
-  }
-  def getPrefixes() = _prefixes;
-
-
+  /*
    * Subject Class URI
    * @return Class of subjects for which property value is checked.
-
-  def getSubjectClassURI() = _subject
-
-
+   */
+  val subject: String = conf.getString("rdf.qualityassessment.dataset.subject")
+  
+  /*
    * Property URI
    * @return Property to be checked.
-
-  def getPropertyURI() = _property
-
-
+   */
+  val property: String = conf.getString("rdf.qualityassessment.dataset.property")
+  
+  /*
    * LowerBound
    * Lower bound to evaluate.
-
-  def getLowerBound() = _lowerBound
-
-
+   */
+  val lowerBound: Double = conf.getDouble("rdf.qualityassessment.dataset.lowerBound")
+  
+  /*
    * UpperBound
    * Upper bound to evaluate.
-
-  def getUpperBound() = _upperBound*/
-
+   */
+  val upperBound: Double = conf.getDouble("rdf.qualityassessment.dataset.upperBound")
 }
