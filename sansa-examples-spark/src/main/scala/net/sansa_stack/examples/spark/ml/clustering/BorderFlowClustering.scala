@@ -30,7 +30,7 @@ object BorderFlowClustering {
 
     val borderflow = algName match {
       case "borderflow"     => BorderFlow(spark, input, output, outputevlsoft, outputevlhard)
-      case "firsthardening" => FirstHardeninginBorderFlow(spark, input, output, outputevlsoft)
+      case "firsthardening" => FirstHardeninginBorderFlow(spark, input, output, outputevlhard)
       case _ =>
         throw new RuntimeException("'" + algName + "' - Not supported, yet.")
     }
@@ -57,17 +57,17 @@ object BorderFlowClustering {
       action((x, c) => c.copy(out = x)).
       text("the output directory")
 
-    opt[String]('e', "outevlsoft").required().valueName("<directory>").
+    opt[String]('e', "outevlsoft").optional().valueName("<directory>").
       action((x, c) => c.copy(outevlsoft = x)).
-      text("the outevlsoft directory")
+      text("the outevlsoft directory (used only for alg 'borderflow')")
 
     opt[String]('h' ,"outevlhard").optional().valueName("<directory>").
       action((x, c) => c.copy(outevlhard = x)).
-      text("the outevlhard directory (used only for alg 'firsthardening')")
+      text("the outevlhard directory ")
 
     help("help").text("prints this usage text")
     checkConfig(c =>
-      if (c.alg == "firsthardening" && c.outevlhard.isEmpty) failure("Option --outevlhard must not be empty if alg 'firsthardening' is set")
+      if (c.alg == "borderflow" && c.outevlsoft.isEmpty) failure("Option --outevlsoft must not be empty if alg 'borderflow' is set")
       else success)
   }
 }
