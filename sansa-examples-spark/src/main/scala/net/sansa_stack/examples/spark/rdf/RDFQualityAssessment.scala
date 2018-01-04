@@ -43,6 +43,14 @@ object RDFQualityAssessment {
     val syntacticvalidity_XSDDatatypeCompatibleLiterals = triples.assessXSDDatatypeCompatibleLiterals()
     
     val availability_DereferenceableUris  = triples.assessDereferenceableUris()
+    
+    val relevancy_CoverageDetail = triples.assessCoverageDetail()
+    val relevancy_CoverageScope = triples.assessCoverageScope()
+    val relevancy_AmountOfTriples = triples.assessAmountOfTriples()
+    
+    val performance_NoHashURIs = triples.assessNoHashUris()
+    val understandability_LabeledResources = triples.assessLabeledResources()
+    
 
     val AssessQualityStr = s"""
       completeness_schema:$completeness_schema
@@ -51,6 +59,11 @@ object RDFQualityAssessment {
       syntacticvalidity_literalnumeric:$syntacticvalidity_literalnumeric 
       syntacticvalidity_XSDDatatypeCompatibleLiterals:$syntacticvalidity_XSDDatatypeCompatibleLiterals
       availability_DereferenceableUris:$availability_DereferenceableUris
+      relevancy_CoverageDetail:$relevancy_CoverageDetail
+      relevancy_CoverageScope:$relevancy_CoverageScope
+      relevancy_AmountOfTriples:$relevancy_AmountOfTriples
+      performance_NoHashURIs:$performance_NoHashURIs
+      understandability_LabeledResources:$understandability_LabeledResources      
       """
 
     println(s"\n AssessQuality for $rdf_quality_file :\n $AssessQualityStr")
