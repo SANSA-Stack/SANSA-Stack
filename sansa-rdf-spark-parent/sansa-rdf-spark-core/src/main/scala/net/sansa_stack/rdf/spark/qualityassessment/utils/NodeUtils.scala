@@ -78,4 +78,7 @@ object NodeUtils {
   def isHashUri(node: Node): Boolean = node.getURI().indexOf("#") > -1
   
   def isLabeled(node:Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_LABEL)
+  
+  def isRDFSClass(node:Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_CLASS)
+  def isOWLClass(node:Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL_CLASS)
 }
