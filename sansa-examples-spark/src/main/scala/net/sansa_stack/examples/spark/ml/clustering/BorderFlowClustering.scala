@@ -61,7 +61,7 @@ object BorderFlowClustering {
       action((x, c) => c.copy(outevlsoft = x)).
       text("the outevlsoft directory")
 
-    opt[String]("outevlhard").optional().valueName("<directory>").
+    opt[String]('h' ,"outevlhard").optional().valueName("<directory>").
       action((x, c) => c.copy(outevlhard = x)).
       text("the outevlhard directory (used only for alg 'firsthardening')")
 
