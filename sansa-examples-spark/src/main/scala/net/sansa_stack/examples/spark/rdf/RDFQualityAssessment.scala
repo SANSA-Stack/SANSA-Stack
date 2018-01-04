@@ -40,8 +40,9 @@ object RDFQualityAssessment {
     val completeness_property = triples.assessPropertyCompleteness()
 
     val syntacticvalidity_literalnumeric = triples.assessLiteralNumericRangeChecker()
-
     val syntacticvalidity_XSDDatatypeCompatibleLiterals = triples.assessXSDDatatypeCompatibleLiterals()
+    
+    val availability_DereferenceableUris  = triples.assessDereferenceableUris()
 
     val AssessQualityStr = s"""
       completeness_schema:$completeness_schema
@@ -49,6 +50,7 @@ object RDFQualityAssessment {
       completeness_property:$completeness_property
       syntacticvalidity_literalnumeric:$syntacticvalidity_literalnumeric 
       syntacticvalidity_XSDDatatypeCompatibleLiterals:$syntacticvalidity_XSDDatatypeCompatibleLiterals
+      availability_DereferenceableUris:$availability_DereferenceableUris
       """
 
     println(s"\n AssessQuality for $rdf_quality_file :\n $AssessQualityStr")
