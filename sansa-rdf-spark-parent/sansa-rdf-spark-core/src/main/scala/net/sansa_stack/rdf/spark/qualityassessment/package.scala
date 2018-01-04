@@ -17,6 +17,7 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.CoverageSco
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.AmountOfTriples._
 
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.performance.NoHashURIs._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.understandability.LabeledResources._
 
 package object qualityassessment {
 
@@ -38,6 +39,7 @@ package object qualityassessment {
   
   implicit def AssessNoHashURIsFunctions(dataset: RDD[Triple]) = new NoHashURIsFunctions(dataset)
   
+  implicit def AssessLabeledResourcesFunctions(dataset: RDD[Triple]) = new LabeledResourcesFunctions(dataset)
   
 
 }
