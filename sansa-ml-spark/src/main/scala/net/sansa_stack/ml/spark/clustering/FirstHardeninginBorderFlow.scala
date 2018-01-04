@@ -24,7 +24,7 @@ import org.apache.spark.graphx._
 
 object FirstHardeninginBorderFlow {
 
-  def apply(spark: SparkSession, input: String) = {
+  def apply(spark: SparkSession, input: String, output:String, outputeval:String) = {
 
     /*
 	 * Load the RDF file and convert it to a graph.
@@ -32,9 +32,9 @@ object FirstHardeninginBorderFlow {
 
     val triplesRDD = NTripleReader.load(spark, URI.create(input))
 
-    val inputPath = URI.create(input)
-    val output = inputPath.getPath.substring(0, inputPath.getPath.lastIndexOf("/")) + "/output"
-    val outputeval = output + "/outputeval"
+    //val inputPath = URI.create(input)
+    //val output = inputPath.getPath.substring(0, inputPath.getPath.lastIndexOf("/")) + "/output"
+    //val outputeval = output + "/outputeval"
 
     val graph = LoadGraph.asString(triplesRDD)
 

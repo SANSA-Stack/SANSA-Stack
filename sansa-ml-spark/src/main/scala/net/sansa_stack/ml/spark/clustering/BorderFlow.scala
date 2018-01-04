@@ -35,18 +35,18 @@ import java.net.URI
 
 object BorderFlow {
 
-  def apply(spark: SparkSession, edgesInputPath: String) = {
+  def apply(spark: SparkSession, input: String, output: String, outputevlsoft: String, outputevlhard:String) = {
 
     /*
 	 * Load the RDF file and convert it to a graph.
 	 */
-    val input = URI.create(edgesInputPath)
-    val output = input.getPath.substring(0, input.getPath.lastIndexOf("/")) + "/output"
+    //val input = URI.create(edgesInputPath)
+    // val output = input.getPath.substring(0, input.getPath.lastIndexOf("/")) + "/output"
 
-    val outputevlhard = output + "/outputevlhard"
-    val outputevlsoft = output + "/outputevlsoft"
+    //val outputevlhard = output + "/outputevlhard"
+    //val outputevlsoft = output + "/outputevlsoft"
 
-    val triplesRDD = NTripleReader.load(spark, input)
+    val triplesRDD = NTripleReader.load(spark, URI.create(input))
 
     val graph = LoadGraph.asString(triplesRDD)
 
@@ -61,7 +61,7 @@ object BorderFlow {
 	 *
 	 */
     val orient = 1
-    val selectYourSimilarity = 1
+    val selectYourSimilarity = 0
 
     def clusterRdd(): List[List[Long]] = {
       graphXinBorderFlow(orient, selectYourSimilarity)
