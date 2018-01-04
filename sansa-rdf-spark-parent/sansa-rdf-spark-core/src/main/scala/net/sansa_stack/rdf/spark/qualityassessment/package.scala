@@ -10,6 +10,8 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness.SchemaCo
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity.LiteralNumericRangeChecker._
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity.XSDDatatypeCompatibleLiterals._
 
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.availability.DereferenceableUris._
+
 package object qualityassessment {
 
   implicit def AssessInterlinkingCompletenessFunctions(dataset: RDD[Triple]) = new InterlinkingCompletenessFunctions(dataset)
@@ -21,5 +23,7 @@ package object qualityassessment {
   implicit def AssessLiteralNumericRangeCheckerFunctions(dataset: RDD[Triple]) = new LiteralNumericRangeCheckerFunctions(dataset)
 
   implicit def AssessXSDDatatypeCompatibleLiteralsFunctions(dataset: RDD[Triple]) = new XSDDatatypeCompatibleLiteralsFunctions(dataset)
+
+  implicit def AssessDereferenceableUrisFunctions(dataset: RDD[Triple]) = new DereferenceableUrisFunctions(dataset)
 
 }
