@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
-import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
+import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
 /*
  * This metric measures the interlinking completeness. Since any resource of a
@@ -53,16 +53,5 @@ object InterlinkingCompleteness {
 
       value
     }
-
-    /*
-	*  Checks if a resource ?node is local
-	*/
-    def isInternal(node: Node) = prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
-
-    /*
-	*  Checks if a resource ?node is local
-	*/
-    def isExternal(node: Node) = !prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
-
   }
 }

@@ -3,6 +3,7 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
 import org.apache.spark.rdd.RDD
+import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
 /**
  * Check if the value of a typed literal is valid with regards to
@@ -20,8 +21,5 @@ object XSDDatatypeCompatibleLiterals {
       noMalformedDatatypeLiterals.map(_.getObject).distinct().count()
 
     }
-
-    def isLexicalFormCompatibleWithDatatype(node: Node) = node.getLiteralDatatype().isValid(node.getLiteralLexicalForm)
-
   }
 }

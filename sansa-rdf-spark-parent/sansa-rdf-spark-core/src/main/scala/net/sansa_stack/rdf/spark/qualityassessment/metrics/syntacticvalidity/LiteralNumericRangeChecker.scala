@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
 import org.apache.spark.rdd.RDD
-import net.sansa_stack.rdf.spark.qualityassessment.dataset.DatasetUtils._
+import net.sansa_stack.rdf.spark.qualityassessment.utils.DatasetUtils._
 
 /**
  * Check if the incorrect numeric range for the given predicate and given class of subjects.
