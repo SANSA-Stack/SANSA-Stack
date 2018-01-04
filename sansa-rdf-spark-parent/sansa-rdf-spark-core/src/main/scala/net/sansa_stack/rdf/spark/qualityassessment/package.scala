@@ -12,6 +12,12 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity.XSD
 
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.availability.DereferenceableUris._
 
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.CoverageDetail._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.CoverageScope._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.AmountOfTriples._
+
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.performance.NoHashURIs._
+
 package object qualityassessment {
 
   implicit def AssessInterlinkingCompletenessFunctions(dataset: RDD[Triple]) = new InterlinkingCompletenessFunctions(dataset)
@@ -25,5 +31,13 @@ package object qualityassessment {
   implicit def AssessXSDDatatypeCompatibleLiteralsFunctions(dataset: RDD[Triple]) = new XSDDatatypeCompatibleLiteralsFunctions(dataset)
 
   implicit def AssessDereferenceableUrisFunctions(dataset: RDD[Triple]) = new DereferenceableUrisFunctions(dataset)
+  
+  implicit def AssessCoverageDetailFunctions(dataset: RDD[Triple]) = new CoverageDetailFunctions(dataset)
+  implicit def AssessCoverageScopeFunctions(dataset: RDD[Triple]) = new CoverageScopeFunctions(dataset)  
+  implicit def AssessAmountOfTriplesFunctions(dataset: RDD[Triple]) = new AmountOfTriplesFunctions(dataset)
+  
+  implicit def AssessNoHashURIsFunctions(dataset: RDD[Triple]) = new NoHashURIsFunctions(dataset)
+  
+  
 
 }

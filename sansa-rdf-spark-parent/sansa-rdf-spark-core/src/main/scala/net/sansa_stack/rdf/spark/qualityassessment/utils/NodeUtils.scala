@@ -72,4 +72,6 @@ object NodeUtils {
 
     isBroken
   }
+
+  def isHashUri(node: Node): Boolean = node.getURI().indexOf("#") > -1
 }
