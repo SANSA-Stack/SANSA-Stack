@@ -22,6 +22,7 @@ object SilviaClustering {
     val spark = SparkSession.builder
       .appName(s"SilviaClustering example ( $input )")
       .master("local[*]")
+      .config("spark.hadoop.validateOutputSpecs", "false")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 
