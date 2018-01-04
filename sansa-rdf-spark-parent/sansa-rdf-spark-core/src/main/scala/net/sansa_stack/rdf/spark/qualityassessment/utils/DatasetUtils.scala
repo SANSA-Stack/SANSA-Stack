@@ -1,16 +1,18 @@
-package net.sansa_stack.rdf.spark.qualityassessment.dataset
+package net.sansa_stack.rdf.spark.qualityassessment.utils
 
 import com.typesafe.config.{ Config, ConfigFactory }
+
+import collection.JavaConverters._
+
 /*
- *
+ * DataSet Utils.
  */
 object DatasetUtils {
 
   @transient lazy val conf: Config = ConfigFactory.load("metrics.conf")
   
+  val prefixes = conf.getStringList("rdf.qualityassessment.dataset.prefixes").asScala.toList
   
-  val prefixes = conf.getStringList("rdf.qualityassessment.dataset.prefixes")
-
   /*
    * Subject Class URI
    * @return Class of subjects for which property value is checked.
