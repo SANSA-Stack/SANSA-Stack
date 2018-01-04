@@ -19,13 +19,11 @@ object CoverageScope {
         .union(dataset.filter(f => f.getPredicate.getLiteralLexicalForm.equals(OWL_CLASS)).map(_.getObject).distinct())
         .count().toDouble
 
-
       val value = if (triples > 0.0)
         instances / triples;
       else 0
 
       value
-
     }
   }
 }
