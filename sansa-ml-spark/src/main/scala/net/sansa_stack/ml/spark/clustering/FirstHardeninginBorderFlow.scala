@@ -685,7 +685,7 @@ object FirstHardeninginBorderFlow {
       val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
-      evaluateStringRDD.saveAsTextFile(outputeval.mkString("\n"))
+      evaluateStringRDD.saveAsTextFile(outputeval)
 
       return bigList
     }
@@ -705,7 +705,7 @@ object FirstHardeninginBorderFlow {
     val rdf = clusterRdd.map(x => makerdf(x))
     println(s"RDF Cluster assignments: $rdf\n")
     val rdfRDD = spark.sparkContext.parallelize(rdf)
-    rdfRDD.saveAsTextFile(output.mkString("\n"))
+    rdfRDD.saveAsTextFile(output)
 
   }
 
