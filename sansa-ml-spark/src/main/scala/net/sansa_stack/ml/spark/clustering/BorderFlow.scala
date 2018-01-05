@@ -847,13 +847,13 @@ object BorderFlow {
       val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
-      evaluateStringRDD.saveAsTextFile(outputevlhard.mkString("\n"))
+      evaluateStringRDD.saveAsTextFile(outputevlhard)
 
       val avsoft = evaluateSoft.sum / evaluateSoft.size
       val evaluateStringS: List[String] = List(avsoft.toString())
       val evaluateStringRDDS = spark.sparkContext.parallelize(evaluateStringS)
 
-      evaluateStringRDDS.saveAsTextFile(outputevlsoft.mkString("\n"))
+      evaluateStringRDDS.saveAsTextFile(outputevlsoft)
       //println(s"averagesoft: $avsoft\n")
 
       bigList
@@ -883,7 +883,7 @@ object BorderFlow {
 			 * save as Text file
 			 */
 
-    rdfRDD.saveAsTextFile(output.mkString("\n"))
+    rdfRDD.saveAsTextFile(output)
 
   }
 }
