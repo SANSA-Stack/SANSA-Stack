@@ -681,7 +681,7 @@ object FirstHardeninginBorderFlow {
       val evaluate = AiBi(bigList, nnode)
 
       val av = evaluate.sum / evaluate.size
-      println(s"average: $av\n")
+      
       val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
@@ -703,7 +703,7 @@ object FirstHardeninginBorderFlow {
     }
 
     val rdf = clusterRdd.map(x => makerdf(x))
-    println(s"RDF Cluster assignments: $rdf\n")
+    
     val rdfRDD = spark.sparkContext.parallelize(rdf)
     rdfRDD.saveAsTextFile(output)
 
