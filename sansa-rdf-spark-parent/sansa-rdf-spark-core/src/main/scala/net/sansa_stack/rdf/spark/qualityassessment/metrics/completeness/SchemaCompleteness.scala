@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness
 
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
 
