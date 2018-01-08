@@ -78,7 +78,7 @@ object NodeUtils {
 
   def getParentURI(node: Node) = {
     var parentURI = ""
-    if (node.isURI() && node.getURI().toString()!= "") {
+    if (node.isURI() && node.getURI().toString() != "") {
 
       val lastSlashIx = node.getURI().lastIndexOf('/')
 
@@ -93,4 +93,14 @@ object NodeUtils {
 
   def isRDFSClass(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_CLASS)
   def isOWLClass(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL_CLASS)
+
+  def resourceTooLong(node: Node) = (node.getURI().length() >= shortURIThreshold)
+
+  def hasQueryString(node: Node) = {
+    val uri = node.getURI()
+    val qMarkIndex = uri.indexOf("?")
+    val hashTagIndex = uri.indexOf("#")
+
+    (qMarkIndex > -1 && (hashTagIndex == -1 || qMarkIndex < hashTagIndex))
+  }
 }
