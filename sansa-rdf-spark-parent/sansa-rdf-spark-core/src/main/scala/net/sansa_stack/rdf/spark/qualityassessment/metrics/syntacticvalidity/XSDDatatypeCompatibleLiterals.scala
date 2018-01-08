@@ -5,13 +5,13 @@ import org.apache.jena.graph.{ Triple, Node }
 import org.apache.spark.rdd.RDD
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
-/**
- * Check if the value of a typed literal is valid with regards to
- * the given xsd datatype.
- *
- */
 object XSDDatatypeCompatibleLiterals {
   implicit class XSDDatatypeCompatibleLiteralsFunctions(dataset: RDD[Triple]) extends Serializable {
+
+    /**
+     * Check if the value of a typed literal is valid with regards to
+     * the given xsd datatype.
+     */
     def assessXSDDatatypeCompatibleLiterals() = {
 
       /*

@@ -5,14 +5,14 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.DatasetUtils._
 
-/**
- * This metric measures the property completeness by checking
- * the missing object values for the given predicate and given class of subjects.
- * A user specifies the RDF class and the RDF predicate, then it checks for each pair
- * whether instances of the given RDF class contain the specified RDF predicate.
- */
 object PropertyCompleteness {
   implicit class PropertyCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
+    /**
+     * This metric measures the property completeness by checking
+     * the missing object values for the given predicate and given class of subjects.
+     * A user specifies the RDF class and the RDF predicate, then it checks for each pair
+     * whether instances of the given RDF class contain the specified RDF predicate.
+     */
     def assessPropertyCompleteness() = {
 
       /*

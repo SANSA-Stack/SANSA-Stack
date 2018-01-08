@@ -5,27 +5,27 @@ import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
-/*
- * This metric measures the interlinking completeness. Since any resource of a
- * dataset can be interlinked with another resource of a foreign dataset this
- * metric makes a statement about the ratio of interlinked resources to
- * resources that could potentially be interlinked.
- * 
- * An interlink here is assumed to be a statement like
- * 
- *   <local resource> <some predicate> <external resource>
- * 
- * or
- * 
- *   <external resource> <some predicate> <local resource>
- * 
- * Local resources are those that share the same URI prefix of the considered
- * dataset, external resources are those that don't.
- * 
- * Zaveri et. al [http://www.semantic-web-journal.net/system/files/swj414.pdf]
- */
 object InterlinkingCompleteness {
   implicit class InterlinkingCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
+    /**
+     * This metric measures the interlinking completeness. Since any resource of a
+     * dataset can be interlinked with another resource of a foreign dataset this
+     * metric makes a statement about the ratio of interlinked resources to
+     * resources that could potentially be interlinked.
+     *
+     * An interlink here is assumed to be a statement like
+     *
+     *   <local resource> <some predicate> <external resource>
+     *
+     * or
+     *
+     *   <external resource> <some predicate> <local resource>
+     *
+     * Local resources are those that share the same URI prefix of the considered
+     * dataset, external resources are those that don't.
+     *
+     * Zaveri et. al [http://www.semantic-web-journal.net/system/files/swj414.pdf]
+     */
     def assessInterlinkingCompleteness() = {
       /*
    		* isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)

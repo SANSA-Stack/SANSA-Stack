@@ -9,7 +9,6 @@ import java.net.HttpURLConnection
 import java.io.IOException
 import java.net.ProtocolException
 
-
 /*
  * Node Utils.
  */
@@ -76,9 +75,22 @@ object NodeUtils {
   }
 
   def isHashUri(node: Node): Boolean = node.getURI().indexOf("#") > -1
-  
-  def isLabeled(node:Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_LABEL)
-  
-  def isRDFSClass(node:Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_CLASS)
-  def isOWLClass(node:Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL_CLASS)
+
+  def getParentURI(node: Node) = {
+    var parentURI = ""
+    if (node.isURI() && node.getURI().toString()!= "") {
+
+      val lastSlashIx = node.getURI().lastIndexOf('/')
+
+      if (lastSlashIx > 0) {
+        parentURI = node.getURI().substring(0, lastSlashIx)
+      } else parentURI = ""
+    }
+    parentURI
+  }
+
+  def isLabeled(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_LABEL)
+
+  def isRDFSClass(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_CLASS)
+  def isOWLClass(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL_CLASS)
 }
