@@ -85,7 +85,7 @@ object LoadGraph extends Logging {
    * @return object of LoadGraph which contains the constructed  ''graph''.
    */
   def asString(triples: RDD[Triple]): Graph[String, String] = {
-    val rs = triples.map(triple => (triple.getSubject.getURI, triple.getPredicate.getURI, triple.getObject.getURI))
+    val rs = triples.map(triple => (getNodeValue(triple.getSubject), getNodeValue(triple.getPredicate), getNodeValue(triple.getObject)))
     val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
 
     val vertices: RDD[(VertexId, String)] = indexedMap.map(x => (x._2, x._1))
