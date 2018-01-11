@@ -10,8 +10,8 @@ import org.apache.jena.vocabulary.RDF
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.partition.layout.TripleLayoutStringLang
-import net.sansa_stack.rdf.partition.layout.TripleLayoutStringDatatype
-import net.sansa_stack.rdf.partition.layout.TripleLayoutStringDatatype
+import net.sansa_stack.rdf.partition.core.RdfPartitioner
+import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
 
 
 object RdfPartitionerDefault

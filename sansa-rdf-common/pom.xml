@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>sansa-rdf-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.3.1-SNAPSHOT</version>
+		<version>0.3.1-SNAPSHOT-refactoring</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sansa-rdf-common_2.11</artifactId>
@@ -12,6 +12,21 @@
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.aksw.sparqlify</groupId>
+			<artifactId>sparqlify-core</artifactId>
 		</dependency>
 
 		<dependency>

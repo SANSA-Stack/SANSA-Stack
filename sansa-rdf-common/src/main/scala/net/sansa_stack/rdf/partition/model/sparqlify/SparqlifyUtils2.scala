@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.partition.sparqlify
+package net.sansa_stack.rdf.partition.model.sparqlify
 
 import org.apache.jena.sparql.expr.ExprVar
 import org.aksw.jena_sparql_api.views.E_RdfTerm
@@ -97,4 +97,3 @@ object SparqlifyUtils2 {
   }
 
 }
-

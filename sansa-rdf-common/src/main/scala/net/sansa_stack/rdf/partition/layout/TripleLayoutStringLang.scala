@@ -8,11 +8,9 @@ import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.partition.schema.SchemaStringStringLang
 
-
 // Layout for plain literals with language tag
 object TripleLayoutStringLang
-  extends TripleLayout
-{
+  extends TripleLayout {
   override def schema = typeOf[SchemaStringStringLang]
 
   override def fromTriple(t: Triple): SchemaStringStringLang = {
@@ -21,7 +19,7 @@ object TripleLayoutStringLang
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
-    val result = if(o.isLiteral()) {
+    val result = if (o.isLiteral()) {
       SchemaStringStringLang(sStr, o.getLiteralLexicalForm, o.getLiteralLanguage)
     } else {
       throw new RuntimeException("Layout only for literals")

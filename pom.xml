@@ -4,7 +4,7 @@
 
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-rdf-parent_2.11</artifactId>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.3.1-SNAPSHOT-refactoring</version>
 	<packaging>pom</packaging>
 
 	<name>SANSA Stack - RDF Layer - Parent</name>
@@ -17,14 +17,6 @@
 		<url>http://sda.tech</url>
 	</organization>
 
-	<modules>
-		<module>sansa-rdf-test-resources</module>
-		<module>sansa-rdf-partition-parent</module>
-		<module>sansa-rdf-spark-parent</module>
-		<module>sansa-rdf-kryo-parent</module>
-		<module>sansa-rdf-flink-parent</module>
-		<module>sansa-rdf-common</module>
-	</modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -225,6 +217,24 @@
 			<!-- Apache Spark -->
 			<dependency>
 				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-core_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-sql_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-graphx_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-streaming_${scala.binary.version}</artifactId>
 				<version>${spark.version}</version>
 			</dependency>
@@ -235,6 +245,26 @@
 				<version>${spark.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-mllib_${scala.binary.version}</artifactId>
+				<scope>provided</scope>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-hive_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>com.holdenkarau</groupId>
+				<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+				<version>2.1.0_0.6.0</version>
+				<scope>test</scope>
+			</dependency>
 
 			<dependency>
 				<groupId>org.scalatest</groupId>
@@ -742,4 +772,9 @@
 		</repository>
 	</repositories>
 
+	<modules>
+		<module>sansa-rdf-common</module>
+		<module>sansa-rdf-flink</module>
+		<module>sansa-rdf-spark</module>
+	</modules>
 </project>
