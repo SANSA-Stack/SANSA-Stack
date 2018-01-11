@@ -53,7 +53,7 @@ class DLTree {
     if (root == null) null
     if (root.pos == null && root.neg == null) root.toString
     else
-      root.concept.toString + " [" + root.pos.toString + " " + root.neg.toString + "]" 
+      root.concept.toString + " [" + root.pos.toString + ", " + root.neg.toString + "]" 
    }
 
    /**
