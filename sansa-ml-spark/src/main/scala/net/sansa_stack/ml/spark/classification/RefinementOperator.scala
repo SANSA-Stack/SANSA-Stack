@@ -58,7 +58,7 @@ class RefinementOperator(var kb: KB) {
 										Concepts.takeSample(true, 1)(0)
 								
 								if (generator.nextDouble() < 0.5) {
-                    val role : OWLObjectProperty = Roles.takeSample(true, 1)(0)
+                  val role : OWLObjectProperty = Roles.takeSample(true, 1)(0)
 
 									newConcept =
 											if (generator.nextDouble() < 0.5)
@@ -69,24 +69,28 @@ class RefinementOperator(var kb: KB) {
 								
 								else if ((generator.nextDouble() < 0.75)) {
 
-									val dataProperty: OWLDataProperty = Properties.takeSample(true, 1)(0)
-									
-									val individuals: Set[OWLNamedIndividual] = dataProperty.individualsInSignature().collect(Collectors.toSet())
-				
-									
-									val inds: ArrayList[OWLNamedIndividual] = new ArrayList[OWLNamedIndividual](individuals)
-									val dPV: Set[OWLLiteral] = new HashSet[OWLLiteral]()
-									for(i <- 0 until inds.size())
+									if (Properties.count() != 0)
 									{
-										val element = inds.get(i)
-										dPV.addAll(EntitySearcher.getDataPropertyValues(element, dataProperty, kb.getOntology).asInstanceOf[Collection[_ <: OWLLiteral]])
-									}
-
-									val values: ArrayList[OWLLiteral] = new ArrayList[OWLLiteral](dPV)
-									newConcept =
-										if (!values.isEmpty)
-												kb.getDataFactory.getOWLDataHasValue(dataProperty, values.get(generator.nextInt(values.size)))
-										else kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
+  								  val dataProperty: OWLDataProperty = Properties.takeSample(true, 1)(0)
+  									
+  									val individuals: Set[OWLNamedIndividual] = dataProperty.individualsInSignature().collect(Collectors.toSet())
+  				
+  									
+  									val inds: ArrayList[OWLNamedIndividual] = new ArrayList[OWLNamedIndividual](individuals)
+  									val dPV: Set[OWLLiteral] = new HashSet[OWLLiteral]()
+  									for(i <- 0 until inds.size())
+  									{
+  										val element = inds.get(i)
+  										dPV.addAll(EntitySearcher.getDataPropertyValues(element, dataProperty, kb.getOntology).asInstanceOf[Collection[_ <: OWLLiteral]])
+  									}
+  
+  									val values: ArrayList[OWLLiteral] = new ArrayList[OWLLiteral](dPV)
+  									newConcept =
+  										if (!values.isEmpty)
+  												kb.getDataFactory.getOWLDataHasValue(dataProperty, values.get(generator.nextInt(values.size)))
+  										else kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
+  								}
+									else kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
 								}
 								
 								else if ((generator.nextDouble() < 0.9)) {
@@ -111,10 +115,12 @@ class RefinementOperator(var kb: KB) {
 								
 								else
 									newConcept = kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
-								}
-							} while (!kb.getReasoner.isSatisfiable(newConcept));
-					newConcept.getNNF
-  }
+						}
+//		} while (!kb.getReasoner.isSatisfiable(newConcept))
+			}while (!kb.reasoner.isEntailed(kb.dataFactory.getOWLSubClassOfAxiom(currentConcept, newConcept))) 				
+							
+			  newConcept.getNNF
+    }
 
   
 /**
