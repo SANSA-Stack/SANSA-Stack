@@ -153,28 +153,6 @@ object KB{
       var nEx : Int = Examples.count.toInt 
       println("\nNumber of Individuals: " + nEx)
       
-      /*println("\n\nConcepts\n-------\n")
-      var classList = ontology.classesInSignature().collect(Collectors.toSet()).asScala.toSeq
-      var nclasses: Int = classList.length
-      Concepts = sparkSession.sparkContext.parallelize(classList)
-      Concepts.take(Concepts.count().toInt).foreach(println)*/ 
-      
-      /*val propList: Seq[OWLObjectProperty] = ontology.objectPropertiesInSignature().collect(Collectors.toSet()).asScala.toSeq
-      var nprop: Int = propList.length
-      println("\nNumber of properties: " + nprop)
-      println()
-
-      Roles = sparkSession.sparkContext.parallelize(propList)
-      Roles.take(Roles.count().toInt).foreach(println)*/
-      
-     /* val indList: Seq[OWLNamedIndividual] = ontology.individualsInSignature().collect(Collectors.toSet()).asScala.toSeq
-      var nind: Int = indList.length
-      println("\nNumber of Individuals: " + nind)
-      println()
-      
-      Examples = sparkSession.sparkContext.parallelize(indList)
-      Examples.take(Examples.count().toInt).foreach(println)*/
-      
       println("\nKB loaded. \n")
       ontology
     }
