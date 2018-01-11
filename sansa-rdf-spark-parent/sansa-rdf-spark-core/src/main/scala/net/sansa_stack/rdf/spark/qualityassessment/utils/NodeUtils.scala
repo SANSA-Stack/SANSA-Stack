@@ -89,6 +89,7 @@ object NodeUtils {
     parentURI
   }
 
+  def checkLiteral(node:Node) = if(node.isLiteral) node.getLiteralLexicalForm else node.toString()
   def isLabeled(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_LABEL)
 
   def isRDFSClass(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_CLASS)

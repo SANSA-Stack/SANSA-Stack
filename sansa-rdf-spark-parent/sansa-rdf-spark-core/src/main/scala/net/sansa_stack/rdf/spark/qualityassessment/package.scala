@@ -19,6 +19,8 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.AmountOfTri
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.performance.NoHashURIs._
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.understandability.LabeledResources._
 
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.interlinking.ExternalSameAsLinks._
+
 package object qualityassessment {
 
   implicit def AssessInterlinkingCompletenessFunctions(dataset: RDD[Triple]) = new InterlinkingCompletenessFunctions(dataset)
@@ -40,6 +42,8 @@ package object qualityassessment {
   implicit def AssessNoHashURIsFunctions(dataset: RDD[Triple]) = new NoHashURIsFunctions(dataset)
   
   implicit def AssessLabeledResourcesFunctions(dataset: RDD[Triple]) = new LabeledResourcesFunctions(dataset)
+  
+  implicit def AssessExternalSameAsLinksFunctions(dataset:RDD[Triple]) = new ExternalSameAsLinksFunctions(dataset)
   
 
 }
