@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.spark.model
 
 import scala.reflect.ClassTag
-import net.sansa_stack.rdf.spark.utils.Kryo.io.KryoSerializationWrapper
+import net.sansa_stack.rdf.spark.utils.kryo.io.KryoSerializationWrapper
 
 /**
  * RDF DSL objects to make life easy - taken from banana-rdf

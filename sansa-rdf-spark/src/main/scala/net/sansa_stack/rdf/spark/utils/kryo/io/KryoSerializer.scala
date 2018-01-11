@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.utils.Kryo.io
+package net.sansa_stack.rdf.spark.utils.kryo.io
 
 import java.nio.ByteBuffer
 import org.apache.spark.SparkEnv
