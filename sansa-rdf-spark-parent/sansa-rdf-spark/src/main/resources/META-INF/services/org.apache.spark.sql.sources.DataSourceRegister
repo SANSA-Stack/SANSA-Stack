@@ -1,3 +1,0 @@
-net.sansa_stack.rdf.spark.io.ntriples.NTriplesDataSource
-net.sansa_stack.rdf.spark.io.turtle.TurtleDataSource
-net.sansa_stack.rdf.spark.io.rdfxml.RdfXmlFileFormat
