@@ -4,6 +4,7 @@ import java.util.ArrayList
 import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
 import org.semanticweb.owlapi.model.OWLClassExpression
+import org.semanticweb.owlapi.model.OWLIndividual
 
 import net.sansa_stack.ml.spark.classification.KB.KB
 import net.sansa_stack.ml.spark.classification.TDTClassifiers.TDTClassifiers
@@ -73,12 +74,21 @@ object TermDecisionTrees {
     println("\nper Pos: " + perPos)
     println("per Neg: " + perNeg)
     
+    val nGeneratedRef: Int = 50
+    
     val c : TDTClassifiers = new TDTClassifiers (kb, sparkSession)
-    val tree : DLTree = c.induceDLTree(kb.getDataFactory.getOWLThing, PosExamples, NegExamples, UndExamples, 50, perPos, perNeg)
+    val tree : DLTree = c.induceDLTree(kb.getDataFactory.getOWLThing, PosExamples, NegExamples, UndExamples, nGeneratedRef, perPos, perNeg)
     
     val Root: OWLClassExpression = tree.getRoot()
     println("Root of the tree is: " + Root)
-  
+    
+    /*val possubtree = tree.getPosSubTree().toString()
+    println("possubtree: " + possubtree)*/
+    
+    val ind: OWLIndividual = kb.getDataFactory().getOWLNamedIndividual("http://example.com/foo#car_33").asInstanceOf[OWLIndividual] 
+    val classification : Int = c.classify(ind, tree) 
+    println("classification of car_33 is " + classification)
+    
     sparkSession.stop
 
   }
