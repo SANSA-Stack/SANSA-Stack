@@ -1,6 +1,7 @@
-package net.sansa_stack.rdf.spark.io;
+package net.sansa_stack.rdf.spark.kryo.sparqlify;
 
 import org.aksw.jena_sparql_api.views.RestrictedExpr;
+
 import org.apache.jena.sparql.expr.Expr;
 
 import com.esotericsoftware.kryo.Kryo;

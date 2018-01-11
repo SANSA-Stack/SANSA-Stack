@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.io;
+package net.sansa_stack.rdf.spark.utils.Kryo.io;
 
 import scala.reflect.ClassTag;
 
