@@ -20,6 +20,7 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.performance.NoHashURI
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.understandability.LabeledResources._
 
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.interlinking.ExternalSameAsLinks._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.HumanReadableLicense._
 
 package object qualityassessment {
 
@@ -34,16 +35,17 @@ package object qualityassessment {
   implicit def AssessXSDDatatypeCompatibleLiteralsFunctions(dataset: RDD[Triple]) = new XSDDatatypeCompatibleLiteralsFunctions(dataset)
 
   implicit def AssessDereferenceableUrisFunctions(dataset: RDD[Triple]) = new DereferenceableUrisFunctions(dataset)
-  
+
   implicit def AssessCoverageDetailFunctions(dataset: RDD[Triple]) = new CoverageDetailFunctions(dataset)
-  implicit def AssessCoverageScopeFunctions(dataset: RDD[Triple]) = new CoverageScopeFunctions(dataset)  
+  implicit def AssessCoverageScopeFunctions(dataset: RDD[Triple]) = new CoverageScopeFunctions(dataset)
   implicit def AssessAmountOfTriplesFunctions(dataset: RDD[Triple]) = new AmountOfTriplesFunctions(dataset)
-  
+
   implicit def AssessNoHashURIsFunctions(dataset: RDD[Triple]) = new NoHashURIsFunctions(dataset)
-  
+
   implicit def AssessLabeledResourcesFunctions(dataset: RDD[Triple]) = new LabeledResourcesFunctions(dataset)
-  
-  implicit def AssessExternalSameAsLinksFunctions(dataset:RDD[Triple]) = new ExternalSameAsLinksFunctions(dataset)
-  
+
+  implicit def AssessExternalSameAsLinksFunctions(dataset: RDD[Triple]) = new ExternalSameAsLinksFunctions(dataset)
+
+  implicit def AssessHumanReadableLicenseFunctions(dataset: RDD[Triple]) = new HumanReadableLicenseFunctions(dataset)
 
 }

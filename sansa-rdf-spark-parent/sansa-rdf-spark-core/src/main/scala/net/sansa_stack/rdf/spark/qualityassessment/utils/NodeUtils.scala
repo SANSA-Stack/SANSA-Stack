@@ -8,6 +8,8 @@ import java.net.MalformedURLException
 import java.net.HttpURLConnection
 import java.io.IOException
 import java.net.ProtocolException
+import scala.util.matching.Regex
+import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
 
 /*
  * Node Utils.
@@ -89,7 +91,7 @@ object NodeUtils {
     parentURI
   }
 
-  def checkLiteral(node:Node) = if(node.isLiteral) node.getLiteralLexicalForm else node.toString()
+  def checkLiteral(node: Node) = if (node.isLiteral) node.getLiteralLexicalForm else node.toString()
   def isLabeled(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_LABEL)
 
   def isRDFSClass(node: Node) = (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_CLASS)
@@ -104,4 +106,12 @@ object NodeUtils {
 
     (qMarkIndex > -1 && (hashTagIndex == -1 || qMarkIndex < hashTagIndex))
   }
+
+  def isLicenseStatement(node: Node) = {
+    val check = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
+    check.findFirstIn(node.getLiteralLexicalForm).size != 0
+  }
+
+  def hasLicenceIndications(node: Node) = (node.isLiteral() && node.getLiteralLexicalForm.contains(DQV.dqv + "description"))
+
 }
