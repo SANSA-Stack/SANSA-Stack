@@ -3,6 +3,8 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
+import scala.util.matching.Regex
+import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
 
 object HumanReadableLicense {
   implicit class HumanReadableLicenseFunctions(dataset: RDD[Triple]) extends Serializable {
@@ -15,10 +17,20 @@ object HumanReadableLicense {
      */
     def assessHumanReadableLicense() = {
 
-      val hasValidLicense = dataset.filter { f => 
+      val hasValidLicense = dataset.filter { f =>
         f.getSubject.isURI() && hasLicenceIndications(f.getPredicate) && f.getObject.isLiteral() && isLicenseStatement(f.getObject)
-        }
-     if (hasValidLicense.count()>0) 1.0 else 0.0
-    }
+      }
+        if (hasValidLicense.count() > 0) 1.0 else 0.0
+      }
+    
+      def isLicenseStatement(node: Node) = {
+        val check = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
+        check.findFirstIn(node.getLiteralLexicalForm).size != 0
+      }
+
+      def hasLicenceIndications(node: Node) = {
+        val licenceIndications = Seq(DQV.dqv + "description", DQV.RDFS + "comment", DQV.RDFS + "label")
+        licenceIndications.contains(node.getURI)
+      }
   }
 }
