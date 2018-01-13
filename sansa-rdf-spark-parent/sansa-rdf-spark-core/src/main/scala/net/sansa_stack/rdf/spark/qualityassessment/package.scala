@@ -21,9 +21,12 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.understandability.Lab
 
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.interlinking.ExternalSameAsLinks._
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.HumanReadableLicense._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.MachineReadableLicense._
+
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.conciseness.ExtensionalConciseness._
 
 package object qualityassessment {
-
+  
   implicit def AssessInterlinkingCompletenessFunctions(dataset: RDD[Triple]) = new InterlinkingCompletenessFunctions(dataset)
 
   implicit def AssessPropertyCompletenessFunctions(dataset: RDD[Triple]) = new PropertyCompletenessFunctions(dataset)
@@ -47,5 +50,11 @@ package object qualityassessment {
   implicit def AssessExternalSameAsLinksFunctions(dataset: RDD[Triple]) = new ExternalSameAsLinksFunctions(dataset)
 
   implicit def AssessHumanReadableLicenseFunctions(dataset: RDD[Triple]) = new HumanReadableLicenseFunctions(dataset)
+  implicit def AssessMachineReadableLicenseFunctions(dataset: RDD[Triple]) = new MachineReadableLicenseFunctions(dataset)
+  
+  implicit def AssessExtensionalConcisenessFunctions(dataset: RDD[Triple]) = new ExtensionalConcisenessFunctions(dataset)
+  
+  
+  
 
 }

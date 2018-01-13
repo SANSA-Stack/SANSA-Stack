@@ -8,8 +8,6 @@ import java.net.MalformedURLException
 import java.net.HttpURLConnection
 import java.io.IOException
 import java.net.ProtocolException
-import scala.util.matching.Regex
-import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
 
 /*
  * Node Utils.
@@ -106,12 +104,5 @@ object NodeUtils {
 
     (qMarkIndex > -1 && (hashTagIndex == -1 || qMarkIndex < hashTagIndex))
   }
-
-  def isLicenseStatement(node: Node) = {
-    val check = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
-    check.findFirstIn(node.getLiteralLexicalForm).size != 0
-  }
-
-  def hasLicenceIndications(node: Node) = (node.isLiteral() && node.getLiteralLexicalForm.contains(DQV.dqv + "description"))
 
 }

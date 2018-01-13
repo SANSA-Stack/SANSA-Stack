@@ -15,6 +15,18 @@ object DQV {
   val prov = "<http://www.w3.org/ns/prov#>"
   val sdmx_attribute = "<http://purl.org/linked-data/sdmx/2009/attribute#>"
   val skos = "<http://www.w3.org/2004/02/skos/core#>"
+  val RDFS = "<http://www.w3.org/2000/01/rdf-schema#>"
+
+  val cclicence = "<http://creativecommons.org/ns#license>"
+  val dbolicense = "<http://dbpedia.org/ontology/>"
+  val xhtmllicense = "<http://www.w3.org/1999/xhtml/vocab#license>"
+  val dclicence = "<http://purl.org/dc/elements/1.1/licence>"
+  val dcrights = "<http://purl.org/dc/elements/1.1/rights>"
+  val dctlicence = "<http://purl.org/dc/terms/licemce>"
+  val dbplicence = "<http://dbpedia.org/property/licence>"
+  val doaplicense = "<http://usefulinc.com/ns/doap#license>"
+  val dctrights = "<http://www.w3.org/ns/dcat/rights>"
+  val schemalicense = "<https://schema.org/license>"
 
   //Indicates the metric being observed.
   val isMeasurementOf = "dqv:isMeasurementOf"
