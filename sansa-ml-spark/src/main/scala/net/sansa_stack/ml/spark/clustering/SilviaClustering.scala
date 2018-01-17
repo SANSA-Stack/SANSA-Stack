@@ -50,8 +50,8 @@ object SilviaClustering {
 	 * The Contrast model similarity : selectYourSimilarity = 3
 	 * The Ratio model similarity : selectYourSimilarity = 4
 	 */
-    val orient = 0
-    val selectYourSimilarity = 1
+    val orient = 1
+    val selectYourSimilarity = 0
     val Hardening = 1
     var result: List[List[Long]] = List()
 
