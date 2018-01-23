@@ -27,7 +27,7 @@
 		<!-- SANSA RDF -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-rdf-spark-core_${scala.binary.version}</artifactId>
+			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
