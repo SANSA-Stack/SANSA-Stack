@@ -19,10 +19,7 @@ object ExternalSameAsLinks {
       val sameAsTriples = dataset.filter(f => checkLiteral(f.getPredicate).equals(OWL_SAME_AS))
 
       val triples = dataset.count().toDouble
-      println("triples:" + triples)
-      val data = 1 to 10
-      val dataRDD = self.spark.sparkContext.parallelize(data)
-      dataRDD.foreach(println(_))
+
       val sameAsCount = self.spark.sparkContext.longAccumulator("My Accumulator")
       // val sameAsCount = spark.sparkContext.longAccumulator("sameAs")
 
