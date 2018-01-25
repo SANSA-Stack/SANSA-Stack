@@ -32,6 +32,7 @@
 		<spark.version>2.2.1</spark.version>
 		<jena.version>3.5.0</jena.version>
 		<jsa.subversion>2</jsa.subversion>
+		<hadoop.version>2.7.0</hadoop.version>
 
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
@@ -129,61 +130,10 @@
 				<version>${scala.version}</version>
 			</dependency>
 
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-test-resources${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-kryo-jena${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-kryo-sparqlify${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-utils${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-core${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-core${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
-			</dependency>
-
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
-				<!-- <classifier>${scala.classifier}</classifier> -->
 			</dependency>
 
 			<!-- Apache Flink -->
@@ -347,10 +297,19 @@
 				<version>${jena.version}</version> </dependency> -->
 
 
+			<!-- <dependency> <groupId>org.apache.commons</groupId> <artifactId>commons-compress</artifactId> 
+				<version>1.15</version> </dependency> -->
+
+			<!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
 			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-compress</artifactId>
-				<version>1.14</version>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-mapreduce-client-core</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-common</artifactId>
+				<version>${hadoop.version}</version>
 			</dependency>
 
 			<dependency>
