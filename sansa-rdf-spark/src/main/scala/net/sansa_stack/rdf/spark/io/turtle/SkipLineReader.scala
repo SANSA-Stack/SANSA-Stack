@@ -6,7 +6,7 @@ import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream
 import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapreduce.lib.input.{SplitLineReader, UncompressedSplitLineReader}
+import org.apache.hadoop.mapreduce.lib.input.{SplitLineReader, FileInputFormat}
 import org.apache.hadoop.util.LineReader
 
 /**
@@ -94,5 +94,5 @@ private[turtle] class SkipLineReader(in: FSDataInputStream, conf: Configuration,
 
   override def needAdditionalRecordAfterSplit(): Boolean = !finished && needAdditionalRecord
 
-  override def unsetNeedAdditionalRecordAfterSplit(): Unit = needAdditionalRecord = false
+ // override def unsetNeedAdditionalRecordAfterSplit(): Unit = {needAdditionalRecord = false}
 }
