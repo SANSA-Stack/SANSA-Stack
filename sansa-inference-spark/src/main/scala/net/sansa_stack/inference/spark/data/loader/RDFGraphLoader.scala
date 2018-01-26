@@ -7,11 +7,11 @@ import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, 
 import net.sansa_stack.inference.utils.NTriplesStringToJenaTriple
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, Encoder, SaveMode, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
-import scala.language.implicitConversions
 
+import scala.language.implicitConversions
 import org.apache.jena.vocabulary.RDF
 
 /**
@@ -42,6 +42,7 @@ object RDFGraphLoader {
 
     val triples = session.sparkContext
       .textFile(path, minPartitions) // read the text file
+      .filter(line => !line.trim().isEmpty & !line.startsWith("#"))
       .map(new NTriplesStringToJenaTriple()) // convert to triple object
 //      .repartition(minPartitions)
 
@@ -127,7 +128,7 @@ object RDFGraphLoader {
       Array(splitted(0), splitted(1), splitted(2))
     })
 
-    implicit val rdfTripleEncoder = org.apache.spark.sql.Encoders.kryo[Triple]
+    implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
     val spark = session.sqlContext
 
 
@@ -195,7 +196,7 @@ object RDFGraphLoader {
     * @param minPartitions min number of partitions for Hadoop RDDs ([[SparkContext.defaultMinPartitions]])
     * @return an RDF graph based on a [[org.apache.spark.sql.DataFrame]]
     */
-  def loadFromDiskAsDataFrame(session: SparkSession, path: String, minPartitions: Int, sqlSchema: SQLSchema = SQLSchemaDefault): RDFGraphDataFrame = {
+  def loadFromDiskAsDataFrame(session: SparkSession, path: String, minPartitions: Int = 4, sqlSchema: SQLSchema = SQLSchemaDefault): RDFGraphDataFrame = {
     val df = session
       .read
       .format("net.sansa_stack.inference.spark.data.loader.sql")
@@ -208,7 +209,7 @@ object RDFGraphLoader {
   }
 
   def main(args: Array[String]): Unit = {
-    import net.sansa_stack.inference.spark.data.loader.sql.rdf._
+    import net.sansa_stack.rdf.spark.io.rdf._
 
     val path = args(0)
     val lang = args(1) match {
@@ -246,8 +247,6 @@ object RDFGraphLoader {
       .write.mode(SaveMode.Append).rdf("/tmp/lubm/out")
 
 
-
-    import net.sansa_stack.inference.spark.data.loader.rdd.rdf._
 
     val triplesRDD = session.sparkContext.rdf(lang)(path)
     triples.show(10)

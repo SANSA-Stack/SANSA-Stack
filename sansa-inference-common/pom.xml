@@ -65,6 +65,7 @@
           <artifactId>google-collections</artifactId>
         </exclusion>
       </exclusions>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Guava -->

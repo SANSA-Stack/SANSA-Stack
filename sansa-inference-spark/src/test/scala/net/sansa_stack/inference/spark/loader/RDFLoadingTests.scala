@@ -5,13 +5,13 @@ import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
 /**
-  * Tests for loading triples from either N-Triples are Turtle files into a DataFrame.
+  * Tests for loading triples from either N-Triples or Turtle files into a DataFrame.
   *
   * @author Lorenz Buehmann
   */
 class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.inference.spark.data.loader.sql.rdf._
+  import net.sansa_stack.rdf.spark.io.rdf._
 
   test("loading N-Triples file into DataFrame with REGEX parsing mode should result in 9 triples") {
     val sqlCtx = sqlContext
