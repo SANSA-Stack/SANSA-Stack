@@ -2,24 +2,23 @@ package net.sansa_stack.rdf.spark.io
 
 import java.io.ByteArrayInputStream
 
-import com.typesafe.config.{Config, ConfigFactory}
-import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
+import com.typesafe.config.{ Config, ConfigFactory }
+import net.sansa_stack.rdf.spark.io.ntriples.{ JenaTripleToNTripleString, NTriplesStringToJenaTriple }
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
-import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
+import net.sansa_stack.rdf.spark.utils.{ Logging, ScalaUtils }
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{LongWritable, Text}
+import org.apache.hadoop.io.{ LongWritable, Text }
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
-import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import org.apache.jena.sparql.util.FmtUtils
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
 /**
-  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
-  * [[RDD]].
-  */
+ * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
+ * [[RDD]].
+ */
 package object rdf {
 
   object RDFLang extends Enumeration {
@@ -27,19 +26,19 @@ package object rdf {
   }
 
   /**
-    * Converts a Jena [[Triple]] to a Spark SQL [[Row]] with three columns.
-    * @param triple the triple
-    * @return the row
-    */
+   * Converts a Jena [[Triple]] to a Spark SQL [[Row]] with three columns.
+   * @param triple the triple
+   * @return the row
+   */
   def toRow(triple: org.apache.jena.graph.Triple): Row = {
     toRow(Seq(triple.getSubject, triple.getPredicate, triple.getObject))
   }
 
   /**
-    * Converts a list Jena [[Node]] objects to a Spark SQL [[Row]].
-    * @param nodes the nodes
-    * @return the row
-    */
+   * Converts a list Jena [[Node]] objects to a Spark SQL [[Row]].
+   * @param nodes the nodes
+   * @return the row
+   */
   def toRow(nodes: Seq[Node]): Row = {
     // we use the Jena rendering
     Row.fromSeq(nodes.map(n => {
@@ -48,63 +47,59 @@ package object rdf {
     }))
   }
 
-
-
   // the DataFrame methods
 
   /**
-    * Adds methods, `ntriples` and `turtle`, to [[DataFrameWriter]] that allows to write N-Triples files.
-    */
+   * Adds methods, `ntriples` and `turtle`, to [[DataFrameWriter]] that allows to write N-Triples files.
+   */
   implicit class RDFDataFrameWriter[T](writer: DataFrameWriter[T]) {
     def rdf: String => Unit = writer.format("ntriples").save
     def ntriples: String => Unit = writer.format("ntriples").save
   }
 
   /**
-    * Adds methods, `rdf`, `ntriples` and `turtle`, to [[DataFrameReader]] that allows to read N-Triples and Turtle
-    * files.
-    */
+   * Adds methods, `rdf`, `ntriples` and `turtle`, to [[DataFrameReader]] that allows to read N-Triples and Turtle
+   * files.
+   */
   implicit class RDFDataFrameReader(reader: DataFrameReader) extends Logging {
     @transient lazy val conf: Config = ConfigFactory.load("rdf_loader")
     /**
-      * Load RDF data into a `DataFrame`. Currently, only N-Triples and Turtle syntax are supported
-      * @param lang the RDF language (Turtle or N-Triples)
-      * @return a [[DataFrame]][(String, String, String)]
-      */
+     * Load RDF data into a `DataFrame`. Currently, only N-Triples and Turtle syntax are supported
+     * @param lang the RDF language (Turtle or N-Triples)
+     * @return a [[DataFrame]][(String, String, String)]
+     */
     def rdf(lang: Lang): String => DataFrame = lang match {
       case i if lang == Lang.NTRIPLES => ntriples
-      case j if lang == Lang.TURTLE => turtle
-      case j if lang == Lang.RDFXML => rdfxml
-      case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
+      case j if lang == Lang.TURTLE   => turtle
+      case j if lang == Lang.RDFXML   => rdfxml
+      case _                          => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
     /**
-      * Load RDF data in N-Triples syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
-      * @return a [[DataFrame]][(String, String, String)]
-      */
+     * Load RDF data in N-Triples syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
+     * @return a [[DataFrame]][(String, String, String)]
+     */
     def ntriples: String => DataFrame = {
       logDebug(s"Parsing N-Triples with ${conf.getString("rdf.ntriples.parser")} ...")
       reader.format("ntriples").load
     }
     /**
-      * Load RDF data in Turtle syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
-      * @return a [[DataFrame]][(String, String, String)]
-      */
+     * Load RDF data in Turtle syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
+     * @return a [[DataFrame]][(String, String, String)]
+     */
     def turtle: String => DataFrame = reader.format("turtle").load
 
     /**
-      * Load RDF data in RDF/XML syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
-      * @return a [[DataFrame]][(String, String, String)]
-      */
+     * Load RDF data in RDF/XML syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
+     * @return a [[DataFrame]][(String, String, String)]
+     */
     def rdfxml(path: String): DataFrame = reader.format("rdfxml").load(path)
   }
-
-
 
   // the RDD methods
 
   /**
-    * Adds methods, `ntriples` and `turtle`, to [[SparkContext]] that allows to write N-Triples and Turtle files.
-    */
+   * Adds methods, `ntriples` and `turtle`, to [[SparkContext]] that allows to write N-Triples and Turtle files.
+   */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
     val converter = new JenaTripleToNTripleString()
@@ -136,43 +131,43 @@ package object rdf {
       }
 
       // save only if there was no failure with the path before
-      if(doSave) {
+      if (doSave) {
         triples
           .map(converter) // map to N-Triples string
           .saveAsTextFile(path)
       }
-
 
     }
 
   }
 
   /**
-    * Adds methods, `rdf(lang: Lang)`, `ntriples` and `turtle`, to [[SparkContext]] that allows to read N-Triples and Turtle files.
-    */
-  implicit class RDFReader(sc: SparkContext) {
+   * Adds methods, `rdf(lang: Lang)`, `ntriples` and `turtle`, to [[SparkSession]] that allows to read N-Triples and Turtle files.
+   */
+  implicit class RDFReader(spark: SparkSession) {
 
     import scala.collection.JavaConverters._
 
     /**
-      * Load RDF data into an [[RDD]][Triple]. Currently, only N-Triples and Turtle syntax are supported.
-      * @param lang the RDF language (Turtle or N-Triples)
-      * @return the [[RDD]]
-      */
+     * Load RDF data into an [[RDD]][Triple]. Currently, only N-Triples and Turtle syntax are supported.
+     * @param lang the RDF language (Turtle or N-Triples)
+     * @return the [[RDD]]
+     */
     def rdf(lang: Lang, allowBlankLines: Boolean = false): String => RDD[Triple] = lang match {
       case i if lang == Lang.NTRIPLES => ntriples(allowBlankLines)
-      case j if lang == Lang.TURTLE => turtle
-      case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
+      case j if lang == Lang.TURTLE   => turtle
+      //case k if lang == Lang.RDFXML => rdfxml
+      case _                          => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
     /**
-      * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
-      * @return the [[RDD]]
-      */
+     * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
+     * @return the [[RDD]]
+     */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
-      var rdd = sc.textFile(path, 4) // read the text file
+      var rdd = spark.sparkContext.textFile(path, 4) // read the text file
 
-      if(allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
+      if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
 
       rdd.map(new NTriplesStringToJenaTriple())
     }
@@ -182,26 +177,26 @@ package object rdf {
       confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
       confHadoop.setInt("sansa.rdf.parser.numthreads", 4)
 
-      sc.newAPIHadoopFile(
+      spark.sparkContext.newAPIHadoopFile(
         path, classOf[RiotFileInputFormat], classOf[LongWritable], classOf[Triple], confHadoop)
-        .map{case (_, v) => v}
+        .map { case (_, v) => v }
     }
 
     /**
-      * Load RDF data in Turtle syntax into an [[RDD]][Triple]
-      * @return the [[RDD]]
-      */
+     * Load RDF data in Turtle syntax into an [[RDD]][Triple]
+     * @return the [[RDD]]
+     */
     def turtle: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
       confHadoop.set("textinputformat.record.delimiter", ".\n")
 
       // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
-      val turtleRDD = sc.newAPIHadoopFile(
+      val turtleRDD = spark.sparkContext.newAPIHadoopFile(
         path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], confHadoop)
         .filter(!_._2.toString.trim.isEmpty)
-        .map{ case (_, v) => v.toString.trim }
+        .map { case (_, v) => v.toString.trim }
 
-//      turtleRDD.collect().foreach(chunk => println("Chunk" + chunk))
+      //      turtleRDD.collect().foreach(chunk => println("Chunk" + chunk))
 
       // 2. we need the prefixes - two options:
       // a) assume that all prefixes occur in the beginning of the document
@@ -209,8 +204,8 @@ package object rdf {
       val prefixes = turtleRDD.filter(_.startsWith("@prefix"))
 
       // we broadcast the prefixes
-      val prefixesBC = sc.broadcast(prefixes.collect())
-//      println(prefixesBC.value.mkString(", "))
+      val prefixesBC = spark.sparkContext.broadcast(prefixes.collect())
+      //      println(prefixesBC.value.mkString(", "))
 
       turtleRDD.flatMap(ttl => {
         ScalaUtils.tryWithResource(new ByteArrayInputStream((prefixesBC.value.mkString("\n") + ttl).getBytes)) {
