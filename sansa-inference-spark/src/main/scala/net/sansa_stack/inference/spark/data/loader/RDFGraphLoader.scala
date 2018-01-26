@@ -248,7 +248,7 @@ object RDFGraphLoader {
 
 
 
-    val triplesRDD = session.sparkContext.rdf(lang)(path)
+    val triplesRDD = session.rdf(lang)(path)
     triples.show(10)
     println(triples.count())
     triplesRDD
