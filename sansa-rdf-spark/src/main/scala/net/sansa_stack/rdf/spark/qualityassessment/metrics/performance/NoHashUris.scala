@@ -5,6 +5,9 @@ import org.apache.jena.graph.{ Triple, Node }
 
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
+/**
+ * @author Gezim Sejdiu
+ */
 object NoHashURIs {
   implicit class NoHashURIsFunctions(dataset: RDD[Triple]) extends Serializable {
     def assessNoHashUris() = {

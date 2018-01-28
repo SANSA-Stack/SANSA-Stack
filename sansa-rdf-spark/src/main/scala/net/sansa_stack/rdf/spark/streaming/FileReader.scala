@@ -9,6 +9,9 @@ import java.io.ByteArrayInputStream
 import org.apache.spark.streaming.{ Time, Duration, StreamingContext }
 import scala.collection.mutable.ArrayBuffer
 
+/**
+ * @author Gezim Sejdiu
+ */
 class FileReader(path: String) extends StreamReader {
 
   /**

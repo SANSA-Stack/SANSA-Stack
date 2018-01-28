@@ -5,6 +5,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.DatasetUtils._
 
+/**
+ * @author Gezim Sejdiu
+ */
 object PropertyCompleteness {
   implicit class PropertyCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
     /**

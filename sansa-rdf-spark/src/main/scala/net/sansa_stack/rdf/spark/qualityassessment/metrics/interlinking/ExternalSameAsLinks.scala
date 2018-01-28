@@ -6,6 +6,9 @@ import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 import net.sansa_stack.rdf.spark.utils.StatsPrefixes._
 import org.apache.spark.sql.SparkSession
 
+/**
+ * @author Gezim Sejdiu
+ */
 object ExternalSameAsLinks {
 
   implicit class ExternalSameAsLinksFunctions(dataset: RDD[Triple]) extends Serializable { self =>

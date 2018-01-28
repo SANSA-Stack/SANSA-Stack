@@ -3,6 +3,9 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
 
+/**
+ * @author Gezim Sejdiu
+ */
 object SchemaCompleteness {
   implicit class SchemaCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
     /**

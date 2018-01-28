@@ -5,6 +5,9 @@ import org.apache.spark.sql.SparkSession
 import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
+/**
+ * @author Gezim Sejdiu
+ */
 object InterlinkingCompleteness {
   implicit class InterlinkingCompletenessFunctions(dataset: RDD[Triple]) extends Serializable {
     /**

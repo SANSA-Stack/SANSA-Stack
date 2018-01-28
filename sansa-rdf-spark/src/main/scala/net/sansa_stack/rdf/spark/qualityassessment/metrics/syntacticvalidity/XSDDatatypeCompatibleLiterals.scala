@@ -5,6 +5,9 @@ import org.apache.jena.graph.{ Triple, Node }
 import org.apache.spark.rdd.RDD
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
+/**
+ * @author Gezim Sejdiu
+ */
 object XSDDatatypeCompatibleLiterals {
   implicit class XSDDatatypeCompatibleLiteralsFunctions(dataset: RDD[Triple]) extends Serializable {
 

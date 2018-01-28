@@ -6,6 +6,7 @@ import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
 /*
  * Dereferenceability of the URI.
+ * @author Gezim Sejdiu
  */
 object DereferenceableUris {
   implicit class DereferenceableUrisFunctions(dataset: RDD[Triple]) extends Serializable {

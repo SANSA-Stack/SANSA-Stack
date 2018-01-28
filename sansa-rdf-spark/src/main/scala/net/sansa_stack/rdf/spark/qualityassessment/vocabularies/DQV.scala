@@ -3,6 +3,8 @@ package net.sansa_stack.rdf.spark.qualityassessment.vocabularies
 /*
  * Data Quality Vocabulary
  * Vocabulary Definitions from https://www.w3.org/TR/vocab-dqv/
+ * 
+ * @author Gezim Sejdiu
  */
 object DQV {
 

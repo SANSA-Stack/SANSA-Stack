@@ -1,5 +1,8 @@
 package net.sansa_stack.rdf.spark.utils
 
+/**
+ * @author Gezim Sejdiu
+ */
 object StatsPrefixes {
   val RDF_CLASS = "http://www.w3.org/2000/01/rdf-schema#Class"
   val OWL_CLASS = "http://www.w3.org/2002/07/owl#Class"

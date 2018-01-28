@@ -25,6 +25,9 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.MachineRead
 
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.conciseness.ExtensionalConciseness._
 
+/**
+ * @author Gezim Sejdiu
+ */
 package object qualityassessment {
   
   implicit def AssessInterlinkingCompletenessFunctions(dataset: RDD[Triple]) = new InterlinkingCompletenessFunctions(dataset)

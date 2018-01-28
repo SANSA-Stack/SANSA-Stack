@@ -6,6 +6,8 @@ import org.apache.jena.graph.Triple
 
 /**
  * Abstract class for loading a DStream of Triples.
+ * 
+ * @author Gezim Sejdiu
  */
 abstract class StreamReader {
   

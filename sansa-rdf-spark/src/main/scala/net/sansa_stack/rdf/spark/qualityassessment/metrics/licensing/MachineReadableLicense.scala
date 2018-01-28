@@ -5,6 +5,9 @@ import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
 
+/**
+ * @author Gezim Sejdiu
+ */
 object MachineReadableLicense {
   implicit class MachineReadableLicenseFunctions(dataset: RDD[Triple]) extends Serializable {
 

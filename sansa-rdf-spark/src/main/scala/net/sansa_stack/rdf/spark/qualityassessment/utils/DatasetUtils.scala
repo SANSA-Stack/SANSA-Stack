@@ -6,6 +6,7 @@ import collection.JavaConverters._
 
 /*
  * DataSet Utils.
+ * @author Gezim Sejdiu
  */
 object DatasetUtils {
 

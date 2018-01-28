@@ -4,6 +4,8 @@ import org.apache.spark.streaming.dstream.DStream
 
 /**
  * Abstract class that save the output from a given DStream.
+ * 
+ * @author Gezim Sejdiu
  */
 abstract class StreamWriter {
   /**

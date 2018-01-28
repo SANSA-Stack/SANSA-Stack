@@ -6,6 +6,9 @@ import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 import scala.util.matching.Regex
 import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
 
+/**
+ * @author Gezim Sejdiu
+ */
 object HumanReadableLicense {
   implicit class HumanReadableLicenseFunctions(dataset: RDD[Triple]) extends Serializable {
 

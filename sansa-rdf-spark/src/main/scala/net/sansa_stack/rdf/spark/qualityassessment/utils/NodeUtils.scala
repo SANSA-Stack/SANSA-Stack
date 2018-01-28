@@ -11,6 +11,7 @@ import java.net.ProtocolException
 
 /*
  * Node Utils.
+ * @author Gezim Sejdiu
  */
 object NodeUtils {
 

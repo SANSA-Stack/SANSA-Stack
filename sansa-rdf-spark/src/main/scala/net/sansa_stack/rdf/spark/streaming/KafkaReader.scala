@@ -10,6 +10,9 @@ import org.apache.spark.streaming.kafka010.KafkaUtils
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 
+/**
+ * @author Gezim Sejdiu
+ */
 class KafkaReader extends StreamReader {
 
   /**

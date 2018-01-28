@@ -4,6 +4,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 
+/**
+ * @author Gezim Sejdiu
+ */
 object ShortURIs {
   implicit class ShortURIsFunctions(dataset: RDD[Triple]) extends Serializable {
 

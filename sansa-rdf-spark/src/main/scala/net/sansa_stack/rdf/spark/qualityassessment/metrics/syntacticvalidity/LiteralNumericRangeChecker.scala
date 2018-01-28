@@ -5,6 +5,9 @@ import org.apache.jena.graph.{ Triple, Node }
 import org.apache.spark.rdd.RDD
 import net.sansa_stack.rdf.spark.qualityassessment.utils.DatasetUtils._
 
+/**
+ * @author Gezim Sejdiu
+ */
 object LiteralNumericRangeChecker {
   implicit class LiteralNumericRangeCheckerFunctions(dataset: RDD[Triple]) extends Serializable {
 

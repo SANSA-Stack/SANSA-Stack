@@ -3,6 +3,9 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Triple, Node }
 
+/**
+ * @author Gezim Sejdiu
+ */
 object CoverageDetail {
   implicit class CoverageDetailFunctions(dataset: RDD[Triple]) extends Serializable {
 
