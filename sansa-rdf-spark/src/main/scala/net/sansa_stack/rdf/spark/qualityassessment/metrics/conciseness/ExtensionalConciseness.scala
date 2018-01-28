@@ -6,6 +6,9 @@ import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
 import org.apache.spark.sql.Row
 
+/**
+ * @author Gezim Sejdiu
+ */
 object ExtensionalConciseness {
   implicit class ExtensionalConcisenessFunctions(dataset: RDD[Triple]) extends Serializable {
 
@@ -17,7 +20,7 @@ object ExtensionalConciseness {
      */
     def assessExtensionalConciseness() = {
 
-      val mapSubjects = dataset.map(_.getSubject).distinct()
+      val mapSubjects = dataset.map(_.getSubject)
 
       val mapSubjectsWithPredicates = dataset.filter(triple => triple.getSubject.isURI() && triple.getPredicate.isURI())
         .map(f => (f.getSubject, f.getPredicate))
@@ -25,44 +28,19 @@ object ExtensionalConciseness {
         .reduceByKey(_ + _)
         .map { case ((k, v), cnt) => (k, (v, cnt)) }
         .groupByKey()
-        
-  
-      val mapSubjectsWithPredicatesValue = dataset.filter(triple => triple.getSubject.isURI() && triple.getPredicate.isURI())
-      .map(f => (f.getSubject, f.getPredicate.getURI.toString() + " " + f.getObject.toString() + " "))
-        .map((_, 1L))
-        .reduceByKey(_ + _)  
-        .map { case ((k, v), cnt) => (k, (v, cnt)) }
-        .groupByKey()
-        
 
-      val test = mapSubjectsWithPredicates.map(v => (v, 1)).groupBy(_._1).mapValues(_.size)
-      
-      val ss = mapSubjectsWithPredicatesValue.map(x=>(x._1, x._2.groupBy(_._1).map(y=>(y._1, y._2.size))))
+      val duplicateSubjects = dataset.filter(triple => triple.getSubject.isURI() && triple.getPredicate.isURI())
+        .map(f => (f.getSubject, f.getPredicate.getURI.toString() + " " + f.getObject.toString() + " "))
+        .map(f => (f._2, 1L))
+        .reduceByKey(_ + _)
+        .filter(_._2 > 1)
+        .values.sum()
 
-      /* val duplicates = mapSubjects.mapPartitions(f => {
-      val triples = f
-      })*/
+      // val duplicates = mapSubjectsWithPredicatesValue.map(x => (x._1, x._2.groupBy(_._1).map(y => (y._1, y._2.size))))
 
-      ss.collect().foreach(println(_))
-
-      val s = mapSubjectsWithPredicates.mapPartitions(rows => {
-
-        val row = rows.zipWithIndex
-        row
-      })
-
-      println("ss : " + ss.count())
-      val uniqueSubjects = 0
-      //val uniqueSubjects = mapSubjects.mapPartitions(f, preservesPartitioning)
-
-      /* .map { triple =>
-          val subject = triple.getSubject
-          val predicates = dataset.filter(_.getSubject.matches(triple.getSubject)).map(_.getPredicate)
-          (subject, predicates)
-        }*/
       val totalSubjects = mapSubjects.count().toDouble
 
-      if (totalSubjects > 0) uniqueSubjects / totalSubjects else 0
+      if (totalSubjects > 0) (totalSubjects - duplicateSubjects) / totalSubjects else 0
     }
   }
 }
