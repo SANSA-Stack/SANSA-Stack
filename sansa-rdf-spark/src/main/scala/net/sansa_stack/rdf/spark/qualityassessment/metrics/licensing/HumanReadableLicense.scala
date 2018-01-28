@@ -5,6 +5,7 @@ import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
 import scala.util.matching.Regex
 import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
+import org.apache.jena.vocabulary.RDFS
 
 /**
  * @author Gezim Sejdiu
@@ -23,17 +24,17 @@ object HumanReadableLicense {
       val hasValidLicense = dataset.filter { f =>
         f.getSubject.isURI() && hasLicenceIndications(f.getPredicate) && f.getObject.isLiteral() && isLicenseStatement(f.getObject)
       }
-        if (hasValidLicense.count() > 0) 1.0 else 0.0
-      }
-    
-      def isLicenseStatement(node: Node) = {
-        val check = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
-        check.findFirstIn(node.getLiteralLexicalForm).size != 0
-      }
+      if (hasValidLicense.count() > 0) 1.0 else 0.0
+    }
 
-      def hasLicenceIndications(node: Node) = {
-        val licenceIndications = Seq(DQV.dqv + "description", DQV.RDFS + "comment", DQV.RDFS + "label")
-        licenceIndications.contains(node.getURI)
-      }
+    def isLicenseStatement(node: Node) = {
+      val check = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
+      check.findFirstIn(node.getLiteralLexicalForm).size != 0
+    }
+
+    def hasLicenceIndications(node: Node) = {
+      val licenceIndications = Seq(DQV.dqv_decription, RDFS.comment, RDFS.label)
+      licenceIndications.contains(node.getURI)
+    }
   }
 }

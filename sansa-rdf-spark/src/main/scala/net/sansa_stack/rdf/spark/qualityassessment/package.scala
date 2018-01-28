@@ -24,6 +24,7 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.HumanReadab
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.MachineReadableLicense._
 
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.conciseness.ExtensionalConciseness._
+import org.apache.spark.sql.SparkSession
 
 /**
  * @author Gezim Sejdiu
