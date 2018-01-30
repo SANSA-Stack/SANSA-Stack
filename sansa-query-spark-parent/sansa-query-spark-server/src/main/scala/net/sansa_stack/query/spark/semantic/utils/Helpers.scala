@@ -33,6 +33,31 @@ object Helpers {
         tripleData
     }
 
+    // fetch FILTER function data
+    def fetchFilterFunctionData(fName: String, filterFunction: String, processLine: String, symbol: Map[String, String]): ArrayBuffer[String] = {
+        val data: ArrayBuffer[String] = ArrayBuffer()
+
+        // split
+        val splitData = filterFunction.split(fName)
+        var locationPoint = splitData(1).indexOf(symbol("round-bracket-right"))
+
+        // variable (?X)
+        val variable = splitData(1).substring(1, locationPoint)
+
+        // value (<...>)
+        locationPoint = processLine.indexOf(variable)
+        var value = processLine.substring(locationPoint + variable.length + 1)
+        locationPoint = value.indexOf(symbol("blank"))
+        if (locationPoint.equals(-1)) value = value
+        else value = value.substring(0, locationPoint)
+
+        // append data
+        data.append(variable)
+        data.append(value)
+
+        data
+    }
+  
     // total query process time
     def queryTime(processedTime: Long,symbol: Map[String, String]) = {
         val milliseconds = TimeUnit.MILLISECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
@@ -40,13 +65,13 @@ object Helpers {
         val minutes = TimeUnit.MINUTES.convert(processedTime, TimeUnit.NANOSECONDS)
 
         if (milliseconds >= 0) {
-            println("Processed Time (MILLISECONDS): " + milliseconds)
+            println(s"Processed Time (MILLISECONDS): $milliseconds")
 
             if (seconds > 0) {
-                println("Processed Time (SECONDS): " + seconds + " approx.")
+                println(s"Processed Time (SECONDS): $seconds approx.")
 
                 if (minutes > 0) {
-                    println("Processed Time (MINUTES): " + minutes)
+                    println(s"Processed Time (MINUTES): $minutes")
                 }
             }
         }
@@ -55,8 +80,6 @@ object Helpers {
         // append query time
         milliseconds
         //_queriesProcessTime.append(milliseconds)
-
-        
     }
 
     // overall queries process time
@@ -65,9 +88,9 @@ object Helpers {
         val seconds = Math.floor(milliseconds/1000d + .5d).toInt
 
         if (milliseconds >= 1000) {
-            println("--> Overall Process Time: " + milliseconds + "ms (" + seconds + "secs approx.)")
+            println(s"--> Overall Process Time: ${milliseconds}ms (${seconds}secs approx.)")
         } else {
-            println("--> Overall Process Time: " + milliseconds + "ms")
+            println(s"--> Overall Process Time: ${milliseconds}ms")
         }
     }
 }
