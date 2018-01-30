@@ -512,7 +512,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT, PREDICATE and OBJECT
-        val tripleData = this.fetchTripleSPO(triple, symbol)
+        val tripleData = fetchTripleSPO(triple, symbol)
         val tripleSubject = tripleData(0)
         val triplePredicate = tripleData(1)
         val tripleObject = tripleData(2)
@@ -806,7 +806,7 @@ class QuerySystem(
             val triple = _WhereTriples(qID)(i)
 
             // fetch SUBJECT and OBJECT
-            val tripleData = this.fetchTripleSPO(triple, symbol)
+            val tripleData = fetchTripleSPO(triple, symbol)
             val tripleSubject = tripleData(0)
             val tripleObject = tripleData(2)
 
@@ -829,7 +829,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT and OBJECT
-        val tripleData = this.fetchTripleSPO(triple, symbol)
+        val tripleData = fetchTripleSPO(triple, symbol)
         val tripleSubject = tripleData(0)
         val tripleObject = tripleData(2)
 
