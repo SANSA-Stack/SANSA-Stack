@@ -9,6 +9,7 @@ import scala.collection.JavaConversions._
 import java.util.StringTokenizer
 import org.apache.spark.rdd._
 import net.sansa_stack.query.spark.semantic.utils.Helpers._
+import scala.util.Try
 
 /*
  * QuerySystem - query on semantic partition data
@@ -31,7 +32,8 @@ class QuerySystem(
     var _WhereTriples: Map[Int, ArrayBuffer[String]] = Map()
     var _numOfWhereClauseTriples: Map[Int, Int] = Map()
     var _queriesLimit: Map[Int, Int] = Map()
-    var _unionQueries: Map[Int, Map[String, Boolean]] = Map()
+    var _unionOp: Map[Int, Map[String, Boolean]] = Map()
+    var _filterOp: Map[Int, String] = Map()
     var _queriesProcessTime: ArrayBuffer[Long] = ArrayBuffer()
 
     var workingTripleRDD: RDD[(String, List[String])] = _
@@ -41,19 +43,19 @@ class QuerySystem(
     def run(): Unit = {
         // parse queries
         for (qID <- this.fetchQueries.indices) {
-            // assemble queries
+            // refactor queries
             val refactoredQueries = this.refactorUnionQueries(this.fetchQueries(qID), qID)
-            
+
             // start process time
             val startTime = System.nanoTime()
 
             // iterate refactored UNION queries
             for (qUID <- refactoredQueries.indices) {
                 // case: UNION
-                _unionQueries = Map(qID -> Map(
+                _unionOp = Map(qID -> Map(
                     "isUnion" -> (refactoredQueries.length > 1),
-                    "first" -> (qUID == 0),
-                    "last" -> (qUID == (refactoredQueries.length - 1)))
+                    "first" -> qUID.equals(0),
+                    "last" -> qUID.equals(refactoredQueries.length - 1))
                 )
 
                 // parse query
@@ -64,11 +66,11 @@ class QuerySystem(
             }
 
             // end process time
-            _queriesProcessTime.append(queryTime((System.nanoTime() - startTime),symbol))
+            this.queryTime(System.nanoTime() - startTime)
         }
 
         // overall process time
-        overallQueriesTime(_queriesProcessTime)
+        this.overallQueriesTime()
     }
 
     // -------------------------------
@@ -89,17 +91,19 @@ class QuerySystem(
             if (line.nonEmpty) {
                 // query should start with SELECT
                 if (line.toUpperCase.startsWith("SELECT")) {
+                    var i = 0
                     var singleQuery: ArrayBuffer[String] = ArrayBuffer()
                     singleQuery += line
 
                     // add elements until "}" found
                     while (fileScanner.hasNext) {
                         line = fileScanner.nextLine.trim()
+                        i += 1 // validate duplicate SELECT right after the first SELECT
 
                         // ignore empty lines
                         if (line.nonEmpty) {
                             // if reach at the end
-                            if (!line.toUpperCase.startsWith("SELECT")) {
+                            if (!line.toUpperCase.startsWith("SELECT") || i.equals(1)) {
                                 singleQuery += line
                             } else {
                                 // append query to the list
@@ -147,14 +151,14 @@ class QuerySystem(
             }
 
             // query: multi triple
-            if (line.startsWith(this.symbol("bracket-left")) && !line.endsWith(this.symbol("bracket-right"))) {
+            if (line.startsWith(this.symbol("curly-bracket-left")) && !line.endsWith(this.symbol("curly-bracket-right"))) {
                 j += 1
 
-                while (!line.startsWith(this.symbol("bracket-right"))) {
+                while (!line.startsWith(this.symbol("curly-bracket-right"))) {
                     line = query(j)
                     j += 1
 
-                    if (!line.startsWith(this.symbol("bracket-right"))) {
+                    if (!line.startsWith(this.symbol("curly-bracket-right"))) {
                         singleQueryP2 += line
                         triplesList += line
                     }
@@ -166,7 +170,7 @@ class QuerySystem(
             }
 
             // query: single triple
-            if (line.startsWith(this.symbol("bracket-left")) && line.endsWith(this.symbol("bracket-right"))) {
+            if (line.startsWith(this.symbol("curly-bracket-left")) && line.endsWith(this.symbol("curly-bracket-right"))) {
                 val tokens = line.split(this.symbol("blank"))
                 val triple = tokens(1) + this.symbol("blank") + tokens(2) + this.symbol("blank") + tokens(3) + this.symbol("blank") + tokens(4)
 
@@ -181,7 +185,7 @@ class QuerySystem(
             if (line.toUpperCase.equals("UNION")) j += 1
 
             // common part: after triples
-            if (line.equals(this.symbol("bracket-right")) && !isEnd) {
+            if (line.equals(this.symbol("curly-bracket-right")) && !isEnd) {
                 singleQueryP3 += line
 
                 while (j < query.size - 1) {
@@ -207,7 +211,7 @@ class QuerySystem(
             if (!selectLine.contains(this.symbol("asterisk"))) {
                 val selectVariables = this.lineParser(selectLine).filter(_.nonEmpty)
                 val whereVariables = this.fetchWhereVariables(triplesList).filter(_.nonEmpty)
-                this.validateSelectVariables(selectVariables, whereVariables, qID)
+                this.validateVariables(selectVariables, whereVariables, qID)
             }
         }
 
@@ -218,7 +222,7 @@ class QuerySystem(
     def queryParser(query: ArrayBuffer[String], qID: Int): Unit = {
         var selectLine: String = ""
         var whereLines: ArrayBuffer[String] = ArrayBuffer()
-        var queryLimit: Int = 0
+        var filterLine: String = ""
         var isEnd = false
 
         // validate query and fetch SELECT and WHERE clauses
@@ -230,7 +234,7 @@ class QuerySystem(
             if (line.toUpperCase.startsWith("SELECT")) {
                 // exception: more than one SELECT line
                 if (selectLine.nonEmpty) {
-                    throw new IllegalStateException("Multiple SELECT lines detected: " + line)
+                    throw new IllegalStateException(s"Multiple SELECT lines detected: $line")
                 }
 
                 selectLine = line
@@ -240,28 +244,63 @@ class QuerySystem(
                     whereLines += line
 
                     // store all WHERE lines
-                    while (!line.endsWith(this.symbol("bracket-right"))) {
+                    while (!line.endsWith(this.symbol("curly-bracket-right"))) {
                         j += 1
                         line = query(j)
 
                         // exception: more than one WHERE line
                         if (line.toUpperCase.startsWith("WHERE")) {
-                            throw new IllegalStateException("Multiple WHERE lines detected: " + line)
+                            throw new IllegalStateException(s"Multiple WHERE lines detected: $line")
                         }
 
-                        whereLines += line
+                        // case: WHERE or FILTER
+                        if (!line.toUpperCase.contains("FILTER")) {
+                            whereLines += line
+                        } else {
+                            // exception: more than one FILTER line
+                            if (filterLine.nonEmpty) {
+                                throw new IllegalStateException(s"Only one Filter Operator is allowed per query: $line")
+                            } else {
+                                if (line.toUpperCase.startsWith("FILTER") && line.toUpperCase.endsWith(this.symbol("round-bracket-right"))) {
+                                    val locationPoint1 = line.indexOf(this.symbol("round-bracket-left"))
+                                    val locationPoint2 = line.lastIndexOf(this.symbol("round-bracket-right"))
+                                    filterLine = line.substring(locationPoint1 + 1, locationPoint2)
+                                } else {
+                                    j += 1
+                                    line = query(j)
+
+                                    while (!line.toUpperCase.equals(this.symbol("round-bracket-right"))) {
+                                        filterLine += this.symbol("blank") + line
+                                        filterLine = filterLine.trim
+
+                                        j += 1
+                                        line = query(j)
+                                    }
+                                }
+
+                                filterLine = filterLine.trim.replaceAll(" +", this.symbol("blank")) // remove multiple spaces to a single space
+                            }
+                        }
                     }
 
-                    // check for other operators
+                    // after WHERE clause
                     for(k <- j+1 until query.size) {
                         line = query(k)
 
-                        // store LIMIT value
+                        // case: LIMIT
                         if (line.toUpperCase.startsWith("LIMIT")) {
+                            // exception: more than one LIMIT line
+                            if (_queriesLimit.get(qID).isDefined) {
+                                throw new IllegalStateException(s"Only one LIMIT Operator is allowed per query: $line")
+                            }
+
                             val locationPoint = line.lastIndexOf(this.symbol("blank")) // split line at location: LIMIT
                             val newLine = line.substring(locationPoint) // skip: LIMIT
-                            queryLimit = newLine.substring(1, newLine.length).toInt
-                            _queriesLimit = Map(qID -> queryLimit)
+                            val queryLimit = newLine.substring(1, newLine.length)
+
+                            // store LIMIT value
+                            if (Try(queryLimit.toInt).isSuccess) _queriesLimit = Map(qID -> queryLimit.toInt)
+                            else throw new IllegalStateException(s"Limit must be an Integer value! Supplied: $queryLimit")
                         }
 
                         // increment
@@ -269,9 +308,7 @@ class QuerySystem(
                     }
 
                     isEnd = true
-                } else {
-                    throw new IllegalStateException("WHERE Clause not found!")
-                }
+                } else throw new IllegalStateException("WHERE Clause not found!")
             }
         }
 
@@ -279,6 +316,7 @@ class QuerySystem(
         val selectVariables = this.lineParser(selectLine).filter(_.nonEmpty)
         val whereVariables = this.fetchWhereVariables(whereLines).filter(_.nonEmpty)
         val WhereTriples = this.fetchWhereTriples(whereLines, whereVariables)
+        val filterVariables = this.lineParser(filterLine)
 
         // append variables: SELECT clause
         _selectVariables += (qID -> selectVariables)
@@ -290,8 +328,14 @@ class QuerySystem(
         _WhereTriples += (qID -> WhereTriples)
 
         // validate SELECT clause variables
-        if (!selectLine.contains(this.symbol("asterisk")) && !_unionQueries(qID)("isUnion"))
-            this.validateSelectVariables(selectVariables, _whereVariables(qID), qID)
+        if (!selectLine.contains(this.symbol("asterisk")) && !_unionOp(qID)("isUnion"))
+            this.validateVariables(selectVariables, _whereVariables(qID), qID)
+
+        // validate FILTER clause variables
+        this.validateVariables(filterVariables, whereVariables, qID, "FILTER")
+
+        // append FILTER
+        _filterOp += (qID -> filterLine)
 
         // append number of clause in a query
         _numOfWhereClauseTriples += (qID -> WhereTriples.size)
@@ -316,13 +360,15 @@ class QuerySystem(
                 locationPoint = line.indexOf(this.symbol("blank"))
 
                 // when there is no more variables found after split
-                if (locationPoint == -1) {
+                if (locationPoint.equals(-1)) {
                     // set location point to end of line
                     locationPoint = line.length()
                 }
 
                 // set value to a variable
                 var variable = line.substring(0, locationPoint)
+                if (variable.endsWith(this.symbol("round-bracket-right")))
+                    variable = line.substring(0, locationPoint - 1)
 
                 // add variable to the list
                 varList += variable
@@ -374,12 +420,12 @@ class QuerySystem(
                 }
 
                 // remove "{"
-                if (line.startsWith(this.symbol("bracket-left"))) {
+                if (line.startsWith(this.symbol("curly-bracket-left"))) {
                     line = line.substring(1).trim()
                 }
 
                 // remove "}"
-                if (line.startsWith(this.symbol("bracket-right"))) {
+                if (line.startsWith(this.symbol("curly-bracket-right"))) {
                     line = line.substring(1).trim()
                 }
 
@@ -419,13 +465,11 @@ class QuerySystem(
         varList
     }
 
-    // validate SELECT clause variables
-    def validateSelectVariables(selectVariables: ArrayBuffer[String], whereVariables: ArrayBuffer[String], qID: Int): Unit = {
-        // SELECT clause variables must be in WHERE clause
-        selectVariables.foreach(variable => {
+    // validate SELECT or FILTER clause variables
+    def validateVariables(variables: ArrayBuffer[String], whereVariables: ArrayBuffer[String], qID: Int, validateType: String = "SELECT"): Unit = {
+        variables.foreach(variable => {
             if (!whereVariables.contains(variable)) {
-                // exception: SELECT variable is not found in WHERE clause
-                throw new IllegalStateException("Query No. " + qID + ": SELECT clause variables must be in WHERE clause: " + variable)
+                throw new IllegalStateException(s"Query No. $qID: $validateType variables must be in WHERE clause: $variable")
             }
         })
     }
@@ -436,19 +480,19 @@ class QuerySystem(
 
     // query engine
     def queryEngine(qID: Int): Unit = {
-        if (_unionQueries(qID)("first")) {
-            if (_unionQueries(qID)("first") == _unionQueries(qID)("last")) println("Query No: " + (qID + 1))
-            else println("Query No: " + (qID + 1) + " - UNION")
+        if (_unionOp(qID)("first")) {
+            if (_unionOp(qID)("first").equals(_unionOp(qID)("last"))) println(s"Query No: ${qID + 1}")
+            else println(s"Query No: ${qID + 1} - UNION")
         }
 
         // validate number of WHERE clause triples
-        if (_numOfWhereClauseTriples(qID) == 1) {
+        if (_numOfWhereClauseTriples(qID).equals(1)) {
             println("No. of WHERE clause Triples: 1")
 
             // process first triple
             this.runFirstTriple(qID)
         } else {
-            println("No. of WHERE clause Triples: " + _numOfWhereClauseTriples(qID))
+            println(s"No. of WHERE clause Triples: ${_numOfWhereClauseTriples(qID)}")
 
             // process all triples of a query
             this.runAllTriplesOfQuery(qID)
@@ -468,10 +512,18 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT, PREDICATE and OBJECT
-        val tripleData = fetchTripleSPO(triple,symbol)
+        val tripleData = this.fetchTripleSPO(triple)
         val tripleSubject = tripleData(0)
         val triplePredicate = tripleData(1)
         val tripleObject = tripleData(2)
+
+        // case: FILTER
+        var isFilter = false
+        var filterLine = ""
+        if (_filterOp(qID).nonEmpty) {
+            isFilter = true
+            filterLine = _filterOp(qID)
+        }
 
         // process partition data
         val tmpRDD = partitionData
@@ -480,9 +532,9 @@ class QuerySystem(
                 val output = for (i <- 1 until (lineArray.length - 1)) yield {
                     var line: String = ""
 
-                    // odd numbers
-                    if (i % 2 != 0) {
-                        if (lineArray(i) == triplePredicate) {
+                    // odd numbers: PREDICATE
+                    if (!(i % 2).equals(0)) {
+                        if (lineArray(i).equals(triplePredicate)) {
                             line = lineArray(0) + this.symbol("space") + lineArray(i) + this.symbol("space") + lineArray(i + 1)
                         }
                     }
@@ -509,20 +561,31 @@ class QuerySystem(
 
                     // check: OBJECT
                     if (tripleObject.startsWith(this.symbol("question-mark")) || tripleObject.equals(lineObject)) {
-                        if (numOfWhereClauseTriples == 1) {
-                            // set output: query with only one WHERE clause triple
-                            key = this.setOnlyTripleOutput(
-                                qID,
-                                tripleSubject,
-                                tripleObject,
-                                lineSubject,
-                                lineObject
-                            )
+                        if (numOfWhereClauseTriples.equals(1) || !isRemainingTriples) {
+                            if (numOfWhereClauseTriples.equals(1)) {
+                                // set output: query with only one WHERE clause triple
+                                key = this.setOnlyTripleOutput(
+                                    qID,
+                                    tripleSubject,
+                                    tripleObject,
+                                    lineSubject,
+                                    lineObject
+                                )
 
-                            value = List(null)
-                        } else {
-                            if (!isRemainingTriples) {
-                                // set output: query with more than one WHERE clause triples
+                                // case: FILTER
+                                if (isFilter)
+                                    value = List(
+                                        this.setFirstTripleOutput(
+                                            tripleSubject,
+                                            tripleObject,
+                                            lineSubject,
+                                            lineObject
+                                        )
+                                    )
+                                else
+                                    value = List()
+                            } else {
+                                // set output: first triple of multi WHERE clause triples
                                 key = this.setFirstTripleOutput(
                                     tripleSubject,
                                     tripleObject,
@@ -530,22 +593,22 @@ class QuerySystem(
                                     lineObject
                                 )
 
-                                value = List(null)
-                            } else {
-                                // set output: query with more than one WHERE clause triples
-                                val keyValue = this.setRemainingTriplesOutput(
-                                    tripleSubject,
-                                    tripleObject,
-                                    lineSubject,
-                                    lineObject,
-                                    varJoinList
-                                )
+                                value = List()
+                            }
+                        } else {
+                            // set output: query with more than one WHERE clause triples
+                            val keyValue = this.setRemainingTriplesOutput(
+                                tripleSubject,
+                                tripleObject,
+                                lineSubject,
+                                lineObject,
+                                varJoinList
+                            )
 
-                                // assign values
-                                for (k <- keyValue.keySet()) {
-                                    key = k
-                                    value = keyValue.get(k).toList
-                                }
+                            // assign values
+                            for (k <- keyValue.keySet()) {
+                                key = k
+                                value = keyValue.get(k).toList
                             }
                         }
                     }
@@ -556,36 +619,76 @@ class QuerySystem(
             })
             .filter(_._1.nonEmpty)
 
-        // case: UNION
-        if (_unionQueries(qID)("isUnion") && numOfWhereClauseTriples == 1) {
-            if (_unionQueries(qID)("first")) unionOutputRDD = tmpRDD.map(key => key._1)
-            else unionOutputRDD = unionOutputRDD.union(tmpRDD.map(key => key._1))
-        }
+        // validate rdd
+        if(tmpRDD.partitions.nonEmpty) {
+            // only one WHERE clause triple query
+            if (numOfWhereClauseTriples.equals(1)) {
+                var outputRDD = tmpRDD
+                    .filter(data => {
+                        var status = false
 
-        // only triple query: display output
-        if (tmpRDD.partitions.nonEmpty && numOfWhereClauseTriples == 1 && _unionQueries(qID)("last")) {
-            val resultPath = this.queryResultPath + "/" + qID + "/"
+                        // case: FILTER
+                        if (isFilter) {
+                            val (result, _) = this.applyFilter(filterLine, data._2.head)
+                            if(result) status = true
+                        } else status = true
 
-            // case: UNION
-            var outputRDD = tmpRDD.map(key => key._1) // key is the output in case of just one triple query
-            if (_unionQueries(qID)("isUnion")) outputRDD = unionOutputRDD
+                        status
+                    })
+                    .map(data => {
+                        var line = data._1 // key is the output in case of just one triple query
 
-            // check limit
-            if (_queriesLimit.get(qID).isDefined) {
-                outputRDD
-                    .repartition(this.numOfFilesPartition)
-                    .mapPartitions(_.take(_queriesLimit(qID)))
-                    .saveAsTextFile(resultPath)
-            } else {
-                outputRDD
-                    .repartition(this.numOfFilesPartition)
-                    .saveAsTextFile(resultPath)
+                        // case: FILTER
+                        // case: a || b and both values are true. show result two times
+                        if (isFilter) {
+                            val (_, duplicateCounter) = this.applyFilter(filterLine, data._2.head)
+                            if (duplicateCounter >= 1) {
+                                val cline = line
+                                for (_ <- 1 to duplicateCounter) {
+                                    line += this.symbol("newline") + cline
+                                }
+                            }
+                        }
+
+                        line
+                    })
+
+                // case: UNION
+                if (_unionOp(qID)("isUnion")) {
+                    if (_unionOp(qID)("first")) unionOutputRDD = outputRDD
+                    else unionOutputRDD = unionOutputRDD.union(outputRDD)
+                }
+
+                // display output
+                if (_unionOp(qID)("last")) {
+                    val resultPath = this.queryResultPath + "/" + qID + "/"
+
+                    // case: UNION
+                    if (_unionOp(qID)("isUnion"))
+                        outputRDD = unionOutputRDD
+
+                    // case: LIMIT
+                    if (_queriesLimit.get(qID).isDefined) {
+                        outputRDD
+                            .repartition(this.numOfFilesPartition)
+                            .mapPartitions(_.take(_queriesLimit(qID)))
+                            .saveAsTextFile(resultPath)
+                    } else {
+                        outputRDD
+                            .repartition(this.numOfFilesPartition)
+                            .saveAsTextFile(resultPath)
+                    }
+                }
+            }
+
+            // multi WHERE clause triples query: set RDD
+            if (numOfWhereClauseTriples > 1)  {
+                if(!isRemainingTriples)
+                    workingPartialRDD = tmpRDD
+                else
+                    workingTripleRDD = tmpRDD
             }
         }
-
-        // multi triples query: set RDD
-        if (numOfWhereClauseTriples > 1 && !isRemainingTriples) workingPartialRDD = tmpRDD
-        if (numOfWhereClauseTriples > 1 && isRemainingTriples) workingTripleRDD = tmpRDD
     }
 
     // set output: query with only one WHERE clause triple
@@ -703,7 +806,7 @@ class QuerySystem(
             val triple = _WhereTriples(qID)(i)
 
             // fetch SUBJECT and OBJECT
-            val tripleData = fetchTripleSPO(triple,symbol)
+            val tripleData = this.fetchTripleSPO(triple)
             val tripleSubject = tripleData(0)
             val tripleObject = tripleData(2)
 
@@ -726,7 +829,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT and OBJECT
-        val tripleData = fetchTripleSPO(triple,symbol)
+        val tripleData = this.fetchTripleSPO(triple)
         val tripleSubject = tripleData(0)
         val tripleObject = tripleData(2)
 
@@ -809,13 +912,13 @@ class QuerySystem(
 
                     // check variable in variable join list
                     if (varJoinList.contains(variable)) {
-                        if (key.length() != 0) {
+                        if (!key.length().equals(0)) {
                             key = key + this.symbol("blank")
                         }
 
                         key = key + variable + this.symbol("blank") + itr.nextToken
                     } else {
-                        if (value.length() != 0) {
+                        if (!value.length().equals(0)) {
                             value = value + this.symbol("blank")
                         }
 
@@ -864,55 +967,288 @@ class QuerySystem(
 
     // display multi triples output
     def displayMultiTriplesOutput(selectVariables: ArrayBuffer[String], qID: Int): Unit = {
-        var tmpRDD = workingPartialRDD.map(line => {
-            val processLine = line._1
-            val itr = new StringTokenizer(processLine)
-            var outputResult: String = ""
-
-            // check tokens
-            while (itr.hasMoreTokens) {
-                val variable = itr.nextToken
-
-                // if variable exists in SELECT variables
-                if (selectVariables.contains(variable) || selectVariables.contains(this.symbol("asterisk"))) {
-                    val next = itr.nextToken()
-                    if (outputResult.length() > 0) {
-                        outputResult = outputResult.concat(this.symbol("space"))
-                    }
-                    outputResult = outputResult.concat(next)
-                } else {
-                    itr.nextToken()
-                }
-            }
-
-            outputResult
-        })
-
-        // case: UNION
-        if (_unionQueries(qID)("isUnion")) {
-            if (_unionQueries(qID)("first")) unionOutputRDD = tmpRDD
-            else unionOutputRDD = unionOutputRDD.union(tmpRDD)
+        // case: FILTER
+        var isFilter = false
+        var filterLine = ""
+        if (_filterOp(qID).nonEmpty) {
+            isFilter = true
+            filterLine = _filterOp(qID)
         }
 
-        // output result to file
-        if (tmpRDD.partitions.nonEmpty && _unionQueries(qID)("last")) {
-            val resultPath = this.queryResultPath + "/" + qID + "/"
+        // output RDD
+        var tmpRDD = workingPartialRDD
+            .filter(line => {
+                val processLine = line._1
+                var isFound = false
+                var status = true
 
+                // case: FILTER
+                if (isFilter) {
+                    val (result, duplicateCounter) = this.applyFilter(filterLine, processLine)
+                    if (result || duplicateCounter >= 1)
+                        isFound = true
+
+                    // filter status: false
+                    if (!isFound)
+                        status = false
+                }
+
+                status
+            })
+            .map(line => {
+                val processLine = line._1
+                val itr = new StringTokenizer(processLine)
+                var outputResult: String = ""
+
+                // check tokens
+                while (itr.hasMoreTokens) {
+                    val variable = itr.nextToken
+
+                    // if variable exists in SELECT variables
+                    if (selectVariables.contains(variable) || selectVariables.contains(this.symbol("asterisk"))) {
+                        val next = itr.nextToken()
+
+                        // add space
+                        if (outputResult.length() > 0)
+                            outputResult = outputResult.concat(this.symbol("space"))
+
+                        // append value
+                        outputResult = outputResult.concat(next)
+                    } else itr.nextToken()
+                }
+
+                // case: FILTER
+                // case: a || b and both values are true. show result two times
+                if (isFilter) {
+                    val (_, duplicateCounter) = this.applyFilter(filterLine, processLine)
+                    if (duplicateCounter >= 1) {
+                        val line = outputResult
+                        for (_ <- 1 to duplicateCounter) {
+                            outputResult += this.symbol("newline") + line
+                        }
+                    }
+                }
+
+                outputResult
+            })
+
+        if (tmpRDD.partitions.nonEmpty) {
             // case: UNION
-            if (_unionQueries(qID)("isUnion")) tmpRDD = unionOutputRDD
+            if (_unionOp(qID)("isUnion")) {
+                if (_unionOp(qID)("first"))
+                    unionOutputRDD = tmpRDD
+                else
+                    unionOutputRDD = unionOutputRDD.union(tmpRDD)
+            }
 
-            // check limit
-            if (_queriesLimit.get(qID).isDefined) {
-                tmpRDD
-                    .repartition(this.numOfFilesPartition)
-                    .mapPartitions(_.take(_queriesLimit(qID)))
-                    .saveAsTextFile(resultPath)
-            } else {
-                tmpRDD
-                    .repartition(this.numOfFilesPartition)
-                    .saveAsTextFile(resultPath)
+            // output result to file
+            if (_unionOp(qID)("last")) {
+                val resultPath = this.queryResultPath + "/" + qID + "/"
+
+                // case: UNION
+                if (_unionOp(qID)("isUnion"))
+                    tmpRDD = unionOutputRDD
+
+                // case: LIMIT
+                if (_queriesLimit.get(qID).isDefined) {
+                    tmpRDD
+                        .repartition(this.numOfFilesPartition)
+                        .mapPartitions(_.take(_queriesLimit(qID)))
+                        .saveAsTextFile(resultPath)
+                } else {
+                    tmpRDD
+                        .repartition(this.numOfFilesPartition)
+                        .saveAsTextFile(resultPath)
+                }
             }
         }
     }
+  
+    // apply FILTER on the query
+    def applyFilter(filterLine: String, processLine: String): (Boolean, Int) = {
+        val filterLineSplit1: Array[String] = filterLine.split("&&|\\|\\|")
+        val filterLineSplit2: Array[String] = filterLine.split(this.symbol("blank"))
+        var resultList: ArrayBuffer[Boolean] = ArrayBuffer()
+        var logicalOpList: ArrayBuffer[String] = ArrayBuffer()
+        var result: Boolean = false
+        var duplicateCounter: Int = 0
 
+        // store logical operators: && ||
+        for (i <- filterLineSplit2.indices) {
+            if (filterLineSplit2(i).matches("&&|\\|\\|"))
+                logicalOpList += filterLineSplit2(i)
+        }
+
+        // FILTER logic
+        if (filterLineSplit1.nonEmpty) {
+            for (i <- filterLineSplit1.indices) {
+                val lineSplit = filterLineSplit1(i).trim.split(this.symbol("blank"))
+                // valid case: 1, 3, 5, 7, 9, 11, 13 ... (odd numbers)
+                if (lineSplit.length.equals(1) || lineSplit.length.equals(3)) {
+                    // FILTER comparison
+                    if (lineSplit.length.equals(3)) {
+                        var content = ""
+
+                        // case: lang
+                        if (lineSplit(0).startsWith("lang") || lineSplit(0).startsWith("datatype")) {
+                            var index = 0
+                            if (lineSplit(0).startsWith("lang"))
+                                index = 5
+                            else
+                                index = 9
+
+                            content = lineSplit(0).substring(index, lineSplit(0).length - 1)
+                        }
+                        else content = lineSplit(0)
+
+                        // validate variable
+                        if (!content.startsWith(this.symbol("question-mark")))
+                            throw new IllegalStateException(s"FILTER - Wrong Variable: $filterLine")
+                        else {
+                            // validate comparison area
+                            if (lineSplit(1).nonEmpty) {
+                                var a = content
+                                var b = lineSplit(2)
+                                val operator = lineSplit(1)
+
+                                // fetch value
+                                var locationPoint = processLine.indexOf(a)
+                                val value = processLine.substring(locationPoint + a.length + 1)
+                                locationPoint = value.indexOf(this.symbol("blank"))
+                                if (locationPoint.equals(-1))
+                                    a = value
+                                else
+                                    a = value.substring(0, locationPoint)
+
+                                // case: lang
+                                if (lineSplit(0).startsWith("lang")) {
+                                    if (a.contains(this.symbol("at")) && !a.contains("http")) {
+                                        val data = a.split(this.symbol("at"))
+                                        if (data.nonEmpty && data(1).nonEmpty && data(1).length.equals(2))
+                                            a = data(1).toLowerCase
+                                    }
+
+                                    // "ES" to es
+                                    b = lineSplit(2).substring(1, lineSplit(2).length - 1).toLowerCase
+                                }
+
+                                // case: datatype
+                                if (lineSplit(0).startsWith("datatype")) {
+                                    if (a.contains(this.symbol("up-arrows")) && a.contains(this.symbol("hash"))) {
+                                        val data = a.split(this.symbol("hash"))
+                                        if (data.nonEmpty && data(1).nonEmpty)
+                                            a = data(1)
+                                    }
+                                }
+
+                                // call comparison function
+                                resultList += this.filterComparison(a, b, operator)
+                            } else throw new IllegalStateException(s"FILTER - Empty Operator: $filterLine")
+                        }
+                    } else { // FILTER functions
+                        // validate filter area
+                        if (lineSplit(0).nonEmpty &&
+                            lineSplit(0).contains(this.symbol("round-bracket-left")) &&
+                            lineSplit(0).endsWith(this.symbol("round-bracket-right"))
+                        ) {
+                            val filterFunction = lineSplit(0)
+                            val locationPoint = filterFunction.indexOf(this.symbol("round-bracket-left"))
+                            var fName = filterFunction.substring(0, locationPoint)
+                            var isNot = false
+
+                            // case: ! operator
+                            if (filterFunction.contains(this.symbol("exclamation-mark"))) {
+                                fName = filterFunction.substring(1, locationPoint)
+                                isNot = true
+                            }
+
+                            // call FILTER function
+                            val output = this.filterFunctions(fName, filterFunction, processLine)
+
+                            // case: ! operator
+                            if (isNot)
+                                resultList += !output
+                            else
+                                resultList += output
+                        } else throw new IllegalStateException(s"FILTER - Wrong Function: $filterLine")
+                    }
+                } else throw new IllegalStateException(s"FILTER - Wrong Statement: $filterLine")
+            }
+
+            // evaluate result
+            if (logicalOpList.nonEmpty && resultList.length > logicalOpList.length) {
+                for (i <- logicalOpList.indices) {
+                    if (i.equals(0)) {
+                        if (logicalOpList(0).equals("&&"))
+                            result = resultList(i) && resultList(i+1)
+                        else {
+                            if (resultList(i) && resultList(i+1)) {
+                                result = resultList(i) || resultList(i+1)
+                                duplicateCounter += 1
+                            } else result = resultList(i) || resultList(i+1)
+                        }
+                    } else {
+                        if (logicalOpList(i).equals("&&"))
+                            result = result && (resultList(i) && resultList(i+1))
+                        else {
+                            if (result && resultList(i) && resultList(i+1)) {
+                                result = result || (resultList(i) || resultList(i+1))
+                                duplicateCounter += 1
+                            } else result = result || (resultList(i) || resultList(i+1))
+                        }
+                    }
+                }
+            } else if (resultList.nonEmpty) result = resultList(0)
+            else result = true
+        }
+
+        (result, duplicateCounter)
+    }
+  
+    // FILTER comparison
+    def filterComparison(a: String, b: String, operator: String): Boolean = {
+        val result: Boolean = operator match {
+            case "<" => a < b
+            case ">" => a > b
+            case "=" | "==" => a.equals(b)
+            case ">=" => a > b || a.equals(b)
+            case "<=" => a < b || a.equals(b)
+            case "!=" => !a.equals(b)
+            case _ => throw new IllegalStateException(s"FILTER - Wrong Operator Found: $operator")
+        }
+
+        result
+    }
+  
+    // FILTER functions
+    def filterFunctions(fName: String, filterFunction: String, processLine: String): Boolean = {
+        var bool = false
+        val data = this.fetchFilterFunctionData(fName, filterFunction, processLine)
+        val variable = data(0)
+        val value = data(1)
+
+        val result: Boolean = fName match {
+            case "isURI" =>
+                if (value.startsWith(this.symbol("less-than")) &&
+                    value.endsWith(this.symbol("greater-than")) &&
+                    value.contains("http")
+                )
+                    bool = true
+
+                bool
+            case "isBlank" =>
+                if (variable.startsWith("_:"))
+                    bool = true
+
+                bool
+            case "isLiteral" =>
+                if (value.contains(this.symbol("up-arrows")))
+                    bool = true
+
+                bool
+            case _ => throw new IllegalStateException(s"FILTER - Wrong functions found: $fName")
+        }
+
+        result
+    }
 }
