@@ -88,22 +88,23 @@ class RdfPartition(
   // total partition time
   def partitionTime(processedTime: Long): Unit = {
     val milliseconds = TimeUnit.MILLISECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
-    val seconds = TimeUnit.SECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
+    val seconds = Math.floor(milliseconds/1000d + .5d).toInt
     val minutes = TimeUnit.MINUTES.convert(processedTime, TimeUnit.NANOSECONDS)
 
     if (milliseconds >= 0) {
-      println("Processed Time (MILLISECONDS): " + milliseconds)
+        println(s"Processed Time (MILLISECONDS): $milliseconds")
 
-      if (seconds > 0) {
-        println("Processed Time (SECONDS): " + seconds)
+        if (seconds > 0) {
+            println(s"Processed Time (SECONDS): $seconds approx.")
 
-        if (minutes > 0) {
-          println("Processed Time (MINUTES): " + minutes)
+            if (minutes > 0) {
+                println(s"Processed Time (MINUTES): $minutes")
+            }
         }
-      }
     }
   }
 }
+
 object RdfPartition {
   def apply(
     symbol:              Map[String, String],
