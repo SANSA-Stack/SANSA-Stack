@@ -50,7 +50,7 @@ object DereferenceableUris {
      * and the total number of objects.
      */
     def assessDereferenceableBackLinks() = {
-      val backLinks = objects.map(f => getParentURI(f.getObject)).count().toDouble
+      val backLinks = objects.map(f => getParentURI(f.getObject)!= "").count().toDouble
       if (totalURIs > 0.0) backLinks / totalURIs else 0
     }
 
@@ -61,7 +61,7 @@ object DereferenceableUris {
      * and the total number of subjects.
      */
     def assessDereferenceableForwardLinks() = {
-      val forwardLinks = subjects.map(f => getParentURI(f.getObject)).count().toDouble
+      val forwardLinks = subjects.map(f => getParentURI(f.getObject)!= "").count().toDouble
       if (totalURIs > 0.0) forwardLinks / totalURIs else 0
     }
   }

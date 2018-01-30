@@ -8,7 +8,7 @@ import collection.JavaConverters._
  * DataSet Utils.
  * @author Gezim Sejdiu
  */
-object DatasetUtils {
+object DatasetUtils extends Serializable{
 
   @transient lazy val conf: Config = ConfigFactory.load("metrics.conf")
 

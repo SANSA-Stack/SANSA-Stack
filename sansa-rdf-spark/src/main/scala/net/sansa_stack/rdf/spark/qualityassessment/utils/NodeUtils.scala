@@ -13,7 +13,7 @@ import java.net.ProtocolException
  * Node Utils.
  * @author Gezim Sejdiu
  */
-object NodeUtils {
+object NodeUtils extends Serializable{
 
   /**
    *  Checks if a resource ?node is local
