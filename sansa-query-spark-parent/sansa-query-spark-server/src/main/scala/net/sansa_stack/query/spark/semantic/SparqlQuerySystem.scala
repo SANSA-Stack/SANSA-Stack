@@ -66,11 +66,11 @@ class QuerySystem(
             }
 
             // end process time
-            this.queryTime(System.nanoTime() - startTime)
+            _queriesProcessTime.append(queryTime((System.nanoTime() - startTime), symbol))
         }
 
         // overall process time
-        this.overallQueriesTime()
+        overallQueriesTime(_queriesProcessTime)
     }
 
     // -------------------------------
@@ -512,7 +512,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT, PREDICATE and OBJECT
-        val tripleData = this.fetchTripleSPO(triple)
+        val tripleData = this.fetchTripleSPO(triple, symbol)
         val tripleSubject = tripleData(0)
         val triplePredicate = tripleData(1)
         val tripleObject = tripleData(2)
@@ -806,7 +806,7 @@ class QuerySystem(
             val triple = _WhereTriples(qID)(i)
 
             // fetch SUBJECT and OBJECT
-            val tripleData = this.fetchTripleSPO(triple)
+            val tripleData = this.fetchTripleSPO(triple, symbol)
             val tripleSubject = tripleData(0)
             val tripleObject = tripleData(2)
 
@@ -829,7 +829,7 @@ class QuerySystem(
         val triple = _WhereTriples(qID)(clauseNum)
 
         // fetch SUBJECT and OBJECT
-        val tripleData = this.fetchTripleSPO(triple)
+        val tripleData = this.fetchTripleSPO(triple, symbol)
         val tripleSubject = tripleData(0)
         val tripleObject = tripleData(2)
 
