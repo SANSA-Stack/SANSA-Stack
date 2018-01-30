@@ -485,7 +485,7 @@ object FirstHardeninginBorderFlow {
        var listuri : List[String] = List()
        val b:List[VertexId] = a
        for(i <- 0 until b.length ){
-          vertices.collect().map(v => {
+          graph.vertices.collect().map(v => {
             if(b(i)==v._1) listuri = listuri.::(v._2)
           })
         
@@ -544,7 +544,7 @@ object FirstHardeninginBorderFlow {
    
    neighborSort.unpersist()
    //println(s"RDF Cluster assignments: $rdfcluster\n")
-   val rdfRDD = sparkSession.sparkContext.parallelize(rdfcluster)
+   val rdfRDD = spark.sparkContext.parallelize(rdfcluster)
    rdfRDD.saveAsTextFile(output)
    
    
@@ -632,9 +632,9 @@ object FirstHardeninginBorderFlow {
   val av = evaluate.sum/evaluate.size
   //println(s"average: $av\n")
   val evaluateString : List[String] = List(av.toString())
-  val evaluateStringRDD = sparkSession.sparkContext.parallelize(evaluateString)
+  val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
       
-  evaluateStringRDD.saveAsTextFile(outputevl)
+  evaluateStringRDD.saveAsTextFile(outputeval)
   
   return bigList
   }
