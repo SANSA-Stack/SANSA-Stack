@@ -9,10 +9,10 @@ services:
     networks:
       - spark-net
     environment:
-      ### Following four examples fail:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.rdf.TripleReader"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/rdf.nt"
-      #SPARK_APPLICATION_ARGS: "/data/rdf.nt"
+      #SPARK_APPLICATION_ARGS: "--input /data/rdf.nt"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/rdf.nt"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
   triple-ops:
@@ -21,8 +21,9 @@ services:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.rdf.TripleOps"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/rdf.nt"
-      #SPARK_APPLICATION_ARGS: "/data/rdf.nt"
+      #SPARK_APPLICATION_ARGS: "--input /data/rdf.nt"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/rdf.nt"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
   triples-writer:
@@ -31,8 +32,9 @@ services:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.rdf.TripleWriter"
-      #SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/rdf.nt hdfs://namenode:8020/output_folder"
-      SPARK_APPLICATION_ARGS: "/data/rdf.nt /output/output_folder"
+      #SPARK_APPLICATION_ARGS: "--input /data/rdf.nt --out /output/rdf_layer/triples_writer"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/rdf.nt --out hdfs://namenode:8020/output/rdf_layer/triples_writer"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
       - ./output:/output
@@ -42,48 +44,51 @@ services:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.rdf.RDFStats"
-      SPARK_APPLICATION_ARGS: "/data/rdf.nt /output/output_folder"
+      #SPARK_APPLICATION_ARGS: "--input /data/rdf.nt --out /output/rdf_layer/rdf_stats"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/rdf.nt --out hdfs://namenode:8020/output/rdf_layer/rdf_stats"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
       - ./output:/output
-  # Fails
   pagerank:
     build: ./examples
     networks:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.rdf.PageRank"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/rdf.nt"
-      #SPARK_APPLICATION_ARGS: "/data/rdf.nt"
+      #SPARK_APPLICATION_ARGS: "--input /data/rdf.nt"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/rdf.nt"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
   #####################
   # Inferencing Layer #
   #####################
-  # HDFS read/write fails
   inferencing:
     build: ./examples
     networks:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.inference.RDFGraphInference"
-      #SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/rdf.nt hdfs://namenode:8020/output rdfs"
-      SPARK_APPLICATION_ARGS: "/data/rdf.nt /output/ rdfs"
+      #SPARK_APPLICATION_ARGS: "--input /data/rdf.nt --out /output/inferencing_layer/inferencing --profile rdfs"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/rdf.nt --out hdfs://namenode:8020/output/inferencing_layer/inferencing --profile rdfs"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./output:/output
       - ./examples/data:/data
   ###############
   # Query Layer #
   ###############
-  # Fails
+  # Fails because file name is too long
   sparklify:
     build: ./examples
     networks:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.query.Sparklify"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/rdf.nt"
-      #SPARK_APPLICATION_ARGS: "/data/rdf.nt"
+      #SPARK_APPLICATION_ARGS: "--input /data/rdf.nt"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/rdf.nt"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./output:/output
       - ./examples/data:/data
@@ -96,18 +101,21 @@ services:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.owl.OWLReaderRDD"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/ont_manchester.owl manch"
-      #SPARK_APPLICATION_ARGS: "/data/ont_manchester.owl manch"
+      #SPARK_APPLICATION_ARGS: "--input /data/ont_manchester.owl --syntax manch"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/ont_manchester.owl --syntax manch"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
+  # Fails because of an UnsupportedOperationException
   owl-reader-functional:
     build: ./examples
     networks:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.owl.OWLReaderRDD"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/ont_functional.owl fun"
-      #SPARK_APPLICATION_ARGS: "/data/ont_functional.owl fun"
+      #SPARK_APPLICATION_ARGS: "--input /data/ont_functional.owl --syntax fun"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/ont_functional.owl --syntax fun"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
   owl-dataset-reader-manchester:
@@ -116,44 +124,48 @@ services:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.owl.OWLReaderDataset"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/ont_manchester.owl manch"
-      #SPARK_APPLICATION_ARGS: "/data/ont_manchester.owl manch"
+      #SPARK_APPLICATION_ARGS: "--input /data/ont_manchester.owl --syntax manch"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/ont_manchester.owl --syntax manch"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
+  # Fails because of an UnsupportedOperationException
   owl-dataset-reader-functional:
     build: ./examples
     networks:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.owl.OWLReaderDataset"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/ont_functional.owl fun"
-      #SPARK_APPLICATION_ARGS: "/data/ont_functional.owl fun"
+      #SPARK_APPLICATION_ARGS: "--input /data/ont_functional.owl --syntax fun"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/ont_functional.owl --syntax fun"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
   ############
   # ML Layer #
   ############
-  # Does not work with HDFS, does not write to output_file
   clustering:
     build: ./examples
     networks:
       - spark-net
     environment:
-      SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.ml.clustering.RDFByModularityClusteringExample"
-      #SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/Clustering_sampledata.nt hdfs://namenode:8020/output_file 10"
-      SPARK_APPLICATION_ARGS: "/data/Clustering_sampledata.nt /output/output_file 10"
+      SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.ml.clustering.RDFByModularityClustering"
+      #SPARK_APPLICATION_ARGS: "--input /data/Clustering_sampledata.nt --output /output/ml_layer/clustering --numIterations 10"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/Clustering_sampledata.nt --output hdfs://namenode:8020/output/ml_layer/clustering --numIterations 10"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./output:/output
       - ./examples/data:/data
-  # Fails
+  # Generated file is empty
   rule-mining:
     build: ./examples
     networks:
       - spark-net
     environment:
       SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.ml.mining.MineRules"
-      SPARK_APPLICATION_ARGS: "hdfs://namenode:8020/data/resourcesMineRules_sampledata.tsv hdfs://namenode:8020/output/output_folder"
-      #SPARK_APPLICATION_ARGS: "/data/resourcesMineRules_sampledata.tsv /output/output_folder"
+      #SPARK_APPLICATION_ARGS: "--input /data/MineRules_sampledata.tsv --out /output/ml_layer/rule_mining"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/MineRules_sampledata.tsv --out hdfs://namenode:8020/output/ml_layer/rule_mining"
+      ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./output:/output
       - ./examples/data:/data
