@@ -38,38 +38,45 @@ class RdfPartition(
     // partition the data
     val partitionedData = nTriplesRDD
       .distinct
-      .filter(
-        line => {
-          // ignore SUBJECT with empty URI
-          line.getSubject.getURI.nonEmpty
-        })
+      .filter(line => line.getSubject.getURI.nonEmpty) // ignore SUBJECT with empty URI
       .map(line => {
-        // SUBJECT, PREDICATE and OBJECT
-        val getSubject = line.getSubject
-        val getPredicate = line.getPredicate
-        val getObject = line.getObject
+          // SUBJECT, PREDICATE and OBJECT
+          val getSubject = line.getSubject
+          val getPredicate = line.getPredicate
+          val getObject = line.getObject
 
-        var filteredPredicate: Any = getPredicate
-        var filteredObject: Any = ()
+          var filteredPredicate: Any = getPredicate
+          var filteredObject: Any = getObject
 
-        // filter out PREDICATE
-        if (getPredicate.isURI && getPredicate.getURI.contains(this.symbol("hash"))) {
-          filteredPredicate = getPredicate.getURI.split(this.symbol("hash"))(1)
+          // set: PREDICATE
+          if (getPredicate.isURI && getPredicate.getURI.contains(this.symbol("hash"))) {
+              filteredPredicate = getPredicate.getURI.split(this.symbol("hash"))(1)
 
-          // filter out OBJECT where PREDICATE is a "type"
-          if (filteredPredicate.equals("type") && getObject.isURI && getObject.getURI.contains(this.symbol("hash"))) {
-            filteredObject = this.symbol("colon") + getObject.getURI.split(this.symbol("hash"))(1)
-          } else if (!getObject.isURI) {
-            filteredObject = getObject
+              // set: OBJECT where PREDICATE is a "type"
+              if (filteredPredicate.equals("type") && getObject.isURI && getObject.getURI.contains(this.symbol("hash")))
+                  filteredObject = this.symbol("colon") + getObject.getURI.split(this.symbol("hash"))(1)
+              else if (getObject.isURI)
+                  filteredObject = this.symbol("less-than") + getObject + this.symbol("greater-than")
+              else
+                  filteredObject = getObject
+
+              // add colon at the start
+              filteredPredicate = this.symbol("colon") + filteredPredicate
           } else {
-            filteredObject = this.symbol("less-than") + getObject + this.symbol("greater-than")
-          }
-        }
+              // PREDICATE
+              if (getPredicate.isURI)
+                  filteredPredicate = this.symbol("less-than") + getPredicate + this.symbol("greater-than")
 
-        // (K,V) pair
-        (
-          this.symbol("less-than") + getSubject + this.symbol("greater-than"),
-          this.symbol("colon") + filteredPredicate + this.symbol("space") + filteredObject + this.symbol("space"))
+              // OBJECT
+              if (getObject.isURI)
+                  filteredObject = this.symbol("less-than") + getObject + this.symbol("greater-than")
+          }
+
+          // (K,V) pair
+          (
+              this.symbol("less-than") + getSubject + this.symbol("greater-than"),
+              filteredPredicate + this.symbol("space") + filteredObject + this.symbol("space")
+          )
       })
       .reduceByKey(_ + _) // group based on key
       .sortBy(x => x._1) // sort by key
@@ -81,22 +88,23 @@ class RdfPartition(
   // total partition time
   def partitionTime(processedTime: Long): Unit = {
     val milliseconds = TimeUnit.MILLISECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
-    val seconds = TimeUnit.SECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
+    val seconds = Math.floor(milliseconds/1000d + .5d).toInt
     val minutes = TimeUnit.MINUTES.convert(processedTime, TimeUnit.NANOSECONDS)
 
     if (milliseconds >= 0) {
-      println("Processed Time (MILLISECONDS): " + milliseconds)
+        println(s"Processed Time (MILLISECONDS): $milliseconds")
 
-      if (seconds > 0) {
-        println("Processed Time (SECONDS): " + seconds)
+        if (seconds > 0) {
+            println(s"Processed Time (SECONDS): $seconds approx.")
 
-        if (minutes > 0) {
-          println("Processed Time (MINUTES): " + minutes)
+            if (minutes > 0) {
+                println(s"Processed Time (MINUTES): $minutes")
+            }
         }
-      }
     }
   }
 }
+
 object RdfPartition {
   def apply(
     symbol:              Map[String, String],
