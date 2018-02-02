@@ -1223,14 +1223,14 @@ class QuerySystem(
     // FILTER functions
     def filterFunctions(fName: String, filterFunction: String, processLine: String): Boolean = {
         var bool = false
-        val data = this.fetchFilterFunctionData(fName, filterFunction, processLine)
+        val data = fetchFilterFunctionData(fName, filterFunction, processLine, symbol)
         val variable = data(0)
         val value = data(1)
 
         val result: Boolean = fName match {
             case "isURI" =>
-                if (value.startsWith(this.symbol("less-than")) &&
-                    value.endsWith(this.symbol("greater-than")) &&
+                if (value.startsWith(symbol("less-than")) &&
+                    value.endsWith(symbol("greater-than")) &&
                     value.contains("http")
                 )
                     bool = true
