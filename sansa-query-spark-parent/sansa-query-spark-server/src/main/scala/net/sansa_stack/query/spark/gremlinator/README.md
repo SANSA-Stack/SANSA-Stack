@@ -1,2 +1,0 @@
-# SANSA Gremlinator  (Experimental)
-> A SPARQL-to-Gremlin-Spark connector using [Apache TinkerPop spark-gremlin connector](https://github.com/apache/tinkerpop/tree/master/spark-gremlin) and [Gremlinator](https://github.com/LITMUS-Benchmark-Suite/sparql-to-gremlin) as a SPARQL-to-Gremlin query rewriter.
