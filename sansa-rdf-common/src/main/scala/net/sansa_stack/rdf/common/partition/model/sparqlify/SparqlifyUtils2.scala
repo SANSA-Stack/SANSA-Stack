@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.partition.model.sparqlify
+package net.sansa_stack.rdf.common.partition.model.sparqlify
 
 import org.apache.jena.sparql.expr.ExprVar
 import org.aksw.jena_sparql_api.views.E_RdfTerm
@@ -14,7 +14,7 @@ import org.aksw.jena_sparql_api.utils.Vars
 import org.aksw.sparqlify.config.syntax.ViewDefinition
 import java.util.ArrayList
 import org.apache.jena.graph.NodeFactory
-import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import org.apache.jena.sparql.expr.Expr
 
 import scala.reflect.runtime.universe._

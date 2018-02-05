@@ -2,9 +2,7 @@ package net.sansa_stack.rdf.flink.partition.core
 
 import org.apache.jena.graph.Triple
 
-import net.sansa_stack.rdf.partition.core.RdfPartition
-import net.sansa_stack.rdf.partition.core.RdfPartitioner
-import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.common.partition.core.{ RdfPartition, RdfPartitioner, RdfPartitionerDefault }
 
 import scala.reflect.ClassTag
 import org.apache.flink.api.scala._
@@ -27,7 +25,7 @@ object RdfPartitionUtilsFlink extends Serializable {
         .filter(t => p.matches(t))
         //.map(t => new Row(p.layout.fromTriple(t).productArity)))
         .map(t => p.layout.fromTriple(t))
-        //.persist())
+      //.persist())
       )
 
     }

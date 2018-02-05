@@ -1,12 +1,12 @@
-package net.sansa_stack.rdf.partition.layout
+package net.sansa_stack.rdf.common.partition.layout
 
 import scala.reflect.runtime.universe.Type
 import scala.reflect.runtime.universe.typeOf
 
 
 import org.apache.jena.graph.Triple
-import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
-import net.sansa_stack.rdf.partition.schema.SchemaStringString
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 
 
 // Layout which can be used for blank nodes, IRIs, and plain iterals without language tag

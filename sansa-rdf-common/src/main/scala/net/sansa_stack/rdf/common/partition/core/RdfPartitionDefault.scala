@@ -1,10 +1,6 @@
-package net.sansa_stack.rdf.partition.core
+package net.sansa_stack.rdf.common.partition.core
 
 import org.apache.jena.graph.Triple
-import net.sansa_stack.rdf.partition.core.RdfPartitionerDefault
-import net.sansa_stack.rdf.partition.core.RdfPartition
-
-
 /**
  * special datatypes: b for blank, u for uri, typed literal otherwise
  */
