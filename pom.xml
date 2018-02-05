@@ -17,17 +17,13 @@
 		<url>http://sda.tech</url>
 	</organization>
 
-	<modules>
-		<module>sansa-query-spark-parent</module>
-		<module>sansa-query-flink-parent</module>
-	</modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 
-		<sansa.version>0.3.0</sansa.version>
+		<sansa.version>0.3.1-SNAPSHOT</sansa.version>
 
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
@@ -90,6 +86,7 @@
 			<timezone>0</timezone>
 		</developer>
 	</developers>
+
 
 	<profiles>
 		<profile>
@@ -196,6 +193,39 @@
 	<dependencyManagement>
 		<dependencies>
 
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-spark${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-graphx_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+
 			<!-- http components -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -274,25 +304,6 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-
-			<dependency>
-				<groupId>net.sansa-stack</groupId>
-				<artifactId>sansa-rdf-common-partition${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>net.sansa-stack</groupId>
-				<artifactId>sansa-rdf-test-resources${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
-			</dependency>
-
 
 			<dependency>
 				<groupId>org.aksw.jena-sparql-api</groupId>
@@ -592,4 +603,9 @@
 		</snapshotRepository>
 	</distributionManagement>
 
+	<modules>
+		<module>sansa-query-common</module>
+		<module>sansa-query-flink</module>
+		<module>sansa-query-spark</module>
+	</modules>
 </project>
