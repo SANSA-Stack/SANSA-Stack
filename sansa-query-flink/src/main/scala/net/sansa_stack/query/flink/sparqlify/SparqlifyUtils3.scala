@@ -1,9 +1,9 @@
 package net.sansa_stack.query.flink.sparqlify
 
 import com.typesafe.scalalogging.StrictLogging
-import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.partition.schema._
-import net.sansa_stack.rdf.partition.model.sparqlify.SparqlifyUtils2
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.schema._
+import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}

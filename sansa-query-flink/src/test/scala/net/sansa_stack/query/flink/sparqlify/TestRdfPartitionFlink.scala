@@ -3,7 +3,7 @@ package net.sansa_stack.query.flink.sparqlify
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
-import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.spark.kryo.jena.JenaKryoSerializers._
 import net.sansa_stack.rdf.spark.kryo.sparqlify.RestrictedExprSerializer
 import org.aksw.jena_sparql_api.views.RestrictedExpr
@@ -26,8 +26,8 @@ import benchmark.testdriver.LocalSPARQLParameterPool
 import benchmark.testdriver.SPARQLConnection2
 import org.apache.jena.graph.Node
 import org.apache.jena.query.Dataset
-import net.sansa_stack.rdf.partition.core.RdfPartition
-import net.sansa_stack.rdf.partition.schema.SchemaStringString
+import net.sansa_stack.rdf.common.partition.core.RdfPartition
+import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 
 
 class TestRdfPartitionFlink extends FlatSpec {
@@ -40,8 +40,8 @@ class TestRdfPartitionFlink extends FlatSpec {
     env.getConfig.addDefaultKryoSerializer(classOf[HashMultimap[_,_]], classOf[HashMultimapSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
     //env.getConfig.registerTypeWithKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
-    env.getConfig.registerKryoType(classOf[net.sansa_stack.rdf.partition.core.RdfPartitionDefault])
-    env.getConfig.registerKryoType(classOf[Array[net.sansa_stack.rdf.partition.core.RdfPartitionDefault]])
+    env.getConfig.registerKryoType(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault])
+    env.getConfig.registerKryoType(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault]])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node], classOf[NodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[Array[org.apache.jena.graph.Node]], classOf[NodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])

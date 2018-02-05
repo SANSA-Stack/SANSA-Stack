@@ -18,8 +18,8 @@ import org.apache.spark.sql.types.StructType
 
 import com.typesafe.scalalogging.LazyLogging
 
-import net.sansa_stack.rdf.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.partition.model.sparqlify.SparqlifyUtils2
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
 import com.typesafe.scalalogging.StrictLogging
 
 
