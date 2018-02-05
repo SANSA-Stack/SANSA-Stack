@@ -1,5 +1,0 @@
-wsdbm:Retailer8535
-wsdbm:Retailer7345
-wsdbm:Retailer9310
-wsdbm:Retailer10306
-wsdbm:Retailer609
