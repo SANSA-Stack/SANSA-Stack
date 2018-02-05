@@ -87,6 +87,7 @@ object FirstHardeninginBorderFlow {
       neighborSort.unpersist()
       sort.unpersist()
       val neighborcollect = neighbor.collect()
+      val verticescollect = graph.vertices.collect()
       
        /*
 	 * finding neighbors for node a
@@ -504,7 +505,7 @@ object FirstHardeninginBorderFlow {
        var listuri : List[String] = List()
        val b:List[VertexId] = a
        for(i <- 0 until b.length ){
-          graph.vertices.collect().map(v => {
+          verticescollect.map(v => {
             if(b(i)==v._1) listuri = listuri.::(v._2)
           })
         
