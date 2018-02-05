@@ -190,7 +190,7 @@
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-spark-bundle_${scala.binary.version}</artifactId>
+				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 
