@@ -47,6 +47,7 @@ object MainSansaSparqlServer
       .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
 
+    sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
 
     val triplesString =
       """<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://xmlns.com/foaf/0.1/givenName>	"Guy De" .

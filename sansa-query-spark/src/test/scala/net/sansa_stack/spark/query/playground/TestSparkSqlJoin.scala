@@ -18,6 +18,8 @@ class TestSparkSqlJoin extends FlatSpec {
 
     import spark.implicits._
 
+    spark.conf.set("spark.sql.crossJoin.enabled", "true")
+
     // The schema is encoded in a string
     val schemaString = "s p o"
 
