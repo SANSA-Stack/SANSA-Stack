@@ -84,7 +84,25 @@ object FirstHardeninginBorderFlow {
       
 
       
+      neighborSort.unpersist()
       sort.unpersist()
+      
+       /*
+	 * finding neighbors for node a
+	 */
+      
+      def findneighbors(a: VertexId): Array[VertexId] ={
+      var b:Array[VertexId] = Array()
+      
+    neighbor.collect.map(f => {
+     
+      if(f._1 == a)
+      {b = f._2
+        
+        }
+    })
+    b
+    }
       
       
       /*
@@ -98,13 +116,10 @@ object FirstHardeninginBorderFlow {
 	 * Difference between two set of vertices, used in different similarity measures
 	 */
   
-    def difference(a: Long, b: Long): Double = {
-      val ansec = neighbor.lookup(a).distinct.head
-      val ansec1 = neighbor.lookup(b).distinct.head
-      if (ansec.isEmpty) { return 0.0 }
-      val differ = ansec.diff(ansec1)
+    def difference(a: Array[VertexId], b: Array[VertexId]): Double = {
+      if (a.length == 0) { return 0.0 }
+      val differ = a.diff(b)
       if (differ.isEmpty) { return 0.0 }
-
       differ.size.toDouble
     }
       
@@ -113,11 +128,9 @@ object FirstHardeninginBorderFlow {
    /*
 	 * Intersection of two set of vertices, used in different similarity measures
 	 */
-     def intersection(a: Long, b: Long): Double = {
-      val inters = neighbor.lookup(a).distinct.head
-      val inters1 = neighbor.lookup(b).distinct.head
-      if (inters.isEmpty || inters1.isEmpty) { return 0.0 }
-      val rst = inters.intersect(inters1)
+     def intersection(a: Array[VertexId], b: Array[VertexId]): Double = {
+      if ((a.length == 0) || (b.length == 0)) { return 0.0 }
+      val rst = a.intersect(b)
       if (rst.isEmpty) { return 0.0 }
       rst.size.toDouble
     }
@@ -127,16 +140,19 @@ object FirstHardeninginBorderFlow {
 			 */
    
        
-    def union(a: Long, b: Long): Double = {
-      val inters = neighbor.lookup(a).distinct.head
-      val inters1 = neighbor.lookup(b).distinct.head
-      val rst = inters.union(inters1)
+    def union(a: Array[VertexId], b: Array[VertexId]): Double = {
+      val rst = a.union(b)
       if (rst.isEmpty) { return 0.0 }
-
       rst.size.toDouble
-    }  	
+    }
+	  
+	  
+    /*
+			 * similarity measures
+			 */
     
-    def selectSimilarity(a: Long, b: Long, c: Int): Double ={
+    
+    def selectSimilarity(a: Array[VertexId], b: Array[VertexId], c: Int): Double ={
      var s = 0.0
       if(c ==0){
 
@@ -202,11 +218,13 @@ object FirstHardeninginBorderFlow {
       {
         
         val x1 = x.srcId.toLong
-        
         val x2 = x.dstId.toLong
-        
+        val x11 = x.srcId
+        val x22 = x.dstId
+        val nx1 = findneighbors(x11)
+        val nx2 = findneighbors(x22)
        
-        (x1, x2, selectSimilarity(x1, x2, f).abs)
+        (x1, x2, selectSimilarity(nx1, nx2, f).abs)
       }
     }
     
@@ -229,7 +247,7 @@ object FirstHardeninginBorderFlow {
       var Listsum1rdd: List[(Long,Double)] = List()
        
       a.map(ak => {
-        val nb = neighbor.lookup(ak).distinct.head
+        val nb = findneighbors(ak)
              
 
         nb.map(nbl => {
@@ -282,7 +300,7 @@ object FirstHardeninginBorderFlow {
         
           b.map(bk => {
             
-            val nX = neighborSort.lookup(bk).distinct.head
+            val nX = findneighbors(bk)
             val nxX = nX.intersect(node)
             val nXa = nxX.diff(b)
             listN = listN.union(nXa).distinct})
@@ -295,7 +313,7 @@ object FirstHardeninginBorderFlow {
         
         var listN : List[Long] = List()
         b.map(bk => {
-          val nX = neighborSort.lookup(bk).distinct.head
+          val nX = findneighbors(bk)
        
           val nxX = nX.intersect(node)
           val nXa = nxX.diff(b)
@@ -349,7 +367,7 @@ object FirstHardeninginBorderFlow {
            var listN : Array[Long] = Array()
         
            b.map(bk => {
-             val nX = neighborSort.lookup(bk).distinct.head
+             val nX = findneighbors(bk)
        
              val nxX = nX.intersect(node)
              val nXa = nxX.diff(b)
@@ -400,7 +418,7 @@ object FirstHardeninginBorderFlow {
         
         
           c.map(ck => {
-            val nX = neighborSort.lookup(ck).distinct.head
+            val nX = findneighbors(ck)
             val nxX = nX.intersect(node)
             val nXa = nxX.diff(c)
             listN = listN.union(nXa).distinct
