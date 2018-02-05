@@ -86,6 +86,7 @@ object FirstHardeninginBorderFlow {
       
       neighborSort.unpersist()
       sort.unpersist()
+      val neighborcollect = neighbor.collect()
       
        /*
 	 * finding neighbors for node a
@@ -94,7 +95,7 @@ object FirstHardeninginBorderFlow {
       def findneighbors(a: VertexId): Array[VertexId] ={
       var b:Array[VertexId] = Array()
       
-    neighbor.collect.map(f => {
+    neighborcollect.map(f => {
      
       if(f._1 == a)
       {b = f._2
