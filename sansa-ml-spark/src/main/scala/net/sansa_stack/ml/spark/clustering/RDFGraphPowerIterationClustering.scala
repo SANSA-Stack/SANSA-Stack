@@ -81,18 +81,32 @@ object RDFGraphPowerIterationClustering {
         val x = f._1
         x
       })
-
+      
+      val collectvertices = graph.vertices.collect()
       val vList = sort.collect()
       sort.unpersist()
+      val neighborcollect = neighbors.collect()
+      
+      def findneighbors(a: VertexId): Array[VertexId] ={
+      var b:Array[VertexId] = Array()
+      
+    neighborcollect.map(f => {
+     
+      if(f._1 == a)
+      {b = f._2
+        
+        }
+    })
+    b
+    }
 
-      /*
+        /*
 	 * Difference between two set of vertices, used in different similarity measures
 	 */
-      def difference(a: Long, b: Long): Double = {
-        val ansec = neighbors.lookup(a).distinct.head
-        val ansec1 = neighbors.lookup(b).distinct.head
-        if (ansec.isEmpty) { return 0.0 }
-        val differ = ansec.diff(ansec1)
+      def difference(a: Array[VertexId], b: Array[VertexId]): Double = {
+        
+        if (a.length == 0) { return 0.0 }
+        val differ = a.diff(b)
         if (differ.isEmpty) { return 0.0 }
 
         differ.size.toDouble
@@ -101,14 +115,9 @@ object RDFGraphPowerIterationClustering {
       /*
 	 * Intersection of two set of vertices, used in different similarity measures
 	 */
-      def intersection(a: Long, b: Long): Double = {
-        val inters = neighbors.lookup(a).distinct.head.toList
-        val inters1 = neighbors.lookup(b).distinct.head.toList
-
-        val intersA = inters.::(a)
-
-        val intersB = inters1.::(b)
-        val rst = intersA.intersect(intersB).toArray
+      def intersection(a: Array[VertexId], b: Array[VertexId]): Double = {
+        
+        val rst = a.intersect(b)
 
         if (rst.isEmpty) { return 0.0 }
         rst.size.toDouble
@@ -117,12 +126,9 @@ object RDFGraphPowerIterationClustering {
       /*
 			 * Union of two set of vertices, used in different similarity measures
 			 */
-      def union(a: Long, b: Long): Double = {
-        val uni = neighbors.lookup(a).distinct.head.toList
-        val uni1 = neighbors.lookup(b).distinct.head.toList
-        val uniA = uni.::(a)
-        val uniB = uni1.::(b)
-        val rst = uniA.union(uniB).distinct.toArray
+      def union(a: Array[VertexId], b: Array[VertexId]): Double = {
+        
+        val rst = a.union(b).distinct
 
         if (rst.isEmpty) { return 0.0 }
 
@@ -138,7 +144,7 @@ object RDFGraphPowerIterationClustering {
 			 * computing similarities
 			 */
 
-      def selectSimilarity(a: Long, b: Long, c: Int): Double = {
+      def selectSimilarity(a: Array[VertexId], b: Array[VertexId], c: Int): Double = {
         var s = 0.0
         if (c == 0) {
 
@@ -192,7 +198,12 @@ object RDFGraphPowerIterationClustering {
           val x2 = x.dstId.toLong
           val x1 = x.srcId.toLong
 
-          (x1, x2, selectSimilarity(x1, x2, f))
+          val x11 = x.srcId
+          val x22 = x.dstId
+          val nx1 = findneighbors(x11).:+(x11)
+          val nx2 = findneighbors(x22).+:(x22)
+
+          (x1, x2, selectSimilarity(nx1, nx2, f))
         }
       }
 
@@ -237,7 +248,7 @@ object RDFGraphPowerIterationClustering {
         var listuri: List[String] = List()
         val b: Array[VertexId] = a
         for (i <- 0 until b.length) {
-          graph.vertices.collect().map(v => {
+          collectvertices.map(v => {
             if (b(i) == v._1) listuri = listuri.::(v._2)
           })
 
