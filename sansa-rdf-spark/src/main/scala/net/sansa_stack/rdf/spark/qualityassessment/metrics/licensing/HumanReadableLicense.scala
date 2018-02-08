@@ -12,7 +12,6 @@ import org.apache.jena.vocabulary.RDFS
  */
 object HumanReadableLicense {
   implicit class HumanReadableLicenseFunctions(dataset: RDD[Triple]) extends Serializable {
-
     /**
      * Human -readable indication of a license
      * This metric checks whether a human-readable text, stating the of licensing model
@@ -22,19 +21,33 @@ object HumanReadableLicense {
     def assessHumanReadableLicense() = {
 
       val hasValidLicense = dataset.filter { f =>
-        f.getSubject.isURI() && hasLicenceIndications(f.getPredicate) && f.getObject.isLiteral() && isLicenseStatement(f.getObject)
+        f.getSubject.isURI() && f.getPredicate.hasLicenceIndications() && f.getObject.isLiteral() && f.getObject.isLicenseStatement()
       }
       if (hasValidLicense.count() > 0) 1.0 else 0.0
     }
 
-    def isLicenseStatement(node: Node) = {
-      val check = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
-      check.findFirstIn(node.getLiteralLexicalForm).size != 0
-    }
+  }
 
-    def hasLicenceIndications(node: Node) = {
-      val licenceIndications = Seq(DQV.dqv_decription, RDFS.comment, RDFS.label)
-      licenceIndications.contains(node.getURI)
-    }
+  implicit class LicenceIndicationFunctions(node: Node) extends Serializable {
+
+    val isLicenseDefination = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
+    val licenceIndications = Seq(DQV.dqv_description, RDFS.comment, RDFS.label)
+
+    /**
+     * Checks if a given [[resource]] contains license statements.  
+     * License statements : .*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).* 
+     * @param node the resource to be checked.
+     * @return `true` if contains these definition, otherwise `false`.
+     */
+    def isLicenseStatement() = isLicenseDefination.findFirstIn(node.getLiteralLexicalForm).size != 0
+
+    /**
+     * Checks if a given [[resource]] contains license indications.
+     * License indications : [[http://www.w3.org/ns/dqv#description dqv:description]], [[https://www.w3.org/2000/01/rdf-schema#comment RDFS.comment]], [[https://www.w3.org/2000/01/rdf-schema#label RDFS.label]]
+     * @param node the resource to be checked.
+     * @return `true` if contains these indications, otherwise `false`.
+     */
+    def hasLicenceIndications() = licenceIndications.contains(node.getURI)
+
   }
 }

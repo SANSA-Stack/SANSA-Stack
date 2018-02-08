@@ -18,15 +18,21 @@ object MachineReadableLicense {
      * It looks for objects containing literal values and analyzes the text searching for key, licensing related terms.
      */
     def assessMachineReadableLicense() = {
-      val hasAssociatedLicense = dataset.filter(f => hasLicenceAssociated(f.getPredicate))
+      val hasAssociatedLicense = dataset.filter(_.getPredicate.hasLicenceAssociated())
       if (hasAssociatedLicense.count() > 0) 1.0 else 0.0
     }
 
-    def hasLicenceAssociated(node: Node) = {
-      val licenceAssociated = Seq(DQV.cclicence, DQV.dbolicense, DQV.xhtmllicense, DQV.dclicence,
-        DQV.dcrights, DQV.dctlicence, DQV.dbplicence, DQV.doaplicense,
-        DQV.dctrights, DQV.schemalicense, "wrcc:license", "sz:license_text")
-      licenceAssociated.contains(node.getURI)
-    }
+  }
+  implicit class LicenceAssociatedFunctions(node: Node) extends Serializable {
+    val licenceAssociated = Seq(DQV.cclicence, DQV.dbolicense, DQV.xhtmllicense, DQV.dclicence,
+      DQV.dcrights, DQV.dctlicense, DQV.dbplicence, DQV.doaplicense,
+      DQV.dctrights, DQV.schemalicense, "wrcc:license", "sz:license_text")
+
+    /**
+     * Checks if a given [[resource]] is license associated.
+     * @param node the resource to be checked.
+     * @return `true` if contains these definition, otherwise `false`.
+     */
+    def hasLicenceAssociated() = licenceAssociated.contains(node.getURI)
   }
 }
