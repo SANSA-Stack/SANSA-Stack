@@ -23,17 +23,17 @@ package object partition {
 
   implicit class RDFPartition(rdf: RDD[Triple]) extends Serializable {
 
-    implicit def partitionGraph(strategy: Strategy.Value) = strategy match {
+    /* def partitionGraph(strategy: Strategy.Value) = strategy match {
       case Strategy.CORE     => corePartitionGraph()
       case Strategy.SEMANTIC => semanticPartitionGraph()
       case _                 => throw new IllegalArgumentException(s"${strategy} partiton not supported yet!")
 
-    }
+    }*/
 
     /**
      * Default partition - using VP.
      */
-    implicit def corePartitionGraph(): Map[RdfPartitionDefault, RDD[Row]] = {
+    def partitionGraph(): Map[RdfPartitionDefault, RDD[Row]] = {
       RdfPartitionUtilsSpark.partitionGraph(rdf)
     }
 
@@ -62,7 +62,7 @@ package object partition {
     /**
      * semantic partition of and RDF graph
      */
-    implicit def semanticPartitionGraph(): RDD[String] = {
+    def partitionGraphAsSemantic(): RDD[String] = {
       RdfPartition(symbol, rdf, "", 1).partitionGraph()
     }
 
