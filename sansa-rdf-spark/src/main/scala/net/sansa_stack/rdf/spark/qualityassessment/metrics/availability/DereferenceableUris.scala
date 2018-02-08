@@ -14,18 +14,22 @@ object DereferenceableUris {
     val totalURIs = dataset.filter(_.getSubject.isURI())
       .union(dataset.filter(_.getPredicate.isURI()))
       .union(dataset.filter(_.getObject.isURI()))
-      .distinct().count().toDouble
+      .distinct().cache()
+
+    val totalSubjects = dataset.filter(_.getSubject.isURI()).cache()
+    val totalObjects = dataset.filter(_.getObject.isURI()).cache()
+
     // check object if URI and local
     val objects = dataset.filter(f =>
-      f.getObject.isURI() && isInternal(f.getObject) && !isBroken(f.getObject))
+      f.getObject.isURI() && isInternal(f.getObject) && !isBroken(f.getObject)).cache()
 
     // check subject, if local and not a blank node
     val subjects = dataset.filter(f =>
-      f.getSubject.isURI() && isInternal(f.getSubject) && !isBroken(f.getSubject))
+      f.getSubject.isURI() && isInternal(f.getSubject) && !isBroken(f.getSubject)).cache()
 
     // check predicate if local
     val predicates = dataset.filter(f =>
-      f.getPredicate.isURI() && isInternal(f.getPredicate) && !isBroken(f.getPredicate))
+      f.getPredicate.isURI() && isInternal(f.getPredicate) && !isBroken(f.getPredicate)).cache()
 
     /**
      * This metric calculates the number of valid redirects of URI.
@@ -36,8 +40,8 @@ object DereferenceableUris {
 
       val dereferencedURIs = subjects.count().toDouble + predicates.count().toDouble + objects.count().toDouble
 
-      val value = if (totalURIs > 0.0)
-        dereferencedURIs / totalURIs
+      val value = if (totalURIs.count().toDouble > 0.0)
+        dereferencedURIs / totalURIs.count().toDouble
       else 0
 
       value
@@ -50,8 +54,8 @@ object DereferenceableUris {
      * and the total number of objects.
      */
     def assessDereferenceableBackLinks() = {
-      val backLinks = objects.map(f => getParentURI(f.getObject)!= "").count().toDouble
-      if (totalURIs > 0.0) backLinks / totalURIs else 0
+      val backLinks = objects.map(f => getParentURI(f.getObject) != "").count().toDouble
+      if (totalObjects.count().toDouble > 0.0) backLinks / totalObjects.count().toDouble else 0
     }
 
     /**
@@ -61,8 +65,8 @@ object DereferenceableUris {
      * and the total number of subjects.
      */
     def assessDereferenceableForwardLinks() = {
-      val forwardLinks = subjects.map(f => getParentURI(f.getObject)!= "").count().toDouble
-      if (totalURIs > 0.0) forwardLinks / totalURIs else 0
+      val forwardLinks = subjects.map(f => getParentURI(f.getObject) != "").count().toDouble
+      if (totalSubjects.count().toDouble > 0.0) forwardLinks / totalSubjects.count().toDouble else 0
     }
   }
 }

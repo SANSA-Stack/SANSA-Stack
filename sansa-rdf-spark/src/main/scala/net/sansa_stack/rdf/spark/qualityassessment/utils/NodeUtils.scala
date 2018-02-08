@@ -13,7 +13,7 @@ import java.net.ProtocolException
  * Node Utils.
  * @author Gezim Sejdiu
  */
-object NodeUtils extends Serializable{
+object NodeUtils extends Serializable {
 
   /**
    *  Checks if a resource ?node is local
@@ -41,20 +41,28 @@ object NodeUtils extends Serializable{
     try {
       extUrl = new URL(node.getURI()) //retrieving extUrl
     } catch {
-      case e: MalformedURLException => (isBroken = true)
+      case e: MalformedURLException =>
+        (isBroken = true)
+        true
     }
 
     var urlConn: HttpURLConnection = null
     try {
       urlConn = extUrl.openConnection().asInstanceOf[HttpURLConnection]
     } catch {
-      case ioe: IOException => (isBroken = true) //IO Exception
-      case e: Exception     => (isBroken = true) //General Exception
+      case ioe: IOException =>
+        (isBroken = true) //IO Exception
+        true
+      case e: Exception =>
+        (isBroken = true) //General Exception
+        true
     }
     try {
       urlConn.setRequestMethod("HEAD")
     } catch {
-      case e: ProtocolException => (isBroken = true) //Protocol error
+      case e: ProtocolException =>
+        (isBroken = true) //Protocol error
+        true
     }
 
     var responseCode = 0;
@@ -63,13 +71,17 @@ object NodeUtils extends Serializable{
       urlConn.connect();
       responseCode = urlConn.getResponseCode();
     } catch {
-      case e: IOException => (isBroken = true) //Not able to retrieve response code
+      case e: IOException =>
+        (isBroken = true) //Not able to retrieve response code
+        true
     }
 
     if (responseCode >= 200 && responseCode < 400) {
       isBroken = false
+      false
     } else {
       isBroken = true //Bad response code
+      true
     }
 
     isBroken
