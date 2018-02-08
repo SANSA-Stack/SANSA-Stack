@@ -16,18 +16,16 @@ import java.io.File
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 
-
-object MainSansaSparqlServer
-{
+object MainSansaSparqlServer {
 
   def main(args: Array[String]): Unit = {
 
     val tempDirStr = System.getProperty("java.io.tmpdir")
-    if(tempDirStr == null) {
+    if (tempDirStr == null) {
       throw new RuntimeException("Could not obtain temporary directory")
     }
     val sparkEventsDir = new File(tempDirStr + "/spark-events")
-    if(!sparkEventsDir.exists()) {
+    if (!sparkEventsDir.exists()) {
       sparkEventsDir.mkdirs()
     }
 
@@ -38,11 +36,11 @@ object MainSansaSparqlServer
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       //.config("spark.kryo.registrationRequired", "true")
-        .config("spark.eventLog.enabled", "true")
-      .config("spark.kryo.registrator", String.join(", ",
-          "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-          "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"
-       ))
+      .config("spark.eventLog.enabled", "true")
+      .config("spark.kryo.registrator", String.join(
+        ", ",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
       .config("spark.default.parallelism", "4")
       .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
@@ -75,39 +73,44 @@ object MainSansaSparqlServer
 
     val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
     server.join()
-//
-//    val q = QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
-//
-//    val qe = qef.createQueryExecution(q)
-//    println(ResultSetFormatter.asText(qe.execSelect))
 
-//
-//    val sqlQueryStr = rewrite.getSqlQueryString
-//    //RowMapperSparqlifyBinding rewrite.getVarDefinition
-//    println("SQL QUERY: " + sqlQueryStr)
-//
-//    val varDef = rewrite.getVarDefinition.getMap
-//    val fuck = varDef.entries().iterator().next().getKey
-//
-//    val resultDs = sparkSession.sql(sqlQueryStr)
-//
-//
-//    val f = { row: Row => val b = rowToBinding(row)
-//      ItemProcessorSparqlify.process(varDef, b) }
-//    val g = RDFDSL.kryoWrap(f)
-//    //val g = genMapper(f)//RDFDSL.kryoWrap(f)
-//
-//    val finalDs = resultDs.rdd.map(g)
-//
-//    finalDs.foreach(b => println("RESULT BINDING: " + b))
+    /*
+     * val result = graphRdd.partitionGraph().sparql("SELECT * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
+     */
+
+    //
+    //    val q = QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
+    //
+    //    val qe = qef.createQueryExecution(q)
+    //    println(ResultSetFormatter.asText(qe.execSelect))
+
+    //
+    //    val sqlQueryStr = rewrite.getSqlQueryString
+    //    //RowMapperSparqlifyBinding rewrite.getVarDefinition
+    //    println("SQL QUERY: " + sqlQueryStr)
+    //
+    //    val varDef = rewrite.getVarDefinition.getMap
+    //    val fuck = varDef.entries().iterator().next().getKey
+    //
+    //    val resultDs = sparkSession.sql(sqlQueryStr)
+    //
+    //
+    //    val f = { row: Row => val b = rowToBinding(row)
+    //      ItemProcessorSparqlify.process(varDef, b) }
+    //    val g = RDFDSL.kryoWrap(f)
+    //    //val g = genMapper(f)//RDFDSL.kryoWrap(f)
+    //
+    //    val finalDs = resultDs.rdd.map(g)
+    //
+    //    finalDs.foreach(b => println("RESULT BINDING: " + b))
 
     //resultDs.foreach { x => println("RESULT ROW: " + ItemProcessorSparqlify.process(varDef, rowToBinding(x))) }
-//    val f = { y: Row =>
-//      println("RESULT ROW: " + fuck + " - ")
-//    }
-//
-//    val g = genMapper(f)
-//    resultDs.foreach { x => f(x) }
+    //    val f = { y: Row =>
+    //      println("RESULT ROW: " + fuck + " - ")
+    //    }
+    //
+    //    val g = genMapper(f)
+    //    resultDs.foreach { x => f(x) }
     //resultDs.foreach(genMapper({row: Row => println("RESULT ROW: " + fuck) })
     //resultDs.map(genMapper(row: Row => fuck)).foreach { x => println("RESULT ROW: " + x) }
 
@@ -118,10 +121,10 @@ object MainSansaSparqlServer
     sparkSession.stop()
   }
 
-//  def genMapperNilesh(kryoWrapper: KryoSerializationWrapper[(Foo => Bar)])
-//               (foo: Foo) : Bar = {
-//    kryoWrapper.value.apply(foo)
-//}
+  //  def genMapperNilesh(kryoWrapper: KryoSerializationWrapper[(Foo => Bar)])
+  //               (foo: Foo) : Bar = {
+  //    kryoWrapper.value.apply(foo)
+  //}
   def genMapper[A, B](f: A => B): A => B = {
     val locker = com.twitter.chill.MeatLocker(f)
     x => locker.get.apply(x)
@@ -131,10 +134,11 @@ object MainSansaSparqlServer
     val result = new BindingHashMap()
 
     val fieldNames = row.schema.fieldNames
-    row.toSeq.zipWithIndex.foreach { case (v, i) =>
-      val fieldName = fieldNames(i)
-      val j = i + 1
-      RowMapperSparqlifyBinding.addAttr(result, j, fieldName, v)
+    row.toSeq.zipWithIndex.foreach {
+      case (v, i) =>
+        val fieldName = fieldNames(i)
+        val j = i + 1
+        RowMapperSparqlifyBinding.addAttr(result, j, fieldName, v)
     }
 
     result
