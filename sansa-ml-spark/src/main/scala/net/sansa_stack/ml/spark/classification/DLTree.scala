@@ -15,13 +15,44 @@ import net.sansa_stack.ml.spark.classification._
 
 class DLTree {
   
+  var rmatch: Int = _
+  var omission: Int = _
+  var commission: Int = _
+  var induction: Int = _
+  
+  def getMatch : Int = rmatch
+  
+  def setMatch (rmatch: Int): Unit = {
+    this.rmatch += 1
+  }
+  
+  
+  def getOmission : Int = omission
+  
+  def setOmission (omission: Int): Unit = {
+    this.omission += 1
+  }
+  
+  
+  def getCommission : Int = commission
+  
+  def setCommission (commission: Int): Unit = {
+    this.commission += 1
+  }
+  
+  
+  def getInduction : Int = induction
+  
+  def setInduction (induction: Int): Unit = {
+    this.induction += 1
+  }
+
+
+
   private class DLNode(var concept: OWLClassExpression) {
     
-// positive decision subtree
-    var pos: DLTree = null 
-
-// negative decision subtree
-    var neg: DLTree = null
+    var pos: DLTree = null   // positive subtree 
+    var neg: DLTree = null   // negative subtree
 
     override def toString(): String = this.concept.toString
 
@@ -35,7 +66,7 @@ class DLTree {
   }
 
   /**
-    * @param root the root to set
+    * @param concept the root to set
     */
   def setRoot(concept: OWLClassExpression): Unit = {
     this.root = new DLNode(concept)
@@ -50,7 +81,7 @@ class DLTree {
   }
 
   override def toString(): String = {
-    if (root == null) null
+    if (root == null) return null
     if (root.pos == null && root.neg == null) root.toString
     else
       root.concept.toString + " [" + root.pos.toString + ", " + root.neg.toString + "]" 
