@@ -90,7 +90,8 @@ class RefinementOperator(var kb: KB) {
   												kb.getDataFactory.getOWLDataHasValue(dataProperty, values.get(generator.nextInt(values.size)))
   										else kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
   								}
-									else kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
+									else 
+									  newConcept = kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
 								}
 								
 								else if ((generator.nextDouble() < 0.9)) {
@@ -116,8 +117,9 @@ class RefinementOperator(var kb: KB) {
 								else
 									newConcept = kb.getDataFactory.getOWLObjectComplementOf(newConceptBase)
 						}
-//		} while (!kb.getReasoner.isSatisfiable(newConcept))
-			}while (!kb.reasoner.isEntailed(kb.dataFactory.getOWLSubClassOfAxiom(currentConcept, newConcept))) 				
+
+			}while (!kb.getReasoner().isSatisfiable(newConcept))
+			//while (!kb.reasoner.isEntailed(kb.dataFactory.getOWLSubClassOfAxiom(newConcept, currentConcept))) 				
 							
 			  newConcept.getNNF
     }
