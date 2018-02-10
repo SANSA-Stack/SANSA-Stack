@@ -63,7 +63,7 @@ object RDFGraphPowerIterationClustering {
       /*
 	 * Collect all the edges of the graph
 	*/
-      val edge = graph.edges.collect()
+      val edge = graph.edges
       /*
 	 * Collect neighbor IDs of all the vertices
 	 */
@@ -207,16 +207,9 @@ object RDFGraphPowerIterationClustering {
         }
       }
 
-      def findingSimilarity(a: Long, b: Long): Double = {
-        var f3 = 0.0
-        weightedGraph.map(f => {
-          if ((f._1 == a && f._2 == b) || (f._1 == b && f._2 == a)) { f3 = f._3 }
+      
 
-        })
-        f3
-      }
-
-      val clusterRdd = spark.sparkContext.parallelize(weightedGraph)
+      
 
       def pic() = {
         val pic = new PowerIterationClustering()
@@ -225,7 +218,7 @@ object RDFGraphPowerIterationClustering {
         pic
       }
 
-      def model = pic.run(clusterRdd)
+      def model = pic.run(weightedGraph)
 
       /*
 			 * Cluster the graph data into two classes using PowerIterationClustering
@@ -260,6 +253,17 @@ object RDFGraphPowerIterationClustering {
       val m = listCluster.map(f => makerdf(f))
       val rdfRDD = spark.sparkContext.parallelize(m)
       rdfRDD.saveAsTextFile(output)
+	    
+     val arrayWeightedGraph = weightedGraph.collect()
+	    
+      def findingSimilarity(a: Long, b: Long): Double = {
+        var f3 = 0.0
+        arrayWeightedGraph.map(f => {
+          if ((f._1 == a && f._2 == b) || (f._1 == b && f._2 == a)) { f3 = f._3 }
+
+        })
+        f3
+      }
       //println(s"RDF Cluster assignments: $m\n")
 
       /*
