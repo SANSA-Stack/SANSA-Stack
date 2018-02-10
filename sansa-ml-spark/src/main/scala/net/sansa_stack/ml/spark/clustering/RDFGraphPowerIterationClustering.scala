@@ -200,8 +200,8 @@ object RDFGraphPowerIterationClustering {
 
           val x11 = x.srcId
           val x22 = x.dstId
-          val nx1 = findneighbors(x11).:+(x11)
-          val nx2 = findneighbors(x22).+:(x22)
+          val nx1 = findneighbors(x11).:+(x1)
+          val nx2 = findneighbors(x22).+:(x2)
 
           (x1, x2, selectSimilarity(nx1, nx2, f))
         }
