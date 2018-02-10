@@ -37,7 +37,7 @@ import java.net.URI
 
 object RDFGraphPowerIterationClustering {
 
-  def apply(spark: SparkSession, input: String, output: String, outputevl: String, k: Int = 2, maxIterations: Int = 50) = {
+  def apply(spark: SparkSession, input: String, output: String, outputevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 50) = {
 
     val triplesRDD = NTripleReader.load(spark, URI.create(input))
 
@@ -207,7 +207,9 @@ object RDFGraphPowerIterationClustering {
         }
       }
 
-      
+      val weightedGraphstring = weightedGraph.toString()
+      val graphRDD = spark.sparkContext.parallelize(weightedGraphstring)
+      graphRDD.saveAsTextFile(outputsim)
 
       
 
