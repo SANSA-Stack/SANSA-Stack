@@ -28,7 +28,7 @@ object RDFGraphPIClustering {
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
-
+    System.setProperty("spark.akka.frameSize", "2000")
     Logger.getRootLogger.setLevel(Level.ERROR)
 
     println("============================================")
