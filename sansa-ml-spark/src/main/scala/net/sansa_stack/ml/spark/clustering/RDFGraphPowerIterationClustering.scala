@@ -227,8 +227,7 @@ object RDFGraphPowerIterationClustering {
 			 * Cluster the graph data into two classes using PowerIterationClustering
 			 */
       def run() = model
-      val arrayWeightedGraph = weightedGraph.collect()
-      weightedGraph.unpersist()
+      val weightedGraphBC = spark.sparkContext.broadcast(weightedGraph.collect())
 
       val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
       val assignments = clusters.toList.sortBy { case (k, v) => v.length }
@@ -263,7 +262,7 @@ object RDFGraphPowerIterationClustering {
 	    
       def findingSimilarity(a: Long, b: Long): Double = {
         var f3 = 0.0
-        arrayWeightedGraph.map(f => {
+        weightedGraphBC.value.map(f => {
           if ((f._1 == a && f._2 == b) || (f._1 == b && f._2 == a)) { f3 = f._3 }
 
         })
