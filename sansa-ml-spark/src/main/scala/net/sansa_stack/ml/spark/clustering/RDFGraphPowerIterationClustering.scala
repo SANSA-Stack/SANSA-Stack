@@ -353,13 +353,13 @@ object RDFGraphPowerIterationClustering {
 			 * Save the model.
 			 * @path - path for a model.
 			 */
-      def save(path: String) = model.save(spark.sparkContext, path)
+     // def save(path: String) = model.save(spark.sparkContext, path)
 
       /*
 			 * Load the model.
 			 * @path - the given model.
 			 */
-      def load(path: String) = PowerIterationClusteringModel.load(spark.sparkContext, path)
+     // def load(path: String) = PowerIterationClusteringModel.load(spark.sparkContext, path)
 
       (listCluster)
     }
