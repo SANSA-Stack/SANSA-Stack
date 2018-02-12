@@ -2,16 +2,16 @@ package net.sansa_stack.owl.spark.rdd
 
 import com.typesafe.scalalogging.Logger
 import net.sansa_stack.owl.common.parsing.ManchesterSyntaxParsing
-import org.apache.spark.SparkContext
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model.{OWLAxiom, OWLRuntimeException}
+import org.apache.spark.sql.SparkSession
 
 
 object ManchesterSyntaxOWLAxiomsRDDBuilder extends ManchesterSyntaxParsing {
   private val logger = Logger(this.getClass)
 
-  def build(sc: SparkContext, filePath: String): OWLAxiomsRDD = {
-    val res = ManchesterSyntaxOWLExpressionsRDDBuilder.buildAndGetPrefixes(sc, filePath)
+  def build(spark: SparkSession, filePath: String): OWLAxiomsRDD = {
+    val res = ManchesterSyntaxOWLExpressionsRDDBuilder.buildAndGetPrefixes(spark, filePath)
 
     val expressionsRDD: OWLExpressionsRDD = res._1
     val prefixes: Map[String, String] = res._2

@@ -3,14 +3,14 @@ package net.sansa_stack.owl.spark.rdd
 import net.sansa_stack.owl.common.parsing.{FunctionalSyntaxExpressionBuilder, FunctionalSyntaxPrefixParsing}
 import net.sansa_stack.owl.spark.hadoop.FunctionalSyntaxInputFormat
 import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 
 
 object FunctionalSyntaxOWLExpressionsRDDBuilder extends Serializable with FunctionalSyntaxPrefixParsing {
-  def build(sc: SparkContext, filePath: String): OWLExpressionsRDD = {
-    val hadoopRDD = sc.hadoopFile(
+  def build(spark: SparkSession, filePath: String): OWLExpressionsRDD = {
+    val hadoopRDD = spark.sparkContext.hadoopFile(
       filePath, classOf[FunctionalSyntaxInputFormat], classOf[LongWritable],
-      classOf[Text], sc.defaultMinPartitions)
+      classOf[Text], spark.sparkContext.defaultMinPartitions)
 
     val rawRDD = hadoopRDD.map(entry => entry._2.toString)
 
