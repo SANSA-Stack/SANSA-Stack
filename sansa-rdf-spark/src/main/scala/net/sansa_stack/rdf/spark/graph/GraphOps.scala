@@ -1,14 +1,36 @@
-package net.sansa_stack.rdf.spark.analytics
+package net.sansa_stack.rdf.spark.graph
 
 import scala.reflect.ClassTag
 import org.apache.spark.graphx._
 import scala.Iterator
+import org.apache.spark.rdd.RDD
+import org.apache.jena.graph.{ Node, Triple }
 
-/**
- * Computes shortest paths to the given set of landmark vertices, returning a graph where each
- * vertex attribute is a map containing the shortest-path distance to each reachable landmark.
- */
-object ShortestPaths {
+object GraphOps {
+
+  /**
+   * Constructs GraphX graph from RDD of triples
+   * @param triples rdd of triples
+   * @return object of LoadGraph which contains the constructed  ''graph''.
+   */
+  def constructGraph(triples: RDD[Triple]): Graph[Node, Node] = {
+    val rs = triples.map(triple => (triple.getSubject, triple.getPredicate, triple.getObject))
+    val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
+
+    val vertices: RDD[(VertexId, Node)] = indexedMap.map(x => (x._2, x._1))
+    val _nodeToId: RDD[(Node, VertexId)] = indexedMap.map(x => (x._1, x._2))
+
+    val tuples = rs.keyBy(_._1).join(indexedMap).map({
+      case (k, ((s, p, o), si)) => (o, (si, p))
+    })
+
+    val edges: RDD[Edge[Node]] = tuples.join(indexedMap).map({
+      case (k, ((si, p), oi)) => Edge(si, oi, p)
+    })
+
+    org.apache.spark.graphx.Graph(vertices, edges)
+  }
+
   /** Stores a map from the vertex id of a landmark to the distance to that landmark. */
   type SPMap = Map[VertexId, Int]
 
@@ -33,7 +55,7 @@ object ShortestPaths {
    * @return a graph where each vertex attribute is a map containing the shortest-path distance to
    * each reachable landmark vertex.
    */
-  def run[VD, ED: ClassTag](graph: Graph[VD, ED], landmarks: Seq[VertexId]): Graph[SPMap, ED] = {
+  def shortestPaths[VD, ED: ClassTag](graph: Graph[VD, ED], landmarks: Seq[VertexId]): Graph[SPMap, ED] = {
     val spGraph = graph.mapVertices { (vid, attr) =>
       if (landmarks.contains(vid)) makeMap(vid -> 0) else makeMap()
     }
@@ -52,4 +74,5 @@ object ShortestPaths {
 
     Pregel(spGraph, initialMessage)(vertexProgram, sendMessage, addMaps)
   }
+
 }
