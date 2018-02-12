@@ -63,13 +63,13 @@ object RDFGraphPowerIterationClustering {
       /*
 	 * Collect all the edges of the graph
 	*/
-      val edge = graph.edges
+      val edge = graph.edges.persist()
       
       /*
 	 * Collect neighbor IDs of all the vertices
 	 */
 
-      val neighbors = graph.collectNeighborIds(EdgeDirection.Either)
+      val neighbors = graph.collectNeighborIds(EdgeDirection.Either).persist()
       /*
 	 * Collect distinct vertices of the graph
 	 *
@@ -83,15 +83,17 @@ object RDFGraphPowerIterationClustering {
         x
       })
       
-      val collectvertices = graph.vertices.collect()
+      val collectvertices = graph.vertices.persist().collect()
+      val cvbc = spark.sparkContext.broadcast(collectvertices)
       val vList = sort.collect()
       sort.unpersist()
       val neighborcollect = neighbors.collect()
+      val ncbc = spark.sparkContext.broadcast(neighborcollect)
       
       def findneighbors(a: VertexId): Array[VertexId] ={
       var b:Array[VertexId] = Array()
       
-    neighborcollect.map(f => {
+    ncbc.value.map(f => {
      
       if(f._1 == a)
       {b = f._2
@@ -207,7 +209,7 @@ object RDFGraphPowerIterationClustering {
 
           (x1, x2, similarity)
         }
-      }
+      }.persist()
 
       val weightedGraphstring = weightedGraph.toString()
       val graphRDD = spark.sparkContext.parallelize(weightedGraphstring)
@@ -246,7 +248,7 @@ object RDFGraphPowerIterationClustering {
         var listuri: List[String] = List()
         val b: Array[VertexId] = a
         for (i <- 0 until b.length) {
-          collectvertices.map(v => {
+          cvbc.value.map(v => {
             if (b(i) == v._1) listuri = listuri.::(v._2)
           })
 
@@ -260,10 +262,11 @@ object RDFGraphPowerIterationClustering {
       rdfRDD.saveAsTextFile(output)
 	    
      
-      val arrayWeightedGraph = weightedGraph.collect()    
+      val arrayWeightedGraph = weightedGraph.collect() 
+      val wgbc = spark.sparkContext.broadcast(arrayWeightedGraph)
       def findingSimilarity(a: Long, b: Long): Double = {
         var f3 = 0.0
-        arrayWeightedGraph.map(f => {
+        wgbc.value.map(f => {
           if ((f._1 == a && f._2 == b) || (f._1 == b && f._2 == a)) { f3 = f._3 }
 
         })
