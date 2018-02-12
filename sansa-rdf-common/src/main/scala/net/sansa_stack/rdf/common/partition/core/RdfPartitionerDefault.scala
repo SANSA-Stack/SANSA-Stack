@@ -6,7 +6,6 @@ import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.vocabulary.RDF
 import org.apache.jena.graph.Node
 import org.apache.jena.graph.Triple
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitioner, RdfPartitionDefault }
 
 object RdfPartitionerDefault
   extends RdfPartitioner[RdfPartitionDefault] with Serializable {

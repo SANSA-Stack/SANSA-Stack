@@ -1,7 +1,6 @@
 package net.sansa_stack.rdf.spark.model
 
 import org.apache.jena.graph.{Node_ANY, Node_Blank, Node_Literal, Node_URI, Node => JenaNode, Triple => JenaTriple}
-import org.apache.jena.vocabulary.RDF
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.{Graph => SparkGraph}
