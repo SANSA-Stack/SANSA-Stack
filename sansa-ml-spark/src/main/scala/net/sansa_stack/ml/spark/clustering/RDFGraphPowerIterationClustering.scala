@@ -37,7 +37,7 @@ import java.net.URI
 
 object RDFGraphPowerIterationClustering {
 
-  def apply(spark: SparkSession, input: String, output: String, outputevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 50) = {
+  def apply(spark: SparkSession, input: String, output: String, outputsim: String, k: Int = 2, maxIterations: Int = 50) = {
 
     val triplesRDD = NTripleReader.load(spark, URI.create(input))
 
@@ -262,7 +262,7 @@ object RDFGraphPowerIterationClustering {
       rdfRDD.saveAsTextFile(output)
 	    
      
-      val arrayWeightedGraph = weightedGraph.collect() 
+      /* val arrayWeightedGraph = weightedGraph.collect() 
       val wgbc = spark.sparkContext.broadcast(arrayWeightedGraph)
       def findingSimilarity(a: Long, b: Long): Double = {
         var f3 = 0.0
@@ -350,6 +350,7 @@ object RDFGraphPowerIterationClustering {
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
       evaluateStringRDD.saveAsTextFile(outputevl)
+	    */
       //println(s"averageSil: $averageSil\n")
 
       /*
