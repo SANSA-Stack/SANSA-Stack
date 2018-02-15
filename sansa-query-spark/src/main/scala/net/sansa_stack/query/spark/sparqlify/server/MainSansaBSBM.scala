@@ -17,11 +17,10 @@ import benchmark.serializer.SerializerModel
 import benchmark.testdriver.LocalSPARQLParameterPool
 import benchmark.testdriver.SPARQLConnection2
 import benchmark.testdriver.TestDriver
-import benchmark.testdriver.model.BsbmResultUtils
+import benchmark.testdriver.TestDriverUtils
 import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import benchmark.testdriver.TestDriverUtils
 
 object MainSansaBSBM {
 
