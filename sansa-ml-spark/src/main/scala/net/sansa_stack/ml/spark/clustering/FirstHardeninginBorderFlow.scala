@@ -71,7 +71,7 @@ object FirstHardeninginBorderFlow {
     
     val neighbor = graph.collectNeighborIds(EdgeDirection.Either)
       
-    graph.unpersist()
+    
     
     val neighborSort = neighbor.sortBy(_._2.length, false)
       
