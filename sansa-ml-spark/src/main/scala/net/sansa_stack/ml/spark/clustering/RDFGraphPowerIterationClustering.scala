@@ -75,7 +75,7 @@ object RDFGraphPowerIterationClustering {
 	 *
 	 */
 
-      graph.unpersist()
+      
       val neighborSort = neighbors.sortBy(_._2.length, false)
 
       val sort = neighborSort.map(f => {
