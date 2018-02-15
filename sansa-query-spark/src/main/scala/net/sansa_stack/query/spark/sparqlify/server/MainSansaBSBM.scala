@@ -21,6 +21,7 @@ import benchmark.testdriver.model.BsbmResultUtils
 import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import benchmark.testdriver.TestDriverUtils
 
 object MainSansaBSBM {
 
@@ -84,9 +85,8 @@ object MainSansaBSBM {
     testDriver.setServer(new SPARQLConnection2(qef))
 
     testDriver.init()
-    val stats = testDriver.runCore()
+    val statsModel = TestDriverUtils.runWithCharts(testDriver, "http://example.org/sansa-bsbm-experiment/")
 
-    val statsModel = BsbmResultUtils.toModel(stats)
     System.out.println("Result model triples: " + statsModel.size())
     RDFDataMgr.write(System.out, statsModel, RDFFormat.TURTLE_PRETTY)
 
