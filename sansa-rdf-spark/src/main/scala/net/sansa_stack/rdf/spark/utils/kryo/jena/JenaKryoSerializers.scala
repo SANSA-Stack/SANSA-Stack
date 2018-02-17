@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.kryo.jena
+package net.sansa_stack.rdf.spark.utils.kryo.jena
 
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
