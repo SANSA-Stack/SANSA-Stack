@@ -5,13 +5,18 @@ import org.apache.spark.graphx._
 import scala.Iterator
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Node, Triple }
+import org.apache.spark.sql._
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.StringType
 
 object GraphOps {
+  @transient var spark: SparkSession = _
 
   /**
    * Constructs GraphX graph from RDD of triples
    * @param triples rdd of triples
-   * @return object of LoadGraph which contains the constructed  ''graph''.
+   * @return object of GraphX which contains the constructed  ''graph''.
    */
   def constructGraph(triples: RDD[Triple]): Graph[Node, Node] = {
     val rs = triples.map(triple => (triple.getSubject, triple.getPredicate, triple.getObject))
@@ -29,6 +34,98 @@ object GraphOps {
     })
 
     org.apache.spark.graphx.Graph(vertices, edges)
+  }
+
+  /**
+   * Convert a graph into a RDD of Triple.
+   * @param graph GraphX graph of triples.
+   * @return a RDD of triples.
+   */
+  def toRDD(graph: Graph[Node, Node]): RDD[Triple] = graph.triplets.map { case x => Triple.create(x.srcAttr, x.attr, x.dstAttr) }
+
+  /**
+   * Convert a graph into a DataFrame.
+   * @param graph GraphX graph of triples.
+   * @return a DataFrame of triples.
+   */
+  def toDF(graph: Graph[Node, Node]): DataFrame = {
+    val schemaStructure = StructType(
+      Seq(
+        StructField("subject", StringType, nullable = false),
+        StructField("predicate", StringType, nullable = false),
+        StructField("object", StringType, nullable = false)))
+    val rowRDD = toRDD(graph).map(t => Row(t.getSubject, t.getPredicate, t.getObject))
+    val df = spark.createDataFrame(rowRDD, schemaStructure)
+    df.createOrReplaceTempView("TRIPLES")
+    df
+  }
+
+  /**
+   * Convert a graph into a Dataset of Triple.
+   * @param graph GraphX graph of triples.
+   * @return a Dataset of triples.
+   */
+  def toDS(graph: Graph[Node, Node]): Dataset[Triple] = {
+    implicit val encoder = Encoders.kryo[Triple]
+    spark.createDataset[Triple](toRDD(graph))
+  }
+
+  /**
+   * Finds triplets  of a given graph.
+   * @param graph one instance of the given graph
+   * @param subject
+   * @param predicate
+   * @param object
+   * @return graph which contains subset of the reduced graph.
+   */
+  def find(graph: Graph[Node, Node], subject: Node, predicate: Node, `object`: Node): Graph[Node, Node] = {
+    graph.subgraph({
+      (triplet) =>
+        triplet.srcAttr.matches(subject) && triplet.attr.matches(predicate) && triplet.dstAttr.matches(`object`)
+    }, (_, _) => true)
+  }
+
+  /**
+   * Compute the size of the graph
+   * @param graph
+   * @return the number of edges in the graph.
+   */
+  def size(graph: Graph[Node, Node]): Long = graph.numEdges
+
+  /**
+   * Return the union of this graph and another one.
+   *
+   * @param graph of the graph
+   * @param other of the other graph
+   * @return graph (union of all)
+   */
+
+  def union(graph: Graph[Node, Node], other: Graph[Node, Node]): Graph[Node, Node] = {
+    Graph(graph.vertices.union(other.vertices.distinct()), graph.edges.union(other.edges.distinct()))
+  }
+
+  /**
+   * Returns a new RDF graph that contains the intersection of the current RDF graph with the given RDF graph.
+   *
+   * @param graph the RDF graph
+   * @param other the other RDF graph
+   * @return the intersection of both RDF graphs
+   */
+
+  def intersection(graph: Graph[Node, Node], other: Graph[Node, Node]): Graph[Node, Node] = {
+    Graph(graph.vertices.intersection(other.vertices.distinct()), graph.edges.intersection(other.edges.distinct()))
+  }
+
+  /**
+   * Returns a new RDF graph that contains the difference between the current RDF graph and the given RDF graph.
+   *
+   * @param graph the RDF graph
+   * @param other the other RDF graph
+   * @return the difference of both RDF graphs
+   */
+
+  def difference(graph: Graph[Node, Node], other: Graph[Node, Node]): Graph[Node, Node] = {
+    Graph(graph.vertices.subtract(other.vertices.distinct()), graph.edges.subtract(other.edges.distinct()))
   }
 
   /** Stores a map from the vertex id of a landmark to the distance to that landmark. */

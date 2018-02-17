@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.Graph
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.{ Node, Triple }
 
 /**
  * Wrap up implicit classes/methods o load RDF data into [[GraphX]].
@@ -23,11 +23,28 @@ package object graph {
      */
     def asGraph() = GraphOps.constructGraph(triples)
 
+  }
+
+  /**
+   * Adds methods, `astTriple`, `find`, `size` to [[Graph][Node, Node]] that allows to different operations to it.
+   */
+  implicit class GraphOperations(graph: Graph[Node, Node]) extends Logging {
+
     /**
-     * Computes shortest paths to the given set of landmark vertices, returning a graph where each
-     * vertex attribute is a map containing the shortest-path distance to each reachable landmark.
+     * @see [[GraphOps.toRDD]]
      */
-    /*def shortestPaths() =???*/
+    def toRDD() = GraphOps.toRDD(graph)
+    def toDF() = GraphOps.toDF(graph)
+    def toDS() = GraphOps.toDS(graph)
+
+    def find(subject: Node, predicate: Node, `object`: Node) = GraphOps.find(graph, subject, predicate, `object`)
+
+    def size() = GraphOps.size(graph)
+
+    def union(other: Graph[Node, Node]) = GraphOps.union(graph, other)
+    def difference(other: Graph[Node, Node]) = GraphOps.difference(graph, other)
+    def intersection(other: Graph[Node, Node]) = GraphOps.intersection(graph, other)
+
   }
 
 }
