@@ -10,6 +10,11 @@ import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.types.StringType
 
+/**
+ * Spark/GraphX based implementation of RDD[Triple].
+ * 
+ * @author Gezim Sejdiu
+ */
 object GraphOps {
   @transient var spark: SparkSession = _
 
@@ -49,13 +54,13 @@ object GraphOps {
    * @return a DataFrame of triples.
    */
   def toDF(graph: Graph[Node, Node]): DataFrame = {
-    val schemaStructure = StructType(
+    val schema = StructType(
       Seq(
         StructField("subject", StringType, nullable = false),
         StructField("predicate", StringType, nullable = false),
         StructField("object", StringType, nullable = false)))
     val rowRDD = toRDD(graph).map(t => Row(t.getSubject, t.getPredicate, t.getObject))
-    val df = spark.createDataFrame(rowRDD, schemaStructure)
+    val df = spark.createDataFrame(rowRDD, schema)
     df.createOrReplaceTempView("TRIPLES")
     df
   }
