@@ -4,7 +4,7 @@ import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.spark.kryo.jena.JenaKryoSerializers._
+import net.sansa_stack.rdf.spark.utils.kryo.jena.JenaKryoSerializers._
 import net.sansa_stack.rdf.spark.kryo.sparqlify.RestrictedExprSerializer
 import org.aksw.jena_sparql_api.views.RestrictedExpr
 import org.aksw.sparqlify.util.SparqlifyCoreInit
