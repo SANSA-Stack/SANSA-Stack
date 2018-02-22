@@ -8,10 +8,10 @@ import org.apache.spark.sql._
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 
 /**
-  * Tests for loading triples from either N-Triples are Turtle files into an [[org.apache.spark.rdd.RDD]].
-  *
-  * @author Lorenz Buehmann
-  */
+ * Tests for loading triples from either N-Triples are Turtle files into an [[org.apache.spark.rdd.RDD]].
+ *
+ * @author Lorenz Buehmann
+ */
 class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io.rdf._
@@ -25,6 +25,17 @@ class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
 
     val cnt = triples.count()
     assert(cnt == 9)
+  }
+
+  test("loading N-Quads file into RDD should result in 28 triples") {
+
+    val path = getClass.getResource("/loader/data.nq").getPath
+    val lang: Lang = Lang.NQUADS
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val cnt = triples.count()
+    assert(cnt == 28)
   }
 
   test("loading Turtle file into RDD should result in 12 triples") {
@@ -45,14 +56,4 @@ class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
     val cnt = triples.count()
     assert(cnt == 9)
   }
-
-  test("loading RDF/XML file into RDD should result in 122 triples") {
-    val path = Paths.get("/tmp/lubm/100").toAbsolutePath.toString
-
-    val triples = spark.rdfxml(path)
-
-    val cnt = triples.count()
-    println(cnt)
-  }
-
 }
