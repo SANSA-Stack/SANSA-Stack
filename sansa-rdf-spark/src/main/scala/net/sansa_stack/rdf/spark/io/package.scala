@@ -14,6 +14,7 @@ import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+import net.sansa_stack.rdf.spark.io.ntriples.NQuadsStringToJenaQuad
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
@@ -156,7 +157,8 @@ package object rdf {
     def rdf(lang: Lang, allowBlankLines: Boolean = false): String => RDD[Triple] = lang match {
       case i if lang == Lang.NTRIPLES => ntriples(allowBlankLines)
       case j if lang == Lang.TURTLE   => turtle
-      //case k if lang == Lang.RDFXML => rdfxml
+      case k if lang == Lang.RDFXML   => rdfxml
+      case g if lang == Lang.NQUADS   => nquads(allowBlankLines)
       case _                          => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
@@ -170,6 +172,19 @@ package object rdf {
       if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
 
       rdd.map(new NTriplesStringToJenaTriple())
+    }
+
+    /**
+     * Load RDF data in N-Quads syntax into an [[RDD]][Triple].
+     * @return the [[RDD]]
+     */
+    def nquads(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
+      var rdd = spark.sparkContext.textFile(path, 4)
+
+      if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
+      //!line.startsWith("#"))
+
+      rdd.map(new NQuadsStringToJenaQuad()).map(_.asTriple())
     }
 
     def rdfxml: String => RDD[Triple] = path => {

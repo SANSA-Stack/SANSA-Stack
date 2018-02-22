@@ -6,9 +6,7 @@ import scala.Iterator
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.StructField
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.{ StructField, StructType, StringType }
 import scala.util.hashing.MurmurHash3
 
 /**
@@ -17,7 +15,6 @@ import scala.util.hashing.MurmurHash3
  * @author Gezim Sejdiu
  */
 object GraphOps {
-  @transient var spark: SparkSession = _
 
   /**
    * Constructs GraphX graph from RDD of triples
@@ -99,6 +96,8 @@ object GraphOps {
    * @return a DataFrame of triples.
    */
   def toDF(graph: Graph[Node, Node]): DataFrame = {
+
+    val spark: SparkSession = SparkSession.builder().getOrCreate()
     val schema = StructType(
       Seq(
         StructField("subject", StringType, nullable = false),
@@ -116,6 +115,7 @@ object GraphOps {
    * @return a Dataset of triples.
    */
   def toDS(graph: Graph[Node, Node]): Dataset[Triple] = {
+    val spark: SparkSession = SparkSession.builder().getOrCreate()
     implicit val encoder = Encoders.kryo[Triple]
     spark.createDataset[Triple](toRDD(graph))
   }
