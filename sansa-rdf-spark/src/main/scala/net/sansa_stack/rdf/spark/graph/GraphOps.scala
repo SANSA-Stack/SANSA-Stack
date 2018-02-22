@@ -9,10 +9,11 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.types.StringType
+import scala.util.hashing.MurmurHash3
 
 /**
  * Spark/GraphX based implementation of RDD[Triple].
- * 
+ *
  * @author Gezim Sejdiu
  */
 object GraphOps {
@@ -38,6 +39,50 @@ object GraphOps {
       case (k, ((si, p), oi)) => Edge(si, oi, p)
     })
 
+    org.apache.spark.graphx.Graph(vertices, edges)
+  }
+
+  /**
+   * Constructs Hashed GraphX graph from RDD of triples
+   * @param triples rdd of triples
+   * @return object of GraphX which contains the constructed hashed ''graph''.
+   */
+  def constructHashedGraph(triples: RDD[Triple]): Graph[Node, Node] = {
+    val rs = triples.map(triple => (triple.getSubject, triple.getPredicate, triple.getObject))
+
+    def hash(s: Node) = MurmurHash3.stringHash(s.toString).toLong
+
+    val vertices: RDD[(Long, Node)] = rs.flatMap {
+      case (s: Node, p: Node, o: Node) =>
+        Seq((hash(s), s), (hash(p), p), (hash(o), o))
+    }
+
+    val edges: RDD[Edge[Node]] = rs.map {
+      case (s: Node, p: Node, o: Node) =>
+        Edge(hash(s), hash(o), p)
+    }
+    org.apache.spark.graphx.Graph(vertices, edges)
+  }
+
+  /**
+   * Constructs String GraphX graph from RDD of triples
+   * @param triples rdd of triples
+   * @return object of GraphX which contains the constructed string ''graph''.
+   */
+  def constructStringGraph(triples: RDD[Triple]): Graph[String, String] = {
+    val rs = triples.map(triple => (getNodeValue(triple.getSubject), getNodeValue(triple.getPredicate), getNodeValue(triple.getObject)))
+    val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
+
+    val vertices: RDD[(VertexId, String)] = indexedMap.map(x => (x._2, x._1))
+    val _nodeToId: RDD[(String, VertexId)] = indexedMap.map(x => (x._1, x._2))
+
+    val tuples = rs.keyBy(_._1).join(indexedMap).map({
+      case (k, ((s, p, o), si)) => (o, (si, p))
+    })
+
+    val edges: RDD[Edge[String]] = tuples.join(indexedMap).map({
+      case (k, ((si, p), oi)) => Edge(si, oi, p)
+    })
     org.apache.spark.graphx.Graph(vertices, edges)
   }
 
@@ -104,7 +149,6 @@ object GraphOps {
    * @param other of the other graph
    * @return graph (union of all)
    */
-
   def union(graph: Graph[Node, Node], other: Graph[Node, Node]): Graph[Node, Node] = {
     Graph(graph.vertices.union(other.vertices.distinct()), graph.edges.union(other.edges.distinct()))
   }
@@ -116,7 +160,6 @@ object GraphOps {
    * @param other the other RDF graph
    * @return the intersection of both RDF graphs
    */
-
   def intersection(graph: Graph[Node, Node], other: Graph[Node, Node]): Graph[Node, Node] = {
     Graph(graph.vertices.intersection(other.vertices.distinct()), graph.edges.intersection(other.edges.distinct()))
   }
@@ -128,7 +171,6 @@ object GraphOps {
    * @param other the other RDF graph
    * @return the difference of both RDF graphs
    */
-
   def difference(graph: Graph[Node, Node], other: Graph[Node, Node]): Graph[Node, Node] = {
     Graph(graph.vertices.subtract(other.vertices.distinct()), graph.edges.subtract(other.edges.distinct()))
   }
@@ -175,6 +217,18 @@ object GraphOps {
     }
 
     Pregel(spGraph, initialMessage)(vertexProgram, sendMessage, addMaps)
+  }
+
+  /**
+   * Return node value based on its type
+   * @param node the Node to be check
+   * @return node value (case when node is URI:: URI, when node is Blank ::Its blank node ID, when node is literal:: its Literal).
+   */
+  def getNodeValue(node: Node): String = node match {
+    case uri if node.isURI         => node.getURI
+    case blank if node.isBlank     => node.getBlankNodeId.toString
+    case literal if node.isLiteral => node.getLiteral.toString
+    case _                         => throw new IllegalArgumentException(s"${node.getLiteralLexicalForm} is not valid!")
   }
 
 }
