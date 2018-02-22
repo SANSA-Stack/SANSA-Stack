@@ -17,13 +17,15 @@ object XSDDatatypeCompatibleLiterals {
      */
     def assessXSDDatatypeCompatibleLiterals() = {
 
-      /*
-   * isLiteral(?o)&&getDatatype(?o) && isLexicalFormCompatibleWithDatatype(?o)
-   */
+      /**
+       * isLiteral(?o)&&getDatatype(?o) && isLexicalFormCompatibleWithDatatype(?o)
+       */
       val noMalformedDatatypeLiterals = dataset.filter(f => f.getObject.isLiteral() && isLexicalFormCompatibleWithDatatype(f.getObject))
-      
-      noMalformedDatatypeLiterals.map(_.getObject).distinct().count()
 
+      println("50")
+      //val metricValue = noMalformedDatatypeLiterals.map(_.getObject).distinct().count()
+      val metricValue = noMalformedDatatypeLiterals.distinct().count()
+      metricValue
     }
   }
 }
