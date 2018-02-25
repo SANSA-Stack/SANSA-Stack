@@ -76,33 +76,10 @@ object RDFGraphPowerIterationClustering {
 	 */
 
       
-      val neighborSort = neighbors.sortBy(_._2.length, false)
-
-      val sort = neighborSort.map(f => {
-        val x = f._1
-        x
-      })
-      
-      val collectvertices = graph.vertices.persist().collect()
+       val collectvertices = graph.vertices.persist().collect()
       val cvbc = spark.sparkContext.broadcast(collectvertices)
-      val vList = sort.collect()
-      sort.unpersist()
-      val neighborcollect = neighbors.collect()
-      val ncbc = spark.sparkContext.broadcast(neighborcollect)
-      
-      def findneighbors(a: VertexId): Array[VertexId] ={
-      var b:Array[VertexId] = Array()
-      
-    ncbc.value.map(f => {
-     
-      if(f._1 == a)
-      {b = f._2
-        
-        }
-    })
-    b
-    }
-
+      val nodes = collectvertices.map(e => e._1).distinct
+      val lenghtOfNodes = nodes.length
         /*
 	 * Difference between two set of vertices, used in different similarity measures
 	 */
@@ -155,39 +132,47 @@ object RDFGraphPowerIterationClustering {
 			 * Jaccard similarity measure
 			 */
 
-          s = intersection(a, b) / union(a, b).toDouble
+          val sim = intersection(a, b) / union(a, b).toDouble
+
+          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
+          else { s = sim }
 
         }
         if (c == 1) {
-          /*
-			 * Batet similarity measure
-			 */
 
-          val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
-          s = log2(cal.toDouble)
-
-        }
-
-        if (c == 2) {
           /*
 			 * Rodríguez and Egenhofer similarity measure
 			 */
 
           var g = 0.8
 
-          s = (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
+          val sim = (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
+          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
+          else { s = sim }
 
         }
-
-        if (c == 4) {
+        if (c == 2) {
           /*
 			 * The Ratio model similarity
 			 */
           var alph = 0.5
           var beth = 0.5
 
-          s = ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
-          // s = BigDecimal(s).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+          val sim = ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
+          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
+          else { s = sim }
+
+        }
+
+        if (c == 3) {
+          /*
+			 * Batet similarity measure 
+			 */
+
+          val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
+          val sim = log2(cal.toDouble)
+          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
+          else { s = sim }
 
         }
         s
@@ -196,20 +181,10 @@ object RDFGraphPowerIterationClustering {
 			 * Calculate similarities between different pair of vertices in the given graph
 			 */
 
-      val weightedGraph = edge.map { x =>
-        {
-          val x2 = x.dstId.toLong
-          val x1 = x.srcId.toLong
+      val verticesOfEdge = edge.map(e => (e.srcId, e.dstId))
+      val neighborsJoinToEdge = neighbors.keyBy(e => (e._1)).join(verticesOfEdge).map(e => e._2).keyBy(e => e._2).join(neighbors)
+      val weightedGraph = neighborsJoinToEdge.map(e => { (e._2._1._1._1.toLong, e._1.toLong, selectSimilarity(e._2._1._1._2, e._2._2, f)) })
 
-          val x11 = x.srcId
-          val x22 = x.dstId
-          val nx1 = findneighbors(x11).:+(x1)
-          val nx2 = findneighbors(x22).+:(x2)
-	  val similarity = selectSimilarity(nx1, nx2, f)
-
-          (x1, x2, similarity)
-        }
-      }.persist()
 
       val weightedGraphstring = weightedGraph.toString()
       val graphRDD = spark.sparkContext.parallelize(weightedGraphstring)
@@ -316,7 +291,7 @@ object RDFGraphPowerIterationClustering {
         s
       }
 
-      def AiBi(m: List[Array[Long]], n: Array[VertexId]): List[Double] = {
+      def AiBi(m: List[Array[Long]], n: Array[Long]): List[Double] = {
         var Ai = 0.0
         var Bi = 0.0
         var bi = 0.0
@@ -344,7 +319,7 @@ object RDFGraphPowerIterationClustering {
         sx
 
       }
-      val evaluate = AiBi(listCluster, vList)
+      val evaluate = AiBi(listCluster, nodes)
       val averageSil = evaluate.sum / evaluate.size
       val evaluateString: List[String] = List(averageSil.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
