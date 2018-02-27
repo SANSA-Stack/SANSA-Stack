@@ -43,6 +43,7 @@ class TestRdfPartitionSpark extends FlatSpec {
 */
     val sparkSession = SparkSession.builder
       .master("local[*]")
+      .config("spark.sql.crossJoin.enabled", "true")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
@@ -89,7 +90,16 @@ WHERE {
 }
 """
 
-    str = "SELECT * { ?s ?p ?o }"
+/*
+    str = """
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        SELECT * {
+          ?s
+            rdfs:label ?l ;
+            rdfs:comment ?c
+        }
+    """
+*/
 
     println(ResultSetFormatter.asText(qef.createQueryExecution(str).execSelect()))
 
