@@ -49,14 +49,8 @@ class TestRdfPartitionSpark extends FlatSpec {
 
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
-    val qef = FluentQueryExecutionFactory.from(new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
-      .config()
-        .withQueryTransform(new java.util.function.Function[Query, Query] {
-            override def apply(qq: Query): Query = { qq.setOffset(Query.NOLIMIT); qq }
-        })
-        .withParser(SparqlQueryParserImpl.create())
-      .end()
-      .create()
+
+    val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 
     val str = """
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -74,53 +68,4 @@ class TestRdfPartitionSpark extends FlatSpec {
     // TODO Validate result - right now its already a success if no exception is thrown
   }
 }
-
-
-    //RDFDataMgr.write(System.out, model, RDFFormat.TURTLE)
-
-/*
-    val t = typeOf[SchemaStringString]
-    val attrNames = t.members.sorted.collect({ case m: MethodSymbol if m.isCaseAccessor => m.name }).toList
-    println(attrNames)
-
-    System.exit(0)
-*/
-
-//    val stack = new Stack[Int]
-//    stack.push(1)
-//    stack.push(2)
-//    assert(stack.pop() === 2)
-//    assert(stack.pop() === 1)
-//    val testDriver = new TestDriver();
-//    testDriver.processProgramParameters(Array[String]("http://example.org/foobar/sparql"))
-//    testDriver.setParameterPool(new LocalSPARQLParameterPool(testDriverParams, testDriver.getSeed))
-//    testDriver.setServer(new SPARQLConnection2(qef))
-//
-//    testDriver.init();
-//    testDriver.run()
-
-    //println(ResultSetFormatter.asText(qef.createQueryExecution("SELECT * { ?s ?p ?o }").execSelect()))
-
-/*
-            var str = """
-PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
-PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX dc: <http://purl.org/dc/elements/1.1/>
-
-SELECT ?label ?comment ?producer ?productFeature ?propertyTextual1 ?propertyTextual2 ?propertyTextual3
- ?propertyNumeric1 ?propertyNumeric2 ?propertyTextual4 ?propertyTextual5 ?propertyNumeric4
-WHERE {
-    <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> rdfs:label ?label .
-    <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> rdfs:comment ?comment .
-}
-"""
-*/
-    //val rdfStr: String = """<http://ex.org/Nile> <http://ex.org/length> "6800"^^<http://ex.org/km> ."""
-    //val triples: List[Triple] = //RDFDataMgr.createIteratorTriples(getClass.getResourceAsStream("/dbpedia-01.nt"), Lang.NTRIPLES, null).asScala.toList
-
-    //val rdfStr: String = """<http://example.org/#Spiderman> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://example.org/#Superhero> ."""
-    //val triples: List[Triple] = RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(rdfStr.getBytes), Lang.NTRIPLES, null).asScala.toList
-
-    //val graphRdd = NTripleReader.load(sparkSession, "classpath:dbpedia-01.nt")
 
