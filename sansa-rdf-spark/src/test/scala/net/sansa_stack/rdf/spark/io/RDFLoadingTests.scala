@@ -22,12 +22,11 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
   import net.sansa_stack.rdf.spark.io.rdf._
 
   test("loading N-Triples file into DataFrame with REGEX parsing mode should result in 9 triples") {
-    val sqlCtx = sqlContext
 
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = sqlCtx.read.rdf(lang)(path)
+    val triples = spark.read.rdf(lang)(path)
 
     val cnt = triples.count()
     assert(cnt == 9)
@@ -38,25 +37,23 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("loading Turtle file into DataFrame should result in 12 triples") {
-    val sqlCtx = sqlContext
 
     val path = getClass.getResource("/loader/data.ttl").getPath
     val lang: Lang = Lang.TURTLE
 
-    val triples = sqlCtx.read.rdf(lang)(path)
+    val triples = spark.read.rdf(lang)(path)
 
     val cnt = triples.count()
     assert(cnt == 12)
   }
 
   test("loading RDF/XML file into DataFrame should result in 12 triples") {
-    val sqlCtx = sqlContext
 
     val path = getClass.getResource("/loader/data.rdf").getPath
     val lang: Lang = Lang.TURTLE
 
     //This test only works when "wholeFile" is set to true
-    val triples = sqlCtx.read.option("wholeFile", true).rdfxml(path)
+    val triples = spark.read.option("wholeFile", true).rdfxml(path)
 
     val cnt = triples.count()
     assert(cnt == 9)
@@ -91,7 +88,6 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
     // extract the zip file
     extractZipFile(zis, tmpFolder)
 
-    val sqlCtx = sqlContext
     val lang: Lang = Lang.TURTLE
 
     import scala.collection.JavaConversions._
@@ -116,7 +112,7 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
       try {
         println(s"loading file ${file}")
         // load the triples into the DataFrame
-        val triples = sqlCtx.read.rdf(lang)(file._1)
+        val triples = spark.read.rdf(lang)(file._1)
 
         // write triples to a string and load it into a Jena model
         val ntriplesString = triples.collect().map(row => {

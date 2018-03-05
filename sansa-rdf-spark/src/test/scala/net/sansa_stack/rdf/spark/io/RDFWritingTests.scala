@@ -17,13 +17,12 @@ class RDFWritingTests extends FunSuite with DataFrameSuiteBase {
   import net.sansa_stack.rdf.spark.io.rdf._
 
   test("writing N-Triples file from DataFrame to disk should result in file with 9 triples") {
-    val sqlCtx = sqlContext
 
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     // load the triples
-    val triples = sqlCtx.read.rdf(lang)(path)
+    val triples = spark.read.rdf(lang)(path)
 
     // validate count
     val cnt1 = triples.count()
@@ -40,7 +39,7 @@ class RDFWritingTests extends FunSuite with DataFrameSuiteBase {
       .ntriples(tmpDir.toString)
 
     // load again
-    val triples2 = sqlCtx.read.rdf(lang)(path)
+    val triples2 = spark.read.rdf(lang)(path)
 
     // and check if count is the same
     val cnt2 = triples2.count()
