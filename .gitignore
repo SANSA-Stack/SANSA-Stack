@@ -17,7 +17,7 @@ buildNumber.properties
 .cache-main
 .cache-tests
 .classpath
-.coveralls.yml
+#.coveralls.yml
 deptree.txt
 # IntelliJ config
 *.iml
