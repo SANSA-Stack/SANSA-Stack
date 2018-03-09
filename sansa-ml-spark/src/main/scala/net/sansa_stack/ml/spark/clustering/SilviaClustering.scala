@@ -24,8 +24,9 @@ import org.apache.spark.graphx._
 import java.io.StringWriter
 import java.io._
 import org.apache.jena.graph.{ Node, Triple }
-import net.sansa_stack.rdf.spark.graph.LoadGraph
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.model.graph._
 import java.net.URI
 
 object SilviaClustering {
@@ -36,9 +37,10 @@ object SilviaClustering {
 
     // Load the graph
 
-    val triplesRDD = NTripleReader.load(spark, URI.create(input))
-
-    val graph = LoadGraph.asString(triplesRDD)
+    val lang = Lang.NTRIPLES
+    val triplesRDD = spark.rdf(lang)(input)
+    
+    val graph = triplesRDD.asStringGraph()
 
     /*
 	 * undirected graph : orient =0

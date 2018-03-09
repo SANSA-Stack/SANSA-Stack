@@ -31,17 +31,19 @@ import scala.math.BigDecimal
 import org.apache.commons.math3.util.MathUtils
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.graphx._
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import net.sansa_stack.rdf.spark.graph.LoadGraph
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.model.graph._
 import java.net.URI
 
 object RDFGraphPowerIterationClustering {
 
   def apply(spark: SparkSession, input: String, output: String, outputevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 50) = {
 
-    val triplesRDD = NTripleReader.load(spark, URI.create(input))
+    val lang = Lang.NTRIPLES
+    val triplesRDD = spark.rdf(lang)(input)
 
-    val graph = LoadGraph.asString(triplesRDD)
+    val graph = triplesRDD.asStringGraph()
 
     /*
 	 *
@@ -64,7 +66,7 @@ object RDFGraphPowerIterationClustering {
 	 * Collect all the edges of the graph
 	*/
       val edge = graph.edges.persist()
-      
+
       /*
 	 * Collect neighbor IDs of all the vertices
 	 */
@@ -75,16 +77,15 @@ object RDFGraphPowerIterationClustering {
 	 *
 	 */
 
-      
-       val collectvertices = graph.vertices.persist().collect()
+      val collectvertices = graph.vertices.persist().collect()
       val cvbc = spark.sparkContext.broadcast(collectvertices)
       val nodes = collectvertices.map(e => e._1).distinct
       val lenghtOfNodes = nodes.length
-        /*
+      /*
 	 * Difference between two set of vertices, used in different similarity measures
 	 */
       def difference(a: Array[VertexId], b: Array[VertexId]): Double = {
-        
+
         if (a.length == 0) { return 0.0 }
         val differ = a.diff(b)
         if (differ.isEmpty) { return 0.0 }
@@ -96,7 +97,7 @@ object RDFGraphPowerIterationClustering {
 	 * Intersection of two set of vertices, used in different similarity measures
 	 */
       def intersection(a: Array[VertexId], b: Array[VertexId]): Double = {
-        
+
         val rst = a.intersect(b)
 
         if (rst.isEmpty) { return 0.0 }
@@ -107,7 +108,7 @@ object RDFGraphPowerIterationClustering {
 			 * Union of two set of vertices, used in different similarity measures
 			 */
       def union(a: Array[VertexId], b: Array[VertexId]): Double = {
-        
+
         val rst = a.union(b).distinct
 
         if (rst.isEmpty) { return 0.0 }
@@ -166,7 +167,7 @@ object RDFGraphPowerIterationClustering {
 
         if (c == 3) {
           /*
-			 * Batet similarity measure 
+			 * Batet similarity measure
 			 */
 
           val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
@@ -185,13 +186,10 @@ object RDFGraphPowerIterationClustering {
       val neighborsJoinToEdge = neighbors.keyBy(e => (e._1)).join(verticesOfEdge).map(e => e._2).keyBy(e => e._2).join(neighbors)
       val weightedGraph = neighborsJoinToEdge.map(e => { (e._2._1._1._1.toLong, e._1.toLong, selectSimilarity(e._2._1._1._2, e._2._2, f)) })
 
-
       val weightedGraphstring = weightedGraph.toString()
       val graphRDD = spark.sparkContext.parallelize(weightedGraphstring)
       graphRDD.saveAsTextFile(outputsim)
 
-      
-      
       def pic() = {
         val pic = new PowerIterationClustering()
           .setK(k)
@@ -205,7 +203,6 @@ object RDFGraphPowerIterationClustering {
 			 * Cluster the graph data into two classes using PowerIterationClustering
 			 */
       def run() = model
-      
 
       val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
       val assignments = clusters.toList.sortBy { case (k, v) => v.length }
@@ -235,9 +232,8 @@ object RDFGraphPowerIterationClustering {
       val m = listCluster.map(f => makerdf(f))
       val rdfRDD = spark.sparkContext.parallelize(m)
       rdfRDD.saveAsTextFile(output)
-	    
-     
-       val arrayWeightedGraph = weightedGraph.collect() 
+
+      val arrayWeightedGraph = weightedGraph.collect()
       val wgbc = spark.sparkContext.broadcast(arrayWeightedGraph)
       def findingSimilarity(a: Long, b: Long): Double = {
         var f3 = 0.0
@@ -325,20 +321,20 @@ object RDFGraphPowerIterationClustering {
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
       evaluateStringRDD.saveAsTextFile(outputevl)
-	    
+
       //println(s"averageSil: $averageSil\n")
 
       /*
 			 * Save the model.
 			 * @path - path for a model.
 			 */
-     // def save(path: String) = model.save(spark.sparkContext, path)
+      // def save(path: String) = model.save(spark.sparkContext, path)
 
       /*
 			 * Load the model.
 			 * @path - the given model.
 			 */
-     // def load(path: String) = PowerIterationClusteringModel.load(spark.sparkContext, path)
+      // def load(path: String) = PowerIterationClusteringModel.load(spark.sparkContext, path)
 
       (listCluster)
     }

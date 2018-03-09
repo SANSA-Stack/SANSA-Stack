@@ -17,9 +17,10 @@ import java.io.ByteArrayInputStream
 import org.apache.spark.rdd.PairRDDFunctions
 import java.io.StringWriter
 import java.io._
-import net.sansa_stack.rdf.spark.io.NTripleReader
 import java.net.URI
-import net.sansa_stack.rdf.spark.graph.LoadGraph
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.model.graph._
 import org.apache.spark.graphx._
 
 object FirstHardeninginBorderFlow {
@@ -30,13 +31,10 @@ object FirstHardeninginBorderFlow {
 	 * Load the RDF file and convert it to a graph.
 	 */
 
-    val triplesRDD = NTripleReader.load(spark, URI.create(input))
-
-    //val inputPath = URI.create(input)
-    //val output = inputPath.getPath.substring(0, inputPath.getPath.lastIndexOf("/")) + "/output"
-    //val outputeval = output + "/outputeval"
-
-    val graph = LoadGraph.asString(triplesRDD)
+    val lang = Lang.NTRIPLES
+    val triplesRDD = spark.rdf(lang)(input)
+    
+    val graph = triplesRDD.asStringGraph()
 
     /*
 	 * 
