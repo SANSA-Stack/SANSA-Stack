@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.graph
+package net.sansa_stack.rdf.spark.model.graph
 
 import scala.reflect.ClassTag
 import org.apache.spark.graphx._
