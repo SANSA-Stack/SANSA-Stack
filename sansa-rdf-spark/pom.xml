@@ -91,7 +91,7 @@
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-hive_${scala.binary.version}</artifactId>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
 
 		<!-- JENA API -->
@@ -138,6 +138,15 @@
 		</dependency>
 
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.scalastyle</groupId>
+				<artifactId>scalastyle-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 
 	<!-- <build> <sourceDirectory>src/main/scala</sourceDirectory> <testSourceDirectory>src/test/scala</testSourceDirectory> 
 		<plugins> <plugin> <groupId>net.alchim31.maven</groupId> <artifactId>scala-maven-plugin</artifactId> 
