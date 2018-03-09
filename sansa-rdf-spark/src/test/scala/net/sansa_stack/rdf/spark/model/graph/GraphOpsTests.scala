@@ -6,7 +6,7 @@ import net.sansa_stack.rdf.spark.io.rdf._
 
 class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.graph._
+  import net.sansa_stack.rdf.spark.model.graph._
 
   test("loading N-Triples file into Graph should result in size 7") {
     val path = getClass.getResource("/loader/data.nt").getPath
