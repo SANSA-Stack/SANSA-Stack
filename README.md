@@ -15,15 +15,13 @@ SANSA uses the RDF data model for representing graphs consisting of triples with
 
 The following Scala code shows how to read an RDF file in N-Triples syntax (be it a local file or a file residing in HDFS) into a Spark RDD:
 ```scala
+import net.sansa_stack.rdf.spark.io.rdf._
+import org.apache.jena.riot.Lang
 
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import org.apache.jena.graph.Triple
+val spark: SparkSession = ...
 
-val session: SparkSession = ...
-
-val input = sc.textFile("hdfs://...")
-
-val triples: RDD[Triple] = NTripleReader.load(session, input)
+val lang = Lang.NTRIPLES
+val triples = spark.rdf(lang)(path)
 
 triples.take(5).foreach(println(_))
 ```
