@@ -1,17 +1,16 @@
 package net.sansa_stack.examples.spark.query
 
 import java.net.URI
-
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.io.rdf._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
-import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
+import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, QueryExecutionUtilsSpark, QueryExecutionSpark, SparqlifyUtils3 }
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.spark.sql.SparkSession
+import org.apache.jena.query._
 import java.awt.Desktop
 
 import scala.collection.mutable
-import java.awt.Desktop
 
 /*
  * Run SPARQL queries over Spark using Sparqlify approach.
@@ -42,7 +41,8 @@ object Sparklify {
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
       .getOrCreate()
 
-    val graphRdd = NTripleReader.load(spark, URI.create(input))
+    val lang = Lang.NTRIPLES
+    val graphRdd = spark.rdf(lang)(input)
 
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
@@ -52,10 +52,15 @@ object Sparklify {
     val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
     val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
 
+    /* val query = QueryFactory.create("SELECT * WHERE {?s ?p ?o} LIMIT 10")
+
+    val rdd = QueryExecutionSpark.createQueryExecution(spark, rewriter.rewrite(query), query)
+    rdd.collect().foreach(rintln(_))
+    val rs = QueryExecutionSpark.ResultSet(rdd, rewriter.rewrite(query))*/
+
     if (Desktop.isDesktopSupported()) {
       Desktop.getDesktop().browse(new URI("http://localhost:" + port + "/sparql"));
     }
-
     server.join()
     spark.stop
 
