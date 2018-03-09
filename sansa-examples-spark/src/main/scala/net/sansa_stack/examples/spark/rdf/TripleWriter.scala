@@ -5,7 +5,8 @@ import java.net.URI
 
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.io.rdf._
 
 object TripleWriter {
 
@@ -30,9 +31,10 @@ object TripleWriter {
     println("|        Triple writer example       |")
     println("======================================")
 
-    val triplesRDD = NTripleReader.load(spark, URI.create(input))
+    val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
 
-    triplesRDD.saveAsTextFile(output)
+    triples.saveAsNTriplesFile(output)
 
     spark.stop
 

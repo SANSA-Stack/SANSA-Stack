@@ -1,12 +1,12 @@
 package net.sansa_stack.examples.spark.rdf
 
-import net.sansa_stack.rdf.spark.io.NTripleReader
 import org.apache.spark.sql.SparkSession
 import java.net.{ URI => JavaURI }
-
 import scala.collection.mutable
-import net.sansa_stack.rdf.spark.graph.LoadGraph
 import org.apache.spark.graphx.Graph
+import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.model.graph._
+import org.apache.jena.riot.Lang
 
 /*
  * Computes the PageRank of Resources from an input .nt file.
@@ -31,12 +31,13 @@ object PageRank {
       .appName(s"PageRank of resources example ( $input )")
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+      // .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
       .getOrCreate()
 
-    val triplesRDD = NTripleReader.load(spark, JavaURI.create(input))
+    val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
 
-    val graph = LoadGraph(triplesRDD)
+    val graph = triples.asGraph()
 
     val pagerank = graph.pageRank(0.00001).vertices
     val report = pagerank.join(graph.vertices)

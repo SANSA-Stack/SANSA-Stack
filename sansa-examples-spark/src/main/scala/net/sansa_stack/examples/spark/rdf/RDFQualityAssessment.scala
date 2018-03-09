@@ -5,7 +5,10 @@ import java.net.URI
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import scala.collection.mutable
 import java.io.File
+import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.qualityassessment._
+import net.sansa_stack.rdf.spark.io.rdf._
+
 
 object RDFQualityAssessment {
 
@@ -32,7 +35,8 @@ object RDFQualityAssessment {
     println("| RDF Quality Assessment Example     |")
     println("======================================")
 
-    val triples = NTripleReader.load(spark, URI.create(input))
+    val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
 
     // compute  quality assessment
     val completeness_schema = triples.assessSchemaCompleteness()
@@ -41,16 +45,15 @@ object RDFQualityAssessment {
 
     val syntacticvalidity_literalnumeric = triples.assessLiteralNumericRangeChecker()
     val syntacticvalidity_XSDDatatypeCompatibleLiterals = triples.assessXSDDatatypeCompatibleLiterals()
-    
-    val availability_DereferenceableUris  = triples.assessDereferenceableUris()
-    
+
+    val availability_DereferenceableUris = triples.assessDereferenceableUris()
+
     val relevancy_CoverageDetail = triples.assessCoverageDetail()
     val relevancy_CoverageScope = triples.assessCoverageScope()
     val relevancy_AmountOfTriples = triples.assessAmountOfTriples()
-    
+
     val performance_NoHashURIs = triples.assessNoHashUris()
     val understandability_LabeledResources = triples.assessLabeledResources()
-    
 
     val AssessQualityStr = s"""
       completeness_schema:$completeness_schema

@@ -2,7 +2,8 @@ package net.sansa_stack.examples.spark.rdf
 
 import org.apache.spark.sql.SparkSession
 import java.net.URI
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import net.sansa_stack.rdf.spark.io.rdf._
+import org.apache.jena.riot.Lang
 import scala.collection.mutable
 import java.io.File
 import net.sansa_stack.rdf.spark.stats.RDFStatistics
@@ -32,7 +33,8 @@ object RDFStats {
     println("|        RDF Statistic example       |")
     println("======================================")
 
-    val triples = NTripleReader.load(spark, URI.create(input))
+     val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
 
     // compute  criterias
     val rdf_statistics = RDFStatistics(triples, spark)
