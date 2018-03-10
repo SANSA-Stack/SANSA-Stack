@@ -3,12 +3,12 @@ package net.sansa_stack.examples.spark.ml.clustering
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
-import org.apache.spark.graphx.GraphLoader
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import java.io.ByteArrayInputStream
-import org.apache.spark.graphx._
-import org.apache.spark.rdd.RDD
 import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.model.graph._
 
 object RDFGraphPIClustering {
 
@@ -35,7 +35,12 @@ object RDFGraphPIClustering {
     println("| Power Iteration Clustering   example     |")
     println("============================================")
 
-    RDFGraphPowerIterationClustering(spark,input, output, outputevl, outputsim, k, maxIterations)
+    val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
+    
+    val graph = triples.asStringGraph()
+
+    RDFGraphPowerIterationClustering(spark, graph, output, outputevl, outputsim, k, maxIterations)
 
     spark.stop
 
@@ -60,12 +65,11 @@ object RDFGraphPIClustering {
     opt[String]('e', "outevl").optional().valueName("<directory>").
       action((x, c) => c.copy(outevl = x)).
       text("the outputevl directory")
-      
-    
+
     opt[String]('s', "outputsim").optional().valueName("<directory>").
       action((x, c) => c.copy(outputsim = x)).
       text("the outputevl directory")
-    
+
     opt[Int]('k', "k")
       .text(s"number of circles (/clusters), default: ${defaultParams.k}")
       .action((x, c) => c.copy(k = x))

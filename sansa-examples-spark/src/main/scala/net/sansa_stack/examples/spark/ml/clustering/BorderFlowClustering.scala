@@ -4,6 +4,9 @@ import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
 import net.sansa_stack.ml.spark.clustering.{ BorderFlow, FirstHardeninginBorderFlow }
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.model.graph._
 
 object BorderFlowClustering {
 
@@ -29,9 +32,13 @@ object BorderFlowClustering {
     println(s"| Border Flow example    ($algName)       |")
     println("============================================")
 
+    val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
+    val graph = triples.asStringGraph()
+
     val borderflow = algName match {
-      case "borderflow"     => BorderFlow(spark, input, output, outputevlsoft, outputevlhard)
-      case "firsthardening" => FirstHardeninginBorderFlow(spark, input, output, outputevlhard)
+      case "borderflow"     => BorderFlow(spark, graph, output, outputevlsoft, outputevlhard)
+      case "firsthardening" => FirstHardeninginBorderFlow(spark, graph, output, outputevlhard)
       case _ =>
         throw new RuntimeException("'" + algName + "' - Not supported, yet.")
     }
@@ -62,7 +69,7 @@ object BorderFlowClustering {
       action((x, c) => c.copy(outevlsoft = x)).
       text("the outevlsoft directory (used only for alg 'borderflow')")
 
-    opt[String]('h' ,"outevlhard").required().valueName("<directory>").
+    opt[String]('h', "outevlhard").required().valueName("<directory>").
       action((x, c) => c.copy(outevlhard = x)).
       text("the outevlhard directory ")
 
