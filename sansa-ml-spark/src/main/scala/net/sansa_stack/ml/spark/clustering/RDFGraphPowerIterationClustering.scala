@@ -31,29 +31,21 @@ import scala.math.BigDecimal
 import org.apache.commons.math3.util.MathUtils
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.graphx._
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
-import net.sansa_stack.rdf.spark.model.graph._
 import java.net.URI
 
 object RDFGraphPowerIterationClustering {
 
-  def apply(spark: SparkSession, input: String, output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 50) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 50) = {
 
-    val lang = Lang.NTRIPLES
-    val triplesRDD = spark.rdf(lang)(input)
-
-    val graph = triplesRDD.asStringGraph()
-
-    /*
-	 *
-	 *
-	 * Jaccard similarity measure : selectYourSimilarity = 0
-	 * Batet similarity measure : selectYourSimilarity = 1
-	 * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
-	 * The Contrast model similarity : selectYourSimilarity = 3
-	 * The Ratio model similarity : selectYourSimilarity = 4
-	 */
+    /**
+     *
+     *
+     * Jaccard similarity measure : selectYourSimilarity = 0
+     * Batet similarity measure : selectYourSimilarity = 1
+     * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
+     * The Contrast model similarity : selectYourSimilarity = 3
+     * The Ratio model similarity : selectYourSimilarity = 4
+     */
 
     val selectYourSimilarity = 0
 
@@ -321,7 +313,6 @@ object RDFGraphPowerIterationClustering {
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
       evaluateStringRDD.saveAsTextFile(outevl)
-	    
 
       //println(s"averageSil: $averageSil\n")
 

@@ -28,24 +28,12 @@ import org.apache.spark.graphx._
 import org.apache.jena.util._
 import java.io.StringWriter
 import java.io._
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
-import net.sansa_stack.rdf.spark.model.graph._
-
+import org.apache.spark.graphx.Graph
 
 object BorderFlow {
 
-  def apply(spark: SparkSession, input: String, output: String, outputevlsoft: String, outputevlhard:String) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputevlsoft: String, outputevlhard: String) = {
 
-    /*
-	 * Load the RDF file and convert it to a graph.
-	 */
-    val lang = Lang.NTRIPLES
-    val triplesRDD = spark.rdf(lang)(input)
-    
-    //val graph = LoadGraph.asString(triplesRDD)
-    val graph = triplesRDD.asStringGraph()
-    
     /*
 	 * undirected graph : orient =0
 	 * directed graph : orient =1.

@@ -31,27 +31,20 @@ import java.net.URI
 
 object SilviaClustering {
 
-  def apply(spark: SparkSession, input: String, output: String, outputeval: String) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String) = {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-    // Load the graph
-
-    val lang = Lang.NTRIPLES
-    val triplesRDD = spark.rdf(lang)(input)
-    
-    val graph = triplesRDD.asStringGraph()
-
-    /*
-	 * undirected graph : orient =0
-	 * directed graph : orient =1.
-	 *
-	 * Jaccard similarity measure : selectYourSimilarity = 0
-	 * Batet similarity measure : selectYourSimilarity = 1
-	 * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
-	 * The Contrast model similarity : selectYourSimilarity = 3
-	 * The Ratio model similarity : selectYourSimilarity = 4
-	 */
+    /**
+     * undirected graph : orient =0
+     * directed graph : orient =1.
+     *
+     * Jaccard similarity measure : selectYourSimilarity = 0
+     * Batet similarity measure : selectYourSimilarity = 1
+     * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
+     * The Contrast model similarity : selectYourSimilarity = 3
+     * The Ratio model similarity : selectYourSimilarity = 4
+     */
     val orient = 1
     val selectYourSimilarity = 0
 
