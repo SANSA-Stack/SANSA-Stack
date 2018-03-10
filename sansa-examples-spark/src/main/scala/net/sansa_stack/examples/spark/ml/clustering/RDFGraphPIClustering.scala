@@ -5,10 +5,10 @@ import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import java.io.ByteArrayInputStream
-import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io.rdf._
 import net.sansa_stack.rdf.spark.model.graph._
+import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 
 object RDFGraphPIClustering {
 
@@ -21,7 +21,7 @@ object RDFGraphPIClustering {
     }
   }
 
-  def run(input: String, output: String, outputevl: String, outputsim: String, k: Int, maxIterations: Int): Unit = {
+  def run(input: String, output: String, outevl: String, outputsim: String, k: Int, maxIterations: Int): Unit = {
 
     val spark = SparkSession.builder
       .appName(s"Power Iteration Clustering example ( $input )")
@@ -37,10 +37,10 @@ object RDFGraphPIClustering {
 
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
-    
+
     val graph = triples.asStringGraph()
 
-    RDFGraphPowerIterationClustering(spark, graph, output, outputevl, outputsim, k, maxIterations)
+    RDFGraphPowerIterationClustering(spark, graph, output, outevl, outputsim, k, maxIterations)
 
     spark.stop
 
