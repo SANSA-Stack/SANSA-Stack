@@ -40,7 +40,7 @@ object RDFGraphPIClustering {
 
     val graph = triples.asStringGraph()
 
-    RDFGraphPowerIterationClustering(spark, input, output, k, maxIterations)
+    RDFGraphPowerIterationClustering(spark, graph, output, k, maxIterations)
 
     spark.stop
 
