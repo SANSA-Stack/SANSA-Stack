@@ -15,13 +15,13 @@ object RDFGraphPIClustering {
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.out, config.outevl, config.outputsim, config.k, config.maxIterations)
+        run(config.in, config.out, config.k, config.maxIterations)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: String, output: String, outevl: String, outputsim: String, k: Int, maxIterations: Int): Unit = {
+  def run(input: String, output: String, k: Int, maxIterations: Int): Unit = {
 
     val spark = SparkSession.builder
       .appName(s"Power Iteration Clustering example ( $input )")
@@ -40,13 +40,13 @@ object RDFGraphPIClustering {
 
     val graph = triples.asStringGraph()
 
-    RDFGraphPowerIterationClustering(spark, graph, output, outevl, outputsim, k, maxIterations)
+    RDFGraphPowerIterationClustering(spark, input, output, k, maxIterations)
 
     spark.stop
 
   }
 
-  case class Config(in: String = "", out: String = "", outevl: String = "", outputsim: String = "", k: Int = 2, maxIterations: Int = 50)
+  case class Config(in: String = "", out: String = "", k: Int = 2, maxIterations: Int = 50)
 
   val defaultParams = Config()
 
@@ -61,7 +61,7 @@ object RDFGraphPIClustering {
     opt[String]('o', "out").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
-
+/*
     opt[String]('e', "outevl").optional().valueName("<directory>").
       action((x, c) => c.copy(outevl = x)).
       text("the outputevl directory")
@@ -69,6 +69,7 @@ object RDFGraphPIClustering {
     opt[String]('s', "outputsim").optional().valueName("<directory>").
       action((x, c) => c.copy(outputsim = x)).
       text("the outputevl directory")
+      */
 
     opt[Int]('k', "k")
       .text(s"number of circles (/clusters), default: ${defaultParams.k}")
