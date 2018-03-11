@@ -168,6 +168,7 @@ package object rdf {
      */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
       var rdd = spark.sparkContext.textFile(path, 4) // read the text file
+                .filter(!_.trim.startsWith("#")) //omit comment lines
 
       if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
 
