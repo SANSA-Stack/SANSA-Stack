@@ -4,6 +4,8 @@ import java.util.concurrent.TimeUnit
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd._
 
+import net.sansa_stack.rdf.spark.partition.semantic.RdfPartition;
+
 /*
  * RdfPartition - semantic partition of and RDF graph
  * @symbol - list of symbols.
@@ -15,23 +17,6 @@ class RdfPartition(
   nTriplesRDD:         RDD[Triple],
   partitionedDataPath: String,
   numOfFilesPartition: Int) extends Serializable {
-
-  def run() = {
-    // start process time
-    val startTime = System.nanoTime()
-
-    // execute partition
-    val partitionedData = partitionGraph()
-
-    // end process time
-    this.partitionTime(System.nanoTime() - startTime)
-
-    // save data to output file
-    if (partitionedData.partitions.nonEmpty) {
-      partitionedData.repartition(this.numOfFilesPartition).saveAsTextFile(this.partitionedDataPath)
-    }
-    partitionedData
-  }
 
   // execute partition
   def partitionGraph(): RDD[String] = {
@@ -85,24 +70,6 @@ class RdfPartition(
     partitionedData
   }
 
-  // total partition time
-  def partitionTime(processedTime: Long): Unit = {
-    val milliseconds = TimeUnit.MILLISECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
-    val seconds = Math.floor(milliseconds/1000d + .5d).toInt
-    val minutes = TimeUnit.MINUTES.convert(processedTime, TimeUnit.NANOSECONDS)
-
-    if (milliseconds >= 0) {
-        println(s"Processed Time (MILLISECONDS): $milliseconds")
-
-        if (seconds > 0) {
-            println(s"Processed Time (SECONDS): $seconds approx.")
-
-            if (minutes > 0) {
-                println(s"Processed Time (MINUTES): $minutes")
-            }
-        }
-    }
-  }
 }
 
 object RdfPartition {
