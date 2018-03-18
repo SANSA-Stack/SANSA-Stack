@@ -49,15 +49,16 @@ object RDFGraphPowerIterationClustering {
 
     val selectYourSimilarity = 0
 
-    def clusterRdd(): List[Array[Long]] = {
+    def clusterRdd(): RDD[Iterable[String]] = {
       SimilaritesInPIC(selectYourSimilarity)
     }
 
-    def SimilaritesInPIC(f: Int): List[Array[Long]] = {
+    def SimilaritesInPIC(f: Int): RDD[Iterable[String]] = {
       /*
 	 * Collect all the edges of the graph
 	*/
       val edge = graph.edges.persist()
+      val nodes = graph.vertices
 
       /*
 	 * Collect neighbor IDs of all the vertices
@@ -69,10 +70,8 @@ object RDFGraphPowerIterationClustering {
 	 *
 	 */
 
-      val collectvertices = graph.vertices.persist().collect()
-      val cvbc = spark.sparkContext.broadcast(collectvertices)
-      val nodes = collectvertices.map(e => e._1).distinct
-      val lenghtOfNodes = nodes.length
+      val node = nodes.map(e =>(e._1))
+      val lenghtOfNodes = node.count()
       /*
 	 * Difference between two set of vertices, used in different similarity measures
 	 */
@@ -196,40 +195,27 @@ object RDFGraphPowerIterationClustering {
 			 */
       def run() = model
 
-      val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
-      val assignments = clusters.toList.sortBy { case (k, v) => v.length }
-      val assignmentsStr = assignments
-        .map {
-          case (k, v) =>
-            s"$k -> ${v.sorted.mkString("[", ",", "]")}"
-        }.mkString(",")
-      val sizesStr = assignments.map {
-        _._2.size
-      }.sorted.mkString("(", ",", ")")
-
-      //println(s"Cluster assignments: $assignmentsStr\ncluster sizes: $sizesStr")
-      def makerdf(a: Array[Long]): List[String] = {
-        var listuri: List[String] = List()
-        val b: Array[VertexId] = a
-        for (i <- 0 until b.length) {
-          cvbc.value.map(v => {
-            if (b(i) == v._1) listuri = listuri.::(v._2)
-          })
-
-        }
-        listuri
-
-      }
-      val listCluster = assignments.map(f => f._2)
-      val m = listCluster.map(f => makerdf(f))
-      val rdfRDD = spark.sparkContext.parallelize(m)
-      rdfRDD.saveAsTextFile(output)
+      val vts = nodes.map(e =>(e._1.toLong , e._2))
+     
+     
+     val modelAssignments = model.assignments
+    
+     val rddClusters= modelAssignments.map(f => {
+      
+       val id = f.id
+       val fcluster = f.cluster
+       (id,fcluster)})
+     
+      val findrdf = rddClusters.join(vts).groupBy(_._2._1).mapValues(_.map(_._2._2)).map(_._2)
+      
+      
+      findrdf.saveAsTextFile(output)
 
       val arrayWeightedGraph = weightedGraph.collect()
-      val wgbc = spark.sparkContext.broadcast(arrayWeightedGraph)
+      
       def findingSimilarity(a: Long, b: Long): Double = {
         var f3 = 0.0
-        wgbc.value.map(f => {
+        arrayWeightedGraph.map(f => {
           if ((f._1 == a && f._2 == b) || (f._1 == b && f._2 == a)) { f3 = f._3 }
 
         })
@@ -240,12 +226,12 @@ object RDFGraphPowerIterationClustering {
       /*
 			 * Sillouhette Evaluation
 			 */
-
-      def avgA(c: Array[Long], d: Long): Double = {
+      val clusters = modelAssignments.groupBy(_.cluster).mapValues(_.map(_.id)).map(_._2).collect()
+      def avgA(c: Iterable[Long], d: Long): Double = {
         var sumA = 0.0
-        val sizeC = c.length
+        val sizeC = c.size
 
-        c.map(ck => {
+        c.foreach(ck => {
           val scd = findingSimilarity(ck, d)
           sumA = sumA + scd
         })
@@ -253,11 +239,11 @@ object RDFGraphPowerIterationClustering {
         sumA / sizeC
       }
 
-      def avgB(c: Array[Long], d: Long): Double = {
+      def avgB(c: Iterable[Long], d: Long): Double = {
         var sumB = 0.0
-        val sizeC = c.length
+        val sizeC = c.size
         if (sizeC == 0) return 0.0
-        c.map(ck => {
+        c.foreach(ck => {
           val scd = findingSimilarity(ck, d)
 
           sumB = sumB + scd
@@ -279,7 +265,7 @@ object RDFGraphPowerIterationClustering {
         s
       }
 
-      def AiBi(m: List[Array[Long]], n: Array[Long]): List[Double] = {
+      def AiBi(m: Array[Iterable[Long]], n: RDD[VertexId]): List[Double] = {
         var Ai = 0.0
         var Bi = 0.0
         var bi = 0.0
@@ -287,10 +273,10 @@ object RDFGraphPowerIterationClustering {
 
         var sx: List[Double] = List()
 
-        n.map(nk => {
+        n.foreach(nk => {
           avg = List()
-          m.map(mp => {
-            if (mp.contains(nk)) {
+          m.foreach(mp => { 
+            if (mp.exists(_.==(nk.toLong))) {
               Ai = avgA(mp, nk)
             } else {
               avg = avg.::(avgB(mp, nk))
@@ -307,7 +293,7 @@ object RDFGraphPowerIterationClustering {
         sx
 
       }
-      val evaluate = AiBi(listCluster, nodes)
+      val evaluate = AiBi(clusters, node)
       val averageSil = evaluate.sum / evaluate.size
       val evaluateString: List[String] = List(averageSil.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
@@ -328,7 +314,7 @@ object RDFGraphPowerIterationClustering {
 			 */
       // def load(path: String) = PowerIterationClusteringModel.load(spark.sparkContext, path)
 
-      (listCluster)
+      (findrdf)
     }
     val clrdd = clusterRdd()
 
