@@ -23,6 +23,26 @@ import net.sansa_stack.query.spark.semantic.QuerySystem
 
 package object query {
 
+  implicit class SparqlifyAsDefault(triples: RDD[Triple]) extends Serializable {
+    import net.sansa_stack.rdf.spark.partition._
+
+    val spark = SparkSession.builder().getOrCreate()
+    /**
+     * Default partition - using VP.
+     */
+    def sparql(sparqlQuery: String) = {
+      val partitions = triples.partitionGraph()
+
+      val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
+      val query = QueryFactory.create(sparqlQuery)
+      val rewrite = rewriter.rewrite(query)
+      val df = QueryExecutionSpark.createQueryExecution(spark, rewrite, query)
+
+      df
+    }
+
+  }
+
   implicit class Sparqlify(partitions: Map[RdfPartitionDefault, RDD[Row]]) extends Serializable {
 
     val spark = SparkSession.builder().getOrCreate()
@@ -33,15 +53,18 @@ package object query {
       val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
       val query = QueryFactory.create(sparqlQuery)
       val rewrite = rewriter.rewrite(query)
-      val rdd = QueryExecutionSpark.createQueryExecution(spark, rewrite, query)
+      val df = QueryExecutionSpark.createQueryExecution(spark, rewrite, query)
+      /*
       val it = rdd.toLocalIterator.asJava
       val resultVars = rewrite.getProjectionOrder()
 
       val tmp = ResultSetUtils.create2(resultVars, it)
-      new ResultSetCloseable(tmp)
+      new ResultSetCloseable(tmp)*/
+      df
     }
 
   }
+
   implicit class Semantic(partitions: RDD[String]) extends Serializable {
 
     val symbol = Map(

@@ -26,16 +26,19 @@ object QueryExecutionSpark {
     val varDef = rewrite.getVarDefinition().getMap()
 
     val sqlQueryStr = rewrite.getSqlQueryString()
-    val dataset = spark.sql(sqlQueryStr)
+    val df = spark.sql(sqlQueryStr)
 
-//    System.out.println("SqlQueryStr: " + sqlQueryStr);
-//    System.out.println("VarDef: " + rewrite.getVarDefinition())
+    /*
+    System.out.println("SqlQueryStr: " + sqlQueryStr);
+    System.out.println("VarDef: " + rewrite.getVarDefinition())
 
     val rowMapper = new SparkRowMapperSparqlify(varDef)
 
     val z = JavaKryoSerializationWrapper.wrap(rowMapper)
 
-    dataset.javaRDD.map(z).rdd
+    //dataset.javaRDD.map(z).rdd
+     */
+    df
   }
 
   def ResultSet(rdd: RDD[Binding], rewrite: SparqlSqlStringRewrite) = {
