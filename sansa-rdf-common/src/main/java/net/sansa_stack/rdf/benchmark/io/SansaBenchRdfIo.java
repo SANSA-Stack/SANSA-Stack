@@ -48,9 +48,12 @@ import com.google.common.collect.Streams;
 
 
 public class SansaBenchRdfIo {
-	
+
+	public static ExecutorService executor = Executors.newSingleThreadExecutor();
+
 	public static void main(String[] args) throws Exception {
-		String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.node.sorted.nt.bz2";
+		String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.way.sorted.nt.bz2";
+		//String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.node.sorted.nt.bz2";
 		//String url = "http://downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-Abutters.way.sorted.nt.bz2";
 		
 		File tmpDir = new File("/tmp");
@@ -75,11 +78,11 @@ public class SansaBenchRdfIo {
 		Map<String, Callable<Long>> map = new LinkedHashMap<>();
 		map.put("parseWhole", () -> parseFile(file).count());
 		map.put("parseReader", () -> parseReader(file).count());
-		map.put("parseLineFlatMap", () -> parseLineFlatMap(file).count());
 		map.put("parseLineRiot", () -> parseLineRiot(file).count());
         map.put("parseLineRiot2", () -> parseLineRiot2(file).count());
 		map.put("parseLineReaderFlatMap", () -> parseLineReaderFlatMap(file).count());
 		map.put("parseLineMap", () -> parseLineMap(file).count());
+		map.put("parseLineFlatMap", () -> parseLineFlatMap(file).count());
 
 		for(Entry<String, Callable<Long>> entry : map.entrySet()) {		
 			System.out.println("Running " + entry.getKey());
@@ -90,6 +93,9 @@ public class SansaBenchRdfIo {
 				System.out.println("Time taken [" + entry.getKey() + ", " + i + ", " + count + "] " + sw.stop().elapsed(TimeUnit.MILLISECONDS));
 			}
 		}
+
+		executor.shutdown();
+		executor.awaitTermination(10, TimeUnit.SECONDS);
 	}
 	
 	public static <T> T forceNew(Class<T> clazz) {
@@ -117,6 +123,8 @@ public class SansaBenchRdfIo {
 
 	// Avoid reflection overhead
 	public static NTripleReader reader = forceNew(NTripleReader.class);
+
+
 
 	public static Stream<Triple> parseReader(InputStream in) {
         PipedRDFIterator<Triple> pipedRdfIterator = new PipedRDFIterator<>();
@@ -153,7 +161,6 @@ public class SansaBenchRdfIo {
 
 		reader.setErrorHandler(handler);
 		
-        ExecutorService executor = Executors.newSingleThreadExecutor();
 
         Future<?> foo = executor.submit(() -> {
     		pipedRdfStream.start();
@@ -166,14 +173,15 @@ public class SansaBenchRdfIo {
         });
         
         Stream<Triple> result = Streams.stream(pipedRdfIterator)
-        		.onClose(() -> {
-        			foo.cancel(true);
-					try {
-						foo.get();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-        		});
+//        		.onClose(() -> {
+//        			foo.cancel(true);
+//					try {
+//						foo.get();
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+  //      		})
+                ;
 
         return result;
 	}
