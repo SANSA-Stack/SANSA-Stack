@@ -24,7 +24,7 @@ object Sparqlify {
         println(parser.usage)
     }
   }
-  def run(input: String, sparqlQuery: String = "", endpoint: Boolean = false, port: String = "7531"): Unit = {
+  def run(input: String, sparqlQuery: String = "", endpoint: Boolean = true, port: String = "7531"): Unit = {
 
     println("======================================")
     println("|   Sparqlify example                |")
@@ -44,7 +44,7 @@ object Sparqlify {
     val graphRdd = spark.rdf(lang)(input)
 
     val checkendpoint = endpoint match {
-      case true =>
+      case j if(endpoint) =>
         val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
         val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
 
@@ -60,7 +60,7 @@ object Sparqlify {
         import net.sansa_stack.query.spark.query._
         //val sparqlQuery = "SELECT * WHERE {?s ?p ?o} LIMIT 10"
         val result = graphRdd.sparql(sparqlQuery)
-        result.show
+        result.rdd.foreach(println)
     }
 
     spark.stop
@@ -83,7 +83,7 @@ object Sparqlify {
 
     opt[Boolean]('e', "endpoint").optional().valueName("SPARQL endoint enabled").
       action((x, c) => c.copy(endpoint = x)).
-      text("enable SPARQL endpoint , default:'disabled'")
+      text("enable SPARQL endpoint , default:'enabled'")
 
     opt[String]('p', "port").optional().valueName("port").
       action((x, c) => c.copy(port = x)).
