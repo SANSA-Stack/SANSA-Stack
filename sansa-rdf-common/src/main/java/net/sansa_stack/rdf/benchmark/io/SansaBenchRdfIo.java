@@ -36,6 +36,11 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.lang.PipedRDFIterator;
 import org.apache.jena.riot.lang.PipedRDFStream;
 import org.apache.jena.riot.lang.PipedTriplesStream;
+import org.apache.jena.riot.lang.RiotParsers;
+import org.apache.jena.riot.system.ParserProfile;
+import org.apache.jena.riot.system.ParserProfileStd;
+import org.apache.jena.riot.system.RiotLib;
+import org.apache.jena.riot.tokens.TokenizerFactory;
 import org.apache.jena.shared.SyntaxError;
 
 import com.google.common.base.Stopwatch;
@@ -45,13 +50,16 @@ import com.google.common.collect.Streams;
 public class SansaBenchRdfIo {
 	
 	public static void main(String[] args) throws Exception {
+		String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.node.sorted.nt.bz2";
+		//String url = "http://downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-Abutters.way.sorted.nt.bz2";
+		
 		File tmpDir = new File("/tmp");
-		File file = new File(tmpDir, "2015-11-02-Abutters.way.sorted.nt");
+		File file = new File(tmpDir, "sansa-bench.nt");
 		
 		if(!file.exists()) {
 			File tmpFile = new File(file.getPath() + ".tmp");
 		
-			try(InputStream in = new MetaBZip2CompressorInputStream(new URL("http://downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-Abutters.way.sorted.nt.bz2").openStream());
+			try(InputStream in = new MetaBZip2CompressorInputStream(new URL(url).openStream());
 					OutputStream out = new FileOutputStream(tmpFile)) {
 				IOUtils.copy(in, out);
 				out.flush();
@@ -66,9 +74,12 @@ public class SansaBenchRdfIo {
 		
 		Map<String, Callable<Long>> map = new LinkedHashMap<>();
 		map.put("parseWhole", () -> parseFile(file).count());
-		map.put("parseLineMap", () -> parseLineMap(file).count());
-		map.put("parseLineFlatMap", () -> parseLineFlatMap(file).count());
 		map.put("parseReader", () -> parseReader(file).count());
+		map.put("parseLineFlatMap", () -> parseLineFlatMap(file).count());
+		map.put("parseLineRiot", () -> parseLineRiot(file).count());
+        map.put("parseLineRiot2", () -> parseLineRiot2(file).count());
+		map.put("parseLineReaderFlatMap", () -> parseLineReaderFlatMap(file).count());
+		map.put("parseLineMap", () -> parseLineMap(file).count());
 
 		for(Entry<String, Callable<Long>> entry : map.entrySet()) {		
 			System.out.println("Running " + entry.getKey());
@@ -76,7 +87,7 @@ public class SansaBenchRdfIo {
 				Stopwatch sw = Stopwatch.createStarted();
 				long count = entry.getValue().call();
 				
-				System.out.println("Time taken [" + entry.getKey() + ", "+ count + "] " + sw.stop().elapsed(TimeUnit.MILLISECONDS));
+				System.out.println("Time taken [" + entry.getKey() + ", " + i + ", " + count + "] " + sw.stop().elapsed(TimeUnit.MILLISECONDS));
 			}
 		}
 	}
@@ -99,8 +110,15 @@ public class SansaBenchRdfIo {
 	}
 
 	
-	
 	public static Stream<Triple> parseReader(File file) throws FileNotFoundException, InterruptedException, ExecutionException {
+		Stream<Triple> result = parseReader(new FileInputStream(file));
+		return result;
+	}
+
+	// Avoid reflection overhead
+	public static NTripleReader reader = forceNew(NTripleReader.class);
+
+	public static Stream<Triple> parseReader(InputStream in) {
         PipedRDFIterator<Triple> pipedRdfIterator = new PipedRDFIterator<>();
 
         PipedRDFStream<Triple> pipedRdfStream = new PipedTriplesStream(pipedRdfIterator);
@@ -137,8 +155,6 @@ public class SansaBenchRdfIo {
 		
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        InputStream in = new FileInputStream(file);
-
         Future<?> foo = executor.submit(() -> {
     		pipedRdfStream.start();
     		try {
@@ -161,7 +177,7 @@ public class SansaBenchRdfIo {
 
         return result;
 	}
-	
+
 	public static Stream<Triple> parseFile(File file) throws FileNotFoundException {		
 		Stream<Triple> result = Streams.stream(RDFDataMgr
 				.createIteratorTriples(
@@ -185,4 +201,23 @@ public class SansaBenchRdfIo {
 										line.getBytes()), Lang.NTRIPLES, "http://example.org")))
 		;
 	}
+
+	public static Stream<Triple> parseLineReaderFlatMap(File file) throws IOException {
+		return Files.lines(file.toPath())
+				.flatMap(line -> parseReader(new ByteArrayInputStream(line.getBytes())))
+		;
+	}
+
+	public static ParserProfile parserProfile = RiotLib.dftProfile();
+	public static Stream<Triple> parseLineRiot(File file) throws IOException {
+	    return Files.lines(file.toPath())
+                .map(line -> RiotParsers.createIteratorNTriples(new ByteArrayInputStream(line.getBytes()), null, parserProfile).next());
+    }
+
+
+	public static Stream<Triple> parseLineRiot2(File file) throws IOException {
+		
+	    return Files.lines(file.toPath())
+                .map(line -> RiotParsers.createParserNTriples(TokenizerFactory.makeTokenizerASCII(line), null, parserProfile).next());
+    }
 }
