@@ -13,14 +13,16 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
@@ -36,7 +38,9 @@ import org.apache.jena.riot.lang.PipedRDFStream;
 import org.apache.jena.riot.lang.PipedTriplesStream;
 import org.apache.jena.shared.SyntaxError;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Streams;
+
 
 public class SansaBenchRdfIo {
 	
@@ -47,7 +51,7 @@ public class SansaBenchRdfIo {
 		if(!file.exists()) {
 			File tmpFile = new File(file.getPath() + ".tmp");
 		
-			try(InputStream in = new BZip2CompressorInputStream(new URL("http://downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-Abutters.way.sorted.nt.bz2").openStream());
+			try(InputStream in = new MetaBZip2CompressorInputStream(new URL("http://downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-Abutters.way.sorted.nt.bz2").openStream());
 					OutputStream out = new FileOutputStream(tmpFile)) {
 				IOUtils.copy(in, out);
 				out.flush();
@@ -58,7 +62,7 @@ public class SansaBenchRdfIo {
 			
 		//File file = new File("/home/raven/tmp/2015-11-02-Abutters.way.sorted.nt");
 
-		int runs = 3;
+		int runs = 2;
 		
 		Map<String, Callable<Long>> map = new LinkedHashMap<>();
 		map.put("parseWhole", () -> parseFile(file).count());
