@@ -19,7 +19,7 @@ import org.scalatest.FunSuite
   */
 class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.io.rdf._
+  import net.sansa_stack.rdf.spark.io._
 
   test("loading N-Triples file into DataFrame with REGEX parsing mode should result in 9 triples") {
 

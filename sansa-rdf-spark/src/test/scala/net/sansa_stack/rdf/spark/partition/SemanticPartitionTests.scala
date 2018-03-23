@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.partition
 import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 
 class SemanticPartitionTests extends FunSuite with DataFrameSuiteBase {
 
