@@ -14,7 +14,7 @@ import org.scalatest.FunSuite
   */
 class RDFWritingTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.io.rdf._
+  import net.sansa_stack.rdf.spark.io._
 
   test("writing N-Triples file from DataFrame to disk should result in file with 9 triples") {
 
