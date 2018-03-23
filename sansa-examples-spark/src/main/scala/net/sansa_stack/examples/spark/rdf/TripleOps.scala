@@ -1,10 +1,9 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.net.{ URI => JavaURI }
-import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.{ JenaSparkRDDOps, TripleRDD }
+import net.sansa_stack.rdf.spark.io._
 import org.apache.spark.sql.SparkSession
-
+import org.apache.jena.riot.Lang
 import scala.collection.mutable
 
 object TripleOps {
@@ -30,12 +29,13 @@ object TripleOps {
     println("|        Triple Ops example       |")
     println("======================================")
 
-    val ops = JenaSparkRDDOps(spark.sparkContext)
-    import ops._
-
-    val triplesRDD = NTripleReader.load(spark, JavaURI.create(input))
+    val lang = Lang.NTRIPLES
+    val triplesRDD = spark.rdf(lang)(input)
 
     val graph: TripleRDD = triplesRDD
+
+    val ops = JenaSparkRDDOps(spark.sparkContext)
+    import ops._
 
     //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
     println("All triples related to Dickens:\n" + graph.find(URI("http://dbpedia.org/resource/Charles_Dickens"), ANY, ANY).collect().mkString("\n"))
