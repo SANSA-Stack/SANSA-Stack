@@ -4,7 +4,7 @@ import org.apache.spark.sql.SparkSession
 import java.net.{ URI => JavaURI }
 import scala.collection.mutable
 import org.apache.spark.graphx.Graph
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
 import org.apache.jena.riot.Lang
 

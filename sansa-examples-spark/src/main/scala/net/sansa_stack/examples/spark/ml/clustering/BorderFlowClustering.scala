@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.log4j.{ Level, Logger }
 import net.sansa_stack.ml.spark.clustering.{ BorderFlow, FirstHardeninginBorderFlow }
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
 
 object BorderFlowClustering {

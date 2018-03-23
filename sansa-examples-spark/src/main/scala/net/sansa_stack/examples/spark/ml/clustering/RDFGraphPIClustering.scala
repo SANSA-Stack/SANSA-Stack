@@ -6,7 +6,7 @@ import org.apache.log4j.{ Level, Logger }
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import java.io.ByteArrayInputStream
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
 import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 

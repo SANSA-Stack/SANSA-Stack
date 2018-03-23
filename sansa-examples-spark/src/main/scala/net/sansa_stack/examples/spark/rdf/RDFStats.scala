@@ -2,7 +2,7 @@ package net.sansa_stack.examples.spark.rdf
 
 import org.apache.spark.sql.SparkSession
 import java.net.URI
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import scala.collection.mutable
 import java.io.File

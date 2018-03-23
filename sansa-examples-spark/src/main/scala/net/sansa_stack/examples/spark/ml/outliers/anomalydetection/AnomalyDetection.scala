@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 import java.net.{ URI => JavaURI }
 import net.sansa_stack.ml.spark.outliers.anomalydetection.{ AnomalyDetection => AlgAnomalyDetection, IQR }
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 
 object AnomalyDetection {
   def main(args: Array[String]) {

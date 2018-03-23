@@ -2,7 +2,7 @@ package net.sansa_stack.examples.spark.query
 
 import java.net.URI
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, QueryExecutionUtilsSpark, QueryExecutionSpark, SparqlifyUtils3 }
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer

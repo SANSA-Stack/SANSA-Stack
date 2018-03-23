@@ -6,7 +6,7 @@ import org.apache.log4j.{ Level, Logger }
 import java.net.{ URI => JavaURI }
 import net.sansa_stack.ml.spark.clustering.{ SilviaClustering => AlgSilviaClustering }
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
 
 object SilviaClustering {

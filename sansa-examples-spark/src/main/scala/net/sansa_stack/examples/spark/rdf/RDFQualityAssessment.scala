@@ -7,7 +7,7 @@ import scala.collection.mutable
 import java.io.File
 import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.qualityassessment._
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 
 
 object RDFQualityAssessment {

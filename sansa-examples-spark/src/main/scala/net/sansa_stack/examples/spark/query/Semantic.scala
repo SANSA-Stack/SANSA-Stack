@@ -3,7 +3,7 @@ package net.sansa_stack.examples.spark.query
 import java.nio.file.{ FileVisitResult, Files, Path, Paths, SimpleFileVisitor }
 import java.nio.file.attribute.BasicFileAttributes
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import org.apache.spark.sql.SparkSession
 import java.io.IOException
 import org.apache.jena.graph.Triple

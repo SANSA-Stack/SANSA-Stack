@@ -6,7 +6,7 @@ import java.net.URI
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 
 object TripleWriter {
 
