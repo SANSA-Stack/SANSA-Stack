@@ -3,7 +3,6 @@ package net.sansa_stack.rdf.spark.io
 import java.io.ByteArrayInputStream
 import java.net.URI
 
-import net.sansa_stack.rdf.spark.io.rdf.RDFLang
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.spark.rdd.RDD
@@ -17,7 +16,7 @@ import org.apache.spark.sql.SparkSession
   */
 class RDFReader(implicit val session: SparkSession) {
 
-  import net.sansa_stack.rdf.spark.io.rdf._
+  import net.sansa_stack.rdf.spark.io._
 
   /**
     * Load RDF data into an [[RDD]][Triple].
