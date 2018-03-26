@@ -82,6 +82,7 @@
     <CodeCacheSize>512m</CodeCacheSize>
     <gpg.keyname>AKSW</gpg.keyname>
     <owlapi.version>5.1.3</owlapi.version>
+    <scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
   </properties>
 
   <prerequisites>
@@ -520,30 +521,33 @@
         <groupId>com.versioneye</groupId>
         <artifactId>versioneye-maven-plugin</artifactId>
       </plugin>
-      <!--<plugin>-->
-        <!--<groupId>org.scalastyle</groupId>-->
-        <!--<artifactId>scalastyle-maven-plugin</artifactId>-->
-        <!--<version>0.8.0</version>-->
-        <!--<configuration>-->
-          <!--<verbose>false</verbose>-->
-          <!--<failOnViolation>false</failOnViolation>-->
-          <!--<includeTestSourceDirectory>false</includeTestSourceDirectory>-->
-          <!--<failOnWarning>false</failOnWarning>-->
-          <!--<sourceDirectory>${basedir}/src/main/scala</sourceDirectory>-->
-          <!--<testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>-->
-          <!--<configLocation>scalastyle-config.xml</configLocation>-->
-          <!--<outputFile>${basedir}/target/scalastyle-output.xml</outputFile>-->
-          <!--<inputEncoding>${project.build.sourceEncoding}</inputEncoding>-->
-          <!--<outputEncoding>${project.reporting.outputEncoding}</outputEncoding>-->
-        <!--</configuration>-->
-        <!--<executions>-->
-          <!--<execution>-->
-            <!--<goals>-->
-              <!--<goal>check</goal>-->
-            <!--</goals>-->
-          <!--</execution>-->
-        <!--</executions>-->
-      <!--</plugin>-->
+
+      <!-- Scalastyle -->
+      <plugin>
+        <groupId>org.scalastyle</groupId>
+        <artifactId>scalastyle-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <verbose>false</verbose>
+          <failOnViolation>false</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <failOnWarning>false</failOnWarning>
+          <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+          <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+          <!-- we use a central config located in the root directory -->
+          <configLocation>${scalastyle.config.path}</configLocation>
+          <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+          <outputEncoding>UTF-8</outputEncoding>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
@@ -668,6 +672,7 @@
 
     <!-- the profile used for deployment to Sonatype Maven repository -->
     <profile>
+      <!-- for Maven Central deployment -->
       <id>ossrh</id>
       <distributionManagement>
         <repository>
@@ -785,6 +790,19 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <!-- for Scalastyle plugin -->
+    <profile>
+      <id>root-dir</id>
+      <activation>
+        <file>
+          <exists>${project.basedir}/../../scalastyle-config.xml</exists>
+        </file>
+      </activation>
+      <properties>
+        <scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+      </properties>
     </profile>
   </profiles>
 </project>
