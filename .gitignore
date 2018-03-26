@@ -28,3 +28,5 @@ deptree.txt
 deptree.txt
 # local project specific tmp folder
 tmp
+
+scalastyle-output.xml

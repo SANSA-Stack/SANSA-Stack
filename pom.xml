@@ -38,6 +38,8 @@
 
 		<jetty.version>9.4.8.v20171121</jetty.version>
 		<mortbay.jetty.version>6.1.26</mortbay.jetty.version>
+		
+		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
 	<scm>
@@ -626,7 +628,7 @@
 						<sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
 						<testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
 						<!-- we use a central config located in the root directory -->
-						<configLocation>${project.basedir}/../scalastyle-config.xml</configLocation>
+						<configLocation>${scalastyle.config.path}</configLocation>
 						<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
 						<outputEncoding>UTF-8</outputEncoding>
 					</configuration>
@@ -659,6 +661,17 @@
 	</distributionManagement>
 
 	<profiles>
+		<profile>
+		    <id>root-dir</id>
+		    <activation>
+			<file>
+			    <exists>${project.basedir}/../../scalastyle-config.xml</exists>
+			</file>
+		    </activation>
+		    <properties>
+			<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+		    </properties>
+		</profile>
 		<profile>
 			<id>doclint-java8-disable</id>
 			<activation>
