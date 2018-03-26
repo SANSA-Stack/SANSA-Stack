@@ -175,6 +175,56 @@
       "progressUpdateIntervalMs": 500
     },
     {
+      "title": "RDF Quality Assessment Example",
+      "text": "import org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.qualityassessment._\nimport net.sansa_stack.rdf.spark.io._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\n// compute  quality assessment\nval completeness_schema \u003d triples.assessSchemaCompleteness()\nval completeness_interlinking \u003d triples.assessInterlinkingCompleteness()\nval completeness_property \u003d triples.assessPropertyCompleteness()\n\nval syntacticvalidity_literalnumeric \u003d triples.assessLiteralNumericRangeChecker()\nval syntacticvalidity_XSDDatatypeCompatibleLiterals \u003d triples.assessXSDDatatypeCompatibleLiterals()\n\nval availability_DereferenceableUris \u003d triples.assessDereferenceableUris()\n\nval relevancy_CoverageDetail \u003d triples.assessCoverageDetail()\nval relevancy_CoverageScope \u003d triples.assessCoverageScope()\nval relevancy_AmountOfTriples \u003d triples.assessAmountOfTriples()\n\nval performance_NoHashURIs \u003d triples.assessNoHashUris()\nval understandability_LabeledResources \u003d triples.assessLabeledResources()\n\nval AssessQualityStr \u003d s\"\"\"%table\nmetric\\tvalue\ncompleteness_schema\\t$completeness_schema\ncompleteness_interlinking\\t$completeness_interlinking \ncompleteness_property\\t$completeness_property\nsyntacticvalidity_literalnumeric\\t$syntacticvalidity_literalnumeric \nsyntacticvalidity_XSDDatatypeCompatibleLiterals\\t$syntacticvalidity_XSDDatatypeCompatibleLiterals\navailability_DereferenceableUris\\t$availability_DereferenceableUris\nrelevancy_CoverageDetail\\t$relevancy_CoverageDetail\nrelevancy_CoverageScope\\t$relevancy_CoverageScope\nrelevancy_AmountOfTriples\\t$relevancy_AmountOfTriples\nperformance_NoHashURIs\\t$performance_NoHashURIs\nunderstandability_LabeledResources\\t$understandability_LabeledResources  \n\"\"\"\n\nz.show(AssessQualityStr)",
+      "user": "anonymous",
+      "dateUpdated": "Mar 26, 2018 1:13:51 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.qualityassessment._\n\nimport net.sansa_stack.rdf.spark.io._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[1495] at map at package.scala:179\n\ncompleteness_schema: Double \u003d 0.0\n\ncompleteness_interlinking: Long \u003d 0\n\ncompleteness_property: Long \u003d 0\n\nsyntacticvalidity_literalnumeric: Long \u003d 0\n50\n\nsyntacticvalidity_XSDDatatypeCompatibleLiterals: Long \u003d 80\n\navailability_DereferenceableUris: Double \u003d 0.07526881720430108\n\nrelevancy_CoverageDetail: Double \u003d 0.22641509433962265\n\nrelevancy_CoverageScope: Double \u003d 0.0\n\nrelevancy_AmountOfTriples: Double \u003d 0.0\n\nperformance_NoHashURIs: Double \u003d 0.0\n\nunderstandability_LabeledResources: Double \u003d 0.0\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAssessQualityStr: String \u003d\n\"%table\nmetric\tvalue\ncompleteness_schema\t0.0\ncompleteness_interlinking\t0\ncompleteness_property\t0\nsyntacticvalidity_literalnumeric\t0\nsyntacticvalidity_XSDDatatypeCompatibleLiterals\t80\navailability_DereferenceableUris\t0.07526881720430108\nrelevancy_CoverageDetail\t0.22641509433962265\nrelevancy_CoverageScope\t0.0\nrelevancy_AmountOfTriples\t0.0\nperformance_NoHashURIs\t0.0\nunderstandability_LabeledResources\t0.0\n\"\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "metric\tvalue\ncompleteness_schema\t0.0\ncompleteness_interlinking\t0 \ncompleteness_property\t0\nsyntacticvalidity_literalnumeric\t0 \nsyntacticvalidity_XSDDatatypeCompatibleLiterals\t80\navailability_DereferenceableUris\t0.07526881720430108\nrelevancy_CoverageDetail\t0.22641509433962265\nrelevancy_CoverageScope\t0.0\nrelevancy_AmountOfTriples\t0.0\nperformance_NoHashURIs\t0.0\nunderstandability_LabeledResources\t0.0  \n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1501496145833_-86361131",
+      "id": "20170731-101545_1335119985",
+      "dateCreated": "Jul 31, 2017 10:15:45 AM",
+      "dateStarted": "Mar 26, 2018 1:13:51 PM",
+      "dateFinished": "Mar 26, 2018 1:14:01 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
       "user": "anonymous",
       "config": {},
       "settings": {
@@ -182,9 +232,9 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1501496145833_-86361131",
-      "id": "20170731-101545_1335119985",
-      "dateCreated": "Jul 31, 2017 10:15:45 AM",
+      "jobName": "paragraph_1522069944076_-1045932466",
+      "id": "20180326-131224_349885443",
+      "dateCreated": "Mar 26, 2018 1:12:24 PM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
