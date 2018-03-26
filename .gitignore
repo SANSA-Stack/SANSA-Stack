@@ -17,3 +17,5 @@ project/plugins/project/
 .worksheet
 *.iml
 .idea
+
+scalastyle-output.xml
