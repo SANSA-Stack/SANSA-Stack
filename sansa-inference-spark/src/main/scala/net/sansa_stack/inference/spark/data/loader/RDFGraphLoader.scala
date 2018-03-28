@@ -209,7 +209,7 @@ object RDFGraphLoader {
   }
 
   def main(args: Array[String]): Unit = {
-    import net.sansa_stack.rdf.spark.io.rdf._
+    import net.sansa_stack.rdf.spark.io._
 
     val path = args(0)
     val lang = args(1) match {

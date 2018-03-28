@@ -289,7 +289,7 @@ object ForwardRuleReasonerRDFSDataframe {
   def apply(session: SparkSession, parallelism: Int = 2): ForwardRuleReasonerRDFSDataframe = new ForwardRuleReasonerRDFSDataframe(session, parallelism)
 
   def main(args: Array[String]): Unit = {
-    import net.sansa_stack.rdf.spark.io.rdf._
+    import net.sansa_stack.rdf.spark.io._
 
     val parallelism = 2
 
