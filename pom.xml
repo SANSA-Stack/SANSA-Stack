@@ -234,7 +234,7 @@
 			<dependency>
 				<groupId>org.aksw.sparqlify</groupId>
 				<artifactId>sparqlify-core</artifactId>
-				<version>0.8.3</version>
+				<version>0.8.4-SNAPSHOT</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.aksw.sparqlify</groupId>
@@ -335,6 +335,28 @@
 		</dependencies>
 	</dependencyManagement>
 
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.6</version>
+				<configuration>
+					<reportPlugins>
+						<plugin>
+							<artifactId>maven-project-info-reports-plugin</artifactId>
+							<version>2.9</version>
+						</plugin>
+						<plugin>
+							<groupId>net.alchim31.maven</groupId>
+							<artifactId>scala-maven-plugin</artifactId>
+						</plugin>
+					</reportPlugins>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -363,15 +385,16 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-			</plugin>
-
-			<plugin>
 				<groupId>com.amashchenko.maven.plugin</groupId>
 				<artifactId>gitflow-maven-plugin</artifactId>
 			</plugin>
 
+<!--
+			<plugin>
+				<groupId>org.scalastyle</groupId>
+				<artifactId>scalastyle-maven-plugin</artifactId>
+			</plugin>
+-->
 		</plugins>
 
 		<pluginManagement>
@@ -481,24 +504,6 @@
 					<configuration>
 						<scalaVersion>${scala.version}</scalaVersion>
 						<recompileMode>incremental</recompileMode>
-					</configuration>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-site-plugin</artifactId>
-					<version>3.6</version>
-					<configuration>
-						<reportPlugins>
-							<plugin>
-								<artifactId>maven-project-info-reports-plugin</artifactId>
-								<version>2.9</version>
-							</plugin>
-							<plugin>
-								<groupId>net.alchim31.maven</groupId>
-								<artifactId>scala-maven-plugin</artifactId>
-							</plugin>
-						</reportPlugins>
 					</configuration>
 				</plugin>
 
