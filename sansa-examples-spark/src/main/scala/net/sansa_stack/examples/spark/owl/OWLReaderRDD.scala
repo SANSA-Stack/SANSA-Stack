@@ -1,6 +1,6 @@
 package net.sansa_stack.examples.spark.owl
 
-import net.sansa_stack.owl.spark.rdd.{ FunctionalSyntaxOWLAxiomsRDDBuilder, ManchesterSyntaxOWLAxiomsRDDBuilder }
+import net.sansa_stack.owl.spark.owl._
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
@@ -26,12 +26,12 @@ object OWLReaderRDD {
       .appName(s"OWL reader example ( $input + )($syntax)")
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")      
+      .config("spark.kryo.registrator", "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
       .getOrCreate()
 
     val rdd = syntax match {
-      case "fun"   => FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark.sparkContext, input)
-      case "manch" => ManchesterSyntaxOWLAxiomsRDDBuilder.build(spark.sparkContext, input)
+      case "fun"   => spark.owl(Syntax.FUNCTIONAL)(input)
+      case "manch" => spark.owl(Syntax.MANCHESTER)(input)
       case "owl_xml" =>
         throw new RuntimeException("'" + syntax + "' - Not supported, yet.")
       case _ =>
