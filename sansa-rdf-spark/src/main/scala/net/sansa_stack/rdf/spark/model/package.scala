@@ -122,6 +122,42 @@ package object model {
     def difference(other: RDD[Triple]) = TripleOps.difference(triples, other)
 
     /**
+     * Add a statement to the current RDF graph.
+     *
+     * @param triple the triple to be added.
+     * @return new RDD of triples containing this statement.
+     * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.add]]
+     */
+    def add(triple: Triple) = TripleOps.add(triples, triple)
+
+    /**
+     * Add a list of statements to the current RDF graph.
+     *
+     * @param triple the list of triples to be added.
+     * @return new RDD of triples containing this list of statements.
+     * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.addAll]]
+     */
+    def addAll(triple: Seq[Triple]) = TripleOps.addAll(triples, triple)
+
+    /**
+     * Removes a statement from the current RDF graph.
+     * The statement with the same subject, predicate and object as that supplied will be removed from the model.
+     * @param triple the statement to be removed.
+     * @return new RDD of triples without this statement.
+     * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.remove]]
+     */
+    def remove(triple: Triple) = TripleOps.remove(triples, triple)
+
+    /**
+     * Removes all the statements from the current RDF graph.
+     * The statements with the same subject, predicate and object as those supplied will be removed from the model.
+     * @param triple the list of statements to be removed.
+     * @return new RDD of triples without these statements.
+     * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.removeAll]]
+     */
+    def removeAll(triple: Seq[Triple]) = TripleOps.removeAll(triples, triple)
+
+    /**
      * Write N-Triples from a given RDD of triples
      *
      * @param path path to the file containing N-Triples

@@ -146,6 +146,56 @@ object TripleOps {
   def difference(triples: RDD[Triple], other: RDD[Triple]): RDD[Triple] =
     triples.subtract(other)
 
+  @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
+
+  /**
+   * Add a statement to the current RDF graph.
+   *
+   * @param triples RDD of RDF graph
+   * @param triple the triple to be added.
+   * @return new RDD of triples containing this statement.
+   */
+  def add(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
+    val statement = spark.sparkContext.parallelize(Seq(triple))
+    union(triples, statement)
+  }
+
+  /**
+   * Add a list of statements to the current RDF graph.
+   *
+   * @param triples RDD of RDF graph
+   * @param triple the list of triples to be added.
+   * @return new RDD of triples containing this list of statements.
+   */
+  def addAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
+    val statements = spark.sparkContext.parallelize(triple)
+    union(triples, statements)
+  }
+
+  /**
+   * Removes a statement from the current RDF graph.
+   * The statement with the same subject, predicate and object as that supplied will be removed from the model.
+   * @param triples RDD of RDF graph
+   * @param triple the statement to be removed.
+   * @return new RDD of triples without this statement.
+   */
+  def remove(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
+    val statement = spark.sparkContext.parallelize(Seq(triple))
+    difference(triples, statement)
+  }
+
+  /**
+   * Removes all the statements from the current RDF graph.
+   * The statements with the same subject, predicate and object as those supplied will be removed from the model.
+   * @param triples RDD of RDF graph
+   * @param triple the list of statements to be removed.
+   * @return new RDD of triples without these statements.
+   */
+  def removeAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
+    val statements = spark.sparkContext.parallelize(triple)
+    difference(triples, statements)
+  }
+
   /**
    * Write N-Triples from a given RDD of triples
    *
