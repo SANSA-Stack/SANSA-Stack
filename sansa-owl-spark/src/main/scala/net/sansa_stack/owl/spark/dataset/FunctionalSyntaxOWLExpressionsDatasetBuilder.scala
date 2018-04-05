@@ -6,8 +6,8 @@ import org.apache.spark.sql.SparkSession
 
 object FunctionalSyntaxOWLExpressionsDatasetBuilder {
   def build(spark: SparkSession, filePath: String): OWLExpressionsDataset = {
-    val rdd = FunctionalSyntaxOWLExpressionsRDDBuilder.build(spark.sparkContext, filePath)
+    val rdd = FunctionalSyntaxOWLExpressionsRDDBuilder.build(spark, filePath)
     import spark.implicits._
-    spark.sqlContext.createDataset[String](rdd)
+    spark.createDataset[String](rdd)
   }
 }
