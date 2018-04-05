@@ -121,6 +121,38 @@ object GraphOps {
   }
 
   /**
+   * Get triples  of a given graph.
+   * @param graph one instance of the given graph
+   * @return [[RDD[Triple]]] which contains list of the graph triples.
+   */
+  def getTriples(graph: Graph[Node, Node]): RDD[Triple] =
+    toRDD(graph)
+
+  /**
+   * Get subjects from a given graph.
+   * @param graph one instance of the given graph
+   * @return [[RDD[Node]]] which contains list of the subjects.
+   */
+  def getSubjects(graph: Graph[Node, Node]): RDD[Node] =
+    graph.triplets.map(_.srcAttr)
+
+  /**
+   * Get predicates from a given graph.
+   * @param graph one instance of the given graph
+   * @return [[RDD[Node]]] which contains list of the predicates.
+   */
+  def getPredicates(graph: Graph[Node, Node]): RDD[Node] =
+    graph.triplets.map(_.attr)
+
+  /**
+   * Get objects from a given graph.
+   * @param graph one instance of the given graph
+   * @return [[RDD[Node]]] which contains list of the objects.
+   */
+  def getObjects(graph: Graph[Node, Node]): RDD[Node] =
+    graph.triplets.map(_.dstAttr)
+
+  /**
    * Finds triplets  of a given graph.
    * @param graph one instance of the given graph
    * @param subject
@@ -132,6 +164,46 @@ object GraphOps {
     graph.subgraph({
       (triplet) =>
         triplet.srcAttr.matches(subject) && triplet.attr.matches(predicate) && triplet.dstAttr.matches(`object`)
+    }, (_, _) => true)
+  }
+
+  
+  /**
+   * Filter out the subject from a given graph,
+   * based on a specific function @func .
+   * @param graph one instance of the given graph
+   * @param func a partial funtion.
+   * @return [[Graph[Node, Node]]] a subset of the given graph.
+   */  
+  def filterSubjects(graph: Graph[Node, Node], func: Node => Boolean): Graph[Node, Node] = {
+    graph.subgraph({
+      triplet => func(triplet.srcAttr)
+    }, (_, _) => true)
+  }
+
+   /**
+   * Filter out the predicates from a given graph,
+   * based on a specific function @func .
+   * @param graph one instance of the given graph
+   * @param func a partial funtion.
+   * @return [[Graph[Node, Node]]] a subset of the given graph.
+   */
+  def filterPredicates(graph: Graph[Node, Node], func: Node => Boolean): Graph[Node, Node] = {
+    graph.subgraph({
+      triplet => func(triplet.attr)
+    }, (_, _) => true)
+  }
+
+  /**
+   * Filter out the objects from a given graph,
+   * based on a specific function @func .
+   * @param graph one instance of the given graph
+   * @param func a partial funtion.
+   * @return [[Graph[Node, Node]]] a subset of the given graph.
+   */
+  def filterObjects(graph: Graph[Node, Node], func: Node => Boolean): Graph[Node, Node] = {
+    graph.subgraph({
+      triplet => func(triplet.dstAttr)
     }, (_, _) => true)
   }
 

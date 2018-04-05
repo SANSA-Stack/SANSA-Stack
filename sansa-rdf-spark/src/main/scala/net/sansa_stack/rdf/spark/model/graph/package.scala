@@ -4,9 +4,10 @@ import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.Graph
 import org.apache.jena.graph.{ Node, Triple }
+import org.apache.spark.graphx.GraphOps
 
 /**
- * Wrap up implicit classes/methods o load RDF data into [[GraphX]].
+ * Wrap up implicit classes/methods to load RDF data into [[GraphX]].
  *
  * @author Gezim Sejdiu
  */
@@ -75,6 +76,61 @@ package object graph {
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.find]]
      */
     def find(subject: Node, predicate: Node, `object`: Node) = GraphOps.find(graph, subject, predicate, `object`)
+
+    /**
+     * Gets triples of a given graph.
+     * @return [[[RDD[Triple]]] from the given graph.
+     * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getTriples]]
+     */
+    def getTriples() = GraphOps.getTriples(graph)
+
+    /**
+     * Gets subjects of a given graph.
+     * @return [[[RDD[Node]]] from the given graph.
+     * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getSubjects]]
+     */
+    def getSubjects() = GraphOps.getSubjects(graph)
+
+    /**
+     * Gets predicates of a given graph.
+     * @return [[[RDD[Node]]] from the given graph.
+     * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getPredicates]]
+     */
+    def getPredicates() = GraphOps.getPredicates(graph)
+
+    /**
+     * Gets objects of a given graph.
+     * @return [[[RDD[Node]]] from the given graph.
+     * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getObjects]]
+     */
+    def getObjects() = GraphOps.getObjects(graph)
+
+    /**
+     * Filter out the subject from a given graph,
+     * based on a specific function @func .
+     * @param func a partial funtion.
+     * @return [[Graph[Node, Node]]] a subset of the given graph.
+     * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterSubjects]]
+     */
+    def filterSubjects(func: Node => Boolean) = GraphOps.filterSubjects(graph, func)
+
+    /**
+     * Filter out the predicates from a given graph,
+     * based on a specific function @func .
+     * @param func a partial funtion.
+     * @return [[Graph[Node, Node]]] a subset of the given graph.
+     * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterPredicates]]
+     */
+    def filterPredicates(func: Node => Boolean) = GraphOps.filterPredicates(graph, func)
+
+    /**
+     * Filter out the objects from a given graph,
+     * based on a specific function @func .
+     * @param func a partial funtion.
+     * @return [[Graph[Node, Node]]] a subset of the given graph.
+     * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterObjects]]
+     */
+    def filterObjects(func: Node => Boolean) = GraphOps.filterObjects(graph, func)
 
     /**
      * Compute the size of the graph
