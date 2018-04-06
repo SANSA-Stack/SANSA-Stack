@@ -8,6 +8,7 @@ import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{ StructField, StructType, StringType }
 import scala.util.hashing.MurmurHash3
+import net.sansa_stack.rdf.spark.utils.NodeUtils
 
 /**
  * Spark/GraphX based implementation of RDD[Triple].
@@ -67,7 +68,7 @@ object GraphOps {
    * @return object of GraphX which contains the constructed string ''graph''.
    */
   def constructStringGraph(triples: RDD[Triple]): Graph[String, String] = {
-    val rs = triples.map(triple => (getNodeValue(triple.getSubject), getNodeValue(triple.getPredicate), getNodeValue(triple.getObject)))
+    val rs = triples.map(triple => (NodeUtils.getNodeValue(triple.getSubject), NodeUtils.getNodeValue(triple.getPredicate), NodeUtils.getNodeValue(triple.getObject)))
     val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
 
     val vertices: RDD[(VertexId, String)] = indexedMap.map(x => (x._2, x._1))
@@ -289,18 +290,6 @@ object GraphOps {
     }
 
     Pregel(spGraph, initialMessage)(vertexProgram, sendMessage, addMaps)
-  }
-
-  /**
-   * Return node value based on its type
-   * @param node the Node to be check
-   * @return node value (case when node is URI:: URI, when node is Blank ::Its blank node ID, when node is literal:: its Literal).
-   */
-  def getNodeValue(node: Node): String = node match {
-    case uri if node.isURI         => node.getURI
-    case blank if node.isBlank     => node.getBlankNodeId.toString
-    case literal if node.isLiteral => node.getLiteral.toString
-    case _                         => throw new IllegalArgumentException(s"${node.getLiteralLexicalForm} is not valid!")
   }
 
 }

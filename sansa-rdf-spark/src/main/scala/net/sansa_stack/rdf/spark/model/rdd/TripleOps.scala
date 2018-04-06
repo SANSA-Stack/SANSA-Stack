@@ -4,6 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{ StructField, StructType, StringType }
+import net.sansa_stack.rdf.spark.utils.NodeUtils
 
 /**
  * Spark/RDD based implementation of RDD[Triple].
@@ -25,7 +26,7 @@ object TripleOps {
         StructField("subject", StringType, nullable = false),
         StructField("predicate", StringType, nullable = false),
         StructField("object", StringType, nullable = false)))
-    val rowRDD = triples.map(t => Row(t.getSubject, t.getPredicate, t.getObject))
+    val rowRDD = triples.map(t => Row(NodeUtils.getNodeValue(t.getSubject), NodeUtils.getNodeValue(t.getPredicate), NodeUtils.getNodeValue(t.getObject)))
     val df = spark.createDataFrame(rowRDD, schema)
     df.createOrReplaceTempView("TRIPLES")
     df
