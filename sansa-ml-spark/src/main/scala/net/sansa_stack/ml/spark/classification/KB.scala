@@ -158,40 +158,47 @@ object KB{
     }
 
     def getClassMembershipResult(testConcepts: Array[OWLClassExpression], negTestConcepts: Array[OWLClassExpression],
-                                 examples: RDD[OWLIndividual]): RDD[Array[Int]] = {
+                                 examples: RDD[OWLIndividual]): Array[Array[Int]] = {
 
       println("\nClassifying all examples \n ------------ ")
-
+      
+      var flag: Boolean = false
       classifications = Array.ofDim[Int](testConcepts.size, examples.count.toInt)
       println("Processed concepts (" + testConcepts.size + "): \n")
-
-      var classify = sparkSession.sparkContext.parallelize(classifications)
-
+      val r: Reasoner = getReasoner
+      
       for (c <- 0 until testConcepts.size) {
-        var p: Int = 0
-        var n: Int = 0
-        println(c)
-
-        for (e <- 0 until examples.count.toInt) {
-          var x = classifications(c)(e) = 0
-          classify.map { x => x match {
-              case a if (reasoner.isEntailed(dataFactory.getOWLClassAssertionAxiom(testConcepts(c).asInstanceOf[OWLClassExpression],
-                examples.map(e => e).asInstanceOf[OWLIndividual]))) => +1
-                p += 1
-              case b if (reasoner.isEntailed(dataFactory.getOWLClassAssertionAxiom(negTestConcepts(c).asInstanceOf[OWLClassExpression],
-                examples.map(e => e).asInstanceOf[OWLIndividual]))) => -1
-              case _ =>
-                -1
-                n += 1
-            }
+          var p: Int = 0
+          var n: Int = 0
+          println("\nTest Concept number " + (c+1) + ": " + testConcepts(c))
+          
+          for (e <- 0 until examples.count.toInt) {
+              
+              classifications(c)(e) = 0
+              val ind = examples.take(e+1).apply(e) 
+              
+              if (r.isEntailed(getDataFactory.getOWLClassAssertionAxiom(testConcepts(c), ind))){
+                classifications(c)(e) = +1
+                p = p + 1
+              }
+              else {
+                if (!flag){
+                  if (r.isEntailed(getDataFactory.getOWLClassAssertionAxiom(negTestConcepts(c), ind)))
+                      classifications(c)(e) = -1
+                }
+                else
+                      classifications(c)(e) = -1
+               
+                n = n + 1
+              }
           }
-
-        } // e loop 
-        println("\n Pos: \t"+ p + "Neg: " + n)
-      } //c loop
-
-      classify
+          
+          println("\n Pos: " + p + "\t Neg: " + n)
+      }
+      
+      classifications
     }
+      
 
     def setClassMembershipResult(classifications: Array[Array[Int]]): Unit = {
       this.classifications = classifications

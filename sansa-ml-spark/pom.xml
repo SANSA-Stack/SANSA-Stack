@@ -27,7 +27,7 @@
 		<!-- SANSA RDF -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-rdf-spark-core_${scala.binary.version}</artifactId>
+			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
@@ -60,6 +60,13 @@
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.github.fommil.netlib/all -->
+		<dependency>
+			<groupId>com.github.fommil.netlib</groupId>
+			<artifactId>all</artifactId>
+			<version>1.1.2</version>
+			<type>pom</type>
 		</dependency>
 
 		<!-- HermiT reasoner -->

@@ -24,52 +24,43 @@ import org.apache.spark.graphx._
 import java.io.StringWriter
 import java.io._
 import org.apache.jena.graph.{ Node, Triple }
-import net.sansa_stack.rdf.spark.graph.LoadGraph
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import org.apache.jena.riot.Lang
+import net.sansa_stack.rdf.spark.model.graph._
 import java.net.URI
 
 object SilviaClustering {
 
-  def apply(spark: SparkSession, input: String, output: String, outputeval: String) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String) = {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
-    // Load the graph
+    /**
+     * undirected graph : orient =0
+     * directed graph : orient =1.
+     *
+     * Jaccard similarity measure : selectYourSimilarity = 0
+     * Batet similarity measure : selectYourSimilarity = 1
+     * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
+     * The Contrast model similarity : selectYourSimilarity = 3
+     * The Ratio model similarity : selectYourSimilarity = 4
+     */
+    val orient = 1
+    val selectYourSimilarity = 0
 
-    val triplesRDD = NTripleReader.load(spark, URI.create(input))
-
-    val graph = LoadGraph.asString(triplesRDD)
-
-    /*
-	 * undirected graph : orient =0
-	 * directed graph : orient =1.
-	 *
-	 * Jaccard similarity measure : selectYourSimilarity = 0
-	 * Batet similarity measure : selectYourSimilarity = 1
-	 * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
-	 * The Contrast model similarity : selectYourSimilarity = 3
-	 * The Ratio model similarity : selectYourSimilarity = 4
-	 */
-    val orient = 0
-    val selectYourSimilarity = 1
-    val Hardening = 1
-    var result: List[List[Long]] = List()
-
-    def clusterRdd(): List[List[Long]] = {
-      graphXinBorderFlow(graph, orient, selectYourSimilarity, Hardening)
+    def clusterRdd(): RDD[List[String]] = {
+      graphXinBorderFlow(graph, orient, selectYourSimilarity)
     }
 
     /*
 	 * Computes different similarities function for a given graph @graph.
 	 */
-    def graphXinBorderFlow(graph: Graph[String, String], e: Int, f: Int, g: Int): List[List[Long]] = {
+    def graphXinBorderFlow(graph: Graph[String, String], e: Int, f: Int): RDD[List[String]] = {
 
       val edge = graph.edges.collect()
       val M = graph.edges.count().toDouble
       val vtx = graph.vertices.count().toDouble
-
       val collectVertices = graph.vertices.collect()
-      val vArray = collectVertices.map(x => x._1.toLong).toList
+      var vArray = collectVertices.map(x => x._1.toLong).toList
 
       def neighbors(d: Int): VertexRDD[Array[VertexId]] = {
         var neighbor: VertexRDD[Array[VertexId]] = graph.collectNeighborIds(EdgeDirection.Either)
@@ -140,7 +131,6 @@ object SilviaClustering {
           val sim = intersection(a, b) / union(a, b).toDouble
 
           s = sim
-          // s = BigDecimal(s).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
         }
 
@@ -155,7 +145,6 @@ object SilviaClustering {
           val sim = (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
 
           s = sim
-          //s = BigDecimal(s).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
         }
         if (c == 2) {
@@ -168,7 +157,7 @@ object SilviaClustering {
           val sim = ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
 
           s = sim
-          // s = BigDecimal(s).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+
         }
 
         if (c == 3) {
@@ -180,7 +169,6 @@ object SilviaClustering {
           val sim = log2(cal.toDouble)
 
           s = sim
-          //s = BigDecimal(s).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
         }
         s
@@ -200,6 +188,7 @@ object SilviaClustering {
           listlistedge
         }
       }
+
       val edgeList = edgeArray.toList
 
       var listSim: List[(Long, Long, Double)] = List()
@@ -334,6 +323,20 @@ object SilviaClustering {
         C
       }
 
+      def makerdf(a: List[Long]): List[String] = {
+        var listuri: List[String] = List()
+        val b: List[VertexId] = a
+        for (i <- 0 until b.length) {
+          graph.vertices.collect().map(v => {
+            if (b(i) == v._1) listuri = listuri.::(v._2)
+          })
+
+        }
+        listuri
+
+      }
+
+      var cluster1: List[List[List[Long]]] = List()
       def mergeMaxSim(a: List[List[List[Long]]]): List[List[List[Long]]] = {
         var append = a
         var maxS = 0.0
@@ -409,10 +412,11 @@ object SilviaClustering {
         mergeMaxSim(append)
       }
 
-      val cluster1 = mergeMaxSim(edgeList)
+      cluster1 = mergeMaxSim(edgeList)
 
       var unionList: List[Long] = List()
       var unionList1: List[List[Long]] = List()
+      var rdfString: List[List[String]] = List()
 
       for (i <- 0 until cluster1.length) {
         for (j <- 0 until cluster1(i).length) {
@@ -424,13 +428,14 @@ object SilviaClustering {
         }
         if (unionList.length != 0) {
           unionList1 = unionList1.::(unionList)
+          val rdf = makerdf(unionList)
+          rdfString = rdfString.::(rdf)
         }
 
         unionList = List()
 
       }
-
-      val minm = 1 / vtx
+      val rdfRDD = spark.sparkContext.parallelize(rdfString)
 
       def avgAsoft(c: List[Long], d: Long): Double = {
         var sumA = 0.0
@@ -502,264 +507,22 @@ object SilviaClustering {
 
       val evaluateSoft = AiBiSoft(unionList1, vArray)
 
-      def subset(c: List[List[Long]]): List[List[Long]] = {
-        var C = c
-        var counter = 0
-
-        for (i <- 0 until c.length) {
-
-          counter = 0
-          for (j <- i + 1 until c.length) {
-
-            if (counter == 0) {
-
-              if ((c(i).diff(c(j))).size == 0 && (c(j).diff(c(i))).size == 0) {
-
-                C = C.diff(List(c(j)))
-
-              }
-              if ((c(i).diff(c(j))).size == 0 && (c(j).diff(c(i))).size != 0) {
-
-                C = C.diff(List(c(i)))
-
-                counter = 1
-              }
-              if ((c(i).diff(c(j))).size != 0 && (c(j).diff(c(i))).size == 0) {
-                C = C.diff(List(c(j)))
-
-              }
-            }
-
-          }
-        }
-        C
-      }
-      val hardening = subset(unionList1)
-
-      val hardening1 = subset(hardening).sortBy(_.length).reverse
-
-      def takeAllElements(c: List[List[Long]], x: List[Long]): List[List[Long]] = {
-
-        var Cl: List[Long] = List()
-        var cluster: List[List[Long]] = List()
-        val y = (x.diff(Cl))
-
-        for (i <- 0 until c.length) {
-
-          if ((x.diff(Cl)).size != 0) {
-            Cl = Cl.union(c(i))
-            cluster = cluster.::(c(i))
-          }
-        }
-        cluster
-      }
-
-      val hardening2 = takeAllElements(hardening1, vArray)
-
-      def reassignment(c: List[List[Long]], x: List[Long]): List[List[Long]] = {
-        var C = c
-
-        for (i <- 0 until x.length) {
-          var f = 0.0
-          var ssim = 0.0
-          var nj: List[Long] = List()
-          for (j <- 0 until C.length) {
-            ssim = 0.0
-            val cj = C(j)
-            if (cj.contains(x(i))) {
-              val listneighbors = neighbor.lookup(x(i)).distinct.head.toList
-              val listsim = listneighbors.intersect(cj)
-              val xi = x(i)
-
-              if (listsim.length > 1) {
-                for (l <- 0 until listsim.length) {
-                  for (m <- l + 1 until listsim.length) {
-                    ssim = ssim + findingSimilarity(listsim(l), listsim(m))
-                  }
-                }
-              }
-              if (listsim.length == 1) { ssim = minm }
-              if (listsim.length == 0) { ssim = 0.0 }
-
-            }
-
-            if (ssim > f) {
-              f = ssim
-              nj = cj
-
-            }
-
-          }
-          C = C.diff(List(nj))
-          var di: List[List[Long]] = List()
-          for (k <- 0 until C.length) {
-            val t = C(k).diff(List(x(i)))
-            di = di.::(t)
-          }
-
-          C = di
-          val cj = nj.::(x(i)).distinct
-          C = C.::(cj)
-
-        }
-
-        C
-      }
-
-      def nul(c: List[List[Long]]): List[List[Long]] = {
-        var C = c
-        var newCluster: List[List[Long]] = List()
-        for (k <- 0 until C.length) {
-          if (C(k).size != 0) {
-            newCluster = newCluster.::(C(k))
-          }
-        }
-        newCluster
-      }
-
-      val hardening3 = reassignment(hardening2, vArray)
-      val hardening4 = nul(hardening3)
-
-      def avgA(c: List[Long], d: Long): Double = {
-        var sumA = 0.0
-        var size = 0.0
-
-        val listneighbors = neighbor.lookup(d).distinct.head.toList
-
-        val listsim = listneighbors.intersect(c)
-        val e = listsim.length
-        if (e == 0.0) return 0.0
-        if (e == 1) { size = 1 }
-        if (e > 1) {
-          size = ((e * (e - 1)) / 2)
-        }
-
-        if (listsim.length > 1) {
-          for (i <- 0 until listsim.length) {
-            for (j <- i + 1 until listsim.length) {
-              sumA = sumA + findingSimilarity(listsim(i), listsim(j))
-            }
-          }
-        }
-        if (listsim.length == 1) { sumA = minm }
-        if (listsim.length == 0) { sumA = 0.0 }
-
-        sumA / size
-      }
-
-      def avgB(c: List[Long], d: Long): Double = {
-        var sumB = 0.0
-        var size = 0.0
-        val listneighbors = neighbor.lookup(d).distinct.head.toList
-
-        val listsim = listneighbors.intersect(c)
-        val e = listsim.length
-        if (e == 0.0) return 0.0
-        if (e == 1) { size = 1 }
-        if (e > 1) {
-          size = ((e * (e - 1)) / 2)
-        }
-
-        if (listsim.length > 1) {
-          for (i <- 0 until listsim.length) {
-            for (j <- i + 1 until listsim.length) {
-              sumB = sumB + findingSimilarity(listsim(i), listsim(j))
-            }
-          }
-        }
-        if (listsim.length == 1) { sumB = minm }
-        if (listsim.length == 0) { sumB = 0.0 }
-
-        sumB / size
-      }
-      def SI(a: Double, b: Double): Double = {
-        var s = 0.0
-        if (a > b) {
-          s = 1 - (b / a)
-        }
-        if (a == b) {
-          s = 0.0
-        }
-        if (a < b) {
-          s = (a / b) - 1
-        }
-        s
-      }
-
-      def AiBi(m: List[List[Long]], n: List[Long]): List[Double] = {
-        var Ai = 0.0
-        var Bi = 0.0
-        var bi = 0.0
-        var avg: List[Double] = List()
-        var ab: List[Double] = List()
-
-        var sx: List[Double] = List()
-        for (k <- 0 until n.length) {
-          avg = List()
-          for (p <- 0 until m.length) {
-
-            if (m(p).contains(n(k))) {
-              Ai = avgA(m(p), n(k))
-
-            } else {
-              avg = avg.::(avgB(m(p), n(k)))
-
-            }
-          }
-          if (avg.length != 0) {
-            bi = avg.max
-          } else { bi = 0.0 }
-
-          val v = SI(Ai, bi)
-          sx = sx.::(v)
-
-        }
-        sx
-      }
-
-      val evaluate = AiBi(hardening4, vArray)
-
-      val avgsil = evaluate.sum / evaluate.size
-
       val avsoft = evaluateSoft.sum / evaluateSoft.size
-
-      //println(s" Cluster assignments2: $unionList1\n")
-
-      //println(s"averagesoft: $avsoft\n")
 
       val evaluateString: List[String] = List(avsoft.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
       evaluateStringRDD.saveAsTextFile(outputeval)
 
-      if (g == 0) {
-        result = hardening4
-      }
-      if (g == 1) {
-        result = unionList1
-      }
+      val result = rdfRDD
+
       result
     }
-    def makerdf(a: List[Long]): List[String] = {
-      var listuri: List[String] = List()
-      val b: List[VertexId] = a
-      for (i <- 0 until b.length) {
-        graph.vertices.collect().map(v => {
-          if (b(i) == v._1) listuri = listuri.::(v._2)
-        })
 
-      }
-      listuri
+    val cRdd = clusterRdd()
 
-    }
-
-    val rdf = clusterRdd.map(x => makerdf(x))
-
-    //println(s"RDF Cluster assignments: $result\n")
-    //println(s"RDF Cluster assignments: $rdf\n")
-    val rdfRDD = spark.sparkContext.parallelize(rdf)
-
-    rdfRDD.saveAsTextFile(output)
+    cRdd.saveAsTextFile(output)
 
   }
+
 }

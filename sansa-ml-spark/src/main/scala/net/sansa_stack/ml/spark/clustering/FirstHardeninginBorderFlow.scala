@@ -17,74 +17,68 @@ import java.io.ByteArrayInputStream
 import org.apache.spark.rdd.PairRDDFunctions
 import java.io.StringWriter
 import java.io._
-import net.sansa_stack.rdf.spark.io.NTripleReader
 import java.net.URI
-import net.sansa_stack.rdf.spark.graph.LoadGraph
 import org.apache.spark.graphx._
 
 object FirstHardeninginBorderFlow {
 
-  def apply(spark: SparkSession, input: String, output:String, outputeval:String) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String) = {
 
-    /*
-	 * Load the RDF file and convert it to a graph.
-	 */
+    /**
+     * 
+     * Jaccard similarity measure : selectYourSimilarity = 0
+     * Batet similarity measure : selectYourSimilarity = 1
+     * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
+     * The Contrast model similarity : selectYourSimilarity = 3
+     * The Ratio model similarity : selectYourSimilarity = 4
+     */
 
-    val triplesRDD = NTripleReader.load(spark, URI.create(input))
-
-    //val inputPath = URI.create(input)
-    //val output = inputPath.getPath.substring(0, inputPath.getPath.lastIndexOf("/")) + "/output"
-    //val outputeval = output + "/outputeval"
-
-    val graph = LoadGraph.asString(triplesRDD)
-
-    /*
-	 * undirected graph : orient =0
-	 * directed graph : orient =1.
-	 *
-	 * Jaccard similarity measure : selectYourSimilarity = 0
-	 * Batet similarity measure : selectYourSimilarity = 1
-	 * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
-	 * The Contrast model similarity : selectYourSimilarity = 3
-	 * The Ratio model similarity : selectYourSimilarity = 4
-	 */
-    val orient = 0
     val selectYourSimilarity = 0
 
     def clusterRdd(): List[List[Long]] = {
-      graphXinBorderFlow(orient, selectYourSimilarity)
+      graphXinBorderFlow(selectYourSimilarity)
     }
 
     /*
 	 * Computes different similarities function for a given graph @graph.
 	 */
-    def graphXinBorderFlow(e: Int, f: Int): List[List[Long]] = {
+    def graphXinBorderFlow(f: Int): List[List[Long]] = {
 
-      val edge = graph.edges.collect()
+      val edge = graph.edges
       val vertex = graph.vertices.count().toDouble
 
-      def neighbors(d: Int): VertexRDD[Array[VertexId]] = {
-        var neighbor: VertexRDD[Array[VertexId]] = graph.collectNeighborIds(EdgeDirection.Either)
-
-        if (d == 1) {
-          neighbor = graph.collectNeighborIds(EdgeDirection.Out)
-        }
-        neighbor
-      }
-      val neighbor = neighbors(e)
+      val neighbor = graph.collectNeighborIds(EdgeDirection.Either)
 
       val neighborSort = neighbor.sortBy(_._2.length, false)
 
       val sort = neighborSort.map(f => {
-        val x = f._1.toLong
-        val nx = f._2.clone().toList
-        (x, nx)
+        val x = f._1
+        x
       })
 
-      var X: List[Long] = sort.map(_._1).collect().toList
+      var X = sort.collect()
 
-      val xsort = X
-      val nx = sort.map(_._2).collect()
+      neighborSort.unpersist()
+      sort.unpersist()
+      val neighborcollect = neighbor.collect()
+      val verticescollect = graph.vertices.collect()
+
+      /*
+	 * finding neighbors for node a
+	 */
+
+      def findneighbors(a: VertexId): Array[VertexId] = {
+        var b: Array[VertexId] = Array()
+
+        neighborcollect.map(f => {
+
+          if (f._1 == a) {
+            b = f._2
+
+          }
+        })
+        b
+      }
 
       /*
 	 * Computing logarithm based 2
@@ -96,24 +90,19 @@ object FirstHardeninginBorderFlow {
 	 * Difference between two set of vertices, used in different similarity measures
 	 */
 
-      def difference(a: Long, b: Long): Double = {
-        val ansec = neighbor.lookup(a).distinct.head.toSet
-        val ansec1 = neighbor.lookup(b).distinct.head.toSet
-        if (ansec.isEmpty) { return 0.0 }
-        val differ = ansec.diff(ansec1)
+      def difference(a: Array[VertexId], b: Array[VertexId]): Double = {
+        if (a.length == 0) { return 0.0 }
+        val differ = a.diff(b)
         if (differ.isEmpty) { return 0.0 }
-
         differ.size.toDouble
       }
 
       /*
 	 * Intersection of two set of vertices, used in different similarity measures
 	 */
-      def intersection(a: Long, b: Long): Double = {
-        val inters = neighbor.lookup(a).distinct.head.toSet
-        val inters1 = neighbor.lookup(b).distinct.head.toSet
-        if (inters.isEmpty || inters1.isEmpty) { return 0.0 }
-        val rst = inters.intersect(inters1).toArray
+      def intersection(a: Array[VertexId], b: Array[VertexId]): Double = {
+        if ((a.length == 0) || (b.length == 0)) { return 0.0 }
+        val rst = a.intersect(b)
         if (rst.isEmpty) { return 0.0 }
         rst.size.toDouble
       }
@@ -122,16 +111,17 @@ object FirstHardeninginBorderFlow {
 			 * Union of two set of vertices, used in different similarity measures
 			 */
 
-      def union(a: Long, b: Long): Double = {
-        val inters = neighbor.lookup(a).distinct.head.toSet
-        val inters1 = neighbor.lookup(b).distinct.head.toSet
-        val rst = inters.union(inters1).toArray
+      def union(a: Array[VertexId], b: Array[VertexId]): Double = {
+        val rst = a.union(b)
         if (rst.isEmpty) { return 0.0 }
-
         rst.size.toDouble
       }
 
-      def selectSimilarity(a: Long, b: Long, c: Int): Double = {
+      /*
+			 * similarity measures
+			 */
+
+      def selectSimilarity(a: Array[VertexId], b: Array[VertexId], c: Int): Double = {
         var s = 0.0
         if (c == 0) {
 
@@ -189,120 +179,58 @@ object FirstHardeninginBorderFlow {
         {
 
           val x1 = x.srcId.toLong
-
           val x2 = x.dstId.toLong
+          val x11 = x.srcId
+          val x22 = x.dstId
+          val nx1 = findneighbors(x11)
+          val nx2 = findneighbors(x22)
 
-          (x1, x2, selectSimilarity(x1, x2, f).abs)
+          (x1, x2, selectSimilarity(nx1, nx2, f).abs)
         }
       }
 
+      val arrayWeightedGraph = weightedGraph.collect()
       def findingSimilarity(a: Long, b: Long): Double = {
         var f3 = 0.0
-        weightedGraph.map(f => {
+        arrayWeightedGraph.map(f => {
           if ((f._1 == a && f._2 == b) || (f._1 == b && f._2 == a)) { f3 = f._3 }
 
         })
         f3
       }
 
-      def sumsimilarity(a: List[Long]): List[(Double, Double)] = {
-        var sums = 0.0
-        var Listsum: (Double, Double) = (0.0, 0.0)
-        var Listsum1: List[(Double, Double)] = List()
+      def sumsimilarity(a: Array[VertexId]): List[(Long, Double)] = {
+        var sumsrdd = 0.0
+        var Listsumrdd: (Long, Double) = (0, 0.0)
+        var Listsum1rdd: List[(Long, Double)] = List()
 
-        for (k <- 0 until a.length) {
-          val nb = neighbor.lookup(a(k)).distinct.head.toList
-          for (l <- 0 until nb.length) {
-            val sisu = findingSimilarity(a(k), nb(l))
-            sums = sums + sisu
-          }
-          Listsum = (a(k).toDouble, sums)
-          Listsum1 = Listsum1.::(Listsum)
-        }
+        a.map(ak => {
+          val nb = findneighbors(ak)
 
-        Listsum1
+          nb.map(nbl => {
+            val sisu = findingSimilarity(ak, nbl)
+            sumsrdd = sumsrdd + sisu
+
+          })
+          Listsumrdd = (ak, sumsrdd)
+          Listsum1rdd = Listsum1rdd.::(Listsumrdd)
+
+        })
+
+        (Listsum1rdd.sortBy(_._2))
       }
-      val susim = sumsimilarity(X)
 
-      val sortsim = susim.sortBy(_._2)
+      val sortsim = sumsimilarity(X)
+
+      //println(s"sortsim: $sortsim\n")
 
       var node = sortsim.map(f => {
-        f._1.toLong
-      }).reverse
+        f._1
+      }).reverse.toArray
 
       val nnode = node
 
-      //computing f(X,V) for Heuristics BorderFlow
-
-      def fOmega(x: List[Long], v: Long): Double = {
-        var numberFlow = 0
-
-        def listOfB(b: List[Long]): List[Long] = {
-
-          var listN: List[Long] = List()
-
-          for (k <- 0 until b.length) yield {
-            val nX = neighborSort.lookup(b(k)).distinct.head
-
-            val nxX = nX.intersect(node)
-            val nXa = nxX.diff(b).toList
-            if (nXa.size > 0) {
-              listN = listN.::(b(k))
-
-            }
-          }
-          (listN)
-        }
-
-        val b = listOfB(x)
-        val VX = node.diff(x)
-        var jaccardBV = 0.0
-        if (b.size == 0) return 0.0
-        for (i <- 0 until b.length) yield {
-
-          jaccardBV = jaccardBV.+(findingSimilarity(b(i), v).abs)
-
-        }
-
-        var jaccardVXV = 0.0
-
-        for (i <- 0 until VX.length) yield {
-          if (VX(i) != v) {
-
-            jaccardVXV = jaccardVXV.+(findingSimilarity(VX(i), v).abs)
-
-          }
-
-        }
-
-        (jaccardVXV / jaccardBV)
-        /*
-         *  without similarity
-         val nv = neighborSort.lookup(v).distinct.head.toSet
-         val nvX = nv.intersect(X.toSet)
-         val nvx = nvX.toList.diff(x).size
-
-
-          for(k <- 0 until x.length) yield{
-            if(x.length>0){
-
-           val xk = x(k)
-           val bX = neighborSort.lookup(xk).distinct.head.toSet
-           val bxX = bX.intersect(X.toSet)
-
-           if(bxX.toList.diff(x).size > 0 && bxX.toList.diff(x).contains(v)) {
-             numberFlow = numberFlow + 1
-             }
-
-            }
-
-         }
-
-        ( 1/(numberFlow.toDouble/ nvx.toDouble))
-        *
-        */
-
-      }
+      neighbor.unpersist()
 
       //computing F(X) for BorderFlow
 
@@ -310,37 +238,35 @@ object FirstHardeninginBorderFlow {
         var jaccardX = 0.0
         var jaccardN = 0.0
 
-        def listOfN(b: List[Long]): List[Long] = {
+        def listOfN(b: List[Long]): Array[Long] = {
 
-          var listN: List[Long] = List()
+          var listN: Array[Long] = Array()
           if (b.length > 0) {
-            for (k <- 0 until b.length) yield {
-              val nX = neighborSort.lookup(b(k)).distinct.head
 
+            b.map(bk => {
+
+              val nX = findneighbors(bk)
               val nxX = nX.intersect(node)
-              val nXa = nxX.diff(b).toList
+              val nXa = nxX.diff(b)
               listN = listN.union(nXa).distinct
+            })
 
-            }
           }
           (listN)
         }
 
-        def listOfB(b: List[Long]): List[Long] = {
+        def listOfB(b: List[Long]): Array[Long] = {
 
           var listN: List[Long] = List()
-
-          for (k <- 0 until b.length) yield {
-            val nX = neighborSort.lookup(b(k)).distinct.head
+          b.map(bk => {
+            val nX = findneighbors(bk)
 
             val nxX = nX.intersect(node)
-            val nXa = nxX.diff(b).toList
-            if (nXa.size > 0) {
-              listN = listN.::(b(k))
+            val nXa = nxX.diff(b)
+            if (nXa.size.>(0)) { listN = listN.::(bk) }
+          })
 
-            }
-          }
-          (listN)
+          (listN.toArray)
         }
 
         val n = listOfN(x)
@@ -348,136 +274,45 @@ object FirstHardeninginBorderFlow {
 
         if (b.size == 0) return 0.0
 
-        def makeomegaB(b: List[Long], c: List[Long]): Double = {
+        b.map(bi => {
+          x.map(xj => {
+            if (bi.!=(xj)) { jaccardX = jaccardX.+(findingSimilarity(bi, xj).abs) }
+          })
+        })
 
-          var listN: List[Long] = List()
-
-          for (k <- 0 until b.length) yield {
-            val nX = neighborSort.lookup(b(k)).distinct.head
-
-            val nxX = nX.intersect(node)
-
-            listN = listN.++(((nxX.intersect(c).toList)))
-          }
-          listN.size.toDouble
-        }
-
-        for (i <- 0 until b.length) yield {
-          for (j <- 0 until x.length) yield {
-            if (b(i) != x(j)) {
-              jaccardX = jaccardX.+(findingSimilarity(b(i), x(j)).abs)
-
-            }
-          }
-        }
-
-        for (i <- 0 until b.length) yield {
-          for (j <- 0 until n.length) yield {
-
-            jaccardN = jaccardN.+(findingSimilarity(b(i), n(j)).abs)
-
-          }
-        }
+        b.map(bi => {
+          n.map(nj => {
+            jaccardN = jaccardN.+(findingSimilarity(bi, nj).abs)
+          })
+        })
 
         (jaccardX / jaccardN)
 
-        //  ( ( listOfNb(listOfB(x)).intersect(x)).size.toDouble / (listOfNb(listOfB(x)).intersect(listOfN(x))).size.toDouble)
-
-        //(makeomegaB(b,x) / makeomegaB(b,n))
       }
 
       def omega(u: Long, x: List[Long]): Double = {
 
-        def listOfN(b: List[Long]): List[Long] = {
+        def listOfN(b: List[Long]): Array[Long] = {
 
-          var listN: List[Long] = List()
+          var listN: Array[Long] = Array()
 
-          for (k <- 0 until b.length) yield {
-            val nX = neighborSort.lookup(b(k)).distinct.head
+          b.map(bk => {
+            val nX = findneighbors(bk)
 
             val nxX = nX.intersect(node)
-            val nXa = nxX.diff(b).toList
+            val nXa = nxX.diff(b)
             listN = listN.union(nXa).distinct
+          })
 
-          }
           (listN)
         }
         val n = listOfN(x)
         var jaccardNU = 0.0
+        n.map(ni => {
+          if (ni.!=(u)) { jaccardNU = jaccardNU.+(findingSimilarity(u, ni).abs) }
+        })
 
-        for (i <- 0 until n.length) yield {
-          if (n(i) != u) {
-
-            jaccardNU = jaccardNU.+(findingSimilarity(u, n(i)).abs)
-
-          }
-
-        }
-        /*
-         * without similarity
-         val nu = neighborSort.lookup(u).distinct.head.toSet
-         val nuX = nu.intersect(X.toSet).toList
-        ( (nuX.intersect(listOfN(x))).size.toDouble)
-
-         */
         jaccardNU
-
-      }
-
-      /*
-	 * Use Heuristics method for producing clusters.
-	 */
-
-      def heuristicsCluster(a: List[Long]): List[Long] = {
-        var nj = 0.0
-        var minF = 100000000000000.0
-        var appends = a
-
-        def neighborsOfList(c: List[Long]): List[Long] = {
-
-          var listN: List[Long] = List()
-
-          for (k <- 0 until c.length) yield {
-            val nX = neighborSort.lookup(c(k)).distinct.head
-
-            val nxX = nX.intersect(node)
-            val nXa = nxX.diff(c).toList
-            listN = listN.union(nXa).distinct
-
-          }
-
-          (listN)
-        }
-
-        var maxFf = fX(appends)
-
-        val neighborsOfX = neighborsOfList(appends)
-
-        if (neighborsOfX.size <= 0) return appends
-        else {
-          for (k <- 0 until neighborsOfX.length) yield {
-
-            val f = fOmega(appends, neighborsOfX(k))
-
-            if (f < minF) {
-              minF = f
-              nj = neighborsOfX(k)
-
-            }
-
-          }
-
-          appends = appends.::(nj.toLong)
-
-          if (neighborsOfList(appends).size == 0) return appends
-          if (fX(appends) < maxFf) {
-            appends = appends.tail
-            return appends
-          }
-
-          heuristicsCluster(appends)
-
-        }
 
       }
 
@@ -494,18 +329,17 @@ object FirstHardeninginBorderFlow {
         var maxfcf = 0.0
         var compare = d
 
-        def neighborsOfList(c: List[Long]): List[Long] = {
+        def neighborsOfList(c: List[Long]): Array[Long] = {
 
-          var listN: List[Long] = List()
+          var listN: Array[Long] = Array()
 
-          for (k <- 0 until c.length) yield {
-            val nX = neighborSort.lookup(c(k)).distinct.head
-
+          c.map(ck => {
+            val nX = findneighbors(ck)
             val nxX = nX.intersect(node)
-            val nXa = nxX.diff(c).toList
+            val nXa = nxX.diff(c)
             listN = listN.union(nXa).distinct
 
-          }
+          })
 
           (listN)
         }
@@ -516,42 +350,39 @@ object FirstHardeninginBorderFlow {
 
         if (neighborsOfX.size <= 0) return appends
 
-        for (k <- 0 until neighborsOfX.length) yield {
-
-          appends = appends.::(neighborsOfX(k))
+        neighborsOfX.map(neighborsOfXk => {
+          appends = appends.::(neighborsOfXk)
           val fx = fX(appends)
 
           if (fx == maxF) {
             maxF = fx
-            nj = nj.::(neighborsOfX(k))
+            nj = nj.::(neighborsOfXk)
             appends = appends.tail
           }
           if (fx > maxF) {
             maxF = fx
-            nj = List(neighborsOfX(k))
+            nj = List(neighborsOfXk)
             appends = appends.tail
           }
 
           if (fx < maxF) { appends = appends.tail }
+        })
 
-        }
-
-        for (k <- 0 until nj.length) yield {
-          val fCF = omega(nj(k), appends)
+        nj.map(njk => {
+          val fCF = omega(njk, appends)
 
           if (fCF >= maxfcf) {
             if (fCF == maxfcf) {
               maxfcf = fCF
-              nj2 = nj2.::(nj(k))
+              nj2 = nj2.::(njk)
             }
             if (fCF > maxfcf) {
               maxfcf = fCF
-              nj2 = List(nj(k))
+              nj2 = List(njk)
             }
 
           }
-
-        }
+        })
 
         appends = appends.union(nj2)
         if (appends == compare) return appends
@@ -569,17 +400,28 @@ object FirstHardeninginBorderFlow {
       }
 
       /*
-	 * Input for heuristics heuristicsCluster(element)    .
+	 *
 	 * Input for nonHeuristics nonHeuristicsCluster(element,List())  .
 	 */
+
+      def makerdf(a: List[Long]): List[String] = {
+        var listuri: List[String] = List()
+        val b: List[VertexId] = a
+        for (i <- 0 until b.length) {
+          verticescollect.map(v => {
+            if (b(i) == v._1) listuri = listuri.::(v._2)
+          })
+
+        }
+        listuri
+
+      }
 
       def makeClusters(a: Long): List[Long] = {
 
         var clusters: List[Long] = List()
 
         clusters = nonHeuristicsCluster(List(a), List())
-        //if(b == 1){
-        // clusters = heuristicsCluster(List(a))}
 
         node = node.diff(clusters)
 
@@ -588,6 +430,7 @@ object FirstHardeninginBorderFlow {
       }
 
       var bigList: List[List[Long]] = List()
+      var rdfcluster: List[List[String]] = List()
 
       do {
 
@@ -597,17 +440,22 @@ object FirstHardeninginBorderFlow {
 
           bigList = bigList.::(finalClusters)
 
-          node = node.diff(finalClusters)
-          val susim = sumsimilarity(node)
+          rdfcluster = rdfcluster.::(makerdf(finalClusters))
 
-          val sortsim = susim.sortBy(_._2)
+          node = node.diff(finalClusters)
+          val sortsim = sumsimilarity(node)
 
           node = sortsim.map(f => {
-            f._1.toLong
-          }).reverse
+            f._1
+          }).reverse.toArray
 
         }
       } while (node.size > 0)
+
+      neighborSort.unpersist()
+      //println(s"RDF Cluster assignments: $rdfcluster\n")
+      val rdfRDD = spark.sparkContext.parallelize(rdfcluster)
+      rdfRDD.saveAsTextFile(output)
 
       /*
 			 * Sillouhette Evaluation
@@ -617,10 +465,11 @@ object FirstHardeninginBorderFlow {
         var sumA = 0.0
         val sizeC = c.length
 
-        for (k <- 0 until c.length) {
-          val scd = findingSimilarity(c(k), d)
+        c.map(ck => {
+          val scd = findingSimilarity(ck, d)
           sumA = sumA + scd
-        }
+        })
+
         sumA / sizeC
       }
 
@@ -628,11 +477,11 @@ object FirstHardeninginBorderFlow {
         var sumB = 0.0
         val sizeC = c.length
         if (sizeC == 0) return 0.0
-        for (k <- 0 until c.length) {
-          val scd = findingSimilarity(c(k), d)
+        c.map(ck => {
+          val scd = findingSimilarity(ck, d)
 
           sumB = sumB + scd
-        }
+        })
 
         sumB / sizeC
       }
@@ -650,24 +499,23 @@ object FirstHardeninginBorderFlow {
         s
       }
 
-      def AiBi(m: List[List[Long]], n: List[Long]): List[Double] = {
+      def AiBi(m: List[List[Long]], n: Array[Long]): List[Double] = {
         var Ai = 0.0
         var Bi = 0.0
         var bi = 0.0
         var avg: List[Double] = List()
-        var ab: List[Double] = List()
 
         var sx: List[Double] = List()
-        for (k <- 0 until n.length) {
-          avg = List()
-          for (p <- 0 until m.length) {
 
-            if (m(p).contains(n(k))) {
-              Ai = avgA(m(p), n(k))
+        n.map(nk => {
+          avg = List()
+          m.map(mp => {
+            if (mp.contains(nk)) {
+              Ai = avgA(mp, nk)
             } else {
-              avg = avg.::(avgB(m(p), n(k)))
+              avg = avg.::(avgB(mp, nk))
             }
-          }
+          })
           if (avg.length != 0) {
             bi = avg.max
           } else { bi = 0.0 }
@@ -675,13 +523,14 @@ object FirstHardeninginBorderFlow {
           val v = SI(Ai, bi)
           sx = sx.::(v)
 
-        }
+        })
         sx
+
       }
       val evaluate = AiBi(bigList, nnode)
 
       val av = evaluate.sum / evaluate.size
-      
+      //println(s"average: $av\n")
       val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
@@ -689,23 +538,9 @@ object FirstHardeninginBorderFlow {
 
       return bigList
     }
-    def makerdf(a: List[Long]): List[String] = {
-      var listuri: List[String] = List()
-      val b: List[VertexId] = a
-      for (i <- 0 until b.length) {
-        graph.vertices.collect().map(v => {
-          if (b(i) == v._1) listuri = listuri.::(v._2)
-        })
 
-      }
-      listuri
-
-    }
-
-    val rdf = clusterRdd.map(x => makerdf(x))
-    
-    val rdfRDD = spark.sparkContext.parallelize(rdf)
-    rdfRDD.saveAsTextFile(output)
+    val rdf = clusterRdd()
+    //println(s"RDF Cluster assignments: $rdf\n")
 
   }
 

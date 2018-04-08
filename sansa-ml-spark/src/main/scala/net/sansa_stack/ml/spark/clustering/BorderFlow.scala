@@ -14,7 +14,6 @@ import java.lang.{ Long => JLong }
 import java.lang.{ Long => JLong }
 import breeze.linalg.{ squaredDistance, DenseVector, Vector }
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.graphx.GraphLoader
 import scala.util.control.Breaks._
 import org.apache.jena.datatypes.{ RDFDatatype, TypeMapper }
 import org.apache.jena.graph.{ Node => JenaNode, Triple => JenaTriple, _ }
@@ -29,26 +28,11 @@ import org.apache.spark.graphx._
 import org.apache.jena.util._
 import java.io.StringWriter
 import java.io._
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import net.sansa_stack.rdf.spark.graph.LoadGraph
-import java.net.URI
+import org.apache.spark.graphx.Graph
 
 object BorderFlow {
 
-  def apply(spark: SparkSession, input: String, output: String, outputevlsoft: String, outputevlhard:String) = {
-
-    /*
-	 * Load the RDF file and convert it to a graph.
-	 */
-    //val input = URI.create(edgesInputPath)
-    // val output = input.getPath.substring(0, input.getPath.lastIndexOf("/")) + "/output"
-
-    //val outputevlhard = output + "/outputevlhard"
-    //val outputevlsoft = output + "/outputevlsoft"
-
-    val triplesRDD = NTripleReader.load(spark, URI.create(input))
-
-    val graph = LoadGraph.asString(triplesRDD)
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputevlsoft: String, outputevlhard: String) = {
 
     /*
 	 * undirected graph : orient =0

@@ -117,8 +117,6 @@ object TDTClassifiers {
          // set the root concept
          tree.setRoot(bestConcept.getNNF)
          
-         println("\nNode: " + tree)
-      
         // sNode._1._1 = PosEL, sNode._2._1 = NegEL, sNode._3._1 =  undEL             
         // sNode._1._2 = PosER, sNode._2._2 = NegER, sNode._3._2 =  undER     
          
@@ -134,11 +132,9 @@ object TDTClassifiers {
         return tree
       }
       else
-        return tree
+        return null
     }
-
-  
-    
+   
     /**
      * recursive down through the tree model
      * @param ind
@@ -148,10 +144,13 @@ object TDTClassifiers {
    def classify(ind: OWLIndividual, tree: DLTree): Int = {
 
       val rootClass: OWLClassExpression = tree.getRoot
+      println("\nrootClass " + rootClass)
+      
       val negRootClass: OWLClassExpression = k.getDataFactory.getOWLObjectComplementOf(rootClass)
-
-      if (rootClass == k.getDataFactory.getOWLThing) return +1
-      if (rootClass == k.getDataFactory.getOWLNothing) return -1
+      println("negRootClass " + negRootClass)
+       
+      if (rootClass.equals(k.getDataFactory.getOWLThing)) return +1
+      if (rootClass.equals(k.getDataFactory.getOWLNothing)) return -1
 
       var r1: Int = 0
       var r2: Int = 0
@@ -201,14 +200,18 @@ object TDTClassifiers {
     //val conceptExp = concept.nestedClassExpressions.iterator().asScala.toArray
     val C = concept.asConjunctSet()
     val ConceptExp = concept.asConjunctSet().iterator().asScala.toSeq
-    println("\nconcept set   " + C )
+    //println("\nconcept set   " + C )
     
     for (c <- 0 until dim) {
 
       do {
         emptyIntersection = false //true
-        refinement = new RefinementOperator(know).getRandomConcept(know)
         val Concepts: HashSet[OWLClassExpression] = new HashSet[OWLClassExpression]()
+        
+        if (concept.equals(know.getDataFactory().getOWLThing))
+          refinement = new RefinementOperator(know).getRandomConcept(know)
+        else
+          refinement = new RefinementOperator(know).getSubsumedRandomConcept(concept)
                
        /* val con: OWLEquivalentClassesAxiom = know.dataFactory.getOWLEquivalentClassesAxiom(concept)
 

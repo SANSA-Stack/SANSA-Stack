@@ -16,3 +16,7 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 /.project
+
+# IntelliJ IDEA specific
+/.idea
+sansa-ml-parent_2.11.iml

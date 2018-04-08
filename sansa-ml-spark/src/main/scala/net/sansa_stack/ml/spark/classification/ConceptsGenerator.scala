@@ -59,28 +59,22 @@ object ConceptsGenerator{
               else dataFactory.getOWLObjectUnionOf(newConcepts) 
             j+=1
           } // for j
+          
           println()
           complPartialConcept = dataFactory.getOWLObjectComplementOf(partialConcept)
           //println("\n", complPartialConcept)
           numPosInst = reasoner.getInstances(partialConcept, false).entities().count().toInt
           numNegInst = reasoner.getInstances(complPartialConcept, false).entities().count().toInt
          
-          println("\n", partialConcept)
-          println ("\n pos: " + numPosInst )
-          println ("\n neg: " + numNegInst )
-          println ("\n und: " + (nEx - numNegInst - numPosInst) )
+          println(partialConcept)
+          println ("\n pos: " + numPosInst + ",  neg: " + numNegInst + ",    und: " + (nEx - numNegInst - numPosInst))
           println()
-          
-          /*println("pos:%d (%3.1f)\t\t neg:%d (%3.1f)\t\t und:%d (%3.1f)\n " + numPosInst + numPosInst * 100.0 / nExs, 
-            numNegInst, numNegInst * 100.0 / nExs,
-            (nExs - numNegInst - numPosInst),
-            (nExs - numNegInst - numPosInst) * 100.0 / nExs)*/
-        } while ( ((numPosInst < 20) || (numNegInst > 3)))
-  // (numPosInst * numNegInst == 0) || ((numPosInst < 10) || (numNegInst <10))
-        
+
+        } while ((numPosInst < 20) || (numNegInst >3))     
+  // ((numPosInst < 10) || (numNegInst > 10))
+  //         (numPosInst * numNegInst == 0) 
         //add the newly built OWLClassExpression to the list of all required query concepts
         queryConcept(i) = partialConcept
-        //println("\n", partialConcept)
         println("Query " + (i+1) + " found\n\n")
         i+=1
       }
@@ -90,3 +84,9 @@ object ConceptsGenerator{
   
   }
 }
+
+          
+          /*println("pos:%d (%3.1f)\t\t neg:%d (%3.1f)\t\t und:%d (%3.1f)\n " + numPosInst + numPosInst * 100.0 / nExs, 
+            numNegInst, numNegInst * 100.0 / nExs,
+            (nExs - numNegInst - numPosInst),
+            (nExs - numNegInst - numPosInst) * 100.0 / nExs)*/

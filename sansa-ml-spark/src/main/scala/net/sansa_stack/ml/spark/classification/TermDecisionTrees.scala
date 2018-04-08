@@ -7,6 +7,7 @@ import org.semanticweb.owlapi.model.OWLClassExpression
 import org.semanticweb.owlapi.model.OWLIndividual
 
 import net.sansa_stack.ml.spark.classification.KB.KB
+import net.sansa_stack.ml.spark.classification.ClassMembership.ClassMembership
 import net.sansa_stack.ml.spark.classification.TDTClassifiers.TDTClassifiers
 
 import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
@@ -39,55 +40,56 @@ object TermDecisionTrees {
       .getOrCreate()
    
     //Call owl axion builder to read the classes and object properties and print
- 	 		
-    val rdd : OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession.sparkContext, input)
-     
+      
+ 	 	val rdd : OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession.sparkContext, input)
+   
     val kb: KB = new KB(input, rdd, sparkSession)
-   // var ClassM = new ClassMembership(kb, sparkSession)
-   // val ClassName = TDTInducer.toString()
-    // ClassM.bootstrap(10, ClassName, sparkSession)
+    var ClassM = new ClassMembership(kb, sparkSession)
+    val ClassName = TDTInducer.toString()
+    ClassM.bootstrap(10, ClassName, sparkSession)
+
     //val c : TDTInducer = new TDTInducer(kb, kb.Concepts.count().toInt, sparkSession)
     
-    var PosExamples = sparkSession.sparkContext.parallelize(Array("http://example.com/foo#east1", 
-        "http://example.com/foo#east2",
-        "http://example.com/foo#east3",
-        "http://example.com/foo#east4",
-        "http://example.com/foo#east5"))
-    
-    var NegExamples = sparkSession.sparkContext.parallelize(Array("http://example.com/foo#west6", 
-        "http://example.com/foo#west7", 
-        "http://example.com/foo#west8", 
-        "http://example.com/foo#west9", 
-        "http://example.com/foo#west10"))
-    
-    var UndExamples = sparkSession.sparkContext.parallelize(new ArrayList[String]().asScala)
-
-    val numPos: Double = PosExamples.count
-    val numNeg: Double = NegExamples.count
-    val perPos: Double = numPos / (numPos + numNeg)
-    val perNeg: Double = numNeg / (numPos + numNeg)
-    
-    println("\nLearning problem: \n --------------------\n")
-    println("No. of Positive examples: " + PosExamples.count)
-    println("No. of Negative examples: " + NegExamples.count)
-    println("No. of Undefined examples: " + UndExamples.count)
-    println("\nper Pos: " + perPos)
-    println("per Neg: " + perNeg)
-    
-    val nGeneratedRef: Int = 50
-    
-    val c : TDTClassifiers = new TDTClassifiers (kb, sparkSession)
-    val tree : DLTree = c.induceDLTree(kb.getDataFactory.getOWLThing, PosExamples, NegExamples, UndExamples, nGeneratedRef, perPos, perNeg)
-    
-    val Root: OWLClassExpression = tree.getRoot()
-    println("Root of the tree is: " + Root)
+//    var PosExamples = sparkSession.sparkContext.parallelize(Array("http://example.com/foo#east1", 
+//        "http://example.com/foo#east2",
+//        "http://example.com/foo#east3",
+//        "http://example.com/foo#east4",
+//        "http://example.com/foo#east5"))
+//    
+//    var NegExamples = sparkSession.sparkContext.parallelize(Array("http://example.com/foo#west6", 
+//        "http://example.com/foo#west7", 
+//        "http://example.com/foo#west8", 
+//        "http://example.com/foo#west9", 
+//        "http://example.com/foo#west10"))
+//    
+//    var UndExamples = sparkSession.sparkContext.parallelize(new ArrayList[String]().asScala)
+//
+//    val numPos: Double = PosExamples.count
+//    val numNeg: Double = NegExamples.count
+//    val perPos: Double = numPos / (numPos + numNeg)
+//    val perNeg: Double = numNeg / (numPos + numNeg)
+//    
+//    println("\nLearning problem: \n --------------------\n")
+//    println("No. of Positive examples: " + PosExamples.count)
+//    println("No. of Negative examples: " + NegExamples.count)
+//    println("No. of Undefined examples: " + UndExamples.count)
+//    println("\nper Pos: " + perPos)
+//    println("per Neg: " + perNeg)
+//    
+//    val nGeneratedRef: Int = 50
+//    
+//    val c : TDTClassifiers = new TDTClassifiers (kb, sparkSession)
+//    val tree : DLTree = c.induceDLTree(kb.getDataFactory.getOWLThing, PosExamples, NegExamples, UndExamples, nGeneratedRef, perPos, perNeg)
+//    
+//    val Root: OWLClassExpression = tree.getRoot()
+//    println("\nRoot of the tree is: " + Root)
     
     /*val possubtree = tree.getPosSubTree().toString()
     println("possubtree: " + possubtree)*/
     
-    val ind: OWLIndividual = kb.getDataFactory().getOWLNamedIndividual("http://example.com/foo#car_33").asInstanceOf[OWLIndividual] 
-    val classification : Int = c.classify(ind, tree) 
-    println("classification of car_33 is " + classification)
+    //val ind = kb.getDataFactory().getOWLNamedIndividual("http://example.com/foo#east2") 
+    //val classification : Int = c.classify(ind, tree) 
+    //println("\nclassification of east2 is " + classification)
     
     sparkSession.stop
 
