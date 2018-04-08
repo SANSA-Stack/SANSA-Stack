@@ -1,4 +1,5 @@
 package xmlpro
+
 import org.apache.hadoop.streaming.StreamInputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.conf.Configuration;
@@ -9,7 +10,7 @@ import org.apache.hadoop.streaming.StreamXmlRecordReader
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.types.{ LongType, DoubleType, StringType, IntegerType, StructField, StructType }
+import org.apache.spark.sql.types.{ DoubleType, StringType, IntegerType, StructField, StructType }
 import org.apache.spark.sql.Row
 import org.apache.spark.sql
 import org.apache.spark.SparkContext._
@@ -41,6 +42,7 @@ import java.util.Scanner;
 import java.util._
 // ML : 2.11
 import org.apache.spark.ml.classification.LogisticRegression
+import org.apache.spark.ml.linalg.{ Vector, Vectors }
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.DataFrame
@@ -67,8 +69,8 @@ import org.apache.spark.ml.classification.BinaryLogisticRegressionSummary
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.StringIndexer
-
-import org.apache.spark.ml.linalg.DenseVector
+import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.evaluation.RegressionEvaluator
@@ -98,30 +100,52 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.PairRDDFunctions
 import org.apache.spark.Partitioner._
 import org.apache.spark.RangePartitioner
-import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{ col, udf }
+import java.util.Set
+import java.util.HashSet
 
-import org.apache.spark.ml.linalg.Vectors
-import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.linalg.Vector
+class StatementFeatures extends Serializable {
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
-import org.apache.spark.sql.functions.col
+   def getProperty(comment: String): String = {
+   var result: String = null
+    if (comment != null) {
+      val pattern: String = "[[Property:"
+      val index1: Int = comment.indexOf(pattern)
+      
+      val index2: Int = comment.indexOf("]]", index1 + pattern.length)
+      
 
-object Main extends App {
+      if (index1 != -1 && index2 != -1) {
+        result = comment.substring(index1 + pattern.length, index2)
+      }
+    }
+    result
+  }
+   def getDataValue(comment: String): String = {
+   var result: String = null
+    if (comment != null) {
+      val antiPattern: String = "]]: [[Q"
+      if (!comment.contains(antiPattern)) {
+        val pattern: String = "]]: "
+        val index1: Int = comment.indexOf(pattern)
+        if (index1 != -1) {
+          result = comment.substring(index1 + pattern.length)
+        }
+      }
+    }
+    result
+  }
 
-  val start = new VandalismDetection()
-  val sparkConf = new SparkConf().setMaster("local[*]").setAppName("VandalismDetector")
-  val sc = new SparkContext(sparkConf)
-
-  start.Triger(sc)
+   def getItemValue(comment: String): String = {
+    var result: String = null
+    if (comment != null) {
+      val pattern: String = "]]: [[Q"
+      val index1: Int = comment.indexOf(pattern)
+      val index2: Int = comment.indexOf("]]", index1 + pattern.length)
+      if (index1 != -1 && index2 != -1) {
+        result = comment.substring(index1 + pattern.length, index2)
+      }
+    }
+    result
+  }
 
 }
-
-
-
