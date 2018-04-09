@@ -20,7 +20,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 7)
   }
 
-  test("conversation of Graph into RDD should result in 9 triples") {
+  test("conversation of Graph into RDD should result in 7 triples") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -33,5 +33,78 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val cnt = graph2rdd.count()
     assert(cnt == 7)
   }
+
+  test("getting the triples of Graph should result in 7 triples") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val graph = triples.asGraph()
+
+    val graph2rdd = graph.getTriples
+
+    val cnt = graph2rdd.count()
+    assert(cnt == 7)
+  }
+
+  test("getting the subjects/predicates/objects of Graph should result in 7 entities") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val graph = triples.asGraph()
+
+    val subjects = graph.getSubjects()
+    val predicates = graph.getPredicates()
+    val objects = graph.getObjects()
+
+    val cnt = subjects.count() + predicates.count() + objects.count()
+    assert(cnt / 3 == 7)
+  }
+
+  test("filtering the subjects as URI of the Graph should result in 7 entities") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val graph = triples.asGraph()
+
+    val subjectsAsURI = graph.filterSubjects(_.isURI())
+
+    val cnt = subjectsAsURI.size()
+    assert(cnt == 7)
+  }
+
+  test("filtering the predicate which are Variable on the graph should result in 0 entities") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val graph = triples.asGraph()
+
+    val predicatesAsVariable = graph.filterPredicates(_.isVariable())
+
+    val cnt = predicatesAsVariable.size()
+    assert(cnt == 0)
+  }
+  
+   test("filtering the objects which are literals on the graph should result in 7 entities") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val graph = triples.asGraph()
+
+    val objectsAsLiterals = graph.filterObjects(_.isLiteral())
+
+    val cnt = objectsAsLiterals.size()
+    assert(cnt == 7)
+  }
+   
 
 }
