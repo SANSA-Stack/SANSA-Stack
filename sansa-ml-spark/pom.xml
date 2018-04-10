@@ -105,13 +105,19 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 			<version>3.5.0</version>
 		</dependency>
-		
+
 		<!-- BigDL Library -->
 		<dependency>
 			<groupId>com.intel.analytics.bigdl</groupId>
 			<artifactId>bigdl-SPARK_${spark.binary.version}</artifactId>
 			<version>0.3.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+		</dependency>
+
 
 		<!-- Test -->
 		<dependency>

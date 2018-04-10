@@ -1,83 +1,7 @@
-package xmlpro
+package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
-import org.apache.hadoop.streaming.StreamInputFormat;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.spark.rdd.RDD
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.io.IntWritable
-import org.apache.hadoop.streaming.StreamXmlRecordReader
-import org.apache.hadoop.mapred.JobConf
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.types.{ DoubleType, StringType, IntegerType, StructField, StructType }
-import org.apache.spark.sql.Row
-import org.apache.spark.sql
-import org.apache.spark.SparkContext._
-import org.apache.spark.sql._
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import Array._
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.List;
-import com.google.common.base.Splitter;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.io;
-import org.apache.commons.lang3.StringUtils;
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.Arrays;
-import org.apache.jena.graph.Triple
-import org.apache.jena.rdf.model.ModelFactory
-import org.apache.spark.rdd.RDD
-import java.io.ByteArrayInputStream;
-import java.util.Scanner;
-import java.util._
-// ML : 2.11
-import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.linalg.{ Vector, Vectors }
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.Row
-import java.util.Arrays.asList
-import collection.JavaConversions;
-import collection.Seq;
-import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
-import org.apache.spark.mllib.classification.{ LogisticRegressionModel, LogisticRegressionWithLBFGS }
-import org.apache.spark.mllib.evaluation.MulticlassMetrics
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.mllib.util.MLUtils
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.feature.VectorIndexer
-import org.apache.spark.ml.regression.{ RandomForestRegressionModel, RandomForestRegressor }
-import org.apache.spark._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.ml.feature.StringIndexer
-import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.classification.BinaryLogisticRegressionSummary
-import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
-import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.feature.StringIndexer
-import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.mllib.linalg.DenseVector
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.feature.VectorIndexer
-import org.apache.spark.ml.regression.{ RandomForestRegressionModel, RandomForestRegressor }
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.regex.{ Matcher, Pattern }
+import org.slf4j.{ Logger, LoggerFactory }
 
 class CommentProcessor extends Serializable {
 
@@ -143,40 +67,37 @@ class CommentProcessor extends Serializable {
     action1
   }
 
-
-
-  
-  // ok : Used in  Revision Action - SubAction Features 
+  // ok : Used in  Revision Action - SubAction Features
   def Extract_Actions_FromComments(comment: String): String = {
-     
-    var actions=""
+
+    var actions = ""
     if (comment != null) {
       if (isRollback(comment)) {
-        actions = "rollback"+"_"+"NA" // in not Normal comment, here we have one main action 
+        actions = "rollback" + "_" + "NA" // in not Normal comment, here we have one main action
       } else if (isUndo(comment)) {
-        actions = "undo"+"_"+"NA"
+        actions = "undo" + "_" + "NA"
       } else if (isRestore(comment)) {
-        actions = "restore"+"_"+"NA"
+        actions = "restore" + "_" + "NA"
       } else if (isPageCreation(comment)) {
-        actions = "pageCreation"+"_"+"NA"
+        actions = "pageCreation" + "_" + "NA"
       } else if ("" == comment) {
-        actions = "emptyComment"+"_"+"NA"
+        actions = "emptyComment" + "_" + "NA"
       } else if (isSetPageProtection(comment)) {
-        actions = "setPageProtection"+"_"+"NA"
+        actions = "setPageProtection" + "_" + "NA"
       } else if (isChangePageProtection(comment)) {
-        actions = "changePageProtection"+"_"+"NA"
+        actions = "changePageProtection" + "_" + "NA"
       } else if (isRemovePageProtection(comment)) {
-        actions = "removePageProtection"+"_"+"NA"
+        actions = "removePageProtection" + "_" + "NA"
       } else {
 
-        actions = Extract_ActionsOfNormalComment(comment) 
+        actions = Extract_ActionsOfNormalComment(comment)
 
       }
     }
     actions
   }
-  
-    //Ok: helper for Revision Features:  extract Action- subaction from comment:
+
+  //Ok: helper for Revision Features:  extract Action- subaction from comment:
   def Extract_ActionsOfNormalComment(comment: String): String = {
 
     var result: Boolean = false
@@ -250,7 +171,7 @@ class CommentProcessor extends Serializable {
 
     }
 
-    Action1+"_"+Action2
+    Action1 + "_" + Action2
 
   }
 
@@ -466,7 +387,7 @@ class CommentProcessor extends Serializable {
 
     }
 
-    Action1+"-"+Action2
+    Action1 + "-" + Action2
 
   }
 
@@ -795,7 +716,7 @@ class CommentProcessor extends Serializable {
     result
   }
 
-  // ok - using in Extract_Revision_Language function in Revision Features class 
+  // ok - using in Extract_Revision_Language function in Revision Features class
   def Check_CommentNormal_Or_Not(comment: String): Boolean = {
 
     var result: Boolean = false
@@ -813,9 +734,7 @@ class CommentProcessor extends Serializable {
 
       }
 
-    }
-    
-    else {
+    } else {
       // There is NOT something of the form /* ... */
       suffixComment = comment
       result = false

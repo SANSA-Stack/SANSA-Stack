@@ -3,7 +3,6 @@ package net.sansa_stack.ml.spark.kernel
 import java.io.File
 
 import net.sansa_stack.rdf.spark.io.NTripleReader
-import net.sansa_stack.rdf.spark.model.TripleRDD
 import org.apache.jena.graph
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
@@ -50,9 +49,8 @@ object RDFFastGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
+    val tripleRDD: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
       .filter(_.getPredicate.getURI != "http://swrc.ontoware.org/ontology#employs")
-    val tripleRDD: TripleRDD = new TripleRDD(triples)
 
     val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, "http://swrc.ontoware.org/ontology#affiliation")
     val data = rdfFastGraphKernel.getMLLibLabeledPoints
@@ -73,9 +71,7 @@ object RDFFastGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
-    val tripleRDD: TripleRDD = new TripleRDD(triples)
-
+    val tripleRDD: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
 
     val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, "http://example.com/multicontract")
     val data = rdfFastGraphKernel.getMLLibLabeledPoints
@@ -97,8 +93,7 @@ object RDFFastGraphKernelApp {
 
     val t0 = System.nanoTime
 
-    val triples: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
-    val tripleRDD: TripleRDD = new TripleRDD(triples)
+    val tripleRDD: RDD[graph.Triple] = NTripleReader.load(sparkSession, input)
 
     val rdfFastGraphKernel = RDFFastGraphKernel(sparkSession, tripleRDD, "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
     val data = rdfFastGraphKernel.getMLLibLabeledPoints

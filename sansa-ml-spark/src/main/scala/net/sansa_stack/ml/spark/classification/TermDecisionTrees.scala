@@ -41,7 +41,7 @@ object TermDecisionTrees {
    
     //Call owl axion builder to read the classes and object properties and print
       
- 	 	val rdd : OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession.sparkContext, input)
+ 	 	val rdd : OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
    
     val kb: KB = new KB(input, rdd, sparkSession)
     var ClassM = new ClassMembership(kb, sparkSession)
