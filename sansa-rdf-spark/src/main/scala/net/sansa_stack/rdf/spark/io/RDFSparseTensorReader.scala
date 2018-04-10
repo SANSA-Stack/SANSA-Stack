@@ -32,7 +32,7 @@ class RDFSparseTensorReader(spark: SparkSession, path: String) {
 
   def getNumRelations = relationIDs.count()
 
-  def getMappedTriples(): Unit = {
+  def getMappedTriples() = {
     val joinedBySubject = entityIDs.join(triplesWithURIs.map { triple =>
       (triple.getSubject(), (triple.getPredicate, triple.getObject))
     })

@@ -38,7 +38,6 @@ import org.apache.jena.riot.lang.PipedRDFStream;
 import org.apache.jena.riot.lang.PipedTriplesStream;
 import org.apache.jena.riot.lang.RiotParsers;
 import org.apache.jena.riot.system.ParserProfile;
-import org.apache.jena.riot.system.ParserProfileStd;
 import org.apache.jena.riot.system.RiotLib;
 import org.apache.jena.riot.tokens.TokenizerFactory;
 import org.apache.jena.shared.SyntaxError;

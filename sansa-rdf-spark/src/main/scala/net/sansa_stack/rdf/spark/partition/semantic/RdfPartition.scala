@@ -4,8 +4,6 @@ import java.util.concurrent.TimeUnit
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd._
 
-import net.sansa_stack.rdf.spark.partition.semantic.RdfPartition;
-
 /*
  * RdfPartition - semantic partition of and RDF graph
  * @symbol - list of symbols.
