@@ -40,7 +40,7 @@ package object stats {
      * <b>Action</b> : `M[?o]++ `
      * @return RDD of classes used in the dataset and their frequencies.
      */
-    def statsClassUsage() = Used_Classes(triples, spark).Action()
+    def statsClassUsageCount() = Used_Classes(triples, spark).Action()
 
     /**
      * <b>3. Classes Defined Criterion </b> <br>
@@ -121,7 +121,7 @@ package object stats {
      * <b>Action</b> : `M[ns]++`
      * @return RDD of distinct object vocabularies used in the dataset and their frequencies.
      */
-    def statsObjectVocabulariesPostProc() = SPO_Vocabularies(triples, spark).ObjectVocabulariesPostProc()
+    def statsObjectVocabularies() = SPO_Vocabularies(triples, spark).ObjectVocabulariesPostProc()
 
     /**
      * <b>Distinct Subjects</b> <br>
@@ -154,7 +154,20 @@ package object stats {
   }
 
   implicit class StatsCriteriaVoidify(stats: RDD[String]) extends Logging {
+
+    /**
+     * Voidify RDF dataset based on the Vocabulary of Interlinked Datasets (VoID) [[https://www.w3.org/TR/void/]]
+     *
+     * @param source name of the Dataset:source--usualy the file's name
+     * @param output the directory to save RDF dataset summary
+     */
     def voidify(source: String, output: String) = RDFStatistics.voidify(stats, source, output)
+
+    /**
+     * Prints the Voidiy version of the given RDF dataset
+     *
+     * @param source name of the Dataset:source--usualy the file's name
+     */
     def print(source: String) = RDFStatistics.print(stats, source)
   }
 }
