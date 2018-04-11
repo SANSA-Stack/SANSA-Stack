@@ -23,7 +23,8 @@ package object model {
      * @return a DataFrame of triples.
      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.toDF]]
      */
-    def toDF() = TripleOps.toDF(triples)
+    def toDF() =
+      TripleOps.toDF(triples)
 
     /**
      * Convert an RDD of Triple into a Dataset of Triple.
@@ -60,7 +61,8 @@ package object model {
      * @return [[RDD[Triple]]] a subset of the given RDD.
      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.filterSubjects]]
      */
-    def filterSubjects(func: Node => Boolean) = TripleOps.filterSubjects(triples, func)
+    def filterSubjects(func: Node => Boolean) =
+      TripleOps.filterSubjects(triples, func)
 
     /**
      * Filter out the predicates from a given RDD[Triple],
@@ -69,7 +71,8 @@ package object model {
      * @return [[RDD[Triple]]] a subset of the given RDD.
      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.filterPredicates]]
      */
-    def filterPredicates(func: Node => Boolean) = TripleOps.filterPredicates(triples, func)
+    def filterPredicates(func: Node => Boolean) =
+      TripleOps.filterPredicates(triples, func)
 
     /**
      * Filter out the objects from a given RDD[Triple],
@@ -78,7 +81,80 @@ package object model {
      * @return [[RDD[Triple]]] a subset of the given RDD.
      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.filterObjects]]
      */
-    def filterObjects(func: Node => Boolean) = TripleOps.filterObjects(triples, func)
+    def filterObjects(func: Node => Boolean) =
+      TripleOps.filterObjects(triples, func)
+
+    /**
+     * Returns an RDD of triples that match with the given input.
+     *
+     * @param subject the subject
+     * @param predicate the predicate
+     * @param object the object
+     * @return RDD of triples
+     * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.find]]
+     */
+    def find(subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None) =
+      TripleOps.find(triples, subject, predicate, `object`)
+
+    /**
+     * Returns an RDD of triples that match with the given input.
+     *
+     * @param triple the triple to be checked
+     * @return RDD of triples that match the given input
+     * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.find]]
+     */
+    def find(triple: Triple): RDD[Triple] = TripleOps.find(triples, triple)
+
+    /**
+     * Determine whether this RDF graph contains any triples
+     * with a given subject and predicate.
+     *
+     * @param subject the subject (None for any)
+     * @param predicate the predicate (Node for any)
+     * @return true if there exists within this RDF graph
+     * a triple with subject and predicate, false otherwise
+     */
+    def contains(subject: Some[Node], predicate: Some[Node]) =
+      TripleOps.contains(triples, subject, predicate, None)
+
+    /**
+     * Determine whether this RDF graph contains any triples
+     * with a given (subject, predicate, object) pattern.
+     *
+     * @param subject the subject (None for any)
+     * @param predicate the predicate (Node for any)
+     * @param object the object (Node for any)
+     * @return true if there exists within this RDF graph
+     * a triple with (S, P, O) pattern, false otherwise
+     */
+    def contains(subject: Some[Node], predicate: Some[Node], `object`: Some[Node]) =
+      TripleOps.contains(triples, subject, predicate, `object`)
+
+    /**
+     * Determine if a triple is present in this RDF graph.
+     *
+     * @param triple the triple to be checked
+     * @return true if the statement s is in this RDF graph, false otherwise
+     */
+    def contains(triple: Triple) = TripleOps.contains(triples, triple)
+
+    /**
+     * Determine if any of the triples in an RDF graph are also contained in this RDF graph.
+     *
+     * @param other the other RDF graph containing the statements to be tested
+     * @return true if any of the statements in RDF graph are also contained
+     * in this RDF graph and false otherwise.
+     */
+    def containsAny(other: RDD[Triple]) = TripleOps.containsAny(triples, other)
+
+    /**
+     * Determine if all of the statements in an RDF graph are also contained in this RDF graph.
+     *
+     * @param other the other RDF graph containing the statements to be tested
+     * @return true if all of the statements in RDF graph are also contained
+     * in this RDF graph and false otherwise.
+     */
+    def containsAll(other: RDD[Triple]) = TripleOps.containsAll(triples, other)
 
     /**
      * Return the number of triples.
@@ -102,7 +178,8 @@ package object model {
      * @return graph (union of all)
      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.unionAll]]
      */
-    def unionAll(others: Seq[RDD[Triple]]) = TripleOps.unionAll(triples, others)
+    def unionAll(others: Seq[RDD[Triple]]) =
+      TripleOps.unionAll(triples, others)
 
     /**
      * Returns a new RDF graph that contains the intersection of the current RDF graph with the given RDF graph.
@@ -111,7 +188,8 @@ package object model {
      * @return the intersection of both RDF graphs
      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.intersection]]
      */
-    def intersection(other: RDD[Triple]) = TripleOps.intersection(triples, other)
+    def intersection(other: RDD[Triple]) =
+      TripleOps.intersection(triples, other)
     /**
      * Returns a new RDF graph that contains the difference between the current RDF graph and the given RDF graph.
      *
@@ -163,7 +241,8 @@ package object model {
      * @param path path to the file containing N-Triples
      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.saveAsNTriplesFile]]
      */
-    def saveAsNTriplesFile(path: String) = TripleOps.saveAsNTriplesFile(triples, path)
+    def saveAsNTriplesFile(path: String) =
+      TripleOps.saveAsNTriplesFile(triples, path)
 
   }
 

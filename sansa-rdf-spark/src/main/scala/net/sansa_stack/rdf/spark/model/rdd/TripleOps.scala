@@ -125,15 +125,16 @@ object TripleOps {
    */
   def find(triples: RDD[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): RDD[Triple] = {
     triples.filter(t =>
-      (subject == None || t.getSubject == subject.get) &&
-        (predicate == None || t.getPredicate == predicate.get) &&
-        (`object` == None || t.getObject == `object`.get))
+      (subject == None || t.getSubject.matches(subject.get)) &&
+        (predicate == None || t.getPredicate.matches(predicate.get)) &&
+        (`object` == None || t.getObject.matches(`object`.get)))
   }
 
   /**
    * Returns an RDD of triples that match with the given input.
    *
    * @param triples RDD of triples
+   * @param triple  the triple to be checked
    * @return RDD of triples that match the given input
    */
   def find(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
@@ -199,20 +200,6 @@ object TripleOps {
 
   /**
    * Determine whether this RDF graph contains any triples
-   * with a given subject and predicate.
-   *
-   * @param triples RDD of triples
-   * @param subject the subject (None for any)
-   * @param predicate the predicate (Node for any)
-   * @return true if there exists within this RDF graph
-   * a triple with subject and predicate, false otherwise
-   */
-  def contains(triples: RDD[Triple], subject: Some[Node], predicate: Some[Node]): Boolean = {
-    find(triples, subject, predicate, None).count() > 0
-  }
-
-  /**
-   * Determine whether this RDF graph contains any triples
    * with a given (subject, predicate, object) pattern.
    *
    * @param triples RDD of triples
@@ -222,7 +209,7 @@ object TripleOps {
    * @return true if there exists within this RDF graph
    * a triple with (S, P, O) pattern, false otherwise
    */
-  def contains(triples: RDD[Triple], subject: Some[Node], predicate: Some[Node], `object`: Some[Node]): Boolean = {
+  def contains(triples: RDD[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): Boolean = {
     find(triples, subject, predicate, `object`).count() > 0
   }
 
