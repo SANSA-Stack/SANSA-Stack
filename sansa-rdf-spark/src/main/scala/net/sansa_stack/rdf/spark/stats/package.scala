@@ -76,7 +76,7 @@ package object stats {
      * <b>Action</b> : `M[?s] += ?p `
      * @return RDD of predicates used in the dataset and their frequencies.
      */
-    def statsPropertyUsageDistinctPerSubject() = OtherStats.PropertyUsageDistinctPerSubject(triples)
+    def statsPropertyUsageDistinctPerSubject() = RDFStats.PropertyUsageDistinctPerSubject(triples)
 
     /**
      * <b>7. Property usage distinct per object   </b> <br>
@@ -85,7 +85,7 @@ package object stats {
      * <b>Action</b> : `M[?o] += ?p `
      * @return RDD of predicates used in the dataset and their frequencies.
      */
-    def statsPropertyUsageDistinctPerObject() = OtherStats.PropertyUsageDistinctPerObject(triples)
+    def statsPropertyUsageDistinctPerObject() = RDFStats.PropertyUsageDistinctPerObject(triples)
 
     /**
      * <b>16. Distinct entities </b> <br>
@@ -95,6 +95,97 @@ package object stats {
      * @return RDD of distinct entities in the dataset.
      */
     def statsDistinctEntities() = DistinctEntities(triples, spark).Action()
+
+    /**
+     * * 17. Literals criterion
+     *
+     * @return number of triples that are referencing literals to subjects.
+     */
+    def Literals() = RDFStats.Literals(triples)
+
+    /**
+     * 18. Blanks as subject criterion
+     *
+     * @return number of triples where blanknodes are used as subjects.
+     */
+    def BlanksAsSubject() = RDFStats.BlanksAsSubject(triples)
+
+    /**
+     * 19. Blanks as object criterion
+     *
+     * @return number of triples where blanknodes are used as objects.
+     */
+    def BlanksAsObject() = RDFStats.BlanksAsObject(triples)
+
+    /**
+     * 20. Datatypes criterion
+     *
+     * @return histogram of types used for literals.
+     */
+    def Datatypes() = RDFStats.Datatypes(triples)
+
+    /**
+     * 21. Languages criterion
+     *
+     * @return histogram of languages used for literals.
+     */
+    def Languages() = RDFStats.Languages(triples)
+
+    /**
+     * 22. Average typed string length criterion.
+     * 
+     * @return the average typed string length used throughout the RDF graph.
+     */
+    def AvgTypedStringLength() = RDFStats.AvgTypedStringLength(triples)
+
+    /**
+     * 23. Average untyped string length criterion.
+     *
+     * @return the average untyped string length used throughout the RDF graph.
+     */
+    def AvgUntypedStringLength() = RDFStats.AvgUntypedStringLength(triples)
+
+    /**
+     * 24. Typed subjects criterion.
+     *
+     * @return list of typed subjects.
+     */
+    def TypedSubjects() = RDFStats.TypedSubjects(triples)
+
+    /**
+     * 24. Labeled subjects criterion.
+     *
+     * @return list of labeled subjects.
+     */
+    def LabeledSubjects() = RDFStats.LabeledSubjects(triples)
+
+    /**
+     * 25. SameAs criterion.
+     *
+     * @return list of triples with owl#sameAs as predicate
+     */
+    def SameAs() = RDFStats.SameAs(triples)
+
+    /**
+     * 26. Links criterion.
+     *
+     * @return list of namespaces and their frequentcies.
+     */
+    def Links() = RDFStats.Links(triples)
+
+    /**
+     * 28.Maximum per property {int,float,time} criterion
+     *
+     * @return entities with their maximum values on the graph
+     */
+    def MaxPerProperty() = RDFStats.MaxPerProperty(triples)
+
+    /**
+     * 29. Average per property {int,float,time} criterion
+     *
+     * @return entities with their average values on the graph
+     */
+    def AvgPerProperty() = RDFStats.AvgPerProperty(triples)
 
     /**
      * <b>30. Subject vocabularies </b> <br>

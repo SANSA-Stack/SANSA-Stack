@@ -3,11 +3,9 @@ package net.sansa_stack.rdf.spark.stats
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.Triple
 import org.apache.spark.sql.SparkSession
-import java.io.StringWriter
-import java.io.File
-import org.apache.jena.vocabulary.RDFS
-import org.apache.jena.vocabulary.RDF
-import org.apache.jena.vocabulary.OWL
+import java.io.{ File, StringWriter }
+import org.apache.jena.vocabulary.{ RDF, RDFS, OWL, XSD }
+import net.sansa_stack.rdf.spark.model.graph._
 
 /**
  * A Distributed implementation of RDF Statisctics.
@@ -312,8 +310,14 @@ object SPO_Vocabularies {
   def apply(triples: RDD[Triple], spark: SparkSession) = new SPO_Vocabularies(triples, spark)
 }
 
-object OtherStats {
+object RDFStats {
 
+  /**
+   * 6. Property usage distinct per subject criterion
+   *
+   * @param triples RDD of triples
+   * @return the usage of properties grouped by subject
+   */
   def PropertyUsageDistinctPerSubject(triples: RDD[Triple]) = {
     triples
       .groupBy(_.getSubject)
@@ -321,10 +325,247 @@ object OtherStats {
       .reduceByKey(_ + _)
   }
 
+  /**
+   * 7. Property usage distinct per object criterion
+   *
+   * @param triples RDD of triples
+   * @return the usage of properties grouped by object
+   */
   def PropertyUsageDistinctPerObject(triples: RDD[Triple]) = {
     triples
       .groupBy(_.getObject)
       .map(f => (f._2.filter(p => p.getPredicate.getLiteralLexicalForm.contains(p)), 1))
       .reduceByKey(_ + _)
   }
+
+  /**
+   *  4. Class hierarchy depth criterion
+   *
+   *  @param triples RDD of triples
+   *  @return the depth of the graph
+   */
+  def ClassHierarchyDepth(triples: RDD[Triple]) = {
+    val uc_triples = triples
+      .filter(triple => (triple.getPredicate.toString().equals(RDFS.subClassOf) &&
+        triple.getSubject.isURI() && triple.getObject.isURI()))
+
+    val graph = uc_triples.asGraph()
+
+    graph.inDegrees
+
+  }
+
+  /**
+   *  12. Property hierarchy depth criterion
+   *
+   *  @param triples RDD of triples
+   *  @return the depth of the graph
+   */
+  def PropertyHierarchyDepth(triples: RDD[Triple]) = {
+
+    val uc_triples = triples
+      .filter(triple => (triple.getPredicate.toString().equals(RDFS.subPropertyOf) &&
+        triple.getSubject.isURI() && triple.getObject.isURI()))
+
+    val graph = uc_triples.asGraph()
+
+    graph.inDegrees
+
+  }
+
+  /**
+   * 13. Subclass usage criterion
+   *
+   * @param triples RDD of triples
+   * @return the usage of subclasses on the given graph
+   */
+  def SubclassUsage(triples: RDD[Triple]) = {
+    triples.filter(triple => triple.getPredicate.toString().equals(RDFS.subClassOf))
+      .count
+  }
+
+  /**
+   * 14. Triples criterion
+   *
+   * @param RDD of triples
+   * @return the amount of triples of a given graph.
+   */
+  def Triples(triples: RDD[Triple]) =
+    triples.count
+
+  /**
+   * 15.Entities mentioned criterion
+   *
+   * @param tripls RDD of triples
+   * @return  number of entities (resources / IRIs) that are mentioned within a RDF graph.
+   */
+  def EntitiesMentioned(triples: RDD[Triple]) = {
+    triples.filter(triple => (triple.getSubject.isURI() && triple.getPredicate.isURI() && triple.getObject.isURI()))
+      .count
+  }
+
+  /**
+   * 16. Distinct Entities criterion
+   *
+   * @pram triples RDD of triples
+   * @return list of distinct entities of the RDF graph where all IRIs..
+   */
+  def DistinctEntities(triples: RDD[Triple]) = {
+
+    val distinct_subjects = triples.filter(_.getSubject.isURI()).distinct()
+    val distinct_predicates = triples.filter(_.getPredicate.isURI()).distinct()
+    val distinct_objects = triples.filter(_.getObject.isURI()).distinct()
+
+    distinct_subjects union distinct_predicates union distinct_objects
+  }
+
+  /**
+   * * 17. Literals criterion
+   *
+   * @param triples RDD of triples
+   * @return number of triples that are referencing literals to subjects.
+   */
+  def Literals(triples: RDD[Triple]) =
+    triples.filter(_.getObject.isLiteral())
+
+  /**
+   * 18. Blanks as subject criterion
+   *
+   * @param triples RDD of triples
+   * @return number of triples where blanknodes are used as subjects.
+   */
+  def BlanksAsSubject(triples: RDD[Triple]) =
+    triples.filter(_.getSubject.isBlank())
+
+  /**
+   * 19. Blanks as object criterion
+   *
+   * @param triples RDD of triples
+   * @return number of triples where blanknodes are used as objects.
+   */
+  def BlanksAsObject(triples: RDD[Triple]) =
+    triples.filter(_.getObject.isBlank())
+
+  /**
+   * 20. Datatypes criterion
+   *
+   * @param triples RDD of triples
+   * @return histogram of types used for literals.
+   */
+  def Datatypes(triples: RDD[Triple]) = {
+    triples.filter(triple => (triple.getObject.isLiteral() && !triple.getObject.getLiteralDatatype.getURI.isEmpty()))
+      .map(triple => (triple.getObject.getLiteralDatatype.getURI, 1))
+      .reduceByKey(_ + _)
+  }
+
+  /**
+   * 21. Languages criterion
+   *
+   * @param triples RDD of triples
+   * @return histogram of languages used for literals.
+   */
+  def Languages(triples: RDD[Triple]) = {
+    triples.filter(triple => (triple.getObject.isLiteral() && !triple.getObject.getLiteralLanguage.isEmpty()))
+      .map(triple => (triple.getObject.getLiteralLanguage, 1))
+      .reduceByKey(_ + _)
+  }
+
+  /**
+   * 22. Average typed string length criterion.
+   * 
+   * @param triples RDD of triples
+   * @return the average typed string length used throughout the RDF graph.
+   */
+  def AvgTypedStringLength(triples: RDD[Triple]) = {
+    val typed_strngs = triples.filter(triple => (triple.getObject.isLiteral() && triple.getObject.getLiteralDatatypeURI.equals(XSD.xstring)))
+    val lenth_o = typed_strngs.map(_.getObject.toString().length()).sum()
+    val cnt = typed_strngs.count()
+    if (cnt > 0) lenth_o / cnt else 0
+  }
+
+  /**
+   * 23. Average untyped string length criterion.
+   *
+   * @param triples RDD of triples
+   * @return the average untyped string length used throughout the RDF graph.
+   */
+  def AvgUntypedStringLength(triples: RDD[Triple]) = {
+    val typed_strngs = triples.filter(triple => (triple.getObject.isLiteral() && triple.getObject.getLiteralDatatypeURI.isEmpty()))
+    val lenth_o = typed_strngs.map(_.getObject.toString().length()).sum()
+    val cnt = typed_strngs.count()
+    if (cnt > 0) lenth_o / cnt else 0
+  }
+
+  /**
+   * 24. Typed subjects criterion.
+   *
+   * @param triples RDD of triples
+   * @return list of typed subjects.
+   */
+  def TypedSubjects(triples: RDD[Triple]) =
+    triples.filter(triple => triple.getPredicate.toString().equals(RDF.`type`)).map(_.getSubject)
+
+  /**
+   * 24. Labeled subjects criterion.
+   *
+   * @param triples RDD of triples
+   * @return list of labeled subjects.
+   */
+  def LabeledSubjects(triples: RDD[Triple]) =
+    triples.filter(triple => triple.getPredicate.toString().equals(RDFS.label)).map(_.getSubject)
+
+  /**
+   * 25. SameAs criterion.
+   *
+   * @param triples RDD of triples
+   * @return list of triples with owl#sameAs as predicate
+   */
+  def SameAs(triples: RDD[Triple]) =
+    triples.filter(_.getPredicate.toString().equals(OWL.sameAs))
+
+  /**
+   * 26. Links criterion.
+   *
+   * @param triples RDD of triples
+   * @return list of namespaces and their frequentcies.
+   */
+  def Links(triples: RDD[Triple]) = {
+    triples.filter(triple => (triple.getSubject.getNameSpace != triple.getObject.getNameSpace))
+      .map(triple => (triple.getSubject.getNameSpace() + triple.getObject.getNameSpace()))
+      .map(f => (f, 1)).reduceByKey(_ + _)
+  }
+
+  /**
+   * 28.Maximum per property {int,float,time} criterion
+   *
+   * @param triples RDD of triples
+   * @return entities with their maximum values on the graph
+   */
+  def MaxPerProperty(triples: RDD[Triple]) = {
+    val max_per_property_def = triples.filter(triple => (triple.getObject.toString().equals(XSD.xint)
+      | triple.getObject.toString().equals(XSD.xfloat) | triple.getObject.toString().equals(XSD.dateTime)))
+    val properties_fr = max_per_property_def.map(f => (f, 1)).reduceByKey(_ + _)
+
+    val ordered = properties_fr.takeOrdered(1)(Ordering[Int].reverse.on(_._2))
+    ordered.maxBy(_._2)
+  }
+
+  /**
+   * 29. Average per property {int,float,time} criterion
+   *
+   * @param triples RDD of triples
+   * @return entities with their average values on the graph
+   */
+  def AvgPerProperty(triples: RDD[Triple]) = {
+    val avg_per_property_def = triples.filter(triple => (triple.getObject.toString().equals(XSD.xint)
+      | triple.getObject.toString().equals(XSD.xfloat) | triple.getObject.toString().equals(XSD.dateTime)))
+
+    val sumCountPair = avg_per_property_def.map((_, 1)).combineByKey(
+      (x: Int) => (x.toDouble, 1),
+      (pair1: (Double, Int), x: Int) => (pair1._1 + x, pair1._2 + 1),
+      (pair1: (Double, Int), pair2: (Double, Int)) => (pair1._1 + pair2._1, pair1._2 + pair2._2))
+    val average = sumCountPair.map(x => (x._1, (x._2._1 / x._2._2)))
+    average
+  }
+
 }
