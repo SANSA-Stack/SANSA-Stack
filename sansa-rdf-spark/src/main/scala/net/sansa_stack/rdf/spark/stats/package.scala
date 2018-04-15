@@ -101,91 +101,91 @@ package object stats {
      *
      * @return number of triples that are referencing literals to subjects.
      */
-    def Literals() = RDFStats.Literals(triples)
+    def statsLiterals() = RDFStats.Literals(triples)
 
     /**
      * 18. Blanks as subject criterion
      *
      * @return number of triples where blanknodes are used as subjects.
      */
-    def BlanksAsSubject() = RDFStats.BlanksAsSubject(triples)
+    def statsBlanksAsSubject() = RDFStats.BlanksAsSubject(triples)
 
     /**
      * 19. Blanks as object criterion
      *
      * @return number of triples where blanknodes are used as objects.
      */
-    def BlanksAsObject() = RDFStats.BlanksAsObject(triples)
+    def statsBlanksAsObject() = RDFStats.BlanksAsObject(triples)
 
     /**
      * 20. Datatypes criterion
      *
      * @return histogram of types used for literals.
      */
-    def Datatypes() = RDFStats.Datatypes(triples)
+    def statsDatatypes() = RDFStats.Datatypes(triples)
 
     /**
      * 21. Languages criterion
      *
      * @return histogram of languages used for literals.
      */
-    def Languages() = RDFStats.Languages(triples)
+    def statsLanguages() = RDFStats.Languages(triples)
 
     /**
      * 22. Average typed string length criterion.
-     * 
+     *
      * @return the average typed string length used throughout the RDF graph.
      */
-    def AvgTypedStringLength() = RDFStats.AvgTypedStringLength(triples)
+    def statsAvgTypedStringLength() = RDFStats.AvgTypedStringLength(triples)
 
     /**
      * 23. Average untyped string length criterion.
      *
      * @return the average untyped string length used throughout the RDF graph.
      */
-    def AvgUntypedStringLength() = RDFStats.AvgUntypedStringLength(triples)
+    def statsAvgUntypedStringLength() = RDFStats.AvgUntypedStringLength(triples)
 
     /**
      * 24. Typed subjects criterion.
      *
      * @return list of typed subjects.
      */
-    def TypedSubjects() = RDFStats.TypedSubjects(triples)
+    def statsTypedSubjects() = RDFStats.TypedSubjects(triples)
 
     /**
      * 24. Labeled subjects criterion.
      *
      * @return list of labeled subjects.
      */
-    def LabeledSubjects() = RDFStats.LabeledSubjects(triples)
+    def statsLabeledSubjects() = RDFStats.LabeledSubjects(triples)
 
     /**
      * 25. SameAs criterion.
      *
      * @return list of triples with owl#sameAs as predicate
      */
-    def SameAs() = RDFStats.SameAs(triples)
+    def statsSameAs() = RDFStats.SameAs(triples)
 
     /**
      * 26. Links criterion.
      *
      * @return list of namespaces and their frequentcies.
      */
-    def Links() = RDFStats.Links(triples)
+    def statsLinks() = RDFStats.Links(triples)
 
     /**
      * 28.Maximum per property {int,float,time} criterion
      *
      * @return entities with their maximum values on the graph
      */
-    def MaxPerProperty() = RDFStats.MaxPerProperty(triples)
+    def statsMaxPerProperty() = RDFStats.MaxPerProperty(triples)
 
     /**
      * 29. Average per property {int,float,time} criterion
      *
      * @return entities with their average values on the graph
      */
-    def AvgPerProperty() = RDFStats.AvgPerProperty(triples)
+    def statsAvgPerProperty() = RDFStats.AvgPerProperty(triples)
 
     /**
      * <b>30. Subject vocabularies </b> <br>

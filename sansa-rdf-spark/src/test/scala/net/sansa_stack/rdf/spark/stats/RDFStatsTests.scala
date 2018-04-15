@@ -153,4 +153,28 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 0)
   }
 
+  test("computing Literals should result in size 7") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsLiterals()
+    val cnt = criteria.count()
+
+    assert(cnt == 7)
+  }
+
+  test("computing Blanks as subject should result in size 2") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsBlanksAsSubject()
+    val cnt = criteria.count()
+
+    assert(cnt == 2)
+  }
+
 }
