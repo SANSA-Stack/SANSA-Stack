@@ -177,4 +177,146 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 2)
   }
 
+  test("computing Blanks as object should result in size 2") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsBlanksAsObject()
+    val cnt = criteria.count()
+
+    assert(cnt == 2)
+  }
+
+  test("computing Data types should result in size 4") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsDatatypes()
+    val cnt = criteria.count()
+
+    assert(cnt == 4)
+  }
+
+  test("computing Langages should result in size 2") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsLanguages()
+    val cnt = criteria.count()
+
+    assert(cnt == 2)
+  }
+
+  test("computing Avgerage Typed String Length should result in size 0.0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val cnt = triples.statsAvgTypedStringLength()
+
+    assert(cnt == 0.0)
+  }
+
+  test("computing Avgerage UnTyped String Length should result in size 0.0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val cnt = triples.statsAvgUntypedStringLength()
+
+    assert(cnt == 0.0)
+  }
+
+  test("computing Typed Subjects should result in size 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsTypedSubjects()
+    val cnt = criteria.count()
+
+    assert(cnt == 0)
+  }
+
+  test("computing Labeled Subjects should result in size 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsLabeledSubjects()
+    val cnt = criteria.count()
+
+    assert(cnt == 0)
+  }
+
+  test("computing Same As should result in size 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsSameAs()
+    val cnt = criteria.count()
+
+    assert(cnt == 0)
+  }
+
+  test("computing Links should result in size 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsLinks()
+    val cnt = criteria.count()
+
+    assert(cnt == 0)
+  }
+
+  test("computing Subject Vocabularies result in size 3") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsSubjectVocabularies()
+    val cnt = criteria.count()
+
+    assert(cnt == 3)
+  }
+
+  test("computing Predicate Vocabularies result in size 5") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsPredicateVocabularies()
+    val cnt = criteria.count()
+
+    assert(cnt == 5)
+  }
+
+  test("computing Object Vocabularies result in size 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.statsObjectVocabularies()
+    val cnt = criteria.count()
+
+    assert(cnt == 0)
+  }
+
 }
