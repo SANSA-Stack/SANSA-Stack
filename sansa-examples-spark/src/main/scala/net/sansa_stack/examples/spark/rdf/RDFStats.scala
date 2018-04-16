@@ -6,7 +6,7 @@ import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import scala.collection.mutable
 import java.io.File
-import net.sansa_stack.rdf.spark.stats.RDFStatistics
+import net.sansa_stack.rdf.spark.stats._
 
 object RDFStats {
 
@@ -33,13 +33,12 @@ object RDFStats {
     println("|        RDF Statistic example       |")
     println("======================================")
 
-     val lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
 
     // compute  criterias
-    val rdf_statistics = RDFStatistics(triples, spark)
-    val stats = rdf_statistics.run()
-    rdf_statistics.voidify(stats, rdf_stats_file, output)
+    val stats = triples.stats
+      .voidify(rdf_stats_file, output)
   }
 
   // the config object
