@@ -99,7 +99,7 @@ package object rdf {
   // the RDD methods
 
   /**
-   * Adds methods, `ntriples` and `turtle`, to [[SparkContext]] that allows to write N-Triples and Turtle files.
+   * Adds methods, `ntriples` and `turtle`, to [[org.apache.spark.SparkContext]] that allows to write N-Triples and Turtle files.
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
@@ -167,12 +167,7 @@ package object rdf {
      * @return the [[RDD]]
      */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
-      var rdd = spark.sparkContext.textFile(path, 4) // read the text file
-                .filter(!_.trim.startsWith("#")) //omit comment lines
-
-      if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
-
-      rdd.map(new NTriplesStringToJenaTriple())
+      NTripleReader.load(spark, path)
     }
 
     /**

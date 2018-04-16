@@ -45,7 +45,8 @@ public class ReadableByteChannelFromIterator
     public static InputStream toInputStream(Stream<String> stream) {
         return Channels.newInputStream(new ReadableByteChannelFromIterator(
                 stream
-                        .map(String::getBytes)
+                        .map(s -> (s + '\n').getBytes())
+//                        .map(String::getBytes)
                         .map(ByteBuffer::wrap)
                         .iterator()));
     }
@@ -54,6 +55,8 @@ public class ReadableByteChannelFromIterator
     protected Iterator<ByteBuffer> it;
     protected boolean isOpen;
     protected ByteBuffer currentBuffer;
+
+    private static char NL = '\n';
 
     public ReadableByteChannelFromIterator(Iterator<ByteBuffer> it) {
         super();
