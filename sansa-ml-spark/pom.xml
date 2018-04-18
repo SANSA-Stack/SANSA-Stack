@@ -61,6 +61,13 @@
 			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.github.fommil.netlib/all -->
+		<dependency>
+			<groupId>com.github.fommil.netlib</groupId>
+			<artifactId>all</artifactId>
+			<version>1.1.2</version>
+			<type>pom</type>
+		</dependency>
 
 		<!-- HermiT reasoner -->
 		<dependency>
@@ -98,13 +105,19 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 			<version>3.5.0</version>
 		</dependency>
-		
+
 		<!-- BigDL Library -->
 		<dependency>
 			<groupId>com.intel.analytics.bigdl</groupId>
 			<artifactId>bigdl-SPARK_2.2</artifactId>
 			<version>0.3.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+		</dependency>
+
 
 		<!-- Test -->
 		<dependency>

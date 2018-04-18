@@ -25,7 +25,6 @@ import java.io.StringWriter
 import java.io._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
 import net.sansa_stack.rdf.spark.model.graph._
 import java.net.URI
 

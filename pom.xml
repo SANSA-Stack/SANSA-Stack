@@ -79,7 +79,7 @@
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
-			
+
 			<!-- SANSA OWL -->
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
@@ -131,6 +131,12 @@
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-arq</artifactId>
 				<version>${jena.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.json</groupId>
+				<artifactId>json</artifactId>
+				<version>20180130</version>
 			</dependency>
 
 			<!-- Test -->
