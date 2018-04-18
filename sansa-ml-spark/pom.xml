@@ -102,7 +102,7 @@
 		<!-- BigDL Library -->
 		<dependency>
 			<groupId>com.intel.analytics.bigdl</groupId>
-			<artifactId>bigdl-SPARK_${spark.binary.version}</artifactId>
+			<artifactId>bigdl-SPARK_2.2</artifactId>
 			<version>0.3.0</version>
 		</dependency>
 

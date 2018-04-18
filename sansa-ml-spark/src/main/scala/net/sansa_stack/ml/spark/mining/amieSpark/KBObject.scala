@@ -18,8 +18,8 @@ object KBObject {
   class KB() extends Serializable {
     var kbSrc: String = ""
 
-    var kbGraph: RDFGraph = null
-    var dfTable: DataFrame = null
+    var kbGraph: RDFGraph = _
+    var dfTable: DataFrame = _
 
     var dfMap: Map[String, DataFrame] = Map()
 
@@ -62,7 +62,7 @@ object KBObject {
       }
 
       str = str.replace(" ", "_").replace("?", "_")
-      return str
+      str
     }
 
     def calcName(whole: ArrayBuffer[RDFTriple]): String = {
@@ -83,11 +83,11 @@ object KBObject {
         } else {
           countMap += (w._3 -> 1)
         }
-        if (!(numberMap.contains(w._1))) {
+        if (!numberMap.contains(w._1)) {
           numberMap += (w._1 -> counter)
           counter += 1
         }
-        if (!(numberMap.contains(w._3))) {
+        if (!numberMap.contains(w._3)) {
           numberMap += (w._3 -> counter)
           counter += 1
         }
@@ -113,24 +113,24 @@ object KBObject {
         out += a + "_" + wh._2 + "_" + b + "_"
       }
       out = out.stripSuffix("_")
-      return out
+      out
     }
 
     def getRngSize(rel: String): Double = {
 
-      return this.predicate2object2subject.get(rel).get.size
+      this.predicate2object2subject.get(rel).get.size
     }
 
     def setKbSrc(x: String) {
       this.kbSrc = x
     }
-    def getKbSrc(): String = {
+    def getKbSrc: String = {
 
-      return this.kbSrc
+      this.kbSrc
     }
 
-    def getKbGraph(): RDFGraph = {
-      return this.kbGraph
+    def getKbGraph: RDFGraph = {
+      this.kbGraph
 
     }
 
@@ -163,7 +163,7 @@ object KBObject {
 
       }
 
-      return out
+      out
     }
 
     /**
@@ -242,7 +242,7 @@ object KBObject {
         return 0
 
       }
-      return this.relationSize.get(rel).get
+      this.relationSize.get(rel).get
 
     }
 
@@ -253,7 +253,7 @@ object KBObject {
 
     def relationsSize(): Int = {
 
-      return this.relationSize.size
+      this.relationSize.size
     }
 
     /**
@@ -264,7 +264,7 @@ object KBObject {
       var x = this.subjectSize.size
       var y = this.objectSize.size
 
-      return (x + y)
+      (x + y)
     }
 
     /**
@@ -283,24 +283,24 @@ object KBObject {
           val objects2 = predicate2object2subject.get(r2).get.keys.toSet
 
           if (!r1.equals(r2)) {
-            var ssoverlap: Int = computeOverlap(subjects1, subjects2);
-            subject2subjectOverlap.get(r1).get.put(r2, ssoverlap);
-            subject2subjectOverlap.get(r2).get.put(r1, ssoverlap);
+            var ssoverlap: Int = computeOverlap(subjects1, subjects2)
+            subject2subjectOverlap.get(r1).get.put(r2, ssoverlap)
+            subject2subjectOverlap.get(r2).get.put(r1, ssoverlap)
           } else {
-            subject2subjectOverlap.get(r1).get.put(r1, subjects2.size);
+            subject2subjectOverlap.get(r1).get.put(r1, subjects2.size)
           }
 
-          var soverlap1: Int = computeOverlap(subjects1, objects2);
-          subject2objectOverlap.get(r1).get.put(r2, soverlap1);
-          var soverlap2: Int = computeOverlap(subjects2, objects1);
-          subject2objectOverlap.get(r2).get.put(r1, soverlap2);
+          var soverlap1: Int = computeOverlap(subjects1, objects2)
+          subject2objectOverlap.get(r1).get.put(r2, soverlap1)
+          var soverlap2: Int = computeOverlap(subjects2, objects1)
+          subject2objectOverlap.get(r2).get.put(r1, soverlap2)
 
           if (!r1.equals(r2)) {
-            var oooverlap: Int = computeOverlap(objects1, objects2);
-            object2objectOverlap.get(r1).get.put(r2, oooverlap);
-            object2objectOverlap.get(r2).get.put(r1, oooverlap);
+            var oooverlap: Int = computeOverlap(objects1, objects2)
+            object2objectOverlap.get(r1).get.put(r2, oooverlap)
+            object2objectOverlap.get(r2).get.put(r1, oooverlap)
           } else {
-            object2objectOverlap.get(r1).get.put(r1, objects2.size);
+            object2objectOverlap.get(r1).get.put(r1, objects2.size)
           }
         }
       }
@@ -320,7 +320,7 @@ object KBObject {
           overlap += 1
       }
 
-      return overlap
+      overlap
     }
 
     // ---------------------------------------------------------------------------
@@ -340,7 +340,7 @@ object KBObject {
       if (this.predicate2subject2object.get(relation).isEmpty) { return 0.0 }
       var a: Double = this.predicate2subject2object.get(relation).get.size
       var b: Double = this.relationSize.get(relation).get
-      return (a / b)
+      (a / b)
 
     }
 
@@ -356,7 +356,7 @@ object KBObject {
 		} */
       var a: Double = this.predicate2object2subject.get(relation).get.size
       var b: Double = this.relationSize.get(relation).get
-      return (a / b)
+      (a / b)
 
     }
 
@@ -368,7 +368,7 @@ object KBObject {
      * @author AMIE+ Team
      */
     def isFunctional(relation: String): Boolean = {
-      return functionality(relation) >= inverseFunctionality(relation);
+      functionality(relation) >= inverseFunctionality(relation)
     }
 
     /**
@@ -382,9 +382,9 @@ object KBObject {
      */
     def functionality(relation: String, inversed: Boolean): Double = {
       if (inversed)
-        return inverseFunctionality(relation);
+        inverseFunctionality(relation)
       else
-        return functionality(relation);
+        functionality(relation)
     }
 
     /**
@@ -397,9 +397,9 @@ object KBObject {
      */
     def inverseFunctionality(relation: String, inversed: Boolean): Double = {
       if (inversed)
-        return functionality(relation);
+        functionality(relation)
       else
-        return inverseFunctionality(relation);
+        inverseFunctionality(relation)
     }
 
     /**
@@ -419,16 +419,16 @@ object KBObject {
 
     def overlap(relation1: String, relation2: String, overlap: Int): Double = {
       overlap match {
-        case SUBJECT2SUBJECT => if ((!(subject2subjectOverlap.get(relation1).isEmpty)) && (!(subject2subjectOverlap.get(relation1).get.get(relation2).isEmpty))) { return subject2subjectOverlap.get(relation1).get.get(relation2).get }
-        else return 0.0
+        case SUBJECT2SUBJECT => if (subject2subjectOverlap.get(relation1).isDefined && (!(subject2subjectOverlap.get(relation1).get.get(relation2).isEmpty))) { subject2subjectOverlap.get(relation1).get.get(relation2).get }
+        else 0.0
         case SUBJECT2OBJECT =>
 
-          if ((!(subject2objectOverlap.get(relation1).isEmpty)) && (!(subject2objectOverlap.get(relation1).get.get(relation2).isEmpty))) { return subject2objectOverlap.get(relation1).get.get(relation2).get }
-          else return 0.0
+          if ((!(subject2objectOverlap.get(relation1).isEmpty)) && (!(subject2objectOverlap.get(relation1).get.get(relation2).isEmpty))) { subject2objectOverlap.get(relation1).get.get(relation2).get }
+          else 0.0
         case OBJECT2OBJECT =>
 
-          if ((!(object2objectOverlap.get(relation1).isEmpty)) && (!(object2objectOverlap.get(relation1).get.get(relation2).isEmpty))) { return object2objectOverlap.get(relation1).get.get(relation2).get }
-          else return 0.0
+          if ((!(object2objectOverlap.get(relation1).isEmpty)) && (!(object2objectOverlap.get(relation1).get.get(relation2).isEmpty))) { object2objectOverlap.get(relation1).get.get(relation2).get }
+          else 0.0
 
       }
     }
@@ -445,10 +445,10 @@ object KBObject {
     def relationColumnSize(rel: String, elem: String): Int = {
       elem match {
         case "subject" =>
-          return predicate2subject2object.get(rel).get.size
+          predicate2subject2object.get(rel).get.size
 
         case "object" =>
-          return predicate2object2subject.get(rel).get.size
+          predicate2object2subject.get(rel).get.size
 
       }
 
@@ -478,7 +478,7 @@ object KBObject {
       var minSize = this.relationSize.get(triplesCard(0).predicate).get
       var index = 0
 
-      for (i <- 1 to triplesCard.length - 1) {
+      for (i <- 1 until triplesCard.length) {
         if (this.relationSize.get(triplesCard(i).predicate).get < minSize) {
           minSize = this.relationSize.get(triplesCard(i).predicate).get
           min = triplesCard(i)
@@ -530,16 +530,16 @@ object KBObject {
           if (test) {
 
             if ((a.startsWith("?")) && ((j._1 == a) && (!(atestLeft)))) {
-              temp += new RDFTriple(i._1, j._2, j._3)
+              temp += RDFTriple(i._1, j._2, j._3)
 
             } else if ((a.startsWith("?")) && ((j._3 == a) && (!(atestRight)))) {
-              temp += new RDFTriple(j._1, j._2, i._1)
+              temp += RDFTriple(j._1, j._2, i._1)
 
             } else if ((b.startsWith("?")) && ((j._3 == b) && (!(btestRight)))) {
-              temp += new RDFTriple(j._1, j._2, i._3)
+              temp += RDFTriple(j._1, j._2, i._3)
 
             } else if ((b.startsWith("?")) && ((j._1 == b) && (!(btestLeft)))) {
-              temp += new RDFTriple(i._3, j._2, j._3)
+              temp += RDFTriple(i._3, j._2, j._3)
             } else if ((b.startsWith("?")) && (((j._3 == b) && (btestRight)) || ((j._1 == b) && (btestLeft)))) {
               exploreFurther = false
             } else if ((a.startsWith("?")) && (((j._1 == a) && (atestLeft)) || ((j._3 == a) && (atestRight)))) {
@@ -564,12 +564,12 @@ object KBObject {
 
       }
 
-      return false
+      false
     }
 
-    def varCount(tpAr: ArrayBuffer[RDFTriple]): ArrayBuffer[Tuple2[String, String]] = {
+    def varCount(tpAr: ArrayBuffer[RDFTriple]): ArrayBuffer[(String, String)] = {
 
-      var out2: ArrayBuffer[Tuple2[String, String]] = new ArrayBuffer
+      var out2: ArrayBuffer[(String, String)] = new ArrayBuffer
 
       for (i <- tpAr) {
         if (!(out2.contains(Tuple2(i.subject, i.predicate)))) {
@@ -582,9 +582,9 @@ object KBObject {
 
       }
 
-      return out2
+      out2
     }
-    def countProjectionQueriesDF(posit: Int, id: Int, operator: String, minHC: Double, tpAr: ArrayBuffer[RDFTriple], RXY: ArrayBuffer[Tuple2[String, String]], sc: SparkContext, sqlContext: SQLContext): DataFrame =
+    def countProjectionQueriesDF(posit: Int, id: Int, operator: String, minHC: Double, tpAr: ArrayBuffer[RDFTriple], RXY: ArrayBuffer[(String, String)], sc: SparkContext, sqlContext: SQLContext): DataFrame =
       {
 
         val threshold = minHC * this.relationSize.get(tpAr(0).predicate).get
@@ -643,13 +643,13 @@ object KBObject {
 
         }
 
-        return whole
+        whole
 
       }
 
     def cardinalityQueries(id: Int, tpArDF: DataFrame, wholeAr: ArrayBuffer[RDFTriple], sc: SparkContext, sqlContext: SQLContext): DataFrame = {
       val DF = this.dfTable
-      var tpMap: Map[String, ArrayBuffer[Tuple2[Int, String]]] = Map()
+      var tpMap: Map[String, ArrayBuffer[(Int, String)]] = Map()
       DF.registerTempTable("table")
       tpArDF.registerTempTable("tpArTable")
 
@@ -659,10 +659,10 @@ object KBObject {
       var v = sqlContext.sql("SELECT * FROM tpArTable JOIN newColumn")
 
       var varAr: ArrayBuffer[String] = new ArrayBuffer
-      var checkMap: Map[Int, Tuple2[String, String]] = Map()
+      var checkMap: Map[Int, (String, String)] = Map()
       var checkSQLSELECT = "SELECT "
 
-      for (i <- 0 to wholeAr.length - 1) {
+      for (i <- wholeAr.indices) {
         var a = wholeAr(i).subject
         var b = wholeAr(i)._3
 
@@ -693,7 +693,7 @@ object KBObject {
 
       var cloneTpAr = wholeAr.clone()
 
-      var removedMap: Map[String, ArrayBuffer[Tuple2[Int, String]]] = Map()
+      var removedMap: Map[String, ArrayBuffer[(Int, String)]] = Map()
 
       varAr = varAr.distinct
       var checkSQLWHERE = "WHERE "
@@ -732,7 +732,7 @@ object KBObject {
       }
 
       checkSQLWHERE = checkSQLWHERE.stripSuffix(" AND ")
-      var seq: Seq[String] = Seq((wholeAr.last.toString() + "  " + id.toString()))
+      var seq: Seq[String] = Seq((wholeAr.last.toString() + "  " + id.toString))
       import sqlContext.implicits._
       var key: DataFrame = seq.toDF("key")
 
@@ -745,7 +745,7 @@ object KBObject {
       key.registerTempTable("keyTable")
       var out = sqlContext.sql(checkSQLSELECT + ", keyTable.key FROM lastTable JOIN keyTable")
 
-      return out
+      out
 
     }
 
@@ -754,18 +754,19 @@ object KBObject {
      */
 
     def cardinality(tpAr: ArrayBuffer[RDFTriple], sc: SparkContext, sqlContext: SQLContext): DataFrame = {
+      println(s"computing cardinality for ${tpAr.mkString(",")} ...")
       var name = calcName(tpAr)
 
       if (dfMap.contains(name)) {
-        return dfMap.get(name).get
+        dfMap.get(name).get
       } else {
         val DF = this.dfTable
-        var tpMap: Map[String, ArrayBuffer[Tuple2[Int, String]]] = Map()
+        var tpMap: Map[String, ArrayBuffer[(Int, String)]] = Map()
         DF.registerTempTable("table")
 
         var v = sqlContext.sql("SELECT rdf AS tp0 FROM table WHERE rdf.predicate = '" + tpAr(0).predicate + "'")
 
-        for (k <- 1 to tpAr.length - 1) {
+        for (k <- 1 until tpAr.length) {
           var w = sqlContext.sql("SELECT rdf AS tp" + k + " FROM table WHERE rdf.predicate = '" + tpAr(k).predicate + "'")
           w.registerTempTable("newColumn")
 
@@ -773,7 +774,7 @@ object KBObject {
           tempO.registerTempTable("previous")
 
           var sqlString = ""
-          for (re <- 0 to k - 1) {
+          for (re <- 0 until k) {
             sqlString += "previous.tp" + re + ", "
           }
 
@@ -782,10 +783,10 @@ object KBObject {
         }
 
         var varAr: ArrayBuffer[String] = new ArrayBuffer
-        var checkMap: Map[Int, Tuple2[String, String]] = Map()
+        var checkMap: Map[Int, (String, String)] = Map()
         var checkSQLSELECT = "SELECT "
 
-        for (i <- 0 to tpAr.length - 1) {
+        for (i <- tpAr.indices) {
           var a = tpAr(i).subject
           var b = tpAr(i)._3
 
@@ -816,7 +817,7 @@ object KBObject {
 
         var cloneTpAr = tpAr.clone()
 
-        var removedMap: Map[String, ArrayBuffer[Tuple2[Int, String]]] = Map()
+        var removedMap: Map[String, ArrayBuffer[(Int, String)]] = Map()
 
         varAr = varAr.distinct
         var checkSQLWHERE = "WHERE "
@@ -856,8 +857,9 @@ object KBObject {
 
         checkSQLWHERE = checkSQLWHERE.stripSuffix(" AND ")
         v.registerTempTable("t")
+        println(checkSQLSELECT + " FROM t " + checkSQLWHERE)
         var out = sqlContext.sql(checkSQLSELECT + " FROM t " + checkSQLWHERE)
-        return out
+        out
       }
 
     }
@@ -869,7 +871,7 @@ object KBObject {
       var go = false
       var outCount: Double = 0.0
       var tpsString = calcName(tpAr)
-      for (i <- 1 to tpAr.length - 1) {
+      for (i <- 1 until tpAr.length) {
         if ((tpAr(i)._1 == "?a") || (tpAr(i)._3 == "?a")) {
           go = true
         }
@@ -918,20 +920,20 @@ object KBObject {
         }
         outCount = out.count()
       }
-      return outCount
+      outCount
 
     }
 
     def negatveExampleBuilder(subjects: DataFrame, wholeAr: ArrayBuffer[RDFTriple], sc: SparkContext, sqlContext: SQLContext): DataFrame = {
       val DF = this.dfTable
-      var tpMap: Map[String, ArrayBuffer[Tuple2[Int, String]]] = Map()
+      var tpMap: Map[String, ArrayBuffer[(Int, String)]] = Map()
       DF.registerTempTable("table")
       var wholeTPARBackup = wholeAr.clone()
       wholeAr.remove(0)
 
       var complete = sqlContext.sql("SELECT rdf AS tp" + 0 + " FROM table WHERE rdf.predicate = '" + (wholeAr(0)).predicate + "'")
 
-      for (i <- 1 to wholeAr.length - 1) {
+      for (i <- 1 until wholeAr.length) {
         var w = sqlContext.sql("SELECT rdf AS tp" + i + " FROM table WHERE rdf.predicate = '" + (wholeAr(i)).predicate + "'")
         w.registerTempTable("newColumn")
 
@@ -940,12 +942,12 @@ object KBObject {
       }
 
       var varAr: ArrayBuffer[String] = new ArrayBuffer
-      var checkMap: Map[Int, Tuple2[String, String]] = Map()
+      var checkMap: Map[Int, (String, String)] = Map()
       var checkSQLSELECT = "SELECT "
 
       var abString = ("", "")
 
-      for (i <- 0 to wholeAr.length - 1) {
+      for (i <- wholeAr.indices) {
         var a = wholeAr(i).subject
         var b = wholeAr(i)._3
 
@@ -984,7 +986,7 @@ object KBObject {
 
       var cloneTpAr = wholeAr.clone()
 
-      var removedMap: Map[String, ArrayBuffer[Tuple2[Int, String]]] = Map()
+      var removedMap: Map[String, ArrayBuffer[(Int, String)]] = Map()
 
       varAr = varAr.distinct
       var checkSQLWHERE = "WHERE "
@@ -1032,7 +1034,7 @@ object KBObject {
 
       var out = sqlContext.sql(checkSQLSELECT + " FROM lastTable JOIN keyTable ON lastTable." + abString._2 + "." + abString._1 + "=keyTable.sub")
 
-      return out
+      out
 
     }
 
@@ -1066,9 +1068,9 @@ object KBObject {
 
       var temp = mapList.clone()
 
-      for (tripleCount <- 1 to triplesCard.length - 1) {
+      for (tripleCount <- 1 until triplesCard.length) {
 
-        val rdd1 = sc.parallelize(mapList.toSeq)
+        val rdd1 = sc.parallelize(mapList)
         val rdd2 = arbuf(tripleCount)
         val comb = rdd1.cartesian(rdd2) // cartesian() to get every possible combination
 
@@ -1106,9 +1108,9 @@ object KBObject {
         }
 
       }
-      var rightOnes = sc.parallelize(mapList.toSeq).map(y => y.get(triplesCard(0).subject).get).distinct.collect
+      var rightOnes = sc.parallelize(mapList).map(y => y.get(triplesCard(0).subject).get).distinct.collect
 
-      var as = sc.parallelize(temp.toSeq).map {
+      var as = sc.parallelize(temp).map {
         x =>
           (x.get(triplesCard(0).subject).get, 1)
 
@@ -1121,14 +1123,14 @@ object KBObject {
 
       }
 
-      return ((mapList.length) + out)
+      ((mapList.length) + out)
 
     }
 
     def addDanglingAtom(c: Int, id: Int, minHC: Double, rule: RuleContainer, sc: SparkContext, sqlContext: SQLContext): DataFrame =
       {
         val tpAr = rule.getRule()
-        var RXY: ArrayBuffer[Tuple2[String, String]] = new ArrayBuffer
+        var RXY: ArrayBuffer[(String, String)] = new ArrayBuffer
 
         val notC = rule.notClosed()
 
@@ -1148,13 +1150,13 @@ object KBObject {
 
         var x = this.countProjectionQueriesDF(c, id, "OD", minHC, tpAr, RXY, sc, sqlContext)
 
-        return x
+        x
       }
 
     def addClosingAtom(c: Int, id: Int, minHC: Double, rule: RuleContainer, sc: SparkContext, sqlContext: SQLContext): DataFrame =
       {
         val tpAr = rule.getRule()
-        var RXY: ArrayBuffer[Tuple2[String, String]] = new ArrayBuffer
+        var RXY: ArrayBuffer[(String, String)] = new ArrayBuffer
 
         val notC = rule.notClosed()
 
@@ -1190,7 +1192,7 @@ object KBObject {
         }
         var x = this.countProjectionQueriesDF(c, id, "OC", minHC, tpAr, RXY, sc, sqlContext)
 
-        return x
+        x
       }
 
   }

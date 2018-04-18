@@ -25,18 +25,18 @@ object amieExample {
  
    val sparkSession = SparkSession.builder
 
-    .master("spark://172.18.160.16:3077")
-      .appName("SPARK Reasoning")
-    .config("spark.sql.warehouse.dir", "file:///data/home/MohamedMami/spark-2.1.0-bin-hadoop2.7/bin/spark-warehouse")
-    
-   
+    .master("local[4]")
+     .appName("SPARK AMIE")
+       .config("spark.eventLog.enabled", true)
+       .config("spark.hadoop.validateOutputSpecs", false)
+//    .config("spark.sql.warehouse.dir", "file:///data/home/MohamedMami/spark-2.1.0-bin-hadoop2.7/bin/spark-warehouse")
     .getOrCreate()
  
     
   val hdfsPath:String = args(0)
   
   val outputPath =hdfsPath
-  val inputFile = hdfsPath + args(1)
+  val inputFile = args(0)//hdfsPath + args(1)
     
   
   
@@ -49,7 +49,7 @@ object amieExample {
   know.sethdfsPath(hdfsPath)
   know.setKbSrc(inputFile)
   
-  know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), sc, 2))
+  know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc, sc, 2))
   know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2)  )
   
    
@@ -63,7 +63,7 @@ object amieExample {
     var outString = erg.map { x =>
       var rdfTrp = x.getRule()
       var temp = ""
-      for (i <- 0 to rdfTrp.length - 1) {
+      for (i <- rdfTrp.indices) {
         if (i == 0) {
           temp = rdfTrp(i) + " <= "
         } else {

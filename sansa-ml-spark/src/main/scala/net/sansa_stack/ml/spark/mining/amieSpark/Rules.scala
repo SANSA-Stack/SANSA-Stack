@@ -134,12 +134,14 @@ object Rules {
      */
 
     def calcSupport(k: KB, sc: SparkContext, sqlContext: SQLContext) {
+      println(s"computing support for rule $rule ...")
 
       if (this.rule.length > 1) {
 
         val mapList = k.cardinality(this.rule, sc, sqlContext)
 
         this.support = mapList.count()
+        println(s"#support($rule):$support")
       }
     }
     /**returns the length of the body*/
