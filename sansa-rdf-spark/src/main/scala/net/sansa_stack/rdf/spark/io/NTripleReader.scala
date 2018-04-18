@@ -124,15 +124,15 @@ object NTripleReader {
            checkRDFTerms: Boolean = false,
            errorLog: Logger = ErrorHandlerFactory.stdLogger)
   : RDD[Triple] = {
-    // omit empty lines + comment lines
+
+    // parse the text file first
     val rdd = session.sparkContext
       .textFile(path, minPartitions = 20)
-//      .filter(line => !line.trim().isEmpty & !line.trim.startsWith("#"))
-//      .coalesce(1)
-
+      .coalesce(1)
 
     val strict = stopOnBadTerm == ErrorParseMode.STOP && stopOnWarnings == WarningParseMode.STOP
 
+    // create the error handler profile
     val profileWrapper = NonSerializableObjectWrapper {
       val errorHandler =
         if (strict) {
@@ -154,6 +154,7 @@ object NTripleReader {
     }
     import scala.collection.JavaConverters._
 
+    // parse each partition
     rdd.mapPartitions(p => {
       // convert iterator to input stream
       val input = ReadableByteChannelFromIterator.toInputStream(p.asJava)
@@ -161,14 +162,20 @@ object NTripleReader {
       // create the parsing iterator
       val it =
         if (stopOnBadTerm == ErrorParseMode.STOP) {
+          // this is the default behaviour of Jena, i.e. once a parse error occurs the whole process stops
           RiotParsers.createIteratorNTriples(input, null, profileWrapper.get)
         } else {
+          // here we "simply" skip illegal triples
+
+          // we need a custom tokenizer
           val tokenizer = new TokenizerTextForgiving(PeekReader.makeUTF8(input))
-          //        val tokenizer = TokenizerFactory.makeTokenizerUTF8(input).asInstanceOf[TokenizerText]
           tokenizer.setErrorHandler(ErrorHandlerFactory.errorHandlerWarn)
 
+          // which is used by a custom N-Triples iterator
+          val it = new LangNTriplesSkipBad(tokenizer, profileWrapper.get, null)
+
           // filter out null values
-          Iterators.filter(new LangNTriplesSkipBad(tokenizer, profileWrapper.get, null), Predicates.notNull[Triple]())
+          Iterators.filter(it, Predicates.notNull[Triple]())
         }
       new IteratorResourceClosing[Triple](it, input).asScala
     })
@@ -185,8 +192,8 @@ object NTripleReader {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       //.config("spark.kryo.registrationRequired", "true")
       //.config("spark.eventLog.enabled", "true")
-      .config("spark.kryo.registrator", String.join(", ",
-      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
+//      .config("spark.kryo.registrator", String.join(", ",
+//      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
       .config("spark.default.parallelism", "4")
       .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
@@ -205,9 +212,9 @@ object NTripleReader {
       checkRDFTerms = true,
       LoggerFactory.getLogger("errorLog"))
 
-//    println(rdd.count())
+    println(rdd.count())
 
-    println("result:\n" + rdd.take(10).mkString("\n"))
+    println("result:\n" + rdd.take(1000).map { _.toString.replaceAll("[\\x00-\\x1f]","???")} .mkString("\n"))
   }
 
 }

@@ -86,24 +86,41 @@ public final class TokenizerTextForgiving implements Tokenizer
     
     @Override
     public final boolean hasNext() {
+//        System.err.println("hasNext...");
+
         if ( finished )
             return false;
-        if ( token != null )
+        if ( token != null ) {
+//            System.err.println("...true(old value)" + token);
+
             return true;
+        }
+
+
+        if ( bad != null ) {
+            RiotException bad2 = bad;
+            bad = null;
+
+//            System.err.println(",,,throw[would be:"+token+"]");
+            throw bad2;
+        }
 
         try {
             skip();
             if ( reader.eof() ) {
                 // close();
                 finished = true;
+//                System.err.println("...false,eof");
                 return false;
             }
             token = parseToken();
             if ( token == null ) {
                 // close();
                 finished = true;
+//                System.err.println("...false,nulltok");
                 return false;
             }
+//            System.err.println("...true."+token);
             return true;
         } catch (AtlasException ex) {
             if ( ex.getCause() != null ) {
@@ -114,9 +131,14 @@ public final class TokenizerTextForgiving implements Tokenizer
             }
             throw new RiotParseException("Bad input stream", reader.getLineNum(), reader.getColNum());
         } catch (RiotException e) {
-            bad = e;
+            RiotException bad3 = e;
             skipLine();
-            return hasNext();
+            token = null;
+            bad = null;
+//            System.err.println("exception:"+e.getMessage());
+            boolean ret = hasNext();
+            bad = bad3;
+            return ret;
         }
     }
     
@@ -128,10 +150,13 @@ public final class TokenizerTextForgiving implements Tokenizer
 
     @Override
     public final Token next() {
+//        System.err.println("next,,,");
+
         if ( !hasNext() )
             throw new NoSuchElementException();
         Token t = token;
         token = null;
+//        System.err.println(",,,is:"+t);
         return t;
     }
 

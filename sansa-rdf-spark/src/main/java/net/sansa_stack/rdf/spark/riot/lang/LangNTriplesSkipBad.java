@@ -22,20 +22,19 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.apache.jena.atlas.iterator.PeekIterator;
-import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.iri.IRI;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.RiotParseException;
 import org.apache.jena.riot.lang.LangNTuple;
-import org.apache.jena.riot.system.*;
+import org.apache.jena.riot.system.ErrorHandler;
+import org.apache.jena.riot.system.ParserProfile;
+import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.tokens.Token;
 import org.apache.jena.riot.tokens.TokenType;
 import org.apache.jena.riot.tokens.Tokenizer;
-import org.apache.jena.sparql.core.Quad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,94 +75,6 @@ public final class LangNTriplesSkipBad implements Iterator<Triple>
 		base.remove();
 	}
 
-	static class NoErrorProfile implements ParserProfile {
-		private final ParserProfile base;
-
-		NoErrorProfile(ParserProfile base) {
-			this.base = base;
-		}
-
-		@Override
-		public String resolveIRI(String uriStr, long line, long col) {
-			return base.resolveIRI(uriStr, line, col);
-		}
-
-		@Override
-		public IRI makeIRI(String uriStr, long line, long col) {
-			return base.makeIRI(uriStr, line, col);
-		}
-
-		@Override
-		public void setIRIResolver(IRIResolver resolver) {
-			base.setIRIResolver(resolver);
-		}
-
-		@Override
-		public Triple createTriple(Node subject, Node predicate, Node object, long line, long col) {
-			return base.createTriple(subject, predicate, object, line, col);
-		}
-
-		@Override
-		public Quad createQuad(Node graph, Node subject, Node predicate, Node object, long line, long col) {
-			return base.createQuad(graph, subject, predicate, object, line, col);
-		}
-
-		@Override
-		public Node createURI(String uriStr, long line, long col) {
-			return base.createURI(uriStr, line, col);
-		}
-
-		@Override
-		public Node createTypedLiteral(String lexical, RDFDatatype datatype, long line, long col) {
-			return base.createTypedLiteral(lexical, datatype, line, col);
-		}
-
-		@Override
-		public Node createLangLiteral(String lexical, String langTag, long line, long col) {
-			return base.createLangLiteral(lexical, langTag, line, col);
-		}
-
-		@Override
-		public Node createStringLiteral(String lexical, long line, long col) {
-			return base.createStringLiteral(lexical, line, col);
-		}
-
-		@Override
-		public Node createBlankNode(Node scope, String label, long line, long col) {
-			return base.createBlankNode(scope, label, line, col);
-		}
-
-		@Override
-		public Node createBlankNode(Node scope, long line, long col) {
-			return base.createBlankNode(scope, line, col);
-		}
-
-		@Override
-		public Node createNodeFromToken(Node scope, Token token, long line, long col) {
-			return base.createNodeFromToken(scope, token, line, col);
-		}
-
-		@Override
-		public Node create(Node currentGraph, Token token) {
-			return base.create(currentGraph, token);
-		}
-
-		@Override
-		public boolean isStrictMode() {
-			return false;
-		}
-
-		@Override
-		public PrefixMap getPrefixMap() {
-			return base.getPrefixMap();
-		}
-
-		@Override
-		public ErrorHandler getErrorHandler() {
-			return null;
-		}
-	}
-
 	static class Wrapper extends LangNTuple<Triple> {
 		/** shadow parent errorHandler */
 		private ErrorHandler errorHandler;
@@ -185,31 +96,36 @@ public final class LangNTriplesSkipBad implements Iterator<Triple>
 	    @Override
 	    protected final Triple parseOne() {
 		    Triple triple = null;
-		    int i = 0;
+		    boolean needSkip = false;
+//			System.err.println("process1");
 		    try {
 			    Token sToken = nextToken();
+//				System.err.println("stoken="+sToken);
 			    if (sToken.isEOF())
 				    exception(sToken, "Premature end of file: %s", sToken);
-			    i = 3;
+			    needSkip = true;
 			    checkIRIOrBNode(sToken);
-			    i = 0;
+			    needSkip = false;
 
 			    Token pToken = nextToken();
+//				System.err.println("ptoken="+pToken);
 			    if (pToken.isEOF())
 				    exception(pToken, "Premature end of file: %s", pToken);
-			    i = 2;
+				needSkip = true;
 			    checkIRI(pToken);
-			    i = 0;
+				needSkip = false;
 
 			    Token oToken = nextToken();
+//				System.err.println("otoken="+oToken);
 			    if (oToken.isEOF())
 				    exception(oToken, "Premature end of file: %s", oToken);
-			    i = 1;
+				needSkip = true;
 			    checkRDFTerm(oToken);
-			    i = 0;
+				needSkip = false;
 
 			    // Check in createTriple - but this is cheap so do it anyway.
 			    Token x = nextToken();
+//				System.err.println("ztoken="+x);
 
 			    if (x.getType() != TokenType.DOT)
 				    exception(x, "Triple not terminated by DOT: %s", x);
@@ -219,10 +135,12 @@ public final class LangNTriplesSkipBad implements Iterator<Triple>
 			    Node o = tokenAsNode(oToken);
 			    triple = profile.createTriple(s, p, o, sToken.getLine(), sToken.getColumn());
 		    } catch (RiotParseException e) {
-			    if (i > 0) {
+			    if (needSkip) {
+//					System.err.println("skipping..."+e.getMessage());
 				    ((TokenizerTextForgiving)tokens).skipLine();
 				    nextToken();
 			    } else {
+//					System.err.println("bad:"+e.getMessage());
 				    /** this is handled by {@link TokenizerTextForgiving} */
 			    }
 		    } catch (NullPointerException e2) {
