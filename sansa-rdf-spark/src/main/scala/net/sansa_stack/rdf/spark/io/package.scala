@@ -2,18 +2,23 @@ package net.sansa_stack.rdf.spark.io
 
 import java.io.ByteArrayInputStream
 
-import com.typesafe.config.{ Config, ConfigFactory }
-import net.sansa_stack.rdf.spark.io.ntriples.{ JenaTripleToNTripleString, NTriplesStringToJenaTriple }
+import com.google.common.collect.Iterators
+import com.typesafe.config.{Config, ConfigFactory}
+
+import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
-import net.sansa_stack.rdf.spark.utils.{ Logging, ScalaUtils }
+import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{ LongWritable, Text }
+import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.jena.atlas.lib.CharSpace
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.riot.out.NodeFormatterNT
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+
 import net.sansa_stack.rdf.spark.io.ntriples.NQuadsStringToJenaQuad
 
 /**
@@ -130,13 +135,25 @@ package object rdf {
       } else {
         true
       }
-
+      import scala.collection.JavaConverters._
       // save only if there was no failure with the path before
-      if (doSave) {
-        triples
-          .map(converter) // map to N-Triples string
-          .saveAsTextFile(path)
-      }
+      if (doSave) triples
+//          .mapPartitions(p => {
+//            val fct = new Function[Triple, String]() {
+//              val sb = new StringBuilder()
+//              val nodeFmt = new NodeFormatterNT(CharSpace.UTF8)
+//              override def apply(t: Triple): String =
+//                nodeFmt.format(t.getSubject) +
+//              " " +
+//              nodeFmt.format(t.getPredicate) +
+//              " " +
+//              nodeFmt.format(t.getObject) +
+//              " .\n"
+//            }
+//            Iterators.transform(p, fct).asScala
+//          })
+        .map(converter) // map to N-Triples string
+        .saveAsTextFile(path)
 
     }
 
