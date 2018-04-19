@@ -1,10 +1,18 @@
 package net.sansa_stack.ml.spark.outliers.anomalydetection
 
+
+
 import org.apache.jena.graph.Node
 import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.Triple
 import org.apache.spark.sql.SparkSession
-
+import org.apache.spark.HashPartitioner
+import scala.collection.mutable
+import scala.collection.mutable.HashSet
+import org.apache.jena.graph.NodeFactory
+import org.apache.spark.sql._
+import org.apache.spark.sql.types._
+import org.apache.spark.rdd._
 /*
  *
  * AnomalyDetection - Anomaly detection of numerical data
@@ -15,14 +23,11 @@ import org.apache.spark.sql.SparkSession
 
 class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
                        triplesType: List[String], JSimThreshold: Double,
-                       listSuperType: List[String], sparkSession: SparkSession, hypernym: String) extends Serializable {
-
-  def run(): RDD[(Node, Set[(Node, Node, Object)])] = {
-
-    // filtering Triples with Numerical Literal
+                       listSuperType: List[String], sparkSession: SparkSession, hypernym: String, numPartition: Int) extends Serializable {
+  def run(): RDD[(String, Set[(String, String, Object)])] = {
 
     // get all the triples whose objects are literal 
-    //these literals also contains xsd:date as well as xsd:xsd:langstring 
+    //these literals also contains xsd:date as well as xsd:langstring 
     val getObjectLiteral = getObjectList()
 
     //remove the literal which has ^^xsd:date or xsd:langstring(only considering numerical)
@@ -31,22 +36,21 @@ class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
     //checking still object has only numerical data only
     val triplesWithNumericLiteral = triplesWithNumericLit(removedLangString)
 
-    //if no numerical data, return from here
-    if (triplesWithNumericLiteral.count() == 0) {
-      println("No Numerical data is present")
-      System.exit(1)
-    }
+    val mapSubWithTriples = propClustering(triplesWithNumericLiteral) //.persist
 
     //get triples of hypernym
     val getHypernym = getHyp()
 
     //filter rdf type having object value dbpedia and join with hyernym
-    val rdfTypeDBwiki = rdfType(getHypernym)
+    val rdfTypeDBwiki = rdfType(getHypernym) //.partitionBy(new HashPartitioner(2)).persist()
 
+    //joining those subjects only who has rdf:ytpe and numerical literal 
+    val rdfTypeWithSubject = mapSubWithTriples.join(rdfTypeDBwiki)
+    val mapSubjectwithType = rdfTypeWithSubject.map(f => (f._1, f._2._2))
+    val propwithSub = propwithsubject(triplesWithNumericLiteral)
     //cluster subjects on the basis of rdf type
-    val jacardSimilarity = jSimilarity(triplesWithNumericLiteral, rdfTypeDBwiki, getHypernym)
+    val jacardSimilarity = jSimilarity(triplesWithNumericLiteral, mapSubjectwithType, propwithSub, mapSubWithTriples)
 
-    val propCluster = propClustering(triplesWithNumericLiteral)
     jacardSimilarity
 
   }
@@ -57,6 +61,7 @@ class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
 
   def triplesWithNumericLit(objLit: RDD[Triple]): RDD[Triple] = objLit.filter(f => isNumeric(f.getObject.toString()))
 
+  def propwithsubject(a: RDD[Triple]): RDD[(String, String)] = a.map(f => (getLocalName1(f.getSubject), getLocalName1(f.getPredicate)))
   def isNumeric(x: String): Boolean =
     {
       if (x.contains("^")) {
@@ -73,7 +78,6 @@ class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
 
   def isAllDigits(x: String): Boolean = {
     var found = false
-
     for (ch <- x) {
       if (ch.isDigit || ch == '.')
         found = true
@@ -86,163 +90,138 @@ class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
     found
   }
 
-  //def filterNumericalTriples(): RDD[Triple] = nTriplesRDD.filter(x => searchedge(x.getObject.toString(), objList))
-
   def searchedge(x: String, y: List[String]): Boolean = {
     if (x.contains("^")) {
       val c = x.indexOf('^')
       val subject = x.substring(c + 2)
-      !y.contains(subject)
+      y.contains(subject)
     } else
       true
   }
 
-  def rdfType(getHypernym: RDD[Triple]): RDD[(Node, Iterable[Iterable[String]])] = {
+  def rdfType(getHypernym: RDD[Triple]): RDD[(String, HashSet[String])] = {
 
     //filter triples with predicate as rdf:type
     val triplesWithRDFType = nTriplesRDD.filter(_.getPredicate.toString() == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
-    val triplesWithDBWikidata = triplesWithRDFType.filter(f => searchType(f.getObject.toString(), triplesType))
+    val triplesWithDBpedia = triplesWithRDFType.filter(f => searchType(f.getObject.toString(), triplesType))
 
-    /*K-V pair of (subject,object(wwikidata or dbpedia) of RDF type triple)
-       example:- (India,CompactBuffer(PopulatedPlace,country,...)*/
-    val subWithType = triplesWithDBWikidata.map(f => (f.getSubject, f.getObject.toString())).groupByKey
+    val subWithType1 = triplesWithDBpedia.map(f =>
+      // ...
+      (getLocalName1(f.getSubject), getLocalName1(f.getObject))) //.partitionBy(new HashPartitioner(8)).persist()
 
-    //adding hypernym in each subject
-    val hyper = getHypernym.map(f => (f.getSubject, ("hypernym") + f.getObject)).groupByKey
+    val initialSet1 = mutable.HashSet.empty[String]
+    val addToSet1 = (s: mutable.HashSet[String], v: String) => s += v
+    val mergePartitionSets1 = (p1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2
+    val uniqueByKey1 = subWithType1.aggregateByKey(initialSet1)(addToSet1, mergePartitionSets1)
 
-    val joinOp = subWithType union hyper
+    val hyper1 = getHypernym.map(f =>
+      (getLocalName1(f.getSubject), (getLocalName1(f.getObject) + ("hypernym")))) //.partitionBy(new HashPartitioner(8)).persist
 
-    val joinOpgroup = joinOp.groupByKey
+    val initialSet = mutable.HashSet.empty[String]
+    val addToSet = (s: mutable.HashSet[String], v: String) => s += v
+    val mergePartitionSets = (p1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2
+    val uniqueByKey = hyper1.aggregateByKey(initialSet)(addToSet, mergePartitionSets)
 
-    joinOpgroup
+    val joinOp = uniqueByKey union uniqueByKey1
+    val initialSet2 = mutable.HashSet.empty[HashSet[String]]
+    val addToSet2 = (s: mutable.HashSet[HashSet[String]], v: HashSet[String]) => s += v
+    val mergePartitionSets2 = (p1: mutable.HashSet[HashSet[String]], p2: mutable.HashSet[HashSet[String]]) => p1 ++= p2
+    val uniqueByKey2 = joinOp.aggregateByKey(initialSet2)(addToSet2, mergePartitionSets2)
+    val Joinopgroup2 = uniqueByKey2.map(f => (f._1, f._2.flatMap(f => f)))
+
+    Joinopgroup2
 
   }
-
+  def getLocalName1(x: Node): String = {
+    var a = x.toString().lastIndexOf("/")
+    val b = x.toString().substring(a + 1)
+    b
+  }
   def searchType(x: String, y: List[String]): Boolean = {
     if (y.exists(x.contains)) {
       true
     } else
       false
   }
-
+  implicit class Crossable[X](xs: Iterator[(String, (String, HashSet[String]))]) {
+    def cross[Y](ys: Iterator[(String, (String, HashSet[String]))]) = for { x <- xs; y <- ys } yield (x, y)
+  }
   def jSimilarity(TriplesWithNumericLiteral: RDD[Triple],
-                  rdfTypeDBwiki: RDD[(Node, Iterable[Iterable[String]])], getHypernym: RDD[Triple]): RDD[(Node, Set[(Node, Node, Object)])] = {
+                  rdfTypeDBwiki: RDD[(String, HashSet[String])], propwithSubject: RDD[(String, String)], mapSubWithTriples: RDD[(String, mutable.Set[(String, String, Object)])]): RDD[(String, Set[(String, String, Object)])] = {
 
-    /*K-V pair of subject with their properties from numerical tiples
-      e.g (United_States,CompactBuffer(populationTotal, populationDensity))*/
-    val subWithPredicate = TriplesWithNumericLiteral.map(f => (f.getSubject, f.getPredicate)).groupByKey
+    nTriplesRDD.unpersist()
+    val partitionedy = rdfTypeDBwiki.persist
+    val broadcastVar = sparkSession.sparkContext.broadcast(partitionedy.collect()) //for 16.6 GB data, collect is 3.5 GB
+    val joined = partitionedy.mapPartitions({ iter =>
 
-    /*join opertaion with rdf types and numerical predicates
-        (India,(CompactBuffer(PopulatedPlace,country,...),CompactBuffer(populationTotal)*/
-    val joinOp = rdfTypeDBwiki.join(subWithPredicate)
-
-    val groupOp = joinOp.groupByKey
-
-    val flatM = groupOp.map(f => (f._1, f._2.flatMap(f => f._1.flatMap(f => f))))
-
-    //cartesian product of joinOp and discarding AxA from RDD
-    val filterOnjoin = flatM.cartesian(flatM).
-      filter(f => (!f._1._1.toString().contentEquals(f._2._1.toString())))  //0+2/2
-
-    /*compare only those subjects which have same properties
-       e.g India and USA has same properties like populationToal*/
-
-    val subsetofProp = filterOnjoin.filter(f => (f._1._2.toSet.intersect(f._2._2.toSet)).size > 0)   
-
-    val subsetofPropRemoveSubType = removeSupType(subsetofProp)
-    //calculate Jaccard Similarity on rdf type of subjects
-
-    val hypernymRDD = subsetofPropRemoveSubType.map({
-      case ((a, iter), (b, iter1)) => ((a,
-        iter.filter(p => p.contains("hypernym"))), ((b, iter1.filter(p => p.contains("hypernym")))))
-    })
-    val hypernymRDDfilter = hypernymRDD.filter(f => f._1._2.size > 0 && f._2._2.size > 0)
-
-    val dbtypeRDD = subsetofPropRemoveSubType.map({
-      case ((a, iter), (b, iter1)) => ((a,
-        iter.filter(p => (!p.contains("hypernym")))), ((b, iter1.filter(p => (!p.contains("hypernym"))))))
-    })
-
-    val dbtypeRDDfilter = dbtypeRDD.filter(f => f._1._2.size > 0 && f._2._2.size > 0)
-
-    val hypernymUdbtype = hypernymRDDfilter union dbtypeRDDfilter
-
-    val Jsim = hypernymUdbtype.map(f => (f._1._1, f._2._1, Similarity.sim(f._1._2.toSet, f._2._2.toSet)))
-
-    val mapSubject = Jsim.map(f => (f._1, (f._2, f._3))).groupByKey
-
-    //filter the RDD with Jaccard value >= threshold
-
-    val Jsimfilter = mapSubject.map {
-      case (s, (iter)) =>
-        (s, (iter.filter { case (s, i) => i >= JSimThreshold }))
-    }
-
-    val similarSubjects = Jsimfilter.map({
-      case (s, (iter)) => (s, (iter.map { case (p, i) => p }))
-    }).distinct()
-
-    val cartSimSubject = similarSubjects.cartesian(similarSubjects).repartition(8)
-
-    val cartSimSubjectfilter = cartSimSubject.filter(f => f._1._1 != f._2._1 && (f._2._2.toList.contains(f._1._1) &&
-      f._1._2.toList.contains(f._2._1))).
-      map(f => (f._1._1, (f._1._2.toSet ++ f._2._2.toSet).toSet)).distinct().cache()
+      val y = broadcastVar.value
   
-    val simSubjectCart = cartSimSubjectfilter.cartesian(cartSimSubjectfilter).repartition(8)
-   
+      for {
+        x <- iter
+        z <- y
+        if x._1.toString() != z._1.toString()
+      } yield (x, z)
+    })
 
-    
-    //    val subsetMembers = ght.collect{case ((set1), (set2)) if  (set2.subsetOf(set1)) && (set1 -- set2).nonEmpty => (set2) }
-    val subset1 = simSubjectCart.filter {
-      case ((name1, set1), (name2, set2)) => (name1 != name2) && (set2.intersect(set1).size > 0) && (set1 -- set2).nonEmpty
+    partitionedy.unpersist()
+    val x = joined.mapPartitions({ iter =>
+      val y = iter.map(f => (f._1._1, (f._2._1, sim(f._1._2, f._2._2))))
+      val z = y.filter(f => f._2._2 > JSimThreshold).map(f => (f._1, f._2._1))
+      z
+    })
+
+    val initialSet3 = mutable.Set.empty[String]
+    val addToSet3 = (s: mutable.Set[String], v: String) => s += v
+    val mergePartitionSets3 = (p1: mutable.Set[String], p2: mutable.Set[String]) => p1 ++= p2
+    val uniqueByKey3 = x.aggregateByKey(initialSet3)(addToSet3, mergePartitionSets3)
+
+    val k = uniqueByKey3.map(f => ((f._2 += (f._1)).toSet)).map(a => (a, a))
+      .aggregateByKey(Set[String]())((x, y) => y, (x, y) => x)
+      .keys.distinct()
+
+    val abc = k.repartition(40).persist()
+    val simSubjectCart = abc.cartesian(abc).filter(f => f._1.intersect(f._2).size > 0)
+
+    val subsetMembers = simSubjectCart.filter { case (set1, set2) => (set2.subsetOf(set1)) && (set1 -- set2).nonEmpty }
+    val sdf = subsetMembers.map(f => (f._2))
+    val superset1 = k.subtract(sdf)
+
+    val ys = superset1.flatMap(f => (f.map(g => (g, f))))
+
+    val smallLookup = sparkSession.sparkContext.broadcast(ys.collect.toMap)
+    val joinSimSubTriples1 = mapSubWithTriples.flatMap {
+      case (key, value) =>
+        smallLookup.value.get(key).map { otherValue =>
+          (key, (otherValue, value))
+        }
     }
-    
+    //    val g=ys.join(mapSubWithTriples)
 
-    val jf = subset1.map(f => f._2)
-
-    val superset = cartSimSubjectfilter.subtract(jf).cache
-
-    //some extra triple removed. 
-    val removedTriples = cartSimSubjectfilter.subtractByKey(superset).cache  
-
-    val cartremove = removedTriples.cartesian(superset).filter(f => f._1._2.intersect(f._2._2).size > 0).repartition(8).
-      map(f => (f._1._1, f._2._2)).distinct() 
-
-    val final1 = cartremove.union(superset)
-
-    val mapSubWithTriples = propClustering(TriplesWithNumericLiteral)
-
-    val joinSimSubTriples = final1.join(mapSubWithTriples)
-
-    val clusterOfSubjects = joinSimSubTriples.map({
+    val clusterOfSubjects = joinSimSubTriples1.map({
       case (s, (iter, iter1)) => ((iter).toSet, iter1)
     })
 
-    val cartClusterSub = clusterOfSubjects.cartesian(clusterOfSubjects).repartition(8)
+    val initialSet = mutable.HashSet.empty[mutable.Set[(String, String, Object)]]
+    val addToSet = (s: mutable.HashSet[mutable.Set[(String, String, Object)]], v: mutable.Set[(String, String, Object)]) => s += v
+    val mergePartitionSets = (p1: mutable.HashSet[mutable.Set[(String, String, Object)]], p2: mutable.HashSet[mutable.Set[(String, String, Object)]]) => p1 ++= p2
+    val uniqueByKey = clusterOfSubjects.aggregateByKey(initialSet)(addToSet, mergePartitionSets)
 
-    val subCwithNumericLiteral = cartClusterSub.
-      filter(f => f._1._1.equals(f._2._1)
-        && (!f._1._2.equals(f._2._2)))
-      .
-      map(f => (f._1._1, (f._1._2.map(f => (f._1, f._2, f._3)))))
-      .groupByKey
-
-    val propCluster = subCwithNumericLiteral.map({
-      case (a, (iter)) => (iter.flatMap(f => f.map(f => f._2)).toSet, (a, (iter)))
+   
+    val propCluster = uniqueByKey.map({
+      case (a, (iter)) => (iter.flatMap(f => f.map(f => f._2)).toSet, ((iter)))
     })
 
     val propDistinct = propCluster.flatMap {
-      case (a, (b, (iter))) => a.map(f => (f, (b, (iter.flatMap(f => f).toSet))))
+      case (a, ((iter))) => a.map(f => (f, ((iter.flatMap(f => f).toSet))))
     }
 
     val clusterOfProp = propDistinct.map({
-      case (a, (iter, iter1)) => (a, iter1.filter(f => f._2.equals(a)))
+      case (a, (iter1)) => (a, iter1.filter(f => f._2.equals(a)))
     })
 
     clusterOfProp
 
-  
   }
   def isContains(a: List[Node], b: List[Node]): Boolean = {
     if (a.forall(b.contains) || b.forall(a.contains)) {
@@ -251,7 +230,7 @@ class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
       false
   }
 
-  def removeSupType(a: RDD[((Node, Iterable[String]), (Node, Iterable[String]))]): RDD[((Node, Iterable[String]), (Node, Iterable[String]))] = {
+  def removeSupType(a: RDD[((String, HashSet[String]), (String, HashSet[String]))]): RDD[((String, HashSet[String]), (String, HashSet[String]))] = {
 
     val rdd1 = a.map(f => f._1._2.toSet)
     val rdd2 = a.map(f => f._2._2.toSet)
@@ -259,31 +238,30 @@ class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
     val countRDD = intersectRDD.filter({
       case b => b.size > 0
     })
-    if (countRDD.count() > 0
+    if (!countRDD.isEmpty()
       && !intersectRDD.equals(rdd1)
       && !intersectRDD.equals(rdd2)) {
-      //     val c= a.map(f=>f._1._2.toSet.intersect(f._2._2.toSet)
-      //                 .filter(f=>searchType(f.toString(),listSuperType)))
-      // val c=a.map(f=>f._1._2.toSet).filter(f=>searchType(f.toString(),listSuperType))
+
       val clusterOfProp = a.map({
         case ((a, iter), (b, iter1)) => ((a, iter.filter(f => !searchType(f.toString(), listSuperType))),
           (b, iter1.filter(f => !searchType(f.toString(), listSuperType))))
       })
 
-      //          
-      println("------------------------------------------")
       clusterOfProp
-    }   
-    else
+    } else
       a
   }
-  def propClustering(triplesWithNumericLiteral: RDD[Triple]): RDD[(Node, Iterable[(Node, Node, Object)])] = {
+  def propClustering(triplesWithNumericLiteral: RDD[Triple]): RDD[(String, mutable.Set[(String, String, Object)])] = {
 
-    val subMap = triplesWithNumericLiteral.map(f => (f.getSubject,
-      (f.getSubject, f.getPredicate, getNumber(f.getObject.toString())))) //make a function instead of using
-      .groupByKey //getlitervalue because <http://dbpedia.org/datatype/squareKilometre>
-    //is not a valid datatype,so give error   
-    subMap
+    val subMap = triplesWithNumericLiteral.map(f => (getLocalName1(f.getSubject),
+      (getLocalName1(f.getSubject), getLocalName1(f.getPredicate), getNumber(f.getObject.toString())))) //.partitionBy(new HashPartitioner(8)) //make a function instead of using
+
+    val initialSet = mutable.Set.empty[(String, String, Object)]
+    val addToSet = (s: mutable.Set[(String, String, Object)], v: (String, String, Object)) => s += v
+    val mergePartitionSets = (p1: mutable.Set[(String, String, Object)], p2: mutable.Set[(String, String, Object)]) => p1 ++= p2
+    val uniqueByKey = subMap.aggregateByKey(initialSet)(addToSet, mergePartitionSets)
+
+    uniqueByKey
   }
 
   def getNumber(a: String): Object = {
@@ -293,9 +271,97 @@ class AnomalyDetection(nTriplesRDD: RDD[Triple], objList: List[String],
     subject
 
   }
+
+  def sim(seq1: HashSet[String], seq2: HashSet[String]): Double = {
+    var jSimilarity = 0.0
+    var dbtype1: HashSet[String] = null
+    var dbtype2: HashSet[String] = null
+    val hyper1 = seq1.filter(p => p.contains("hypernym"))
+    val hyper2 = seq2.filter(p => p.contains("hypernym"))
+    //case of usa and India
+
+    //USA= hypernym/states and India :- hypernym//Country
+    if (hyper1 == hyper2 && !hyper1.isEmpty && !hyper2.isEmpty) {
+
+      jSimilarity = 1.0
+      jSimilarity
+    } else {
+      if (seq1.contains("hypernym")) {
+        dbtype1 = seq1.dropRight(1)
+      } else
+        dbtype1 = seq1
+      if (seq2.contains("hypernym")) {
+        dbtype2 = seq2.dropRight(1)
+      } else
+        dbtype2 = seq2
+
+      val intersect_cnt = dbtype1.toSet.intersect(dbtype2.toSet).size
+
+      val union_count = dbtype1.toSet.union(dbtype2.toSet).size
+      jSimilarity = intersect_cnt / (union_count).toDouble
+      jSimilarity
+    }
+    jSimilarity
+  }
+
+  def iqr1(cluster: Seq[(String, String, Object)], anomalyListLimit: Int): Dataset[Row] = {
+
+    //create sample data 
+
+    var result: Dataset[Row] = null
+    // var _partitionData: RDD[String] = _
+    val KVcluster = sparkSession.sparkContext.parallelize(cluster.map(f => ((f._3.toString()).toDouble, f.toString())))
+    val rowRDD1 = KVcluster.map(value => Row(value))
+    val listofData = cluster.map(b => (b._3.toString()).toDouble).toList
+
+    if (listofData.size > anomalyListLimit) {
+      val k = sparkSession.sparkContext.makeRDD(listofData)
+      //create sample data 
+      //  println("sampleData=" + listofData)
+      val c = listofData.sorted
+
+      val rowRDD = sparkSession.sparkContext.makeRDD(c.map(value => Row(value)))
+      val schema = StructType(Array(StructField("value", DoubleType)))
+      val df = sparkSession.createDataFrame(rowRDD, schema)
+
+      val schema1 = new StructType()
+        .add(StructField("id", DoubleType, true))
+        .add(StructField("val1", StringType, true))
+      val dfWithoutSchema = sparkSession.createDataFrame(KVcluster).toDF("id", "dt")
+
+      // calculate quantiles and IQR
+      val quantiles = df.stat.approxQuantile("value",
+        Array(0.25, 0.75), 0.0)
+      //quantiles.foreach(println)
+
+      val Q1 = quantiles(0)
+
+      val Q3 = quantiles(1)
+
+      val IQR = Q3 - Q1
+
+      val lowerRange = Q1 - 1.5 * IQR
+
+      val upperRange = Q3 + 1.5 * IQR
+
+      val outliers = df.filter(s"value < $lowerRange or value > $upperRange").toDF("outlier")
+
+      def matcher(row: Row): Boolean = row.getAs[Double]("id")
+        .equals(row.getAs[Double]("outlier"))
+
+      val join = dfWithoutSchema.crossJoin(outliers)
+
+      result = join.filter(matcher _).distinct()
+      // _result.select("dt").show(20, false)
+      result.select("dt")
+    }
+    // result.show()
+    result
+  }
+
 }
 object AnomalyDetection {
   def apply(nTriplesRDD: RDD[Triple], objList: List[String], triplesType: List[String],
-            JSimThreshold: Double, listSuperType: List[String], sparkSession: SparkSession, hypernym: String) = new AnomalyDetection(nTriplesRDD, objList, triplesType,
-    JSimThreshold, listSuperType, sparkSession, hypernym)
+            JSimThreshold: Double, listSuperType: List[String], sparkSession: SparkSession, hypernym: String, numPartition: Int) = new AnomalyDetection(nTriplesRDD, objList, triplesType,
+    JSimThreshold, listSuperType, sparkSession, hypernym, numPartition)
 }
