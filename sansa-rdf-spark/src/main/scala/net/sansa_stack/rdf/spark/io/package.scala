@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark.io
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, StringWriter}
+import java.util.Collections
 
 import com.google.common.collect.Iterators
 import com.typesafe.config.{Config, ConfigFactory}
@@ -13,7 +14,9 @@ import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.atlas.lib.CharSpace
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.riot.lang.PipedTriplesStream
 import org.apache.jena.riot.out.NodeFormatterNT
+import org.apache.jena.riot.system.StreamOps
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
@@ -138,21 +141,27 @@ package object rdf {
       import scala.collection.JavaConverters._
       // save only if there was no failure with the path before
       if (doSave) triples
-//          .mapPartitions(p => {
-//            val fct = new Function[Triple, String]() {
+          .mapPartitions(p => {
+            val os = new ByteArrayOutputStream()
+            RDFDataMgr.writeTriples(os, p.asJava)
+            Collections.singleton(new String(os.toByteArray)).iterator().asScala
+
+//            val os = new ByteArrayOutputStream()
+//            val fct = new com.google.common.base.Function[Triple, String]() {
 //              val sb = new StringBuilder()
 //              val nodeFmt = new NodeFormatterNT(CharSpace.UTF8)
 //              override def apply(t: Triple): String =
-//                nodeFmt.format(t.getSubject) +
+//                nodeFmt.format(os, t.getSubject) +
 //              " " +
 //              nodeFmt.format(t.getPredicate) +
 //              " " +
 //              nodeFmt.format(t.getObject) +
 //              " .\n"
 //            }
+
 //            Iterators.transform(p, fct).asScala
-//          })
-        .map(converter) // map to N-Triples string
+          })
+//        .map(converter) // map to N-Triples string
         .saveAsTextFile(path)
 
     }
