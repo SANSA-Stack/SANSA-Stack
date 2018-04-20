@@ -3,21 +3,26 @@ package net.sansa_stack.examples.spark.ml.outliers.anomalydetection
 import scala.collection.mutable
 import org.apache.spark.sql.SparkSession
 import java.net.{ URI => JavaURI }
-import net.sansa_stack.ml.spark.outliers.anomalydetection.{ AnomalyDetection => AlgAnomalyDetection, IQR }
+import net.sansa_stack.ml.spark.outliers.anomalydetection.{ AnomalyDetection => AlgAnomalyDetection }
 import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
+import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.SaveMode
 
 object AnomalyDetection {
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.out)
+        run(config.in, config.threshold, config.anomalyListLimit, config.numofpartition, config.out)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: String, outputPath: String): Unit = {
+  def run(input: String, threshold: Double,
+          anomalyListLimit: Int,
+          numofpartition:   Int, output: String): Unit = {
 
     println("==================================================")
     println("|        Distributed Anomaly Detection           |")
@@ -31,7 +36,7 @@ object AnomalyDetection {
 
     //N-Triples Reader
     val lang = Lang.NTRIPLES
-    val triplesRDD = spark.rdf(lang)(input)
+    val triplesRDD = spark.rdf(lang)(input).repartition(numofpartition).persist()
     //constant parameters defined
     val JSimThreshold = 0.6
 
@@ -55,28 +60,33 @@ object AnomalyDetection {
     //hypernym URI
     val hypernym = "http://purl.org/linguistics/gold/hypernym"
 
-    val outDetection = new AlgAnomalyDetection(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, spark, hypernym)
+    val outDetection = new AlgAnomalyDetection(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, spark, hypernym, numofpartition)
 
     val clusterOfSubject = outDetection.run()
 
-    clusterOfSubject.foreach(println)
+    clusterOfSubject.take(10).foreach(println)
 
-    val setData = clusterOfSubject.map(f => f._2)
+    val setData = clusterOfSubject.repartition(numofpartition).persist.map(f => f._2.toSeq)
 
-    val listofData = clusterOfSubject.map({
-      case (a, (b)) => b.map(f => (f._3.toString().toDouble)).toList
-    })
+    //calculating IQR and saving output to the file
+    val listofDataArray = setData.collect()
+    var a: Dataset[Row] = null
 
-    val listofDataArray = listofData.collect()
-
-    for (listofData <- listofDataArray)
-      IQR.iqr(listofData, setData)
-
+    for (listofDatavalue <- listofDataArray) {
+      a = outDetection.iqr1(listofDatavalue, anomalyListLimit)
+      if (a != null)
+        a.select("dt").coalesce(1).write.format("text").mode(SaveMode.Append) save (output)
+    }
+    setData.unpersist()
+    spark.stop()
   }
 
   case class Config(
-    in:  String = "",
-    out: String = "")
+    in:               String = "",
+    threshold:        Double = 0.0,
+    anomalyListLimit: Int    = 0,
+    numofpartition:   Int    = 4,
+    out:              String = "")
 
   val parser = new scopt.OptionParser[Config]("Anomaly Detection example") {
 
@@ -85,6 +95,22 @@ object AnomalyDetection {
     opt[String]('i', "input").required().valueName("<path>").
       action((x, c) => c.copy(in = x)).
       text("path to file that contains the data")
+
+    opt[Double]('t', "threshold").required().
+      action((x, c) => c.copy(threshold = x)).
+      text("the Jaccard Similarity value")
+
+    opt[Int]('a', "numofpartition").required().
+      action((x, c) => c.copy(numofpartition = x)).
+      text("Number of partition")
+
+    opt[Int]('c', "anomalyListLimit").required().
+      action((x, c) => c.copy(anomalyListLimit = x)).
+      text("the outlier List Limit")
+
+    opt[String]('o', "output").required().valueName("<directory>").
+      action((x, c) => c.copy(out = x)).
+      text("the output directory")
 
     help("help").text("prints this usage text")
   }
