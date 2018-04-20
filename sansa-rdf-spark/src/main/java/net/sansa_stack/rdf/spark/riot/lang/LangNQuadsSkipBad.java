@@ -18,9 +18,7 @@
 
 package net.sansa_stack.rdf.spark.riot.lang;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
+import net.sansa_stack.rdf.spark.riot.tokens.TokenizerTextForgiving;
 import org.apache.jena.atlas.iterator.PeekIterator;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.Lang;
@@ -38,7 +36,8 @@ import org.apache.jena.sparql.core.Quad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.rdf.spark.riot.tokens.TokenizerTextForgiving;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * N-Quads.
@@ -113,45 +112,52 @@ public final class LangNQuadsSkipBad implements Iterator<Quad>
 		@Override
 		protected final Quad parseOne()
 		{
-//			System.err.println("parseone");
+//			System.err.println("\nparseone");
 			boolean needSkip = false;
 			try {
 				Token sToken = nextToken() ;
 //				System.err.println("stoken="+sToken);
 				if ( sToken.getType() == TokenType.EOF )
 					exception(sToken, "Premature end of file: %s", sToken) ;
+				needSkip = true;
+				checkIRIOrBNode(sToken) ;
+				needSkip = false;
 
 				Token pToken = nextToken() ;
 //				System.err.println("ptoken="+pToken);
 				if ( pToken.getType() == TokenType.EOF )
 					exception(pToken, "Premature end of file: %s", pToken) ;
+				needSkip = true;
+				checkIRI(pToken) ;
+				needSkip = false;
 
 				Token oToken = nextToken() ;
 //				System.err.println("otoken="+oToken);
 				if ( oToken.getType() == TokenType.EOF )
 					exception(oToken, "Premature end of file: %s", oToken) ;
+				needSkip = true;
+				checkRDFTerm(oToken) ;
+				needSkip = false;
 
 				Token xToken = nextToken() ;    // Maybe DOT
 //				System.err.println("xtoken="+xToken);
-				needSkip=true;
 				if ( xToken.getType() == TokenType.EOF )
 					exception(xToken, "Premature end of file: Quad not terminated by DOT: %s", xToken) ;
 
 				// Process graph node first, before S,P,O
 				// to set bnode label scope (if not global)
 				Node c = null ;
-				needSkip = true;
 				if ( xToken.getType() != TokenType.DOT )
 				{
 					// Allow bNodes for graph names.
+					needSkip = true;
 					checkIRIOrBNode(xToken) ;
+					needSkip = false;
 					// Allow only IRIs
 					//checkIRI(xToken) ;
 					c = tokenAsNode(xToken) ;
-					needSkip = false;
 					xToken = nextToken() ;
 //					System.err.println("ztoken="+xToken);
-					needSkip = true;
 					currentGraph = c ;
 				}
 				else
@@ -161,10 +167,6 @@ public final class LangNQuadsSkipBad implements Iterator<Quad>
 				}
 
 				// createQuad may also check but these checks are cheap and do form syntax errors.
-				checkIRIOrBNode(sToken) ;
-				checkIRI(pToken) ;
-				checkRDFTerm(oToken) ;
-				//needSkip = false;
 				// xToken already checked.
 
 				Node s = tokenAsNode(sToken) ;
@@ -173,18 +175,17 @@ public final class LangNQuadsSkipBad implements Iterator<Quad>
 
 				// Check end of tuple.
 
+				needSkip = true;
 				if ( xToken.getType() != TokenType.DOT )
 					exception(xToken, "Quad not terminated by DOT: %s", xToken) ;
 
 				return profile.createQuad(c, s, p, o, sToken.getLine(), sToken.getColumn()) ;
 			} catch (RiotParseException e) {
-				errorHandler.warning("skipping line  " + e.getOriginalMessage(), e.getLine(), e.getCol());
+				errorHandler.warning("skipping line " + e.getOriginalMessage(), e.getLine(), e.getCol());
 				if(needSkip) {
-//					System.err.println("error");
 					((TokenizerTextForgiving)tokens).skipLine();
 					nextToken();
 				}
-
 			} catch (NullPointerException e2) {
 				errorHandler.warning(e2.getMessage(), currLine, currCol);
 			}
