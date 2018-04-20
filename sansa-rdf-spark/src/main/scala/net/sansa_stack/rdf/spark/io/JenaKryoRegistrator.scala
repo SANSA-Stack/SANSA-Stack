@@ -28,7 +28,7 @@ class JenaKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[org.apache.jena.graph.Node_URI], new NodeSerializer)
     kryo.register(classOf[org.apache.jena.graph.Node_Literal], new NodeSerializer)
     kryo.register(classOf[org.apache.jena.graph.Triple], new TripleSerializer)
-    kryo.register(classOf[org.apache.jena.sparql.core.Quad], new QuadSerializer)
+    //kryo.register(classOf[org.apache.jena.sparql.core.Quad], new QuadSerializer)
     kryo.register(classOf[Array[org.apache.jena.graph.Triple]])
     kryo.register(Class.forName("net.sansa_stack.rdf.spark.model.SparkRDDGraphOps$$anonfun$findGraph$1"))
     kryo.register(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
