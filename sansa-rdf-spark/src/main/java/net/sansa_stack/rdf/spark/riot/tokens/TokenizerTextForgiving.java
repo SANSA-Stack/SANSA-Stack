@@ -18,8 +18,6 @@
 
 package net.sansa_stack.rdf.spark.riot.tokens;
 
-import java.util.NoSuchElementException;
-
 import org.apache.jena.atlas.AtlasException;
 import org.apache.jena.atlas.io.IO;
 import org.apache.jena.atlas.io.PeekReader;
@@ -30,6 +28,9 @@ import org.apache.jena.riot.system.ErrorHandler;
 import org.apache.jena.riot.system.RiotChars;
 import org.apache.jena.riot.tokens.*;
 import org.apache.jena.sparql.ARQInternalErrorException;
+
+import java.util.NoSuchElementException;
+
 import static org.apache.jena.atlas.lib.Chars.*;
 import static org.apache.jena.riot.system.RiotChars.*;
 
@@ -133,6 +134,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         } catch (RiotException e) {
             RiotException bad3 = e;
             skipLine();
+            /* invalidate the (broken) token */
             token = null;
             bad = null;
 //            System.err.println("exception:"+e.getMessage());
