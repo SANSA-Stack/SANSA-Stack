@@ -17,7 +17,7 @@ class TripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang, allowBlankLines = true)(path)
 
     val graph = triples.toDF()
-    val size = graph.count()
+    val size = graph.size()
 
     assert(size == 9)
   }

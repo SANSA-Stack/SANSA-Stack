@@ -24,9 +24,9 @@ object TripleOps {
     val spark: SparkSession = SparkSession.builder().getOrCreate()
     val schema = StructType(
       Seq(
-        StructField("subject", StringType, nullable = false),
-        StructField("predicate", StringType, nullable = false),
-        StructField("object", StringType, nullable = false)))
+        StructField("s", StringType, nullable = false),
+        StructField("p", StringType, nullable = false),
+        StructField("o", StringType, nullable = false)))
     val rowRDD = triples.map(t => Row(NodeUtils.getNodeValue(t.getSubject), NodeUtils.getNodeValue(t.getPredicate), NodeUtils.getNodeValue(t.getObject)))
     val df = spark.createDataFrame(rowRDD, schema)
     df.createOrReplaceTempView("TRIPLES")
@@ -204,8 +204,8 @@ object TripleOps {
    *
    * @param triples RDD of triples
    * @param subject the subject (None for any)
-   * @param predicate the predicate (Node for any)
-   * @param object the object (Node for any)
+   * @param predicate the predicate (None for any)
+   * @param object the object (None for any)
    * @return true if there exists within this RDF graph
    * a triple with (S, P, O) pattern, false otherwise
    */
