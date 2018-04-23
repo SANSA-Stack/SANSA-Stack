@@ -1,10 +1,11 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
-
 import java.util.regex.{ Matcher, Pattern }
 
-class RevisionFeatures extends Serializable {
-
-  // Contain language Latin :
+class RevisionFeatures extends Serializable{
+  
+  
+  
+    // Contain language Latin :
 
   val latinRegex_Str: String = "(af|ak|an|ang|ast|ay|az|bar|bcl|bi|bm|br|bs|ca|cbk-zam|ceb|ch|chm|cho|chy|co|crh-latn|cs|csb|cv|cy|da|de|diq|dsb|ee|eml|en|eo|es|et|eu|ff|fi|fj|fo|fr|frp|frr|fur|fy|ga|gd|gl|gn|gsw|gv|ha|haw|ho|hr|hsb|ht|hu|hz|id|ie|ig|ik|ilo|io|is|it|jbo|jv|kab|kg|ki|kj|kl|kr|ksh|ku(?!-arab\b)|kw|la|lad|lb|lg|li|lij|lmo|ln|lt|lv|map-bms|mg|mh|min?|ms|mt|mus|mwl|na|nah|nan|nap|nb|nds|nds-nl|ng|nl|nn|nov|nrm|nv|ny|oc|om|pag|pam|pap|pcd|pdc|pih|pl|pms|pt|qu|rm|rn|ro|roa-tara|rup|rw|sc|scn|sco|se|sg|sgs|sk|sl|sm|sn|so|sq|sr-el|ss|st|stq|su|sv|sw|szl|tet|tk|tl|tn|to|tpi|tr|ts|tum|tw|ty|uz|ve|vec|vi|vls|vo|vro|wa|war|wo|xh|yo|za|zea|zu)"
   val pattern_ContainLanguage_Latin: Pattern = Pattern.compile(latinRegex_Str);
@@ -100,8 +101,12 @@ class RevisionFeatures extends Serializable {
           langeType = "NA"
         }
       }
+      else {
+                  langeType = "NA"
 
-      //   }
+      }
+
+
 
     } else {
 
@@ -112,8 +117,9 @@ class RevisionFeatures extends Serializable {
 
   }
 
-}
 
   
-     
-
+  
+  
+  
+}

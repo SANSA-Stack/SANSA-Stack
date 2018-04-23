@@ -1,10 +1,11 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
+
 import java.util.regex.{ Matcher, Pattern }
 import org.slf4j.{ Logger, LoggerFactory }
 
 class CommentProcessor extends Serializable {
-
+  
   val logger: Logger = LoggerFactory.getLogger(classOf[SentencesFeature])
 
   // Some Operations related to  Comment Parsing : "Parsed Comments"
@@ -67,37 +68,40 @@ class CommentProcessor extends Serializable {
     action1
   }
 
-  // ok : Used in  Revision Action - SubAction Features
-  def Extract_Actions_FromComments(comment: String): String = {
 
-    var actions = ""
+
+  
+  // ok : Used in  Revision Action - SubAction Features 
+  def Extract_Actions_FromComments(comment: String): String = {
+     
+    var actions=""
     if (comment != null) {
       if (isRollback(comment)) {
-        actions = "rollback" + "_" + "NA" // in not Normal comment, here we have one main action
+        actions = "rollback"+"_"+"NA" // in not Normal comment, here we have one main action 
       } else if (isUndo(comment)) {
-        actions = "undo" + "_" + "NA"
+        actions = "undo"+"_"+"NA"
       } else if (isRestore(comment)) {
-        actions = "restore" + "_" + "NA"
+        actions = "restore"+"_"+"NA"
       } else if (isPageCreation(comment)) {
-        actions = "pageCreation" + "_" + "NA"
+        actions = "pageCreation"+"_"+"NA"
       } else if ("" == comment) {
-        actions = "emptyComment" + "_" + "NA"
+        actions = "emptyComment"+"_"+"NA"
       } else if (isSetPageProtection(comment)) {
-        actions = "setPageProtection" + "_" + "NA"
+        actions = "setPageProtection"+"_"+"NA"
       } else if (isChangePageProtection(comment)) {
-        actions = "changePageProtection" + "_" + "NA"
+        actions = "changePageProtection"+"_"+"NA"
       } else if (isRemovePageProtection(comment)) {
-        actions = "removePageProtection" + "_" + "NA"
+        actions = "removePageProtection"+"_"+"NA"
       } else {
 
-        actions = Extract_ActionsOfNormalComment(comment)
+        actions = Extract_ActionsOfNormalComment(comment) 
 
       }
     }
     actions
   }
-
-  //Ok: helper for Revision Features:  extract Action- subaction from comment:
+  
+    //Ok: helper for Revision Features:  extract Action- subaction from comment:
   def Extract_ActionsOfNormalComment(comment: String): String = {
 
     var result: Boolean = false
@@ -171,7 +175,7 @@ class CommentProcessor extends Serializable {
 
     }
 
-    Action1 + "_" + Action2
+    Action1+"_"+Action2
 
   }
 
@@ -387,7 +391,7 @@ class CommentProcessor extends Serializable {
 
     }
 
-    Action1 + "-" + Action2
+    Action1+"-"+Action2
 
   }
 
@@ -716,7 +720,7 @@ class CommentProcessor extends Serializable {
     result
   }
 
-  // ok - using in Extract_Revision_Language function in Revision Features class
+  // ok - using in Extract_Revision_Language function in Revision Features class 
   def Check_CommentNormal_Or_Not(comment: String): Boolean = {
 
     var result: Boolean = false
@@ -734,7 +738,9 @@ class CommentProcessor extends Serializable {
 
       }
 
-    } else {
+    }
+    
+    else {
       // There is NOT something of the form /* ... */
       suffixComment = comment
       result = false
@@ -868,5 +874,9 @@ class CommentProcessor extends Serializable {
   def getDataValue(): String = dataValue
 
   def getItemValue(): String = itemValue
-
+ 
+  
+  
+  
+  
 }

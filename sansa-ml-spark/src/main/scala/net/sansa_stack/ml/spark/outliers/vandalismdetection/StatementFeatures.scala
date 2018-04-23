@@ -1,9 +1,8 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
-
-class StatementFeatures extends Serializable {
-
-   def getProperty(comment: String): String = {
+class StatementFeatures extends Serializable{
+  
+  def getProperty(comment: String): String = {
    var result: String = null
     if (comment != null) {
       val pattern: String = "[[Property:"
@@ -32,7 +31,6 @@ class StatementFeatures extends Serializable {
     }
     result
   }
-
    def getItemValue(comment: String): String = {
     var result: String = null
     if (comment != null) {
@@ -45,5 +43,8 @@ class StatementFeatures extends Serializable {
     }
     result
   }
-
+  
+  
+  
+  
 }

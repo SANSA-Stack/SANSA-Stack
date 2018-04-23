@@ -3,9 +3,10 @@ package net.sansa_stack.ml.spark.outliers.vandalismdetection
 import java.util.{ Arrays, List }
 import java.util.{ Set, HashSet }
 
-class UserFeatures extends Serializable {
 
-  // User Is Privileged :
+class UserFeatures extends Serializable{
+  
+   // User Is Privileged :
   def CheckName_isGlobalSysopUser(str: String): Boolean = {
 
     val GlobalSysopUser: Array[String] = Array("Alan", "BRUTE", "Defender", "Glaisher", "Igna", "Jafeluv", "Kaganer", "Liliana-60", "Mh7kJ", "MoiraMoira", "PiRSquared17", "Pmlineditor", "Stryn",
@@ -24,7 +25,7 @@ class UserFeatures extends Serializable {
 
   }
   def CheckName_isGlobalRollBackerUser(str: String): Boolean = {
-    val lobalRollBackerUser: Array[String] =
+    val isGlobalRollBackerUser: Array[String] =
       Array(".snoopy.", "Addihockey10",
         "Ah3kal", "Alan", "Aldnonymous", "Alison", "Avicennasis",
         "Az1568", "BRUTE", "Baiji", "Beetstra", "Church of emacs",
@@ -42,7 +43,7 @@ class UserFeatures extends Serializable {
         "Vogone", "Waihorace", "Werdan7", "Wiki13", "Xqt", "Ymblanter",
         "YourEyesOnly")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(lobalRollBackerUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(isGlobalRollBackerUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -353,7 +354,7 @@ class UserFeatures extends Serializable {
 
   def IsRegisteroUser(str: String): Boolean = {
     var flag = false
-    if (str != "0000") {
+    if (str != "NA") {
       flag = true
     }
     flag
@@ -378,12 +379,9 @@ class UserFeatures extends Serializable {
 
     flag
 
+    
   }
 
+
+  
 }
-
-
-
-
-
-

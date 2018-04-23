@@ -9,9 +9,11 @@ import java.util.ArrayList
 import java.util.regex.Pattern
 import java.io.ByteArrayInputStream
 
-class ParseRDFXML extends Serializable {
 
-  def start_RDFXML_Parser(jobConf_Record: JobConf, jobConf_Prefixes: JobConf, sc: SparkContext): RDD[String] = {
+class ParseRDFXML extends Serializable{
+  
+  
+   def start_RDFXML_Parser(jobConf_Record: JobConf, jobConf_Prefixes: JobConf, sc: SparkContext): RDD[String] = {
 
     jobConf_Record.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
     jobConf_Record.set("stream.recordreader.begin", "<rdf:Description") // start Tag
@@ -88,9 +90,5 @@ class ParseRDFXML extends Serializable {
     str
   }
 
+
 }
-
-
-
-
-
