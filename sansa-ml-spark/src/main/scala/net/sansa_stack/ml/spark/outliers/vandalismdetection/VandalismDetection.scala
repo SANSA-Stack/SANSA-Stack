@@ -21,6 +21,9 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.classification.MultilayerPerceptronClassifier
 
+//import ml.dmlc.xgboost4j.scala.spark.{XGBoostEstimator, XGBoostClassificationModel}
+import scala.collection.mutable
+
 class VandalismDetection extends Serializable {
 
   def Triger(sc: SparkContext): Unit = {
@@ -914,6 +917,23 @@ class VandalismDetection extends Serializable {
       //**************************5.End Multilayer perceptron classifier  ***************
                     
 
+        
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
 
   }
@@ -921,6 +941,24 @@ class VandalismDetection extends Serializable {
   //===========================================================================================================================================
   //=================================================Functions Part=============================================================================
 
+  
+  def get_param(): mutable.HashMap[String, Any] = {
+    val params = new mutable.HashMap[String, Any]()
+        params += "eta" -> 0.1
+        params += "max_depth" -> 8
+        params += "gamma" -> 0.0
+        params += "colsample_bylevel" -> 1
+        params += "objective" -> "binary:logistic"
+        params += "num_class" -> 2
+        params += "booster" -> "gbtree"
+        params += "num_rounds" -> 20
+        params += "nWorkers" -> 3
+    return params
+}
+  
+  
+  
+  
   def Ration(va: Double, median: Double): Double = {
 
     var tem = va
