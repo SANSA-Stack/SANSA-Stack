@@ -105,7 +105,7 @@ object TripleOps {
    * Return the union all of RDF graphs.
    *
    * @param triples Dataset of RDF graph
-   * @param others sequence of RDDs of other RDF graph
+   * @param others sequence of Datasets of other RDF graph
    * @return graph (union of all)
    */
   def unionAll(triples: Dataset[Triple], others: Seq[Dataset[Triple]]): Dataset[Triple] =
