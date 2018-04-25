@@ -8,18 +8,14 @@ import java.util.Scanner
 import org.json.JSONObject
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.functions.{ concat, lit }
-import org.apache.spark.ml.feature.{Word2Vec, Word2VecModel}
+import org.apache.spark.ml.feature.{ Word2Vec, Word2VecModel }
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
-import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
+import org.apache.spark.ml.classification.{ RandomForestClassificationModel, RandomForestClassifier }
+import org.apache.spark.ml.feature.{ IndexToString, StringIndexer, VectorIndexer }
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.ml.classification.{GBTClassificationModel, GBTClassifier}
-import org.apache.spark.ml.classification.DecisionTreeClassificationModel
-import org.apache.spark.ml.classification.DecisionTreeClassifier
+import org.apache.spark.ml.classification.{ GBTClassificationModel, LogisticRegression, MultilayerPerceptronClassifier, GBTClassifier, DecisionTreeClassificationModel, DecisionTreeClassifier }
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.classification.MultilayerPerceptronClassifier
 
 //import ml.dmlc.xgboost4j.scala.spark.{XGBoostEstimator, XGBoostClassificationModel}
 import scala.collection.mutable
@@ -27,7 +23,6 @@ import scala.collection.mutable
 class VandalismDetection extends Serializable {
 
   def Triger(sc: SparkContext): Unit = {
-
 
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
     import sqlContext.implicits._
@@ -57,7 +52,7 @@ class VandalismDetection extends Serializable {
       val sqlContext = new org.apache.spark.sql.SQLContext(sc)
       val DFR_RDF_XML = DRF_Builder_RDFXML_OBJ.RDD_TO_DFR_RDFXML(RDD_RDFXML, sqlContext)
       DFR_RDF_XML.show()
-//
+      //
       // NOrmal XML Example WikiData: ***************************************************************************************************
     } else if (num == "2") {
       // Streaming records:
@@ -91,22 +86,17 @@ class VandalismDetection extends Serializable {
       DF_First_DF_Result_Join_Tags_and_Json.registerTempTable("Data1")
       val dfr_DATA_JsonTages1 = sqlContext.sql("select * from Data1 order by itemid ,Rid ").cache()
 
-
       val colNames = Seq("Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2", "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2", "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
       val DF_Second = DF_First_DF_Result_Join_Tags_and_Json.toDF(colNames: _*) //.distinct()
       DF_Second.registerTempTable("Data2")
 
-
       //===================================================================Parent // Previous Revision==============================================================================================================
       //val DF_Joined = result1.as("df1").join(result2.as("df2"), col("itemid") === col("itemid2") && col("index1") === col("index2") + 1, "leftouter").select("Rid", "itemid", "comment", "pid", "time", "contributorIP", "contributorID", "contributorName", "JsonText", "labels", "descriptions", "aliases", "claims", "sitelinks", "model", "format", "sha", "Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2", "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2", "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
       //.select("itemid", "Rid","pid","time","itemid2","Rid2","pid2","time2")
-      
-      
+
       //Joining based on Parent Id to get the previous cases: ParentID
-      val DF_Joined = DF_First_DF_Result_Join_Tags_and_Json.as("df1").join(DF_Second.as("df2"), $"df1.pid" === $"df2.Rid2", "leftouter").distinct()      
-      
-      
-      
+      val DF_Joined = DF_First_DF_Result_Join_Tags_and_Json.as("df1").join(DF_Second.as("df2"), $"df1.pid" === $"df2.Rid2", "leftouter").distinct()
+
       val RDD_After_JoinDF = DF_Joined.rdd.distinct()
       val x = RDD_After_JoinDF.map(row => (row(0).toString().toInt, row)).cache()
       val part = new RangePartitioner(4, x)
@@ -171,29 +161,18 @@ class VandalismDetection extends Serializable {
           /*80*/ StructField("R10RevisionSize", DoubleType, false) :: /*81*/ StructField("R11ContentType", StringType, false) :: /*82*/ StructField("R12BytesIncrease", DoubleType, false) ::
           /*83*/ StructField("R13TimeSinceLastRevi", DoubleType, false) :: /*84*/ StructField("R14CommentLength", DoubleType, false) :: /*85*/ StructField("R15RevisionSubaction", StringType, false) ::
           /*86*/ StructField("R16PrevReviSubaction", StringType, false) ::
-          
+
           Nil)
 
-      val rowRDD = Result_all_Features.map(line => line.split(",")).map(e ⇒ Row(e(0).toInt 
-          
-          
-        // character feature column
-       , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble),
-         e(11).toDouble, e(12).toDouble, e(13).toDouble, e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble
-       , e(21).toDouble, e(22).toDouble, e(23).toDouble, e(24).toDouble, e(25).toDouble
-       
-       //Word Feature column
-      , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble, RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
-      , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble //Statement Features Column: 
-      , e(47), e(48), e(49) // User Features Column: 
-      , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble //Item Features column:
-      , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble, e(68).toDouble, e(69).toDouble, "Q" + e(70).toDouble.toInt.toString() //Revision Features Column: 
-      , e(71), e(72), e(73).toDouble, e(74).toDouble, e(75), e(76), e(77).toDouble, e(78), e(79), e(80).toDouble, e(81), e(82).toDouble, e(83).toDouble, e(84).toDouble
-       , e(85), e(86)
-      
-      )
-      
-      )
+      val rowRDD = Result_all_Features.map(line => line.split(",")).map(e ⇒ Row(e(0).toInt // character feature column
+      , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble),
+        e(11).toDouble, e(12).toDouble, e(13).toDouble, e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble, e(21).toDouble, e(22).toDouble, e(23).toDouble, e(24).toDouble, e(25).toDouble //Word Feature column
+        , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble, RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
+        , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble //Statement Features Column: 
+        , e(47), e(48), e(49) // User Features Column: 
+        , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble //Item Features column:
+        , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble, e(68).toDouble, e(69).toDouble, "Q" + e(70).toDouble.toInt.toString() //Revision Features Column: 
+        , e(71), e(72), e(73).toDouble, e(74).toDouble, e(75), e(76), e(77).toDouble, e(78), e(79), e(80).toDouble, e(81), e(82).toDouble, e(83).toDouble, e(84).toDouble, e(85), e(86)))
 
       //a.User Frequency:
       //number of revisions a user has contributed
@@ -275,56 +254,51 @@ class VandalismDetection extends Serializable {
 
       // For String Column, We fill the Null values by "NA":
 
-      var Fill_Missing_Final_All_Features = Final_All_Features.na.fill("NA", Seq("USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE", "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME","REVISION_TAGS")).cache()
+      var Fill_Missing_Final_All_Features = Final_All_Features.na.fill("NA", Seq("USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE", "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")).cache()
 
       // For Integer Frequency  Column, We fill the Null values by 0:
-      Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.na.fill(0, Seq("FreqItem", "NumberUniqUserEditItem", "NumberRevisionItemHas", "NumberofUniqueItemsUseredit", "NumberofRevisionsUserContributed","REVISION_SESSION_ID")).cache()
+      Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.na.fill(0, Seq("FreqItem", "NumberUniqUserEditItem", "NumberRevisionItemHas", "NumberofUniqueItemsUseredit", "NumberofRevisionsUserContributed", "REVISION_SESSION_ID")).cache()
       //Fill_Missing_Final_All_Features.show()
-      
-      
-      
+
       val BoolToDoubleUDF = udf { (BoolAsString: String) => if (BoolAsString == "T") 1.0 else 0.0 }
-      val IntegerToDouble=  udf { (IntegerRevisionSessionID: Integer) => IntegerRevisionSessionID.toDouble }
+      val IntegerToDouble = udf { (IntegerRevisionSessionID: Integer) => IntegerRevisionSessionID.toDouble }
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalROLLBACK_REVERTED", BoolToDoubleUDF(col("ROLLBACK_REVERTED")))
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalUNDO_RESTORE_REVERTED", BoolToDoubleUDF(col("UNDO_RESTORE_REVERTED")))
-      
+
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalREVISION_SESSION_ID", IntegerToDouble(col("REVISION_SESSION_ID")))
-      
+
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalNumberofRevisionsUserContributed", IntegerToDouble(col("NumberofRevisionsUserContributed")))
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalNumberofUniqueItemsUseredit", IntegerToDouble(col("NumberofUniqueItemsUseredit")))
-      
+
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalNumberRevisionItemHas", IntegerToDouble(col("NumberRevisionItemHas")))
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalNumberUniqUserEditItem", IntegerToDouble(col("NumberUniqUserEditItem")))
       Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalFreqItem", IntegerToDouble(col("FreqItem")))
 
-
-     //===========================================================================Caharacter Features : Double , Integer Features ====================================================================================
+      //===========================================================================Caharacter Features : Double , Integer Features ====================================================================================
       //Double Ratio:  For Ratio Double column, Fill -1 value by Median:Character Features + Ratio of Word Features :
       var Samples = Fill_Missing_Final_All_Features.sample(false, 0.001).cache() //.where($"S2SimikaritySitelinkandLabel">0.0 || $"S3SimilarityLabelandSitelink">0.0 || $"S4SimilarityCommentComment">0.0)
       Samples.registerTempTable("df")
-      
-      
-      val Query ="select "+
-       "percentile_approx(C1uppercaseratio, 0.5) as meadian1"+","+"percentile_approx(C2lowercaseratio, 0.5) as median2"+" ,"+
-       "percentile_approx(C3alphanumericratio, 0.5) as median3"+ ","+"percentile_approx(C4asciiratio, 0.5) as median4" +","+
-       "percentile_approx(C5bracketratio, 0.5) as median5"+ ","+"percentile_approx(C6digitalratio, 0.5) as median6" +","+
-       "percentile_approx(C7latinratio, 0.5) as median7"+ ","+"percentile_approx(C8whitespaceratio, 0.5) as median8" +","+
-       "percentile_approx(C9puncratio, 0.5) as median9"+ ","+"percentile_approx(C11arabicratio, 0.5) as median11" +","+
-       "percentile_approx(C12bengaliratio, 0.5) as median12"+ ","+"percentile_approx(C13brahmiratio, 0.5) as median13"+","+
-       "percentile_approx(C14cyrilinratio, 0.5) as median14"+ ","+"percentile_approx(C15hanratio, 0.5) as median15"+","+
-        "percentile_approx(c16malysiaratio, 0.5) as median16"+ ","+
-       "percentile_approx(C17tamiratio, 0.5) as median17"+ ","+"percentile_approx(C18telugratio, 0.5) as median18" +","+
-       "percentile_approx(C19symbolratio, 0.5) as median19"+ ","+"percentile_approx(C20alpharatio, 0.5) as median20"+","+
-       "percentile_approx(C21visibleratio, 0.5) as median21"+ ","+"percentile_approx(C22printableratio, 0.5) as median22" +","+
-       "percentile_approx(C23blankratio, 0.5) as median23"+ ","+"percentile_approx(C24controlratio, 0.5) as median24"+","+
-       "percentile_approx(C25hexaratio, 0.5) as median25"++","+"percentile_approx(W1languagewordratio, 0.5) as median26"+","+
-       "percentile_approx(W3lowercaseratio, 0.5) as median27"+","+"percentile_approx(W6badwordratio, 0.5) as median28"+","+
-       "percentile_approx(W7uppercaseratio, 0.5) as median27"+","+"percentile_approx(W8banwordratio, 0.5) as median27"+" from df"
-       
-        val medianValues = sqlContext.sql(Query).rdd
-        val Median = medianValues.first()
 
-      
+      val Query = "select " +
+        "percentile_approx(C1uppercaseratio, 0.5) as meadian1" + "," + "percentile_approx(C2lowercaseratio, 0.5) as median2" + " ," +
+        "percentile_approx(C3alphanumericratio, 0.5) as median3" + "," + "percentile_approx(C4asciiratio, 0.5) as median4" + "," +
+        "percentile_approx(C5bracketratio, 0.5) as median5" + "," + "percentile_approx(C6digitalratio, 0.5) as median6" + "," +
+        "percentile_approx(C7latinratio, 0.5) as median7" + "," + "percentile_approx(C8whitespaceratio, 0.5) as median8" + "," +
+        "percentile_approx(C9puncratio, 0.5) as median9" + "," + "percentile_approx(C11arabicratio, 0.5) as median11" + "," +
+        "percentile_approx(C12bengaliratio, 0.5) as median12" + "," + "percentile_approx(C13brahmiratio, 0.5) as median13" + "," +
+        "percentile_approx(C14cyrilinratio, 0.5) as median14" + "," + "percentile_approx(C15hanratio, 0.5) as median15" + "," +
+        "percentile_approx(c16malysiaratio, 0.5) as median16" + "," +
+        "percentile_approx(C17tamiratio, 0.5) as median17" + "," + "percentile_approx(C18telugratio, 0.5) as median18" + "," +
+        "percentile_approx(C19symbolratio, 0.5) as median19" + "," + "percentile_approx(C20alpharatio, 0.5) as median20" + "," +
+        "percentile_approx(C21visibleratio, 0.5) as median21" + "," + "percentile_approx(C22printableratio, 0.5) as median22" + "," +
+        "percentile_approx(C23blankratio, 0.5) as median23" + "," + "percentile_approx(C24controlratio, 0.5) as median24" + "," +
+        "percentile_approx(C25hexaratio, 0.5) as median25" ++ "," + "percentile_approx(W1languagewordratio, 0.5) as median26" + "," +
+        "percentile_approx(W3lowercaseratio, 0.5) as median27" + "," + "percentile_approx(W6badwordratio, 0.5) as median28" + "," +
+        "percentile_approx(W7uppercaseratio, 0.5) as median27" + "," + "percentile_approx(W8banwordratio, 0.5) as median27" + " from df"
+
+      val medianValues = sqlContext.sql(Query).rdd
+      val Median = medianValues.first()
+
       // Median :
       // Character Ratio Features: UDF
       val lkpUDF1 = udf { (i: Double) => if (i == 0) Median(0).toString().toDouble else i }
@@ -353,228 +327,214 @@ class VandalismDetection extends Serializable {
       val lkpUDF24 = udf { (i: Double) => if (i == 0) Median(22).toString().toDouble else i }
       val lkpUDF25 = udf { (i: Double) => if (i == 0) Median(23).toString().toDouble else i }
 
-      
-
-      val df1 = Fill_Missing_Final_All_Features.withColumn("FinalC1uppercaseratio", lkpUDF1(col("C1uppercaseratio")))//.drop("C1uppercaseratio").cache()
-      val df2 = df1.withColumn("FinalC2lowercaseratio", lkpUDF2(col("C2lowercaseratio")))//.drop("C2lowercaseratio").cache()
+      val df1 = Fill_Missing_Final_All_Features.withColumn("FinalC1uppercaseratio", lkpUDF1(col("C1uppercaseratio"))) //.drop("C1uppercaseratio").cache()
+      val df2 = df1.withColumn("FinalC2lowercaseratio", lkpUDF2(col("C2lowercaseratio"))) //.drop("C2lowercaseratio").cache()
       //df1.unpersist()
-      val df3 = df2.withColumn("FinalC3alphanumericratio", lkpUDF3(col("C3alphanumericratio")))//.drop("C3alphanumericratio").cache()
+      val df3 = df2.withColumn("FinalC3alphanumericratio", lkpUDF3(col("C3alphanumericratio"))) //.drop("C3alphanumericratio").cache()
       //df2.unpersist()
-      val df4 = df3.withColumn("FinalC4asciiratio", lkpUDF4(col("C4asciiratio")))//.drop("C4asciiratio").cache()
+      val df4 = df3.withColumn("FinalC4asciiratio", lkpUDF4(col("C4asciiratio"))) //.drop("C4asciiratio").cache()
       //df3.unpersist()
-      val df5 = df4.withColumn("FinalC5bracketratio", lkpUDF5(col("C5bracketratio")))//.drop("C5bracketratio").cache()
+      val df5 = df4.withColumn("FinalC5bracketratio", lkpUDF5(col("C5bracketratio"))) //.drop("C5bracketratio").cache()
       //df4.unpersist()
-      val df6 = df5.withColumn("FinalC6digitalratio", lkpUDF6(col("C6digitalratio")))//.drop("C6digitalratio").cache()
+      val df6 = df5.withColumn("FinalC6digitalratio", lkpUDF6(col("C6digitalratio"))) //.drop("C6digitalratio").cache()
       //df5.unpersist()
-      val df7 = df6.withColumn("FinalC7latinratio", lkpUDF7(col("C7latinratio")))//.drop("C7latinratio").cache()
+      val df7 = df6.withColumn("FinalC7latinratio", lkpUDF7(col("C7latinratio"))) //.drop("C7latinratio").cache()
       //df6.unpersist()
-      val df8 = df7.withColumn("FinalC8whitespaceratio", lkpUDF8(col("C8whitespaceratio")))//.drop("C8whitespaceratio").cache()
+      val df8 = df7.withColumn("FinalC8whitespaceratio", lkpUDF8(col("C8whitespaceratio"))) //.drop("C8whitespaceratio").cache()
       //df7.unpersist()
-      val df9 = df8.withColumn("FinalC9puncratio", lkpUDF9(col("C9puncratio")))//.drop("C9puncratio").cache()
-      
-       // Mean : 
-      // character integer values : 
-       val Mean_C10longcharacterseq = Samples.agg(mean("C10longcharacterseq")).head()
-       val C10_Mean = Mean_C10longcharacterseq.getDouble(0)
-       val lkpUDFC10 = udf { (i: Double) => if (i == 0) C10_Mean else i }
-       val df10 = df9.withColumn("FinalC10longcharacterseq", lkpUDFC10(col("C10longcharacterseq")))
-      
-      
+      val df9 = df8.withColumn("FinalC9puncratio", lkpUDF9(col("C9puncratio"))) //.drop("C9puncratio").cache()
+
+      // Mean :
+      // character integer values :
+      val Mean_C10longcharacterseq = Samples.agg(mean("C10longcharacterseq")).head()
+      val C10_Mean = Mean_C10longcharacterseq.getDouble(0)
+      val lkpUDFC10 = udf { (i: Double) => if (i == 0) C10_Mean else i }
+      val df10 = df9.withColumn("FinalC10longcharacterseq", lkpUDFC10(col("C10longcharacterseq")))
+
       //Median
-      val df11 = df10.withColumn("FinalC11arabicratio", lkpUDF11(col("C11arabicratio")))//.drop("C11arabicratio").cache()
+      val df11 = df10.withColumn("FinalC11arabicratio", lkpUDF11(col("C11arabicratio"))) //.drop("C11arabicratio").cache()
       // df9.unpersist()
-      val df12 = df11.withColumn("FinalC12bengaliratio", lkpUDF12(col("C12bengaliratio")))//.drop("C12bengaliratio").cache()
+      val df12 = df11.withColumn("FinalC12bengaliratio", lkpUDF12(col("C12bengaliratio"))) //.drop("C12bengaliratio").cache()
       //df11.unpersist()
-      val df13 = df12.withColumn("FinalC13brahmiratio", lkpUDF13(col("C13brahmiratio")))//.drop("C13brahmiratio").cache()
+      val df13 = df12.withColumn("FinalC13brahmiratio", lkpUDF13(col("C13brahmiratio"))) //.drop("C13brahmiratio").cache()
       // df12.unpersist()
-      val df14 = df13.withColumn("FinalC14cyrilinratio", lkpUDF14(col("C14cyrilinratio")))//.drop("C14cyrilinratio").cache()
+      val df14 = df13.withColumn("FinalC14cyrilinratio", lkpUDF14(col("C14cyrilinratio"))) //.drop("C14cyrilinratio").cache()
       // df13.unpersist()
-      val df15 = df14.withColumn("FinalC15hanratio", lkpUDF15(col("C15hanratio")))//.drop("C15hanratio").cache()
+      val df15 = df14.withColumn("FinalC15hanratio", lkpUDF15(col("C15hanratio"))) //.drop("C15hanratio").cache()
       // df14.unpersist()
-      val df16 = df15.withColumn("Finalc16malysiaratio", lkpUDF16(col("c16malysiaratio")))//.drop("c16malysiaratio").cache()
+      val df16 = df15.withColumn("Finalc16malysiaratio", lkpUDF16(col("c16malysiaratio"))) //.drop("c16malysiaratio").cache()
       //df15.unpersist()
-      val df17 = df16.withColumn("FinalC17tamiratio", lkpUDF17(col("C17tamiratio")))//.drop("C17tamiratio").cache()
+      val df17 = df16.withColumn("FinalC17tamiratio", lkpUDF17(col("C17tamiratio"))) //.drop("C17tamiratio").cache()
       //df16.unpersist()
-      val df18 = df17.withColumn("FinalC18telugratio", lkpUDF18(col("C18telugratio")))//.drop("C18telugratio").cache()
+      val df18 = df17.withColumn("FinalC18telugratio", lkpUDF18(col("C18telugratio"))) //.drop("C18telugratio").cache()
       //df17.unpersist()
-      val df19 = df18.withColumn("FinalC19symbolratio", lkpUDF19(col("C19symbolratio")))//.drop("C19symbolratio").cache()
+      val df19 = df18.withColumn("FinalC19symbolratio", lkpUDF19(col("C19symbolratio"))) //.drop("C19symbolratio").cache()
       //df18.unpersist()
-      val df20 = df19.withColumn("FinalC20alpharatio", lkpUDF20(col("C20alpharatio")))//.drop("C20alpharatio").cache()
+      val df20 = df19.withColumn("FinalC20alpharatio", lkpUDF20(col("C20alpharatio"))) //.drop("C20alpharatio").cache()
       // df19.unpersist()
-      val df21 = df20.withColumn("FinalC21visibleratio", lkpUDF21(col("C21visibleratio")))//.drop("C21visibleratio").cache()
+      val df21 = df20.withColumn("FinalC21visibleratio", lkpUDF21(col("C21visibleratio"))) //.drop("C21visibleratio").cache()
       // df20.unpersist()
-      val df22 = df21.withColumn("FinalC22printableratio", lkpUDF22(col("C22printableratio")))//.drop("C22printableratio").cache()
+      val df22 = df21.withColumn("FinalC22printableratio", lkpUDF22(col("C22printableratio"))) //.drop("C22printableratio").cache()
       //df21.unpersist()
-      val df23 = df22.withColumn("FinalC23blankratio", lkpUDF23(col("C23blankratio")))//.drop("C23blankratio").cache()
+      val df23 = df22.withColumn("FinalC23blankratio", lkpUDF23(col("C23blankratio"))) //.drop("C23blankratio").cache()
       // df22.unpersist()
-      val df24 = df23.withColumn("FinalC24controlratio", lkpUDF24(col("C24controlratio")))//.drop("C24controlratio").cache()
+      val df24 = df23.withColumn("FinalC24controlratio", lkpUDF24(col("C24controlratio"))) //.drop("C24controlratio").cache()
       //df23.unpersist()
-      val df25 = df24.withColumn("FinalC25hexaratio", lkpUDF25(col("C25hexaratio")))//.drop("C25hexaratio").cache()
-      
-     
+      val df25 = df24.withColumn("FinalC25hexaratio", lkpUDF25(col("C25hexaratio"))) //.drop("C25hexaratio").cache()
 
-      
-//************************************************End Character Features ****************************************************************************************      
- 
-//************************************************Start Word  Features ****************************************************************************************      
-      
-      // Word Ratio Features : UDF 
-      val lkpUDFW1 = udf { (i: Double) => if (i == 0)  Median(24).toString().toDouble  else i }
-      val lkpUDFW3 = udf { (i: Double) => if (i == 0)  Median(25).toString().toDouble  else i }
-      val lkpUDFW6 = udf { (i: Double) => if (i == 0)  Median(26).toString().toDouble  else i }
-      val lkpUDFW7 = udf { (i: Double) => if (i == 0)  Median(27).toString().toDouble  else i }
-      val lkpUDFW8 = udf { (i: Double) => if (i == 0)  Median(28).toString().toDouble  else i }
-      
+      //************************************************End Character Features ****************************************************************************************
 
-     
+      //************************************************Start Word  Features ****************************************************************************************
+
+      // Word Ratio Features : UDF
+      val lkpUDFW1 = udf { (i: Double) => if (i == 0) Median(24).toString().toDouble else i }
+      val lkpUDFW3 = udf { (i: Double) => if (i == 0) Median(25).toString().toDouble else i }
+      val lkpUDFW6 = udf { (i: Double) => if (i == 0) Median(26).toString().toDouble else i }
+      val lkpUDFW7 = udf { (i: Double) => if (i == 0) Median(27).toString().toDouble else i }
+      val lkpUDFW8 = udf { (i: Double) => if (i == 0) Median(28).toString().toDouble else i }
+
       //1.
-       val df26 = df25.withColumn("FinalW1languagewordratio", lkpUDFW1(col("W1languagewordratio")))//.drop("W1languagewordratio").cache()
-      
+      val df26 = df25.withColumn("FinalW1languagewordratio", lkpUDFW1(col("W1languagewordratio"))) //.drop("W1languagewordratio").cache()
+
       //2.Boolean(Double) IsContainLanguageWord
-      
+
       //3.
-      val df27 = df26.withColumn("FinalW3lowercaseratio", lkpUDFW3(col("W3lowercaseratio")))//.drop("W3lowercaseratio").cache()
+      val df27 = df26.withColumn("FinalW3lowercaseratio", lkpUDFW3(col("W3lowercaseratio"))) //.drop("W3lowercaseratio").cache()
       // df26.unpersist()
-      
-      //4. Integer " Mean: 
-       val Mean_W4longestword= Samples.agg(mean("W4longestword")).head()
-       val W4_Mean = Mean_W4longestword.getDouble(0)
-       val lkpUDFW4 = udf { (i: Double) => if (i == 0) W4_Mean else i }
-       val df28 = df27.withColumn("FinalW4longestword", lkpUDFW4(col("W4longestword")))
-      
-       //5. Boolean (Double ) W5IscontainURL 
-       //6.
-      val df29 = df28.withColumn("FinalW6badwordratio", lkpUDFW6(col("W6badwordratio")))//.drop("W6badwordratio").cache()
+
+      //4. Integer " Mean:
+      val Mean_W4longestword = Samples.agg(mean("W4longestword")).head()
+      val W4_Mean = Mean_W4longestword.getDouble(0)
+      val lkpUDFW4 = udf { (i: Double) => if (i == 0) W4_Mean else i }
+      val df28 = df27.withColumn("FinalW4longestword", lkpUDFW4(col("W4longestword")))
+
+      //5. Boolean (Double ) W5IscontainURL
+      //6.
+      val df29 = df28.withColumn("FinalW6badwordratio", lkpUDFW6(col("W6badwordratio"))) //.drop("W6badwordratio").cache()
 
       //7.
-      val df30 = df29.withColumn("FinalW7uppercaseratio", lkpUDFW7(col("W7uppercaseratio")))//.drop("W7uppercaseratio").cache()
+      val df30 = df29.withColumn("FinalW7uppercaseratio", lkpUDFW7(col("W7uppercaseratio"))) //.drop("W7uppercaseratio").cache()
 
       //8.
-      val df31 = df30.withColumn("FinalW8banwordratio", lkpUDFW8(col("W8banwordratio")))//.drop("W8banwordratio").cache()
- 
+      val df31 = df30.withColumn("FinalW8banwordratio", lkpUDFW8(col("W8banwordratio"))) //.drop("W8banwordratio").cache()
+
       //9.FemalFirst       Boolean(Double)
       //10.Male First      Boolean(Double)
       //11.ContainBadWord  Boolean(Double)
       //12ContainBanWord   Boolean(Double)
-      
-      //13. Integer(Double): 
-       val Mean_W13W13NumberSharewords= Samples.agg(mean("W13NumberSharewords")).head()
-       val W13_Mean = Mean_W13W13NumberSharewords.getDouble(0)
-       val lkpUDFW13 = udf { (i: Double) => if (i == 0) W13_Mean else i }
-       val df32 = df31.withColumn("FinalW13NumberSharewords", lkpUDFW13(col("W13NumberSharewords")))
-      
-      //14. Integer (Double): 
-       val Mean_W14NumberSharewordswithoutStopwords= Samples.agg(mean("W14NumberSharewordswithoutStopwords")).head()
-       val W14_Mean = Mean_W14NumberSharewordswithoutStopwords.getDouble(0)
-       val lkpUDFW14 = udf { (i: Double) => if (i == 0) W14_Mean else i }
-       val df33 = df32.withColumn("FinalW14NumberSharewordswithoutStopwords", lkpUDFW14(col("W14NumberSharewordswithoutStopwords")))
-       
-       // 15. Double (Not ratio):
-       val Mean_W15PortionQid= Samples.agg(mean("W15PortionQid")).head()
-       val W15_Mean = Mean_W15PortionQid.getDouble(0)
-       val lkpUDFW15 = udf { (i: Double) => if (i == 0) W15_Mean else i }
-       val df34 = df33.withColumn("FinalW15PortionQid", lkpUDFW15(col("W15PortionQid")))
-       
-       //16. Double(Not Ratio):
-       val Mean_W16PortionLnags= Samples.agg(mean("W16PortionLnags")).head()
-       val W16_Mean = Mean_W16PortionLnags.getDouble(0)
-       val lkpUDFW16 = udf { (i: Double) => if (i == 0) W16_Mean else i }
-       val df35 = df34.withColumn("FinalW16PortionLnags", lkpUDFW16(col("W16PortionLnags")))
-       
-       //17.Double(Not ratio):
-       val Mean_W17PortionLinks= Samples.agg(mean("W17PortionLinks")).head()
-       val W17_Mean = Mean_W17PortionLinks.getDouble(0)
-       val lkpUDFW17 = udf { (i: Double) => if (i == 0) W17_Mean else i }
-       val df36 = df35.withColumn("FinalW17PortionLinks", lkpUDFW17(col("W17PortionLinks")))
-       
-       
-       
-       //************************************************End Word  Features ****************************************************************************************      
 
-      //************************************************Start Sentences  Features ****************************************************************************************      
-       // 1. Integer(Double)
-       val Mean_S1CommentTailLength= Samples.agg(mean("S1CommentTailLength")).head()
-       val S1_Mean = RoundDouble(Mean_S1CommentTailLength.getDouble(0))
-       val lkpUDFS1 = udf { (i: Double) => if (i == 0) S1_Mean else i }
-       val df37 = df36.withColumn("FinalS1CommentTailLength", lkpUDFS1(col("S1CommentTailLength")))
- 
-       //2. Double  but Not ratio values : 
-       val Mean_S2SimikaritySitelinkandLabel= Samples.agg(mean("S2SimikaritySitelinkandLabel")).head()
-       val S2_Mean =RoundDouble( Mean_S2SimikaritySitelinkandLabel.getDouble(0))
-       val lkpUDFS2 = udf { (i: Double) => if (i == 0) S2_Mean else i }
-       val df39 = df37.withColumn("FinalS2SimikaritySitelinkandLabel", lkpUDFS2(col("S2SimikaritySitelinkandLabel")))
-       
-       //3. Double  but Not ratio values : 
-       val Mean_S3SimilarityLabelandSitelink= Samples.agg(mean("S3SimilarityLabelandSitelink")).head()
-       val S3_Mean = RoundDouble(Mean_S3SimilarityLabelandSitelink.getDouble(0))
-       val lkpUDFS3 = udf { (i: Double) => if (i == 0.0) S3_Mean else i }
-       val df40 = df39.withColumn("FinalS3SimilarityLabelandSitelink", lkpUDFS3(col("S3SimilarityLabelandSitelink")))
-       
-       
-       //4.  Double  but Not ratio values : 
-       val Mean_S4SimilarityCommentComment= Samples.agg(mean("S4SimilarityCommentComment")).head()
-       val S4_Mean =RoundDouble( Mean_S4SimilarityCommentComment.getDouble(0))
-       val lkpUDFS4 = udf { (i: Double) => if (i == 0.0) S4_Mean else i }
-       val df41 = df40.withColumn("FinalS4SimilarityCommentComment", lkpUDFS4(col("S4SimilarityCommentComment"))) 
-       
-       
-       //df41.show()
-  //************************************************End Sentences  Features ****************************************************************************************      
-  //*********************************************** Start Statement  Features ****************************************************************************************      
-       //1. String 
-       //2. String 
-       //3. String 
- //************************************************End Statement  Features ****************************************************************************************      
- //*********************************************** Start User Features ****************************************************************************************      
-      
-       //1.Boolean(Double)
-       //2.Boolean(Double)
-       //3.Boolean(Double)
-       //4.Boolean(Double)
-       //5.Boolean(Double)
-       //6.Boolean(Double)
-       //7. (Double) IP No need to fill Missing Data
-       //8. (Double) ID No need to fill Missing Data
-       //9.Boolean(Double)
-       //10.Boolean(Double)
-       
+      //13. Integer(Double):
+      val Mean_W13W13NumberSharewords = Samples.agg(mean("W13NumberSharewords")).head()
+      val W13_Mean = Mean_W13W13NumberSharewords.getDouble(0)
+      val lkpUDFW13 = udf { (i: Double) => if (i == 0) W13_Mean else i }
+      val df32 = df31.withColumn("FinalW13NumberSharewords", lkpUDFW13(col("W13NumberSharewords")))
 
-       
- //*********************************************** End User Features ****************************************************************************************      
- //*********************************************** Start Item Features ****************************************************************************************      
-       //1. Integer (Double) No need to fill missing values
-       //2. Integer (Double) No need to fill missing values
-       //3. Integer (Double) No need to fill missing values
-       //4. Integer (Double) No need to fill missing values
-       //5. Integer (Double) No need to fill missing values
-       //6. Integer (Double) No need to fill missing values
-       //7. Integer (Double) No need to fill missing values
-       //8. Integer (Double) No need to fill missing values
-       //9. Integer (Double) No need to fill missing values
-       //10. Integer (Double) No need to fill missing values
-       //11. String  
- //*********************************************** End Item Features ****************************************************************************************      
- //*********************************************** Start Revision Features ****************************************************************************************      
-       //1.String
-       //2.String
-       //3.Boolean (Double)
-       //4.Integer(Double)
-       //5.String
-       //6.String
-       //7. Boolean(Double)
-       //8. String
-       //9.String
-       //10. Integer (Double)
-       //11.String
-       //12. integer(Double)
-       //13. Long(Double)
-       //14. integer (Double)
-       //15.String
-       //16.String
-  //*********************************************** End Revision Features ****************************************************************************************      
-  //*********************************************** Meta Data , Truth Data and Frequnces  ****************************************************************************************      
-       //Meta
-       // 1.Revision Session :Integer (Converted to Double) 
+      //14. Integer (Double):
+      val Mean_W14NumberSharewordswithoutStopwords = Samples.agg(mean("W14NumberSharewordswithoutStopwords")).head()
+      val W14_Mean = Mean_W14NumberSharewordswithoutStopwords.getDouble(0)
+      val lkpUDFW14 = udf { (i: Double) => if (i == 0) W14_Mean else i }
+      val df33 = df32.withColumn("FinalW14NumberSharewordswithoutStopwords", lkpUDFW14(col("W14NumberSharewordswithoutStopwords")))
+
+      // 15. Double (Not ratio):
+      val Mean_W15PortionQid = Samples.agg(mean("W15PortionQid")).head()
+      val W15_Mean = Mean_W15PortionQid.getDouble(0)
+      val lkpUDFW15 = udf { (i: Double) => if (i == 0) W15_Mean else i }
+      val df34 = df33.withColumn("FinalW15PortionQid", lkpUDFW15(col("W15PortionQid")))
+
+      //16. Double(Not Ratio):
+      val Mean_W16PortionLnags = Samples.agg(mean("W16PortionLnags")).head()
+      val W16_Mean = Mean_W16PortionLnags.getDouble(0)
+      val lkpUDFW16 = udf { (i: Double) => if (i == 0) W16_Mean else i }
+      val df35 = df34.withColumn("FinalW16PortionLnags", lkpUDFW16(col("W16PortionLnags")))
+
+      //17.Double(Not ratio):
+      val Mean_W17PortionLinks = Samples.agg(mean("W17PortionLinks")).head()
+      val W17_Mean = Mean_W17PortionLinks.getDouble(0)
+      val lkpUDFW17 = udf { (i: Double) => if (i == 0) W17_Mean else i }
+      val df36 = df35.withColumn("FinalW17PortionLinks", lkpUDFW17(col("W17PortionLinks")))
+
+      //************************************************End Word  Features ****************************************************************************************
+
+      //************************************************Start Sentences  Features ****************************************************************************************
+      // 1. Integer(Double)
+      val Mean_S1CommentTailLength = Samples.agg(mean("S1CommentTailLength")).head()
+      val S1_Mean = RoundDouble(Mean_S1CommentTailLength.getDouble(0))
+      val lkpUDFS1 = udf { (i: Double) => if (i == 0) S1_Mean else i }
+      val df37 = df36.withColumn("FinalS1CommentTailLength", lkpUDFS1(col("S1CommentTailLength")))
+
+      //2. Double  but Not ratio values :
+      val Mean_S2SimikaritySitelinkandLabel = Samples.agg(mean("S2SimikaritySitelinkandLabel")).head()
+      val S2_Mean = RoundDouble(Mean_S2SimikaritySitelinkandLabel.getDouble(0))
+      val lkpUDFS2 = udf { (i: Double) => if (i == 0) S2_Mean else i }
+      val df39 = df37.withColumn("FinalS2SimikaritySitelinkandLabel", lkpUDFS2(col("S2SimikaritySitelinkandLabel")))
+
+      //3. Double  but Not ratio values :
+      val Mean_S3SimilarityLabelandSitelink = Samples.agg(mean("S3SimilarityLabelandSitelink")).head()
+      val S3_Mean = RoundDouble(Mean_S3SimilarityLabelandSitelink.getDouble(0))
+      val lkpUDFS3 = udf { (i: Double) => if (i == 0.0) S3_Mean else i }
+      val df40 = df39.withColumn("FinalS3SimilarityLabelandSitelink", lkpUDFS3(col("S3SimilarityLabelandSitelink")))
+
+      //4.  Double  but Not ratio values :
+      val Mean_S4SimilarityCommentComment = Samples.agg(mean("S4SimilarityCommentComment")).head()
+      val S4_Mean = RoundDouble(Mean_S4SimilarityCommentComment.getDouble(0))
+      val lkpUDFS4 = udf { (i: Double) => if (i == 0.0) S4_Mean else i }
+      val df41 = df40.withColumn("FinalS4SimilarityCommentComment", lkpUDFS4(col("S4SimilarityCommentComment")))
+
+      //df41.show()
+      //************************************************End Sentences  Features ****************************************************************************************
+      //*********************************************** Start Statement  Features ****************************************************************************************
+      //1. String
+      //2. String
+      //3. String
+      //************************************************End Statement  Features ****************************************************************************************
+      //*********************************************** Start User Features ****************************************************************************************
+
+      //1.Boolean(Double)
+      //2.Boolean(Double)
+      //3.Boolean(Double)
+      //4.Boolean(Double)
+      //5.Boolean(Double)
+      //6.Boolean(Double)
+      //7. (Double) IP No need to fill Missing Data
+      //8. (Double) ID No need to fill Missing Data
+      //9.Boolean(Double)
+      //10.Boolean(Double)
+
+      //*********************************************** End User Features ****************************************************************************************
+      //*********************************************** Start Item Features ****************************************************************************************
+      //1. Integer (Double) No need to fill missing values
+      //2. Integer (Double) No need to fill missing values
+      //3. Integer (Double) No need to fill missing values
+      //4. Integer (Double) No need to fill missing values
+      //5. Integer (Double) No need to fill missing values
+      //6. Integer (Double) No need to fill missing values
+      //7. Integer (Double) No need to fill missing values
+      //8. Integer (Double) No need to fill missing values
+      //9. Integer (Double) No need to fill missing values
+      //10. Integer (Double) No need to fill missing values
+      //11. String
+      //*********************************************** End Item Features ****************************************************************************************
+      //*********************************************** Start Revision Features ****************************************************************************************
+      //1.String
+      //2.String
+      //3.Boolean (Double)
+      //4.Integer(Double)
+      //5.String
+      //6.String
+      //7. Boolean(Double)
+      //8. String
+      //9.String
+      //10. Integer (Double)
+      //11.String
+      //12. integer(Double)
+      //13. Long(Double)
+      //14. integer (Double)
+      //15.String
+      //16.String
+      //*********************************************** End Revision Features ****************************************************************************************
+      //*********************************************** Meta Data , Truth Data and Frequnces  ****************************************************************************************
+      //Meta
+      // 1.Revision Session :Integer (Converted to Double)
       //2. User Country Code
       //3.User Continent Code
       //4.User Time Size
@@ -582,383 +542,346 @@ class VandalismDetection extends Serializable {
       //6.User-city Name
       //7.User Country Name
       //8.RevisionTags
-       
-       // Truth:
+
+      // Truth:
       //1.Undo
-       
+
       // Freq :
-      
-      //1.5 features 
-     
-       
-       
+
+      //1.5 features
+
       // Roll Boolean     :Boolean (Double)
       // Undo             :Boolean (Double)
 
- //*********************************************** End Revision Features ****************************************************************************************      
+      //*********************************************** End Revision Features ****************************************************************************************
 
-          //===========================================================================String Features====================================================================================
-      
-            val df42 = df41.withColumn(
-             //statement String features:
-             "StringFeatures", concat($"SS1Property",lit(";"), $"SS2DataValue",lit(";"),$"SS3ItemValue",lit(";"),$"I11ItemTitle",
-            //Revision  String Features:
-            lit(";"),$"R1languageRevision",
-            lit(";"),$"R2RevisionLanguageLocal",
-            lit(";"),$"R5RevisionAction",
-            lit(";"),$"R6PrevReviAction",
-            lit(";"),$"R8ParRevision",
-            lit(";"),$"R9RevisionTime", 
-            lit(";"),$"R11ContentType",
-            lit(";"),$"R15RevisionSubaction",
-            lit(";"),$"R16PrevReviSubaction",
-            
-            lit(";"),$"USER_COUNTRY_CODE",
-            lit(";"),$"USER_CONTINENT_CODE",
-            lit(";"),$"USER_TIME_ZONE",
-            lit(";"),$"USER_REGION_CODE",
-            lit(";"),$"USER_CITY_NAME", 
-            lit(";"),$"USER_COUNTY_NAME", 
-            lit(";"),$"REVISION_TAGS"))
+      //===========================================================================String Features====================================================================================
 
-         val toArray = udf((record: String) => record.split(";").map(_.toString()))
-         val test1 = df42.withColumn("StringFeatures", toArray(col("StringFeatures")))
-       //  test1.show()
-       //  test1.printSchema()
-         
-         val word2Vec = new Word2Vec().setInputCol("StringFeatures").setOutputCol("result").setVectorSize(20).setMinCount(0)
-         val model = word2Vec.fit(test1)
-         val result = model.transform(test1) //.rdd
-         
-         
-        // result.show()
-         
-          val Todense = udf((b: Vector) => b.toDense)
-          val test_new2 = result.withColumn("result", Todense(col("result")))   
-         
-         
-         val assembler = new VectorAssembler().setInputCols(Array("result",
-             
-             // character
-             "FinalC1uppercaseratio","FinalC2lowercaseratio", "FinalC3alphanumericratio", "FinalC4asciiratio", "FinalC5bracketratio" ,"FinalC6digitalratio" ,
-             "FinalC7latinratio", "FinalC8whitespaceratio", "FinalC9puncratio","FinalC10longcharacterseq", "FinalC11arabicratio" , "FinalC12bengaliratio",
-             "FinalC13brahmiratio" ,"FinalC14cyrilinratio", "FinalC15hanratio" ,"Finalc16malysiaratio" ,"FinalC17tamiratio" , "FinalC18telugratio" ,
-             "FinalC19symbolratio" ,"FinalC20alpharatio", "FinalC21visibleratio" ,"FinalC22printableratio", "FinalC23blankratio", "FinalC24controlratio", "FinalC25hexaratio",
-             
-             // Words 
-               "FinalW1languagewordratio","W2Iscontainlanguageword", "FinalW3lowercaseratio" ,"FinalW4longestword" ,"W5IscontainURL" ,"FinalW6badwordratio" ,
-               "FinalW7uppercaseratio", "FinalW8banwordratio" ,"W9FemalFirstName" , "W10MaleFirstName" ,"W11IscontainBadword" ,"W12IsContainBanword",
-               "FinalW13NumberSharewords","FinalW14NumberSharewordswithoutStopwords", "FinalW15PortionQid" ,"FinalW16PortionLnags" ,"FinalW17PortionLinks",
+      val df42 = df41.withColumn(
+        //statement String features:
+        "StringFeatures", concat($"SS1Property", lit(";"), $"SS2DataValue", lit(";"), $"SS3ItemValue", lit(";"), $"I11ItemTitle",
+          //Revision  String Features:
+          lit(";"), $"R1languageRevision",
+          lit(";"), $"R2RevisionLanguageLocal",
+          lit(";"), $"R5RevisionAction",
+          lit(";"), $"R6PrevReviAction",
+          lit(";"), $"R8ParRevision",
+          lit(";"), $"R9RevisionTime",
+          lit(";"), $"R11ContentType",
+          lit(";"), $"R15RevisionSubaction",
+          lit(";"), $"R16PrevReviSubaction",
 
-             //Sentences :
-                "FinalS1CommentTailLength",  "FinalS2SimikaritySitelinkandLabel" , "FinalS3SimilarityLabelandSitelink", "FinalS4SimilarityCommentComment",
+          lit(";"), $"USER_COUNTRY_CODE",
+          lit(";"), $"USER_CONTINENT_CODE",
+          lit(";"), $"USER_TIME_ZONE",
+          lit(";"), $"USER_REGION_CODE",
+          lit(";"), $"USER_CITY_NAME",
+          lit(";"), $"USER_COUNTY_NAME",
+          lit(";"), $"REVISION_TAGS"))
 
-             
-            // User : 
-                 "U1IsPrivileged", "U2IsBotUser" ,"U3IsBotuserWithFlaguser" ,"U4IsProperty" ,"U5IsTranslator" ,"U6IsRegister" ,"U7IPValue", "U8UserID" ,
-                 "U9HasBirthDate", "U10HasDeathDate",
-                
-              //Item:
-                 
-                "I1NumberLabels"  ,"I2NumberDescription","I3NumberAliases","I4NumberClaims","I5NumberSitelinks","I6NumberStatement",
-                "I7NumberReferences","I8NumberQualifier","I9NumberQualifierOrder","I10NumberBadges",
-                 
-              //Revision:
-               "R3IslatainLanguage", "R4JsonLength", "R7RevisionAccountChange"  ,"R10RevisionSize" ,"R12BytesIncrease",
-               "R13TimeSinceLastRevi" ,"R14CommentLength" ,
-               
-               // Meta , truth , Freq
-               // meta : 
-               "FinalREVISION_SESSION_ID",
-               // Truth:
-               "FinalUNDO_RESTORE_REVERTED",
-               
-               //Freq: 
-               "FinalNumberofRevisionsUserContributed" ,
-               "FinalNumberofUniqueItemsUseredit" ,"FinalNumberRevisionItemHas", "FinalNumberUniqUserEditItem" ,"FinalFreqItem"
-      
-             )).setOutputCol("features")
-         val NewData = assembler.transform(test_new2)
-               
-              
-         // Prepare the data for classification: 
-          NewData.registerTempTable("DB")
-//          val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB")
-        val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB") // for logistic regrision
+      val toArray = udf((record: String) => record.split(";").map(_.toString()))
+      val test1 = df42.withColumn("StringFeatures", toArray(col("StringFeatures")))
+      //  test1.show()
+      //  test1.printSchema()
 
-          
-          //Data.show()
-          
-          
-//         //**************************1. Start Random Forest Classifer ******************************
-          
-//          val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
-//          
-//          val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-//         
-//          val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-//          
-//         // Train a RandomForest model.
-//          val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043).setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setNumTrees(20)
-//          
-//          // Convert indexed labels back to original labels.
-//          val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
-//         
-//          // Chain indexers and forest in a Pipeline.
-//         val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
-//         
-//          // Train model. This also runs the indexers.
-//         val model_New = pipeline.fit(trainingData)
-//          
-//          // Make predictions.
-//          val predictions = model_New.transform(testData)
-//         
-//          // Select example rows to display.
-//          val finlaPrediction = predictions.select("Rid","features","FinalROLLBACK_REVERTED", "predictedLabel")
-//          finlaPrediction.show()
-//          
-//          // Select (prediction, true label) and compute test error.
-//          val evaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("accuracy")
-//          val accuracy = evaluator.evaluate(predictions)
-//          println("accuracy is : "+ accuracy)
-          
-          //**************************End Random Forest Classifer ******************************
-//         //**************************2. Start Random Forest Classifer ******************************
-//
-//          //Prepare the data for classification
-//          val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("label")
-//          val df04 =labelIndexer.fit(TrainingData).transform(TrainingData)
-//          
-//         //Train the classifier
-//          val splitSeed = 5043 
-//          val Array(trainingData, testData) = df04.randomSplit(Array(0.7, 0.3), splitSeed)
-//          val classifier = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043)
-//          val modelClassifer = classifier.fit(trainingData)
-//          
-//          //Predicting : 
-//          val predictions = modelClassifer.transform(testData)
-//          
-//          // Evaluate the quality of the model
-//          val evaluator = new MulticlassClassificationEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("accuracy")
-//          val accuracy = evaluator.evaluate(predictions) 
-//          predictions.show()
-//          println("ROC is : " +accuracy)
-//          
-//         //**************************End Random Forest Classifer ******************************
-           //**************************3.Decision tree classifier ******************************
+      val word2Vec = new Word2Vec().setInputCol("StringFeatures").setOutputCol("result").setVectorSize(20).setMinCount(0)
+      val model = word2Vec.fit(test1)
+      val result = model.transform(test1) //.rdd
 
-//          
-//       // Index labels, adding metadata to the label column.
-//      // Fit on whole dataset to include all labels in index.
-//      val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
-//      
-//      
-//      // Automatically identify categorical features, and index them.
-//      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-//      
-//      
-//      // Split the data into training and test sets (30% held out for testing).
-//      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-//
-//          
-//      // Train a DecisionTree model.
-//      val dt = new DecisionTreeClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")
-//      
-//      // Convert indexed labels back to original labels.
-//      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)    
-//          
-//          
-//      // Chain indexers and tree in a Pipeline.
-//      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, dt, labelConverter))
-//      
-//      
-//      // Train model. This also runs the indexers.
-//      val modelxx = pipeline.fit(trainingData)
-//      
-//      
-//      // Make predictions.
-//      val predictions = modelxx.transform(testData)
-// 
-//          
-//          // Select example rows to display.
-//    val xxx =  predictions.select("predictedLabel", "FinalROLLBACK_REVERTED", "features")
-//          
-//          xxx.show()
-//          
-//        // Select (prediction, true label) and compute test error.
-//      val evaluator = new MulticlassClassificationEvaluator()
-//        .setLabelCol("indexedLabel")
-//        .setPredictionCol("prediction")
-//        .setMetricName("accuracy")
-//      val accuracy = evaluator.evaluate(predictions)
-//      println("Accuracy = " + accuracy)  
-          
-          
-          //**************************End Decision tree classifier ******************************
-         
-          //**************************4.Gradient-boosted tree classifier ******************************
+      // result.show()
 
-          
-//       val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
-//     
-//      // Automatically identify categorical features, and index them.
-//      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-//      
-//      
-//      // Split the data into training and test sets (30% held out for testing).
-//      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-//
-//          
-//      // Train a DecisionTree model.
-//      val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setMaxIter(10)
-//
-//      
-//      
-//      
-//      // Convert indexed labels back to original labels.
-//      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)    
-//          
-//          
-//      // Chain indexers and tree in a Pipeline.
-//      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, gbt, labelConverter))
-//      
-//      
-//      // Train model. This also runs the indexers.
-//      val modelxx = pipeline.fit(trainingData)
-//      
-//      
-//      // Make predictions.
-//      val predictions = modelxx.transform(testData)
-// 
-//          
-//          // Select example rows to display.
-//    val xxx =  predictions.select("predictedLabel", "FinalROLLBACK_REVERTED", "features")
-//          
-//          xxx.show()
-//          
-//        // Select (prediction, true label) and compute test error.
-//      val evaluator = new MulticlassClassificationEvaluator()
-//        .setLabelCol("indexedLabel")
-//        .setPredictionCol("prediction")
-//        .setMetricName("accuracy")
-//      val accuracy = evaluator.evaluate(predictions)
-//      println("Accuracy = " + accuracy) 
-          
-          
-        //**************************End Gradient-boosted tree classifier ******************************
-      
-        //**************************4.Start Logistic Regrision ******************************
+      val Todense = udf((b: Vector) => b.toDense)
+      val test_new2 = result.withColumn("result", Todense(col("result")))
 
-//       val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(Data)
-//     
-//      // Automatically identify categorical features, and index them.
-//      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-//      
-//      // Split the data into training and test sets (30% held out for testing).
-//      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-//
-//      // Train a DecisionTree model.
-//      //val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setMaxIter(10)
-//
-//      val mlr = new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8).setFamily("multinomial")
-//      
-//      // Convert indexed labels back to original labels.
-//      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)    
-//          
-//      // Chain indexers and tree in a Pipeline.
-//      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, mlr, labelConverter))
-//      
-//      // Train model. This also runs the indexers.
-//      val modelxx = pipeline.fit(trainingData)
-//      
-//      // Make predictions.
-//      val predictions = modelxx.transform(testData)
-// 
-//          
-//     // Select example rows to display.
-//    val xxx =  predictions.select("predictedLabel", "label", "features")
-//          
-//          xxx.show()
-//          
-//        // Select (prediction, true label) and compute test error.
-//      val evaluator = new MulticlassClassificationEvaluator()
-//        .setLabelCol("indexedLabel")
-//        .setPredictionCol("prediction")
-//        .setMetricName("accuracy")
-//      val accuracy = evaluator.evaluate(predictions)
-//      println("Accuracy = " + accuracy) 
-          
-          
-       //**************************4.End Logistic Regrision ******************************
+      val assembler = new VectorAssembler().setInputCols(Array(
+        "result",
+
+        // character
+        "FinalC1uppercaseratio", "FinalC2lowercaseratio", "FinalC3alphanumericratio", "FinalC4asciiratio", "FinalC5bracketratio", "FinalC6digitalratio",
+        "FinalC7latinratio", "FinalC8whitespaceratio", "FinalC9puncratio", "FinalC10longcharacterseq", "FinalC11arabicratio", "FinalC12bengaliratio",
+        "FinalC13brahmiratio", "FinalC14cyrilinratio", "FinalC15hanratio", "Finalc16malysiaratio", "FinalC17tamiratio", "FinalC18telugratio",
+        "FinalC19symbolratio", "FinalC20alpharatio", "FinalC21visibleratio", "FinalC22printableratio", "FinalC23blankratio", "FinalC24controlratio", "FinalC25hexaratio",
+
+        // Words
+        "FinalW1languagewordratio", "W2Iscontainlanguageword", "FinalW3lowercaseratio", "FinalW4longestword", "W5IscontainURL", "FinalW6badwordratio",
+        "FinalW7uppercaseratio", "FinalW8banwordratio", "W9FemalFirstName", "W10MaleFirstName", "W11IscontainBadword", "W12IsContainBanword",
+        "FinalW13NumberSharewords", "FinalW14NumberSharewordswithoutStopwords", "FinalW15PortionQid", "FinalW16PortionLnags", "FinalW17PortionLinks",
+
+        //Sentences :
+        "FinalS1CommentTailLength", "FinalS2SimikaritySitelinkandLabel", "FinalS3SimilarityLabelandSitelink", "FinalS4SimilarityCommentComment",
+
+        // User :
+        "U1IsPrivileged", "U2IsBotUser", "U3IsBotuserWithFlaguser", "U4IsProperty", "U5IsTranslator", "U6IsRegister", "U7IPValue", "U8UserID",
+        "U9HasBirthDate", "U10HasDeathDate",
+
+        //Item:
+
+        "I1NumberLabels", "I2NumberDescription", "I3NumberAliases", "I4NumberClaims", "I5NumberSitelinks", "I6NumberStatement",
+        "I7NumberReferences", "I8NumberQualifier", "I9NumberQualifierOrder", "I10NumberBadges",
+
+        //Revision:
+        "R3IslatainLanguage", "R4JsonLength", "R7RevisionAccountChange", "R10RevisionSize", "R12BytesIncrease",
+        "R13TimeSinceLastRevi", "R14CommentLength",
+
+        // Meta , truth , Freq
+        // meta :
+        "FinalREVISION_SESSION_ID",
+        // Truth:
+        "FinalUNDO_RESTORE_REVERTED",
+
+        //Freq:
+        "FinalNumberofRevisionsUserContributed",
+        "FinalNumberofUniqueItemsUseredit", "FinalNumberRevisionItemHas", "FinalNumberUniqUserEditItem", "FinalFreqItem")).setOutputCol("features")
+      val NewData = assembler.transform(test_new2)
+
+      // Prepare the data for classification:
+      NewData.registerTempTable("DB")
+      //          val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB")
+      val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB") // for logistic regrision
+
+      //Data.show()
+
+      //         //**************************1. Start Random Forest Classifer ******************************
+
+      //          val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
+      //
+      //          val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+      //
+      //          val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+      //
+      //         // Train a RandomForest model.
+      //          val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043).setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setNumTrees(20)
+      //
+      //          // Convert indexed labels back to original labels.
+      //          val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
+      //
+      //          // Chain indexers and forest in a Pipeline.
+      //         val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
+      //
+      //          // Train model. This also runs the indexers.
+      //         val model_New = pipeline.fit(trainingData)
+      //
+      //          // Make predictions.
+      //          val predictions = model_New.transform(testData)
+      //
+      //          // Select example rows to display.
+      //          val finlaPrediction = predictions.select("Rid","features","FinalROLLBACK_REVERTED", "predictedLabel")
+      //          finlaPrediction.show()
+      //
+      //          // Select (prediction, true label) and compute test error.
+      //          val evaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("accuracy")
+      //          val accuracy = evaluator.evaluate(predictions)
+      //          println("accuracy is : "+ accuracy)
+
+      //**************************End Random Forest Classifer ******************************
+      //         //**************************2. Start Random Forest Classifer ******************************
+      //
+      //          //Prepare the data for classification
+      //          val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("label")
+      //          val df04 =labelIndexer.fit(TrainingData).transform(TrainingData)
+      //
+      //         //Train the classifier
+      //          val splitSeed = 5043
+      //          val Array(trainingData, testData) = df04.randomSplit(Array(0.7, 0.3), splitSeed)
+      //          val classifier = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043)
+      //          val modelClassifer = classifier.fit(trainingData)
+      //
+      //          //Predicting :
+      //          val predictions = modelClassifer.transform(testData)
+      //
+      //          // Evaluate the quality of the model
+      //          val evaluator = new MulticlassClassificationEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("accuracy")
+      //          val accuracy = evaluator.evaluate(predictions)
+      //          predictions.show()
+      //          println("ROC is : " +accuracy)
+      //
+      //         //**************************End Random Forest Classifer ******************************
+      //**************************3.Decision tree classifier ******************************
+
+      //
+      //       // Index labels, adding metadata to the label column.
+      //      // Fit on whole dataset to include all labels in index.
+      //      val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
+      //
+      //
+      //      // Automatically identify categorical features, and index them.
+      //      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+      //
+      //
+      //      // Split the data into training and test sets (30% held out for testing).
+      //      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+      //
+      //
+      //      // Train a DecisionTree model.
+      //      val dt = new DecisionTreeClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")
+      //
+      //      // Convert indexed labels back to original labels.
+      //      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
+      //
+      //
+      //      // Chain indexers and tree in a Pipeline.
+      //      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, dt, labelConverter))
+      //
+      //
+      //      // Train model. This also runs the indexers.
+      //      val modelxx = pipeline.fit(trainingData)
+      //
+      //
+      //      // Make predictions.
+      //      val predictions = modelxx.transform(testData)
+      //
+      //
+      //          // Select example rows to display.
+      //    val xxx =  predictions.select("predictedLabel", "FinalROLLBACK_REVERTED", "features")
+      //
+      //          xxx.show()
+      //
+      //        // Select (prediction, true label) and compute test error.
+      //      val evaluator = new MulticlassClassificationEvaluator()
+      //        .setLabelCol("indexedLabel")
+      //        .setPredictionCol("prediction")
+      //        .setMetricName("accuracy")
+      //      val accuracy = evaluator.evaluate(predictions)
+      //      println("Accuracy = " + accuracy)
+
+      //**************************End Decision tree classifier ******************************
+
+      //**************************4.Gradient-boosted tree classifier ******************************
+
+      //       val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
+      //
+      //      // Automatically identify categorical features, and index them.
+      //      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+      //
+      //
+      //      // Split the data into training and test sets (30% held out for testing).
+      //      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+      //
+      //
+      //      // Train a DecisionTree model.
+      //      val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setMaxIter(10)
+      //
+      //
+      //
+      //
+      //      // Convert indexed labels back to original labels.
+      //      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
+      //
+      //
+      //      // Chain indexers and tree in a Pipeline.
+      //      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, gbt, labelConverter))
+      //
+      //
+      //      // Train model. This also runs the indexers.
+      //      val modelxx = pipeline.fit(trainingData)
+      //
+      //
+      //      // Make predictions.
+      //      val predictions = modelxx.transform(testData)
+      //
+      //
+      //          // Select example rows to display.
+      //    val xxx =  predictions.select("predictedLabel", "FinalROLLBACK_REVERTED", "features")
+      //
+      //          xxx.show()
+      //
+      //        // Select (prediction, true label) and compute test error.
+      //      val evaluator = new MulticlassClassificationEvaluator()
+      //        .setLabelCol("indexedLabel")
+      //        .setPredictionCol("prediction")
+      //        .setMetricName("accuracy")
+      //      val accuracy = evaluator.evaluate(predictions)
+      //      println("Accuracy = " + accuracy)
+
+      //**************************End Gradient-boosted tree classifier ******************************
+
+      //**************************4.Start Logistic Regrision ******************************
+
+      //       val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(Data)
+      //
+      //      // Automatically identify categorical features, and index them.
+      //      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+      //
+      //      // Split the data into training and test sets (30% held out for testing).
+      //      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+      //
+      //      // Train a DecisionTree model.
+      //      //val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setMaxIter(10)
+      //
+      //      val mlr = new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8).setFamily("multinomial")
+      //
+      //      // Convert indexed labels back to original labels.
+      //      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
+      //
+      //      // Chain indexers and tree in a Pipeline.
+      //      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, mlr, labelConverter))
+      //
+      //      // Train model. This also runs the indexers.
+      //      val modelxx = pipeline.fit(trainingData)
+      //
+      //      // Make predictions.
+      //      val predictions = modelxx.transform(testData)
+      //
+      //
+      //     // Select example rows to display.
+      //    val xxx =  predictions.select("predictedLabel", "label", "features")
+      //
+      //          xxx.show()
+      //
+      //        // Select (prediction, true label) and compute test error.
+      //      val evaluator = new MulticlassClassificationEvaluator()
+      //        .setLabelCol("indexedLabel")
+      //        .setPredictionCol("prediction")
+      //        .setMetricName("accuracy")
+      //      val accuracy = evaluator.evaluate(predictions)
+      //      println("Accuracy = " + accuracy)
+
+      //**************************4.End Logistic Regrision ******************************
       //**************************5.Start Multilayer perceptron classifier  ***************
-//                    
-//       val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))  
-//                    
-//        val layers = Array[Int](100, 5, 4, 2)
-//
-//// create the trainer and set its parameters
-//val trainer = new MultilayerPerceptronClassifier()
-//  .setLayers(layers)
-//  .setBlockSize(128)
-//  .setSeed(1234L)
-//  .setMaxIter(100)
-//
-//// train the model
-//val modelxx = trainer.fit(trainingData)
-//
-//// compute accuracy on the test set
-//val resultxx = modelxx.transform(testData)
-//val predictionAndLabels = resultxx.select("prediction", "label")
-//val evaluator = new MulticlassClassificationEvaluator()
-//  .setMetricName("accuracy")
-//
-//println("Test set accuracy = " + evaluator.evaluate(predictionAndLabels))            
-                    
+      //
+      //       val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+      //
+      //        val layers = Array[Int](100, 5, 4, 2)
+      //
+      //// create the trainer and set its parameters
+      //val trainer = new MultilayerPerceptronClassifier()
+      //  .setLayers(layers)
+      //  .setBlockSize(128)
+      //  .setSeed(1234L)
+      //  .setMaxIter(100)
+      //
+      //// train the model
+      //val modelxx = trainer.fit(trainingData)
+      //
+      //// compute accuracy on the test set
+      //val resultxx = modelxx.transform(testData)
+      //val predictionAndLabels = resultxx.select("prediction", "label")
+      //val evaluator = new MulticlassClassificationEvaluator()
+      //  .setMetricName("accuracy")
+      //
+      //println("Test set accuracy = " + evaluator.evaluate(predictionAndLabels))
+
       //**************************5.End Multilayer perceptron classifier  ***************
-                    
 
-        
-
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-
-  }
+    }
   }
   //===========================================================================================================================================
   //=================================================Functions Part=============================================================================
 
-  
   def get_param(): mutable.HashMap[String, Any] = {
     val params = new mutable.HashMap[String, Any]()
-        params += "eta" -> 0.1
-        params += "max_depth" -> 8
-        params += "gamma" -> 0.0
-        params += "colsample_bylevel" -> 1
-        params += "objective" -> "binary:logistic"
-        params += "num_class" -> 2
-        params += "booster" -> "gbtree"
-        params += "num_rounds" -> 20
-        params += "nWorkers" -> 3
+    params += "eta" -> 0.1
+    params += "max_depth" -> 8
+    params += "gamma" -> 0.0
+    params += "colsample_bylevel" -> 1
+    params += "objective" -> "binary:logistic"
+    params += "num_class" -> 2
+    params += "booster" -> "gbtree"
+    params += "num_rounds" -> 20
+    params += "nWorkers" -> 3
     return params
-}
-  
-  
-  
-  
+  }
+
   def Ration(va: Double, median: Double): Double = {
 
     var tem = va
@@ -1221,7 +1144,7 @@ class VandalismDetection extends Serializable {
 
       // Feature 2 similarity  between comment contain Sitelink and label :
       //Check the language in comment that contain sitelinkword: --------------------
-      val Sitelink_inCommentObj = new SentencesFeature()
+      val Sitelink_inCommentObj = new SentencesFeatures()
 
       if (CommentRecord_AsString.contains("sitelink")) { // start 1 loop
         //1. First step : get the language from comment
@@ -1257,7 +1180,7 @@ class VandalismDetection extends Serializable {
 
       // Feature 3 similarity between comment contain label word and sitelink
       //Check the language in comment that contain Label word:-----------------------
-      val Label_inCommentObj = new SentencesFeature()
+      val Label_inCommentObj = new SentencesFeatures()
       if (CommentRecord_AsString.contains("label")) {
         //1. First step : get the language from comment
         val languageLabel_from_Comment = Label_inCommentObj.extract_CommentLabel_LanguageType(CommentRecord_AsString).trim()
@@ -1860,42 +1783,33 @@ class VandalismDetection extends Serializable {
     //14. Comment Length:---------------------------------------
     var lengthcomment = fullcomment.length().toString()
     full_Str_Result = full_Str_Result + "," + lengthcomment
-    
-    
-    //15. Revision SubAction: 
+
+    //15. Revision SubAction:
     val CommentProcessOBJ2 = new CommentProcessor()
     val actions2 = CommentProcessOBJ2.Extract_Actions_FromComments(fullcomment)
 
     var ActionsArray2: Array[String] = actions2.split("_", 2)
     var SubAction2 = ActionsArray2(1)
     full_Str_Result = full_Str_Result + "," + SubAction2.trim()
-    
-    
-    
+
     //16.Prev_revision SubAction:
-     if (row(19) != null) {
+    if (row(19) != null) {
       var Prev_fullcomment2 = row(19).toString()
       val Prev_CommentProcessOBJ2 = new CommentProcessor()
       val Prev_actions2 = Prev_CommentProcessOBJ2.Extract_Actions_FromComments(fullcomment)
       var Prev_ActionsArray2: Array[String] = Prev_actions2.split("_", 2)
-            var Prev_SubAction2 = ActionsArray2(1).trim()
-           full_Str_Result = full_Str_Result + "," + Prev_SubAction2.trim()
+      var Prev_SubAction2 = ActionsArray2(1).trim()
+      full_Str_Result = full_Str_Result + "," + Prev_SubAction2.trim()
 
     } else {
 
-       full_Str_Result = full_Str_Result + "," + "NA"
+      full_Str_Result = full_Str_Result + "," + "NA"
     }
-    
-    
-    
-    
-    
-    
 
-//    //15. Item of Revision :----------------------------------------
-//
-//    var ItemOfRevision = row(1).toString()
-//    full_Str_Result = full_Str_Result + "," + ItemOfRevision
+    //    //15. Item of Revision :----------------------------------------
+    //
+    //    var ItemOfRevision = row(1).toString()
+    //    full_Str_Result = full_Str_Result + "," + ItemOfRevision
 
     full_Str_Result
 
