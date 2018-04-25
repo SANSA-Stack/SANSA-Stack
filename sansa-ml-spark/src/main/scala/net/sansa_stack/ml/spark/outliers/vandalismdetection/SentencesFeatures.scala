@@ -1,18 +1,21 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
-class SentencesFeatures extends Serializable {
-
-  def RoundDouble(va: Double): Double = {
-
-    //    number = Math.round(number * 100)
-    //    number = number / 100
-
+class SentencesFeatures extends Serializable{
+  
+      def RoundDouble(va:Double):Double={
+    
+//    number = Math.round(number * 100)
+//    number = number / 100
+    
     val rounded: Double = Math.round(va * 10000).toDouble / 10000
-
+    
     rounded
-
+    
   }
+  
 
+  
+  
   //1.comment tail Lenght  Action subaction param+ tail
   def CommentTailLenght(Full_Comment_Str: String): Integer = {
     val parsedCommment_OBJ = new CommentProcessor()
@@ -186,4 +189,5 @@ class SentencesFeatures extends Serializable {
 
   }
 
+  
 }

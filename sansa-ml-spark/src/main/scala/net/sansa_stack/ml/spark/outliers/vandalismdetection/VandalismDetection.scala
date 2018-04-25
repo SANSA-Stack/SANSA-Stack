@@ -10,15 +10,8 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.functions.{ concat, lit }
 import org.apache.spark.ml.feature.{ Word2Vec, Word2VecModel }
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.{ RandomForestClassificationModel, RandomForestClassifier }
-import org.apache.spark.ml.feature.{ IndexToString, StringIndexer, VectorIndexer }
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.ml.classification.{ GBTClassificationModel, LogisticRegression, MultilayerPerceptronClassifier, GBTClassifier, DecisionTreeClassificationModel, DecisionTreeClassifier }
-import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-
-//import ml.dmlc.xgboost4j.scala.spark.{XGBoostEstimator, XGBoostClassificationModel}
-import scala.collection.mutable
 
 class VandalismDetection extends Serializable {
 
@@ -30,7 +23,6 @@ class VandalismDetection extends Serializable {
     import org.apache.spark.sql.types._
 
     //*******************************************************************************************************************************
-
     println("Please Enter 1 for RDFXML process and 2 for NormalXML process:")
     val num = scala.io.StdIn.readLine()
 
@@ -59,9 +51,17 @@ class VandalismDetection extends Serializable {
       val jobConf = new JobConf()
       val NormalXML_Parser_OBJ = new ParseNormalXML()
       val RDD_OBJ = new ParseNormalXML()
-      val RDD_All_Record = RDD_OBJ.DB_NormalXML_Parser(sc).distinct().cache()
-      //RDD_All_Record.foreach(println)
-      //println(RDD_All_Record.count())
+      val RDD_All_Record1 = RDD_OBJ.DB_NormalXML_Parser_Input1(sc)
+      val RDD_All_Record2 = RDD_OBJ.DB_NormalXML_Parser_Input2(sc)
+      val RDD_All_Record3 = RDD_OBJ.DB_NormalXML_Parser_Input3(sc)
+      //RDD_All_Record1.foreach(println)
+      //RDD_All_Record2.foreach(println)
+      // RDD_All_Record3.foreach(println)
+
+      val RDD_All_Record = RDD_All_Record1.union(RDD_All_Record2).union(RDD_All_Record3).distinct()
+
+       println(RDD_All_Record.count())
+      // println(RDD_All_Record.count())
 
       // ======= Json part :
       //Json RDD : Each record has its Revision iD:
@@ -636,251 +636,23 @@ class VandalismDetection extends Serializable {
 
       // Prepare the data for classification:
       NewData.registerTempTable("DB")
-      //          val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB")
-      val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB") // for logistic regrision
+      val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB")
+      //        val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB") // for logistic regrision
 
       //Data.show()
 
-      //         //**************************1. Start Random Forest Classifer ******************************
+      val TestClassifiers = new Classifiers()
 
-      //          val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
-      //
-      //          val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-      //
-      //          val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-      //
-      //         // Train a RandomForest model.
-      //          val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043).setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setNumTrees(20)
-      //
-      //          // Convert indexed labels back to original labels.
-      //          val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
-      //
-      //          // Chain indexers and forest in a Pipeline.
-      //         val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
-      //
-      //          // Train model. This also runs the indexers.
-      //         val model_New = pipeline.fit(trainingData)
-      //
-      //          // Make predictions.
-      //          val predictions = model_New.transform(testData)
-      //
-      //          // Select example rows to display.
-      //          val finlaPrediction = predictions.select("Rid","features","FinalROLLBACK_REVERTED", "predictedLabel")
-      //          finlaPrediction.show()
-      //
-      //          // Select (prediction, true label) and compute test error.
-      //          val evaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("accuracy")
-      //          val accuracy = evaluator.evaluate(predictions)
-      //          println("accuracy is : "+ accuracy)
-
-      //**************************End Random Forest Classifer ******************************
-      //         //**************************2. Start Random Forest Classifer ******************************
-      //
-      //          //Prepare the data for classification
-      //          val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("label")
-      //          val df04 =labelIndexer.fit(TrainingData).transform(TrainingData)
-      //
-      //         //Train the classifier
-      //          val splitSeed = 5043
-      //          val Array(trainingData, testData) = df04.randomSplit(Array(0.7, 0.3), splitSeed)
-      //          val classifier = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043)
-      //          val modelClassifer = classifier.fit(trainingData)
-      //
-      //          //Predicting :
-      //          val predictions = modelClassifer.transform(testData)
-      //
-      //          // Evaluate the quality of the model
-      //          val evaluator = new MulticlassClassificationEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("accuracy")
-      //          val accuracy = evaluator.evaluate(predictions)
-      //          predictions.show()
-      //          println("ROC is : " +accuracy)
-      //
-      //         //**************************End Random Forest Classifer ******************************
-      //**************************3.Decision tree classifier ******************************
-
-      //
-      //       // Index labels, adding metadata to the label column.
-      //      // Fit on whole dataset to include all labels in index.
-      //      val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
-      //
-      //
-      //      // Automatically identify categorical features, and index them.
-      //      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-      //
-      //
-      //      // Split the data into training and test sets (30% held out for testing).
-      //      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-      //
-      //
-      //      // Train a DecisionTree model.
-      //      val dt = new DecisionTreeClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")
-      //
-      //      // Convert indexed labels back to original labels.
-      //      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
-      //
-      //
-      //      // Chain indexers and tree in a Pipeline.
-      //      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, dt, labelConverter))
-      //
-      //
-      //      // Train model. This also runs the indexers.
-      //      val modelxx = pipeline.fit(trainingData)
-      //
-      //
-      //      // Make predictions.
-      //      val predictions = modelxx.transform(testData)
-      //
-      //
-      //          // Select example rows to display.
-      //    val xxx =  predictions.select("predictedLabel", "FinalROLLBACK_REVERTED", "features")
-      //
-      //          xxx.show()
-      //
-      //        // Select (prediction, true label) and compute test error.
-      //      val evaluator = new MulticlassClassificationEvaluator()
-      //        .setLabelCol("indexedLabel")
-      //        .setPredictionCol("prediction")
-      //        .setMetricName("accuracy")
-      //      val accuracy = evaluator.evaluate(predictions)
-      //      println("Accuracy = " + accuracy)
-
-      //**************************End Decision tree classifier ******************************
-
-      //**************************4.Gradient-boosted tree classifier ******************************
-
-      //       val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
-      //
-      //      // Automatically identify categorical features, and index them.
-      //      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-      //
-      //
-      //      // Split the data into training and test sets (30% held out for testing).
-      //      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-      //
-      //
-      //      // Train a DecisionTree model.
-      //      val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setMaxIter(10)
-      //
-      //
-      //
-      //
-      //      // Convert indexed labels back to original labels.
-      //      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
-      //
-      //
-      //      // Chain indexers and tree in a Pipeline.
-      //      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, gbt, labelConverter))
-      //
-      //
-      //      // Train model. This also runs the indexers.
-      //      val modelxx = pipeline.fit(trainingData)
-      //
-      //
-      //      // Make predictions.
-      //      val predictions = modelxx.transform(testData)
-      //
-      //
-      //          // Select example rows to display.
-      //    val xxx =  predictions.select("predictedLabel", "FinalROLLBACK_REVERTED", "features")
-      //
-      //          xxx.show()
-      //
-      //        // Select (prediction, true label) and compute test error.
-      //      val evaluator = new MulticlassClassificationEvaluator()
-      //        .setLabelCol("indexedLabel")
-      //        .setPredictionCol("prediction")
-      //        .setMetricName("accuracy")
-      //      val accuracy = evaluator.evaluate(predictions)
-      //      println("Accuracy = " + accuracy)
-
-      //**************************End Gradient-boosted tree classifier ******************************
-
-      //**************************4.Start Logistic Regrision ******************************
-
-      //       val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(Data)
-      //
-      //      // Automatically identify categorical features, and index them.
-      //      val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-      //
-      //      // Split the data into training and test sets (30% held out for testing).
-      //      val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-      //
-      //      // Train a DecisionTree model.
-      //      //val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setMaxIter(10)
-      //
-      //      val mlr = new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8).setFamily("multinomial")
-      //
-      //      // Convert indexed labels back to original labels.
-      //      val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
-      //
-      //      // Chain indexers and tree in a Pipeline.
-      //      val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, mlr, labelConverter))
-      //
-      //      // Train model. This also runs the indexers.
-      //      val modelxx = pipeline.fit(trainingData)
-      //
-      //      // Make predictions.
-      //      val predictions = modelxx.transform(testData)
-      //
-      //
-      //     // Select example rows to display.
-      //    val xxx =  predictions.select("predictedLabel", "label", "features")
-      //
-      //          xxx.show()
-      //
-      //        // Select (prediction, true label) and compute test error.
-      //      val evaluator = new MulticlassClassificationEvaluator()
-      //        .setLabelCol("indexedLabel")
-      //        .setPredictionCol("prediction")
-      //        .setMetricName("accuracy")
-      //      val accuracy = evaluator.evaluate(predictions)
-      //      println("Accuracy = " + accuracy)
-
-      //**************************4.End Logistic Regrision ******************************
-      //**************************5.Start Multilayer perceptron classifier  ***************
-      //
-      //       val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
-      //
-      //        val layers = Array[Int](100, 5, 4, 2)
-      //
-      //// create the trainer and set its parameters
-      //val trainer = new MultilayerPerceptronClassifier()
-      //  .setLayers(layers)
-      //  .setBlockSize(128)
-      //  .setSeed(1234L)
-      //  .setMaxIter(100)
-      //
-      //// train the model
-      //val modelxx = trainer.fit(trainingData)
-      //
-      //// compute accuracy on the test set
-      //val resultxx = modelxx.transform(testData)
-      //val predictionAndLabels = resultxx.select("prediction", "label")
-      //val evaluator = new MulticlassClassificationEvaluator()
-      //  .setMetricName("accuracy")
-      //
-      //println("Test set accuracy = " + evaluator.evaluate(predictionAndLabels))
-
-      //**************************5.End Multilayer perceptron classifier  ***************
+      // TestClassifiers.RandomForestClassifer(Data, sqlContext)
+      // TestClassifiers.DecisionTreeClassifier(Data, sqlContext)
+      // TestClassifiers.LogisticRegrision(Data, sqlContext)
+      // TestClassifiers.GradientBoostedTree(Data, sqlContext)
+      // TestClassifiers.MultilayerPerceptronClassifier(Data, sqlContext)
 
     }
   }
   //===========================================================================================================================================
   //=================================================Functions Part=============================================================================
-
-  def get_param(): mutable.HashMap[String, Any] = {
-    val params = new mutable.HashMap[String, Any]()
-    params += "eta" -> 0.1
-    params += "max_depth" -> 8
-    params += "gamma" -> 0.0
-    params += "colsample_bylevel" -> 1
-    params += "objective" -> "binary:logistic"
-    params += "num_class" -> 2
-    params += "booster" -> "gbtree"
-    params += "num_rounds" -> 20
-    params += "nWorkers" -> 3
-    return params
-  }
 
   def Ration(va: Double, median: Double): Double = {
 
@@ -1878,4 +1650,4 @@ class VandalismDetection extends Serializable {
 
   }
 
-}// endl c;ass -------
+}// endl class -------
