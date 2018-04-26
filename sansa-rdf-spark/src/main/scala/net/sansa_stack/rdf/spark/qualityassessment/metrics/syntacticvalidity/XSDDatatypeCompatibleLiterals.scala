@@ -22,7 +22,6 @@ object XSDDatatypeCompatibleLiterals {
        */
       val noMalformedDatatypeLiterals = dataset.filter(f => f.getObject.isLiteral() && isLexicalFormCompatibleWithDatatype(f.getObject))
 
-      println("50")
       //val metricValue = noMalformedDatatypeLiterals.map(_.getObject).distinct().count()
       val metricValue = noMalformedDatatypeLiterals.distinct().count()
       metricValue

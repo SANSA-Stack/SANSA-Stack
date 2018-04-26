@@ -6,7 +6,7 @@ import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{ Node, Triple, NodeFactory }
 
-class TripleOpsTests extends FunSuite with DataFrameSuiteBase {
+class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.model._
 
@@ -179,26 +179,27 @@ class TripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(size == 9)
   }
-  
   /*
   test("finding a statement via S, P, O to the RDF graph should result in size 1") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val subject = NodeFactory.createURI("http://example.org/show/218")
-    val predicate = NodeFactory.createURI("http://example.org/show/localName")
-    val `object` = NodeFactory.createLiteral("That Seventies Show", "en")
+    val subject = "http://example.org/show/218"
+    val predicate = "http://www.w3.org/2000/01/rdf-schema#label"
+    val `object` = "\"That Seventies Show\""
 
     val triples = spark.read.rdf(lang)(path)
     
-    println(subject.toString())
+    triples.collect.foreach(println)
 
-    val graph = triples.find(Some(subject.toString()), Some(predicate.toString()), Some(`object`.toString()))
 
+    val graph = triples.find(Some(subject), Some(predicate), Some(`object`))
+    
     val size = graph.count()
 
     assert(size == 1)
   }
+
 
   test("finding a statement to the RDF graph should result in size 1") {
     val path = getClass.getResource("/loader/data.nt").getPath
@@ -217,8 +218,7 @@ class TripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(size == 1)
   }
-  * 
+  *
   */
-  
 
 }

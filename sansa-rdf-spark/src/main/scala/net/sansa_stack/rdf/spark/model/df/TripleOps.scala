@@ -101,6 +101,8 @@ object TripleOps {
 
       sql += conditions.mkString(" AND ")
     }
+    println(sql)
+    println(subject.get + ", " + predicate.get + ", " + `object`.get)
     triples.sqlContext.sql(sql)
   }
 
@@ -114,9 +116,10 @@ object TripleOps {
   def find(triples: DataFrame, triple: Triple): DataFrame = {
     find(
       triples,
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString()),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString()),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString()))
+      if (triple.getSubject.isVariable) None else Option(triple.getSubject.getURI),
+      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.getURI),
+      if (triple.getObject.isVariable) None else
+        Option(if (triple.getObject.isLiteral()) triple.getObject.getLiteralLexicalForm else triple.getObject.getURI))
   }
 
   /**

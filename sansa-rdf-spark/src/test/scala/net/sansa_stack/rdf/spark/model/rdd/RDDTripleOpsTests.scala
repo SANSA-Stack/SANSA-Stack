@@ -6,7 +6,7 @@ import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{ Node, Triple, NodeFactory }
 
-class TripleOpsTests extends FunSuite with DataFrameSuiteBase {
+class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.model._
 
