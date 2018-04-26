@@ -23,11 +23,29 @@ class VandalismDetection extends Serializable {
     import org.apache.spark.sql.types._
 
     //*******************************************************************************************************************************
-    println("Please Enter 1 for RDFXML process and 2 for NormalXML process:")
+    println("Please Enter 1 for TRIX  process and 2 for RDFXML process and 3 for NormalXML:")
     val num = scala.io.StdIn.readLine()
 
-    //RDF XML file :*********************************************************************************************************
     if (num == "1") {
+
+      println("TRIX.........!!!!!!")
+      // Streaming records:RDFTRIX file :
+      val jobConf = new JobConf()
+
+      val TRIX_Parser_OBJ = new ParseTRIX()
+      val DRF_Builder_RDFTRIX_OBJ = new FacilitiesClass()
+
+      val RDD_TRIX = TRIX_Parser_OBJ.Start_TriX_Parser(jobConf, sc)
+      RDD_TRIX.foreach(println)
+
+      //----------------------------DF for RDF TRIX ------------------------------------------
+      //  Create SQLContext Object:
+      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+      val DFR_TRIX = DRF_Builder_RDFTRIX_OBJ.RDD_TO_DFR_TRIX(RDD_TRIX, sqlContext)
+      DFR_TRIX.show()
+
+    } //RDF XML file :*********************************************************************************************************
+    else if (num == "2") {
       println("RDF XML .........!!!!!!")
       // Streaming records:RDFXML file :
       val jobConf_Record = new JobConf()
@@ -46,7 +64,7 @@ class VandalismDetection extends Serializable {
       DFR_RDF_XML.show()
       //
       // NOrmal XML Example WikiData: ***************************************************************************************************
-    } else if (num == "2") {
+    } else if (num == "3") {
       // Streaming records:
       val jobConf = new JobConf()
       val NormalXML_Parser_OBJ = new ParseNormalXML()
@@ -60,7 +78,7 @@ class VandalismDetection extends Serializable {
 
       val RDD_All_Record = RDD_All_Record1.union(RDD_All_Record2).union(RDD_All_Record3).distinct()
 
-       println(RDD_All_Record.count())
+      println(RDD_All_Record.count())
       // println(RDD_All_Record.count())
 
       // ======= Json part :

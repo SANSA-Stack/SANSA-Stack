@@ -3,10 +3,9 @@ package net.sansa_stack.ml.spark.outliers.vandalismdetection
 import java.util.{ Arrays, List }
 import java.util.{ Set, HashSet }
 
+class UserFeatures extends Serializable {
 
-class UserFeatures extends Serializable{
-  
-   // User Is Privileged :
+  // User Is Privileged :
   def CheckName_isGlobalSysopUser(str: String): Boolean = {
 
     val GlobalSysopUser: Array[String] = Array("Alan", "BRUTE", "Defender", "Glaisher", "Igna", "Jafeluv", "Kaganer", "Liliana-60", "Mh7kJ", "MoiraMoira", "PiRSquared17", "Pmlineditor", "Stryn",
@@ -379,9 +378,6 @@ class UserFeatures extends Serializable{
 
     flag
 
-    
   }
 
-
-  
 }

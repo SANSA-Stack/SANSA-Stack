@@ -3,8 +3,7 @@ package net.sansa_stack.ml.spark.outliers.vandalismdetection
 import java.util.regex.{ Pattern, Matcher }
 
 class ItemFeatures extends Serializable {
-  
-  
+
   //1.
   def Get_NumberOfLabels(str: String): Double = {
 
@@ -64,7 +63,7 @@ class ItemFeatures extends Serializable {
 
     count
   }
-//5.
+  //5.
   def Get_NumberOfSiteLinks(str: String): Double = {
 
     // from Sitelink tag
@@ -78,7 +77,7 @@ class ItemFeatures extends Serializable {
 
     count
   }
-//6.
+  //6.
   def Get_NumberOfstatements(str: String): Double = {
 
     // from claims tag
@@ -122,7 +121,7 @@ class ItemFeatures extends Serializable {
 
     count
   }
-//9.
+  //9.
   def Get_NumberOfQualifier_Order(str: String): Double = {
     // from claims tag
     val input: String = str
@@ -135,7 +134,7 @@ class ItemFeatures extends Serializable {
 
     count
   }
-//10.
+  //10.
   def Get_NumberOfBadges(str: String): Double = {
 
     // from Sitelink  tag
@@ -150,7 +149,4 @@ class ItemFeatures extends Serializable {
     count
   }
 
-  
-  
-  
 }
