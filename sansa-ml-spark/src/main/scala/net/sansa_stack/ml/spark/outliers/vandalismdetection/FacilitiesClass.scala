@@ -56,6 +56,24 @@ class FacilitiesClass extends Serializable {
     dfr
   }
 
+    //ok --- Used for DF Triples
+  def RDD_TO_DFR_JTriple(rdd: RDD[String], sqlContext: org.apache.spark.sql.SQLContext): DataFrame = {
+    //Create an Encoded Schema in a String Format:
+    val schemaString = "Subject Predicate Object"
+    //Generate schema:
+    val schema = StructType(schemaString.split(" ").map(fieldName ⇒ StructField(fieldName, StringType, true)))
+    //Apply Transformation for Reading Data from Text File
+    val rowRDD = rdd.map(_.split(",")).map(e ⇒ Row(e(0), e(1), e(2)))
+    //Apply RowRDD in Row Data based on Schema:
+    val RDFTRIPLE = sqlContext.createDataFrame(rowRDD, schema)
+    //Store DataFrame Data into Table
+    RDFTRIPLE.registerTempTable("SPO")
+    //Select Query on DataFrame
+    val dfr = sqlContext.sql("SELECT * FROM SPO")
+    dfr.show()
+
+    dfr
+  }
   def RoundDouble(va: Double): Double = {
 
     val rounded: Double = Math.round(va * 10000).toDouble / 10000

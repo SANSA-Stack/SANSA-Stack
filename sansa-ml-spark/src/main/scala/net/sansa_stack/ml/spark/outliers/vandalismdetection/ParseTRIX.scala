@@ -28,7 +28,7 @@ class ParseTRIX extends Serializable {
     println("HelloRecords" + " " + TRIX_Dataset_Record_AsstringBlock.count)
     TRIX_Dataset_Record_AsstringBlock.foreach(println)
 
-    val RevisioninOneString = TRIX_Dataset_Record_AsstringBlock.map(line => New_abendRevision(line)).cache()
+    val RevisioninOneString = TRIX_Dataset_Record_AsstringBlock.map(line => New_abendRevision(line)).distinct().cache()
 
     RevisioninOneString
   }

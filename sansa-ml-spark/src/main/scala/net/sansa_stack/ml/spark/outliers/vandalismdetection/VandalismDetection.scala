@@ -23,8 +23,25 @@ class VandalismDetection extends Serializable {
     import org.apache.spark.sql.types._
 
     //*******************************************************************************************************************************
-    println("Please Enter 1 for TRIX  process and 2 for RDFXML process and 3 for NormalXML:")
+    println("Please Enter 0 for JTriple and  1 for TRIX  process and 2 for RDFXML process and 3 for NormalXML:")
     val num = scala.io.StdIn.readLine()
+
+    if (num == "0") {
+      println("JTriple.........!!!!!!")
+      // Streaming records:RDFJtriple file :
+      val jobConf = new JobConf()
+
+      val JTriple_Parser_OBJ = new ParseJTriple()
+      val DRF_Builder_JTripleOBJ = new FacilitiesClass()
+      val RDD_JTriple = JTriple_Parser_OBJ.Start_JTriple_Parser(jobConf, sc)
+      RDD_JTriple.foreach(println)
+      //----------------------------DF for RDF TRIX ------------------------------------------
+      //  Create SQLContext Object:
+      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+      val DFR_JTriple = DRF_Builder_JTripleOBJ.RDD_TO_DFR_JTriple(RDD_JTriple, sqlContext)
+      DFR_JTriple.show()
+
+    }
 
     if (num == "1") {
 
