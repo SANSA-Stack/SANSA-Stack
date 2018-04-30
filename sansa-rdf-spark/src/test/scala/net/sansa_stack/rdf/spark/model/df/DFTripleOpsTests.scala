@@ -179,46 +179,5 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(size == 9)
   }
-  /*
-  test("finding a statement via S, P, O to the RDF graph should result in size 1") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val subject = "http://example.org/show/218"
-    val predicate = "http://www.w3.org/2000/01/rdf-schema#label"
-    val `object` = "\"That Seventies Show\""
-
-    val triples = spark.read.rdf(lang)(path)
-    
-    triples.collect.foreach(println)
-
-
-    val graph = triples.find(Some(subject), Some(predicate), Some(`object`))
-    
-    val size = graph.count()
-
-    assert(size == 1)
-  }
-
-
-  test("finding a statement to the RDF graph should result in size 1") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triple = Triple.create(
-      NodeFactory.createURI("http://example.org/show/218"),
-      NodeFactory.createURI("http://example.org/show/localName"),
-      NodeFactory.createLiteral("That Seventies Show", "en"))
-
-    val triples = spark.read.rdf(lang)(path)
-
-    val graph = triples.find(triple)
-
-    val size = graph.count()
-
-    assert(size == 1)
-  }
-  *
-  */
 
 }

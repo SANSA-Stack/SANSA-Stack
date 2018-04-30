@@ -24,8 +24,8 @@ object TripleOps {
       Triple.create(
         NodeFactory.createURI(row.getString(0)),
         NodeFactory.createURI(row.getString(1)),
-        //NodeFactory.createLiteral(row.getString(2))
-        if (row.getString(2).startsWith("http:")) NodeFactory.createURI(row.getString(2)) else NodeFactory.createLiteral(row.getString(2))))
+        if (row.getString(2).startsWith("http:"))
+          NodeFactory.createURI(row.getString(2)) else NodeFactory.createLiteral(row.getString(2))))
   }
 
   /**
@@ -86,7 +86,29 @@ object TripleOps {
    * @param object the object
    * @return DataFrame of triples
    */
-  def find(triples: DataFrame, subject: Option[String] = None, predicate: Option[String] = None, `object`: Option[String] = None): DataFrame = {
+  def find(
+    triples:   DataFrame,
+    subject:   Option[String] = None,
+    predicate: Option[String] = None,
+    `object`:  Option[String] = None): DataFrame = {
+
+    val sql = getSQL(subject, predicate, `object`)
+
+    triples.sqlContext.sql(sql)
+  }
+
+  /**
+   * Generate the translated SQL statement from the triple pattern.
+   *
+   * @param subject the subject
+   * @param predicate the predicate
+   * @param object the object
+   * @return the translated SQL statement as a string
+   */
+  def getSQL(
+    subject:   Option[String] = None,
+    predicate: Option[String] = None,
+    `object`:  Option[String] = None): String = {
 
     var sql = s"SELECT s, p, o FROM TRIPLES"
 
@@ -101,9 +123,7 @@ object TripleOps {
 
       sql += conditions.mkString(" AND ")
     }
-    println(sql)
-    println(subject.get + ", " + predicate.get + ", " + `object`.get)
-    triples.sqlContext.sql(sql)
+    sql
   }
 
   /**
@@ -119,7 +139,8 @@ object TripleOps {
       if (triple.getSubject.isVariable) None else Option(triple.getSubject.getURI),
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.getURI),
       if (triple.getObject.isVariable) None else
-        Option(if (triple.getObject.isLiteral()) triple.getObject.getLiteralLexicalForm else triple.getObject.getURI))
+        Option(if (triple.getObject.isLiteral())
+          triple.getObject.getLiteralLexicalForm else triple.getObject.getURI))
   }
 
   /**
@@ -196,7 +217,11 @@ object TripleOps {
    * @return true if there exists within this RDF graph
    * a triple with (S, P, O) pattern, false otherwise
    */
-  def contains(triples: DataFrame, subject: Option[String] = None, predicate: Option[String] = None, `object`: Option[String] = None): Boolean = {
+  def contains(
+    triples:   DataFrame,
+    subject:   Option[String] = None,
+    predicate: Option[String] = None,
+    `object`:  Option[String] = None): Boolean = {
     find(triples, subject, predicate, `object`).count() > 0
   }
 

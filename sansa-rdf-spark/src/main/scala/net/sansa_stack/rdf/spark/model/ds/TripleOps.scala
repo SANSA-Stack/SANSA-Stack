@@ -5,6 +5,7 @@ import org.apache.spark.sql._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.sql.types.{ StructField, StructType, StringType }
 import net.sansa_stack.rdf.spark.utils.NodeUtils
+import net.sansa_stack.rdf.spark.utils.SchemaUtils
 
 /**
  * Spark based implementation of Dataset of triples.
@@ -31,12 +32,13 @@ object TripleOps {
   def toDF(triples: Dataset[Triple]): DataFrame = {
 
     val spark: SparkSession = SparkSession.builder().getOrCreate()
-    val schema = StructType(
-      Seq(
-        StructField("s", StringType, nullable = false),
-        StructField("p", StringType, nullable = false),
-        StructField("o", StringType, nullable = false)))
-    val rowRDD = triples.rdd.map(t => Row(NodeUtils.getNodeValue(t.getSubject), NodeUtils.getNodeValue(t.getPredicate), NodeUtils.getNodeValue(t.getObject)))
+
+    val schema = SchemaUtils.SQLSchemaDefault
+    val rowRDD = triples.rdd.map(t =>
+      Row(
+        NodeUtils.getNodeValue(t.getSubject),
+        NodeUtils.getNodeValue(t.getPredicate),
+        NodeUtils.getNodeValue(t.getObject)))
     val df = spark.createDataFrame(rowRDD, schema)
     df.createOrReplaceTempView("TRIPLES")
     df
@@ -60,7 +62,11 @@ object TripleOps {
    * @param object the object
    * @return Dataset of triples
    */
-  def find(triples: Dataset[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): Dataset[Triple] = {
+  def find(
+    triples:   Dataset[Triple],
+    subject:   Option[Node]    = None,
+    predicate: Option[Node]    = None,
+    `object`:  Option[Node]    = None): Dataset[Triple] = {
     triples.filter(t =>
       (subject == None || t.getSubject.matches(subject.get)) &&
         (predicate == None || t.getPredicate.matches(predicate.get)) &&
@@ -144,7 +150,11 @@ object TripleOps {
    * @return true if there exists within this RDF graph
    * a triple with (S, P, O) pattern, false otherwise
    */
-  def contains(triples: Dataset[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): Boolean = {
+  def contains(
+    triples:   Dataset[Triple],
+    subject:   Option[Node]    = None,
+    predicate: Option[Node]    = None,
+    `object`:  Option[Node]    = None): Boolean = {
     find(triples, subject, predicate, `object`).count() > 0
   }
 
