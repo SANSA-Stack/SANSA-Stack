@@ -4,7 +4,7 @@
       "title": "PageRank of resources example",
       "text": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.rdf.spark.model.graph._\nimport org.apache.jena.riot.Lang\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval graph \u003d triples.asGraph()\n\nval pagerank \u003d graph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(graph.vertices)\n  .map({ case (k, (r, v)) \u003d\u003e (r, v, k) })\n  .sortBy(50 - _._1)\n\nval rankedreport \u003d report.map(f \u003d\u003e f._2 + \"\\t\" + f._1 )\nprintln(\"%table resource\\t rank\\n \" + rankedreport.take(50).mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "Mar 26, 2018 9:11:07 AM",
+      "dateUpdated": "Apr 30, 2018 1:39:31 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -33,7 +33,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport org.apache.spark.graphx.Graph\n\nimport net.sansa_stack.rdf.spark.io._\n\nimport net.sansa_stack.rdf.spark.model.graph._\n\nimport org.apache.jena.riot.Lang\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[7] at map at package.scala:179\n\ngraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@353ecdce\n\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[92] at RDD at VertexRDD.scala:57\n\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[103] at sortBy at \u003cconsole\u003e:53\n\nrankedreport: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[104] at map at \u003cconsole\u003e:53\n"
+            "data": "\nimport org.apache.spark.graphx.Graph\n\nimport net.sansa_stack.rdf.spark.io._\n\nimport net.sansa_stack.rdf.spark.model.graph._\n\nimport org.apache.jena.riot.Lang\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[3] at map at package.scala:179\n\ngraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@6a5275fe\n\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[88] at RDD at VertexRDD.scala:57\n\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[99] at sortBy at \u003cconsole\u003e:45\n\nrankedreport: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[100] at map at \u003cconsole\u003e:45\n"
           },
           {
             "type": "TABLE",
@@ -45,16 +45,16 @@
       "jobName": "paragraph_1501495930621_-1758570151",
       "id": "20170731-101210_1262676205",
       "dateCreated": "Jul 31, 2017 10:12:10 AM",
-      "dateStarted": "Mar 26, 2018 9:11:07 AM",
-      "dateFinished": "Mar 26, 2018 9:11:32 AM",
+      "dateStarted": "Apr 30, 2018 1:39:31 PM",
+      "dateFinished": "Apr 30, 2018 1:40:23 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Triple Ops example ",
-      "text": "\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.model.{ JenaSparkRDDOps, TripleRDD }\nimport net.sansa_stack.rdf.spark.io._\n\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\nval triplesRDD \u003d spark.rdf(lang)(input)\n\nval graph: TripleRDD \u003d triplesRDD\n\nval ops \u003d JenaSparkRDDOps(spark.sparkContext)\nimport ops._\n\n//Triples filtered by subject ( \"http://dbpedia.org/resource/Charles_Dickens\" )\nprintln(\"All triples related to Dickens:\\n\" + graph.find(URI(\"http://dbpedia.org/resource/Charles_Dickens\"), ANY, ANY).collect().mkString(\"\\n\"))\n\n//Triples filtered by predicate ( \"http://dbpedia.org/ontology/influenced\" )\nprintln(\"All triples for predicate influenced:\\n\" + graph.find(ANY, URI(\"http://dbpedia.org/ontology/influenced\"), ANY).collect().mkString(\"\\n\"))\n\n//Triples filtered by object ( \u003chttp://dbpedia.org/resource/Henry_James\u003e )\nprintln(\"All triples influenced by Henry_James:\\n\" + graph.find(ANY, ANY, URI(\"\u003chttp://dbpedia.org/resource/Henry_James\u003e\")).collect().mkString(\"\\n\"))\n\nprintln(\"Number of triples: \" + graph.find(ANY, ANY, ANY).distinct.count())\nprintln(\"Number of subjects: \" + graph.getSubjects.distinct.count())\nprintln(\"Number of predicates: \" + graph.getPredicates.distinct.count())\nprintln(\"Number of objects: \" + graph.getObjects.distinct.count())\n\nval subjects \u003d graph.filterSubjects(_.isURI()).collect.mkString(\"\\n\")\n\nval predicates \u003d graph.filterPredicates(_.isVariable()).collect.mkString(\"\\n\")\nval objects \u003d graph.filterObjects(_.isLiteral()).collect.mkString(\"\\n\")\n\ngraph.getTriples.take(5).foreach(println(_))",
+      "text": "\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.rdf.spark.model._\nimport org.apache.jena.graph.NodeFactory\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\n\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\n//Triples filtered by subject ( \"http://dbpedia.org/resource/Charles_Dickens\" )\nprintln(\"All triples related to Dickens:\\n\" + triples.find(Some(NodeFactory.createURI(\"http://dbpedia.org/resource/Charles_Dickens\")), None, None).collect().mkString(\"\\n\"))\n\n//Triples filtered by predicate ( \"http://dbpedia.org/ontology/influenced\" )\nprintln(\"All triples for predicate influenced:\\n\" + triples.find(None, Some(NodeFactory.createURI(\"http://dbpedia.org/ontology/influenced\")), None).collect().mkString(\"\\n\"))\n\n//Triples filtered by object ( \u003chttp://dbpedia.org/resource/Henry_James\u003e )\nprintln(\"All triples influenced by Henry_James:\\n\" + triples.find(None, None, Some(NodeFactory.createURI(\"http://dbpedia.org/resource/Henry_James\"))).collect().mkString(\"\\n\"))\n\nprintln(\"Number of triples: \" + triples.distinct.count())\nprintln(\"Number of subjects: \" + triples.getSubjects.distinct.count())\nprintln(\"Number of predicates: \" + triples.getPredicates.distinct.count())\nprintln(\"Number of objects: \" + triples.getObjects.distinct.count())\n\nval subjects \u003d triples.filterSubjects(_.isURI()).collect.mkString(\"\\n\")\n\nval predicates \u003d triples.filterPredicates(_.isVariable()).collect.mkString(\"\\n\")\nval objects \u003d triples.filterObjects(_.isLiteral()).collect.mkString(\"\\n\")\n\n//triples.getTriples().take(5).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "Mar 26, 2018 9:12:46 AM",
+      "dateUpdated": "Apr 30, 2018 1:43:48 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -74,7 +74,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.model.{JenaSparkRDDOps, TripleRDD}\n\nimport net.sansa_stack.rdf.spark.io._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[108] at map at package.scala:179\n\ngraph: net.sansa_stack.rdf.spark.model.TripleRDD \u003d net.sansa_stack.rdf.spark.model.TripleRDD@75eb31a6\n\nops: net.sansa_stack.rdf.spark.model.JenaSparkRDDOps{val sparkContext: org.apache.spark.SparkContext} \u003d net.sansa_stack.rdf.spark.model.JenaSparkRDDOps$$anon$2@a6980a0\n\nimport ops._\nAll triples related to Dickens:\nhttp://dbpedia.org/resource/Charles_Dickens @http://xmlns.com/foaf/0.1/givenName \"Charles\"@en\nhttp://dbpedia.org/resource/Charles_Dickens @http://dbpedia.org/ontology/deathPlace http://dbpedia.org/resource/Gads_Hill_Place\nAll triples for predicate influenced:\nhttp://dbpedia.org/resource/Guy_de_Maupassant @http://dbpedia.org/ontology/influenced http://dbpedia.org/resource/Tobias_Wolff\nhttp://dbpedia.org/resource/Guy_de_Maupassant @http://dbpedia.org/ontology/influenced http://dbpedia.org/resource/Henry_James\nAll triples influenced by Henry_James:\n\nNumber of triples: 106\nNumber of subjects: 36\nNumber of predicates: 24\nNumber of objects: 66\n\n\n\n\n\n\nsubjects: String \u003d\nhttp://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/File:Hunebed_003.jpg @http://commons.dbpedia.org/property/description \"Hunebed D24 near Bronneger, August 2004.\"...\npredicates: String \u003d \"\"\n\n\n\n\n\n\nobjects: String \u003d\nhttp://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/File:Hunebed_003.jpg @http://commons.dbpedia.org/property/description \"Hunebed D24 near Bronneger, August 2004.\"@...http://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\n"
+            "data": "\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.io._\n\nimport net.sansa_stack.rdf.spark.model._\n\nimport org.apache.jena.graph.NodeFactory\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[179] at map at package.scala:179\nAll triples related to Dickens:\nhttp://dbpedia.org/resource/Charles_Dickens @http://xmlns.com/foaf/0.1/givenName \"Charles\"@en\nhttp://dbpedia.org/resource/Charles_Dickens @http://dbpedia.org/ontology/deathPlace http://dbpedia.org/resource/Gads_Hill_Place\nAll triples for predicate influenced:\nhttp://dbpedia.org/resource/Guy_de_Maupassant @http://dbpedia.org/ontology/influenced http://dbpedia.org/resource/Tobias_Wolff\nhttp://dbpedia.org/resource/Guy_de_Maupassant @http://dbpedia.org/ontology/influenced http://dbpedia.org/resource/Henry_James\nAll triples influenced by Henry_James:\nhttp://dbpedia.org/resource/Guy_de_Maupassant @http://dbpedia.org/ontology/influenced http://dbpedia.org/resource/Henry_James\nNumber of triples: 106\nNumber of subjects: 36\nNumber of predicates: 24\nNumber of objects: 66\n\n\n\n\n\n\nsubjects: String \u003d\nhttp://commons.dbpedia.org/resource/Template:Cc-by-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/de \"Ereignis, Veranstaltung.\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/en \"Events\"@en\nhttp://commons.dbpedia.org/resource/Category:Events @http://commons.dbpedia.org/property/fr \"Événements.\"@en\nhttp://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0 @http://commons.dbpedia.org/property/version \"1\"^^http://www.w3.org/2001/XMLSchema#integer\nhttp://commons.dbpedia.org/resource/File:Hunebed_003.jpg @http://commons.dbpedia.org/property/description \"Hunebed D24 near Bronneger, August 2004.\"...\npredicates: String \u003d \"\"\n\nobjects: String \u003d \"\"\n"
           }
         ]
       },
@@ -82,8 +82,8 @@
       "jobName": "paragraph_1501495946594_773108260",
       "id": "20170731-101226_1788149475",
       "dateCreated": "Jul 31, 2017 10:12:26 AM",
-      "dateStarted": "Mar 26, 2018 9:12:46 AM",
-      "dateFinished": "Mar 26, 2018 9:12:57 AM",
+      "dateStarted": "Apr 30, 2018 1:43:48 PM",
+      "dateFinished": "Apr 30, 2018 1:43:54 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -126,9 +126,9 @@
     },
     {
       "title": " RDF Statistic example",
-      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.stats._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\n\nval triples \u003d spark.rdf(lang)(input)\n\nval propertyDist \u003d PropertyUsage(triples, spark).PostProc()\n                                .map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + propertyDist.mkString(\"\\n\"))",
+      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.stats._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\n\nval triples \u003d spark.rdf(lang)(input)\n\nval propertyDist \u003d triples.statsPropertyUsage()\n\nval sortedValues \u003d propertyDist.sortBy(_._2, false).take(100)\n                                .map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + sortedValues.mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "Mar 26, 2018 9:14:49 AM",
+      "dateUpdated": "Apr 30, 2018 1:51:36 PM",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -157,7 +157,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.rdf.spark.io._\n\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.stats._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[138] at map at package.scala:179\n\npropertyDist: Array[String] \u003d Array(author\t25, source\t18, description\t17, date\t11, permission\t4, de\t3, fr\t3, eo\t2, es\t2, en\t2, version\t2, influenced\t2, otherVersions\t2, deathPlace\t2, givenName\t2, hidetitle\t1, mk\t1, wikidata\t1, gallery\t1, width\t1, inline\t1, year\t1, sv\t1, artist\t1)\n"
+            "data": "\nimport net.sansa_stack.rdf.spark.io._\n\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.stats._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[335] at map at package.scala:179\n\npropertyDist: org.apache.spark.rdd.RDD[(org.apache.jena.graph.Node, Int)] \u003d ShuffledRDD[338] at reduceByKey at RDFStatistics.scala:430\n\nsortedValues: Array[String] \u003d Array(author\t25, source\t18, description\t17, date\t11, permission\t4, de\t3, fr\t3, eo\t2, es\t2, en\t2, version\t2, influenced\t2, otherVersions\t2, deathPlace\t2, givenName\t2, hidetitle\t1, mk\t1, wikidata\t1, gallery\t1, width\t1, inline\t1, year\t1, sv\t1, artist\t1)\n"
           },
           {
             "type": "TABLE",
@@ -169,8 +169,8 @@
       "jobName": "paragraph_1501496020213_206112619",
       "id": "20170731-101340_79632211",
       "dateCreated": "Jul 31, 2017 10:13:40 AM",
-      "dateStarted": "Mar 26, 2018 9:14:49 AM",
-      "dateFinished": "Mar 26, 2018 9:14:52 AM",
+      "dateStarted": "Apr 30, 2018 1:51:36 PM",
+      "dateFinished": "Apr 30, 2018 1:51:41 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -242,25 +242,25 @@
   "name": "RDF",
   "id": "2CJKQVM6W",
   "angularObjects": {
-    "2DA3BDJ3M:shared_process": [],
-    "2D8PBYP1Y:shared_process": [],
-    "2DA821HY5:shared_process": [],
-    "2D8NFQ99A:shared_process": [],
-    "2DANBPYM2:shared_process": [],
-    "2D9A5XT55:shared_process": [],
-    "2DAHUK2H4:shared_process": [],
-    "2D97ETERV:shared_process": [],
-    "2DB25EG5T:shared_process": [],
-    "2D95BFFNM:shared_process": [],
-    "2D9TENCFY:shared_process": [],
-    "2DCB6VE7N:shared_process": [],
-    "2D96QGZV1:shared_process": [],
-    "2DAACZERM:shared_process": [],
-    "2D9J8BSSQ:shared_process": [],
-    "2DBHH6JVZ:shared_process": [],
-    "2DA1VQMJ6:shared_process": [],
-    "2D8K42H1F:shared_process": [],
-    "2D8QGYDH5:shared_process": []
+    "2DBDQB7PX:shared_process": [],
+    "2DBZJ737T:shared_process": [],
+    "2DBCSG3S2:shared_process": [],
+    "2DBH2T277:shared_process": [],
+    "2DEYQSXHV:shared_process": [],
+    "2DD2J6EF2:shared_process": [],
+    "2DD6WZ6A8:shared_process": [],
+    "2DD4HCCA1:shared_process": [],
+    "2DDFHGYKD:shared_process": [],
+    "2DDYG49H7:shared_process": [],
+    "2DBKD23WF:shared_process": [],
+    "2DD9SRPFY:shared_process": [],
+    "2DCKZBJNQ:shared_process": [],
+    "2DC2AKS5V:shared_process": [],
+    "2DFATPKWS:shared_process": [],
+    "2DF421H8E:shared_process": [],
+    "2DEXN15NV:shared_process": [],
+    "2DEMH9A9R:shared_process": [],
+    "2DBW7GZKB:shared_process": []
   },
   "config": {},
   "info": {}
