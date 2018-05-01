@@ -276,8 +276,8 @@ object RDFGraphPowerIterationClustering {
         val aorb = e._2._1._4
         val i1 = e._2._1._5
         val i2 = e._2._1._6
-        (v1,v2,avg,aorb,i1,i2)
-        }).groupBy(_._2)
+        (v2,v1,avg,aorb,i2,i1)
+        }).groupBy(_._1)
       
    
      
