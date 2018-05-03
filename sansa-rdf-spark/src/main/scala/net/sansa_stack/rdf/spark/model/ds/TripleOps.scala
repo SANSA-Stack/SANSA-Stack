@@ -10,7 +10,7 @@ import net.sansa_stack.rdf.spark.utils.SchemaUtils
 /**
  * Spark based implementation of Dataset of triples.
  *
- * @author Gezim Sejdiu
+ * @author Gezim Sejdiu Lorenz Buehmann
  */
 object TripleOps {
 

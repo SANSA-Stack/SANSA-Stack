@@ -8,7 +8,7 @@ import org.apache.spark.sql.types.{ StructField, StructType, StringType }
 /**
  * Spark/DataFrame based implementation of DataFrame of triples.
  *
- * @author Gezim Sejdiu
+ * @author Gezim Sejdiu Lorenz Buehmann
  */
 
 object TripleOps {
