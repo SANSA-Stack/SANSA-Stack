@@ -11,9 +11,7 @@ import java.net.InetAddress
 
 class ParseNormalXML extends Serializable {
 
-  def DB_NormalXML_Parser_Input1(sc: SparkContext): RDD[String] = {
-
-    println("Normal XML .........!!!!!!")
+  def Training_DB_NormalXML_Parser_Input1(sc: SparkContext): RDD[String] = {
 
     //Streaming records:==================================================================Input Files
     val jobConf = new JobConf()
@@ -37,9 +35,7 @@ class ParseNormalXML extends Serializable {
     New_RevisionMap
 
   }
-  def DB_NormalXML_Parser_Input2(sc: SparkContext): RDD[String] = {
-
-    println("Normal XML .........!!!!!!")
+  def Training_DB_NormalXML_Parser_Input2(sc: SparkContext): RDD[String] = {
 
     //Streaming records:==================================================================Input Files
     val jobConf = new JobConf()
@@ -63,11 +59,9 @@ class ParseNormalXML extends Serializable {
     New_RevisionMap
 
   }
-  def DB_NormalXML_Parser_Input3(sc: SparkContext): RDD[String] = {
+  def Training_DB_NormalXML_Parser_Input3(sc: SparkContext): RDD[String] = {
 
-    println("Normal XML .........!!!!!!")
-
-    //Streaming records:==================================================================Input Files
+   //Streaming records:==================================================================Input Files
     val jobConf = new JobConf()
     jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
     jobConf.set("stream.recordreader.begin", "<revision>") // start Tag
@@ -79,7 +73,6 @@ class ParseNormalXML extends Serializable {
     println(wikiData.count)
     val RevisionTagewikidata = wikiData.map { case (x, y) => (x.toString()) }
     //println(RevisionTagewikidata.count)
-
     // ABend the revision in one line string
     val RevisioninOneString = RevisionTagewikidata.map(line => New_abendRevision(line)).cache()
     // println("TotalCount" + " " + RevisioninOneString.count)
@@ -90,6 +83,35 @@ class ParseNormalXML extends Serializable {
 
   }
 
+    def Testing_DB_NormalXML_Parser(sc: SparkContext): RDD[String] = {
+
+   //Streaming records:==================================================================Input Files
+    val jobConf = new JobConf()
+    jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
+    jobConf.set("stream.recordreader.begin", "<revision>") // start Tag
+    jobConf.set("stream.recordreader.end", "</revision>") // End Tag
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/3.xml") // input path from Hadoop
+
+    // read data and save in RDD as block
+    val wikiData = sc.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text]) //.distinct()
+    println(wikiData.count)
+    val RevisionTagewikidata = wikiData.map { case (x, y) => (x.toString()) }
+    //println(RevisionTagewikidata.count)
+    // ABend the revision in one line string
+    val RevisioninOneString = RevisionTagewikidata.map(line => New_abendRevision(line)).cache()
+    // println("TotalCount" + " " + RevisioninOneString.count)
+
+    val New_RevisionMap = RevisioninOneString.map(line => New_Build_Revision_map(line)).cache()
+
+    New_RevisionMap
+
+  }
+
+  
+  
+  
+
+  
   // make the revision as one string
   def New_abendRevision(str: String): String = {
 

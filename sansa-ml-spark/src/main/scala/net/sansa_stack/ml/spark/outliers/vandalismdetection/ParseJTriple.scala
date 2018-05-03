@@ -7,7 +7,7 @@ import org.apache.jena.rdf.model.ModelFactory
 import java.util.ArrayList
 import java.util.regex.Pattern
 import java.io.ByteArrayInputStream
-
+ 
 class ParseJTriple extends Serializable{
   
   

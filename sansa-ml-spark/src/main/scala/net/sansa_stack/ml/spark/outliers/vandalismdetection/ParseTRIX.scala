@@ -43,33 +43,7 @@ class ParseTRIX extends Serializable {
     s4
   }
 
-  // This function for TRIX case.
-  def RecordParse(record: String, prefixes: String): ArrayList[Triple] = {
-    var triples = new ArrayList[Triple]()
-    var model = ModelFactory.createDefaultModel();
-    val modelText = "<?xml version=\"1.0\" encoding=\"utf-8\" ?> \n" + prefixes + record + "</rdf:RDF>"
-    model.read(new ByteArrayInputStream(modelText.getBytes()), "http://example.org");
-    val iter = model.listStatements()
-    while (iter.hasNext()) {
-      var triple = iter.next().asTriple()
-      triples.add(triple)
-    }
-    triples
-  }
-  // This function for TRIX case.
-  def prefixParse(line: String): ArrayList[String] = {
-    var temp = line
-    val prefixRegex = Pattern.compile("xmlns\\s*:\\s*[a-zA-Z][a-zA-Z0-9_]*\\s*=\\s*([\"'])(?:(?=(\\\\?))\\2.)*?\\1")
-    var matcher = prefixRegex.matcher(temp)
-    var vars = new ArrayList[String]()
-    while (matcher.find()) {
-      var x = temp.substring(matcher.start(), matcher.end())
-      vars.add(x.toString())
-      temp = temp.substring(0, matcher.start()) + temp.substring(matcher.end(), temp.length())
-      matcher = prefixRegex.matcher(temp)
-    }
-    vars
-  }
+
   // This function for TRIX case.
   def arrayListTOstring(Arraylistval: ArrayList[Triple]): String = {
     val str = Arraylistval.get(0).toString()

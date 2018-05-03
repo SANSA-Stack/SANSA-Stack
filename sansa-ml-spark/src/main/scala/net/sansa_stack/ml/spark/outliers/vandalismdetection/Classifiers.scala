@@ -17,19 +17,35 @@ import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.{ IndexToString, StringIndexer, VectorIndexer }
 import org.apache.spark.ml.classification.{ RandomForestClassificationModel, RandomForestClassifier }
 import org.apache.spark.ml.Pipeline
+import org.apache.commons.io.FileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Date
+import org.apache.spark.mllib.classification.{SVMModel, SVMWithSGD}
 
 class Classifiers extends Serializable {
 
-  //ok -----
-  def RandomForestClassifer(DF: DataFrame, sqlContext: SQLContext): Unit = {
+  //1.ok -----
+  def RandomForestClassifer(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
-    DF.registerTempTable("DB")
-    val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB")
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+    import sqlContext.implicits._
+    import org.apache.spark.sql.functions._ // for UDF
+    import org.apache.spark.sql.types._
 
-    val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
-    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+    DF_Training.registerTempTable("DB1")
+    DF_Testing.registerTempTable("DB2")
 
-    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+    val TrainingData = sqlContext.sql("select Rid, features,FinalROLLBACK_REVERTED  from DB1")
+    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2")
+
+    val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(TrainingData)
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
+
+    //    val Array(TrainingData) = TrainingData//.randomSplit(Array(0.100))
+    //    val Array(DF_Testing) = DF_Testing//.randomSplit(Array(0.100))
 
     // Train a RandomForest model.
     val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043).setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") //.setNumTrees(20)
@@ -41,10 +57,10 @@ class Classifiers extends Serializable {
     val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, rf, labelConverter))
 
     // Train model. This also runs the indexers.
-    val model_New = pipeline.fit(trainingData)
+    val model_New = pipeline.fit(TrainingData)
 
     // Make predictions.
-    val predictions = model_New.transform(testData)
+    val predictions = model_New.transform(TestingData)
 
     // Select example rows to display.
     val finlaPrediction = predictions.select("Rid", "features", "FinalROLLBACK_REVERTED", "predictedLabel")
@@ -52,42 +68,56 @@ class Classifiers extends Serializable {
 
     //Case1 : BinaryClassificationEvaluator:OK ------------------------------------------------------
     val binaryClassificationEvaluator = new BinaryClassificationEvaluator().setLabelCol("indexedLabel").setRawPredictionCol("rawPrediction")
-    var results = 0.0
-    def printlnMetricCAse1(metricName: String): Unit = {
+    var results1 = 0.0
+    def printlnMetricCAse1(metricName: String): Double = {
 
-      results = binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
-      println(metricName + " = " + results)
+      results1 = binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " + results1)
+      results1
     }
-    printlnMetricCAse1("areaUnderROC")
-    printlnMetricCAse1("areaUnderPR")
+    val ROC = printlnMetricCAse1("areaUnderROC")
+    val PR = printlnMetricCAse1("areaUnderPR")
 
     // Case 2: MulticlassClassificationEvaluator:OK -----------------------------------------------------
     //Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
+    var results2 = 0.0
 
-    def printlnMetricCase2(metricName: String): Unit = {
-      println(metricName + " = " + MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions))
+    def printlnMetricCase2(metricName: String): Double = {
+      results2 = MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " + results2)
+      results2
     }
-    printlnMetricCase2("accuracy")
-    printlnMetricCase2("weightedPrecision")
-    printlnMetricCase2("weightedRecall")
-    //
+    val accuracy = printlnMetricCase2("accuracy")
+    val Precision = printlnMetricCase2("weightedPrecision")
+    val Recall = printlnMetricCase2("weightedRecall")
+
+    val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+  finalResult
+
   }
+  //2.ok------
+  def DecisionTreeClassifier(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
-  //ok------
-  def DecisionTreeClassifier(DF: DataFrame, sqlContext: SQLContext): Unit = {
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+    import sqlContext.implicits._
+    import org.apache.spark.sql.functions._ // for UDF
+    import org.apache.spark.sql.types._
 
-    DF.registerTempTable("DB")
-    val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB")
+    DF_Training.registerTempTable("DB1")
+    DF_Testing.registerTempTable("DB2")
+
+    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB1")
+    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2")
 
     // Index labels, adding metadata to the label column.
     // Fit on whole dataset to include all labels in index.
-    val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
+    val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(TrainingData)
     // Automatically identify categorical features, and index them.
-    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
 
     // Split the data into training and test sets (30% held out for testing).
-    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+    //    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
 
     // Train a DecisionTree model.
     val dt = new DecisionTreeClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")
@@ -99,67 +129,81 @@ class Classifiers extends Serializable {
     val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, dt, labelConverter))
 
     // Train model. This also runs the indexers.
-    val modelxx = pipeline.fit(trainingData)
+    val modelxx = pipeline.fit(TrainingData)
 
     // Make predictions.
-    val predictions = modelxx.transform(testData)
+    val predictions = modelxx.transform(TestingData)
 
     // Select example rows to display.
-    val finlaPrediction = predictions.select("Rid", "features", "FinalROLLBACK_REVERTED", "predictedLabel")
+    //val finlaPrediction = predictions.select("Rid", "features", "FinalROLLBACK_REVERTED", "predictedLabel")
 
     //Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
     val binaryClassificationEvaluator = new BinaryClassificationEvaluator().setLabelCol("indexedLabel").setRawPredictionCol("rawPrediction")
-    def printlnMetricCAse1(metricName: String): Unit = {
-
-      println(metricName + " = " + binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions))
+    
+    var result1=0.0
+    def printlnMetricCAse1(metricName: String): Double = {
+     result1 =binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " +result1 )
+      
+      result1
     }
-    printlnMetricCAse1("areaUnderROC")
-    printlnMetricCAse1("areaUnderPR")
+    val ROC = printlnMetricCAse1("areaUnderROC")
+    val PR = printlnMetricCAse1("areaUnderPR")
 
     //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
     //Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
-
-    def printlnMetricCase2(metricName: String): Unit = {
-      println(metricName + " = " + MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions))
+   var result2=0.0
+    def printlnMetricCase2(metricName: String): Double = {
+      result2=MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " + result2)
+      result2
     }
-    printlnMetricCase2("accuracy")
-    printlnMetricCase2("weightedPrecision")
-    printlnMetricCase2("weightedRecall")
+     val accuracy = printlnMetricCase2("accuracy")
+    val Precision = printlnMetricCase2("weightedPrecision")
+    val Recall = printlnMetricCase2("weightedRecall")
 
+    
+        val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+
+    finalResult
+     
+    
   }
 
-  // Ok --------
-  def LogisticRegrision(DF: DataFrame, sqlContext: SQLContext): Unit = {
+  // 3.Ok --------
+  def LogisticRegrision(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
-    DF.registerTempTable("DB")
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+    import sqlContext.implicits._
+    import org.apache.spark.sql.functions._ // for UDF
+    import org.apache.spark.sql.types._
 
-    val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB") // for logistic regrision
+    DF_Training.registerTempTable("DB1")
+    DF_Testing.registerTempTable("DB2")
 
-    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(Data)
+    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB1") // for logistic regrision
+    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB2") // for logistic regrision
+
+    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(TrainingData)
 
     // Automatically identify categorical features, and index them.
-    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
-
-    // Split the data into training and test sets (30% held out for testing).
-    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
 
     // Train a DecisionTree model.
-    //val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")//.setMaxIter(10)
-
-    val mlr = new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8).setFamily("multinomial")
+    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8).setFamily("multinomial")
 
     // Convert indexed labels back to original labels.
     val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
 
     // Chain indexers and tree in a Pipeline.
-    val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, mlr, labelConverter))
+    val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, lr, labelConverter))
 
     // Train model. This also runs the indexers.
-    val modelxx = pipeline.fit(trainingData)
+    val modelxx = pipeline.fit(TrainingData)
 
     // Make predictions.
-    val predictions = modelxx.transform(testData)
+    val predictions = modelxx.transform(TestingData)
 
     // Select example rows to display.
     val finlaPrediction = predictions.select("Rid", "features", "label", "predictedLabel")
@@ -168,40 +212,57 @@ class Classifiers extends Serializable {
 
     //Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
     val binaryClassificationEvaluator = new BinaryClassificationEvaluator().setLabelCol("indexedLabel").setRawPredictionCol("rawPrediction")
-    var results = 0.0
-    def printlnMetricCase1(metricName: String): Unit = {
+    var results1 = 0.0
+    def printlnMetricCase1(metricName: String): Double = {
 
-      results = binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
-      println(metricName + " = " + results)
+      results1 = binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " + results1)
+      results1
     }
-    printlnMetricCase1("areaUnderROC")
-    printlnMetricCase1("areaUnderPR")
+    val ROC = printlnMetricCase1("areaUnderROC")
+    val PR = printlnMetricCase1("areaUnderPR")
 
     //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
     //Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
-
-    def printlnMetricCase2(metricName: String): Unit = {
-      println(metricName + " = " + MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions))
+   var result2=0.0
+    def printlnMetricCase2(metricName: String): Double = {
+      
+      result2=MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " + result2)
+      result2
     }
-    printlnMetricCase2("accuracy")
-    printlnMetricCase2("weightedPrecision")
-    printlnMetricCase2("weightedRecall")
+    val accuracy = printlnMetricCase2("accuracy")
+    val Precision = printlnMetricCase2("weightedPrecision")
+    val Recall = printlnMetricCase2("weightedRecall")
 
+    
+     val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+
+     finalResult
+    
   }
-  // OK-----
-  def GradientBoostedTree(DF: DataFrame, sqlContext: SQLContext): Unit = {
+  //4. OK-----
+  def GradientBoostedTree(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
-    DF.registerTempTable("DB")
-    val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB").cache()
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+    import sqlContext.implicits._
+    import org.apache.spark.sql.functions._ // for UDF
+    import org.apache.spark.sql.types._
 
-    val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(Data)
+    DF_Training.registerTempTable("DB1")
+    DF_Testing.registerTempTable("DB2")
+
+    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB1").cache()
+    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2").cache()
+
+    val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(TrainingData)
 
     // Automatically identify categorical features, and index them.
-    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
 
     // Split the data into training and test sets (30% held out for testing).
-    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+    //    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
 
     // Train a DecisionTree model.
     val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") //.setMaxIter(10)
@@ -213,10 +274,10 @@ class Classifiers extends Serializable {
     val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, gbt, labelConverter))
 
     // Train model. This also runs the indexers.
-    val modelxx = pipeline.fit(trainingData)
+    val modelxx = pipeline.fit(TrainingData)
 
     // Make predictions.
-    val predictions = modelxx.transform(testData)
+    val predictions = modelxx.transform(TestingData)
 
     // Select example rows to display.
 
@@ -229,32 +290,49 @@ class Classifiers extends Serializable {
     println("Area under ROC = " + metrics.areaUnderROC())
     println("Area under PR = " + metrics.areaUnderPR())
 
+      val ROC =metrics.areaUnderROC()
+      val PR= metrics.areaUnderPR()
+    
+    
     //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
     //Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
 
-    def printlnMetric(metricName: String): Unit = {
-      println(metricName + " = " + MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions))
+    var result2=0.0 
+    def printlnMetric(metricName: String): Double = {
+      
+      result2= MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " +result2)
+      result2
     }
-    printlnMetric("accuracy")
-    printlnMetric("weightedPrecision")
-    printlnMetric("weightedRecall")
+    val accuracy = printlnMetric("accuracy")
+    val Precision = printlnMetric("weightedPrecision")
+    val Recall = printlnMetric("weightedRecall")
+    
+    val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+
+     finalResult
 
   }
 
-  //Ok------------
-  def MultilayerPerceptronClassifier(DF: DataFrame, sqlContext: SQLContext): Unit = {
+  //5.Ok------------
+  def MultilayerPerceptronClassifier(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
-    DF.registerTempTable("DB")
+    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+    import sqlContext.implicits._
+    import org.apache.spark.sql.functions._ // for UDF
+    import org.apache.spark.sql.types._
 
-    val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB")
+    DF_Training.registerTempTable("DB1")
+    DF_Testing.registerTempTable("DB2")
 
-    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
+    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB1")
+    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB2")
 
-    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(Data)
+    val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(TrainingData)
 
     // Automatically identify categorical features, and index them.
-    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(Data)
+    val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
 
     val layers = Array[Int](100, 5, 4, 2)
 
@@ -267,10 +345,10 @@ class Classifiers extends Serializable {
     val pipeline = new Pipeline().setStages(Array(labelIndexer, featureIndexer, trainer, labelConverter))
 
     // train the model
-    val modelxx = pipeline.fit(trainingData)
+    val modelxx = pipeline.fit(TrainingData)
 
     // compute accuracy on the test set
-    val predictions = modelxx.transform(testData)
+    val predictions = modelxx.transform(TestingData)
 
     // predictions.show()
 
@@ -283,6 +361,12 @@ class Classifiers extends Serializable {
     println("Area under ROC = " + metrics.areaUnderROC())
     println("Area under PR = " + metrics.areaUnderPR())
 
+    
+      val ROC =metrics.areaUnderROC()
+      val PR= metrics.areaUnderPR()
+    
+    
+    
     //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
     val accuracyevaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
     val weightedPrecisionevaluator = new MulticlassClassificationEvaluator().setMetricName("weightedPrecision")
@@ -291,7 +375,22 @@ class Classifiers extends Serializable {
     println("Accuracy = " + accuracyevaluator.evaluate(predictionsDF))
     println("weightedPrecision = " + weightedPrecisionevaluator.evaluate(predictionsDF))
     println("weightedRecall = " + weightedRecallevaluator.evaluate(predictionsDF))
+    
+    
+    val accuracy = accuracyevaluator.evaluate(predictionsDF)
+    val Precision = weightedPrecisionevaluator.evaluate(predictionsDF)
+    val Recall = weightedRecallevaluator.evaluate(predictionsDF)
+    
+    
+     val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+     finalResult
+
+    
+    
 
   }
+
+  
+  
 
 }
