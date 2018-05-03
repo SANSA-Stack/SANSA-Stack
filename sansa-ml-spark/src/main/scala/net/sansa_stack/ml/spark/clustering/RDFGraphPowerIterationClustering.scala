@@ -225,7 +225,7 @@ object RDFGraphPowerIterationClustering {
     val findRdf = findIterable.mapValues(_.map(_._2._2))
     findRdf.saveAsTextFile(output)
 
-    val joinv1 = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
+   /* val joinv1 = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
     val joinv2 = weightedGraph.keyBy(_._2).join(rddClusters).keyBy(_._2._1._1).join(rddClusters)
     val simnode = joinv1.map(e => {
       var clid = 0
@@ -302,6 +302,9 @@ object RDFGraphPowerIterationClustering {
       }).sum()
       
       val silouhette = allLinkstoNodeV/lenghtOfNodes
+      * 
+      */
+      val silouhette = 0.0
       val evaluateString: List[String] = List(silouhette.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
       evaluateStringRDD.saveAsTextFile(outevl)
