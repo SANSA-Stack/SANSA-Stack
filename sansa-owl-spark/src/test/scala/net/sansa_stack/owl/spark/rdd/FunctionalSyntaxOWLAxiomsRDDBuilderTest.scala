@@ -1,25 +1,31 @@
 package net.sansa_stack.owl.spark.rdd
 
-import com.holdenkarau.spark.testing.SharedSparkContext
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.model._
-
+import net.sansa_stack.owl.spark.owl._
+import com.holdenkarau.spark.testing.SharedSparkContext
+import org.apache.spark.sql.SparkSession
 
 class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkContext {
+  lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
+    .config(
+      "spark.kryo.registrator",
+      "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
+    .getOrCreate()
+
   var _rdd: OWLAxiomsRDD = null
+  val syntax = Syntax.FUNCTIONAL
 
   def rdd = {
     if (_rdd == null) {
-      _rdd = FunctionalSyntaxOWLAxiomsRDDBuilder.build(
-        sc, "src/test/resources/ont_functional.owl")
-//        sc, "hdfs://localhost:9000/ont_functional.owl")
+      val s = spark.owl(syntax)("src/test/resources/ont_functional.owl")
       _rdd.cache()
     }
     _rdd
   }
 
   test("The number of axioms should match") {
-    val expectedNumberOfAxioms = 67  // = 71 - commented out Import(...) - 3 x null
+    val expectedNumberOfAxioms = 67 // = 71 - commented out Import(...) - 3 x null
     assert(rdd.count() == expectedNumberOfAxioms)
   }
 

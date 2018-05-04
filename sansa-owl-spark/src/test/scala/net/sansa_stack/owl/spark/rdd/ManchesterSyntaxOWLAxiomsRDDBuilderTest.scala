@@ -8,20 +8,26 @@ import org.scalatest.FunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.XSDVocabulary
-import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl}
+import uk.ac.manchester.cs.owl.owlapi.{ OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl }
+import net.sansa_stack.owl.spark.owl._
 
 import scala.collection.JavaConverters._
-
+import org.apache.spark.sql.SparkSession
 
 class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkContext {
+  lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
+    .config(
+      "spark.kryo.registrator",
+      "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
+    .getOrCreate()
   var _rdd: OWLAxiomsRDD = null
   val dataFactory = OWLManager.getOWLDataFactory
+  val syntax = Syntax.MANCHESTER
 
   def rdd = {
     if (_rdd == null) {
-      _rdd = ManchesterSyntaxOWLAxiomsRDDBuilder.build(
-        sc, "src/test/resources/ont_manchester.owl")
-//        sc, "hdfs://localhost:9000/ont_manchester.owl")
+      _rdd = spark.owl(syntax)("src/test/resources/ont_manchester.owl")
+      //        sc, "hdfs://localhost:9000/ont_manchester.owl")
       _rdd.cache()
     }
 
@@ -548,8 +554,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     val expectedClasses = Set(
       dataFactory.getOWLClass("http://ex.com/bar#Cl1OrNegate"),
       dataFactory.getOWLClass("http://ex.com/bar#Cls1"),
-      dataFactory.getOWLClass("http://ex.com/bar#ComplementCls1")
-    )
+      dataFactory.getOWLClass("http://ex.com/bar#ComplementCls1"))
 
     val filteredRDD: RDD[OWLDisjointUnionAxiom] =
       rdd.filter(_.isInstanceOf[OWLDisjointUnionAxiom]).map(
@@ -572,8 +577,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     val expectedNumberOfAxioms = 2
     val expectedClasses = Set(
       dataFactory.getOWLClass("http://ex.com/bar#DataMin3Prop1"),
-      dataFactory.getOWLClass("http://ex.com/bar#DataMax2Prop1")
-    )
+      dataFactory.getOWLClass("http://ex.com/bar#DataMax2Prop1"))
     val filteredRDD: RDD[OWLDisjointClassesAxiom] =
       rdd.filter(_.isInstanceOf[OWLDisjointClassesAxiom]).map(
         _.getAxiomWithoutAnnotations[OWLDisjointClassesAxiom])
@@ -589,8 +593,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
   def equivClasses(ce1: OWLClassExpression, ce2: OWLClassExpression): OWLEquivalentClassesAxiom =
     new OWLEquivalentClassesAxiomImpl(
       List(ce1, ce2).asJavaCollection,
-      List.empty[OWLAnnotation].asJavaCollection
-    )
+      List.empty[OWLAnnotation].asJavaCollection)
 
   /** FIXME */
   test("Equivalent classes axioms should be created correctly") {
@@ -722,16 +725,14 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
         df.getOWLClass("http://ex.com/bar#UnionCls"),
         df.getOWLObjectUnionOf(
           df.getOWLClass("http://ex.com/bar#Cls1"),
-          df.getOWLClass("http://ex.com/bar#Cls2")))
-    )
+          df.getOWLClass("http://ex.com/bar#Cls2"))))
 
     val filteredRDD: RDD[OWLEquivalentClassesAxiom] =
       rdd.filter(_.isInstanceOf[OWLEquivalentClassesAxiom]).map(
         _.getAxiomWithoutAnnotations[OWLEquivalentClassesAxiom])
 
     assert(
-      filteredRDD.filter(expectedEquivClassesAxioms.contains(_)).count() == expectedNumberOfAxioms
-    )
+      filteredRDD.filter(expectedEquivClassesAxioms.contains(_)).count() == expectedNumberOfAxioms)
   }
 
   test("Sub-class-of axioms should be created correctly") {
@@ -764,8 +765,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
     val expectedNumberOfAxioms = 2
     val expectedRanges = Set(
       (dataFactory.getOWLDataProperty("http://ex.com/bar#dataProp1"), XSDVocabulary.STRING.getIRI),
-      (dataFactory.getOWLDataProperty("http://ex.com/bar#dataProp2"), XSDVocabulary.INT.getIRI)
-    )
+      (dataFactory.getOWLDataProperty("http://ex.com/bar#dataProp2"), XSDVocabulary.INT.getIRI))
 
     val filteredRDD: RDD[OWLDataPropertyRangeAxiom] =
       rdd.filter(_.isInstanceOf[OWLDataPropertyRangeAxiom]).map(
