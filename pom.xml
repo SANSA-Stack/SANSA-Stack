@@ -177,6 +177,16 @@
         <artifactId>jena-arq</artifactId>
         <version>${jena.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-tdb</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-cmds</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
 
       <!-- OWL API -->
       <dependency>
@@ -202,14 +212,14 @@
 
       <!-- Graph API -->
       <dependency>
-        <groupId>com.assembla.scala-incubator</groupId>
+        <groupId>org.scala-graph</groupId>
         <artifactId>graph-core_${scala.binary.version}</artifactId>
-        <version>1.10.0</version>
+        <version>1.12.3</version>
       </dependency>
       <dependency>
-        <groupId>com.assembla.scala-incubator</groupId>
+        <groupId>org.scala-graph</groupId>
         <artifactId>graph-dot_${scala.binary.version}</artifactId>
-        <version>1.9.0</version>
+        <version>1.11.5</version>
       </dependency>
       <dependency>
         <groupId>org.jgrapht</groupId>

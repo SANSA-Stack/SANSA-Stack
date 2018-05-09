@@ -1,10 +1,12 @@
 package net.sansa_stack.inference.rules.minimizer
 import scala.collection.mutable.{ArrayBuffer, Buffer}
+
 import scalax.collection.Graph
 import scalax.collection.edge.LDiEdge
 import scala.collection.JavaConverters._
-import scalax.collection.GraphTraversal.Parameters
+import scala.collection.mutable
 
+import scalax.collection.GraphTraversal.Parameters
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
@@ -16,7 +18,6 @@ import net.sansa_stack.inference.rules.RuleDependencyGraphGenerator.{asString, d
 import net.sansa_stack.inference.utils.{GraphUtils, RuleUtils}
 import net.sansa_stack.inference.utils.graph.LabeledEdge
 import net.sansa_stack.inference.utils.RuleUtils._
-
 import scalax.collection.GraphTraversal.Parameters
 import scalax.collection._
 import scalax.collection.edge.Implicits._
@@ -294,11 +295,13 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
 //          debug(cycles.asScala.mkString(","))
 
           // cycles that contain the current node
-          val cyclesWithNode: Buffer[Buffer[Rule]] = allCycles.asScala.filter(cycle => cycle.contains(node.value)).map(cycle => cycle.asScala)
+          val cyclesWithNode: mutable.Buffer[mutable.Buffer[Rule]] = allCycles.asScala
+            .filter(cycle => cycle.contains(node.value))
+            .map(cycle => cycle.asScala)
           debug("Cycles: " + cyclesWithNode.map(c => c.map(r => r.getName)).mkString(","))
 
           // cycles that use the same property
-          val cyclesWithNodeSameProp: Map[Node, scala.List[Buffer[graph.EdgeT]]] = cyclesWithNode.map(cycle => {
+          val cyclesWithNodeSameProp: Map[Node, scala.List[mutable.Buffer[graph.EdgeT]]] = cyclesWithNode.map(cycle => {
 
             debug("Cycle: " + cycle.map(r => r.getName).mkString(", "))
 
@@ -307,12 +310,12 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
             pairsOfRules :+= (cycle.last, cycle(0))
 
             // map to list of edges
-            val edges: Buffer[graph.EdgeT] = pairsOfRules.map(e => {
+            val edges: mutable.Buffer[graph.EdgeT] = pairsOfRules.flatMap(e => {
               val node1 = graph get e._1
               val node2 = graph get e._2
 
               node1.outgoing.filter(_.target == node2)
-            }).flatten
+            })
             debug("Edges: " + edges.mkString(", "))
 
             // map to edge labels, i.e. the predicates
@@ -325,9 +328,14 @@ abstract class RuleDependencyGraphMinimizer extends MinimizationRuleExecutor {
             if (samePred) Some(predicates(0), edges) else None
           }).filter(_.isDefined).map(_.get).groupBy(e => e._1).mapValues(e => e.map(x => x._2).toList)
 
-          var removedCycles: collection.mutable.Set[Buffer[graph.EdgeT]] = collection.mutable.Set()
+          var removedCycles: collection.mutable.Set[mutable.Buffer[graph.EdgeT]] = collection.mutable.Set()
 
-          val tmp: Map[Node, Map[Int, List[Buffer[graph.EdgeT]]]] = cyclesWithNodeSameProp.mapValues(value => value.map(cycle => (cycle.size, cycle)).groupBy(_._1).mapValues(e => e.map(x => x._2).toList))
+          val tmp: Map[Node, Map[Int, List[mutable.Buffer[graph.EdgeT]]]] =
+            cyclesWithNodeSameProp
+              .mapValues(value =>
+                value.map(cycle => (cycle.size, cycle))
+                  .groupBy(_._1)
+                  .mapValues(e => e.map(x => x._2)))
 
           tmp.foreach(predicate2Cycles => {
             debug("predicate: " + predicate2Cycles._1)

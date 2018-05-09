@@ -137,8 +137,8 @@ object RuleDependencyGraphAnalyzer extends Logging{
   def main(args: Array[String]) {
     // we re-use the JENA API for parsing rules
     val filenames = List(
-//      "rules/rdfs-simple.rules"
-      "rules/owl_horst.rules"
+      "rules/rdfs-simple.rules"
+//      "rules/owl_horst.rules"
 //    "rules/owl_rl.rules"
     )
 
@@ -154,7 +154,7 @@ object RuleDependencyGraphAnalyzer extends Logging{
 
       // print each rule as graph
       rules.foreach { r =>
-        val g = RuleUtils.asGraph(r).export(new File(graphDir, r.getName + ".graphml").toString)
+        RuleUtils.asGraph(r).export(new File(graphDir, r.getName + ".graphml").toString)
       }
 
       // generate graph

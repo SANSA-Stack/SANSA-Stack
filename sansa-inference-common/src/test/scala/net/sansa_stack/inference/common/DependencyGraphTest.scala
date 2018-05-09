@@ -19,7 +19,7 @@ object DependencyGraphTest {
 //    val names = Seq("rdfs5", "rdfs7", "rdfp3", "rdfp4") // property TC rule + some instance rules
 
     // define the rules
-    val rules = RuleSets.OWL_HORST//.filter(r => names.contains(r.getName))
+    val rules = RuleSets.OWL_HORST.filter(r => names.contains(r.getName))
     val profile = ReasoningProfile.OWL_HORST
 //    val rules = RuleSets.RDFS_SIMPLE
 //    val profile = ReasoningProfile.RDFS_SIMPLE
@@ -31,10 +31,10 @@ object DependencyGraphTest {
 
     // generate the rule dependency graph
     var dependencyGraph = RuleDependencyGraphGenerator.generate(rules)
-    dependencyGraph.export(s"${path}/rdg-${profile}.graphml")
+    dependencyGraph.export(s"${path}/rdg-${profile}.graphml", true)
 
     dependencyGraph = minimizer.execute(dependencyGraph) // RuleDependencyGraphGenerator.generate(rules, pruned = true)
-    dependencyGraph.export(s"${path}/rdg-${profile}-pruned.graphml")
+    dependencyGraph.export(s"${path}/rdg-${profile}-pruned.graphml", true)
 //    dependencyGraph.exportAsPDF(s"${path}/rdg-${profile}-pruned.pdf")
 
     // generate the high-level dependency graph

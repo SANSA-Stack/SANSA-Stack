@@ -8,6 +8,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.shared.PrefixMapping
+import org.apache.jena.sparql.util.FmtUtils
 import org.gephi.graph.api.GraphController
 import org.gephi.io.exporter.api.ExportController
 import org.gephi.io.exporter.preview.PDFExporter
@@ -21,6 +22,7 @@ import org.gephi.project.api.ProjectController
 import org.jgrapht.{DirectedGraph, Graph}
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector
 import org.openide.util.Lookup
+
 import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
 import org.jgrapht.graph.{DefaultDirectedGraph, DirectedPseudograph}
 import org.jgrapht.io.{ComponentNameProvider, GraphMLExporter, IntegerComponentNameProvider};
@@ -87,7 +89,8 @@ object GraphUtils {
     * @param graph the 'Graph for Scala' graph
     * @return the JGraphT graph
     */
-  def asJGraphtRuleSetGraph(graph: scalax.collection.mutable.Graph[Rule, LDiEdge]): Graph[Rule, LabeledEdge[Rule, TriplePattern]] = {
+  def asJGraphtRuleSetGraph(graph: scalax.collection.mutable.Graph[Rule, LDiEdge],
+                            showInFlowDirection: Boolean = false): Graph[Rule, LabeledEdge[Rule, TriplePattern]] = {
     val g = new DefaultDirectedGraph[Rule, LabeledEdge[Rule, TriplePattern]](classOf[LabeledEdge[Rule, TriplePattern]])
 
     val edges = graph.edges.toList
@@ -100,7 +103,11 @@ object GraphUtils {
 
       val label = e.label.asInstanceOf[TriplePattern]
 
-      g.addEdge(s, t, LabeledEdge[Rule, TriplePattern](s, t, label))
+      if (showInFlowDirection) {
+        g.addEdge(t, s, LabeledEdge[Rule, TriplePattern](t, s, label))
+      } else {
+        g.addEdge(s, t, LabeledEdge[Rule, TriplePattern](s, t, label))
+      }
 
     }
 
@@ -115,9 +122,10 @@ object GraphUtils {
       *
       * @param filename the target file
       */
-    def export(filename: String, showInFlowDirection: Boolean = false): Unit = {
+    def export(filename: String, showInFlowDirection: Boolean = false,
+               prefixMapping: PrefixMapping = PrefixMapping.Standard): Unit = {
 
-      val g: Graph[Rule, LabeledEdge[Rule, TriplePattern]] = asJGraphtRuleSetGraph(graph)
+      val g: Graph[Rule, LabeledEdge[Rule, TriplePattern]] = asJGraphtRuleSetGraph(graph, showInFlowDirection)
 
       // In order to be able to export edge and node labels and IDs,
       // we must implement providers for them
@@ -136,7 +144,8 @@ object GraphUtils {
       }
 
       val edgeLabelProvider = new ComponentNameProvider[LabeledEdge[Rule, TriplePattern]]() {
-        override def getName(e: LabeledEdge[Rule, TriplePattern]): String = e.label.toString
+        override def getName(e: LabeledEdge[Rule, TriplePattern]): String =
+          FmtUtils.stringForNode(e.label.getPredicate, prefixMapping)
       }
 
 //      val exporter = new GraphMLExporter[String,LabeledEdge](
