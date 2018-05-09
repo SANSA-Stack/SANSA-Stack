@@ -46,7 +46,7 @@ An overview is given in the [FAQ section of the SANSA project page](http://sansa
 @prefix dbr: <http://dbpedia.org/resource/>.
 @prefix dbo: <http://dbpedia.org/ontology/>.
 @prefix dbp: <http://dbpedia.org/resource/>.
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 
 dbr:Cologne dbo:country dbr:Germany;
             dbo:populationTotal	"1057327"^^xsd:integer;
