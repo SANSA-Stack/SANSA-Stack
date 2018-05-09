@@ -8,7 +8,7 @@ object PrettyDuration {
 
     def pretty: String = pretty(includeNanos = false)
 
-    /** Selects most apropriate TimeUnit for given duration and formats it accordingly */
+    /** Selects most appropriate TimeUnit for given duration and formats it accordingly */
     def pretty(includeNanos: Boolean, precision: Int = 4): String = {
       require(precision > 0, "precision must be > 0")
 

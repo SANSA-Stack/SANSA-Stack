@@ -78,7 +78,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
   private def addTransitive(triples: Set[Triple]): Set[Triple] = {
     triples ++ (
       for (t1 <- triples; t2 <- triples if t1.o == t2.s)
-      yield Triple.create(t1.s, t1.p, t2.o))
+        yield Triple.create(t1.s, t1.p, t2.o))
   }
 
   /**
@@ -101,7 +101,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
   /**
     * Computes the transitive closure for the given predicate on an RDD of triples.
     *
-    * @param triples the RDD of triples
+    * @param triples   the RDD of triples
     * @param predicate the predicate
     * @return an RDD containing the transitive closure of the triples
     */
@@ -139,7 +139,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
       rdd.join(edgesReversed).map(x => (x._2._2, x._2._1))
     }
 
-//    tc = FixpointIteration(10)(tc, f)
+    //    tc = FixpointIteration(10)(tc, f)
 
     // the join is iterated until a fixed point is reached
     var i = 1
@@ -190,14 +190,14 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
 
     // the join is iterated until a fixed point is reached
     var i = 1
-    while(!deltaTC.isEmpty()) {
+    while (!deltaTC.isEmpty()) {
       log.info(s"iteration $i...")
 
       // perform the join (x, y) x (y, x), obtaining an RDD of (x=y, (y, x)) pairs,
       // then project the result to obtain the new (x, y) paths.
       deltaTC = deltaTC.join(edgesReversed)
-                        .map(x => (x._2._2, x._2._1))
-                        .subtract(tc).distinct().cache()
+        .map(x => (x._2._2, x._2._1))
+        .subtract(tc).distinct().cache()
 
       // add to TC
       tc = tc.union(deltaTC).cache()
@@ -217,7 +217,7 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
     */
   def computeTransitiveClosure(edges: Dataset[Triple]): Dataset[Triple] = {
     log.info("computing TC...")
-//    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
+    //    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[RDFTriple]
     val spark = edges.sparkSession.sqlContext
     import spark.implicits._
     implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Triple]
@@ -242,12 +242,12 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
 
         tc.createOrReplaceTempView("SC")
         var joined = tc.as("A").join(tc.as("B"), $"A.o" === $"B.s").select("A.s", "A.p", "B.o").as[Triple]
-//          var joined = tc
-//            .join(edges, tc("o") === edges("s"))
-//            .select(tc("s"), tc("p"), edges("o"))
-//            .as[RDFTriple]
-//        tc.sqlContext.
-//          sql("SELECT A.subject, A.predicate, B.object FROM SC A INNER JOIN SC B ON A.object = B.subject")
+        //          var joined = tc
+        //            .join(edges, tc("o") === edges("s"))
+        //            .select(tc("s"), tc("p"), edges("o"))
+        //            .as[RDFTriple]
+        //        tc.sqlContext.
+        //          sql("SELECT A.subject, A.predicate, B.object FROM SC A INNER JOIN SC B ON A.object = B.subject")
 
         //      joined.explain()
         //      var joined = df1.join(df2, df1("object") === df2("subject"), "inner")

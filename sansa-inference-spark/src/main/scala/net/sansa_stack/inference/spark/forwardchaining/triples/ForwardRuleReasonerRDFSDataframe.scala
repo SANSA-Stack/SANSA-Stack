@@ -65,8 +65,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 //    val checkSubclass = udf((cls: String) => subClassOfMapBC.value.contains(cls))
 //    val makeSuperTypeTriple = udf((ind: String, cls: String) => (ind, subClassOfMapBC.value(cls)))
     /*
-        rdfs5	xxx rdfs:subPropertyOf yyy .
-              yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
+        rdfs5 xxx rdfs:subPropertyOf yyy .
+              yyy rdfs:subPropertyOf zzz . xxx rdfs:subPropertyOf zzz .
      */
     val subPropertyOfTriples = index(RDFS.subPropertyOf.asNode()) // extract rdfs:subPropertyOf triples
     val subPropertyOfTriplesTrans = broadcast(computeTransitiveClosureDF(subPropertyOfTriples.as[RDFTriple]).toDF().alias("SP"))
@@ -95,8 +95,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     // 2. SubPropertyOf inheritance according to rdfs7 is computed
 
     /*
-      rdfs7	aaa rdfs:subPropertyOf bbb .
-            xxx aaa yyy .                   	xxx bbb yyy .
+      rdfs7 aaa rdfs:subPropertyOf bbb .
+            xxx aaa yyy .                    xxx bbb yyy .
      */
     val triplesRDFS7 =
       triples // all triples (s p1 o)
@@ -117,8 +117,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     // 3. Domain and Range inheritance according to rdfs2 and rdfs3 is computed
 
     /*
-    rdfs2	aaa rdfs:domain xxx .
-          yyy aaa zzz .	          yyy rdf:type xxx .
+    rdfs2 aaa rdfs:domain xxx .
+          yyy aaa zzz .           yyy rdf:type xxx .
      */
     val domainTriples = broadcast(index(RDFS.domain.asNode()).alias("DOM"))
 
@@ -132,8 +132,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
 //    triplesRDFS2.explain(true)
 
     /*
-   rdfs3	aaa rdfs:range xxx .
-         yyy aaa zzz .	          zzz rdf:type xxx .
+   rdfs3 aaa rdfs:range xxx .
+         yyy aaa zzz .           zzz rdf:type xxx .
     */
     val rangeTriples = broadcast(index(RDFS.range.asNode()).alias("RAN"))
 
@@ -154,8 +154,8 @@ class ForwardRuleReasonerRDFSDataframe(session: SparkSession, parallelism: Int =
     // 4. SubClass inheritance according to rdfs9
 
     /*
-    rdfs9	xxx rdfs:subClassOf yyy .
-          zzz rdf:type xxx .	        zzz rdf:type yyy .
+    rdfs9 xxx rdfs:subClassOf yyy .
+          zzz rdf:type xxx .         zzz rdf:type yyy .
      */
     val tuplesRDFS9 = typeTuples
       .join(subClassOfTriplesTrans, $"TYPES.${sqlSchema.objectCol}" === $"SC.${sqlSchema.subjectCol}", "inner")

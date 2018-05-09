@@ -51,14 +51,14 @@ abstract class AbstractForwardRuleReasonerRDFS[Rdf <: RDF, D, G <: AbstractRDFGr
 //    println("others:" + others.size())
 
     /*
-        rdfs5	xxx rdfs:subPropertyOf yyy .
-              yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
+        rdfs5 xxx rdfs:subPropertyOf yyy .
+              yyy rdfs:subPropertyOf zzz . xxx rdfs:subPropertyOf zzz .
      */
     val r5 = rule5(graph)
 
     /*
-     rdfs7	aaa rdfs:subPropertyOf bbb .
-           xxx aaa yyy .                   	xxx bbb yyy .
+     rdfs7 aaa rdfs:subPropertyOf bbb .
+           xxx aaa yyy .                    xxx bbb yyy .
     */
     val r7 = rule7(others)
     others = others.union(r7)
@@ -73,8 +73,8 @@ abstract class AbstractForwardRuleReasonerRDFS[Rdf <: RDF, D, G <: AbstractRDFGr
     val r11 = rule11(graph)
 
     /*
-      rdfs9	xxx rdfs:subClassOf yyy .
-         zzz rdf:type xxx .	        zzz rdf:type yyy .
+      rdfs9 xxx rdfs:subClassOf yyy .
+         zzz rdf:type xxx .         zzz rdf:type yyy .
     */
     val r9 = rule9(types)
 
