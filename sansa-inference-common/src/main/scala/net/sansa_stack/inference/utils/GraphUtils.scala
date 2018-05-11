@@ -1,8 +1,8 @@
 package net.sansa_stack.inference.utils
 
 import java.io.{ByteArrayOutputStream, File, FileOutputStream, FileWriter}
+import java.util
 
-import scalax.collection.edge.LDiEdge
 import com.itextpdf.text.PageSize
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
@@ -19,13 +19,15 @@ import org.gephi.layout.plugin.force.yifanHu.YifanHuLayout
 import org.gephi.preview.api.{Item, PreviewController, PreviewProperty}
 import org.gephi.preview.types.EdgeColor
 import org.gephi.project.api.ProjectController
-import org.jgrapht.{DirectedGraph, Graph}
+import org.jgrapht.Graph
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector
-import org.openide.util.Lookup
-
-import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
 import org.jgrapht.graph.{DefaultDirectedGraph, DirectedPseudograph}
-import org.jgrapht.io.{ComponentNameProvider, GraphMLExporter, IntegerComponentNameProvider};
+import org.jgrapht.io.GraphMLExporter.AttributeCategory
+import org.jgrapht.io._
+import org.openide.util.Lookup
+import scalax.collection.edge.LDiEdge
+
+import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator};
 
 /**
   * @author Lorenz Buehmann
@@ -144,18 +146,38 @@ object GraphUtils {
       }
 
       val edgeLabelProvider = new ComponentNameProvider[LabeledEdge[Rule, TriplePattern]]() {
-        override def getName(e: LabeledEdge[Rule, TriplePattern]): String =
-          FmtUtils.stringForNode(e.label.getPredicate, prefixMapping)
+        override def getName(e: LabeledEdge[Rule, TriplePattern]): String = {
+          val p = e.label.getPredicate
+          // omit if predicate is a variable
+          if(p.isVariable) {
+            ""
+          } else {
+            FmtUtils.stringForNode(e.label.getPredicate, prefixMapping)
+          }
+        }
       }
 
-//      val exporter = new GraphMLExporter[String,LabeledEdge](
+      import org.jgrapht.io.DefaultAttribute
+      val ruleDescriptionProvider = new ComponentAttributeProvider[Rule]() {
+        override def getComponentAttributes(r: Rule): util.Map[String, Attribute] = {
+          val map = new util.HashMap[String, Attribute]()
+          map.put("rule", DefaultAttribute.createAttribute(r.toString))
+          map
+        }
+      }
+
+      //      val exporter = new GraphMLExporter[String,LabeledEdge](
 //        vertexIDProvider, vertexNameProvider, edgeIDProvider,edgeLabelProvider)
 
       val exporter = new GraphMLExporter[Rule, LabeledEdge[Rule, TriplePattern]](
         new IntegerComponentNameProvider[Rule],
         vertexNameProvider,
+        ruleDescriptionProvider,
         new IntegerComponentNameProvider[LabeledEdge[Rule, TriplePattern]],
-        edgeLabelProvider)
+        edgeLabelProvider,
+        null)
+
+      exporter.registerAttribute("rule", AttributeCategory.NODE, AttributeType.STRING)
 
       val fw = new FileWriter(filename)
 
