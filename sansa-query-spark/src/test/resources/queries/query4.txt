@@ -1,0 +1,15 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?user ?age
+WHERE {
+    {
+        ?user foaf:age ?age .
+        FILTER(?age>25)
+    }
+    UNION {
+        ?user foaf:age ?age .
+        FILTER(?age<20)
+    }
+}
+ORDER BY ?age
+OFFSET 1
+LIMIT 2

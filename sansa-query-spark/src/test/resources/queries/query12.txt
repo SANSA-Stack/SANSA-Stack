@@ -1,0 +1,11 @@
+PREFIX tw: <http://twitter/>
+PREFIX tw-export: <http://twitter/export/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+CONSTRUCT {
+    tw:user0 tw-export:name ?name .
+    tw:user0 tw-export:age ?age .
+}
+WHERE {
+    tw:user0 foaf:name ?name .
+    tw:user0 foaf:age ?age .
+}
