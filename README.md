@@ -41,3 +41,22 @@ server.join()
 
 ```
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
+
+```turtle
+@prefix dbr: <http://dbpedia.org/resource/>.
+@prefix dbo: <http://dbpedia.org/ontology/>.
+@prefix dbp: <http://dbpedia.org/resource/>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+dbr:Cologne dbo:country dbr:Germany;
+            dbo:populationTotal	"1057327"^^xsd:integer;
+            dbp:south	dbr:Bonn;
+            dbp:north	dbr:Düsseldorf.
+
+dbr:Bonn dbo:country	dbr:Germany;
+         dbo:populationTotal	"311287"^^xsd:integer.
+
+dbr:Düsseldorf	dbo:country	dbr:Germany;
+                dbo:populationTotal	"653678"^^xsd:integer;
+                dbp: south	dbr:Bonn.
+```
