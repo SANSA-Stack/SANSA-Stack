@@ -8,4 +8,4 @@ WHERE {
     OPTIONAL { ?user foaf:age ?age . }
 }
 ORDER BY DESC(?username)
-LIMIT 5
+LIMIT 3

@@ -22,8 +22,6 @@ class ExprLangMatches(e: E_LangMatches) extends ExprFilter {
       }
     } else {
       if(leftLang.lengthCompare(2) == 0){
-        println(leftLang(1).toLowerCase)
-        println(rightLang.toString.toLowerCase)
         leftLang(1).toLowerCase.contains(rightLang.toLowerCase)
       } else {
         false
