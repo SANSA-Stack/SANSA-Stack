@@ -27,9 +27,13 @@ See the [available layouts](https://github.com/SANSA-Stack/SANSA-RDF/tree/develo
 The following Scala code shows how to query an RDF file SPARQL syntax (be it a local file or a file residing in HDFS):
 ```scala
 
-val graphRdd = NTripleReader.load(spark, new File("path/to/rdf.nt"))
+val spark: SparkSession = ...
 
-val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
+val lang = Lang.NTRIPLES
+val triples = spark.rdf(lang)("path/to/rdf.nt")
+
+
+val partitions = RdfPartitionUtilsSpark.partitionGraph(triples)
 val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
 
 val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
