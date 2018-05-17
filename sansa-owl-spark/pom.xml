@@ -12,6 +12,9 @@
     <artifactId>sansa-owl-spark_2.11</artifactId>
     <version>0.3.1-SNAPSHOT</version>
 
+    <name>SANSA OWL layer - SPARK</name>
+    <description>A library to read OWL files into Spark.</description>
+
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
@@ -100,6 +103,11 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
