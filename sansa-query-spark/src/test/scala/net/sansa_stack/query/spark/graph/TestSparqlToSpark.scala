@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.query.graph
+package net.sansa_stack.query.spark.graph
 
 import net.sansa_stack.query.spark.graph.jena.SparqlParser
 import net.sansa_stack.query.spark.graph.jena.patternOp.PatternOp

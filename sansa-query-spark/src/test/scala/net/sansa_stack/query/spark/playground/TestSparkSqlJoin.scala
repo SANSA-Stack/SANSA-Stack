@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.query.playground
+package net.sansa_stack.query.spark.playground
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.Row
