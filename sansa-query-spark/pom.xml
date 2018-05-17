@@ -22,13 +22,6 @@
 			<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
 		</dependency>
 
-		<!-- SANSA RDF -->
-		<dependency>
-			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-rdf-spark-bundle_2.11</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.aksw.jena-sparql-api</groupId>
 			<artifactId>jena-sparql-api-server-standalone</artifactId>
@@ -68,6 +61,12 @@
 		<dependency>
 			<groupId>org.scalatest</groupId>
 			<artifactId>scalatest_${scala.binary.version}</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.holdenkarau</groupId>
+			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
 
