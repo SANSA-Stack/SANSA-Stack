@@ -4,8 +4,7 @@ import org.apache.jena.query.QueryExecutionFactory
 
 import scala.io.Source
 
-class Construct{
-
+class Construct {
 }
 
 object Construct {
