@@ -10,6 +10,7 @@ import org.apache.jena.query.Query
 import org.apache.jena.graph.Node
 import org.apache.spark.sql.SparkSession
 import org.scalatest._
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
@@ -20,10 +21,9 @@ import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 
+class TestRdfPartitionSpark extends FunSuite with DataFrameSuiteBase {
 
-class TestRdfPartitionSpark extends FlatSpec {
-
-  "A partitioner" should "support custom datatypes" in {
+  test("A partitioner should support custom datatypes"){
 
     val serializer = new SerializerModel()
     Generator.init(Array[String]())
@@ -33,24 +33,13 @@ class TestRdfPartitionSpark extends FlatSpec {
 
     val model = serializer.getModel
 
-    val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.sql.crossJoin.enabled", "true")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", String.join(", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
-      .appName("Partitioner test")
-      .getOrCreate()
-
     val triples = model.getGraph.find(Node.ANY, Node.ANY, Node.ANY).toList.asScala
-    val graphRdd = sparkSession.sparkContext.parallelize(triples)
-
+    val graphRdd = spark.sparkContext.parallelize(triples)
 
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
 
-    val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
+    val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
 
     val str = """
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -62,8 +51,6 @@ class TestRdfPartitionSpark extends FlatSpec {
     """
 
     println(ResultSetFormatter.asText(qef.createQueryExecution(str).execSelect()))
-
-    sparkSession.stop
 
     // TODO Validate result - right now its already a success if no exception is thrown
   }
