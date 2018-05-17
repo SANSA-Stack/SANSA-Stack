@@ -1,0 +1,3 @@
+PREFIX tw: <http://twitter/>
+DESCRIBE ?user
+WHERE { ?user tw:follows tw:user3 . }

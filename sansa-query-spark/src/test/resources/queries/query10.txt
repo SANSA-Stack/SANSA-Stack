@@ -1,0 +1,11 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX tw: <http://twitter/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?user ?age
+WHERE {
+    ?user tw:register ?date .
+    FILTER (?date > "2013-01-01"^^xsd:date)
+    ?user foaf:age ?age
+}
+ORDER BY ?user xsd:double(str(?age))
+LIMIT 5

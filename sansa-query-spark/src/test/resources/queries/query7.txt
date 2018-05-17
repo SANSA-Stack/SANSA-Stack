@@ -1,0 +1,10 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX tw: <http://twitter/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?user ?name ?age
+WHERE {
+    ?user foaf:name ?name .
+    ?user tw:follows tw:user3 .
+    ?user foaf:age ?age
+    Filter (?age > 26)
+}

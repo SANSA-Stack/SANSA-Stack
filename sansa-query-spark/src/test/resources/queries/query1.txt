@@ -1,0 +1,10 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX tw: <http://twitter/>
+SELECT DISTINCT ?user ?name
+WHERE {
+    ?user foaf:name ?name .
+    ?user foaf:age ?age .
+    FILTER(?age > 25)
+}
+ORDER BY ?name
+LIMIT 3
