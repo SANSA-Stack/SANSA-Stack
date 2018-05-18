@@ -12,7 +12,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
 
 import scala.util.{Failure, Success, Try}
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 
 
 /**
