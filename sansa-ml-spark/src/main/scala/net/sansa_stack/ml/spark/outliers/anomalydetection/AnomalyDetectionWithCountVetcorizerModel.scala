@@ -192,8 +192,8 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val x1 = opiu.rdd //maimum time taken by this rdd
       .map(row => {
         val id = row.getString(0)
-        val country = row.getString(1)
-        (id, country)
+        val value = row.getString(1)
+        (id, value)
       })
 
     val initialSet3 = mutable.Set.empty[String]
