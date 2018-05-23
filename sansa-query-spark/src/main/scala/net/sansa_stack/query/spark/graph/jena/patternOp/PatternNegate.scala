@@ -36,6 +36,10 @@ class PatternNegate(triples: Iterator[Triple]) extends PatternOp {
     }
   }
 
+  override def execute(): Unit = {
+    // compiler here
+  }
+
   override def getTag: String = { tag }
 
   private def mapEquals(a: Map[Node, Node], b: Map[Node, Node], intVar: List[Node]): Boolean = {

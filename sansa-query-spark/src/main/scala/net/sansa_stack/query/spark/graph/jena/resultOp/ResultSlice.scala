@@ -1,7 +1,11 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpSlice
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 /**
   * Class that execute SPARQL LIMIT and OFFSET operations
@@ -10,6 +14,8 @@ import org.apache.jena.sparql.algebra.op.OpSlice
 class ResultSlice(op: OpSlice) extends ResultOp {
 
   private val tag = "LIMIT and OFFSET"
+  private val limit = op.getLength.toInt
+  private val offset = op.getStart.toInt
 
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
     if(op.getStart < 0){    // no offset
@@ -18,6 +24,13 @@ class ResultSlice(op: OpSlice) extends ResultOp {
     else {
       input.slice(op.getStart.toInt, op.getLength.toInt+op.getStart.toInt)
     }
+  }
+
+  override def execute(): Unit = {
+    val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode())
+    val newResult = SparkExecutionModel.slice(oldResult, limit, offset)
+    IntermediateResult.putResult(op.hashCode(), newResult)
+    IntermediateResult.removeResult(op.getSubOp.hashCode())
   }
 
   override def getTag: String = { tag }

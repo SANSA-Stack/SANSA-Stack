@@ -1,8 +1,11 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
 import net.sansa_stack.query.spark.graph.jena.ExprParser
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpOrder
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConversions._
 
@@ -33,6 +36,10 @@ class ResultOrder(op: OpOrder) extends ResultOp {
           parsers(2).getFunction.evaluate(map).toString,
           parsers(3).getFunction.evaluate(map).toString))(order4(dirs.head, dirs(1), dirs(2), dirs(3)))
     }
+  }
+
+  override def execute(): Unit = {
+    // compiler here
   }
 
   def test(input: Array[Map[Node, Node]]): Unit = {

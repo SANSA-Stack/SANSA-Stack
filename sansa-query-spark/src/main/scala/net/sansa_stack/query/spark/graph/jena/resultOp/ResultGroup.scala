@@ -1,8 +1,11 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.sparql.algebra.op.OpGroup
 import org.apache.jena.sparql.expr.ExprAggregator
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConversions._
 
@@ -33,6 +36,10 @@ class ResultGroup(op: OpGroup) extends ResultOp {
     }
     val output = intermediate
     output
+  }
+
+  override def execute(): Unit = {
+    // compiler here
   }
 
   override def getTag: String = { tag }

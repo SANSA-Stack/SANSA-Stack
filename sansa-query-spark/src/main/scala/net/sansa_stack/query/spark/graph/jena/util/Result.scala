@@ -73,6 +73,10 @@ class Result[VD: ClassTag] extends Serializable {
     solutionMapping(variable)
   }
 
+  def getValueSet(vars: Set[VD]): Set[VD] = {
+    vars.map(v=>getValue(v))
+  }
+
   override def hashCode(): Int = {
     solutionMapping.hashCode()
   }
@@ -129,5 +133,14 @@ class Result[VD: ClassTag] extends Serializable {
       }
       math.max(length, v.toString.length)
     }
+  }
+
+  /**
+    * Merge two reuslts as one.
+    */
+  def merge(other: Result[VD]): Result[VD] = {
+    this.variableField.++(other.variableField)
+    addAllMapping(other.solutionMapping.toMap)
+    this
   }
 }

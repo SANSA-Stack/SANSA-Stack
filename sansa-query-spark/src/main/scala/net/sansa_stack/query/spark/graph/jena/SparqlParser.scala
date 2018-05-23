@@ -40,11 +40,12 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
     for (triple <- triples) {
       elementTriples += triple
     }
-    if(ops.isEmpty){ ops.enqueue(new PatternBgp(elementTriples.toIterator)) }
+    //if(ops.isEmpty){ ops.enqueue(new PatternBgp(elementTriples.toIterator)) }
+    ops.enqueue(new PatternBgp(opBGP))
   }
 
   override def visit(opDistinct: OpDistinct): Unit = {
-    ops.enqueue(new ResultDistinct)
+    ops.enqueue(new ResultDistinct(opDistinct))
     //ops.enqueue(new NewDistinct)
   }
 
@@ -59,7 +60,7 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
         for(triple <- triples) {
           elementTriples += triple
         }
-        ops.head.asInstanceOf[PatternBgp].setBgp(elementTriples.toIterator)
+        //ops.head.asInstanceOf[PatternBgp].setBgp(elementTriples.toIterator)
       case e: E_NotExists => val triples = e.getGraphPattern.asInstanceOf[OpBGP].getPattern
         for(triple <- elementTriples){
           triples.add(triple)
@@ -74,8 +75,9 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
   }
 
   override def visit(opLeftJoin: OpLeftJoin): Unit = {
-    val sp = new SparqlParser(opLeftJoin.getRight)
-    ops.enqueue(new PatternOptional(sp.getElementTriples.toIterator, opLeftJoin.getExprs))
+    /*val sp = new SparqlParser(opLeftJoin.getRight)
+    ops.enqueue(new PatternOptional(sp.getElementTriples.toIterator, opLeftJoin.getExprs))*/
+    ops.enqueue(new PatternOptional(opLeftJoin))
   }
 
   override def visit(opMinus: OpMinus): Unit = {
@@ -107,7 +109,11 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
       case e: ResultFilter => e.getExpr.equals(op.asInstanceOf[ResultFilter].getExpr)
       case _               => false
     })
-    ops.enqueue(new PatternUnion(sp.getElementTriples.toIterator, sp.getOps))
+    ops.enqueue(new PatternUnion(opUnion))
+  }
+
+  def getOp: Op = {
+    op
   }
 
   def getOps: mutable.Queue[Ops] = {

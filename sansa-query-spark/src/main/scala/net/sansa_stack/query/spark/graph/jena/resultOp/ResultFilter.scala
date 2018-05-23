@@ -1,8 +1,11 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
 import net.sansa_stack.query.spark.graph.jena.ExprParser
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.expr.{Expr, ExprList}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 /**
   * Class that execute SPARQL FILTER operation
@@ -25,6 +28,10 @@ class ResultFilter(val expr: Expr) extends ResultOp {
     intermediate = intermediate.filter(solution => filterOp.evaluate(solution))
     val output = intermediate
     output
+  }
+
+  override def execute(): Unit = {
+    // compiler here
   }
 
   override def getTag: String = { tag }
