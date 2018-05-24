@@ -20,7 +20,8 @@ import org.apache.spark.sql.functions.col
 import org.apache.commons.math3.stat.descriptive._
 import org.apache.spark.storage.StorageLevel
 
-/*
+/* Dataframe CrossJoin works well for smaller datasets(for e.g. 3.6GB)
+ * For Big datasets(16.6GB), it is computationally expensive.
  *
  * AnomalyDetection - Anomaly detection of numerical data
  * @objList - list of numerical type.
@@ -40,41 +41,42 @@ class AnomalWithDataframeCrossJoin(nTriplesRDD: RDD[Triple], objList: List[Strin
     //remove the literal which has ^^xsd:date or xsd:langstring(only considering numerical)
     val removedLangString = getObjectLiteral.filter(f => searchedge(f.getObject.toString(), objList))
 
+    //the predicate wikipageId,wikiPageRevisionID are not important for outliers
     val removewiki = removedLangString.filter(f => (!f.getPredicate.toString().contains("wikiPageID")) &&
       (!f.getPredicate.toString().contains("wikiPageRevisionID")))
 
-    //checking still object has only numerical data only
+    //checking object has only numerical data only
     val triplesWithNumericLiteral = triplesWithNumericLit(removewiki)
-
+    
+   //Pair rdd with key as subject and calue as triple with numerical literal
     val mapSubWithTriples = propClustering(triplesWithNumericLiteral) //.persist
 
     //get triples of hypernym
     val getHypernymTriples = getHyp()
 
-    //filter rdf type having object value dbpedia and join with hyernym
-    // val rdfTypeDBwiki = rdfType(getHypernym) //.partitionBy(new HashPartitioner(2)).persist()
+    //filter Dbpedia's rdf type and join with hyernym
     val rdfTypeDBwiki = rdfType(getHypernymTriples)
 
-    //joining those subjects only who has rdf:ytpe and numerical literal 
+    //joining those subjects only who has rdf:ytpe/hypernym and numerical literal 
     val rdfTypeWithSubject = mapSubWithTriples.join(rdfTypeDBwiki)
 
     val mapSubjectwithType = rdfTypeWithSubject.map(f => (f._1, f._2._2))
 
-    //  val propwithSub = propwithsubject(triplesWithNumericLiteral)
-    //cluster subjects on the basis of rdf type
     val jacardSimilarity = jSimilarity(triplesWithNumericLiteral, mapSubjectwithType, mapSubWithTriples)
 
     jacardSimilarity
 
   }
 
+ //filter triples with hypernm 
   def getHyp(): RDD[Triple] = nTriplesRDD.filter(f => f.getPredicate.toString().equals(hypernym))
 
+  //filtering triples with literal at object position
   def getObjectList(): RDD[Triple] = nTriplesRDD.filter(f => f.getObject.isLiteral())
 
+  //filtering only numeric literals
   def triplesWithNumericLit(objLit: RDD[Triple]): RDD[Triple] = objLit.filter(f => isNumeric(f.getObject.toString()))
 
-  def propwithsubject(a: RDD[Triple]): RDD[(String, String)] = a.map(f => (getLocalName1(f.getSubject), getLocalName1(f.getPredicate)))
   def isNumeric(x: String): Boolean =
     {
       if (x.contains("^")) {
@@ -163,18 +165,23 @@ class AnomalWithDataframeCrossJoin(nTriplesRDD: RDD[Triple], objList: List[Strin
 
     nTriplesRDD.unpersist()
     import sparkSession.implicits._
-
+    //KV pair with subject as key and rdf type/hypernym as value
     val hashtoseq = rdfTypeDBwiki.map(f => (f._1, f._2.toSeq))
     val part = new RangePartitioner(30, hashtoseq)
     val partitioned = hashtoseq.partitionBy(part).persist()
+    //converting the rdd to dataframe
     val dfA = partitioned.toDF("id1", "value1")
     val dfB = partitioned.toDF("id2", "value2")
 
+     //crossJoin of the rdd
     val joindfA = dfA.crossJoin(dfB)
+    //registering Jaccard similarity function in udf
     val myUDF = udf(sim _)
+    //papplying jaccard similarity function to each row
     val newDF = joindfA.withColumn("Jsim", myUDF(joindfA("value1"), joindfA("value2"))).select("id1", "id2", "Jsim").filter($"Jsim" > 0.6)
 
-    val x1 = newDF.rdd //maimum time taken by this rdd
+    //converting df to rdd
+    val x1 = newDF.rdd 
       .map(row => {
         val id = row.getString(0)
         val value = row.getString(1)
@@ -186,12 +193,12 @@ class AnomalWithDataframeCrossJoin(nTriplesRDD: RDD[Triple], objList: List[Strin
     val mergePartitionSets3 = (p1: mutable.Set[String], p2: mutable.Set[String]) => p1 ++= p2
     val uniqueByKey3 = x1.aggregateByKey(initialSet3)(addToSet3, mergePartitionSets3)
 
-
+    //create cohort of subjects
     val SubKV = uniqueByKey3.map(f => ((f._1, (f._2 += (f._1)).toSet)))
     val partitioner = new HashPartitioner(80)
     val mapSubWithTriplesPart = mapSubWithTriples.partitionBy(partitioner).persist(StorageLevel.MEMORY_AND_DISK) //   --heap size error on local mode when not unpersisted with persist
 
-
+    //join cohort of subjects with KV value of mapSubWithTriples
     val ys = SubKV.partitionBy(partitioner).persist(StorageLevel.MEMORY_AND_DISK) 
     val g = ys.join(mapSubWithTriples)
 
@@ -299,70 +306,6 @@ class AnomalWithDataframeCrossJoin(nTriplesRDD: RDD[Triple], objList: List[Strin
     }
     jSimilarity
   }
-
-  def iqr1(cluster: Seq[(String, String, Object)], anomalyListLimit: Int): Dataset[Row] = {
-
-    //create sample data 
-
-    var result: Dataset[Row] = null
-    // var _partitionData: RDD[String] = _
-    val KVcluster = sparkSession.sparkContext.parallelize(cluster.map(f => ((f._3.toString()).toDouble, f.toString())))
-
-    val rowRDD1 = KVcluster.map(value => Row(value))
-    val listofData = cluster.map(b => (b._3.toString()).toDouble).toList
-
-    val k = sparkSession.sparkContext.makeRDD(listofData)
-    //create sample data 
-    //  println("sampleData=" + listofData)
-    val c = listofData.sorted
-
-    val rowRDD = sparkSession.sparkContext.makeRDD(c.map(value => Row(value)))
-    val schema = StructType(Array(StructField("value", DoubleType)))
-    val df = sparkSession.createDataFrame(rowRDD, schema)
-
-    val schema1 = new StructType()
-      .add(StructField("id", DoubleType, true))
-      .add(StructField("val1", StringType, true))
-    val dfWithoutSchema = sparkSession.createDataFrame(KVcluster).toDF("id", "outliers")
-
-    // calculate quantiles and IQR
-    val quantiles = df.stat.approxQuantile("value",
-      Array(0.25, 0.75), 0.0)
-    //quantiles.foreach(println)
-
-    val Q1 = quantiles(0)
-
-    val Q3 = quantiles(1)
-
-    val IQR = Q3 - Q1
-
-    val lowerRange = Q1 - 1.5 * IQR
-
-    val upperRange = Q3 + 1.5 * IQR
-
-    val outliers = df.filter(s"value < $lowerRange or value > $upperRange").toDF("anomaly")
-
-    def matcher(row: Row): Boolean = row.getAs[Double]("id")
-      .equals(row.getAs[Double]("anomaly"))
-
-    if (!outliers.head(1).isEmpty) {
-      val join = dfWithoutSchema.crossJoin(outliers)
-
-      // val joinfilt=join.filter(df(colName).isNull || df(colName) === "" || df(colName).isNaN)
-      result = join.filter(matcher _).distinct()
-      result.select("outliers").show(100, false)
-      // _result.select("dt").show(20, false)
-      // result.filter($"outliers".isNotNull).select("outliers")
-
-      //  val res=result.where(result.col("outliers").isNotNull && result.col("outliers") =!= "").select("outliers")
-      result
-    }
-    result
-    //    
-    //    // result.show()
-    //    result.where(result.col("outliers").isNotNull)
-  }
-
   def iqr2(cluster: Seq[(String, String, Object)], anomalyListLimit: Int): Seq[(String, String, Object)] = {
 
     //create sample data 
