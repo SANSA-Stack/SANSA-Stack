@@ -50,17 +50,18 @@ object Main {
     opt[Int]('a', "numofpartition").required().
       action((x, c) => c.copy(numofpartition = x)).
       text("Number of partition")
-
+    
+     //List limit for calculating IQR
     opt[Int]('c', "anomalyListLimit").required().
       action((x, c) => c.copy(anomalyListLimit = x)).
       text("the outlier List Limit")
 
-    //List limit for calculating IQR
+    //output file path
     opt[String]('o', "output").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
 
-    //option for changing class
+    //option for changing different class
     opt[Int]('z', "optionChange").required().
       action((x, c) => c.copy(optionChange = x)).
       text("Option Number for class")
@@ -87,6 +88,7 @@ object Main {
 
     removePathFiles(Paths.get(output))
 
+    //spark configuration
     val sparkSession = SparkSession.builder
       .master("spark://172.18.160.16:3077")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -96,18 +98,21 @@ object Main {
       .config("spark.driver.overhead.memory", "2048")
       .appName("Anomaly Detection")
       .getOrCreate()
-
+  
+    // predicated that are not interesting for evaluation
     val wikiList = List("wikiPageRevisionID,wikiPageID")
 
     //N-Triples Reader
     val triplesRDD = NTripleReader.load(sparkSession, JavaURI.create(input)).repartition(numofpartition)
     triplesRDD.persist()
-
+  
+    //filtering numeric literal having xsd type double,integer,nonNegativeInteger and squareKilometre
     val objList = List("http://www.w3.org/2001/XMLSchema#double",
       "http://www.w3.org/2001/XMLSchema#integer",
       "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
       "http://dbpedia.org/datatype/squareKilometre")
 
+    //helful for considering only Dbpedia type as their will be yago type,wikidata type also
     val triplesType = List("http://dbpedia.org/ontology")
 
     //some of the supertype which are present for most of the subject
@@ -127,7 +132,7 @@ object Main {
 
     if (optionChange == 0) {
 
-      println("you are in AnomalyDetection-using CountVectorizerModel,ApproxSimilarity")
+      println("AnomalyDetection-using ApproxSimilarityJoin function with the help of CountVectorizerModel")
       val outDetection = new AnomalyDetectionWithCountVetcorizerModel(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, sparkSession, hypernym, numofpartition)
       val startTime = System.nanoTime()
       clusterOfSubject = outDetection.run()
@@ -138,15 +143,14 @@ object Main {
       val setDataSize = setDataStore.filter(f => f.size > anomalyListLimit)
       val test = setDataSize.map(f => outDetection.iqr2(f, anomalyListLimit))
       val testfilter = test.filter(f => f.size > 0).distinct()
-      val inputTrim = input.trim()
-      testfilter.coalesce(1).saveAsTextFile(output + "_" + optionChange + "_" + input.substring(input.lastIndexOf("/") + 1))
-
+     
+      testfilterDistinct.saveAsTextFile(output)
       setData.unpersist()
       runTime(System.nanoTime() - startTime)
 
     } else if (optionChange == 1) {
 
-      println("you are in AnomalyWithHashingTF-using HashingTF,approxSimilarityJoin ")
+      println("AnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF ")
       val outDetection1 = new AnomalyWithHashingTF(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, sparkSession, hypernym, numofpartition)
       val startTime = System.nanoTime()
       clusterOfSubject = outDetection1.run()
@@ -157,7 +161,7 @@ object Main {
       val setDataSize = setDataStore.filter(f => f.size > anomalyListLimit)
 
       val test = setDataSize.map(f => outDetection1.iqr2(f, anomalyListLimit))
-      test.first
+      
       
       val testfilter = test.filter(f => f.size > 0) //.distinct()
        val testfilterDistinct = testfilter.flatMap(f => f)
@@ -182,26 +186,7 @@ object Main {
       runTime(System.nanoTime() - startTime)
 
     }
-    else if (optionChange == 3) {
-      println("Implementation with collect-tested with big file-Not working")
-      val outDetection2 = new AnomalydetectWithCollect(triplesRDD, objList, triplesType,
-                              JSimThreshold, listSuperType, sparkSession, hypernym, numofpartition, anomalyListLimit)
-      val startTime = System.nanoTime()
-      clusterOfSubject = outDetection2.run()
-      val setData = clusterOfSubject.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)
-      val setDataStore = setData.map(f => f.toSeq)
 
-      val setDataSize = setDataStore.filter(f => f.size > anomalyListLimit)
-      val test = setDataSize.map(f => outDetection2.iqr2(f, anomalyListLimit))
-      val testfilter = test.filter(f => f.size > 0).distinct()
-      testfilter.coalesce(1).saveAsTextFile(output + "_" + optionChange + "_" + input.substring(input.lastIndexOf("/") + 1))
-
-      setData.unpersist()
-      runTime(System.nanoTime() - startTime)
-
-    }
-
-   
     sparkSession.stop()
 
   }
@@ -222,11 +207,5 @@ object Main {
         }
       }
     }
-  }
-  def searchWiki(x: String, y: List[String]): Boolean = {
-    if (y.exists(x.contains)) {
-      true
-    } else
-      false
   }
 }
