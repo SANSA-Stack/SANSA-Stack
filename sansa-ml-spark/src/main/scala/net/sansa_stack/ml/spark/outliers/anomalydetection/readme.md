@@ -1,5 +1,7 @@
 **# Scalable Numerical Outlier Detection in RDF**  
-This repository(outliers) consists of three different implementations for detecting outliers in RDF with one main class. These three implementations have different approaches for cohorting the subjects. All the techniques have their pros and cons as discussed below:-  
+This repository(outliers) consists of three different implementations for detecting outliers in RDF with one main class. 
+These three implementations are different due to the difference in the approaches for cohorting the subjects. All the 
+techniques have their pros and cons as discussed below:-  
 
 1. Dataframe CroosJoin implementation:
    The subjects are cohorted according to the rdf:type and hypernym. The crossJoin function is used to create 
@@ -10,21 +12,19 @@ This repository(outliers) consists of three different implementations for detect
 2. ApproxSimilarityJoin with CountvectorizerModel:-
    Spark inbuilt function ApproxSimilarityJoin is used with CountvectorizerModel to find similarity between 
    subjects. CountvectorizerModel helps in creating the features from the data. It Scans data twice-one for 
-   building model and another for transformation. It also needs extra space equal to number of unique features
+   building model and another for transformation. It also needs extra space equal to the number of unique features
   .ApproxSimilarityJoin with CountvectorizerModel performs better than crossJoin on a big dataset (16.6 GB).
    
 3. ApproxSimilarityJoin with HashigTF:-
-   ApproxSimilarityJoin with HashigTF is another way to calculate similarity between the subjects. HashigTF also 
+   ApproxSimilarityJoin with HashigTF is another way to calculate the similarity between the subjects. HashigTF also 
    helps in creating the features from the data. It scans the data only once and does not require any additional 
    storage. ApproxSimilarityJoin with HashigTF performs better than the technique mentioned above on big 
-   dataset(tested on 16.6 GB dataset). 
-   
-  **#Command to run the application  
+   dataset(tested on 16.6 GB dataset).  
   
-  Framework and Tools used:-
+ **Framework and Tools used:-**
    * Spark framework
    * Scala programming language
-   * Hadoop file system(HDFS) for stroing the data
+   * Hadoop file system(HDFS) for storing the data
    * Maven
   
   # **Command to run the application**:  
