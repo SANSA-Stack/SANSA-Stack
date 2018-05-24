@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
+import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util.{BasicGraphPattern, Result, ResultFactory, ResultMapping}
 import org.apache.jena.graph.Node
 import org.apache.spark.graphx.Graph
@@ -7,6 +8,8 @@ import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.graph._
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
+import org.apache.jena.sparql.expr.ExprAggregator
+import org.apache.jena.sparql.expr.aggregate.AggAvg
 import org.apache.spark.rdd.RDD
 
 /**
@@ -59,6 +62,18 @@ object SparkExecutionModel {
     newResult
   }
 
+  def group(result: RDD[Result[Node]], vars: List[Node], aggregates: List[ExprAggregator]): RDD[Result[Node]] = {
+    val group = result.groupBy(r => r.projectNewResult(vars.toSet)).cache()
+    aggregates.foreach{aggr =>
+      println("getVar: "+aggr.getVar.asNode())
+      println("getAggregator: "+aggr.getAggregator)
+      println("aggr type: "+aggr.getAggregator.isInstanceOf[AggAvg])
+      group.foreach{ case(_, iter) =>
+      //ResultGroup.aggregateOp(iter, broadcast)
+    }}
+    result
+  }
+
   def leftJoin(left: RDD[Result[Node]], right: RDD[Result[Node]]): RDD[Result[Node]] = {
     val leftVars = getVars(left)
     val rightVars = getVars(right)
@@ -84,6 +99,32 @@ object SparkExecutionModel {
         }
       }.cache()
     }
+    newResult
+  }
+
+  def union(left: RDD[Result[Node]], right: RDD[Result[Node]]): RDD[Result[Node]] = {
+    val newResult = left.union(right).cache()
+    left.unpersist()
+    right.unpersist()
+    newResult
+  }
+
+  def minus(left: RDD[Result[Node]], right: RDD[Result[Node]]): RDD[Result[Node]] = {
+    val leftVars = getVars(left)
+    val rightVars = getVars(right)
+    val intersection = spark.sparkContext.broadcast(leftVars.intersect(rightVars))
+    var newResult: RDD[Result[Node]] = null
+    // two results have no common variables
+    if(intersection.value.isEmpty){
+      newResult = left
+    }
+    else {
+      val leftPair = left.map(result => (result.projectNewResult(intersection.value), result))
+      val rightPair = right.map(result => (result, null))
+      newResult = leftPair.subtractByKey(rightPair).map(pair => pair._2).cache()
+    }
+    left.unpersist()
+    right.unpersist()
     newResult
   }
 

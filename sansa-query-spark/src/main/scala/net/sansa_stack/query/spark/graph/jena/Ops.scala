@@ -5,4 +5,6 @@ trait Ops extends Serializable {
   def getTag: String
 
   def execute(): Unit
+
+  def getId: Int
 }

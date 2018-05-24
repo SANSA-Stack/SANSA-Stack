@@ -106,6 +106,17 @@ class Result[VD: ClassTag] extends Serializable {
   }
 
   /**
+    * Return a new result for the required variable fields. Compare to method project, this method will not
+    * change this result, but return a new one.
+    */
+  def projectNewResult(projectField: Set[VD]): Result[VD] = {
+    val resultMapping = projectField.map(v => (v, solutionMapping(v))).toMap
+    val result = new Result[VD]
+    result.addAllMapping(resultMapping)
+    result
+  }
+
+  /**
     * Remove a set of variables from the result line.
     */
   def removeAllMapping(field: Set[VD]): Result[VD] = {

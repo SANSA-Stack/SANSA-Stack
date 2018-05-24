@@ -14,6 +14,7 @@ import org.apache.spark.sql.SparkSession
 class ResultSlice(op: OpSlice) extends ResultOp {
 
   private val tag = "LIMIT and OFFSET"
+  private val id = op.hashCode()
   private val limit = op.getLength.toInt
   private val offset = op.getStart.toInt
 
@@ -29,9 +30,11 @@ class ResultSlice(op: OpSlice) extends ResultOp {
   override def execute(): Unit = {
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode())
     val newResult = SparkExecutionModel.slice(oldResult, limit, offset)
-    IntermediateResult.putResult(op.hashCode(), newResult)
+    IntermediateResult.putResult(id, newResult)
     IntermediateResult.removeResult(op.getSubOp.hashCode())
   }
 
   override def getTag: String = { tag }
+
+  override def getId: Int = { id }
 }

@@ -36,5 +36,7 @@ class ResultFilter(val expr: Expr) extends ResultOp {
 
   override def getTag: String = { tag }
 
+  override def getId: Int = { 0 }
+
   def getExpr: Expr = { expr }
 }

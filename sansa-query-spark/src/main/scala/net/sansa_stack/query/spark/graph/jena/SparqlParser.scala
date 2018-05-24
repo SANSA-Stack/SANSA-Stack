@@ -65,7 +65,7 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
         for(triple <- elementTriples){
           triples.add(triple)
         }
-        ops.enqueue(new PatternNegate(triples.toIterator))
+        //ops.enqueue(new PatternNegate(triples.toIterator))
       case other => ops.enqueue(new ResultFilter(other))
     }
   }
@@ -82,7 +82,7 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
 
   override def visit(opMinus: OpMinus): Unit = {
     val triples = opMinus.getRight.asInstanceOf[OpBGP].getPattern
-    ops.enqueue(new PatternNegate(triples.toIterator))
+    ops.enqueue(new PatternMinus(opMinus))
   }
 
   override def visit(opOrder: OpOrder): Unit = {

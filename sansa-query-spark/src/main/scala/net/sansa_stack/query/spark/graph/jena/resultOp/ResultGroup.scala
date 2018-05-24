@@ -1,11 +1,13 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpGroup
 import org.apache.jena.sparql.expr.ExprAggregator
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConversions._
 
@@ -16,6 +18,7 @@ import scala.collection.JavaConversions._
 class ResultGroup(op: OpGroup) extends ResultOp {
 
   private val tag = "GROUP BY"
+  private val id = op.hashCode()
 
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
     val vars = op.getGroupVars.getVars.toList   // e.g. List(?user)
@@ -27,7 +30,7 @@ class ResultGroup(op: OpGroup) extends ResultOp {
           input.groupBy(map => map(vars.head)).foreach{ case(node, array) =>
             intermediate = intermediate.map{ mapping =>
               if(mapping(vars.head).equals(node)){
-                val c = mapping ++ aggregateOp(array, aggr: ExprAggregator)
+                val c = mapping ++ ResultGroup.aggregateOp(array, aggr)
                 c
               } else{ mapping }
             }
@@ -39,12 +42,30 @@ class ResultGroup(op: OpGroup) extends ResultOp {
   }
 
   override def execute(): Unit = {
-    // compiler here
+    val vars = op.getGroupVars.getVars.toList.map(v=>v.asNode())    // List of variables, e.g. List(?user)
+    val aggregates = op.getAggregators.toList
+    val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
+    var newResult: RDD[Result[Node]] = null
+    /*aggregates.foreach(aggr => group.foreach{ case(_, iter) =>
+      aggregateOp(iter, aggr)
+    })*/
+
+    newResult = SparkExecutionModel.group(oldResult, vars, aggregates)
+    IntermediateResult.putResult(id, newResult)
+    IntermediateResult.removeResult(op.getSubOp.hashCode())
   }
 
   override def getTag: String = { tag }
 
-  private def aggregateOp(input: Array[Map[Node, Node]], aggr: ExprAggregator): Map[Node, Node] = {
+  override def getId: Int = { id }
+
+  def getOp: Op = { op }
+
+}
+
+object ResultGroup {
+
+  def aggregateOp(input: Array[Map[Node, Node]], aggr: ExprAggregator): Map[Node, Node] = {
     val key = aggr.getAggregator.getExprList.head.getExprVar.getAsNode    // e.g. ?age
     val seq = input.map(_(key).getLiteralValue.toString.toDouble)
     val result = seq.aggregate((0.0, 0))(
@@ -69,4 +90,11 @@ class ResultGroup(op: OpGroup) extends ResultOp {
       Map(aggr.getVar.asNode() -> NodeFactory.createBlankNode())
     }
   }
+
+  def aggregateOp(input: Iterable[Result[Node]], aggr: Broadcast[ExprAggregator]): Unit ={
+    val key = aggr.value.getAggregator.getExprList.head.getExprVar.getAsNode    // e.g. ?age
+    val seq = input.map(_.getValue(key).getLiteralValue.toString.toDouble)
+    seq.foreach(println(_))
+  }
+
 }

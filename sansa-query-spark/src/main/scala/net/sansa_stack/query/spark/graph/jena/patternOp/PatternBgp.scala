@@ -16,8 +16,8 @@ import scala.collection.JavaConversions._
 class PatternBgp(op: OpBGP) extends PatternOp {
 
   private val tag = "Bgp Match"
-  private val triples = op.getPattern.toIterator
   private val id = op.hashCode
+  private val triples = op.getPattern.toIterator
 
   override def execute(input: Array[Map[Node, Node]],
                        graph: Graph[Node, Node],
@@ -37,6 +37,8 @@ class PatternBgp(op: OpBGP) extends PatternOp {
   }
 
   def getOp: Op = { op }
+
+  override def getId: Int = { id }
 
   override def getTag: String = { tag }
 

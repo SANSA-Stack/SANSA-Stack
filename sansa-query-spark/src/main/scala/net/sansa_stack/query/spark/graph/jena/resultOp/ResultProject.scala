@@ -18,6 +18,7 @@ import scala.collection.JavaConversions._
 class ResultProject(val op: OpProject) extends ResultOp {
 
   private val tag = "SELECT"
+  private val id = op.hashCode()
   private val vars = op.getVars.toList
 
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
@@ -28,13 +29,15 @@ class ResultProject(val op: OpProject) extends ResultOp {
 
   override def execute(): Unit = {
     val varSet = vars.map(v => v.asNode()).toSet
-    val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode())
+    val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
     val newResult = SparkExecutionModel.project(oldResult, varSet)
-    IntermediateResult.putResult(op.hashCode(), newResult)
+    IntermediateResult.putResult(id, newResult)
     IntermediateResult.removeResult(op.getSubOp.hashCode())
   }
 
   override def getTag: String = { tag }
+
+  override def getId: Int = { id }
 
   def getOp: Op = { op }
 

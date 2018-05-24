@@ -1,7 +1,9 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
+import net.sansa_stack.query.spark.graph.jena.model.IntermediateResult
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
+import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpExtend
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -11,6 +13,7 @@ import scala.collection.JavaConversions._
 class ResultExtend(op: OpExtend) extends ResultOp {
 
   private val tag = "EXTEND"
+  private val id = op.hashCode()
   private val sub = op.getVarExprList.getVars.toList.head
   private val exp = op.getVarExprList.getExpr(sub)
 
@@ -21,7 +24,15 @@ class ResultExtend(op: OpExtend) extends ResultOp {
 
   override def execute(): Unit = {
     // compiler here
+    val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
+    val newResult = oldResult
+    IntermediateResult.putResult(id, newResult)
+    IntermediateResult.removeResult(op.getSubOp.hashCode())
   }
 
   override def getTag: String = { tag }
+
+  override def getId: Int = { id }
+
+  def getOp: Op = { op }
 }

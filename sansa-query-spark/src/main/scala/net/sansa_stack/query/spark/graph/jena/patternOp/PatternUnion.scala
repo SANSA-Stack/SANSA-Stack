@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.patternOp
 
 import net.sansa_stack.query.spark.graph.jena.Ops
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultOp
 import net.sansa_stack.query.spark.graph.jena.util.{BasicGraphPattern, ResultMapping}
 import org.apache.jena.graph.{Node, Triple}
@@ -17,8 +18,9 @@ import scala.collection.mutable
 class PatternUnion(op: OpUnion) extends PatternOp {
 
   private val tag = "UNION"
+  private val id = op.hashCode()
 
-  // Deprecated
+  @deprecated("this method will be removed", "")
   override def execute(input: Array[Map[Node, Node]],
                        graph: Graph[Node, Node],
                        session: SparkSession): Array[Map[Node, Node]] = {
@@ -27,10 +29,19 @@ class PatternUnion(op: OpUnion) extends PatternOp {
   }
 
   override def execute(): Unit = {
-    // compiler here
+    val leftId = op.getLeft.hashCode()
+    val rightId = op.getRight.hashCode()
+    val leftResult = IntermediateResult.getResult(leftId).cache()
+    val rightResult = IntermediateResult.getResult(rightId).cache()
+    val newResult = SparkExecutionModel.union(leftResult, rightResult)
+    IntermediateResult.putResult(id, newResult)
+    IntermediateResult.removeResult(leftId)
+    IntermediateResult.removeResult(rightId)
   }
 
   def getOp: Op = { op }
+
+  override def getId: Int = { id }
 
   override def getTag: String = { tag }
 }

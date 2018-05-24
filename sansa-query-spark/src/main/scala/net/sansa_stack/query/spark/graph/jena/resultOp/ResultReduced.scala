@@ -28,4 +28,6 @@ class ResultReduced extends ResultOp {
   }
 
   override def getTag: String = { tag }
+
+  override def getId: Int = { 0 }
 }
