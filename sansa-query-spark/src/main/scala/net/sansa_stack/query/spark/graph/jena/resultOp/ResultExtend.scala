@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import net.sansa_stack.query.spark.graph.jena.model.IntermediateResult
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.Op
@@ -23,9 +23,10 @@ class ResultExtend(op: OpExtend) extends ResultOp {
   }
 
   override def execute(): Unit = {
-    // compiler here
+    val subVar = sub.asNode
+    val exprVar = exp.asVar.asNode
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
-    val newResult = oldResult
+    val newResult = SparkExecutionModel.extend(oldResult, subVar, exprVar)
     IntermediateResult.putResult(id, newResult)
     IntermediateResult.removeResult(op.getSubOp.hashCode())
   }

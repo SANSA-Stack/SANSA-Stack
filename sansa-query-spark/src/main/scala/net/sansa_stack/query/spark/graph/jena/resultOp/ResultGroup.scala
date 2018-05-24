@@ -1,13 +1,11 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
 import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
-import net.sansa_stack.query.spark.graph.jena.util.Result
+import net.sansa_stack.query.spark.graph.jena.util.{Result, ResultFactory}
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpGroup
 import org.apache.jena.sparql.expr.ExprAggregator
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConversions._
 
@@ -45,12 +43,7 @@ class ResultGroup(op: OpGroup) extends ResultOp {
     val vars = op.getGroupVars.getVars.toList.map(v=>v.asNode())    // List of variables, e.g. List(?user)
     val aggregates = op.getAggregators.toList
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
-    var newResult: RDD[Result[Node]] = null
-    /*aggregates.foreach(aggr => group.foreach{ case(_, iter) =>
-      aggregateOp(iter, aggr)
-    })*/
-
-    newResult = SparkExecutionModel.group(oldResult, vars, aggregates)
+    val newResult = SparkExecutionModel.group(oldResult, vars, aggregates)
     IntermediateResult.putResult(id, newResult)
     IntermediateResult.removeResult(op.getSubOp.hashCode())
   }
@@ -91,10 +84,36 @@ object ResultGroup {
     }
   }
 
-  def aggregateOp(input: Iterable[Result[Node]], aggr: Broadcast[ExprAggregator]): Unit ={
-    val key = aggr.value.getAggregator.getExprList.head.getExprVar.getAsNode    // e.g. ?age
+  /**
+    * Evaluating the Aggregate Function over the grouping results
+    * @param input an Iterable of result grouped
+    * @param variable variable to be aliased
+    * @param aggrOp set function to evaluate(AVG, SUM, ...)
+    * @param key variable to be aggregated
+    */
+  def aggregateOp(input: Iterable[Result[Node]], variable: Node, aggrOp: String, key: Node): Result[Node] ={
     val seq = input.map(_.getValue(key).getLiteralValue.toString.toDouble)
-    seq.foreach(println(_))
+    val sumAndCount = seq.aggregate((0.0, 0))(
+      (acc, value) => (acc._1 + value, acc._2 + 1),
+      (acc1, acc2) => (acc1._1 + acc2._1, acc1._2 + acc2._2))
+    if(aggrOp.equals("AVG")){
+      ResultFactory.create(Map(variable -> NodeFactory.createLiteral((sumAndCount._1 / sumAndCount._2).toString)))
+    }
+    else if(aggrOp.equals("SUM")){
+      ResultFactory.create(Map(variable -> NodeFactory.createLiteral(sumAndCount._1.toString)))
+    }
+    else if(aggrOp.equals("COUNT")){
+      ResultFactory.create(Map(variable -> NodeFactory.createLiteral(sumAndCount._2.toString)))
+    }
+    else if(aggrOp.equals("MAX")){
+      ResultFactory.create(Map(variable -> NodeFactory.createLiteral(seq.max.toString)))
+    }
+    else if(aggrOp.equals("MIN")){
+      ResultFactory.create(Map(variable -> NodeFactory.createLiteral(seq.min.toString)))
+    }
+    else{
+      ResultFactory.create(Map(variable -> NodeFactory.createBlankNode()))
+    }
   }
 
 }

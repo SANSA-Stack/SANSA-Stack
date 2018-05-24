@@ -9,7 +9,6 @@ import net.sansa_stack.rdf.spark.model.graph._
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.expr.ExprAggregator
-import org.apache.jena.sparql.expr.aggregate.AggAvg
 import org.apache.spark.rdd.RDD
 
 /**
@@ -64,14 +63,23 @@ object SparkExecutionModel {
 
   def group(result: RDD[Result[Node]], vars: List[Node], aggregates: List[ExprAggregator]): RDD[Result[Node]] = {
     val group = result.groupBy(r => r.projectNewResult(vars.toSet)).cache()
+    var newResult: RDD[Result[Node]] = group.map(_._1)
+    result.unpersist()
     aggregates.foreach{aggr =>
-      println("getVar: "+aggr.getVar.asNode())
-      println("getAggregator: "+aggr.getAggregator)
-      println("aggr type: "+aggr.getAggregator.isInstanceOf[AggAvg])
-      group.foreach{ case(_, iter) =>
-      //ResultGroup.aggregateOp(iter, broadcast)
-    }}
-    result
+      val variable = aggr.getVar.asNode()
+      val aggrOp = aggr.getAggregator.getName
+      val key = aggr.getAggregator.getExprList.get(0).asVar.asNode
+      newResult = this.leftJoin(newResult,
+        group.map( pair => ResultFactory.merge(pair._1,ResultGroup.aggregateOp(pair._2, variable, aggrOp, key))))
+    }
+    group.unpersist()
+    newResult
+  }
+
+  def extend(result: RDD[Result[Node]], sub: Node, expr: Node): RDD[Result[Node]] = {
+    val newResult = result.map(r => r.addMapping(sub, r.getValue(expr))).cache()
+    result.unpersist()
+    newResult
   }
 
   def leftJoin(left: RDD[Result[Node]], right: RDD[Result[Node]]): RDD[Result[Node]] = {
