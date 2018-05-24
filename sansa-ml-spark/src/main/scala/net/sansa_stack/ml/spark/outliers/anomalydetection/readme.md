@@ -1,24 +1,25 @@
 **# Scalable Numerical Outlier Detection in RDF**  
-This repository(outliers) consists of three different implementations for detecting outliers in RDF with one main class. 
-These three implementations are different due to the difference in the approaches for cohorting the subjects. All the 
-techniques have their pros and cons as discussed below:-  
+This repository(anomalydetection) consists of three different implementations for detecting numerical outliers in RDF with 
+one main class. These three implementations are different due to the difference in the approaches for cohorting the subjects. 
+All the techniques have their pros and cons as discussed below:-  
 
-1. Dataframe CroosJoin implementation:
+1. Implementation with dataframe crossJoin function:
    The subjects are cohorted according to the rdf:type and hypernym. The crossJoin function is used to create 
-   the pair rdd so that similar subjects can be cohorted. CrossJoin is one of the most time-consuming joins and 
-   often should be avoided. It works well on small datasets(tested on 3.6 GB) but does not work for large 
-   datasets(tested on 16.6 GB dataset)
+   the pair rdd so that similar subjects can be cohorted. CrossJoin is one of the most time-consuming join and 
+   should be avoided. It works well on small datasets(tested on 3.6 GB) but does not work for large datasets(tested on 
+   16.6 GB dataset)
    
 2. ApproxSimilarityJoin with CountvectorizerModel:-
    Spark inbuilt function ApproxSimilarityJoin is used with CountvectorizerModel to find similarity between 
-   subjects. CountvectorizerModel helps in creating the features from the data. It Scans data twice-one for 
-   building model and another for transformation. It also needs extra space equal to the number of unique features
-  .ApproxSimilarityJoin with CountvectorizerModel performs better than crossJoin on a big dataset (16.6 GB).
+   subjects. ApproxSimilarityJoin takes input as feature vectors and CountvectorizerModel helps in creating the features from 
+   the data. CountvectorizerModel scans data twice-one for building model and another for transformation. It also needs extra 
+   space equal to the number of unique features. ApproxSimilarityJoin with CountvectorizerModel performs better than 
+   crossJoin on a big dataset (16.6 GB).
    
 3. ApproxSimilarityJoin with HashigTF:-
    ApproxSimilarityJoin with HashigTF is another way to calculate the similarity between the subjects. HashigTF also 
-   helps in creating the features from the data. It scans the data only once and does not require any additional 
-   storage. ApproxSimilarityJoin with HashigTF performs better than the technique mentioned above on big 
+   helps in creating the features from the data like CountvectorizerModel. It scans the data only once and does not require 
+   any additional storage. ApproxSimilarityJoin with HashigTF performs better than the techniques mentioned above on big 
    dataset(tested on 16.6 GB dataset).  
   
  **Framework and Tools used:-**
