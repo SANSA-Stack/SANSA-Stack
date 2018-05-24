@@ -47,7 +47,7 @@ sudo ./bin/spark-submit --class net.sansa_stack.template.spark.AnomalyDetection.
  *  --anomalyListLimit- size of list containing numerical triples for anomaly detection
  *  --numofpartition- number of partition 
  * --output - output file path
- * --optionChange - option for selecting different mmethods like CroosJoin,ApproxSimilarityJoin etc.
+ * --optionChange - option for selecting different methods like CroosJoin,ApproxSimilarityJoin etc.
  
  
  
