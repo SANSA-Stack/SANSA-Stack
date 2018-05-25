@@ -46,7 +46,7 @@ object RDFGraphPIClustering {
 
   }
 
-  case class Config(in: String = "", out: String = "", outevl: String = "", outputsim: String = "", k: Int = 2, maxIterations: Int = 50)
+  case class Config(in: String = "", out: String = "", outevl: String = "", outputsim: String = "", k: Int = 2, maxIterations: Int = 5)
 
   val defaultParams = Config()
 
