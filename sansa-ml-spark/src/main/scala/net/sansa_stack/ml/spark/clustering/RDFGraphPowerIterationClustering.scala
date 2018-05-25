@@ -300,14 +300,14 @@ object RDFGraphPowerIterationClustering {
         val v = e._1
         (si)
       }).sum()
-      
-      val silouhette = allLinkstoNodeV/lenghtOfNodes
+       * 
+      */
+      val silouhette = 0.0
       
       val evaluateString: List[String] = List(silouhette.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
       evaluateStringRDD.saveAsTextFile(outevl)
-      * 
-      */
+     
 
       //println(s"averageSil: $averageSil\n")
 
