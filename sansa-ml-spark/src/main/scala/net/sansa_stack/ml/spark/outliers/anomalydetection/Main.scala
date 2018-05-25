@@ -144,7 +144,7 @@ object Main {
       val test = setDataSize.map(f => outDetection.iqr2(f, anomalyListLimit))
       val testfilter = test.filter(f => f.size > 0).distinct()
      
-      testfilterDistinct.saveAsTextFile(output)
+      testfilter.saveAsTextFile(output)
       setData.unpersist()
       runTime(System.nanoTime() - startTime)
 
@@ -171,7 +171,7 @@ object Main {
 
     }  else if (optionChange == 2) {
       println("Cartesian product using dataframe crossJoin")
-      val outDetection2 = new AnomalWithDataframe(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, sparkSession, hypernym, numofpartition)
+      val outDetection2 = new AnomalWithDataframeCrossJoin(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, sparkSession, hypernym, numofpartition)
       val startTime = System.nanoTime()
       clusterOfSubject = outDetection2.run()
       val setData = clusterOfSubject.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)
@@ -179,9 +179,9 @@ object Main {
 
       val setDataSize = setDataStore.filter(f => f.size > anomalyListLimit)
       val test = setDataSize.map(f => outDetection2.iqr2(f, anomalyListLimit))
-      val testfilter = test.filter(f => f.size > 0).distinct()
-      testfilter.coalesce(1).saveAsTextFile(output + "_" + optionChange + "_" + input.substring(input.lastIndexOf("/") + 1))
-
+      val testfilter = test.filter(f => f.size > 0)
+      val testfilterDistinct = testfilter.flatMap(f => f)
+      testfilterDistinct.saveAsTextFile(output)
       setData.unpersist()
       runTime(System.nanoTime() - startTime)
 
