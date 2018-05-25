@@ -35,7 +35,7 @@ import java.net.URI
 
 object RDFGraphPowerIterationClustering {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 50) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 5) = {
 
     /**
      *
