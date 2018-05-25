@@ -44,7 +44,9 @@ sudo ./bin/spark-submit --class net.sansa_stack.template.spark.AnomalyDetection.
  * --input - input dataset store in the hdfs ( 
        hdfs://172.18.160.17:54310/RajatDadwal/input/recent_dataset/Dbpedia.nt)
  *  --threshold - jaccard distance threshole value i.e 0.45. 
- *  --anomalyListLimit- size of list containing numerical triples for anomaly detection
+ *  --anomalyListLimit- size of list containing numerical triples for anomaly detection. We prune subpopulations which contain a low 
+                        number of instances or maybe no instances at all. The default value is 10.(minimum 10 instances should be there 
+                        for the calculation of IQR)
  *  --numofpartition- number of partition 
  * --output - output file path
  * --optionChange - option for selecting different methods like CroosJoin,ApproxSimilarityJoin etc.
