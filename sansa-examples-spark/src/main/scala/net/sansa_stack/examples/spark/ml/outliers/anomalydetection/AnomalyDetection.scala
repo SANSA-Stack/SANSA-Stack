@@ -1,14 +1,12 @@
 package net.sansa_stack.examples.spark.ml.outliers.anomalydetection
 
 import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import java.net.{ URI => JavaURI }
-import net.sansa_stack.ml.spark.outliers.anomalydetection.{ AnomalyDetection => AlgAnomalyDetection }
 import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
-import org.apache.spark.sql.Dataset
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.{ SparkSession, Dataset, Row, SaveMode }
+import org.apache.spark.storage.StorageLevel
+import net.sansa_stack.ml.spark.outliers.anomalydetection._
+import org.apache.spark.rdd.RDD
 
 object AnomalyDetection {
   def main(args: Array[String]) {
@@ -20,9 +18,12 @@ object AnomalyDetection {
     }
   }
 
-  def run(input: String, threshold: Double,
-          anomalyListLimit: Int,
-          numofpartition:   Int, output: String): Unit = {
+  def run(
+    input:            String,
+    JSimThreshold:    Double,
+    anomalyListLimit: Int,
+    numofpartition:   Int,
+    output:           String): Unit = {
 
     println("==================================================")
     println("|        Distributed Anomaly Detection           |")
@@ -37,15 +38,18 @@ object AnomalyDetection {
     //N-Triples Reader
     val lang = Lang.NTRIPLES
     val triplesRDD = spark.rdf(lang)(input).repartition(numofpartition).persist()
-    //constant parameters defined
-    val JSimThreshold = 0.6
 
+    // predicated that are not interesting for evaluation
+    val wikiList = List("wikiPageRevisionID,wikiPageID")
+
+    //filtering numeric literal having xsd type double,integer,nonNegativeInteger and squareKilometre
     val objList = List(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
-      "http://www.w3.org/2001/XMLSchema#date")
+      "http://www.w3.org/2001/XMLSchema#double",
+      "http://www.w3.org/2001/XMLSchema#integer",
+      "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+      "http://dbpedia.org/datatype/squareKilometre")
 
-    //clustering of subjects are on the basis of rdf:type specially object with wikidata and dbpedia.org
-    //val triplesType = List("http://www.wikidata.org", "http://dbpedia.org/ontology")
+    //helful for considering only Dbpedia type as their will be yago type,wikidata type also
     val triplesType = List("http://dbpedia.org/ontology")
 
     //some of the supertype which are present for most of the subject
@@ -57,27 +61,28 @@ object AnomalyDetection {
       "http://dbpedia.org/ontology/PopulatedPlace", "http://dbpedia.org/ontology/Region",
       "http://dbpedia.org/ontology/Species", "http://dbpedia.org/ontology/Eukaryote",
       "http://dbpedia.org/ontology/Location")
+
     //hypernym URI
     val hypernym = "http://purl.org/linguistics/gold/hypernym"
 
-    val outDetection = new AlgAnomalyDetection(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, spark, hypernym, numofpartition)
+    var clusterOfSubject: RDD[(Set[(String, String, Object)])] = null
+    println("AnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF ")
 
-    val clusterOfSubject = outDetection.run()
+    val outDetection = new AnomalyWithHashingTF(triplesRDD, objList, triplesType, JSimThreshold, listSuperType, spark, hypernym, numofpartition)
+    clusterOfSubject = outDetection.run()
 
-    clusterOfSubject.take(10).foreach(println)
+    val setData = clusterOfSubject.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)
+    val setDataStore = setData.map(f => f.toSeq)
 
-    val setData = clusterOfSubject.repartition(numofpartition).persist.map(f => f._2.toSeq)
+    val setDataSize = setDataStore.filter(f => f.size > anomalyListLimit)
 
-    //calculating IQR and saving output to the file
-    val listofDataArray = setData.collect()
-    var a: Dataset[Row] = null
+    val test = setDataSize.map(f => outDetection.iqr2(f, anomalyListLimit))
 
-    for (listofDatavalue <- listofDataArray) {
-      a = outDetection.iqr1(listofDatavalue, anomalyListLimit)
-      if (a != null)
-        a.select("dt").coalesce(1).write.format("text").mode(SaveMode.Append) save (output)
-    }
+    val testfilter = test.filter(f => f.size > 0) //.distinct()
+    val testfilterDistinct = testfilter.flatMap(f => f)
+    testfilterDistinct.saveAsTextFile(output)
     setData.unpersist()
+
     spark.stop()
   }
 
@@ -85,29 +90,33 @@ object AnomalyDetection {
     in:               String = "",
     threshold:        Double = 0.0,
     anomalyListLimit: Int    = 0,
-    numofpartition:   Int    = 4,
+    numofpartition:   Int    = 0,
     out:              String = "")
 
-  val parser = new scopt.OptionParser[Config]("Anomaly Detection example") {
+  val parser = new scopt.OptionParser[Config]("SANSA -Outlier Detection") {
 
-    head("Anomaly Detection example")
+    head("Detecting Numerical Outliers in dataset")
 
     opt[String]('i', "input").required().valueName("<path>").
       action((x, c) => c.copy(in = x)).
-      text("path to file that contains the data")
+      text("path to file that contains RDF data (in N-Triples format)")
 
+    //Jaccard similarity threshold value
     opt[Double]('t', "threshold").required().
       action((x, c) => c.copy(threshold = x)).
       text("the Jaccard Similarity value")
 
+    //number of partition
     opt[Int]('a', "numofpartition").required().
       action((x, c) => c.copy(numofpartition = x)).
       text("Number of partition")
 
+    //List limit for calculating IQR
     opt[Int]('c', "anomalyListLimit").required().
       action((x, c) => c.copy(anomalyListLimit = x)).
       text("the outlier List Limit")
 
+    //output file path
     opt[String]('o', "output").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
