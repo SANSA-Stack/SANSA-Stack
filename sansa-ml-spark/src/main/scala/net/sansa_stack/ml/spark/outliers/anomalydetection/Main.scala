@@ -142,9 +142,9 @@ object Main {
 
       val setDataSize = setDataStore.filter(f => f.size > anomalyListLimit)
       val test = setDataSize.map(f => outDetection.iqr2(f, anomalyListLimit))
-      val testfilter = test.filter(f => f.size > 0).distinct()
-     
-      testfilter.saveAsTextFile(output)
+      val testfilter = test.filter(f => f.size > 0)
+      val testfilterDistinct = testfilter.flatMap(f => f)
+      testfilterDistinct.saveAsTextFile(output)
       setData.unpersist()
       runTime(System.nanoTime() - startTime)
 
