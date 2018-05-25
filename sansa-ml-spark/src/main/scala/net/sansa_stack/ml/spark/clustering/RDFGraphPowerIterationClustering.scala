@@ -49,11 +49,11 @@ object RDFGraphPowerIterationClustering {
 
     val selectYourSimilarity = 0
 
-    def clusterRdd(): RDD[(Int, Iterable[String])] = {
+    def clusterRdd(): RDD[(Int, String)] = {
       SimilaritesInPIC(selectYourSimilarity)
     }
 
-    def SimilaritesInPIC(f: Int): RDD[(Int, Iterable[String])] = {
+    def SimilaritesInPIC(f: Int): RDD[(Int, String)] = {
       /*
 	 * Collect all the edges of the graph
 	*/
@@ -221,11 +221,11 @@ object RDFGraphPowerIterationClustering {
        val fcluster = f.cluster
        (id,fcluster)})
      
-      val findIterable = rddClusters.join(vts).groupBy(_._2._1)
-    val findRdf = findIterable.mapValues(_.map(_._2._2))
-    findRdf.saveAsTextFile(output)
+      val findIterable = rddClusters.join(vts).map(_._2)
+    
+    findIterable.saveAsTextFile(output)
 
-    val joinv1 = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
+   /* val joinv1 = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
     val joinv2 = weightedGraph.keyBy(_._2).join(rddClusters).keyBy(_._2._1._1).join(rddClusters)
     val simnode = joinv1.map(e => {
       var clid = 0
@@ -306,6 +306,8 @@ object RDFGraphPowerIterationClustering {
       val evaluateString: List[String] = List(silouhette.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
       evaluateStringRDD.saveAsTextFile(outevl)
+      * 
+      */
 
       //println(s"averageSil: $averageSil\n")
 
@@ -321,7 +323,7 @@ object RDFGraphPowerIterationClustering {
 			 */
       // def load(path: String) = PowerIterationClusteringModel.load(spark.sparkContext, path)
 
-      (findRdf)
+      (findIterable)
     }
     val clrdd = clusterRdd()
 
