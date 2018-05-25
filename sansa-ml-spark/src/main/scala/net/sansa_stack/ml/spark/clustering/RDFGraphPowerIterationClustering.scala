@@ -223,7 +223,7 @@ object RDFGraphPowerIterationClustering {
      
       val findIterable = rddClusters.join(vts).map(_._2)
     
-    findIterable.saveAsTextFile(output)
+    findIterable.repartition(100).saveAsTextFile(output)
 
    /* val joinv1 = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
     val joinv2 = weightedGraph.keyBy(_._2).join(rddClusters).keyBy(_._2._1._1).join(rddClusters)
