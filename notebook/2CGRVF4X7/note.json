@@ -77,6 +77,43 @@
       "progressUpdateIntervalMs": 500
     },
     {
+      "title": "Detecting Numerical Outliers in the dataset",
+      "text": "import scala.collection.mutable\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.spark.storage.StorageLevel\nimport net.sansa_stack.ml.spark.outliers.anomalydetection._\nimport org.apache.spark.rdd.RDD\n\n\nval numofpartition   \u003d 10\nval threshold        \u003d 0.45\nval anomalyListLimit \u003d 5\n\nval input \u003d \"hdfs://namenode:8020/data/outliers_dataset.nt\"\n\n//N-Triples Reader\nval lang \u003d Lang.NTRIPLES\nval triplesRDD \u003d spark.rdf(lang)(input).repartition(numofpartition).persist()\n\n//filtering numeric literal having xsd type double,integer,nonNegativeInteger and squareKilometre\nval objList \u003d List(\n  \"http://www.w3.org/2001/XMLSchema#double\",\n  \"http://www.w3.org/2001/XMLSchema#integer\",\n  \"http://www.w3.org/2001/XMLSchema#nonNegativeInteger\",\n  \"http://dbpedia.org/datatype/squareKilometre\")\n\n//helful for considering only Dbpedia type as their will be yago type,wikidata type also\nval triplesType \u003d List(\"http://dbpedia.org/ontology\")\n\n//some of the supertype which are present for most of the subject\nval listSuperType \u003d List(\n  \"http://dbpedia.org/ontology/Activity\", \"http://dbpedia.org/ontology/Organisation\",\n  \"http://dbpedia.org/ontology/Agent\", \"http://dbpedia.org/ontology/SportsLeague\",\n  \"http://dbpedia.org/ontology/Person\", \"http://dbpedia.org/ontology/Athlete\",\n  \"http://dbpedia.org/ontology/Event\", \"http://dbpedia.org/ontology/Place\",\n  \"http://dbpedia.org/ontology/PopulatedPlace\", \"http://dbpedia.org/ontology/Region\",\n  \"http://dbpedia.org/ontology/Species\", \"http://dbpedia.org/ontology/Eukaryote\",\n  \"http://dbpedia.org/ontology/Location\")\n\n//hypernym URI\nval hypernym \u003d \"http://purl.org/linguistics/gold/hypernym\"\n\nvar clusterOfSubject: RDD[(Set[(String, String, Object)])] \u003d null\nprintln(\"AnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \")\n\nval outDetection \u003d new AnomalyWithHashingTF(triplesRDD, objList, triplesType, threshold, listSuperType, spark, hypernym, numofpartition) with Serializable\nclusterOfSubject \u003d outDetection.run()\n\nval setData \u003d clusterOfSubject.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)\nval setDataStore \u003d setData.map(f \u003d\u003e f.toSeq)\n\nval setDataSize \u003d setDataStore.filter(f \u003d\u003e f.size \u003e anomalyListLimit)\n\nval test \u003d setDataSize.map(f \u003d\u003e outDetection.iqr2(f, anomalyListLimit))\n\n//val testfilter \u003d test.filter(f \u003d\u003e f.size \u003e 0) //.distinct()\n//val testfilterDistinct \u003d testfilter.flatMap(f \u003d\u003e f)\n\n//testfilterDistinct.take(10).foreach(println)\n",
+      "user": "anonymous",
+      "dateUpdated": "May 28, 2018 11:50:36 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala"
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nimport scala.collection.mutable\n\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.io._\n\nimport org.apache.spark.storage.StorageLevel\n\nimport net.sansa_stack.ml.spark.outliers.anomalydetection._\n\nimport org.apache.spark.rdd.RDD\n\nnumofpartition: Int \u003d 10\n\nthreshold: Double \u003d 0.45\n\nanomalyListLimit: Int \u003d 5\n\ninput: String \u003d hdfs://namenode:8020/data/outliers_dataset.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[874] at repartition at \u003cconsole\u003e:141\n\nobjList: List[String] \u003d List(http://www.w3.org/2001/XMLSchema#double, http://www.w3.org/2001/XMLSchema#integer, http://www.w3.org/2001/XMLSchema#nonNegativeInteger, http://dbpedia.org/datatype/squareKilometre)\n\ntriplesType: List[String] \u003d List(http://dbpedia.org/ontology)\n\nlistSuperType: List[String] \u003d List(http://dbpedia.org/ontology/Activity, http://dbpedia.org/ontology/Organisation, http://dbpedia.org/ontology/Agent, http://dbpedia.org/ontology/SportsLeague, http://dbpedia.org/ontology/Person, http://dbpedia.org/ontology/Athlete, http://dbpedia.org/ontology/Event, http://dbpedia.org/ontology/Place, http://dbpedia.org/ontology/PopulatedPlace, http://dbpedia.org/ontology/Region, http://dbpedia.org/ontology/Species, http://dbpedia.org/ontology/Eukaryote, http://dbpedia.org/ontology/Location)\n\nhypernym: String \u003d http://purl.org/linguistics/gold/hypernym\n\nclusterOfSubject: org.apache.spark.rdd.RDD[Set[(String, String, Object)]] \u003d null\nAnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \n\noutDetection: net.sansa_stack.ml.spark.outliers.anomalydetection.AnomalyWithHashingTF with Serializable \u003d $$$$ccfd814a275f81da22fbbb816de9ca49$$$$anon$1@623e7396\ndffilter\n\nclusterOfSubject: org.apache.spark.rdd.RDD[Set[(String, String, Object)]] \u003d MapPartitionsRDD[947] at map at AnomalyWithHashingTF.scala:230\n\nsetData: org.apache.spark.rdd.RDD[Set[(String, String, Object)]] \u003d MapPartitionsRDD[951] at repartition at \u003cconsole\u003e:137\n\nsetDataStore: org.apache.spark.rdd.RDD[Seq[(String, String, Object)]] \u003d MapPartitionsRDD[952] at map at \u003cconsole\u003e:139\n\nsetDataSize: org.apache.spark.rdd.RDD[Seq[(String, String, Object)]] \u003d MapPartitionsRDD[953] at filter at \u003cconsole\u003e:143\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\norg.apache.spark.SparkException: Task not serializable\n  at org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:298)\n  at org.apache.spark.util.ClosureCleaner$.org$apache$spark$util$ClosureCleaner$$clean(ClosureCleaner.scala:288)\n  at org.apache.spark.util.ClosureCleaner$.clean(ClosureCleaner.scala:108)\n  at org.apache.spark.SparkContext.clean(SparkContext.scala:2101)\n  at org.apache.spark.rdd.RDD$$anonfun$map$1.apply(RDD.scala:370)\n  at org.apache.spark.rdd.RDD$$anonfun$map$1.apply(RDD.scala:369)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:151)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:112)\n  at org.apache.spark.rdd.RDD.withScope(RDD.scala:362)\n  at org.apache.spark.rdd.RDD.map(RDD.scala:369)\n  ... 90 elided\nCaused by: java.io.NotSerializableException: org.apache.jena.riot.Lang\nSerialization stack:\n\t- object not serializable (class: org.apache.jena.riot.Lang, value: Lang:N-Triples)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: lang, type: class org.apache.jena.riot.Lang)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@2d9f325c)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: $iw, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@1e626595)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: $iw, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@2b44c476)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: $iw, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@4b708903)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: $iw, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@87bdf0e)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: $iw, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@1325ed53)\n\t- field (class: $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, name: $iw, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, $$$$4f1dd1244917239c21cdfe76974c148$$$$iw@7c283ee3)\n\t- field (class: $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, name: $iw, type: class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw)\n\t- object (class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, $$$$4f1dd1244917239c21cdfe76974c148$$$$iw@66ca9a17)\n\t- field (class: $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, name: $iw, type: class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw)\n\t- object (class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, $$$$4f1dd1244917239c21cdfe76974c148$$$$iw@5bda645)\n\t- field (class: $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, name: $iw, type: class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw)\n\t- object (class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, $$$$4f1dd1244917239c21cdfe76974c148$$$$iw@70787804)\n\t- field (class: $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, name: $iw, type: class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw)\n\t- object (class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, $$$$4f1dd1244917239c21cdfe76974c148$$$$iw@7d113b14)\n\t- field (class: $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, name: $iw, type: class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw)\n\t- object (class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw, $$$$4f1dd1244917239c21cdfe76974c148$$$$iw@42303bb6)\n\t- field (class: $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, name: $iw, type: class $$$$4f1dd1244917239c21cdfe76974c148$$$$iw)\n\t- object (class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, $$$$bec6d1991b88c272b3efac29d720f546$$$$iw@3195b542)\n\t- field (class: $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, name: $iw, type: class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw)\n\t- object (class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, $$$$bec6d1991b88c272b3efac29d720f546$$$$iw@15c00f63)\n\t- field (class: $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, name: $iw, type: class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw)\n\t- object (class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, $$$$bec6d1991b88c272b3efac29d720f546$$$$iw@e984bf1)\n\t- field (class: $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, name: $iw, type: class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw)\n\t- object (class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, $$$$bec6d1991b88c272b3efac29d720f546$$$$iw@55b2ee16)\n\t- field (class: $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, name: $iw, type: class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw)\n\t- object (class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, $$$$bec6d1991b88c272b3efac29d720f546$$$$iw@17e2fccf)\n\t- field (class: $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, name: $iw, type: class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw)\n\t- object (class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw, $$$$bec6d1991b88c272b3efac29d720f546$$$$iw@edbebaf)\n\t- field (class: $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, name: $iw, type: class $$$$bec6d1991b88c272b3efac29d720f546$$$$iw)\n\t- object (class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, $$$$68fcb2421412a821f22fc798f81019bf$$$$iw@30689f47)\n\t- field (class: $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, name: $iw, type: class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw)\n\t- object (class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, $$$$68fcb2421412a821f22fc798f81019bf$$$$iw@d03dc9d)\n\t- field (class: $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, name: $iw, type: class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw)\n\t- object (class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, $$$$68fcb2421412a821f22fc798f81019bf$$$$iw@2d5776c3)\n\t- field (class: $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, name: $iw, type: class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw)\n\t- object (class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, $$$$68fcb2421412a821f22fc798f81019bf$$$$iw@6db1bc03)\n\t- field (class: $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, name: $iw, type: class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw)\n\t- object (class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, $$$$68fcb2421412a821f22fc798f81019bf$$$$iw@35323f10)\n\t- field (class: $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, name: $iw, type: class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw)\n\t- object (class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw, $$$$68fcb2421412a821f22fc798f81019bf$$$$iw@608c64f2)\n\t- field (class: $iw, name: $iw, type: class $$$$68fcb2421412a821f22fc798f81019bf$$$$iw)\n\t- object (class $iw, $iw@32858330)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@68eee168)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@3b0d744a)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@72e737e3)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@4e9810a0)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@1021c6b)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@13b42b0)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@66b51b36)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@6f033960)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@79bf4c8)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@25ff0bcf)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@71c56827)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@38a14490)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@3d3372fc)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@7223625e)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@7290b012)\n\t- field (class: $iw, n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\name: $iw, type: class $iw)\n\t- object (class $iw, $iw@26b3b382)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@350c261f)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@4a3e2591)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@1c711abc)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@687346e6)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@37f5fede)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@48e9f1ae)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@156fc884)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@d223f50)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@72f287d8)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@689ac282)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@1ab82679)\n\t- field (class: $line685094144275.$read, name: $iw, type: class $iw)\n\t- object (class $line685094144275.$read, $line685094144275.$read@7fe8a9)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: $line685094144275$read, type: class $line685094144275.$read)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@68953f1e)\n\t- field (class: $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, name: $outer, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw, $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw@2774fa0a)\n\t- field (class: $$$$badb6125592c33559657811ff71820$$$$$anonfun$1, name: $outer, type: class $$$$24338a4fbcb24dc6d683541cf6403767$$$$iw)\n\t- object (class $$$$badb6125592c33559657811ff71820$$$$$anonfun$1, \u003cfunction1\u003e)\n  at org.apache.spark.serializer.SerializationDebugger$.improveException(SerializationDebugger.scala:40)\n  at org.apache.spark.serializer.JavaSerializationStream.writeObject(JavaSerializer.scala:46)\n  at org.apache.spark.serializer.JavaSerializerInstance.serialize(JavaSerializer.scala:100)\n  at org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:295)\n  ... 99 more\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1494503670410_82299729",
+      "id": "20170511-115430_1909909659",
+      "dateCreated": "May 11, 2017 11:54:30 AM",
+      "dateStarted": "May 28, 2018 11:50:37 AM",
+      "dateFinished": "May 28, 2018 11:50:48 AM",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
       "user": "anonymous",
       "config": {},
       "settings": {
@@ -84,9 +121,9 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1494503670410_82299729",
-      "id": "20170511-115430_1909909659",
-      "dateCreated": "May 11, 2017 11:54:30 AM",
+      "jobName": "paragraph_1527460258089_406940779",
+      "id": "20180527-223058_286619925",
+      "dateCreated": "May 27, 2018 10:30:58 PM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
@@ -94,25 +131,25 @@
   "name": "Machine Learning",
   "id": "2CGRVF4X7",
   "angularObjects": {
-    "2D4ERZXXW:shared_process": [],
-    "2D4EPAJD4:shared_process": [],
-    "2D3BKJA7V:shared_process": [],
-    "2D22Q8VER:shared_process": [],
-    "2D4BARTEP:shared_process": [],
-    "2D4VXHXBJ:shared_process": [],
-    "2D1HR4PUY:shared_process": [],
-    "2D28CYVNT:shared_process": [],
-    "2D3KBK32J:shared_process": [],
-    "2D376ADYX:shared_process": [],
-    "2D4ZA8GES:shared_process": [],
-    "2D5974FPG:shared_process": [],
-    "2D1RKBFHH:shared_process": [],
-    "2D4J5PAAQ:shared_process": [],
-    "2D55HQ7RC:shared_process": [],
-    "2D3H8E9AU:shared_process": [],
-    "2D271H4X8:shared_process": [],
-    "2D37JTAJZ:shared_process": [],
-    "2D4M2X1ES:shared_process": []
+    "2DGA6WUWV:shared_process": [],
+    "2DF45FKVS:shared_process": [],
+    "2DG7TWCED:shared_process": [],
+    "2DDNCXBQX:shared_process": [],
+    "2DFHGDBBC:shared_process": [],
+    "2DENWVEYR:shared_process": [],
+    "2DEG6JKYD:shared_process": [],
+    "2DGN4KQZP:shared_process": [],
+    "2DG8XWWSJ:shared_process": [],
+    "2DHENZUQA:shared_process": [],
+    "2DHAG82R9:shared_process": [],
+    "2DDTMTESS:shared_process": [],
+    "2DFX4EGZX:shared_process": [],
+    "2DEAPMFS8:shared_process": [],
+    "2DEN28DM7:shared_process": [],
+    "2DDUYHGEF:shared_process": [],
+    "2DGWNCPCD:shared_process": [],
+    "2DF2C8VBX:shared_process": [],
+    "2DDPX4PWA:shared_process": []
   },
   "config": {},
   "info": {}
