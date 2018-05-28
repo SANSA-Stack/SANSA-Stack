@@ -6,8 +6,8 @@ import net.sansa_stack.rdf.spark.utils.kryo.jena.JenaKryoSerializers._
 import org.apache.spark.serializer.KryoRegistrator
 
 /**
-  * Created by nilesh on 01/06/2016.
-  */
+ * Created by nilesh on 01/06/2016.
+ */
 class JenaKryoRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
 
@@ -16,7 +16,6 @@ class JenaKryoRegistrator extends KryoRegistrator {
     // Partitioning
     kryo.register(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault])
     kryo.register(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault]])
-
 
     kryo.register(classOf[org.apache.jena.graph.Node], new NodeSerializer)
     kryo.register(classOf[Array[org.apache.jena.graph.Node]], new NodeSerializer)
@@ -30,8 +29,8 @@ class JenaKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[org.apache.jena.graph.Triple], new TripleSerializer)
     //kryo.register(classOf[org.apache.jena.sparql.core.Quad], new QuadSerializer)
     kryo.register(classOf[Array[org.apache.jena.graph.Triple]])
-    kryo.register(Class.forName("net.sansa_stack.rdf.spark.model.SparkRDDGraphOps$$anonfun$findGraph$1"))
+    //kryo.register(Class.forName("net.sansa_stack.rdf.spark.model.SparkRDDGraphOps$$anonfun$findGraph$1"))
     kryo.register(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
-    kryo.register(classOf[net.sansa_stack.rdf.spark.model.TripleRDD])
+    //kryo.register(classOf[net.sansa_stack.rdf.spark.model.TripleRDD])
   }
 }

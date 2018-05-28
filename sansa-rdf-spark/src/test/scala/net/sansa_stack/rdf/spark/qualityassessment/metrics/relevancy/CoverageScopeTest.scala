@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy
 import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io.rdf._
+import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
 import java.io.File
 import scala.io.Source

@@ -19,13 +19,16 @@ import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
-import net.sansa_stack.rdf.spark.io.ntriples.NQuadsStringToJenaQuad
+import net.sansa_stack.rdf.spark.io.nquads.NQuadsStringToJenaQuad
+import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
+import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
+import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
  * [[RDD]].
  */
-package object rdf {
+package object io {
 
   object RDFLang extends Enumeration {
     val NTRIPLES, TURTLE, RDFXML = Value
@@ -160,15 +163,16 @@ package object rdf {
   }
 
   /**
-   * Adds methods, `rdf(lang: Lang)`, `ntriples` and `turtle`, to [[SparkSession]] that allows to read N-Triples and Turtle files.
-   */
+    * Adds methods, `rdf(lang: Lang)`, `ntriples`, `nquads`, and `turtle`, to [[SparkSession]] that allows to read
+    * N-Triples, N-Quads and Turtle files.
+    */
   implicit class RDFReader(spark: SparkSession) {
 
     import scala.collection.JavaConverters._
 
     /**
-     * Load RDF data into an [[RDD]][Triple]. Currently, only N-Triples and Turtle syntax are supported.
-     * @param lang the RDF language (Turtle or N-Triples)
+     * Load RDF data into an [[RDD]][Triple]. Currently, N-Triples, N-Quads and Turtle syntax are supported.
+     * @param lang the RDF language (N-Triples, N-Quads, Turtle)
      * @return the [[RDD]]
      */
     def rdf(lang: Lang, allowBlankLines: Boolean = false): String => RDD[Triple] = lang match {
@@ -180,17 +184,21 @@ package object rdf {
     }
 
     /**
-     * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
-     * @return the [[RDD]]
-     */
+      * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
+      *
+      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
+      * @return the [[RDD]]
+      */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
       NTripleReader.load(spark, path)
     }
 
     /**
-     * Load RDF data in N-Quads syntax into an [[RDD]][Triple].
-     * @return the [[RDD]]
-     */
+      * Load RDF data in N-Quads syntax into an [[RDD]][Triple].
+      *
+      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
+      * @return the [[RDD]]
+      */
     def nquads(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
       var rdd = spark.sparkContext.textFile(path, 4)
 
