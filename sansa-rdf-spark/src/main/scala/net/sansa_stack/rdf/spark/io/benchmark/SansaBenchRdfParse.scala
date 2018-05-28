@@ -1,17 +1,18 @@
 package net.sansa_stack.rdf.spark.io.benchmark
 
-import java.io.{File, InputStream}
+import java.io.{ByteArrayInputStream, File, InputStream}
 import java.util.concurrent.TimeUnit
 
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-
 import scala.collection.JavaConverters._
+
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import org.apache.jena.ext.com.google.common.base.Stopwatch
+import org.apache.jena.graph.Triple
 
 object SansaBenchRdfParse {
   def main(args: Array[String]): Unit = {
@@ -64,32 +65,36 @@ object SansaBenchRdfParse {
     //val textRdd : RDD[String] = sparkSession.sparkContext.parallelize(triplesString.split("\n"))
 
 
-    val textRdd : RDD[String] = sparkSession.sparkContext.textFile("/tmp/sansa-bench.nt", 200)
+    if(args.length != 1) {
+      sys.error("please provide path to RDF file(s) a argument")
+      sparkSession.stop()
+      System.exit(0)
+    }
+    val textRdd : RDD[String] = sparkSession.sparkContext.textFile(args(0), 20)
 
     println(s"Raw count: ${textRdd.count()}")
 
-    {
-      val sw = Stopwatch.createStarted()
-      val c = textRdd
-        .mapPartitions(p => RDFDataMgr.createIteratorTriples(toInputStream(p), Lang.NTRIPLES, null).asScala)
-        .count()
+    measureLoadingTime(
+      textRdd
+      .mapPartitions(p => RDFDataMgr.createIteratorTriples(toInputStream(p), Lang.NTRIPLES, null).asScala)
+    )
 
-      println(s"Time: ${sw.stop().elapsed(TimeUnit.MILLISECONDS)}ms")
-      println(s"Count: $c")
-    }
-
-    {
-      val sw = Stopwatch.createStarted()
-      val c = NTripleReader.load(sparkSession, "/tmp/sansa-bench.nt").count()
-
-      println(s"Time: ${sw.stop().elapsed(TimeUnit.MILLISECONDS)}ms")
-      println(s"Count: $c")
-    }
-
+    measureLoadingTime(
+      textRdd
+        .map(line => RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.getBytes), Lang.NTRIPLES, null).next())
+    )
 
 
     sparkSession.stop()
 
+  }
+
+  def measureLoadingTime(rdd: RDD[Triple]): Unit = {
+    val sw = Stopwatch.createStarted()
+    val c = rdd.count()
+
+    println(s"Time: ${sw.stop().elapsed(TimeUnit.MILLISECONDS)}ms")
+    println(s"Count: $c")
   }
 
   def toInputStream(it : Iterator[String]) : InputStream =
