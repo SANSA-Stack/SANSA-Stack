@@ -128,7 +128,6 @@ object NTripleReader {
     // parse the text file first
     val rdd = session.sparkContext
       .textFile(path, minPartitions = 20)
-      .coalesce(1)
 
     val strict = stopOnBadTerm == ErrorParseMode.STOP && stopOnWarnings == WarningParseMode.STOP
 
@@ -198,13 +197,6 @@ object NTripleReader {
       .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
 
-    //    val rdd = NTripleReader.load(sparkSession,
-    //      path,
-    //      stopOnBadTerm = false,
-    //      stopOnWarnings = false,
-    //      checkRDFTerms = false,
-    //      strict = true,
-    //      LoggerFactory.getLogger("errorLog"))
     val rdd = NTripleReader.load(sparkSession,
       path,
       stopOnBadTerm = ErrorParseMode.SKIP,
