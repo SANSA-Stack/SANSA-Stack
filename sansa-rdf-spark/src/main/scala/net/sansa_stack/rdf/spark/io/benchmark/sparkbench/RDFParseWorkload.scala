@@ -22,6 +22,7 @@ import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
   * @author Lorenz Buehmann
   */
 object RDFParseWorkload extends WorkloadDefaults {
+
   override val name: String = "rdf-parse"
 
   override def apply(m: Map[String, Any]): Workload =
@@ -80,6 +81,7 @@ case class RDFParseWorkload(input: Option[String],
   private def loadSimple(session: SparkSession, paths: Seq[URI], minPartitions: Int = 20): RDD[Triple] = {
     session.sparkContext
       .textFile(paths.mkString(","), minPartitions)
+      .filter(l => !l.startsWith("#") && !l.isEmpty)
       .map(l => RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(l.getBytes), Lang.NTRIPLES, null).next)
   }
 
