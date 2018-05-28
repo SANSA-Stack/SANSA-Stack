@@ -138,7 +138,7 @@ object NTripleReader {
           ErrorHandlerFactory.errorHandlerStrict(errorLog)
         } else {
           if (stopOnBadTerm == ErrorParseMode.STOP) {
-            if (stopOnWarnings == ErrorParseMode.STOP || stopOnWarnings == WarningParseMode.SKIP) {
+            if (stopOnWarnings == WarningParseMode.STOP || stopOnWarnings == WarningParseMode.SKIP) {
               ErrorHandlerFactory.errorHandlerStrict(errorLog)
             } else {
               ErrorHandlerFactory.errorHandlerStd(errorLog)
@@ -160,7 +160,7 @@ object NTripleReader {
 
       // create the parsing iterator
       val it =
-        if (stopOnBadTerm == ErrorParseMode.STOP) {
+        if (stopOnBadTerm == ErrorParseMode.STOP || stopOnWarnings == WarningParseMode.STOP) {
           // this is the default behaviour of Jena, i.e. once a parse error occurs the whole process stops
           RiotParsers.createIteratorNTriples(input, null, profileWrapper.get)
         } else {
