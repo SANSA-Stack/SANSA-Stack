@@ -25,8 +25,7 @@ import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
-
-import net.sansa_stack.rdf.spark.io.nquads.NQuadsStringToJenaQuad
+import net.sansa_stack.rdf.spark.io.nquads.{NQuadReader, NQuadsStringToJenaQuad}
 import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
@@ -200,27 +199,30 @@ package object io {
       * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
       *
       * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-      * @return the [[RDD]]
+      * @return the [[RDD]] of triples
       */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
       NTripleReader.load(spark, path)
     }
 
     /**
-      * Load RDF data in N-Quads syntax into an [[RDD]][Triple].
+      * Load RDF data in N-Quads syntax into an [[RDD]][Triple], i.e. the graph will be omitted.
       *
       * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-      * @return the [[RDD]]
+      * @return the [[RDD]] of triples
       */
     def nquads(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
-      var rdd = spark.sparkContext.textFile(path, 4)
-
-      if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
-      //!line.startsWith("#"))
-
-      rdd.map(new NQuadsStringToJenaQuad()).map(_.asTriple())
+      NQuadReader.load(spark, path)
     }
 
+    /**
+      * Load RDF data in RDF/XML syntax into an [[RDD]][Triple].
+      *
+      * Note, the data will not be splitted and only loaded via a single task because of the nature of XML and
+      * how Spark can handle this format.
+      *
+      * @return the [[RDD]] of triples
+      */
     def rdfxml: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
       confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
@@ -233,7 +235,7 @@ package object io {
 
     /**
      * Load RDF data in Turtle syntax into an [[RDD]][Triple]
-     * @return the [[RDD]]
+      * @return the [[RDD]] of triples
      */
     def turtle: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
