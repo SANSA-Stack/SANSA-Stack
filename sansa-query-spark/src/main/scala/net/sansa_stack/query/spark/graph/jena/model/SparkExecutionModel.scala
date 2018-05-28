@@ -1,5 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
+import net.sansa_stack.query.spark.graph.jena.ExprParser
+import net.sansa_stack.query.spark.graph.jena.expression.{Filter, Expression}
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util.{BasicGraphPattern, Result, ResultFactory, ResultMapping}
 import org.apache.jena.graph.Node
@@ -8,8 +10,10 @@ import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.graph._
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
-import org.apache.jena.sparql.expr.ExprAggregator
+import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList}
 import org.apache.spark.rdd.RDD
+
+import scala.collection.JavaConversions._
 
 /**
   * Model that contains methods for query operations on top of spark.
@@ -80,6 +84,17 @@ object SparkExecutionModel {
     val newResult = result.map(r => r.addMapping(sub, r.getValue(expr))).cache()
     result.unpersist()
     newResult
+  }
+
+  def filter(result: RDD[Result[Node]], filters: List[Filter]): RDD[Result[Node]] = {
+    val broadcast = spark.sparkContext.broadcast(filters)
+    result.filter{ r =>
+      var filtered: Boolean = true
+      broadcast.value.foreach{ filter =>
+        filtered = filtered && filter.evaluate(r)
+      }
+      filtered
+    }
   }
 
   def leftJoin(left: RDD[Result[Node]], right: RDD[Result[Node]]): RDD[Result[Node]] = {

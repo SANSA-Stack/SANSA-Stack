@@ -19,25 +19,10 @@ class ResultOrder(op: OpOrder) extends ResultOp {
   private val tag = "ORDER BY"
   private val id = op.hashCode()
 
+  @deprecated("this method will be removed", "")
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
     //val vars = op.getConditions.toList.map(sc => new ExprParser(sc.getExpression).getVar.getAsNode)
-    val parsers = op.getConditions.toList.map(sc => new ExprParser(sc.getExpression))
-    val dirs = op.getConditions.toList.map(_.direction)
-    parsers.length match {
-      case 1 => input.sortBy(map => parsers.head.getFunction.evaluate(map).toString)(order1(dirs.head))
-      case 2 => input.sortBy(map =>
-        (parsers.head.getFunction.evaluate(map).toString,
-          parsers(1).getFunction.evaluate(map).toString))(order2(dirs.head, dirs(1)))
-      case 3 => input.sortBy(map =>
-        (parsers.head.getFunction.evaluate(map).toString,
-          parsers(1).getFunction.evaluate(map).toString,
-          parsers(2).getFunction.evaluate(map).toString))(order3(dirs.head, dirs(1), dirs(2)))
-      case 4 => input.sortBy(map =>
-        (parsers.head.getFunction.evaluate(map).toString,
-          parsers(1).getFunction.evaluate(map).toString,
-          parsers(2).getFunction.evaluate(map).toString,
-          parsers(3).getFunction.evaluate(map).toString))(order4(dirs.head, dirs(1), dirs(2), dirs(3)))
-    }
+    throw new UnsupportedOperationException
   }
 
   override def execute(): Unit = {

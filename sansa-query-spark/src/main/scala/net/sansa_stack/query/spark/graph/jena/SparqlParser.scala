@@ -54,7 +54,8 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
   }
 
   override def visit(opFilter: OpFilter): Unit = {
-    opFilter.getExprs.foreach{
+    ops.enqueue(new ResultFilter(opFilter))
+    /*opFilter.getExprs.foreach{
       // Add triple pattern in filter expression EXISTS to elementTriples
       case e: E_Exists => val triples = e.getGraphPattern.asInstanceOf[OpBGP].getPattern
         for(triple <- triples) {
@@ -66,8 +67,8 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
           triples.add(triple)
         }
         //ops.enqueue(new PatternNegate(triples.toIterator))
-      case other => ops.enqueue(new ResultFilter(other))
-    }
+      case other =>
+    }*/
   }
 
   override def visit(opGroup: OpGroup): Unit = {
@@ -95,7 +96,7 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
   }
 
   override def visit(opReduced: OpReduced): Unit = {
-    ops.enqueue(new ResultReduced)
+    ops.enqueue(new ResultReduced(opReduced))
   }
 
   override def visit(opSlice: OpSlice): Unit = {
@@ -103,12 +104,12 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
   }
 
   override def visit(opUnion: OpUnion): Unit = {
-    val sp = new SparqlParser(opUnion.getRight)
+    /*val sp = new SparqlParser(opUnion.getRight)
     sp.getOps.dequeue()
     sp.getOps.foreach(op => ops.dequeueFirst {
       case e: ResultFilter => e.getExpr.equals(op.asInstanceOf[ResultFilter].getExpr)
       case _               => false
-    })
+    })*/
     ops.enqueue(new PatternUnion(opUnion))
   }
 

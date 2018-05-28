@@ -1,19 +1,27 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
 import net.sansa_stack.query.spark.graph.jena.ExprParser
-import net.sansa_stack.query.spark.graph.jena.util.Result
+import net.sansa_stack.query.spark.graph.jena.expression.Filter
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
 import org.apache.jena.graph.Node
-import org.apache.jena.sparql.expr.{Expr, ExprList}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
+import org.apache.jena.sparql.algebra.op.OpFilter
+import org.apache.jena.sparql.expr.ExprList
+
+import scala.collection.JavaConversions._
 
 /**
   * Class that execute SPARQL FILTER operation
-  * @param expr FILTER expression
   */
-class ResultFilter(val expr: Expr) extends ResultOp {
+class ResultFilter(op: OpFilter) extends ResultOp {
 
   private val tag = "FILTER"
+  private val id = op.hashCode
+  private val filters = op.getExprs.getList.toList.map{ expr =>
+    new ExprParser(expr).getExpression match{
+      case e:Filter => e
+      case _ => throw new UnsupportedOperationException
+    }
+  }
 
   /**
     * Filter the result by the given filter expression
@@ -21,6 +29,7 @@ class ResultFilter(val expr: Expr) extends ResultOp {
     * @return solution mapping after filtering
     */
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
+    val expr = op.getExprs.getList.toList.head
     val exprParser = new ExprParser(expr)
     val filterOp = exprParser.getFilter
     var intermediate = input
@@ -30,13 +39,20 @@ class ResultFilter(val expr: Expr) extends ResultOp {
     output
   }
 
+  /**
+    * Filter the RDD result and put the new result into intermediate model.
+    */
   override def execute(): Unit = {
-    // compiler here
+    val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode())
+    val newResult = SparkExecutionModel.filter(oldResult, filters)
+    IntermediateResult.putResult(id, newResult)
+    IntermediateResult.removeResult(op.getSubOp.hashCode())
   }
 
   override def getTag: String = { tag }
 
-  override def getId: Int = { 0 }
+  override def getId: Int = { id }
 
-  def getExpr: Expr = { expr }
+  def getExprList: ExprList = { op.getExprs }
+
 }

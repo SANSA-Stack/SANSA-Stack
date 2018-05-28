@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.expression
 
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 
 /**
@@ -8,11 +9,15 @@ import org.apache.jena.graph.Node
   *
   * @author Zhe Wang
   */
-class ExprPattern(variable: Node, value: Node, op: String) extends ExprFilter {
+class Pattern(variable: Node, value: Node, op: String) extends Filter {
 
   private val tag = "Filter Pattern"
 
   override def evaluate(solution: Map[Node, Node]): Boolean = {
+    true
+  }
+
+  override def evaluate(solution: Result[Node]): Boolean = {
     true
   }
 

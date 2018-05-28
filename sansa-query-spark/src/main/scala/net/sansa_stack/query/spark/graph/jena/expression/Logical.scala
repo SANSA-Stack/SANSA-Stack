@@ -1,8 +1,9 @@
 package net.sansa_stack.query.spark.graph.jena.expression
 
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 
-class ExprLogical(left: ExprFilter, right: ExprFilter, op: String) extends ExprFilter {
+class Logical(left: Filter, right: Filter, op: String) extends Filter {
 
   private val tag = "Filter Logical"
 
@@ -16,6 +17,10 @@ class ExprLogical(left: ExprFilter, right: ExprFilter, op: String) extends ExprF
     else {
       false
     }
+  }
+
+  override def evaluate(solution: Result[Node]): Boolean = {
+    true
   }
 
   override def getTag: String = tag

@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.expression
 
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 
 /**
@@ -7,7 +8,7 @@ import org.apache.jena.graph.Node
   * @param variable expression of variable
   * @param value expression of value
   */
-class ExprRegex(variable: Node, value: Node) extends ExprFilter {
+class Regex(variable: Node, value: Node) extends Filter {
 
   private val tag = "Filter Regex"
 
@@ -19,6 +20,10 @@ class ExprRegex(variable: Node, value: Node) extends ExprFilter {
     else{
       false
     }
+  }
+
+  override def evaluate(solution: Result[Node]): Boolean = {
+    true
   }
 
   override def getTag: String = { tag }
