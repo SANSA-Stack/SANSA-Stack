@@ -219,6 +219,8 @@ object NQuadReader {
     println("result:\n" + rdd.take(1000).map { _.toString.replaceAll("[\\x00-\\x1f]","???")} .mkString("\n"))
 
 //    println("result:\n" + rdd.take(1000).mkString("\n"))
+
+    rdd.saveAsTextFile("/tmp/test-out.nq")
   }
 
 }
