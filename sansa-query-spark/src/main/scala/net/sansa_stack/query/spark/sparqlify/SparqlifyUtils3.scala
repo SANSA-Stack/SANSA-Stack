@@ -16,43 +16,38 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 
-import com.typesafe.scalalogging.LazyLogging
+//import com.typesafe.scalalogging.LazyLogging
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
-import com.typesafe.scalalogging.StrictLogging
+//import com.typesafe.scalalogging.StrictLogging
 
-
-object SparqlifyUtils3
-  extends StrictLogging
+object SparqlifyUtils3 // extends StrictLogging
 {
   def createSparqlSqlRewriter(sparkSession: SparkSession, partitions: Map[RdfPartitionDefault, RDD[Row]]): SparqlSqlStringRewriter = {
     val config = new Config()
-    val loggerCount = new LoggerCount(logger.underlying)
-
+    // val loggerCount = new LoggerCount(logger.underlying)
 
     val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) //new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
 
-
     val ers = SparqlifyUtils.createDefaultExprRewriteSystem()
     val mappingOps = SparqlifyUtils.createDefaultMappingOps(ers)
-
 
     val candidateViewSelector = new CandidateViewSelectorSparqlify(mappingOps, new ViewDefinitionNormalizerImpl());
 
     val views = partitions.map {
       case (p, rdd) =>
-//
-        logger.debug("Processing RdfPartition: " + p)
+        //
+        //        logger.debug("Processing RdfPartition: " + p)
 
         val vd = SparqlifyUtils2.createViewDefinition(p)
-        logger.debug("Created view definition: " + vd)
-        
+        //       logger.debug("Created view definition: " + vd)
+
         val tableName = vd.getRelation match {
           case o: SqlOpTable => o.getTableName
-          case _ => throw new RuntimeException("Table name required - instead got: " + vd)
+          case _             => throw new RuntimeException("Table name required - instead got: " + vd)
         }
 
         val scalaSchema = p.layout.schema
@@ -68,7 +63,7 @@ object SparqlifyUtils3
     val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
     //val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
 
-//    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
+    //    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
     rewriter
   }
 
