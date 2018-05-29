@@ -15,7 +15,6 @@ import scala.io.Source
 
 /**
   * Read sparql query from a file and convert to Op expressions.
-  *
   * @param path path to sparql query file
   *
   * @author Zhe Wang
@@ -30,23 +29,16 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
     this("", op)
   }
 
-  private val elementTriples = ArrayBuffer[Triple]()
   private val ops = new mutable.Queue[Ops]()
 
   OpWalker.walk(op, this)
 
   override def visit(opBGP: OpBGP): Unit = {
-    val triples = opBGP.getPattern.toList
-    for (triple <- triples) {
-      elementTriples += triple
-    }
-    //if(ops.isEmpty){ ops.enqueue(new PatternBgp(elementTriples.toIterator)) }
     ops.enqueue(new PatternBgp(opBGP))
   }
 
   override def visit(opDistinct: OpDistinct): Unit = {
     ops.enqueue(new ResultDistinct(opDistinct))
-    //ops.enqueue(new NewDistinct)
   }
 
   override def visit(opExtend: OpExtend): Unit = {
@@ -55,20 +47,6 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
 
   override def visit(opFilter: OpFilter): Unit = {
     ops.enqueue(new ResultFilter(opFilter))
-    /*opFilter.getExprs.foreach{
-      // Add triple pattern in filter expression EXISTS to elementTriples
-      case e: E_Exists => val triples = e.getGraphPattern.asInstanceOf[OpBGP].getPattern
-        for(triple <- triples) {
-          elementTriples += triple
-        }
-        //ops.head.asInstanceOf[PatternBgp].setBgp(elementTriples.toIterator)
-      case e: E_NotExists => val triples = e.getGraphPattern.asInstanceOf[OpBGP].getPattern
-        for(triple <- elementTriples){
-          triples.add(triple)
-        }
-        //ops.enqueue(new PatternNegate(triples.toIterator))
-      case other =>
-    }*/
   }
 
   override def visit(opGroup: OpGroup): Unit = {
@@ -76,13 +54,10 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
   }
 
   override def visit(opLeftJoin: OpLeftJoin): Unit = {
-    /*val sp = new SparqlParser(opLeftJoin.getRight)
-    ops.enqueue(new PatternOptional(sp.getElementTriples.toIterator, opLeftJoin.getExprs))*/
     ops.enqueue(new PatternOptional(opLeftJoin))
   }
 
   override def visit(opMinus: OpMinus): Unit = {
-    val triples = opMinus.getRight.asInstanceOf[OpBGP].getPattern
     ops.enqueue(new PatternMinus(opMinus))
   }
 
@@ -92,7 +67,6 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
 
   override def visit(opProject: OpProject): Unit = {
     ops.enqueue(new ResultProject(opProject))
-    //ops.enqueue(new NewProject(opProject))
   }
 
   override def visit(opReduced: OpReduced): Unit = {
@@ -104,12 +78,6 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
   }
 
   override def visit(opUnion: OpUnion): Unit = {
-    /*val sp = new SparqlParser(opUnion.getRight)
-    sp.getOps.dequeue()
-    sp.getOps.foreach(op => ops.dequeueFirst {
-      case e: ResultFilter => e.getExpr.equals(op.asInstanceOf[ResultFilter].getExpr)
-      case _               => false
-    })*/
     ops.enqueue(new PatternUnion(opUnion))
   }
 
@@ -119,9 +87,18 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
 
   def getOps: mutable.Queue[Ops] = {
     ops
+    //reOrderOps(ops)
   }
 
-  def getElementTriples: ArrayBuffer[Triple] = {
-    elementTriples
+  private def reOrderOps(ops: mutable.Queue[Ops]): mutable.Queue[Ops] = {
+    val tags = ops.toIterator.map(op => op.getTag )
+    if(tags.contains("ORDER BY")){
+      val order = ops.dequeueFirst(op => op.getTag.equals("ORDER BY"))
+      ops.enqueue(order.get)
+      ops
+    }
+    else{
+      ops
+    }
   }
 }

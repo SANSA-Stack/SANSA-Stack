@@ -3,7 +3,6 @@ package net.sansa_stack.query.spark.graph.jena.util
 import org.apache.jena.graph.Triple
 import org.apache.spark.SparkContext
 
-
 /**
   * Class that generate GraphX graph for input triples
   *

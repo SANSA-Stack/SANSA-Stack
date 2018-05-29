@@ -1,20 +1,12 @@
 package net.sansa_stack.query.spark.graph.jena
 
 import net.sansa_stack.query.spark.graph.jena.expression._
-import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.sparql.algebra.walker.{ExprVisitorFunction, Walker}
 import org.apache.jena.sparql.expr._
 
-import scala.collection.JavaConversions._
 import scala.collection.mutable
 
 class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {
-
-  private val filter = new mutable.Queue[Filter]()
-  private val function = new mutable.Queue[Function]()
-
-  private val filters = new mutable.Stack[Filter]
-  private val nodes = new mutable.Stack[Node]
 
   private val stack = new mutable.Stack[Expression]
 
@@ -52,8 +44,6 @@ class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {
     } else {
       throw new NoSuchElementException
     }
-    println(left.getTag)
-    println(right.getTag)
 
     func match {
       case _: E_Equals             => stack.push(new Equals(left, right))
@@ -77,22 +67,16 @@ class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {
 
   override def visit(func: ExprFunctionN): Unit = {
     func match {
-      case _: E_Regex =>
-        val left = func.getArgs.toList.head.asVar.asNode
-        val right = func.getArgs.toList(1).getConstant.asNode
-        filter += new Regex(left, right)
-      case e: E_BNode    => println(e + ":E_BNode")
-      case e: E_Call     => println(e + ":E_Call")
-      case e: E_Coalesce => println(e + ":E_Coalesce")
-      case e: E_Function => //function.last.setFunction(e)
+      case _: E_Regex    =>
+      case _: E_BNode    =>
+      case _: E_Call     =>
+      case _: E_Coalesce =>
+      case _: E_Function =>
       case _             => throw new UnsupportedOperationException("Not support the expression of ExprFunctionN")
     }
   }
 
   override def visit(exprFunctionOp: ExprFunctionOp): Unit = {
-    exprFunctionOp match {
-      case e: E_Exists => println(e.getElement)
-    }
   }
 
   override def visit(exprAggregator: ExprAggregator): Unit = {
@@ -107,14 +91,6 @@ class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {
 
   override def visit(nodeValue: NodeValue): Unit = {
     stack.push(new NodeVal(nodeValue.getNode))
-  }
-
-  def getFilter: Filter = {
-    filters.pop()
-  }
-
-  def getFunction: Function = {
-    function.last
   }
 
   def getExpression: Expression = {

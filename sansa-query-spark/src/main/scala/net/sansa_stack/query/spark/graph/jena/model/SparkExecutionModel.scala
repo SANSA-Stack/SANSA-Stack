@@ -1,9 +1,9 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
 import net.sansa_stack.query.spark.graph.jena.ExprParser
-import net.sansa_stack.query.spark.graph.jena.expression.{Filter, Expression}
+import net.sansa_stack.query.spark.graph.jena.expression.{Expression, Filter}
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
-import net.sansa_stack.query.spark.graph.jena.util.{BasicGraphPattern, Result, ResultFactory, ResultMapping}
+import net.sansa_stack.query.spark.graph.jena.util._
 import org.apache.jena.graph.Node
 import org.apache.spark.graphx.Graph
 import org.apache.spark.sql.SparkSession
@@ -24,11 +24,38 @@ object SparkExecutionModel {
 
   private var graph: Graph[Node, Node] = _
 
+  def setSparkSession(spark: SparkSession): Unit = {
+    this.spark = spark
+  }
+
   def createSparkSession(): Unit = {
+
+    if(Config.getMaster == ""){
+      Config.setMaster("local[*]")
+    }
+
+    if(Config.getInputGraphFile == ""){
+      throw new ExceptionInInitializerError("Input graph file path is not initialized")
+    }
+
+    if(Config.getInputQueryFile == ""){
+      throw new ExceptionInInitializerError("Input query file path is not initialized")
+    }
+
+    if(Config.getLang == null){
+      throw new ExceptionInInitializerError("The language of input graph file is not initialized")
+    }
+
     spark = SparkSession.builder()
-      .master("local[*]")
-      .appName("s2x")
+      .master(Config.getMaster)
+      .appName(Config.getAppName)
       .getOrCreate()
+
+    loadGraph()
+  }
+
+  def loadGraph(): Unit = {
+    loadGraph(Config.getInputGraphFile, Config.getLang)
   }
 
   def loadGraph(path: String, lang: Lang): Unit = {
@@ -40,8 +67,36 @@ object SparkExecutionModel {
   }
 
   def basicGraphPatternMatch(bgp: BasicGraphPattern): RDD[Result[Node]] = {
-    setSession()
-    ResultFactory.create(ResultMapping.run(graph, bgp, spark), spark).cache()
+    if(spark == null){ setSession() }
+
+    val ms = new MatchSetNode(graph, bgp, spark)
+    var finalMatchSet = ms.matchCandidateSet
+    var tempMatchSet = ms.matchCandidateSet
+    var changed = true
+    while(changed) {
+      tempMatchSet = ms.validateRemoteMatchSet(ms.validateLocalMatchSet(tempMatchSet))
+      if(tempMatchSet.count().equals(finalMatchSet.count())){
+        changed = false
+      }
+      finalMatchSet = tempMatchSet
+    }
+
+    var intermediate: RDD[Result[Node]] = null
+    bgp.triplePatterns.foreach{ tp =>
+      val mapping = finalMatchSet
+        .filter(_.pattern.equals(tp))
+        .map(_.mapping).collect()
+        .map(_.filterKeys(_.toString.startsWith("?")))
+        .distinct
+      if(intermediate == null) {
+        intermediate = ResultFactory.create(mapping, spark).cache()
+      }
+      else{
+        intermediate = leftJoin(intermediate, ResultFactory.create(mapping, spark)).cache()
+      }
+    }
+
+    intermediate
   }
 
   def project(result: RDD[Result[Node]], varSet: Set[Node]): RDD[Result[Node]] = {
@@ -53,8 +108,9 @@ object SparkExecutionModel {
   }
 
   def distinct(result: RDD[Result[Node]]): RDD[Result[Node]] = {
-    val newResult = result.distinct().cache()
-    result.unpersist()
+    /*val newResult = result.distinct().cache()
+    result.unpersist()*/
+    val newResult = spark.sparkContext.parallelize(result.collect().distinct).cache()
     newResult
   }
 

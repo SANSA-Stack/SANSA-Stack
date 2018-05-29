@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.graph.jena.util
 
 import org.apache.jena.graph.Node
 import org.apache.spark.graphx.Graph
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 /**

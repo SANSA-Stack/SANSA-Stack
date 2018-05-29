@@ -23,20 +23,9 @@ class ResultFilter(op: OpFilter) extends ResultOp {
     }
   }
 
-  /**
-    * Filter the result by the given filter expression
-    * @param input solution mapping to be filtered
-    * @return solution mapping after filtering
-    */
+  @deprecated("this method will be removed", "")
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
-    val expr = op.getExprs.getList.toList.head
-    val exprParser = new ExprParser(expr)
-    val filterOp = exprParser.getFilter
-    var intermediate = input
-    //filter.foreach(expr => intermediate = intermediate.filter(solution => expr.evaluate(solution)))
-    intermediate = intermediate.filter(solution => filterOp.evaluate(solution))
-    val output = intermediate
-    output
+    throw new UnsupportedOperationException
   }
 
   /**

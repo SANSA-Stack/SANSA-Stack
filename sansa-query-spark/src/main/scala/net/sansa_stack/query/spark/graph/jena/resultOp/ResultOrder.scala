@@ -76,5 +76,4 @@ class ResultOrder(op: OpOrder) extends ResultOp {
       case -1 => Ordering.String.reverse
     }
   }
-
 }

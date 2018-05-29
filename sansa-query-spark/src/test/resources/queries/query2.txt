@@ -3,7 +3,7 @@ PREFIX tw: <http://twitter/>
 SELECT ?user ?name ?age
 WHERE {
     ?user tw:follows ?follower .
-    FILTER (?user = tw:user0)
+    FILTER (?user != tw:user0)
     OPTIONAL { ?user foaf:name ?name }
     OPTIONAL { ?user foaf:age ?age .
     FILTER (?age>25) }

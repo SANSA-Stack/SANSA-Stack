@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.graph.jena.expression
 
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
+import org.apache.jena.sparql.expr.NodeValue
 
 abstract class FilterTwo(protected val left: Expression, protected val right: Expression) extends Filter {
 
@@ -45,6 +46,10 @@ abstract class FilterTwo(protected val left: Expression, protected val right: Ex
         rightValue = rightVal.getURI
       }
     }
+
+    /*val leftNodeValue = NodeValue.makeDecimal(leftValue.toDouble)
+    val rightNodeValue = NodeValue.makeDecimal(rightValue.toDouble)
+    NodeValue.compare(leftNodeValue, rightNodeValue)*/
 
     leftValue.compare(rightValue)
   }
