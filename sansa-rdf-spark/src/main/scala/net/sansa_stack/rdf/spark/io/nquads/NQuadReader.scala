@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.io
+package net.sansa_stack.rdf.spark.io.nquads
 
 import java.net.URI
 
@@ -13,12 +13,13 @@ import org.apache.jena.riot.SysRIOT.fmtMessage
 import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
 import org.apache.jena.riot.{RIOT, SysRIOT}
+import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
 
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
-import net.sansa_stack.rdf.spark.riot.lang.LangNTriplesSkipBad
+import net.sansa_stack.rdf.spark.riot.lang.LangNQuadsSkipBad
 import net.sansa_stack.rdf.spark.riot.tokens.TokenizerTextForgiving
 
 
@@ -27,7 +28,7 @@ import net.sansa_stack.rdf.spark.riot.tokens.TokenizerTextForgiving
   *
   * @author Lorenz Buehmann
   */
-object NTripleReader {
+object NQuadReader {
 
   /**
     * Loads N-Triples data from a file or directory into an RDD.
@@ -123,11 +124,12 @@ object NTripleReader {
            stopOnWarnings: WarningParseMode.Value = WarningParseMode.IGNORE,
            checkRDFTerms: Boolean = false,
            errorLog: Logger = ErrorHandlerFactory.stdLogger)
-  : RDD[Triple] = {
+  : RDD[Quad] = {
 
     // parse the text file first
     val rdd = session.sparkContext
       .textFile(path, minPartitions = 20)
+      .coalesce(1)
 
     val strict = stopOnBadTerm == ErrorParseMode.STOP && stopOnWarnings == WarningParseMode.STOP
 
@@ -138,7 +140,7 @@ object NTripleReader {
           ErrorHandlerFactory.errorHandlerStrict(errorLog)
         } else {
           if (stopOnBadTerm == ErrorParseMode.STOP) {
-            if (stopOnWarnings == WarningParseMode.STOP || stopOnWarnings == WarningParseMode.SKIP) {
+            if (stopOnWarnings == ErrorParseMode.STOP || stopOnWarnings == WarningParseMode.SKIP) {
               ErrorHandlerFactory.errorHandlerStrict(errorLog)
             } else {
               ErrorHandlerFactory.errorHandlerStd(errorLog)
@@ -160,9 +162,9 @@ object NTripleReader {
 
       // create the parsing iterator
       val it =
-        if (stopOnBadTerm == ErrorParseMode.STOP || stopOnWarnings == WarningParseMode.STOP) {
+        if (stopOnBadTerm == ErrorParseMode.STOP) {
           // this is the default behaviour of Jena, i.e. once a parse error occurs the whole process stops
-          RiotParsers.createIteratorNTriples(input, null, profileWrapper.get)
+          RiotParsers.createIteratorNQuads(input, null, profileWrapper.get)
         } else {
           // here we "simply" skip illegal triples
 
@@ -171,23 +173,23 @@ object NTripleReader {
           tokenizer.setErrorHandler(ErrorHandlerFactory.errorHandlerWarn)
 
           // which is used by a custom N-Triples iterator
-          val it = new LangNTriplesSkipBad(tokenizer, profileWrapper.get, null)
+          val it = new LangNQuadsSkipBad(tokenizer, profileWrapper.get, null)
 
           // filter out null values
-          Iterators.filter(it, Predicates.notNull[Triple]())
+          Iterators.filter(it, Predicates.notNull[Quad]())
         }
-      new IteratorResourceClosing[Triple](it, input).asScala
+      new IteratorResourceClosing[Quad](it, input).asScala
     })
   }
 
   def main(args: Array[String]): Unit = {
-    if (args.length == 0) println("Usage: NTripleReader <PATH_TO_FILE>")
+    if (args.length == 0) println("Usage: NQuadReader <PATH_TO_FILE>")
 
     val path = args(0)
 
     val sparkSession = SparkSession.builder
       .master("local")
-      .appName("N-Triples reader")
+      .appName("N-Quad reader")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       //.config("spark.kryo.registrationRequired", "true")
       //.config("spark.eventLog.enabled", "true")
@@ -197,16 +199,28 @@ object NTripleReader {
       .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
 
-    val rdd = NTripleReader.load(sparkSession,
+    //    val rdd = NTripleReader.load(sparkSession,
+    //      path,
+    //      stopOnBadTerm = false,
+    //      stopOnWarnings = false,
+    //      checkRDFTerms = false,
+    //      strict = true,
+    //      LoggerFactory.getLogger("errorLog"))
+    val rdd = NQuadReader.load(sparkSession,
       path,
       stopOnBadTerm = ErrorParseMode.SKIP,
       stopOnWarnings = WarningParseMode.SKIP,
       checkRDFTerms = true,
       LoggerFactory.getLogger("errorLog"))
 
-    println(rdd.count())
+//    rdd.saveAsTextFile("/tmp/skip-new.txt")
 
+    println(rdd.count())
     println("result:\n" + rdd.take(1000).map { _.toString.replaceAll("[\\x00-\\x1f]","???")} .mkString("\n"))
+
+//    println("result:\n" + rdd.take(1000).mkString("\n"))
+
+    rdd.saveAsTextFile("/tmp/test-out.nq")
   }
 
 }

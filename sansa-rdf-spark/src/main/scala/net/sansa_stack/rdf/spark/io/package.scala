@@ -1,18 +1,31 @@
 package net.sansa_stack.rdf.spark
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, StringWriter}
+import java.util.Collections
 
+import com.google.common.collect.Iterators
+import com.typesafe.config.{Config, ConfigFactory}
+
+import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
+import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
+import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+import org.apache.jena.atlas.lib.CharSpace
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.riot.lang.PipedTriplesStream
+import org.apache.jena.riot.out.NodeFormatterNT
+import org.apache.jena.riot.system.StreamOps
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
-import net.sansa_stack.rdf.spark.io.nquads.NQuadsStringToJenaQuad
+import net.sansa_stack.rdf.spark.io.nquads.{NQuadReader, NQuadsStringToJenaQuad}
 import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
@@ -131,13 +144,31 @@ package object io {
       } else {
         true
       }
-
+      import scala.collection.JavaConverters._
       // save only if there was no failure with the path before
-      if (doSave) {
-        triples
-          .map(converter) // map to N-Triples string
-          .saveAsTextFile(path)
-      }
+      if (doSave) triples
+          .mapPartitions(p => {
+            val os = new ByteArrayOutputStream()
+            RDFDataMgr.writeTriples(os, p.asJava)
+            Collections.singleton(new String(os.toByteArray)).iterator().asScala
+
+//            val os = new ByteArrayOutputStream()
+//            val fct = new com.google.common.base.Function[Triple, String]() {
+//              val sb = new StringBuilder()
+//              val nodeFmt = new NodeFormatterNT(CharSpace.UTF8)
+//              override def apply(t: Triple): String =
+//                nodeFmt.format(os, t.getSubject) +
+//              " " +
+//              nodeFmt.format(t.getPredicate) +
+//              " " +
+//              nodeFmt.format(t.getObject) +
+//              " .\n"
+//            }
+
+//            Iterators.transform(p, fct).asScala
+          })
+//        .map(converter) // map to N-Triples string
+        .saveAsTextFile(path)
 
     }
 
@@ -168,32 +199,30 @@ package object io {
       * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
       *
       * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-      * @return the [[RDD]]
+      * @return the [[RDD]] of triples
       */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
-      var rdd = spark.sparkContext.textFile(path, 4) // read the text file
-                .filter(!_.trim.startsWith("#")) //omit comment lines
-
-      if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
-
-      rdd.map(new NTriplesStringToJenaTriple())
+      NTripleReader.load(spark, path)
     }
 
     /**
-      * Load RDF data in N-Quads syntax into an [[RDD]][Triple].
+      * Load RDF data in N-Quads syntax into an [[RDD]][Triple], i.e. the graph will be omitted.
       *
       * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-      * @return the [[RDD]]
+      * @return the [[RDD]] of triples
       */
     def nquads(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
-      var rdd = spark.sparkContext.textFile(path, 4)
-
-      if (allowBlankLines) rdd = rdd.filter(!_.trim.isEmpty)
-      //!line.startsWith("#"))
-
-      rdd.map(new NQuadsStringToJenaQuad()).map(_.asTriple())
+      NQuadReader.load(spark, path)
     }
 
+    /**
+      * Load RDF data in RDF/XML syntax into an [[RDD]][Triple].
+      *
+      * Note, the data will not be splitted and only loaded via a single task because of the nature of XML and
+      * how Spark can handle this format.
+      *
+      * @return the [[RDD]] of triples
+      */
     def rdfxml: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
       confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
@@ -206,7 +235,7 @@ package object io {
 
     /**
      * Load RDF data in Turtle syntax into an [[RDD]][Triple]
-     * @return the [[RDD]]
+      * @return the [[RDD]] of triples
      */
     def turtle: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration

@@ -7,6 +7,7 @@ import org.apache.jena.riot.system.RiotLib
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.sparql.util.{ExprUtils, FmtUtils}
+import org.apache.jena.sparql.core.{Quad => JenaQuad}
 
 /**
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
@@ -24,7 +25,9 @@ object JenaKryoSerializers {
     }
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
-        RiotLib.parse(input.readString())
+      val s = input.readString()
+      println(s"parsing:$s")
+        RiotLib.parse(s)
     }
   }
 
@@ -154,6 +157,27 @@ object JenaKryoSerializers {
       val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val o = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       new JenaTriple(s, p, o)
+    }
+  }
+
+  class QuadSerializer extends Serializer[JenaQuad] {
+    override def write(kryo: Kryo, output: Output, obj: JenaQuad) {
+      kryo.writeClassAndObject(output, obj.getGraph)
+      kryo.writeClassAndObject(output, obj.getSubject)
+      kryo.writeClassAndObject(output, obj.getPredicate)
+      kryo.writeClassAndObject(output, obj.getObject)
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[JenaQuad]): JenaQuad = {
+      val g = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
+      println(s"g:$g")
+      val s = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
+      println(s"s:$s")
+      val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
+      println(s"p:$p")
+      val o = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
+      println(s"o:$o")
+      new JenaQuad(g, s, p, o)
     }
   }
 }
