@@ -57,14 +57,14 @@ object RDFGraphPowerIterationClustering {
       /*
 	 * Collect all the edges of the graph
 	*/
-      val edge = graph.edges.persist()
+      val edge = graph.edges
       val nodes = graph.vertices
 
       /*
 	 * Collect neighbor IDs of all the vertices
 	 */
 
-      val neighbors = graph.collectNeighborIds(EdgeDirection.Either).persist()
+      val neighbors = graph.collectNeighborIds(EdgeDirection.Either)
       /*
 	 * Collect distinct vertices of the graph
 	 *
