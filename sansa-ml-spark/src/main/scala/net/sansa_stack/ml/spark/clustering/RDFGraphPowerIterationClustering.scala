@@ -57,14 +57,14 @@ object RDFGraphPowerIterationClustering {
       /*
 	 * Collect all the edges of the graph
 	*/
-      val edge = graph.edges
+      val edge = graph.edges.persist()
       val nodes = graph.vertices
 
       /*
 	 * Collect neighbor IDs of all the vertices
 	 */
 
-      val neighbors = graph.collectNeighborIds(EdgeDirection.Either)
+      val neighbors = graph.collectNeighborIds(EdgeDirection.Either).persist()
       /*
 	 * Collect distinct vertices of the graph
 	 *
@@ -180,6 +180,8 @@ object RDFGraphPowerIterationClustering {
       val weightedGraphstring = weightedGraph.toString()
       val graphRDD = spark.sparkContext.parallelize(weightedGraphstring)
       graphRDD.saveAsTextFile(outputsim)
+      neighbors.unpersist()
+      edge.unpersist()
       def SI(a: (Double,Double)): Double = {
         var s = 0.0
         
