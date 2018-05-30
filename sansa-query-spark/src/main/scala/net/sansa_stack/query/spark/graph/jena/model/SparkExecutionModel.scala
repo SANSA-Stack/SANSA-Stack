@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
 import net.sansa_stack.query.spark.graph.jena.ExprParser
-import net.sansa_stack.query.spark.graph.jena.expression.{Expression, Filter}
+import net.sansa_stack.query.spark.graph.jena.expression.{Expression, Filter, Pattern}
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util._
 import org.apache.jena.graph.Node
@@ -142,15 +142,14 @@ object SparkExecutionModel {
     newResult
   }
 
-  def filter(result: RDD[Result[Node]], filters: List[Filter]): RDD[Result[Node]] = {
+  def filter(result: RDD[Result[Node]], filters: List[Expression]): RDD[Result[Node]] = {
     val broadcast = spark.sparkContext.broadcast(filters)
-    result.filter{ r =>
-      var filtered: Boolean = true
-      broadcast.value.foreach{ filter =>
-        filtered = filtered && filter.evaluate(r)
-      }
-      filtered
+    var intermediate:RDD[Result[Node]] = result.cache()
+    broadcast.value.foreach{
+      case e: Filter => intermediate = intermediate.filter(r => e.evaluate(r))
+      case e: Pattern => intermediate = e.evaluate(intermediate)
     }
+    intermediate
   }
 
   def leftJoin(left: RDD[Result[Node]], right: RDD[Result[Node]]): RDD[Result[Node]] = {
@@ -161,14 +160,14 @@ object SparkExecutionModel {
     // two results have no common variables
     if(intersection.value.isEmpty){
       newResult = left.cartesian(right).map{ case(r1, r2) => r1.merge(r2) }.cache()
+      left.unpersist()
+      right.unpersist()
     }
     else {
       val leftPair = left.map(r => (r.getValueSet(intersection.value), r))
       left.unpersist()
-
       val rightPair = right.map(r => (r.getValueSet(intersection.value), r))
       right.unpersist()
-
       intersection.unpersist()
 
       newResult = leftPair.leftOuterJoin(rightPair).map{case(_, pair) =>

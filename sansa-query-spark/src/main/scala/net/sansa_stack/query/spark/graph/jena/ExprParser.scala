@@ -1,10 +1,13 @@
 package net.sansa_stack.query.spark.graph.jena
 
 import net.sansa_stack.query.spark.graph.jena.expression._
+import net.sansa_stack.query.spark.graph.jena.util.BasicGraphPattern
+import org.apache.jena.sparql.algebra.op.OpBGP
 import org.apache.jena.sparql.algebra.walker.{ExprVisitorFunction, Walker}
 import org.apache.jena.sparql.expr._
 
 import scala.collection.mutable
+import scala.collection.JavaConversions._
 
 class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {
 
@@ -67,16 +70,17 @@ class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {
 
   override def visit(func: ExprFunctionN): Unit = {
     func match {
-      case _: E_Regex    =>
-      case _: E_BNode    =>
-      case _: E_Call     =>
-      case _: E_Coalesce =>
-      case _: E_Function =>
-      case _             => throw new UnsupportedOperationException("Not support the expression of ExprFunctionN")
+      case _ => throw new UnsupportedOperationException("Not support the expression of ExprFunctionN")
     }
   }
 
   override def visit(exprFunctionOp: ExprFunctionOp): Unit = {
+    val triples = exprFunctionOp.getGraphPattern.asInstanceOf[OpBGP].getPattern.toIterator
+    val bgp = new BasicGraphPattern(triples)
+    exprFunctionOp match {
+      case _: E_Exists    => stack.push(new Exists(bgp))
+      case _: E_NotExists =>
+    }
   }
 
   override def visit(exprAggregator: ExprAggregator): Unit = {

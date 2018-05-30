@@ -1,8 +1,8 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
 import net.sansa_stack.query.spark.graph.jena.ExprParser
-import net.sansa_stack.query.spark.graph.jena.expression.Filter
-import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
+import net.sansa_stack.query.spark.graph.jena.expression.Expression
+import net.sansa_stack.query.spark.graph.jena.model._
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpFilter
 import org.apache.jena.sparql.expr.ExprList
@@ -18,7 +18,7 @@ class ResultFilter(op: OpFilter) extends ResultOp {
   private val id = op.hashCode
   private val filters = op.getExprs.getList.toList.map{ expr =>
     new ExprParser(expr).getExpression match{
-      case e:Filter => e
+      case e:Expression => e
       case _ => throw new UnsupportedOperationException
     }
   }
