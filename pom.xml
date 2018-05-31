@@ -62,6 +62,7 @@
 		<flink.version>1.4.0</flink.version>
 		<jena.version>3.5.0</jena.version>
 		<sansa.version>0.3.1-SNAPSHOT</sansa.version>
+		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
 	<dependencyManagement>
@@ -241,9 +242,51 @@
 						<pushRemote>false</pushRemote>
 					</configuration>
 				</plugin>
+
+				<!-- Scalastyle -->
+				<plugin>
+					<groupId>org.scalastyle</groupId>
+					<artifactId>scalastyle-maven-plugin</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<verbose>false</verbose>
+						<failOnViolation>false</failOnViolation>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
+						<failOnWarning>false</failOnWarning>
+						<sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+						<testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+						<!-- we use a central config located in the root directory -->
+						<configLocation>${scalastyle.config.path}</configLocation>
+						<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+						<outputEncoding>UTF-8</outputEncoding>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<!-- profile necessary for Scalastyle plugin to find the conf file -->
+		<profile>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>
