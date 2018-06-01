@@ -46,7 +46,9 @@ object RDFGraphPowerIterationClustering {
      * The Contrast model similarity : selectYourSimilarity = 3
      * The Ratio model similarity : selectYourSimilarity = 4
      */
-
+println("============================================")
+    println("| Power Iteration Clustering   example  33   |")
+    println("============================================")
     val selectYourSimilarity = 0
 
     def clusterRdd(): RDD[(Int, String)] = {
@@ -54,12 +56,17 @@ object RDFGraphPowerIterationClustering {
     }
 
     def SimilaritesInPIC(f: Int): RDD[(Int, String)] = {
+	    println("============================================")
+    println("| Power Iteration Clustering   example  44   |")
+    println("============================================")
       /*
 	 * Collect all the edges of the graph
 	*/
       val edge = graph.edges
       val nodes = graph.vertices
-
+println("============================================")
+    println("| Power Iteration Clustering   example  55   |")
+    println("============================================")
       /*
 	 * Collect neighbor IDs of all the vertices
 	 */
