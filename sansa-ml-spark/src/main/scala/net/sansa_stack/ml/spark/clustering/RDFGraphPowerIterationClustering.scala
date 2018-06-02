@@ -34,9 +34,7 @@ import org.apache.spark.graphx._
 import java.net.URI
 
 object RDFGraphPowerIterationClustering {
-	println("============================================")
-    println("| Power Iteration Clustering   example  55   |")
-    println("============================================")
+	
 
   def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 5) = {
 
@@ -49,9 +47,7 @@ object RDFGraphPowerIterationClustering {
      * The Contrast model similarity : selectYourSimilarity = 3
      * The Ratio model similarity : selectYourSimilarity = 4
      */
-println("============================================")
-    println("| Power Iteration Clustering   example  33   |")
-    println("============================================")
+
     val selectYourSimilarity = 0
 
     def clusterRdd(): RDD[(Int, String)] = {
@@ -59,22 +55,18 @@ println("============================================")
     }
 
     def SimilaritesInPIC(f: Int): RDD[(Int, String)] = {
-	    println("============================================")
-    println("| Power Iteration Clustering   example  44   |")
-    println("============================================")
+	    
       /*
 	 * Collect all the edges of the graph
 	*/
-      val edge = graph.edges
+      val edge = graph.edges.persist()
       val nodes = graph.vertices
-println("============================================")
-    println("| Power Iteration Clustering   example  55   |")
-    println("============================================")
+
       /*
 	 * Collect neighbor IDs of all the vertices
 	 */
 
-      val neighbors = graph.collectNeighborIds(EdgeDirection.Either)
+      val neighbors = graph.collectNeighborIds(EdgeDirection.Either).persist()
       /*
 	 * Collect distinct vertices of the graph
 	 *
@@ -187,10 +179,10 @@ println("============================================")
       val neighborsJoinToEdge = neighbors.keyBy(e => (e._1)).join(verticesOfEdge).map(e => e._2).keyBy(e => e._2).join(neighbors)
       val weightedGraph = neighborsJoinToEdge.map(e => { (e._2._1._1._1.toLong, e._1.toLong, selectSimilarity(e._2._1._1._2, e._2._2, f)) })
 
+      neighbors.unpersist()
+      edge.unpersist()
       
-      val weightedGraphstring = weightedGraph.toString()
-        val graphRDD = spark.sparkContext.parallelize(weightedGraphstring)
-        graphRDD.saveAsTextFile(outputsim)
+      weightedGraph.saveAsTextFile(outputsim)
       
       def SI(a: (Double,Double)): Double = {
         var s = 0.0
@@ -235,7 +227,7 @@ println("============================================")
      
       val findIterable = rddClusters.join(vts).map(_._2)
     
-    findIterable.repartition(100).saveAsTextFile(output)
+    findIterable.saveAsTextFile(output)
 
    /* val joinv1 = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
     val joinv2 = weightedGraph.keyBy(_._2).join(rddClusters).keyBy(_._2._1._1).join(rddClusters)
