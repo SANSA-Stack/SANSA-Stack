@@ -34,6 +34,9 @@ import org.apache.spark.graphx._
 import java.net.URI
 
 object RDFGraphPowerIterationClustering {
+	println("============================================")
+    println("| Power Iteration Clustering   example  55   |")
+    println("============================================")
 
   def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 5) = {
 
