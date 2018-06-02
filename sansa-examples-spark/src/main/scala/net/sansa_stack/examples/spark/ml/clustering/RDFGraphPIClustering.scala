@@ -37,9 +37,13 @@ object RDFGraphPIClustering {
 
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
-
+    println("============================================")
+    println("| Power Iteration Clustering   example 11    |")
+    println("============================================")
     val graph = triples.asStringGraph()
-
+    println("============================================")
+    println("| Power Iteration Clustering   example 13    |")
+    println("============================================")
     RDFGraphPowerIterationClustering(spark, graph, output, outevl, outputsim, k, maxIterations)
     println("============================================")
     println("| Power Iteration Clustering   example  12   |")
@@ -48,9 +52,7 @@ object RDFGraphPIClustering {
     spark.stop
 
   }
-  println("============================================")
-    println("| Power Iteration Clustering   example 11    |")
-    println("============================================")
+  
 
   case class Config(in: String = "", out: String = "", outevl: String = "", outputsim: String = "", k: Int = 2, maxIterations: Int = 5)
 
