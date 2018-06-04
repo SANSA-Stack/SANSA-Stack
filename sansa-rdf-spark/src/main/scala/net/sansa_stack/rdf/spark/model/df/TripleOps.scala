@@ -260,7 +260,7 @@ object TripleOps {
     difference(triples, other).count() == 0
   }
 
-  @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
+  //@transient var spark: SparkSession = SparkSession.builder.getOrCreate()
 
   /**
    * Add a statement to the current RDF graph.
@@ -271,7 +271,7 @@ object TripleOps {
    */
   def add(triples: DataFrame, triple: Triple): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
-    val statement = spark.sparkContext.parallelize(Seq(triple))
+    val statement = triples.sparkSession.sparkContext.parallelize(Seq(triple))
     union(triples, statement.toDF())
   }
 
@@ -284,7 +284,7 @@ object TripleOps {
    */
   def addAll(triples: DataFrame, triple: Seq[Triple]): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
-    val statements = spark.sparkContext.parallelize(triple)
+    val statements = triples.sparkSession.sparkContext.parallelize(triple)
     union(triples, statements.toDF())
   }
 
@@ -299,7 +299,7 @@ object TripleOps {
    */
   def remove(triples: DataFrame, triple: Triple): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
-    val statement = spark.sparkContext.parallelize(Seq(triple))
+    val statement = triples.sparkSession.sparkContext.parallelize(Seq(triple))
     difference(triples, statement.toDF())
   }
 
@@ -314,7 +314,7 @@ object TripleOps {
    */
   def removeAll(triples: DataFrame, triple: Seq[Triple]): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
-    val statements = spark.sparkContext.parallelize(triple)
+    val statements = triples.sparkSession.sparkContext.parallelize(triple)
     difference(triples, statements.toDF())
   }
 
