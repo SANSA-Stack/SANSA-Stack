@@ -1,4 +1,8 @@
 language: java
 script:
   - make test
-sudo: required
+sudo: false
+cache:
+  directories:
+  - $HOME/.m2
+  
