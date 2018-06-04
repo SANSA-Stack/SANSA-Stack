@@ -216,3 +216,7 @@ OWL Horst is a fragment of OWL and was proposed by Herman ter Horst [1] defining
 
 [1] Herman J. ter Horst:
 *Completeness, decidability and complexity of entailment for RDF Schema and a semantic extension involving the OWL vocabulary.* J. Web Sem. 3(2-3): 79-115 (2005)
+
+## How to Contribute
+We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
+
