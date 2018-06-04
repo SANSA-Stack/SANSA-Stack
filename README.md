@@ -25,6 +25,7 @@
 		- [RDFS](#rdfs)
 		- [RDFS Simple](#rdfs-simple)
 		- [OWL Horst](#owl-horst)
+  	- [How to Contribute](#how-to-contribute)
 
 
 ## Structure
