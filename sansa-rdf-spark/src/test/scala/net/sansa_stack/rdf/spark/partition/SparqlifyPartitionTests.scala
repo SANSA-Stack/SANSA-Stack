@@ -16,10 +16,11 @@ class SparqlifyPartitionTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang)(path)
 
     val partitions = triples.partitionGraph()
+    println(partitions.map(_._1).mkString("\n"))
 
     val size = partitions.size
 
-    assert(size == 30)
+    assert(size == 25)
 
   }
 }

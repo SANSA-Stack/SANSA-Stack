@@ -32,20 +32,6 @@ object NQuadReader {
 
   /**
     * Loads N-Triples data from a file or directory into an RDD.
-    * The path can also contain multiple paths
-    * and even wildcards, e.g.
-    * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
-    *
-    * @param session the Spark session
-    * @param path    the path to the N-Triples file(s)
-    * @return the RDD of triples
-    */
-  def load(session: SparkSession, path: String): RDD[Triple] = {
-    load(session, path.toString)
-  }
-
-  /**
-    * Loads N-Triples data from a file or directory into an RDD.
     *
     * @param session the Spark session
     * @param path    the path to the N-Triples file(s)
@@ -124,7 +110,7 @@ object NQuadReader {
            stopOnWarnings: WarningParseMode.Value = WarningParseMode.IGNORE,
            checkRDFTerms: Boolean = false,
            errorLog: Logger = ErrorHandlerFactory.stdLogger)
-  : RDD[Quad] = {
+  : RDD[Triple] = {
 
     // parse the text file first
     val rdd = session.sparkContext
@@ -180,6 +166,7 @@ object NQuadReader {
         }
       new IteratorResourceClosing[Quad](it, input).asScala
     })
+      .map(_.asTriple())
   }
 
   def main(args: Array[String]): Unit = {
