@@ -31,20 +31,6 @@ object NTripleReader {
 
   /**
     * Loads N-Triples data from a file or directory into an RDD.
-    * The path can also contain multiple paths
-    * and even wildcards, e.g.
-    * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
-    *
-    * @param session the Spark session
-    * @param path    the path to the N-Triples file(s)
-    * @return the RDD of triples
-    */
-  def load(session: SparkSession, path: String): RDD[Triple] = {
-    load(session, path.toString)
-  }
-
-  /**
-    * Loads N-Triples data from a file or directory into an RDD.
     *
     * @param session the Spark session
     * @param path    the path to the N-Triples file(s)
