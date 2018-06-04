@@ -1,11 +1,8 @@
 package net.sansa_stack.rdf.spark.io
 
-import java.nio.file.Paths
-
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
-import org.apache.spark.sql._
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 
 /**
  * Tests for loading triples from either N-Triples are Turtle files into an [[org.apache.spark.rdd.RDD]].
@@ -14,14 +11,12 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
  */
 class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.io._
-
   test("loading N-Triples file into RDD should result in 9 triples") {
 
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val cnt = triples.count()
     assert(cnt == 9)
@@ -32,7 +27,7 @@ class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nq").getPath
     val lang: Lang = Lang.NQUADS
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val cnt = triples.count()
     assert(cnt == 28)

@@ -51,9 +51,10 @@ public class SansaBenchRdfIo {
 	public static ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	public static void main(String[] args) throws Exception {
-		String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.way.sorted.nt.bz2";
+		//String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.way.sorted.nt.bz2";
 		//String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.node.sorted.nt.bz2";
-		//String url = "http://downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-Abutters.way.sorted.nt.bz2";
+		String url = "http://downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-Abutters.way.sorted.nt.bz2";
+		////String url = "https://hobbitdata.informatik.uni-leipzig.de/LinkedGeoData/downloads.linkedgeodata.org/releases/2015-11-02/2015-11-02-AerialwayThing.way.sorted.nt.bz2";
 		
 		File tmpDir = new File("/tmp");
 		File file = new File(tmpDir, "sansa-bench.nt");
@@ -76,12 +77,12 @@ public class SansaBenchRdfIo {
 		
 		Map<String, Callable<Long>> map = new LinkedHashMap<>();
 		map.put("parseWhole", () -> parseFile(file).count());
-		map.put("parseReader", () -> parseReader(file).count());
-		map.put("parseLineRiot", () -> parseLineRiot(file).count());
-        map.put("parseLineRiot2", () -> parseLineRiot2(file).count());
-		map.put("parseLineReaderFlatMap", () -> parseLineReaderFlatMap(file).count());
-		map.put("parseLineMap", () -> parseLineMap(file).count());
-		map.put("parseLineFlatMap", () -> parseLineFlatMap(file).count());
+//		map.put("parseReader", () -> parseReader(file).count());
+//		map.put("parseLineRiot", () -> parseLineRiot(file).count());
+//        map.put("parseLineRiot2", () -> parseLineRiot2(file).count());
+//		map.put("parseLineReaderFlatMap", () -> parseLineReaderFlatMap(file).count());
+//		map.put("parseLineMap", () -> parseLineMap(file).count());
+//		map.put("parseLineFlatMap", () -> parseLineFlatMap(file).count());
 
 		for(Entry<String, Callable<Long>> entry : map.entrySet()) {		
 			System.out.println("Running " + entry.getKey());
