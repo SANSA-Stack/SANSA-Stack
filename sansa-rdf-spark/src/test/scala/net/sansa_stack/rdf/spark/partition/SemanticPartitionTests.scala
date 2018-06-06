@@ -19,7 +19,7 @@ class SemanticPartitionTests extends FunSuite with DataFrameSuiteBase {
 
     val size = partitions.count()
 
-    assert(size == 37)
+    assert(size == 34)
 
   }
 }
