@@ -10,7 +10,7 @@ class FunctionalSyntaxOWLExpressionsDataSetBuilderTest extends FunSuite {
   def dataSet: OWLExpressionsDataSet = {
     if (_dataSet == null) {
       _dataSet = FunctionalSyntaxOWLExpressionsDataSetBuilder.build(
-        env, "src/test/resources/ont_functional.owl")
+        env, this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
     }
     _dataSet
   }
