@@ -6,10 +6,6 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
 
-class IntermediateResult {
-
-}
-
 object IntermediateResult {
 
   private val results = mutable.HashMap.empty[Int, RDD[Result[Node]]]
@@ -35,8 +31,7 @@ object IntermediateResult {
       results.head._2
     }
     else {
-      //throw new UnsupportedOperationException("No final result found")
-      results.head._2
+      throw new UnsupportedOperationException("No final result found")
     }
   }
 }

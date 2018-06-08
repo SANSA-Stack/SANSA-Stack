@@ -51,6 +51,8 @@ object SparkExecutionModel {
       .appName(Config.getAppName)
       .getOrCreate()
 
+    spark.conf.set("spark.executor.memory", "4g")
+
     loadGraph()
   }
 
