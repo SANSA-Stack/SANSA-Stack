@@ -28,7 +28,7 @@
 		<scala.classifier>${scala.binary.version}</scala.classifier>
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<flink.version>1.4.0</flink.version>
+		<flink.version>1.5.0</flink.version>
 		<spark.version>2.2.1</spark.version>
 		<jena.version>3.5.0</jena.version>
 		<jsa.subversion>2</jsa.subversion>
@@ -162,6 +162,12 @@
 			<dependency>
 				<groupId>org.apache.flink</groupId>
 				<artifactId>flink-table_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<!-- required since Flink 1.3 to custom Hadoop based input formats -->
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-hadoop-compatibility_${scala.binary.version}</artifactId>
 				<version>${flink.version}</version>
 			</dependency>
 
@@ -318,6 +324,12 @@
 				<groupId>org.apache.hadoop</groupId>
 				<artifactId>hadoop-common</artifactId>
 				<version>${hadoop.version}</version>
+                <exclusions>
+                    <exclusion>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
 			</dependency>
 
 			<dependency>
