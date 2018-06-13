@@ -16,9 +16,10 @@ class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
   var _rdd: OWLAxiomsRDD = null
   val syntax = Syntax.FUNCTIONAL
 
-  def rdd = {
+  val filePath = this.getClass.getClassLoader.getResource("ont_functional.owl").getPath
+  def rdd: OWLAxiomsRDD = {
     if (_rdd == null) {
-      val s = spark.owl(syntax)("src/test/resources/ont_functional.owl")
+      _rdd = spark.owl(syntax)(filePath)
       _rdd.cache()
     }
     _rdd
