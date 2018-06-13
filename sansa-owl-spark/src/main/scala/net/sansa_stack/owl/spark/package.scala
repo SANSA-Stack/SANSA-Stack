@@ -71,7 +71,7 @@ package object owl {
      * @return the [[OWLExpressionsRDD]]
      */
     def functional: String => OWLExpressionsRDD = path => {
-      ManchesterSyntaxOWLExpressionsRDDBuilder.build(spark, path)
+      FunctionalSyntaxOWLExpressionsRDDBuilder.build(spark, path)
     }
 
     /**
