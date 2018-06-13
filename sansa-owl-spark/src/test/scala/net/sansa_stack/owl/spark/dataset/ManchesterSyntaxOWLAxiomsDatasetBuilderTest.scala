@@ -24,8 +24,8 @@ class ManchesterSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSp
   def dataset: OWLAxiomsDataset = {
     if (_dataset == null) {
       _dataset = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(
-//        spark, "src/test/resources/ont_manchester.owl")
-        spark, "hdfs://localhost:54310/ont_manchester.owl")
+        spark, this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath)
+//        spark, "hdfs://localhost:54310/ont_manchester.owl")
       _dataset.cache()
     }
     _dataset
