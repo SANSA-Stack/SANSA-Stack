@@ -53,39 +53,52 @@ package object io {
       * on <a href="https://flink.apache.org/faq.html#what-is-the-parallelism-how-do-i-set-it">parallelism</a>
       *
       * <br/>
-      * <pre>{@code .
-* └── path1/
-*     ├── 1
-*     ├── 2
-*     └── ...}</pre>
+      * {{{
+      * .
+      * └── path1/
+      *     ├── 1
+      *     ├── 2
+      *     └── ...
+      * }}}
+      *
       * Code Example
-      * <pre>{@code dataset.saveAsNTriplesFile("file:///path1")}</pre>
+      * {{{
+      * dataset.saveAsNTriplesFile("file:///path1")
+      * }}}
       * </li>
       *
       * <li>
       * A single file called "path1" is created when parallelism is set to 1
-      * <pre>{@code .
-* └── path1 }</pre>
+      * {{{
+      * .
+      * └── path1
+      * }}}
+      *
       * Code Example
-      * <pre>{@code
-* // Parallelism is set to only this particular operation
-* dataset.saveAsNTriplesFile("file:///path1").setParallelism(1)
-*
-* // This will have the same effect but note all operators' parallelism are set to one
-* env.setParallelism(1);
-* ...
-* dataset.saveAsNTriplesFile("file:///path1"); }</pre>
+      * {{{
+      // Parallelism is set to only this particular operation
+      * dataset.saveAsNTriplesFile("file:///path1").setParallelism(1)
+      *
+      * // This will have the same effect but note all operators' parallelism are set to one
+      * env.setParallelism(1);
+      * ...
+      * dataset.saveAsNTriplesFile("file:///path1")
+      * }}}
       * </li>
       * <li>
       * A directory is always created when <a href="https://ci.apache.org/projects/flink/flink-docs-master/setup/config.html#file-systems">fs.output.always-create-directory</a>
       * is set to true in flink-conf.yaml file, even when parallelism is set to 1.
-      * <pre>{@code .
-* └── path1/
-*     └── 1 }</pre>
+      * {{{
+      * .
+      * └── path1/
+      *     └── 1
+      * }}}
+      *
       * Code Example
-      * <pre>{@code
-* // fs.output.always-create-directory = true
-* dataset.writeAsText("file:///path1").setParallelism(1); }</pre>
+      * {{{
+      * // fs.output.always-create-directory = true
+      * dataset.saveAsNTriplesFile("file:///path1").setParallelism(1)
+      * }}}
       * </li>
       * </ul>
       *
@@ -119,39 +132,52 @@ package object io {
       * on <a href="https://flink.apache.org/faq.html#what-is-the-parallelism-how-do-i-set-it">parallelism</a>
       *
       * <br/>
-      * <pre>{@code .
-* └── path1/
-*     ├── 1
-*     ├── 2
-*     └── ...}</pre>
+      * {{{
+      * .
+      * └── path1/
+      *     ├── 1
+      *     ├── 2
+      *     └── ...
+      * }}}
+      *
       * Code Example
-      * <pre>{@code dataset.saveAsNTriplesFile("file:///path1")}</pre>
+      * {{{
+      * dataset.saveAsNQuadsFile("file:///path1")
+      * }}}
       * </li>
       *
       * <li>
       * A single file called "path1" is created when parallelism is set to 1
-      * <pre>{@code .
-* └── path1 }</pre>
+      * {{{
+      * .
+      * └── path1
+      * }}}
+      *
       * Code Example
-      * <pre>{@code
-      * // Parallelism is set to only this particular operation
-* dataset.saveAsNTriplesFile("file:///path1").setParallelism(1)
-*
-* // This will have the same effect but note all operators' parallelism are set to one
-* env.setParallelism(1);
-* ...
-* dataset.saveAsNTriplesFile("file:///path1"); }</pre>
+      * {{{
+      // Parallelism is set to only this particular operation
+      * dataset.saveAsNQuadsFile("file:///path1").setParallelism(1)
+      *
+      * // This will have the same effect but note all operators' parallelism are set to one
+      * env.setParallelism(1);
+      * ...
+      * dataset.saveAsNQuadsFile("file:///path1")
+      * }}}
       * </li>
       * <li>
       * A directory is always created when <a href="https://ci.apache.org/projects/flink/flink-docs-master/setup/config.html#file-systems">fs.output.always-create-directory</a>
       * is set to true in flink-conf.yaml file, even when parallelism is set to 1.
-      * <pre>{@code .
-* └── path1/
-*     └── 1 }</pre>
+      * {{{
+      * .
+      * └── path1/
+      *     └── 1
+      * }}}
+      *
       * Code Example
-      * <pre>{@code
+      * {{{
       * // fs.output.always-create-directory = true
-* dataset.writeAsText("file:///path1").setParallelism(1); }</pre>
+      * dataset.saveAsNQuadsFile("file:///path1").setParallelism(1)
+      * }}}
       * </li>
       * </ul>
       *
@@ -171,10 +197,14 @@ package object io {
         .mapPartition(p => {
           val g = NodeFactory.createURI(graph)
 
-          // convert to Quad
-          val quadIt = Iterators.transform(p.asJava, new com.google.common.base.Function[Triple, Quad] {
+//          val it: java.util.Iterator[java.io.Serializable] = p.asJava.asInstanceOf[java.util.Iterator[java.io.Serializable]]
+val it = p.asJava
+
+          val f = new com.google.common.base.Function[Triple, Quad] {
             override def apply(t: Triple): Quad = Quad.create(g, t)
-          })
+          }
+          // convert to Quad
+          val quadIt = Iterators.transform(it.asInstanceOf[java.util.Iterator[java.io.Serializable]], f)
 
           val os = new ByteArrayOutputStream()
           RDFDataMgr.writeQuads(os, quadIt)
