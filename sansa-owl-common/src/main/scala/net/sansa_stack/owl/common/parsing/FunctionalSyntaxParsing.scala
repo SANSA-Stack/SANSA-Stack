@@ -6,6 +6,8 @@ import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParserFact
 import org.semanticweb.owlapi.io.{OWLParserException, StringDocumentSource}
 import org.semanticweb.owlapi.model.OWLAxiom
 
+import scala.util.matching.Regex.Match
+
 
 /**
   * Object containing several constants used by the FunctionalSyntaxParsing
@@ -144,10 +146,10 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
       trimmedExpr.startsWith("Ontology(") ||  // 5)
       trimmedExpr.startsWith("<http") // 6
 
-    if (discardExpression)
+    if (discardExpression) {
       null
 
-    else {
+    } else {
       // Expand prefix abbreviations: foo:Bar --> http://foo.com/somePath#Bar
       for (prefix <- prefixes.keys) {
         val p = prefix + ":"
@@ -155,13 +157,11 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
         if (trimmedExpr.contains(p)) {
           val v: String = "<" + prefixes.get(prefix).get
           // TODO: refine regex
-          val pattern = (p + "([a-zA-Z][0-9a-zA-Z_-]*)").r
+          val pattern = (p + "([a-zA-Z][0-9a-zA-Z_-]*)\\b").r
 
-          pattern.findAllIn(trimmedExpr).foreach(hit => {
-            if (!trimmedExpr.contains(hit + ">")) {
-              trimmedExpr = trimmedExpr.replace(hit, hit + ">")
-            }
-          })
+          // Append ">" to all matched local parts: "foo:car" --> "foo:car>"
+          trimmedExpr = pattern.replaceAllIn(trimmedExpr, m => s"${m.matched}>")
+          // Expand prefix: "foo:car>" --> "http://foo.org/res#car>"
           trimmedExpr = trimmedExpr.replace(p.toCharArray, v.toCharArray)
         }
       }
