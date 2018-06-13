@@ -1,7 +1,8 @@
 package net.sansa_stack.owl.spark.dataset
 
-import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLExpressionsRDDBuilder
 import org.apache.spark.sql.SparkSession
+
+import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLExpressionsRDDBuilder
 
 
 object FunctionalSyntaxOWLExpressionsDatasetBuilder {

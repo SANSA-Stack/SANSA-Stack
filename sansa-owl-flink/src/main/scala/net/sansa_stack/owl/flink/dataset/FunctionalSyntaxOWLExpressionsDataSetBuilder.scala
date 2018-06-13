@@ -1,10 +1,11 @@
 package net.sansa_stack.owl.flink.dataset
 
-import net.sansa_stack.owl.common.parsing.{FunctionalSyntaxExpressionBuilder, FunctionalSyntaxPrefixParsing}
-import net.sansa_stack.owl.flink.hadoop.FunctionalSyntaxInputFormat
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.hadoopcompatibility.scala.HadoopInputs
 import org.apache.hadoop.io.{LongWritable, Text}
+
+import net.sansa_stack.owl.common.parsing.{FunctionalSyntaxExpressionBuilder, FunctionalSyntaxPrefixParsing}
+import net.sansa_stack.owl.flink.hadoop.FunctionalSyntaxInputFormat
 
 
 object FunctionalSyntaxOWLExpressionsDataSetBuilder extends FunctionalSyntaxPrefixParsing {

@@ -1,10 +1,12 @@
 package net.sansa_stack.owl.spark.rdd
 
-import org.scalatest.FunSuite
-import org.semanticweb.owlapi.model._
-import net.sansa_stack.owl.spark.owl._
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.spark.sql.SparkSession
+import org.scalatest.FunSuite
+import org.semanticweb.owlapi.model._
+
+import net.sansa_stack.owl.spark.owl._
+
 
 class FunctionalSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)

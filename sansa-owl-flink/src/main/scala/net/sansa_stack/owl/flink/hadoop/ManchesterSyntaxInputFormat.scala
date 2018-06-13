@@ -1,7 +1,7 @@
 package net.sansa_stack.owl.flink.hadoop
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
+import org.apache.hadoop.fs.{FileSystem, FSDataInputStream, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.{FileSplit, InputSplit, JobConf, RecordReader, Reporter, TextInputFormat}
 import org.apache.hadoop.util.LineReader
@@ -44,10 +44,11 @@ class ManchesterSyntaxRecordReader(job: Configuration, split: FileSplit) extends
     key.set(pos)
 
     currentRecord = readNextRecord
-    if (currentRecord == null)
+    if (currentRecord == null) {
       value.set("")
-    else
+    } else {
       value.set(currentRecord)
+    }
 
     currentRecord != null
   }

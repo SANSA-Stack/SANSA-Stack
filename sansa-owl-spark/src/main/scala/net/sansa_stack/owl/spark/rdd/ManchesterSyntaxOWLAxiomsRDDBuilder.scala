@@ -1,10 +1,11 @@
 package net.sansa_stack.owl.spark.rdd
 
 import com.typesafe.scalalogging.Logger
-import net.sansa_stack.owl.common.parsing.ManchesterSyntaxParsing
+import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model.{OWLAxiom, OWLRuntimeException}
-import org.apache.spark.sql.SparkSession
+
+import net.sansa_stack.owl.common.parsing.ManchesterSyntaxParsing
 
 
 object ManchesterSyntaxOWLAxiomsRDDBuilder extends ManchesterSyntaxParsing {
@@ -22,18 +23,15 @@ object ManchesterSyntaxOWLAxiomsRDDBuilder extends ManchesterSyntaxParsing {
     expressionsRDD.filter(!_.startsWith("Annotations")).flatMap(frame => {
       try makeAxioms(frame, defaultPrefix)
       catch {
-        case exception: OWLParserException => {
+        case exception: OWLParserException =>
           val msg = exception.getMessage
           logger.warn("Parser error for frame\n" + frame + "\n\n" + msg)
-//          exception.printStackTrace()
           Set.empty[OWLAxiom]
-        }
-        case exception: OWLRuntimeException => {
+        case exception: OWLRuntimeException =>
           val msg = exception.getMessage
           logger.warn("Parser error for frame\n" + frame + "\n\n" + msg)
           exception.printStackTrace()
           Set.empty[OWLAxiom]
-        }
       }
     })
   }

@@ -1,9 +1,9 @@
 package net.sansa_stack.owl.spark.dataset
 
-import net.sansa_stack.owl.common.parsing.FunctionalSyntaxParsing
 import org.apache.spark.sql.{Encoders, SparkSession}
 import org.semanticweb.owlapi.model.OWLAxiom
 
+import net.sansa_stack.owl.common.parsing.FunctionalSyntaxParsing
 
 object FunctionalSyntaxOWLAxiomsDatasetBuilder extends FunctionalSyntaxParsing {
   def build(spark: SparkSession, filePath: String): OWLAxiomsDataset = {

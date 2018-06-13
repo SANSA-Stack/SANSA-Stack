@@ -1,9 +1,10 @@
 package net.sansa_stack.owl.spark.rdd
 
-import net.sansa_stack.owl.common.parsing.{ ManchesterSyntaxExpressionBuilder, ManchesterSyntaxPrefixParsing }
-import net.sansa_stack.owl.spark.hadoop.ManchesterSyntaxInputFormat
 import org.apache.hadoop.io.{ LongWritable, Text }
 import org.apache.spark.sql.SparkSession
+
+import net.sansa_stack.owl.common.parsing.{ ManchesterSyntaxExpressionBuilder, ManchesterSyntaxPrefixParsing }
+import net.sansa_stack.owl.spark.hadoop.ManchesterSyntaxInputFormat
 
 object ManchesterSyntaxOWLExpressionsRDDBuilder extends ManchesterSyntaxPrefixParsing {
   def build(spark: SparkSession, filePath: String): OWLExpressionsRDD = {

@@ -1,22 +1,22 @@
 package net.sansa_stack.owl.common.parsing
 
+import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
+
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.formats.{ManchesterSyntaxDocumentFormat, TurtleDocumentFormat}
 import org.semanticweb.owlapi.model.{IRI, OWLAnnotation, OWLAxiom, OWLClassExpression, OWLDataRange, OWLDocumentFormatImpl, OWLFacetRestriction, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression}
 import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet, XSDVocabulary}
 import uk.ac.manchester.cs.owl.owlapi._
 
-import scala.collection.JavaConversions.asJavaCollection
-import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
-
-
 class ManchesterParsingTest extends FunSuite {
+  // scalastyle:off
   def p = ManchesterParser
+  // scalastyle:on
+
   val df = OWLManager.getOWLDataFactory
   val noAnnotations = List.empty[OWLAnnotation]
 
-  def setupParserPrefixes = {
+  def setupParserPrefixes: Unit = {
     p.prefixes.clear()
     p.prefixes.put("", "http://ex.com/default#")
     p.prefixes.put("foo", "http://ex.com/foo#")
@@ -27,7 +27,7 @@ class ManchesterParsingTest extends FunSuite {
     p.prefixes.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
   }
 
-  def clearParserPrefixes = p.prefixes.clear()
+  def clearParserPrefixes: Unit = p.prefixes.clear()
 
   test("The scheme parser should work correctly") {
     val fn = p.scheme
@@ -189,7 +189,7 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.checkParsed(fn, address) == address)
   }
 
-  def quoted(iriStr: String) = "<" + iriStr + ">"
+  def quoted(iriStr: String): String = "<" + iriStr + ">"
 
   /**
     * URL test cases taken from https://mathiasbynens.be/demo/url-regex
@@ -213,7 +213,9 @@ class ManchesterParsingTest extends FunSuite {
     iri = "https://www.example.com/foo/?bar=baz&inga=42&quux"
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://✪df.ws/123"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
     iri = "http://userid:password@example.com:8080"
@@ -237,7 +239,7 @@ class ManchesterParsingTest extends FunSuite {
     iri = "http://userid:password@example.com"
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
-    iri= "http://userid:password@example.com/"
+    iri = "http://userid:password@example.com/"
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
     iri = "http://142.42.1.1/"
@@ -246,13 +248,19 @@ class ManchesterParsingTest extends FunSuite {
     iri = "http://142.42.1.1:8080/"
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://➡.ws/䨹"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://⌘.ws"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://⌘.ws/"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
     iri = "http://foo.com/blah_(wikipedia)#cite-1"
@@ -261,13 +269,17 @@ class ManchesterParsingTest extends FunSuite {
     iri = "http://foo.com/blah_(wikipedia)_blah#cite-1"
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://foo.com/unicode_(✪)_in_parens"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
     iri = "http://foo.com/(something)?after=parens"
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://☺.damowmow.com/"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
     iri = "http://code.google.com/events/#&product=browser"
@@ -282,13 +294,19 @@ class ManchesterParsingTest extends FunSuite {
     iri = "http://foo.bar/?q=Test%20URL-encoded%20stuff"
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://مثال.إختبار"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://例子.测试"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
+    // scalastyle:off
     iri = "http://उदाहरण.परीक्षा"
+    // scalastyle:on
     assert(p.checkParsed(p.fullIRI, quoted(iri)) == IRI.create(iri))
 
     iri = "http://-.~_!$&'()*+,;=:%40:80%2f::::::@example.com"
@@ -713,7 +731,9 @@ class ManchesterParsingTest extends FunSuite {
     assert(p.checkParsed(p.typedLiteral, "\"lala\"^^string") ==
       df.getOWLLiteral("lala", OWL2Datatype.XSD_STRING))
 
+    // scalastyle:off
     val lexValue = "la la \\!§$%&/()=?°^*'+#_-:.;,><|"
+    // scalastyle:on
     assert(p.checkParsed(p.typedLiteral, "\"" + lexValue + "\"^^string") ==
       df.getOWLLiteral(lexValue, OWL2Datatype.XSD_STRING))
 
@@ -911,7 +931,7 @@ class ManchesterParsingTest extends FunSuite {
 
     var expectedAxiom: OWLAxiom = new OWLDeclarationAxiomImpl(
       df.getStringOWLDatatype,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.length == 1)
     assert(parsed.contains(expectedAxiom))
@@ -1669,7 +1689,7 @@ class ManchesterParsingTest extends FunSuite {
     var annotation = new OWLAnnotationImpl(
       df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
       df.getOWLLiteral("Don't understand why there has to be an annotation here"),
-      noAnnotations.stream()
+      noAnnotations.asJavaCollection.stream()
     )
     var properties = List(
       df.getOWLObjectProperty(prefix, "objProp"),
@@ -1688,7 +1708,7 @@ class ManchesterParsingTest extends FunSuite {
     annotation = new OWLAnnotationImpl(
       df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
       df.getOWLLiteral("Don't understand why there has to be an annotation here"),
-      noAnnotations.stream()
+      noAnnotations.asJavaCollection.stream()
     )
     properties = List(
       df.getOWLObjectProperty(prefix, "objProp"),
@@ -1707,7 +1727,7 @@ class ManchesterParsingTest extends FunSuite {
     annotation = new OWLAnnotationImpl(
       df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
       df.getOWLLiteral("Don't understand why there has to be an annotation here"),
-      noAnnotations.stream()
+      noAnnotations.asJavaCollection.stream()
     )
     properties = List(
       df.getOWLObjectProperty(prefix, "objProp"),
@@ -1727,7 +1747,7 @@ class ManchesterParsingTest extends FunSuite {
     annotation = new OWLAnnotationImpl(
       df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
       df.getOWLLiteral("Don't understand why there has to be an annotation here"),
-      noAnnotations.stream()
+      noAnnotations.asJavaCollection.stream()
     )
     properties = List(
       df.getOWLObjectProperty(prefix, "objProp"),
@@ -1747,7 +1767,7 @@ class ManchesterParsingTest extends FunSuite {
     annotation = new OWLAnnotationImpl(
       df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
       df.getOWLLiteral("Don't understand why there has to be an annotation here"),
-      noAnnotations.stream()
+      noAnnotations.asJavaCollection.stream()
     )
     properties = List(
       df.getOWLObjectProperty(prefix, "objProp")
@@ -1757,7 +1777,7 @@ class ManchesterParsingTest extends FunSuite {
     clearParserPrefixes
   }
 
-  def debugSave(axioms: List[OWLAxiom], format: OWLDocumentFormatImpl, filePath: String) = {
+  def debugSave(axioms: List[OWLAxiom], format: OWLDocumentFormatImpl, filePath: String): Unit = {
     val man = OWLManager.createOWLOntologyManager()
     val ont = man.createOntology(IRI.create("file://" + filePath))
     ont.addAxioms(axioms.asJavaCollection)
@@ -1795,7 +1815,7 @@ class ManchesterParsingTest extends FunSuite {
       cls.getIRI,
       df.getOWLAnnotationProperty(prefix, "comment"),
       df.getOWLLiteral("Some class"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(annAxiom))
 
@@ -1803,14 +1823,14 @@ class ManchesterParsingTest extends FunSuite {
       cls.getIRI,
       df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
       df.getOWLLiteral("Some class"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(annAxiom))
 
     val subClassOfAxiom = new OWLSubClassOfAxiomImpl(
       cls,
       df.getOWLObjectExactCardinality(1, df.getOWLObjectProperty(prefix + "someProp")),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(subClassOfAxiom))
 
@@ -1818,14 +1838,14 @@ class ManchesterParsingTest extends FunSuite {
       List(
         cls,
         df.getOWLClass(prefix + "SomeOtherClass")).asJavaCollection,
-      noAnnotations)
+      noAnnotations.asJavaCollection)
     assert(parsed.contains(equivClsAxiom))
 
     equivClsAxiom = new OWLEquivalentClassesAxiomImpl(
       List(
         cls,
         df.getOWLClass(prefix + "YetAnotherClass")).asJavaCollection,
-      noAnnotations)
+      noAnnotations.asJavaCollection)
     assert(parsed.contains(equivClsAxiom))
 
     var disjointWithAxiom = new OWLDisjointClassesAxiomImpl(
@@ -1833,7 +1853,7 @@ class ManchesterParsingTest extends FunSuite {
         cls,
         df.getOWLClass(prefix + "ADifferentClass")
       ).asJavaCollection,
-      noAnnotations)
+      noAnnotations.asJavaCollection)
     assert(parsed.contains(disjointWithAxiom))
 
     disjointWithAxiom = new OWLDisjointClassesAxiomImpl(
@@ -1841,14 +1861,14 @@ class ManchesterParsingTest extends FunSuite {
         cls,
         df.getOWLClass(prefix + "AnotherDifferentClass")
       ).asJavaCollection,
-      noAnnotations)
+      noAnnotations.asJavaCollection)
     assert(parsed.contains(disjointWithAxiom))
 
-    var annotations = List(
+    var annotations: List[OWLAnnotation] = List(
       new OWLAnnotationImpl(
         df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
         df.getOWLLiteral("A union of small, medium and large"),
-        noAnnotations.stream())
+        noAnnotations.asJavaCollection.stream())
     )
     var disjUnionAxiom = new OWLDisjointUnionAxiomImpl(
       cls,
@@ -1856,7 +1876,7 @@ class ManchesterParsingTest extends FunSuite {
         df.getOWLClass(prefix + "Small"), df.getOWLClass(prefix + "Medium"),
         df.getOWLClass(prefix + "Large")
       ).asJavaCollection.stream(),
-      annotations
+      annotations.asJavaCollection
     )
     assert(parsed.contains(disjUnionAxiom))
 
@@ -1872,14 +1892,15 @@ class ManchesterParsingTest extends FunSuite {
       new OWLAnnotationImpl(
         df.getOWLAnnotationProperty(Namespaces.RDFS.getPrefixIRI, "label"),
         df.getOWLLiteral("Don't understand why there has to be an annotation here"),
-        noAnnotations.stream()
+        noAnnotations.asJavaCollection.stream()
       )
     )
     val properties = List(
       df.getOWLObjectProperty(prefix + "objProp"),
       df.getOWLObjectProperty(prefix + "dProp")
     )
-    val hasKeyAxiom = new OWLHasKeyAxiomImpl(cls, properties, annotations)
+    val hasKeyAxiom = new OWLHasKeyAxiomImpl(
+      cls, properties.asJavaCollection, annotations.asJavaCollection)
     assert(parsed.contains(hasKeyAxiom))
 
     clearParserPrefixes
@@ -1902,12 +1923,12 @@ class ManchesterParsingTest extends FunSuite {
       df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "label"),
         df.getOWLLiteral("Domain ABC"),
-        noAnnotations
+        noAnnotations.asJavaCollection
       ),
       df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "comment"),
         df.getOWLLiteral("Some comment"),
-        noAnnotations
+        noAnnotations.asJavaCollection
       )
     )
     var expectedDomain: OWLClassExpression =
@@ -1934,12 +1955,12 @@ class ManchesterParsingTest extends FunSuite {
       df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "label"),
         df.getOWLLiteral("Domain ABC"),
-        noAnnotations
+        noAnnotations.asJavaCollection
       ),
       df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "comment"),
         df.getOWLLiteral("Some comment"),
-        noAnnotations
+        noAnnotations.asJavaCollection
       )
     )
     expectedDomain =
@@ -1966,12 +1987,12 @@ class ManchesterParsingTest extends FunSuite {
       df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "label"),
         df.getOWLLiteral("Domain ABC"),
-        noAnnotations
+        noAnnotations.asJavaCollection
       ),
       df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "comment"),
         df.getOWLLiteral("Some comment"),
-        noAnnotations
+        noAnnotations.asJavaCollection
       )
     )
     expectedDomain =
@@ -2040,7 +2061,7 @@ class ManchesterParsingTest extends FunSuite {
       objProp.getIRI,
       df.getOWLAnnotationProperty(prefix + "comment"),
       df.getOWLLiteral("Some comment"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2048,31 +2069,31 @@ class ManchesterParsingTest extends FunSuite {
       objProp.getIRI,
       df.getOWLAnnotationProperty(prefix + "label"),
       df.getOWLLiteral("Object Property XYZ"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLFunctionalObjectPropertyAxiomImpl(
       objProp,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLInverseFunctionalObjectPropertyAxiomImpl(
       objProp,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLReflexiveObjectPropertyAxiomImpl(
       objProp,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLIrreflexiveObjectPropertyAxiomImpl(
       objProp,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2081,27 +2102,27 @@ class ManchesterParsingTest extends FunSuite {
       List(df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "comment"),
         df.getOWLLiteral("Yes, this object property is asymmetric"),
-        noAnnotations
+        noAnnotations.asJavaCollection
       )).asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLSymmetricObjectPropertyAxiomImpl(
       objProp,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLTransitiveObjectPropertyAxiomImpl(
       objProp,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLSubObjectPropertyOfAxiomImpl(
       objProp,
       df.getOWLObjectProperty(prefix + "anotherProp"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2122,7 +2143,7 @@ class ManchesterParsingTest extends FunSuite {
         objProp,
         df.getOWLObjectProperty(prefix + "andYetAnotherProp")
       ).asJavaCollection,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2145,7 +2166,7 @@ class ManchesterParsingTest extends FunSuite {
         objProp,
         df.getOWLObjectProperty(prefix + "aDisjointProp")
       ).asJavaCollection,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2166,7 +2187,7 @@ class ManchesterParsingTest extends FunSuite {
     expectedAxiom = new OWLInverseObjectPropertiesAxiomImpl(
       objProp,
       df.getOWLObjectProperty(prefix + "anInverseProp"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2774,14 +2795,14 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     var parsed = p.checkParsed(p.annotationPropertyFrame, annPropFrameStr)
 
-    var expectedAxiom: OWLAxiom = new OWLDeclarationAxiomImpl(annProp, noAnnotations)
+    var expectedAxiom: OWLAxiom = new OWLDeclarationAxiomImpl(annProp, noAnnotations.asJavaCollection)
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
       annProp.getIRI,
       df.getOWLAnnotationProperty(prefix + "comment"),
       df.getOWLLiteral("A comment"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2789,7 +2810,7 @@ class ManchesterParsingTest extends FunSuite {
       annProp.getIRI,
       df.getOWLAnnotationProperty(prefix + "title"),
       df.getOWLLiteral("Annotation Property XYZ"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2804,14 +2825,14 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     parsed = p.checkParsed(p.annotationPropertyFrame, annPropFrameStr)
 
-    expectedAxiom = new OWLDeclarationAxiomImpl(annProp, noAnnotations)
+    expectedAxiom = new OWLDeclarationAxiomImpl(annProp, noAnnotations.asJavaCollection)
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLAnnotationAssertionAxiomImpl(
       annProp.getIRI,
       df.getOWLAnnotationProperty(prefix + "comment"),
       df.getOWLLiteral("A comment"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2819,7 +2840,7 @@ class ManchesterParsingTest extends FunSuite {
       annProp.getIRI,
       df.getOWLAnnotationProperty(prefix + "title"),
       df.getOWLLiteral("Annotation Property XYZ"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2846,7 +2867,7 @@ class ManchesterParsingTest extends FunSuite {
       annProp.getIRI,
       df.getOWLAnnotationProperty(prefix + "label"),
       df.getOWLLiteral("Whatever"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2867,7 +2888,7 @@ class ManchesterParsingTest extends FunSuite {
     expectedAxiom = new OWLAnnotationPropertyRangeAxiomImpl(
       annProp,
       IRI.create(prefix + "anotherIRI"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2878,7 +2899,7 @@ class ManchesterParsingTest extends FunSuite {
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
           df.getOWLLiteral("Blah"),
-          noAnnotations
+          noAnnotations.asJavaCollection
         )
       ).asJavaCollection
     )
@@ -2954,7 +2975,7 @@ class ManchesterParsingTest extends FunSuite {
     var parsed = p.checkParsed(p.individualFrame, individualFrameStr)
     var expectedAxiom: OWLAxiom = new OWLDeclarationAxiomImpl(
       indiv,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2962,7 +2983,7 @@ class ManchesterParsingTest extends FunSuite {
       indiv.getIRI,
       df.getOWLAnnotationProperty(prefix + "comment"),
       df.getOWLLiteral("Some comment"),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -2999,7 +3020,7 @@ class ManchesterParsingTest extends FunSuite {
         df.getOWLObjectProperty(prefix + "anotherProp"),
         df.getOWLClass(prefix + "RangeClass")
       ),
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -3061,7 +3082,7 @@ class ManchesterParsingTest extends FunSuite {
         indiv,
         df.getOWLNamedIndividual(prefix + "sameAgainIndiv")
       ).asJavaCollection,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
@@ -3070,7 +3091,7 @@ class ManchesterParsingTest extends FunSuite {
         indiv,
         df.getOWLNamedIndividual(prefix + "aDifferentIndiv")
       ).asJavaCollection,
-      noAnnotations
+      noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 

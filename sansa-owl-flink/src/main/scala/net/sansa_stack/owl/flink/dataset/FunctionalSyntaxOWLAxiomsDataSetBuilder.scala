@@ -1,8 +1,8 @@
 package net.sansa_stack.owl.flink.dataset
 
-import net.sansa_stack.owl.common.parsing.FunctionalSyntaxParsing
 import org.apache.flink.api.scala.ExecutionEnvironment
 
+import net.sansa_stack.owl.common.parsing.FunctionalSyntaxParsing
 
 object FunctionalSyntaxOWLAxiomsDataSetBuilder extends FunctionalSyntaxParsing {
   def build(env: ExecutionEnvironment, filePath: String): OWLAxiomsDataSet = {

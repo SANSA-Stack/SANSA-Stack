@@ -1,17 +1,15 @@
 package net.sansa_stack.owl.common.parsing
 
+import scala.collection.JavaConverters._
+
 import com.typesafe.scalalogging.Logger
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.expression.OWLEntityChecker
-import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntax
-import org.semanticweb.owlapi.model.{IRI, OWLAnnotationProperty, OWLAxiom,
-  OWLClass, OWLDataProperty, OWLDatatype, OWLLogicalEntity, OWLNamedIndividual,
-  OWLObjectProperty, OWLOntology}
+import org.semanticweb.owlapi.model.{OWLAnnotationProperty, OWLAxiom, OWLClass, OWLDataProperty, OWLDatatype, OWLLogicalEntity, OWLNamedIndividual, OWLObjectProperty, OWLOntology}
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 
-import scala.collection.JavaConverters._
 
 
 /**
@@ -29,19 +27,23 @@ class FakeEntityChecker(defaultPrefix: String) extends OWLEntityChecker {
   val dataFactory = OWLManager.getOWLDataFactory
 
   private def clean(name: String, factory: String => OWLLogicalEntity) = {
-    if (name.startsWith("<"))
+    if (name.startsWith("<")) {
       // remove angle brackets as in <http://ex.com/bar#Cls1>
       factory(name.replace("<", "").replace(">", ""))
-    else if (name == "|EOF|")  // TODO: don't know whether this works at all
-      // It happened that a URI <http://ex.com/default#|EOF|> was created.
-      // After some changes I could not reproduce it so might be it won't occur
-      // again.
-      null
-    else
-      // for cases like
-      //   AnnotationProperty: description
-      // this will return sth like <http://ex.com/default#description>
-      factory(defaultPrefix + name)
+    } else {
+      if (name == "|EOF|") {
+        // TODO: don't know whether this works at all
+        // It happened that a URI <http://ex.com/default#|EOF|> was created.
+        // After some changes I could not reproduce it so might be it won't occur
+        // again.
+        null
+      } else {
+        // for cases like
+        //   AnnotationProperty: description
+        // this will return sth like <http://ex.com/default#description>
+        factory(defaultPrefix + name)
+      }
+    }
   }
 
   override def getOWLIndividual(name: String): OWLNamedIndividual =
@@ -60,8 +62,9 @@ class FakeEntityChecker(defaultPrefix: String) extends OWLEntityChecker {
         case _ => dataFactory.getOWLDatatype(defaultPrefix + name)
       }
 
-    } else
+    } else {
       dataFactory.getOWLDatatype(name.replace("<", "").replace(">", ""))
+    }
   }
 
   override def getOWLObjectProperty(name: String): OWLObjectProperty =
@@ -132,10 +135,9 @@ trait ManchesterSyntaxPrefixParsing {
     var prefix, uri: String = null
 
     prefixFrame.trim match {
-      case ManchesterSyntaxParsing.prefixPattern(p, u) => {
+      case ManchesterSyntaxParsing.prefixPattern(p, u) =>
         prefix = p
         uri = u
-      }
     }
 
     if (prefix.isEmpty) prefix = ManchesterSyntaxParsing._empty
@@ -172,10 +174,10 @@ class ManchesterSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
       trimmedFrame.startsWith("Ontology") ||
       trimmedFrame.startsWith("<http")
 
-    if (discardFrame)
+    if (discardFrame) {
       null
 
-    else {
+    } else {
       for (prefix <- prefixes.keys) {
         val p = prefix + ":"
 

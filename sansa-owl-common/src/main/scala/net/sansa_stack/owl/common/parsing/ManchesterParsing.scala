@@ -3,11 +3,12 @@ package net.sansa_stack.owl.common.parsing
 import java.io
 import java.util.stream.Collectors
 
+import scala.collection.JavaConverters._
+
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet}
 import uk.ac.manchester.cs.owl.owlapi._
 
-import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
 
 /** Enum to match property characteristics */
 object PropertyCharacteristic extends Enumeration {
@@ -180,11 +181,10 @@ class ManchesterParsing extends IRIParsing {
     }
 
     remainingParseResults match {
-      case Nil => {
+      case Nil =>
         // Just add current description-annotation pair and return result list
         { (entry, annotations) :: resultList }.reverse
-      }
-      case _ => {
+      case _ =>
         // Add current description-annotation pair and recursively call
         // unravelAnnotationAnnotatedList on the remaining parse results
         val nextParsedItem = remainingParseResults.head
@@ -198,7 +198,6 @@ class ManchesterParsing extends IRIParsing {
           nextEntry,
           nextRemainingParseResults
         )
-      }
     }
   }
 
@@ -232,7 +231,7 @@ class ManchesterParsing extends IRIParsing {
 
     // recursive call on remaining parse results
     remainingParseResults.tail match {
-      case Nil => { nextCE :: resultList }.reverse
+      case Nil => (nextCE :: resultList).reverse
       case _ => unravelConjunctionWithOptional(
         nextCE :: resultList,
         remainingParseResults.tail)
@@ -251,11 +250,10 @@ class ManchesterParsing extends IRIParsing {
                                    ): List[U] =
     remainingParseResults match {
       case Nil => results.reverse
-      case _ => {
+      case _ =>
         unravelWithFixedWhiteSpace(
           remainingParseResults.head._2 :: results,
           remainingParseResults.tail)
-      }
     }
 
   /**
@@ -292,11 +290,10 @@ class ManchesterParsing extends IRIParsing {
     }
 
     remainingParseResults match {
-      case Nil => {
+      case Nil =>
         // Just add current annotation and return result list
         { currentAnnotation :: annotationsResultList }.reverse
-      }
-      case _ => {
+      case _ =>
         // Add current annotation and recursively call unravelAnnotationAnnotatedList
         // on the remaining parse results
         val nextParsedItem = remainingParseResults.head
@@ -313,7 +310,6 @@ class ManchesterParsing extends IRIParsing {
           nextAnnValue,
           nextRemainingParseResults
         )
-      }
     }
   }
 
@@ -376,15 +372,19 @@ class ManchesterParsing extends IRIParsing {
   /** a finite sequence of characters in which " (U+22) and \ (U+5C) occur only
     * in pairs of the form \" (U+5C, U+22) and \\ (U+5C, U+5C), enclosed in a
     * pair of " (U+22) characters */
+  // scalastyle:off
   def quotedString: Parser[String] =
     doubleQuote ~ "[A-Za-z0-9 _!§$%&/()=?`´*+'#:.;,^°\n\r\f\\\\<>|-]+".r ~
       doubleQuote ^^ { _._1._2.toString }
+  // scalastyle:on
 
   def lexicalValue: Parser[String] = quotedString
 
   /** ('e' | 'E') ['+' | '-'] digits */
+  // scalastyle:off
   def exponent: Parser[String] =
     { "e" | "E" } ~ { plus | minus }.? ~ digit.+ ^^ { toString(_) }
+  // scalastyle:on
 
   /** @ (U+40) followed a nonempty sequence of characters matching the langtag
     * production from [BCP 47] */
@@ -401,22 +401,28 @@ class ManchesterParsing extends IRIParsing {
   def stringLiteralWithLanguage: Parser[OWLLiteral] =
     quotedString ~ languageTag ^^ { raw => dataFactory.getOWLLiteral(raw._1, raw._2) }
 
+  // scalastyle:off
   def integerLiteral: Parser[OWLLiteral] =
     { plus | minus }.? ~ digit.+ ^^ { raw =>
       dataFactory.getOWLLiteral(toString(raw), OWL2Datatype.XSD_INTEGER)
     }
+  // scalastyle:on
 
+  // scalastyle:off
   def decimalLiteral: Parser[OWLLiteral] =
     { plus | minus }.? ~ digit.+ ~ dot ~ digit.+ ^^ { raw =>
       dataFactory.getOWLLiteral(toString(raw), OWL2Datatype.XSD_DECIMAL)
     }
+  // scalastyle:on
 
   // [ '+' | '-'] ( digits ['.'digits] [exponent] | '.' digits[exponent]) ( 'f' | 'F' )
+  // scalastyle:off
   def floatingPointLiteral: Parser[OWLLiteral] =
     { plus | minus }.? ~ { digit.+ ~ { dot ~ digit.+ }.? ~ exponent.? |
       dot ~ digit.+ ~ exponent.? } ~ { "f" | "F" } ^^ { raw =>
       dataFactory.getOWLLiteral(toString(raw), OWL2Datatype.XSD_FLOAT)
     }
+  // scalastyle:on
 
   def literal: Parser[OWLLiteral] =
     typedLiteral | stringLiteralWithLanguage | stringLiteralNoLanguage |
@@ -580,7 +586,7 @@ class ManchesterParsing extends IRIParsing {
           * - a datatype declaration axiom and
           * - a datatype definition axiom will be created
           */
-        case Some(equivalences) => {
+        case Some(equivalences) =>
           val dataRange: OWLDataRange = equivalences._2
           val equivalenceAnnotations = equivalences._1._1._2.asJavaCollection
 
@@ -588,7 +594,6 @@ class ManchesterParsing extends IRIParsing {
             new OWLDeclarationAxiomImpl(datatype, annotations.asJavaCollection),
             new OWLDatatypeDefinitionAxiomImpl(datatype, dataRange, equivalenceAnnotations)
           )
-        }
 
         /**
           * In case no equivalent data range is given, we will just create a
@@ -1379,7 +1384,7 @@ class ManchesterParsing extends IRIParsing {
           val value = d._1._3
           val annotations = d._2
 
-          if (positiveAssertion)
+          if (positiveAssertion) {
             prop match {
               case prop: OWLObjectProperty =>
                 new OWLObjectPropertyAssertionAxiomImpl(
@@ -1396,7 +1401,7 @@ class ManchesterParsing extends IRIParsing {
                   annotations.asJavaCollection
                 )
             }
-          else
+          } else {
             prop match {
               case prop: OWLObjectProperty =>
                 new OWLNegativeObjectPropertyAssertionAxiomImpl(
@@ -1413,6 +1418,7 @@ class ManchesterParsing extends IRIParsing {
                   annotations.asJavaCollection
                 )
             }
+          }
         })
         case IndividualSameAsDetails(details) => details.map(d =>
           new OWLSameIndividualAxiomImpl(
@@ -1566,8 +1572,8 @@ object ManchesterParser extends ManchesterParsing {
   def checkParsed[U](fn: Parser[U], input: String): U = {
     parse(fn, input) match {
       case Success(matched: U, _) => matched
-      case Failure(msg,_) => throw ParserException(msg)
-      case Error(msg,_) => throw ParserException(msg)
+      case Failure(msg, _) => throw ParserException(msg)
+      case Error(msg, _) => throw ParserException(msg)
     }
   }
 }

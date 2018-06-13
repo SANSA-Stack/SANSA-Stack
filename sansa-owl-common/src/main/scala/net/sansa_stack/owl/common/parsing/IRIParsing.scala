@@ -1,12 +1,13 @@
 package net.sansa_stack.owl.common.parsing
 
+import scala.collection.mutable
+import scala.util.matching.Regex
+import scala.util.parsing.combinator.RegexParsers
+
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLDataFactory}
 import org.semanticweb.owlapi.vocab.Namespaces
 
-import scala.collection.mutable
-import scala.util.matching.Regex
-import scala.util.parsing.combinator.RegexParsers
 
 
 /**
@@ -87,7 +88,7 @@ trait IRIParsing extends RegexParsers {
   def iuserinfo: Parser[String] =
     {iunreserved | pctEncoded | subDelims | colon}.* ^^ { toString(_) }
 
-  def ipv6Block:Parser[String] = { repN(4, hexDigit) | repN(3, hexDigit) |
+  def ipv6Block: Parser[String] = { repN(4, hexDigit) | repN(3, hexDigit) |
     repN(2, hexDigit) | repN(1, hexDigit) } ^^ { toString(_) }
 
   def ipv6address: Parser[String] =
@@ -344,10 +345,12 @@ trait IRIParsing extends RegexParsers {
   // x30000-3FFFD, x40000-4FFFD, x50000-5FFFD, x60000-6FFFD, x70000-7FFFD,
   // x80000-8FFFD, x90000-9FFFD, xA0000-AFFFD, xB0000-BFFFD, xC0000-CFFFD,
   // xD0000-DFFFD, xE1000-EFFFD
+  // scalastyle:off
   def ucschar: Parser[String] =
     "[\u00A0-\uD7FF]".r |
     "[\uF900-\uFDCF]".r |
     "[\uFDF0-\uFFEF]".r ^^ { _.toString }
+  // scalastyle:on
 
   def iunreserved: Parser[String] =
     alpha | digit | dash | dot | underscore | tilde | ucschar
@@ -358,7 +361,9 @@ trait IRIParsing extends RegexParsers {
     quote | openingParen | closingParen | asterisk | plus | comma |
     semicolon | equalsSign
 
+  // scalastyle:off
   def iregName: Parser[String] = { iunreserved | pctEncoded | subDelims }.+ ^^ { toString(_) }
+  // scalastyle:on
 
   def ihost: Parser[String] = ipLiteral | ipv4address | iregName
 
@@ -376,7 +381,9 @@ trait IRIParsing extends RegexParsers {
   def ipathAbempty: Parser[String] = { slash ~ isegment }.* ^^ { toString(_) }
 
   // non-zero-length segment
+  // scalastyle:off
   def isegmentNz: Parser[String] = ipchar.+ ^^ { toString(_) }
+  // scalastyle:on
 
   def ipathAbsolute: Parser[String] =
     slash ~ { isegmentNz ~ { slash ~ isegment }.* }.? ^^ { toString(_) }
@@ -390,7 +397,9 @@ trait IRIParsing extends RegexParsers {
     { ipathAbempty | ipathAbsolute | ipathRootless | ipathEmpty } ^^ { toString(_) }
 
   // FIXME: skipped upper code points: xF0000-FFFFD, x100000-10FFFD
+  // scalastyle:off
   def iprivate: Parser[String] = "[\uE000-\uF8FF]".r ^^ { _.toString }
+  // scalastyle:on
 
   def iquery: Parser[String] =
     { ipchar | iprivate | slash | questionmark }.* ^^ { toString(_) }
@@ -413,6 +422,7 @@ trait IRIParsing extends RegexParsers {
   //   [#x0370-#x037D] | [#x037F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] |
   //   [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] |
   //   [#x10000-#xEFFFF]
+  // scalastyle:off
   def pn_chars_base: Parser[String] = alpha |  // [A-Z] | [a-z]
     "[\u00C0-\u00D6]".r ^^ { _.toString } |  // [#x00C0-#x00D6]
     "[\u00D8-\u00F6]".r ^^ { _.toString } |  // [#x00D8-#x00F6]
@@ -426,14 +436,17 @@ trait IRIParsing extends RegexParsers {
     "[\uF900-\uFDCF]".r ^^ { _.toString } |  // [#xF900-#xFDCF]
     "[\uFDF0-\uFFFD]".r ^^ { _.toString }    // [#xFDF0-#xFFFD]
   // TODO: [#x10000-#xEFFFF]
+  // scalastyle:on
 
   // PN_CHARS_BASE | '_'
   def pn_chars_u: Parser[String] = pn_chars_base | underscore
 
   // PN_CHARS_U | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]
+  // scalastyle:off
   def pn_chars: Parser[String] = pn_chars_u | dash | digit | "\u00B7" |
     "[\u0300-\u036F]".r ^^ { _.toString } |
     "[\u203F-\u2040]".r ^^ { _.toString }
+  // scalastyle:on
 
   // PN_CHARS_BASE ((PN_CHARS|'.')* PN_CHARS)?
   // FIXME
@@ -479,13 +492,14 @@ trait IRIParsing extends RegexParsers {
 
   def simpleIRI: Parser[IRI] = notAManchesterOWLKeyword ^^ { raw =>
     /* Add default prefix if it is defined. */
-    if (dtypeBuiltinKeywords.contains(raw))
+    if (dtypeBuiltinKeywords.contains(raw)) {
       IRI.create(Namespaces.XSD.getPrefixIRI, raw)
-    else
+    } else {
       prefixes.get("") match {
         case Some(defaultPrefix) => IRI.create(defaultPrefix, raw)
         case None => IRI.create(raw)
       }
+    }
   }
 
   def iri: Parser[IRI] = fullIRI | abbreviatedIRI | simpleIRI

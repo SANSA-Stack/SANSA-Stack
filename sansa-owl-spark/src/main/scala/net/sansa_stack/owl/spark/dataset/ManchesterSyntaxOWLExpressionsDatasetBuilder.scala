@@ -1,8 +1,9 @@
 package net.sansa_stack.owl.spark.dataset
 
+import org.apache.spark.sql.SparkSession
+
 import net.sansa_stack.owl.common.parsing.{ ManchesterSyntaxParsing, ManchesterSyntaxPrefixParsing }
 import net.sansa_stack.owl.spark.rdd.ManchesterSyntaxOWLExpressionsRDDBuilder
-import org.apache.spark.sql.SparkSession
 
 object ManchesterSyntaxOWLExpressionsDatasetBuilder extends ManchesterSyntaxPrefixParsing {
   def build(spark: SparkSession, filePath: String): OWLExpressionsDataset = {

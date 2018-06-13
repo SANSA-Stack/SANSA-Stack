@@ -1,15 +1,14 @@
 package net.sansa_stack.owl.spark
 
-import org.apache.spark.sql.Dataset
-import org.semanticweb.owlapi.model.OWLAxiom
-import net.sansa_stack.owl.spark.rdd._
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Dataset, SparkSession}
+
+import net.sansa_stack.owl.spark.rdd._
 
 /**
  * Wrap up implicit classes/methods to read OWL data into either [[Dataset]] or
  * [[RDD]].
- * 
+ *
  * @author Gezim Sejdiu
  */
 
@@ -32,7 +31,7 @@ package object owl {
     def owl(syntax: Syntax.Value): String => OWLAxiomsRDD = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
-      case _                 => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
+      case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
     /**
@@ -63,7 +62,7 @@ package object owl {
     def owlExpressions(syntax: Syntax.Value): String => OWLExpressionsRDD = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
-      case _                 => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
+      case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
     /**

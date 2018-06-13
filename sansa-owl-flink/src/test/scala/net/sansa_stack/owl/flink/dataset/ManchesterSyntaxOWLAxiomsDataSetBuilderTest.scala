@@ -2,6 +2,8 @@ package net.sansa_stack.owl.flink.dataset
 
 import java.util.stream.Collectors
 
+import scala.collection.JavaConverters._
+
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
@@ -10,18 +12,19 @@ import org.semanticweb.owlapi.model.{OWLDataPropertyAssertionAxiom, _}
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl}
 
-import scala.collection.JavaConverters._
-
-
 class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
-  lazy val env = ExecutionEnvironment.getExecutionEnvironment
+  lazy val env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment
+
+  // scalastyle:off classforname
   env.getConfig.addDefaultKryoSerializer(
     Class.forName("java.util.Collections$UnmodifiableCollection"),
     classOf[UnmodifiableCollectionsSerializer]
   )
+  // scalastyle:on classforname
+
   val dataFactory = OWLManager.getOWLDataFactory
   var _dataSet: OWLAxiomsDataSet = null
-  def dataSet = {
+  def dataSet: OWLAxiomsDataSet = {
     if (_dataSet == null) {
       _dataSet = ManchesterSyntaxOWLAxiomsDataSetBuilder.build(
         env, this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath)

@@ -1,13 +1,12 @@
 package net.sansa_stack.owl.common.parsing
 
+import scala.util.matching.Regex.Match
+
 import com.typesafe.scalalogging.Logger
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParserFactory
 import org.semanticweb.owlapi.io.{OWLParserException, StringDocumentSource}
 import org.semanticweb.owlapi.model.OWLAxiom
-
-import scala.util.matching.Regex.Match
-
 
 /**
   * Object containing several constants used by the FunctionalSyntaxParsing
@@ -83,14 +82,13 @@ trait FunctionalSyntaxPrefixParsing {
     *                   Prefix(:=<http://purl.obolibrary.org/obo/pato.owl#>) or
     *                   Prefix(dc:=<http://purl.org/dc/elements/1.1/>)
     */
-  def parsePrefix(prefixLine: String) = {
+  def parsePrefix(prefixLine: String): (String, String) = {
     var prefix, uri: String = null
 
     prefixLine.trim match {
-      case FunctionalSyntaxParsing.prefixPattern(p, u) => {
+      case FunctionalSyntaxParsing.prefixPattern(p, u) =>
         prefix = p
         uri = u
-      }
     }
 
     if (prefix.isEmpty) prefix = FunctionalSyntaxParsing._empty
@@ -182,4 +180,3 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
     }
   }
 }
-

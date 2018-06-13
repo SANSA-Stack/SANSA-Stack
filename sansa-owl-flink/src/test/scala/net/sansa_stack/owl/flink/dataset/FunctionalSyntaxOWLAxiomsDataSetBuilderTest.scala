@@ -8,10 +8,13 @@ import org.semanticweb.owlapi.model.{OWLAsymmetricObjectPropertyAxiom, OWLDataPr
 
 class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
   val env = ExecutionEnvironment.getExecutionEnvironment
+
+  // scalastyle:off classforname
   env.getConfig.addDefaultKryoSerializer(
     Class.forName("java.util.Collections$UnmodifiableCollection"),
     classOf[UnmodifiableCollectionsSerializer]
   )
+  // scalastyle:on classforname
 
   var _dataSet: OWLAxiomsDataSet = null
   def dataSet: OWLAxiomsDataSet = {

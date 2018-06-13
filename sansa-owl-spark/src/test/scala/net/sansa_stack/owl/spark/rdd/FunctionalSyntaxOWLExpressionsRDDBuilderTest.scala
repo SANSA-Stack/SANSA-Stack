@@ -1,9 +1,10 @@
 package net.sansa_stack.owl.spark.rdd
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.SharedSparkContext
-import net.sansa_stack.owl.spark.owl._
 import org.apache.spark.sql.SparkSession
+import org.scalatest.FunSuite
+
+import net.sansa_stack.owl.spark.owl._
 
 class FunctionalSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
@@ -11,7 +12,7 @@ class FunctionalSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedS
       "spark.kryo.registrator",
       "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
     .getOrCreate()
-    
+
   var _rdd: OWLExpressionsRDD = null
   val syntax = Syntax.FUNCTIONAL
 
