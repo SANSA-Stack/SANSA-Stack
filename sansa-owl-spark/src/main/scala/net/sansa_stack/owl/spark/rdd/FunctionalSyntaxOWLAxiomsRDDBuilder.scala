@@ -18,10 +18,9 @@ object FunctionalSyntaxOWLAxiomsRDDBuilder extends FunctionalSyntaxParsing {
     expressionsRDD.map(expression => {
       try makeAxiom(expression)
       catch {
-        case exception: OWLParserException => {
+        case exception: OWLParserException =>
           logger.warn("Parser error for line " + expression + ": " + exception.getMessage)
           null
-        }
       }
     }).filter(_ != null)
   }
