@@ -14,10 +14,10 @@ class FunctionalSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSp
     .getOrCreate()
 
   var _dataset: OWLAxiomsDataset = null
-  def dataset = {
+  def dataset: OWLAxiomsDataset = {
     if (_dataset == null) {
       _dataset = FunctionalSyntaxOWLAxiomsDatasetBuilder.build(
-        spark, "src/test/resources/ont_functional.owl")
+        spark, this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
       _dataset.cache()
     }
     _dataset

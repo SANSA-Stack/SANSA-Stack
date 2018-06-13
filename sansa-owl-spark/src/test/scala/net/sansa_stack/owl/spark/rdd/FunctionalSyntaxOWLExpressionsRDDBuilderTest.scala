@@ -15,9 +15,10 @@ class FunctionalSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedS
   var _rdd: OWLExpressionsRDD = null
   val syntax = Syntax.FUNCTIONAL
 
-  def rdd = {
+  val filePath = this.getClass.getClassLoader.getResource("ont_functional.owl").getPath
+  def rdd: OWLExpressionsRDD = {
     if (_rdd == null) {
-      _rdd = spark.owlExpressions(syntax)("src/test/resources/ont_functional.owl")
+      _rdd = spark.owlExpressions(syntax)(filePath)
       _rdd.cache()
     }
 
@@ -59,7 +60,7 @@ several lines")""")
   }
 
   test("There should be a DisjointObjectProperties axiom") {
-    val res = rdd.filter(line => line.trim.startsWith("DisjointObjectProperties")).collect()
+    val res = rdd.filter(_.trim.startsWith("DisjointObjectProperties")).collect()
     assert(res.length == 1)
   }
 

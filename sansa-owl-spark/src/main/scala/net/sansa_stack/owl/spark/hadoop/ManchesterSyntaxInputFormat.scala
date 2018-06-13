@@ -44,10 +44,11 @@ class ManchesterSyntaxRecordReader(job: Configuration, split: FileSplit) extends
     key.set(pos)
 
     currentRecord = readNextRecord
-    if (currentRecord == null)
+    if (currentRecord == null) {
       value.set("")
-    else
+    } else {
       value.set(currentRecord)
+    }
 
     currentRecord != null
   }

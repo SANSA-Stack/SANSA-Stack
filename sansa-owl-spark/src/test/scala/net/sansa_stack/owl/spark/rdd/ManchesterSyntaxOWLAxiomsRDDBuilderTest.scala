@@ -24,9 +24,10 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
   val dataFactory = OWLManager.getOWLDataFactory
   val syntax = Syntax.MANCHESTER
 
-  def rdd = {
+  val filePath = this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath
+  def rdd: OWLAxiomsRDD = {
     if (_rdd == null) {
-      _rdd = spark.owl(syntax)("src/test/resources/ont_manchester.owl")
+      _rdd = spark.owl(syntax)(filePath)
       //        sc, "hdfs://localhost:9000/ont_manchester.owl")
       _rdd.cache()
     }

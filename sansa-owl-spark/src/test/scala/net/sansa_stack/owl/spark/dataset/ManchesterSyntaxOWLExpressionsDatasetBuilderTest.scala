@@ -8,10 +8,10 @@ import org.scalatest.FunSuite
 class ManchesterSyntaxOWLExpressionsDatasetBuilderTest extends FunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master).getOrCreate()
   var _dataset: OWLExpressionsDataset = null
-  def dataset = {
+  def dataset: OWLExpressionsDataset = {
     if (_dataset == null) {
       _dataset = ManchesterSyntaxOWLExpressionsDatasetBuilder.build(
-        spark, "src/test/resources/ont_manchester.owl")
+        spark, this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath)
 //        spark, "hdfs://localhost:9000/ont_manchester.owl")
       _dataset.cache()
     }

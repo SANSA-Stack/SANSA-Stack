@@ -11,7 +11,7 @@ class FunctionalSyntaxOWLExpressionsDatasetBuilderTest extends FunSuite with Sha
   def dataset: OWLExpressionsDataset = {
     if (_dataset == null) {
       _dataset = FunctionalSyntaxOWLExpressionsDatasetBuilder.build(
-        spark, "src/test/resources/ont_functional.owl")
+        spark, this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
       _dataset.cache()
     }
     _dataset

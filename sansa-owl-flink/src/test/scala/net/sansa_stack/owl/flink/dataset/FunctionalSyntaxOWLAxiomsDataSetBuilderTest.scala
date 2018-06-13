@@ -14,7 +14,7 @@ class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
   )
 
   var _dataSet: OWLAxiomsDataSet = null
-  def dataSet = {
+  def dataSet: OWLAxiomsDataSet = {
     if (_dataSet == null) {
       _dataSet = FunctionalSyntaxOWLAxiomsDataSetBuilder.build(
         env, this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)

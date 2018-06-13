@@ -21,7 +21,7 @@ class ManchesterSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSp
     .getOrCreate()
   val dataFactory = OWLManager.getOWLDataFactory
   var _dataset: OWLAxiomsDataset = null
-  def dataset = {
+  def dataset: OWLAxiomsDataset = {
     if (_dataset == null) {
       _dataset = ManchesterSyntaxOWLAxiomsDatasetBuilder.build(
 //        spark, "src/test/resources/ont_manchester.owl")
