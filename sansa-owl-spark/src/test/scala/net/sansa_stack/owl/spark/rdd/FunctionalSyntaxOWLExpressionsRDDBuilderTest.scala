@@ -25,21 +25,6 @@ class FunctionalSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedS
     _rdd
   }
 
-  test("There should be three annotation lines with full URIs") {
-    val res = rdd.filter(line => line.startsWith("Annotation(")).collect()
-    val expected = List(
-      "Annotation(<http://ex.com/foo#hasName> \"Name\")",
-      "Annotation(<http://ex.com/bar#hasTitle> \"Title\")",
-      """Annotation(<http://ex.com/default#description> "A longer
-description running over
-several lines")""")
-
-    assert(res.length == 3)
-    for (e <- expected) {
-      assert(res.contains(e))
-    }
-  }
-
   /* Test disabled since OWLAPI will try to resolve imported ontology which
    * will fail or make the number of axioms unpredictable
    */
