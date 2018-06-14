@@ -2,11 +2,13 @@ package net.sansa_stack.rdf.flink.io.ntriples
 
 import java.net.URI
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
+import org.apache.flink.streaming.api.scala._
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.graph.Triple
@@ -19,9 +21,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
 import net.sansa_stack.rdf.common.io.riot.lang.LangNTriplesSkipBad
 import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
-
-import scala.collection.JavaConverters._
-import org.apache.flink.streaming.api.scala._
 
 
 /**
@@ -181,9 +180,8 @@ object NTriplesReader {
       checkRDFTerms = true,
       LoggerFactory.getLogger("errorLog"))
 
-    println(ds.count())
-
-    println("result:\n" + ds.first(1000).map { _.toString.replaceAll("[\\x00-\\x1f]","???")}.collect().mkString("\n"))
+    println(s"size:${ds.count}")
+    println("sample data:\n" + ds.first(10).map { _.toString.replaceAll("[\\x00-\\x1f]","???")}.collect().mkString("\n"))
   }
 
 }

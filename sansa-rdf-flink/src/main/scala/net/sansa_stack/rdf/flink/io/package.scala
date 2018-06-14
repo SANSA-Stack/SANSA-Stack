@@ -4,13 +4,13 @@ import java.io.ByteArrayOutputStream
 import java.lang
 import java.util.Collections
 
-import com.google.common.collect.Iterators
 import org.apache.flink.api.common.functions.RichMapPartitionFunction
 import org.apache.flink.api.java.operators.DataSink
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.core.fs.FileSystem
 import org.apache.flink.hadoopcompatibility.scala.HadoopInputs
+import org.apache.flink.streaming.api.scala._
 import org.apache.flink.util.Collector
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
@@ -22,9 +22,6 @@ import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
 import net.sansa_stack.rdf.common.io.hadoop.RiotFileInputFormat
 import net.sansa_stack.rdf.flink.io.nquads.NQuadsReader
 import net.sansa_stack.rdf.flink.io.ntriples.NTriplesReader
-
-import scala.collection.JavaConverters._
-import org.apache.flink.streaming.api.scala._
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples, N-Quads or Turtle files into a
@@ -195,19 +192,13 @@ package object io {
 
       ds
         .mapPartition(p => {
+          // map to N-Quads
           val g = NodeFactory.createURI(graph)
+          val nquadsIt = p.map(Quad.create(g, _)).asJava
 
-//          val it: java.util.Iterator[java.io.Serializable] = p.asJava.asInstanceOf[java.util.Iterator[java.io.Serializable]]
-val it = p.asJava
-
-          val f = new com.google.common.base.Function[Triple, Quad] {
-            override def apply(t: Triple): Quad = Quad.create(g, t)
-          }
-          // convert to Quad
-          val quadIt = Iterators.transform(it.asInstanceOf[java.util.Iterator[java.io.Serializable]], f)
-
+          // write to string object
           val os = new ByteArrayOutputStream()
-          RDFDataMgr.writeQuads(os, quadIt)
+          RDFDataMgr.writeQuads(os, nquadsIt)
           Collections.singleton(new String(os.toByteArray)).iterator().asScala
         })
         .writeAsText(path)
@@ -322,7 +313,7 @@ val it = p.asJava
 
         override def mapPartition(iterable: lang.Iterable[String], collector: Collector[Triple]): Unit = {
           // concat prefixes and Turtle snippet
-          val it = Iterators.concat(prefixes.iterator(), iterable.iterator())
+          val it = (prefixes.asScala ++ iterable.asScala).asJava.iterator()
 
           // collect the parsed triples
           val is = ReadableByteChannelFromIterator.toInputStream(it)
