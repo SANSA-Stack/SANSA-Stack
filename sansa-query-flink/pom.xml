@@ -72,6 +72,27 @@
 			<scope>runtime</scope>
 		</dependency>
 
-
 	</dependencies>
+
+	<build>
+		<!-- <sourceDirectory>src/main/java</sourceDirectory> -->
+		<!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.scalastyle</groupId>
+				<artifactId>scalastyle-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
