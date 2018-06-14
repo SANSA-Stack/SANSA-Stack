@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
-import net.sansa_stack.query.spark.graph.jena.ExprParser
 import net.sansa_stack.query.spark.graph.jena.expression.{Expression, Filter, Pattern}
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util._
@@ -10,10 +9,8 @@ import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.graph._
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
-import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList}
+import org.apache.jena.sparql.expr.ExprAggregator
 import org.apache.spark.rdd.RDD
-
-import scala.collection.JavaConversions._
 
 /**
   * Model that contains methods for query operations on top of spark.
@@ -49,9 +46,14 @@ object SparkExecutionModel {
     spark = SparkSession.builder()
       .master(Config.getMaster)
       .appName(Config.getAppName)
+      // Use the Kryo serializer
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .config("spark.kryo.registrator", "net.sansa_stack.query.spark.graph.jena.serialization.Registrator")
+      //.config("spark.core.connection.ack.wait.timeout", "5000")
+      //.config("spark.shuffle.consolidateFiles", "true")
+      //.config("spark.rdd.compress", "true")
+      //.config("spark.kryoserializer.buffer.max.mb", "512")
       .getOrCreate()
-
-    spark.conf.set("spark.executor.memory", "4g")
 
     loadGraph()
   }
@@ -64,29 +66,42 @@ object SparkExecutionModel {
     if(spark == null){
       createSparkSession()
     }
-    val triples = spark.rdf(lang)(path)
-    graph = triples.asGraph().cache()
+    graph = spark.rdf(lang)(path).asGraph().cache()
   }
 
   def basicGraphPatternMatch(bgp: BasicGraphPattern): RDD[Result[Node]] = {
+
     if(spark == null){ setSession() }
 
-    val ms = new MatchSetNode(graph, bgp, spark)
-    var finalMatchSet = ms.matchCandidateSet
-    var tempMatchSet = ms.matchCandidateSet
+    val patterns = spark.sparkContext.broadcast(bgp.triplePatterns)
+    val matchSet = new MatchSet(graph, patterns, spark)
+    var finalMatchSet = matchSet.matchCandidateSet.cache()
+    var prevMatchSet: RDD[MatchCandidate] = null
+
     var changed = true
     while(changed) {
-      tempMatchSet = ms.validateRemoteMatchSet(ms.validateLocalMatchSet(tempMatchSet))
-      if(tempMatchSet.count().equals(finalMatchSet.count())){
+      prevMatchSet = finalMatchSet
+      // Step 1: Confirm the validation of local match sets.
+      prevMatchSet = matchSet.validateLocalMatchSet(prevMatchSet)
+
+      // Step 2: Conform the validation of remote match sets.
+      prevMatchSet = matchSet.validateRemoteMatchSet(prevMatchSet)
+
+      if(prevMatchSet.count().equals(finalMatchSet.count())){
         changed = false
       }
-      finalMatchSet = tempMatchSet
+      finalMatchSet = prevMatchSet
+      prevMatchSet.unpersist()
+    }
+
+    if(finalMatchSet.count()==0){
+      throw new IllegalStateException("No results match")
     }
 
     var intermediate: RDD[Result[Node]] = null
-    bgp.triplePatterns.foreach{ tp =>
+    patterns.value.foreach{ pattern =>
       val mapping = finalMatchSet
-        .filter(_.pattern.equals(tp))
+        .filter(_.pattern.equals(pattern))
         .map(_.mapping).collect()
         .map(_.filterKeys(_.toString.startsWith("?")))
         .distinct
@@ -97,6 +112,8 @@ object SparkExecutionModel {
         intermediate = leftJoin(intermediate, ResultFactory.create(mapping, spark)).cache()
       }
     }
+    finalMatchSet.unpersist()
+    graph.unpersist()
 
     intermediate
   }

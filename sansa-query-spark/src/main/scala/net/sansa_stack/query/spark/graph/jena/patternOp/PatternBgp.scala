@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.patternOp
 
 import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
-import net.sansa_stack.query.spark.graph.jena.util.{BasicGraphPattern, ResultMapping}
+import net.sansa_stack.query.spark.graph.jena.util.BasicGraphPattern
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpBGP
@@ -22,12 +22,7 @@ class PatternBgp(op: OpBGP) extends PatternOp {
   override def execute(input: Array[Map[Node, Node]],
                        graph: Graph[Node, Node],
                        session: SparkSession): Array[Map[Node, Node]] = {
-    if(input.isEmpty) {
-      val bgp = new BasicGraphPattern(triples)
-      ResultMapping.run(graph, bgp, session)
-    } else {
-      input
-    }
+    input
   }
 
   override def execute(): Unit = {

@@ -3,15 +3,15 @@ package net.sansa_stack.query.spark.graph.jena.util
 import org.apache.jena.graph._
 import org.apache.spark.graphx.EdgeTriplet
 
-class TriplePatternNode(private val s: Node,
-                        private val p: Node,
-                        private val o: Node) extends Serializable {
+class TriplePattern(private val s: Node,
+                    private val p: Node,
+                    private val o: Node) extends Serializable {
 
   def this(triple: Triple) = {
     this(triple.getSubject, triple.getPredicate, triple.getObject)
   }
 
-  def this(tp: TriplePatternNode) = {
+  def this(tp: TriplePattern) = {
     this(tp.s, tp.p, tp.o)
   }
 
@@ -55,7 +55,7 @@ class TriplePatternNode(private val s: Node,
     Array[Node](s, p, o).filter(node => node.isVariable)
   }
 
-  def compares(obj: TriplePatternNode): Boolean = {
+  def compares(obj: TriplePattern): Boolean = {
     this.s.equals(obj.s) && this.p.equals(obj.p) && this.o.equals(obj.o)
   }
 

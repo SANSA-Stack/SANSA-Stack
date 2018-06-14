@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.util
 
 import org.apache.jena.graph.Node
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.graphx.{EdgeDirection, Graph, VertexId}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -13,41 +14,42 @@ import scala.util.control.Breaks._
   *
   * @author Zhe Wang
   */
-class MatchSetNode(val graph: Graph[Node, Node],
-                   val bgp: BasicGraphPattern,
-                   session: SparkSession) extends Serializable {
+class MatchSet(val graph: Graph[Node, Node],
+               val patterns: Broadcast[List[TriplePattern]],
+               session: SparkSession) extends Serializable {
 
-  private val triplePatterns = session.sparkContext.broadcast(bgp.triplePatterns)
+  def matchCandidateSet: RDD[MatchCandidate] = {
 
-  def matchCandidateSet: RDD[MatchCandidateNode] = {
-    val subjectMatchSet = graph.triplets.flatMap{ triplet =>
-      triplePatterns.value.map{ tp => new MatchCandidateNode(triplet, tp, MatchCandidate.s) }
+    graph.triplets.flatMap{ triplet =>
+
+      val result = scala.collection.mutable.ListBuffer.empty[MatchCandidate]
+
+      val subjectResult = patterns.value.map(tp => new MatchCandidate(triplet, tp, NodeType.s))
         .filter(_.isMatch).filter(_.isVar)
-    }
-    val predicateMatchSet = graph.triplets.flatMap{ triplet =>
-      triplePatterns.value.map{ tp => new MatchCandidateNode(triplet, tp, MatchCandidate.p) }
+      result ++= subjectResult
+      val predicateResult = patterns.value.map(tp => new MatchCandidate(triplet, tp, NodeType.p))
         .filter(_.isMatch).filter(_.isVar)
-    }
-    val objectMatchSet = graph.triplets.flatMap{ triplet =>
-      triplePatterns.value.map{ tp => new MatchCandidateNode(triplet, tp, MatchCandidate.o) }
+      result ++= predicateResult
+      val objectResult = patterns.value.map(tp => new MatchCandidate(triplet, tp, NodeType.o))
         .filter(_.isMatch).filter(_.isVar)
+      result ++= objectResult
+
+      result
     }
-    subjectMatchSet.++(predicateMatchSet).++(objectMatchSet)
   }
 
   /**
-    * Conform the validation of local match sets. Filter match sets which has local match.
+    * Confirm the validation of local match sets. Filter match sets which has local match.
     *
     * matchSet match candidate set of all vertices in rdf graph
     * @return match candidate set after filter.
     */
-  def validateLocalMatchSet(matchSet: RDD[MatchCandidateNode]): RDD[MatchCandidateNode] = {
+  def validateLocalMatchSet(matchSet: RDD[MatchCandidate]): RDD[MatchCandidate] = {
     val broadcast = session.sparkContext.broadcast(matchSet.collect())
-    val tpList = triplePatterns.value
     matchSet.filter{ mc =>  //foreach matchC1 2 v.matchS do
       var exists = true
       breakable{
-        tpList.filterNot(_.equals(mc.pattern)).foreach { tp => //foreach tp 2 BGP != matchC1.tp do
+        patterns.value.filterNot(_.equals(mc.pattern)).foreach { tp => //foreach tp 2 BGP != matchC1.tp do
           if (tp.getVariable.contains(mc.variable)) {
             val localMatchSet = broadcast.value.filter(_.vertex.equals(mc.vertex))
             val numOfExist = localMatchSet.count{ mc2 =>
@@ -68,7 +70,7 @@ class MatchSetNode(val graph: Graph[Node, Node],
     * Conform the validation of remote match sets. Filter match sets which has remote match.
     * @return match candidate set after filter.
     */
-  def validateRemoteMatchSet(matchSet: RDD[MatchCandidateNode]): RDD[MatchCandidateNode] = {
+  def validateRemoteMatchSet(matchSet: RDD[MatchCandidate]): RDD[MatchCandidate] = {
     val broadcast = session.sparkContext.broadcast(matchSet.collect())
     val neighborBroadcast = session.sparkContext.broadcast(graph.ops.collectNeighbors(EdgeDirection.Either).collect())
     matchSet.filter { mc => //foreach matchC1 2 v.matchS do
