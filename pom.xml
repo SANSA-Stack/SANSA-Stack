@@ -65,11 +65,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.version>2.11.11</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.2.1</spark.version>
+        <spark.version>2.3.1</spark.version>
         <flink.version>1.5.0</flink.version>
         <hadoop.common.version>2.7.0</hadoop.common.version>
         <hadoop.mapreduce-client.version>2.7.0</hadoop.mapreduce-client.version>
-        <owlapi.version>5.1.3</owlapi.version>
+        <owlapi.version>5.1.5</owlapi.version>
         <scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
     </properties>
 
