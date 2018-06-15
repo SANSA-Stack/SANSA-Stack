@@ -116,3 +116,87 @@ class MatchSet(val graph: Graph[Node, Node],
     }
   }
 }
+
+object MatchSet{
+
+  def createCandidateRDD(graph: Graph[Node, Node],
+                         patterns: Broadcast[List[TriplePattern]]): RDD[(VertexId, Iterable[MatchCandidate])] = {
+    graph.triplets.flatMap{ triplet =>
+      val result = scala.collection.mutable.ListBuffer.empty[(VertexId, MatchCandidate)]
+      val subjectResult = patterns.value.map(pattern =>
+        new MatchCandidate(triplet, pattern, NodeType.s)).filter(_.isMatch).filter(_.isVar)
+      subjectResult.foreach(candidate => result += ((triplet.srcId,candidate)))
+
+      /*val predicateResult = patterns.value.map(tp => new MatchCandidate(triplet, tp, NodeType.p))
+        .filter(_.isMatch).filter(_.isVar)
+      result ++= predicateResult*/
+
+      val objectResult = patterns.value.map(pattern =>
+        new MatchCandidate(triplet, pattern, NodeType.o)).filter(_.isMatch).filter(_.isVar)
+      objectResult.foreach(candidate => result += ((triplet.dstId,candidate)))
+
+      result
+    }.groupByKey()
+  }
+
+  def createCandidateGraph(graph: Graph[Node, Node],
+                           patterns: Broadcast[List[TriplePattern]]): Graph[Iterable[MatchCandidate], Node] = {
+    val vertices = createCandidateRDD(graph, patterns).cache()
+    val edges = graph.edges.cache()
+    val defaultAttr = Iterable.empty[MatchCandidate]
+    val candidateGraph = Graph.apply(vertices, edges, defaultAttr)
+
+    vertices.unpersist()
+    edges.unpersist()
+
+    candidateGraph
+  }
+
+  def localMatch(candidateGraph: Graph[Iterable[MatchCandidate], Node],
+                 patterns: Broadcast[List[TriplePattern]]): Graph[Iterable[MatchCandidate], Node] = {
+    candidateGraph.mapVertices{ case(_, iter) =>
+      if(iter.isEmpty){
+        iter
+      } else {
+        //foreach candidate belongs to v.Iterable[candidate] do
+        iter.filter{candidate =>
+          var exists = true
+          breakable{
+            //foreach triple pattern belongs to pattens != candidate's triple pattern do
+            patterns.value.filterNot(_.equals(candidate.pattern)).foreach { pattern =>
+              // if candidate's variable in pattern's variable set then
+              if (pattern.getVariable.contains(candidate.variable)) {
+                val numOfExist = iter.count{ other =>
+                  other.pattern.equals(pattern) && other.variable.equals(candidate.variable) && compatible(other.mapping, candidate.mapping)
+                }
+                if (numOfExist == 0) {
+                  exists = false
+                  break
+                }
+              }
+            }
+          }
+          exists
+        }
+      }
+    }
+    candidateGraph
+  }
+
+  def remoteMatch(candidateGraph: Graph[Iterable[MatchCandidate], Node]): Unit = {
+
+  }
+
+  private def compatible(map1: Map[Node,Node], map2: Map[Node,Node]): Boolean = {
+    if(map1.keys.equals(map2.keys)){
+      map1.equals(map2)
+    }
+    else{
+      if(map1.keys.head.equals(map2.keys.head)) { map1.values.head.equals(map2.values.head) }
+      else if(map1.keys.head.equals(map2.keys.last)) { map1.values.head.equals(map2.values.last) }
+      else if(map1.keys.last.equals(map2.keys.head)) { map1.values.last.equals(map2.values.head) }
+      else if(map1.keys.last.equals(map2.keys.last)) { map1.values.last.equals(map2.values.last) }
+      else { true }
+    }
+  }
+}

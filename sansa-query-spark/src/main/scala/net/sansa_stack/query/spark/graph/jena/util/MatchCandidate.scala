@@ -29,5 +29,9 @@ class MatchCandidate(val target: EdgeTriplet[Node, Node],
     pattern.getPredicate->target.attr,
     pattern.getObject->target.dstAttr)
 
-  override def toString: String = (vertex, variable, mapping, pattern).toString
+  override def toString: String = (variable, filterNotVariable(mapping), pattern).toString
+
+  private def filterNotVariable(mapping: Map[Node, Node]): Map[Node, Node] = {
+    mapping.filter(map => map._1.isVariable)
+  }
 }

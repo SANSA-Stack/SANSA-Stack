@@ -62,7 +62,7 @@ class TriplePattern(private val s: Node,
   override def toString: String = { s.toString+" "+p.toString+" "+o.toString+" ." }
 
   override def hashCode(): Int = {
-    s.hashCode() + p.hashCode() + o.hashCode()
+    s.hashCode()*5 + p.hashCode()*3 + o.hashCode()
   }
 
   override def equals(obj: scala.Any): Boolean = {
