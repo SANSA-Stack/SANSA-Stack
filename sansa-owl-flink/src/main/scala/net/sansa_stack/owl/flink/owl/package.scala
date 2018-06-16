@@ -3,12 +3,12 @@ package net.sansa_stack.owl.flink
 import org.apache.flink.api.scala.{ DataSet, ExecutionEnvironment }
 
 import net.sansa_stack.owl.flink.dataset.{
-  OWLAxiomsDataSet,
-  OWLExpressionsDataSet,
   FunctionalSyntaxOWLAxiomsDataSetBuilder,
-  ManchesterSyntaxOWLAxiomsDataSetBuilder,
   FunctionalSyntaxOWLExpressionsDataSetBuilder,
-  ManchesterSyntaxOWLExpressionsDataSetBuilder
+  ManchesterSyntaxOWLAxiomsDataSetBuilder,
+  ManchesterSyntaxOWLExpressionsDataSetBuilder,
+  OWLAxiomsDataSet,
+  OWLExpressionsDataSet
 }
 
 /**
@@ -36,7 +36,7 @@ package object owl {
     def owl(syntax: Syntax.Value): String => OWLAxiomsDataSet = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
-      case _                 => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
+      case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
     /**
@@ -67,7 +67,7 @@ package object owl {
     def owlExpressions(syntax: Syntax.Value): String => OWLExpressionsDataSet = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
-      case _                 => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
+      case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
     /**
