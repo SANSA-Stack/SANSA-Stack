@@ -3,25 +3,17 @@ package net.sansa_stack.rdf.spark
 
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.availability.DereferenceableUris
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.completeness._
-import org.apache.jena.graph.{ Triple, Node }
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.conciseness.ExtensionalConciseness
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.interlinking.ExternalSameAsLinks
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.performance.NoHashURIs
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.reprconciseness._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity._
+import net.sansa_stack.rdf.spark.qualityassessment.metrics.understandability.LabeledResources
+import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity.LiteralNumericRangeChecker._
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity.XSDDatatypeCompatibleLiterals._
-
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.CoverageDetail._
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.CoverageScope._
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy.AmountOfTriples._
-
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.performance.NoHashURIs._
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.understandability.LabeledResources._
-
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.interlinking.ExternalSameAsLinks._
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.HumanReadableLicense._
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing.MachineReadableLicense._
-
-import net.sansa_stack.rdf.spark.qualityassessment.metrics.conciseness.ExtensionalConciseness._
 
 /**
  * @author Gezim Sejdiu
@@ -36,7 +28,7 @@ package object qualityassessment {
      * (subject + predicates + objects)a.k.a dereferencedURIS and
      * the total number of URIs on the dataset.
      */
-    def assessDereferenceableUris() =
+    def assessDereferenceableUris(): Double =
       DereferenceableUris.assessDereferenceableUris(triples)
 
     /**
@@ -45,7 +37,7 @@ package object qualityassessment {
      * The ratio computed is the number of objects that are "back-links"
      * (are part of the resource's URI) and the total number of objects.
      */
-    def assessDereferenceableBackLinks() =
+    def assessDereferenceableBackLinks(): Double =
       DereferenceableUris.assessDereferenceableBackLinks(triples)
 
     /**
@@ -54,7 +46,7 @@ package object qualityassessment {
      * The ratio computed is the number of subjects that are "forward-links"
      * (are part of the resource's URI) and the total number of subjects.
      */
-    def assessDereferenceableForwardLinks() =
+    def assessDereferenceableForwardLinks(): Double =
       DereferenceableUris.assessDereferenceableForwardLinks(triples)
 
     /**
@@ -63,7 +55,7 @@ package object qualityassessment {
      * metric makes a statement about the ratio of interlinked resources to
      * resources that could potentially be interlinked.
      */
-    def assessInterlinkingCompleteness() =
+    def assessInterlinkingCompleteness(): Long =
       InterlinkingCompleteness.assessInterlinkingCompleteness(triples)
 
     /**
@@ -72,7 +64,7 @@ package object qualityassessment {
      * A user specifies the RDF class and the RDF predicate, then it checks for each pair
      * whether instances of the given RDF class contain the specified RDF predicate.
      */
-    def assessPropertyCompleteness() =
+    def assessPropertyCompleteness(): Long =
       PropertyCompleteness.assessPropertyCompleteness(triples)
 
     /**
@@ -80,28 +72,108 @@ package object qualityassessment {
      * of the gold standard existing in g, and the number of classes and
      * relations in the gold standard.
      */
-    def assessSchemaCompleteness() =
+    def assessSchemaCompleteness(): Double =
       SchemaCompleteness.assessSchemaCompleteness(triples)
 
+    /**
+     * The extensional conciseness
+     * This metric metric checks for redundant resources in the assessed dataset,
+     * and thus measures the number of unique instances found in the dataset.
+     * @return  No. of unique subjects / Total No. of subjects
+     */
+    def assessExtensionalConciseness(): Double =
+      ExtensionalConciseness.assessExtensionalConciseness(triples)
+
+    /**
+     * Checks the sameAs externals links.
+     */
+    def assessExternalSameAsLinks(): Double =
+      ExternalSameAsLinks.assessExternalSameAsLinks(triples)
+
+    /**
+     * Human -readable indication of a license
+     * This metric checks whether a human-readable text, stating the of licensing model
+     * attributed to the resource, has been provided as part of the dataset.
+     * It looks for objects containing literal values and analyzes the text
+     * searching for key, licensing related terms.
+     */
+    def assessHumanReadableLicense(): Double =
+      HumanReadableLicense.assessHumanReadableLicense(triples)
+
+    /**
+     * Machine -readable indication of a license
+     * This metric checks whether a machine-readable text, stating the of licensing model
+     * attributed to the resource, has been provided as part of the dataset.
+     * It looks for objects containing literal values and analyzes the text
+     * searching for key, licensing related terms.
+     */
+    def assessMachineReadableLicense(): Double =
+      MachineReadableLicense.assessMachineReadableLicense(triples)
+
+    /**
+     * Checks if a URI contains hashs.
+     */
+    def assessNoHashUris(): Double =
+      NoHashURIs.assessNoHashUris(triples)
+
+    /**
+     * Computes the size of the triples.
+     */
+    def assessAmountOfTriples(): Double =
+      AmountOfTriples.assessAmountOfTriples(triples)
+
+    /**
+     * This metric measures the the coverage (i.e. number of entities described
+     * in a dataset) and level of detail (i.e. number of properties) in a dataset
+     * to ensure that the data retrieved is appropriate for the task at hand.
+     */
+    def assessCoverageDetail(): Double =
+      CoverageDetail.assessCoverageDetail(triples)
+
+    /**
+     * This metric calculate the coverage of a dataset referring to the covered scope.
+     * This covered scope is expressed as the number of 'instances' statements are made about.
+     */
+    def assessCoverageScope(): Double =
+      CoverageScope.assessCoverageScope(triples)
+
+    /**
+     * This metric calculates the number of non Queryable URIs.
+     * It computes the ratio between the number of all non queryable URIs
+     * and the total number of URIs on the dataset.
+     */
+    def assessQueryParamFreeURIs(): Double =
+      QueryParamFreeURIs.assessQueryParamFreeURIs(triples)
+
+    /**
+     * This metric calculates the number of long URIs.
+     * It computes the ratio between the number of all long URIs
+     * and the total number of URIs on the dataset.
+     */
+    def assessShortURIs(): Double =
+      ShortURIs.assessShortURIs(triples)
+
+    /**
+     * Check if the incorrect numeric range for the given predicate and given class of subjects.
+     * A user should specify the RDF class, the RDF property for which he would like to verify
+     * if the values are in the specified range determined by the user.
+     * The range is specified by the user by indicating the lower and the upper bound of the value.
+     */
+    def assessLiteralNumericRangeChecker(): Long =
+      LiteralNumericRangeChecker.assessLiteralNumericRangeChecker(triples)
+
+    /**
+     * Check if the value of a typed literal is valid with regards to
+     * the given xsd datatype.
+     */
+    def assessXSDDatatypeCompatibleLiterals(): Long =
+      XSDDatatypeCompatibleLiterals.assessXSDDatatypeCompatibleLiterals(triples)
+
+    /**
+     * This metric assess the labeled resources.
+     */
+    def assessLabeledResources(): Double =
+      LabeledResources.assessLabeledResources(triples)
+
   }
-
-  implicit def AssessLiteralNumericRangeCheckerFunctions(dataset: RDD[Triple]) = new LiteralNumericRangeCheckerFunctions(dataset)
-
-  implicit def AssessXSDDatatypeCompatibleLiteralsFunctions(dataset: RDD[Triple]) = new XSDDatatypeCompatibleLiteralsFunctions(dataset)
-
-  implicit def AssessCoverageDetailFunctions(dataset: RDD[Triple]) = new CoverageDetailFunctions(dataset)
-  implicit def AssessCoverageScopeFunctions(dataset: RDD[Triple]) = new CoverageScopeFunctions(dataset)
-  implicit def AssessAmountOfTriplesFunctions(dataset: RDD[Triple]) = new AmountOfTriplesFunctions(dataset)
-
-  implicit def AssessNoHashURIsFunctions(dataset: RDD[Triple]) = new NoHashURIsFunctions(dataset)
-
-  implicit def AssessLabeledResourcesFunctions(dataset: RDD[Triple]) = new LabeledResourcesFunctions(dataset)
-
-  implicit def AssessExternalSameAsLinksFunctions(dataset: RDD[Triple]) = new ExternalSameAsLinksFunctions(dataset)
-
-  implicit def AssessHumanReadableLicenseFunctions(dataset: RDD[Triple]) = new HumanReadableLicenseFunctions(dataset)
-  implicit def AssessMachineReadableLicenseFunctions(dataset: RDD[Triple]) = new MachineReadableLicenseFunctions(dataset)
-
-  implicit def AssessExtensionalConcisenessFunctions(dataset: RDD[Triple]) = new ExtensionalConcisenessFunctions(dataset)
-
 }
