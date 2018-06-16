@@ -26,8 +26,8 @@ object SchemaCompleteness {
       f.getPredicate.getLocalName.equals("type")
         && f.getObject.isURI()).cache()
 
-    val S = p2_o.map(_.getPredicate).distinct().cache()
-    val SC = dataset.map(_.getObject).distinct().cache()
+    val S = p2_o.map(_.getPredicate).distinct()
+    val SC = dataset.map(_.getObject).distinct()
 
     val S_intersection_SC = S.intersection(SC).distinct
 
