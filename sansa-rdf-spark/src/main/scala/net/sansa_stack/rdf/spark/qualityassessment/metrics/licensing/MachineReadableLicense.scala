@@ -1,38 +1,22 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics.licensing
 
-import org.apache.spark.rdd.RDD
-import org.apache.jena.graph.{ Triple, Node }
 import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
-import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.spark.rdd.RDD
 
 /**
  * @author Gezim Sejdiu
  */
 object MachineReadableLicense {
-  implicit class MachineReadableLicenseFunctions(dataset: RDD[Triple]) extends Serializable {
 
-    /**
-     * Machine -readable indication of a license
-     * This metric checks whether a machine-readable text, stating the of licensing model
-     * attributed to the resource, has been provided as part of the dataset.
-     * It looks for objects containing literal values and analyzes the text searching for key, licensing related terms.
-     */
-    def assessMachineReadableLicense() = {
-      val hasAssociatedLicense = dataset.filter(_.getPredicate.hasLicenceAssociated())
-      if (hasAssociatedLicense.count() > 0) 1.0 else 0.0
-    }
-
-  }
-  implicit class LicenceAssociatedFunctions(node: Node) extends Serializable {
-    val licenceAssociated = Seq(DQV.cclicence, DQV.dbolicense, DQV.xhtmllicense, DQV.dclicence,
-      DQV.dcrights, DQV.dctlicense, DQV.dbplicence, DQV.doaplicense,
-      DQV.dctrights, DQV.schemalicense, "wrcc:license", "sz:license_text")
-
-    /**
-     * Checks if a given [[resource]] is license associated.
-     * @param node the resource to be checked.
-     * @return `true` if contains these definition, otherwise `false`.
-     */
-    def hasLicenceAssociated() = licenceAssociated.contains(node.getURI)
+  /**
+   * Machine -readable indication of a license
+   * This metric checks whether a machine-readable text, stating the of licensing model
+   * attributed to the resource, has been provided as part of the dataset.
+   * It looks for objects containing literal values and analyzes the text searching for key, licensing related terms.
+   */
+  def assessMachineReadableLicense(dataset: RDD[Triple]): Double = {
+    val hasAssociatedLicense = dataset.filter(f => hasLicenceAssociated(f.getPredicate))
+    if (hasAssociatedLicense.count() > 0) 1.0 else 0.0
   }
 }
