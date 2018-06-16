@@ -8,27 +8,28 @@ import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{OWLDataPropertyAssertionAxiom, _}
+import org.semanticweb.owlapi.model.{ OWLDataPropertyAssertionAxiom, _ }
 import org.semanticweb.owlapi.vocab.XSDVocabulary
-import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl}
+import uk.ac.manchester.cs.owl.owlapi.{ OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl }
 
 class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
+  import net.sansa_stack.owl.flink.owl._
   lazy val env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment
 
   // scalastyle:off classforname
   env.getConfig.addDefaultKryoSerializer(
     Class.forName("java.util.Collections$UnmodifiableCollection"),
-    classOf[UnmodifiableCollectionsSerializer]
-  )
+    classOf[UnmodifiableCollectionsSerializer])
   // scalastyle:on classforname
 
   val dataFactory = OWLManager.getOWLDataFactory
   var _dataSet: OWLAxiomsDataSet = null
+  val syntax = Syntax.MANCHESTER
+
   def dataSet: OWLAxiomsDataSet = {
     if (_dataSet == null) {
-      _dataSet = ManchesterSyntaxOWLAxiomsDataSetBuilder.build(
-        env, this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath)
-//        env, "hdfs://localhost:9000/ont_manchester.owl")
+      _dataSet = env.owl(syntax)(this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath)
+      //        env, "hdfs://localhost:9000/ont_manchester.owl")
     }
 
     _dataSet
@@ -555,8 +556,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     val expectedClasses = Set(
       dataFactory.getOWLClass("http://ex.com/bar#Cl1OrNegate"),
       dataFactory.getOWLClass("http://ex.com/bar#Cls1"),
-      dataFactory.getOWLClass("http://ex.com/bar#ComplementCls1")
-    )
+      dataFactory.getOWLClass("http://ex.com/bar#ComplementCls1"))
 
     import org.apache.flink.api.scala._
     val filteredDataSet: DataSet[OWLDisjointUnionAxiom] =
@@ -580,8 +580,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     val expectedNumberOfAxioms = 2
     val expectedClasses = Set(
       dataFactory.getOWLClass("http://ex.com/bar#DataMin3Prop1"),
-      dataFactory.getOWLClass("http://ex.com/bar#DataMax2Prop1")
-    )
+      dataFactory.getOWLClass("http://ex.com/bar#DataMax2Prop1"))
 
     import org.apache.flink.api.scala._
     val filteredDataSet: DataSet[OWLDisjointClassesAxiom] =
@@ -592,14 +591,13 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(
       filteredDataSet.filter(
         _.classExpressions().collect(Collectors.toSet()) == expectedClasses.asJava).count() ==
-      expectedNumberOfAxioms)
+        expectedNumberOfAxioms)
   }
 
   def equivClasses(ce1: OWLClassExpression, ce2: OWLClassExpression): OWLEquivalentClassesAxiom =
     new OWLEquivalentClassesAxiomImpl(
       List(ce1, ce2).asJavaCollection,
-      List.empty[OWLAnnotation].asJavaCollection
-    )
+      List.empty[OWLAnnotation].asJavaCollection)
 
   test("Equivalent classes axioms should be created correctly") {
     // 57) EquivalentClasses(<http://ex.com/bar#AllIndividualsCls> ObjectOneOf(<http://ex.com/foo#indivA> <http://ex.com/foo#indivB>))
@@ -730,8 +728,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
         df.getOWLClass("http://ex.com/bar#UnionCls"),
         df.getOWLObjectUnionOf(
           df.getOWLClass("http://ex.com/bar#Cls1"),
-          df.getOWLClass("http://ex.com/bar#Cls2")))
-    )
+          df.getOWLClass("http://ex.com/bar#Cls2"))))
 
     import org.apache.flink.api.scala._
     val filteredDataSet: DataSet[OWLEquivalentClassesAxiom] =
@@ -773,8 +770,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     val expectedNumberOfAxioms = 2
     val expectedRanges = Set(
       (dataFactory.getOWLDataProperty("http://ex.com/bar#dataProp1"), XSDVocabulary.STRING.getIRI),
-      (dataFactory.getOWLDataProperty("http://ex.com/bar#dataProp2"), XSDVocabulary.INT.getIRI)
-    )
+      (dataFactory.getOWLDataProperty("http://ex.com/bar#dataProp2"), XSDVocabulary.INT.getIRI))
 
     import org.apache.flink.api.scala._
     val filteredDataSet: DataSet[OWLDataPropertyRangeAxiom] =
