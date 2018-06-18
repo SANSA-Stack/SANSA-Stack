@@ -5,6 +5,7 @@ import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{ StructField, StructType, StringType }
 import net.sansa_stack.rdf.spark.utils.NodeUtils
+import net.sansa_stack.rdf.spark.utils.SchemaUtils
 
 /**
  * Spark/RDD based implementation of RDD[Triple].
@@ -22,12 +23,13 @@ object TripleOps {
   def toDF(triples: RDD[Triple]): DataFrame = {
 
     val spark: SparkSession = SparkSession.builder().getOrCreate()
-    val schema = StructType(
-      Seq(
-        StructField("subject", StringType, nullable = false),
-        StructField("predicate", StringType, nullable = false),
-        StructField("object", StringType, nullable = false)))
-    val rowRDD = triples.map(t => Row(NodeUtils.getNodeValue(t.getSubject), NodeUtils.getNodeValue(t.getPredicate), NodeUtils.getNodeValue(t.getObject)))
+    val schema = SchemaUtils.SQLSchemaDefault
+
+    val rowRDD = triples.map(t =>
+      Row(
+        NodeUtils.getNodeValue(t.getSubject),
+        NodeUtils.getNodeValue(t.getPredicate),
+        NodeUtils.getNodeValue(t.getObject)))
     val df = spark.createDataFrame(rowRDD, schema)
     df.createOrReplaceTempView("TRIPLES")
     df
@@ -123,7 +125,11 @@ object TripleOps {
    * @param object the object
    * @return RDD of triples
    */
-  def find(triples: RDD[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): RDD[Triple] = {
+  def find(
+    triples:   RDD[Triple],
+    subject:   Option[Node] = None,
+    predicate: Option[Node] = None,
+    `object`:  Option[Node] = None): RDD[Triple] = {
     triples.filter(t =>
       (subject == None || t.getSubject.matches(subject.get)) &&
         (predicate == None || t.getPredicate.matches(predicate.get)) &&
@@ -204,12 +210,16 @@ object TripleOps {
    *
    * @param triples RDD of triples
    * @param subject the subject (None for any)
-   * @param predicate the predicate (Node for any)
-   * @param object the object (Node for any)
+   * @param predicate the predicate (None for any)
+   * @param object the object (None for any)
    * @return true if there exists within this RDF graph
    * a triple with (S, P, O) pattern, false otherwise
    */
-  def contains(triples: RDD[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): Boolean = {
+  def contains(
+    triples:   RDD[Triple],
+    subject:   Option[Node] = None,
+    predicate: Option[Node] = None,
+    `object`:  Option[Node] = None): Boolean = {
     find(triples, subject, predicate, `object`).count() > 0
   }
 
