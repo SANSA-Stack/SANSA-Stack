@@ -1,8 +1,9 @@
 package net.sansa_stack.rdf.spark.model.graph
-import org.scalatest.FunSuite
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
 
@@ -91,8 +92,8 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val cnt = predicatesAsVariable.size()
     assert(cnt == 0)
   }
-  
-   test("filtering the objects which are literals on the graph should result in 7 entities") {
+
+  test("filtering the objects which are literals on the graph should result in 7 entities") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -105,6 +106,4 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val cnt = objectsAsLiterals.size()
     assert(cnt == 7)
   }
-   
-
 }
