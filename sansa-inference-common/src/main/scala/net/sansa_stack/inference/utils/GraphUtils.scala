@@ -1,13 +1,14 @@
 package net.sansa_stack.inference.utils
 
 import java.io.{ByteArrayOutputStream, File, FileOutputStream, FileWriter}
+import java.util
 
-import scalax.collection.edge.LDiEdge
 import com.itextpdf.text.PageSize
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.shared.PrefixMapping
+import org.apache.jena.sparql.util.FmtUtils
 import org.gephi.graph.api.GraphController
 import org.gephi.io.exporter.api.ExportController
 import org.gephi.io.exporter.preview.PDFExporter
@@ -18,12 +19,15 @@ import org.gephi.layout.plugin.force.yifanHu.YifanHuLayout
 import org.gephi.preview.api.{Item, PreviewController, PreviewProperty}
 import org.gephi.preview.types.EdgeColor
 import org.gephi.project.api.ProjectController
-import org.jgrapht.{DirectedGraph, Graph}
+import org.jgrapht.Graph
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector
-import org.openide.util.Lookup
-import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
 import org.jgrapht.graph.{DefaultDirectedGraph, DirectedPseudograph}
-import org.jgrapht.io.{ComponentNameProvider, GraphMLExporter, IntegerComponentNameProvider};
+import org.jgrapht.io.GraphMLExporter.AttributeCategory
+import org.jgrapht.io._
+import org.openide.util.Lookup
+import scalax.collection.edge.LDiEdge
+
+import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
 
 /**
   * @author Lorenz Buehmann
@@ -87,7 +91,8 @@ object GraphUtils {
     * @param graph the 'Graph for Scala' graph
     * @return the JGraphT graph
     */
-  def asJGraphtRuleSetGraph(graph: scalax.collection.mutable.Graph[Rule, LDiEdge]): Graph[Rule, LabeledEdge[Rule, TriplePattern]] = {
+  def asJGraphtRuleSetGraph(graph: scalax.collection.mutable.Graph[Rule, LDiEdge],
+                            showInFlowDirection: Boolean = false): Graph[Rule, LabeledEdge[Rule, TriplePattern]] = {
     val g = new DefaultDirectedGraph[Rule, LabeledEdge[Rule, TriplePattern]](classOf[LabeledEdge[Rule, TriplePattern]])
 
     val edges = graph.edges.toList
@@ -100,7 +105,11 @@ object GraphUtils {
 
       val label = e.label.asInstanceOf[TriplePattern]
 
-      g.addEdge(s, t, LabeledEdge[Rule, TriplePattern](s, t, label))
+      if (showInFlowDirection) {
+        g.addEdge(t, s, LabeledEdge[Rule, TriplePattern](t, s, label))
+      } else {
+        g.addEdge(s, t, LabeledEdge[Rule, TriplePattern](s, t, label))
+      }
 
     }
 
@@ -115,9 +124,10 @@ object GraphUtils {
       *
       * @param filename the target file
       */
-    def export(filename: String, showInFlowDirection: Boolean = false): Unit = {
+    def export(filename: String, showInFlowDirection: Boolean = false,
+               prefixMapping: PrefixMapping = PrefixMapping.Standard): Unit = {
 
-      val g: Graph[Rule, LabeledEdge[Rule, TriplePattern]] = asJGraphtRuleSetGraph(graph)
+      val g: Graph[Rule, LabeledEdge[Rule, TriplePattern]] = asJGraphtRuleSetGraph(graph, showInFlowDirection)
 
       // In order to be able to export edge and node labels and IDs,
       // we must implement providers for them
@@ -136,17 +146,38 @@ object GraphUtils {
       }
 
       val edgeLabelProvider = new ComponentNameProvider[LabeledEdge[Rule, TriplePattern]]() {
-        override def getName(e: LabeledEdge[Rule, TriplePattern]): String = e.label.toString
+        override def getName(e: LabeledEdge[Rule, TriplePattern]): String = {
+          val p = e.label.getPredicate
+          // omit if predicate is a variable
+          if(p.isVariable) {
+            ""
+          } else {
+            FmtUtils.stringForNode(e.label.getPredicate, prefixMapping)
+          }
+        }
       }
 
-//      val exporter = new GraphMLExporter[String,LabeledEdge](
+      import org.jgrapht.io.DefaultAttribute
+      val ruleDescriptionProvider = new ComponentAttributeProvider[Rule]() {
+        override def getComponentAttributes(r: Rule): util.Map[String, Attribute] = {
+          val map = new util.HashMap[String, Attribute]()
+          map.put("rule", DefaultAttribute.createAttribute(r.toString))
+          map
+        }
+      }
+
+      //      val exporter = new GraphMLExporter[String,LabeledEdge](
 //        vertexIDProvider, vertexNameProvider, edgeIDProvider,edgeLabelProvider)
 
       val exporter = new GraphMLExporter[Rule, LabeledEdge[Rule, TriplePattern]](
         new IntegerComponentNameProvider[Rule],
         vertexNameProvider,
+        ruleDescriptionProvider,
         new IntegerComponentNameProvider[LabeledEdge[Rule, TriplePattern]],
-        edgeLabelProvider)
+        edgeLabelProvider,
+        null)
+
+      exporter.registerAttribute("rule", AttributeCategory.NODE, AttributeType.STRING)
 
       val fw = new FileWriter(filename)
 
@@ -157,12 +188,12 @@ object GraphUtils {
 
           // Gephi
           // Init a project - and therefore a workspace
-          val pc = Lookup.getDefault().lookup(classOf[ProjectController])
+          val pc = Lookup.getDefault.lookup(classOf[ProjectController])
           pc.newProject()
-          val workspace = pc.getCurrentWorkspace()
+          val workspace = pc.getCurrentWorkspace
 
           // Get controllers and models
-          val importController = Lookup.getDefault().lookup(classOf[ImportController])
+          val importController = Lookup.getDefault.lookup(classOf[ImportController])
 
           // export as GraphML
           val tmpFilename = "/tmp/temp-graph.graphml"
@@ -171,8 +202,8 @@ object GraphUtils {
           // Import file
           val file = new File(tmpFilename)
           val container = importController.importFile(file)
-          container.getLoader().setEdgeDefault(EdgeDirectionDefault.DIRECTED)   // Force DIRECTED
-          container.getLoader().setAllowAutoNode(false)  // Don't create missing nodes
+          container.getLoader.setEdgeDefault(EdgeDirectionDefault.DIRECTED)   // Force DIRECTED
+          container.getLoader.setAllowAutoNode(false)  // Don't create missing nodes
 
           // Append imported data to GraphAPI
           importController.process(container, new DefaultProcessor(), workspace)
@@ -182,7 +213,7 @@ object GraphUtils {
 
 
           // See if graph is well imported
-          val graphModel = Lookup.getDefault().lookup(classOf[GraphController]).getGraphModel
+          val graphModel = Lookup.getDefault.lookup(classOf[GraphController]).getGraphModel
           val g = graphModel.getDirectedGraph()
 
           // Run YifanHuLayout for 100 passes - The layout always takes the current visible view
@@ -192,23 +223,23 @@ object GraphUtils {
           layout.setOptimalDistance(200f)
 
           layout.initAlgo()
-          for (i <- 0 to 100 if layout.canAlgo()) {
+          for (i <- 0 to 100 if layout.canAlgo) {
             layout.goAlgo()
           }
           layout.endAlgo()
 
-          val model = Lookup.getDefault().lookup(classOf[PreviewController]).getModel()
-          model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, true)
-          model.getProperties().putValue(PreviewProperty.SHOW_EDGE_LABELS, true)
-          model.getProperties().putValue(PreviewProperty.EDGE_CURVED, false)
-          model.getProperties().putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(java.awt.Color.GRAY))
-          model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, 0.1f)
-          model.getProperties().putValue(PreviewProperty.NODE_LABEL_FONT, model.getProperties().getFontValue(PreviewProperty.NODE_LABEL_FONT).deriveFont(8))
+          val model = Lookup.getDefault.lookup(classOf[PreviewController]).getModel()
+          model.getProperties.putValue(PreviewProperty.SHOW_NODE_LABELS, true)
+          model.getProperties.putValue(PreviewProperty.SHOW_EDGE_LABELS, true)
+          model.getProperties.putValue(PreviewProperty.EDGE_CURVED, false)
+          model.getProperties.putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(java.awt.Color.GRAY))
+          model.getProperties.putValue(PreviewProperty.EDGE_THICKNESS, 0.1f)
+          model.getProperties.putValue(PreviewProperty.NODE_LABEL_FONT, model.getProperties.getFontValue(PreviewProperty.NODE_LABEL_FONT).deriveFont(8))
                 model.getProperties.putValue(Item.NODE_LABEL, "Vertex Label")
 
 
           // Export full graph
-          val ec = Lookup.getDefault().lookup(classOf[ExportController])
+          val ec = Lookup.getDefault.lookup(classOf[ExportController])
           //      ec.exportFile(new File("io_gexf.gexf"));
 
           // PDF Exporter config and export to Byte array
@@ -310,7 +341,7 @@ object GraphUtils {
         val label = e.label.asInstanceOf[Node]
         g.addVertex(s)
         g.addVertex(t)
-        g.addEdge(s, t, new LabeledEdge(s, t, label))
+        g.addEdge(s, t, LabeledEdge(s, t, label))
       }
 
       // In order to be able to export edge and node labels and IDs,
