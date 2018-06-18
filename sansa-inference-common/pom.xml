@@ -57,6 +57,10 @@
       <artifactId>jgrapht-ext</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jgrapht</groupId>
+      <artifactId>jgrapht-io</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.gephi</groupId>
       <artifactId>gephi-toolkit</artifactId>
       <exclusions>
