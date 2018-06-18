@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class RelevancyTests extends FunSuite with DataFrameSuiteBase {
 
@@ -29,8 +29,8 @@ class RelevancyTests extends FunSuite with DataFrameSuiteBase {
     val ratio = triples.assessCoverageScope()
     assert(ratio == 0.0)
   }
-  
-  test("assessing the coverage details of a dataset should restul in value 0.22641509433962265") {
+
+  test("assessing the coverage details of a dataset should restul in value 0.21") {
 
     val path = getClass.getResource("/rdf.nt").getPath
     val lang: Lang = Lang.NTRIPLES
@@ -38,7 +38,6 @@ class RelevancyTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang)(path)
 
     val ratio = triples.assessCoverageDetail()
-    assert(ratio == 0.22641509433962265)
+    assert(ratio == 0.21)
   }
-  
 }

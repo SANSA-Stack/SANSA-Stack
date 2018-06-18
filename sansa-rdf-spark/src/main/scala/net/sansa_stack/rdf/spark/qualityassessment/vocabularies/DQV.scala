@@ -36,7 +36,6 @@ object DQV {
   // Indicates the data set of which this observation is a part.
   val dataSet = "http://purl.org/linked-data/cube#dataSet"
   val dqv_description = "http://www.w3.org/ns/dqv#description"
-  
   // Refers to the resource (e.g., a dataset, a linkset, a graph, a set of triples) on which the quality measurement is performed.
   val computedOn = "dqv:computedOn"
 

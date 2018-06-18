@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class CompletenessTests extends FunSuite with DataFrameSuiteBase {
 

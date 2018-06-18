@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class SyntacticvalidityTests extends FunSuite with DataFrameSuiteBase {
 
@@ -19,7 +19,7 @@ class SyntacticvalidityTests extends FunSuite with DataFrameSuiteBase {
     assert(value == 0.0)
   }
 
-  test("assessing the XSD datatype compatible literals should result in value 80") {
+  test("assessing the XSD datatype compatible literals should result in value 78") {
 
     val path = getClass.getResource("/rdf.nt").getPath
     val lang: Lang = Lang.NTRIPLES
@@ -27,6 +27,6 @@ class SyntacticvalidityTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang)(path)
 
     val value = triples.assessXSDDatatypeCompatibleLiterals()
-    assert(value == 80)
+    assert(value == 78)
   }
 }
