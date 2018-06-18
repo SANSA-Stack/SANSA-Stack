@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.model.ds
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.graph.{ Node, Triple, NodeFactory }
+import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class DSTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
@@ -78,8 +78,8 @@ class DSTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(size == 9)
   }
-  
-   test("add a statement to the RDF graph should result in size 10") {
+
+  test("add a statement to the RDF graph should result in size 10") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -126,8 +126,8 @@ class DSTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(size == 12)
   }
-  
-    test("remove a statement from the RDF graph should result in size 9") {
+
+  test("remove a statement from the RDF graph should result in size 9") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 

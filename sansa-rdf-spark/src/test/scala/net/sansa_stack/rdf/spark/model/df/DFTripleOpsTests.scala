@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.model.df
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.graph.{ Node, Triple, NodeFactory }
+import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
@@ -179,5 +179,4 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(size == 9)
   }
-
 }
