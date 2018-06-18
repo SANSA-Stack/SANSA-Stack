@@ -5,6 +5,8 @@ import java.net.URL
 import java.nio.file.{Files, Path, Paths}
 import java.util.zip.ZipInputStream
 
+import scala.collection.JavaConverters._
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io.index.TriplesIndexer
 import org.apache.jena.rdf.model.{ModelFactory, ResourceFactory}
@@ -48,14 +50,14 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.rdf").getPath
     val lang: Lang = Lang.TURTLE
 
-    //This test only works when "wholeFile" is set to true
+    // This test only works when "wholeFile" is set to true
     val triples = spark.read.option("wholeFile", true).rdfxml(path)
 
     val cnt = triples.count()
     assert(cnt == 9)
   }
 
-  def extractZipFile(zis: ZipInputStream, destination: Path) = {
+  def extractZipFile(zis: ZipInputStream, destination: Path): Unit = {
     Stream.continually(zis.getNextEntry).takeWhile(_ != null).foreach { file =>
       if (!file.isDirectory) {
         val outPath = destination.resolve(file.getName)
@@ -76,7 +78,7 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
     // load test suite from URL
     val url = new URL("https://www.w3.org/2013/TurtleTests/TESTS.zip")
-    //zip file content
+    // zip file content
     val zis: ZipInputStream = new ZipInputStream(url.openStream())
 
     val tmpFolder = Files.createTempDirectory("sansa-turtle-tests")
@@ -86,7 +88,6 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
     val lang: Lang = Lang.TURTLE
 
-    import scala.collection.JavaConversions._
     val path = tmpFolder.resolve("TurtleTests/")
 
     val sourceProp = ResourceFactory.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#action")
@@ -99,7 +100,7 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
     val tests = manifest.listSubjectsWithProperty(
       RDF.`type`,
-      ResourceFactory.createResource("http://www.w3.org/ns/rdftest#TestTurtleEval"))
+      ResourceFactory.createResource("http://www.w3.org/ns/rdftest#TestTurtleEval")).asScala
     val files = tests.map(test =>
       (test.getPropertyResourceValue(sourceProp).getURI, test.getPropertyResourceValue(targetProp).getURI)
     )
@@ -142,16 +143,14 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("bla") {
-    import scala.collection.JavaConversions._
     val sourceModel = ModelFactory.createDefaultModel()
-    val turtleFile = new File(scala.collection.JavaConversions.getClass.getResource("/loader/data.ttl").getPath)
+    val turtleFile = new File(getClass.getResource("/loader/data.ttl").getPath)
     val fileInputStream = new FileInputStream(turtleFile)
     sourceModel.read(fileInputStream, null, "TURTLE")
 
-    sourceModel.listStatements().toSeq.foreach(st => {
+    sourceModel.listStatements().asScala.toSeq.foreach(st => {
       val s = st.getSubject
       if (s.isAnon) println(s.getId.getLabelString)
     })
   }
-
 }
