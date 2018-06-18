@@ -35,7 +35,7 @@ class RDFGraphDataset(override val triples: Dataset[Triple])
 
   def unionAll(graphs: Seq[RDFGraphDataset]): RDFGraphDataset = {
     // the Dataframe based solution
-    return graphs.reduce(_ union _)
+    graphs.reduce(_ union _)
 
 //    // to limit the lineage, we convert to RDDs first, and use the SparkContext Union method for a sequence of RDDs
 //    val df: Option[DataFrame] = graphs match {

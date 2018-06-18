@@ -17,10 +17,12 @@ class SimpleRDFOps extends RDFOps[SimpleRDF]  {
         val s = t.s
         val p = t.p
         val o = t.o
-        if (p.isInstanceOf[SimpleRDF#URI])
-            (s, p.asInstanceOf[SimpleRDF#URI], o)
-        else
-            throw new RuntimeException("fromTriple: predicate " + p.toString + " must be a URI")
+        p match {
+            case uri: String =>
+                (s, uri, o)
+            case _ =>
+                throw new RuntimeException("fromTriple: predicate " + p.toString + " must be a URI")
+        }
     }
 
     // node

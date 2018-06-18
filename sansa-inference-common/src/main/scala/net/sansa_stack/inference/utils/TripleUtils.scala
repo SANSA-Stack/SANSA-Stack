@@ -15,14 +15,14 @@ import org.apache.jena.vocabulary.RDFS._
 object TripleUtils {
 
   // set of properties that indicate terminological triples
-  val properties = List(
+  val properties: List[Node] = List(
     subClassOf, equivalentClass, disjointWith,
     intersectionOf, unionOf, complementOf, someValuesFrom, allValuesFrom, hasValue,
     maxCardinality, minCardinality, cardinality,
     subPropertyOf, equivalentProperty, propertyDisjointWith, domain, range, inverseOf).map(t => t.asNode())
 
   // set of types that indicate terminological triples
-  val types = Set(
+  val types: Set[Node] = Set(
     ObjectProperty, DatatypeProperty,
     FunctionalProperty, InverseFunctionalProperty,
     SymmetricProperty, AsymmetricProperty,
@@ -115,7 +115,7 @@ object TripleUtils {
       * @return all var nodes of the triple pattern
       */
     def vars(): Seq[Node] = {
-      nodes.filter(_.isVariable)
+      nodes().filter(_.isVariable)
     }
   }
 

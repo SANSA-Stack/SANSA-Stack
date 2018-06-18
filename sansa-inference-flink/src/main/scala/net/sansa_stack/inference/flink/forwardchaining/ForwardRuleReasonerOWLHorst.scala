@@ -50,9 +50,9 @@ class ForwardRuleReasonerOWLHorst(env: ExecutionEnvironment) extends ForwardRule
                               .distinct()
 
     // 2. we compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
-    // rdfs11: 	(xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) ->	(xxx rdfs:subClassOf zzz)
+    // rdfs11:  (xxx rdfs:subClassOf yyy), (yyy rdfs:subClassOf zzz) -> (xxx rdfs:subClassOf zzz)
     val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples)
-    // rdfs5:	(xxx rdfs:subPropertyOf yyy), (yyy rdfs:subPropertyOf zzz) -> (xxx rdfs:subPropertyOf zzz)
+    // rdfs5: (xxx rdfs:subPropertyOf yyy), (yyy rdfs:subPropertyOf zzz) -> (xxx rdfs:subPropertyOf zzz)
     val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples)
 
 
@@ -159,8 +159,8 @@ class ForwardRuleReasonerOWLHorst(env: ExecutionEnvironment) extends ForwardRule
       // 2. SubPropertyOf inheritance according to rdfs7 is computed
 
       /*
-        rdfs7	aaa rdfs:subPropertyOf bbb .
-              xxx aaa yyy .                   	xxx bbb yyy .
+        rdfs7 aaa rdfs:subPropertyOf bbb .
+              xxx aaa yyy .                    => xxx bbb yyy .
        */
       val triplesRDFS7 =
         triplesFiltered
@@ -173,8 +173,8 @@ class ForwardRuleReasonerOWLHorst(env: ExecutionEnvironment) extends ForwardRule
       // 3. Domain and Range inheritance according to rdfs2 and rdfs3 is computed
 
       /*
-      rdfs2	aaa rdfs:domain xxx .
-            yyy aaa zzz .	          yyy rdf:type xxx .
+      rdfs2 aaa rdfs:domain xxx .
+            yyy aaa zzz .           => yyy rdf:type xxx .
        */
       val triplesRDFS2 =
         rdfs7Res
@@ -182,8 +182,8 @@ class ForwardRuleReasonerOWLHorst(env: ExecutionEnvironment) extends ForwardRule
           .map(t => RDFTriple(t.s, RDF.`type`.getURI, domainMap(t.p)))
 
       /*
-     rdfs3	aaa rdfs:range xxx .
-           yyy aaa zzz .	          zzz rdf:type xxx .
+     rdfs3 aaa rdfs:range xxx .
+           yyy aaa zzz .           => zzz rdf:type xxx .
       */
       val triplesRDFS3 =
         rdfs7Res
@@ -195,8 +195,8 @@ class ForwardRuleReasonerOWLHorst(env: ExecutionEnvironment) extends ForwardRule
       // input are the rdf:type triples from RDFS2/RDFS3 and the ones contained in the original graph
 
       /*
-      rdfs9	xxx rdfs:subClassOf yyy .
-            zzz rdf:type xxx .	        zzz rdf:type yyy .
+      rdfs9 xxx rdfs:subClassOf yyy .
+            zzz rdf:type xxx .         => zzz rdf:type yyy .
        */
       val triplesRDFS9 =
         triplesRDFS2

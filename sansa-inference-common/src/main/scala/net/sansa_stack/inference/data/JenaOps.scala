@@ -1,10 +1,10 @@
 package net.sansa_stack.inference.data
 
+import scala.collection.JavaConverters._
+
 import org.apache.jena.datatypes.{BaseDatatype, RDFDatatype, TypeMapper}
 import org.apache.jena.graph.{Graph => JenaGraph, Node => JenaNode, Triple => JenaTriple, _}
-import org.apache.jena.rdf.model.{Literal => JenaLiteral, Seq => _}
-
-import scala.collection.JavaConverters._
+import org.apache.jena.rdf.model.{Seq => _}
 
 class JenaOps extends RDFOps[Jena]  {
 
@@ -33,10 +33,12 @@ class JenaOps extends RDFOps[Jena]  {
     val s = t.getSubject
     val p = t.getPredicate
     val o = t.getObject
-    if (p.isInstanceOf[Jena#URI])
-      (s, p.asInstanceOf[Jena#URI], o)
-    else
-      throw new RuntimeException("fromTriple: predicate " + p.toString + " must be a URI")
+    p match {
+      case uri: Node_URI =>
+        (s, uri, o)
+      case _ =>
+        throw new RuntimeException("fromTriple: predicate " + p.toString + " must be a URI")
+    }
   }
 
   // node
@@ -52,10 +54,11 @@ class JenaOps extends RDFOps[Jena]  {
   def makeUri(iriStr: String): Jena#URI = { NodeFactory.createURI(iriStr).asInstanceOf[Node_URI] }
 
   def fromUri(node: Jena#URI): String =
-    if (node.isURI)
+    if (node.isURI) {
       node.getURI
-    else
+    } else {
       throw new RuntimeException("fromUri: " + node.toString() + " must be a URI")
+    }
 
   // bnode
 
@@ -67,17 +70,18 @@ class JenaOps extends RDFOps[Jena]  {
   }
 
   def fromBNode(bn: Jena#BNode): String =
-    if (bn.isBlank)
+    if (bn.isBlank) {
       bn.getBlankNodeId.getLabelString
-    else
+    } else {
       throw new RuntimeException("fromBNode: " + bn.toString + " must be a BNode")
+    }
 
   // literal
 
   // TODO the javadoc doesn't say if this is thread safe
   lazy val mapper = TypeMapper.getInstance
 
-  def jenaDatatype(datatype: Jena#URI) = {
+  private def jenaDatatype(datatype: Jena#URI) = {
     val iriString = fromUri(datatype)
     val typ = mapper.getTypeByName(iriString)
     if (typ == null) {
@@ -94,10 +98,11 @@ class JenaOps extends RDFOps[Jena]  {
   val __rdfLangStringURI: Jena#URI = makeUri("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")
 
   def makeLiteral(lexicalForm: String, datatype: Jena#URI): Jena#Literal =
-    if (datatype == __xsdStringURI)
+    if (datatype == __xsdStringURI) {
       NodeFactory.createLiteral(lexicalForm, null, null).asInstanceOf[Node_Literal]
-    else
+    } else {
       NodeFactory.createLiteral(lexicalForm, null, jenaDatatype(datatype)).asInstanceOf[Node_Literal]
+    }
 
   def makeLangTaggedLiteral(lexicalForm: String, lang: Jena#Lang): Jena#Literal =
     NodeFactory.createLiteral(lexicalForm, fromLang(lang), null).asInstanceOf[Node_Literal]
@@ -105,9 +110,9 @@ class JenaOps extends RDFOps[Jena]  {
 
   // lang
 
-  def makeLang(langString: String) = langString
+  def makeLang(langString: String): String = langString
 
-  def fromLang(lang: Jena#Lang) = lang
+  def fromLang(lang: Jena#Lang): String = lang
 
 
 

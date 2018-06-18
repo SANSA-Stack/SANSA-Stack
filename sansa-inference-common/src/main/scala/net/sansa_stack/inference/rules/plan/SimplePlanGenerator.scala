@@ -1,30 +1,20 @@
 package net.sansa_stack.inference.rules.plan
 
-import java.io.PrintWriter
-import java.util.Collections
+import scala.collection.JavaConverters._
+import scala.util.Try
 
-import com.google.common.collect.ImmutableList
 import org.apache.calcite.config.Lex
+import org.apache.calcite.interpreter.{BindableConvention, Bindables}
 import org.apache.calcite.plan.{RelOptUtil, _}
+import org.apache.calcite.rel.`type`.RelDataTypeSystem
+import org.apache.calcite.rel.rules._
 import org.apache.calcite.rel.{RelCollationTraitDef, RelNode}
 import org.apache.calcite.schema.SchemaPlus
 import org.apache.calcite.sql.parser.SqlParser
 import org.apache.calcite.tools._
-import collection.JavaConverters._
-import scala.util.Try
-
-import org.apache.calcite.rel.`type`.RelDataTypeSystem
-import org.apache.calcite.rel.externalize.RelWriterImpl
-import org.apache.calcite.rel.rules._
 import org.apache.jena.reasoner.rulesys.Rule
 
 import net.sansa_stack.inference.utils.{Logging, RuleUtils}
-import org.apache.calcite.adapter.enumerable.{EnumerableConvention, EnumerableRules}
-import org.apache.calcite.interpreter.{BindableConvention, Bindables}
-import org.apache.calcite.plan.RelOptPlanner.CannotPlanException
-import org.apache.calcite.plan.hep.{HepMatchOrder, HepPlanner, HepProgramBuilder}
-import org.apache.calcite.plan.volcano.VolcanoPlanner
-import org.apache.calcite.sql2rel.{RelDecorrelator, SqlToRelConverter}
 
 /**
   * @author Lorenz Buehmann
@@ -37,7 +27,7 @@ class SimplePlanGenerator(schema: SchemaPlus) extends Logging {
     BindableConvention.INSTANCE.getTraitDef
   )
 
-  val optRuleSet = RuleSets.ofList(
+  val optRuleSet: RuleSet = RuleSets.ofList(
     FilterJoinRule.FILTER_ON_JOIN,// push a filter into a join
     FilterJoinRule.JOIN,// push filter into the children of a join
     ProjectJoinTransposeRule.INSTANCE// push a projection to the children of a join
@@ -68,13 +58,13 @@ class SimplePlanGenerator(schema: SchemaPlus) extends Logging {
 //      // Context provides a way to store data within the planner session that can be accessed in planner rules.
 //      .context(Contexts.EMPTY_CONTEXT)
 //      // Rule sets to use in transformation phases. Each transformation phase can use a different set of rules.
-////      .ruleSets(optRuleSet)
+// //      .ruleSets(optRuleSet)
 //      .ruleSets(RuleSets.ofList(Bindables.BINDABLE_TABLE_SCAN_RULE, Bindables.BINDABLE_PROJECT_RULE, Bindables.BINDABLE_JOIN_RULE, Bindables.BINDABLE_FILTER_RULE, FilterJoinRule.FILTER_ON_JOIN))
 //      .programs(Programs.ofRules(Bindables.BINDABLE_TABLE_SCAN_RULE, Bindables.BINDABLE_PROJECT_RULE, Bindables.BINDABLE_JOIN_RULE, Bindables.BINDABLE_FILTER_RULE, FilterJoinRule.FILTER_ON_JOIN))
 //
 //      // Custom cost factory to use during optimization
 //      .costFactory(null)
-////      .programs(program)
+// //      .programs(program)
 //      .typeSystem(RelDataTypeSystem.DEFAULT)
 //      .build()
 

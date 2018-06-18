@@ -11,7 +11,7 @@ import org.apache.jena.riot.{Lang, RDFDataMgr}
   * @author Lorenz Buehmann
   */
 class NTriplesStringToJenaTriple
-    extends Function1[String, Triple]
+    extends Function[String, Triple]
     with java.io.Serializable {
   override def apply(s: String): Triple = {
     RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(s.getBytes), Lang.NTRIPLES, null).next()
