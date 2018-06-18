@@ -8,7 +8,7 @@ import net.sansa_stack.inference.data.RDFTriple
   * @author Lorenz Buehmann
   */
 class RDFTripleToNTripleString
-    extends Function1[RDFTriple, String]
+    extends Function[RDFTriple, String]
     with java.io.Serializable {
   override def apply(t: RDFTriple): String = {
     val objStr =
@@ -17,6 +17,6 @@ class RDFTripleToNTripleString
       } else {
         t.o
       }
-    s"<${t.s}> <${t.p}> ${objStr} ."
+    s"<${t.s}> <${t.p}> $objStr ."
   }
 }

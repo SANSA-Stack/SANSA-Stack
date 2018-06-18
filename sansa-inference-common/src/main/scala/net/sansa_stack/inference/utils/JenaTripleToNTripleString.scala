@@ -9,7 +9,7 @@ import org.apache.jena.graph.Triple
   * @author Lorenz Buehmann
   */
 class JenaTripleToNTripleString
-    extends ((Triple) => String)
+    extends Function[Triple, String]
     with java.io.Serializable {
   override def apply(t: Triple): String = {
     val subStr =
@@ -27,7 +27,7 @@ class JenaTripleToNTripleString
       } else {
         s"<${t.getObject}>"
       }
-    s"${subStr} <${t.getPredicate}> ${objStr} ."
+    s"$subStr <${t.getPredicate}> $objStr ."
   }
 }
 

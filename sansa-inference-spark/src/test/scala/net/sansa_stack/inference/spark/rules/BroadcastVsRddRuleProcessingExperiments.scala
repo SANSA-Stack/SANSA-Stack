@@ -85,8 +85,8 @@ object BroadcastVsRddRuleProcessingExperiments extends Profiler{
   }
 
   /*
-     rdfs7	aaa rdfs:subPropertyOf bbb .
-           xxx aaa yyy .                   	xxx bbb yyy .
+     rdfs7 aaa rdfs:subPropertyOf bbb .
+           xxx aaa yyy .                    xxx bbb yyy .
     */
 
   def rddOnly(triples: RDD[Triple]): RDD[Triple] = {

@@ -25,7 +25,7 @@ object GenericDataframeVsGenericNativeExperiments {
     .appName("GenericDataframe-Vs-GenericNative-Experiments")
     .master("local[4]")
     .config("spark.eventLog.enabled", "true")
-    .config("spark.hadoop.validateOutputSpecs", "false") //override output files
+    .config("spark.hadoop.validateOutputSpecs", "false") // override output files
     .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     .config("spark.default.parallelism", "4")
     .config("spark.sql.shuffle.partitions", "8")
@@ -47,7 +47,7 @@ object GenericDataframeVsGenericNativeExperiments {
     session = sessionBuilder.appName("generic-rdd").getOrCreate()
 
     // load triples from disk
-    var graph = RDFGraphLoader.loadFromDiskAsRDD(session, args(0), 4)//generateData(1)
+    var graph = RDFGraphLoader.loadFromDiskAsRDD(session, args(0), 4)// generateData(1)
 
     val infGraphNative = native(graph)
 

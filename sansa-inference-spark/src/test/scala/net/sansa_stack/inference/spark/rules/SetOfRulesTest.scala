@@ -1,17 +1,18 @@
 package net.sansa_stack.inference.spark.rules
 
+import scala.collection.mutable
+
+import org.apache.jena.graph.Triple
+import org.apache.jena.reasoner.rulesys.Rule
+import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
+import org.apache.spark.sql.SparkSession
+
 import net.sansa_stack.inference.data.JenaOps
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.model.RDFGraphNative
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
 import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerNaive, ForwardRuleReasonerOptimizedNative}
 import net.sansa_stack.inference.utils.RuleUtils
-import org.apache.jena.graph.Triple
-import org.apache.jena.reasoner.rulesys.Rule
-import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
-import org.apache.spark.sql.SparkSession
-
-import scala.collection.mutable
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -25,7 +26,7 @@ object SetOfRulesTest {
     //      .master("spark://me-ThinkPad-W510:7077")
     .master("local[4]")
     .config("spark.eventLog.enabled", "true")
-    .config("spark.hadoop.validateOutputSpecs", "false") //override output files
+    .config("spark.hadoop.validateOutputSpecs", "false") // override output files
     .config("spark.default.parallelism", "4")
     .config("spark.sql.shuffle.partitions", "8")
     //      .config("spark.jars", "/home/me/work/projects/scala/Spark-Sem-I/target/inference-spark-0.1-SNAPSHOT.jar")
@@ -48,7 +49,7 @@ object SetOfRulesTest {
     val numberOfTriples = graph.size()
     println("#Triples:" + numberOfTriples)
 
-    val rules = RuleUtils.load("rdfs-simple.rules")//.filter(r => ruleNames.contains(r.getName))
+    val rules = RuleUtils.load("rdfs-simple.rules")// .filter(r => ruleNames.contains(r.getName))
 
 //    runNaive(graph, rules)
 //    runNative(graph, rules)

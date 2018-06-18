@@ -7,6 +7,4 @@ import org.apache.jena.rdf.model.Model
   *
   * @author Lorenz Buehmann
   */
-case class TestCase (id: String,  description: String, testCaseType: String, inputGraph: Model, outputGraph: Model){
-
-}
+case class TestCase(id: String, description: String, testCaseType: String, inputGraph: Model, outputGraph: Model) {}

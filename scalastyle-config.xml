@@ -116,7 +116,7 @@ This file is divided into 3 sections:
 
   <check level="error" class="org.scalastyle.file.NewLineAtEofChecker" enabled="true"></check>
 
-  <check customId="nonascii" level="error" class="org.scalastyle.scalariform.NonASCIICharacterChecker" enabled="true"></check>
+  <check customId="nonascii" level="error" class="org.scalastyle.scalariform.NonASCIICharacterChecker" enabled="false"></check>
 
   <check level="error" class="org.scalastyle.scalariform.SpaceAfterCommentStartChecker" enabled="true"></check>
 
@@ -142,13 +142,13 @@ This file is divided into 3 sections:
   <!--</check>-->
 
   <!-- As of SPARK-7977 all printlns need to be wrapped in '// scalastyle:off/on println' -->
-  <check customId="println" level="error" class="org.scalastyle.scalariform.TokenChecker" enabled="true">
-    <parameters><parameter name="regex">^println$</parameter></parameters>
-    <customMessage><![CDATA[Are you sure you want to println? If yes, wrap the code block with
-      // scalastyle:off println
-      println(...)
-      // scalastyle:on println]]></customMessage>
-  </check>
+  <!--<check customId="println" level="error" class="org.scalastyle.scalariform.TokenChecker" enabled="true">-->
+    <!--<parameters><parameter name="regex">^println$</parameter></parameters>-->
+    <!--<customMessage><![CDATA[Are you sure you want to println? If yes, wrap the code block with-->
+      <!--// scalastyle:off println-->
+      <!--println(...)-->
+      <!--// scalastyle:on println]]></customMessage>-->
+  <!--</check>-->
 
   <check customId="visiblefortesting" level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
     <parameters><parameter name="regex">@VisibleForTesting</parameter></parameters>
@@ -222,15 +222,15 @@ This file is divided into 3 sections:
     is slower.  </customMessage>
   </check>
 
-  <check level="warning" class="org.scalastyle.scalariform.ImportOrderChecker" enabled="true">
-    <parameters>
-      <parameter name="groups">java,scala,3rdParty,sansa</parameter>
-      <parameter name="group.java">javax?\..*</parameter>
-      <parameter name="group.scala">scalax?\..*</parameter>
-      <parameter name="group.3rdParty">(?!net\.sansa_stack\.inference\.).*</parameter>
-      <parameter name="group.sansa">net\.sansa_stack\.inference\..*</parameter>
-    </parameters>
-  </check>
+  <!--<check level="warning" class="org.scalastyle.scalariform.ImportOrderChecker" enabled="true">-->
+    <!--<parameters>-->
+      <!--<parameter name="groups">java,scala,3rdParty,sansa</parameter>-->
+      <!--<parameter name="group.java">javax?\..*</parameter>-->
+      <!--<parameter name="group.scala">scalax?\..*</parameter>-->
+      <!--<parameter name="group.3rdParty">(?!net\.sansa_stack\.inference\.).*</parameter>-->
+      <!--<parameter name="group.sansa">net\.sansa_stack\.inference\..*</parameter>-->
+    <!--</parameters>-->
+  <!--</check>-->
 
   <check level="error" class="org.scalastyle.scalariform.DisallowSpaceBeforeTokenChecker" enabled="true">
     <parameters>

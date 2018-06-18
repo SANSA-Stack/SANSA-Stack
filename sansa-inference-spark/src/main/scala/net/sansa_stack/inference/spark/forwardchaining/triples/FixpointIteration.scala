@@ -27,7 +27,7 @@ object FixpointIteration extends Logging {
     * the termination criterion. The iterations terminate when either the termination criterion
     * [[RDD]] contains no elements or when `maxIterations` iterations have been performed.
     *
-    **/
+    */
   def apply[T: ClassTag](maxIterations: Int = 10)(rdd: RDD[T], f: RDD[T] => RDD[T]): RDD[T] = {
     var newRDD = rdd
     newRDD.cache()
@@ -56,7 +56,7 @@ object FixpointIteration extends Logging {
     * the termination criterion. The iterations terminate when either the termination criterion
     * RDD contains no elements or when `maxIterations` iterations have been performed.
     *
-    **/
+    */
   def apply2[T: ClassTag](maxIterations: Int = 10)(dataset: Dataset[T], f: Dataset[T] => Dataset[T]): Dataset[T] = {
     var newDS = dataset
     newDS.cache()

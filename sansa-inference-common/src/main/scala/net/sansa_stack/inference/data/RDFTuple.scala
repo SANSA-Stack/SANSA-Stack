@@ -8,6 +8,7 @@ package net.sansa_stack.inference.data
   * @author Lorenz Buehmann
   */
 case class RDFTuple(s: String, o: String) extends Product2[String, String] {
-    override def _1: String = s
-    override def _2: String = o
-  }
+  override def _1: String = s
+
+  override def _2: String = o
+}
