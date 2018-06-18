@@ -30,10 +30,6 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
     val cnt = triples.count()
     assert(cnt == 9)
-
-    triples.show(false)
-
-    new TriplesIndexer().index(triples).show()
   }
 
   test("loading Turtle file into DataFrame should result in 12 triples") {
