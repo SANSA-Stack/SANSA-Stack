@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.spark.stats
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
 
@@ -318,5 +318,4 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(cnt == 0)
   }
-
 }

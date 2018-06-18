@@ -1,8 +1,8 @@
 package net.sansa_stack.rdf.spark
 
 import net.sansa_stack.rdf.spark.utils.Logging
-import org.apache.spark.rdd.RDD
 import org.apache.jena.graph.{ Node, Triple }
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 package object stats {
@@ -14,7 +14,7 @@ package object stats {
      * Compute distributed RDF dataset statistics.
      * @return VoID description of the given dataset
      */
-    def stats = RDFStatistics.run(triples)
+    def stats: RDD[String] = RDFStatistics.run(triples)
 
     /**
      * <b>1. Used Classes Criterion </b> <br>
@@ -25,7 +25,7 @@ package object stats {
      * <b>Action</b> : `S += ?o`
      * @return RDD of classes/instances
      */
-    def statsUsedClasses() = Used_Classes(triples, spark).Filter()
+    def statsUsedClasses(): RDD[Node] = Used_Classes(triples, spark).Filter()
 
     /**
      * <b>2. Class Usage Count Criterion </b> <br>
@@ -40,7 +40,7 @@ package object stats {
      * <b>Action</b> : `M[?o]++ `
      * @return RDD of classes used in the dataset and their frequencies.
      */
-    def statsClassUsageCount() = Used_Classes(triples, spark).Action()
+    def statsClassUsageCount(): RDD[(Node, Int)] = Used_Classes(triples, spark).Action()
 
     /**
      * <b>3. Classes Defined Criterion </b> <br>
@@ -55,7 +55,7 @@ package object stats {
      * <b>Action</b> : `S += ?s `
      * @return RDD of classes defined in the dataset.
      */
-    def statsClassesDefined() = Classes_Defined(triples, spark).Action()
+    def statsClassesDefined(): RDD[Node] = Classes_Defined(triples, spark).Action()
 
     /**
      * <b>5. Property Usage Criterion </b> <br>
@@ -67,7 +67,7 @@ package object stats {
      * <b>Action</b> : `M[?p]++ `
      * @return RDD of predicates used in the dataset and their frequencies.
      */
-    def statsPropertyUsage() = PropertyUsage(triples, spark).Action()
+    def statsPropertyUsage(): RDD[(Node, Int)] = PropertyUsage(triples, spark).Action()
 
     /**
      * <b>6. Property usage distinct per subject  </b> <br>
@@ -76,7 +76,7 @@ package object stats {
      * <b>Action</b> : `M[?s] += ?p `
      * @return RDD of predicates used in the dataset and their frequencies.
      */
-    def statsPropertyUsageDistinctPerSubject() = RDFStatistics.PropertyUsageDistinctPerSubject(triples)
+    def statsPropertyUsageDistinctPerSubject(): RDD[(Iterable[Triple], Int)] = RDFStatistics.PropertyUsageDistinctPerSubject(triples)
 
     /**
      * <b>7. Property usage distinct per object   </b> <br>
@@ -85,7 +85,7 @@ package object stats {
      * <b>Action</b> : `M[?o] += ?p `
      * @return RDD of predicates used in the dataset and their frequencies.
      */
-    def statsPropertyUsageDistinctPerObject() = RDFStatistics.PropertyUsageDistinctPerObject(triples)
+    def statsPropertyUsageDistinctPerObject(): RDD[(Iterable[Triple], Int)] = RDFStatistics.PropertyUsageDistinctPerObject(triples)
 
     /**
      * <b>16. Distinct entities </b> <br>
@@ -94,98 +94,98 @@ package object stats {
      * <b>Action</b> : `S`
      * @return RDD of distinct entities in the dataset.
      */
-    def statsDistinctEntities() = DistinctEntities(triples, spark).Action()
+    def statsDistinctEntities(): RDD[Triple] = DistinctEntities(triples, spark).Action()
 
     /**
      * * 17. Literals criterion
      *
      * @return number of triples that are referencing literals to subjects.
      */
-    def statsLiterals() = RDFStatistics.Literals(triples)
+    def statsLiterals(): RDD[Triple] = RDFStatistics.Literals(triples)
 
     /**
      * 18. Blanks as subject criterion
      *
      * @return number of triples where blanknodes are used as subjects.
      */
-    def statsBlanksAsSubject() = RDFStatistics.BlanksAsSubject(triples)
+    def statsBlanksAsSubject(): RDD[Triple] = RDFStatistics.BlanksAsSubject(triples)
 
     /**
      * 19. Blanks as object criterion
      *
      * @return number of triples where blanknodes are used as objects.
      */
-    def statsBlanksAsObject() = RDFStatistics.BlanksAsObject(triples)
+    def statsBlanksAsObject(): RDD[Triple] = RDFStatistics.BlanksAsObject(triples)
 
     /**
      * 20. Datatypes criterion
      *
      * @return histogram of types used for literals.
      */
-    def statsDatatypes() = RDFStatistics.Datatypes(triples)
+    def statsDatatypes(): RDD[(String, Int)] = RDFStatistics.Datatypes(triples)
 
     /**
      * 21. Languages criterion
      *
      * @return histogram of languages used for literals.
      */
-    def statsLanguages() = RDFStatistics.Languages(triples)
+    def statsLanguages(): RDD[(String, Int)] = RDFStatistics.Languages(triples)
 
     /**
      * 22. Average typed string length criterion.
      *
      * @return the average typed string length used throughout the RDF graph.
      */
-    def statsAvgTypedStringLength() = RDFStatistics.AvgTypedStringLength(triples)
+    def statsAvgTypedStringLength(): Double = RDFStatistics.AvgTypedStringLength(triples)
 
     /**
      * 23. Average untyped string length criterion.
      *
      * @return the average untyped string length used throughout the RDF graph.
      */
-    def statsAvgUntypedStringLength() = RDFStatistics.AvgUntypedStringLength(triples)
+    def statsAvgUntypedStringLength(): Double = RDFStatistics.AvgUntypedStringLength(triples)
 
     /**
      * 24. Typed subjects criterion.
      *
      * @return list of typed subjects.
      */
-    def statsTypedSubjects() = RDFStatistics.TypedSubjects(triples)
+    def statsTypedSubjects(): RDD[Node] = RDFStatistics.TypedSubjects(triples)
 
     /**
      * 24. Labeled subjects criterion.
      *
      * @return list of labeled subjects.
      */
-    def statsLabeledSubjects() = RDFStatistics.LabeledSubjects(triples)
+    def statsLabeledSubjects(): RDD[Node] = RDFStatistics.LabeledSubjects(triples)
 
     /**
      * 25. SameAs criterion.
      *
      * @return list of triples with owl#sameAs as predicate
      */
-    def statsSameAs() = RDFStatistics.SameAs(triples)
+    def statsSameAs(): RDD[Triple] = RDFStatistics.SameAs(triples)
 
     /**
      * 26. Links criterion.
      *
      * @return list of namespaces and their frequentcies.
      */
-    def statsLinks() = RDFStatistics.Links(triples)
+    def statsLinks(): RDD[(String, Int)] = RDFStatistics.Links(triples)
 
     /**
      * 28.Maximum per property {int,float,time} criterion
      *
      * @return entities with their maximum values on the graph
      */
-    def statsMaxPerProperty() = RDFStatistics.MaxPerProperty(triples)
+    def statsMaxPerProperty(): (Triple, Int) = RDFStatistics.MaxPerProperty(triples)
 
     /**
      * 29. Average per property {int,float,time} criterion
      *
      * @return entities with their average values on the graph
      */
-    def statsAvgPerProperty() = RDFStatistics.AvgPerProperty(triples)
+    def statsAvgPerProperty(): RDD[(Triple, Double)] = RDFStatistics.AvgPerProperty(triples)
 
     /**
      * <b>30. Subject vocabularies </b> <br>
@@ -194,7 +194,7 @@ package object stats {
      * <b>Action</b> : `M[ns]++`
      * @return RDD of distinct subject vocabularies used in the dataset and their frequencies.
      */
-    def statsSubjectVocabularies() = SPO_Vocabularies(triples, spark).SubjectVocabulariesPostProc()
+    def statsSubjectVocabularies(): RDD[(String, Int)] = SPO_Vocabularies(triples, spark).SubjectVocabulariesPostProc()
 
     /**
      * <b>31. Predicate vocabularies </b> <br>
@@ -203,7 +203,7 @@ package object stats {
      * <b>Action</b> : `M[ns]++`
      * @return RDD of distinct predicate vocabularies used in the dataset and their frequencies.
      */
-    def statsPredicateVocabularies() = SPO_Vocabularies(triples, spark).PredicateVocabulariesPostProc()
+    def statsPredicateVocabularies(): RDD[(String, Int)] = SPO_Vocabularies(triples, spark).PredicateVocabulariesPostProc()
 
     /**
      * <b>32. Object vocabularies </b> <br>
@@ -212,7 +212,7 @@ package object stats {
      * <b>Action</b> : `M[ns]++`
      * @return RDD of distinct object vocabularies used in the dataset and their frequencies.
      */
-    def statsObjectVocabularies() = SPO_Vocabularies(triples, spark).ObjectVocabulariesPostProc()
+    def statsObjectVocabularies(): RDD[(String, Int)] = SPO_Vocabularies(triples, spark).ObjectVocabulariesPostProc()
 
     /**
      * <b>Distinct Subjects</b> <br>
@@ -221,7 +221,7 @@ package object stats {
      * <b>Action</b> : `M[?s]++`
      * @return RDD of subjects used in the dataset.
      */
-    def statsDistinctSubjects() = DistinctSubjects(triples, spark).Action()
+    def statsDistinctSubjects(): RDD[Node] = DistinctSubjects(triples, spark).Action()
 
     /**
      * <b>Distinct Objects</b> <br>
@@ -230,7 +230,7 @@ package object stats {
      * <b>Action</b> : `M[?o]++`
      * @return RDD of objects used in the dataset.
      */
-    def statsDistinctObjects() = DistinctObjects(triples, spark).Action()
+    def statsDistinctObjects(): RDD[Node] = DistinctObjects(triples, spark).Action()
 
     /**
      * <b>Properties Defined</b> <br>
@@ -240,7 +240,7 @@ package object stats {
      * <b>Action</b> : `M[?p]++`
      * @return RDD of predicates defined in the dataset.
      */
-    def statsPropertiesDefined() = PropertiesDefined(triples, spark).Action()
+    def statsPropertiesDefined(): RDD[Node] = PropertiesDefined(triples, spark).Action()
 
   }
 
@@ -252,13 +252,13 @@ package object stats {
      * @param source name of the Dataset:source--usualy the file's name
      * @param output the directory to save RDF dataset summary
      */
-    def voidify(source: String, output: String) = RDFStatistics.voidify(stats, source, output)
+    def voidify(source: String, output: String): Unit = RDFStatistics.voidify(stats, source, output)
 
     /**
      * Prints the Voidiy version of the given RDF dataset
      *
      * @param source name of the Dataset:source--usualy the file's name
      */
-    def print(source: String) = RDFStatistics.print(stats, source)
+    def print(source: String): Unit = RDFStatistics.print(stats, source)
   }
 }
