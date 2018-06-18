@@ -95,6 +95,15 @@
         <groupId>${project.groupId}</groupId>
         <artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
         <version>${sansa.rdf.version}</version>
+        <!-- we have to exclude an old version here transitively included by a Kafka dependency of Spark
+        Don't know how Spark 2.3 is able to work with Kafka 0.10 right now ...
+        -->
+        <exclusions>
+          <exclusion>
+            <groupId>net.jpountz.lz4</groupId>
+            <artifactId>lz4</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
@@ -146,6 +155,16 @@
       <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
       </dependency>
 
