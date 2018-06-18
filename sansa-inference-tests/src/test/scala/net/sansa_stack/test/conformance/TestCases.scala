@@ -21,7 +21,7 @@ object TestCases {
     * @return test cases
     */
   def loadTestCases(directory: File, ids: Set[String] = Set.empty): Seq[TestCase] = {
-    println("loading test cases ...")
+    println(s"loading test cases from ${directory.getAbsolutePath}...")
 
     val testCases = new ListBuffer[TestCase]()
 

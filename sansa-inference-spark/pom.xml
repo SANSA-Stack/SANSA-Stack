@@ -123,11 +123,11 @@
 
         <!-- Graph API -->
         <dependency>
-            <groupId>com.assembla.scala-incubator</groupId>
+            <groupId>org.scala-graph</groupId>
             <artifactId>graph-core_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.assembla.scala-incubator</groupId>
+            <groupId>org.scala-graph</groupId>
             <artifactId>graph-dot_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
@@ -210,6 +210,16 @@
             <groupId>org.apache.calcite</groupId>
             <artifactId>calcite-core</artifactId>
             <!--<scope>provided</scope>-->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.janino</groupId>
+                    <artifactId>janino</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.janino</groupId>
+                    <artifactId>commons-compiler</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

@@ -5,6 +5,7 @@ import java.util.stream.Collectors
 import scala.collection
 import scala.collection.JavaConverters._
 import scala.language.{existentials, implicitConversions}
+
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphTraversal.Parameters
 import scalax.collection._
@@ -13,7 +14,6 @@ import scalax.collection.edge._
 import scalax.collection.mutable.DefaultGraphImpl
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
-
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
@@ -259,12 +259,12 @@ object RuleDependencyGraphGenerator extends Logging {
         pairsOfRules :+= (cycle.last, cycle(0))
 
         // map to list of edges
-        val edges: Buffer[graph.EdgeT] = pairsOfRules.map(e => {
+        val edges: Buffer[graph.EdgeT] = pairsOfRules.flatMap(e => {
           val node1 = graph get e._1
           val node2 = graph get e._2
 
           node1.outgoing.filter(_.target == node2)
-        }).flatten
+        })
         debug("Edges: " + edges.mkString(", "))
 
         // map to edge labels, i.e. the predicates

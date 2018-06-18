@@ -1,10 +1,12 @@
 package net.sansa_stack.inference.spark
 
-import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.SparkConf
-import org.apache.spark.scheduler.{SparkListener, SparkListenerJobEnd, SparkListenerStageCompleted}
+import org.apache.spark.scheduler.{SparkListener, SparkListenerJobEnd}
 import org.apache.spark.sql.{Encoder, Encoders, Row, SparkSession}
+
+import net.sansa_stack.inference.utils.{NTriplesStringToJenaTriple, NTriplesStringToRDFTriple}
+import net.sansa_stack.rdf.spark.io.NTripleReader
 // import org.apache.spark.groupon.metrics.{SparkMeter, SparkTimer, UserMetricsSystem}
 
 import scala.reflect.ClassTag
@@ -30,7 +32,7 @@ object DatastructureSerializationPerformanceTests {
   conf.registerKryoClasses(Array(classOf[org.apache.jena.graph.Triple], classOf[org.apache.jena.graph.Node]))
   conf.set("spark.extraListeners", "net.sansa_stack.inference.spark.utils.CustomSparkListener")
 
-  val parallelism = 4
+  val parallelism = 20
 
   class JobListener extends SparkListener  {
     override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = {
@@ -40,7 +42,7 @@ object DatastructureSerializationPerformanceTests {
 
   // the SPARK config
   val session = SparkSession.builder
-    .appName(s"SPARK RDFS Reasoning")
+    .appName(s"RDF Triple Encoder Performance")
     .master("local[4]")
     .config("spark.eventLog.enabled", "true")
     .config("spark.hadoop.validateOutputSpecs", "false") // override output files
@@ -74,10 +76,8 @@ object DatastructureSerializationPerformanceTests {
     .getOrCreate()
 
 
-  def loadAndDictinctJena(path: String): Unit = {
-    val triples = session.sparkContext
-      .textFile(path, 4) // read the text file
-      .map(new NTriplesStringToJenaTriple())
+  def loadAndDistinctJena(path: String): Unit = {
+    val triples = NTripleReader.load(session, path)
 
     triples.cache()
 
@@ -88,11 +88,12 @@ object DatastructureSerializationPerformanceTests {
     val pair = triples.map(t => (t.getSubject, (t.getPredicate, t.getObject))) // map to PairRDD
     val joinCount = pair.join(pair).count()
 
-    logger.info(distinctCount)
-    logger.info(joinCount)
+    logger.info("Jena RDD[Triple]")
+    logger.info(s"#triples:$distinctCount")
+    logger.info(s"#joined triples(s-s):$joinCount")
   }
 
-  def loadAndDictinctPlain(path: String): Unit = {
+  def loadAndDistinctPlain(path: String): Unit = {
     val triples = session.sparkContext
       .textFile(path, 4) // read the text file
       .flatMap(line => new NTriplesStringToRDFTriple().apply(line))
@@ -124,10 +125,9 @@ object DatastructureSerializationPerformanceTests {
     implicit def tuple3[A1, A2, A3](implicit e1: Encoder[A1], e2: Encoder[A2], e3: Encoder[A3]): Encoder[(A1, A2, A3)] =
       Encoders.tuple[A1, A2, A3](e1, e2, e3)
 
-    val triples = session.sparkContext
-      .textFile(path, 4) // read the text file
-      .map(new NTriplesStringToJenaTriple())
-      .map(t => (t.getSubject, t.getPredicate, t.getObject))
+    val triplesRDD = NTripleReader.load(session, path)
+
+    val tripleNodesRDD = triplesRDD.map(t => (t.getSubject, t.getPredicate, t.getObject))
 
     val conv = new NTriplesStringToJenaTriple()
     var tripleDS =
@@ -136,29 +136,38 @@ object DatastructureSerializationPerformanceTests {
 //      val t = conv.apply(row.getString(0))
 //      (t.getSubject, t.getPredicate, t.getObject)
 //    })
-        session.createDataset(triples)
+        session.createDataset(tripleNodesRDD)
       .toDF("s", "p", "o")
       .as[JenaTripleEncoded]
 
+    tripleDS.printSchema()
     tripleDS.cache()
+
+    // show 10 triples
+    tripleDS.show()
 
     // DISTINCT and COUNT
     val distinctCount = tripleDS.distinct().count()
 
-    // self JOIN on subject and COUNT
-    val joinCount = tripleDS.alias("A").join(tripleDS.alias("B"), $"A.s" === $"B.s", "inner").count()
 
-    logger.info(distinctCount)
-    logger.info(joinCount)
+    // self JOIN on subject and COUNT
+    val triplesA = tripleDS.alias("A")
+    val triplesB = tripleDS.alias("B")
+    val triplesJoined = triplesA.joinWith(triplesB, $"A.s" === $"B.s")
+    val joinCount = triplesJoined.count()
+
+    logger.info("DataFrame[(Node, Node, Node)]")
+    logger.info(s"#triples:$distinctCount")
+    logger.info(s"#joined triples(s-s):$joinCount")
   }
 
   def main(args: Array[String]): Unit = {
 
     val path = args(0)
-
-    loadAndDictinctJena(path)
-
-    loadAndDictinctPlain(path)
+//
+//    loadAndDistinctJena(path)
+//
+//    loadAndDistinctPlain(path)
 
     loadAndDistinctDatasetJena(path)
 
