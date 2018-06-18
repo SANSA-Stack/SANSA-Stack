@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.spark.qualityassessment.vocabularies
 
-/*
+/**
  * Data Quality Vocabulary
  * Vocabulary Definitions from https://www.w3.org/TR/vocab-dqv/
- * 
+ *
  * @author Gezim Sejdiu
  */
 object DQV {
@@ -30,15 +30,14 @@ object DQV {
   val dctrights = "http://www.w3.org/ns/dcat/rights"
   val schemalicense = "https://schema.org/license"
 
-  //Indicates the metric being observed.
+  // Indicates the metric being observed.
   val isMeasurementOf = "dqv:isMeasurementOf"
 
-  //Indicates the data set of which this observation is a part.
+  // Indicates the data set of which this observation is a part.
   val dataSet = "http://purl.org/linked-data/cube#dataSet"
-  
   val dqv_description = "http://www.w3.org/ns/dqv#description"
-
-  //Refers to the resource (e.g., a dataset, a linkset, a graph, a set of triples) on which the quality measurement is performed.
+  
+  // Refers to the resource (e.g., a dataset, a linkset, a graph, a set of triples) on which the quality measurement is performed.
   val computedOn = "dqv:computedOn"
 
 }
