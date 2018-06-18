@@ -5,30 +5,22 @@ import java.util.Collections
 
 import com.google.common.collect.Iterators
 import com.typesafe.config.{Config, ConfigFactory}
-
+import net.sansa_stack.rdf.spark.io.nquads.{NQuadReader, NQuadsStringToJenaQuad}
 import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
-import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.atlas.lib.CharSpace
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.riot.lang.PipedTriplesStream
 import org.apache.jena.riot.out.NodeFormatterNT
 import org.apache.jena.riot.system.StreamOps
-import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-
-import net.sansa_stack.rdf.spark.io.nquads.{NQuadReader, NQuadsStringToJenaQuad}
-import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
-import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
-import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
@@ -85,9 +77,9 @@ package object io {
      */
     def rdf(lang: Lang): String => DataFrame = lang match {
       case i if lang == Lang.NTRIPLES => ntriples
-      case j if lang == Lang.TURTLE   => turtle
-      case j if lang == Lang.RDFXML   => rdfxml
-      case _                          => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
+      case j if lang == Lang.TURTLE => turtle
+      case j if lang == Lang.RDFXML => rdfxml
+      case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
     /**
      * Load RDF data in N-Triples syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
@@ -189,10 +181,10 @@ package object io {
      */
     def rdf(lang: Lang, allowBlankLines: Boolean = false): String => RDD[Triple] = lang match {
       case i if lang == Lang.NTRIPLES => ntriples(allowBlankLines)
-      case j if lang == Lang.TURTLE   => turtle
-      case k if lang == Lang.RDFXML   => rdfxml
-      case g if lang == Lang.NQUADS   => nquads(allowBlankLines)
-      case _                          => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
+      case j if lang == Lang.TURTLE => turtle
+      case k if lang == Lang.RDFXML => rdfxml
+      case g if lang == Lang.NQUADS => nquads(allowBlankLines)
+      case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
     /**

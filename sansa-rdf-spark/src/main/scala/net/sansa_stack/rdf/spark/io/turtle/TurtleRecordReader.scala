@@ -2,22 +2,21 @@ package net.sansa_stack.rdf.spark.io.turtle
 
 import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path, Seekable}
+import org.apache.hadoop.fs.{ FileSystem, FSDataInputStream, Path, Seekable }
+import org.apache.hadoop.io.{ LongWritable, Text }
 import org.apache.hadoop.io.compress._
-import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapreduce.lib.input.{CompressedSplitLineReader, FileSplit, SplitLineReader, FileInputFormat}
-import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
+import org.apache.hadoop.mapreduce.{ InputSplit, RecordReader, TaskAttemptContext }
+import org.apache.hadoop.mapreduce.lib.input.{ CompressedSplitLineReader, FileInputFormat, FileSplit, SplitLineReader }
 import org.apache.hadoop.util.LineReader
 import org.apache.log4j.Logger
 import org.slf4j.LoggerFactory
-
 import util.control.Breaks._
 
 /**
-  * @author Lorenz Buehmann
-  */
+ * @author Lorenz Buehmann
+ */
 @Experimental
-class TurtleRecordReader(val recordDelimiterBytes: Array[Byte]) extends RecordReader[LongWritable, Text]{
+class TurtleRecordReader(val recordDelimiterBytes: Array[Byte]) extends RecordReader[LongWritable, Text] {
 
   val LOG = LoggerFactory.getLogger(classOf[TurtleRecordReader])
 
@@ -61,13 +60,11 @@ class TurtleRecordReader(val recordDelimiterBytes: Array[Byte]) extends RecordRe
         start = cIn.getAdjustedStart
         end = cIn.getAdjustedEnd
         filePosition = cIn
-      }
-      else {
+      } else {
         reader = new SplitLineReader(codec.createInputStream(fileIn, decompressor), job, recordDelimiterBytes)
         filePosition = fileIn
       }
-    }
-    else {
+    } else {
       fileIn.seek(start)
       reader = new SkipLineReader(fileIn, job, recordDelimiterBytes, split.getLength)
       filePosition = fileIn
@@ -98,18 +95,18 @@ class TurtleRecordReader(val recordDelimiterBytes: Array[Byte]) extends RecordRe
     // split limit i.e. (end - 1)
     var break = false
     while (!break && (getFilePosition <= end || reader.needAdditionalRecordAfterSplit)) {
-//      breakable {
-        if (pos == 0) {
-          newSize = skipUtfByteOrderMark
-        } else {
-          newSize = reader.readLine(value, maxLineLength, maxBytesToConsume(pos))
-          pos += newSize
-        }
-//        if(value.toString.startsWith("#")) println("Comment: " + value.toString)
-        if ((newSize == 0) || (newSize < maxLineLength)) break = true
-        // line too long. try again
-//        LOG.warn("Skipped line of size " + newSize + " at pos " + (pos - newSize))
-//      }
+      //      breakable {
+      if (pos == 0) {
+        newSize = skipUtfByteOrderMark
+      } else {
+        newSize = reader.readLine(value, maxLineLength, maxBytesToConsume(pos))
+        pos += newSize
+      }
+      //        if(value.toString.startsWith("#")) println("Comment: " + value.toString)
+      if ((newSize == 0) || (newSize < maxLineLength)) break = true
+      // line too long. try again
+      //        LOG.warn("Skipped line of size " + newSize + " at pos " + (pos - newSize))
+      //      }
     }
     val ret = if (newSize == 0) {
       key = null
@@ -118,16 +115,15 @@ class TurtleRecordReader(val recordDelimiterBytes: Array[Byte]) extends RecordRe
     } else {
       true
     }
-      ret
+    ret
   }
 
   override def getCurrentKey: LongWritable = key
 
   override def getProgress: Float =
-    if (start == end)
+    if (start == end) {
       0.0f
-    else
-      Math.min(1.0f, (pos - start) / (end - start).asInstanceOf[Float])
+    } else Math.min(1.0f, (pos - start) / (end - start).asInstanceOf[Float])
 
   override def getCurrentValue: Text = value
 
@@ -154,8 +150,7 @@ class TurtleRecordReader(val recordDelimiterBytes: Array[Byte]) extends RecordRe
       if (textLength > 0) { // It may work to use the same buffer and not do the copyBytes
         textBytes = value.copyBytes
         value.set(textBytes, 3, textLength)
-      }
-      else value.clear()
+      } else value.clear()
     }
     newSize
   }
