@@ -226,7 +226,7 @@ object RuleUtils {
 
         // get the path in body graph
         val s = (bodyGraph get source).withSubgraph(edges = e => property == null || e.label.equals(property))
-        val t = (bodyGraph get target)
+        val t = bodyGraph get target
         val path = s pathTo t
 
 
@@ -299,7 +299,8 @@ object RuleUtils {
     // predicates that are contained in body and head
     val intersection = bodyPredicates.intersect(headPredicates)
 
-    ruleType match {
+    // 1. check whether there is an overlap between body and head predicates (might not work)
+    val cyclic = ruleType match {
       case TERMINOLOGICAL =>
         // check if there is at least one predicate that occurs in body and head
         val bodyPredicates = rule.getBody
@@ -331,6 +332,8 @@ object RuleUtils {
 
     }
 
+    // 2. use JGraphT instead and compute cycles
+
     // we generate a graph for the rule (we use a JGraphT graph which provides better cycle detection)
     val g = GraphUtils.asJGraphtRuleGraph(asGraph(rule))
 
@@ -356,9 +359,7 @@ object RuleUtils {
     * @param filename the file
     * @return a set of rules
     */
-  def load(filename: String): Seq[Rule] = {
-    Rule.parseRules(org.apache.jena.reasoner.rulesys.Util.loadRuleParserFromResourceFile(filename)).asScala.toSeq
-  }
+  def load(filename: String): Seq[Rule] = Rule.parseRules(org.apache.jena.reasoner.rulesys.Util.loadRuleParserFromResourceFile(filename)).asScala
 
   /**
     * Returns a rule by the given name from a set of rules.
@@ -423,14 +424,14 @@ object RuleUtils {
   }
 
   /**
-    * Returns `true` if `rule1 has the same body as `rule2`, otherwise `false` .
+    * Returns `true` if `rule1` has the same body as `rule2`, otherwise `false` .
     */
   def sameBody(rule1: Rule, rule2: Rule): Boolean = {
     GraphUtils.areIsomorphic(graphOfBody(rule1), graphOfBody(rule2))
   }
 
   /**
-    * Returns `true` if `rule1 has the same head as `rule2`, otherwise `false`.
+    * Returns `true` if `rule1` has the same head as `rule2`, otherwise `false`.
     */
   def sameHead(rule1: Rule, rule2: Rule): Boolean = {
     GraphUtils.areIsomorphic(graphOfHead(rule1), graphOfHead(rule2))

@@ -9,7 +9,7 @@ import org.apache.jena.sparql.util.NodeComparator
   * @author Lorenz Buehmann
   */
 class TriplePatternOrdering extends Ordering[TriplePattern]{
-  implicit val comp = new NodeComparator
+  implicit val comp: NodeComparator = new NodeComparator
 
   override def compare(x: TriplePattern, y: TriplePattern): Int = {
     Ordering.by{t: TriplePattern => (t.getSubject, t.getPredicate, t.getObject)}.compare(x, y)

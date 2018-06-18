@@ -1,26 +1,25 @@
 package net.sansa_stack.inference.flink
 
-import org.apache.flink.api.common.functions.RichJoinFunction
-import org.apache.flink.api.common.operators.Order
-import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
-import org.apache.flink.core.fs.FileSystem.WriteMode
-import org.apache.flink.test.util.{MultipleProgramsTestBase, TestBaseUtils}
-import org.apache.flink.test.util.MultipleProgramsTestBase.TestExecutionMode
-import org.apache.flink.util.Collector
-import org.apache.jena.vocabulary.RDFS
-import org.junit.{After, Before, Rule, Test}
-import org.junit.rules.TemporaryFolder
 import scala.collection.mutable
 
-import org.apache.flink.api.scala._
+import org.apache.flink.api.common.functions.RichJoinFunction
+import org.apache.flink.api.common.operators.Order
+import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
+import org.apache.flink.core.fs.FileSystem.WriteMode
+import org.apache.flink.test.util.MultipleProgramsTestBase.TestExecutionMode
+import org.apache.flink.test.util.{MultipleProgramsTestBase, TestBaseUtils}
+import org.apache.flink.util.Collector
+import org.apache.jena.vocabulary.RDFS
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import org.junit.{After, Before, Rule, Test}
 
 import net.sansa_stack.inference.data.RDFTriple
-import net.sansa_stack.inference.flink.forwardchaining.TransitiveReasoner
 
 /**
   * A test case for the computation of the transitive closure (TC).
+  *
   * @author Lorenz Buehmann
   */
 @RunWith(classOf[Parameterized])
@@ -35,7 +34,7 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
   private var expectedResult: String = ""
 
   @Rule
-  def tempFolder = _tempFolder
+  def tempFolder: TemporaryFolder = _tempFolder
 
   @Before
   def before(): Unit = {
@@ -123,12 +122,17 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
   def performOptimized(triples: DataSet[RDFTriple]): DataSet[(String, String)] = {
     def iterate(s: DataSet[RDFTriple], ws: DataSet[RDFTriple]): (DataSet[RDFTriple], DataSet[RDFTriple]) = {
       val resolvedRedirects = triples.join(ws)
-        .where { _.s }
-        .equalTo { _.o }
-        .map { joinResult => joinResult match {
-          case (redirect, link) =>
-            RDFTriple(link.s, redirect.p, redirect.o)
+        .where {
+          _.s
         }
+        .equalTo {
+          _.o
+        }
+        .map { joinResult =>
+          joinResult match {
+            case (redirect, link) =>
+              RDFTriple(link.s, redirect.p, redirect.o)
+          }
         }.name("TC-From-Iteration")
       (resolvedRedirects, resolvedRedirects)
     }
@@ -136,8 +140,8 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
     val tc = triples
       .iterateDelta(triples, 10, Array("s", "o"))(iterate)
       .name("Final-TC")
-//      .map { cl => cl}
-//      .name("Final-Redirect-Result")
+    //      .map { cl => cl}
+    //      .name("Final-Redirect-Result")
     tc.map(t => (t.s, t.o))
   }
 
@@ -158,19 +162,19 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
           .join(tuples).where(1).equalTo(0)(
           new RichJoinFunction[(String, String), (String, String), (String, String)] {
             override def join(left: (String, String), right: (String, String)): (String, String) = {
-//              val context = getIterationRuntimeContext
-//              println("Iteration #" + context.getSuperstepNumber)
-//              println(context.getIndexOfThisSubtask + "/" + context.getNumberOfParallelSubtasks)
+              //              val context = getIterationRuntimeContext
+              //              println("Iteration #" + context.getSuperstepNumber)
+              //              println(context.getIndexOfThisSubtask + "/" + context.getNumberOfParallelSubtasks)
               (left._1, right._2)
             }
           }
         )
-//        {
-//          (left, right) => (left._1, right._2)
-//        }
+          //        {
+          //          (left, right) => (left._1, right._2)
+          //        }
           .union(prevPaths)
           .groupBy(0, 1)
-          .reduce((l ,r) => l)
+          .reduce((l, r) => l)
 
         val terminate = prevPaths
           .coGroup(nextPaths)
@@ -202,32 +206,32 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
     val initialSolutionSet = tuples
     val initialWorkset = tuples
 
-//    val res = initialSolutionSet.iterateDelta(initialWorkset, maxIterations, Array(keyPosition)) {
-//      (solution, workset) =>
-//        val deltas = workset.join(solution).where(1).equalTo(0){
-//          (prev, next, out: Collector[(String, String)]) => {
-//            val prevPaths = prev.toSet
-//            for (n <- next)
-//              if (!prevPaths.contains(n)) out.collect(n)
-//          }
-//        }
-//
-//        val nextWorkset = deltas.filter(new FilterByThreshold())
-//
-//        (deltas, nextWorkset)
-//    }
-//    res
+    //    val res = initialSolutionSet.iterateDelta(initialWorkset, maxIterations, Array(keyPosition)) {
+    //      (solution, workset) =>
+    //        val deltas = workset.join(solution).where(1).equalTo(0) {
+    //          (prev, next, out: Collector[(String, String)]) => {
+    //            val prevPaths = prev.toSet
+    //            for (n <- next)
+    //              if (!prevPaths.contains(n)) out.collect(n)
+    //          }
+    //        }
+    //
+    //        val nextWorkset = deltas.filter(new FilterByThreshold())
+    //
+    //        (deltas, nextWorkset)
+    //    }
+    //    res
 
     tuples
   }
 
-  def getDataSimple(env: ExecutionEnvironment, scale: Int = 1) : DataSet[RDFTriple] = {
+  def getDataSimple(env: ExecutionEnvironment, scale: Int = 1): DataSet[RDFTriple] = {
     val triples = new mutable.HashSet[RDFTriple]()
 
     val begin = 1
     val end = 10 * scale
 
-    for(i <- begin to end) {
+    for (i <- begin to end) {
       triples += RDFTriple(ns + "x" + i, p1, ns + "y" + i)
       triples += RDFTriple(ns + "y" + i, p1, ns + "z" + i)
     }
@@ -235,10 +239,10 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
     env.fromCollection(triples)
   }
 
-  def getExpectedResultSimple(scale: Int = 1) : String = {
+  def getExpectedResultSimple(scale: Int = 1): String = {
     var res = ""
 
-    for(i <- 1 to scale * 10) {
+    for (i <- 1 to scale * 10) {
       res += s"${ns}x$i,${ns}y$i\n"
       res += s"${ns}y$i,${ns}z$i\n"
       res += s"${ns}x$i,${ns}z$i\n"
@@ -247,24 +251,24 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
     res
   }
 
-  def getDataSinglePath(env: ExecutionEnvironment, length: Int = 10) : DataSet[RDFTriple] = {
+  def getDataSinglePath(env: ExecutionEnvironment, length: Int = 10): DataSet[RDFTriple] = {
     val triples = new mutable.HashSet[RDFTriple]()
 
     // graph is a path of length n
     // (x1, p, x2), (x2, p, x3), ..., (x(n-1), p, xn)
     val n = 10
-    for(i <- 1 until length) {
-      triples += RDFTriple(ns + "x" + i, p1, ns + "x" + (i+1))
+    for (i <- 1 until length) {
+      triples += RDFTriple(ns + "x" + i, p1, ns + "x" + (i + 1))
     }
 
     env.fromCollection(triples)
   }
 
-  def getExpectedResultSinglePath(length: Int = 10) : String = {
+  def getExpectedResultSinglePath(length: Int = 10): String = {
     var res = ""
 
-    for(i <- 1 to length) {
-      for(j <- i+1 to length) {
+    for (i <- 1 to length) {
+      for (j <- i + 1 to length) {
         res += s"${ns}x$i,${ns}x${j}\n"
       }
     }

@@ -11,7 +11,7 @@ import scala.language.implicitConversions
   */
 trait Logging {
 
-  @transient private var log_ : Logger = null
+  @transient private var log_ : Logger = _
 
   // Method to get or create the logger for this object
   protected def log: Logger = {
@@ -22,7 +22,7 @@ trait Logging {
   }
 
   // Method to get the logger name for this object
-  protected def logName = {
+  protected def logName: String = {
     // Ignore trailing $'s in the class names for Scala objects
     this.getClass.getName.stripSuffix("$")
   }

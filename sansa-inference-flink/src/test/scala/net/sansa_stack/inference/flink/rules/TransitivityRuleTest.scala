@@ -39,8 +39,8 @@ object TransitivityRuleTest {
     // graph is a path of length n
     // (x1, p, x2), (x2, p, x3), ..., (x(n-1), p, xn)
     val n = 10
-    for(i <- 1 to end) {
-      triples += RDFTriple(ns + "x" + i, p1, ns + "x" + (i+1))
+    for (i <- 1 to end) {
+      triples += RDFTriple(ns + "x" + i, p1, ns + "x" + (i + 1))
     }
 
     val triplesDataset = env.fromCollection(triples)

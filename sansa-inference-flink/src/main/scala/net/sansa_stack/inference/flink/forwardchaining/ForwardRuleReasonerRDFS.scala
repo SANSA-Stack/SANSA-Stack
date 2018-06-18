@@ -60,8 +60,8 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       computeTransitiveClosureOptSemiNaive(subClassOfTriples).name("rdfs11")
 
     /*
-        rdfs5	xxx rdfs:subPropertyOf yyy .
-              yyy rdfs:subPropertyOf zzz .	xxx rdfs:subPropertyOf zzz .
+        rdfs5 xxx rdfs:subPropertyOf yyy .
+              yyy rdfs:subPropertyOf zzz . => xxx rdfs:subPropertyOf zzz .
      */
     val subPropertyOfTriples =
       extractTriples(schemaTriples, RDFS.subPropertyOf.getURI)
@@ -77,8 +77,8 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     // 2. SubPropertyOf inheritance according to rdfs7 is computed
 
     /*
-      rdfs7	aaa rdfs:subPropertyOf bbb .
-            xxx aaa yyy .                   	xxx bbb yyy .
+      rdfs7 aaa rdfs:subPropertyOf bbb .
+            xxx aaa yyy .                 => xxx bbb yyy .
      */
     val triplesRDFS7 = if (useSchemaBroadCasting) {
       otherTriples
@@ -124,8 +124,8 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     // 3. Domain and Range inheritance according to rdfs2 and rdfs3 is computed
 
     /*
-    rdfs2	aaa rdfs:domain xxx .
-          yyy aaa zzz .	          yyy rdf:type xxx .
+    rdfs2 aaa rdfs:domain xxx .
+          yyy aaa zzz .           => yyy rdf:type xxx .
      */
     val domainTriples =
       extractTriples(schemaTriples, RDFS.domain.getURI).name("rdfs:domain")
@@ -168,8 +168,8 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     }.name("rdfs2")
 
     /*
-   rdfs3	aaa rdfs:range xxx .
-         yyy aaa zzz .	          zzz rdf:type xxx .
+   rdfs3 aaa rdfs:range xxx .
+         yyy aaa zzz .           => zzz rdf:type xxx .
      */
     val rangeTriples =
       extractTriples(schemaTriples, RDFS.range.getURI).name("rdfs:range")
@@ -220,8 +220,8 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     // 4. SubClass inheritance according to rdfs9
 
     /*
-    rdfs9	xxx rdfs:subClassOf yyy .
-          zzz rdf:type xxx .	        zzz rdf:type yyy .
+    rdfs9 xxx rdfs:subClassOf yyy .
+          zzz rdf:type xxx .         => zzz rdf:type yyy .
      */
     val triplesRDFS9 = if (useSchemaBroadCasting) {
       typeTriples // all rdf:type triples (s a A)
