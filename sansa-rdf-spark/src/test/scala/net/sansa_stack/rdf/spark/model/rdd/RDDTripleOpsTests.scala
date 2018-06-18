@@ -6,7 +6,7 @@ import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{ Node, Triple, NodeFactory }
 
-class TripleOpsTests extends FunSuite with DataFrameSuiteBase {
+class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.model._
 
@@ -17,7 +17,7 @@ class TripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang, allowBlankLines = true)(path)
 
     val graph = triples.toDF()
-    val size = graph.count()
+    val size = graph.size()
 
     assert(size == 9)
   }

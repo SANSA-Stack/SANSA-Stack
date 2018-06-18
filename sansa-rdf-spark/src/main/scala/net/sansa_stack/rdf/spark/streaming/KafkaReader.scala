@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.streaming
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.jena.graph.Triple
-import kafka.serializer.StringDecoder
+//import kafka.serializer.StringDecoder
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import java.io.ByteArrayInputStream
 import org.apache.spark.streaming.kafka010.KafkaUtils
