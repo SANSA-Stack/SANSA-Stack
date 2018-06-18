@@ -1,23 +1,22 @@
 package net.sansa_stack.rdf.spark.io.index
 
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap
-import org.apache.spark.ml.feature.StringIndexer
-import org.apache.spark.sql.{DataFrame, Row}
-
 import scala.collection.mutable
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
+
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap
 import org.apache.spark.SparkException
 import org.apache.spark.ml.attribute.NominalAttribute
+import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.sql.{ DataFrame, Row }
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 
 /**
-  * @author Lorenz Buehmann
-  */
+ * @author Lorenz Buehmann
+ */
 class TriplesIndexer {
 
   val inputCols = Array("s", "p", "o")
   val outputCols = Array("s1", "p1", "o1")
-
 
   def index(triples: DataFrame): DataFrame = {
 
@@ -76,9 +75,9 @@ private[index] class Aggregator extends Serializable {
 }
 
 class TripleIndexModel(
-                        val labels: Array[Array[String]],
-                        val inputCols: Array[String],
-                        val outputCols: Array[String]) extends Serializable{
+  val labels: Array[Array[String]],
+  val inputCols: Array[String],
+  val outputCols: Array[String]) extends Serializable {
 
   val k = inputCols.length
 
@@ -99,11 +98,10 @@ class TripleIndexModel(
 
   def transform(dataset: DataFrame): DataFrame = {
     val transformedDataset = (0 until k).foldLeft[DataFrame](dataset) {
-      case (df, x) => {
+      case (df, x) =>
         val indexer = udf { label: String =>
           labelToIndex(x)(label)
         }
-
         val outputCol = outputCols(x)
         val metadata = NominalAttribute.defaultAttr.withName(outputCol)
           .withValues(labels(x)).toMetadata()
@@ -111,7 +109,7 @@ class TripleIndexModel(
         df
           .withColumn(outputCol, indexer(col(inputCols(x))).as(outputCol, metadata))
           .drop(inputCols(x))
-      }
+
     }
 
     transformedDataset

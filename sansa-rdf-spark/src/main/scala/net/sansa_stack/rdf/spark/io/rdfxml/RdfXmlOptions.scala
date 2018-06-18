@@ -26,7 +26,7 @@ private[rdfxml] class RdfXmlOptions(
       defaultColumnNameOfCorruptRecord)
   }
 
-  def defaultErrorHandler = "std"
+  def defaultErrorHandler: String = "std"
 
   val baseURI =
     parameters.get("baseURI").getOrElse(null)

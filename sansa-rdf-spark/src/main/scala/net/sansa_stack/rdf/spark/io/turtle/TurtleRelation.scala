@@ -3,16 +3,15 @@ package net.sansa_stack.rdf.spark.io.turtle
 import java.io.ByteArrayInputStream
 
 import net.sansa_stack.rdf.common.annotation.Experimental
+import net.sansa_stack.rdf.spark.io._
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{Row, SQLContext}
-
 import scala.util.{Failure, Success, Try}
-import net.sansa_stack.rdf.spark.io._
 
 
 /**
@@ -140,6 +139,4 @@ private[turtle] class TurtleRelation(location: String, userSchema: StructType)
       }
     }
   }
-
-
 }

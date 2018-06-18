@@ -5,22 +5,21 @@ import java.net.URI
 
 import com.ibm.sparktc.sparkbench.utils.GeneralFunctions._
 import com.ibm.sparktc.sparkbench.utils.SaveModes
-import com.ibm.sparktc.sparkbench.workload.{Workload, WorkloadDefaults}
-import org.apache.jena.graph.Triple
-import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
-
+import com.ibm.sparktc.sparkbench.workload.{ Workload, WorkloadDefaults }
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
+import org.apache.jena.graph.Triple
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ DataFrame, SparkSession }
 
 /**
-  * A custom Spark-Bench workload for the RDF N-Triples reader.
-  * The goal is to measure the runtime of the RDF reader, i.e. the performance of the Jena-based parser.
-  *
-  * It loads the RDF file from disk and does a `count` as action.
-  *
-  * @author Lorenz Buehmann
-  */
+ * A custom Spark-Bench workload for the RDF N-Triples reader.
+ * The goal is to measure the runtime of the RDF reader, i.e. the performance of the Jena-based parser.
+ *
+ * It loads the RDF file from disk and does a `count` as action.
+ *
+ * @author Lorenz Buehmann
+ */
 object RDFParseWorkload extends WorkloadDefaults {
 
   override val name: String = "rdf-parse"
@@ -31,36 +30,37 @@ object RDFParseWorkload extends WorkloadDefaults {
       output = m.get("output").map(_.asInstanceOf[String]),
       saveMode = getOrDefault[String](m, "save-mode", SaveModes.error),
       numPartitions = m.get("partitions").map(_.asInstanceOf[Int]),
-      mode = m.get("mode").map(_.asInstanceOf[String])
-    )
+      mode = m.get("mode").map(_.asInstanceOf[String]))
 
 }
 
-case class RDFParseWorkload(input: Option[String],
-                            output: Option[String] = None,
-                            saveMode: String,
-                            numPartitions: Option[Int] = None,
-                            mode: Option[String] = None)
+case class RDFParseWorkload(
+  input: Option[String],
+  output: Option[String] = None,
+  saveMode: String,
+  numPartitions: Option[Int] = None,
+  mode: Option[String] = None)
   extends Workload {
 
   def parse(spark: SparkSession): (Long, Long) = time {
-    if(mode.get == "old")
+    if (mode.get == "old") {
       loadSimple(spark, Seq(URI.create(input.get)), numPartitions.get).count()
-    else
+    } else {
       loadFast(spark, Seq(URI.create(input.get)), numPartitions.get).count()
+    }
   }
 
   /**
-    * Loads N-Triples data from a set of files or directories into an RDD.
-    * The path can also contain multiple paths
-    * and even wildcards, e.g.
-    * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
-    *
-    * @param session the Spark session
-    * @param paths   the path to the N-Triples file(s)
-    * @param minPartitions suggested minimum number of partitions for the resulting RDD
-    * @return the RDD of triples
-    */
+   * Loads N-Triples data from a set of files or directories into an RDD.
+   * The path can also contain multiple paths
+   * and even wildcards, e.g.
+   * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
+   *
+   * @param session the Spark session
+   * @param paths   the path to the N-Triples file(s)
+   * @param minPartitions suggested minimum number of partitions for the resulting RDD
+   * @return the RDD of triples
+   */
   private def loadFast(session: SparkSession, paths: Seq[URI], minPartitions: Int = 20): RDD[Triple] = {
     import scala.collection.JavaConverters._
     session.sparkContext
@@ -69,15 +69,15 @@ case class RDFParseWorkload(input: Option[String],
   }
 
   /**
-    * Loads N-Triples data from a set of files or directories into an RDD.
-    * The path can also contain multiple paths
-    * and even wildcards, e.g.
-    * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
-    *
-    * @param session the Spark session
-    * @param paths   the path to the N-Triples file(s)
-    * @return the RDD of triples
-    */
+   * Loads N-Triples data from a set of files or directories into an RDD.
+   * The path can also contain multiple paths
+   * and even wildcards, e.g.
+   * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
+   *
+   * @param session the Spark session
+   * @param paths   the path to the N-Triples file(s)
+   * @return the RDD of triples
+   */
   private def loadSimple(session: SparkSession, paths: Seq[URI], minPartitions: Int = 20): RDD[Triple] = {
     session.sparkContext
       .textFile(paths.mkString(","), minPartitions)
@@ -96,16 +96,13 @@ case class RDFParseWorkload(input: Option[String],
         timestamp,
         runtime,
         numTriples,
-        mode.get
-      )
-    ))
+        mode.get)))
   }
 }
 
 case class RDFParseWorkloadResult(
-                                   name: String,
-                                   timestamp: Long,
-                                   runtime: Long,
-                                   numTriples: Long,
-                                   mode: String
-                                 )
+  name: String,
+  timestamp: Long,
+  runtime: Long,
+  numTriples: Long,
+  mode: String)

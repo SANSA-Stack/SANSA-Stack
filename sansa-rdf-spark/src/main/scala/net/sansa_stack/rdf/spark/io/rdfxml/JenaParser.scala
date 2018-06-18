@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.spark.io.rdfxml
 
-import org.apache.jena.riot.lang.CollectorStreamRDF
 import org.apache.jena.riot.{RDFParser, RDFParserBuilder, RiotException}
+import org.apache.jena.riot.lang.CollectorStreamRDF
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.GenericInternalRow
 import org.apache.spark.sql.catalyst.util.BadRecordException
@@ -11,7 +11,7 @@ class JenaParser(val options: RdfXmlOptions) {
   import scala.collection.JavaConverters._
 
   val parserBuilder: RDFParserBuilder = RDFParser.create().base(options.baseURI)
-  
+
   def parse[T](record: T,
                createParser: (RDFParserBuilder, T) => RDFParser,
                recordLiteral: T => UTF8String)
