@@ -8,7 +8,7 @@ import java.util.concurrent.Executor
 
 import org.apache.calcite.adapter.java.JavaTypeFactory
 import org.apache.calcite.config.CalciteConnectionConfig
-import org.apache.calcite.jdbc.CalciteConnection
+import org.apache.calcite.jdbc.{CalciteConnection, CalcitePrepare}
 import org.apache.calcite.linq4j.tree.Expression
 import org.apache.calcite.linq4j.{Enumerator, Queryable}
 import org.apache.calcite.schema.SchemaPlus
@@ -150,4 +150,6 @@ class SimpleCalciteConnection extends CalciteConnection{
   override def execute[T](expression: Expression, `type`: Type): T = null.asInstanceOf[T]
 
   override def executeQuery[T](queryable: Queryable[T]): Enumerator[T] = null
+
+  override def createPrepareContext(): CalcitePrepare.Context = null
 }
