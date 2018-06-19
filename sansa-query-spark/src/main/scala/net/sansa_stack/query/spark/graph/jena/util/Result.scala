@@ -73,6 +73,10 @@ class Result[VD: ClassTag] extends Serializable {
     solutionMapping(variable)
   }
 
+  def getValueSet(vars: Set[VD]): Set[VD] = {
+    vars.map(v=>getValue(v))
+  }
+
   override def hashCode(): Int = {
     solutionMapping.hashCode()
   }
@@ -99,6 +103,17 @@ class Result[VD: ClassTag] extends Serializable {
     val removeField = variableField.diff(projectField)
     removeAllMapping(removeField.toSet)
     this
+  }
+
+  /**
+    * Return a new result for the required variable fields. Compare to method project, this method will not
+    * change this result, but return a new one.
+    */
+  def projectNewResult(projectField: Set[VD]): Result[VD] = {
+    val resultMapping = projectField.map(v => (v, solutionMapping(v))).toMap
+    val result = new Result[VD]
+    result.addAllMapping(resultMapping)
+    result
   }
 
   /**
@@ -129,5 +144,14 @@ class Result[VD: ClassTag] extends Serializable {
       }
       math.max(length, v.toString.length)
     }
+  }
+
+  /**
+    * Merge two reuslts as one.
+    */
+  def merge(other: Result[VD]): Result[VD] = {
+    this.variableField.++(other.variableField)
+    addAllMapping(other.solutionMapping.toMap)
+    this
   }
 }

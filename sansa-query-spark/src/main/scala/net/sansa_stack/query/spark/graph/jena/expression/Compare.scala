@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.expression
 
+import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.expr._
 
@@ -9,7 +10,7 @@ import org.apache.jena.sparql.expr._
   *
   * @author Zhe Wang
   */
-class ExprCompare(e: ExprFunction2) extends ExprFilter {
+class Compare(e: ExprFunction2) extends Filter {
 
   private val tag = "Filter Comparision"
   private val left = e.getArg1
@@ -48,6 +49,11 @@ class ExprCompare(e: ExprFunction2) extends ExprFilter {
     }
 
     boolean
+  }
+
+  override def evaluate(solution: Result[Node]): Boolean = {
+    // compiler here
+    true
   }
 
   override def getTag: String = { tag }

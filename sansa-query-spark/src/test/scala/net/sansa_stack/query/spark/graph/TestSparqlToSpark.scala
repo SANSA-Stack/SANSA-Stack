@@ -5,7 +5,9 @@ import net.sansa_stack.query.spark.graph.jena.patternOp.PatternOp
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultOp
 import org.apache.jena.graph.Node
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.query.spark.graph.jena.util.ResultFactory
 import org.scalatest.FunSuite
+
 import scala.io.Source
 import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
@@ -285,5 +287,39 @@ class TestSparqlToSpark extends FunSuite with DataFrameSuiteBase {
     // Union
     intermediate = sp.getOps.dequeue().asInstanceOf[PatternOp].execute(intermediate, graph, spark)
     assert(intermediate.length == 8)
+  }
+
+  test("read query 1 with result rdd") {
+
+    val nTriplePath = "src/test/resources/Clustering_sampledata.nt"
+    val lang: Lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(nTriplePath)
+
+    val graph = triples.asGraph()
+
+    val queryPath = "src/test/resources/queries/query1.txt"
+    val sp = new SparqlParser(queryPath)
+
+    var intermediate = Array[Map[Node, Node]]()
+    // BPG Matching
+    intermediate = sp.getOps.dequeue().asInstanceOf[PatternOp].execute(intermediate, graph, spark)
+    assert(intermediate.length == 6)
+    // Filter
+    intermediate = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(intermediate)
+    assert(intermediate.length == 3)
+    // Order
+    intermediate = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(intermediate)
+    assert(intermediate.length == 3)
+    // Select
+    var interRDD = ResultFactory.create[Node](intermediate, spark)
+    //interRDD.collect().foreach(println(_))
+    //interRDD = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(interRDD)
+    //assert(interRDD.count() == 3)
+    // Distinct
+    //interRDD = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(interRDD)
+    //assert(interRDD.count() == 3)
+    // Limit
+    //intermediate = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(intermediate)
+    //assert(intermediate.length == 3)
   }
 }

@@ -27,6 +27,23 @@ object ResultFactory {
     result
   }
 
+  /**
+    * Create a single result from the given mapping
+    * @param mapping The given solution mapping
+    * @tparam VD Attribute of variables and rdf terms
+    * @return
+    */
+  def create[VD: ClassTag](mapping: Map[VD, VD]): Result[VD] = {
+    val result = new Result[VD].addAllMapping(mapping)
+    result
+  }
+
+  def merge[VD: ClassTag](left: Result[VD], right: Result[VD]): Result[VD] = {
+    val mapping = left.getMapping.++(right.getMapping)
+    val result = new Result[VD].addAllMapping(mapping)
+    result
+  }
+
   def convertToDataFrame[VD: ClassTag](results: RDD[Result[VD]], session: SparkSession): Unit = {
     //session.createDataFrame()
   }

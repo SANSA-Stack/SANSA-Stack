@@ -3,7 +3,6 @@ package net.sansa_stack.query.spark.graph.jena.util
 import org.apache.jena.graph.Triple
 import org.apache.spark.SparkContext
 
-
 /**
   * Class that generate GraphX graph for input triples
   *
@@ -13,8 +12,8 @@ import org.apache.spark.SparkContext
   */
 class BasicGraphPattern(triples: Iterator[Triple]) extends Serializable {
 
-  val triplePatterns: List[TriplePatternNode] = {
-    triples.toList.map( t => new TriplePatternNode(t.getSubject, t.getPredicate, t.getObject))
+  val triplePatterns: List[TriplePattern] = {
+    triples.toList.map( t => new TriplePattern(t.getSubject, t.getPredicate, t.getObject))
   }
 
   lazy val numTriples: Long = triplePatterns.length

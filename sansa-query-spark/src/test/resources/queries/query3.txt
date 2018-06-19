@@ -5,6 +5,6 @@ WHERE {
     ?user tw:follows ?follower .
     OPTIONAL { ?user foaf:name ?name }
     OPTIONAL { ?user foaf:age ?age }
-    FILTER(bound(?name))
+    FILTER(!bound(?name))
 }
 ORDER BY ?age
