@@ -4,21 +4,21 @@ import java.util.Iterator
 
 import scala.collection.JavaConverters._
 
-import org.aksw.jena_sparql_api.views.RestrictedExpr
+import com.google.common.collect.Multimap
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
-import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.aksw.jena_sparql_api.core.ResultSetCloseable
+import org.aksw.jena_sparql_api.utils.ResultSetUtils
+import org.aksw.jena_sparql_api.views.RestrictedExpr
 import org.apache.jena.query.Query
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
+import net.sansa_stack.rdf.spark.utils.kryo.io.{ JavaKryoSerializationWrapper, KryoSerializationWrapper }
 import org.apache.spark.rdd._
-import org.apache.spark.sql.{ Dataset, Row, SparkSession }
-import com.google.common.collect.Multimap
-import net.sansa_stack.rdf.spark.utils.kryo.io.{JavaKryoSerializationWrapper, KryoSerializationWrapper}
+import org.apache.spark.sql.{ DataFrame, Dataset, Row, SparkSession }
 
 object QueryExecutionSpark {
 
-  def createQueryExecution(spark: SparkSession, rewrite: SparqlSqlStringRewrite, query: Query) = {
+  def createQueryExecution(spark: SparkSession, rewrite: SparqlSqlStringRewrite, query: Query): DataFrame = {
 
     val varDef = rewrite.getVarDefinition().getMap()
 
@@ -38,7 +38,7 @@ object QueryExecutionSpark {
     df
   }
 
-  def ResultSet(rdd: RDD[Binding], rewrite: SparqlSqlStringRewrite) = {
+  def ResultSet(rdd: RDD[Binding], rewrite: SparqlSqlStringRewrite): ResultSetCloseable = {
     val it = rdd.toLocalIterator.asJava
     val resultVars = rewrite.getProjectionOrder()
 

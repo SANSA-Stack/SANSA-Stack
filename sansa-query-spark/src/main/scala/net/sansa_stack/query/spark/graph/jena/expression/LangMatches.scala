@@ -2,8 +2,8 @@ package net.sansa_stack.query.spark.graph.jena.expression
 
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
-import org.apache.jena.sparql.expr.nodevalue.NodeFunctions
 import org.apache.jena.sparql.expr.{ E_Lang, E_LangMatches, Expr, NodeValue }
+import org.apache.jena.sparql.expr.nodevalue.NodeFunctions
 
 class LangMatches(left: Expression, right: Expression) extends FilterTwo(left, right) {
 
@@ -14,7 +14,7 @@ class LangMatches(left: Expression, right: Expression) extends FilterTwo(left, r
   }
   private val rightVal = right match {
     case e: NodeVal => e.getNode
-    case _  => throw new TypeNotPresentException("Node Value", new Throwable)
+    case _ => throw new TypeNotPresentException("Node Value", new Throwable)
   }
 
   override def evaluate(result: Map[Node, Node]): Boolean = {

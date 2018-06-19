@@ -1,14 +1,12 @@
 package net.sansa_stack.query.spark.playground
 
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{ Row, SparkSession }
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 import org.scalatest._
 
 class TestSparkSqlJoin extends FlatSpec {
 
   "SPARK SQL processor" should "be capable of handling transitive join conditions" in {
-
 
     val spark = SparkSession
       .builder()
@@ -32,7 +30,6 @@ class TestSparkSqlJoin extends FlatSpec {
     val dataRDD = spark.sparkContext.parallelize(data).map(attributes => Row(attributes._1, attributes._2, attributes._3))
     val df = spark.createDataFrame(dataRDD, schema).as("TRIPLES")
     df.createOrReplaceTempView("TRIPLES")
-
 
     println("First Query")
     spark.sql("SELECT A.s FROM TRIPLES A, TRIPLES B WHERE A.s = B.s AND A.s = 'dbr:Leipzig'").show(10)

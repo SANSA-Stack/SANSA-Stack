@@ -2,8 +2,14 @@ package net.sansa_stack.query.spark.sparqlify.server
 
 import java.io.File
 
-import scala.collection.JavaConverters.asScalaIteratorConverter
+import scala.collection.JavaConverters._
 
+import benchmark.generator.Generator
+import benchmark.serializer.SerializerModel
+import benchmark.testdriver.LocalSPARQLParameterPool
+import benchmark.testdriver.SPARQLConnection2
+import benchmark.testdriver.TestDriver
+import benchmark.testdriver.TestDriverUtils
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.riot.RDFFormat
@@ -11,12 +17,6 @@ import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.engine.binding.BindingHashMap
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
-import benchmark.generator.Generator
-import benchmark.serializer.SerializerModel
-import benchmark.testdriver.LocalSPARQLParameterPool
-import benchmark.testdriver.SPARQLConnection2
-import benchmark.testdriver.TestDriver
-import benchmark.testdriver.TestDriverUtils
 import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
@@ -136,7 +136,7 @@ object MainSansaBSBM {
   //  def genMapperNilesh(kryoWrapper: KryoSerializationWrapper[(Foo => Bar)])
   //               (foo: Foo) : Bar = {
   //    kryoWrapper.value.apply(foo)
-  //}
+  // }
   def genMapper[A, B](f: A => B): A => B = {
     val locker = com.twitter.chill.MeatLocker(f)
     x => locker.get.apply(x)

@@ -4,10 +4,10 @@ import java.io.File
 
 import scala.collection.JavaConverters._
 
+import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, SparqlifyUtils3 }
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, SparqlifyUtils3 }
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import org.apache.jena.sparql.engine.binding.{ Binding, BindingHashMap }

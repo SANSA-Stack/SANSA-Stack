@@ -4,13 +4,14 @@ import java.io._
 import java.io.File
 import java.util.{ Scanner, StringTokenizer }
 
+// import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.JavaConversions._
 import scala.util.Try
 
 import com.google.common.collect.ArrayListMultimap
-import org.apache.spark.rdd._
 import net.sansa_stack.query.spark.semantic.utils.Helpers._
+import org.apache.spark.rdd._
 
 /*
  * QuerySystem - query on semantic partition data
@@ -22,10 +23,10 @@ import net.sansa_stack.query.spark.semantic.utils.Helpers._
  * @numOfFilesPartition - total number of files to save the partition data.
  */
 class QuerySystem(
-  symbol:              Map[String, String],
-  partitionData:       RDD[String],
-  queryInputPath:      String,
-  queryResultPath:     String,
+  symbol: Map[String, String],
+  partitionData: RDD[String],
+  queryInputPath: String,
+  queryResultPath: String,
   numOfFilesPartition: Int) extends Serializable {
   var _selectVariables: Map[Int, ArrayBuffer[String]] = Map()
   var _whereVariables: Map[Int, ArrayBuffer[String]] = Map()
@@ -601,9 +602,9 @@ class QuerySystem(
                 varJoinList)
 
               // assign values
-              for (k <- keyValue.keySet()) {
+              for (k <- keyValue.keySet().asScala) {
                 key = k
-                value = keyValue.get(k).toList
+                value = keyValue.get(k).asScala.toList
               }
             }
           }
@@ -1181,9 +1182,9 @@ class QuerySystem(
       if (logicalOpList.nonEmpty && resultList.length > logicalOpList.length) {
         for (i <- logicalOpList.indices) {
           if (i.equals(0)) {
-            if (logicalOpList(0).equals("&&"))
+            if (logicalOpList(0).equals("&&")) {
               result = resultList(i) && resultList(i + 1)
-            else {
+            } else {
               if (resultList(i) && resultList(i + 1)) {
                 result = resultList(i) || resultList(i + 1)
                 duplicateCounter += 1
@@ -1233,7 +1234,7 @@ class QuerySystem(
       case "isURI" =>
         if (value.startsWith(symbol("less-than")) &&
           value.endsWith(symbol("greater-than")) &&
-          value.contains("http")) bool = true
+          value.contains("http")) { bool = true }
 
         bool
       case "isBlank" =>

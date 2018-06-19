@@ -1,5 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
+import scala.collection.JavaConverters._
+
 import net.sansa_stack.query.spark.graph.jena.ExprParser
 import net.sansa_stack.query.spark.graph.jena.expression.Expression
 import net.sansa_stack.query.spark.graph.jena.model._
@@ -7,7 +9,6 @@ import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpFilter
 import org.apache.jena.sparql.expr.ExprList
 
-import scala.collection.JavaConversions._
 
 /**
  * Class that execute SPARQL FILTER operation
@@ -16,10 +17,10 @@ class ResultFilter(op: OpFilter) extends ResultOp {
 
   private val tag = "FILTER"
   private val id = op.hashCode
-  private val filters = op.getExprs.getList.toList.map { expr =>
+  private val filters = op.getExprs.getList.asScala.toList.map { expr =>
     new ExprParser(expr).getExpression match {
       case e: Expression => e
-      case _             => throw new UnsupportedOperationException
+      case _ => throw new UnsupportedOperationException
     }
   }
 

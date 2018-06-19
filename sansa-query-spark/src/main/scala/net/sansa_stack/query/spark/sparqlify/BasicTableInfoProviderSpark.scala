@@ -1,11 +1,13 @@
 package net.sansa_stack.query.spark.sparqlify
 
-import scala.collection.JavaConverters._
-import org.apache.spark.sql.SparkSession
 import java.util.Collections
+
+import scala.collection.JavaConverters._
+
 import org.aksw.sparqlify.config.v0_2.bridge.BasicTableInfo
 import org.aksw.sparqlify.config.v0_2.bridge.BasicTableInfoProvider
 import net.sansa_stack.rdf.spark.utils.SchemaUtils
+import org.apache.spark.sql.SparkSession
 
 class BasicTableInfoProviderSpark(val sparkSession: SparkSession)
     extends BasicTableInfoProvider {
@@ -16,7 +18,7 @@ class BasicTableInfoProviderSpark(val sparkSession: SparkSession)
     // TODO Handle nullable columns
 
     val rawTypeMap = flatSchema.asJava
-    val nullableColumns = Collections.emptySet[String] //Set[String]().asJava
+    val nullableColumns = Collections.emptySet[String] // Set[String]().asJava
 
     new BasicTableInfo(rawTypeMap, nullableColumns)
   }

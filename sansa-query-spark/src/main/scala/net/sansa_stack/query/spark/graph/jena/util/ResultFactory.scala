@@ -45,6 +45,6 @@ object ResultFactory {
   }
 
   def convertToDataFrame[VD: ClassTag](results: RDD[Result[VD]], session: SparkSession): Unit = {
-    //session.createDataFrame()
+    // session.createDataFrame()
   }
 }

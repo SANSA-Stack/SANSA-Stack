@@ -23,7 +23,7 @@ object SparqlifyUtils3 // extends StrictLogging
     val config = new Config()
     // val loggerCount = new LoggerCount(logger.underlying)
 
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) //new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) // new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
 
@@ -42,7 +42,7 @@ object SparqlifyUtils3 // extends StrictLogging
 
         val tableName = vd.getRelation match {
           case o: SqlOpTable => o.getTableName
-          case _             => throw new RuntimeException("Table name required - instead got: " + vd)
+          case _ => throw new RuntimeException("Table name required - instead got: " + vd)
         }
 
         val scalaSchema = p.layout.schema
@@ -56,7 +56,7 @@ object SparqlifyUtils3 // extends StrictLogging
     val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
 
     val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
-    //val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
+    //   val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
 
     //    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
     rewriter

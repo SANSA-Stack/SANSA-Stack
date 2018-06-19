@@ -1,8 +1,8 @@
 package net.sansa_stack.query.spark.gremlinator.utils
 
 import org.apache.commons.configuration.BaseConfiguration
-import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer
+import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
 
 object Config {
@@ -21,5 +21,4 @@ object Config {
       .result(GraphComputer.ResultGraph.NEW)
       .persist(GraphComputer.Persist.VERTEX_PROPERTIES)
   }
-
 }

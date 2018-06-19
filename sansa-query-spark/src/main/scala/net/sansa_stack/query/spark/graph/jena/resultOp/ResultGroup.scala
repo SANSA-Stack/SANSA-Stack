@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._ 
 
 import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
 import net.sansa_stack.query.spark.graph.jena.util.{ Result, ResultFactory }
@@ -19,8 +19,8 @@ class ResultGroup(op: OpGroup) extends ResultOp {
   private val id = op.hashCode()
 
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
-    val vars = op.getGroupVars.getVars.toList // e.g. List(?user)
-    val aggregates = op.getAggregators.toList // e.g. List((AGG ?.0 AVG(?age)), (AGG ?.1 MAX(?age)), (AGG ?.2 MIN(?age)))
+    val vars = op.getGroupVars.getVars.asScala.toList // e.g. List(?user)
+    val aggregates = op.getAggregators.asScala.toList // e.g. List((AGG ?.0 AVG(?age)), (AGG ?.1 MAX(?age)), (AGG ?.2 MIN(?age)))
     var intermediate = input
     vars.length match {
       case 1 =>
@@ -41,8 +41,8 @@ class ResultGroup(op: OpGroup) extends ResultOp {
   }
 
   override def execute(): Unit = {
-    val vars = op.getGroupVars.getVars.toList.map(v => v.asNode()) // List of variables, e.g. List(?user)
-    val aggregates = op.getAggregators.toList
+    val vars = op.getGroupVars.getVars.asScala.toList.map(v => v.asNode()) // List of variables, e.g. List(?user)
+    val aggregates = op.getAggregators.asScala.toList
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
     val newResult = SparkExecutionModel.group(oldResult, vars, aggregates)
     IntermediateResult.putResult(id, newResult)
@@ -60,7 +60,7 @@ class ResultGroup(op: OpGroup) extends ResultOp {
 object ResultGroup {
 
   def aggregateOp(input: Array[Map[Node, Node]], aggr: ExprAggregator): Map[Node, Node] = {
-    val key = aggr.getAggregator.getExprList.head.getExprVar.getAsNode // e.g. ?age
+    val key = aggr.getAggregator.getExprList.asScala.head.getExprVar.getAsNode // e.g. ?age
     val seq = input.map(_(key).getLiteralValue.toString.toDouble)
     val result = seq.aggregate((0.0, 0))(
       (acc, value) => (acc._1 + value, acc._2 + 1),

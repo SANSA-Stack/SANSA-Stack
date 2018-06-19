@@ -45,10 +45,6 @@ abstract class FilterTwo(protected val left: Expression, protected val right: Ex
       }
     }
 
-    /*val leftNodeValue = NodeValue.makeDecimal(leftValue.toDouble)
-    val rightNodeValue = NodeValue.makeDecimal(rightValue.toDouble)
-    NodeValue.compare(leftNodeValue, rightNodeValue)*/
-
     leftValue.compare(rightValue)
   }
 

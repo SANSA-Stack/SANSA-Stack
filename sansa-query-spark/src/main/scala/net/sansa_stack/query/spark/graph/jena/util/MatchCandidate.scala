@@ -2,11 +2,12 @@ package net.sansa_stack.query.spark.graph.jena.util
 
 import net.sansa_stack.query.spark.graph.jena.util.NodeType.NodeType
 import org.apache.jena.graph._
-import org.apache.spark.graphx.{EdgeTriplet, VertexId}
+import org.apache.spark.graphx.{ EdgeTriplet, VertexId }
 
-class MatchCandidate(val target: EdgeTriplet[Node, Node],
-                     val pattern: TriplePattern,
-                     nodeType: NodeType) extends Serializable {
+class MatchCandidate(
+  val target: EdgeTriplet[Node, Node],
+  val pattern: TriplePattern,
+  nodeType: NodeType) extends Serializable {
 
   val isMatch: Boolean = pattern.isFulfilledByTriplet(target)
   val vertex: (VertexId, Node) = {
@@ -24,10 +25,10 @@ class MatchCandidate(val target: EdgeTriplet[Node, Node],
     }
   }
   val isVar: Boolean = variable.isVariable
-  val mapping: Map[Node,Node] = Map(
-    pattern.getSubject->target.srcAttr,
-    pattern.getPredicate->target.attr,
-    pattern.getObject->target.dstAttr)
+  val mapping: Map[Node, Node] = Map(
+    pattern.getSubject -> target.srcAttr,
+    pattern.getPredicate -> target.attr,
+    pattern.getObject -> target.dstAttr)
 
   override def toString: String = (variable, filterNotVariable(mapping), pattern).toString
 

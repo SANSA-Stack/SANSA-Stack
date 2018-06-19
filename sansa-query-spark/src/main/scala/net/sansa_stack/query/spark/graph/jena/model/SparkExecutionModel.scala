@@ -3,13 +3,13 @@ package net.sansa_stack.query.spark.graph.jena.model
 import net.sansa_stack.query.spark.graph.jena.expression.{ Expression, Filter, Pattern }
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util._
-import org.apache.jena.graph.Node
-import net.sansa_stack.rdf.spark.model.graph._
 import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.model.graph._
+import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.expr.ExprAggregator
-import org.apache.spark.rdd.RDD
 import org.apache.spark.graphx.Graph
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 /**
@@ -46,13 +46,6 @@ object SparkExecutionModel {
     spark = SparkSession.builder()
       .master(Config.getMaster)
       .appName(Config.getAppName)
-      // Use the Kryo serializer
-      //.config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      //.config("spark.kryo.registrator", "net.sansa_stack.query.spark.graph.jena.serialization.Registrator")
-      //.config("spark.core.connection.ack.wait.timeout", "5000")
-      //.config("spark.shuffle.consolidateFiles", "true")
-      //.config("spark.rdd.compress", "true")
-      //.config("spark.kryoserializer.buffer.max.mb", "512")
       .getOrCreate()
 
     loadGraph()
@@ -123,8 +116,8 @@ object SparkExecutionModel {
   }
 
   def distinct(result: RDD[Result[Node]]): RDD[Result[Node]] = {
-    /*val newResult = result.distinct().cache()
-    result.unpersist()*/
+    /* val newResult = result.distinct().cache()
+    result.unpersist() */
     val newResult = spark.sparkContext.parallelize(result.collect().distinct).cache()
     newResult
   }
@@ -162,7 +155,7 @@ object SparkExecutionModel {
     val broadcast = spark.sparkContext.broadcast(filters)
     var intermediate: RDD[Result[Node]] = result.cache()
     broadcast.value.foreach {
-      case e: Filter  => intermediate = intermediate.filter(r => e.evaluate(r))
+      case e: Filter => intermediate = intermediate.filter(r => e.evaluate(r))
       case e: Pattern => intermediate = e.evaluate(intermediate)
     }
     intermediate
@@ -189,7 +182,7 @@ object SparkExecutionModel {
         case (_, pair) =>
           pair._2 match {
             case Some(_) => pair._1.merge(pair._2.get)
-            case None    => pair._1
+            case None => pair._1
           }
       }.cache()
     }

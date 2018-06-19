@@ -1,14 +1,14 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
+import scala.collection.JavaConverters._
+import scala.reflect._
+
 import net.sansa_stack.query.spark.graph.jena.ExprParser
 import net.sansa_stack.query.spark.graph.jena.model.IntermediateResult
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpOrder
 import org.apache.spark.rdd.RDD
-
-import scala.collection.JavaConversions._
-import scala.reflect._
 
 /**
  * Class that execute SPARQL ORDER BY operation.
@@ -21,12 +21,12 @@ class ResultOrder(op: OpOrder) extends ResultOp {
 
   @deprecated("this method will be removed", "")
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
-    //val vars = op.getConditions.toList.map(sc => new ExprParser(sc.getExpression).getVar.getAsNode)
+    // val vars = op.getConditions.toList.map(sc => new ExprParser(sc.getExpression).getVar.getAsNode)
     throw new UnsupportedOperationException
   }
 
   override def execute(): Unit = {
-    val conditions = op.getConditions.toList //.map(sc => new ExprParser(sc.getExpression))
+    val conditions = op.getConditions.asScala.toList // .map(sc => new ExprParser(sc.getExpression))
     val vars = conditions.map(condition => condition.expression.asVar.asNode)
     val dirs = conditions.map(condition => condition.direction)
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()

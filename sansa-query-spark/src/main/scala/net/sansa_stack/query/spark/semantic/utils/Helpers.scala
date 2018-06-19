@@ -59,7 +59,7 @@ object Helpers {
   }
 
   // total query process time
-  def queryTime(processedTime: Long, symbol: Map[String, String]) = {
+  def queryTime(processedTime: Long, symbol: Map[String, String]): Long = {
     val milliseconds = TimeUnit.MILLISECONDS.convert(processedTime, TimeUnit.NANOSECONDS)
     val seconds = Math.floor(milliseconds / 1000d + .5d).toInt
     val minutes = TimeUnit.MINUTES.convert(processedTime, TimeUnit.NANOSECONDS)
