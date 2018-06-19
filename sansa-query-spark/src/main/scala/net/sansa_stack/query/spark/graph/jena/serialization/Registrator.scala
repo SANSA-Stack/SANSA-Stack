@@ -23,7 +23,6 @@ class Registrator extends KryoRegistrator{
     kryo.register(classOf[TriplePattern])
     kryo.register(classOf[BasicGraphPattern])
     kryo.register(classOf[MatchCandidate])
-    kryo.register(classOf[MatchSet])
 
     // Query processing
     kryo.register(classOf[Ops])

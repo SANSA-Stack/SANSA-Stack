@@ -47,8 +47,8 @@ object SparkExecutionModel {
       .master(Config.getMaster)
       .appName(Config.getAppName)
       // Use the Kryo serializer
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", "net.sansa_stack.query.spark.graph.jena.serialization.Registrator")
+      //.config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      //.config("spark.kryo.registrator", "net.sansa_stack.query.spark.graph.jena.serialization.Registrator")
       //.config("spark.core.connection.ack.wait.timeout", "5000")
       //.config("spark.shuffle.consolidateFiles", "true")
       //.config("spark.rdd.compress", "true")
@@ -56,6 +56,14 @@ object SparkExecutionModel {
       .getOrCreate()
 
     loadGraph()
+  }
+
+  def createSparkSession(session: SparkSession): Unit = {
+    if(spark == null){
+      spark = session
+    } else {
+      throw new IllegalArgumentException("spark session has been set already")
+    }
   }
 
   def loadGraph(): Unit = {
@@ -69,53 +77,41 @@ object SparkExecutionModel {
     graph = spark.rdf(lang)(path).asGraph().cache()
   }
 
+  def setGraph(graph: Graph[Node, Node]): Unit = {
+    if(graph == null){
+      this.graph = graph
+    } else {
+      throw new IllegalArgumentException("rdf graph has been set already")
+    }
+  }
+
   def basicGraphPatternMatch(bgp: BasicGraphPattern): RDD[Result[Node]] = {
 
     if(spark == null){ setSession() }
 
     val patterns = spark.sparkContext.broadcast(bgp.triplePatterns)
-    val matchSet = new MatchSet(graph, patterns, spark)
-    var finalMatchSet = matchSet.matchCandidateSet.cache()
-    var prevMatchSet: RDD[MatchCandidate] = null
 
-    var changed = true
-    while(changed) {
-      prevMatchSet = finalMatchSet
-      // Step 1: Confirm the validation of local match sets.
-      prevMatchSet = matchSet.validateLocalMatchSet(prevMatchSet)
-
-      // Step 2: Conform the validation of remote match sets.
-      prevMatchSet = matchSet.validateRemoteMatchSet(prevMatchSet)
-
-      if(prevMatchSet.count().equals(finalMatchSet.count())){
-        changed = false
-      }
-      finalMatchSet = prevMatchSet
-      prevMatchSet.unpersist()
-    }
-
-    if(finalMatchSet.count()==0){
-      throw new IllegalStateException("No results match")
-    }
-
-    var intermediate: RDD[Result[Node]] = null
-    patterns.value.foreach{ pattern =>
-      val mapping = finalMatchSet
-        .filter(_.pattern.equals(pattern))
-        .map(_.mapping).collect()
-        .map(_.filterKeys(_.toString.startsWith("?")))
-        .distinct
-      if(intermediate == null) {
-        intermediate = ResultFactory.create(mapping, spark).cache()
-      }
-      else{
-        intermediate = leftJoin(intermediate, ResultFactory.create(mapping, spark)).cache()
-      }
-    }
-    finalMatchSet.unpersist()
+    // Step 1: generate a new candidate graph, attribute of each vertex is a set of candidates match triple patterns
+    val candidateGraph = MatchSet.createCandidateGraph(graph, patterns).cache()
     graph.unpersist()
 
-    intermediate
+    // Step 2: validate local match sets, filter candidate which has local match.
+    val localGraph = MatchSet.localMatch(candidateGraph, patterns).cache()
+    candidateGraph.unpersist()
+
+    // Step 3: join the message of neighbours' candidates into vertex attributes
+    val mergedGraph = MatchSet.joinNeighbourCandidate(localGraph).cache()
+    localGraph.unpersist()
+
+    // Step 4: validate remote match sets, filter candidate which has remote match.
+    val remoteGraph = MatchSet.remoteMatch(mergedGraph).cache()
+    mergedGraph.unpersist()
+
+    // Step 5: Produce this final results that match the triple patterns in RDF graph.
+    val results = MatchSet.generateResultRDD(remoteGraph, patterns, spark).cache()
+    remoteGraph.unpersist()
+
+    results
   }
 
   def project(result: RDD[Result[Node]], varSet: Set[Node]): RDD[Result[Node]] = {
