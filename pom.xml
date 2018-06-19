@@ -70,12 +70,12 @@
     <scala.binary.version>2.11</scala.binary.version>
     <spark.version>2.3.1</spark.version>
     <flink.version>1.5.0</flink.version>
-    <jena.version>3.6.0</jena.version>
+    <jena.version>3.7.0</jena.version>
     <sansa.stack.version>0.3.1-SNAPSHOT</sansa.stack.version>
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
     <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
-    <jsa.subversion>3</jsa.subversion>
+    <jsa.subversion>1</jsa.subversion>
     <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
@@ -234,7 +234,7 @@
       <dependency>
         <groupId>org.scala-graph</groupId>
         <artifactId>graph-core_${scala.binary.version}</artifactId>
-        <version>1.12.3</version>
+        <version>1.12.5</version>
       </dependency>
       <dependency>
         <groupId>org.scala-graph</groupId>
@@ -266,7 +266,7 @@
         <dependency>
             <groupId>org.apache.calcite</groupId>
             <artifactId>calcite-core</artifactId>
-            <version>1.13.0</version>
+            <version>1.16.0</version>
         </dependency>
 
       <!-- Test -->
@@ -285,13 +285,13 @@
       <dependency>
         <groupId>org.specs2</groupId>
         <artifactId>specs2-core_${scala.binary.version}</artifactId>
-        <version>4.0.2</version>
+        <version>4.2.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.specs2</groupId>
         <artifactId>specs2-junit_${scala.binary.version}</artifactId>
-        <version>4.0.2</version>
+        <version>4.2.0</version>
         <scope>test</scope>
       </dependency>
 
@@ -563,7 +563,7 @@
         <version>1.0.0</version>
         <configuration>
           <verbose>false</verbose>
-          <failOnViolation>false</failOnViolation>
+          <failOnViolation>true</failOnViolation>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
           <failOnWarning>false</failOnWarning>
           <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>

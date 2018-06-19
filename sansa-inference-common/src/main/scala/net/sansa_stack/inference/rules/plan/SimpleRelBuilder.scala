@@ -1,10 +1,14 @@
 package net.sansa_stack.inference.rules.plan
 
+import java.util.Properties
+
+import org.apache.calcite.config.{CalciteConnectionConfig, CalciteConnectionConfigImpl, CalciteConnectionProperty}
 import org.apache.calcite.jdbc.CalciteSchema
 import org.apache.calcite.plan.{Context, RelOptCluster, RelOptPlanner, RelOptSchema}
 import org.apache.calcite.prepare.CalciteCatalogReader
 import org.apache.calcite.rex.RexBuilder
 import org.apache.calcite.schema.SchemaPlus
+import org.apache.calcite.sql.parser.SqlParser
 import org.apache.calcite.tools.Frameworks.PlannerAction
 import org.apache.calcite.tools.{FrameworkConfig, Frameworks, RelBuilder}
 
@@ -56,11 +60,18 @@ object SimpleRelBuilder {
     val calciteSchema = CalciteSchema.from(config.getDefaultSchema)
     val relOptSchema = new CalciteCatalogReader(
       calciteSchema,
-      config.getParserConfig.caseSensitive(),
       defaultRelOptSchema.getSchemaPaths.get(0),
-      typeFactory)
+      typeFactory,
+      connectionConfig(config.getParserConfig))
 
     new SimpleRelBuilder(config.getContext, cluster, relOptSchema)
+  }
+
+  def connectionConfig(parserConfig : SqlParser.Config): CalciteConnectionConfig = {
+    val prop = new Properties()
+    prop.setProperty(CalciteConnectionProperty.CASE_SENSITIVE.camelName,
+      String.valueOf(parserConfig.caseSensitive))
+    new CalciteConnectionConfigImpl(prop)
   }
 
 }
