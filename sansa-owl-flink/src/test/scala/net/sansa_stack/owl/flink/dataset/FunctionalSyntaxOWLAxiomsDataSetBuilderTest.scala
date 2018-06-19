@@ -3,31 +3,31 @@ package net.sansa_stack.owl.flink.dataset
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
-import org.semanticweb.owlapi.model.{OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLFunctionalObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, OWLInverseObjectPropertiesAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLNegativeDataPropertyAssertionAxiom, OWLNegativeObjectPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLReflexiveObjectPropertyAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, SWRLRule, _}
-
+import org.semanticweb.owlapi.model.{ OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLFunctionalObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, OWLInverseObjectPropertiesAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLNegativeDataPropertyAssertionAxiom, OWLNegativeObjectPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLReflexiveObjectPropertyAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, SWRLRule, _ }
 
 class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
+  import net.sansa_stack.owl.flink.owl._
+
   val env = ExecutionEnvironment.getExecutionEnvironment
 
   // scalastyle:off classforname
   env.getConfig.addDefaultKryoSerializer(
     Class.forName("java.util.Collections$UnmodifiableCollection"),
-    classOf[UnmodifiableCollectionsSerializer]
-  )
+    classOf[UnmodifiableCollectionsSerializer])
   // scalastyle:on classforname
 
   var _dataSet: OWLAxiomsDataSet = null
+  val syntax = Syntax.FUNCTIONAL
   def dataSet: OWLAxiomsDataSet = {
     if (_dataSet == null) {
-      _dataSet = FunctionalSyntaxOWLAxiomsDataSetBuilder.build(
-        env, this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
-//        env, "hdfs://localhost:9000/ont_functional.owl")
+      _dataSet = env.owl(syntax)(this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
+      //        env, "hdfs://localhost:9000/ont_functional.owl")
     }
     _dataSet
   }
 
   test("The number of axioms should match") {
-    val expectedNumberOfAxioms = 67  // = 71 - commented out Import(...) - 3 x null
+    val expectedNumberOfAxioms = 67 // = 71 - commented out Import(...) - 3 x null
     assert(dataSet.count() == expectedNumberOfAxioms)
   }
 

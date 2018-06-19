@@ -3,14 +3,15 @@ package net.sansa_stack.owl.flink.dataset
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
 
-
 class FunctionalSyntaxOWLExpressionsDataSetBuilderTest extends FunSuite {
+  import net.sansa_stack.owl.flink.owl._
   lazy val env = ExecutionEnvironment.getExecutionEnvironment
   var _dataSet: OWLExpressionsDataSet = null
+  val syntax = Syntax.FUNCTIONAL
+
   def dataSet: OWLExpressionsDataSet = {
     if (_dataSet == null) {
-      _dataSet = FunctionalSyntaxOWLExpressionsDataSetBuilder.build(
-        env, this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
+      _dataSet = env.owlExpressions(syntax)(this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
     }
     _dataSet
   }
