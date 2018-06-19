@@ -227,35 +227,4 @@ object MatchSet{
       compatible
     }
   }
-
-  def createPropertyGraph(graph: Graph[Node, Node],
-                          patterns: Broadcast[List[TriplePattern]]): Graph[Iterable[Candidate], Candidate] = {
-    val g = graph.mapTriplets{triplet =>
-      val result = new Candidate(triplet)
-      patterns.value.foreach{pattern =>
-        if(pattern.isFulfilledByTriplet(triplet)){
-          result.addToMsg(pattern)
-        }
-      }
-      result
-    }
-    val vertices = g.aggregateMessages[Iterable[Candidate]](tripletFields => {
-      tripletFields.sendToSrc(Iterable(tripletFields.attr))
-      tripletFields.sendToDst(Iterable(tripletFields.attr))
-    }, (a,b) =>a.++(b))
-
-    val edges = g.edges
-    val default = Iterable.empty[Candidate]
-
-    Graph.apply(vertices, edges, default)
-  }
-
-  def test(graph: Graph[Iterable[Candidate], Candidate],
-           patterns: Broadcast[List[TriplePattern]]): Unit = {
-    graph.triplets.foreach{ triplet =>
-      if(triplet.attr.nonEmpty){
-        println((triplet.srcId, triplet.dstId))
-      }
-    }
-  }
 }
