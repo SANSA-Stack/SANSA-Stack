@@ -2,7 +2,7 @@
 
 # SANSA Inference Layer
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-inference-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-inference-parent_2.11)
-[![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20Inference%20Layer/job/develop/)
+[![Build Status](https://travis-ci.com/SANSA-Stack/SANSA-Inference.svg?branch=develop)](https://travis-ci.com/SANSA-Stack/SANSA-Inference)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
