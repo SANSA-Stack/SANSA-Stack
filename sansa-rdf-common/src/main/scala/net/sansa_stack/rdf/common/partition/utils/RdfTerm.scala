@@ -1,8 +1,7 @@
 package net.sansa_stack.rdf.common.partition.utils
 
 import org.apache.jena.datatypes.TypeMapper
-import org.apache.jena.graph.NodeFactory
-import org.apache.jena.graph.Node
+import org.apache.jena.graph.{ Node, NodeFactory }
 
 /**
  * This class/object is not used (yet/anymore) but for now I keep it for reference ~ Claus 2016/11/17
@@ -11,31 +10,30 @@ import org.apache.jena.graph.Node
 case class RdfTerm(t: Int, v: String, lang: String, dt: String)
 
 object RdfTerm {
-  def toLexicalForm(o: Any) = "" + o //NodeFmtLib.str(node)
+  def toLexicalForm(o: Any): String = "" + o // NodeFmtLib.str(node)
 
-  def termToNode(term: RdfTerm) = {
+  def termToNode(term: RdfTerm): Unit = {
     val lexicalForm = toLexicalForm(term.v)
     val result = term.t match {
       case 0 => NodeFactory.createBlankNode(lexicalForm)
       case 1 => NodeFactory.createURI(lexicalForm)
-      case 2 => {
+      case 2 =>
         val dt = term.dt
-        if (dt != null && !dt.isEmpty()) {
-          //logger.warn("Language tag should be null or empty, was '" + dt + "'");
-        }
-        NodeFactory.createLiteral(lexicalForm, term.lang)
-      }
+        if (dt != null && !dt.isEmpty()) NodeFactory.createLiteral(lexicalForm, term.lang)
+      // {
+      // logger.warn("Language tag should be null or empty, was '" + dt + "'");
+      // }
       case 3 => // Typed Literal
         val lang = term.lang
-        if (lang != null && !lang.isEmpty()) {
-          //logger.warn("Language tag should be null or empty, was '" + lang + "'");
-        }
+        // if (lang != null && !lang.isEmpty()) {
+        // logger.warn("Language tag should be null or empty, was '" + lang + "'");
+        // }
         val dt = TypeMapper.getInstance().getSafeTypeByName(term.dt)
         NodeFactory.createLiteral(lexicalForm, dt)
     }
   }
 
-  def nodeToTerm(node: Node) = {
+  def nodeToTerm(node: Node): RdfTerm = {
     var t: Int = 0
     var v: Any = ""
     var lang: String = null
@@ -51,12 +49,12 @@ object RdfTerm {
 
       v = node.getLiteral().getValue();
 
-      //lex = node.getLiteralLexicalForm();
+      // lex = node.getLiteralLexicalForm();
 
       dt = node.getLiteralDatatypeURI();
       if (dt == null || dt.isEmpty()) {
-        //System.err.println("Treating plain literals as typed ones");
-        //logger.warn("Treating plain literals as typed ones");
+        // System.err.println("Treating plain literals as typed ones");
+        // logger.warn("Treating plain literals as typed ones");
         t = 2;
         lang = node.getLiteralLanguage();
       } else {

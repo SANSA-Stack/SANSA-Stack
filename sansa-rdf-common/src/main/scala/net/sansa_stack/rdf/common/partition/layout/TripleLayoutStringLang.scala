@@ -1,17 +1,16 @@
 package net.sansa_stack.rdf.common.partition.layout
 
-import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe.Type
 import scala.reflect.runtime.universe.typeOf
-
-import org.apache.jena.graph.Triple
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringStringLang
+import org.apache.jena.graph.Triple
 
 // Layout for plain literals with language tag
 object TripleLayoutStringLang
   extends TripleLayout {
-  override def schema = typeOf[SchemaStringStringLang]
+  override def schema: Type = typeOf[SchemaStringStringLang]
 
   override def fromTriple(t: Triple): SchemaStringStringLang = {
     val s = t.getSubject
