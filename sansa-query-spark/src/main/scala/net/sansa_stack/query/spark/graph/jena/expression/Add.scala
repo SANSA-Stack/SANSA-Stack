@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.expression
 
 import net.sansa_stack.query.spark.graph.jena.util.Result
-import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.graph.{ Node, NodeFactory }
 
 class Add(left: Expression, right: Expression) extends FunctionTwo(left, right) {
 
@@ -13,7 +13,7 @@ class Add(left: Expression, right: Expression) extends FunctionTwo(left, right) 
   }
 
   override def getValue(result: Result[Node]): Node = {
-    val leftAndRight= getLeftAndRightValue(result)
+    val leftAndRight = getLeftAndRightValue(result)
     val leftValue = leftAndRight._1
     val rightValue = leftAndRight._2
     val value = NodeFactory.createLiteral(

@@ -7,22 +7,23 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 /**
-  * Class that execute REDUCED modifier. Support syntax as SELECT REDUCED ?user WHERE ...
-  */
+ * Class that execute REDUCED modifier. Support syntax as SELECT REDUCED ?user WHERE ...
+ */
 class ResultReduced(op: OpReduced) extends ResultOp {
 
   private val tag = "REDUCED"
   private val id = op.hashCode()
 
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
-    var duplicates = input.groupBy(identity).mapValues(_.length).filter{ case(_, count) =>
-      count > 1}.keys.toArray
+    var duplicates = input.groupBy(identity).mapValues(_.length).filter {
+      case (_, count) =>
+        count > 1
+    }.keys.toArray
     input.filter(map =>
-      if(duplicates.contains(map)){
+      if (duplicates.contains(map)) {
         duplicates = duplicates.filterNot(_.equals(map))
         false
-      }
-      else{ true })
+      } else { true })
   }
 
   override def execute(): Unit = {

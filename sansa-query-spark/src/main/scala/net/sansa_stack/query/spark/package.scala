@@ -1,18 +1,16 @@
 package net.sansa_stack.query.spark
 
-import org.apache.spark.rdd.RDD
-import org.apache.jena.graph.Triple
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SparkSession
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import net.sansa_stack.query.spark.sparqlify.QueryExecutionSpark
-import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
-import org.apache.jena.query.QueryFactory
-
 import scala.collection.JavaConverters._
+
+import org.apache.jena.graph.Triple
+import org.apache.spark.rdd.RDD
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.aksw.jena_sparql_api.core.ResultSetCloseable
+import org.apache.spark.sql.{ DataFrame, Row, SparkSession }
+import org.apache.jena.query.QueryFactory
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.query.spark.semantic.QuerySystem
+import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionSpark, SparqlifyUtils3 }
 
 /**
  * Wrap up implicit classes/methods to query RDF data from N-Triples files into either [[Sparqlify]] or
@@ -30,7 +28,7 @@ package object query {
     /**
      * Default partition - using VP.
      */
-    def sparql(sparqlQuery: String) = {
+    def sparql(sparqlQuery: String): DataFrame = {
       val partitions = triples.partitionGraph()
 
       val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
@@ -49,17 +47,17 @@ package object query {
     /**
      * Default partition - using VP.
      */
-    def sparql(sparqlQuery: String) = {
+    def sparql(sparqlQuery: String): DataFrame = {
       val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
       val query = QueryFactory.create(sparqlQuery)
       val rewrite = rewriter.rewrite(query)
       val df = QueryExecutionSpark.createQueryExecution(spark, rewrite, query)
-      /*
+      /* 
       val it = rdd.toLocalIterator.asJava
       val resultVars = rewrite.getProjectionOrder()
 
       val tmp = ResultSetUtils.create2(resultVars, it)
-      new ResultSetCloseable(tmp)*/
+      new ResultSetCloseable(tmp) */
       df
     }
 
@@ -93,7 +91,7 @@ package object query {
     /**
      * semantic partition of and RDF graph
      */
-    def sparql(sparqlQuery: String)(input: String, output: String, numOfFilesPartition: Int) = {
+    def sparql(sparqlQuery: String)(input: String, output: String, numOfFilesPartition: Int): Unit = {
       new QuerySystem(symbol, partitions,
         input,
         output,

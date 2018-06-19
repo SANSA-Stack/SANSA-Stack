@@ -1,8 +1,9 @@
 package net.sansa_stack.query.spark.graph.jena.expression
+
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 
-class Lang(expr:Expression) extends FunctionOne(expr) {
+class Lang(expr: Expression) extends FunctionOne(expr) {
 
   private val tag = "Lang"
 
@@ -16,7 +17,7 @@ class Lang(expr:Expression) extends FunctionOne(expr) {
     expr match {
       case e: NodeVar => lang = result.getValue(e.getNode)
       case e: NodeVal => lang = e.getNode
-      case _          => throw new TypeNotPresentException("Variable or Value", new Throwable)
+      case _ => throw new TypeNotPresentException("Variable or Value", new Throwable)
     }
     lang
   }

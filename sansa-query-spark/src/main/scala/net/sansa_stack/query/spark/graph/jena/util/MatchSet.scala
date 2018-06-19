@@ -20,14 +20,15 @@ object MatchSet{
   type candidates = Iterable[MatchCandidate]
 
   /**
-    * Create an RDD of vertices that set the vertex attributes as a set of match candidates.
-    *
-    * @param graph Input RDF graph
-    * @param patterns Basic triple patterns
-    * @return RDD for vertices. Each vertex has an attribute that is a set of match candidate for this vertex.
-    */
-  def createCandidateVertices(graph: Graph[Node, Node],
-                              patterns: Broadcast[List[TriplePattern]]): RDD[(VertexId, candidates)] = {
+   * Create an RDD of vertices that set the vertex attributes as a set of match candidates.
+   *
+   * @param graph Input RDF graph
+   * @param patterns Basic triple patterns
+   * @return RDD for vertices. Each vertex has an attribute that is a set of match candidate for this vertex.
+   */
+  def createCandidateVertices(
+    graph: Graph[Node, Node],
+    patterns: Broadcast[List[TriplePattern]]): RDD[(VertexId, candidates)] = {
 
     val vertices = graph.triplets.flatMap{ triplet =>
 
@@ -89,11 +90,11 @@ object MatchSet{
       if(iter.isEmpty){
         iter
       } else {
-        //foreach candidate belongs to v.candidates do
+        // foreach candidate belongs to v.candidates do
         iter.filter{candidate =>
           var exists = true
           breakable{
-            //foreach triple pattern belongs to pattens != candidate's triple pattern do
+            // foreach triple pattern belongs to pattens != candidate's triple pattern do
             patterns.value.filterNot(_.equals(candidate.pattern)).foreach{pattern =>
               // if candidate's variable in pattern's variable set then
               if(pattern.getVariable.contains(candidate.variable)){
@@ -155,12 +156,12 @@ object MatchSet{
       if(local.isEmpty){
         local
       } else {
-        //foreach local candidate belongs to v.candidates do
+        // foreach local candidate belongs to v.candidates do
         local.filter{candidate =>
           var exists = true
-          //?var2 = pattern.var - ?var
+          // ?var2 = pattern.var - ?var
           val var2 = candidate.pattern.getVariable.filterNot(_.equals(candidate.variable))
-          //if ?var2 != Null then
+          // if ?var2 != Null then
           if(var2.length != 0){
             // if not exists other candidate meet the condition, set the exists false.
             val numOfExists = remote.count{ other =>

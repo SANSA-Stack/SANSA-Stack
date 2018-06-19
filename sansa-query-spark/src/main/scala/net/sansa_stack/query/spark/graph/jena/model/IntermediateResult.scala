@@ -1,10 +1,10 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
+import scala.collection.mutable
+
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.spark.rdd.RDD
-
-import scala.collection.mutable
 
 object IntermediateResult {
 
@@ -27,10 +27,9 @@ object IntermediateResult {
   }
 
   def getFinalResult: RDD[Result[Node]] = {
-    if(results.size == 1) {
+    if (results.size == 1) {
       results.head._2
-    }
-    else {
+    } else {
       throw new UnsupportedOperationException("No final result found")
     }
   }

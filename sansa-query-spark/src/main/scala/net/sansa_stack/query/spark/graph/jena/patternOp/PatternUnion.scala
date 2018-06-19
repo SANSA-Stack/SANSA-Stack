@@ -1,29 +1,30 @@
 package net.sansa_stack.query.spark.graph.jena.patternOp
 
+import scala.collection.mutable
+
 import net.sansa_stack.query.spark.graph.jena.Ops
-import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
+import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultOp
 import net.sansa_stack.query.spark.graph.jena.util.BasicGraphPattern
-import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.graph.{ Node, Triple }
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpUnion
 import org.apache.spark.graphx.Graph
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.mutable
-
 /**
-  * Class that execute SPARQL UNION operations
-  */
+ * Class that execute SPARQL UNION operations
+ */
 class PatternUnion(op: OpUnion) extends PatternOp {
 
   private val tag = "UNION"
   private val id = op.hashCode()
 
   @deprecated("this method will be removed", "")
-  override def execute(input: Array[Map[Node, Node]],
-                       graph: Graph[Node, Node],
-                       session: SparkSession): Array[Map[Node, Node]] = {
+  override def execute(
+    input: Array[Map[Node, Node]],
+    graph: Graph[Node, Node],
+    session: SparkSession): Array[Map[Node, Node]] = {
     // compiler here
     input
   }

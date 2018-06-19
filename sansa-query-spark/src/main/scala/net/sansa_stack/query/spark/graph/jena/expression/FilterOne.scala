@@ -4,5 +4,5 @@ abstract class FilterOne(expr: Expression) extends Filter {
 
   def getExpr: Expression = { expr }
 
-  override def toString: String = { "Expression: "+expr.toString }
+  override def toString: String = { "Expression: " + expr.toString }
 }

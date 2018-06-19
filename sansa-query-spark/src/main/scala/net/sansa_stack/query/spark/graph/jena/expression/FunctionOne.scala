@@ -4,5 +4,5 @@ abstract class FunctionOne(protected val expr: Expression) extends Function {
 
   def getExpr: Expression = { expr }
 
-  override def toString: String = { "Expression: "+expr.toString }
+  override def toString: String = { "Expression: " + expr.toString }
 }

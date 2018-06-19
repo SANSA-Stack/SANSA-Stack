@@ -8,12 +8,14 @@ class LogicalOr(left: Expression, right: Expression) extends FilterTwo(left, rig
   private val tag = "Logical Or"
   private val leftFilter = left match {
     case e: Filter => e
-    case _         => throw new TypeNotPresentException("Filter",
+    case _ => throw new TypeNotPresentException(
+      "Filter",
       new Throwable("The input left expression is not a type of filter"))
   }
   private val rightFilter = right match {
     case e: Filter => e
-    case _         => throw new TypeNotPresentException("Filter",
+    case _ => throw new TypeNotPresentException(
+      "Filter",
       new Throwable("The input left expression is not a type of filter"))
   }
 

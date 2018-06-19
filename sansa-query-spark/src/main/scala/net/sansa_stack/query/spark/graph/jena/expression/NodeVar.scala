@@ -3,9 +3,9 @@ package net.sansa_stack.query.spark.graph.jena.expression
 import org.apache.jena.graph.Node
 
 /**
-  * Serializable class that store expression variable.
-  * @param exprVar variable
-  */
+ * Serializable class that store expression variable.
+ * @param exprVar variable
+ */
 class NodeVar(exprVar: Node) extends Expression {
 
   private val tag = "Node Variable"

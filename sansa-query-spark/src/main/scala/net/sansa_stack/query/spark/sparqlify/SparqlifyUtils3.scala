@@ -1,5 +1,7 @@
 package net.sansa_stack.query.spark.sparqlify
 
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.config.syntax.Config
@@ -11,16 +13,9 @@ import org.aksw.sparqlify.util.SparqlifyUtils
 import org.aksw.sparqlify.util.SqlBackendConfig
 import org.aksw.sparqlify.validation.LoggerCount
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
-
-//import com.typesafe.scalalogging.LazyLogging
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
-//import com.typesafe.scalalogging.StrictLogging
 
 object SparqlifyUtils3 // extends StrictLogging
 {

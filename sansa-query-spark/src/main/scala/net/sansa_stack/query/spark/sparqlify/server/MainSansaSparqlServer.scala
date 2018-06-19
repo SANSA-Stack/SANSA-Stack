@@ -1,20 +1,17 @@
 package net.sansa_stack.query.spark.sparqlify.server
 
-import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
-import org.apache.commons.io.IOUtils
-import org.apache.jena.riot.Lang
-import org.apache.jena.riot.RDFDataMgr
-import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.engine.binding.BindingHashMap
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SparkSession
-import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
-import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
-import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
-import scala.collection.JavaConverters._
 import java.io.File
+
+import scala.collection.JavaConverters._
+
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, SparqlifyUtils3 }
+import org.apache.commons.io.IOUtils
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.jena.sparql.engine.binding.{ Binding, BindingHashMap }
+import org.apache.spark.sql.{ Row, SparkSession }
 
 object MainSansaSparqlServer {
 
@@ -29,13 +26,12 @@ object MainSansaSparqlServer {
       sparkEventsDir.mkdirs()
     }
 
-    //File.createTempFile("spark-events")
+    // File.createTempFile("spark-events")
 
     val sparkSession = SparkSession.builder
       .master("local")
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      //.config("spark.kryo.registrationRequired", "true")
       .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(
         ", ",
@@ -48,23 +44,23 @@ object MainSansaSparqlServer {
     sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
 
     val triplesString =
-      """<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://xmlns.com/foaf/0.1/givenName>	"Guy De" .
-        |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://example.org/ontology/age>	"30"^^<http://www.w3.org/2001/XMLSchema#integer> .
-        |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/influenced>	<http://dbpedia.org/resource/Tobias_Wolff> .
-        |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/influenced>	<http://dbpedia.org/resource/Henry_James> .
-        |<http://dbpedia.org/resource/Guy_de_Maupassant>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Passy> .
-        |<http://dbpedia.org/resource/Charles_Dickens>	<http://xmlns.com/foaf/0.1/givenName>	"Charles"@en .
-        |<http://dbpedia.org/resource/Charles_Dickens>	<http://dbpedia.org/ontology/deathPlace>	<http://dbpedia.org/resource/Gads_Hill_Place> .
+      """<http://dbpedia.org/resource/Guy_de_Maupassant> <http://xmlns.com/foaf/0.1/givenName> "Guy De" .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://example.org/ontology/age> "30"^^<http://www.w3.org/2001/XMLSchema#integer> .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/influenced> <http://dbpedia.org/resource/Tobias_Wolff> .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/influenced> <http://dbpedia.org/resource/Henry_James> .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Passy> .
+        |<http://dbpedia.org/resource/Charles_Dickens> <http://xmlns.com/foaf/0.1/givenName> "Charles"@en .
+        |<http://dbpedia.org/resource/Charles_Dickens> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Gads_Hill_Place> .
         |<http://someOnt/1> <http://someOnt/184298> <http://someOnt/272277> .
         |<http://someOnt/184298> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#AnnotationProperty> .
         |<http://snomedct-20170731T150000Z> <http://www.w3.org/2002/07/owl#versionInfo> "20170731T150000Z"@en .
       """.stripMargin
 
     val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
-    //it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
+    // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
-    //val map = graphRdd.partitionGraphByPredicates
+    // val map = graphRdd.partitionGraphByPredicates
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
 
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
@@ -104,19 +100,19 @@ object MainSansaSparqlServer {
     //
     //    finalDs.foreach(b => println("RESULT BINDING: " + b))
 
-    //resultDs.foreach { x => println("RESULT ROW: " + ItemProcessorSparqlify.process(varDef, rowToBinding(x))) }
+    // resultDs.foreach { x => println("RESULT ROW: " + ItemProcessorSparqlify.process(varDef, rowToBinding(x))) }
     //    val f = { y: Row =>
     //      println("RESULT ROW: " + fuck + " - ")
     //    }
     //
     //    val g = genMapper(f)
     //    resultDs.foreach { x => f(x) }
-    //resultDs.foreach(genMapper({row: Row => println("RESULT ROW: " + fuck) })
-    //resultDs.map(genMapper(row: Row => fuck)).foreach { x => println("RESULT ROW: " + x) }
+    // resultDs.foreach(genMapper({row: Row => println("RESULT ROW: " + fuck) })
+    // resultDs.map(genMapper(row: Row => fuck)).foreach { x => println("RESULT ROW: " + x) }
 
-    //predicateRdds.foreach(x => println(x._1, x._2.count))
+    // predicateRdds.foreach(x => println(x._1, x._2.count))
 
-    //println(predicates.mkString("\n"))
+    // println(predicates.mkString("\n"))
 
     sparkSession.stop()
   }
@@ -124,7 +120,7 @@ object MainSansaSparqlServer {
   //  def genMapperNilesh(kryoWrapper: KryoSerializationWrapper[(Foo => Bar)])
   //               (foo: Foo) : Bar = {
   //    kryoWrapper.value.apply(foo)
-  //}
+  // }
   def genMapper[A, B](f: A => B): A => B = {
     val locker = com.twitter.chill.MeatLocker(f)
     x => locker.get.apply(x)

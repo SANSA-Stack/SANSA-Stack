@@ -11,7 +11,6 @@ import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.engine.binding.BindingHashMap
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
-
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import benchmark.testdriver.LocalSPARQLParameterPool
@@ -35,13 +34,12 @@ object MainSansaBSBM {
       sparkEventsDir.mkdirs()
     }
 
-    //File.createTempFile("spark-events")
+    // File.createTempFile("spark-events")
 
     val sparkSession = SparkSession.builder
       .master("local")
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      //.config("spark.kryo.registrationRequired", "true")
       .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(
         ", ",
@@ -53,31 +51,27 @@ object MainSansaBSBM {
 
     sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
 
-    
     val serializer = new SerializerModel()
     Generator.init(Array[String]())
     Generator.setSerializer(serializer)
     Generator.run()
     val testDriverParams = Generator.getTestDriverParams()
-        
+
     val model = serializer.getModel()
 
-
     val it = model.getGraph.find().asScala.toSeq
-    //val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
-    
-    
-    //it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
+    // val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
+
+    // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
-    //val map = graphRdd.partitionGraphByPredicates
+    // val map = graphRdd.partitionGraphByPredicates
     val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
 
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
 
     val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 
-    
     val testDriver = new TestDriver()
     testDriver.processProgramParameters(Array("http://example.org/foobar/sparql", "-w", "1", "-runs", "1"))
     testDriver.setParameterPool(new LocalSPARQLParameterPool(testDriverParams, testDriver.getSeed()))
@@ -89,14 +83,9 @@ object MainSansaBSBM {
     System.out.println("Result model triples: " + statsModel.size())
     RDFDataMgr.write(System.out, statsModel, RDFFormat.TURTLE_PRETTY)
 
-    
-    
-    //val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
-    //server.join()
+    // val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
+    // server.join()
 
-    
-    
-    
     /*
      * val result = graphRdd.partitionGraph().sparql("SELECT * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
      */
@@ -127,19 +116,19 @@ object MainSansaBSBM {
     //
     //    finalDs.foreach(b => println("RESULT BINDING: " + b))
 
-    //resultDs.foreach { x => println("RESULT ROW: " + ItemProcessorSparqlify.process(varDef, rowToBinding(x))) }
+    // resultDs.foreach { x => println("RESULT ROW: " + ItemProcessorSparqlify.process(varDef, rowToBinding(x))) }
     //    val f = { y: Row =>
     //      println("RESULT ROW: " + fuck + " - ")
     //    }
     //
     //    val g = genMapper(f)
     //    resultDs.foreach { x => f(x) }
-    //resultDs.foreach(genMapper({row: Row => println("RESULT ROW: " + fuck) })
-    //resultDs.map(genMapper(row: Row => fuck)).foreach { x => println("RESULT ROW: " + x) }
+    // resultDs.foreach(genMapper({row: Row => println("RESULT ROW: " + fuck) })
+    // resultDs.map(genMapper(row: Row => fuck)).foreach { x => println("RESULT ROW: " + x) }
 
-    //predicateRdds.foreach(x => println(x._1, x._2.count))
+    // predicateRdds.foreach(x => println(x._1, x._2.count))
 
-    //println(predicates.mkString("\n"))
+    // println(predicates.mkString("\n"))
 
     sparkSession.stop()
   }

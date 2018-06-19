@@ -1,14 +1,15 @@
 package net.sansa_stack.query.spark.gremlinator
 
-import org.apache.tinkerpop.gremlin.spark.structure.Spark
-import org.apache.tinkerpop.gremlin.structure.util.GraphFactory
-import org.apache.spark.sql.SparkSession
 import org.apache.commons.configuration.BaseConfiguration
-import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
 import org.apache.tinkerpop.gremlin.process.computer.{ GraphComputer, VertexProgram }
-import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.structure.Graph
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory
+import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
+import org.apache.tinkerpop.gremlin.spark.structure.Spark
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable
 import net.sansa_stack.query.spark.gremlinator.sparql2gremlin.QuaryTranslator
 import net.sansa_stack.query.spark.gremlinator.utils.Config._
@@ -21,17 +22,16 @@ object GremlinatorSpark {
 
   @transient var spark: SparkSession = _
 
-  def apply(sparql: String) = {
+  def apply(sparql: String): GraphTraversalSource = {
 
     val gremlinSpark = Spark.create(spark.sparkContext)
-    val sparkComputerConnection = GraphFactory.open(getSparkConfig) //spark.conf.getAll.toString())
+    val sparkComputerConnection = GraphFactory.open(getSparkConfig) // spark.conf.getAll.toString())
 
     val gremlinquery = QuaryTranslator(sparql, sparkComputerConnection)
-    
-    run(sparkComputerConnection,gremlinquery.toString())
+    run(sparkComputerConnection, gremlinquery.toString())
   }
 
-  def run(sparkComputerConnection:Graph, gremlinQuery: String, lang: String = "gremlin-groovy") = {
+  def run(sparkComputerConnection: Graph, gremlinQuery: String, lang: String = "gremlin-groovy"): GraphTraversalSource = {
 
     val sparkGraphComputer = getSparkGraphComputer(sparkComputerConnection)
 
@@ -45,7 +45,7 @@ object GremlinatorSpark {
       .get()
 
     traversalSource.graph().traversal()
-    //traversalSource.graph().compute().submit().get
+    // traversalSource.graph().compute().submit().get
   }
 
 }

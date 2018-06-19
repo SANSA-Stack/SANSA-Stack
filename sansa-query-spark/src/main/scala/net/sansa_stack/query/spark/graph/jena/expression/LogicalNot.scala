@@ -4,15 +4,16 @@ import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 
 /**
-  * Class that execute filter with logical not.
-  */
+ * Class that execute filter with logical not.
+ */
 class LogicalNot(expr: Expression) extends FilterOne(expr) {
 
   private val tag = "Logical Not"
 
   private val filter = expr match {
     case e: Filter => e
-    case _         => throw new java.lang.TypeNotPresentException("Filter",
+    case _ => throw new java.lang.TypeNotPresentException(
+      "Filter",
       new Throwable("The input expression is not a type of filter"))
   }
 

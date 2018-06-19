@@ -10,16 +10,16 @@ import org.apache.jena.sparql.expr.ExprList
 import scala.collection.JavaConversions._
 
 /**
-  * Class that execute SPARQL FILTER operation
-  */
+ * Class that execute SPARQL FILTER operation
+ */
 class ResultFilter(op: OpFilter) extends ResultOp {
 
   private val tag = "FILTER"
   private val id = op.hashCode
-  private val filters = op.getExprs.getList.toList.map{ expr =>
-    new ExprParser(expr).getExpression match{
-      case e:Expression => e
-      case _ => throw new UnsupportedOperationException
+  private val filters = op.getExprs.getList.toList.map { expr =>
+    new ExprParser(expr).getExpression match {
+      case e: Expression => e
+      case _             => throw new UnsupportedOperationException
     }
   }
 
@@ -29,8 +29,8 @@ class ResultFilter(op: OpFilter) extends ResultOp {
   }
 
   /**
-    * Filter the RDD result and put the new result into intermediate model.
-    */
+   * Filter the RDD result and put the new result into intermediate model.
+   */
   override def execute(): Unit = {
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode())
     val newResult = SparkExecutionModel.filter(oldResult, filters)

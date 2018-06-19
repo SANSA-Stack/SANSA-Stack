@@ -11,19 +11,18 @@ abstract class FilterTwo(protected val left: Expression, protected val right: Ex
     var rightValue: String = ""
 
     // Left side is variable and right side is value
-    if(left.isInstanceOf[NodeVar] && right.isInstanceOf[NodeVal]){
+    if (left.isInstanceOf[NodeVar] && right.isInstanceOf[NodeVal]) {
       val leftVar = left.asInstanceOf[NodeVar].getNode
       val rightVal = right.asInstanceOf[NodeVal].getNode
-      if(rightVal.isLiteral){
+      if (rightVal.isLiteral) {
         leftValue = result.getValue(leftVar).getLiteralValue.toString
         rightValue = rightVal.getLiteralValue.toString
-      } else if(rightVal.isURI){
+      } else if (rightVal.isURI) {
         leftValue = result.getValue(leftVar).getURI
         rightValue = rightVal.getURI
       }
-    }
-    // Left side is value and right side is variable
-    else if(left.isInstanceOf[NodeVal] && right.isInstanceOf[NodeVar]) {
+    } // Left side is value and right side is variable
+    else if (left.isInstanceOf[NodeVal] && right.isInstanceOf[NodeVar]) {
       val leftVal = left.asInstanceOf[NodeVal].getNode
       val rightVar = right.asInstanceOf[NodeVar].getNode
       if (leftVal.isLiteral) {
@@ -33,15 +32,14 @@ abstract class FilterTwo(protected val left: Expression, protected val right: Ex
         leftValue = leftVal.getURI
         rightValue = result.getValue(rightVar).getURI
       }
-    }
-    // Left side is variable and right side is function
-    else if(left.isInstanceOf[NodeVar] && right.isInstanceOf[Function]){
+    } // Left side is variable and right side is function
+    else if (left.isInstanceOf[NodeVar] && right.isInstanceOf[Function]) {
       val leftVar = left.asInstanceOf[NodeVar].getNode
       val rightVal = right.asInstanceOf[Function].getValue(result)
-      if(rightVal.isLiteral){
+      if (rightVal.isLiteral) {
         leftValue = result.getValue(leftVar).getLiteralValue.toString
         rightValue = rightVal.getLiteralValue.toString
-      } else if(rightVal.isURI){
+      } else if (rightVal.isURI) {
         leftValue = result.getValue(leftVar).getURI
         rightValue = rightVal.getURI
       }
@@ -58,5 +56,5 @@ abstract class FilterTwo(protected val left: Expression, protected val right: Ex
 
   def getRightNode: Expression = { right }
 
-  override def toString: String = { "Left Expression: "+left.toString+"; Right Expression: "+right.toString }
+  override def toString: String = { "Left Expression: " + left.toString + "; Right Expression: " + right.toString }
 }

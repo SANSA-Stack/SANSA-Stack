@@ -3,9 +3,10 @@ package net.sansa_stack.query.spark.graph.jena.util
 import org.apache.jena.graph._
 import org.apache.spark.graphx.EdgeTriplet
 
-class TriplePattern(private val s: Node,
-                    private val p: Node,
-                    private val o: Node) extends Serializable {
+class TriplePattern(
+  private val s: Node,
+  private val p: Node,
+  private val o: Node) extends Serializable {
 
   def this(triple: Triple) = {
     this(triple.getSubject, triple.getPredicate, triple.getObject)
@@ -44,7 +45,7 @@ class TriplePattern(private val s: Node,
   }
 
   private def checkQueryPattern(pattern: Node, target: Node): Boolean = {
-    if(pattern.isVariable){
+    if (pattern.isVariable) {
       true
     } else {
       pattern.equals(target)
@@ -59,10 +60,10 @@ class TriplePattern(private val s: Node,
     this.s.equals(obj.s) && this.p.equals(obj.p) && this.o.equals(obj.o)
   }
 
-  override def toString: String = { s.toString+" "+p.toString+" "+o.toString+" ." }
+  override def toString: String = { s.toString + " " + p.toString + " " + o.toString + " ." }
 
   override def hashCode(): Int = {
-    s.hashCode()*5 + p.hashCode()*3 + o.hashCode()
+    s.hashCode() * 5 + p.hashCode() * 3 + o.hashCode()
   }
 
   override def equals(obj: scala.Any): Boolean = {

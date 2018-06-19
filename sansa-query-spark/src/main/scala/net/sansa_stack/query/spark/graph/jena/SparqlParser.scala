@@ -1,24 +1,24 @@
 package net.sansa_stack.query.spark.graph.jena
 
-import net.sansa_stack.query.spark.graph.jena.patternOp._
-import net.sansa_stack.query.spark.graph.jena.resultOp._
-import org.apache.jena.query.QueryFactory
-import org.apache.jena.graph.Triple
-import org.apache.jena.sparql.algebra.{Algebra, Op, OpVisitorBase, OpWalker}
-import org.apache.jena.sparql.algebra.op._
-import org.apache.jena.sparql.expr.{E_Exists, E_NotExists}
-
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
+import net.sansa_stack.query.spark.graph.jena.patternOp._
+import net.sansa_stack.query.spark.graph.jena.resultOp._
+import org.apache.jena.query.QueryFactory
+import org.apache.jena.graph.Triple
+import org.apache.jena.sparql.algebra.{ Algebra, Op, OpVisitorBase, OpWalker }
+import org.apache.jena.sparql.algebra.op._
+import org.apache.jena.sparql.expr.{ E_Exists, E_NotExists }
+
 /**
-  * Read sparql query from a file and convert to Op expressions.
-  * @param path path to sparql query file
-  *
-  * @author Zhe Wang
-  */
+ * Read sparql query from a file and convert to Op expressions.
+ * @param path path to sparql query file
+ *
+ * @author Zhe Wang
+ */
 class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable {
 
   def this(path: String) {
@@ -87,17 +87,16 @@ class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable
 
   def getOps: mutable.Queue[Ops] = {
     ops
-    //reOrderOps(ops)
+    // reOrderOps(ops)
   }
 
   private def reOrderOps(ops: mutable.Queue[Ops]): mutable.Queue[Ops] = {
-    val tags = ops.toIterator.map(op => op.getTag )
-    if(tags.contains("ORDER BY")){
+    val tags = ops.toIterator.map(op => op.getTag)
+    if (tags.contains("ORDER BY")) {
       val order = ops.dequeueFirst(op => op.getTag.equals("ORDER BY"))
       ops.enqueue(order.get)
       ops
-    }
-    else{
+    } else {
       ops
     }
   }

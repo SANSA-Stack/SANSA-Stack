@@ -1,20 +1,20 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
-import net.sansa_stack.query.spark.graph.jena.expression.{Expression, Filter, Pattern}
+import net.sansa_stack.query.spark.graph.jena.expression.{ Expression, Filter, Pattern }
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util._
 import org.apache.jena.graph.Node
-import org.apache.spark.graphx.Graph
-import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.model.graph._
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.expr.ExprAggregator
 import org.apache.spark.rdd.RDD
+import org.apache.spark.graphx.Graph
+import org.apache.spark.sql.SparkSession
 
 /**
-  * Model that contains methods for query operations on top of spark.
-  */
+ * Model that contains methods for query operations on top of spark.
+ */
 object SparkExecutionModel {
 
   private var spark: SparkSession = _
@@ -27,19 +27,19 @@ object SparkExecutionModel {
 
   def createSparkSession(): Unit = {
 
-    if(Config.getMaster == ""){
+    if (Config.getMaster == "") {
       Config.setMaster("local[*]")
     }
 
-    if(Config.getInputGraphFile == ""){
+    if (Config.getInputGraphFile == "") {
       throw new ExceptionInInitializerError("Input graph file path is not initialized")
     }
 
-    if(Config.getInputQueryFile == ""){
+    if (Config.getInputQueryFile == "") {
       throw new ExceptionInInitializerError("Input query file path is not initialized")
     }
 
-    if(Config.getLang == null){
+    if (Config.getLang == null) {
       throw new ExceptionInInitializerError("The language of input graph file is not initialized")
     }
 
@@ -59,7 +59,7 @@ object SparkExecutionModel {
   }
 
   def createSparkSession(session: SparkSession): Unit = {
-    if(spark == null){
+    if (spark == null) {
       spark = session
     } else {
       throw new IllegalArgumentException("spark session has been set already")
@@ -71,14 +71,14 @@ object SparkExecutionModel {
   }
 
   def loadGraph(path: String, lang: Lang): Unit = {
-    if(spark == null){
+    if (spark == null) {
       createSparkSession()
     }
     graph = spark.rdf(lang)(path).asGraph().cache()
   }
 
   def setGraph(graph: Graph[Node, Node]): Unit = {
-    if(graph == null){
+    if (graph == null) {
       this.graph = graph
     } else {
       throw new IllegalArgumentException("rdf graph has been set already")
@@ -87,7 +87,7 @@ object SparkExecutionModel {
 
   def basicGraphPatternMatch(bgp: BasicGraphPattern): RDD[Result[Node]] = {
 
-    if(spark == null){ setSession() }
+    if (spark == null) { setSession() }
 
     val patterns = spark.sparkContext.broadcast(bgp.triplePatterns)
 
@@ -130,7 +130,7 @@ object SparkExecutionModel {
   }
 
   def slice(result: RDD[Result[Node]], limit: Int, offset: Int): RDD[Result[Node]] = {
-    val newArray = result.collect().slice(offset, limit+offset)
+    val newArray = result.collect().slice(offset, limit + offset)
     result.unpersist()
     val newResult = spark.sparkContext.parallelize(newArray).cache()
     newResult
@@ -140,12 +140,13 @@ object SparkExecutionModel {
     val group = result.groupBy(r => r.projectNewResult(vars.toSet)).cache()
     var newResult: RDD[Result[Node]] = group.map(_._1)
     result.unpersist()
-    aggregates.foreach{aggr =>
+    aggregates.foreach { aggr =>
       val variable = aggr.getVar.asNode()
       val aggrOp = aggr.getAggregator.getName
       val key = aggr.getAggregator.getExprList.get(0).asVar.asNode
-      newResult = this.leftJoin(newResult,
-        group.map( pair => ResultFactory.merge(pair._1,ResultGroup.aggregateOp(pair._2, variable, aggrOp, key))))
+      newResult = this.leftJoin(
+        newResult,
+        group.map(pair => ResultFactory.merge(pair._1, ResultGroup.aggregateOp(pair._2, variable, aggrOp, key))))
     }
     group.unpersist()
     newResult
@@ -159,9 +160,9 @@ object SparkExecutionModel {
 
   def filter(result: RDD[Result[Node]], filters: List[Expression]): RDD[Result[Node]] = {
     val broadcast = spark.sparkContext.broadcast(filters)
-    var intermediate:RDD[Result[Node]] = result.cache()
-    broadcast.value.foreach{
-      case e: Filter => intermediate = intermediate.filter(r => e.evaluate(r))
+    var intermediate: RDD[Result[Node]] = result.cache()
+    broadcast.value.foreach {
+      case e: Filter  => intermediate = intermediate.filter(r => e.evaluate(r))
       case e: Pattern => intermediate = e.evaluate(intermediate)
     }
     intermediate
@@ -173,23 +174,23 @@ object SparkExecutionModel {
     val intersection = spark.sparkContext.broadcast(leftVars.intersect(rightVars))
     var newResult: RDD[Result[Node]] = null
     // two results have no common variables
-    if(intersection.value.isEmpty){
-      newResult = left.cartesian(right).map{ case(r1, r2) => r1.merge(r2) }.cache()
+    if (intersection.value.isEmpty) {
+      newResult = left.cartesian(right).map { case (r1, r2) => r1.merge(r2) }.cache()
       left.unpersist()
       right.unpersist()
-    }
-    else {
+    } else {
       val leftPair = left.map(r => (r.getValueSet(intersection.value), r))
       left.unpersist()
       val rightPair = right.map(r => (r.getValueSet(intersection.value), r))
       right.unpersist()
       intersection.unpersist()
 
-      newResult = leftPair.leftOuterJoin(rightPair).map{case(_, pair) =>
-        pair._2 match {
-          case Some(_) => pair._1.merge(pair._2.get)
-          case None => pair._1
-        }
+      newResult = leftPair.leftOuterJoin(rightPair).map {
+        case (_, pair) =>
+          pair._2 match {
+            case Some(_) => pair._1.merge(pair._2.get)
+            case None    => pair._1
+          }
       }.cache()
     }
     newResult
@@ -208,10 +209,9 @@ object SparkExecutionModel {
     val intersection = spark.sparkContext.broadcast(leftVars.intersect(rightVars))
     var newResult: RDD[Result[Node]] = null
     // two results have no common variables
-    if(intersection.value.isEmpty){
+    if (intersection.value.isEmpty) {
       newResult = left
-    }
-    else {
+    } else {
       val leftPair = left.map(result => (result.projectNewResult(intersection.value), result))
       val rightPair = right.map(result => (result, null))
       newResult = leftPair.subtractByKey(rightPair).map(pair => pair._2).cache()
@@ -230,12 +230,12 @@ object SparkExecutionModel {
   }
 
   private def setSession(): Unit = {
-    if(spark == null){
+    if (spark == null) {
       createSparkSession()
     }
   }
 
   private def getVars(results: RDD[Result[Node]]): Set[Node] = {
-    results.map(result => result.getField).reduce((s1, s2) => s1++s2)
+    results.map(result => result.getField).reduce((s1, s2) => s1 ++ s2)
   }
 }

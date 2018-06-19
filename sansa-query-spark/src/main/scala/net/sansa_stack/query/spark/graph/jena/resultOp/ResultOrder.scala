@@ -11,9 +11,9 @@ import scala.collection.JavaConversions._
 import scala.reflect._
 
 /**
-  * Class that execute SPARQL ORDER BY operation.
-  * Currently support for ordering by at most four variables in the same time.
-  */
+ * Class that execute SPARQL ORDER BY operation.
+ * Currently support for ordering by at most four variables in the same time.
+ */
 class ResultOrder(op: OpOrder) extends ResultOp {
 
   private val tag = "ORDER BY"
@@ -26,7 +26,7 @@ class ResultOrder(op: OpOrder) extends ResultOp {
   }
 
   override def execute(): Unit = {
-    val conditions = op.getConditions.toList//.map(sc => new ExprParser(sc.getExpression))
+    val conditions = op.getConditions.toList //.map(sc => new ExprParser(sc.getExpression))
     val vars = conditions.map(condition => condition.expression.asVar.asNode)
     val dirs = conditions.map(condition => condition.direction)
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
@@ -35,14 +35,16 @@ class ResultOrder(op: OpOrder) extends ResultOp {
       case 1 => newResult = oldResult.sortBy(result =>
         result.getValue(vars.head).toString)(order1(dirs.head), classTag[String])
       case 2 => newResult = oldResult.sortBy(result =>
-        (result.getValue(vars.head).toString, result.getValue(vars(1)).toString))(order2(dirs.head, dirs(1)),
+        (result.getValue(vars.head).toString, result.getValue(vars(1)).toString))(
+        order2(dirs.head, dirs(1)),
         classTag[(String, String)])
       case 3 => newResult = oldResult.sortBy(result =>
         (result.getValue(vars.head).toString, result.getValue(vars(1)).toString,
           result.getValue(vars(2)).toString))(order3(dirs.head, dirs(1), dirs(2)), classTag[(String, String, String)])
       case 4 => newResult = oldResult.sortBy(result =>
         (result.getValue(vars.head).toString, result.getValue(vars(1)).toString,
-          result.getValue(vars(2)).toString, result.getValue(vars(3)).toString))(order4(dirs.head, dirs(1), dirs(2), dirs(3)),
+          result.getValue(vars(2)).toString, result.getValue(vars(3)).toString))(
+        order4(dirs.head, dirs(1), dirs(2), dirs(3)),
         classTag[(String, String, String, String)])
     }
     newResult.cache()
