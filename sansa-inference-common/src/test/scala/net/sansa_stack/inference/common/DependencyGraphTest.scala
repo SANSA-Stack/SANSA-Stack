@@ -75,7 +75,7 @@ object DependencyGraphTest {
     }
 
 //    val names = Seq("rdfp13a", "rdfp13b", "rdfp13c", "rdfs5", "rdfs7") // property rules
-    val names = Seq("rdfp13a", "rdfp13b", "rdfp13c")//, "rdfs5", "rdfs7", "rdfp3", "rdfp4") // property rules + some instance rules
+    val names = Seq("rdfp13a", "rdfp13b", "rdfp13c")// , "rdfs5", "rdfs7", "rdfp3", "rdfp4") // property rules + some instance rules
 //    val names = Seq("rdfs5", "rdfs7", "rdfp3", "rdfp4") // property TC rule + some instance rules
 
     val minimizer = new DefaultRuleDependencyGraphMinimizer()
