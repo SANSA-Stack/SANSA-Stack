@@ -1,14 +1,14 @@
 package net.sansa_stack.rdf.spark.streaming
 
+import java.io.ByteArrayInputStream
+
+import org.apache.jena.graph.Triple
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
-import org.apache.jena.graph.Triple
-//import kafka.serializer.StringDecoder
-import org.apache.jena.riot.{Lang, RDFDataMgr}
-import java.io.ByteArrayInputStream
+import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import org.apache.spark.streaming.kafka010.KafkaUtils
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
-import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 
 /**
  * @author Gezim Sejdiu
@@ -31,8 +31,8 @@ class KafkaReader extends StreamReader {
     val topicMap = topics.split(",").toSet
 
     KafkaUtils.createDirectStream[String, String](ssc, PreferConsistent,
-  Subscribe[String, String](topicMap, kafkaParams))
-      .map(line =>RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.value().getBytes), Lang.NTRIPLES, null).next())
+      Subscribe[String, String](topicMap, kafkaParams))
+      .map(line => RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.value().getBytes), Lang.NTRIPLES, null).next())
 
   }
 
