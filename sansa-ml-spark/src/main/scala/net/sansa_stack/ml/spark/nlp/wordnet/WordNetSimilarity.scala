@@ -11,20 +11,18 @@
  */
 package net.sansa_stack.ml.spark.nlp.wordnet
 
-
-import net.didion.jwnl.data.POS
-
+import net.didion.jwnl.data._
 
 object WordNetSimilarity extends WordNet {
 
   /**
-    * Wu & Palmer (1994) method of measuring semantic relatedness based on node counting.
-    * given two synsets, synset1 and synset2 returns the similarity score
-    *
-    * @param synset1 :Synset
-    * @param synset2 :Synset
-    * @return score :Double
-    */
+   * Wu & Palmer (1994) method of measuring semantic relatedness based on node counting.
+   * given two synsets, synset1 and synset2 returns the similarity score
+   *
+   * @param synset1 :Synset
+   * @param synset2 :Synset
+   * @return score :Double
+   */
   def wupSimilarity(synset1: Synset, synset2: Synset): Double = {
     val min = 0.0
     if (synset1 == null || synset2 == null) throw new IllegalArgumentException("arg 1 or 2 was null...")
@@ -40,13 +38,13 @@ object WordNetSimilarity extends WordNet {
   }
 
   /**
-    * Returns the distance similarity of two synsets using the shortest path linking the two synsets (if
-    * one exists)
-    *
-    * @param synset1 : Synset
-    * @param synset2 : Synset
-    * @return : Double
-    */
+   * Returns the distance similarity of two synsets using the shortest path linking the two synsets (if
+   * one exists)
+   *
+   * @param synset1 : Synset
+   * @param synset2 : Synset
+   * @return : Double
+   */
   def shortestPathSim(synset1: Synset, synset2: Synset): Double = {
 
     if (synset1 == null || synset2 == null) throw new IllegalArgumentException("arg 1 or 2 was null...")
@@ -59,6 +57,5 @@ object WordNetSimilarity extends WordNet {
     else score = 1.toDouble / distance
     score
   }
-
 
 }
