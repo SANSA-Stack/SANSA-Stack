@@ -51,3 +51,6 @@ hs_err_pid*
 stat*.txt
 
 .idea
+
+scalastyle-output.xml
+
