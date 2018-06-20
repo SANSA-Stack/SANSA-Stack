@@ -5,12 +5,14 @@
  *  Afshin Sadeghi
  *  Inspired from:
  *  WordNet::Similarity of Ted Peterson
- *  and https://github.com/sujitpal/scalcium
  *  and ws4j
  *  and ntlk project
 
  */
 package net.sansa_stack.ml.spark.nlp.wordnet
+
+
+import net.didion.jwnl.data.POS
 
 
 object WordNetSimilarity extends WordNet {
@@ -21,7 +23,7 @@ object WordNetSimilarity extends WordNet {
     *
     * @param synset1 :Synset
     * @param synset2 :Synset
-    * @return  score :Double
+    * @return score :Double
     */
   def wupSimilarity(synset1: Synset, synset2: Synset): Double = {
     val min = 0.0
@@ -37,6 +39,26 @@ object WordNetSimilarity extends WordNet {
     score
   }
 
+  /**
+    * Returns the distance similarity of two synsets using the shortest path linking the two synsets (if
+    * one exists)
+    *
+    * @param synset1 : Synset
+    * @param synset2 : Synset
+    * @return : Double
+    */
+  def shortestPathSim(synset1: Synset, synset2: Synset): Double = {
+
+    if (synset1 == null || synset2 == null) throw new IllegalArgumentException("arg 1 or 2 was null...")
+
+    val lch = this.lowestCommonHypernym(synset1, synset2)
+    val distance = lch.map(x => shortestHypernymPathLength(synset1, x) +
+      shortestHypernymPathLength(synset2, x)).min
+    var score = 0.0
+    if (distance == 0) score = Double.PositiveInfinity
+    else score = 1.toDouble / distance
+    score
+  }
 
 
 }

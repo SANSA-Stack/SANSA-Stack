@@ -26,7 +26,7 @@ object TestWUPWordNetSimilarityMeasures {
     Console.println(wn.depth(thing))
 
     Console.println(">>> dog.wup_similarity(cat)")
-    // getting similarity of two sysnsets
+    // getting similarity of two synsets
     val dogCatWupSimilarity = wnSim.wupSimilarity(dog, cat)
     Console.println(dogCatWupSimilarity)
 
