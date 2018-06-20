@@ -1,6 +1,7 @@
 package net.sansa_stack.test.conformance
 
-import java.io.File
+import java.io.{File, StringWriter}
+import java.nio.file.{Path, Paths}
 
 import net.sansa_stack.inference.data.{RDF, RDFOps}
 import org.apache.jena.rdf.model.Model
@@ -8,8 +9,9 @@ import org.apache.jena.shared.PrefixMapping
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-
 import scala.collection.mutable
+
+import net.sansa_stack.test.conformance.TestCases.getClass
 
 /**
   * The class is to test the conformance of each materialization rule of RDFS(simple) entailment.
@@ -20,15 +22,15 @@ import scala.collection.mutable
 @RunWith(classOf[JUnitRunner])
 abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends FlatSpec with BeforeAndAfterAll {
 
+  val logger = com.typesafe.scalalogging.Logger("ConformanceTestBase")
+
   behavior of ""
 
   // the test case IDs
   def testCaseIds: Set[String]
 
-  // the base directory of the test cases
-  def testsCasesFolder: File = {
-    new File(this.getClass.getClassLoader.getResource(testCasesPath).getPath)
-  }
+  def testsCasesFolder: String = testCasesPath // this.getClass.getClassLoader.getResource(testCasesPath).getPath
+//  def testsCasesFolder: File = null // new File(this.getClass.getClassLoader.getResource(testCasesPath).getPath)
 
   def testCasesPath: String
 
@@ -38,12 +40,10 @@ abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends 
     .withDefaultMappings(PrefixMapping.Standard)
 
   // load the test cases
-  private val testCases = TestCases.loadTestCases(testsCasesFolder, testCaseIds)
+  lazy val testCases = TestCases.loadTestCasesJar(testsCasesFolder, testCaseIds)
 
   // scalastyle:off println
   testCases.foreach { testCase =>
-    println(testCase.id)
-
     testCase.id should "produce the same graph" in {
       val triples = new mutable.HashSet[Rdf#Triple]()
 
@@ -71,14 +71,20 @@ abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends 
       // remove the input triples such that we can compare only the conclusion graph
       inferredModel.remove(testCase.inputGraph)
 
-      println("#" * 80 + "\ninput:")
-      testCase.inputGraph.write(System.out, "TURTLE")
+      logger.whenDebugEnabled {
+        println("#" * 80 + "\ninput:")
+        testCase.inputGraph.write(System.out, "TURTLE")
+      }
 
-      println("#" * 80 + "\nexpected output:")
-      testCase.outputGraph.write(System.out, "TURTLE")
+      logger.whenDebugEnabled {
+        println("#" * 80 + "\nexpected output:")
+        testCase.outputGraph.write(System.out, "TURTLE")
+      }
 
-      println("#" * 80 + "\ngot output:")
-      inferredModel.write(System.out, "TURTLE")
+      logger.whenDebugEnabled {
+        println("#" * 80 + "\ngot output:")
+        inferredModel.write(System.out, "TURTLE")
+      }
 
       // compare models, i.e. the inferred model should contain exactly the triples of the conclusion graph
       val correctOutput = inferredModel.containsAll(testCase.outputGraph)

@@ -54,6 +54,11 @@
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>com.typesafe.scala-logging</groupId>
+      <artifactId>scala-logging_${scala.binary.version}</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
