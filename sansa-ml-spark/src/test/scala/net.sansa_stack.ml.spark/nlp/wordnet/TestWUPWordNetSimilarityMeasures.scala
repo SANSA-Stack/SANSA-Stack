@@ -11,19 +11,22 @@ object TestWUPWordNetSimilarityMeasures {
 
     val wn = new WordNet
 
-    val dog = wn.synset("dog", POS.NOUN, 1)
-    val cat = wn.synset("cat", POS.NOUN, 1)
+    // getting a synset by a word
+    val dog = wn.synset("dog", POS.NOUN, 1).head
+    val cat = wn.synset("cat", POS.NOUN, 1).head
 
-    val thing = wn.synset("thing", POS.NOUN, 1)
+    val thing = wn.synset("thing", POS.NOUN, 1).head
 
     val wnSim = WordNetSimilarity
     Console.println(dog)
 
+    // getting depth of the synset
     Console.println(wn.depth(dog))
 
     Console.println(wn.depth(thing))
 
     Console.println(">>> dog.wup_similarity(cat)")
+    // getting similarity of two sysnsets
     val dogCatWupSimilarity = wnSim.wupSimilarity(dog, cat)
     Console.println(dogCatWupSimilarity)
 

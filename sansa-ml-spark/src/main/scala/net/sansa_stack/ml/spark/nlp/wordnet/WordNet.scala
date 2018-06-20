@@ -3,7 +3,13 @@
  *  WordNet for Scala and Spark
  *
  *  Afshin Sadeghi
- *  Inspired from WordNet::Similarity of Ted Peterson and https://github.com/sujitpal/scalcium and ws4j and ntlk project
+ *
+ *  Inspired from:
+ *
+ *  WordNet::Similarity of Ted Peterson
+ *  and https://github.com/sujitpal/scalcium
+ *  and ws4j
+ *  and ntlk project
 */
 package net.sansa_stack.ml.spark.nlp.wordnet
 
@@ -17,7 +23,9 @@ import scala.collection.JavaConversions._
 import scala.collection.breakOut
 import scala.collection.mutable.ArrayBuffer
 
-
+/**
+  * WordNet singleton to initialize WordNet dataset
+  */
 object WordNet {
 
   val currentDirectory = new java.io.File(".").getCanonicalPath
@@ -26,6 +34,9 @@ object WordNet {
   val dict = Dictionary.getInstance()
 }
 
+/**
+  * WordNet class that provide WordNet related basic services
+  */
 class WordNet extends Serializable {
   def synsets(lemma: String): List[Synset] =
     net.didion.jwnl.data.POS.getAllPOS
@@ -38,86 +49,144 @@ class WordNet extends Serializable {
   }
 
   /**
-    * returns a Synset given a String
-    *
-    * @param lemma
-    * @param pos
-    * @param sid
-    * @return
+    * Returns a Synset given a String
+    * Returns empty list if the lemma did not exist in the WordNet
+    * @param lemma : String
+    * @param pos   : POS
+    * @param sid   : Integer
+    * @return : List[Synset]
     */
-  def getSynset(lemma: String, pos: POS, sid: Int): Option[Synset] = {
+  def getSynset(lemma: String, pos: POS, sid: Int): List[Synset] = {
     val iword = WordNet.dict.getIndexWord(pos, lemma)
-    if (iword != null) Some(iword.getSense(sid))
-    else None
+    var result = List.empty[Synset]
+    if (iword != null) {
+      result = List(iword.getSense(sid))
+    }
+    result
   }
 
   /**
-    * Returns a Synset given a String
+    * Returns a Synset given a String, pos and synset id
+    * Returns empty list if the lemma did not exist in the WordNet
     *
-    * @param lemma
-    * @param pos
-    * @param sid
-    * @return
+    * @param lemma : String
+    * @param pos   : POS
+    * @param sid   : Integer
+    * @return Synset
     */
-  def synset(lemma: String, pos: POS, sid: Int): Synset =
+  def synset(lemma: String, pos: POS, sid: Int): List[Synset] =
     getSynset(lemma, pos, sid)
-      .getOrElse(throw new NoSuchElementException(s"lemma = '$lemma', pos = $pos, sid = $sid"))
 
   /**
-    *  Returns a Synset given a String
-    * @param lemma
-    * @param pos
-    * @return
-    */
-  def synset(lemma: String, pos: POS): Synset = synset(lemma, pos, 1)
-
-  /**
-    * Gets lemma name for a Synset
+    * Gets lemma name for a synset
     *
-    * @param synset
-    * @return
+    * @param synset :Synset
+    * @return : List[String]
     */
   def lemmaNames(synset: Synset): List[String] =
     synset.getWords.map(_.getLemma)(breakOut)
 
-
-  def hyponyms(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.HYPONYM)
-
-  def hypernyms(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.HYPERNYM)
-
-  def partMeronyms(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.PART_MERONYM)
-
-  def partHolonyms(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.PART_HOLONYM)
-
-  def substanceMeronyms(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.SUBSTANCE_MERONYM)
-
-  def substanceHolonyms(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.SUBSTANCE_HOLONYM)
-
-  def memberHolonyms(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.MEMBER_HOLONYM)
-
-  def entailments(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.ENTAILMENT)
-
-  def entailedBy(ss: Synset): List[Synset] = relatedSynsets(ss, PointerType.ENTAILED_BY)
-
   /**
-    * Gets related Synsets per function
+    * Input is a synset
+    * returns a list of synsets
     *
-    * @param ss
-    * @param ptr
+    * @param synset :Synset
     * @return
     */
-  def relatedSynsets(ss: Synset, ptr: PointerType): List[Synset] =
-    ss.getPointers(ptr).map(ptr => ptr.getTarget.asInstanceOf[Synset])(breakOut)
+  def hyponyms(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.HYPONYM)
 
   /**
-    * Returns list of all hypernyms of a Synset
+    * Input is a synset
+    * returns a list of synsets
     *
-    * @param ss
+    * @param synset :Synset
     * @return
     */
-  def allHypernyms(ss: Synset): List[List[Synset]] =
+  def hypernyms(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.HYPERNYM)
+
+  /**
+    * Input is a synset
+    * returns a list of synsets
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def partMeronyms(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.PART_MERONYM)
+
+  /**
+    * Input is a synset
+    * returns a list of synsets
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def partHolonyms(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.PART_HOLONYM)
+
+  /**
+    * Input is a synset
+    * returns a list of synsets
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def substanceMeronyms(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.SUBSTANCE_MERONYM)
+
+  /**
+    * Input is a synset
+    * returns a list of synsets
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def substanceHolonyms(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.SUBSTANCE_HOLONYM)
+
+  /**
+    * Input is a synset
+    * returns a list of synsets
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def memberHolonyms(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.MEMBER_HOLONYM)
+
+  /**
+    * Input is a synset
+    * returns a list of synsets
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def entailments(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.ENTAILMENT)
+
+  /**
+    * Input is a synset
+    * returns a list of synsets
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def entailedBy(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.ENTAILED_BY)
+
+  /**
+    * Gets related synsets per function given a pointer type
+    * pointer types are defined in jwnl library
+    *
+    * @param synset :Synset
+    * @param ptr    : PointerType
+    * @return : List[Synset]
+    */
+  def relatedSynsets(synset: Synset, ptr: PointerType): List[Synset] =
+    synset.getPointers(ptr).map(ptr => ptr.getTarget.asInstanceOf[Synset])(breakOut)
+
+  /**
+    * Returns list of all hypernyms of a synset
+    *
+    * @param synset :Synset
+    * @return : List[Synset]
+    */
+  def allHypernyms(synset: Synset): List[List[Synset]] =
     PointerUtils.getInstance()
-      .getHypernymTree(ss)
+      .getHypernymTree(synset)
       .toList
       .map(ptnl => ptnl.asInstanceOf[PointerTargetNodeList]
         .map(ptn => ptn.asInstanceOf[PointerTargetNode].getSynset)
@@ -126,18 +195,19 @@ class WordNet extends Serializable {
   /**
     * Returns the list of root hypernyms of a Synset
     *
-    * @param ss
-    * @return
+    * @param synset : Synset
+    * @return : List[Synset]
     */
-  def rootHypernyms(ss: Synset): List[Synset] =
-    allHypernyms(ss)
+  def rootHypernyms(synset: Synset): List[Synset] =
+    allHypernyms(synset)
       .map(hp => hp.reverse.head).distinct
 
   /**
-    *  Get lowestCommonHypernym of two Synsets
-    * @param synset1
-    * @param synset2
-    * @return
+    * Get lowestCommonHypernym of two Synsets
+    *
+    * @param synset1 : Synset
+    * @param synset2 : Synset
+    * @return : List[Synset]
     */
   def lowestCommonHypernym(synset1: Synset, synset2: Synset): List[Synset] = {
     val paths1 = allHypernyms(synset1)
@@ -147,9 +217,10 @@ class WordNet extends Serializable {
 
   /**
     * Get shortestPath Length to a Hypernim
-    * @param synset1
-    * @param hypernym
-    * @return
+    *
+    * @param synset1  : Synset
+    * @param hypernym : Synset
+    * @return : Integer
     */
   def shortestHypernymPathLength(synset1: Synset, hypernym: Synset): Int = {
     val paths1 = allHypernyms(synset1)
@@ -160,10 +231,11 @@ class WordNet extends Serializable {
   }
 
   /**
-    * Returns the lowest common hypernymy of two synset paths
-    * @param paths1
-    * @param paths2
-    * @return
+    * Returns the lowest common hypernymys of two synset paths
+    *
+    * @param paths1 : List[Synset]
+    * @param paths2 : List[Synset]
+    * @return : List[Synset]
     */
   private[this] def lch(paths1: List[List[Synset]], paths2: List[List[Synset]]): List[Synset] = {
     val pairs = for (paths1 <- paths1; paths2 <- paths2) yield (paths1, paths2)
@@ -181,38 +253,32 @@ class WordNet extends Serializable {
   }
 
   /**
-    * Min depth of synset
-    * @param synset
-    * @return
+    * Returns the depth of a synset
+    * Since there can be several paths to root, the minimum lenth is considered
+    *
+    * @param synset : Synset
+    * @return : Integer
     */
-  def minDepth(synset: Synset): Int = {
+  def depth(synset: Synset): Int = {
     val lens = allHypernyms(synset)
     if (lens.isEmpty) -1 else lens.map(_.size).min - 1
   }
 
   /**
-    *  Returns the depth of a synset
-    * @param synset
-    * @return
-    */
-  def depth(synset: Synset): Int = {
-    val lens = allHypernyms(synset)
-    if (lens.isEmpty) -1 else lens.map(_.size).max - 1
-  }
-
-  /**
     * Returns the antonym of a word
-    * @param word
-    * @return
+    *
+    * @param word : Word
+    * @return : List[Word]
     */
   def antonyms(word: Word): List[Word] =
     relatedLemmas(word, PointerType.ANTONYM)
 
   /**
-    * return related lemmas of a word
-    * @param word
-    * @param ptr
-    * @return
+    * Returns related lemmas of a word given the word and the type of relation
+    *
+    * @param word : Word
+    * @param ptr  : PointerType
+    * @return : List[Word]
     */
   def relatedLemmas(word: Word, ptr: PointerType): List[Word] =
     word.getPointers(ptr)
