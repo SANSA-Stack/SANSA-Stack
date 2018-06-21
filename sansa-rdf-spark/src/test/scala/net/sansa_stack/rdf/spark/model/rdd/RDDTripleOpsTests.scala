@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
-import org.scalatest.FunSuite
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.graph.{ Node, Triple, NodeFactory }
+import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
@@ -314,7 +314,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("checks if all of the statements in an RDF graph are also contained in this RDF graph should result true") {
-    //The input file has been changes since Spark does the intersection between two RDDs by removing any duplicates and blank lines.
+    // The input file has been changes since Spark does the intersection between two RDDs by removing any duplicates and blank lines.
     val path = getClass.getResource("/rdf.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -326,5 +326,4 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     assertTrue(containsAny)
   }
-
 }

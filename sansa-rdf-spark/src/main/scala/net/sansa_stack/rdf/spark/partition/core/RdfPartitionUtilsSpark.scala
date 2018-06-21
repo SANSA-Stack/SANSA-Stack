@@ -1,12 +1,11 @@
 package net.sansa_stack.rdf.spark.partition.core
 
+import scala.reflect.ClassTag
+
+import net.sansa_stack.rdf.common.partition.core.{ RdfPartition, RdfPartitioner, RdfPartitionerDefault }
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-
-import net.sansa_stack.rdf.common.partition.core.{ RdfPartition, RdfPartitioner, RdfPartitionerDefault }
-
-import scala.reflect.ClassTag
 
 object RdfPartitionUtilsSpark extends Serializable {
 

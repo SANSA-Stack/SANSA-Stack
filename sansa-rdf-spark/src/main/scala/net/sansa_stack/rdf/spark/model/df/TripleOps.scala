@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.spark.model.df
 
-import org.apache.spark.sql._
+import org.apache.jena.graph.{ NodeFactory, Triple }
 import org.apache.spark.rdd.RDD
-import org.apache.jena.graph.{ Triple, NodeFactory }
-import org.apache.spark.sql.types.{ StructField, StructType, StringType }
+import org.apache.spark.sql._
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 
 /**
  * Spark/DataFrame based implementation of DataFrame of triples.
@@ -24,8 +24,9 @@ object TripleOps {
       Triple.create(
         NodeFactory.createURI(row.getString(0)),
         NodeFactory.createURI(row.getString(1)),
-        if (row.getString(2).startsWith("http:"))
-          NodeFactory.createURI(row.getString(2)) else NodeFactory.createLiteral(row.getString(2))))
+        if (row.getString(2).startsWith("http:")) {
+          NodeFactory.createURI(row.getString(2))
+        } else NodeFactory.createLiteral(row.getString(2))))
   }
 
   /**
@@ -37,7 +38,7 @@ object TripleOps {
   def toDS(triples: DataFrame): Dataset[Triple] = {
     val spark: SparkSession = SparkSession.builder().getOrCreate()
     implicit val encoder = Encoders.kryo[Triple]
-    //triples.as[Triple]
+    // triples.as[Triple]
     spark.createDataset[Triple](toRDD(triples))
   }
 
@@ -86,11 +87,7 @@ object TripleOps {
    * @param object the object
    * @return DataFrame of triples
    */
-  def find(
-    triples:   DataFrame,
-    subject:   Option[String] = None,
-    predicate: Option[String] = None,
-    `object`:  Option[String] = None): DataFrame = {
+  def find(triples: DataFrame, subject: Option[String] = None, predicate: Option[String] = None, `object`: Option[String] = None): DataFrame = {
 
     val sql = getSQL(subject, predicate, `object`)
 
@@ -105,10 +102,7 @@ object TripleOps {
    * @param object the object
    * @return the translated SQL statement as a string
    */
-  def getSQL(
-    subject:   Option[String] = None,
-    predicate: Option[String] = None,
-    `object`:  Option[String] = None): String = {
+  def getSQL(subject: Option[String] = None, predicate: Option[String] = None, `object`: Option[String] = None): String = {
 
     var sql = s"SELECT s, p, o FROM TRIPLES"
 
@@ -138,9 +132,11 @@ object TripleOps {
       triples,
       if (triple.getSubject.isVariable) None else Option(triple.getSubject.getURI),
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.getURI),
-      if (triple.getObject.isVariable) None else
-        Option(if (triple.getObject.isLiteral())
-          triple.getObject.getLiteralLexicalForm else triple.getObject.getURI))
+      if (triple.getObject.isVariable) None else {
+        Option(if (triple.getObject.isLiteral()) {
+          triple.getObject.getLiteralLexicalForm
+        } else triple.getObject.getURI)
+      })
   }
 
   /**
@@ -217,11 +213,7 @@ object TripleOps {
    * @return true if there exists within this RDF graph
    * a triple with (S, P, O) pattern, false otherwise
    */
-  def contains(
-    triples:   DataFrame,
-    subject:   Option[String] = None,
-    predicate: Option[String] = None,
-    `object`:  Option[String] = None): Boolean = {
+  def contains(triples: DataFrame, subject: Option[String] = None, predicate: Option[String] = None, `object`: Option[String] = None): Boolean = {
     find(triples, subject, predicate, `object`).count() > 0
   }
 
@@ -259,8 +251,6 @@ object TripleOps {
   def containsAll(triples: DataFrame, other: DataFrame): Boolean = {
     difference(triples, other).count() == 0
   }
-
-  //@transient var spark: SparkSession = SparkSession.builder.getOrCreate()
 
   /**
    * Add a statement to the current RDF graph.
@@ -330,5 +320,4 @@ object TripleOps {
       .map(new JenaTripleToNTripleString()) // map to N-Triples string
       .saveAsTextFile(path)
   }
-
 }

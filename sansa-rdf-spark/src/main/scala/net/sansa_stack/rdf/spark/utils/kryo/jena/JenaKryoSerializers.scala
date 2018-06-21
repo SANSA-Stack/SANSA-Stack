@@ -4,10 +4,10 @@ import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
 import org.apache.jena.riot.system.RiotLib
+import org.apache.jena.sparql.core.{Quad => JenaQuad}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.sparql.util.{ExprUtils, FmtUtils}
-import org.apache.jena.sparql.core.{Quad => JenaQuad}
 
 /**
  * @author Nilesh Chakraborty <nilesh@nileshc.com>

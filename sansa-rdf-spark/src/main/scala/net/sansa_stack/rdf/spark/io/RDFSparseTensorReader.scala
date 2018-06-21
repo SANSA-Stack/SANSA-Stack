@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.io
 
-import org.apache.jena.graph.Node
-import org.apache.spark.sql._
-import org.apache.spark.rdd.RDD
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.model._
+import org.apache.jena.graph.Node
+import org.apache.jena.riot.Lang
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
 
 /**
  * Created by nilesh
@@ -28,11 +28,11 @@ class RDFSparseTensorReader(spark: SparkSession, path: String) {
     .distinct
     .zipWithUniqueId()
 
-  def getNumEntities = entityIDs.count()
+  def getNumEntities: Long = entityIDs.count()
 
-  def getNumRelations = relationIDs.count()
+  def getNumRelations: Long = relationIDs.count()
 
-  def getMappedTriples() = {
+  def getMappedTriples(): RDD[(Long, Long, Long)] = {
     val joinedBySubject = entityIDs.join(triplesWithURIs.map { triple =>
       (triple.getSubject(), (triple.getPredicate, triple.getObject))
     })

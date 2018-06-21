@@ -22,7 +22,7 @@ class KryoSerializationWrapper[T: ClassTag] extends Serializable
     valueSerialized
   }
 
-  def setValueSerialized(bytes: Array[Byte]) =
+  def setValueSerialized(bytes: Array[Byte]): Unit =
   {
     valueSerialized = bytes
     value = KryoSerializer.deserialize[T](valueSerialized)

@@ -1,26 +1,27 @@
 package net.sansa_stack.rdf.spark.utils
 
-import org.apache.spark.sql.types.{ StructType, StructField, StringType }
 import scala.collection.mutable.LinkedHashMap
+
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 
 object SchemaUtils {
 
   def flattenSchemaField(
-    schema:        StructType,
+    schema: StructType,
     qualifiedName: String,
-    fieldName:     String, map: LinkedHashMap[String, String]) {
+    fieldName: String, map: LinkedHashMap[String, String]) {
     val field = schema.apply(fieldName)
     val dt = field.dataType
     dt match {
       case st: StructType => flattenSchema(st, qualifiedName, map)
-      case _              => map += (qualifiedName -> dt.simpleString)
+      case _ => map += (qualifiedName -> dt.simpleString)
     }
   }
 
   def flattenSchema(
     schema: StructType,
-    prefix: String                        = "",
-    map:    LinkedHashMap[String, String] = LinkedHashMap[String, String]()): LinkedHashMap[String, String] = {
+    prefix: String = "",
+    map: LinkedHashMap[String, String] = LinkedHashMap[String, String]()): LinkedHashMap[String, String] = {
     schema.fields.foreach { sf =>
       val fieldName = sf.name
       val qualifiedName = prefix + (if (prefix.isEmpty()) "" else ".") + fieldName
@@ -35,7 +36,7 @@ object SchemaUtils {
    * @return the default schema for TRIPLES table with
    * s, p, o as column names.
    */
-  def SQLSchemaDefault = {
+  def SQLSchemaDefault: StructType = {
     val schema = StructType(
       Seq(
         StructField("s", StringType, nullable = false),

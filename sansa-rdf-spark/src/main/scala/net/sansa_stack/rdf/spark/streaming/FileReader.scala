@@ -1,13 +1,14 @@
 package net.sansa_stack.rdf.spark.streaming
 
-import org.apache.spark.streaming.dstream.DStream
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import org.apache.jena.graph.Triple
-import org.apache.spark.streaming.dstream.InputDStream
-import org.apache.spark.rdd.RDD
 import java.io.ByteArrayInputStream
-import org.apache.spark.streaming.{ Time, Duration, StreamingContext }
+
 import scala.collection.mutable.ArrayBuffer
+
+import org.apache.jena.graph.Triple
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.spark.rdd.RDD
+import org.apache.spark.streaming.{ Duration, StreamingContext, Time }
+import org.apache.spark.streaming.dstream.{ DStream, InputDStream }
 
 /**
  * @author Gezim Sejdiu
@@ -23,7 +24,7 @@ class FileReader(path: String) extends StreamReader {
   override def load(ssc: StreamingContext): DStream[Triple] = {
 
     val slideDurationOption = 1000
-    val chunkSizeOption = 1000
+    val chunkdSizeOption = 1000
 
     new InputDStream[Triple](ssc) {
       override def start(): Unit = {}
@@ -47,5 +48,4 @@ class FileReader(path: String) extends StreamReader {
     }
 
   }
-
 }

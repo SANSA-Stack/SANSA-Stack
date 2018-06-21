@@ -1,7 +1,5 @@
 package net.sansa_stack.rdf.spark.utils
 
-//package org.apache.spark
-
 import org.slf4j.{Logger, LoggerFactory}
 
 trait Logging {

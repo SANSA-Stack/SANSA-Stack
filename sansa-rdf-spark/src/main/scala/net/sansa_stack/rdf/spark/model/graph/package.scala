@@ -1,10 +1,11 @@
 package net.sansa_stack.rdf.spark.model
 
 import net.sansa_stack.rdf.spark.utils.Logging
-import org.apache.spark.rdd.RDD
-import org.apache.spark.graphx.Graph
 import org.apache.jena.graph.{ Node, Triple }
-import org.apache.spark.graphx.GraphOps
+import org.apache.spark.graphx.Graph
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+
 
 /**
  * Wrap up implicit classes/methods to load RDF data into [[GraphX]].
@@ -24,21 +25,24 @@ package object graph {
      * @return object of GraphX which contains the constructed  ''graph''.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.constructGraph]]
      */
-    def asGraph() = GraphOps.constructGraph(triples)
+    def asGraph(): Graph[Node, Node] =
+      GraphOps.constructGraph(triples)
 
     /**
      * Constructs Hashed GraphX graph from RDD of triples
      * @return object of GraphX which contains the constructed hashed ''graph''.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.constructHashedGraph]]
      */
-    def asHashedGraph() = GraphOps.constructHashedGraph(triples)
+    def asHashedGraph(): Graph[Node, Node] =
+      GraphOps.constructHashedGraph(triples)
 
     /**
      * Constructs String GraphX graph from RDD of triples
      * @return object of GraphX which contains the constructed string ''graph''.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.constructStringGraph]]
      */
-    def asStringGraph() = GraphOps.constructStringGraph(triples)
+    def asStringGraph(): Graph[String, String] =
+      GraphOps.constructStringGraph(triples)
   }
 
   /**
@@ -51,21 +55,24 @@ package object graph {
      * @return a RDD of triples.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.toRDD]]
      */
-    def toRDD() = GraphOps.toRDD(graph)
+    def toRDD(): RDD[Triple] =
+      GraphOps.toRDD(graph)
 
     /**
      * Convert a graph into a DataFrame.
      * @return a DataFrame of triples.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.toDF]]
      */
-    def toDF() = GraphOps.toDF(graph)
+    def toDF(): DataFrame =
+      GraphOps.toDF(graph)
 
     /**
      * Convert a graph into a Dataset of Triple.
      * @return a Dataset of triples.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.toDS]]
      */
-    def toDS() = GraphOps.toDS(graph)
+    def toDS(): Dataset[Triple] =
+      GraphOps.toDS(graph)
 
     /**
      * Finds triplets  of a given graph.
@@ -75,35 +82,40 @@ package object graph {
      * @return graph which contains subset of the reduced graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.find]]
      */
-    def find(subject: Node, predicate: Node, `object`: Node) = GraphOps.find(graph, subject, predicate, `object`)
+    def find(subject: Node, predicate: Node, `object`: Node): Graph[Node, Node] =
+      GraphOps.find(graph, subject, predicate, `object`)
 
     /**
      * Gets triples of a given graph.
      * @return [[[RDD[Triple]]] from the given graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getTriples]]
      */
-    def getTriples() = GraphOps.getTriples(graph)
+    def getTriples(): RDD[Triple] =
+      GraphOps.getTriples(graph)
 
     /**
      * Gets subjects of a given graph.
      * @return [[[RDD[Node]]] from the given graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getSubjects]]
      */
-    def getSubjects() = GraphOps.getSubjects(graph)
+    def getSubjects(): RDD[Node] =
+      GraphOps.getSubjects(graph)
 
     /**
      * Gets predicates of a given graph.
      * @return [[[RDD[Node]]] from the given graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getPredicates]]
      */
-    def getPredicates() = GraphOps.getPredicates(graph)
+    def getPredicates(): RDD[Node] =
+      GraphOps.getPredicates(graph)
 
     /**
      * Gets objects of a given graph.
      * @return [[[RDD[Node]]] from the given graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getObjects]]
      */
-    def getObjects() = GraphOps.getObjects(graph)
+    def getObjects(): RDD[Node] =
+      GraphOps.getObjects(graph)
 
     /**
      * Filter out the subject from a given graph,
@@ -112,7 +124,8 @@ package object graph {
      * @return [[Graph[Node, Node]]] a subset of the given graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterSubjects]]
      */
-    def filterSubjects(func: Node => Boolean) = GraphOps.filterSubjects(graph, func)
+    def filterSubjects(func: Node => Boolean): Graph[Node, Node] =
+      GraphOps.filterSubjects(graph, func)
 
     /**
      * Filter out the predicates from a given graph,
@@ -121,7 +134,8 @@ package object graph {
      * @return [[Graph[Node, Node]]] a subset of the given graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterPredicates]]
      */
-    def filterPredicates(func: Node => Boolean) = GraphOps.filterPredicates(graph, func)
+    def filterPredicates(func: Node => Boolean): Graph[Node, Node] =
+      GraphOps.filterPredicates(graph, func)
 
     /**
      * Filter out the objects from a given graph,
@@ -130,14 +144,16 @@ package object graph {
      * @return [[Graph[Node, Node]]] a subset of the given graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterObjects]]
      */
-    def filterObjects(func: Node => Boolean) = GraphOps.filterObjects(graph, func)
+    def filterObjects(func: Node => Boolean): Graph[Node, Node] =
+      GraphOps.filterObjects(graph, func)
 
     /**
      * Compute the size of the graph
      * @return the number of edges in the graph.
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.size]]
      */
-    def size() = GraphOps.size(graph)
+    def size(): Long =
+      GraphOps.size(graph)
 
     /**
      * Return the union of this graph and another one.
@@ -146,7 +162,8 @@ package object graph {
      * @return graph (union of all)
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.union]]
      */
-    def union(other: Graph[Node, Node]) = GraphOps.union(graph, other)
+    def union(other: Graph[Node, Node]): Graph[Node, Node] =
+      GraphOps.union(graph, other)
     /**
      * Returns a new RDF graph that contains the intersection of the current RDF graph with the given RDF graph.
      *
@@ -154,7 +171,8 @@ package object graph {
      * @return the intersection of both RDF graphs
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.difference]]
      */
-    def difference(other: Graph[Node, Node]) = GraphOps.difference(graph, other)
+    def difference(other: Graph[Node, Node]): Graph[Node, Node] =
+      GraphOps.difference(graph, other)
 
     /**
      * Returns a new RDF graph that contains the difference between the current RDF graph and the given RDF graph.
@@ -163,7 +181,8 @@ package object graph {
      * @return the difference of both RDF graphs
      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.intersection]]
      */
-    def intersection(other: Graph[Node, Node]) = GraphOps.intersection(graph, other)
+    def intersection(other: Graph[Node, Node]): Graph[Node, Node] =
+      GraphOps.intersection(graph, other)
   }
 }
 

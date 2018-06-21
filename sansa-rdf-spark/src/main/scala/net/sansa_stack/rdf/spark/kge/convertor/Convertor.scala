@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.spark.kge.convertor
 
-
 /**
  * Convertor Abstract Class
  * ------------------------
@@ -10,9 +9,8 @@ package net.sansa_stack.rdf.spark.kge.convertor
  * Created by Hamed Shariat Yazdi
  */
 
-import org.apache.spark.sql._
 import net.sansa_stack.rdf.spark.kge.triples._
-
+import org.apache.spark.sql._
 
 trait Convertor {
 
