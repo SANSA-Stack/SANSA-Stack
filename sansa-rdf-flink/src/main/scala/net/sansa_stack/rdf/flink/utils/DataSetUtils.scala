@@ -2,12 +2,12 @@ package net.sansa_stack.rdf.flink.utils
 
 import java.lang.Iterable
 
+import scala.reflect.ClassTag
+
 import org.apache.flink.api.common.functions.CoGroupFunction
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.util.Collector
-
-import scala.reflect.ClassTag
 
 /**
   * @author Lorenz Buehmann

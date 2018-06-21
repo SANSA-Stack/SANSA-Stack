@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.flink.qualityassessment.dataset
+
 /*
- * 
+ * Dataset utils.
  */
 object DatasetUtils {
 
@@ -8,38 +9,38 @@ object DatasetUtils {
 
   var _subject: String = _
   var _property: String = _
-  
-  var _lowerBound:Double =_
-  var _upperBound:Double =_
-  
-  def setPrefixes(prefixes: List[String]) {
-    _prefixes = prefixes;
 
+  var _lowerBound: Double = _
+  var _upperBound: Double = _
+
+  def setPrefixes(prefixes: List[String]): Unit = {
+    _prefixes = prefixes
   }
-  def getPrefixes() = _prefixes;
+
+  def getPrefixes(): List[String] = _prefixes;
 
   /*
-   * Subject Class URI 
+   * Subject Class URI
    * @return Class of subjects for which property value is checked.
    */
-  def getSubjectClassURI() = _subject
+  def getSubjectClassURI(): String = _subject
 
   /*
-   * Property URI 
+   * Property URI
    * @return Property to be checked.
    */
-  def getPropertyURI() = _property
-  
+  def getPropertyURI(): String = _property
+
   /*
    * LowerBound
    * Lower bound to evaluate.
    */
-  def getLowerBound() = _lowerBound
-  
+  def getLowerBound(): Double = _lowerBound
+
   /*
    * UpperBound
    * Upper bound to evaluate.
    */
-  def getUpperBound() = _upperBound
+  def getUpperBound(): Double = _upperBound
 
 }

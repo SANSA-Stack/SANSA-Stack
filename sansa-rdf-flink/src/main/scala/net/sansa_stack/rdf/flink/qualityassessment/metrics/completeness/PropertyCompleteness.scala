@@ -1,11 +1,11 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import org.apache.jena.graph.{ Triple, Node }
-import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.flink.api.scala.DataSet
-import org.apache.flink.api.scala._
-import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
 import net.sansa_stack.rdf.flink.data.RDFGraph
+import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
+import org.apache.flink.api.scala._
+import org.apache.flink.api.scala.DataSet
+import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.jena.graph.{ Node, Triple }
 
 /**
  * This metric measures the property completeness by checking
@@ -22,15 +22,15 @@ object PropertyCompleteness {
 
   def apply(rdfgraph: RDFGraph): Long = {
 
-    /*
-     -->Rule->Filter-->
-   		"select (?s) where ?s p=rdf:type o=Type; p2=Property ?o2
-			select (?s2) where ?s2 p=rdf:type o=Type"
-			-->Action-->
-			S+=?s && S2+=?s2
-			-->Post-processing-->
-			|S| / |S2|
-   */
+    /**
+     * -->Rule->Filter-->
+     * "select (?s) where ?s p=rdf:type o=Type; p2=Property ?o2
+     * select (?s2) where ?s2 p=rdf:type o=Type"
+     * -->Action-->
+     * S+=?s && S2+=?s2
+     * -->Post-processing-->
+     * |S| / |S2|
+     */
     val dataset = rdfgraph.triples
     val s2 = dataset.filter(f =>
       f.getPredicate.getLiteralLexicalForm.contains("rdf:type")

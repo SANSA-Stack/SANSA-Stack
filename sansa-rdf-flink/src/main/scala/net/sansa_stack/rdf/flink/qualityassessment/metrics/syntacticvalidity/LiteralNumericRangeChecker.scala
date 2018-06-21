@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity
 
-import org.apache.jena.graph.{ Triple, Node }
-import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.flink.api.scala._
-import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
 import net.sansa_stack.rdf.flink.data.RDFGraph
+import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
+import org.apache.flink.api.scala._
+import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.jena.graph.{ Node, Triple }
 
 /**
  * Check if the incorrect numeric range for the given predicate and given class of subjects.
@@ -22,23 +22,23 @@ object LiteralNumericRangeChecker {
   val lowerBound = DatasetUtils.getLowerBound();
   val upperBound = DatasetUtils.getUpperBound();
 
-  def apply(rdfgraph: RDFGraph) = {
+  def apply(rdfgraph: RDFGraph): Long = {
 
-    /*
-   		 -->Rule->Filter-->
-   		"select COUNT(?s) where ?s rdf:type o=Type .
-			select COUNT(?s2) where ?s2 p=rdf:type o=Type ?s <"+ property +"> ?o . FILTER (?o > "+ lowerBound +" && ?o < "+ upperBound +") ."
-			-->Action-->
-			S+=?s && S2+=?s2
-			-->Post-processing-->
-			|S| / |S2|
-   */
+    /**
+     * -->Rule->Filter-->
+     * "select COUNT(?s) where ?s rdf:type o=Type .
+     * select COUNT(?s2) where ?s2 p=rdf:type o=Type ?s <"+ property +"> ?o . FILTER (?o > "+ lowerBound +" && ?o < "+ upperBound +") ."
+     * -->Action-->
+     * S+=?s && S2+=?s2
+     * -->Post-processing-->
+     * |S| / |S2|
+     */
     val dataset = rdfgraph.triples
-    
+
     val s2 = dataset.filter(f =>
       f.getPredicate.getLiteralLexicalForm.contains("rdf:type")
         && f.getSubject.getLiteralLexicalForm.contains(subject))
-        
+
     val s = s2.filter(f => f.getPredicate.getLiteralLexicalForm.contains(property)
       && (f.getObject.getLiteralValue.toString().toDouble > lowerBound && f.getObject.getLiteralValue.toString().toDouble < upperBound))
 
