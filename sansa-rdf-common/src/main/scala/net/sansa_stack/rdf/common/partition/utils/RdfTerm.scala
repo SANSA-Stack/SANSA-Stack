@@ -12,17 +12,20 @@ case class RdfTerm(t: Int, v: String, lang: String, dt: String)
 object RdfTerm {
   def toLexicalForm(o: Any): String = "" + o // NodeFmtLib.str(node)
 
-  def termToNode(term: RdfTerm): Unit = {
+  def termToNode(term: RdfTerm): Node = {
     val lexicalForm = toLexicalForm(term.v)
-    val result = term.t match {
+    val result: Node = term.t match {
       case 0 => NodeFactory.createBlankNode(lexicalForm)
       case 1 => NodeFactory.createURI(lexicalForm)
       case 2 =>
         val dt = term.dt
-        if (dt != null && !dt.isEmpty()) NodeFactory.createLiteral(lexicalForm, term.lang)
-      // {
-      // logger.warn("Language tag should be null or empty, was '" + dt + "'");
-      // }
+        if (term.dt != null && !term.dt.isEmpty()) {
+
+        }
+        // {
+        // logger.warn("Language tag should be null or empty, was '" + dt + "'");
+        // }
+        NodeFactory.createLiteral(lexicalForm, term.lang)
       case 3 => // Typed Literal
         val lang = term.lang
         // if (lang != null && !lang.isEmpty()) {
@@ -31,6 +34,7 @@ object RdfTerm {
         val dt = TypeMapper.getInstance().getSafeTypeByName(term.dt)
         NodeFactory.createLiteral(lexicalForm, dt)
     }
+    result
   }
 
   def nodeToTerm(node: Node): RdfTerm = {
