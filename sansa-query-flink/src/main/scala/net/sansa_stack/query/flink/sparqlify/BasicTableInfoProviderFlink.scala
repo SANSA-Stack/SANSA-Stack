@@ -2,15 +2,15 @@ package net.sansa_stack.query.flink.sparqlify
 
 import java.util.Collections
 
-import org.aksw.sparqlify.config.v0_2.bridge.{BasicTableInfo, BasicTableInfoProvider}
-import org.apache.flink.table.api.scala.BatchTableEnvironment
 import collection.JavaConverters._
+import org.aksw.sparqlify.config.v0_2.bridge.{ BasicTableInfo, BasicTableInfoProvider }
+import org.apache.flink.table.api.scala.BatchTableEnvironment
 
 /**
-  * Created by Simon Bin on 12/06/17.
-  */
+ * Created by Simon Bin on 12/06/17.
+ */
 class BasicTableInfoProviderFlink(flinkTable: BatchTableEnvironment)
-extends BasicTableInfoProvider {
+  extends BasicTableInfoProvider {
   override def getBasicTableInfo(queryString: String): BasicTableInfo = {
     val table = flinkTable.sql(queryString)
     val schema = table.getSchema
@@ -18,10 +18,10 @@ extends BasicTableInfoProvider {
     val names = schema.getColumnNames
     val map = (0 until types.length).map { i =>
       (names(i), types(i).toString)
-    }   toMap
+    } toMap
 
     println(map)
-    val nullableColumns = Collections.emptySet[String] //Set[String]().asJava
+    val nullableColumns = Collections.emptySet[String] // Set[String]().asJava
     new BasicTableInfo(map.asJava, nullableColumns)
   }
 }
