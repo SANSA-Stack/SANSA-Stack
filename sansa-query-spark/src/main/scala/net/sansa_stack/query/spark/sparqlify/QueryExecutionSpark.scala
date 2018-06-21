@@ -5,14 +5,14 @@ import java.util.Iterator
 import scala.collection.JavaConverters._
 
 import com.google.common.collect.Multimap
-import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
+import net.sansa_stack.rdf.spark.utils.kryo.io.{ JavaKryoSerializationWrapper, KryoSerializationWrapper }
 import org.aksw.jena_sparql_api.core.ResultSetCloseable
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.aksw.jena_sparql_api.views.RestrictedExpr
+import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.apache.jena.query.Query
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
-import net.sansa_stack.rdf.spark.utils.kryo.io.{ JavaKryoSerializationWrapper, KryoSerializationWrapper }
 import org.apache.spark.rdd._
 import org.apache.spark.sql.{ DataFrame, Dataset, Row, SparkSession }
 

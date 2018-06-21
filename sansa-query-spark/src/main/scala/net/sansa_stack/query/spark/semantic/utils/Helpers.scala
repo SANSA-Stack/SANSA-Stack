@@ -75,11 +75,9 @@ object Helpers {
         }
       }
     }
-
     println(symbol("newline"))
     // append query time
     milliseconds
-    //_queriesProcessTime.append(milliseconds)
   }
 
   // overall queries process time

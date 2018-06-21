@@ -1,18 +1,18 @@
 package net.sansa_stack.query.spark.gremlinator
 
+import net.sansa_stack.query.spark.gremlinator.sparql2gremlin.QuaryTranslator
+import net.sansa_stack.query.spark.gremlinator.utils.Config._
 import org.apache.commons.configuration.BaseConfiguration
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable
 import org.apache.tinkerpop.gremlin.process.computer.{ GraphComputer, VertexProgram }
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-import org.apache.tinkerpop.gremlin.spark.structure.Spark
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
+import org.apache.tinkerpop.gremlin.spark.structure.Spark
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory
-import net.sansa_stack.query.spark.gremlinator.sparql2gremlin.QuaryTranslator
-import net.sansa_stack.query.spark.gremlinator.utils.Config._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 
 /*
    * GremlinatorSpark - a SPARQL to gremlin query rewriter on Spark.

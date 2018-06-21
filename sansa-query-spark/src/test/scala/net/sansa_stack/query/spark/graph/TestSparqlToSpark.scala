@@ -1,16 +1,16 @@
 package net.sansa_stack.query.spark.graph
 
+import scala.io.Source
+
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.graph.jena.SparqlParser
 import net.sansa_stack.query.spark.graph.jena.patternOp.PatternOp
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultOp
-import org.apache.jena.graph.Node
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.graph.jena.util.ResultFactory
-import org.scalatest.FunSuite
-
-import scala.io.Source
-import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.graph.Node
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class TestSparqlToSpark extends FunSuite with DataFrameSuiteBase {
 
@@ -276,7 +276,6 @@ class TestSparqlToSpark extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang)(nTriplePath)
 
     val graph = triples.asGraph()
-    
     val queryPath = "src/test/resources/queries/query11.txt"
     val sp = new SparqlParser(queryPath)
 
@@ -312,14 +311,14 @@ class TestSparqlToSpark extends FunSuite with DataFrameSuiteBase {
     assert(intermediate.length == 3)
     // Select
     var interRDD = ResultFactory.create[Node](intermediate, spark)
-    //interRDD.collect().foreach(println(_))
-    //interRDD = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(interRDD)
-    //assert(interRDD.count() == 3)
+    // interRDD.collect().foreach(println(_))
+    // interRDD = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(interRDD)
+    // assert(interRDD.count() == 3)
     // Distinct
-    //interRDD = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(interRDD)
-    //assert(interRDD.count() == 3)
+    // interRDD = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(interRDD)
+    // assert(interRDD.count() == 3)
     // Limit
-    //intermediate = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(intermediate)
-    //assert(intermediate.length == 3)
+    // intermediate = sp.getOps.dequeue().asInstanceOf[ResultOp].execute(intermediate)
+    // assert(intermediate.length == 3)
   }
 }

@@ -2,13 +2,13 @@ package net.sansa_stack.query.spark
 
 import scala.collection.JavaConverters._
 
-import org.aksw.jena_sparql_api.core.ResultSetCloseable
-import org.aksw.jena_sparql_api.utils.ResultSetUtils
-import org.apache.jena.query.QueryFactory
-import org.apache.jena.graph.Triple
 import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionSpark, SparqlifyUtils3 }
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import org.aksw.jena_sparql_api.core.ResultSetCloseable
+import org.aksw.jena_sparql_api.utils.ResultSetUtils
+import org.apache.jena.graph.Triple
+import org.apache.jena.query.QueryFactory
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ DataFrame, Row, SparkSession }
 

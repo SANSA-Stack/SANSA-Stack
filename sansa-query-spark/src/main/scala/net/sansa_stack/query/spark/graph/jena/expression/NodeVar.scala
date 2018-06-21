@@ -16,7 +16,7 @@ class NodeVar(exprVar: Node) extends Expression {
 
   override def toString: String = { exprVar.toString }
 
-  override def equals(obj: scala.Any): Boolean = { this.getNode.equals(obj.asInstanceOf[NodeVar].getNode) }
+  override def equals(obj: Any): Boolean = { this.getNode.equals(obj.asInstanceOf[NodeVar].getNode) }
 
   override def hashCode(): Int = { exprVar.hashCode }
 }

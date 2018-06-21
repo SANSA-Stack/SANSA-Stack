@@ -4,9 +4,9 @@ import java.util.Collections
 
 import scala.collection.JavaConverters._
 
+import net.sansa_stack.rdf.spark.utils.SchemaUtils
 import org.aksw.sparqlify.config.v0_2.bridge.BasicTableInfo
 import org.aksw.sparqlify.config.v0_2.bridge.BasicTableInfoProvider
-import net.sansa_stack.rdf.spark.utils.SchemaUtils
 import org.apache.spark.sql.SparkSession
 
 class BasicTableInfoProviderSpark(val sparkSession: SparkSession)

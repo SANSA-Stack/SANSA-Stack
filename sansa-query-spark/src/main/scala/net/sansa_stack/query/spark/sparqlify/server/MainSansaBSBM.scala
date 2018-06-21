@@ -6,20 +6,13 @@ import scala.collection.JavaConverters._
 
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
-import benchmark.testdriver.LocalSPARQLParameterPool
-import benchmark.testdriver.SPARQLConnection2
-import benchmark.testdriver.TestDriver
-import benchmark.testdriver.TestDriverUtils
-import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
-import org.apache.jena.riot.RDFDataMgr
-import org.apache.jena.riot.RDFFormat
-import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.engine.binding.BindingHashMap
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.SparkSession
-import net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark
-import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
+import benchmark.testdriver.{ LocalSPARQLParameterPool, SPARQLConnection2, TestDriver, TestDriverUtils }
+import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, SparqlifyUtils3 }
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
+import org.apache.jena.riot.{ RDFDataMgr, RDFFormat }
+import org.apache.jena.sparql.engine.binding.{ Binding, BindingHashMap }
+import org.apache.spark.sql.{ Row, SparkSession }
 
 object MainSansaBSBM {
 

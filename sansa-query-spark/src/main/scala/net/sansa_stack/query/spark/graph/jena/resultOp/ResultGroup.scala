@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import scala.collection.JavaConverters._ 
+import scala.collection.JavaConverters._
 
 import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
 import net.sansa_stack.query.spark.graph.jena.util.{ Result, ResultFactory }
