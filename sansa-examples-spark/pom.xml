@@ -146,6 +146,13 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
+<!--
+		<dependency>
+			<groupId>com.holdenkarau</groupId>
+			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+		</dependency>
+-->
+
 	</dependencies>
 
 	<build>
