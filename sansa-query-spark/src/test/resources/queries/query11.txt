@@ -1,7 +1,0 @@
-PREFIX tw: <http://twitter/>
-SELECT ?property ?hasValue ?isValueOf
-WHERE {
-    { tw:user3 ?property ?hasValue .}
-    UNION
-    { ?isValueOf ?property tw:user3 . }
-}
