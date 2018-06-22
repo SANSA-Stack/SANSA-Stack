@@ -108,12 +108,18 @@
 
 		<!-- WordNet Library -->
 		<dependency>
-			<groupId>net.sf.jwordnet</groupId>
-			<artifactId>jwnl</artifactId>
-			<version>1.4_rc3</version>
+			<groupId>net.sf.extjwnl</groupId>
+			<artifactId>extjwnl</artifactId>
+			<version>1.9.4</version>
 		</dependency>
-
-
+		<!-- WordNet Library Dataset-->
+		<!--
+		<dependency>
+			<groupId>net.sf.extjwnl</groupId>
+			<artifactId>extjwnl-data-wn31-map</artifactId>
+			<version>1.0</version>
+		</dependency>
+		 -->
 
 		<!-- BigDL Library -->
 		<dependency>
@@ -183,6 +189,27 @@
 				<groupId>org.scalastyle</groupId>
 				<artifactId>scalastyle-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>com.googlecode.maven-download-plugin</groupId>
+				<artifactId>download-maven-plugin</artifactId>
+				<version>1.3.0</version>
+				<executions>
+					<execution>
+						<!-- the wget goal actually binds itself to this phase by default -->
+						<phase>process-resources</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>http://wordnetcode.princeton.edu/3.0/WordNet-3.0.tar.gz</url>
+							<outputFileName>foo.bar</outputFileName>
+							<!-- default target location, just to demonstrate the parameter -->
+							<outputDirectory>${project.build.directory}/src</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 
 			<!-- disable surefire -->
 			<plugin>

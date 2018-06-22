@@ -11,7 +11,6 @@
  */
 package net.sansa_stack.ml.spark.nlp.wordnet
 
-import net.didion.jwnl.data._
 
 object WordNetSimilarity extends WordNet {
 
@@ -58,4 +57,4 @@ object WordNetSimilarity extends WordNet {
     score
   }
 
-}
+  }

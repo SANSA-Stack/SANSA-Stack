@@ -24,3 +24,16 @@ Several further algorithms are in development. Please create a pull request and/
 ## How to Contribute
 We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
 
+
+###  The nlp package distribution does not include the WordNet dataset.
+ 
+To enable WordNet dataset 
+this Artifact needs to be included in the pom.xml of the sansa-ml project
+ 
+```
+		<dependency>
+			<groupId>net.sf.extjwnl</groupId>
+			<artifactId>extjwnl-data-wn31-map</artifactId>
+			<version>1.0</version>
+		</dependency>
+```

@@ -5,7 +5,6 @@
  *  Afshin Sadeghi
  *
  *  Inspired from:
- *
  *  WordNet::Similarity of Ted Peterson
  *  and https://github.com/sujitpal/scalcium
  *  and ws4j
@@ -13,54 +12,52 @@
 */
 package net.sansa_stack.ml.spark.nlp.wordnet
 
-import java.io.{File, FileInputStream, InputStream, Serializable}
-
-import net.didion.jwnl.JWNL
-import net.didion.jwnl.data.list.{PointerTargetNode, PointerTargetNodeList}
-import net.didion.jwnl.data._
-import net.didion.jwnl.dictionary.Dictionary
+import java.io.Serializable
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
 import scala.collection.mutable.ArrayBuffer
+import net.sf.extjwnl.dictionary.Dictionary
+import net.sf.extjwnl.data.{PointerType, PointerUtils, Word}
 
 /**
   * WordNet singleton to initialize WordNet dataset
   */
 object WordNet {
 
-  val currentDirectory = new java.io.File(".").getCanonicalPath
-  val wnConfig: InputStream = new FileInputStream(currentDirectory + "/sansa-ml-spark/config/wnconfig.xml")
-  JWNL.initialize(wnConfig)
-  val dict = Dictionary.getInstance()
+
+  val dict: Dictionary = Dictionary.getDefaultResourceInstance
 }
 
 /**
   * WordNet class that provide WordNet related basic services
   */
 class WordNet extends Serializable {
-  def synsets(lemma: String): List[Synset] =
-    net.didion.jwnl.data.POS.getAllPOS
-      .flatMap(pos => synsets(lemma, pos.asInstanceOf[POS]))(breakOut)
 
-  def synsets(lemma: String, pos: POS): List[Synset] = {
-    val iword = WordNet.dict.getIndexWord(pos, lemma)
-    if (iword == null) List.empty[Synset]
-    else iword.getSenses.toList
-  }
+  /**
+    * Returns a Synset belonging to a lemma String
+    *
+    * @param lemma : String
+    * @return : List[Synset]
+    */
+  def getSynsets(lemma: String): List[Synset] =
+    net.sf.extjwnl.data.POS.getAllPOS
+      .flatMap(pos => getSynsets(lemma, pos))(breakOut)
+
 
   /**
     * Returns a Synset given a String
     * Returns empty list if the lemma did not exist in the WordNet
+    *
     * @param lemma : String
     * @param pos   : POS
     * @param sid   : Integer
     * @return : List[Synset]
     */
   def getSynset(lemma: String, pos: POS, sid: Int): List[Synset] = {
-    val iword = WordNet.dict.getIndexWord(pos, lemma)
+    val indexWord = WordNet.dict.getIndexWord(pos, lemma)
     var result = List.empty[Synset]
-    if (iword != null) {
-      result = List(iword.getSense(sid))
+    if (indexWord != null) {
+      result = List(indexWord.getSenses()(sid))
     }
     result
   }
@@ -71,11 +68,13 @@ class WordNet extends Serializable {
     *
     * @param lemma : String
     * @param pos   : POS
-    * @param sid   : Integer
-    * @return Synset
+    * @return List[Synset]
     */
-  def synset(lemma: String, pos: POS, sid: Int): List[Synset] =
-    getSynset(lemma, pos, sid)
+  def getSynsets(lemma: String, pos: POS): List[Synset] = {
+    val iword = WordNet.dict.getIndexWord(pos, lemma)
+    if (iword == null) List.empty[Synset]
+    else iword.getSenses.toList
+  }
 
   /**
     * Gets lemma name for a synset
@@ -159,17 +158,8 @@ class WordNet extends Serializable {
   def entailments(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.ENTAILMENT)
 
   /**
-    * Input is a synset
-    * returns a list of synsets
-    *
-    * @param synset :Synset
-    * @return : List[Synset]
-    */
-  def entailedBy(synset: Synset): List[Synset] = relatedSynsets(synset, PointerType.ENTAILED_BY)
-
-  /**
     * Gets related synsets per function given a pointer type
-    * pointer types are defined in jwnl library
+    * from pointer class
     *
     * @param synset :Synset
     * @param ptr    : PointerType
@@ -185,11 +175,11 @@ class WordNet extends Serializable {
     * @return : List[Synset]
     */
   def allHypernyms(synset: Synset): List[List[Synset]] =
-    PointerUtils.getInstance()
+    PointerUtils
       .getHypernymTree(synset)
       .toList
-      .map(ptnl => ptnl.asInstanceOf[PointerTargetNodeList]
-        .map(ptn => ptn.asInstanceOf[PointerTargetNode].getSynset)
+      .map(ptnl => ptnl
+        .map(ptn => ptn.getSynset)
         .toList)(breakOut)
 
   /**
