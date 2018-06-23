@@ -34,7 +34,7 @@
 		<spark.version>2.3.1</spark.version>
 		<flink.version>1.5.0</flink.version>
 
-		<jena.version>3.5.0</jena.version>
+		<jena.version>3.7.0</jena.version>
 		<jsa.subversion>2</jsa.subversion>
 
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
