@@ -70,12 +70,8 @@ object SparkExecutionModel {
     graph = spark.rdf(lang)(path).asGraph().cache()
   }
 
-  def setGraph(graph: Graph[Node, Node]): Unit = {
-    if (graph == null) {
-      this.graph = graph
-    } else {
-      throw new IllegalArgumentException("rdf graph has been set already")
-    }
+  def loadGraph(graph: Graph[Node, Node]): Unit = {
+    this.graph = graph
   }
 
   def basicGraphPatternMatch(bgp: BasicGraphPattern): RDD[Result[Node]] = {
