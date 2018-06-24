@@ -4,9 +4,7 @@ import net.sansa_stack.rdf.spark.partition.graph.utils.{Paths, VerticesPlacement
 import org.apache.spark.HashPartitioner
 import org.apache.spark.graphx.{Graph, PartitionID}
 import org.apache.spark.sql.SparkSession
-
 import scala.reflect.ClassTag
-
 /**
   * Path Partition Strategy expand the partitions by assign path groups of all start vertices
   * Expand Edges set E+(i) = pg(sv*).edges
@@ -56,15 +54,16 @@ class PathPartition[VD: ClassTag, ED: ClassTag](override val graph: Graph[VD, ED
   val paths = new Paths(graph, numIterations, session)
 
   override def partitionBy(): Graph[VD, ED] = {
-    val pathGraph = paths.pathGraph.cache()
+    val g = paths.pathGraph.cache()
     val verticesPartMap = session.sparkContext.broadcast(VerticesPlacement.placeByIndex(paths.src.value, numPartitions))
-    val edges = pathGraph.vertices.filter(_._2.head.nonEmpty).flatMap { case (vid, paths) =>
+    val edges = g.vertices.filter(_._2.head.nonEmpty).flatMap { case (vid, paths) =>
       val pid = verticesPartMap.value(vid)
       paths.flatMap(_.toIterator).map(e => (pid, e)) }
       .distinct()
       .partitionBy(new HashPartitioner(numPartitions))
       .map(_._2).cache()
     val vertices = graph.vertices.cache()
+    g.unpersist()
     Graph.apply(vertices, edges)
   }
 }

@@ -33,4 +33,10 @@ object VerticesPlacement {
     results.mapValues(_.toArray).toMap
   }
 
+  def placeById(vid: VertexId, numParts: PartitionID): PartitionID = {
+    val mixingPrime: VertexId = 1125899906842597L
+    val part: PartitionID = (math.abs(vid * mixingPrime) % numParts).toInt
+    part
+  }
+
 }
