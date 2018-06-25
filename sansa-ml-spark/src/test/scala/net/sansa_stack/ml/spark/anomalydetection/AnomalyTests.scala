@@ -12,7 +12,7 @@ class AnomalyTests extends FunSuite with DataFrameSuiteBase {
 
   test("performing anomaly detection using HashingTF method should result in size 36") {
    
-    // predicated that are not interesting for evaluation
+    // predicates that are not interesting for evaluation
     val wikiList = List("wikiPageRevisionID,wikiPageID")
 
     val path = getClass.getResource("/AnomalyDetection/testSample.nt").getPath
@@ -21,17 +21,17 @@ class AnomalyTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(Lang.NTRIPLES)(path)
     triples.repartition(125).persist
 
-    //filtering numeric literal having xsd type double,integer,nonNegativeInteger and squareKilometre
+    //filtering numeric literals having xsd type double,integer,nonNegativeInteger and squareKilometre
     val objList = List(
       "http://www.w3.org/2001/XMLSchema#double",
       "http://www.w3.org/2001/XMLSchema#integer",
       "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
       "http://dbpedia.org/datatype/squareKilometre")
 
-    //helful for considering only Dbpedia type as their will be yago type,wikidata type also
+    //helpful for considering only Dbpedia type as their will be yago type,wikidata type also
     val triplesType = List("http://dbpedia.org/ontology")
 
-    //some of the supertype which are present for most of the subject
+    //some of the supertypes which are present for most of the subject
     val listSuperType = List(
       "http://dbpedia.org/ontology/Activity", "http://dbpedia.org/ontology/Organisation",
       "http://dbpedia.org/ontology/Agent", "http://dbpedia.org/ontology/SportsLeague",
