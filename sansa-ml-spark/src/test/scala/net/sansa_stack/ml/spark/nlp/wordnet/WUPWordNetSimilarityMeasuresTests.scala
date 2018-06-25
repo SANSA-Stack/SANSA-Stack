@@ -11,7 +11,6 @@ class WUPWordNetSimilarityMeasuresTests extends FunSuite with DataFrameSuiteBase
     try {
       val wn = new WordNet
       val dict = wn.getDict
-      val wn = new WordNet
 
       // getting a synset by a word
       val dog = wn.getSynsets("dog", POS.NOUN).head
