@@ -16,6 +16,16 @@ import scala.collection.mutable
 trait ForwardRuleReasoner extends Profiler {
 
   /**
+    * Applies forward chaining to the given RDD of RDF triples and returns a new
+    * RDD of RDF triples that contains all additional triples based on the underlying
+    * set of rules.
+    *
+    * @param triples the RDF triples
+    * @return the materialized set of RDF triples
+    */
+  def apply(triples: RDD[Triple]) : RDD[Triple] = apply(RDFGraph(triples)).triples
+
+  /**
     * Applies forward chaining to the given RDF graph and returns a new RDF graph that contains all additional
     * triples based on the underlying set of rules.
     *
