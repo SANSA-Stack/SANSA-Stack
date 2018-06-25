@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-owl-parent_2.11</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>OWL - Parent</name>
 
