@@ -19,13 +19,12 @@ object picMain {
     Logger.getRootLogger.setLevel(Level.ERROR)
     val input = "/home/hajira/Desktop/Link to Supervision/Tina/dbpedia_2015-10.nt" //hdfs://172.18.160.17:54310/TinaBoroukhian/input/HairStylist_TaxiDriver.txt" 
     val output = "src/main/resources/PICOut"
-    val outputevl = "src/main/resources/PICOutEvl"
-    val outputsim = "src/main/resources/PICOutSim"
+    
     println("============================================")
     println("| Power Iteration Clustering   example     |")
     println("============================================")
     val k =2
-    val maxIterations =2
+    val maxIterations =5
 
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
@@ -33,7 +32,7 @@ object picMain {
     val graph = triples.asStringGraph()
 
     //RDFGraphPowerIterationClustering(spark, graph, output, outputevl, outputsim, k, maxIterations)
-    val cluster = RDFGraphPowerIterationClustering.apply(spark, graph, output, outputevl, outputsim, k, maxIterations)
+    val cluster = RDFGraphPowerIterationClustering.apply(spark, graph, output, k, maxIterations)
     cluster.collect().foreach(println)
     spark.stop
 
