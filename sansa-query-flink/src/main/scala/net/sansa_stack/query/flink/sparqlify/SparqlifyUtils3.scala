@@ -36,7 +36,7 @@ object SparqlifyUtils3
         logger.debug("Processing RdfPartition: " + p)
         val vd = SparqlifyUtils2.createViewDefinition(p)
         logger.debug("Created view definition: " + vd)
-        val tableName = vd.getRelation match {
+        val tableName = vd.getLogicalTable match {
           case o: SqlOpTable => o.getTableName
           case _ => throw new RuntimeException("Table name required - instead got: " + vd)
         }
