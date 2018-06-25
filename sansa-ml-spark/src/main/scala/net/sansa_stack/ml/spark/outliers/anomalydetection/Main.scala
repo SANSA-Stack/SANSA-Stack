@@ -22,7 +22,14 @@ object Main {
     println("==================================================")
     println("|        Distributed Anomaly Detection           |")
     println("==================================================")
-
+    
+    //config.in-> path for input nt file. It may be a local path or hdfs path.
+    //config.threshold->  Jaccard distance threshold , range from 0 to 1. More the value closer to 0, the more similar subjects of rdf Ntriple will be in the result. In our case, it is 0.45.
+    //config.anomalyListLimit->  size of list containing numerical triples for anomaly detection. We prune subpopulations which contain a low number of instances or maybe no instances at all.
+    //config.numofpartition->  depends upon the size of the input file. As the size of file increases, this config parameters should be increased accordingly.
+    //config.out->  the path for an output file. The output file consists of a list of outliers.
+    //config.optionChnage-> For selecting one method out of three methods. 1 for hashing TF, 2 for dataframe crossJoin and 3 for  CountVetcorizerModel.  
+   
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.threshold, config.anomalyListLimit, config.numofpartition, config.out, config.optionChange)
