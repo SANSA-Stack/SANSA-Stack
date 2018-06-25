@@ -90,7 +90,7 @@ object Main {
 
     //spark configuration
     val sparkSession = SparkSession.builder
-      .master("spark://172.18.160.16:3077")
+      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.sql.shuffle.partitions", "400")
       .config("spark.sql.autoBroadcastJoinThreshold", "304857600")
