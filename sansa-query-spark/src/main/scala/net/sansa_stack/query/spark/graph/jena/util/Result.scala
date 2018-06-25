@@ -46,7 +46,7 @@ class Result[VD: ClassTag] extends Serializable {
     this
   }
 
-  override def equals(obj: scala.Any): Boolean = {
+  override def equals(obj: Any): Boolean = {
     if (!obj.isInstanceOf[Result[VD]]) {
       false
     } else {

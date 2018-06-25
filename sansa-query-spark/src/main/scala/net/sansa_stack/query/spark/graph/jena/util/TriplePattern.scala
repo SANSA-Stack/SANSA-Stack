@@ -66,7 +66,7 @@ class TriplePattern(
     s.hashCode() * 5 + p.hashCode() * 3 + o.hashCode()
   }
 
-  override def equals(obj: scala.Any): Boolean = {
+  override def equals(obj: Any): Boolean = {
     this.hashCode() == obj.hashCode()
   }
 }

@@ -2,7 +2,7 @@ package net.sansa_stack.query.spark.graph.jena.resultOp
 
 import scala.collection.JavaConverters._
 
-import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
+import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.Op
@@ -12,9 +12,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 /**
-  * Class that execute the operations of projecting the required variables.
-  * @param op Project operator.
-  */
+ * Class that execute the operations of projecting the required variables.
+ * @param op Project operator.
+ */
 class ResultProject(val op: OpProject) extends ResultOp {
 
   private val tag = "SELECT"
@@ -22,8 +22,8 @@ class ResultProject(val op: OpProject) extends ResultOp {
   private val vars = op.getVars.asScala.toList
 
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
-    input.map{ mapping =>
-      mapping.filter{ case(k,_) => vars.contains(k) }
+    input.map { mapping =>
+      mapping.filter { case (k, _) => vars.contains(k) }
     }
   }
 

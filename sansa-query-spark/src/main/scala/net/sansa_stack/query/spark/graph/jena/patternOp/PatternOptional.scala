@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.patternOp
 
-import scala.collection.JavaConverters._ 
+import scala.collection.JavaConverters._
 
 import net.sansa_stack.query.spark.graph.jena.ExprParser
 import net.sansa_stack.query.spark.graph.jena.expression.Filter
@@ -39,7 +39,7 @@ class PatternOptional(op: OpLeftJoin) extends PatternOp {
       val filters = op.getExprs.getList.asScala.toList.map { expr =>
         new ExprParser(expr).getExpression match {
           case e: Filter => e
-          case _  => throw new UnsupportedOperationException
+          case _ => throw new UnsupportedOperationException
         }
       }
       rightResult = SparkExecutionModel.filter(rightResult, filters)

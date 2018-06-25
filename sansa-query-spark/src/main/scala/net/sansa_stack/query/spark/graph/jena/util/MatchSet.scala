@@ -87,7 +87,7 @@ object MatchSet {
    */
   def localMatch(
     candidateGraph: Graph[candidates, Node],
-    patterns:       Broadcast[List[TriplePattern]]): Graph[candidates, Node] = {
+    patterns: Broadcast[List[TriplePattern]]): Graph[candidates, Node] = {
     candidateGraph.mapVertices {
       case (_, iter) =>
         if (iter.isEmpty) {
@@ -187,8 +187,8 @@ object MatchSet {
    */
   def generateResultRDD(
     candidateGraph: Graph[candidates, Node],
-    patterns:       Broadcast[List[TriplePattern]],
-    spark:          SparkSession): RDD[Result[Node]] = {
+    patterns: Broadcast[List[TriplePattern]],
+    spark: SparkSession): RDD[Result[Node]] = {
     val matchSet = candidateGraph.vertices.filter { case (_, candidate) => candidate.nonEmpty }
       .flatMap {
         case (_, candidates) =>
