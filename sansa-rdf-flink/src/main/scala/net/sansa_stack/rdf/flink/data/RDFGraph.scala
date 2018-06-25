@@ -1,11 +1,10 @@
 package net.sansa_stack.rdf.flink.data
 
-import org.apache.flink.api.scala.{ DataSet, _ }
-import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.flink.model.RDFTriple
 import net.sansa_stack.rdf.flink.utils.DataSetUtils
 import net.sansa_stack.rdf.flink.utils.DataSetUtils.DataSetOps
-import org.apache.jena.graph.{ Node, Node_URI, Node_Concrete }
+import org.apache.flink.api.scala.{ DataSet, _ }
+import org.apache.jena.graph.{ Node, Node_Concrete, Node_URI, Triple }
 
 /**
  * A data structure that comprises a set of triples.
@@ -41,7 +40,6 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
       if (triple.getObject.isVariable) None else Option(triple.getObject.toString))
   }
-  
 
   /**
    * Returns the union of the current RDF graph with the given RDF graph
@@ -68,7 +66,7 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
    *
    * @return the number of triples
    */
-  def size() = {
+  def size(): Long = {
     triples.count()
   }
 
@@ -77,26 +75,30 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
    *
    * @return DataSet of triples
    */
-  def getTriples = triples
+  def getTriples(): DataSet[RDFTriple] =
+    triples
 
   /**
    * Returns a DataSet of subjects
    *
    * @return DataSet of subjects
    */
-  def getSubjects = triples.map(_.getSubject)
+  def getSubjects(): DataSet[Node] =
+    triples.map(_.getSubject)
 
   /**
    * Returns a DataSet of predicates
    *
    * @return DataSet of predicates
    */
-  def getPredicates = triples.map(_.getPredicate)
-  
-   /**
+  def getPredicates(): DataSet[Node] =
+    triples.map(_.getPredicate)
+
+  /**
    * Returns a DataSet of objects
    *
    * @return DataSet of objects
    */
-  def getObjects = triples.map(_.getObject)
+  def getObjects(): DataSet[Node] =
+    triples.map(_.getObject)
 }

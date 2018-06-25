@@ -1,8 +1,10 @@
-language: java
-script:
-  - make test
+language: scala
 sudo: false
 cache:
   directories:
   - $HOME/.m2
-  
+scala:
+  - 2.11.11
+script:
+  - mvn scalastyle:check
+  - mvn test 

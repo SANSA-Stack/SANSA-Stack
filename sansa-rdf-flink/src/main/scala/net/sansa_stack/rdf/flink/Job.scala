@@ -2,10 +2,10 @@ package net.sansa_stack.rdf.flink
 
 import java.io.File
 
+import net.sansa_stack.rdf.flink.data.{ RDFGraphLoader, RDFGraphWriter }
+import net.sansa_stack.rdf.flink.graph.LoadGraph
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment
-import net.sansa_stack.rdf.flink.data.{RDFGraphLoader,RDFGraphWriter}
-import net.sansa_stack.rdf.flink.graph.LoadGraph
 
 object Job {
 
@@ -15,7 +15,7 @@ object Job {
         run(args, config.in, config.out)
       case None =>
         println(parser.usage)
-        //run(null, new File("src/test/scala/rdf.nt"), new File("src/test/scala/out"))
+      // run(null, new File("src/test/scala/rdf.nt"), new File("src/test/scala/out"))
     }
   }
 
@@ -25,16 +25,16 @@ object Job {
 
     // set up the execution environment
     val env = ExecutionEnvironment.getExecutionEnvironment
-    //env.getConfig.disableSysoutLogging()
+    // env.getConfig.disableSysoutLogging()
 
     env.getConfig.setGlobalJobParameters(params)
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromFile(input.getAbsolutePath, env)
-    
+
     val gelly_graph = LoadGraph(graph, env)
     val res = gelly_graph.reverse().getEdges.collect().toList
-    
+
     res.foreach(println(_))
 
     val t = graph.getPredicates
