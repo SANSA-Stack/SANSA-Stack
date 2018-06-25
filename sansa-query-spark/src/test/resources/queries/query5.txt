@@ -1,9 +1,0 @@
-PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX tw: <http://twitter/>
-SELECT ?user ?name
-WHERE {
-    ?user foaf:name ?name .
-    tw:user4 foaf:age ?age1 .
-    ?user foaf:age ?age2 .
-    FILTER((?age2 > ?age1+3) || (?age2 < ?age1-3))
-}
