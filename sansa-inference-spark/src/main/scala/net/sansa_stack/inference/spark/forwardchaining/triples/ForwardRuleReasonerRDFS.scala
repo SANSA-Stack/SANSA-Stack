@@ -10,8 +10,9 @@ import org.apache.jena.graph.Triple
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.SparkContext
 import org.slf4j.LoggerFactory
-
 import scala.collection.mutable
+
+import org.apache.spark.rdd.RDD
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -39,8 +40,10 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
 
     // as an optimization, we can extract all schema triples first which avoids to run on the whole dataset
     // for each schema triple later
-    val schemaTriples = if (extractSchemaTriplesInAdvance) new RDFSSchemaExtractor().extract(triplesRDD)
+    val schemaTriples = if (extractSchemaTriplesInAdvance) new RDFSSchemaExtractor().extract(triplesRDD).cache()
                         else triplesRDD
+    schemaTriples.setName("schema triples")
+//    println(s"#schema: ${schemaTriples.count()}")
 
 
     // 1. we first compute the transitive closure of rdfs:subPropertyOf and rdfs:subClassOf
@@ -49,14 +52,14 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
       * rdfs11 xxx rdfs:subClassOf yyy .
       * yyy rdfs:subClassOf zzz . xxx rdfs:subClassOf zzz .
      */
-    val subClassOfTriples = extractTriples(schemaTriples, RDFS.subClassOf.asNode()) // extract rdfs:subClassOf triples
+    val subClassOfTriples = extractTriples(schemaTriples, RDFS.subClassOf.asNode()).cache() // extract rdfs:subClassOf triples
     val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples, RDFS.subClassOf.asNode()).setName("rdfs11")// mutable.Set()++subClassOfTriples.collect())
 
     /*
         rdfs5 xxx rdfs:subPropertyOf yyy .
               yyy rdfs:subPropertyOf zzz . xxx rdfs:subPropertyOf zzz .
      */
-    val subPropertyOfTriples = extractTriples(schemaTriples, RDFS.subPropertyOf.asNode()) // extract rdfs:subPropertyOf triples
+    val subPropertyOfTriples = extractTriples(schemaTriples, RDFS.subPropertyOf.asNode()).cache() // extract rdfs:subPropertyOf triples
     val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples, RDFS.subPropertyOf.asNode()).setName("rdfs5")// extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
 
     // a map structure should be more efficient
@@ -71,7 +74,9 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
     // split by rdf:type
     val split = triplesRDD.partitionBy(t => t.p == RDF.`type`.asNode)
     var typeTriples = split._1
+    typeTriples.setName("rdf:type triples")
     var otherTriples = split._2
+    otherTriples.setName("other triples")
 
 //    val formatter = java.text.NumberFormat.getIntegerInstance
 //    println("triples" + formatter.format(triplesRDD.count()))
@@ -92,7 +97,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
         .setName("rdfs7")
 
     // add triples
-    otherTriples = otherTriples.union(triplesRDFS7)
+    otherTriples = otherTriples.union(triplesRDFS7).setName("other triples with rdfs7")
 
     // 3. Domain and Range inheritance according to rdfs2 and rdfs3 is computed
 
@@ -125,10 +130,10 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
         .setName("rdfs3")
 
     // rdfs2 and rdfs3 generated rdf:type triples which we'll add to the existing ones
-    val triples23 = triplesRDFS2.union(triplesRDFS3)
+    val triples23 = triplesRDFS2.union(triplesRDFS3).setName("rdfs2 + rdfs3")
 
     // all rdf:type triples here as intermediate result
-    typeTriples = typeTriples.union(triples23)
+    typeTriples = typeTriples.union(triples23).setName("rdf:type + rdfs2 + rdfs3")
 
 
     // 4. SubClass inheritance according to rdfs9
@@ -168,8 +173,9 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
                           subClassOfTriplesTrans,
                           subPropertyOfTriplesTrans,
                           typeTriples,
-                          triplesRDFS7,
+//                          triplesRDFS7,
                           triplesRDFS9))
+      .setName("rdf:type + other + rdfs2 + rdfs3 + rdfs5 + rdfs7 + rdfs9 + rdfs11")
                         .distinct(parallelism)
 
     // we perform also additional rules if enabled
@@ -180,7 +186,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
 
       // rdfs4a: (s p o) => (s rdf:type rdfs:Resource)
       // rdfs4b: (s p o) => (o rdf:type rdfs:Resource) // filter by literals
-     // TODO not sure which version is more effcient, using a FILTER + UNION, or doing it via faltMap but creating Set objects
+     // TODO not sure which version is more efficient, using a FILTER + UNION, or doing it via faltMap but creating Set objects
 //      val rdfs4 = allTriples.map(t => Triple.create(t.s, RDF.`type`.asNode(), RDFS.Resource.asNode()))
 //                    .union(
 //                  allTriples.filter(!_.getObject.isLiteral).map(t => Triple.create(t.o, RDF.`type`.asNode(), RDFS.Resource.asNode())))
