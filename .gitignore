@@ -17,6 +17,7 @@ buildNumber.properties
 .cache-main
 .cache-tests
 .classpath
+#.coveralls.yml
 deptree.txt
 # IntelliJ config
 *.iml
@@ -27,3 +28,5 @@ deptree.txt
 deptree.txt
 # local project specific tmp folder
 tmp
+
+scalastyle-output.xml
