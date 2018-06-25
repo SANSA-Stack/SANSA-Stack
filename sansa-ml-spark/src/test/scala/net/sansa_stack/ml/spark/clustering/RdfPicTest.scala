@@ -33,7 +33,8 @@ class RdfPicTest extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang)(path)
     
     val graph = triples.asStringGraph()
-    val cluster = RDFGraphPowerIterationClustering.apply(spark, graph, "/Cluster/output", "/Cluster/outevl", "/Cluster/outputsim", 4, 10)
+     val cluster = RDFGraphPowerIterationClustering(spark, graph, "/Cluster/output", 4, 10)
+   // val cluster = RDFGraphPowerIterationClustering.apply(spark, graph, , "/Cluster/outevl", "/Cluster/outputsim", 4, 10)
     cluster.collect().foreach(println)
     assert(true)
     
