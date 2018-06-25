@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
 import java.util.{ Arrays, List }
-import java.util.{ Set, HashSet }
+import java.util.{ HashSet, Set }
 
 class UserFeatures extends Serializable {
 
@@ -19,10 +19,9 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
+
   def CheckName_isGlobalRollBackerUser(str: String): Boolean = {
     val isGlobalRollBackerUser: Array[String] =
       Array(".snoopy.", "Addihockey10",
@@ -51,9 +50,7 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
 
   def CheckName_isGlobalStewarUser(str: String): Boolean = {
@@ -368,16 +365,11 @@ class UserFeatures extends Serializable {
 
     flag
   }
-
   def IsDeathDate(str: String): Boolean = {
-
     var flag = false
     if (str.contains("P570")) {
       flag = true
     }
-
     flag
-
   }
-
 }

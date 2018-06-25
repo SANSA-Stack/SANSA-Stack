@@ -2,15 +2,11 @@ package net.sansa_stack.ml.spark.kge.linkprediction.run
 
 import scala.util.Random
 
-import org.apache.spark.sql._
-
-import org.apache.log4j.Logger
-import org.apache.log4j.Level
-
-import org.springframework.util.StopWatch
-
 import net.sansa_stack.rdf.spark.kge.triples._
 import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
+import org.apache.spark.sql._
+import org.apache.log4j.{ Level, Logger }
+import org.springframework.util.StopWatch
 
 object runTesting extends App {
 
@@ -63,19 +59,19 @@ object runTesting extends App {
 
   //  val id1 = conv.entities.select("ID").sample(false,0.2).take(n)
   //  val ind1 = id1.map( row => row(0).asInstanceOf[Long]).toSeq.toDS()
-  //  
+  //
   //  val r1 = conv.getEntitiesByIndex(ind1).persist()
   //  println(" count = ", r1.count)
   //  r1.show()
   //
   //  val id2 = conv.predicates.select("ID").sample(false, 0.2).take(n)
   //  val ind2 = id2.map( row => row(0).asInstanceOf[Long]).toSeq.toDS()
-  //  
+  //
   //  val r2 = conv.getPredicatesByIndex(ind2).persist()
   //  println(" count = ", r2.count)
   //  r2.show()
-  //  
-  //  
+  //
+  //
   println("\n\n------ TESTING -----")
 
   lazy val smp1 = trp.triples.take(n)

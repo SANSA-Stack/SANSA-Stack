@@ -34,16 +34,16 @@ object BorderFlow {
 
   def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputevlsoft: String, outputevlhard: String) = {
 
-    /*
-	 * undirected graph : orient =0
-	 * directed graph : orient =1.
-	 *
-	 *  Jaccard similarity measure : selectYourSimilarity = 0
-	 *  Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 1
-	 *  The Ratio model similarity : selectYourSimilarity = 2
-	 *  Batet similarity measure : selectYourSimilarity = 3
-	 *
-	 */
+    /**
+     * undirected graph : orient =0
+     * directed graph : orient =1.
+     *
+     *  Jaccard similarity measure : selectYourSimilarity = 0
+     *  Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 1
+     *  The Ratio model similarity : selectYourSimilarity = 2
+     *  Batet similarity measure : selectYourSimilarity = 3
+     *
+     */
     val orient = 1
     val selectYourSimilarity = 0
 
@@ -77,16 +77,15 @@ object BorderFlow {
 
       var X: List[Long] = sort.distinct.collect().toList.distinct
 
-      /*
-	 * Computing logarithm based 2
-	 */
+      /**
+       * Computing logarithm based 2
+       */
       val LOG2 = math.log(2)
       val log2 = { x: Double => math.log(x) / LOG2 }
 
-      /*
-	 * Difference between two set of vertices, used in different similarity measures
-	 */
-
+      /**
+       * Difference between two set of vertices, used in different similarity measures
+       */
       def difference(a: Long, b: Long): Double = {
         val ansec = neighbor.lookup(a).distinct.head.toSet
         val ansec1 = neighbor.lookup(b).distinct.head.toSet
@@ -97,9 +96,9 @@ object BorderFlow {
         differ.size.toDouble
       }
 
-      /*
-	 * Intersection of two set of vertices, used in different similarity measures
-	 */
+      /**
+       * Intersection of two set of vertices, used in different similarity measures
+       */
 
       def intersection(a: Long, b: Long): Double = {
         val inters = neighbor.lookup(a).distinct.head.toSet
@@ -110,10 +109,9 @@ object BorderFlow {
         rst.size.toDouble
       }
 
-      /*
-			 * Union of two set of vertices, used in different similarity measures
-			 */
-
+      /**
+       * Union of two set of vertices, used in different similarity measures
+       */
       def union(a: Long, b: Long): Double = {
         val inters = neighbor.lookup(a).distinct.head.toSet
         val inters1 = neighbor.lookup(b).distinct.head.toSet
@@ -127,9 +125,9 @@ object BorderFlow {
         var s = 0.0
         if (c == 0) {
 
-          /*
-			 * Jaccard similarity measure
-			 */
+          /**
+           * Jaccard similarity measure
+           */
 
           val sim = intersection(a, b) / union(a, b).toDouble
           if (sim == 0.0) { s = (1 / vertex) }
@@ -139,9 +137,9 @@ object BorderFlow {
 
         if (c == 1) {
 
-          /*
-			 * Rodríguez and Egenhofer similarity measure
-			 */
+          /**
+           * Rodríguez and Egenhofer similarity measure
+           */
 
           var g = 0.8
 
@@ -151,9 +149,10 @@ object BorderFlow {
 
         }
         if (c == 2) {
-          /*
-			 * The Ratio model similarity
-			 */
+
+          /**
+           * The Ratio model similarity
+           */
           var alph = 0.5
           var beth = 0.5
 
@@ -164,9 +163,10 @@ object BorderFlow {
         }
 
         if (c == 3) {
-          /*
-			 * Batet similarity measure
-			 */
+
+          /**
+           * Batet similarity measure
+           */
 
           val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
           val sim = log2(cal.toDouble)
@@ -268,7 +268,7 @@ object BorderFlow {
 
       }
 
-      //computing F(X) for BorderFlow
+      // computing F(X) for BorderFlow
 
       def fX(x: List[Long]): Double = {
         var jaccardX = 0.0
@@ -343,7 +343,7 @@ object BorderFlow {
 
         //  ( ( listOfNb(listOfB(x)).intersect(x)).size.toDouble / (listOfNb(listOfB(x)).intersect(listOfN(x))).size.toDouble)
 
-        //(makeomegaB(b,x) / makeomegaB(b,n))
+        // (makeomegaB(b,x) / makeomegaB(b,n))
       }
 
       def omega(u: Long, x: List[Long]): Double = {
@@ -862,10 +862,6 @@ object BorderFlow {
 
     val rdf = clusterRdd.map(x => makerdf(x))
     val rdfRDD = spark.sparkContext.parallelize(rdf)
-
-    /*
-			 * save as Text file
-			 */
 
     rdfRDD.saveAsTextFile(output)
 
