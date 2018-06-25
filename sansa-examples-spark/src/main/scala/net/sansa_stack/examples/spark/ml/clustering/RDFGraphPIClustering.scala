@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream
 import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
+import net.sansa_stack.rdf._
 import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 
 object RDFGraphPIClustering {
@@ -15,17 +16,17 @@ object RDFGraphPIClustering {
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.out, config.outevl, config.outputsim, config.k, config.maxIterations)
+        run(config.in, config.out, config.k, config.maxIterations)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: String, output: String, outevl: String, outputsim: String, k: Int, maxIterations: Int): Unit = {
+  def run(input: String, output: String, k: Int, maxIterations: Int): Unit = {
 
     val spark = SparkSession.builder
       .appName(s"Power Iteration Clustering example ( $input )")
-      .master("local[*]")
+      .master("spark://172.18.160.16:3077")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
     System.setProperty("spark.akka.frameSize", "2000")
@@ -40,15 +41,15 @@ object RDFGraphPIClustering {
     
     val graph = triples.asStringGraph()
     
-    RDFGraphPowerIterationClustering(spark, graph, output, outevl, outputsim, k, maxIterations)
-    
+    val cluster = RDFGraphPowerIterationClustering(spark, graph, output, k, maxIterations)
+    cluster.saveAsTextFile(output)
 
     spark.stop
 
   }
   
 
-  case class Config(in: String = "", out: String = "", outevl: String = "", outputsim: String = "", k: Int = 2, maxIterations: Int = 5)
+  case class Config(in: String = "", out: String = "", k: Int = 2, maxIterations: Int = 5)
 
   val defaultParams = Config()
 
@@ -64,14 +65,6 @@ object RDFGraphPIClustering {
       action((x, c) => c.copy(out = x)).
       text("the output directory")
 
-    opt[String]('e', "outevl").optional().valueName("<directory>").
-      action((x, c) => c.copy(outevl = x)).
-      text("the outputevl directory")
-
-    opt[String]('s', "outputsim").optional().valueName("<directory>").
-      action((x, c) => c.copy(outputsim = x)).
-      text("the outputevl directory")
-      
 
     opt[Int]('k', "k")
       .text(s"number of circles (/clusters), default: ${defaultParams.k}")
