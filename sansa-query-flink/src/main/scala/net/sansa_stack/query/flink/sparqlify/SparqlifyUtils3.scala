@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.StrictLogging
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
 import net.sansa_stack.rdf.common.partition.schema._
-import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
+import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.{ CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl }
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
@@ -36,8 +36,8 @@ object SparqlifyUtils3
         logger.debug("Processing RdfPartition: " + p)
         val vd = SparqlifyUtils2.createViewDefinition(p)
         logger.debug("Created view definition: " + vd)
-        val tableName = vd.getRelation match {
-          case o: SqlOpTable => o.getTableName
+        val tableName = vd.getLogicalTable match {
+          case o: LogicalTableTableName => o.getTableName
           case _ => throw new RuntimeException("Table name required - instead got: " + vd)
         }
         val q = p.layout.schema
