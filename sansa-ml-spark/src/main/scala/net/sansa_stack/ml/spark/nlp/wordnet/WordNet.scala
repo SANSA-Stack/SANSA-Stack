@@ -8,7 +8,7 @@
  *  WordNet::Similarity of Ted Peterson
  *  and https://github.com/sujitpal/scalcium
  *  and ws4j
- *  and ntlk project
+ *  and nltk project
 */
 package net.sansa_stack.ml.spark.nlp.wordnet
 
@@ -32,6 +32,12 @@ object WordNet {
   * WordNet class that provide WordNet related basic services
   */
 class WordNet extends Serializable {
+
+  /**
+    * Returns an instance of the WordNet dictionary used in the package
+    * @return
+    */
+  def getDict: Dictionary = WordNet.dict
 
   /**
     * Returns a Synset belonging to a lemma String

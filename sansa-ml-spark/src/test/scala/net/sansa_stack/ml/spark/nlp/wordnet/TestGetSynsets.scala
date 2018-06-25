@@ -4,21 +4,25 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.FunSuite
 import net.sf.extjwnl.data._
 
-class TestGetSynsets  extends FunSuite with DataFrameSuiteBase{
+class TestGetSynsets extends FunSuite with DataFrameSuiteBase {
 
-  test("If The WordNEt dictionary is correctly installed synsets must not be null ") {
+  test("If The WordNet dictionary is correctly installed synsets must not be null ") {
 
-    val wn = new WordNet
+    try {
+      val wn = new WordNet
+      val dict = wn.getDict
+      // getting a synset by a word and index
 
-    // getting a synset by a word and index
+      val thing1 = wn.getSynset("thing", POS.NOUN, 1)
 
-    val thing1 = wn.getSynset("thing", POS.NOUN, 1)
+      // getting a list of synsets by a word
 
-    // getting a list of synsets by a word
+      val thing2 = wn.getSynsets("thing", POS.NOUN).head
 
-    val thing2 = wn.getSynsets("thing", POS.NOUN).head
-
-    assert(thing1 != null)
-    assert(thing2 != null)
+      assert(thing1 != null)
+      assert(thing2 != null)
+    } catch {
+      case e: ExceptionInInitializerError => println("The WordNet dictionary is not installed, please check the readme for instructions to enable it.")
+    }
   }
 }
