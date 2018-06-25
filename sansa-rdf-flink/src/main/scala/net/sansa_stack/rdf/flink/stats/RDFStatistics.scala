@@ -1,16 +1,18 @@
 package net.sansa_stack.rdf.flink.stats
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
-import net.sansa_stack.rdf.flink.utils.{ Logging, StatsPrefixes }
-import net.sansa_stack.rdf.flink.data.RDFGraph
-import scala.reflect.ClassTag
-import net.sansa_stack.rdf.flink.model.RDFTriple
-import org.apache.flink.api.common.typeinfo.TypeInformation
-import org.apache.flink.api.scala.DataSet
-import org.apache.flink.api.scala._
-import java.io.StringWriter
 import java.io.File
+import java.io.StringWriter
+
+import scala.reflect.ClassTag
+
+import net.sansa_stack.rdf.flink.data.RDFGraph
+import net.sansa_stack.rdf.flink.model.RDFTriple
+import net.sansa_stack.rdf.flink.utils.{ Logging, StatsPrefixes }
+import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.api.scala._
+import org.apache.flink.api.scala.DataSet
 import org.apache.flink.core.fs.FileSystem
+import org.apache.jena.graph.{ Node, Triple }
 
 class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
@@ -52,25 +54,25 @@ class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
 }
 
 object RDFStatistics {
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new RDFStatistics(rdfgraph, env) //.run()
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): RDFStatistics = new RDFStatistics(rdfgraph, env)
 }
 
 class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  //?p=rdf:type && isIRI(?o)
-  def Filter() = rdfgraph.triples.filter(f =>
+  // ?p=rdf:type && isIRI(?o)
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
     f.predicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.`object`.isURI())
 
-  //M[?o]++ 
-  def Action() = Filter().map(f => f.`object`)
+  // M[?o]++
+  def Action(): AggregateDataSet[(Node, Int)] = Filter().map(f => f.`object`)
     .map(f => (f, 1))
     .groupBy(0)
     .sum(1)
 
-  //top(M,100)
-  def PostProc() = Action().collect().sortBy(_._2).take(100)
+  // top(M,100)
+  def PostProc(): Seq[(Node, Int)] = Action().collect().sortBy(_._2).take(100)
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
 
     var triplesString = new Array[String](1)
     triplesString(0) = "\nvoid:classPartition "
@@ -87,24 +89,24 @@ class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serial
 }
 object Used_Classes {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Used_Classes(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): Used_Classes = new Used_Classes(rdfgraph, env)
 
 }
 
 class Classes_Defined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  //?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
-  def Filter() = rdfgraph.triples.filter(f =>
+  // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
     (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.RDFS_CLASS))
       || (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.OWL_CLASS))
       && !f.getSubject.isURI())
 
-  //M[?o]++ 
-  def Action() = Filter().map(_.getSubject).distinct()
+  // M[?o]++
+  def Action(): DataSet[Node] = Filter().map(_.getSubject).distinct()
 
-  def PostProc() = Action().count()
+  def PostProc(): Long = Action().count()
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
     var cd = new Array[String](1)
     cd(0) = "\nvoid:classes  " + PostProc() + ";"
     env.fromCollection(cd)
@@ -112,20 +114,20 @@ class Classes_Defined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Ser
 }
 object Classes_Defined {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new Classes_Defined(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): Classes_Defined = new Classes_Defined(rdfgraph, env)
 }
 
 class PropertiesDefined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter() = rdfgraph.triples.filter(f =>
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
     (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.OWL_OBJECT_PROPERTY))
       || (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.RDF_PROPERTY))
       && !f.getSubject.isURI())
-  def Action() = Filter().map(_.getPredicate).distinct()
+  def Action(): DataSet[Node] = Filter().map(_.getPredicate).distinct()
 
-  def PostProc() = Action().count()
+  def PostProc(): Long = Action().count()
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
     var cd = new Array[String](1)
     cd(0) = "\nvoid:properties  " + PostProc() + ";"
     env.fromCollection(cd)
@@ -133,23 +135,23 @@ class PropertiesDefined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends S
 }
 object PropertiesDefined {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new PropertiesDefined(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): PropertiesDefined = new PropertiesDefined(rdfgraph, env)
 }
 
 class PropertyUsage(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter() = rdfgraph.triples
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples
 
-  //M[?p]++
-  def Action() = Filter().map(_.getPredicate)
+  // M[?p]++
+  def Action(): AggregateDataSet[(Node, Int)] = Filter().map(_.getPredicate)
     .map(f => (f, 1))
     .groupBy(0)
     .sum(1)
 
-  //top(M,100)
-  def PostProc() = Action().collect().sortBy(_._2).take(100)
+  // top(M,100)
+  def PostProc(): Seq[(Node, Int)] = Action().collect().sortBy(_._2).take(100)
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
 
     var triplesString = new Array[String](1)
     triplesString(0) = "\nvoid:propertyPartition "
@@ -166,19 +168,19 @@ class PropertyUsage(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
 }
 object PropertyUsage {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new PropertyUsage(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): PropertyUsage = new PropertyUsage(rdfgraph, env)
 }
 
 class DistinctEntities(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter() = rdfgraph.triples.filter(f =>
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
     (f.getSubject.isURI() && f.getPredicate.isURI() && f.getObject.isURI()))
 
-  def Action() = Filter().distinct()
+  def Action(): DataSet[RDFTriple] = Filter().distinct()
 
-  def PostProc() = Action().count()
+  def PostProc(): Long = Action().count()
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
     var ents = new Array[String](1)
     ents(0) = "\nvoid:entities  " + PostProc() + ";"
     env.fromCollection(ents)
@@ -186,18 +188,18 @@ class DistinctEntities(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object DistinctEntities {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctEntities(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): DistinctEntities = new DistinctEntities(rdfgraph, env)
 }
 
 class DistinctSubjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter() = rdfgraph.triples.filter(f => f.getSubject.isURI())
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f => f.getSubject.isURI())
 
-  def Action() = Filter().distinct()
+  def Action(): DataSet[RDFTriple] = Filter().distinct()
 
-  def PostProc() = Action().count()
+  def PostProc(): Long = Action().count()
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
     var ents = new Array[String](1)
     ents(0) = "\nvoid:distinctSubjects  " + PostProc() + ";"
     env.fromCollection(ents)
@@ -205,18 +207,18 @@ class DistinctSubjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object DistinctSubjects {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctSubjects(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): DistinctSubjects = new DistinctSubjects(rdfgraph, env)
 }
 
 class DistinctObjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter() = rdfgraph.triples.filter(f => f.getObject.isURI())
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f => f.getObject.isURI())
 
-  def Action() = Filter().distinct()
+  def Action(): DataSet[RDFTriple] = Filter().distinct()
 
-  def PostProc() = Action().count()
+  def PostProc(): Long = Action().count()
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
     var ents = new Array[String](1)
     ents(0) = "\nvoid:distinctObjects  " + PostProc() + ";"
     env.fromCollection(ents)
@@ -224,35 +226,35 @@ class DistinctObjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Ser
 }
 object DistinctObjects {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new DistinctObjects(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): DistinctObjects = new DistinctObjects(rdfgraph, env)
 }
 
 class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter() = rdfgraph.triples
+  def Filter(): DataSet[RDFTriple] = rdfgraph.triples
 
-  def Action(node: org.apache.jena.graph.Node) = Filter().map(f => node.getNameSpace())
+  def Action(node: Node): DataSet[String] = Filter().map(f => node.getNameSpace())
 
-  def SubjectVocabulariesAction() = Filter().filter(f => f.getSubject.isURI()).map(f => (f.getSubject.getNameSpace()))
-  def SubjectVocabulariesPostProc() = SubjectVocabulariesAction()
+  def SubjectVocabulariesAction(): DataSet[String] = Filter().filter(f => f.getSubject.isURI()).map(f => (f.getSubject.getNameSpace()))
+  def SubjectVocabulariesPostProc(): AggregateDataSet[(String, Int)] = SubjectVocabulariesAction()
     .map(f => (f, 1)).groupBy(0)
     .sum(1)
 
-  def PredicateVocabulariesAction() = Filter().filter(f => f.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace()))
-  def PredicateVocabulariesPostProc() = PredicateVocabulariesAction()
+  def PredicateVocabulariesAction(): DataSet[String] = Filter().filter(f => f.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace()))
+  def PredicateVocabulariesPostProc(): AggregateDataSet[(String, Int)] = PredicateVocabulariesAction()
     .map(f => (f, 1)).groupBy(0)
     .sum(1)
 
-  def ObjectVocabulariesAction() = Filter().filter(f => f.getObject.isURI()).map(f => (f.getObject.getNameSpace()))
-  def ObjectVocabulariesPostProc() = ObjectVocabulariesAction()
+  def ObjectVocabulariesAction(): DataSet[String] = Filter().filter(f => f.getObject.isURI()).map(f => (f.getObject.getNameSpace()))
+  def ObjectVocabulariesPostProc(): AggregateDataSet[(String, Int)] = ObjectVocabulariesAction()
     .map(f => (f, 1)).groupBy(0)
     .sum(1)
 
-  def PostProc(node: org.apache.jena.graph.Node) = Filter().map(f => node.getNameSpace())
+  def PostProc(node: Node): AggregateDataSet[(String, Int)] = Filter().map(f => node.getNameSpace())
     .map(f => (f, 1)).groupBy(0)
     .sum(1)
 
-  def Voidify() = {
+  def Voidify(): DataSet[String] = {
     var ents = new Array[String](1)
     ents(0) = "\nvoid:vocabulary  <" + SubjectVocabulariesAction().union(PredicateVocabulariesAction()).union(ObjectVocabulariesAction()).distinct().collect.take(15).mkString(">, <") + ">;"
     env.fromCollection(ents)
@@ -260,9 +262,5 @@ class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object SPO_Vocabularies {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment) = new SPO_Vocabularies(rdfgraph, env)
+  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): SPO_Vocabularies = new SPO_Vocabularies(rdfgraph, env)
 }
-
-
-
-

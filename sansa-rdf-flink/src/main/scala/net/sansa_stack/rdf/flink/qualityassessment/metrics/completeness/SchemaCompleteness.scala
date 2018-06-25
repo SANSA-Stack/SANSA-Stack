@@ -1,11 +1,11 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.flink.api.scala.DataSet
-import org.apache.flink.api.scala._
-import org.apache.jena.graph.{ Triple, Node }
-import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
 import net.sansa_stack.rdf.flink.data.RDFGraph
+import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
+import org.apache.flink.api.scala._
+import org.apache.flink.api.scala.DataSet
+import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.jena.graph.{ Node, Triple }
 
 /**
  * This metric measures the ratio of the number of classes and relations
@@ -15,18 +15,18 @@ import net.sansa_stack.rdf.flink.data.RDFGraph
 object SchemaCompleteness {
   @transient var env: ExecutionEnvironment = _
 
-  def apply(rdfgraph: RDFGraph) = {
+  def apply(rdfgraph: RDFGraph): Double = {
 
-    /*
-     -->Rule->Filter-->
-   		select (?p2, o) where ?s p=rdf:type isIRI(?o); ?p2 ?o2
-			-->Action-->
-			S+=?p2 && SC+=?o
-			-->Post-processing-->
-			|S| intersect |SC| / |SC|
-   */
+    /**
+     * -->Rule->Filter-->
+     * select (?p2, o) where ?s p=rdf:type isIRI(?o); ?p2 ?o2
+     * -->Action-->
+     * S+=?p2 && SC+=?o
+     * -->Post-processing-->
+     * |S| intersect |SC| / |SC|
+     */
     val dataset = rdfgraph.triples
-    
+
     val p2_o = dataset.filter(f =>
       f.getPredicate.getLocalName.equals("type")
         && f.getObject.isURI())
@@ -42,5 +42,5 @@ object SchemaCompleteness {
     if (SC_count > 0) S_intersection_SC_count.toDouble / SC_count.toDouble
     else 0.00
   }
-  
+
 }

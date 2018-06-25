@@ -1,12 +1,13 @@
 package net.sansa_stack.rdf.flink.partition.semantic
 
-import org.apache.flink.api.scala.DataSet
-import net.sansa_stack.rdf.flink.data.RDFGraph
-import org.apache.flink.streaming.api.scala._
-import org.apache.flink.api.common.typeinfo.TypeInformation
 import scala.reflect.ClassTag
+
+import net.sansa_stack.rdf.flink.data.RDFGraph
 import net.sansa_stack.rdf.flink.model.RDFTriple
 import org.apache.flink.api.common.operators.Order
+import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.api.scala.DataSet
+import org.apache.flink.streaming.api.scala._
 
 /*
  * RdfPartition - semantic partition of and RDF graph
@@ -17,7 +18,7 @@ import org.apache.flink.api.common.operators.Order
 object RdfPartition extends Serializable {
 
   implicit def partitionGraph[T <: RDFGraph: TypeInformation: ClassTag](
-    symbol:   Map[String, String],
+    symbol: Map[String, String],
     rdfgraph: RDFGraph): DataSet[String] = {
     // partition the data
     val partitionedData = rdfgraph.triples
