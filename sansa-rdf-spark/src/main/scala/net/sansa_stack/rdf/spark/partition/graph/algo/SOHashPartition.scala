@@ -1,11 +1,10 @@
 package net.sansa_stack.rdf.spark.partition.graph.algo
 
-import scala.reflect.ClassTag
-
-import net.sansa_stack.rdf.spark.partition.graph.utils.{ TripleGroup, TripleGroupType }
-import org.apache.spark.graphx.{ Edge, Graph, PartitionID, PartitionStrategy }
-import org.apache.spark.rdd.RDD
+import net.sansa_stack.rdf.spark.partition.graph.utils.{Groups, VerticesPlacement}
+import org.apache.spark.HashPartitioner
+import org.apache.spark.graphx.{Graph, PartitionID}
 import org.apache.spark.sql.SparkSession
+import scala.reflect.ClassTag
 
 /**
  * Expanding the partitions by assigning subject-object triple group of each vertex to partitions
@@ -54,23 +53,17 @@ class SOHashPartition[VD: ClassTag, ED: ClassTag](
     this
   }
 
+  val groups = new Groups(graph, numIterations, session)
+
   override def partitionBy(): Graph[VD, ED] = {
-    val stg = new TripleGroup(graph, TripleGroupType.so)
-    val edgesBroadcast = session.sparkContext.broadcast(stg.edgesGroupSet.collectAsMap)
-    val e = new Array[RDD[Edge[ED]]](numIterations)
-    val bhp = graph.partitionBy(PartitionStrategy.EdgePartition1D, numPartitions).cache()
-    for (i <- 0 until numIterations) {
-      if (i == 0) {
-        e(i) = bhp.edges
-      } else {
-        e(i) = e(i - 1).mapPartitions { iter =>
-          val initialEdges = iter.toArray
-          val expandEdges = initialEdges.map(e => e.dstId).distinct.flatMap(vid =>
-            edgesBroadcast.value.get(vid)).flatten
-          initialEdges.++(expandEdges).distinct.toIterator
-        }
-      }
-    }
-    Graph[VD, ED](bhp.vertices, e(numIterations - 1))
+    val g = groups.bothGroup.cache()
+    val edges = g.vertices.flatMap{ case(vid, group) =>
+      val pid = VerticesPlacement.placeById(vid, numPartitions)
+      group.map(e => (pid, e))}
+      .distinct().partitionBy(new HashPartitioner(numPartitions))
+      .map(_._2).cache()
+    val vertices = graph.vertices.cache()
+    g.unpersist()
+    Graph.apply(vertices, edges)
   }
 }
