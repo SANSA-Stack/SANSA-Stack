@@ -32,173 +32,58 @@ import org.apache.commons.math3.util.MathUtils
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.graphx._
 import java.net.URI
+import org.apache.spark.storage.StorageLevel
+import org.apache.spark.graphx._
+import scala.collection.mutable
 
 object RDFGraphPowerIterationClustering {
-	
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 5): RDD[(Int, String)] = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, k: Int = 2, maxIterations: Int = 5) = {
 
-    /**
-     *
-     *
-     * Jaccard similarity measure : selectYourSimilarity = 0
-     * Batet similarity measure : selectYourSimilarity = 1
-     * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
-     * The Contrast model similarity : selectYourSimilarity = 3
-     * The Ratio model similarity : selectYourSimilarity = 4
-     */
-
-    val selectYourSimilarity = 0
+    
 
     def clusterRdd(): RDD[(Int, String)] = {
-      SimilaritesInPIC(selectYourSimilarity)
+      SimilaritesInPIC()
     }
 
-    def SimilaritesInPIC(f: Int): RDD[(Int, String)] = {
-	    
+    def SimilaritesInPIC(): RDD[(Int, String)] = {
+
       /*
 	 * Collect all the edges of the graph
 	*/
-      val edge = graph.edges.persist()
+      val edge = graph.edges
       val nodes = graph.vertices
 
-      /*
-	 * Collect neighbor IDs of all the vertices
-	 */
-
-      val neighbors = graph.collectNeighborIds(EdgeDirection.Either).persist()
       /*
 	 * Collect distinct vertices of the graph
 	 *
 	 */
 
-      val node = nodes.map(e =>(e._1))
-      val lenghtOfNodes = node.count()
-      /*
-	 * Difference between two set of vertices, used in different similarity measures
-	 */
-      def difference(a: Array[VertexId], b: Array[VertexId]): Double = {
+      val node = nodes.map(e => (e._1))
 
-        if (a.length == 0) { return 0.0 }
-        val differ = a.diff(b)
-        if (differ.isEmpty) { return 0.0 }
+      def Similarity(a: Int, b: Int): Double = {
 
-        differ.size.toDouble
+        val union = (a + b).toDouble
+        val jac = 1 / union
+        jac
+
       }
-
-      /*
-	 * Intersection of two set of vertices, used in different similarity measures
-	 */
-      def intersection(a: Array[VertexId], b: Array[VertexId]): Double = {
-
-        val rst = a.intersect(b)
-
-        if (rst.isEmpty) { return 0.0 }
-        rst.size.toDouble
-      }
-
-      /*
-			 * Union of two set of vertices, used in different similarity measures
-			 */
-      def union(a: Array[VertexId], b: Array[VertexId]): Double = {
-
-        val rst = a.union(b).distinct
-
-        if (rst.isEmpty) { return 0.0 }
-
-        rst.size.toDouble
-      }
-      /*
-			 * computing algorithm based 2
-			 */
-      val LOG2 = math.log(2)
-      val log2 = { x: Double => math.log(x) / LOG2 }
-
-      /*
-			 * computing similarities
-			 */
-
-      def selectSimilarity(a: Array[VertexId], b: Array[VertexId], c: Int): Double = {
-        var s = 0.0
-        if (c == 0) {
-
-          /*
-			 * Jaccard similarity measure
-			 */
-
-          val sim = intersection(a, b) / union(a, b).toDouble
-
-          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
-          else { s = sim }
-
-        }
-        if (c == 1) {
-
-          /*
-			 * Rodríguez and Egenhofer similarity measure
-			 */
-
-          var g = 0.8
-
-          val sim = (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
-          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
-          else { s = sim }
-
-        }
-        if (c == 2) {
-          /*
-			 * The Ratio model similarity
-			 */
-          var alph = 0.5
-          var beth = 0.5
-
-          val sim = ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
-          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
-          else { s = sim }
-
-        }
-
-        if (c == 3) {
-          /*
-			 * Batet similarity measure
-			 */
-
-          val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
-          val sim = log2(cal.toDouble)
-          if (sim == 0.0) { s = (1 / lenghtOfNodes) }
-          else { s = sim }
-
-        }
-        s
-      }
-      /*
-			 * Calculate similarities between different pair of vertices in the given graph
-			 */
 
       val verticesOfEdge = edge.map(e => (e.srcId, e.dstId))
-      val neighborsJoinToEdge = neighbors.keyBy(e => (e._1)).join(verticesOfEdge).map(e => e._2).keyBy(e => e._2).join(neighbors)
-      val weightedGraph = neighborsJoinToEdge.map(e => { (e._2._1._1._1.toLong, e._1.toLong, selectSimilarity(e._2._1._1._2, e._2._2, f)) })
+      val reverseverticesOfEdge = verticesOfEdge.map(v => {
+        val v1 = v._1
+        val v2 = v._2
+        (v2, v1)
+      })
+      val verticesOfEdgeWithoutDirection = verticesOfEdge.union(reverseverticesOfEdge).distinct()
 
-      neighbors.unpersist()
-      edge.unpersist()
-      
-      weightedGraph.saveAsTextFile(outputsim)
-      
-      def SI(a: (Double,Double)): Double = {
-        var s = 0.0
-        
-        if (a._1 > a._2) {
-          s = 1 - (a._2 / a._1)
-        }
-        if (a._1 == a._2) {
-          s = 0.0
-        }
-        if (a._1 < a._2) {
-          s = (a._1 / a._2) - 1
-        }
-        
-        s
-      }
+      val initialSetE = mutable.ArrayBuffer.empty[(VertexId)]
+      val addToSetE = (s: mutable.ArrayBuffer[(VertexId)], v: (VertexId)) => s += v
+      val mergePartitionSetsE = (p1: mutable.ArrayBuffer[(VertexId)], p2: mutable.ArrayBuffer[(VertexId)]) => p1.++=(p2)
+      val neighbors = verticesOfEdgeWithoutDirection.aggregateByKey(initialSetE)(addToSetE, mergePartitionSetsE)
+      val lenghtNeighbors = neighbors.map(m => (m._1, m._2.length))
+      val neighborsJoinToEdge = lenghtNeighbors.join(verticesOfEdgeWithoutDirection).keyBy(e => e._2._2).join(lenghtNeighbors)
+      val weightedGraph = neighborsJoinToEdge.map(e => { (e._2._1._1.toLong, e._1.toLong, Similarity(e._2._1._2._1, e._2._2)) })
 
       def pic() = {
         val pic = new PowerIterationClustering()
@@ -214,122 +99,124 @@ object RDFGraphPowerIterationClustering {
 			 */
       def run() = model
 
-      val vts = nodes.map(e =>(e._1.toLong , e._2))
-     
-     
-     val modelAssignments = model.assignments
-    
-     val rddClusters= modelAssignments.map(f => {
-      
-       val id = f.id
-       val fcluster = f.cluster
-       (id,fcluster)})
-     
-      val findIterable = rddClusters.join(vts).map(_._2)
-    
-    findIterable.saveAsTextFile(output)
+      val modelAssignments = model.assignments
 
-   /* val joinv1 = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
-    val joinv2 = weightedGraph.keyBy(_._2).join(rddClusters).keyBy(_._2._1._1).join(rddClusters)
-    val simnode = joinv1.map(e => {
-      var clid = 0
-      val v1 = e._2._1._1
-      val v2 = e._1
-      val sim = e._2._1._2._1._3
-      val clid1 = e._2._1._2._2
-      val clid2 = e._2._2
-      if(clid1 == clid2){clid = 1}
-      if(clid1 != clid2){clid = 2}
-      (v1,v2,sim,clid,clid1,clid2)
-    })
-    
-    val simnode1 = joinv2.map(e => {
-      var clid = 0
-      
-      val v1 = e._1
-      val v2 = e._2._1._1
-      val sim = e._2._1._2._1._3
-      val clid1 = e._2._2
-      val clid2 = e._2._1._2._2
-      
-      if(clid1 == clid2){clid = 1}
-      if(clid1 != clid2){clid = 2}
-      (v1,v2,sim,clid,clid1,clid2)
-    })
-   
-   
-   
-      
-      val lenght1 = simnode.keyBy(_._6).join(findIterable).map(e => {
-        val l = e._2._2.size
-        val sim = e._2._1._3
-        val avg = sim/l
+      val rddClusters = modelAssignments.map(f => {
+
+        val id = f.id
+        val fcluster = f.cluster
+        (id, fcluster)
+      })
+
+      def SI(a: (Double, Double)): Double = {
+        var s = 0.0
+
+        if (a._1 > a._2) {
+          s = 1 - (a._2 / a._1)
+        }
+        if (a._1 == a._2) {
+          s = 0.0
+        }
+        if (a._1 < a._2) {
+          s = (a._1 / a._2) - 1
+        }
+
+        s
+      }
+
+      val joinv = weightedGraph.keyBy(_._1).join(rddClusters).keyBy(_._2._1._2).join(rddClusters)
+
+      val simnode = joinv.map(e => {
+        var clid = 0
         val v1 = e._2._1._1
-        val v2 = e._2._1._2
-        val aorb = e._2._1._4
-        val i1 = e._2._1._5
-        val i2 = e._2._1._6
-        (v1,v2,avg,aorb,i1,i2)
-        }).groupBy(_._1)
-        val lenght2 = simnode1.keyBy(_._5).join(findIterable).map(e => {
-        val l = e._2._2.size
-        val sim = e._2._1._3
-        val avg = sim/l
-        val v1 = e._2._1._1
-        val v2 = e._2._1._2
-        val aorb = e._2._1._4
-        val i1 = e._2._1._5
-        val i2 = e._2._1._6
-        (v2,v1,avg,aorb,i2,i1)
-        }).groupBy(_._1)
-      
-   
-     
-      val allLinkstoNodeV = lenght1.join(lenght2).map(e => {
-        val l1 = e._2._1.toArray
-        val l2 = e._2._2.toArray
-        val l1l2 = l1.union(l2).distinct.toIterable.partition(_._4 == 1)
-        
-        val par1 = l1l2._1.map(_._3)
-        val par2 = l1l2._2.map(_._3)
-        val par3 = l1l2._2.groupBy(g => {(g._5 , g._6)})
-        
-        val ps = par3.mapValues(_.map(_._3).sum)
-        
-        var bi = 0.0
-        if(ps.size > 0) {bi = ps.maxBy(_._2)._2}
-        val a = par1.sum
-        val b = par2.sum
-        val si = SI((a,bi))
-        val v = e._1
-        (si)
-      }).sum()
-       * 
-      */
-      val silouhette = 0.0
-      
-      val evaluateString: List[String] = List(silouhette.toString())
-      val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
-      evaluateStringRDD.saveAsTextFile(outevl)
-     
+        val v2 = e._1
+        val sim = e._2._1._2._1._3
+        val clid1 = e._2._1._2._2
+        val clid2 = e._2._2
+        if (clid1 == clid2) { clid = 1 }
+        if (clid1 != clid2) { clid = 2 }
+        (v1, v2, sim, clid, clid1, clid2)
+      })
+      val clusterA = simnode.filter(_._4 == 1)
+      val clusterC = simnode.filter(_._4 == 2)
+      val v1clusterA = clusterA.map(m => {
+        val m1 = m._1
+        val m2 = m._3
+        (m1, m2)
+      })
 
-      //println(s"averageSil: $averageSil\n")
+      val initialList1 = mutable.ListBuffer.empty[(Double)]
+      val addToList1 = (s: mutable.ListBuffer[(Double)], v: (Double)) => s += v
+      val mergePartitionLists1 = (p1: mutable.ListBuffer[(Double)], p2: mutable.ListBuffer[(Double)]) => p1.++=(p2)
+      val uniqueByKeyA = v1clusterA.aggregateByKey(initialList1)(addToList1, mergePartitionLists1)
 
-      /*
-			 * Save the model.
-			 * @path - path for a model.
-			 */
-      // def save(path: String) = model.save(spark.sparkContext, path)
+      val avgClusterA = uniqueByKeyA.map(m => {
+        val v = m._1
+        val sumsim = m._2.sum
+        val sizesim = m._2.length
+        val avg = sumsim / sizesim
+        (v, avg)
+      })
+      val v1clusterC = clusterC.map(m => {
+        val m1 = m._1
+        val m2 = m._3
+        val m3 = m._6
+        ((m1, m3), m2)
+      })
+      val initialList2 = mutable.ListBuffer.empty[(Double)]
+      val addToList2 = (s: mutable.ListBuffer[(Double)], v: (Double)) => s += v
+      val mergePartitionLists2 = (p1: mutable.ListBuffer[(Double)], p2: mutable.ListBuffer[(Double)]) => p1.++=(p2)
+      val uniqueByKeyA2 = v1clusterC.aggregateByKey(initialList2)(addToList2, mergePartitionLists2)
+      val avgclusterC = uniqueByKeyA2.map(m => {
+        val m1 = m._1._1
+        val m2 = m._1._2
+        val simsum = m._2.sum
+        val simsize = m._2.length
+        val avg = simsum / simsize
+        (m1, (m2, avg))
+      })
+      val initialList3 = mutable.ListBuffer.empty[(Int, Double)]
+      val addToList3 = (s: mutable.ListBuffer[(Int, Double)], v: (Int, Double)) => s += v
+      val mergePartitionLists3 = (p1: mutable.ListBuffer[(Int, Double)], p2: mutable.ListBuffer[(Int, Double)]) => p1.++=(p2)
+      val uniqueByKeyA3 = avgclusterC.aggregateByKey(initialList3)(addToList3, mergePartitionLists3)
+      val maxavgsimclusterC = uniqueByKeyA3.map(m => {
+        val m1 = m._1
+        val m2 = m._2.maxBy(_._2)._2
+        (m1, m2)
+      })
+      val clusterac = avgClusterA.keyBy(_._1).join(maxavgsimclusterC)
+      val computeSI = clusterac.map(m => {
+        val v = m._1
+        val simA = m._2._1._2
+        val simC = m._2._2
+        val si = SI(simA, simC)
+        (v, si)
+      })
+      val remainva = avgClusterA.map(_._1).subtract(computeSI.map(_._1))
+      val remainvc = maxavgsimclusterC.map(_._1).subtract(computeSI.map(_._1))
+      val computeremainSIa = remainva.map(m => {
+        val si = 1.0
+        val v = m
+        (v, si)
+      })
+      val computeremainSIc = remainvc.map(m => {
+        val si = -1.0
+        val v = m
+        (v, si)
+      })
+      val computeallSI = computeSI.union(computeremainSIa).union(computeremainSIc)
+      val rddSI = computeallSI.values
+      val silouhette = rddSI.sum() / rddSI.count()
 
-      /*
-			 * Load the model.
-			 * @path - the given model.
-			 */
-      // def load(path: String) = PowerIterationClusteringModel.load(spark.sparkContext, path)
+      println(s"averageSil: $silouhette\n")
 
-      (findIterable)
+      val vts = nodes.map(e => (e._1.toLong, e._2))
+      val ClustersAsURL = rddClusters.join(vts).map(_._2)
+
+      (ClustersAsURL)
     }
     val clrdd = clusterRdd()
     clrdd
+
   }
 }
