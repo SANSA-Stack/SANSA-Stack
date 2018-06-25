@@ -7,8 +7,10 @@ import scala.reflect.runtime.universe._
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import org.aksw.jena_sparql_api.utils.Vars
 import org.aksw.jena_sparql_api.views.E_RdfTerm
+import org.aksw.obda.domain.api.LogicalTable
+import org.aksw.obda.domain.impl.LogicalTableTableName
+import org.aksw.obda.jena.domain.impl.ViewDefinition
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
-import org.aksw.sparqlify.config.syntax.ViewDefinition
 import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.{ Quad, QuadPattern, Var }
@@ -66,8 +68,9 @@ object SparqlifyUtils2 {
     // println("Schema: " + schema)
 
     val sqlOp = new SqlOpTable(null, tableName)
+    val logTable = new LogicalTableTableName(tableName)
     val vtd = new ViewTemplateDefinition(quadPattern, varDefs)
-    val vd = new ViewDefinition(tableName, vtd, sqlOp, Arrays.asList())
+    val vd = new ViewDefinition(tableName, quadPattern.getList, vtd.getVarExprList.getExprs, null, logTable)
 
     vd
   }
