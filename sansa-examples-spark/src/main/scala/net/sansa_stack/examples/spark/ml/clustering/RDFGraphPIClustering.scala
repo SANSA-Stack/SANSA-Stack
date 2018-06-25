@@ -14,6 +14,7 @@ import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 object RDFGraphPIClustering {
 
   def main(args: Array[String]) {
+    //config.in-> path for input nt file or txt file. It may be a local path or hdfs path.
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.out, config.k, config.maxIterations)
