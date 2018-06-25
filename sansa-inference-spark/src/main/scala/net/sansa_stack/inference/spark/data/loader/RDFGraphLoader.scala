@@ -10,9 +10,11 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{Dataset, Encoder, SaveMode, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
-
 import scala.language.implicitConversions
+
 import org.apache.jena.vocabulary.RDF
+
+import net.sansa_stack.rdf.spark.io.NTripleReader
 
 /**
   * A class that provides methods to load an RDF graph from disk.
@@ -37,17 +39,7 @@ object RDFGraphLoader {
     * @return an RDF graph
     */
   def loadFromDisk(session: SparkSession, path: String, minPartitions: Int = 2): RDFGraph = {
-    logger.info("loading triples from disk...")
-    val startTime = System.currentTimeMillis()
-
-    val triples = session.sparkContext
-      .textFile(path, minPartitions) // read the text file
-      .filter(line => !line.trim().isEmpty & !line.startsWith("#"))
-      .map(new NTriplesStringToJenaTriple()) // convert to triple object
-//      .repartition(minPartitions)
-
-//  logger.info("finished loading " + triples.count() + " triples in " + (System.currentTimeMillis()-startTime) + "ms.")
-    RDFGraph(triples)
+    RDFGraph(NTripleReader.load(session, path))
   }
 
   /**
@@ -85,18 +77,7 @@ object RDFGraphLoader {
     * @return an RDF graph
     */
   def loadFromDiskAsRDD(session: SparkSession, path: String, minPartitions: Int): RDFGraphNative = {
-    logger.info("loading triples from disk...")
-    val startTime = System.currentTimeMillis()
-
-    val converter = new NTriplesStringToJenaTriple()
-
-    val triples = session.sparkContext
-      .textFile(path, minPartitions) // read the text file
-      .map(line => converter.apply(line)) // convert to triple object
-
-    // logger.info("finished loading " + triples.count() + " triples in " +
-    // (System.currentTimeMillis()-startTime) + "ms.")
-    new RDFGraphNative(triples)
+    new RDFGraphNative(NTripleReader.load(session, path))
   }
 
   private case class RDFTriple2(s: String, p: String, o: String) extends Product3[String, String, String] {
@@ -132,11 +113,8 @@ object RDFGraphLoader {
     val spark = session.sqlContext
 
 
-
-    val triples = session.read
-      .textFile(path) // read the text file
-      .map(new NTriplesStringToJenaTriple())
-      .as[Triple](rdfTripleEncoder)
+    val triples = session
+      .createDataset(NTripleReader.load(session, path))(rdfTripleEncoder)
       .as("triples")
     // (rdfTripleEncoder)
     //    val rowRDD = session.sparkContext
