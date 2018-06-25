@@ -36,7 +36,7 @@ import java.net.URI
 object RDFGraphPowerIterationClustering {
 	
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 5) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outevl: String, outputsim: String, k: Int = 2, maxIterations: Int = 5): RDD[(Int, String)] = {
 
     /**
      *
@@ -330,6 +330,6 @@ object RDFGraphPowerIterationClustering {
       (findIterable)
     }
     val clrdd = clusterRdd()
-
+    clrdd
   }
 }

@@ -1,13 +1,11 @@
 package net.sansa_stack.ml.spark.clustering
-
-import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import org.apache.log4j.{ Level, Logger }
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import java.io.ByteArrayInputStream
 import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model.graph._
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+import org.apache.spark.sql.SparkSession
+
+import net.sansa_stack.rdf.spark.io.RDFReader
+import net.sansa_stack.rdf.spark.model.graph.GraphLoader
 //import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 object picMain {
     def main(args: Array[String]): Unit =  {
