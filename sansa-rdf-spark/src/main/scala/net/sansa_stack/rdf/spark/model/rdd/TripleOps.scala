@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
-import org.apache.spark.rdd.RDD
+import net.sansa_stack.rdf.spark.utils._
 import org.apache.jena.graph.{ Node, Triple }
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ StructField, StructType, StringType }
-import net.sansa_stack.rdf.spark.utils.NodeUtils
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 
 /**
  * Spark/RDD based implementation of RDD[Triple].
@@ -22,12 +22,13 @@ object TripleOps {
   def toDF(triples: RDD[Triple]): DataFrame = {
 
     val spark: SparkSession = SparkSession.builder().getOrCreate()
-    val schema = StructType(
-      Seq(
-        StructField("subject", StringType, nullable = false),
-        StructField("predicate", StringType, nullable = false),
-        StructField("object", StringType, nullable = false)))
-    val rowRDD = triples.map(t => Row(NodeUtils.getNodeValue(t.getSubject), NodeUtils.getNodeValue(t.getPredicate), NodeUtils.getNodeValue(t.getObject)))
+    val schema = SchemaUtils.SQLSchemaDefault
+
+    val rowRDD = triples.map(t =>
+      Row(
+        NodeUtils.getNodeValue(t.getSubject),
+        NodeUtils.getNodeValue(t.getPredicate),
+        NodeUtils.getNodeValue(t.getObject)))
     val df = spark.createDataFrame(rowRDD, schema)
     df.createOrReplaceTempView("TRIPLES")
     df
@@ -204,8 +205,8 @@ object TripleOps {
    *
    * @param triples RDD of triples
    * @param subject the subject (None for any)
-   * @param predicate the predicate (Node for any)
-   * @param object the object (Node for any)
+   * @param predicate the predicate (None for any)
+   * @param object the object (None for any)
    * @return true if there exists within this RDF graph
    * a triple with (S, P, O) pattern, false otherwise
    */

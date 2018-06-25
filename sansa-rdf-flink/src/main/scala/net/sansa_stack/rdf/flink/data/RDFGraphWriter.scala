@@ -3,13 +3,12 @@ package net.sansa_stack.rdf.flink.data
 import java.io.{ ByteArrayInputStream, File }
 import java.nio.charset.StandardCharsets
 
+import net.sansa_stack.rdf.flink.utils.Logging
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.scala._
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.rdf.model.{ Model, ModelFactory }
-import net.sansa_stack.rdf.flink.utils.Logging
 import org.slf4j.LoggerFactory
-import net.sansa_stack.rdf.flink.utils.Logging
 
 /**
  * Writes an RDF graph to disk.

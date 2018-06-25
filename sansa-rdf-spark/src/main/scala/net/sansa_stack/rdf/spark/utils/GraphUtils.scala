@@ -1,7 +1,8 @@
 package net.sansa_stack.rdf.spark.utils
 
-import org.apache.spark.graphx.Graph
 import java.io._
+
+import org.apache.spark.graphx.Graph
 
 object GraphUtils {
 

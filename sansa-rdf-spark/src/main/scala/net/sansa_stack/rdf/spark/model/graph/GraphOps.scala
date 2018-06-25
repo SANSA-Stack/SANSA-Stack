@@ -1,14 +1,15 @@
 package net.sansa_stack.rdf.spark.model.graph
 
-import scala.reflect.ClassTag
-import org.apache.spark.graphx._
 import scala.Iterator
-import org.apache.spark.rdd.RDD
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ StructField, StructType, StringType }
+import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
+
 import net.sansa_stack.rdf.spark.utils.NodeUtils
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.spark.graphx._
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 
 /**
  * Spark/GraphX based implementation of RDD[Triple].
@@ -168,21 +169,20 @@ object GraphOps {
     }, (_, _) => true)
   }
 
-  
   /**
    * Filter out the subject from a given graph,
    * based on a specific function @func .
    * @param graph one instance of the given graph
    * @param func a partial funtion.
    * @return [[Graph[Node, Node]]] a subset of the given graph.
-   */  
+   */
   def filterSubjects(graph: Graph[Node, Node], func: Node => Boolean): Graph[Node, Node] = {
     graph.subgraph({
       triplet => func(triplet.srcAttr)
     }, (_, _) => true)
   }
 
-   /**
+  /**
    * Filter out the predicates from a given graph,
    * based on a specific function @func .
    * @param graph one instance of the given graph
@@ -291,5 +291,4 @@ object GraphOps {
 
     Pregel(spGraph, initialMessage)(vertexProgram, sendMessage, addMaps)
   }
-
 }

@@ -1,11 +1,9 @@
 package net.sansa_stack.rdf.common.partition.core
 
-import net.sansa_stack.rdf.common.partition.layout.{ TripleLayout, TripleLayoutDouble, TripleLayoutString, TripleLayoutLong, TripleLayoutStringLang }
-import org.apache.jena.vocabulary.XSD
+import net.sansa_stack.rdf.common.partition.layout.{ TripleLayout, TripleLayoutDouble, TripleLayoutLong, TripleLayoutString, TripleLayoutStringLang }
 import org.apache.jena.datatypes.TypeMapper
-import org.apache.jena.vocabulary.RDF
-import org.apache.jena.graph.Node
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.vocabulary.{ RDF, XSD }
 
 object RdfPartitionerDefault
   extends RdfPartitioner[RdfPartitionDefault] with Serializable {
@@ -20,8 +18,9 @@ object RdfPartitionerDefault
 
   def getRdfTermType(node: Node): Byte = {
     val result =
-      if (node.isURI()) 1.toByte else if (node.isLiteral()) 2.toByte else if (node.isBlank()) 0.toByte else
-        throw new RuntimeException("Unknown RDF term type: " + node) //-1
+      if (node.isURI()) 1.toByte else if (node.isLiteral()) 2.toByte else if (node.isBlank()) 0.toByte else {
+        throw new RuntimeException("Unknown RDF term type: " + node)
+      } // -1
     result
   }
 
@@ -31,7 +30,7 @@ object RdfPartitionerDefault
   }
 
   def isPlainLiteral(node: Node): Boolean = {
-    val result = node.isLiteral() && isPlainLiteralDatatype(node.getLiteralDatatypeURI) //NodeUtils.isSimpleString(node) || NodeUtils.isLangString(node))
+    val result = node.isLiteral() && isPlainLiteralDatatype(node.getLiteralDatatypeURI) // NodeUtils.isSimpleString(node) || NodeUtils.isLangString(node))
     result
   }
 
@@ -46,7 +45,7 @@ object RdfPartitionerDefault
 
     val subjectType = getRdfTermType(s)
     val objectType = getRdfTermType(o)
-    //val predicateType =
+    // val predicateType =
 
     val predicate = t.getPredicate.getURI
 
@@ -68,32 +67,30 @@ object RdfPartitionerDefault
     val layout = oType match {
       case 0 => TripleLayoutString
       case 1 => TripleLayoutString
-      case 2 => if (isPlainLiteralDatatype(t.datatype))
-        TripleLayoutStringLang
-      else
-        determineLayoutDatatype(t.datatype)
-      //if(!t.langTagPresent)
-      //TripleLayoutString else TripleLayoutStringLang
+      case 2 => if (isPlainLiteralDatatype(t.datatype)) TripleLayoutStringLang else determineLayoutDatatype(t.datatype)
+      // if(!t.langTagPresent)
+      // TripleLayoutString else TripleLayoutStringLang
       case _ => throw new RuntimeException("Unsupported object type: " + t)
     }
     layout
   }
 
   def determineLayoutDatatype(dtypeIri: String): TripleLayout = {
-    val dti = if (dtypeIri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")
-      XSD.xstring.getURI else dtypeIri
+    val dti = if (dtypeIri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString") {
+      XSD.xstring.getURI
+    } else dtypeIri
 
     val v = TypeMapper.getInstance.getSafeTypeByName(dti).getJavaClass
 
-    //val v = node.getLiteralValue
+    // val v = node.getLiteralValue
     v match {
       case w if (w == classOf[java.lang.Byte] || w == classOf[java.lang.Short] || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long]) => TripleLayoutLong
       case w if (w == classOf[java.lang.Float] || w == classOf[java.lang.Double]) => TripleLayoutDouble
-      //case w if(w == classOf[String]) => TripleLayoutString
+      // case w if(w == classOf[String]) => TripleLayoutString
       case w => TripleLayoutString
-      //case _ => TripleLayoutStringDatatype
+      // case _ => TripleLayoutStringDatatype
 
-      //case _ => throw new RuntimeException("Unsupported object type: " + dtypeIri)
+      // case _ => throw new RuntimeException("Unsupported object type: " + dtypeIri)
     }
   }
 }

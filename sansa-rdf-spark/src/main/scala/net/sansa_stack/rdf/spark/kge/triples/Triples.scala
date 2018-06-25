@@ -31,19 +31,19 @@ class Triples(filePath: String, delimiter: String = "\t", header: Boolean = fals
   val triples = readFromFile()
   val (e, r) = (getEntities(), getRelations())
 
-  def getEntities() = {
+  def getEntities(): Array[Row] = {
     triples.select($"Subject").union(triples.select($"Object")).distinct().collect()
   }
 
-  def getRelations() = {
+  def getRelations(): Array[Row] = {
     triples.select("Predicate").distinct().collect()
   }
 
-  def readFromFile() = {
+  def readFromFile(): Dataset[StringTriples] = {
 
     val schema = numeric match {
       case true => integerSchema
-      case _    => stringSchema
+      case _ => stringSchema
     }
 
     var data = spark.read.format("com.databricks.spark.csv")

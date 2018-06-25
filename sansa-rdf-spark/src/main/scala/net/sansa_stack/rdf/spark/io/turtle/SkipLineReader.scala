@@ -6,7 +6,7 @@ import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FSDataInputStream
 import org.apache.hadoop.io.Text
-import org.apache.hadoop.mapreduce.lib.input.{SplitLineReader, FileInputFormat}
+import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, SplitLineReader}
 import org.apache.hadoop.util.LineReader
 
 /**
@@ -37,14 +37,14 @@ private[turtle] class SkipLineReader(in: FSDataInputStream, conf: Configuration,
   def skipComments(in: InputStream): Unit = {
     var i = 0
     var break = false
-    while (!break && {i = in.read; i != -1}) { //Reading begin
+    while (!break && {i = in.read; i != -1}) { // Reading begin
       println(s"Char: ${i.asInstanceOf[Char]}")
 
-      if (i == '\n') { //If a line in .txt file ends.
+      if (i == '\n') { // If a line in .txt file ends.
         break = true
         println("BREAK")
       }
-      if (i.asInstanceOf[Char] == '#') { //|| (char) i == '0')
+      if (i.asInstanceOf[Char] == '#') { // || (char) i == '0')
         println("COMMENT")
       }
       totalBytesRead += 1

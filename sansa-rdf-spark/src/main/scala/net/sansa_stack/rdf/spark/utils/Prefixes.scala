@@ -26,12 +26,11 @@ object Vocabularies {
    * Vocabulary definitions from https://www.w3.org/TR/vocab-dcat/
    */
   object DCAT {
-    
-    /**The namespace of the DAQ (https://www.w3.org/TR/2015/WD-vocab-dqv-20150625/ ) vocabulary */
+
+    /** The namespace of the DAQ (https://www.w3.org/TR/2015/WD-vocab-dqv-20150625/ ) vocabulary */
     val DAQ_NS = "http://purl.org/eis/vocab/daq#"
-    
-     val computedBy = DAQ_NS + "#computedBy"
+
+    val computedBy = DAQ_NS + "#computedBy"
   }
 
 }
-

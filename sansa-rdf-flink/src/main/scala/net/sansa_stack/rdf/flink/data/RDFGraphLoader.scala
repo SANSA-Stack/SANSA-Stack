@@ -1,13 +1,12 @@
 package net.sansa_stack.rdf.flink.data
 
+import java.io.ByteArrayInputStream
 import java.io.File
 
+import net.sansa_stack.rdf.flink.model.RDFTriple
 import org.apache.flink.api.scala.{ ExecutionEnvironment, _ }
 import org.apache.flink.configuration.Configuration
-import org.apache.jena.riot.RDFDataMgr
-import java.io.ByteArrayInputStream
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.flink.model.RDFTriple
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
 
 /**
  * @author Gezim Sejdiu

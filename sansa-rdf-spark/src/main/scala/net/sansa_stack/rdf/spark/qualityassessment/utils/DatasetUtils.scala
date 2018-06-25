@@ -1,14 +1,13 @@
 package net.sansa_stack.rdf.spark.qualityassessment.utils
 
-import com.typesafe.config.{ Config, ConfigFactory }
-
 import collection.JavaConverters._
+import com.typesafe.config.{ Config, ConfigFactory }
 
 /*
  * DataSet Utils.
  * @author Gezim Sejdiu
  */
-object DatasetUtils extends Serializable{
+object DatasetUtils extends Serializable {
 
   @transient lazy val conf: Config = ConfigFactory.load("metrics.conf")
 
@@ -37,7 +36,6 @@ object DatasetUtils extends Serializable{
    * Upper bound to evaluate.
    */
   val upperBound: Double = conf.getDouble("rdf.qualityassessment.dataset.upperBound")
-  
-  
+
   val shortURIThreshold: Double = conf.getDouble("rdf.qualityassessment.dataset.shortUri.threshold")
 }

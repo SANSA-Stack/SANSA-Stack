@@ -1,16 +1,15 @@
 package net.sansa_stack.rdf.spark
 
-import org.apache.spark.rdd.RDD
-import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import org.apache.spark.sql.Row
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.partition.semantic.RdfPartition
+import org.apache.jena.graph.Triple
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
 
 /**
- * Wrap up implicit classes/methods to partition RDF data from N-Triples files into either [[Sparqlify]] or
- * [[Semantic]] partition strategies.
+ * Wrap up implicit classes/methods to partition RDF data from N-Triples
+ * files into either [[Sparqlify]] or [[Semantic]] partition strategies.
  *
  * @author Gezim Sejdiu
  */
@@ -22,13 +21,6 @@ package object partition {
   }
 
   implicit class RDFPartition(rdf: RDD[Triple]) extends Serializable {
-
-    /* def partitionGraph(strategy: Strategy.Value) = strategy match {
-      case Strategy.CORE     => corePartitionGraph()
-      case Strategy.SEMANTIC => semanticPartitionGraph()
-      case _                 => throw new IllegalArgumentException(s"${strategy} partiton not supported yet!")
-
-    }*/
 
     /**
      * Default partition - using VP.
@@ -59,6 +51,7 @@ package object partition {
       "dots" -> "...",
       "asterisk" -> "*",
       "up-arrows" -> "^^")
+
     /**
      * semantic partition of and RDF graph
      */
