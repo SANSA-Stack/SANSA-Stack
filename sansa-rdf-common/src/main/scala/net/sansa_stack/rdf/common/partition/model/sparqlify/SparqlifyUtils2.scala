@@ -8,11 +8,13 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import org.aksw.jena_sparql_api.utils.Vars
 import org.aksw.jena_sparql_api.views.E_RdfTerm
 import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
-import org.aksw.sparqlify.config.syntax.ViewDefinition
+import org.aksw.obda.jena.domain.impl.ViewDefinition
 import org.aksw.sparqlify.config.syntax.ViewTemplateDefinition
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.{ Quad, QuadPattern, Var }
 import org.apache.jena.sparql.expr.{ E_Equals, Expr, ExprVar, NodeValue }
+
+import scala.language.implicitConversions
 
 object SparqlifyUtils2 {
   implicit def newExprVar(varName: String): ExprVar = new ExprVar(Var.alloc(varName))
