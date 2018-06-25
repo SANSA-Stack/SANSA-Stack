@@ -35,13 +35,10 @@ class RDFSSchemaExtractor() extends Logging with Serializable {
     * @return the RDF graph containing only the schema triples
     */
   def extract(graph: RDFGraph): RDFGraph = {
-    log.info("Started schema extraction...")
 
     val filteredTriples = graph.triples.filter(t => properties.contains(t.p))
 
-    log.info("Finished schema extraction.")
-
-    new RDFGraph(filteredTriples)
+    RDFGraph(filteredTriples)
   }
 
   /**
@@ -51,11 +48,11 @@ class RDFSSchemaExtractor() extends Logging with Serializable {
     * @return the schema triples
     */
   def extract(triples: RDD[Triple]): RDD[Triple] = {
-    log.info("Started schema extraction...")
+//    log.info("Started schema extraction...")
 
     val filteredTriples = triples.filter(t => properties.contains(t.p))
 
-    log.info("Finished schema extraction.")
+//    log.info("Finished schema extraction.")
 
     filteredTriples
   }
