@@ -500,6 +500,18 @@
                                                 <include>**</include>
                                             </includes>
                                         </filter>
+                                        <filter>
+                                            <artifact>xerces:xercesImpl</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>org.aksw.jena-sparql-api:*</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
                                     </filters>
                                     <finalName>dist-${project.artifactId}-${project.version}</finalName>
                                     <transformers>
