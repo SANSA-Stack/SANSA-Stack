@@ -19,7 +19,5 @@ class RdfPicTest extends FunSuite with DataFrameSuiteBase {
 
     cluster.collect().foreach(println)
     assert(true)
-
   }
-
 }
