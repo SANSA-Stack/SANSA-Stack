@@ -4,7 +4,7 @@
 
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-query-parent_2.11</artifactId>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.4.0</version>
 	<packaging>pom</packaging>
 
 	<name>SANSA Stack - Query Layer - Parent</name>
