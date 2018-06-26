@@ -15,7 +15,7 @@ import org.apache.jena.vocabulary.RDFS
   * @author Lorenz Buehmann
   */
 class RDFSSchemaExtractor()
-  extends SchemaExtractor()(Set(RDFS.subClassOf, RDFS.subPropertyOf, RDFS.domain, RDFS.range).map(p => p.getURI))() {}
+  extends SchemaExtractor()(Set(RDFS.subClassOf, RDFS.subPropertyOf, RDFS.domain, RDFS.range).map(p => p.asNode()))() {}
 
 object RDFSSchemaExtractor {
   def apply: RDFSSchemaExtractor = new RDFSSchemaExtractor()

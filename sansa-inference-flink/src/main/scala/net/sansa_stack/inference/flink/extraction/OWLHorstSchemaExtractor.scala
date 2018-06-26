@@ -42,12 +42,12 @@ class OWLHorstSchemaExtractor()
         OWL2.allValuesFrom,
         OWL2.hasValue,
         OWL2.onProperty
-      ).map(p => p.getURI)
+      ).map(p => p.asNode())
     )(
       Set(
         OWL2.TransitiveProperty,
         OWL2.FunctionalProperty,
         OWL2.InverseFunctionalProperty,
         OWL2.SymmetricProperty
-      ).map(p => p.getURI)
+      ).map(p => p.asNode())
     ) {}
