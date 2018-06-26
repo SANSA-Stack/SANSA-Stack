@@ -1,5 +1,0 @@
-wsdbm:City40
-wsdbm:City181
-wsdbm:City158
-wsdbm:City93
-wsdbm:City230

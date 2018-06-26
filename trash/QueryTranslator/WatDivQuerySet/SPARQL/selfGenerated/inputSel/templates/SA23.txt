@@ -1,4 +1,0 @@
-SELECT ?v0 ?v1 ?v2 WHERE {
- ?v0 rev:reviewer ?v1 .
- ?v1 sorg:jobTitle ?v2 .
-}

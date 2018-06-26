@@ -1,8 +1,0 @@
-#mapping v0 wsdbm:User uniform
-SELECT ?v1 ?v2 ?v3 ?v4 ?v5 WHERE {
-	%v0%	wsdbm:follows	?v1 .
-	?v1	wsdbm:likes	?v2 .
-	?v2	rev:hasReview	?v3 .
-	?v3	rev:reviewer	?v4 .
-	?v4 wsdbm:userId ?v5 .
-}

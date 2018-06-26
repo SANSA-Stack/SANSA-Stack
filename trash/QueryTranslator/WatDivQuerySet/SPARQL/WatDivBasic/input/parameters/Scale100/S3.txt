@@ -1,5 +1,0 @@
-wsdbm:ProductCategory6
-wsdbm:ProductCategory13
-wsdbm:ProductCategory9
-wsdbm:ProductCategory0
-wsdbm:ProductCategory14

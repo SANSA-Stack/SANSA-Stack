@@ -4,7 +4,7 @@
 
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-query-parent_2.11</artifactId>
-	<version>0.3.0</version>
+	<version>0.4.0</version>
 	<packaging>pom</packaging>
 
 	<name>SANSA Stack - Query Layer - Parent</name>
@@ -17,17 +17,13 @@
 		<url>http://sda.tech</url>
 	</organization>
 
-	<modules>
-		<module>sansa-query-spark-parent</module>
-		<module>sansa-query-flink-parent</module>
-	</modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 
-		<sansa.version>0.3.0</sansa.version>
+		<sansa.version>0.4.0</sansa.version>
 
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
@@ -35,14 +31,14 @@
 
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<spark.version>2.2.1</spark.version>
-		<flink.version>1.4.0</flink.version>
+		<spark.version>2.3.1</spark.version>
+		<flink.version>1.5.0</flink.version>
 
-		<jena.version>3.5.0</jena.version>
-		<jsa.subversion>2</jsa.subversion>
+		<jena.version>3.7.0</jena.version>
+		<jsa.subversion>3</jsa.subversion>
 
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
-
+		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 
 		<httpcomponents.version>4.5.3</httpcomponents.version>
 	</properties>
@@ -90,6 +86,7 @@
 			<timezone>0</timezone>
 		</developer>
 	</developers>
+
 
 	<profiles>
 		<profile>
@@ -146,6 +143,20 @@
 				</plugins>
 			</build>
 		</profile>
+
+		<!-- profile necessary for Scalastyle plugin to find the conf file -->
+		<profile>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+
 	</profiles>
 
 	<repositories>
@@ -196,6 +207,39 @@
 	<dependencyManagement>
 		<dependencies>
 
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-spark${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-graphx_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+
 			<!-- http components -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -235,11 +279,20 @@
 				<version>${scala.version}</version>
 			</dependency>
 
+
+			<!-- Benchmarking bsbm and visualization of the results -->
 			<dependency>
 				<groupId>org.aksw.bsbm</groupId>
 				<artifactId>bsbm-jsa</artifactId>
-				<version>3.1.1</version>
+				<version>3.1.2</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.aksw.beast</groupId>
+				<artifactId>beast-bundle</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+
 
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -258,7 +311,7 @@
 			<dependency>
 				<groupId>org.aksw.sparqlify</groupId>
 				<artifactId>sparqlify-core</artifactId>
-				<version>0.8.3</version>
+				<version>0.8.5</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.aksw.sparqlify</groupId>
@@ -274,25 +327,6 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-
-			<dependency>
-				<groupId>net.sansa-stack</groupId>
-				<artifactId>sansa-rdf-common-partition${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>net.sansa-stack</groupId>
-				<artifactId>sansa-rdf-test-resources${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-partition-sparqlify${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
-			</dependency>
-
 
 			<dependency>
 				<groupId>org.aksw.jena-sparql-api</groupId>
@@ -311,6 +345,13 @@
 				<groupId>org.scalatest</groupId>
 				<artifactId>scalatest_${scala.binary.version}</artifactId>
 				<version>3.0.3</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.holdenkarau</groupId>
+				<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+				<version>2.1.0_0.6.0</version>
+				<scope>test</scope>
 			</dependency>
 
 			<dependency>
@@ -569,6 +610,66 @@
 					</configuration>
 				</plugin>
 
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											net.alchim31.maven
+										</groupId>
+										<artifactId>
+											scala-maven-plugin
+										</artifactId>
+										<versionRange>
+											[3.3.1,)
+										</versionRange>
+										<goals>
+											<goal>testCompile</goal>
+											<goal>compile</goal>
+											<goal>add-source</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+
+				<!-- Scalastyle -->
+				<plugin>
+					<groupId>org.scalastyle</groupId>
+					<artifactId>scalastyle-maven-plugin</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<verbose>false</verbose>
+						<failOnViolation>true</failOnViolation>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
+						<failOnWarning>false</failOnWarning>
+						<sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+						<testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+						<!-- we use a central config located in the root directory -->
+						<configLocation>${scalastyle.config.path}</configLocation>
+						<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+						<outputEncoding>UTF-8</outputEncoding>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -592,4 +693,9 @@
 		</snapshotRepository>
 	</distributionManagement>
 
+	<modules>
+		<module>sansa-query-common</module>
+		<module>sansa-query-flink</module>
+		<module>sansa-query-spark</module>
+	</modules>
 </project>

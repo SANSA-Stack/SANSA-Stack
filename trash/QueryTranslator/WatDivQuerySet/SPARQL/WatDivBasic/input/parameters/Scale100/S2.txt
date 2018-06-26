@@ -1,5 +1,0 @@
-wsdbm:Country2
-wsdbm:Country19
-wsdbm:Country17
-wsdbm:Country3
-wsdbm:Country13
