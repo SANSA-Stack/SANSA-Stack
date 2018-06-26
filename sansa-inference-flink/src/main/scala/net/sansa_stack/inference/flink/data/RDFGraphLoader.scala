@@ -9,6 +9,8 @@ import net.sansa_stack.inference.data.RDFTriple
 import org.apache.flink.configuration.Configuration
 import scala.language.implicitConversions
 
+import org.apache.jena.rdf.model.impl.NTripleReader
+
 import net.sansa_stack.inference.utils.NTriplesStringToRDFTriple
 
 /**
@@ -33,6 +35,7 @@ object RDFGraphLoader {
     // set the recursive enumeration parameter
     parameters.setBoolean("recursive.file.enumeration", true)
 
+
     // pass the configuration to the data source
     val triples = env.readTextFile(path.toString).withParameters(parameters)
       .map(line => line.replace(">", "").replace("<", "").split("\\s+")) // line to tokens
@@ -48,7 +51,8 @@ object RDFGraphLoader {
 
     val converter = new NTriplesStringToRDFTriple()
 
-    val triples = tmp.map(f => env.readTextFile(f).flatMap(line => converter.apply(line))).reduce(_ union _).name("triples")
+    val triples = tmp
+      .map(f => env.readTextFile(f).flatMap(line => converter.apply(line))).reduce(_ union _).name("triples")
 
     RDFGraph(triples)
   }

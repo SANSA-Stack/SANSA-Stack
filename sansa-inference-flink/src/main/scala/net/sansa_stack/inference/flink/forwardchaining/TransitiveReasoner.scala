@@ -5,8 +5,8 @@ import scala.reflect.ClassTag
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.flink.util.Collector
+import org.apache.jena.graph.{Node, Triple}
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.utils.Profiler
 
 /**
@@ -29,7 +29,7 @@ trait TransitiveReasoner extends Profiler{
     * @param triples the set of triples
     * @return a set containing the transitive closure of the triples
     */
-  def computeTransitiveClosure(triples: Set[RDFTriple]): Set[RDFTriple] = {
+  def computeTransitiveClosure(triples: Set[Triple]): Set[Triple] = {
     val tc = addTransitive(triples)
     // recursive call if set changed, otherwise stop and return
     if (tc.size == triples.size) triples else computeTransitiveClosure(tc)
@@ -39,8 +39,9 @@ trait TransitiveReasoner extends Profiler{
   //    s ++ (for ((s1, p1, o1) <- s; (s2, p2, o2) <- s if o1 == s2) yield (s1, p1, o2))
   //  }
 
-  def addTransitive(triples: Set[RDFTriple]): Set[RDFTriple] = {
-    triples ++ (for (t1 <- triples; t2 <- triples if t1.o == t2.s) yield RDFTriple(t1.s, t1.p, t2.o))
+  def addTransitive(triples: Set[Triple]): Set[Triple] = {
+    triples ++ (for (t1 <- triples; t2 <- triples if t1.objectMatches(t2.getSubject))
+      yield Triple.create(t1.getSubject, t1.getPredicate, t2.getObject))
   }
 
   /**
@@ -50,16 +51,16 @@ trait TransitiveReasoner extends Profiler{
     * @param triples the DataSet of triples
     * @return a DataSet containing the transitive closure of the triples
     */
-  def computeTransitiveClosure(triples: DataSet[RDFTriple]): DataSet[RDFTriple] = {
+  def computeTransitiveClosure(triples: DataSet[Triple]): DataSet[Triple] = {
     if (triples.count() == 0) return triples
     log.info("computing TC...")
 
     profile {
       // keep the predicate
-      val predicate = triples.first(1).collect().head.p
+      val predicate = triples.first(1).collect().head.getPredicate
 
       // compute the TC
-      var subjectObjectPairs = triples.map(t => (t.s, t.o))
+      var subjectObjectPairs = triples.map(t => (t.getSubject, t.getObject))
 
       // because join() joins on keys, in addition the pairs are stored in reversed order (o, s)
       val objectSubjectPairs = subjectObjectPairs.map(t => (t._2, t._1))
@@ -86,7 +87,7 @@ trait TransitiveReasoner extends Profiler{
       } while (nextCount != oldCount)
 
       log.info("TC has " + nextCount + " triples.")
-      subjectObjectPairs.map(p => RDFTriple(p._1, predicate, p._2))
+      subjectObjectPairs.map(p => Triple.create(p._1, predicate, p._2))
     }
   }
 
@@ -99,20 +100,20 @@ trait TransitiveReasoner extends Profiler{
     * @param triples the DataSet of triples
     * @return a DataSet containing the transitive closure of the triples
     */
-  def computeTransitiveClosureOpt(triples: DataSet[RDFTriple]): DataSet[RDFTriple] = {
+  def computeTransitiveClosureOpt(triples: DataSet[Triple]): DataSet[Triple] = {
     if (triples.count() == 0) return triples
     log.info("computing TC...")
 
     profile {
       // keep the predicate
-      val predicate = triples.first(1).collect().head.p
+      val predicate = triples.first(1).collect().head.getPredicate
 
       // convert to tuples needed for the JOIN operator
-      val subjectObjectPairs = triples.map(t => (t.s, t.o))
+      val subjectObjectPairs = triples.map(t => (t.getSubject, t.getObject))
 
       // compute the TC
       val res = subjectObjectPairs.iterateWithTermination(10) {
-        prevPaths: DataSet[(String, String)] =>
+        prevPaths: DataSet[(Node, Node)] =>
 
           val nextPaths = prevPaths
             .join(subjectObjectPairs).where(1).equalTo(0) {
@@ -125,7 +126,7 @@ trait TransitiveReasoner extends Profiler{
           val terminate = prevPaths
             .coGroup(nextPaths)
             .where(0).equalTo(0) {
-            (prev, next, out: Collector[(String, String)]) => {
+            (prev, next, out: Collector[(Node, Node)]) => {
               val prevPaths = prev.toSet
               for (n <- next)
                 if (!prevPaths.contains(n)) out.collect(n)
@@ -135,7 +136,7 @@ trait TransitiveReasoner extends Profiler{
       }
 
       // map back to RDF triples
-      res.map(p => RDFTriple(p._1, predicate, p._2))
+      res.map(p => Triple.create(p._1, predicate, p._2))
     }
   }
 
@@ -184,15 +185,15 @@ trait TransitiveReasoner extends Profiler{
     * @param triples the DataSet of triples
     * @return a DataSet containing the transitive closure of the triples
     */
-  def computeTransitiveClosureOptSemiNaive(triples: DataSet[RDFTriple]): DataSet[RDFTriple] = {
+  def computeTransitiveClosureOptSemiNaive(triples: DataSet[Triple]): DataSet[Triple] = {
     log.info("computing TC...")
-    def iterate(s: DataSet[RDFTriple], ws: DataSet[RDFTriple]): (DataSet[RDFTriple], DataSet[RDFTriple]) = {
+    def iterate(s: DataSet[Triple], ws: DataSet[Triple]): (DataSet[Triple], DataSet[Triple]) = {
       val resolvedRedirects = triples.join(ws)
-        .where { _.s }
-        .equalTo { _.o }
+        .where { _.getSubject }
+        .equalTo { _.getObject }
         .map { joinResult => joinResult match {
           case (redirect, link) =>
-            RDFTriple(link.s, redirect.p, redirect.o)
+            Triple.create(link.getSubject, redirect.getPredicate, redirect.getObject)
         }
         }.name("TC-From-Iteration")
       (resolvedRedirects, resolvedRedirects)

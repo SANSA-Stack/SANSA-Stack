@@ -4,13 +4,13 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 import org.apache.flink.api.common.functions.{RichFilterFunction, RichFlatMapFunction}
-import org.apache.flink.api.scala.{ExecutionEnvironment, _}
+import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.util.Collector
+import org.apache.jena.graph.Triple
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.slf4j.LoggerFactory
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.flink.data.RDFGraph
 import net.sansa_stack.inference.flink.extraction.RDFSSchemaExtractor
 import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
@@ -54,7 +54,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       * yyy rdfs:subClassOf zzz . xxx rdfs:subClassOf zzz .
       */
     val subClassOfTriples =
-      extractTriples(schemaTriples, RDFS.subClassOf.getURI)
+      extractTriples(schemaTriples, RDFS.subClassOf.asNode())
         .name("rdfs:subClassOf") // extract rdfs:subClassOf triples
     val subClassOfTriplesTrans =
       computeTransitiveClosureOptSemiNaive(subClassOfTriples).name("rdfs11")
@@ -64,13 +64,13 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
               yyy rdfs:subPropertyOf zzz . => xxx rdfs:subPropertyOf zzz .
      */
     val subPropertyOfTriples =
-      extractTriples(schemaTriples, RDFS.subPropertyOf.getURI)
+      extractTriples(schemaTriples, RDFS.subPropertyOf.asNode())
         .name("rdfs:subPropertyOf") // extract rdfs:subPropertyOf triples
     val subPropertyOfTriplesTrans =
       computeTransitiveClosureOptSemiNaive(subPropertyOfTriples).name("rdfs5")
 
     // split by rdf:type
-    val split = triplesDS.partitionBy(t => t.p == RDF.`type`.getURI)
+    val split = triplesDS.partitionBy(t => t.predicateMatches(RDF.`type`.asNode()))
     var typeTriples = split._1
     var otherTriples = split._2
 
@@ -82,39 +82,39 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
      */
     val triplesRDFS7 = if (useSchemaBroadCasting) {
       otherTriples
-        .filter(new RichFilterFunction[RDFTriple]() {
+        .filter(new RichFilterFunction[Triple]() {
 
-          var broadcastSet: Traversable[RDFTriple] = _
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("subPropertyTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("subPropertyTriples").asScala
           }
 
-          override def filter(t: RDFTriple): Boolean = broadcastSet.exists(_.s == t.p)
+          override def filter(t: Triple): Boolean = broadcastSet.exists(_.subjectMatches(t.getPredicate))
         })
         .withBroadcastSet(subPropertyOfTriplesTrans, "subPropertyTriples")
         //        .flatMap(new SubClassOfFlatMapFunction("subClasses")).withBroadcastSet(subClassOfTriplesTrans, "subClasses") // create triple (s a B)
-        .flatMap(new RichFlatMapFunction[RDFTriple, RDFTriple]() {
-          var broadcastSet: Traversable[RDFTriple] = _
+        .flatMap(new RichFlatMapFunction[Triple, Triple]() {
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("subPropertyTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("subPropertyTriples").asScala
           }
 
-          override def flatMap(in: RDFTriple, collector: Collector[RDFTriple]): Unit = {
+          override def flatMap(in: Triple, collector: Collector[Triple]): Unit = {
             broadcastSet
-              .filter(_.s == in.p)
-              .foreach(t => collector.collect(RDFTriple(in.s, t.o, in.o)))
+              .filter(_.subjectMatches(in.getPredicate))
+              .foreach(t => collector.collect(Triple.create(in.getSubject, t.getObject, in.getObject)))
           }
         })
         .withBroadcastSet(subPropertyOfTriplesTrans, "subPropertyTriples")
     } else {
       val subPropertyMap =
-        CollectionUtils.toMultiMap(subPropertyOfTriplesTrans.map(t => (t.s, t.o)).collect)
+        CollectionUtils.toMultiMap(subPropertyOfTriplesTrans.map(t => (t.getSubject, t.getObject)).collect)
 
       otherTriples // all triples (s p1 o)
-        .filter(t => subPropertyMap.contains(t.p)) // such that p1 has a super property p2
-        .flatMap(t => subPropertyMap(t.p).map(supProp => RDFTriple(t.s, supProp, t.o))) // create triple (s p2 o)
+        .filter(t => subPropertyMap.contains(t.getPredicate)) // such that p1 has a super property p2
+        .flatMap(t => subPropertyMap(t.getPredicate).map(supProp => Triple.create(t.getSubject, supProp, t.getObject))) // create triple (s p2 o)
 
     }.name("rdfs7")
 
@@ -128,42 +128,42 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
           yyy aaa zzz .           => yyy rdf:type xxx .
      */
     val domainTriples =
-      extractTriples(schemaTriples, RDFS.domain.getURI).name("rdfs:domain")
+      extractTriples(schemaTriples, RDFS.domain.asNode()).name("rdfs:domain")
 
     val triplesRDFS2 = if (useSchemaBroadCasting) {
       otherTriples
-        .filter(new RichFilterFunction[RDFTriple]() {
+        .filter(new RichFilterFunction[Triple]() {
 
-          var broadcastSet: Traversable[RDFTriple] = _
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("domainTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("domainTriples").asScala
           }
 
-          override def filter(t: RDFTriple): Boolean =
-            broadcastSet.exists(_.s == t.p)
+          override def filter(t: Triple): Boolean =
+            broadcastSet.exists(_.subjectMatches(t.getPredicate))
         })
         .withBroadcastSet(domainTriples, "domainTriples")
-        .flatMap(new RichFlatMapFunction[RDFTriple, RDFTriple]() {
-          var broadcastSet: Traversable[RDFTriple] = _
+        .flatMap(new RichFlatMapFunction[Triple, Triple]() {
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("domainTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("domainTriples").asScala
           }
 
-          override def flatMap(in: RDFTriple, collector: Collector[RDFTriple]): Unit = {
+          override def flatMap(in: Triple, collector: Collector[Triple]): Unit = {
             broadcastSet
-              .filter(_.s == in.p)
-              .foreach(t => collector.collect(RDFTriple(in.s, RDF.`type`.getURI, t.o)))
+              .filter(_.subjectMatches(in.getPredicate))
+              .foreach(t => collector.collect(Triple.create(in.getSubject, RDF.`type`.asNode(), t.getObject)))
           }
         })
         .withBroadcastSet(domainTriples, "domainTriples")
     } else {
-      val domainMap = domainTriples.map(t => (t.s, t.o)).collect.toMap
+      val domainMap = domainTriples.map(t => (t.getSubject, t.getObject)).collect.toMap
 
       otherTriples
-        .filter(t => domainMap.contains(t.p))
-        .map(t => RDFTriple(t.s, RDF.`type`.getURI, domainMap(t.p)))
+        .filter(t => domainMap.contains(t.getPredicate))
+        .map(t => Triple.create(t.getSubject, RDF.`type`.asNode(), domainMap(t.getPredicate)))
 
     }.name("rdfs2")
 
@@ -172,42 +172,42 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
          yyy aaa zzz .           => zzz rdf:type xxx .
      */
     val rangeTriples =
-      extractTriples(schemaTriples, RDFS.range.getURI).name("rdfs:range")
+      extractTriples(schemaTriples, RDFS.range.asNode()).name("rdfs:range")
 
     val triplesRDFS3 = if (useSchemaBroadCasting) {
       otherTriples
-        .filter(new RichFilterFunction[RDFTriple]() {
+        .filter(new RichFilterFunction[Triple]() {
 
-          var broadcastSet: Traversable[RDFTriple] = _
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("rangeTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("rangeTriples").asScala
           }
 
-          override def filter(t: RDFTriple): Boolean =
-            broadcastSet.exists(_.s == t.p)
+          override def filter(t: Triple): Boolean =
+            broadcastSet.exists(_.subjectMatches(t.getPredicate))
         })
         .withBroadcastSet(rangeTriples, "rangeTriples")
-        .flatMap(new RichFlatMapFunction[RDFTriple, RDFTriple]() {
-          var broadcastSet: Traversable[RDFTriple] = _
+        .flatMap(new RichFlatMapFunction[Triple, Triple]() {
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("rangeTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("rangeTriples").asScala
           }
 
-          override def flatMap(in: RDFTriple, collector: Collector[RDFTriple]): Unit = {
+          override def flatMap(in: Triple, collector: Collector[Triple]): Unit = {
             broadcastSet
-              .filter(_.s == in.p)
-              .foreach(t => collector.collect(RDFTriple(in.o, RDF.`type`.getURI, t.o)))
+              .filter(_.subjectMatches(in.getPredicate))
+              .foreach(t => collector.collect(Triple.create(in.getObject, RDF.`type`.asNode(), t.getObject)))
           }
         })
         .withBroadcastSet(rangeTriples, "rangeTriples")
     } else {
-      val rangeMap = rangeTriples.map(t => (t.s, t.o)).collect().toMap
+      val rangeMap = rangeTriples.map(t => (t.getSubject, t.getObject)).collect().toMap
 
       otherTriples
-        .filter(t => rangeMap.contains(t.p))
-        .map(t => RDFTriple(t.o, RDF.`type`.getURI, rangeMap(t.p)))
+        .filter(t => rangeMap.contains(t.getPredicate))
+        .map(t => Triple.create(t.getObject, RDF.`type`.asNode(), rangeMap(t.getPredicate)))
 
     }.name("rdfs3")
 
@@ -226,42 +226,42 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     val triplesRDFS9 = if (useSchemaBroadCasting) {
       typeTriples // all rdf:type triples (s a A)
       //        .filter(new SubClassOfFilterFunction("subClasses")).withBroadcastSet(subClassOfTriplesTrans, "subClasses") // such that A has a super class B
-        .filter(new RichFilterFunction[RDFTriple]() {
+        .filter(new RichFilterFunction[Triple]() {
 
-          var broadcastSet: Traversable[RDFTriple] = _
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("subClassTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("subClassTriples").asScala
           }
 
-          override def filter(t: RDFTriple): Boolean =
-            broadcastSet.exists(_.s == t.o)
+          override def filter(t: Triple): Boolean =
+            broadcastSet.exists(_.subjectMatches(t.getObject))
         })
         .withBroadcastSet(subClassOfTriplesTrans, "subClassTriples")
         //        .flatMap(new SubClassOfFlatMapFunction("subClasses")).withBroadcastSet(subClassOfTriplesTrans, "subClasses") // create triple (s a B)
-        .flatMap(new RichFlatMapFunction[RDFTriple, RDFTriple]() {
-          var broadcastSet: Traversable[RDFTriple] = _
+        .flatMap(new RichFlatMapFunction[Triple, Triple]() {
+          var broadcastSet: Traversable[Triple] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple]("subClassTriples").asScala
+            broadcastSet = getRuntimeContext.getBroadcastVariable[Triple]("subClassTriples").asScala
           }
 
-          override def flatMap(in: RDFTriple, collector: Collector[RDFTriple]): Unit = {
+          override def flatMap(in: Triple, collector: Collector[Triple]): Unit = {
             broadcastSet
-              .filter(t => in.o == t.s)
-              .foreach(t => collector.collect(RDFTriple(in.s, in.p, t.o)))
+              .filter(t => in.objectMatches(t.getSubject))
+              .foreach(t => collector.collect(Triple.create(in.getSubject, in.getPredicate, t.getObject)))
           }
         })
         .withBroadcastSet(subClassOfTriplesTrans, "subClassTriples")
     } else {
-      val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.s, t.o)).collect)
+      val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.getSubject, t.getObject)).collect)
 
       typeTriples // all rdf:type triples (s a A)
-        .filter(t => subClassOfMap.contains(t.o)) // such that A has a super class B
+        .filter(t => subClassOfMap.contains(t.getObject)) // such that A has a super class B
         .flatMap(
           t =>
-            subClassOfMap(t.o)
-              .map(supCls => RDFTriple(t.s, RDF.`type`.getURI, supCls))
+            subClassOfMap(t.getObject)
+              .map(supCls => Triple.create(t.getSubject, RDF.`type`.asNode(), supCls))
         ) // create triple (s a B)
     }.name("rdfs9")
 
@@ -284,39 +284,39 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
         .flatMap(
           t =>
             Set(
-              RDFTriple(t.s, RDF.`type`.getURI, RDFS.Resource.getURI),
-              RDFTriple(t.o, RDF.`type`.getURI, RDFS.Resource.getURI)
-              //          RDFTriple(t.predicate, RDF.`type`.getURI, RDF.Property.getURI)
+              Triple.create(t.getSubject, RDF.`type`.asNode(), RDFS.Resource.asNode()),
+              Triple.create(t.getObject, RDF.`type`.asNode(), RDFS.Resource.asNode())
+              //          Triple(t.predicate, RDF.`type`.getURI, RDF.Property.getURI)
           )
         )
         .name("rdfs4")
 
       // rdfs12: (?x rdf:type rdfs:ContainerMembershipProperty) -> (?x rdfs:subPropertyOf rdfs:member)
       val rdfs12 = typeTriples
-        .filter(t => t.o == RDFS.ContainerMembershipProperty.getURI)
-        .map(t => RDFTriple(t.s, RDF.`type`.getURI, RDFS.member.getURI))
+        .filter(t => t.objectMatches(RDFS.ContainerMembershipProperty.asNode()))
+        .map(t => Triple.create(t.getSubject, RDF.`type`.asNode(), RDFS.member.asNode()))
         .name("rdfs12")
 
       // rdfs6: (p rdf:type rdf:Property) => (p rdfs:subPropertyOf p)
       val rdfs6 = typeTriples
-        .filter(t => t.o == RDF.Property.getURI)
-        .map(t => RDFTriple(t.s, RDFS.subPropertyOf.getURI, t.s))
+        .filter(t => t.objectMatches(RDF.Property.asNode()))
+        .map(t => Triple.create(t.getSubject, RDFS.subPropertyOf.asNode(), t.getSubject))
         .name("rdfs6")
 
       // rdfs8: (s rdf:type rdfs:Class ) => (s rdfs:subClassOf rdfs:Resource)
       // rdfs10: (s rdf:type rdfs:Class) => (s rdfs:subClassOf s)
       val rdfs8_10 = typeTriples
-        .filter(t => t.o == RDFS.Class.getURI)
+        .filter(t => t.objectMatches(RDFS.Class.asNode()))
         .flatMap(
           t =>
             Set(
-              RDFTriple(t.s, RDFS.subClassOf.getURI, RDFS.Resource.getURI),
-              RDFTriple(t.s, RDFS.subClassOf.getURI, t.s)
+              Triple.create(t.getSubject, RDFS.subClassOf.asNode(), RDFS.Resource.asNode()),
+              Triple.create(t.getSubject, RDFS.subClassOf.asNode(), t.getSubject)
           )
         )
         .name("rdfs8/rdfs10")
 
-      val additionalTripleRDDs = mutable.Seq(rdfs4, rdfs6, rdfs8_10)
+      val additionalTripleRDDs = mutable.Seq(rdfs4, rdfs6, rdfs8_10, rdfs12)
 
       allTriples = env.union(Seq(allTriples) ++ additionalTripleRDDs).distinct()
     }
@@ -332,43 +332,43 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     RDFGraph(allTriples)
   }
 
-  object SchemaTriplesFilter extends ((RDFTriple) => Boolean) with Serializable {
+  object SchemaTriplesFilter extends (Triple => Boolean) with Serializable {
 
-    val schemaPredicates =
-      Set(RDFS.subClassOf.getURI, RDFS.subPropertyOf.getURI, RDFS.domain.getURI, RDFS.range.getURI)
+    private val schemaPredicates =
+      Set(RDFS.subClassOf, RDFS.subPropertyOf, RDFS.domain, RDFS.range).map(_.asNode())
 
-    override def apply(t: RDFTriple): Boolean = schemaPredicates.contains(t.p)
+    override def apply(t: Triple): Boolean = schemaPredicates.contains(t.getPredicate)
   }
 
-  private def extractSchemaTriples(triples: DataSet[RDFTriple]): DataSet[RDFTriple] = {
+  private def extractSchemaTriples(triples: DataSet[Triple]): DataSet[Triple] = {
     triples.filter(SchemaTriplesFilter).name("schemaTriples")
   }
 
-  class SubClassOfFilterFunction(predicate: String) extends RichFilterFunction[RDFTriple]() {
+  class SubClassOfFilterFunction(predicate: String) extends RichFilterFunction[Triple]() {
 
-    var broadcastSet: Traversable[RDFTriple] = _
+    var broadcastSet: Traversable[Triple] = _
 
     override def open(config: Configuration): Unit = {
       // Access the broadcasted DataSet as a Collection
-      broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple](predicate).asScala
+      broadcastSet = getRuntimeContext.getBroadcastVariable[Triple](predicate).asScala
     }
 
-    override def filter(t: RDFTriple): Boolean =
-      broadcastSet.exists(_.s == t.o)
+    override def filter(t: Triple): Boolean =
+      broadcastSet.exists(_.subjectMatches(t.getObject))
   }
 
-  class SubClassOfFlatMapFunction(predicate: String) extends RichFlatMapFunction[RDFTriple, RDFTriple]() {
-    var broadcastSet: Traversable[RDFTriple] = _
+  class SubClassOfFlatMapFunction(predicate: String) extends RichFlatMapFunction[Triple, Triple]() {
+    var broadcastSet: Traversable[Triple] = _
 
     override def open(config: Configuration): Unit = {
       // Access the broadcasted DataSet as a Collection
-      broadcastSet = getRuntimeContext().getBroadcastVariable[RDFTriple](predicate).asScala
+      broadcastSet = getRuntimeContext.getBroadcastVariable[Triple](predicate).asScala
     }
 
-    override def flatMap(in: RDFTriple, collector: Collector[RDFTriple]): Unit = {
+    override def flatMap(in: Triple, collector: Collector[Triple]): Unit = {
       broadcastSet
-        .filter(t => in.o == t.s)
-        .foreach(t => collector.collect(RDFTriple(in.s, in.p, t.o)))
+        .filter(t => in.objectMatches(t.getSubject))
+        .foreach(t => collector.collect(Triple.create(in.getSubject, in.getPredicate, t.getObject)))
     }
   }
 
