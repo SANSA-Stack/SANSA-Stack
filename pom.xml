@@ -58,10 +58,9 @@
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
 		<spark.version>2.3.1</spark.version>
-		<spark.binary.version>2.2</spark.binary.version>
 		<flink.version>1.5.0</flink.version>
-		<jena.version>3.5.0</jena.version>
-		<sansa.version>0.3.1-SNAPSHOT</sansa.version>
+		<jena.version>3.7.0</jena.version>
+		<sansa.version>0.4.0</sansa.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
