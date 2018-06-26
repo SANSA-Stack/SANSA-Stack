@@ -43,9 +43,9 @@
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
 
-		<spark.version>2.2.1</spark.version>
-		<flink.version>1.4.0</flink.version>
-		<sansa.version>0.3.0</sansa.version>
+		<spark.version>2.3.1</spark.version>
+		<flink.version>1.5.0</flink.version>
+		<sansa.version>0.4.0</sansa.version>
 	</properties>
 
 
@@ -56,13 +56,13 @@
 			<!-- RDF Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark-bundle_${scala.binary.version}</artifactId>
+				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink-core_${scala.binary.version}</artifactId>
+				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 
@@ -82,16 +82,11 @@
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-spark-bundle_${scala.binary.version}</artifactId>
+				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
 				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- Inference Layer -->
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-inference-parent_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>

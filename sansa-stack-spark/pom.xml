@@ -18,7 +18,7 @@
 		<!-- RDF Layer -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark-bundle_${scala.binary.version}</artifactId>
+			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- OWL Layer -->
@@ -30,7 +30,7 @@
 		<!-- Query Layer -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-query-spark-bundle_${scala.binary.version}</artifactId>
+			<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Inference Layer -->
