@@ -111,6 +111,11 @@
         <artifactId>sansa-rdf-partition-core</artifactId>
         <version>${sansa.rdf.version}</version>
       </dependency>
+      <dependency>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+          <version>${sansa.rdf.version}</version>
+      </dependency>
 
       <!-- Query Layer -->
       <dependency>

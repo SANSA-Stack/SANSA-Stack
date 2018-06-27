@@ -67,7 +67,5 @@ case class RDFGraph(triples: DataSet[Triple]) {
     *
     * @return the number of triples
     */
-  def size(): Long = {
-    triples.count()
-  }
+  lazy val size: Long = triples.count()
 }

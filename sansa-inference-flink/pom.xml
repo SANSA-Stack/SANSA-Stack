@@ -47,6 +47,12 @@ under the License.
 			<scope>test</scope>
 		</dependency>
 
+        <!-- RDF Layer -->
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+		</dependency>
+
 		<!-- Apache Flink -->
 		<dependency>
 			<groupId>org.apache.flink</groupId>
