@@ -74,7 +74,6 @@ object RDFGraphMaterializer {
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromDisk(input, env)
-//    println(s"|G| = ${graph.size()}")
 
     // create reasoner
     val reasoner = profile match {
@@ -90,7 +89,7 @@ object RDFGraphMaterializer {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    println(s"|G_inf| = ${inferredGraph.size()}")
+    println(s"|G_inf| = ${inferredGraph.size}")
 
     // write triples to disk
 //    RDFGraphWriter.writeToDisk(inferredGraph, output, writeToSingleFile, sortedOutput)
@@ -119,7 +118,7 @@ object RDFGraphMaterializer {
 
   // the CLI parser
   val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
-    head("RDFGraphMaterializer", "0.1.0")
+    head("RDFGraphMaterializer", "0.4.0")
 
 //    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
 //      action((x, c) => c.copy(in = x)).
@@ -128,7 +127,7 @@ object RDFGraphMaterializer {
       .required()
       .valueName("<path>")
       .action((x, c) => c.copy(in = x))
-      .text("path to file or directory that contains the input files (in N-Triple format)")
+      .text("path to file or directory that contains the input files (in N-Triples format)")
 
     opt[URI]('o', "out")
       .required()

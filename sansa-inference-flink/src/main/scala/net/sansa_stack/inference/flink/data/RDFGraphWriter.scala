@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.flink.data
 
-import java.io.{ByteArrayInputStream, File}
+import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.charset.StandardCharsets
 
@@ -8,9 +8,10 @@ import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.scala._
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.rdf.model.{Model, ModelFactory}
-
-import net.sansa_stack.inference.utils.{RDFTripleOrdering, RDFTripleToNTripleString}
+import org.apache.jena.sparql.util.TripleComparator
 import org.slf4j.LoggerFactory
+
+import net.sansa_stack.inference.utils.{JenaTripleToNTripleString, RDFTripleOrdering}
 
 /**
   * Writes an RDF graph to disk.
@@ -26,10 +27,10 @@ object RDFGraphWriter {
     logger.info("writing triples to disk...")
     val startTime = System.currentTimeMillis()
 
-    implicit val ordering = RDFTripleOrdering
+    implicit val ordering = new TripleComparator()
 
     graph.triples.map(t => (t, t)).sortPartition(1, Order.DESCENDING).map(_._1)
-      .map(new RDFTripleToNTripleString()) // to N-TRIPLES string
+      .map(new JenaTripleToNTripleString()) // to N-Triples string
       .writeAsText(path, writeMode = FileSystem.WriteMode.OVERWRITE)
 
     logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
@@ -61,14 +62,14 @@ object RDFGraphWriter {
     }
 
     tmp
-      .map(new RDFTripleToNTripleString()) // to N-TRIPLES string
+      .map(new JenaTripleToNTripleString()) // to N-TRIPLES string
       .writeAsText(path.toString, writeMode = FileSystem.WriteMode.OVERWRITE)
 
     logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
   }
 
   def convertToModel(graph: RDFGraph) : Model = {
-    val modelString = graph.triples.map(new RDFTripleToNTripleString())
+    val modelString = graph.triples.map(new JenaTripleToNTripleString())
       .collect().mkString("\n")
 
     val model = ModelFactory.createDefaultModel()

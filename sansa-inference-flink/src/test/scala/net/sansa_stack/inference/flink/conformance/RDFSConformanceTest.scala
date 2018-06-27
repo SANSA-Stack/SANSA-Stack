@@ -1,14 +1,14 @@
 package net.sansa_stack.inference.flink.conformance
 
-import net.sansa_stack.inference.flink.data.RDFGraphWriter
-import net.sansa_stack.test.conformance.{IntegrationTestSuite, RDFSConformanceTestBase}
-import org.apache.jena.rdf.model.Model
-import net.sansa_stack.inference.data.{RDFTriple, SimpleRDFOps}
-import net.sansa_stack.inference.flink.data.RDFGraph
-import org.apache.flink.api.scala._
-import org.scalatest.Ignore
-
 import scala.collection.mutable
+
+import org.apache.flink.api.scala._
+import org.apache.jena.graph.Triple
+import org.apache.jena.rdf.model.Model
+
+import net.sansa_stack.inference.data.{Jena, JenaOps}
+import net.sansa_stack.inference.flink.data.{RDFGraph, RDFGraphWriter}
+import net.sansa_stack.test.conformance.RDFSConformanceTestBase
 
 /**
   * The class is to test the conformance of each materialization rule of RDFS(simple) entailment.
@@ -16,10 +16,11 @@ import scala.collection.mutable
   * @author Lorenz Buehmann
   *
   */
-@IntegrationTestSuite
-class RDFSConformanceTest extends RDFSConformanceTestBase(rdfOps = new SimpleRDFOps) with SharedRDFSReasonerContext{
+class RDFSConformanceTest
+  extends RDFSConformanceTestBase[Jena](rdfOps = new JenaOps)
+    with SharedRDFSReasonerContext{
 
-  override def computeInferredModel(triples: mutable.HashSet[RDFTriple]): Model = {
+  override def computeInferredModel(triples: mutable.HashSet[Triple]): Model = {
     // distribute triples
     val triplesRDD = env.fromCollection(triples)
 
