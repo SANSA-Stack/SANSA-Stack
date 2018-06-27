@@ -4,12 +4,12 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-inference-parent_2.11</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.4.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.4.1-SNAPSHOT</version>
 
     <name>Inference API - Spark</name>
     <description>Apache Spark based inference layer for RDF and OWL</description>
@@ -44,6 +44,10 @@
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-mapreduce-client-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.aksw.sparqlify</groupId>
+                    <artifactId>sparqlify-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -149,11 +153,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.holdenkarau</groupId>
@@ -496,6 +495,18 @@
                                         </filter>
                                         <filter>
                                             <artifact>org.apache.jena:*</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>xerces:xercesImpl</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>org.aksw.jena-sparql-api:*</artifact>
                                             <includes>
                                                 <include>**</include>
                                             </includes>

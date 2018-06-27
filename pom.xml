@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-parent_2.11</artifactId>
-  <version>0.3.1-SNAPSHOT</version>
+  <version>0.4.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Inference API - Parent</name>
 
@@ -71,7 +71,7 @@
     <spark.version>2.3.1</spark.version>
     <flink.version>1.5.0</flink.version>
     <jena.version>3.7.0</jena.version>
-    <sansa.stack.version>0.3.1-SNAPSHOT</sansa.stack.version>
+    <sansa.stack.version>0.4.0</sansa.stack.version>
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
     <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
