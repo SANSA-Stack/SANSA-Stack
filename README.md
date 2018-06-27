@@ -116,8 +116,6 @@ libraryDependencies += "net.sansa-stack" % "sansa-inference-flink_2.11" % "0.4.0
 ### Using Snapshots
 
 Snapshot version are only avalibale via our custom Maven repository located at http://maven.aksw.org/archiva/repository/snapshots .
-SANSA Inference API has not been published on Maven Central yet, thus, you have to add an additional repository as follows
-
 
 ## Usage
 Besides using the Inference API in your application code, we also provide a command line interface with various options that allow for a convenient way to use the core reasoning algorithms:
