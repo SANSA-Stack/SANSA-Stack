@@ -62,7 +62,7 @@
 		<flink.version>1.5.0</flink.version>
 		<hadoop.version>2.8.3</hadoop.version>
 		<jena.version>3.7.0</jena.version>
-		<sansa.version>0.4.0</sansa.version>
+		<sansa.version>0.4.1-SNAPSHOT</sansa.version>
 	</properties>
 
 	<dependencyManagement>
