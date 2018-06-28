@@ -14,7 +14,6 @@ import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 object RDFGraphPIClustering {
 
   def main(args: Array[String]) {
-    //config.in-> path for input nt file or txt file. It may be a local path or hdfs path.
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.out, config.k, config.maxIterations)
@@ -31,7 +30,6 @@ object RDFGraphPIClustering {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
     System.setProperty("spark.akka.frameSize", "2000")
-    
 
     println("============================================")
     println("| Power Iteration Clustering   example     |")
@@ -39,16 +37,15 @@ object RDFGraphPIClustering {
 
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
-    
+
     val graph = triples.asStringGraph()
-    
+
     val cluster = RDFGraphPowerIterationClustering(spark, graph, output, k, maxIterations)
     cluster.saveAsTextFile(output)
 
     spark.stop
 
   }
-  
 
   case class Config(in: String = "", out: String = "", k: Int = 2, maxIterations: Int = 5)
 
@@ -59,13 +56,12 @@ object RDFGraphPIClustering {
     head("PowerIterationClusteringExample: an example PIC app using concentric circles.")
 
     opt[String]('i', "input").required().valueName("<path>")
-      .text(s"path to file that contains the input files (in N-Triple format)")
+      .text(s"path (local/hdfs) to file that contains the input files (in N-Triple format)")
       .action((x, c) => c.copy(in = x))
 
     opt[String]('o', "out").required().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
-
 
     opt[Int]('k', "k")
       .text(s"number of circles (/clusters), default: ${defaultParams.k}")

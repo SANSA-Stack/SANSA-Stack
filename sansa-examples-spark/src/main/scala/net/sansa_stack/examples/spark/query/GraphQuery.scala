@@ -1,7 +1,7 @@
 package net.sansa_stack.examples.spark.query
 
 import net.sansa_stack.query.spark.graph.jena.SparqlParser
-import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel, Config => modelConfig}
+import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel, Config => modelConfig }
 import net.sansa_stack.rdf.spark.partition.graph.algo._
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
@@ -16,7 +16,7 @@ object GraphQuery {
 
     parser.parse(args, Config()) match {
       case Some(config) => run(config)
-      case None => println(parser.usage)
+      case None         => println(parser.usage)
     }
   }
 
@@ -50,12 +50,12 @@ object GraphQuery {
 
     // Set number of partitions (if config.numParts is 0, number of partitions equals to that of previous graph)
     config.numParts match {
-      case 0 => numParts = prevG.edges.partitions.length
+      case 0     => numParts = prevG.edges.partitions.length
       case other => numParts = other
     }
 
     config.numIters match {
-      case 0 =>
+      case 0     =>
       case other => numIters = other
     }
 
@@ -63,7 +63,7 @@ object GraphQuery {
 
     config.algo match {
       case "SSHP" =>
-        if(numIters == 0){
+        if (numIters == 0) {
           // Partition algorithm will use default number of iterations
           partAlgo = new SubjectHashPartition[Node, Node](prevG, session, numParts)
         } else {
@@ -71,64 +71,64 @@ object GraphQuery {
         }
         msg = "Start to execute subject semantic hash partitioning"
       case "OSHP" =>
-        if(numIters == 0){
+        if (numIters == 0) {
           partAlgo = new ObjectHashPartition[Node, Node](prevG, session, numParts)
         } else {
           partAlgo = new ObjectHashPartition[Node, Node](prevG, session, numParts).setNumIterations(numIters)
         }
         msg = "Start to execute object semantic hash partitioning"
       case "SOSHP" =>
-        if(numIters == 0){
+        if (numIters == 0) {
           partAlgo = new SOHashPartition[Node, Node](prevG, session, numParts)
         } else {
           partAlgo = new SOHashPartition[Node, Node](prevG, session, numParts).setNumIterations(numIters)
         }
         msg = "Start to execute subject-object semantic hash partitioning"
       case "PP" =>
-        if(numIters == 0){
+        if (numIters == 0) {
           partAlgo = new PathPartition[Node, Node](prevG, session, numParts)
         } else {
           partAlgo = new PathPartition[Node, Node](prevG, session, numParts).setNumIterations(numIters)
         }
         msg = "Start to execute path partitioning"
-      case "" =>
+      case ""    =>
       case other => println(s"the input $other doesn't match any options, no algorithm will be applied.")
     }
 
     var start = 0L
     var end = 0L
 
-    if(partAlgo != null) {
+    if (partAlgo != null) {
       log.info(msg)
       start = System.currentTimeMillis()
       g = partAlgo.partitionBy().cache()
-      //SparkExecutionModel.loadGraph(g)
+      SparkExecutionModel.loadGraph(g)
       end = System.currentTimeMillis()
-      log.info("Graph partitioning execution time: "+Duration(end - start, "millis").toMillis+" ms")
+      log.info("Graph partitioning execution time: " + Duration(end - start, "millis").toMillis + " ms")
     }
 
     // query executing
     log.info("Start to execute queries")
 
-    config.query.foreach{ path =>
-      log.info("Query file: "+path)
+    config.query.foreach { path =>
+      log.info("Query file: " + path)
       modelConfig.setInputQueryFile(path)
       val sp = new SparqlParser(modelConfig.getInputQueryFile)
-      sp.getOps.foreach{ ops =>
+      sp.getOps.foreach { ops =>
         val tag = ops.getTag
-        log.info("Operation "+tag+" start")
+        log.info("Operation " + tag + " start")
         start = System.currentTimeMillis()
         ops.execute()
         end = System.currentTimeMillis()
-        log.info(tag+" execution time: "+Duration(end - start, "millis").toMillis+" ms")
+        log.info(tag + " execution time: " + Duration(end - start, "millis").toMillis + " ms")
       }
     }
 
     // print results to console
-    if(config.print){
+    if (config.print) {
       log.info("print final result")
       val results = IntermediateResult.getFinalResult.cache()
-      if(results.count() >= 10){
+      if (results.count() >= 10) {
         log.info("Too long results(more than 10)")
       } else {
         results.collect().foreach(println(_))
