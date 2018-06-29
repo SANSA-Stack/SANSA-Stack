@@ -126,7 +126,7 @@ object RDFStatistics extends Serializable {
    */
   def ClassHierarchyDepth(triples: RDD[Triple]): VertexRDD[Int] = {
     val uc_triples = triples
-      .filter(triple => (triple.getPredicate.toString().equals(RDFS.subClassOf) &&
+      .filter(triple => (triple.getPredicate.matches(RDFS.subClassOf.asNode()) &&
         triple.getSubject.isURI() && triple.getObject.isURI()))
 
     val graph = uc_triples.asGraph()
@@ -143,7 +143,7 @@ object RDFStatistics extends Serializable {
   def PropertyHierarchyDepth(triples: RDD[Triple]): VertexRDD[Int] = {
 
     val uc_triples = triples
-      .filter(triple => (triple.getPredicate.toString().equals(RDFS.subPropertyOf) &&
+      .filter(triple => (triple.getPredicate.matches(RDFS.subPropertyOf.asNode()) &&
         triple.getSubject.isURI() && triple.getObject.isURI()))
 
     val graph = uc_triples.asGraph()
@@ -159,7 +159,7 @@ object RDFStatistics extends Serializable {
    * @return the usage of subclasses on the given graph
    */
   def SubclassUsage(triples: RDD[Triple]): Long = {
-    triples.filter(triple => triple.getPredicate.toString().equals(RDFS.subClassOf))
+    triples.filter(triple => triple.getPredicate.matches(RDFS.subClassOf.asNode()))
       .count
   }
 
@@ -241,7 +241,7 @@ object RDFStatistics extends Serializable {
    * @return the average typed string length used throughout the RDF graph.
    */
   def AvgTypedStringLength(triples: RDD[Triple]): Double = {
-    val typed_strngs = triples.filter(triple => (triple.getObject.isLiteral() && triple.getObject.getLiteralDatatypeURI.equals(XSD.xstring)))
+    val typed_strngs = triples.filter(triple => (triple.getObject.isLiteral() && triple.getObject.getLiteralDatatypeURI.equals(XSD.xstring.getURI)))
     val lenth_o = typed_strngs.map(_.getObject.toString().length()).sum()
     val cnt = typed_strngs.count()
     if (cnt > 0) lenth_o / cnt else 0
@@ -267,7 +267,7 @@ object RDFStatistics extends Serializable {
    * @return list of typed subjects.
    */
   def TypedSubjects(triples: RDD[Triple]): RDD[Node] =
-    triples.filter(triple => triple.getPredicate.toString().equals(RDF.`type`)).map(_.getSubject)
+    triples.filter(triple => triple.getPredicate.matches(RDF.`type`.asNode())).map(_.getSubject)
 
   /**
    * 24. Labeled subjects criterion.
@@ -276,7 +276,7 @@ object RDFStatistics extends Serializable {
    * @return list of labeled subjects.
    */
   def LabeledSubjects(triples: RDD[Triple]): RDD[Node] =
-    triples.filter(triple => triple.getPredicate.toString().equals(RDFS.label)).map(_.getSubject)
+    triples.filter(triple => triple.getPredicate.matches(RDFS.label.asNode())).map(_.getSubject)
 
   /**
    * 25. SameAs criterion.
@@ -285,7 +285,7 @@ object RDFStatistics extends Serializable {
    * @return list of triples with owl#sameAs as predicate
    */
   def SameAs(triples: RDD[Triple]): RDD[Triple] =
-    triples.filter(_.getPredicate.toString().equals(OWL.sameAs))
+    triples.filter(_.getPredicate.matches(OWL.sameAs.asNode()))
 
   /**
    * 26. Links criterion.
@@ -307,8 +307,8 @@ object RDFStatistics extends Serializable {
    * @return entities with their maximum values on the graph
    */
   def MaxPerProperty(triples: RDD[Triple]): (Triple, Int) = {
-    val max_per_property_def = triples.filter(triple => (triple.getObject.toString().equals(XSD.xint)
-      | triple.getObject.toString().equals(XSD.xfloat) | triple.getObject.toString().equals(XSD.dateTime)))
+    val max_per_property_def = triples.filter(triple => (triple.getObject.matches(XSD.xint.asNode())
+      | triple.getObject.matches(XSD.xfloat.asNode()) | triple.getObject.matches(XSD.dateTime.asNode())))
     val properties_fr = max_per_property_def.map(f => (f, 1)).reduceByKey(_ + _)
 
     val ordered = properties_fr.takeOrdered(1)(Ordering[Int].reverse.on(_._2))
@@ -322,8 +322,8 @@ object RDFStatistics extends Serializable {
    * @return entities with their average values on the graph
    */
   def AvgPerProperty(triples: RDD[Triple]): RDD[(Triple, Double)] = {
-    val avg_per_property_def = triples.filter(triple => (triple.getObject.toString().equals(XSD.xint)
-      | triple.getObject.toString().equals(XSD.xfloat) | triple.getObject.toString().equals(XSD.dateTime)))
+    val avg_per_property_def = triples.filter(triple => (triple.getObject.matches(XSD.xint.asNode())
+      | triple.getObject.matches(XSD.xfloat.asNode()) | triple.getObject.matches(XSD.dateTime.asNode())))
 
     val sumCountPair = avg_per_property_def.map((_, 1)).combineByKey(
       (x: Int) => (x.toDouble, 1),
@@ -339,7 +339,7 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
 
   // ?p=rdf:type && isIRI(?o)
   def Filter(): RDD[Node] = triples.filter(f =>
-    f.getPredicate.toString().equals(RDF.`type`) && f.getObject.isURI())
+    f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.isURI())
     .map(_.getObject)
 
   // M[?o]++
@@ -378,8 +378,8 @@ class Classes_Defined(triples: RDD[Triple], spark: SparkSession) extends Seriali
 
   // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
   def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(RDFS.Class))
-      || (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(OWL.Class))
+    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDFS.Class.asNode()))
+      || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(OWL.Class.asNode()))
       && !f.getSubject.isURI())
 
   // M[?o]++
@@ -401,8 +401,8 @@ object Classes_Defined {
 class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
   def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(OWL.ObjectProperty))
-      || (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(RDF.Property))
+    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(OWL.ObjectProperty.asNode()))
+      || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDF.Property.asNode()))
       && !f.getSubject.isURI())
 
   def Action(): RDD[Node] = Filter().map(_.getPredicate).distinct()
