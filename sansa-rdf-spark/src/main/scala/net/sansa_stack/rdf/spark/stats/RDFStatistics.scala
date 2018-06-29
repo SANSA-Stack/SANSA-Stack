@@ -378,10 +378,8 @@ class Classes_Defined(triples: RDD[Triple], spark: SparkSession) extends Seriali
 
   // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
   def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDFS.Class.asNode()))
-      || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(OWL.Class.asNode()))
-      && !f.getSubject.isURI())
-
+    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getSubject.isURI() &&
+      (f.getObject.matches(RDFS.Class.asNode()) || f.getObject.matches(OWL.Class.asNode()))))
   // M[?o]++
   def Action(): RDD[Node] = Filter().map(_.getSubject).distinct()
 
@@ -401,9 +399,8 @@ object Classes_Defined {
 class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
   def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(OWL.ObjectProperty.asNode()))
-      || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDF.Property.asNode()))
-      && !f.getSubject.isURI())
+    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getSubject.isURI() &&
+      (f.getObject.matches(OWL.ObjectProperty.asNode()) || f.getObject.matches(RDF.Property.asNode()))))
 
   def Action(): RDD[Node] = Filter().map(_.getPredicate).distinct()
 
