@@ -69,7 +69,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 6)
   }
 
-  test("computing Distinct Entities should result in size 0") {
+  test("computing Distinct Entities should result in size 9") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -78,7 +78,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsDistinctEntities()
     val cnt = criteria.count()
 
-    assert(cnt == 0)
+    assert(cnt == 9)
   }
 
   test("computing Distinct Subjects should result in size 3") {

@@ -94,7 +94,7 @@ package object stats {
      * <b>Action</b> : `S`
      * @return RDD of distinct entities in the dataset.
      */
-    def statsDistinctEntities(): RDD[Triple] = DistinctEntities(triples, spark).Action()
+    def statsDistinctEntities(): RDD[Node] = DistinctEntities(triples, spark).Action()
 
     /**
      * * 17. Literals criterion

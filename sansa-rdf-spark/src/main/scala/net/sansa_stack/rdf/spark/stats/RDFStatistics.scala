@@ -453,10 +453,13 @@ object PropertyUsage {
 
 class DistinctEntities(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
-  def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getSubject.isURI && f.getPredicate.isURI && f.getObject.isURI))
+  def Filter(): RDD[Node] =
+    triples
+      .flatMap(t => Seq(t.getSubject, t.getPredicate, t.getObject))
+      .filter(_.isURI)
+      .distinct()
 
-  def Action(): RDD[Triple] = Filter().distinct()
+  def Action(): RDD[Node] = Filter().distinct()
 
   def PostProc(): Long = Action().count()
 
