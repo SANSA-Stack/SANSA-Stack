@@ -241,10 +241,10 @@ object RDFStatistics extends Serializable {
    * @return the average typed string length used throughout the RDF graph.
    */
   def AvgTypedStringLength(triples: RDD[Triple]): Double = {
-    val typed_strngs = triples.filter(triple => (triple.getObject.isLiteral && triple.getObject.getLiteralDatatypeURI.equals(XSD.xstring.getURI)))
-    val lenth_o = typed_strngs.map(_.getObject.toString().length()).sum()
-    val cnt = typed_strngs.count()
-    if (cnt > 0) lenth_o / cnt else 0
+    triples
+      .filter(triple => triple.getObject.isLiteral && triple.getObject.getLiteralDatatypeURI.equals(XSD.xstring.getURI))
+      .map(_.getObject.getLiteralLexicalForm.length)
+      .mean()
   }
 
   /**
@@ -254,10 +254,10 @@ object RDFStatistics extends Serializable {
    * @return the average untyped string length used throughout the RDF graph.
    */
   def AvgUntypedStringLength(triples: RDD[Triple]): Double = {
-      triples
-        .filter(triple => triple.getObject.isLiteral && !triple.getObject.getLiteralLanguage.isEmpty) // since RDF 1.1 there is always a datatype, thus, we check for non-empty language tag
-        .map(_.getObject.getLiteralLexicalForm.length)
-        .mean()
+    triples
+      .filter(triple => triple.getObject.isLiteral && !triple.getObject.getLiteralLanguage.isEmpty) // since RDF 1.1 there is always a datatype, thus, we check for non-empty language tag
+      .map(_.getObject.getLiteralLexicalForm.length)
+      .mean()
   }
 
   /**
