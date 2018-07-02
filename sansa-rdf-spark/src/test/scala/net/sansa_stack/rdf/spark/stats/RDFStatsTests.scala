@@ -224,7 +224,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 42.666666666666664)
   }
 
-  test("computing Avgerage UnTyped String Length should result in size 0.0") {
+  test("computing Avgerage UnTyped String Length should result in 25.0") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -232,7 +232,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
 
     val cnt = triples.statsAvgUntypedStringLength()
 
-    assert(cnt == 0.0)
+    assert(cnt == 25.0)
   }
 
   test("computing Typed Subjects should result in size 0") {
