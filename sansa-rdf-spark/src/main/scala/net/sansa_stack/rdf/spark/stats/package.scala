@@ -171,7 +171,7 @@ package object stats {
      *
      * @return list of namespaces and their frequentcies.
      */
-    def statsLinks(): RDD[(String, Int)] = RDFStatistics.Links(triples)
+    def statsLinks(): RDD[(String, String, Int)] = RDFStatistics.Links(triples)
 
     /**
      * 28.Maximum per property {int,float,time} criterion

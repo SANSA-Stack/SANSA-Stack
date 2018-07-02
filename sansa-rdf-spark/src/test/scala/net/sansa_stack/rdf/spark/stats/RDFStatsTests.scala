@@ -18,7 +18,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsDistinctSubjects()
     val cnt = criteria.count()
 
-    assert(cnt == 3)
+    assert(cnt == 4)
   }
 
   test("computing Used Classes should result in size 0") {
@@ -66,7 +66,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsPropertyUsage()
     val cnt = criteria.count()
 
-    assert(cnt == 6)
+    assert(cnt == 7)
   }
 
   test("computing Distinct Entities should result in size 9") {
@@ -78,7 +78,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsDistinctEntities()
     val cnt = criteria.count()
 
-    assert(cnt == 9)
+    assert(cnt == 12)
   }
 
   test("computing Distinct Subjects should result in size 3") {
@@ -90,7 +90,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsDistinctSubjects()
     val cnt = criteria.count()
 
-    assert(cnt == 3)
+    assert(cnt == 4)
   }
 
   test("computing Distinct Objects should result in size 0") {
@@ -102,7 +102,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsDistinctObjects()
     val cnt = criteria.count()
 
-    assert(cnt == 0)
+    assert(cnt == 1)
   }
 
   test("computing Subject Vocabularies should result in size 3") {
@@ -114,7 +114,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsSubjectVocabularies()
     val cnt = criteria.count()
 
-    assert(cnt == 3)
+    assert(cnt == 4)
   }
 
   test("computing Predicate Vocabularies should result in size 5") {
@@ -126,7 +126,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsPredicateVocabularies()
     val cnt = criteria.count()
 
-    assert(cnt == 5)
+    assert(cnt == 6)
   }
 
   test("computing Object Vocabularies should result in size 0") {
@@ -138,7 +138,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsObjectVocabularies()
     val cnt = criteria.count()
 
-    assert(cnt == 0)
+    assert(cnt == 1)
   }
 
   test("computing Properties Defined should result in size 0") {
@@ -268,19 +268,22 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsSameAs()
     val cnt = criteria.count()
 
-    assert(cnt == 0)
+    assert(cnt == 1)
   }
 
-  test("computing Links should result in size 0") {
+  test("computing Links between different namespaces should match the expected result") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = spark.rdf(lang, allowBlankLines = true)(path)
 
-    val criteria = triples.statsLinks()
-    val cnt = criteria.count()
+    val result = triples.statsLinks().collect().toSet
 
-    assert(cnt == 0)
+    val target = Set(
+      ("http://namespace1.org/show/218", "http://namespace2.org/show/218", 1)
+    )
+
+    assert(result == target)
   }
 
   test("computing Subject Vocabularies result in size 3") {
@@ -292,7 +295,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsSubjectVocabularies()
     val cnt = criteria.count()
 
-    assert(cnt == 3)
+    assert(cnt == 4)
   }
 
   test("computing Predicate Vocabularies result in size 5") {
@@ -304,7 +307,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsPredicateVocabularies()
     val cnt = criteria.count()
 
-    assert(cnt == 5)
+    assert(cnt == 6)
   }
 
   test("computing Object Vocabularies result in size 0") {
@@ -316,6 +319,6 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val criteria = triples.statsObjectVocabularies()
     val cnt = criteria.count()
 
-    assert(cnt == 0)
+    assert(cnt == 1)
   }
 }

@@ -288,16 +288,20 @@ object RDFStatistics extends Serializable {
     triples.filter(_.predicateMatches(OWL.sameAs.asNode()))
 
   /**
-   * 26. Links criterion.
-   *
-   * @param triples RDD of triples
-   * @return list of namespaces and their frequentcies.
-   */
-  def Links(triples: RDD[Triple]): RDD[(String, Int)] = {
-    triples.filter(triple => ((triple.getSubject.isURI && triple.getObject.isURI) &&
-      triple.getSubject.getNameSpace != triple.getObject.getNameSpace))
-      .map(triple => (triple.getSubject.getNameSpace + triple.getObject.getNameSpace))
-      .map(f => (f, 1)).reduceByKey(_ + _)
+    * 26. Links criterion.
+    *
+    * Computes the frequencies of links between entities of different namespaces. This measure is directed, i.e.
+    * a link from `ns1 -> ns2` is different from `ns2 -> ns1`.
+    *
+    * @param triples RDD of triples
+    * @return list of namespace combinations and their frequencies.
+    */
+  def Links(triples: RDD[Triple]): RDD[(String, String, Int)] = {
+    triples
+      .filter(triple => (triple.getSubject.isURI && triple.getObject.isURI) && triple.getSubject.getNameSpace != triple.getObject.getNameSpace)
+      .map(triple => ((triple.getSubject.getNameSpace, triple.getObject.getNameSpace), 1))
+      .reduceByKey(_ + _)
+      .map(e => (e._1._1, e._1._2, e._2))
   }
 
   /**
@@ -332,6 +336,7 @@ object RDFStatistics extends Serializable {
     val average = sumCountPair.map(x => (x._1, (x._2._1 / x._2._2)))
     average
   }
+
 
 }
 

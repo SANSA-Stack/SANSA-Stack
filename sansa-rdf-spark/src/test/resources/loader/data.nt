@@ -8,3 +8,5 @@
 
 _:alice <http://xmlns.com/foaf/0.1/knows> _:bob .
 _:bob <http://xmlns.com/foaf/0.1/knows> _:alice .
+
+<http://namespace1.org/show/218> <http://www.w3.org/2002/07/owl#sameAs> <http://namespace2.org/show/218> .
