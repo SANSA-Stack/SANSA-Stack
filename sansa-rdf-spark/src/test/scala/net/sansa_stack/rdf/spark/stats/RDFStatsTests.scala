@@ -321,4 +321,17 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
 
     assert(cnt == 1)
   }
+
+  test("computing Class Hierarchy Depth should result in 3") {
+    val path = getClass.getResource("/stats/4_class_hierarchy.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val criteria = triples.classHierarchyDepth()
+    println(criteria.collect().mkString("\n"))
+    val cnt = criteria.count()
+
+    assert(cnt == 4)
+  }
 }

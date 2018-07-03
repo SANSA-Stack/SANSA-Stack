@@ -1,7 +1,8 @@
 package net.sansa_stack.rdf.spark
 
 import net.sansa_stack.rdf.spark.utils.Logging
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
@@ -241,6 +242,9 @@ package object stats {
      * @return RDD of predicates defined in the dataset.
      */
     def statsPropertiesDefined(): RDD[Node] = PropertiesDefined(triples, spark).Action()
+
+
+    def classHierarchyDepth(): VertexRDD[Int] = RDFStatistics.ClassHierarchyDepth(triples)
 
   }
 
