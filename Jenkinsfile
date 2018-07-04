@@ -1,5 +1,3 @@
-#!groovy
-
 pipeline {
     agent any
     tools {
@@ -17,10 +15,11 @@ pipeline {
         }
 
         stage('Prepare') {
-            checkout scm
+            
         }
 
         stage ('Build') {
+            echo 'Building..'
             steps {
                 sh 'mvn clean package'
             }
@@ -32,26 +31,16 @@ pipeline {
         }
 
         stage('Test') {
+            echo 'Testing..'
             steps {
                 sh 'mvn test'
             }
         }
 
         stage ('Deploy') {
-            steps {
-                sh 'mvn -Dmaven.test.failure.ignore=true install'
-            }
-            post {
-                success {
-                    junit 'target/surefire-reports/**/*.xml'
-                }
-            }
+            echo 'Deploying..'
+          
         }
 
-
-
-        stage('Release') {
-
-        }
     }
 }
