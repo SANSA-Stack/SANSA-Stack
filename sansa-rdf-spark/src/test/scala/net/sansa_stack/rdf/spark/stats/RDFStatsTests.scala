@@ -1,6 +1,9 @@
 package net.sansa_stack.rdf.spark.stats
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.graph.NodeFactory
+
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
@@ -322,7 +325,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 1)
   }
 
-  test("computing Class Hierarchy Depth should result in 3") {
+  test("4 - computing Class Hierarchy Depth should result in 3") {
     val path = getClass.getResource("/stats/4_class_hierarchy.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -333,5 +336,40 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val cnt = criteria.count()
 
     assert(cnt == 4)
+  }
+
+  test("28 - computing Max Value Per Property should match") {
+    val path = getClass.getResource("/stats/28_max_per_property.nt").getPath
+
+    val triples = spark.rdf(Lang.NTRIPLES)(path)
+
+    val target = Set(
+      (NodeFactory.createURI("http://example.org/dtp"), NodeFactory.createLiteral("2004-04-12T16:20:00", XSDDatatype.XSDdateTime)),
+      (NodeFactory.createURI("http://example.org/dp1"), NodeFactory.createLiteral("123.0", XSDDatatype.XSDdouble)),
+      (NodeFactory.createURI("http://example.org/ip2"), NodeFactory.createLiteral("1111", XSDDatatype.XSDint)),
+      (NodeFactory.createURI("http://example.org/dp2"), NodeFactory.createLiteral("1111.0", XSDDatatype.XSDdouble)),
+      (NodeFactory.createURI("http://example.org/ip1"), NodeFactory.createLiteral("123", XSDDatatype.XSDint))
+    )
+
+    val result = triples.statsMaxPerProperty().collect().toSet
+
+    assert(target == result)
+  }
+
+  test("29 - computing Avg Value Per Property should match") {
+    val path = getClass.getResource("/stats/28_max_per_property.nt").getPath
+
+    val triples = spark.rdf(Lang.NTRIPLES)(path)
+
+    val target = Set(
+      (NodeFactory.createURI("http://example.org/dp1"), (10.0 + (-30.0) + 123.0) / 3),
+      (NodeFactory.createURI("http://example.org/dp2"), (1111.0 + (-90.0) + 2.0) / 3),
+      (NodeFactory.createURI("http://example.org/ip1"), (10 + (-30) + 123) / 3.0),
+      (NodeFactory.createURI("http://example.org/ip2"), (1111 + (-90) + 2) / 3.0)
+    )
+
+    val result = triples.statsAvgPerProperty().collect().toSet
+
+    assert(target == result)
   }
 }

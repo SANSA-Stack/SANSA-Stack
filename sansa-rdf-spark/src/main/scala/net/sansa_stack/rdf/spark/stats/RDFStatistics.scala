@@ -1,13 +1,16 @@
 package net.sansa_stack.rdf.spark.stats
 
-import java.io.{ File, StringWriter }
+import java.io.StringWriter
 
-import net.sansa_stack.rdf.spark.model.graph._
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.vocabulary.{ OWL, RDF, RDFS, XSD }
+import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.sparql.expr.NodeValue
+import org.apache.jena.vocabulary.{OWL, RDF, RDFS, XSD}
 import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
+import net.sansa_stack.rdf.spark.model.graph._
 
 /**
  * A Distributed implementation of RDF Statisctics.
@@ -305,38 +308,64 @@ object RDFStatistics extends Serializable {
   }
 
   /**
-   * 28.Maximum per property {int,float,time} criterion
+   * 28.Maximum value per property {int,float,time} criterion
    *
    * @param triples RDD of triples
    * @return entities with their maximum values on the graph
    */
-  def MaxPerProperty(triples: RDD[Triple]): (Triple, Int) = {
-    val max_per_property_def = triples.filter(triple => (triple.objectMatches(XSD.xint.asNode())
-      | triple.objectMatches(XSD.xfloat.asNode()) | triple.objectMatches(XSD.dateTime.asNode())))
-    val properties_fr = max_per_property_def.map(f => (f, 1)).reduceByKey(_ + _)
+  def MaxPerProperty(triples: RDD[Triple]): RDD[(Node, Node)] = {
+    // int values (fast)
+//    triples
+//      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+//      .map(t => (t.getPredicate, t.getObject.getLiteralValue.asInstanceOf[Int]))
+//      .reduceByKey(_ max _)
 
-    val ordered = properties_fr.takeOrdered(1)(Ordering[Int].reverse.on(_._2))
-    ordered.maxBy(_._2)
+    // generic (simple)
+    triples
+      .filter(t => t.getObject.isLiteral) // && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+      .map(t => (t.getPredicate, t.getObject))
+      .reduceByKey((n1, n2) => {
+        val ret = NodeValue.compare(NodeValue.makeNode(n1), NodeValue.makeNode(n2))
+        if (ret > 0) n1 else n2
+      })
+
+    // generic (accumulator)
+//    triples
+//      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+//      .map(t => (t.getPredicate, t.getObject))
+//      .aggregateByKey(new AggMax(null).createAccumulator())(
+//      (acc, v) => {
+//          acc.accumulate(BindingFactory.binding(null, v), null)
+//          acc},
+//        (acc1, acc2) => {
+//          acc1.accumulate(BindingFactory.binding(null, acc2.getValue().asNode()), null)
+//          acc1
+//        })
+//      .map(e => (e._1, e._2.getValue.asNode()))
   }
 
   /**
-   * 29. Average per property {int,float,time} criterion
+   * 29. Average value per numeric property {int,float,time} criterion
    *
    * @param triples RDD of triples
-   * @return entities with their average values on the graph
+   * @return properties with their average values on the graph
    */
-  def AvgPerProperty(triples: RDD[Triple]): RDD[(Triple, Double)] = {
-    val avg_per_property_def = triples.filter(triple => (triple.objectMatches(XSD.xint.asNode())
-      | triple.objectMatches(XSD.xfloat.asNode()) | triple.objectMatches(XSD.dateTime.asNode())))
-
-    val sumCountPair = avg_per_property_def.map((_, 1)).combineByKey(
-      (x: Int) => (x.toDouble, 1),
-      (pair1: (Double, Int), x: Int) => (pair1._1 + x, pair1._2 + 1),
-      (pair1: (Double, Int), pair2: (Double, Int)) => (pair1._1 + pair2._1, pair1._2 + pair2._2))
-    val average = sumCountPair.map(x => (x._1, (x._2._1 / x._2._2)))
-    average
+  def AvgPerProperty(triples: RDD[Triple]): RDD[(Node, Double)] = {
+    triples
+      .filter(t => t.getObject.isLiteral &&
+        (t.getObject.getLiteralDatatype == XSDDatatype.XSDint ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDshort ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDdecimal ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDfloat ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDdouble))
+      .map(t => (t.getPredicate, t.getObject))
+      .aggregateByKey((0.0, 0))(
+        (elt, node) => (elt._1 + NodeValue.makeNode(node).getDouble, elt._2 + 1),
+        (elt1, elt2) => (elt1._1 + elt2._1, elt1._2 + elt2._2)
+      )
+      .map(e => (e._1, e._2._1 / e._2._2))
   }
-
 
 }
 

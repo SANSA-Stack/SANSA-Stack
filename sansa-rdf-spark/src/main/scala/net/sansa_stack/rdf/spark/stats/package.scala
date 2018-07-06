@@ -179,14 +179,14 @@ package object stats {
      *
      * @return entities with their maximum values on the graph
      */
-    def statsMaxPerProperty(): (Triple, Int) = RDFStatistics.MaxPerProperty(triples)
+    def statsMaxPerProperty(): RDD[(Node, Node)] = RDFStatistics.MaxPerProperty(triples)
 
     /**
      * 29. Average per property {int,float,time} criterion
      *
      * @return entities with their average values on the graph
      */
-    def statsAvgPerProperty(): RDD[(Triple, Double)] = RDFStatistics.AvgPerProperty(triples)
+    def statsAvgPerProperty(): RDD[(Node, Double)] = RDFStatistics.AvgPerProperty(triples)
 
     /**
      * <b>30. Subject vocabularies </b> <br>
@@ -245,7 +245,6 @@ package object stats {
 
 
     def classHierarchyDepth(): VertexRDD[Int] = RDFStatistics.ClassHierarchyDepth(triples)
-
   }
 
   implicit class StatsCriteriaVoidify(stats: RDD[String]) extends Logging {
