@@ -15,12 +15,14 @@ pipeline {
         }
 
         stage('Prepare') {
-            
+            steps {
+                echo 'Preparing..'
+            }
         }
 
         stage ('Build') {
-            echo 'Building..'
             steps {
+                echo 'Building..'
                 sh 'mvn clean package'
             }
             post {
@@ -30,15 +32,17 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            echo 'Testing..'
+        stage('Test') {            
             steps {
+                echo 'Testing..'
                 sh 'mvn test'
             }
         }
 
         stage ('Deploy') {
-            echo 'Deploying..'
+            steps {
+                echo 'Deploying..'
+            }
           
         }
 
