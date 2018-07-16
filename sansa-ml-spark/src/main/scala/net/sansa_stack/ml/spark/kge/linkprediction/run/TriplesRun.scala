@@ -1,16 +1,15 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.run
 
-import scala.util.Random
-
-import net.sansa_stack.rdf.spark.kge.triples._
-import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
+import com.google.common.base.Stopwatch
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql._
-import org.apache.log4j.{ Level, Logger }
-import org.springframework.util.StopWatch
 
-object runTesting extends App {
+import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
+import net.sansa_stack.rdf.spark.kge.triples._
 
-  def printType[T](x: T): Unit = { println(x.getClass.toString()) }
+object TriplesRun extends App {
+
+  def printType[T](x: T): Unit = { println(x.getClass.toString) }
 
   Logger.getLogger("org").setLevel(Level.OFF)
   Logger.getLogger("akka").setLevel(Level.OFF)
@@ -26,27 +25,27 @@ object runTesting extends App {
 
   println("<<< STARTING >>>")
 
-  var watch: StopWatch = new StopWatch()
+  val watch = Stopwatch.createUnstarted()
 
   watch.start()
   val trp = new Triples("/home/hamed/workspace/TransE/DataSets/FB15k/freebase_mtr100_mte100-train.txt", "\t", false, false, spark)
   watch.stop()
-  println("Readin triples done in " + watch.getTotalTimeSeconds + " seconds")
+  println("Reading triples done in " + watch.elapsed().toMillis + " seconds")
 
   watch.start()
   var num: Long = trp.triples.count()
   watch.stop()
-  println("\n\n No triples = " + num.toString() + " - Done in " + watch.getTotalTimeSeconds + " seconds.")
+  println("\n\n No triples = " + num.toString + " - Done in " + watch.elapsed().toMillis + " seconds.")
 
   watch.start()
   num = trp.getEntities().length
   watch.stop()
-  println("\n\n No Entities = " + num.toString() + " - Done in " + watch.getTotalTimeSeconds + " seconds.")
+  println("\n\n No Entities = " + num.toString + " - Done in " + watch.elapsed().toMillis + " seconds.")
 
   watch.start()
   num = trp.getRelations().length
   watch.stop()
-  println("\n\n No Predicates = " + num.toString() + " - Done in " + watch.getTotalTimeSeconds + " seconds.")
+  println("\n\n No Predicates = " + num.toString + " - Done in " + watch.elapsed().toMillis + " seconds.")
   //  trp.getAllDistinctEntities().take(10).foreach(println)
   //  println("\n \n No entities = ",trp.getAllDistinctEntities().count() )
   //  println("\n \n No predicates = ",trp.getAllDistinctPredicates().count() )
@@ -79,10 +78,10 @@ object runTesting extends App {
 
   sample1.show()
 
-  //val r3 = conv.getTriplesByIndex(sample1)
-  //r3.printSchema()
-  //r3.show
+  // val r3 = conv.getTriplesByIndex(sample1)
+  // r3.printSchema()
+  // r3.show
 
-  //val r4 = conv.getTriplesByString(r3)
-  //println("<<< DONE >>>")
+  // val r4 = conv.getTriplesByString(r3)
+  // println("<<< DONE >>>")
 }

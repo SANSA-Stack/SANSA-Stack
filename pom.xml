@@ -55,7 +55,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<scala.version>2.11.11</scala.version>
+		<scala.version>2.11.12</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
 		<spark.version>2.3.1</spark.version>
 		<flink.version>1.5.0</flink.version>
@@ -176,7 +176,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>19.0</version>
+				<version>23.6.1-jre</version>
 			</dependency>
 
 		</dependencies>
@@ -189,7 +189,7 @@
 				<plugin>
 					<groupId>net.alchim31.maven</groupId>
 					<artifactId>scala-maven-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.4.1</version>
 					<executions>
 						<execution>
 							<goals>
@@ -209,7 +209,7 @@
 					</executions>
 					<configuration>
 						<scalaVersion>${scala.version}</scalaVersion>
-						<recompileMode>incremental</recompileMode>
+						<!--<recompileMode>incremental</recompileMode>-->
 					</configuration>
 				</plugin>
 
