@@ -39,7 +39,7 @@ object MineRules {
     know.sethdfsPath(hdfsPath)
     know.setKbSrc(input)
 
-    know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))
+    know.setKbGraph(RDFGraphLoader.loadFromFile(input, spark.sparkContext, 2))
     know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, spark.sparkContext, spark.sqlContext, 2))
 
     val algo = new Algorithm(know, 0.01, 3, 0.1, hdfsPath)
