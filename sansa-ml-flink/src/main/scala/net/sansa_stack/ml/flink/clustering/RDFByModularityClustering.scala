@@ -1,19 +1,21 @@
 package net.sansa_stack.ml.flink.clustering
 
-import org.apache.flink.api.scala._
-import org.apache.flink.api.common.functions.RichMapFunction
-import org.apache.flink.configuration.Configuration
-import scala.collection.JavaConverters._
-import org.apache.flink.core.fs.FileSystem
-import org.apache.flink.api.common.operators.Order
-
 import java.io.StringWriter
+
+import scala.collection.JavaConverters._
 import scala.util.control.Breaks._
+
+import org.apache.flink.api.common.functions.RichMapFunction
+import org.apache.flink.api.common.operators.Order
+import org.apache.flink.api.java.operators.DataSink
+import org.apache.flink.api.scala._
+import org.apache.flink.configuration.Configuration
+import org.apache.flink.core.fs.FileSystem
 import org.apache.flink.util.Collector
 
 object RDFByModularityClustering {
 
-  def apply(env: ExecutionEnvironment, numIterations: Int, graphFile: String, outputFile: String) = {
+  def apply(env: ExecutionEnvironment, numIterations: Int, graphFile: String, outputFile: String): DataSink[String] = {
 
     val graphDataSet = env.readTextFile(graphFile) // returns list with entry = triple form "URI1 URI2 URI3 ."
     val nodeURIsDataSet = graphDataSet.map(x => x.split(" ").filter(y => y.trim() != "")).flatMap(array => Array(array(0), array(2))).distinct
@@ -32,12 +34,12 @@ object RDFByModularityClustering {
     val flattendedEdgeList: Array[String] = edgesDataSet.flatMap(x => Array(x._1, x._2)).collect.toArray
     val vertexDegreesDataSet: DataSet[(String, Int)] = nodeURIsDataSet.map(x => (x, flattendedEdgeList.count(y => y == x)))
 
-    /*val vertexDegreesBCFlink =nodeURIsDataSet.map(new RichMapFunction[String, Int]() {
+    /* val vertexDegreesBCFlink =nodeURIsDataSet.map(new RichMapFunction[String, Int]() {
 
           var broadcastSet: Traversable[(String, Int)] = _
 
           override def open(config: Configuration): Unit = {
-            broadcastSet = getRuntimeContext().getBroadcastVariable[(String, Int)]("vertexDegreesBC").asScala  
+            broadcastSet = getRuntimeContext().getBroadcastVariable[(String, Int)]("vertexDegreesBC").asScala
           }
 
           override def map(t: (String, Int)):Unit= broadcastSet.map(f=>(f._1,f._2))
@@ -45,7 +47,7 @@ object RDFByModularityClustering {
         .withBroadcastSet(vertexDegreesDataSet, "vertexDegreesBC")
       */
 
-    //TODO: this need to be broadcasted
+    // TODO: this need to be broadcasted
     val vertexDegreesBC = vertexDegreesDataSet.collect.toMap
     val edgesBC = edgesDataSet.collect.toArray
 
@@ -101,11 +103,12 @@ object RDFByModularityClustering {
     WriteToFile(cClustersInfo, outputFile, (true, 1))
 
   }
-  def iterationStepClusteringRDFByModularity(numEdges: Long,
-                                             edgesBC: Array[(String, String)],
-                                             vertexDegreesBC: Map[String, Int],
-                                             clusterMapDataSet: DataSet[List[String]],
-                                             env: ExecutionEnvironment): (DataSet[List[String]], Boolean) = {
+  def iterationStepClusteringRDFByModularity(
+    numEdges: Long,
+    edgesBC: Array[(String, String)],
+    vertexDegreesBC: Map[String, Int],
+    clusterMapDataSet: DataSet[List[String]],
+    env: ExecutionEnvironment): (DataSet[List[String]], Boolean) = {
     // Start iteration
 
     // The following DataSet contains distinct pairs of clusters for which there is an edge between them
@@ -142,8 +145,9 @@ object RDFByModularityClustering {
         (in, out: Collector[((List[String], List[String]), Double)]) =>
           var prev: (String, String) = null
           for (t <- in) {
-            if (prev == null || prev != t)
+            if (prev == null || prev != t) {
               out.collect(t)
+            }
           }
       }
 
@@ -160,7 +164,7 @@ object RDFByModularityClustering {
       //          bestL1.buffered.head
       //      }
       s.collect().head
-      //ss.collect().asInstanceOf[((List[String], List[String]), Double)]
+      // ss.collect().asInstanceOf[((List[String], List[String]), Double)]
 
     }
 
@@ -176,11 +180,12 @@ object RDFByModularityClustering {
 
   // The function that computes delta Q for the merge of two clusters
 
-  def deltaQ(numEdges: Long,
-             vertexDegreesBC: Map[String, Int],
-             edgesBC: Array[(String, String)],
-             clusterI: List[String],
-             clusterJ: List[String]): Double = {
+  def deltaQ(
+    numEdges: Long,
+    vertexDegreesBC: Map[String, Int],
+    edgesBC: Array[(String, String)],
+    clusterI: List[String],
+    clusterJ: List[String]): Double = {
 
     val clusterPairs: List[(String, String)] = clusterI.flatMap(x => clusterJ.map(y => (x, y)))
 
@@ -193,9 +198,9 @@ object RDFByModularityClustering {
     1.0 / numEdges * summand.fold(0.0)((a: Double, b: Double) => a - b)
   }
 
-  def WriteToFile[T](dataset: DataSet[T], file: String, parallelism: (Boolean, Int) = (false, 0)) =
+  def WriteToFile[T](dataset: DataSet[T], file: String, parallelism: (Boolean, Int) = (false, 0)): DataSink[T] =
     parallelism._1 match {
-      case true  => dataset.writeAsText(file, writeMode = FileSystem.WriteMode.OVERWRITE).setParallelism(parallelism._2)
+      case true => dataset.writeAsText(file, writeMode = FileSystem.WriteMode.OVERWRITE).setParallelism(parallelism._2)
       case false => dataset.writeAsText(file, writeMode = FileSystem.WriteMode.OVERWRITE)
     }
 }

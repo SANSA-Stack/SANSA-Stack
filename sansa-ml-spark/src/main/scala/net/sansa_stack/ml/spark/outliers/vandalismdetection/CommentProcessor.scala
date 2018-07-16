@@ -5,7 +5,7 @@ import org.slf4j.{ Logger, LoggerFactory }
 
 class CommentProcessor extends Serializable {
 
-  val logger: Logger = LoggerFactory.getLogger(classOf[SentencesFeature])
+  val logger: Logger = LoggerFactory.getLogger(classOf[SentencesFeatures])
 
   // Some Operations related to  Comment Parsing : "Parsed Comments"
   val ROBUST_ROLLBACK_PATTERN: Pattern = Pattern.compile(

@@ -40,7 +40,8 @@ class ParseRDFXML extends Serializable {
     println("HelloPrefixes" + " " + RDFXML_Dataset_Prefixes.count)
     //      RDFXML_Dataset_Prefixes.foreach(println)
     // Convert the block- RDFXML Prefixes to String DataType
-    val RDFXML_Dataset_AsstringPrefixes = RDFXML_Dataset_Prefixes.map { case (x, y) => (x.toString()) }
+    var RDFXML_Dataset_AsstringPrefixes_WithoutDist = RDFXML_Dataset_Prefixes.map { case (x, y) => (x.toString()) }
+    val RDFXML_Dataset_AsstringPrefixes=RDFXML_Dataset_AsstringPrefixes_WithoutDist.distinct()
     println("HelloPrefixes" + " " + RDFXML_Dataset_AsstringPrefixes.count)
     //      RDFXML_Dataset_AsstringPrefixes.foreach(println)
     val pref = RDFXML_Dataset_AsstringPrefixes.reduce((a, b) => a + "\n" + b)
@@ -89,8 +90,3 @@ class ParseRDFXML extends Serializable {
   }
 
 }
-
-
-
-
-

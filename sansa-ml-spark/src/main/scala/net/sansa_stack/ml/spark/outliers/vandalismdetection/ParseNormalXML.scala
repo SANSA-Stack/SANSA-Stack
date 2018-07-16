@@ -11,11 +11,9 @@ import java.net.InetAddress
 
 class ParseNormalXML extends Serializable {
 
-  def DB_NormalXML_Parser(sc: SparkContext): RDD[String] = {
+  def Training_DB_NormalXML_Parser_Input1(sc: SparkContext): RDD[String] = {
 
-    println("Normal XML .........!!!!!!")
-
-    //Streaming records:
+    //Streaming records:==================================================================Input Files
     val jobConf = new JobConf()
     jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
     jobConf.set("stream.recordreader.begin", "<revision>") // start Tag
@@ -26,18 +24,94 @@ class ParseNormalXML extends Serializable {
     val wikiData = sc.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text]) //.distinct()
     println(wikiData.count)
     val RevisionTagewikidata = wikiData.map { case (x, y) => (x.toString()) }
-    println(RevisionTagewikidata.count)
+    //println(RevisionTagewikidata.count)
 
     // ABend the revision in one line string
-    val RevisioninOneString = RevisionTagewikidata.map(line => New_abendRevision(line))
-    println("TotalCount" + " " + RevisioninOneString.count)
+    val RevisioninOneString = RevisionTagewikidata.map(line => New_abendRevision(line)).cache()
+    // println("TotalCount" + " " + RevisioninOneString.count)
 
-    val New_RevisionMap = RevisioninOneString.map(line => New_Build_Revision_map(line))
+    val New_RevisionMap = RevisioninOneString.map(line => New_Build_Revision_map(line)).cache()
+
+    New_RevisionMap
+
+  }
+  def Training_DB_NormalXML_Parser_Input2(sc: SparkContext): RDD[String] = {
+
+    //Streaming records:==================================================================Input Files
+    val jobConf = new JobConf()
+    jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
+    jobConf.set("stream.recordreader.begin", "<revision>") // start Tag
+    jobConf.set("stream.recordreader.end", "</revision>") // End Tag
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/2.xml") // input path from Hadoop
+
+    // read data and save in RDD as block
+    val wikiData = sc.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text]) //.distinct()
+    println(wikiData.count)
+    val RevisionTagewikidata = wikiData.map { case (x, y) => (x.toString()) }
+    //println(RevisionTagewikidata.count)
+
+    // ABend the revision in one line string
+    val RevisioninOneString = RevisionTagewikidata.map(line => New_abendRevision(line)).cache()
+    // println("TotalCount" + " " + RevisioninOneString.count)
+
+    val New_RevisionMap = RevisioninOneString.map(line => New_Build_Revision_map(line)).cache()
+
+    New_RevisionMap
+
+  }
+  def Training_DB_NormalXML_Parser_Input3(sc: SparkContext): RDD[String] = {
+
+   //Streaming records:==================================================================Input Files
+    val jobConf = new JobConf()
+    jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
+    jobConf.set("stream.recordreader.begin", "<revision>") // start Tag
+    jobConf.set("stream.recordreader.end", "</revision>") // End Tag
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/3.xml") // input path from Hadoop
+
+    // read data and save in RDD as block
+    val wikiData = sc.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text]) //.distinct()
+    println(wikiData.count)
+    val RevisionTagewikidata = wikiData.map { case (x, y) => (x.toString()) }
+    //println(RevisionTagewikidata.count)
+    // ABend the revision in one line string
+    val RevisioninOneString = RevisionTagewikidata.map(line => New_abendRevision(line)).cache()
+    // println("TotalCount" + " " + RevisioninOneString.count)
+
+    val New_RevisionMap = RevisioninOneString.map(line => New_Build_Revision_map(line)).cache()
 
     New_RevisionMap
 
   }
 
+    def Testing_DB_NormalXML_Parser(sc: SparkContext): RDD[String] = {
+
+   //Streaming records:==================================================================Input Files
+    val jobConf = new JobConf()
+    jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
+    jobConf.set("stream.recordreader.begin", "<revision>") // start Tag
+    jobConf.set("stream.recordreader.end", "</revision>") // End Tag
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/3.xml") // input path from Hadoop
+
+    // read data and save in RDD as block
+    val wikiData = sc.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text]) //.distinct()
+    println(wikiData.count)
+    val RevisionTagewikidata = wikiData.map { case (x, y) => (x.toString()) }
+    //println(RevisionTagewikidata.count)
+    // ABend the revision in one line string
+    val RevisioninOneString = RevisionTagewikidata.map(line => New_abendRevision(line)).cache()
+    // println("TotalCount" + " " + RevisioninOneString.count)
+
+    val New_RevisionMap = RevisioninOneString.map(line => New_Build_Revision_map(line)).cache()
+
+    New_RevisionMap
+
+  }
+
+  
+  
+  
+
+  
   // make the revision as one string
   def New_abendRevision(str: String): String = {
 
@@ -62,9 +136,11 @@ class ParseNormalXML extends Serializable {
     if (IdRevision != "") {
       val ID = IdRevision.toString().trim()
       Store_Record_String = ID.trim()
-    } else {
-      Store_Record_String = "0000"
     }
+
+    //    else {
+    //      Store_Record_String = "0"
+    //    }
     //1. Item Title :
     val ItemTitle: ArrayList[String] = Get_Item_Title_FromJson(Json)
     if (ItemTitle.size() > 0) {
@@ -97,6 +173,7 @@ class ParseNormalXML extends Serializable {
     } else {
       Store_Record_String = Store_Record_String.trim() + "NNLL" + "NA"
     }
+
     //3.Parent ID :
     val ParentIDStr = Get_ParentID(obj)
 
@@ -105,7 +182,7 @@ class ParseNormalXML extends Serializable {
       Store_Record_String = Store_Record_String + "NNLL" + ParentID.trim
 
     } else {
-      Store_Record_String = Store_Record_String + "NNLL" + "0110"
+      Store_Record_String = Store_Record_String + "NNLL" + "0"
 
     }
     //4.Timestamp:
@@ -116,29 +193,32 @@ class ParseNormalXML extends Serializable {
     } else {
       Store_Record_String = Store_Record_String + "NNLL" + "NA"
     }
+
     //5. Contributor Data( IP ):
     val Contributstr = Get_Contributor_IP(obj)
     //val ContributorSta = Contributorarray.get(0)
-    if (Contributstr != "") {
+    if (Contributstr != "0") {
       Store_Record_String = Store_Record_String + "NNLL" + Contributstr.trim()
     } else {
-      Store_Record_String = Store_Record_String + "NNLL" + "0000"
+      Store_Record_String = Store_Record_String + "NNLL" + "0"
     }
+
     //6. Contributor ID :
     val Contributor_IDStr = Get_Contributor_ID(obj)
     //val Contributor_IDSta = Contributor_IDarray.get(0)
-    if (Contributor_IDStr != "") {
+    if (Contributor_IDStr != "0") {
       Store_Record_String = Store_Record_String + "NNLL" + Contributor_IDStr.trim()
     } else {
-      Store_Record_String = Store_Record_String + "NNLL" + "0000"
+      Store_Record_String = Store_Record_String + "NNLL" + "0"
     }
+
     //7. Contributor Name :
     val Contributor_NameStr = Get_Contributor_Name(obj)
     //val Contributor_IDSta = Contributor_IDarray.get(0)
-    if (Contributor_NameStr != "") {
+    if (Contributor_NameStr != "NA") {
       Store_Record_String = Store_Record_String + "NNLL" + Contributor_NameStr.trim()
     } else {
-      Store_Record_String = Store_Record_String + "NNLL" + "0000"
+      Store_Record_String = Store_Record_String + "NNLL" + "NA"
     }
 
     //8. Full Json Tag for Parsing:
@@ -339,108 +419,23 @@ class ParseNormalXML extends Serializable {
     list_pairs_fromlabels
   }
 
-  // Get Geolocation information
-  def Get_Geolocation_FromJson(str: String): ArrayList[String] = {
-
-    val Geolocation_fromGeo: ArrayList[String] = new ArrayList[String]()
-    val inputJsonStr: CharSequence = str
-    val pattStr_Geo: String = "latitude:.*,altitude"
-    val p_Geo: Pattern = Pattern.compile(pattStr_Geo)
-    val m_Geo: Matcher = p_Geo.matcher(inputJsonStr)
-    while ((m_Geo.find())) {
-      val replabels: String = m_Geo.group()
-      //val cleaned_value1 = replabels.replace("latitude:", "").trim()
-      val cleaned_value2 = replabels.replace(",altitude", "").trim()
-      Geolocation_fromGeo.add(cleaned_value2.trim())
-
-    }
-    Geolocation_fromGeo
-  }
-  //extract Description from Json File
-  def Get_Descri_FromJson(str: String): ArrayList[String] = {
-
-    val list_pairs_fromDescrip: ArrayList[String] = new ArrayList[String]()
-    val inputDescription: CharSequence = str
-    val pattStr_desc: String = "descriptions:.*,aliases"
-    val p_desc: Pattern = Pattern.compile(pattStr_desc)
-    val m_desc: Matcher = p_desc.matcher(inputDescription)
-    while ((m_desc.find())) {
-      val repdesc: String = m_desc.group()
-      val cleaned_value1 = repdesc.replace("descriptions:", "").trim()
-      val cleaned_value2 = cleaned_value1.replace(",aliases", "").trim()
-      if (cleaned_value2 == "[]") {
-        list_pairs_fromDescrip.add("NA")
-
-      } else {
-        list_pairs_fromDescrip.add(cleaned_value2.trim())
-      }
-    }
-    list_pairs_fromDescrip
-  }
-  // extract Aliases from Json String
-  def Get_Alias_FromJson(str: String): ArrayList[String] = {
-
-    val list_pairs_fromAliases: ArrayList[String] = new ArrayList[String]()
-    val inputDescription: CharSequence = str
-    val pattStr_desc: String = "aliases:.*,claims"
-    val p_desc: Pattern = Pattern.compile(pattStr_desc)
-    val m_desc: Matcher = p_desc.matcher(inputDescription)
-    while ((m_desc.find())) {
-      val repdesc: String = m_desc.group()
-      val cleaned_value1 = repdesc.replace("aliases:", "").trim()
-      val cleaned_value2 = cleaned_value1.replace(",claims", "").trim()
-
-      if (cleaned_value2 == "[]") {
-        list_pairs_fromAliases.add("NA")
-
-      } else {
-        list_pairs_fromAliases.add(cleaned_value2.trim())
-      }
-
-    }
-
-    list_pairs_fromAliases
-
-  }
-
-  // extract Claim from Json String
-  def Get_Claim_FromJson(str: String): ArrayList[String] = {
-
-    val list_pairs_fromAliases: ArrayList[String] = new ArrayList[String]()
-    val inputDescription: CharSequence = str
-    val pattStr_desc: String = "claims:.*,sitelinks"
-    val p_desc: Pattern = Pattern.compile(pattStr_desc)
-    val m_desc: Matcher = p_desc.matcher(inputDescription)
-    while ((m_desc.find())) {
-      val repdesc: String = m_desc.group()
-      val cleaned_value1 = repdesc.replace("aliases:", "").trim()
-      val cleaned_value2 = cleaned_value1.replace(",claims", "").trim()
-
-      if (cleaned_value2 == "[]") {
-        list_pairs_fromAliases.add("NA")
-
-      } else {
-        list_pairs_fromAliases.add(cleaned_value2.trim())
-      }
-
-    }
-
-    list_pairs_fromAliases
-
-  }
-  //
   def Get_Contributor_Name(str: String): String = {
     var tem = ""
+    if (str.contains("<contributor>")) {
 
-    val inputContributor: CharSequence = str
-    val pattStr_Contributor: String = "<contributor><username>.*</username>"
-    val p_pattStr_Contributor: Pattern = Pattern.compile(pattStr_Contributor)
-    val m_Contributor: Matcher = p_pattStr_Contributor.matcher(inputContributor)
-    while ((m_Contributor.find())) {
-      val repTime: String = m_Contributor.group()
-      val cleaned_value1 = repTime.replace("<contributor><username>", "")
-      val cleaned_value2 = cleaned_value1.replace("</username>", "").trim()
-      tem = cleaned_value2.toString().trim()
+      val inputContributor: CharSequence = str
+      val pattStr_Contributor: String = "<contributor><username>.*</username>"
+      val p_pattStr_Contributor: Pattern = Pattern.compile(pattStr_Contributor)
+      val m_Contributor: Matcher = p_pattStr_Contributor.matcher(inputContributor)
+      while ((m_Contributor.find())) {
+        val repTime: String = m_Contributor.group()
+        val cleaned_value1 = repTime.replace("<contributor><username>", "")
+        val cleaned_value2 = cleaned_value1.replace("</username>", "").trim()
+        tem = cleaned_value2.toString().trim()
+
+      }
+    } else {
+      tem = "NA"
 
     }
     tem
@@ -467,6 +462,9 @@ class ParseNormalXML extends Serializable {
         tem = longAdress.toString().trim()
       }
 
+    } else {
+      tem = "0"
+
     }
     tem
 
@@ -474,16 +472,24 @@ class ParseNormalXML extends Serializable {
 
   def Get_Contributor_ID(str: String): String = {
     var tem = ""
-    val inputContributor_ID: CharSequence = str
-    val pattStr_Contributor_ID: String = "</username><id>.*</id></contributor>"
-    val p_pattStr_Contributor: Pattern = Pattern.compile(pattStr_Contributor_ID)
-    val m_Contributor_ID: Matcher = p_pattStr_Contributor.matcher(inputContributor_ID)
-    while ((m_Contributor_ID.find())) {
-      val repTime: String = m_Contributor_ID.group()
-      val cleaned_value1 = repTime.replace("</username><id>", "")
-      val cleaned_value2 = cleaned_value1.replace("</id></contributor>", "").trim()
-      tem = cleaned_value2.trim()
+
+    if (!str.contains("<ip>")) {
+      val inputContributor_ID: CharSequence = str
+      val pattStr_Contributor_ID: String = "</username><id>.*</id></contributor>"
+      val p_pattStr_Contributor: Pattern = Pattern.compile(pattStr_Contributor_ID)
+      val m_Contributor_ID: Matcher = p_pattStr_Contributor.matcher(inputContributor_ID)
+      while ((m_Contributor_ID.find())) {
+        val repTime: String = m_Contributor_ID.group()
+        val cleaned_value1 = repTime.replace("</username><id>", "")
+        val cleaned_value2 = cleaned_value1.replace("</id></contributor>", "").trim()
+        tem = cleaned_value2.trim()
+      }
+
+    } else {
+      tem = "0"
+
     }
+
     tem
 
   }
@@ -628,8 +634,5 @@ class ParseNormalXML extends Serializable {
     }
     temp
   }
+
 }
-
-
-
-

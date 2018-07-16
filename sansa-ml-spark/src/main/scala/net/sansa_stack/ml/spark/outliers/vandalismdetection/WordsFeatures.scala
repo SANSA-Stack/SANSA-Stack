@@ -5,17 +5,22 @@ import java.util.{ List, Arrays, ArrayList }
 import org.apache.commons.lang3.StringUtils
 
 class WordsFeatures extends Serializable {
+  def RoundDouble(va: Double): Double = {
 
-  //  def Vector_Words_Feature(StrValue: String): Vector = {
+    val rounded: Double = Math.round(va * 10000).toDouble / 10000
+
+    rounded
+
+  }
   def Vector_Words_Feature(StrValue: String): Array[Double] = {
     var RatioValues = new Array[Double](17)
     val WordsFeature_OBJ = new WordsFeatures()
     //1. Double for LanguageWord Ratio - ok
     val LanguageWord = LanguageWordRatio_Character(StrValue)
     if (!LanguageWord.isNaN()) {
-      RatioValues(0) = LanguageWord
+      RatioValues(0) = RoundDouble(LanguageWord)
     }
-    //2. Boolean --> Double for Contain language word - ok
+    //2. Boolean --> Double for Contain language word - ok (1 Boolean)
     val IsContainLanguageWord = ContainLanguageWord(StrValue)
     if (IsContainLanguageWord == true) {
       RatioValues(1) = 1.0
@@ -25,15 +30,15 @@ class WordsFeatures extends Serializable {
     //3.Double for LowerCaseWord Ratio - ok
     val LowerCaseWord = LowercaseWordRation(StrValue)
     if (!LowerCaseWord.isNaN()) {
-      RatioValues(2) = LowerCaseWord
+      RatioValues(2) = RoundDouble(LowerCaseWord)
     }
-    //4.Integer --> to Double for LongestWord - ok
+    //4.Integer --> to Double for LongestWord - ok (1 Integer)
     val LongWord = LongestWord(StrValue)
     if (LongWord != null) {
       val castedValue = LongWord.toDouble
       RatioValues(3) = castedValue
     }
-    //5.Boolean --> Double for word Contain URL -ok
+    //5.Boolean --> Double for word Contain URL -ok(2 boolean)
     val IsWordContainURL = ContainURLWord(StrValue)
     if (IsWordContainURL == true) {
       RatioValues(4) = 1.0
@@ -43,20 +48,20 @@ class WordsFeatures extends Serializable {
     //6.Double for  Bad Word Ratio - ok
     val BadWord = BadWordRation(StrValue)
     if (!BadWord.isNaN()) {
-      RatioValues(5) = BadWord
+      RatioValues(5) = RoundDouble(BadWord)
     }
     //7. Double for UppercaseWord Ratio -ok
     val UpperCaseWord = UppercaseWordRation(StrValue)
     if (!UpperCaseWord.isNaN()) {
-      RatioValues(6) = UpperCaseWord
+      RatioValues(6) = RoundDouble(UpperCaseWord)
     }
     //8.Double for Ban Word Ratio - ok
     val BanWord = BanWordRation(StrValue)
     if (!BanWord.isNaN()) {
-      RatioValues(7) = BanWord
+      RatioValues(7) = RoundDouble(BanWord)
     }
 
-    //9. Femal FirstName
+    //9.Boolean Femal FirstName (3 Boolean )
 
     val IsFemalFirstName = FemaleName_word(StrValue)
     if (IsFemalFirstName == true) {
@@ -65,7 +70,7 @@ class WordsFeatures extends Serializable {
       RatioValues(8) = 0.0
     }
 
-    //10. Male FirstName
+    //10. Boolean Male FirstName (4 Boolean)
     val IsMaleFirstName = MaleName_word(StrValue)
     if (IsMaleFirstName == true) {
       RatioValues(9) = 1.0
@@ -73,7 +78,7 @@ class WordsFeatures extends Serializable {
       RatioValues(9) = 0.0
     }
 
-    //11. containBadWord_word
+    //11. Boolean containBadWord_word (5 Boolean )
 
     val IsContainBad_Word = containBadWord_word(StrValue)
     if (IsContainBad_Word == true) {
@@ -82,7 +87,7 @@ class WordsFeatures extends Serializable {
       RatioValues(10) = 0.0
     }
 
-    //12.containBanWord_word
+    //12. Boolean containBanWord_word (6 Boolean)
 
     val IsContainBan_Word = BanBuilderWordlist_word(StrValue)
     if (IsContainBan_Word == true) {
@@ -476,7 +481,6 @@ class WordsFeatures extends Serializable {
     results
 
   }
-
   //9.Ban Builder Word:It is OK
   val BanBuilderWordlist: Array[String] = Array("$#!+", "$1ut", "$h1t",
     "$hit", "$lut", "'ho", "'hobag", "a$$", "anal", "anus", "ass",

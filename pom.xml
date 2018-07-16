@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-ml-parent_2.11</artifactId>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.4.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>ML API - Parent</name>
 	<description>RDF/OWL Machine Learning Library for Big Data</description>
@@ -57,11 +57,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
-		<spark.version>2.2.1</spark.version>
-		<spark.binary.version>2.2</spark.binary.version>
-		<flink.version>1.4.0</flink.version>
-		<jena.version>3.5.0</jena.version>
-		<sansa.version>0.3.1-SNAPSHOT</sansa.version>
+		<spark.version>2.3.1</spark.version>
+		<flink.version>1.5.0</flink.version>
+		<jena.version>3.7.0</jena.version>
+		<sansa.version>0.4.0</sansa.version>
+		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
 	<dependencyManagement>
@@ -149,7 +149,13 @@
 			<dependency>
 				<groupId>org.scalatest</groupId>
 				<artifactId>scalatest_${scala.binary.version}</artifactId>
-				<version>2.2.6</version>
+				<version>3.0.3</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.holdenkarau</groupId>
+				<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+				<version>2.3.0_0.9.0</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -243,9 +249,51 @@
 						<pushRemote>false</pushRemote>
 					</configuration>
 				</plugin>
+
+				<!-- Scalastyle -->
+				<plugin>
+					<groupId>org.scalastyle</groupId>
+					<artifactId>scalastyle-maven-plugin</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<verbose>false</verbose>
+						<failOnViolation>false</failOnViolation>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
+						<failOnWarning>false</failOnWarning>
+						<sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+						<testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+						<!-- we use a central config located in the root directory -->
+						<configLocation>${scalastyle.config.path}</configLocation>
+						<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+						<outputEncoding>UTF-8</outputEncoding>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<!-- profile necessary for Scalastyle plugin to find the conf file -->
+		<profile>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>

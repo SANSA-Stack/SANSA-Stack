@@ -1,0 +1,831 @@
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/name> "Dodge Caravan"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/name> "Dodge Grand Caravan"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/manufacturer> <http://dbpedia.org/resource/Fiat_Chrysler_Automobiles> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/class> <http://dbpedia.org/resource/Minivan> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Front-engine,_front-wheel-drive_layout> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Front-engine,_all-wheel-drive_layout> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/production> "--11-02"^^<http://www.w3.org/2001/XMLSchema#gMonthDay> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/modelYears> "1984"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Plymouth_Voyager> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Chrysler_Town_&_Country> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Dodge_Mini_Ram> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Chrysler_Voyager> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Lancia_Voyager> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Volkswagen_Routan> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/assembly> "Windsor Assembly, Windsor, Ontario, Canada"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Arica> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Chile> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Dodge_Journey> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Ram_Promaster_City> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Chrysler_Pacifica_(minivan)> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/name> "First generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/production> "October 1983–1990"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/aka> "Dodge Grand Caravan"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/aka> "Dodge Caravan"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "1984"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "Grand Caravan & C/V Extended:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "1989"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "SWB & C/V:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "Grand Caravan:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "1989"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "C/V Extended:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/width> "1984"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/width> "1989"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "1984"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "1987"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "C/V:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "1989"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/bodyStyle> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/platform> <http://dbpedia.org/resource/Chrysler_S_platform> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "2.2"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "2.5"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "2.6"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "3.3"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/transmission> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/transmission> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/transmission> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/name> "Second generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/All-wheel_drive> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/production> "--08-14"^^<http://www.w3.org/2001/XMLSchema#gMonthDay> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/modelYears> "1991"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/aka> "Guangdong Sanxing Caravan/Grand Caravan"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "1991"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "SWB & 1994–1995 C/V:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "C/V AWD:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "Grand Caravan & 1994–1995 C/V Extended:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "1991"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/width> "72.0"^^<http://dbpedia.org/datatype/inch> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/width> "1991"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/width> "1992"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "SWB & 1991–93 C/V:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "Grand Caravan:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "1991"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "1994"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "3.8"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/name> "Third generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/production> "--01-30"^^<http://www.w3.org/2001/XMLSchema#gMonthDay> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/modelYears> "1996"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "SWB:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/wheelbase> "Grand Caravan:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/weight> "3528.0"^^<http://dbpedia.org/datatype/pound> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "SWB:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "Grand Caravan FWD:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "Grand Caravan AWD:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "68.5"^^<http://dbpedia.org/datatype/inch> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "FWD:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "2.4"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> <http://dbpedia.org/resource/Chrysler_Neon_engine> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "''"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> <http://dbpedia.org/resource/Straight-4> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> <http://dbpedia.org/resource/List_of_VM_Motori_engines> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "'' I4"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "6"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> <http://dbpedia.org/resource/V6_engine> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> <http://dbpedia.org/resource/Chrysler_3.3_engine> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "'' V6"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/name> "Fourth generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/production> "--07-24"^^<http://www.w3.org/2001/XMLSchema#gMonthDay> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/production> "2008"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/modelYears> "2001"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/modelYears> "2008"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Chrysler_Pacifica> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/bodyStyle> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "2.8"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "2001"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "2005"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "Grand Caravan: /"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/name> "Fifth generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/aka> "Ram C/V Tradesman"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/production> "--08-16"^^<http://www.w3.org/2001/XMLSchema#gMonthDay> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/related> "Ram Cargo Van"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/engine> "3.6"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/transmission> "62"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "202.5"^^<http://dbpedia.org/datatype/inch> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/length> "Ram Cargo Van:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/width> "76.9"^^<http://dbpedia.org/datatype/inch> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/width> "Ram Cargo Van:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "68.9"^^<http://dbpedia.org/datatype/inch> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/property/height> "Ram Cargo Van:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Plymouth_Voyager> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Dodge_Caravan> .
+<http://dbpedia.org/resource/Chrysler_Voyager> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Dodge_Caravan> .
+<http://dbpedia.org/resource/Chrysler_Town_&_Country> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Dodge_Caravan> .
+<http://dbpedia.org/resource/Chrysler_Pacifica_(CS)> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Dodge_Caravan> .
+<http://dbpedia.org/resource/Chrysler_Pacifica_(1999_concept_vehicle)> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Dodge_Caravan> .
+<http://dbpedia.org/resource/Volkswagen_Routan> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Dodge_Caravan> .
+<http://dbpedia.org/resource/Dodge_Journey> <http://dbpedia.org/property/predecessor> <http://dbpedia.org/resource/Dodge_Caravan> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://purl.org/linguistics/gold/hypernym> <http://dbpedia.org/resource/Minivan> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://xmlns.com/foaf/0.1/name> "Dodge Caravan"@en .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://xmlns.com/foaf/0.1/name> "Dodge Grand Caravan"@en .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/ontology/productionStartYear> "0002"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/ontology/productionEndYear> "0002"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/ontology/modelStartYear> "1984"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://xmlns.com/foaf/0.1/name> "First generation"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Grand Caravan (LWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Caravan (SWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/productionStartYear> "1983"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/productionEndYear> "1983"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/modelStartYear> "1984"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/modelEndYear> "1990"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0022"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0025"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0026"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.003"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://dbpedia.org/ontology/configuration> "V6"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0033"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/transmission> "4-speed A460manual" .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/transmission> "5-speedmanual" .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/transmission> "3-speed A413 automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/transmission> "3-speed A470 automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/transmission> "3-speedA670automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/transmission> "4-speed A604automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/wheelbase> "2.84734"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/length> "4.46786"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/width> "1.7653"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/height> "1.63576"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://xmlns.com/foaf/0.1/name> "Second generation"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Grand Caravan (LWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Caravan (SWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://xmlns.com/foaf/0.1/name> "Guangdong Sanxing Caravan/Grand Caravan (China)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/productionStartYear> "0014"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/productionEndYear> "0014"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/modelStartYear> "1991"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/modelEndYear> "1995"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0025"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.003"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://dbpedia.org/ontology/configuration> "V6"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0033"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0038"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/transmission> "4-speedmanual" .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/transmission> "5-speedmanual" .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/transmission> "3-speed A670" .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/transmission> "3-speed A413 automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/transmission> "4-speed A604automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/wheelbase> "2.8448"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/length> "4.46786"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/width> "1.8288"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/height> "1.63068"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/weight> "1499148.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://xmlns.com/foaf/0.1/name> "Third generation"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Grand Caravan (LWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Caravan (SWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://xmlns.com/foaf/0.1/name> "Guangdong Sanxing Caravan/Grand Caravan (China)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/productionStartYear> "0030"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/productionEndYear> "0030"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/modelStartYear> "1996"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/modelEndYear> "2000"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0024"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0025"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.003"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://dbpedia.org/ontology/configuration> "V6"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0033"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0038"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/transmission> "5-speedmanual(Philippines diesel)" .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/transmission> "3-speed 31TH automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/transmission> "3-speed A670 automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/transmission> "4-speed 41TE automatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/wheelbase> "2.87782"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/length> "4.73202"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/width> "1.95072"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/height> "1.7399"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/weight> "1600300.8"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://xmlns.com/foaf/0.1/name> "Fourth generation"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Grand Caravan (LWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://xmlns.com/foaf/0.1/name> "Dodge Caravan (SWB Model)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/productionStartYear> "0024"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/productionEndYear> "0024"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/modelStartYear> "2001"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/modelEndYear> "2007"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0024"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0028"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.003"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://dbpedia.org/ontology/configuration> "V6"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0033"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1__1> <http://dbpedia.org/ontology/displacement> "0.0038"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/transmission> "3-speed 31TH automatic with 2.4EDZ" .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/transmission> "4-speed 41TEautomatic" .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/wheelbase> "2.87782"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/length> "4.80314"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/width> "1.99644"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/height> "1.75006"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://xmlns.com/foaf/0.1/name> "Fifth generation (Dodge Grand Caravan)"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://xmlns.com/foaf/0.1/name> "Ram C/V Tradesman"@en .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/productionStartYear> "0016"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/productionEndYear> "0016"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/modelStartYear> "2008"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/powerOutput> "131247.10368"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/displacement> "0.0028"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/powerOutput> "130501.3815"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/displacement> "0.0033"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/configuration> "V6"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/powerOutput> "146907.26946"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/displacement> "0.0038"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/powerOutput> "187176.26718"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/displacement> "0.004"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/powerOutput> "211039.37694"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1__1> <http://dbpedia.org/ontology/displacement> "0.0036"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/transmission> "4-speedautomatic(3.3 engine)" .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/transmission> "62TE 6-speed automatic (3.6, 3.8, 4.0 engines)" .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/wheelbase> "3.07848"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/length> "5.1435"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/width> "1.95326"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/height> "1.75006"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/weight> "1953201.6"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Dodge_Caravan> <http://dbpedia.org/ontology/wikiPageOutDegree> "317"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Dodge_Caravan_C/V> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Dodge_Caravan_and_Grand_Caravan> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Dodge_Caravan_&_Grand_Caravan> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Dodge_Caravan/Grand_Caravan> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "2847.34"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4467.86"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1765.3"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__First_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1635.76"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "2844.8"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4467.86"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1828.8"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1630.68"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Second_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/weight> "1499.148"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "2877.82"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4732.02"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1950.72"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1739.9"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Third_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/weight> "1600.3008"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "2877.82"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4803.14"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1996.44"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fourth_generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1750.06"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "3078.48"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "5143.5"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1953.26"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1750.06"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Dodge_Caravan__Fifth_generation_Dodge_Grand_Caravan__1> <http://dbpedia.org/ontology/MeanOfTransportation/weight> "1953.2016"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/property/name> "Unipower GT"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/property/production> "1966"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/property/manufacturer> <http://dbpedia.org/resource/Universal_Power_Drives> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/property/transmission> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/property/wheelbase> "84"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Unipower_GT> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Unipower_GT> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Unipower_GT> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Unipower_GT> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Unipower_GT> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Unipower_GT> <http://xmlns.com/foaf/0.1/name> "Unipower GT"@en .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/ontology/productionStartYear> "1966"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/ontology/productionEndYear> "1970"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/ontology/transmission> "4 speed manual" .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/ontology/wheelbase> "0.084"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/ontology/wikiPageOutDegree> "12"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Unipower_GT> <http://dbpedia.org/ontology/Automobile/wheelbase> "84.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Hijet> <http://dbpedia.org/property/aka> <http://dbpedia.org/resource/Daihatsu_Luxio> .
+<http://dbpedia.org/resource/Buick_Century> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Oldsmobile_Series_70> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Buick_Roadmaster> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Cadillac_Series_60> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Cadillac_Series_62> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/name> "1941"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/manufacturer> "Cadillac"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/production> "1938"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/FR_layout> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/assembly> "Detroit, Michigan, United States"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/South_Gate,_California> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/predecessor> <http://dbpedia.org/resource/Cadillac_Series_60> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Cadillac_Series_62> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/class> <http://dbpedia.org/resource/Luxury_car> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/designer> <http://dbpedia.org/resource/Harley_Earl> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/name> "First Generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/modelYears> "1939"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/engine> "331"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/LaSalle_(automobile)> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Buick_Century> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Buick_Special> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Oldsmobile_Series_70> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/name> "Second Generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/modelYears> "1941"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/platform> <http://dbpedia.org/resource/GM_B_platform> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/engine> "346"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Pontiac_Torpedo> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/name> "Third Generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/modelYears> "1942"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/transmission> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/transmission> "Hydra-Matic"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Pontiac_Streamliner> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/name> "Fourth Generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/modelYears> "1948"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/platform> "1948"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/platform> "1950"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/bodyStyle> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/bodyStyle> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/wheelbase> "1948"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/wheelbase> "1950"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/length> "1948"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/length> "1950"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/width> "1948"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/width> "1949"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/width> "1950"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/engine> "Monobloc V8"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/engine> "OHV V8"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/transmission> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_62> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Buick_Roadmaster> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Buick_Super> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Buick_Estate> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Oldsmobile_88> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Oldsmobile_98> .
+<http://dbpedia.org/resource/Buick_Super> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Pontiac_Torpedo> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Pontiac_Streamliner> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Cadillac_Series_61> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://xmlns.com/foaf/0.1/name> "1941 Cadillac Series 63"@en .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/ontology/productionStartYear> "1938"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/ontology/productionEndYear> "1951"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://xmlns.com/foaf/0.1/name> "First Generation"@en .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://dbpedia.org/ontology/modelStartYear> "1939"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://dbpedia.org/ontology/modelEndYear> "1939"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1__1> <http://dbpedia.org/ontology/displacement> "0.00542509"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1__1> <http://dbpedia.org/ontology/configuration> "V8"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://dbpedia.org/ontology/wheelbase> "3.2004"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://xmlns.com/foaf/0.1/name> "Second Generation"@en .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://dbpedia.org/ontology/modelStartYear> "1941"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://dbpedia.org/ontology/modelEndYear> "1941"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://dbpedia.org/ontology/displacement> "0.00567094"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://dbpedia.org/ontology/configuration> "V8"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1__1> <http://dbpedia.org/ontology/displacement> "0.00542509"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://dbpedia.org/ontology/wheelbase> "3.2004"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://dbpedia.org/ontology/length> "5.461"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://xmlns.com/foaf/0.1/name> "Third Generation"@en .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/modelStartYear> "1942"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/modelEndYear> "1947"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://dbpedia.org/ontology/displacement> "0.00567094"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://dbpedia.org/ontology/configuration> "V8"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1__1> <http://dbpedia.org/ontology/displacement> "0.00542509"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/transmission> "3-speed manual" .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/transmission> "Hydra-Matic" .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/wheelbase> "3.2004"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/length> "5.461"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/weight> "1991304.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://xmlns.com/foaf/0.1/name> "Fourth Generation"@en .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/modelStartYear> "1948"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/modelEndYear> "1951"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://dbpedia.org/ontology/displacement> "0.00567094"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://dbpedia.org/ontology/configuration> "V8"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1__1> <http://dbpedia.org/ontology/displacement> "0.00542509"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/transmission> "3-speedsynchromeshmanual" .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/transmission> "4-speedHydramatic" .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/wheelbase> "3.2004"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/length> "5.4356"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/width> "2.0066"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/height> "1.59258"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Cadillac_Series_61> <http://dbpedia.org/ontology/wikiPageOutDegree> "96"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Cadillac_Series_61__First_Generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "3200.4"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "3200.4"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Second_Generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "5461.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "3200.4"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "5461.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Third_Generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/weight> "1991.304"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "3200.4"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "5435.6"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "2006.6"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Cadillac_Series_61__Fourth_Generation__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1592.58"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/manufacturer> "Astra Daihatsu"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/production> "2009"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Sunter> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/North_Jakarta> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Jakarta> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Indonesia> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/class> <http://dbpedia.org/resource/Minivan> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Toyota_Avanza> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/related> "Daihatsu Terios"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/related> "Daihatsu Gran Max"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/bodyStyle> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Front-engine,_rear-wheel_drive_layout> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/engine> "1.5"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/transmission> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/transmission> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/wheelbase> "2.65"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/length> "4.165"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/width> "1.665"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/height> "1.915"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/property/weight> "1.85"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Daihatsu_Luxio__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://purl.org/linguistics/gold/hypernym> <http://dbpedia.org/resource/Minivan> .
+<http://dbpedia.org/resource/Daihatsu_Luxio__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Daihatsu_Luxio__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Daihatsu_Luxio__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Daihatsu_Luxio__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://xmlns.com/foaf/0.1/name> "Daihatsu Luxio"@en .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/productionStartYear> "2009"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Daihatsu_Luxio__1> <http://dbpedia.org/ontology/displacement> "0.0015"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Daihatsu_Luxio__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/transmission> "5-speedmanual" .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/transmission> "4-speedautomatic" .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/wheelbase> "0.00265"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/length> "0.004165"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/width> "0.001665"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/height> "0.001915"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/weight> "1850.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/wikiPageOutDegree> "21"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/Automobile/wheelbase> "2.65"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4.165"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1.665"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1.915"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Daihatsu_Luxio> <http://dbpedia.org/ontology/MeanOfTransportation/weight> "1.85"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Toyota_Hilux> <http://dbpedia.org/property/aka> <http://dbpedia.org/resource/Volkswagen_Taro> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/name> "Volkswagen Taro"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/manufacturer> <http://dbpedia.org/resource/Volkswagen_Commercial_Vehicles> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/manufacturer> <http://dbpedia.org/resource/Toyota> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/manufacturer> <http://dbpedia.org/resource/Hino_Motors> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/production> "February 1989–March 1997"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Tahara,_Aichi> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Japan> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Hanover> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Germany> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Volkswagen_Amarok> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/class> <http://dbpedia.org/resource/Light_commercial_vehicle> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/bodyStyle> <http://dbpedia.org/resource/Pickup_truck> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Longitudinal_engine> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Front-engine_design> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/layout> "rear-wheel drive , or"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Four-wheel_drive> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/engine> "1.8"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/engine> "2.2"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/engine> "2.4"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/engine> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/transmission> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/wheelbase> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/length> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/width> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/height> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Toyota_Hilux> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://xmlns.com/foaf/0.1/name> "Volkswagen Taro"@en .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://xmlns.com/foaf/0.1/name> "(Typ 7A)"@en .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/productionStartYear> "1989"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/productionEndYear> "1997"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://dbpedia.org/ontology/displacement> "0.0018"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://dbpedia.org/ontology/displacement> "0.0022"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://dbpedia.org/ontology/displacement> "0.0024"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro__1> <http://dbpedia.org/ontology/displacement> "0.003"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/transmission> "5-speedmanual" .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/wheelbase> "2.85"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/length> "4.725"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/width> "1.65"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/height> "1.555"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/wikiPageOutDegree> "77"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/Automobile/wheelbase> "2850.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4725.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1650.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Volkswagen_Taro> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1555.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/SEAT_León> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Audi_A3> .
+<http://dbpedia.org/resource/Audi_TT> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Audi_A3> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/name> "Audi A3"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/manufacturer> <http://dbpedia.org/resource/Audi> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/production> "1996"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/class> "Compact car / Small family car"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Transverse_engine> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/Front-engine_design> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/layout> "front-wheel drive or quattro on-demand four-wheel drive"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/platform> <http://dbpedia.org/resource/Volkswagen_Group_A_platform> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/platform> <http://dbpedia.org/resource/Volkswagen_Group_MQB_platform> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/name> "First generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/designer> <http://dbpedia.org/resource/Dirk_van_Braeckel> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> "Ingolstadt, Germany"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> "Curitiba, Brazil"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/bodyStyle> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/bodyStyle> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/wheelbase> "2513.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/wheelbase> "quattro:"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> "Volkswagen Golf Mk4"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> "SEAT León Mk1"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/name> "Second generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/production> "2003"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> "Brussels, Belgium"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> "Győr, Hungary"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> "Jakarta, Indonesia"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> "Curitiba, Brasil"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/bodyStyle> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/length> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/length> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> "Volkswagen Golf Mk5"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> "SEAT León Mk2"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Volkswagen_Gran_Lavida> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/name> "Third generation"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/production> "2012"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/production> "October 2013-present"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/modelYears> "2013"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/Foshan> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/assembly> <http://dbpedia.org/resource/People's_Republic_of_China> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/bodyStyle> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/wheelbase> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/wheelbase> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/wheelbase> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/length> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/width> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/width> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/width> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/height> "3"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/height> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/height> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/weight> "to"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Volkswagen_Golf_Mk7> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/SEAT_León_Mk3> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Škoda_Octavia_Mk3> .
+<http://dbpedia.org/resource/Škoda_Octavia> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Audi_A3> .
+<http://dbpedia.org/resource/Lobini_H1> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Audi_A3> .
+<http://dbpedia.org/resource/Volkswagen_Passat_(B6)> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Audi_A3> .
+<http://dbpedia.org/resource/Volkswagen_Golf_Mk7> <http://dbpedia.org/property/related> <http://dbpedia.org/resource/Audi_A3> .
+<http://dbpedia.org/resource/Audi_A3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Audi_A3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Audi_A3> <http://purl.org/linguistics/gold/hypernym> <http://dbpedia.org/resource/Car> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Audi_A3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Audi_A3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Audi_A3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Audi_A3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Audi_A3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Audi_A3> <http://xmlns.com/foaf/0.1/name> "Audi A3"@en .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/ontology/productionStartYear> "1996"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://xmlns.com/foaf/0.1/name> "First generation (A3/8L)"@en .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/productionStartYear> "1996"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/productionEndYear> "2003"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/wheelbase> "2.513"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/length> "4.152"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/width> "1.735"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/height> "1.423"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://xmlns.com/foaf/0.1/name> "Second generation (A5/8P)"@en .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/productionStartYear> "2003"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/productionEndYear> "2013"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1__1> <http://dbpedia.org/ontology/configuration> "straight-five"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/wheelbase> "2.578"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/length> "4.215"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/width> "1.765"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/height> "1.42"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://xmlns.com/foaf/0.1/name> "Third generation (MQB/8V)"@en .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/productionStartYear> "2012"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/modelStartYear> "2013"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1__1> <http://dbpedia.org/ontology/configuration> "straight-five"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/wheelbase> "2.601"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/length> "4.237"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/width> "1.777"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/height> "1.421"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/weight> "1150000.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Audi_A3> <http://dbpedia.org/ontology/wikiPageOutDegree> "256"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3_3.2_quattro> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3_TDI_clubsport_quattro_concept> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3_3.2L_Quattro> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3_e-tron> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3_Sportback_e-tron> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3_8V> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3_8P> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3/S3/RS3> <http://dbpedia.org/ontology/wikiPageOutDegree> "1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "2513.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4152.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1735.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__First_generation_A3/8L__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1423.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "2578.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4215.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1765.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Second_generation_A5/8P__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1420.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/Automobile/wheelbase> "2601.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4237.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1777.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1421.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Audi_A3__Third_generation_MQB/8V__1> <http://dbpedia.org/ontology/MeanOfTransportation/weight> "1150.0"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Princess_(car)> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Austin_Ambassador> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/name> "Austin Ambassador"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/manufacturer> "Austin"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/production> "1982"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/class> "Large family car"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/bodyStyle> "5"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/predecessor> <http://dbpedia.org/resource/Princess_(car)> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Austin_Montego> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/successor> <http://dbpedia.org/resource/Rover_600> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/engine> "1.7"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/engine> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/transmission> "four-speed manual"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/transmission> "three-speed automatic"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/property/wheelbase> "105"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Austin_Montego> <http://dbpedia.org/property/predecessor> <http://dbpedia.org/resource/Austin_Ambassador> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://purl.org/linguistics/gold/hypernym> <http://dbpedia.org/resource/Car> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://xmlns.com/foaf/0.1/name> "Austin Ambassador"@en .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/productionStartYear> "1982"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/productionEndYear> "1984"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://dbpedia.org/ontology/displacement> "0.0017"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://dbpedia.org/ontology/configuration> "straight-four"^^<http://dbpedia.org/datatype/engineConfiguration> .
+<http://dbpedia.org/resource/Austin_Ambassador__1> <http://dbpedia.org/ontology/displacement> "0.002"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/transmission> "four-speedmanual" .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/transmission> "three-speedautomatic(B-W)" .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/wheelbase> "0.105"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/weight> "1262822.4"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/wikiPageOutDegree> "34"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/Automobile/wheelbase> "105.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Austin_Ambassador> <http://dbpedia.org/ontology/MeanOfTransportation/weight> "1262.8224"^^<http://dbpedia.org/datatype/kilogram> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/name> "Hotchkiss H Anjou"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/manufacturer> <http://dbpedia.org/resource/Hotchkiss_(car)> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/bodyStyle> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/bodyStyle> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/engine> "2312"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/engine> "3485"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/production> "1950"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/production> "5465"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/layout> <http://dbpedia.org/resource/FR_layout> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/wheelbase> "2920.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/wheelbase> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/wheelbase> "3090.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/wheelbase> "6"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/length> "4850.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/length> "4"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/length> "5000.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/property/length> "6"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Automobile> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://purl.org/linguistics/gold/hypernym> <http://dbpedia.org/resource/Car> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/AutomobileEngine> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Product> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/MeanOfTransportation> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#DesignedArtifact> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Engine> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Device> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou__1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Thing> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://xmlns.com/foaf/0.1/name> "Hotchkiss H Anjou"@en .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/productionStartYear> "1950"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/productionEndYear> "1950"^^<http://www.w3.org/2001/XMLSchema#gYear> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou__1> <http://dbpedia.org/ontology/displacement> "0.002312"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou__1> <http://dbpedia.org/ontology/displacement> "0.003485"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/wheelbase> "2.92"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/length> "4.85"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/width> "1.77"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/height> "1.55"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/wikiPageOutDegree> "13"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/Automobile/wheelbase> "2920.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/MeanOfTransportation/length> "4850.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/MeanOfTransportation/width> "1770.0"^^<http://dbpedia.org/datatype/millimetre> .
+<http://dbpedia.org/resource/Hotchkiss_Anjou> <http://dbpedia.org/ontology/MeanOfTransportation/height> "1550.0"^^<http://dbpedia.org/datatype/millimetre> .

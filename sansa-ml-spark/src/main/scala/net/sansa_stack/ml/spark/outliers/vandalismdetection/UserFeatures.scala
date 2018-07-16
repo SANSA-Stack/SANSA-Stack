@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
 import java.util.{ Arrays, List }
-import java.util.{ Set, HashSet }
+import java.util.{ HashSet, Set }
 
 class UserFeatures extends Serializable {
 
@@ -19,12 +19,11 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
+
   def CheckName_isGlobalRollBackerUser(str: String): Boolean = {
-    val lobalRollBackerUser: Array[String] =
+    val isGlobalRollBackerUser: Array[String] =
       Array(".snoopy.", "Addihockey10",
         "Ah3kal", "Alan", "Aldnonymous", "Alison", "Avicennasis",
         "Az1568", "BRUTE", "Baiji", "Beetstra", "Church of emacs",
@@ -42,7 +41,7 @@ class UserFeatures extends Serializable {
         "Vogone", "Waihorace", "Werdan7", "Wiki13", "Xqt", "Ymblanter",
         "YourEyesOnly")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(lobalRollBackerUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(isGlobalRollBackerUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -51,9 +50,7 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
 
   def CheckName_isGlobalStewarUser(str: String): Boolean = {
@@ -353,7 +350,7 @@ class UserFeatures extends Serializable {
 
   def IsRegisteroUser(str: String): Boolean = {
     var flag = false
-    if (str != "0000") {
+    if (str != "NA") {
       flag = true
     }
     flag
@@ -368,22 +365,11 @@ class UserFeatures extends Serializable {
 
     flag
   }
-
   def IsDeathDate(str: String): Boolean = {
-
     var flag = false
     if (str.contains("P570")) {
       flag = true
     }
-
     flag
-
   }
-
 }
-
-
-
-
-
-
