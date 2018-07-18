@@ -14,15 +14,17 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 class RdfXmlFileFormat extends TextBasedFileFormat with DataSourceRegister {
   override val shortName: String = "rdfxml"
 
-  override def isSplitable(
-      sparkSession: SparkSession,
-      options: Map[String, String],
-      path: Path): Boolean = {
+  override def isSplitable(sparkSession: SparkSession,
+                           options: Map[String, String],
+                           path: Path): Boolean = {
+
     val parsedOptions = new RdfXmlOptions(
       options,
       sparkSession.sessionState.conf.sessionLocalTimeZone,
       sparkSession.sessionState.conf.columnNameOfCorruptRecord)
+
     val rdfDataSource = RdfXmlDataSource(parsedOptions)
+
     rdfDataSource.isSplitable && super.isSplitable(sparkSession, options, path)
   }
 

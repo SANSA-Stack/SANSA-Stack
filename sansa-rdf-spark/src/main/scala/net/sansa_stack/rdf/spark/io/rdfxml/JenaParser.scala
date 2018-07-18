@@ -17,10 +17,9 @@ class JenaParser(val options: RdfXmlOptions) {
                recordLiteral: T => UTF8String)
   : Seq[InternalRow] = {
     try {
-      println(recordLiteral(record))
       val triples = new CollectorStreamRDF()
       createParser(parserBuilder, record).parse(triples)
-      triples.getTriples.asScala.map(convertTriple(_))
+      triples.getTriples.asScala.map(convertTriple)
     } catch {
       case e@(_: RuntimeException | _: RiotException) =>
         throw BadRecordException(() => recordLiteral(record), () => None, e)
@@ -30,7 +29,9 @@ class JenaParser(val options: RdfXmlOptions) {
 
   def convertTriple(triple: org.apache.jena.graph.Triple): InternalRow = {
     val row = new GenericInternalRow(3)
-    row.update(0, triple.getSubject)
+    row.update(0, UTF8String.fromBytes(triple.getSubject.toString.getBytes()))
+    row.update(1, UTF8String.fromBytes(triple.getPredicate.toString.getBytes()))
+    row.update(2, UTF8String.fromBytes(triple.getObject.toString.getBytes()))
     row
   }
 }
