@@ -60,7 +60,8 @@ object RdfXmlDataSource {
     if (options.wholeFile) {
       WholeFileRdfXmlDataSource
     } else {
-      TextInputRdfXmlDataSource
+      WholeFileRdfXmlDataSource
+//      TextInputRdfXmlDataSource
     }
   }
 
@@ -87,7 +88,7 @@ object RdfXmlDataSource {
 object TextInputRdfXmlDataSource extends RdfXmlDataSource[Text] {
   override val isSplitable: Boolean = {
     // splittable if the underlying source is
-    true
+    false
   }
 
   override protected def createBaseRdd(
