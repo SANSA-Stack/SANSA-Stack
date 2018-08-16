@@ -38,8 +38,9 @@ class ForwardRuleReasonerOWLHorst(sc: SparkContext, parallelism: Int = 2) extend
     val equivPropertyTriples = extractTriples(triplesRDD, OWL2.equivalentProperty.asNode) // owl:equivalentProperty
 
 
+
     // 1. we have to process owl:equivalentClass (resp. owl:equivalentProperty) before computing the transitive closure
-    // of rdfs:subClassOf (resp. rdfs:sobPropertyOf)
+    // of rdfs:subClassOf (resp. rdfs:subPropertyOf)
     // rdfp12a: (?C owl:equivalentClass ?D) -> (?C rdfs:subClassOf ?D )
     // rdfp12b: (?C owl:equivalentClass ?D) -> (?D rdfs:subClassOf ?C )
     subClassOfTriples = sc.union(

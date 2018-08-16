@@ -52,14 +52,14 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
       * rdfs11 xxx rdfs:subClassOf yyy .
       * yyy rdfs:subClassOf zzz . xxx rdfs:subClassOf zzz .
      */
-    val subClassOfTriples = extractTriples(schemaTriples, RDFS.subClassOf.asNode()).cache() // extract rdfs:subClassOf triples
-    val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples, RDFS.subClassOf.asNode()).setName("rdfs11")// mutable.Set()++subClassOfTriples.collect())
+    val subClassOfTriples: RDD[Triple] = extractTriples(schemaTriples, RDFS.subClassOf.asNode()).cache() // extract rdfs:subClassOf triples
+    val subClassOfTriplesTrans: RDD[Triple] = computeTransitiveClosure(subClassOfTriples, RDFS.subClassOf.asNode()).setName("rdfs11")// mutable.Set()++subClassOfTriples.collect())
 
     /*
         rdfs5 xxx rdfs:subPropertyOf yyy .
               yyy rdfs:subPropertyOf zzz . xxx rdfs:subPropertyOf zzz .
      */
-    val subPropertyOfTriples = extractTriples(schemaTriples, RDFS.subPropertyOf.asNode()).cache() // extract rdfs:subPropertyOf triples
+    val subPropertyOfTriples: RDD[Triple] = extractTriples(schemaTriples, RDFS.subPropertyOf.asNode()).cache() // extract rdfs:subPropertyOf triples
     val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples, RDFS.subPropertyOf.asNode()).setName("rdfs5")// extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
 
     // a map structure should be more efficient
