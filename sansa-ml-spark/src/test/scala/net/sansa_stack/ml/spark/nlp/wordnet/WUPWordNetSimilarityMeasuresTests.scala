@@ -1,9 +1,8 @@
 package net.sansa_stack.ml.spark.nlp.wordnet
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.scalatest.FunSuite
-//import net.didion.jwnl.data._
 import net.sf.extjwnl.data._
+import org.scalatest.FunSuite
 
 class WUPWordNetSimilarityMeasuresTests extends FunSuite with DataFrameSuiteBase {
 

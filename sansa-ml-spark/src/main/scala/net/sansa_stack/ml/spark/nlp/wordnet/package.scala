@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.nlp
 
 import java.io.Serializable
+
 import net.sf.extjwnl.data.POS
 
 package object wordnet extends Serializable {
@@ -13,4 +14,3 @@ package object wordnet extends Serializable {
   val Adjective = POS.ADJECTIVE
   val Adjverb = POS.ADVERB
 }
-
