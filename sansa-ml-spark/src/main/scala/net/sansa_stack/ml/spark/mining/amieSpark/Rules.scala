@@ -1,19 +1,15 @@
 package net.sansa_stack.ml.spark.mining.amieSpark
 
-import net.sansa_stack.ml.spark.mining.amieSpark._
+import scala.collection.mutable.{ ArrayBuffer, Map }
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-
-import org.apache.spark.sql.DataFrame
+import KBObject.KB
+import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 
-import org.apache.spark.rdd.RDD
-
-import scala.collection.mutable.ArrayBuffer
-import KBObject.KB
-import scala.collection.mutable.Map
+import net.sansa_stack.ml.spark.mining.amieSpark._
 
 object Rules {
 
@@ -49,7 +45,7 @@ object Rules {
       return this.sortedRule
     }
 
-    /**initializes rule, support, bodySize and sizeHead*/
+    /** initializes rule, support, bodySize and sizeHead */
     def initRule(x: ArrayBuffer[RDFTriple], k: KB, sc: SparkContext, sqlContext: SQLContext) {
       this.rule = x
 
@@ -78,7 +74,7 @@ object Rules {
       this.rule = tp
     }
 
-    /**returns ArrayBuffer with every triplePattern of the body as a RDFTriple*/
+    /** returns ArrayBuffer with every triplePattern of the body as a RDFTriple */
 
     def hc(): Double = {
       if (this.bodySize < 1) {
@@ -144,7 +140,7 @@ object Rules {
         println(s"#support($rule):$support")
       }
     }
-    /**returns the length of the body*/
+    /** returns the length of the body */
 
     def bodyLength(): Int = {
       var x = this.rule.length - 1
@@ -170,7 +166,7 @@ object Rules {
           maptp += (x._1 -> counter)
         }
 
-        /**checking map for placeholder for the object*/
+        /** checking map for placeholder for the object */
         if (!(maptp.contains(x._3))) {
           maptp += (x._3 -> 1)
         } else {
@@ -264,29 +260,30 @@ object Rules {
     }
 
     def parentsOfRule(outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]], sc: SparkContext): ArrayBuffer[RuleContainer] = {
-      // TODO: create new rules with body in alphabetical order     
+      // TODO: create new rules with body in alphabetical order
       var parents = ArrayBuffer(this.parent)
       val r = this.sortedRule.clone
 
-      if (outMap.get(r(0).predicate) == None) { return parents }
+      if (outMap.get(r(0).predicate) == None) {
+        return parents
+      }
+
       var rel = outMap.get(r(0).predicate).get
-
       var tp: ArrayBuffer[RDFTriple] = new ArrayBuffer
-
       var filtered = rel.filter(x => (x._1.length == r.length - 1))
 
-      /* 
-             for (f <- filtered){
+      /*
+             for (f <- filtered) {
                var bool = true
-               for (ff <- f._1){
-                 if (!(r.contains(ff))){
+               for (ff <- f._1) {
+                 if (!(r.contains(ff))) {
                    bool = false
                  }
                }
-               if (bool){
+               if (bool) {
                  parents += f._2
                }
-             }*/
+             } */
 
       for (l <- 1 to r.length - 1) {
         if (!(filtered.isEmpty)) {
@@ -321,7 +318,7 @@ object Rules {
           maptp.put(x._1, (maptp.get(x._1).get + 1)).get
         }
 
-        /**checking map for placeholder for the object*/
+        /** checking map for placeholder for the object */
         if (!(maptp.contains(x._3))) {
 
           maptp += (x._3 -> 1)
@@ -361,7 +358,7 @@ object Rules {
           maptp.put(x._1, (maptp.get(x._1).get + 1)).get
         }
 
-        /**checking map for placeholder for the object*/
+        /** checking map for placeholder for the object */
         if (!(maptp.contains(x._3))) {
           varArBuff += x._3
 
@@ -400,13 +397,11 @@ object Rules {
       var out2: ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)] = new ArrayBuffer
 
       var out: (ArrayBuffer[RuleContainer], ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]) = (out1, out2)
-      if (triples.length <= 1) {
-        return out
-      }
-      var triplesCardcombis: ArrayBuffer[ArrayBuffer[RDFTriple]] = new ArrayBuffer
+      if (triples.length <= 1) return out
 
-      //var rdd =sc.parallelize(arbuf.toSeq)
-      //out ++= rdd.filter(x => (sameRule(triples, x._1))).map(y => y._2).collect
+      var triplesCardcombis: ArrayBuffer[ArrayBuffer[RDFTriple]] = new ArrayBuffer
+      // var rdd =sc.parallelize(arbuf.toSeq)
+      // out ++= rdd.filter(x => (sameRule(triples, x._1))).map(y => y._2).collect
 
       for (x <- arbuf) {
         if (sameRule(triples, x._1)) {
@@ -417,13 +412,13 @@ object Rules {
 
       /* var rdd = sc.parallelize(arbuf.toSeq)
           var pq = rdd.map{ x=>
-           if (sameRule(triples, x._1)){
-             ("out1", x._2) 
-             
+           if (sameRule(triples, x._1)) {
+             ("out1", x._2)
+
            }
            else ("out2",x)
          }.groupByKey()
-         * 
+         *
          */
 
       out = (out1, out2)
@@ -494,8 +489,6 @@ object Rules {
       return out
     }
 
-    //end
-
+    // end
   }
-
 }

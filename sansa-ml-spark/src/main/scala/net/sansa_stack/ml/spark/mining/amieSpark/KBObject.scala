@@ -1,17 +1,15 @@
 package net.sansa_stack.ml.spark.mining.amieSpark
 
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.{ DataFrame, SQLContext }
+import java.io.File
 
 import scala.collection.mutable.{ ArrayBuffer, Map }
 
-//import net.sansa_stack.ml.spark.dissect.inference.utils._
-
-import java.io.File
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ DataFrame, SQLContext }
+import org.apache.spark.sql.functions.udf
 
 import net.sansa_stack.ml.spark.mining.amieSpark.Rules.RuleContainer
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.udf
 
 object KBObject {
   case class Atom(rdf: RDFTriple)
@@ -134,7 +132,7 @@ object KBObject {
 
     }
 
-    //TODO: think about Graph representation
+    // TODO: think about Graph representation
     def setKbGraph(x: RDFGraph) {
       this.kbGraph = x
       val graph = x.triples.collect
@@ -178,7 +176,7 @@ object KBObject {
       val subject = tp.subject
       val relation = tp.predicate
       val o = tp.`object`
-      //filling the to to to maps
+      // filling the to to to maps
       if (!(add(subject, relation, o, this.subject2predicate2object))) {
         add(relation, o, subject, this.predicate2object2subject)
         add(o, subject, relation, this.object2subject2predicate)
@@ -187,7 +185,7 @@ object KBObject {
         add(subject, o, relation, this.subject2object2predicate)
       }
 
-      //filling the sizes
+      // filling the sizes
       if (this.subjectSize.get(subject).isEmpty) {
         this.subjectSize += (subject -> 1)
       } else {
@@ -212,7 +210,7 @@ object KBObject {
         this.objectSize += (o -> obSize)
       }
 
-      //filling the overlaps
+      // filling the overlaps
 
       if (this.subject2subjectOverlap.get(relation).isEmpty) {
         subject2subjectOverlap += (relation -> Map())
@@ -246,7 +244,7 @@ object KBObject {
 
     }
 
-    /*TO DO 
+    /* TODO
     * Functionality
     * bulidOverlapTable
     * */
@@ -316,8 +314,9 @@ object KBObject {
     def computeOverlap(s1: Set[String], s2: Set[String]): Int = {
       var overlap: Int = 0
       for (r <- s1) {
-        if (s2.contains(r))
+        if (s2.contains(r)) {
           overlap += 1
+        }
       }
 
       overlap
@@ -334,8 +333,8 @@ object KBObject {
      *
      */
     def functionality(relation: String): Double = {
-      /*if (relation.equals(EQUALSbs)) {
-			return 1.0;*/
+      /* if (relation.equals(EQUALSbs)) {
+         return 1.0; */
 
       if (this.predicate2subject2object.get(relation).isEmpty) { return 0.0 }
       var a: Double = this.predicate2subject2object.get(relation).get.size
@@ -351,9 +350,9 @@ object KBObject {
      *
      */
     def inverseFunctionality(relation: String): Double = {
-      /*if (relation.equals(EQUALSbs)) {
-			return 1.0;
-		} */
+      /* if (relation.equals(EQUALSbs)) {
+       return 1.0
+       } */
       var a: Double = this.predicate2object2subject.get(relation).get.size
       var b: Double = this.relationSize.get(relation).get
       (a / b)
@@ -381,10 +380,11 @@ object KBObject {
      *
      */
     def functionality(relation: String, inversed: Boolean): Double = {
-      if (inversed)
+      if (inversed) {
         inverseFunctionality(relation)
-      else
+      } else {
         functionality(relation)
+      }
     }
 
     /**
@@ -396,10 +396,11 @@ object KBObject {
      *
      */
     def inverseFunctionality(relation: String, inversed: Boolean): Double = {
-      if (inversed)
+      if (inversed) {
         functionality(relation)
-      else
+      } else {
         inverseFunctionality(relation)
+      }
     }
 
     /**
@@ -408,28 +409,29 @@ object KBObject {
      * length of maplist is the number of instantiations of a rule
      *
      * @param triplesCard rule as an ArrayBuffer of RDFTriples, triplesCard(0)
-     * 										is the head of the rule
+     * is the head of the rule
      * @param sc spark context
      *
      */
 
-    //----------------------------------------------------------------
+    // ----------------------------------------------------------------
     // Statistics
-    //----------------------------------------------------------------
+    // ----------------------------------------------------------------
 
     def overlap(relation1: String, relation2: String, overlap: Int): Double = {
       overlap match {
-        case SUBJECT2SUBJECT => if (subject2subjectOverlap.get(relation1).isDefined && (!(subject2subjectOverlap.get(relation1).get.get(relation2).isEmpty))) { subject2subjectOverlap.get(relation1).get.get(relation2).get }
-        else 0.0
+        case SUBJECT2SUBJECT =>
+          if (subject2subjectOverlap.get(relation1).isDefined && (!(subject2subjectOverlap.get(relation1).get.get(relation2).isEmpty))) {
+            subject2subjectOverlap.get(relation1).get.get(relation2).get
+          } else 0.0
         case SUBJECT2OBJECT =>
-
-          if ((!(subject2objectOverlap.get(relation1).isEmpty)) && (!(subject2objectOverlap.get(relation1).get.get(relation2).isEmpty))) { subject2objectOverlap.get(relation1).get.get(relation2).get }
-          else 0.0
+          if ((!(subject2objectOverlap.get(relation1).isEmpty)) && (!(subject2objectOverlap.get(relation1).get.get(relation2).isEmpty))) {
+            subject2objectOverlap.get(relation1).get.get(relation2).get
+          } else 0.0
         case OBJECT2OBJECT =>
-
-          if ((!(object2objectOverlap.get(relation1).isEmpty)) && (!(object2objectOverlap.get(relation1).get.get(relation2).isEmpty))) { object2objectOverlap.get(relation1).get.get(relation2).get }
-          else 0.0
-
+          if ((!(object2objectOverlap.get(relation1).isEmpty)) && (!(object2objectOverlap.get(relation1).get.get(relation2).isEmpty))) {
+            object2objectOverlap.get(relation1).get.get(relation2).get
+          } else 0.0
       }
     }
 
@@ -454,7 +456,7 @@ object KBObject {
 
     }
 
-    //TODO: better than cardinality
+    // TODO: better than cardinality
 
     def bindingExists(triplesCard: ArrayBuffer[RDFTriple]): Boolean = {
       val k = this.kbGraph
@@ -500,7 +502,7 @@ object KBObject {
         x = k.find(None, Some(min.predicate), None).collect
       }
 
-      //x.foreach(println)
+      // x.foreach(println)
       triplesCard.remove(index)
 
       for (i <- x) {
@@ -881,7 +883,7 @@ object KBObject {
         return outCount
       }
 
-      if (go) {
+      if ( go ) {
 
         var card = dfMap.get(tpsString).get
 
@@ -906,16 +908,6 @@ object KBObject {
           o.registerTempTable("twoLengthT")
           h.registerTempTable("subjects")
           out = sqlContext.sql("SELECT twoLengthT.tp0 FROM twoLengthT JOIN subjects ON twoLengthT.tp0." + abString + "=subjects.sub")
-
-          /*
-	   if ((tpAr(0).predicate == "directed")&&(tpAr(1).predicate== "produced")&&(tpAr(1).subject== "?a")&&(tpAr(1)._3== "?b")){
-	     h.show(800, false)
-	     
-	     var fjgf = sqlContext.sql("SELECT ")
-	   }
-	   
-	   
-	   */
 
         }
         outCount = out.count()
@@ -1038,7 +1030,7 @@ object KBObject {
 
     }
 
-    //TODO: solve with DataFrames
+    // TODO: solve with DataFrames
     def cardPlusnegativeExamplesLength(triplesCard: ArrayBuffer[RDFTriple], sc: SparkContext): Double = {
 
       val k = this.kbGraph
@@ -1060,7 +1052,7 @@ object KBObject {
 
       }
 
-      /**initializing maplist with head of the rule*/
+      /** initializing maplist with head of the rule */
       for (ii <- arbuf(0).collect()) {
         mapList += Map(triplesCard(0).subject -> ii._1, triplesCard(0).`object` -> ii._3)
 
@@ -1086,17 +1078,17 @@ object KBObject {
 
         for (i <- combinations) {
           var ltrip = i._2
-          var elem1 = ltrip._1 //subject from combination
+          var elem1 = ltrip._1 // subject from combination
           var elem2 = ltrip._3
           var trip1 = triplesCard(tripleCount)._1 // subject from Rule
           var trip2 = triplesCard(tripleCount)._3
 
-          /**checking map for placeholder for the subject*/
+          /** checking map for placeholder for the subject */
           if (!(i._1.contains(trip1))) {
             i._1 += (trip1 -> elem1)
           }
 
-          /**checking map for placeholder for the object*/
+          /** checking map for placeholder for the object */
           if (!(i._1.contains(trip2))) {
             i._1 += (trip2 -> elem2)
           }
@@ -1118,13 +1110,11 @@ object KBObject {
 
       var out: Double = 0.0
       for (i <- as) {
-        if (rightOnes.contains(i._1))
+        if (rightOnes.contains(i._1)) {
           out += (i._2 - 1)
-
+        }
       }
-
       ((mapList.length) + out)
-
     }
 
     def addDanglingAtom(c: Int, id: Int, minHC: Double, rule: RuleContainer, sc: SparkContext, sqlContext: SQLContext): DataFrame =
@@ -1196,5 +1186,4 @@ object KBObject {
       }
 
   }
-
 }

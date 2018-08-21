@@ -1,8 +1,11 @@
 package net.sansa_stack.ml.spark.mining.amieSpark
 
 import org.apache.jena.graph.Triple
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ DataFrame, SparkSession }
+
 import net.sansa_stack.ml.spark.mining.amieSpark._
+
 /**
  * A data structure that comprises a set of triples.
  *
@@ -65,7 +68,7 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
     this
   }
 
-  def distinct() = {
+  def distinct(): RDFGraphDataFrame = {
     new RDFGraphDataFrame(triples.distinct())
   }
 
@@ -74,11 +77,11 @@ class RDFGraphDataFrame(triples: DataFrame) extends AbstractRDFGraph[DataFrame, 
    *
    * @return the number of triples
    */
-  def size() = {
+  def size(): Long = {
     triples.count()
   }
 
   def toDataFrame(sparkSession: SparkSession): DataFrame = triples
 
-  def toRDD() = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
+  def toRDD(): RDD[RDFTriple] = triples.rdd.map(row => RDFTriple(row.getString(0), row.getString(1), row.getString(2)))
 }

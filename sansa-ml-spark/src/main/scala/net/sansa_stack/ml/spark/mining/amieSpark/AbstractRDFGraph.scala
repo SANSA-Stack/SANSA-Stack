@@ -3,6 +3,7 @@ package net.sansa_stack.ml.spark.mining.amieSpark
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ DataFrame, SparkSession }
+
 import net.sansa_stack.ml.spark.mining.amieSpark._
 
 /**

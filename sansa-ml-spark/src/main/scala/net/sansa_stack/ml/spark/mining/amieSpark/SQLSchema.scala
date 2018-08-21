@@ -1,6 +1,5 @@
-
-
 package net.sansa_stack.ml.spark.mining.amieSpark
+
 /**
  * The SQL schema used for RDF triples in a Dataframe.
  *
@@ -8,12 +7,12 @@ package net.sansa_stack.ml.spark.mining.amieSpark
  */
 object SQLSchema {
 
-  def triplesTable = "TRIPLES"
+  def triplesTable: String = "TRIPLES"
 
-  def subjectCol = "subject"
+  def subjectCol: String = "subject"
 
-  def predicateCol = "predicate"
+  def predicateCol: String = "predicate"
 
-  def objectCol = "object"
+  def objectCol: String = "object"
 
 }

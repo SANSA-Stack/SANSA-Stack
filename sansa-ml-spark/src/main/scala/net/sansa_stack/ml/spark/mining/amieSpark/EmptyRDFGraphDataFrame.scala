@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.mining.amieSpark
 
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 import org.apache.spark.sql.{ DataFrame, Row, SQLContext }
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 
 /**
  * @author Lorenz Buehmann

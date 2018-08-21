@@ -3,23 +3,23 @@ package net.sansa_stack.ml.spark.mining.amieSpark
 import java.io.File
 import java.net.URI
 
-import net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB
-import net.sansa_stack.ml.spark.mining.amieSpark.Rules.RuleContainer
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{ DataFrame, SQLContext, SparkSession, _ }
-
 import scala.collection.mutable.{ ArrayBuffer, Map }
 import scala.util.Try
 
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ DataFrame, SparkSession, SQLContext, _ }
 
 import net.sansa_stack.ml.spark.mining.amieSpark.DfLoader.Atom
+import net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB
+import net.sansa_stack.ml.spark.mining.amieSpark.Rules.RuleContainer
+
 
 object MineRules {
   /**
-   * 	Algorithm that mines the Rules.
+   * Algorithm that mines the Rules.
    *
    * @param kb object knowledge base that was created in main
    * @param minHC threshold on head coverage
@@ -196,7 +196,7 @@ object MineRules {
             if (r.getRule().length < maxLen) {
 
               dataFrameRuleParts = refine(i, j, r, dataFrameRuleParts, sc, sqlContext)
-              //TODO: Dublicate check
+              // TODO: Dublicate check
 
             }
 
@@ -220,7 +220,7 @@ object MineRules {
 
       var out: DataFrame = null
       var OUT: RDD[(RDFTriple, Int, Int)] = dataFrameRuleParts
-      //var count2:RDD[(String, Int)] = null 
+      // var count2:RDD[(String, Int)] = null
       var path = new File("test_table/")
       var temp = 0
 
@@ -295,7 +295,7 @@ object MineRules {
      */
     def acceptedForOutput(outMap: Map[String, ArrayBuffer[(ArrayBuffer[RDFTriple], RuleContainer)]], r: RuleContainer, minConf: Double, k: KB, sc: SparkContext, sqlContext: SQLContext): Boolean = {
 
-      //if ((!(r.closed())) || (r.getPcaConfidence(k, sc, sqlContext) < minConf)) {
+      // if ((!(r.closed())) || (r.getPcaConfidence(k, sc, sqlContext) < minConf)) {
       if ((!r.closed()) || (r.getPcaConfidence() < minConf)) {
         return false
 
@@ -332,59 +332,4 @@ object MineRules {
     }
 
   }
-
-  def main(args: Array[String]): Unit = {
-    val know = new KB()
-
-    val sparkSession = SparkSession.builder
-
-      .master("local[*]")
-      .appName("AMIESpark example")
-
-      .getOrCreate()
-
-    if (args.length < 2) {
-      System.err.println(
-        "Usage: Triple reader <input> <output>")
-      System.exit(1)
-    }
-
-    val input = args(0)
-    val outputPath: String = args(1)
-    val hdfsPath: String = outputPath + "/"
-
-    val sc = sparkSession.sparkContext
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-
-    know.sethdfsPath(hdfsPath)
-    know.setKbSrc(input)
-
-    know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc, sc, 2))
-    know.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, sc, sqlContext, 2))
-
-    val algo = new Algorithm(know, 0.01, 3, 0.1, hdfsPath)
-
-    var output = algo.ruleMining(sc, sqlContext)
-
-    var outString = output.map { x =>
-      var rdfTrp = x.getRule()
-      var temp = ""
-      for (i <- rdfTrp.indices) {
-        if (i == 0) {
-          temp = rdfTrp(i) + " <= "
-        } else {
-          temp += rdfTrp(i) + " \u2227 "
-        }
-      }
-      temp = temp.stripSuffix(" \u2227 ")
-      temp
-    }
-    var rddOut = sc.parallelize(outString)
-
-    rddOut.saveAsTextFile(outputPath + "/testOut")
-
-    sc.stop
-
-  }
-
 }

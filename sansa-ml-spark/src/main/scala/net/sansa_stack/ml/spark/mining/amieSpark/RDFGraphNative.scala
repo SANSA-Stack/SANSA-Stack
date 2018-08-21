@@ -2,45 +2,44 @@ package net.sansa_stack.ml.spark.mining.amieSpark
 
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{ DataFrame, Row, SparkSession }
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
+
 import net.sansa_stack.ml.spark.mining.amieSpark._
 
 /**
-  * A data structure that comprises a set of triples.
-  *
-  * @author Lorenz Buehmann
-  *
-  */
-class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples){
+ * A data structure that comprises a set of triples.
+ *
+ * @author Lorenz Buehmann
+ *
+ */
+class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[RDFTriple], RDFGraphNative](triples) {
 
   /**
-    * Returns an RDD of triples that match with the given input.
-    *
-    * @param s the subject
-    * @param p the predicate
-    * @param o the object
-    * @return RDD of triples
-    */
-  def find (s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple]= {
-      triples.filter(t =>
-          (s == None || t.subject == s.get) &&
-          (p == None || t.predicate == p.get) &&
-          (o == None || t.`object` == o.get)
-      )
+   * Returns an RDD of triples that match with the given input.
+   *
+   * @param s the subject
+   * @param p the predicate
+   * @param o the object
+   * @return RDD of triples
+   */
+  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): RDD[RDFTriple] = {
+    triples.filter(t =>
+      (s == None || t.subject == s.get) &&
+        (p == None || t.predicate == p.get) &&
+        (o == None || t.`object` == o.get))
   }
 
   /**
-    * Returns an RDD of triples that match with the given input.
-    *
-    * @return RDD of triples
-    */
+   * Returns an RDD of triples that match with the given input.
+   *
+   * @return RDD of triples
+   */
   def find(triple: Triple): RDD[RDFTriple] = {
     find(
       if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
-    )
+      if (triple.getObject.isVariable) None else Option(triple.getObject.toString))
   }
 
   def union(graph: RDFGraphNative): RDFGraphNative = {
@@ -52,20 +51,20 @@ class RDFGraphNative(val triples: RDD[RDFTriple]) extends AbstractRDFGraph[RDD[R
     this
   }
 
-  def distinct() = {
+  def distinct(): RDFGraphNative = {
     new RDFGraphNative(triples.distinct())
   }
 
   /**
-    * Return the number of triples.
- *
-    * @return the number of triples
-    */
-  def size() = {
+   * Return the number of triples.
+   *
+   * @return the number of triples
+   */
+  def size(): Long = {
     triples.count()
   }
 
-  def toRDD() = triples
+  def toRDD(): RDD[RDFTriple] = triples
 
   def toDataFrame(sparkSession: SparkSession): DataFrame = {
     // convert RDD to DataFrame

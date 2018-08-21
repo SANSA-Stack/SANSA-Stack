@@ -4,6 +4,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
+
 import net.sansa_stack.ml.spark.mining.amieSpark._
 
 /**
@@ -14,7 +15,7 @@ import net.sansa_stack.ml.spark.mining.amieSpark._
  */
 object RDFGraphLoader {
 
-  //private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
+  // private val logger = com.typesafe.scalalogging.slf4j.Logger(LoggerFactory.getLogger(this.getClass.getName))
   private val logger = LoggerFactory.getLogger(this.getClass.getName)
 
   def loadFromFile(path: String, sc: SparkContext, minPartitions: Int = 2): RDFGraph = {

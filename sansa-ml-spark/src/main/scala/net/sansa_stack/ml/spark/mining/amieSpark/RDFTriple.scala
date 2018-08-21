@@ -1,6 +1,5 @@
-
-
 package net.sansa_stack.ml.spark.mining.amieSpark
+
 /**
   * An RDF triple.
   *
@@ -11,9 +10,9 @@ case class RDFTriple(subject: String, predicate: String, `object`: String) exten
   override def _2: String = predicate
   override def _3: String = `object`
 
-  def s = subject
-  def p = predicate
-  def o = `object`
+  def s: String = subject
+  def p: String = predicate
+  def o: String = `object`
 
-  override def toString = subject + "  " + predicate + "  " + `object`
+  override def toString: String = subject + "  " + predicate + "  " + `object`
 }

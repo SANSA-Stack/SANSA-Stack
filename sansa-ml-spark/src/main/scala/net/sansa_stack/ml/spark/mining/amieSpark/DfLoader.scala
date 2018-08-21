@@ -1,7 +1,5 @@
 package net.sansa_stack.ml.spark.mining.amieSpark
 
-import net.sansa_stack.ml.spark.mining.amieSpark._
-
 import org.apache.spark.SparkContext
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
@@ -18,9 +16,9 @@ object DfLoader {
     val startTime = System.currentTimeMillis()
     import sqlContext.implicits._
 
-    /* var y = StructType(StructField("sub", StringType,false)::
+    /*   var y = StructType(StructField("sub", StringType,false)::
                         StructField("rel", StringType, false)::
-                        StructField("ob", StringType, false):: Nil)*/
+                        StructField("ob", StringType, false):: Nil) */
 
     val triples =
       sc.textFile(path, minPartitions)

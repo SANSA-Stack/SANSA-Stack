@@ -1,8 +1,9 @@
 package net.sansa_stack.ml.spark.mining.amieSpark
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 import org.apache.spark.sql.{ DataFrame, Row, SQLContext }
+import org.apache.spark.sql.types.{ StringType, StructField, StructType }
+
 import net.sansa_stack.ml.spark.mining.amieSpark._
 
 /**
@@ -40,7 +41,7 @@ case class RDFGraph(triples: RDD[RDFTriple]) {
   /**
    * Persist the triples RDD with the default storage level (`MEMORY_ONLY`).
    */
-  def cache() = {
+  def cache(): RDFGraph = {
     triples.cache()
     this
   }
@@ -49,7 +50,7 @@ case class RDFGraph(triples: RDD[RDFTriple]) {
    * Return the number of triples.
    * @return the number of triples
    */
-  def size() = {
+  def size(): Long = {
     triples.count()
   }
 
