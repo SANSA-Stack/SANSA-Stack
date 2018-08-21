@@ -1,15 +1,14 @@
 package net.sansa_stack.ml.spark.classification
 
-import java.util.ArrayList
-import java.util.List
+import java.util.{ArrayList, List}
 
 import collection.JavaConverters._
-
-import net.sansa_stack.ml.spark.classification._
-import org.semanticweb.owlapi.model.OWLClassExpression
-import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.semanticweb.owlapi.model.OWLClassExpression
+
+import net.sansa_stack.ml.spark.classification._
+
 
 /*
  * Class for basic functions of DL trees
@@ -99,8 +98,7 @@ class DLTree {
    * function to get the number of nodes
    */
 
-  /*
-    def getNodi(sc: SparkSession): Double = {
+  /* def getNodi(sc: SparkSession): Double = {
 
     // visit in to make the count
     val lista: ArrayList[DLNode] = new ArrayList[DLNode]()
@@ -145,10 +143,6 @@ class DLTree {
     }
     num
   }
-
-
-
-   def getComplexityMeasure(sc: SparkSession) : Double = getNodi(sc)*/
+   def getComplexityMeasure(sc: SparkSession) : Double = getNodi(sc) */
 
 }
-

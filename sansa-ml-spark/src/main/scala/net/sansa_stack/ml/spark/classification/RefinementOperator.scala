@@ -6,11 +6,12 @@ import java.util.stream.{ Collectors, Stream }
 import scala.collection.JavaConverters._
 import scala.util.Random
 
+import org.apache.spark.rdd.RDD
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.search.EntitySearcher
+
 import net.sansa_stack.ml.spark.classification._
 import net.sansa_stack.ml.spark.classification.KB.KB
-import org.apache.spark.rdd.RDD
 
 object RefinementOperator {
   val d: Double = 0.5
@@ -25,9 +26,9 @@ class RefinementOperator(var kb: KB) {
   private var Properties: RDD[OWLDataProperty] = kb.getDataProperties
   private var dataFactory: OWLDataFactory = kb.getDataFactory
 
-  /*
-	 * Function to generate subsumed random concepts
-	 */
+  /**
+   * Function to generate subsumed random concepts
+   */
   def getSubsumedRandomConcept(currentConcept: OWLClassExpression): OWLClassExpression = {
 
     val generator: Random = new Random()

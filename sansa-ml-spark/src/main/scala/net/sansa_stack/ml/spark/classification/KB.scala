@@ -5,29 +5,29 @@ import java.net.URI
 import java.util.{ ArrayList, List, Random }
 import java.util.stream.{ Collectors, IntStream, Stream }
 
-import scala.collection.JavaConversions._
-import collection.JavaConverters._
 import scala.collection.{ Iterator, Map }
+import scala.collection.JavaConverters._
 import scala.collection.immutable.{ HashMap, Set }
 
-import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model._
-import org.semanticweb.owlapi.util.SimpleIRIMapper
-import org.semanticweb.owlapi.reasoner.{ OWLReasoner, OWLReasonerFactory }
-import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory
-
-import org.semanticweb.HermiT.{ Configuration, Reasoner, ReasonerFactory }
+import collection.JavaConverters._
+import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import org.semanticweb.HermiT.{ Configuration, Reasoner, ReasonerFactory }
+import org.semanticweb.owlapi.apibinding.OWLManager
+import org.semanticweb.owlapi.model._
+import org.semanticweb.owlapi.reasoner.{ OWLReasoner, OWLReasonerFactory }
+import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory
+import org.semanticweb.owlapi.util.SimpleIRIMapper
+
 
 object KB {
   val d: Double = 0.3
   var generator: Random = new Random(2)
 
-  /*
-		 * The class to define the Knowledgebase elements
-		 */
+  /**
+   * The class to define the Knowledgebase elements
+   */
 
   class KB(var UrlOwlFile: String, rdd: OWLAxiomsRDD, sparkSession: SparkSession) {
 
@@ -82,7 +82,7 @@ object KB {
 
       val Concepts2: RDD[OWLClass] = rdd.flatMap {
         case axiom: HasClassesInSignature => axiom.classesInSignature().iterator().asScala
-        case _                            => null
+        case _ => null
       }.filter(_ != null).distinct()
 
       Concepts = Concepts2
@@ -96,7 +96,7 @@ object KB {
 
       val Roles2: RDD[OWLObjectProperty] = rdd.map {
         case axiom: HasProperty[OWLObjectProperty] => axiom.getProperty
-        case _                                     => null
+        case _ => null
       }.filter(_ != null).distinct()
 
       Roles = Roles2
@@ -110,7 +110,7 @@ object KB {
 
       val Properties2: RDD[OWLDataProperty] = rdd.flatMap {
         case axiom: HasDataPropertiesInSignature => axiom.dataPropertiesInSignature().iterator().asScala
-        case _                                   => null
+        case _ => null
       }.filter(_ != null).distinct()
 
       Properties = Properties2
@@ -124,7 +124,7 @@ object KB {
 
       val Examples2: RDD[OWLNamedIndividual] = rdd.flatMap {
         case axiom: HasIndividualsInSignature => axiom.individualsInSignature().collect(Collectors.toSet()).asScala
-        case _                                => null
+        case _ => null
       }.filter(_ != null).distinct()
 
       Examples = Examples2.asInstanceOf[RDD[OWLIndividual]]
@@ -163,10 +163,12 @@ object KB {
             p = p + 1
           } else {
             if (!flag) {
-              if (r.isEntailed(getDataFactory.getOWLClassAssertionAxiom(negTestConcepts(c), ind)))
+              if (r.isEntailed(getDataFactory.getOWLClassAssertionAxiom(negTestConcepts(c), ind))) {
                 classifications(c)(e) = -1
-            } else
+              }
+            } else {
               classifications(c)(e) = -1
+            }
 
             n = n + 1
           }
@@ -231,7 +233,7 @@ object KB {
 
     def getReasoner(): Reasoner = hermit
 
-    //def getURL(): String = urlOwlFile
+    // def getURL(): String = urlOwlFile
 
     def getRandomProperty(numQueryProperty: Int): Array[Int] = {
 
@@ -277,11 +279,12 @@ object KB {
                 val role: OWLObjectProperty = Roles.takeSample(true, 1)(0)
 
                 newConcept =
-                  if (KB.generator.nextDouble() < 0.5)
+                  if (KB.generator.nextDouble() < 0.5) {
                     dataFactory.getOWLObjectAllValuesFrom(role, newConceptBase)
-                  else dataFactory.getOWLObjectSomeValuesFrom(role, newConceptBase)
-              } else
+                  } else dataFactory.getOWLObjectSomeValuesFrom(role, newConceptBase)
+              } else {
                 newConcept = dataFactory.getOWLObjectComplementOf(newConceptBase)
+              }
             }
           }
         } while (!reasoner.isSatisfiable(newConcept))
@@ -301,12 +304,13 @@ object KB {
                 val role: OWLObjectProperty = Roles.takeSample(true, 1)(0)
 
                 newConcept =
-                  if (KB.generator.nextDouble() < d)
+                  if (KB.generator.nextDouble() < d) {
                     dataFactory.getOWLObjectAllValuesFrom(role, newConceptBase)
-                  else dataFactory.getOWLObjectSomeValuesFrom(role, newConceptBase)
+                  } else dataFactory.getOWLObjectSomeValuesFrom(role, newConceptBase)
               }
-          } else
+          } else {
             newConcept = dataFactory.getOWLObjectComplementOf(newConcept)
+          }
 
         } while (!reasoner.isSatisfiable(newConcept))
 
