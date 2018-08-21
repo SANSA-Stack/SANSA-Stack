@@ -1,5 +1,14 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.models
 
+import scala.math._
+
+import com.intel.analytics.bigdl.optim.Adam
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import net.sansa_stack.rdf.spark.kge.triples.{ IntegerTriples, StringTriples }
+import org.apache.spark.sql._
+
+
 /**
  * TransE embedding model
  * ----------------------
@@ -9,19 +18,8 @@ package net.sansa_stack.ml.spark.kge.linkprediction.models
  *
  * Created by lpfgarcia on 14/11/2017.
  */
-
-import scala.math._
-
-import org.apache.spark.sql._
-
-import com.intel.analytics.bigdl.optim.Adam
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-
-import net.sansa_stack.rdf.spark.kge.triples.{StringTriples,IntegerTriples}
-
 class TransE(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: Int, margin: Float, L: String, sk: SparkSession)
-    extends Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
+  extends Models(ne: Int, nr: Int, batch: Int, k: Int, sk: SparkSession) {
 
   val epochs = 1000
   val rate = 0.01f
@@ -30,12 +28,12 @@ class TransE(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: In
 
   val myL = L match {
     case "L2" => L2 _
-    case _    => L1 _
+    case _ => L1 _
   }
 
   import sk.implicits._
 
-  def dist(data: Dataset[IntegerTriples]) = {
+  def dist(data: Dataset[IntegerTriples]): Float = {
 
     val aux = data.collect().map { i =>
       e(i.Subject) + r(i.Predicate) - e(i.Object)
@@ -44,11 +42,11 @@ class TransE(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: In
     myL(aux)
   }
 
-  def dist(row: IntegerTriples) = {
+  def dist(row: IntegerTriples): Tensor[Float] = {
     e(row.Subject) + r(row.Predicate) - e(row.Object)
   }
 
-  def run() = {
+  def run(): Unit = {
 
     for (i <- 1 to epochs) {
 
@@ -70,5 +68,4 @@ class TransE(train: Dataset[IntegerTriples], ne: Int, nr: Int, batch: Int, k: In
 
     }
   }
-
 }

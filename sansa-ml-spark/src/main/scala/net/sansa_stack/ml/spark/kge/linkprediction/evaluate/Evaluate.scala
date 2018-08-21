@@ -9,9 +9,8 @@ package net.sansa_stack.ml.spark.kge.linkprediction.evaluate
 
 object Evaluate {
 
-  def meanRank(left: Array[Float], right: Array[Float]) {
+  def meanRank(left: Array[Float], right: Array[Float]): (Float, Float) = {
     (left.sum / left.length,
       right.sum / right.length)
   }
-  
 }

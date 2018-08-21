@@ -1,11 +1,10 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.run
 
 import com.google.common.base.Stopwatch
-import org.apache.log4j.{Level, Logger}
-import org.apache.spark.sql._
-
 import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
 import net.sansa_stack.rdf.spark.kge.triples._
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.sql._
 
 object TriplesRun extends App {
 

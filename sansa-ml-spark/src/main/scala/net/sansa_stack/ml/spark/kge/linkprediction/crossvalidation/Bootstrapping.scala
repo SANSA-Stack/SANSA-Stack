@@ -1,5 +1,8 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
 
+import net.sansa_stack.rdf.spark.kge.triples.IntegerTriples
+import org.apache.spark.sql._
+
 /**
  * Bootstrapping
  * -------------
@@ -8,18 +11,12 @@ package net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation
  *
  * Created by lpfgarcia
  */
-
-import org.apache.spark.sql._
-
-import net.sansa_stack.rdf.spark.kge.triples.IntegerTriples
-
 class Bootstrapping(data: Dataset[IntegerTriples])
-    extends CrossValidation[Dataset[IntegerTriples]] {
+  extends CrossValidation[Dataset[IntegerTriples]] {
 
-  def crossValidation() = {
+  def crossValidation(): (Dataset[IntegerTriples], Dataset[IntegerTriples]) = {
     val train = data.sample(true, 1)
     val test = data.except(train)
     (train, test)
   }
-
 }

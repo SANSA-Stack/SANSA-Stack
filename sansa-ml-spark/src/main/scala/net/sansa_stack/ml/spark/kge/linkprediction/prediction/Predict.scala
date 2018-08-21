@@ -1,29 +1,27 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.prediction
 
+import net.sansa_stack.rdf.spark.kge.triples.{ IntegerTriples, StringTriples }
+import org.apache.spark.sql._
+
 /**
  * Predict Abstract Class
  * ----------------------
  *
  * Created by lpfgarcia on 14/11/2017.
  */
-
-import org.apache.spark.sql._
-
-import net.sansa_stack.rdf.spark.kge.triples.{StringTriples,IntegerTriples}
-
 abstract class Evaluate(test: Dataset[IntegerTriples]) {
 
-  def left(row: IntegerTriples, i: Int) = {
+  def left(row: IntegerTriples, i: Int): IntegerTriples = {
     IntegerTriples(i, row.Predicate, row.Object)
   }
 
-  def right(row: IntegerTriples, i: Int) = {
+  def right(row: IntegerTriples, i: Int): IntegerTriples = {
     IntegerTriples(row.Subject, row.Predicate, i)
   }
 
   def rank(row: IntegerTriples, spo: String): Integer
 
-  def ranking() = {
+  def ranking(): (Seq[Integer], Seq[Integer]) = {
 
     var l, r = Seq[Integer]()
 
@@ -35,7 +33,7 @@ abstract class Evaluate(test: Dataset[IntegerTriples]) {
     (l, r)
   }
 
-  def rawHits10() = {
+  def rawHits10(): (Seq[Boolean], Seq[Boolean]) = {
 
     var l, r = Seq[Boolean]()
 
@@ -46,5 +44,4 @@ abstract class Evaluate(test: Dataset[IntegerTriples]) {
 
     (l, r)
   }
-
 }

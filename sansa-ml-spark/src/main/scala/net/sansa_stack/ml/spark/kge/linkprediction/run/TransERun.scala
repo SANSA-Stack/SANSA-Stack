@@ -4,18 +4,14 @@ package net.sansa_stack.ml.spark.kge.linkprediction.run
  * Created by lpfgarcia on 14/11/2017.
  */
 
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql._
 
-import org.apache.log4j.Logger
-import org.apache.log4j.Level
-
-import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
-import net.sansa_stack.rdf.spark.kge.triples._
-
-import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.Holdout
-import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.{kFold,Bootstrapping,Holdout}
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.{ kFold, Bootstrapping, Holdout }
 import net.sansa_stack.ml.spark.kge.linkprediction.models.TransE
 import net.sansa_stack.ml.spark.kge.linkprediction.prediction.PredictTransE
+import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
+import net.sansa_stack.rdf.spark.kge.triples._
 
 object TransERun {
 
@@ -25,7 +21,7 @@ object TransERun {
   val spark = SparkSession.builder.master("local")
     .appName("kge").getOrCreate
 
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit = {
 
     val table = new Triples("/home/lpfgarcia/Desktop/SANSA-ML/data/train.txt", "\t", false, false, spark)
 
@@ -37,18 +33,15 @@ object TransERun {
 
     val (train, test) = new Holdout(data.triples, 0.6f).crossValidation()
 
-    
     println("Trinamento:")
     println(train.show())
     println("Teste:")
     println(test.show())
 
-    //var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", spark)
-    //model.run()
+    // var model = new TransE(train, data.e.length, data.r.length, 100, 20, 1, "L1", spark)
+    // model.run()
 
-    //val predict = new PredictTransE(model, test).ranking()
-    //println(predict)
-
+    // val predict = new PredictTransE(model, test).ranking()
+    // println(predict)
   }
-
 }
