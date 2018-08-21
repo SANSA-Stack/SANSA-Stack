@@ -1,18 +1,18 @@
 package net.sansa_stack.ml.spark.kernel
 
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, StringIndexer}
+import org.apache.spark.ml.feature.{ CountVectorizer, CountVectorizerModel, StringIndexer }
 import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ DataFrame, SparkSession }
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
-                               val tripleDF: DataFrame,
-                               val instanceDF: DataFrame,
-                               val maxDepth: Int
-                              ) extends Serializable {
+class RDFFastTreeGraphKernel_v2(
+  @transient val sparkSession: SparkSession,
+  val tripleDF: DataFrame,
+  val instanceDF: DataFrame,
+  val maxDepth: Int) extends Serializable {
 
   def computeFeatures(): DataFrame = {
     /*
@@ -46,7 +46,6 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
       intermediateDF.createOrReplaceTempView("df")
     }
 
-
     // Indexing on path
     val indexer = new StringIndexer()
       .setInputCol("path")
@@ -59,11 +58,9 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
       .agg(collect_list("pathIndex") as "paths")
       .toDF("instance", "label", "paths")
 
-
     // CountVectorize the aggregated paths
     val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("paths").setOutputCol("features").fit(aggDF)
     val dataML = cvModel.transform(aggDF)
-
 
     dataML
 
@@ -97,11 +94,11 @@ class RDFFastTreeGraphKernel_v2 (@transient val sparkSession: SparkSession,
 
 object RDFFastTreeGraphKernel_v2 {
 
-  def apply(sparkSession: SparkSession,
-            tripleDF: DataFrame,
-            instanceDF: DataFrame,
-            maxDepth: Int
-           ): RDFFastTreeGraphKernel_v2 = {
+  def apply(
+    sparkSession: SparkSession,
+    tripleDF: DataFrame,
+    instanceDF: DataFrame,
+    maxDepth: Int): RDFFastTreeGraphKernel_v2 = {
 
     new RDFFastTreeGraphKernel_v2(sparkSession, tripleDF, instanceDF, maxDepth)
   }

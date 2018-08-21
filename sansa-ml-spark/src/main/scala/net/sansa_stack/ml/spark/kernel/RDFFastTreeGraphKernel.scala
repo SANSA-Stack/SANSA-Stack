@@ -1,13 +1,14 @@
 package net.sansa_stack.ml.spark.kernel
 
+import org.apache.jena.graph.Triple
+import org.apache.spark.ml.feature.{ CountVectorizer, CountVectorizerModel }
+import org.apache.spark.mllib.linalg.SparseVector
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ DataFrame, SparkSession }
 import org.apache.spark.sql.functions._
-import org.apache.spark.ml.feature.{ CountVectorizer, CountVectorizerModel }
-import org.apache.spark.mllib.linalg.SparseVector
-import org.apache.spark.mllib.util.MLUtils
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.jena.graph.Triple
+
 
 object Uri2Index {
   /*
@@ -81,9 +82,9 @@ object Uri2Index {
 
 class RDFFastTreeGraphKernel(
   @transient val sparkSession: SparkSession,
-  val tripleRDD:               RDD[Triple],
-  val instanceDF:              DataFrame,
-  val maxDepth:                Int) extends Serializable {
+  val tripleRDD: RDD[Triple],
+  val instanceDF: DataFrame,
+  val maxDepth: Int) extends Serializable {
   /*
   * Construct Triples DataFrame and Instances DataFrame
   * Also, Get/Set Index for each URI and Literal
@@ -168,9 +169,9 @@ object RDFFastTreeGraphKernel {
 
   def apply(
     sparkSession: SparkSession,
-    tripleRDD:    RDD[Triple],
-    instanceDF:   DataFrame,
-    maxDepth:     Int): RDFFastTreeGraphKernel = {
+    tripleRDD: RDD[Triple],
+    instanceDF: DataFrame,
+    maxDepth: Int): RDFFastTreeGraphKernel = {
 
     new RDFFastTreeGraphKernel(sparkSession, tripleRDD, instanceDF, maxDepth)
   }

@@ -1,18 +1,18 @@
 package net.sansa_stack.ml.spark.kernel
 
+import org.apache.jena.graph.Triple
 import org.apache.spark.ml.feature.{ CountVectorizer, CountVectorizerModel, StringIndexer }
 import org.apache.spark.mllib.linalg.SparseVector
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{ DataFrame, SparkSession }
-import org.apache.jena.graph.Triple
+import org.apache.spark.sql.functions._
 
 class RDFFastGraphKernel(
   @transient val sparkSession: SparkSession,
-  val tripleRDD:               RDD[Triple],
-  val predicateToPredict:      String) extends Serializable {
+  val tripleRDD: RDD[Triple],
+  val predicateToPredict: String) extends Serializable {
 
   import sparkSession.implicits._
 
@@ -84,8 +84,8 @@ class RDFFastGraphKernel(
 object RDFFastGraphKernel {
 
   def apply(
-    sparkSession:       SparkSession,
-    tripleRDD:          RDD[Triple],
+    sparkSession: SparkSession,
+    tripleRDD: RDD[Triple],
     predicateToPredict: String): RDFFastGraphKernel = {
 
     new RDFFastGraphKernel(sparkSession, tripleRDD, predicateToPredict)

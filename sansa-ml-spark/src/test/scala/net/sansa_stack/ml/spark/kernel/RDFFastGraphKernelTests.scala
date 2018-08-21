@@ -31,5 +31,4 @@ class RDFFastGraphKernelTests extends FunSuite with DataFrameSuiteBase {
 
     assert(true)
   }
-
 }

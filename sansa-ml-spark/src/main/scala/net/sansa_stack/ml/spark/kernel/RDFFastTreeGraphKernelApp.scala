@@ -46,7 +46,7 @@ object RDFFastTreeGraphKernelApp {
   }
 
   def experimentAffiliationPrediction(sparkSession: SparkSession, depth: Int, iteration: Int): Unit = {
-    //val input = "src/main/resources/kernel/aifb-fixed_complete4.nt"
+    // val input = "src/main/resources/kernel/aifb-fixed_complete4.nt"
     val input = "src/main/resources/kernel/aifb-fixed_no_schema4.nt"
 
     val t0 = System.nanoTime
@@ -137,7 +137,7 @@ object RDFFastTreeGraphKernelApp {
     tripleRDD.filter(_.getPredicate.getURI == "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
       .foreach(f => Uri2Index.setInstanceAndLabel(f.getSubject.toString, f.getObject.toString))
 
-    val filteredTripleRDD=tripleRDD
+    val filteredTripleRDD = tripleRDD
       .filter(_.getPredicate.getURI != "http://data.bgs.ac.uk/ref/Lexicon/hasTheme")
 
     val instanceDF = Uri2Index.getInstanceLabelsDF(sparkSession)
