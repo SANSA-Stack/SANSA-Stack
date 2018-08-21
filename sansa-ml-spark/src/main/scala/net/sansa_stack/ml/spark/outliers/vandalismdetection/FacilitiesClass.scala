@@ -1,9 +1,9 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
+import org.apache.spark.ml.linalg.{ Vector, Vectors }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ DoubleType, StringType, IntegerType, StructField, StructType }
-import org.apache.spark.ml.linalg.{ Vector, Vectors }
+import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructField, StructType }
 
 class FacilitiesClass extends Serializable {
 
@@ -18,68 +18,68 @@ class FacilitiesClass extends Serializable {
     namesList
   }
 
-  //ok --- Used for DF Triples
+  // ok --- Used for DF Triples
   def RDD_TO_DFR_RDFXML(rdd: RDD[String], sqlContext: org.apache.spark.sql.SQLContext): DataFrame = {
-    //Create an Encoded Schema in a String Format:
+    // Create an Encoded Schema in a String Format:
     val schemaString = "Subject Predicate Object"
-    //Generate schema:
+    // Generate schema:
     val schema = StructType(schemaString.split(" ").map(fieldName ⇒ StructField(fieldName, StringType, true)))
-    //Apply Transformation for Reading Data from Text File
+    // Apply Transformation for Reading Data from Text File
     val rowRDD = rdd.map(_.split(" ")).map(e ⇒ Row(e(0), e(1), e(2)))
-    //Apply RowRDD in Row Data based on Schema:
+    // Apply RowRDD in Row Data based on Schema:
     val RDFTRIPLE = sqlContext.createDataFrame(rowRDD, schema)
-    //Store DataFrame Data into Table
+    // Store DataFrame Data into Table
     RDFTRIPLE.registerTempTable("SPO")
-    //Select Query on DataFrame
+    // Select Query on DataFrame
     val dfr = sqlContext.sql("SELECT * FROM SPO")
     dfr.show()
 
     dfr
   }
 
-  //ok --- Used for DF Triples
+  // ok --- Used for DF Triples
   def RDD_TO_DFR_TRIX(rdd: RDD[String], sqlContext: org.apache.spark.sql.SQLContext): DataFrame = {
-    //Create an Encoded Schema in a String Format:
+    // Create an Encoded Schema in a String Format:
     val schemaString = "Subject Predicate Object"
-    //Generate schema:
+    // Generate schema:
     val schema = StructType(schemaString.split(" ").map(fieldName ⇒ StructField(fieldName, StringType, true)))
-    //Apply Transformation for Reading Data from Text File
+    // Apply Transformation for Reading Data from Text File
     val rowRDD = rdd.map(_.split("><")).map(e ⇒ Row(e(0), e(1), e(2)))
-    //Apply RowRDD in Row Data based on Schema:
+    // Apply RowRDD in Row Data based on Schema:
     val RDFTRIPLE = sqlContext.createDataFrame(rowRDD, schema)
-    //Store DataFrame Data into Table
+    // Store DataFrame Data into Table
     RDFTRIPLE.registerTempTable("SPO")
-    //Select Query on DataFrame
+    // Select Query on DataFrame
     val dfr = sqlContext.sql("SELECT * FROM SPO")
     dfr.show()
 
     dfr
   }
 
-    //ok --- Used for DF Triples
+  // ok --- Used for DF Triples
   def RDD_TO_DFR_JTriple(rdd: RDD[String], sqlContext: org.apache.spark.sql.SQLContext): DataFrame = {
-    //Create an Encoded Schema in a String Format:
+    // Create an Encoded Schema in a String Format:
     val schemaString = "Subject Predicate Object"
-    //Generate schema:
+    // Generate schema:
     val schema = StructType(schemaString.split(" ").map(fieldName ⇒ StructField(fieldName, StringType, true)))
-    //Apply Transformation for Reading Data from Text File
+    // Apply Transformation for Reading Data from Text File
     val rowRDD = rdd.map(_.split(",")).map(e ⇒ Row(e(0), e(1), e(2)))
-    //Apply RowRDD in Row Data based on Schema:
+    // Apply RowRDD in Row Data based on Schema:
     val RDFTRIPLE = sqlContext.createDataFrame(rowRDD, schema)
-    //Store DataFrame Data into Table
+    // Store DataFrame Data into Table
     RDFTRIPLE.registerTempTable("SPO")
-    //Select Query on DataFrame
+    // Select Query on DataFrame
     val dfr = sqlContext.sql("SELECT * FROM SPO")
     dfr.show()
 
     dfr
   }
+
   def RoundDouble(va: Double): Double = {
 
     val rounded: Double = Math.round(va * 10000).toDouble / 10000
 
     rounded
-
   }
 
   def stringToInt(str: String): Integer = {
@@ -139,7 +139,5 @@ class FacilitiesClass extends Serializable {
     }
 
     tem.trim()
-
   }
-
 }

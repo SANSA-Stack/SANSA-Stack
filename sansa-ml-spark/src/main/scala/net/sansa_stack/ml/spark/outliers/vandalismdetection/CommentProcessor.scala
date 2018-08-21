@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
 import java.util.regex.{ Matcher, Pattern }
+
 import org.slf4j.{ Logger, LoggerFactory }
 
 class CommentProcessor extends Serializable {
@@ -97,7 +98,7 @@ class CommentProcessor extends Serializable {
     actions
   }
 
-  //Ok: helper for Revision Features:  extract Action- subaction from comment:
+  // Ok: helper for Revision Features:  extract Action- subaction from comment:
   def Extract_ActionsOfNormalComment(comment: String): String = {
 
     var result: Boolean = false
@@ -108,7 +109,7 @@ class CommentProcessor extends Serializable {
     var Param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
     var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 //== */
+    var asterisk_End = 0 // == */
     var colon = 0
     if (comment != null) {
       val check_asterisk_Start = comment.contains("/*")
@@ -182,7 +183,7 @@ class CommentProcessor extends Serializable {
     var suffixComment = ""
 
     var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 //== */
+    var asterisk_End = 0 // == */
     var colon = 0
 
     if (comment != null) {
@@ -246,7 +247,7 @@ class CommentProcessor extends Serializable {
     var Param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
     var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 //== */
+    var asterisk_End = 0 // == */
     var colon = 0
     if (comment != null) {
       val check_asterisk_Start = comment.contains("/*")
@@ -324,7 +325,7 @@ class CommentProcessor extends Serializable {
     var Param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
     var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 //== */
+    var asterisk_End = 0 // == */
     var colon = 0
     if (comment != null) {
       val check_asterisk_Start = comment.contains("/*")
@@ -403,7 +404,7 @@ class CommentProcessor extends Serializable {
     var Param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
     var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 //== */
+    var asterisk_End = 0 // == */
     var colon = 0
     if (comment != null) {
       val check_asterisk_Start = comment.contains("/*")
@@ -569,7 +570,7 @@ class CommentProcessor extends Serializable {
 
         } else {
 
-          //do not thing
+          // do not thing
 
         }
 
@@ -584,7 +585,7 @@ class CommentProcessor extends Serializable {
 
   }
 
-  //"Thecommentis" + result_Str + "&&&" + "Ac1:" + Action1 + "&&&" + "Ac2 :" + Action2 + "&&&" + "SF:" + suffixComment
+  // "Thecommentis" + result_Str + "&&&" + "Ac1:" + Action1 + "&&&" + "Ac2 :" + Action2 + "&&&" + "SF:" + suffixComment
   def isRollback(comment: String): Boolean = {
     var result: Boolean = false
     if (comment != null) {
@@ -594,8 +595,8 @@ class CommentProcessor extends Serializable {
         logger.debug("Robust but not precise rollback match (result = " + result + ") : " + tmp)
       }
     }
-    //result =  tmp.startsWith("Reverted");
-    //result =  tmp.startsWith("Reverted");
+    // result =  tmp.startsWith("Reverted");
+    // result =  tmp.startsWith("Reverted");
     result
   }
 
@@ -613,8 +614,8 @@ class CommentProcessor extends Serializable {
         }
       }
     }
-    //result = (tmp.startsWith("Undid") || tmp.startsWith("Undo")) ;
-    //result = (tmp.startsWith("Undid") || tmp.startsWith("Undo")) ;
+    // result = (tmp.startsWith("Undid") || tmp.startsWith("Undo")) ;
+    // result = (tmp.startsWith("Undid") || tmp.startsWith("Undo")) ;
     result
   }
 
@@ -632,8 +633,8 @@ class CommentProcessor extends Serializable {
         }
       }
     }
-    //result = (tmp.startsWith("Restored") || tmp.startsWith("Restore"));
-    //result = (tmp.startsWith("Restored") || tmp.startsWith("Restore"));
+    // result = (tmp.startsWith("Restored") || tmp.startsWith("Restore"));
+    // result = (tmp.startsWith("Restored") || tmp.startsWith("Restore"));
     result
   }
 
@@ -693,7 +694,7 @@ class CommentProcessor extends Serializable {
   }
 
   def getUndoneRevisionId(comment: String): Long = {
-    var result: Long = 0l
+    var result: Long = 0L
     val matcher: Matcher = ROBUST_UNDO_PATTERN.matcher(comment)
     if (matcher.matches()) {
       val str: String = matcher.group(2)
@@ -705,7 +706,7 @@ class CommentProcessor extends Serializable {
   }
 
   def getRestoredRevisionId(comment: String): Long = {
-    var result: Long = 0l
+    var result: Long = 0L
     val matcher: Matcher = ROBUST_RESTORE_PATTERN.matcher(comment)
     if (matcher.matches()) {
       val str: String = matcher.group(1)

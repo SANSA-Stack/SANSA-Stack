@@ -1,12 +1,14 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
-import org.apache.spark.SparkContext
-import org.apache.hadoop.mapred.JobConf
-import org.apache.spark.rdd.RDD
-import org.apache.jena.graph.Triple
-import org.apache.jena.rdf.model.ModelFactory
+
+import java.io.ByteArrayInputStream
 import java.util.ArrayList
 import java.util.regex.Pattern
-import java.io.ByteArrayInputStream
+
+import org.apache.hadoop.mapred.JobConf
+import org.apache.jena.graph.Triple
+import org.apache.jena.rdf.model.ModelFactory
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 class ParseTRIX extends Serializable {
 
@@ -18,7 +20,7 @@ class ParseTRIX extends Serializable {
 
     org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf_Record, "hdfs://localhost:9000/mydata/xx.trix") // input path from Hadoop
 
-    //------------TRIX Record
+    // ------------TRIX Record
     // read data and save in RDD as block- TRIX Record
     val TRIX_Dataset_Record = sc.hadoopRDD(jobConf_Record, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text])
     //      println("HelloRecords" + " " + TRIX_Dataset_Record.count)
@@ -43,11 +45,9 @@ class ParseTRIX extends Serializable {
     s4
   }
 
-
   // This function for TRIX case.
   def arrayListTOstring(Arraylistval: ArrayList[Triple]): String = {
     val str = Arraylistval.get(0).toString()
     str
   }
-
 }

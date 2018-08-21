@@ -1,8 +1,7 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
-import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.spark.{ RangePartitioner, SparkConf, SparkContext }
 import org.apache.spark.sql._
-import org.apache.spark.{ SparkContext, RangePartitioner }
 
 object Main {
 
@@ -19,7 +18,7 @@ object Main {
     if (num == "1") {
 
       Start.Start_RDF_Parser_Appraoch(sc)
-    } // Distributed Standard Parser and Vandalism Detection : 
+    } // Distributed Standard Parser and Vandalism Detection:
     else if (num == "2") {
 
       val Training_Data = Start.Training_Start_StandardXMLParser_VD(sc)
@@ -27,22 +26,21 @@ object Main {
 
       val OBJClassifiers = new Classifiers()
 
-      //1.Random Forest Classifer:
+      // 1.Random Forest Classifer:
       val RandomForestClassifer_Values = OBJClassifiers.RandomForestClassifer(Training_Data, Testing_Data, sc)
 
-      //2.DecisionTreeClassifier
+      // 2.DecisionTreeClassifier
       val DecisionTreeClassifier_values = OBJClassifiers.DecisionTreeClassifier(Training_Data, Testing_Data, sc)
 
       // 3.LogisticRegrision
       val LogisticRegrision_values = OBJClassifiers.LogisticRegrision(Training_Data, Testing_Data, sc)
 
-      //4.GradientBoostedTree
+      // 4.GradientBoostedTree
       val GradientBoostedTree_values = OBJClassifiers.GradientBoostedTree(Training_Data, Testing_Data, sc)
 
-      //5.MultilayerPerceptronClassifier
+      // 5.MultilayerPerceptronClassifier
       val MultilayerPerceptronClassifier_values = OBJClassifiers.MultilayerPerceptronClassifier(Training_Data, Testing_Data, sc)
 
-      
       println(RandomForestClassifer_Values)
       println(DecisionTreeClassifier_values)
       println(LogisticRegrision_values)

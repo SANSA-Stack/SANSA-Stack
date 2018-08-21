@@ -13,7 +13,7 @@ class SentencesFeatures extends Serializable {
 
   }
 
-  //1.comment tail Lenght  Action subaction param+ tail
+  // 1.comment tail Lenght  Action subaction param+ tail
   def CommentTailLenght(Full_Comment_Str: String): Integer = {
     val parsedCommment_OBJ = new CommentProcessor()
     val commentTail_Str = parsedCommment_OBJ.Extract_CommentTail(Full_Comment_Str)
@@ -23,9 +23,9 @@ class SentencesFeatures extends Serializable {
   }
   // similarity  between the comment ( suffix of the comment = Tail ) where the comment is normal comment /* .........*/ or  /* .........
   // e.g This comment includes wb...sitelink
-  //1-we have to be sure the comment is normal comment take the form /* ........./*
-  //2-Next step: we check the Action part if it includes a sitelink word or not.
-  //3-we compare the suffix in this case to  site link with pay attention to  the same language.
+  // 1-we have to be sure the comment is normal comment take the form /* ........./*
+  // 2-Next step: we check the Action part if it includes a sitelink word or not.
+  // 3-we compare the suffix in this case to  site link with pay attention to  the same language.
 
   // we check the type of Normal comment if it contains Aliases  .
   def extract_CommentAliases_LanguageType(Full_Comment_Str: String): String = {
@@ -185,5 +185,4 @@ class SentencesFeatures extends Serializable {
     langeType.trim()
 
   }
-
 }

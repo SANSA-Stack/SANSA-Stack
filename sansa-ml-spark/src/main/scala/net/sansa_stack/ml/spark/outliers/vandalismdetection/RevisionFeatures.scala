@@ -1,4 +1,5 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
+
 import java.util.regex.{ Matcher, Pattern }
 
 class RevisionFeatures extends Serializable {
@@ -53,7 +54,7 @@ class RevisionFeatures extends Serializable {
 
     }
 
-    //      if (result_isNonLatin==true){ // is matched
+    //      if (result_isNonLatin==true) { // is matched
     //
     //        Final_Result=false
     //

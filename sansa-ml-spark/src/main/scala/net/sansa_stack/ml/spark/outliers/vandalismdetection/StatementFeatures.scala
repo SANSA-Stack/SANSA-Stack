@@ -42,5 +42,4 @@ class StatementFeatures extends Serializable {
     }
     result
   }
-
 }

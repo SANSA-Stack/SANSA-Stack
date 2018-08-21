@@ -1,10 +1,10 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
-import java.util.regex.{ Pattern, Matcher }
+import java.util.regex.{ Matcher, Pattern }
 
 class ItemFeatures extends Serializable {
 
-  //1.
+  // 1.
   def Get_NumberOfLabels(str: String): Double = {
 
     // from Label Tag
@@ -15,11 +15,9 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
 
-  //2.
+  // 2.
   def Get_NumberOfDescription(str: String): Double = {
 
     // from description tag
@@ -30,11 +28,9 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
 
-  //3.
+  // 3.
   def Get_NumberOfAliases(str: String): Double = {
 
     // from Aliases Tag
@@ -45,11 +41,9 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
 
-  //4.
+  // 4.
   def Get_NumberOfClaim(str: String): Double = {
 
     // from claim tag
@@ -60,10 +54,8 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
-  //5.
+  // 5.
   def Get_NumberOfSiteLinks(str: String): Double = {
 
     // from Sitelink tag
@@ -74,10 +66,8 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
-  //6.
+  // 6.
   def Get_NumberOfstatements(str: String): Double = {
 
     // from claims tag
@@ -88,10 +78,8 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
-  //7.
+  // 7.
 
   def Get_NumberOfReferences(str: String): Double = {
 
@@ -107,7 +95,7 @@ class ItemFeatures extends Serializable {
     count
   }
 
-  //8.
+  // 8.
   def Get_NumberOfQualifier(str: String): Double = {
 
     // from claims tag
@@ -118,10 +106,8 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
-  //9.
+  // 9.
   def Get_NumberOfQualifier_Order(str: String): Double = {
     // from claims tag
     val input: String = str
@@ -131,20 +117,15 @@ class ItemFeatures extends Serializable {
     while (matcher.find()) { count += 1; count - 1 }
 
     count
-
-    count
   }
-  //10.
+  // 10.
   def Get_NumberOfBadges(str: String): Double = {
-
     // from Sitelink  tag
     val input: String = str
     val pattern: Pattern = Pattern.compile(""""badges"""" + ":")
     val matcher: Matcher = pattern.matcher(input)
     var count: Double = 0.0
     while (matcher.find()) { count += 1; count - 1 }
-
-    count
 
     count
   }

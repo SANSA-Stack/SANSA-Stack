@@ -1,33 +1,27 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
-import org.apache.spark.{ SparkContext, RangePartitioner }
+import java.io.{ File, IOException }
+import java.text.SimpleDateFormat
+import java.util.{ Calendar, Date }
+
+import scala.collection.mutable
+
+import org.apache.commons.io.FileUtils
+import org.apache.spark.{ RangePartitioner, SparkContext }
+import org.apache.spark.ml.classification.{ DecisionTreeClassificationModel, DecisionTreeClassifier, GBTClassificationModel, GBTClassifier, LogisticRegression, MultilayerPerceptronClassifier, RandomForestClassificationModel, RandomForestClassifier }
+import org.apache.spark.ml.evaluation.{ BinaryClassificationEvaluator, MulticlassClassificationEvaluator }
+import org.apache.spark.ml.feature.{ IndexToString, StringIndexer, VectorIndexer }
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.linalg.{ Vector, Vectors }
+import org.apache.spark.mllib.classification.{ SVMModel, SVMWithSGD }
+import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ DoubleType, StringType, IntegerType, StructField, StructType }
-import org.apache.spark.ml.linalg.{ Vector, Vectors }
-import org.apache.spark.ml.classification.{ GBTClassificationModel, GBTClassifier }
-import org.apache.spark.ml.classification.DecisionTreeClassificationModel
-import org.apache.spark.ml.classification.DecisionTreeClassifier
-import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.classification.MultilayerPerceptronClassifier
-import scala.collection.mutable
-import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
-import org.apache.spark.ml.feature.{ IndexToString, StringIndexer, VectorIndexer }
-import org.apache.spark.ml.classification.{ RandomForestClassificationModel, RandomForestClassifier }
-import org.apache.spark.ml.Pipeline
-import org.apache.commons.io.FileUtils;
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar
-import java.text.SimpleDateFormat
-import java.util.Date
-import org.apache.spark.mllib.classification.{SVMModel, SVMWithSGD}
+import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructField, StructType }
 
 class Classifiers extends Serializable {
 
-  //1.ok -----
+  // 1.ok -----
   def RandomForestClassifer(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
@@ -48,7 +42,7 @@ class Classifiers extends Serializable {
     //    val Array(DF_Testing) = DF_Testing//.randomSplit(Array(0.100))
 
     // Train a RandomForest model.
-    val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043).setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") //.setNumTrees(20)
+    val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043).setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") // .setNumTrees(20)
 
     // Convert indexed labels back to original labels.
     val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
@@ -66,7 +60,7 @@ class Classifiers extends Serializable {
     val finlaPrediction = predictions.select("Rid", "features", "FinalROLLBACK_REVERTED", "predictedLabel")
     predictions.show()
 
-    //Case1 : BinaryClassificationEvaluator:OK ------------------------------------------------------
+    // Case1 : BinaryClassificationEvaluator:OK ------------------------------------------------------
     val binaryClassificationEvaluator = new BinaryClassificationEvaluator().setLabelCol("indexedLabel").setRawPredictionCol("rawPrediction")
     var results1 = 0.0
     def printlnMetricCAse1(metricName: String): Double = {
@@ -79,7 +73,7 @@ class Classifiers extends Serializable {
     val PR = printlnMetricCAse1("areaUnderPR")
 
     // Case 2: MulticlassClassificationEvaluator:OK -----------------------------------------------------
-    //Select (prediction, true label) and compute test error.
+    // Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
     var results2 = 0.0
 
@@ -93,10 +87,10 @@ class Classifiers extends Serializable {
     val Recall = printlnMetricCase2("weightedRecall")
 
     val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
-  finalResult
+    finalResult
 
   }
-  //2.ok------
+  // 2.ok------
   def DecisionTreeClassifier(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
@@ -135,40 +129,38 @@ class Classifiers extends Serializable {
     val predictions = modelxx.transform(TestingData)
 
     // Select example rows to display.
-    //val finlaPrediction = predictions.select("Rid", "features", "FinalROLLBACK_REVERTED", "predictedLabel")
+    // val finlaPrediction = predictions.select("Rid", "features", "FinalROLLBACK_REVERTED", "predictedLabel")
 
-    //Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
+    // Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
     val binaryClassificationEvaluator = new BinaryClassificationEvaluator().setLabelCol("indexedLabel").setRawPredictionCol("rawPrediction")
-    
-    var result1=0.0
+
+    var result1 = 0.0
     def printlnMetricCAse1(metricName: String): Double = {
-     result1 =binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
-      println(metricName + " = " +result1 )
-      
+      result1 = binaryClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " + result1)
+
       result1
     }
     val ROC = printlnMetricCAse1("areaUnderROC")
     val PR = printlnMetricCAse1("areaUnderPR")
 
-    //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
-    //Select (prediction, true label) and compute test error.
+    // Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
+    // Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
-   var result2=0.0
+    var result2 = 0.0
     def printlnMetricCase2(metricName: String): Double = {
-      result2=MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      result2 = MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
       println(metricName + " = " + result2)
       result2
     }
-     val accuracy = printlnMetricCase2("accuracy")
+    val accuracy = printlnMetricCase2("accuracy")
     val Precision = printlnMetricCase2("weightedPrecision")
     val Recall = printlnMetricCase2("weightedRecall")
 
-    
-        val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+    val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
 
     finalResult
-     
-    
+
   }
 
   // 3.Ok --------
@@ -210,7 +202,7 @@ class Classifiers extends Serializable {
 
     predictions.show()
 
-    //Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
+    // Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
     val binaryClassificationEvaluator = new BinaryClassificationEvaluator().setLabelCol("indexedLabel").setRawPredictionCol("rawPrediction")
     var results1 = 0.0
     def printlnMetricCase1(metricName: String): Double = {
@@ -222,13 +214,13 @@ class Classifiers extends Serializable {
     val ROC = printlnMetricCase1("areaUnderROC")
     val PR = printlnMetricCase1("areaUnderPR")
 
-    //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
-    //Select (prediction, true label) and compute test error.
+    // Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
+    // Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
-   var result2=0.0
+    var result2 = 0.0
     def printlnMetricCase2(metricName: String): Double = {
-      
-      result2=MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+
+      result2 = MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
       println(metricName + " = " + result2)
       result2
     }
@@ -236,13 +228,12 @@ class Classifiers extends Serializable {
     val Precision = printlnMetricCase2("weightedPrecision")
     val Recall = printlnMetricCase2("weightedRecall")
 
-    
-     val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+    val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
 
-     finalResult
-    
+    finalResult
+
   }
-  //4. OK-----
+  // 4. OK-----
   def GradientBoostedTree(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
@@ -265,7 +256,7 @@ class Classifiers extends Serializable {
     //    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
 
     // Train a DecisionTree model.
-    val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") //.setMaxIter(10)
+    val gbt = new GBTClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") // .setMaxIter(10)
 
     // Convert indexed labels back to original labels.
     val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)
@@ -281,7 +272,7 @@ class Classifiers extends Serializable {
 
     // Select example rows to display.
 
-    //Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
+    // Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
 
     var predictionsRDD = predictions.select("prediction", "FinalROLLBACK_REVERTED").rdd
     var predictionAndLabels = predictionsRDD.map { row => (row.get(0).asInstanceOf[Double], row.get(1).asInstanceOf[Double]) }
@@ -290,32 +281,31 @@ class Classifiers extends Serializable {
     println("Area under ROC = " + metrics.areaUnderROC())
     println("Area under PR = " + metrics.areaUnderPR())
 
-      val ROC =metrics.areaUnderROC()
-      val PR= metrics.areaUnderPR()
-    
-    
-    //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
-    //Select (prediction, true label) and compute test error.
+    val ROC = metrics.areaUnderROC()
+    val PR = metrics.areaUnderPR()
+
+    // Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
+    // Select (prediction, true label) and compute test error.
     val MulticlassClassificationEvaluator = new MulticlassClassificationEvaluator().setLabelCol("indexedLabel").setPredictionCol("prediction")
 
-    var result2=0.0 
+    var result2 = 0.0
     def printlnMetric(metricName: String): Double = {
-      
-      result2= MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
-      println(metricName + " = " +result2)
+
+      result2 = MulticlassClassificationEvaluator.setMetricName(metricName).evaluate(predictions)
+      println(metricName + " = " + result2)
       result2
     }
     val accuracy = printlnMetric("accuracy")
     val Precision = printlnMetric("weightedPrecision")
     val Recall = printlnMetric("weightedRecall")
-    
+
     val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
 
-     finalResult
+    finalResult
 
   }
 
-  //5.Ok------------
+  // 5.Ok------------
   def MultilayerPerceptronClassifier(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
 
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
@@ -352,7 +342,7 @@ class Classifiers extends Serializable {
 
     // predictions.show()
 
-    //Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
+    // Case1 : BinaryClassificationEvaluator:----------------------------------------------------------
     var predictionsDF = predictions.select("prediction", "label")
     var predictionsRDD = predictions.select("prediction", "label").rdd
     var predictionAndLabels = predictionsRDD.map { row => (row.get(0).asInstanceOf[Double], row.get(1).asInstanceOf[Double]) }
@@ -361,13 +351,10 @@ class Classifiers extends Serializable {
     println("Area under ROC = " + metrics.areaUnderROC())
     println("Area under PR = " + metrics.areaUnderPR())
 
-    
-      val ROC =metrics.areaUnderROC()
-      val PR= metrics.areaUnderPR()
-    
-    
-    
-    //Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
+    val ROC = metrics.areaUnderROC()
+    val PR = metrics.areaUnderPR()
+
+    // Case 2: MulticlassClassificationEvaluator:-----------------------------------------------------
     val accuracyevaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
     val weightedPrecisionevaluator = new MulticlassClassificationEvaluator().setMetricName("weightedPrecision")
     val weightedRecallevaluator = new MulticlassClassificationEvaluator().setMetricName("weightedRecall")
@@ -375,22 +362,14 @@ class Classifiers extends Serializable {
     println("Accuracy = " + accuracyevaluator.evaluate(predictionsDF))
     println("weightedPrecision = " + weightedPrecisionevaluator.evaluate(predictionsDF))
     println("weightedRecall = " + weightedRecallevaluator.evaluate(predictionsDF))
-    
-    
+
     val accuracy = accuracyevaluator.evaluate(predictionsDF)
     val Precision = weightedPrecisionevaluator.evaluate(predictionsDF)
     val Recall = weightedRecallevaluator.evaluate(predictionsDF)
-    
-    
-     val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
-     finalResult
 
-    
-    
+    val finalResult = "ROC=" + ROC.toString() + "|" + "PR=" + PR.toString() + "|" + "accuracy=" + accuracy.toString() + "|" + "Precision=" + Precision.toString() + "|" + "Recall=" + Recall.toString()
+    finalResult
 
   }
-
-  
-  
 
 }
