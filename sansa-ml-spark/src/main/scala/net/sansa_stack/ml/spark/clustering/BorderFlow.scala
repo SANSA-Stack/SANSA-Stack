@@ -1,38 +1,34 @@
 package net.sansa_stack.ml.spark.clustering
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.graphx.{ Graph, EdgeDirection }
+import java.io._
+import java.io.{ ByteArrayInputStream, FileNotFoundException, FileReader, IOException, StringWriter }
+import java.lang.{ Long => JLong }
+
 import scala.math.BigDecimal
-import org.apache.spark.sql.SparkSession
 import scala.reflect.runtime.universe._
-import scopt.OptionParser
-import org.apache.log4j.{ Level, Logger }
-import org.apache.spark.mllib.util.MLUtils
-import java.io.{ FileReader, FileNotFoundException, IOException }
-import org.apache.spark.mllib.linalg.Vectors
-import java.lang.{ Long => JLong }
-import java.lang.{ Long => JLong }
-import breeze.linalg.{ squaredDistance, DenseVector, Vector }
-import org.apache.spark.sql.SparkSession
 import scala.util.control.Breaks._
+
+import breeze.linalg.{ squaredDistance, DenseVector, Vector }
 import org.apache.jena.datatypes.{ RDFDatatype, TypeMapper }
-import org.apache.jena.graph.{ Node => JenaNode, Triple => JenaTriple, _ }
-import org.apache.jena.riot.writer.NTriplesWriter
+import org.apache.jena.graph.{ Node => JenaNode, Node_ANY, Node_Blank, Node_Literal, Node_URI, Triple => JenaTriple, _ }
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import org.apache.jena.graph.{ Node_ANY, Node_Blank, Node_Literal, Node_URI, Node => JenaNode, Triple => JenaTriple }
+import org.apache.jena.riot.writer.NTriplesWriter
+import org.apache.jena.util._
 import org.apache.jena.vocabulary.RDF
-import java.io.ByteArrayInputStream
-import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx._
-import org.apache.jena.util._
-import java.io.StringWriter
-import java.io._
-import org.apache.spark.graphx.Graph
+import org.apache.spark.graphx.{ EdgeDirection, Graph }
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
+import scopt.OptionParser
 
 object BorderFlow {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputevlsoft: String, outputevlhard: String) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputevlsoft: String, outputevlhard: String): Unit = {
 
     /**
      * undirected graph : orient =0
@@ -51,9 +47,9 @@ object BorderFlow {
       graphXinBorderFlow(orient, selectYourSimilarity)
     }
 
-    /*
-	 * Computes different similarities function for a given graph @graph.
-	 */
+    /**
+     * Computes different similarities function for a given graph @graph.
+     */
     def graphXinBorderFlow(e: Int, f: Int): List[List[Long]] = {
 
       val edge = graph.edges.collect()
@@ -197,7 +193,7 @@ object BorderFlow {
         f3
       }
 
-      //computing f(X,V) for Heuristics BorderFlow
+      // computing f(X,V) for Heuristics BorderFlow
 
       def fOmega(x: List[Long], v: Long): Double = {
         var numberFlow = 0
@@ -223,9 +219,7 @@ object BorderFlow {
         var jaccardBV = 0.0
         if (b.size == 0) return 0.0
         for (i <- 0 until b.length) yield {
-
-          jaccardBV = jaccardBV.+(findingSimilarity(b(i), v).abs)
-
+          jaccardBV = jaccardBV. + (findingSimilarity(b(i), v).abs)
         }
 
         var jaccardVXV = 0.0
@@ -233,38 +227,13 @@ object BorderFlow {
         for (i <- 0 until VX.length) yield {
           if (VX(i) != v) {
 
-            jaccardVXV = jaccardVXV.+(findingSimilarity(VX(i), v).abs)
+            jaccardVXV = jaccardVXV. + (findingSimilarity(VX(i), v).abs)
 
           }
 
         }
 
         (jaccardVXV / jaccardBV)
-        /*
-         *  without similarity
-         val nv = neighborSort.lookup(v).distinct.head.toSet
-         val nvX = nv.intersect(X.toSet)
-         val nvx = nvX.toList.diff(x).size
-
-
-          for(k <- 0 until x.length) yield{
-            if(x.length>0){
-
-           val xk = x(k)
-           val bX = neighborSort.lookup(xk).distinct.head.toSet
-           val bxX = bX.intersect(X.toSet)
-
-           if(bxX.toList.diff(x).size > 0 && bxX.toList.diff(x).contains(v)) {
-             numberFlow = numberFlow + 1
-             }
-
-            }
-
-         }
-
-        ( 1/(numberFlow.toDouble/ nvx.toDouble))
-        *
-        */
 
       }
 
@@ -325,7 +294,7 @@ object BorderFlow {
         for (i <- 0 until b.length) yield {
           for (j <- 0 until x.length) yield {
             if (b(i) != x(j)) {
-              jaccardX = jaccardX.+(findingSimilarity(b(i), x(j)).abs)
+              jaccardX = jaccardX. + (findingSimilarity(b(i), x(j)).abs)
 
             }
           }
@@ -334,7 +303,7 @@ object BorderFlow {
         for (i <- 0 until b.length) yield {
           for (j <- 0 until n.length) yield {
 
-            jaccardN = jaccardN.+(findingSimilarity(b(i), n(j)).abs)
+            jaccardN = jaccardN. + (findingSimilarity(b(i), n(j)).abs)
 
           }
         }
@@ -367,7 +336,7 @@ object BorderFlow {
         for (i <- 0 until n.length) yield {
           if (n(i) != u) {
 
-            jaccardNU = jaccardNU.+(findingSimilarity(u, n(i)).abs)
+            jaccardNU = jaccardNU. + (findingSimilarity(u, n(i)).abs)
 
           }
 
@@ -383,9 +352,9 @@ object BorderFlow {
 
       }
 
-      /*
-	 * Use Heuristics method for producing clusters.
-	 */
+      /**
+       * Use Heuristics method for producing clusters.
+       */
 
       def heuristicsCluster(a: List[Long]): List[Long] = {
         var nj = 0.0
@@ -436,9 +405,9 @@ object BorderFlow {
 
       }
 
-      /*
-	 * Use Non-Heuristics(normal) method for producing clusters.
-	 */
+      /**
+       * Use Non-Heuristics(normal) method for producing clusters.
+       */
 
       def nonHeuristicsCluster(a: List[Long], d: List[Long]): List[Long] = {
         var nj: List[Long] = List()
@@ -529,18 +498,18 @@ object BorderFlow {
 
       }
 
-      /*
-	 * Input for heuristics heuristicsCluster(element)    .
-	 * Input for nonHeuristics nonHeuristicsCluster(element,List())  .
-	 */
+      /**
+       * Input for heuristics heuristicsCluster(element)    .
+       * Input for nonHeuristics nonHeuristicsCluster(element,List())  .
+       */
 
       def makeClusters(a: Long): List[Long] = {
 
         var clusters: List[Long] = List()
 
         clusters = nonHeuristicsCluster(List(a), List())
-        // if(b == 1){
-        // clusters = heuristicsCluster(List(a))}
+        // if(b == 1) {
+        // clusters = heuristicsCluster(List(a)) }
 
         (clusters)
 
@@ -558,9 +527,9 @@ object BorderFlow {
 
       bigList = bigList.map(_.distinct)
 
-      /*
-			 * Sillouhette Evaluation soft
-			 */
+      /**
+       * Sillouhette Evaluation soft
+       */
 
       def avgAsoft(c: List[Long], d: Long): Double = {
         var sumA = 0.0
@@ -585,6 +554,7 @@ object BorderFlow {
 
         sumB / sizeC
       }
+
       def SIsoft(a: Double, b: Double): Double = {
         var s = 0.0
         if (a > b) {
@@ -632,9 +602,9 @@ object BorderFlow {
 
       val evaluateSoft = AiBiSoft(bigList, X)
 
-      /*
-			 * Apply Hardening
-			 */
+      /**
+       * Apply Hardening
+       */
 
       def subset(c: List[List[Long]]): List[List[Long]] = {
         var C = c
@@ -698,7 +668,7 @@ object BorderFlow {
         for (i <- 0 until c.length) yield {
           if (c(i) != v) {
 
-            omega = omega.+(findingSimilarity(v, c(i)).abs)
+            omega = omega. + (findingSimilarity(v, c(i)).abs)
 
           }
 
@@ -741,6 +711,7 @@ object BorderFlow {
         }
         C
       }
+
       def nul(c: List[List[Long]]): List[List[Long]] = {
         var C = c
         var newCluster: List[List[Long]] = List()
@@ -755,9 +726,9 @@ object BorderFlow {
       bigList = reassignment(bigList, X)
       bigList = nul(bigList)
 
-      /*
-			 * Sillouhette Evaluation Hard
-			 */
+      /**
+       * Sillouhette Evaluation Hard
+       */
 
       def avgA(c: List[Long], d: Long): Double = {
         var sumA = 0.0
@@ -782,6 +753,7 @@ object BorderFlow {
 
         sumB / sizeC
       }
+
       def SI(a: Double, b: Double): Double = {
         var s = 0.0
         if (a > b) {
@@ -838,14 +810,14 @@ object BorderFlow {
       val evaluateStringRDDS = spark.sparkContext.parallelize(evaluateStringS)
 
       evaluateStringRDDS.saveAsTextFile(outputevlsoft)
-      //println(s"averagesoft: $avsoft\n")
+      // println(s"averagesoft: $avsoft\n")
 
       bigList
     }
 
-    /*
-			 * convert to RDF
-			 */
+    /**
+     * convert to RDF
+     */
 
     def makerdf(a: List[Long]): List[String] = {
       var listuri: List[String] = List()
@@ -857,13 +829,11 @@ object BorderFlow {
 
       }
       listuri
-
     }
 
     val rdf = clusterRdd.map(x => makerdf(x))
     val rdfRDD = spark.sparkContext.parallelize(rdf)
 
     rdfRDD.saveAsTextFile(output)
-
   }
 }

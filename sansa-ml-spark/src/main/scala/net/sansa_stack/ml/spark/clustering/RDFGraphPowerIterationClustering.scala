@@ -1,46 +1,36 @@
 package net.sansa_stack.ml.spark.clustering
 
+import java.io._
+import java.io.{ ByteArrayInputStream, FileNotFoundException, FileReader, IOException, StringWriter }
+import java.lang.{ Long => JLong }
+import java.net.URI
+
+import scala.collection.mutable
+import scala.math.BigDecimal
 import scala.reflect.runtime.universe._
-import scopt.OptionParser
-import org.apache.log4j.{ Level, Logger }
-import org.apache.spark.mllib.util.MLUtils
-import java.io.{ FileReader, FileNotFoundException, IOException }
-import org.apache.spark.mllib.linalg.Vectors
-import java.lang.{ Long => JLong }
-import java.lang.{ Long => JLong }
+
 import breeze.linalg.{ squaredDistance, DenseVector, Vector }
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.graphx.GraphLoader
+import org.apache.commons.math3.util.MathUtils
 import org.apache.jena.datatypes.{ RDFDatatype, TypeMapper }
-import org.apache.jena.graph.{ Node => JenaNode, Triple => JenaTriple, _ }
-import org.apache.jena.riot.writer.NTriplesWriter
+import org.apache.jena.graph.{ Node => JenaNode, Node_ANY, Node_Blank, Node_Literal, Node_URI, Triple => JenaTriple, _ }
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import org.apache.jena.graph.{ Node_ANY, Node_Blank, Node_Literal, Node_URI, Node => JenaNode, Triple => JenaTriple }
+import org.apache.jena.riot.writer.NTriplesWriter
 import org.apache.jena.vocabulary.RDF
-import java.io.ByteArrayInputStream
-import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx._
+import org.apache.spark.graphx.{ EdgeDirection, Graph, GraphLoader }
+import org.apache.spark.mllib.clustering.{ PowerIterationClustering, PowerIterationClusteringModel }
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.rdd.PairRDDFunctions
 import org.apache.spark.rdd.RDD
-import java.io.StringWriter
-import java.io._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.clustering.{ PowerIterationClusteringModel, PowerIterationClustering }
-import org.apache.spark.graphx.{ Graph, EdgeDirection }
-import scala.math.BigDecimal
-import org.apache.commons.math3.util.MathUtils
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.graphx._
-import java.net.URI
 import org.apache.spark.storage.StorageLevel
-import org.apache.spark.graphx._
-import scala.collection.mutable
 
 object RDFGraphPowerIterationClustering {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, k: Int = 2, maxIterations: Int = 5) = {
-
-    
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, k: Int = 2, maxIterations: Int = 5): RDD[(Int, String)] = {
 
     def clusterRdd(): RDD[(Int, String)] = {
       SimilaritesInPIC()
@@ -48,16 +38,16 @@ object RDFGraphPowerIterationClustering {
 
     def SimilaritesInPIC(): RDD[(Int, String)] = {
 
-      /*
-	 * Collect all the edges of the graph
-	*/
+      /**
+       * Collect all the edges of the graph
+       */
       val edge = graph.edges
       val nodes = graph.vertices
 
-      /*
-	 * Collect distinct vertices of the graph
-	 *
-	 */
+      /**
+       * Collect distinct vertices of the graph
+       *
+       */
 
       val node = nodes.map(e => (e._1))
 
@@ -94,9 +84,9 @@ object RDFGraphPowerIterationClustering {
 
       def model = pic.run(weightedGraph)
 
-      /*
-			 * Cluster the graph data into two classes using PowerIterationClustering
-			 */
+      /**
+       * Cluster the graph data into two classes using PowerIterationClustering
+       */
       def run() = model
 
       val modelAssignments = model.assignments

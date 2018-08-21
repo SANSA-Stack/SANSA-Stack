@@ -1,19 +1,21 @@
 package net.sansa_stack.ml.spark.clustering
 
-import org.apache.log4j.{ Level, Logger }
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{ SparkConf, SparkContext }
+import java.io.StringWriter
 
 import scala.util.control.Breaks._
-import java.io.StringWriter
+
+import org.apache.log4j.{ Level, Logger }
+import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
+
 
 /**
  * Created by hpetzka on 09.11.2016.
  */
 object RDFByModularityClustering {
 
-  def apply(sc: SparkContext, numIterations: Int, graphFile: String, outputFile: String) = {
+  def apply(sc: SparkContext, numIterations: Int, graphFile: String, outputFile: String): Unit = {
 
     // DEFAULT INPUT
     // val (numIterations, graphFile) = (100 , "C:/Users/hpetzka/IdeaProjects/Clustering_in_Spark/Graphs/testRDF.txt")
@@ -39,7 +41,7 @@ object RDFByModularityClustering {
         If weight edges come in, one probably needa a map as follows
         val adjacencyMatrix: Array[Array[Int]] = Array.ofDim[Int](numVertices, numVertices)
         var adjacencies: Map[(String, String), Int] = Map[(String, String),Int]()
-        for (x <- edgesRDD.collect()){
+        for (x <- edgesRDD.collect()) {
           // TODO add the weights here if they exist
           if(x(0) < x(1)) adjacencies += ( (x(0),x(1)) -> 1 )
           else adjacencies += ( (x(1),x(0)) -> 1 )
@@ -117,11 +119,12 @@ object RDFByModularityClustering {
 
   }
 
-  def iterationStepClusteringRDFByModularity(numEdges: Long,
-                                             edgesBC: Broadcast[Array[(String, String)]],
-                                             vertexDegreesBC: Broadcast[Map[String, Int]],
-                                             clusterMapRDD: RDD[List[String]],
-                                             sc: SparkContext): (RDD[List[String]], Boolean) = {
+  def iterationStepClusteringRDFByModularity(
+    numEdges: Long,
+    edgesBC: Broadcast[Array[(String, String)]],
+    vertexDegreesBC: Broadcast[Map[String, Int]],
+    clusterMapRDD: RDD[List[String]],
+    sc: SparkContext): (RDD[List[String]], Boolean) = {
     // Start iteration
 
     // The following RDD contains distinct pairs of clusters for which there is an edge between them
@@ -172,11 +175,12 @@ object RDFByModularityClustering {
 
   // The function that computes delta Q for the merge of two clusters
 
-  def deltaQ(numEdges: Long,
-             vertexDegreesBC: Broadcast[Map[String, Int]],
-             edgesBC: Broadcast[Array[(String, String)]],
-             clusterI: List[String],
-             clusterJ: List[String]): Double = {
+  def deltaQ(
+    numEdges: Long,
+    vertexDegreesBC: Broadcast[Map[String, Int]],
+    edgesBC: Broadcast[Array[(String, String)]],
+    clusterI: List[String],
+    clusterJ: List[String]): Double = {
 
     val clusterPairs: List[(String, String)] = clusterI.flatMap(x => clusterJ.map(y => (x, y)))
 
@@ -189,12 +193,9 @@ object RDFByModularityClustering {
     1.0 / numEdges * summand.fold(0.0)((a: Double, b: Double) => a - b)
   }
 
-  def WriteToFile[T](rdd: RDD[T], file: String, coalesce: (Boolean, Int) = (false, 0)) =
+  def WriteToFile[T](rdd: RDD[T], file: String, coalesce: (Boolean, Int) = (false, 0)): Unit =
     coalesce._1 match {
-      case true  => rdd.coalesce(coalesce._2).saveAsTextFile(file)
+      case true => rdd.coalesce(coalesce._2).saveAsTextFile(file)
       case false => rdd.saveAsTextFile(file)
     }
-
 }
-
-

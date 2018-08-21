@@ -1,36 +1,31 @@
 package net.sansa_stack.ml.spark.clustering
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.graphx.{ Graph, EdgeDirection }
+import java.io._
+import java.io.{ ByteArrayInputStream, FileNotFoundException, FileReader, IOException, StringWriter }
+import java.lang.{ Long => JLong }
+import java.net.URI
+
 import scala.math.BigDecimal
-import org.apache.spark.sql.SparkSession
 import scala.reflect.runtime.universe._
-import scopt.OptionParser
-import org.apache.log4j.{ Level, Logger }
-import org.apache.spark.mllib.util.MLUtils
-import java.io.{ FileReader, FileNotFoundException, IOException }
-import org.apache.spark.mllib.linalg.Vectors
-import java.lang.{ Long => JLong }
-import java.lang.{ Long => JLong }
-import breeze.linalg.{ squaredDistance, DenseVector, Vector }
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.graphx.GraphLoader
 import scala.util.control.Breaks._
+
+import breeze.linalg.{ squaredDistance, DenseVector, Vector }
+import net.sansa_stack.rdf.spark.model.graph._
+import org.apache.jena.graph.{ Node, Triple }
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import java.io.ByteArrayInputStream
-import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx._
-import java.io.StringWriter
-import java.io._
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.model.graph._
-import java.net.URI
+import org.apache.spark.graphx.{ EdgeDirection, Graph, GraphLoader }
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 object SilviaClustering {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String): Unit = {
 
     Logger.getRootLogger.setLevel(Level.WARN)
 
@@ -40,7 +35,7 @@ object SilviaClustering {
      *
      * Jaccard similarity measure : selectYourSimilarity = 0
      * Batet similarity measure : selectYourSimilarity = 1
-     * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
+     * Rodriguez and Egenhofer similarity measure : selectYourSimilarity = 2
      * The Contrast model similarity : selectYourSimilarity = 3
      * The Ratio model similarity : selectYourSimilarity = 4
      */
@@ -51,9 +46,9 @@ object SilviaClustering {
       graphXinBorderFlow(graph, orient, selectYourSimilarity)
     }
 
-    /*
-	 * Computes different similarities function for a given graph @graph.
-	 */
+    /**
+     * Computes different similarities function for a given graph @graph.
+     */
     def graphXinBorderFlow(graph: Graph[String, String], e: Int, f: Int): RDD[List[String]] = {
 
       val edge = graph.edges.collect()
@@ -77,9 +72,9 @@ object SilviaClustering {
       val LOG2 = math.log(2)
       val log2 = { x: Double => math.log(x) / LOG2 }
 
-      /*
-	 * Difference between two set of vertices, used in different similarity measures
-	 */
+      /**
+       * Difference between two set of vertices, used in different similarity measures
+       */
       def difference(a: Long, b: Long): Double = {
         val ansec = neighbor.lookup(a).distinct.head.toSet
         val ansec1 = neighbor.lookup(b).distinct.head.toSet
@@ -90,9 +85,9 @@ object SilviaClustering {
         differ.size.toDouble
       }
 
-      /*
-	 * Intersection of two set of vertices, used in different similarity measures
-	 */
+      /**
+       * Intersection of two set of vertices, used in different similarity measures
+       */
       def intersection(a: Long, b: Long): Double = {
         val inters = neighbor.lookup(a).distinct.head.toList
         val inters1 = neighbor.lookup(b).distinct.head.toList
@@ -106,9 +101,9 @@ object SilviaClustering {
         rst.size.toDouble
       }
 
-      /*
-			 * Union of two set of vertices, used in different similarity measures
-			 */
+      /**
+       * Union of two set of vertices, used in different similarity measures
+       */
       def union(a: Long, b: Long): Double = {
         val uni = neighbor.lookup(a).distinct.head.toList
         val uni1 = neighbor.lookup(b).distinct.head.toList
@@ -124,9 +119,9 @@ object SilviaClustering {
         var s = 0.0
         if (c == 0) {
 
-          /*
-			 * Jaccard similarity measure
-			 */
+          /**
+           * Jaccard similarity measure
+           */
 
           val sim = intersection(a, b) / union(a, b).toDouble
 
@@ -136,9 +131,9 @@ object SilviaClustering {
 
         if (c == 1) {
 
-          /*
-			 * Rodríguez and Egenhofer similarity measure
-			 */
+          /**
+           * Rodríguez and Egenhofer similarity measure
+           */
 
           var g = 0.8
 
@@ -148,9 +143,10 @@ object SilviaClustering {
 
         }
         if (c == 2) {
-          /*
-			 * The Ratio model similarity
-			 */
+
+          /**
+           * The Ratio model similarity
+           */
           var alph = 0.5
           var beth = 0.5
 
@@ -161,9 +157,9 @@ object SilviaClustering {
         }
 
         if (c == 3) {
-          /*
-			 * Batet similarity measure
-			 */
+          /**
+           * Batet similarity measure
+           */
 
           val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
           val sim = log2(cal.toDouble)
@@ -522,7 +518,5 @@ object SilviaClustering {
     val cRdd = clusterRdd()
 
     cRdd.saveAsTextFile(output)
-
   }
-
 }

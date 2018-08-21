@@ -1,31 +1,30 @@
 package net.sansa_stack.ml.spark.clustering
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.graphx.{ Graph, EdgeDirection }
-import scala.math.BigDecimal
-import org.apache.spark.sql.SparkSession
-import scala.reflect.runtime.universe._
-import scopt.OptionParser
-import org.apache.log4j.{ Level, Logger }
-import org.apache.spark.mllib.util.MLUtils
-import java.io.{ FileReader, FileNotFoundException, IOException }
-import org.apache.spark.mllib.linalg.Vectors
-import java.lang.{ Long => JLong }
-import breeze.linalg.{ squaredDistance, DenseVector, Vector }
-import scala.util.control.Breaks._
-import java.io.ByteArrayInputStream
-import org.apache.spark.rdd.PairRDDFunctions
-import java.io.StringWriter
 import java.io._
+import java.io.{ ByteArrayInputStream, FileNotFoundException, FileReader, IOException, StringWriter }
+import java.lang.{ Long => JLong }
 import java.net.URI
+
+import scala.math.BigDecimal
+import scala.reflect.runtime.universe._
+import scala.util.control.Breaks._
+
+import breeze.linalg.{ squaredDistance, DenseVector, Vector }
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.graphx._
+import org.apache.spark.graphx.{ EdgeDirection, Graph }
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.util.MLUtils
+import org.apache.spark.rdd.PairRDDFunctions
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 object FirstHardeninginBorderFlow {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String) = {
+  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String): Unit = {
 
     /**
-     * 
+     *
      * Jaccard similarity measure : selectYourSimilarity = 0
      * Batet similarity measure : selectYourSimilarity = 1
      * Rodríguez and Egenhofer similarity measure : selectYourSimilarity = 2
@@ -39,9 +38,9 @@ object FirstHardeninginBorderFlow {
       graphXinBorderFlow(selectYourSimilarity)
     }
 
-    /*
-	 * Computes different similarities function for a given graph @graph.
-	 */
+    /**
+     * Computes different similarities function for a given graph @graph.
+     */
     def graphXinBorderFlow(f: Int): List[List[Long]] = {
 
       val edge = graph.edges
@@ -63,9 +62,9 @@ object FirstHardeninginBorderFlow {
       val neighborcollect = neighbor.collect()
       val verticescollect = graph.vertices.collect()
 
-      /*
-	 * finding neighbors for node a
-	 */
+      /**
+       * finding neighbors for node a
+       */
 
       def findneighbors(a: VertexId): Array[VertexId] = {
         var b: Array[VertexId] = Array()
@@ -80,15 +79,15 @@ object FirstHardeninginBorderFlow {
         b
       }
 
-      /*
-	 * Computing logarithm based 2
-	 */
+      /**
+       * Computing logarithm based 2
+       */
       val LOG2 = math.log(2)
       val log2 = { x: Double => math.log(x) / LOG2 }
 
-      /*
-	 * Difference between two set of vertices, used in different similarity measures
-	 */
+      /**
+       * Difference between two set of vertices, used in different similarity measures
+       */
 
       def difference(a: Array[VertexId], b: Array[VertexId]): Double = {
         if (a.length == 0) { return 0.0 }
@@ -97,9 +96,9 @@ object FirstHardeninginBorderFlow {
         differ.size.toDouble
       }
 
-      /*
-	 * Intersection of two set of vertices, used in different similarity measures
-	 */
+      /**
+       * Intersection of two set of vertices, used in different similarity measures
+       */
       def intersection(a: Array[VertexId], b: Array[VertexId]): Double = {
         if ((a.length == 0) || (b.length == 0)) { return 0.0 }
         val rst = a.intersect(b)
@@ -107,9 +106,9 @@ object FirstHardeninginBorderFlow {
         rst.size.toDouble
       }
 
-      /*
-			 * Union of two set of vertices, used in different similarity measures
-			 */
+      /**
+       * Union of two set of vertices, used in different similarity measures
+       */
 
       def union(a: Array[VertexId], b: Array[VertexId]): Double = {
         val rst = a.union(b)
@@ -117,17 +116,17 @@ object FirstHardeninginBorderFlow {
         rst.size.toDouble
       }
 
-      /*
-			 * similarity measures
-			 */
+      /**
+       * similarity measures
+       */
 
       def selectSimilarity(a: Array[VertexId], b: Array[VertexId], c: Int): Double = {
         var s = 0.0
         if (c == 0) {
 
-          /*
-			 * Jaccard similarity measure
-			 */
+          /**
+           * Jaccard similarity measure
+           */
 
           val sim = intersection(a, b) / union(a, b).toDouble
           if (sim == 0.0) { s = (1 / vertex) }
@@ -137,9 +136,9 @@ object FirstHardeninginBorderFlow {
 
         if (c == 1) {
 
-          /*
-			 * Rodríguez and Egenhofer similarity measure
-			 */
+          /**
+           * Rodríguez and Egenhofer similarity measure
+           */
 
           var g = 0.8
 
@@ -149,9 +148,9 @@ object FirstHardeninginBorderFlow {
 
         }
         if (c == 2) {
-          /*
-			 * The Ratio model similarity
-			 */
+          /**
+           * The Ratio model similarity
+           */
           var alph = 0.5
           var beth = 0.5
 
@@ -162,15 +161,14 @@ object FirstHardeninginBorderFlow {
         }
 
         if (c == 3) {
-          /*
-			 * Batet similarity measure
-			 */
+          /**
+           * Batet similarity measure
+           */
 
           val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
           val sim = log2(cal.toDouble)
           if (sim == 0.0) { s = (1 / vertex) }
           else { s = sim }
-
         }
         s
       }
@@ -222,7 +220,7 @@ object FirstHardeninginBorderFlow {
 
       val sortsim = sumsimilarity(X)
 
-      //println(s"sortsim: $sortsim\n")
+      // println(s"sortsim: $sortsim\n")
 
       var node = sortsim.map(f => {
         f._1
@@ -232,7 +230,7 @@ object FirstHardeninginBorderFlow {
 
       neighbor.unpersist()
 
-      //computing F(X) for BorderFlow
+      // computing F(X) for BorderFlow
 
       def fX(x: List[Long]): Double = {
         var jaccardX = 0.0
@@ -276,13 +274,13 @@ object FirstHardeninginBorderFlow {
 
         b.map(bi => {
           x.map(xj => {
-            if (bi.!=(xj)) { jaccardX = jaccardX.+(findingSimilarity(bi, xj).abs) }
+            if (bi.!=(xj)) { jaccardX = jaccardX. + (findingSimilarity(bi, xj).abs) }
           })
         })
 
         b.map(bi => {
           n.map(nj => {
-            jaccardN = jaccardN.+(findingSimilarity(bi, nj).abs)
+            jaccardN = jaccardN. + (findingSimilarity(bi, nj).abs)
           })
         })
 
@@ -309,16 +307,16 @@ object FirstHardeninginBorderFlow {
         val n = listOfN(x)
         var jaccardNU = 0.0
         n.map(ni => {
-          if (ni.!=(u)) { jaccardNU = jaccardNU.+(findingSimilarity(u, ni).abs) }
+          if (ni.!=(u)) { jaccardNU = jaccardNU. + (findingSimilarity(u, ni).abs) }
         })
 
         jaccardNU
 
       }
 
-      /*
-	 * Use Non-Heuristics(normal) method for producing clusters.
-	 */
+      /**
+       * Use Non-Heuristics(normal) method for producing clusters.
+       */
 
       def nonHeuristicsCluster(a: List[Long], d: List[Long]): List[Long] = {
         var nj: List[Long] = List()
@@ -399,10 +397,9 @@ object FirstHardeninginBorderFlow {
 
       }
 
-      /*
-	 *
-	 * Input for nonHeuristics nonHeuristicsCluster(element,List())  .
-	 */
+      /**
+       * Input for nonHeuristics nonHeuristicsCluster(element,List())  .
+       */
 
       def makerdf(a: List[Long]): List[String] = {
         var listuri: List[String] = List()
@@ -414,7 +411,6 @@ object FirstHardeninginBorderFlow {
 
         }
         listuri
-
       }
 
       def makeClusters(a: Long): List[Long] = {
@@ -453,13 +449,13 @@ object FirstHardeninginBorderFlow {
       } while (node.size > 0)
 
       neighborSort.unpersist()
-      //println(s"RDF Cluster assignments: $rdfcluster\n")
+      // println(s"RDF Cluster assignments: $rdfcluster\n")
       val rdfRDD = spark.sparkContext.parallelize(rdfcluster)
       rdfRDD.saveAsTextFile(output)
 
-      /*
-			 * Sillouhette Evaluation
-			 */
+      /**
+       * Sillouhette Evaluation
+       */
 
       def avgA(c: List[Long], d: Long): Double = {
         var sumA = 0.0
@@ -530,7 +526,7 @@ object FirstHardeninginBorderFlow {
       val evaluate = AiBi(bigList, nnode)
 
       val av = evaluate.sum / evaluate.size
-      //println(s"average: $av\n")
+      // println(s"average: $av\n")
       val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
@@ -540,8 +536,6 @@ object FirstHardeninginBorderFlow {
     }
 
     val rdf = clusterRdd()
-    //println(s"RDF Cluster assignments: $rdf\n")
-
+    // println(s"RDF Cluster assignments: $rdf\n")
   }
-
 }
