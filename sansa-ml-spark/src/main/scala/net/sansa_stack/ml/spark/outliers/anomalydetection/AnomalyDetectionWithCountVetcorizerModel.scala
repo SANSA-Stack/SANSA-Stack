@@ -1,22 +1,18 @@
 package net.sansa_stack.ml.spark.outliers.anomalydetection
 
-import org.apache.jena.graph.Node
-import org.apache.spark.rdd.RDD
-import org.apache.jena.graph.Triple
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.HashPartitioner
 import scala.collection.mutable
 import scala.collection.mutable.HashSet
-import org.apache.jena.graph.NodeFactory
-import org.apache.spark.sql._
-import org.apache.spark.sql.types._
-import org.apache.spark.rdd._
-import org.apache.spark.ml.feature.MinHashLSH
-import org.apache.spark.sql.functions.udf
-import org.apache.spark.ml.feature._
-import org.apache.spark.ml.linalg._
-import org.apache.spark.sql.functions.col
+
 import org.apache.commons.math3.stat.descriptive._
+import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.spark.{ HashPartitioner, RangePartitioner }
+import org.apache.spark.ml.feature.{ MinHashLSH, _ }
+import org.apache.spark.ml.linalg._
+import org.apache.spark.rdd.{ RDD, _ }
+import org.apache.spark.sql.{ SparkSession, _ }
+import org.apache.spark.sql.functions.{ col, udf }
+import org.apache.spark.sql.types._
+import org.apache.spark.storage.StorageLevel
 
 /*
  *
@@ -27,39 +23,39 @@ import org.apache.commons.math3.stat.descriptive._
  */
 
 class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList: List[String],
-                       triplesType: List[String], JSimThreshold: Double,
-                       listSuperType: List[String], sparkSession: SparkSession, hypernym: String, numPartition: Int) extends Serializable {
+                                               triplesType: List[String], JSimThreshold: Double,
+                                               listSuperType: List[String], sparkSession: SparkSession, hypernym: String, numPartition: Int) extends Serializable {
   def run(): RDD[(Set[(String, String, Object)])] = {
 
-    // get all the triples whose objects are literal 
-    //these literals also contains xsd:date as well as xsd:langstring 
+    // get all the triples whose objects are literal
+    // these literals also contains xsd:date as well as xsd:langstring
     val getObjectLiteral = getObjectList()
 
-    //remove the literal which has ^^xsd:date or xsd:langstring(only considering numerical)
+    // remove the literal which has ^^xsd:date or xsd:langstring(only considering numerical)
     val removedLangString = getObjectLiteral.filter(f => searchedge(f.getObject.toString(), objList))
 
     val removewiki = removedLangString.filter(f => (!f.getPredicate.toString().contains("wikiPageID")) &&
       (!f.getPredicate.toString().contains("wikiPageRevisionID")))
 
-    //checking still object has only numerical data only
+    // checking still object has only numerical data only
     val triplesWithNumericLiteral = triplesWithNumericLit(removewiki)
 
-    val mapSubWithTriples = propClustering(triplesWithNumericLiteral) //.persist
+    val mapSubWithTriples = propClustering(triplesWithNumericLiteral) // .persist
 
-    //get triples of hypernym
+    // get triples of hypernym
     val getHypernymTriples = getHyp()
- 
-    //filter rdf type having object value dbpedia and join with hyernym
+
+    // filter rdf type having object value dbpedia and join with hyernym
     // val rdfTypeDBwiki = rdfType(getHypernym) //.partitionBy(new HashPartitioner(2)).persist()
     val rdfTypeDBwiki = rdfType(getHypernymTriples)
-    
-    //joining those subjects only who has rdf:ytpe and numerical literal 
+
+    // joining those subjects only who has rdf:ytpe and numerical literal
     val rdfTypeWithSubject = mapSubWithTriples.join(rdfTypeDBwiki)
-    
+
     val mapSubjectwithType = rdfTypeWithSubject.map(f => (f._1, f._2._2))
-    
+
     //  val propwithSub = propwithsubject(triplesWithNumericLiteral)
-    //cluster subjects on the basis of rdf type
+    // cluster subjects on the basis of rdf type
     val jacardSimilarity = jSimilarity(triplesWithNumericLiteral, mapSubjectwithType, mapSubWithTriples)
 
     jacardSimilarity
@@ -79,20 +75,17 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
         val c = x.indexOf('^')
         val subject = x.substring(1, c - 1)
 
-        if (isAllDigits(subject))
-          true
-        else
-          false
-      } else
-        false
+        if (isAllDigits(subject)) true
+        else false
+      } else false
     }
 
   def isAllDigits(x: String): Boolean = {
     var found = false
     for (ch <- x) {
-      if (ch.isDigit || ch == '.')
+      if (ch.isDigit || ch == '.') {
         found = true
-      else if (ch.isLetter) {
+      } else if (ch.isLetter) {
 
         found = false
       }
@@ -106,20 +99,19 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
       val c = x.indexOf('^')
       val subject = x.substring(c + 2)
       y.contains(subject)
-    } else
-      false
+    } else false
   }
 
   def rdfType(getHypernym: RDD[Triple]): RDD[(String, HashSet[String])] = {
 
-    //filter triples with predicate as rdf:type
+    // filter triples with predicate as rdf:type
     val triplesWithRDFType = nTriplesRDD.filter(_.getPredicate.toString() == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
     val triplesWithDBpedia = triplesWithRDFType.filter(f => searchType(f.getObject.toString(), triplesType))
 
     val subWithType1 = triplesWithDBpedia.map(f =>
       // ...
-      (getLocalName1(f.getSubject), (getLocalName1(f.getObject)))) //.reduceByKey(_ ++ _) //.partitionBy(new HashPartitioner(8)).persist()
+      (getLocalName1(f.getSubject), (getLocalName1(f.getObject)))) // .reduceByKey(_ ++ _) //.partitionBy(new HashPartitioner(8)).persist()
 
     val initialSet1 = mutable.HashSet.empty[String]
     val addToSet1 = (s: mutable.HashSet[String], v: String) => s += v
@@ -127,7 +119,7 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val uniqueByKey1 = subWithType1.aggregateByKey(initialSet1)(addToSet1, mergePartitionSets1)
 
     val hyper1 = getHypernym.map(f =>
-      (getLocalName1(f.getSubject), (getLocalName1(f.getObject) + ("hypernym")))) //.partitionBy(new HashPartitioner(8)).persist
+      (getLocalName1(f.getSubject), (getLocalName1(f.getObject) + ("hypernym")))) // .partitionBy(new HashPartitioner(8)).persist
 
     val initialSet = mutable.HashSet.empty[String]
     val addToSet = (s: mutable.HashSet[String], v: String) => s += v
@@ -153,11 +145,11 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
   def searchType(x: String, y: List[String]): Boolean = {
     if (y.exists(x.contains)) {
       true
-    } else
-      false
+    } else false
   }
-  def jSimilarity(TriplesWithNumericLiteral: RDD[Triple],
-                  rdfTypeDBwiki: RDD[(String, HashSet[String])], mapSubWithTriples: RDD[(String, mutable.Set[(String, String, Object)])]): RDD[(Set[(String, String, Object)])] = {
+  def jSimilarity(
+    TriplesWithNumericLiteral: RDD[Triple],
+    rdfTypeDBwiki: RDD[(String, HashSet[String])], mapSubWithTriples: RDD[(String, mutable.Set[(String, String, Object)])]): RDD[(Set[(String, String, Object)])] = {
 
     nTriplesRDD.unpersist()
     import sparkSession.implicits._
@@ -172,10 +164,10 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
       .setMinDF(1)
       .fit(dfA)
 
-    val kt = cvModel.transform(dfA) //.filter(isNoneZeroVector(col("features")))
-   
+    val kt = cvModel.transform(dfA) // .filter(isNoneZeroVector(col("features")))
+
     val mh = new MinHashLSH()
-      .setNumHashTables(3) //tested with 100 on out4.nt file ..result in /home/rajjat/Desktop/recent_dataset/output_removed_boolean_udf.txt
+      .setNumHashTables(3) // tested with 100 on out4.nt file ..result in /home/rajjat/Desktop/recent_dataset/output_removed_boolean_udf.txt
       .setInputCol("features")
       .setOutputCol("hashes")
 
@@ -183,13 +175,13 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     // val model1 = mh.fit(featurizedData)
     val dffilter = model.approxSimilarityJoin(kt, kt, 0.45)
 
-  
     val opiu = dffilter.filter($"datasetA.id".isNotNull).filter($"datasetB.id".isNotNull)
       .filter(($"datasetA.id" =!= $"datasetB.id"))
-      .select(col("datasetA.id").alias("id1"),
+      .select(
+        col("datasetA.id").alias("id1"),
         col("datasetB.id").alias("id2"))
 
-    val x1 = opiu.rdd //maimum time taken by this rdd
+    val x1 = opiu.rdd // maimum time taken by this rdd
       .map(row => {
         val id = row.getString(0)
         val value = row.getString(1)
@@ -200,16 +192,16 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val addToSet3 = (s: mutable.Set[String], v: String) => s += v
     val mergePartitionSets3 = (p1: mutable.Set[String], p2: mutable.Set[String]) => p1 ++= p2
     val uniqueByKey3 = x1.aggregateByKey(initialSet3)(addToSet3, mergePartitionSets3)
-    
+
     x1.unpersist()
-    
+
     val k = uniqueByKey3.map(f => ((f._2 += (f._1)).toSet)).map(a => (a, a))
       .aggregateByKey(Set[String]())((x, y) => y, (x, y) => x)
       .keys.distinct()
 
     val abc = k.repartition(50).persist()
     val simSubjectCart = abc.cartesian(abc).filter(f => f._1.intersect(f._2).size > 0)
-   
+
     partitionedy.unpersist()
     // joined.unpersist()
     val subsetMembers = simSubjectCart.filter { case (set1, set2) => (set2.subsetOf(set1)) && (set1 -- set2).nonEmpty }
@@ -217,8 +209,8 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val superset1 = abc.subtract(sdf)
 
     val ys = superset1.flatMap(f => (f.map(g => (g, f))))
-    
-     val g=ys.join(mapSubWithTriples)
+
+    val g = ys.join(mapSubWithTriples)
 
     val clusterOfSubjects = g.map({
       case (s, (iter, iter1)) => ((iter).toSet, iter1)
@@ -240,15 +232,14 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val clusterOfProp = propDistinct.map({
       case (a, (iter1)) => (iter1.filter(f => f._2.equals(a)))
     })
-  
+
     clusterOfProp
 
   }
   def isContains(a: List[Node], b: List[Node]): Boolean = {
     if (a.forall(b.contains) || b.forall(a.contains)) {
       true
-    } else
-      false
+    } else false
   }
 
   def removeSupType(a: RDD[((String, HashSet[String]), (String, HashSet[String]))]): RDD[((String, HashSet[String]), (String, HashSet[String]))] = {
@@ -269,13 +260,12 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
       })
 
       clusterOfProp
-    } else
-      a
+    } else a
   }
   def propClustering(triplesWithNumericLiteral: RDD[Triple]): RDD[(String, mutable.Set[(String, String, Object)])] = {
 
     val subMap = triplesWithNumericLiteral.map(f => (getLocalName1(f.getSubject),
-      (getLocalName1(f.getSubject), getLocalName1(f.getPredicate), getNumber(f.getObject.toString())))) //.partitionBy(new HashPartitioner(8)) //make a function instead of using
+      (getLocalName1(f.getSubject), getLocalName1(f.getPredicate), getNumber(f.getObject.toString())))) // .partitionBy(new HashPartitioner(8)) //make a function instead of using
 
     val initialSet = mutable.Set.empty[(String, String, Object)]
     val addToSet = (s: mutable.Set[(String, String, Object)], v: (String, String, Object)) => s += v
@@ -299,9 +289,9 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     var dbtype2: HashSet[String] = null
     val hyper1 = seq1.filter(p => p.contains("hypernym"))
     val hyper2 = seq2.filter(p => p.contains("hypernym"))
-    //case of usa and India
+    // case of usa and India
 
-    //USA= hypernym/states and India :- hypernym//Country
+    // USA= hypernym/states and India :- hypernym//Country
     if (hyper1 == hyper2 && !hyper1.isEmpty && !hyper2.isEmpty) {
 
       jSimilarity = 1.0
@@ -309,12 +299,14 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     } else {
       if (seq1.contains("hypernym")) {
         dbtype1 = seq1.dropRight(1)
-      } else
+      } else {
         dbtype1 = seq1
+      }
       if (seq2.contains("hypernym")) {
         dbtype2 = seq2.dropRight(1)
-      } else
+      } else {
         dbtype2 = seq2
+      }
 
       val intersect_cnt = dbtype1.toSet.intersect(dbtype2.toSet).size
 
@@ -327,7 +319,7 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
 
   def iqr1(cluster: Seq[(String, String, Object)], anomalyListLimit: Int): Dataset[Row] = {
 
-    //create sample data 
+    // create sample data
 
     var result: Dataset[Row] = null
     // var _partitionData: RDD[String] = _
@@ -337,7 +329,7 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val listofData = cluster.map(b => (b._3.toString()).toDouble).toList
 
     val k = sparkSession.sparkContext.makeRDD(listofData)
-    //create sample data 
+    // create sample data
     //  println("sampleData=" + listofData)
     val c = listofData.sorted
 
@@ -351,9 +343,10 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val dfWithoutSchema = sparkSession.createDataFrame(KVcluster).toDF("id", "outliers")
 
     // calculate quantiles and IQR
-    val quantiles = df.stat.approxQuantile("value",
+    val quantiles = df.stat.approxQuantile(
+      "value",
       Array(0.25, 0.75), 0.0)
-    //quantiles.foreach(println)
+    // quantiles.foreach(println)
 
     val Q1 = quantiles(0)
 
@@ -383,52 +376,48 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
       result
     }
     result
-    //    
+    //
     //    // result.show()
     //    result.where(result.col("outliers").isNotNull)
   }
 
   def iqr2(cluster: Seq[(String, String, Object)], anomalyListLimit: Int): Seq[(String, String, Object)] = {
 
-    //create sample data 
+    // create sample data
 
     val listofData = cluster.map(b => (b._3.toString()).toDouble).toArray
 
- 
-
     val c = listofData.sorted
-  
+
     val arrMean = new DescriptiveStatistics()
     genericArrayOps(c).foreach(v => arrMean.addValue(v))
     // Get first and third quartiles and then calc IQR
     val Q1 = arrMean.getPercentile(25)
-    //println("Q1="+Q1)
+    // println("Q1="+Q1)
     val Q3 = arrMean.getPercentile(75)
-    //println("Q3="+Q3)
+    // println("Q3="+Q3)
     val IQR = Q3 - Q1
-    //println("IQR="+IQR)
+    // println("IQR="+IQR)
     val lowerRange = Q1 - 1.5 * IQR
-    //println("lowerRange="+lowerRange)
+    // println("lowerRange="+lowerRange)
     val upperRange = Q3 + 1.5 * IQR
     //    println("upperRange="+upperRange)
     val yse = c.filter(p => (p < lowerRange || p > upperRange))
-    
 
     val xde = cluster.filter(f => search(f._3.toString().toDouble, yse))
-    
+
     xde
   }
 
   def search(a: Double, b: Array[Double]): Boolean = {
-    if (b.contains(a))
-      true
-    else
-      false
+    if (b.contains(a)) true
+    else false
 
   }
 }
 object AnomalyDetectionWithCountVetcorizerModel {
   def apply(nTriplesRDD: RDD[Triple], objList: List[String], triplesType: List[String],
-            JSimThreshold: Double, listSuperType: List[String], sparkSession: SparkSession, hypernym: String, numPartition: Int) = new AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD, objList, triplesType,
+            JSimThreshold: Double, listSuperType: List[String], sparkSession: SparkSession,
+            hypernym: String, numPartition: Int): AnomalyDetectionWithCountVetcorizerModel = new AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD, objList, triplesType,
     JSimThreshold, listSuperType, sparkSession, hypernym, numPartition)
 }

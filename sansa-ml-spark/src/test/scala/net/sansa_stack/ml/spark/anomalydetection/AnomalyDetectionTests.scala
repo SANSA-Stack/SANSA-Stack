@@ -1,10 +1,11 @@
 package net.sansa_stack.ml.spark.anomalydetection
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.ml.spark.outliers.anomalydetection._
 import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
+
+import net.sansa_stack.ml.spark.outliers.anomalydetection._
 
 class AnomalyDetectionTests extends FunSuite with DataFrameSuiteBase {
 
@@ -34,9 +35,6 @@ class AnomalyDetectionTests extends FunSuite with DataFrameSuiteBase {
   val hypernym = "http://purl.org/linguistics/gold/hypernym"
 
   test("performing anomaly detection using HashingTF method should result in size 36") {
-
- 
-
     val triples = spark.rdf(Lang.NTRIPLES)(path)
     triples.repartition(125).persist
 
@@ -51,7 +49,6 @@ class AnomalyDetectionTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("performing anomaly detection using CountVetcorizerModel method should result in size 15") {
-
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)
     triples.repartition(125).persist
