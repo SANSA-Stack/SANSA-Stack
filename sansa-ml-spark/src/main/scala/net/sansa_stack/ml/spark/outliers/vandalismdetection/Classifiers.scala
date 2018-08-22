@@ -8,10 +8,10 @@ import scala.collection.mutable
 
 import org.apache.commons.io.FileUtils
 import org.apache.spark.{ RangePartitioner, SparkContext }
+import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.{ DecisionTreeClassificationModel, DecisionTreeClassifier, GBTClassificationModel, GBTClassifier, LogisticRegression, MultilayerPerceptronClassifier, RandomForestClassificationModel, RandomForestClassifier }
 import org.apache.spark.ml.evaluation.{ BinaryClassificationEvaluator, MulticlassClassificationEvaluator }
 import org.apache.spark.ml.feature.{ IndexToString, StringIndexer, VectorIndexer }
-import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.linalg.{ Vector, Vectors }
 import org.apache.spark.mllib.classification.{ SVMModel, SVMWithSGD }
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
@@ -42,7 +42,8 @@ class Classifiers extends Serializable {
     //    val Array(DF_Testing) = DF_Testing//.randomSplit(Array(0.100))
 
     // Train a RandomForest model.
-    val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043).setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") // .setNumTrees(20)
+    val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043)
+    .setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures") // .setNumTrees(20)
 
     // Convert indexed labels back to original labels.
     val labelConverter = new IndexToString().setInputCol("prediction").setOutputCol("predictedLabel").setLabels(labelIndexer.labels)

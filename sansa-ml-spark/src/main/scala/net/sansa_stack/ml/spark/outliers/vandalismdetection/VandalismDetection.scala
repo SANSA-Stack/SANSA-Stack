@@ -5,10 +5,9 @@ import java.util.Scanner
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.{ RangePartitioner, SparkContext }
-import org.apache.spark.ml.feature.{ Word2Vec, Word2VecModel }
-import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.feature.{ VectorAssembler, Word2Vec, Word2VecModel }
+import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{ concat, lit }
@@ -72,7 +71,7 @@ class VandalismDetection extends Serializable {
       val RDD_RDFXML = RDFXML_Parser_OBJ.start_RDFXML_Parser(jobConf_Record, jobConf_Prefixes, sc)
       RDD_RDFXML.foreach(println)
 
-      //----------------------------DF for RDF XML ------------------------------------------
+      // ----------------------------DF for RDF XML ------------------------------------------
       //  Create SQLContext Object:
       val sqlContext = new org.apache.spark.sql.SQLContext(sc)
       val DFR_RDF_XML = DRF_Builder_RDFXML_OBJ.RDD_TO_DFR_RDFXML(RDD_RDFXML, sqlContext)
@@ -142,8 +141,6 @@ class VandalismDetection extends Serializable {
     DF_Second.registerTempTable("Data2")
 
     // ===================================================================Parent // Previous Revision==============================================================================================================
-    // val DF_Joined = result1.as("df1").join(result2.as("df2"), col("itemid") === col("itemid2") && col("index1") === col("index2") + 1, "leftouter").select("Rid", "itemid", "comment", "pid", "time", "contributorIP", "contributorID", "contributorName", "JsonText", "labels", "descriptions", "aliases", "claims", "sitelinks", "model", "format", "sha", "Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2", "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2", "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
-    // .select("itemid", "Rid","pid","time","itemid2","Rid2","pid2","time2")
 
     // Joining based on Parent Id to get the previous cases: ParentID
     val DF_Joined = DF_First_DF_Result_Join_Tags_and_Json.as("df1").join(DF_Second.as("df2"), $"df1.pid" === $"df2.Rid2", "leftouter").distinct()
@@ -168,72 +165,82 @@ class VandalismDetection extends Serializable {
       StructField("Rid", IntegerType, false) ::
 
         // Character Features :
-        /* 1 */ StructField("C1uppercaseratio", DoubleType, false) :: /* 2 */ StructField("C2lowercaseratio", DoubleType, false) :: /*3*/ StructField("C3alphanumericratio", DoubleType, false) ::
-        /* 4 */ StructField("C4asciiratio", DoubleType, false) :: /* 5 */ StructField("C5bracketratio", DoubleType, false) :: /*6*/ StructField("C6digitalratio", DoubleType, false) ::
-        /* 7 */ StructField("C7latinratio", DoubleType, false) :: /* 8 */ StructField("C8whitespaceratio", DoubleType, false) :: /* 9*/ StructField("C9puncratio", DoubleType, false) ::
-        /* 10 */ StructField("C10longcharacterseq", DoubleType, false) :: /* 11 */ StructField("C11arabicratio", DoubleType, false) :: /*12*/ StructField("C12bengaliratio", DoubleType, false) ::
-        /* 13 */ StructField("C13brahmiratio", DoubleType, false) :: /* 14 */ StructField("C14cyrilinratio", DoubleType, false) :: /*15*/ StructField("C15hanratio", DoubleType, false) ::
-        /* 16 */ StructField("c16malysiaratio", DoubleType, false) :: /* 17 */ StructField("C17tamiratio", DoubleType, false) :: /*18*/ StructField("C18telugratio", DoubleType, false) ::
-        /* 19 */ StructField("C19symbolratio", DoubleType, false) :: /* 20 */ StructField("C20alpharatio", DoubleType, false) :: /*21*/ StructField("C21visibleratio", DoubleType, false) ::
-        /* 22 */ StructField("C22printableratio", DoubleType, false) :: /* 23 */ StructField("C23blankratio", DoubleType, false) :: /*24 */ StructField("C24controlratio", DoubleType, false) ::
+        /* 1 */ StructField("C1uppercaseratio", DoubleType, false) :: /* 2 */ StructField("C2lowercaseratio", DoubleType, false) :: /* 3 */ StructField("C3alphanumericratio", DoubleType, false) ::
+        /* 4 */ StructField("C4asciiratio", DoubleType, false) :: /* 5 */ StructField("C5bracketratio", DoubleType, false) :: /* 6 */ StructField("C6digitalratio", DoubleType, false) ::
+        /* 7 */ StructField("C7latinratio", DoubleType, false) :: /* 8 */ StructField("C8whitespaceratio", DoubleType, false) :: /* 9 */ StructField("C9puncratio", DoubleType, false) ::
+        /* 10 */ StructField("C10longcharacterseq", DoubleType, false) :: /* 11 */ StructField("C11arabicratio", DoubleType, false) :: /* 12 */ StructField("C12bengaliratio", DoubleType, false) ::
+        /* 13 */ StructField("C13brahmiratio", DoubleType, false) :: /* 14 */ StructField("C14cyrilinratio", DoubleType, false) :: /* 15 */ StructField("C15hanratio", DoubleType, false) ::
+        /* 16 */ StructField("c16malysiaratio", DoubleType, false) :: /* 17 */ StructField("C17tamiratio", DoubleType, false) :: /* 18 */ StructField("C18telugratio", DoubleType, false) ::
+        /* 19 */ StructField("C19symbolratio", DoubleType, false) :: /* 20 */ StructField("C20alpharatio", DoubleType, false) :: /* 21 */ StructField("C21visibleratio", DoubleType, false) ::
+        /* 22 */ StructField("C22printableratio", DoubleType, false) :: /* 23 */ StructField("C23blankratio", DoubleType, false) :: /* 24 */ StructField("C24controlratio", DoubleType, false) ::
         /* 25 */ StructField("C25hexaratio", DoubleType, false) ::
 
         // word Features:
-        /* 26 */ StructField("W1languagewordratio", DoubleType, false) :: /* 27 Boolean */ StructField("W2Iscontainlanguageword", DoubleType, false) :: /*28*/ StructField("W3lowercaseratio", DoubleType, false) ::
-        /* 29 Integer */ StructField("W4longestword", IntegerType, false) :: /* 30 Boolean */ StructField("W5IscontainURL", DoubleType, false) :: /*31*/ StructField("W6badwordratio", DoubleType, false) ::
-        /* 32 */ StructField("W7uppercaseratio", DoubleType, false) :: /* 33 */ StructField("W8banwordratio", DoubleType, false) :: /*34 Boolean */ StructField("W9FemalFirstName", DoubleType, false) ::
-        /* 35 Boolean */ StructField("W10MaleFirstName", DoubleType, false) :: /* 36 Boolean */ StructField("W11IscontainBadword", DoubleType, false) :: /*37 Boolean*/ StructField("W12IsContainBanword", DoubleType, false) ::
+        /* 26 */ StructField("W1languagewordratio", DoubleType, false) :: /* 27 Boolean */ StructField("W2Iscontainlanguageword", DoubleType, false) :: /* 28 */ StructField("W3lowercaseratio", DoubleType, false) ::
+        /* 29 Integer */ StructField("W4longestword", IntegerType, false) :: /* 30 Boolean */ StructField("W5IscontainURL", DoubleType, false) :: /* 31 */ StructField("W6badwordratio", DoubleType, false) ::
+        /* 32 */ StructField("W7uppercaseratio", DoubleType, false) :: /* 33 */ StructField("W8banwordratio", DoubleType, false) :: /* 34 Boolean */ StructField("W9FemalFirstName", DoubleType, false) ::
+        /* 35 Boolean */ StructField("W10MaleFirstName", DoubleType, false) :: /* 36 Boolean */ StructField("W11IscontainBadword", DoubleType, false) ::
+        /* 37 Boolean */ StructField("W12IsContainBanword", DoubleType, false) ::
         /* 38 integer */ StructField("W13NumberSharewords", DoubleType, false) :: /* 39 Integer */ StructField("W14NumberSharewordswithoutStopwords", DoubleType, false) ::
-        /* 40 */ StructField("W15PortionQid", DoubleType, false) :: /* 41 */ StructField("W16PortionLnags", DoubleType, false) :: /*42*/ StructField("W17PortionLinks", DoubleType, false) ::
+        /* 40 */ StructField("W15PortionQid", DoubleType, false) :: /* 41 */ StructField("W16PortionLnags", DoubleType, false) :: /* 42 */ StructField("W17PortionLinks", DoubleType, false) ::
 
         //
         //          // Sentences Features:
-        /* 43 */ StructField("S1CommentTailLength", DoubleType, false) :: /* 44 */ StructField("S2SimikaritySitelinkandLabel", DoubleType, false) :: /*45*/ StructField("S3SimilarityLabelandSitelink", DoubleType, false) :: /*46*/ StructField("S4SimilarityCommentComment", DoubleType, false) ::
+        /* 43 */ StructField("S1CommentTailLength", DoubleType, false) :: /* 44 */ StructField("S2SimikaritySitelinkandLabel", DoubleType, false) ::
+        /* 45 */ StructField("S3SimilarityLabelandSitelink", DoubleType, false) :: /* 46 */ StructField("S4SimilarityCommentComment", DoubleType, false) ::
         //
         //          // Statements Features :
-        /* 47 */ StructField("SS1Property", StringType, false) :: /* 48 */ StructField("SS2DataValue", StringType, false) :: /*49*/ StructField("SS3ItemValue", StringType, false) ::
+        /* 47 */ StructField("SS1Property", StringType, false) :: /* 48 */ StructField("SS2DataValue", StringType, false) :: /* 49 */ StructField("SS3ItemValue", StringType, false) ::
         //
         //
         //        // User Features :
-        /* 50 Boolean */ StructField("U1IsPrivileged", DoubleType, false) :: /*51 Boolean*/ StructField("U2IsBotUser", DoubleType, false) :: /*52 Boolean*/ StructField("U3IsBotuserWithFlaguser", DoubleType, false) ::
-        /* 53 Boolean */ StructField("U4IsProperty", DoubleType, false) :: /*54 Boolean*/ StructField("U5IsTranslator", DoubleType, false) :: /*55 Boolean*/ StructField("U6IsRegister", DoubleType, false) ::
-        /* 56 */ StructField("U7IPValue", DoubleType, false) :: /* 57 */ StructField("U8UserID", IntegerType, false) :: /*58*/ StructField("U9HasBirthDate", DoubleType, false) :: /*59*/ StructField("U10HasDeathDate", DoubleType, false) ::
+        /* 50 Boolean */ StructField("U1IsPrivileged", DoubleType, false) :: /* 51 Boolean */ StructField("U2IsBotUser", DoubleType, false) :: /* 52 Boolean */ StructField("U3IsBotuserWithFlaguser", DoubleType, false) ::
+        /* 53 Boolean */ StructField("U4IsProperty", DoubleType, false) :: /* 54 Boolean */ StructField("U5IsTranslator", DoubleType, false) :: /* 55 Boolean */ StructField("U6IsRegister", DoubleType, false) ::
+        /* 56 */ StructField("U7IPValue", DoubleType, false) :: /* 57 */ StructField("U8UserID", IntegerType, false) :: /* 58 */ StructField("U9HasBirthDate", DoubleType, false) ::
+        /* 59 */ StructField("U10HasDeathDate", DoubleType, false) ::
 
         // Items Features :
 
-        /* 60 */ StructField("I1NumberLabels", DoubleType, false) :: /* 61 */ StructField("I2NumberDescription", DoubleType, false) :: /*62*/ StructField("I3NumberAliases", DoubleType, false) :: /*63*/ StructField("I4NumberClaims", DoubleType, false) ::
-        /* 64 */ StructField("I5NumberSitelinks", DoubleType, false) :: /* 65 */ StructField("I6NumberStatement", DoubleType, false) :: /*66*/ StructField("I7NumberReferences", DoubleType, false) :: /*67*/ StructField("I8NumberQualifier", DoubleType, false) ::
-        /* 68 */ StructField("I9NumberQualifierOrder", DoubleType, false) :: /* 69 */ StructField("I10NumberBadges", DoubleType, false) :: /*70*/ StructField("I11ItemTitle", StringType, false) ::
+        /* 60 */ StructField("I1NumberLabels", DoubleType, false) :: /* 61 */ StructField("I2NumberDescription", DoubleType, false) :: /* 62 */ StructField("I3NumberAliases", DoubleType, false) ::
+        /* 63 */ StructField("I4NumberClaims", DoubleType, false) ::
+        /* 64 */ StructField("I5NumberSitelinks", DoubleType, false) :: /* 65 */ StructField("I6NumberStatement", DoubleType, false) :: /* 66 */ StructField("I7NumberReferences", DoubleType, false) ::
+        /* 67 */ StructField("I8NumberQualifier", DoubleType, false) ::
+        /* 68 */ StructField("I9NumberQualifierOrder", DoubleType, false) :: /* 69 */ StructField("I10NumberBadges", DoubleType, false) :: /* 70 */ StructField("I11ItemTitle", StringType, false) ::
 
         // Revision Features:
-        /* 71 */ StructField("R1languageRevision", StringType, false) :: /* 72 */ StructField("R2RevisionLanguageLocal", StringType, false) :: /*73*/ StructField("R3IslatainLanguage", DoubleType, false) ::
-        /* 74 */ StructField("R4JsonLength", DoubleType, false) :: /* 75 */ StructField("R5RevisionAction", StringType, false) :: /*76*/ StructField("R6PrevReviAction", StringType, false) ::
-        /* 77 */ StructField("R7RevisionAccountChange", DoubleType, false) :: /* 78 */ StructField("R8ParRevision", StringType, false) :: /*79*/ StructField("R9RevisionTime", StringType, false) ::
-        /* 80 */ StructField("R10RevisionSize", DoubleType, false) :: /* 81 */ StructField("R11ContentType", StringType, false) :: /*82*/ StructField("R12BytesIncrease", DoubleType, false) ::
-        /* 83 */ StructField("R13TimeSinceLastRevi", DoubleType, false) :: /* 84 */ StructField("R14CommentLength", DoubleType, false) :: /*85*/ StructField("R15RevisionSubaction", StringType, false) ::
+        /* 71 */ StructField("R1languageRevision", StringType, false) :: /* 72 */ StructField("R2RevisionLanguageLocal", StringType, false) :: /* 73 */ StructField("R3IslatainLanguage", DoubleType, false) ::
+        /* 74 */ StructField("R4JsonLength", DoubleType, false) :: /* 75 */ StructField("R5RevisionAction", StringType, false) :: /* 76 */ StructField("R6PrevReviAction", StringType, false) ::
+        /* 77 */ StructField("R7RevisionAccountChange", DoubleType, false) :: /* 78 */ StructField("R8ParRevision", StringType, false) :: /* 79 */ StructField("R9RevisionTime", StringType, false) ::
+        /* 80 */ StructField("R10RevisionSize", DoubleType, false) :: /* 81 */ StructField("R11ContentType", StringType, false) :: /* 82 */ StructField("R12BytesIncrease", DoubleType, false) ::
+        /* 83 */ StructField("R13TimeSinceLastRevi", DoubleType, false) :: /* 84 */ StructField("R14CommentLength", DoubleType, false) :: /* 85 */ StructField("R15RevisionSubaction", StringType, false) ::
         /* 86 */ StructField("R16PrevReviSubaction", StringType, false) ::
 
         Nil)
 
     val rowRDD = Result_all_Features.map(line => line.split(",")).map(e ⇒ Row(e(0).toInt // character feature column
-    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble),
-      e(11).toDouble, e(12).toDouble, e(13).toDouble, e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble, e(21).toDouble, e(22).toDouble, e(23).toDouble, e(24).toDouble, e(25).toDouble // Word Feature column
-      , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble, RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
-      , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble // Statement Features Column:
-      , e(47), e(48), e(49) // User Features Column:
-      , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble // Item Features column:
-      , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble, e(68).toDouble, e(69).toDouble, "Q" + e(70).toDouble.toInt.toString() // Revision Features Column:
-      , e(71), e(72), e(73).toDouble, e(74).toDouble, e(75), e(76), e(77).toDouble, e(78), e(79), e(80).toDouble, e(81), e(82).toDouble, e(83).toDouble, e(84).toDouble, e(85), e(86)))
+    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble), e(11).toDouble, e(12).toDouble //
+    , e(13).toDouble, e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble, e(21).toDouble, e(22).toDouble //
+    , e(23).toDouble, e(24).toDouble, e(25).toDouble // Word Feature column
+    , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble //
+    , RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
+    , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble // Statement Features Column:
+    , e(47), e(48), e(49) // User Features Column:
+    , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble // Item Features column:
+    , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble, e(68).toDouble //
+    , e(69).toDouble, "Q" + e(70).toDouble.toInt.toString() // Revision Features Column:
+    , e(71), e(72), e(73).toDouble, e(74).toDouble, e(75), e(76), e(77).toDouble, e(78), e(79), e(80).toDouble, e(81), e(82).toDouble, e(83).toDouble, e(84).toDouble, e(85), e(86)))
 
     // a.User Frequency:
     // number of revisions a user has contributed
     // val resu= DF_Tags.groupBy("contributorID").agg(count("Rid"))
     DF_Tags.registerTempTable("TagesTable")
-    val ContributorFreq_for_Each_Revision_DF = sqlContext.sql("select contributorID as CIDUSER1, count(Rid) as NumberofRevisionsUserContributed from TagesTable where contributorID !='0' group by contributorID ") //.drop("CIDUSER1")
+    val ContributorFreq_for_Each_Revision_DF = sqlContext
+      .sql("select contributorID as CIDUSER1, count(Rid) as NumberofRevisionsUserContributed from TagesTable where contributorID !='0' group by contributorID ") // .drop("CIDUSER1")
     // ContributorFreq_for_Each_Revision_DF.show()
 
     // b.Cumulated : Number of a unique Item a user has contributed.
-    val CumulatedNumberof_uniqueItemsForUser_DF = sqlContext.sql("select contributorID as CIDUSER2,  COUNT(DISTINCT itemid) as NumberofUniqueItemsUseredit from TagesTable where contributorID !='0' group by contributorID") //.drop("CIDUSER2")
+    val CumulatedNumberof_uniqueItemsForUser_DF = sqlContext
+      .sql("select contributorID as CIDUSER2,  COUNT(DISTINCT itemid) as NumberofUniqueItemsUseredit from TagesTable where contributorID !='0' group by contributorID") // .drop("CIDUSER2")
     // CumulatedNumberof_uniqueItemsForUser_DF.show()
 
     // 1.Item Frequency:
@@ -285,7 +292,8 @@ class VandalismDetection extends Serializable {
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
-      .load("hdfs://localhost:9000/mydata/Meta.csv").select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE", "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
+      .load("hdfs://localhost:9000/mydata/Meta.csv").select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE",
+        "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
     // df_GeoInf.show()
 
     val df_Truth = sqlContext.read
@@ -305,10 +313,12 @@ class VandalismDetection extends Serializable {
 
     // For String Column, We fill the Null values by "NA":
 
-    var Fill_Missing_Final_All_Features = Final_All_Features.na.fill("NA", Seq("USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE", "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")).cache()
+    var Fill_Missing_Final_All_Features = Final_All_Features.na.fill("NA", Seq("USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE",
+      "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")).cache()
 
     // For Integer Frequency  Column, We fill the Null values by 0:
-    Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.na.fill(0, Seq("FreqItem", "NumberUniqUserEditItem", "NumberRevisionItemHas", "NumberofUniqueItemsUseredit", "NumberofRevisionsUserContributed", "REVISION_SESSION_ID")).cache()
+    Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.na.fill(0, Seq("FreqItem", "NumberUniqUserEditItem", "NumberRevisionItemHas", "NumberofUniqueItemsUseredit",
+      "NumberofRevisionsUserContributed", "REVISION_SESSION_ID")).cache()
     // Fill_Missing_Final_All_Features.show()
 
     val BoolToDoubleUDF = udf { (BoolAsString: String) => if (BoolAsString == "T") 1.0 else 0.0 }
@@ -325,9 +335,9 @@ class VandalismDetection extends Serializable {
     Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalNumberUniqUserEditItem", IntegerToDouble(col("NumberUniqUserEditItem")))
     Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.withColumn("FinalFreqItem", IntegerToDouble(col("FreqItem")))
 
-    // ===========================================================================Caharacter Features : Double , Integer Features ====================================================================================
+    // ===========================================================================Caharacter Features : Double , Integer Features ========================================================
     // Double Ratio:  For Ratio Double column, Fill -1 value by Median:Character Features + Ratio of Word Features :
-    var Samples = Fill_Missing_Final_All_Features.sample(false, 0.001).cache() //.where($"S2SimikaritySitelinkandLabel">0.0 || $"S3SimilarityLabelandSitelink">0.0 || $"S4SimilarityCommentComment">0.0)
+    var Samples = Fill_Missing_Final_All_Features.sample(false, 0.001).cache() // .where($"S2SimikaritySitelinkandLabel">0.0 || $"S3SimilarityLabelandSitelink">0.0 || $"S4SimilarityCommentComment">0.0)
     Samples.registerTempTable("df")
 
     val Query = "select " +
@@ -378,22 +388,22 @@ class VandalismDetection extends Serializable {
     val lkpUDF24 = udf { (i: Double) => if (i == 0) Median(22).toString().toDouble else i }
     val lkpUDF25 = udf { (i: Double) => if (i == 0) Median(23).toString().toDouble else i }
 
-    val df1 = Fill_Missing_Final_All_Features.withColumn("FinalC1uppercaseratio", lkpUDF1(col("C1uppercaseratio"))) //.drop("C1uppercaseratio").cache()
-    val df2 = df1.withColumn("FinalC2lowercaseratio", lkpUDF2(col("C2lowercaseratio"))) //.drop("C2lowercaseratio").cache()
+    val df1 = Fill_Missing_Final_All_Features.withColumn("FinalC1uppercaseratio", lkpUDF1(col("C1uppercaseratio"))) // .drop("C1uppercaseratio").cache()
+    val df2 = df1.withColumn("FinalC2lowercaseratio", lkpUDF2(col("C2lowercaseratio"))) // .drop("C2lowercaseratio").cache()
     // df1.unpersist()
-    val df3 = df2.withColumn("FinalC3alphanumericratio", lkpUDF3(col("C3alphanumericratio"))) //.drop("C3alphanumericratio").cache()
+    val df3 = df2.withColumn("FinalC3alphanumericratio", lkpUDF3(col("C3alphanumericratio"))) // .drop("C3alphanumericratio").cache()
     // df2.unpersist()
-    val df4 = df3.withColumn("FinalC4asciiratio", lkpUDF4(col("C4asciiratio"))) //.drop("C4asciiratio").cache()
+    val df4 = df3.withColumn("FinalC4asciiratio", lkpUDF4(col("C4asciiratio"))) // .drop("C4asciiratio").cache()
     // df3.unpersist()
-    val df5 = df4.withColumn("FinalC5bracketratio", lkpUDF5(col("C5bracketratio"))) //.drop("C5bracketratio").cache()
+    val df5 = df4.withColumn("FinalC5bracketratio", lkpUDF5(col("C5bracketratio"))) // .drop("C5bracketratio").cache()
     // df4.unpersist()
-    val df6 = df5.withColumn("FinalC6digitalratio", lkpUDF6(col("C6digitalratio"))) //.drop("C6digitalratio").cache()
+    val df6 = df5.withColumn("FinalC6digitalratio", lkpUDF6(col("C6digitalratio"))) // .drop("C6digitalratio").cache()
     // df5.unpersist()
-    val df7 = df6.withColumn("FinalC7latinratio", lkpUDF7(col("C7latinratio"))) //.drop("C7latinratio").cache()
+    val df7 = df6.withColumn("FinalC7latinratio", lkpUDF7(col("C7latinratio"))) // .drop("C7latinratio").cache()
     // df6.unpersist()
-    val df8 = df7.withColumn("FinalC8whitespaceratio", lkpUDF8(col("C8whitespaceratio"))) //.drop("C8whitespaceratio").cache()
+    val df8 = df7.withColumn("FinalC8whitespaceratio", lkpUDF8(col("C8whitespaceratio"))) // .drop("C8whitespaceratio").cache()
     // df7.unpersist()
-    val df9 = df8.withColumn("FinalC9puncratio", lkpUDF9(col("C9puncratio"))) //.drop("C9puncratio").cache()
+    val df9 = df8.withColumn("FinalC9puncratio", lkpUDF9(col("C9puncratio"))) // .drop("C9puncratio").cache()
 
     // Mean :
     // character integer values :
@@ -403,35 +413,35 @@ class VandalismDetection extends Serializable {
     val df10 = df9.withColumn("FinalC10longcharacterseq", lkpUDFC10(col("C10longcharacterseq")))
 
     // Median
-    val df11 = df10.withColumn("FinalC11arabicratio", lkpUDF11(col("C11arabicratio"))) //.drop("C11arabicratio").cache()
+    val df11 = df10.withColumn("FinalC11arabicratio", lkpUDF11(col("C11arabicratio"))) // .drop("C11arabicratio").cache()
     // df9.unpersist()
-    val df12 = df11.withColumn("FinalC12bengaliratio", lkpUDF12(col("C12bengaliratio"))) //.drop("C12bengaliratio").cache()
+    val df12 = df11.withColumn("FinalC12bengaliratio", lkpUDF12(col("C12bengaliratio"))) // .drop("C12bengaliratio").cache()
     // df11.unpersist()
-    val df13 = df12.withColumn("FinalC13brahmiratio", lkpUDF13(col("C13brahmiratio"))) //.drop("C13brahmiratio").cache()
+    val df13 = df12.withColumn("FinalC13brahmiratio", lkpUDF13(col("C13brahmiratio"))) // .drop("C13brahmiratio").cache()
     // df12.unpersist()
-    val df14 = df13.withColumn("FinalC14cyrilinratio", lkpUDF14(col("C14cyrilinratio"))) //.drop("C14cyrilinratio").cache()
+    val df14 = df13.withColumn("FinalC14cyrilinratio", lkpUDF14(col("C14cyrilinratio"))) // .drop("C14cyrilinratio").cache()
     // df13.unpersist()
-    val df15 = df14.withColumn("FinalC15hanratio", lkpUDF15(col("C15hanratio"))) //.drop("C15hanratio").cache()
+    val df15 = df14.withColumn("FinalC15hanratio", lkpUDF15(col("C15hanratio"))) // .drop("C15hanratio").cache()
     // df14.unpersist()
-    val df16 = df15.withColumn("Finalc16malysiaratio", lkpUDF16(col("c16malysiaratio"))) //.drop("c16malysiaratio").cache()
+    val df16 = df15.withColumn("Finalc16malysiaratio", lkpUDF16(col("c16malysiaratio"))) // .drop("c16malysiaratio").cache()
     // df15.unpersist()
-    val df17 = df16.withColumn("FinalC17tamiratio", lkpUDF17(col("C17tamiratio"))) //.drop("C17tamiratio").cache()
+    val df17 = df16.withColumn("FinalC17tamiratio", lkpUDF17(col("C17tamiratio"))) // .drop("C17tamiratio").cache()
     // df16.unpersist()
-    val df18 = df17.withColumn("FinalC18telugratio", lkpUDF18(col("C18telugratio"))) //.drop("C18telugratio").cache()
+    val df18 = df17.withColumn("FinalC18telugratio", lkpUDF18(col("C18telugratio"))) // .drop("C18telugratio").cache()
     // df17.unpersist()
-    val df19 = df18.withColumn("FinalC19symbolratio", lkpUDF19(col("C19symbolratio"))) //.drop("C19symbolratio").cache()
+    val df19 = df18.withColumn("FinalC19symbolratio", lkpUDF19(col("C19symbolratio"))) // .drop("C19symbolratio").cache()
     // df18.unpersist()
-    val df20 = df19.withColumn("FinalC20alpharatio", lkpUDF20(col("C20alpharatio"))) //.drop("C20alpharatio").cache()
+    val df20 = df19.withColumn("FinalC20alpharatio", lkpUDF20(col("C20alpharatio"))) // .drop("C20alpharatio").cache()
     // df19.unpersist()
-    val df21 = df20.withColumn("FinalC21visibleratio", lkpUDF21(col("C21visibleratio"))) //.drop("C21visibleratio").cache()
+    val df21 = df20.withColumn("FinalC21visibleratio", lkpUDF21(col("C21visibleratio"))) // .drop("C21visibleratio").cache()
     // df20.unpersist()
-    val df22 = df21.withColumn("FinalC22printableratio", lkpUDF22(col("C22printableratio"))) //.drop("C22printableratio").cache()
+    val df22 = df21.withColumn("FinalC22printableratio", lkpUDF22(col("C22printableratio"))) // .drop("C22printableratio").cache()
     // df21.unpersist()
-    val df23 = df22.withColumn("FinalC23blankratio", lkpUDF23(col("C23blankratio"))) //.drop("C23blankratio").cache()
+    val df23 = df22.withColumn("FinalC23blankratio", lkpUDF23(col("C23blankratio"))) // .drop("C23blankratio").cache()
     // df22.unpersist()
-    val df24 = df23.withColumn("FinalC24controlratio", lkpUDF24(col("C24controlratio"))) //.drop("C24controlratio").cache()
+    val df24 = df23.withColumn("FinalC24controlratio", lkpUDF24(col("C24controlratio"))) // .drop("C24controlratio").cache()
     // df23.unpersist()
-    val df25 = df24.withColumn("FinalC25hexaratio", lkpUDF25(col("C25hexaratio"))) //.drop("C25hexaratio").cache()
+    val df25 = df24.withColumn("FinalC25hexaratio", lkpUDF25(col("C25hexaratio"))) // .drop("C25hexaratio").cache()
 
     // ************************************************End Character Features ****************************************************************************************
 
@@ -445,12 +455,12 @@ class VandalismDetection extends Serializable {
     val lkpUDFW8 = udf { (i: Double) => if (i == 0) Median(28).toString().toDouble else i }
 
     // 1.
-    val df26 = df25.withColumn("FinalW1languagewordratio", lkpUDFW1(col("W1languagewordratio"))) //.drop("W1languagewordratio").cache()
+    val df26 = df25.withColumn("FinalW1languagewordratio", lkpUDFW1(col("W1languagewordratio"))) // .drop("W1languagewordratio").cache()
 
     // 2.Boolean(Double) IsContainLanguageWord
 
     // 3.
-    val df27 = df26.withColumn("FinalW3lowercaseratio", lkpUDFW3(col("W3lowercaseratio"))) //.drop("W3lowercaseratio").cache()
+    val df27 = df26.withColumn("FinalW3lowercaseratio", lkpUDFW3(col("W3lowercaseratio"))) // .drop("W3lowercaseratio").cache()
     // df26.unpersist()
 
     // 4. Integer " Mean:
@@ -461,13 +471,13 @@ class VandalismDetection extends Serializable {
 
     // 5. Boolean (Double ) W5IscontainURL
     // 6.
-    val df29 = df28.withColumn("FinalW6badwordratio", lkpUDFW6(col("W6badwordratio"))) //.drop("W6badwordratio").cache()
+    val df29 = df28.withColumn("FinalW6badwordratio", lkpUDFW6(col("W6badwordratio"))) // .drop("W6badwordratio").cache()
 
     // 7.
-    val df30 = df29.withColumn("FinalW7uppercaseratio", lkpUDFW7(col("W7uppercaseratio"))) //.drop("W7uppercaseratio").cache()
+    val df30 = df29.withColumn("FinalW7uppercaseratio", lkpUDFW7(col("W7uppercaseratio"))) // .drop("W7uppercaseratio").cache()
 
     // 8.
-    val df31 = df30.withColumn("FinalW8banwordratio", lkpUDFW8(col("W8banwordratio"))) //.drop("W8banwordratio").cache()
+    val df31 = df30.withColumn("FinalW8banwordratio", lkpUDFW8(col("W8banwordratio"))) // .drop("W8banwordratio").cache()
 
     // 9.FemalFirst       Boolean(Double)
     // 10.Male First      Boolean(Double)
@@ -637,7 +647,7 @@ class VandalismDetection extends Serializable {
 
     val word2Vec = new Word2Vec().setInputCol("StringFeatures").setOutputCol("result").setVectorSize(20).setMinCount(0)
     val model = word2Vec.fit(test1)
-    val result = model.transform(test1) //.rdd
+    val result = model.transform(test1) // .rdd
 
     // result.show()
 
@@ -732,23 +742,25 @@ class VandalismDetection extends Serializable {
 
     // ======= Tags part : // Contributor IP here is in Decimal format not IP format and It is converted in ParseNormalXml stage
     val TagsRDD = Testing_RDD_All_Record.map(_.split("NNLL")).map(x => (x(0), x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8), x(9), x(10), x(11))).cache()
-    val DF_Tags = TagsRDD.toDF("Rid", "Itemid", "comment", "pid", "time", "contributorIP", "contributorID", "contributorName", "JsonText", "model", "format", "sha").cache()
+    val DF_Tags = TagsRDD.toDF("Rid", "Itemid", "comment", "pid", "time", "contributorIP",
+      "contributorID", "contributorName", "JsonText", "model", "format", "sha").cache()
     //    DF_Tags.show()
     //    println(DF_Tags.count())
 
     // ======== Join Json part with Tag Part:============================
     // Joining to have full data
-    val DF_First_DF_Result_Join_Tags_and_Json = DF_Tags.as("T1").join(Ds_Json.as("T2"), $"T1.Rid" === $"T2.key", "leftouter").select("Rid", "itemid", "comment", "pid", "time", "contributorIP", "contributorID", "contributorName", "JsonText", "labels", "descriptions", "aliases", "claims", "sitelinks", "model", "format", "sha") // .orderBy("Rid", "Itemid")
+    val DF_First_DF_Result_Join_Tags_and_Json = DF_Tags.as("T1").join(Ds_Json.as("T2"), $"T1.Rid" === $"T2.key", "leftouter").select("Rid", "itemid", "comment", "pid", "time",
+      "contributorIP", "contributorID", "contributorName", "JsonText", "labels", "descriptions",
+      "aliases", "claims", "sitelinks", "model", "format", "sha") // .orderBy("Rid", "Itemid")
     DF_First_DF_Result_Join_Tags_and_Json.registerTempTable("Data1")
     val dfr_DATA_JsonTages1 = sqlContext.sql("select * from Data1 order by itemid ,Rid ").cache()
 
-    val colNames = Seq("Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2", "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2", "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
-    val DF_Second = DF_First_DF_Result_Join_Tags_and_Json.toDF(colNames: _*) //.distinct()
+    val colNames = Seq("Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2", "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2",
+      "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
+    val DF_Second = DF_First_DF_Result_Join_Tags_and_Json.toDF(colNames: _*) // .distinct()
     DF_Second.registerTempTable("Data2")
 
     // ===================================================================Parent // Previous Revision==============================================================================================================
-    // val DF_Joined = result1.as("df1").join(result2.as("df2"), col("itemid") === col("itemid2") && col("index1") === col("index2") + 1, "leftouter").select("Rid", "itemid", "comment", "pid", "time", "contributorIP", "contributorID", "contributorName", "JsonText", "labels", "descriptions", "aliases", "claims", "sitelinks", "model", "format", "sha", "Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2", "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2", "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
-    // .select("itemid", "Rid","pid","time","itemid2","Rid2","pid2","time2")
 
     // Joining based on Parent Id to get the previous cases: ParentID
     val DF_Joined = DF_First_DF_Result_Join_Tags_and_Json.as("df1").join(DF_Second.as("df2"), $"df1.pid" === $"df2.Rid2", "leftouter").distinct()
@@ -773,77 +785,88 @@ class VandalismDetection extends Serializable {
       StructField("Rid", IntegerType, false) ::
 
         // Character Features :
-        /* 1*/ StructField("C1uppercaseratio", DoubleType, false) :: /* 2 */ StructField("C2lowercaseratio", DoubleType, false) :: /*3*/ StructField("C3alphanumericratio", DoubleType, false) ::
-        /* 4 */ StructField("C4asciiratio", DoubleType, false) :: /* 5 */ StructField("C5bracketratio", DoubleType, false) :: /*6*/ StructField("C6digitalratio", DoubleType, false) ::
-        /* 7 */ StructField("C7latinratio", DoubleType, false) :: /* 8 */ StructField("C8whitespaceratio", DoubleType, false) :: /* 9*/ StructField("C9puncratio", DoubleType, false) ::
-        /* 10 */ StructField("C10longcharacterseq", DoubleType, false) :: /* 11 */ StructField("C11arabicratio", DoubleType, false) :: /*12*/ StructField("C12bengaliratio", DoubleType, false) ::
-        /* 13 */ StructField("C13brahmiratio", DoubleType, false) :: /* 14 */ StructField("C14cyrilinratio", DoubleType, false) :: /*15*/ StructField("C15hanratio", DoubleType, false) ::
-        /* 16 */ StructField("c16malysiaratio", DoubleType, false) :: /* 17 */ StructField("C17tamiratio", DoubleType, false) :: /*18*/ StructField("C18telugratio", DoubleType, false) ::
-        /* 19 */ StructField("C19symbolratio", DoubleType, false) :: /* 20 */ StructField("C20alpharatio", DoubleType, false) :: /*21*/ StructField("C21visibleratio", DoubleType, false) ::
-        /* 22 */ StructField("C22printableratio", DoubleType, false) :: /* 23 */ StructField("C23blankratio", DoubleType, false) :: /*24 */ StructField("C24controlratio", DoubleType, false) ::
+        /* 1 */ StructField("C1uppercaseratio", DoubleType, false) :: /* 2 */ StructField("C2lowercaseratio", DoubleType, false) :: /* 3 */ StructField("C3alphanumericratio", DoubleType, false) ::
+        /* 4 */ StructField("C4asciiratio", DoubleType, false) :: /* 5 */ StructField("C5bracketratio", DoubleType, false) :: /* 6 */ StructField("C6digitalratio", DoubleType, false) ::
+        /* 7 */ StructField("C7latinratio", DoubleType, false) :: /* 8 */ StructField("C8whitespaceratio", DoubleType, false) :: /* 9 */ StructField("C9puncratio", DoubleType, false) ::
+        /* 10 */ StructField("C10longcharacterseq", DoubleType, false) :: /* 11 */ StructField("C11arabicratio", DoubleType, false) :: /* 12 */ StructField("C12bengaliratio", DoubleType, false) ::
+        /* 13 */ StructField("C13brahmiratio", DoubleType, false) :: /* 14 */ StructField("C14cyrilinratio", DoubleType, false) :: /* 15 */ StructField("C15hanratio", DoubleType, false) ::
+        /* 16 */ StructField("c16malysiaratio", DoubleType, false) :: /* 17 */ StructField("C17tamiratio", DoubleType, false) :: /* 18 */ StructField("C18telugratio", DoubleType, false) ::
+        /* 19 */ StructField("C19symbolratio", DoubleType, false) :: /* 20 */ StructField("C20alpharatio", DoubleType, false) :: /* 21 */ StructField("C21visibleratio", DoubleType, false) ::
+        /* 22 */ StructField("C22printableratio", DoubleType, false) :: /* 23 */ StructField("C23blankratio", DoubleType, false) :: /* 24 */ StructField("C24controlratio", DoubleType, false) ::
         /* 25 */ StructField("C25hexaratio", DoubleType, false) ::
 
         // word Features:
-        /* 26 */ StructField("W1languagewordratio", DoubleType, false) :: /* 27 Boolean */ StructField("W2Iscontainlanguageword", DoubleType, false) :: /*28*/ StructField("W3lowercaseratio", DoubleType, false) ::
-        /* 29 Integer */ StructField("W4longestword", IntegerType, false) :: /* 30 Boolean */ StructField("W5IscontainURL", DoubleType, false) :: /*31*/ StructField("W6badwordratio", DoubleType, false) ::
-        /* 32 */ StructField("W7uppercaseratio", DoubleType, false) :: /* 33 */ StructField("W8banwordratio", DoubleType, false) :: /*34 Boolean */ StructField("W9FemalFirstName", DoubleType, false) ::
-        /* 35 Boolean */ StructField("W10MaleFirstName", DoubleType, false) :: /* 36 Boolean */ StructField("W11IscontainBadword", DoubleType, false) :: /*37 Boolean*/ StructField("W12IsContainBanword", DoubleType, false) ::
+        /* 26 */ StructField("W1languagewordratio", DoubleType, false) :: /* 27 Boolean */ StructField("W2Iscontainlanguageword", DoubleType, false) :: /* 28 */ StructField("W3lowercaseratio", DoubleType, false) ::
+        /* 29 Integer */ StructField("W4longestword", IntegerType, false) :: /* 30 Boolean */ StructField("W5IscontainURL", DoubleType, false) :: /* 31 */ StructField("W6badwordratio", DoubleType, false) ::
+        /* 32 */ StructField("W7uppercaseratio", DoubleType, false) :: /* 33 */ StructField("W8banwordratio", DoubleType, false) :: /* 34 Boolean */ StructField("W9FemalFirstName", DoubleType, false) ::
+        /* 35 Boolean */ StructField("W10MaleFirstName", DoubleType, false) :: /* 36 Boolean */ StructField("W11IscontainBadword", DoubleType, false) ::
+        /* 37 Boolean */ StructField("W12IsContainBanword", DoubleType, false) ::
         /* 38 integer */ StructField("W13NumberSharewords", DoubleType, false) :: /* 39 Integer */ StructField("W14NumberSharewordswithoutStopwords", DoubleType, false) ::
-        /* 40 */ StructField("W15PortionQid", DoubleType, false) :: /* 41 */ StructField("W16PortionLnags", DoubleType, false) :: /*42*/ StructField("W17PortionLinks", DoubleType, false) ::
+        /* 40 */ StructField("W15PortionQid", DoubleType, false) :: /* 41 */ StructField("W16PortionLnags", DoubleType, false) :: /* 42 */ StructField("W17PortionLinks", DoubleType, false) ::
 
         //
         //          // Sentences Features:
-        /* 43 */ StructField("S1CommentTailLength", DoubleType, false) :: /* 44 */ StructField("S2SimikaritySitelinkandLabel", DoubleType, false) :: /*45*/ StructField("S3SimilarityLabelandSitelink", DoubleType, false) :: /*46*/ StructField("S4SimilarityCommentComment", DoubleType, false) ::
+        /* 43 */ StructField("S1CommentTailLength", DoubleType, false) :: /* 44 */ StructField("S2SimikaritySitelinkandLabel", DoubleType, false) ::
+        /* 45 */ StructField("S3SimilarityLabelandSitelink", DoubleType, false) ::
+        /* 46 */ StructField("S4SimilarityCommentComment", DoubleType, false) ::
         //
         //          // Statements Features :
-        /* 47 */ StructField("SS1Property", StringType, false) :: /* 48 */ StructField("SS2DataValue", StringType, false) :: /*49*/ StructField("SS3ItemValue", StringType, false) ::
+        /* 47 */ StructField("SS1Property", StringType, false) :: /* 48 */ StructField("SS2DataValue", StringType, false) :: /* 49 */ StructField("SS3ItemValue", StringType, false) ::
         //
         //
         //        //User Features :
-        /* 50 Boolean */ StructField("U1IsPrivileged", DoubleType, false) :: /* 51 Boolean */ StructField("U2IsBotUser", DoubleType, false) :: /*52 Boolean*/ StructField("U3IsBotuserWithFlaguser", DoubleType, false) ::
-        /*53 Boolean */ StructField("U4IsProperty", DoubleType, false) :: /* 54 Boolean */ StructField("U5IsTranslator", DoubleType, false) :: /*55 Boolean*/ StructField("U6IsRegister", DoubleType, false) ::
-        /* 56 */ StructField("U7IPValue", DoubleType, false) :: /* 57 */ StructField("U8UserID", IntegerType, false) :: /*58*/ StructField("U9HasBirthDate", DoubleType, false) :: /*59*/ StructField("U10HasDeathDate", DoubleType, false) ::
+        /* 50 Boolean */ StructField("U1IsPrivileged", DoubleType, false) :: /* 51 Boolean */ StructField("U2IsBotUser", DoubleType, false) :: /* 52 Boolean */ StructField("U3IsBotuserWithFlaguser", DoubleType, false) ::
+        /* 53 Boolean */ StructField("U4IsProperty", DoubleType, false) :: /* 54 Boolean */ StructField("U5IsTranslator", DoubleType, false) :: /* 55 Boolean */ StructField("U6IsRegister", DoubleType, false) ::
+        /* 56 */ StructField("U7IPValue", DoubleType, false) :: /* 57 */ StructField("U8UserID", IntegerType, false) :: /* 58 */ StructField("U9HasBirthDate", DoubleType, false) ::
+        /* 59 */ StructField("U10HasDeathDate", DoubleType, false) ::
 
         // Items Features :
 
-        /* 60 */ StructField("I1NumberLabels", DoubleType, false) :: /* 61 */ StructField("I2NumberDescription", DoubleType, false) :: /*62*/ StructField("I3NumberAliases", DoubleType, false) :: /*63*/ StructField("I4NumberClaims", DoubleType, false) ::
-        /* 64 */ StructField("I5NumberSitelinks", DoubleType, false) :: /* 65 */ StructField("I6NumberStatement", DoubleType, false) :: /*66*/ StructField("I7NumberReferences", DoubleType, false) :: /*67*/ StructField("I8NumberQualifier", DoubleType, false) ::
-        /* 68 */ StructField("I9NumberQualifierOrder", DoubleType, false) :: /* 69 */ StructField("I10NumberBadges", DoubleType, false) :: /*70*/ StructField("I11ItemTitle", StringType, false) ::
+        /* 60 */ StructField("I1NumberLabels", DoubleType, false) :: /* 61 */ StructField("I2NumberDescription", DoubleType, false) :: /* 62 */ StructField("I3NumberAliases", DoubleType, false) ::
+        /* 63 */ StructField("I4NumberClaims", DoubleType, false) ::
+        /* 64 */ StructField("I5NumberSitelinks", DoubleType, false) :: /* 65 */ StructField("I6NumberStatement", DoubleType, false) :: /* 66 */ StructField("I7NumberReferences", DoubleType, false) ::
+        /* 67 */ StructField("I8NumberQualifier", DoubleType, false) ::
+        /* 68 */ StructField("I9NumberQualifierOrder", DoubleType, false) :: /* 69 */ StructField("I10NumberBadges", DoubleType, false) :: /* 70 */ StructField("I11ItemTitle", StringType, false) ::
 
         // Revision Features:
-        /* 71 */ StructField("R1languageRevision", StringType, false) :: /* 72 */ StructField("R2RevisionLanguageLocal", StringType, false) :: /*73*/ StructField("R3IslatainLanguage", DoubleType, false) ::
-        /* 74 */ StructField("R4JsonLength", DoubleType, false) :: /* 75 */ StructField("R5RevisionAction", StringType, false) :: /*76*/ StructField("R6PrevReviAction", StringType, false) ::
-        /* 77 */ StructField("R7RevisionAccountChange", DoubleType, false) :: /* 78 */ StructField("R8ParRevision", StringType, false) :: /*79*/ StructField("R9RevisionTime", StringType, false) ::
-        /* 80 */ StructField("R10RevisionSize", DoubleType, false) :: /* 81 */ StructField("R11ContentType", StringType, false) :: /*82*/ StructField("R12BytesIncrease", DoubleType, false) ::
-        /* 83 */ StructField("R13TimeSinceLastRevi", DoubleType, false) :: /* 84 */ StructField("R14CommentLength", DoubleType, false) :: /*85*/ StructField("R15RevisionSubaction", StringType, false) ::
+        /* 71 */ StructField("R1languageRevision", StringType, false) :: /* 72 */ StructField("R2RevisionLanguageLocal", StringType, false) :: /* 73 */ StructField("R3IslatainLanguage", DoubleType, false) ::
+        /* 74 */ StructField("R4JsonLength", DoubleType, false) :: /* 75 */ StructField("R5RevisionAction", StringType, false) :: /* 76 */ StructField("R6PrevReviAction", StringType, false) ::
+        /* 77 */ StructField("R7RevisionAccountChange", DoubleType, false) :: /* 78 */ StructField("R8ParRevision", StringType, false) :: /* 79 */ StructField("R9RevisionTime", StringType, false) ::
+        /* 80 */ StructField("R10RevisionSize", DoubleType, false) :: /* 81 */ StructField("R11ContentType", StringType, false) :: /* 82 */ StructField("R12BytesIncrease", DoubleType, false) ::
+        /* 83 */ StructField("R13TimeSinceLastRevi", DoubleType, false) :: /* 84 */ StructField("R14CommentLength", DoubleType, false) :: /* 85 */ StructField("R15RevisionSubaction", StringType, false) ::
         /* 86 */ StructField("R16PrevReviSubaction", StringType, false) ::
 
         Nil)
 
     val rowRDD = Result_all_Features.map(line => line.split(",")).map(e ⇒ Row(e(0).toInt // character feature column
-    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble),
-      e(11).toDouble, e(12).toDouble, e(13).toDouble, e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble, e(21).toDouble, e(22).toDouble, e(23).toDouble, e(24).toDouble, e(25).toDouble //Word Feature column
-      , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble, RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
-      , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble //Statement Features Column: 
-      , e(47), e(48), e(49) // User Features Column:
-      , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble //Item Features column:
-      , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble, e(68).toDouble, e(69).toDouble, "Q" + e(70).toDouble.toInt.toString() //Revision Features Column:
-      , e(71), e(72), e(73).toDouble, e(74).toDouble, e(75), e(76), e(77).toDouble, e(78), e(79), e(80).toDouble, e(81), e(82).toDouble, e(83).toDouble, e(84).toDouble, e(85), e(86)))
+    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble), e(11).toDouble, e(12).toDouble, e(13).toDouble //
+    , e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble, e(21).toDouble, e(22).toDouble, e(23).toDouble, e(24).toDouble, e(25).toDouble // Word Feature column
+    , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble //
+    , RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
+    , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble // Statement Features Column:
+    , e(47), e(48), e(49) // User Features Column:
+    , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble // Item Features column:
+    , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble //
+    , e(68).toDouble, e(69).toDouble, "Q" + e(70).toDouble.toInt.toString() // Revision Features Column:
+    , e(71), e(72), e(73).toDouble, e(74).toDouble, e(75), e(76), e(77).toDouble, e(78), e(79), e(80).toDouble, e(81), e(82).toDouble, e(83).toDouble, e(84).toDouble, e(85), e(86)))
 
     // a.User Frequency:
     // number of revisions a user has contributed
     // val resu= DF_Tags.groupBy("contributorID").agg(count("Rid"))
     DF_Tags.registerTempTable("TagesTable")
-    val ContributorFreq_for_Each_Revision_DF = sqlContext.sql("select contributorID as CIDUSER1, count(Rid) as NumberofRevisionsUserContributed from TagesTable where contributorID !='0' group by contributorID ") //.drop("CIDUSER1")
+    val ContributorFreq_for_Each_Revision_DF = sqlContext
+      .sql("select contributorID as CIDUSER1, count(Rid) as NumberofRevisionsUserContributed from TagesTable where contributorID !='0' group by contributorID ") // .drop("CIDUSER1")
     // ContributorFreq_for_Each_Revision_DF.show()
 
     // b.Cumulated : Number of a unique Item a user has contributed.
-    val CumulatedNumberof_uniqueItemsForUser_DF = sqlContext.sql("select contributorID as CIDUSER2,  COUNT(DISTINCT itemid) as NumberofUniqueItemsUseredit from TagesTable where contributorID !='0' group by contributorID") //.drop("CIDUSER2")
+    val CumulatedNumberof_uniqueItemsForUser_DF = sqlContext
+      .sql("select contributorID as CIDUSER2,  COUNT(DISTINCT itemid) as NumberofUniqueItemsUseredit from TagesTable where contributorID !='0' group by contributorID") // .drop("CIDUSER2")
     // CumulatedNumberof_uniqueItemsForUser_DF.show()
 
     // 1.Item Frequency:
     // number of revisions an Item has
-    val ItemFrequ_DF = sqlContext.sql("select itemid, count(Rid) as NumberRevisionItemHas from TagesTable  group by itemid")
+    val ItemFrequ_DF = sqlContext
+      .sql("select itemid, count(Rid) as NumberRevisionItemHas from TagesTable  group by itemid")
     // ItemFrequ_DF.show()
 
     // 2. Cumulate number of unique users have edited the Item : Did not consider the users IP. Contributor is an IP or Name. we consider name
@@ -890,7 +913,8 @@ class VandalismDetection extends Serializable {
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
-      .load("hdfs://localhost:9000/mydata/Meta.csv").select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE", "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
+      .load("hdfs://localhost:9000/mydata/Meta.csv").select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE",
+        "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
     // df_GeoInf.show()
 
     val df_Truth = sqlContext.read
@@ -910,10 +934,12 @@ class VandalismDetection extends Serializable {
 
     // For String Column, We fill the Null values by "NA":
 
-    var Fill_Missing_Final_All_Features = Final_All_Features.na.fill("NA", Seq("USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE", "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")).cache()
+    var Fill_Missing_Final_All_Features = Final_All_Features.na.fill("NA", Seq("USER_COUNTRY_CODE", "USER_CONTINENT_CODE",
+      "USER_TIME_ZONE", "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")).cache()
 
     // For Integer Frequency  Column, We fill the Null values by 0:
-    Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.na.fill(0, Seq("FreqItem", "NumberUniqUserEditItem", "NumberRevisionItemHas", "NumberofUniqueItemsUseredit", "NumberofRevisionsUserContributed", "REVISION_SESSION_ID")).cache()
+    Fill_Missing_Final_All_Features = Fill_Missing_Final_All_Features.na.fill(0, Seq("FreqItem", "NumberUniqUserEditItem", "NumberRevisionItemHas",
+      "NumberofUniqueItemsUseredit", "NumberofRevisionsUserContributed", "REVISION_SESSION_ID")).cache()
     // Fill_Missing_Final_All_Features.show()
 
     val BoolToDoubleUDF = udf { (BoolAsString: String) => if (BoolAsString == "T") 1.0 else 0.0 }
@@ -932,7 +958,7 @@ class VandalismDetection extends Serializable {
 
     // ===========================================================================Caharacter Features : Double , Integer Features ====================================================================================
     // Double Ratio:  For Ratio Double column, Fill -1 value by Median:Character Features + Ratio of Word Features :
-    var Samples = Fill_Missing_Final_All_Features.sample(false, 0.001).cache() //.where($"S2SimikaritySitelinkandLabel">0.0 || $"S3SimilarityLabelandSitelink">0.0 || $"S4SimilarityCommentComment">0.0)
+    var Samples = Fill_Missing_Final_All_Features.sample(false, 0.001).cache() // .where($"S2SimikaritySitelinkandLabel">0.0 || $"S3SimilarityLabelandSitelink">0.0 || $"S4SimilarityCommentComment">0.0)
     Samples.registerTempTable("df")
 
     val Query = "select " +
@@ -1025,7 +1051,7 @@ class VandalismDetection extends Serializable {
     val df18 = df17.withColumn("FinalC18telugratio", lkpUDF18(col("C18telugratio"))) // .drop("C18telugratio").cache()
     // df17.unpersist()
     val df19 = df18.withColumn("FinalC19symbolratio", lkpUDF19(col("C19symbolratio"))) // .drop("C19symbolratio").cache()
-    //df18.unpersist()
+    // df18.unpersist()
     val df20 = df19.withColumn("FinalC20alpharatio", lkpUDF20(col("C20alpharatio"))) // .drop("C20alpharatio").cache()
     // df19.unpersist()
     val df21 = df20.withColumn("FinalC21visibleratio", lkpUDF21(col("C21visibleratio"))) // .drop("C21visibleratio").cache()
@@ -1050,12 +1076,12 @@ class VandalismDetection extends Serializable {
     val lkpUDFW8 = udf { (i: Double) => if (i == 0) Median(28).toString().toDouble else i }
 
     // 1.
-    val df26 = df25.withColumn("FinalW1languagewordratio", lkpUDFW1(col("W1languagewordratio"))) //.drop("W1languagewordratio").cache()
+    val df26 = df25.withColumn("FinalW1languagewordratio", lkpUDFW1(col("W1languagewordratio"))) // .drop("W1languagewordratio").cache()
 
     // 2.Boolean(Double) IsContainLanguageWord
 
     // 3.
-    val df27 = df26.withColumn("FinalW3lowercaseratio", lkpUDFW3(col("W3lowercaseratio"))) //.drop("W3lowercaseratio").cache()
+    val df27 = df26.withColumn("FinalW3lowercaseratio", lkpUDFW3(col("W3lowercaseratio"))) // .drop("W3lowercaseratio").cache()
     // df26.unpersist()
 
     // 4. Integer " Mean:
@@ -1066,13 +1092,13 @@ class VandalismDetection extends Serializable {
 
     // 5. Boolean (Double ) W5IscontainURL
     // 6.
-    val df29 = df28.withColumn("FinalW6badwordratio", lkpUDFW6(col("W6badwordratio"))) //.drop("W6badwordratio").cache()
+    val df29 = df28.withColumn("FinalW6badwordratio", lkpUDFW6(col("W6badwordratio"))) // .drop("W6badwordratio").cache()
 
     // 7.
-    val df30 = df29.withColumn("FinalW7uppercaseratio", lkpUDFW7(col("W7uppercaseratio"))) //.drop("W7uppercaseratio").cache()
+    val df30 = df29.withColumn("FinalW7uppercaseratio", lkpUDFW7(col("W7uppercaseratio"))) // .drop("W7uppercaseratio").cache()
 
     // 8.
-    val df31 = df30.withColumn("FinalW8banwordratio", lkpUDFW8(col("W8banwordratio"))) //.drop("W8banwordratio").cache()
+    val df31 = df30.withColumn("FinalW8banwordratio", lkpUDFW8(col("W8banwordratio"))) // .drop("W8banwordratio").cache()
 
     // 9.FemalFirst       Boolean(Double)
     // 10.Male First      Boolean(Double)
@@ -1309,8 +1335,8 @@ class VandalismDetection extends Serializable {
 
   }
 
-  //===========================================================================================================================================
-  //=================================================Functions Part=============================================================================
+  // ===========================================================================================================================================
+  // =================================================Functions Part=============================================================================
 
   def Ration(va: Double, median: Double): Double = {
 
@@ -1965,7 +1991,7 @@ class VandalismDetection extends Serializable {
 
     }
 
-    //9. Features depending on  claim
+    // 9. Features depending on  claim
     var Qualifier_String_order = row(12).toString() // from claim
     var NumberOfQualifier_order = 0.0
     if (Qualifier_String_order != "[]") {
@@ -2128,7 +2154,8 @@ class VandalismDetection extends Serializable {
 
     // 10. Revision Size:------------------------------------------------------------------------------------------------
 
-    var RevisionBody = row(0).toString() + row(2).toString() + row(3).toString() + row(4).toString() + row(8).toString() + row(14).toString() + row(15).toString() + row(16).toString()
+    var RevisionBody = row(0).toString() + row(2).toString() + row(3).toString() + row(4).toString() +
+      row(8).toString() + row(14).toString() + row(15).toString() + row(16).toString()
     if (row(5).toString() != "0") {
 
       RevisionBody = RevisionBody + row(5).toString()
@@ -2157,7 +2184,8 @@ class VandalismDetection extends Serializable {
     var PreviRevision = ""
 
     // For Current Revision
-    CurrentRevision = row(0).toString() + row(2).toString() + row(3).toString() + row(4).toString() + row(8).toString() + row(14).toString() + row(15).toString() + row(16).toString()
+    CurrentRevision = row(0).toString() + row(2).toString() + row(3).toString() + row(4).toString() +
+      row(8).toString() + row(14).toString() + row(15).toString() + row(16).toString()
     if (row(5).toString() != "0") {
       CurrentRevision = CurrentRevision.trim() + row(5).toString()
     } else {
@@ -2167,10 +2195,12 @@ class VandalismDetection extends Serializable {
     // For Previous Revision :
     if (row(17) != null && row(19) != null && row(20) != null && row(21) != null && row(25) != null && row(31) != null && row(32) != null && row(33) != null) {
       if (row(22) != null && row(22).toString() != "0") {
-        var PreviRevision = row(17).toString() + row(19).toString() + row(20).toString() + row(21).toString() + row(25).toString() + row(31).toString() + row(32).toString() + row(33).toString() + row(22).toString()
+        var PreviRevision = row(17).toString() + row(19).toString() + row(20).toString() + row(21).toString() +
+          row(25).toString() + row(31).toString() + row(32).toString() + row(33).toString() + row(22).toString()
 
       } else if (row(23) != null && row(24) != null) {
-        var PreviRevision = row(17).toString() + row(19).toString() + row(20).toString() + row(21).toString() + row(25).toString() + row(31).toString() + row(32).toString() + row(33).toString() + row(23).toString() + row(24).toString()
+        var PreviRevision = row(17).toString() + row(19).toString() + row(20).toString() + row(21).toString() +
+          row(25).toString() + row(31).toString() + row(32).toString() + row(33).toString() + row(23).toString() + row(24).toString()
       } else {
 
         PreviRevision = null

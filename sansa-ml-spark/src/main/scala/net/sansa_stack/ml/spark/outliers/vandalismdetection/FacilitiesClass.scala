@@ -23,9 +23,9 @@ class FacilitiesClass extends Serializable {
     // Create an Encoded Schema in a String Format:
     val schemaString = "Subject Predicate Object"
     // Generate schema:
-    val schema = StructType(schemaString.split(" ").map(fieldName ⇒ StructField(fieldName, StringType, true)))
+    val schema = StructType(schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, true)))
     // Apply Transformation for Reading Data from Text File
-    val rowRDD = rdd.map(_.split(" ")).map(e ⇒ Row(e(0), e(1), e(2)))
+    val rowRDD = rdd.map(_.split(" ")).map(e => Row(e(0), e(1), e(2)))
     // Apply RowRDD in Row Data based on Schema:
     val RDFTRIPLE = sqlContext.createDataFrame(rowRDD, schema)
     // Store DataFrame Data into Table
@@ -42,9 +42,9 @@ class FacilitiesClass extends Serializable {
     // Create an Encoded Schema in a String Format:
     val schemaString = "Subject Predicate Object"
     // Generate schema:
-    val schema = StructType(schemaString.split(" ").map(fieldName ⇒ StructField(fieldName, StringType, true)))
+    val schema = StructType(schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, true)))
     // Apply Transformation for Reading Data from Text File
-    val rowRDD = rdd.map(_.split("><")).map(e ⇒ Row(e(0), e(1), e(2)))
+    val rowRDD = rdd.map(_.split("><")).map(e => Row(e(0), e(1), e(2)))
     // Apply RowRDD in Row Data based on Schema:
     val RDFTRIPLE = sqlContext.createDataFrame(rowRDD, schema)
     // Store DataFrame Data into Table
@@ -61,9 +61,9 @@ class FacilitiesClass extends Serializable {
     // Create an Encoded Schema in a String Format:
     val schemaString = "Subject Predicate Object"
     // Generate schema:
-    val schema = StructType(schemaString.split(" ").map(fieldName ⇒ StructField(fieldName, StringType, true)))
+    val schema = StructType(schemaString.split(" ").map(fieldName => StructField(fieldName, StringType, true)))
     // Apply Transformation for Reading Data from Text File
-    val rowRDD = rdd.map(_.split(",")).map(e ⇒ Row(e(0), e(1), e(2)))
+    val rowRDD = rdd.map(_.split(",")).map(e => Row(e(0), e(1), e(2)))
     // Apply RowRDD in Row Data based on Schema:
     val RDFTRIPLE = sqlContext.createDataFrame(rowRDD, schema)
     // Store DataFrame Data into Table
