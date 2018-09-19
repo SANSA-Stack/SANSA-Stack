@@ -6,12 +6,13 @@ import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import net.sansa_stack.inference.spark.utils.RDDUtils.RDDOps
 import net.sansa_stack.inference.spark.utils.RDFSSchemaExtractor
 import net.sansa_stack.inference.utils.CollectionUtils
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
 import org.slf4j.LoggerFactory
-import scala.collection.mutable
 
+import scala.collection.mutable
 import org.apache.spark.rdd.RDD
 
 /**
@@ -52,27 +53,27 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
       * rdfs11 xxx rdfs:subClassOf yyy .
       * yyy rdfs:subClassOf zzz . xxx rdfs:subClassOf zzz .
      */
-    val subClassOfTriples: RDD[Triple] = extractTriples(schemaTriples, RDFS.subClassOf.asNode()).cache() // extract rdfs:subClassOf triples
-    val subClassOfTriplesTrans: RDD[Triple] = computeTransitiveClosure(subClassOfTriples, RDFS.subClassOf.asNode()).setName("rdfs11")// mutable.Set()++subClassOfTriples.collect())
+    val subClassOfTriples = extractTriples(schemaTriples, RDFS.subClassOf.asNode()).cache() // extract rdfs:subClassOf triples
+    val subClassOfTriplesTrans = computeTransitiveClosure(subClassOfTriples, RDFS.subClassOf.asNode()).setName("rdfs11")// mutable.Set()++subClassOfTriples.collect())
 
     /*
         rdfs5 xxx rdfs:subPropertyOf yyy .
               yyy rdfs:subPropertyOf zzz . xxx rdfs:subPropertyOf zzz .
      */
-    val subPropertyOfTriples: RDD[Triple] = extractTriples(schemaTriples, RDFS.subPropertyOf.asNode()).cache() // extract rdfs:subPropertyOf triples
+    val subPropertyOfTriples = extractTriples(schemaTriples, RDFS.subPropertyOf.asNode()).cache() // extract rdfs:subPropertyOf triples
     val subPropertyOfTriplesTrans = computeTransitiveClosure(subPropertyOfTriples, RDFS.subPropertyOf.asNode()).setName("rdfs5")// extractTriples(mutable.Set()++subPropertyOfTriples.collect(), RDFS.subPropertyOf.getURI))
 
     // a map structure should be more efficient
-    val subClassOfMap = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.s, t.o)).collect)
+    val subClassOfMap: Map[Node, Set[Node]] = CollectionUtils.toMultiMap(subClassOfTriplesTrans.map(t => (t.s, t.o)).collect)
     val subPropertyMap = CollectionUtils.toMultiMap(subPropertyOfTriplesTrans.map(t => (t.s, t.o)).collect)
 
     // distribute the schema data structures by means of shared variables
     // the assumption here is that the schema is usually much smaller than the instance data
-    val subClassOfMapBC = sc.broadcast(subClassOfMap)
+    val subClassOfMapBC: Broadcast[Map[Node, Set[Node]]] = sc.broadcast(subClassOfMap)
     val subPropertyMapBC = sc.broadcast(subPropertyMap)
 
     // split by rdf:type
-    val split = triplesRDD.partitionBy(t => t.p == RDF.`type`.asNode)
+    val split: (RDD[Triple], RDD[Triple]) = triplesRDD.partitionBy(t => t.p == RDF.`type`.asNode)
     var typeTriples = split._1
     typeTriples.setName("rdf:type triples")
     var otherTriples = split._2
@@ -92,8 +93,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
     val triplesRDFS7 =
       otherTriples // all triples (s p1 o)
         .filter(t => subPropertyMapBC.value.contains(t.p)) // such that p1 has a super property p2
-        .flatMap(t => subPropertyMapBC.value(t.p)
-        .map(supProp => Triple.create(t.s, supProp, t.o))) // create triple (s p2 o)
+        .flatMap(t => subPropertyMapBC.value(t.p).map(supProp => Triple.create(t.s, supProp, t.o))) // create triple (s p2 o)
         .setName("rdfs7")
 
     // add triples
@@ -106,7 +106,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Tr
           yyy aaa zzz .           yyy rdf:type xxx .
      */
     val domainTriples = extractTriples(schemaTriples, RDFS.domain.asNode())
-    val domainMap = domainTriples.map(t => (t.s, t.o)).collect.toMap
+    val domainMap: Map[Node, Node] = domainTriples.map(t => (t.s, t.o)).collect.toMap
     val domainMapBC = sc.broadcast(domainMap)
 
     val triplesRDFS2 =
