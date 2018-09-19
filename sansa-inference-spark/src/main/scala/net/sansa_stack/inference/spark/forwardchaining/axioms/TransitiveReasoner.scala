@@ -1,7 +1,5 @@
 package net.sansa_stack.inference.spark.forwardchaining.axioms
 
-// import org.apache.spark.SparkContext
-import scala.collection.JavaConverters._
 import org.apache.spark.rdd.RDD
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
