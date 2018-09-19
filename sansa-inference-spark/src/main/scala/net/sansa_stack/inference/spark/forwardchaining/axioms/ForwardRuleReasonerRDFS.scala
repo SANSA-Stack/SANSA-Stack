@@ -181,7 +181,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
       .union(subClassOfAxiomsTrans)
       .distinct()
 
-    val subClassMap: Map[OWLClassExpression, Set[OWLClassExpression]] = CollectionUtils
+    val subClassMap = CollectionUtils
       .toMultiMap(subClassOfAxiomsTrans.asInstanceOf[RDD[OWLSubClassOfAxiom]]
       .map(a => (a.getSubClass, a.getSuperClass)).collect())
 
@@ -288,8 +288,8 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
       .map(a => (a.getProperty, a.getRange)).collect().toMap
     val dataRangeMapBC: Broadcast[Map[OWLDataPropertyExpression, OWLDataRange]] = sc.broadcast(dataRangeMap)
 
-    println("\ndataRangeMap\n")
-    dataRangeMap.take(10).foreach(println(_))
+//    println("\ndataRangeMap\n")
+//    dataRangeMap.take(10).foreach(println(_))
 
     val RDFS3a = dataPropAsserAxiom.asInstanceOf[RDD[OWLDataPropertyAssertionAxiom]]
       .filter(a => dataRangeMapBC.value.contains(a.getProperty) && !a.getObject.isLiteral)  // Add checking for non-literals
@@ -304,8 +304,8 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
       .map(a => (a.getProperty, a.getRange)).collect().toMap
     val objRangeMapBC: Broadcast[Map[OWLObjectPropertyExpression, OWLClassExpression]] = sc.broadcast(objRangeMap)
 
-    println("\nobjRangeMap\n")
-    objRangeMap.take(10).foreach(println(_))
+//    println("\nobjRangeMap\n")
+//    objRangeMap.take(10).foreach(println(_))
 
     val RDFS3b = objPropAsserAxiom.asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
       .filter(a => objRangeMapBC.value.contains(a.getProperty))  // Add checking for non-literals
@@ -315,16 +315,47 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
     println("\n RDFS3b results \n----------------\n")
     RDFS3b.take(RDFS3b.count().toInt).foreach(println(_))
 
-//
-//    // rdfs2 and rdfs3 generated rdf:type triples which we'll add to the existing ones
-//    val triples23 = triplesRDFS2.union(triplesRDFS3).setName("rdfs2 + rdfs3")
-//
-//    // all rdf:type triples here as intermediate result
-//    typeTriples = typeTriples.union(triples23).setName("rdf:type + rdfs2 + rdfs3")
+    // rdfs2 and rdf3 generate classAssertionAxiom which we will add to typeAxioms
+    val axiome23ab = RDFS2a.union(RDFS2b).union(RDFS3a)
+      .union(RDFS3b).distinct(parallelism)
+      .asInstanceOf[RDD[OWLAxiom]]
+      .setName("rdfs2a + rdfs2b + rdfs3a + rdfs3b")
+
+    typeAxioms = typeAxioms.union(axiome23ab).distinct.setName("classAssertion + rdfs2ab + rdfs3ab")
 
 
+    // 4. SubClass inheritance according to rdfs9
+    /*   rule 6
+
+       rdfs9: x rdfs:subClassOf y . z rdf:type x -->  z rdf:type y .
+    */
+
+//    println("\nsubClassMap\n")
+//    subClassMap.take(10).foreach(println(_))
+//
+//    println("\ntyped axioms\n")
+//    typeAxioms.take(10).foreach(println(_))
+
+    val RDFs9 = typeAxioms.asInstanceOf[RDD[OWLClassAssertionAxiom]]
+      .filter(a => subClassOfBC.value.contains(a.getClassExpression))
+      .flatMap(a => subClassOfBC.value(a.getClassExpression).map(s => dataFactory.getOWLClassAssertionAxiom(s, a.getIndividual)))
+      .setName("rdfs9")
+
+    println("\n RDFs9 results \n----------------\n")
+    RDFs9.take(RDFs9.count().toInt).foreach(println(_))
+
+    typeAxioms = typeAxioms.union(RDFs9.asInstanceOf[RDD[OWLAxiom]])
+
+    // merge all the resulting axioms
+    allAxioms = sc.union(Seq(SPOAxioms, typeAxioms, sameAsAxioms))
+        .distinct(parallelism)
+        .setName("typeAxioms + sameAsAxioms + SPOAxioms")
+
+//    println("\nall axioms\n")
+//    allAxioms.take(allAxioms.count.toInt).foreach(println(_))
 
   }
+
   def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {
     axiom.filter(a => a.getAxiomType.equals(T))
   }
