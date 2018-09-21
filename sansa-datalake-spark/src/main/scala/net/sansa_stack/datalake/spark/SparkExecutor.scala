@@ -13,7 +13,7 @@ import scala.collection.mutable
 import scala.collection.mutable.{HashMap, ListBuffer, Set}
 
 import org.sparkall.Helpers._
-class SparkExecutor(sparkURI: String, mappingsFile: String) extends QueryExecutor[DataFrame] {
+class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExecutor[DataFrame] {
 
     def getType() = {
         val dataframe : DataFrame = null
@@ -34,7 +34,9 @@ class SparkExecutor(sparkURI: String, mappingsFile: String) extends QueryExecuto
                joinPairs: Map[(String,String), String]
         ): (DataFrame, Integer) = {
 
-        val spark = SparkSession.builder.master(sparkURI).appName("Sparkall").getOrCreate;
+        // SANSA-integration: obtain spark from constructor
+        //val spark = SparkSession.builder.master(sparkURI).appName("Sparkall").getOrCreate;
+
         //TODO: get from the function if there is a relevant data source that requires setting config to SparkSession
 
         spark.sparkContext.setLogLevel("ERROR")

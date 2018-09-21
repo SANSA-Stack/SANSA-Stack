@@ -14,7 +14,7 @@ class Run[A] (executor: QueryExecutor[A]) {
 
     private var finalDataSet: A = _
 
-    def application(queryFile : String, mappingsFile: String, configFile: String, executorID: String) {
+    def application(queryFile : String, mappingsFile: String, configFile: String) : DataFrame = {
 
         Logger.getLogger("ac.biu.nlp.nlp.engineml").setLevel(Level.OFF)
         Logger.getLogger("org.BIU.utils.logging.ExperimentLogger").setLevel(Level.OFF)
@@ -283,5 +283,7 @@ class Run[A] (executor: QueryExecutor[A]) {
         val timeTaken = stopwatch.getTime
 
         println(s"timeTaken: $timeTaken")
+
+        finalDataSet
     }
 }
