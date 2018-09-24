@@ -5,3 +5,8 @@
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
 A library to query heterogeneous data source uniformly using SPARQL
+
+
+## How to Contribute
+We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
+
