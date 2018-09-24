@@ -1,4 +1,4 @@
-package net.sansa_stack.datalake.spark
+package net.sansa_stack.datalake.spark.utils
 
 import java.util
 
@@ -7,15 +7,10 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.util.FileManager
 
 import scala.collection.mutable
-//import org.mongodb.scala._
 
 /**
   * Created by mmami on 26.07.17.
   */
-class Helpers() {
-
-}
-
 object Helpers {
     def invertMap(prolog: util.Map[String, String]): Map[String, String] = {
         var star_df : Map[String, String] = Map.empty

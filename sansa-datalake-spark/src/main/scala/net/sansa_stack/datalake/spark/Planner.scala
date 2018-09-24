@@ -3,7 +3,7 @@ package net.sansa_stack.datalake.spark
 import java.util
 
 import com.google.common.collect.ArrayListMultimap
-import net.sansa_stack.rdf.spark.utils.Helpers._
+import net.sansa_stack.datalake.spark.utils.Helpers._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, Reads, __}
 

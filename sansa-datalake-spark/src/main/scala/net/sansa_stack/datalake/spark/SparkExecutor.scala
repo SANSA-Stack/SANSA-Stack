@@ -12,7 +12,8 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, ListBuffer, Set}
 
-import org.sparkall.Helpers._
+import net.sansa_stack.datalake.spark.utils.Helpers._
+
 class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExecutor[DataFrame] {
 
     def getType() = {

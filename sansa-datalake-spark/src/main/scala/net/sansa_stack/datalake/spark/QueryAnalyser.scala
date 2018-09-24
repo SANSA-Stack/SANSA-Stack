@@ -9,7 +9,7 @@ import org.apache.jena.sparql.syntax.{ElementFilter, ElementVisitorBase, Element
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
 import scala.collection.JavaConversions._
-import net.sansa_stack.rdf.spark.utils.Helpers._
+import net.sansa_stack.datalake.spark.utils.Helpers._
 
 /**
   * Created by mmami on 05.07.17.
