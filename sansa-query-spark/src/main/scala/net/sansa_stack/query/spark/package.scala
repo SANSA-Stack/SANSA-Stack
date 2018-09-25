@@ -6,7 +6,6 @@ import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionSpark, SparqlifyUtils3 }
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-
 import org.aksw.jena_sparql_api.core.ResultSetCloseable
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.apache.jena.graph.Triple
@@ -110,7 +109,6 @@ package object query {
      * Querying a Data Lake.
      */
     def sparql(sparqlQuery: String, mappingsFile: String, configFile: String): DataFrame = {
-      
       DataLakeEngine.run(sparqlQuery, mappingsFile, configFile, spark)
     }
   }

@@ -1,8 +1,7 @@
 package net.sansa_stack.query.spark.datalake
 
+import net.sansa_stack.datalake.spark.{Run, SparkExecutor}
 import org.apache.spark.sql.{ DataFrame, SparkSession }
-import net.sansa_stack.datalake.spark.SparkExecutor
-import net.sansa_stack.datalake.spark.Run
 
 object DataLakeEngine {
 
