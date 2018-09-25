@@ -39,6 +39,11 @@
 			<version>1.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+		</dependency>
+
 		<!-- Override transitive tdb version via litmus -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>

@@ -234,6 +234,12 @@
 			</dependency>
 
 			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-graphx_${scala.binary.version}</artifactId>
 				<version>${spark.version}</version>
