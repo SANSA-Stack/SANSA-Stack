@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.clustering
+package net.sansa_stack.ml.spark.clustering.algorithms
 
 import java.io.StringWriter
 
