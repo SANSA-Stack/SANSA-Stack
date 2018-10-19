@@ -102,13 +102,12 @@ package object query {
 
   }
 
-  implicit class DataLake(triples: DataFrame) extends Serializable {
+  implicit class DataLake(spark: SparkSession) extends Serializable {
 
-    val spark = SparkSession.builder().getOrCreate()
     /**
      * Querying a Data Lake.
      */
-    def sparql(sparqlQuery: String, mappingsFile: String, configFile: String): DataFrame = {
+    def sparqlDL(sparqlQuery: String, mappingsFile: String, configFile: String): DataFrame = {
       DataLakeEngine.run(sparqlQuery, mappingsFile, configFile, spark)
     }
   }
