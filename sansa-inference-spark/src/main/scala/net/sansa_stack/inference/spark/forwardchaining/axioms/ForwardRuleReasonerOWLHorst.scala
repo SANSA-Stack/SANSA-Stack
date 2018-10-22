@@ -226,7 +226,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
         .map(a => (a.getFirstProperty, a.getSecondProperty))
         .collect().toMap)
 
-    val swapInverseObjPropBC = sc.broadcast(inverseObjPropBC.value.map(_.swap))
+    // val swapInverseObjPropBC = sc.broadcast(inverseObjPropBC.value.map(_.swap))
 
   }
 
