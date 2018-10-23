@@ -14,6 +14,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
+import org.apache.jena.vocabulary.OWL2
 
 class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) extends TransitiveReasoner{
 
@@ -226,8 +227,15 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
         .map(a => (a.getFirstProperty, a.getSecondProperty))
         .collect().toMap)
 
-    // val swapInverseObjPropBC = sc.broadcast(inverseObjPropBC.value.map(_.swap))
+    val swapInverseObjPropBC = sc.broadcast(inverseObjPropBC.value.map(_.swap))
 
+    // More OWL vocabulary used in property restrictions
+
+//    val onPropertyBC = sc.broadcast(
+//      extractAxiom(axiomsRDD, AxiomType.)
+//        .asInstanceOf[RDD[OWLInverseObjectPropertiesAxiom]]
+//        .map(a => (a.getFirstProperty, a.getSecondProperty))
+//        .collect().toMap)
   }
 
   def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {

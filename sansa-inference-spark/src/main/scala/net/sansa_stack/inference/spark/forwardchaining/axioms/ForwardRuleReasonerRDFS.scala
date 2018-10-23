@@ -387,7 +387,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
   }
 }
 
-//object ForwardRuleReasonerRDFS{
+// object ForwardRuleReasonerRDFS{
 //
 //  def main(args: Array[String]): Unit = {
 //
@@ -415,4 +415,4 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
 //
 //    sparkSession.stop
 //  }
-//}
+// }
