@@ -1,12 +1,14 @@
 package net.sansa_stack.ml.spark.clustering.utils
 
-import net.sansa_stack.ml.spark.clustering.datatypes.appConfig
-import net.sansa_stack.rdf.spark.io.NTripleReader
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-
 import scala.collection.mutable.ArrayBuffer
+
+import net.sansa_stack.ml.spark.clustering.datatypes.appConfig
+import net.sansa_stack.rdf.spark.io.NTripleReader
+
+
 
 class dataFiltering(val spark: SparkSession, val conf: appConfig) extends Serializable {
 
@@ -32,7 +34,7 @@ class dataFiltering(val spark: SparkSession, val conf: appConfig) extends Serial
     // get RDD[Triples] with subject in Array[subjects]
     val viennaTriples = subjectsRDD.join(dataRDDPair).map(f => f._2._2).persist()
     // find filtered Triples with prediction category, and get their object => RDD[Object]
-    val viennaCatgoriesObjects = viennaTriples.filter(f => f.getPredicate.getURI.equals("http://slipo.eu/def#category")).map(f => f.getObject.getURI).distinct().persist()
+    val viennaCatgoriesObjects = viennaTriples.filter(f => f.getPredicate.getURI.equals("http://example.org/def#category")).map(f => f.getObject.getURI).distinct().persist()
     // RDD[Object] => RDD[(Object, Object)]
     val viennaPoiCategoriesRDD = viennaCatgoriesObjects.map(f => (f, f)).persist()
     // RDD[(Object, Object)] => RDD[Triples], where Object is Subject in Triples
@@ -50,7 +52,7 @@ class dataFiltering(val spark: SparkSession, val conf: appConfig) extends Serial
     */
   def createSubjects(poiID: Long): ArrayBuffer[String] = {
     val subjects = ArrayBuffer[String]()
-    val id = "http://slipo.eu/id/poi/".concat(poiID.toString)
+    val id = "http://example.org/id/poi/".concat(poiID.toString)
     subjects.+=(id)
     subjects.+=(id.concat("/address"))
     subjects.+=(id.concat("/phone"))

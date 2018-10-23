@@ -27,3 +27,4 @@ case class Datasets(input: String,
 
 case class appConfig(dataset: Datasets, clustering: Clustering, spark: Spark)
 
+

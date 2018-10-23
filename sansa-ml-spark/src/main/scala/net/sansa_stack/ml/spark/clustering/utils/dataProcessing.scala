@@ -19,8 +19,8 @@ import net.sansa_stack.rdf.spark.io.NTripleReader
   */
 class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializable {
 
-  // val dataRDD: RDD[Triple] = NTripleReader.load(spark, conf.getString("slipo.data.input")).persist()
-  val dataRDD: RDD[Triple] = loadNTriple(conf.getString("slipo.data.input"))
+  // val dataRDD: RDD[Triple] = NTripleReader.load(spark, conf.getString("sansa.data.input")).persist()
+  val dataRDD: RDD[Triple] = loadNTriple(conf.getString("sansa.data.input"))
 
   // var poiCoordinates: RDD[(Long, Coordinate)] = this.getPOICoordinates(16.192851, 16.593533, 48.104194, 48.316388).sample(withReplacement = false, fraction = 0.01, seed = 0)
   var poiCoordinates: RDD[(Long, Coordinate)] = this.getPOICoordinates
@@ -81,8 +81,8 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
   def getPOICoordinates: RDD[(Long, Coordinate)] = {
     // get the coordinates of pois
     val pattern = "POINT(.+ .+)".r
-    val poiCoordinatesString = dataRDD.filter(x => x.getPredicate.toString().equalsIgnoreCase(conf.getString("slipo.data.coordinatesPredicate")))
-      .map(x => (x.getSubject.toString().replace(conf.getString("slipo.data.poiPrefix"), "").replace("/geometry", "").toLong,
+    val poiCoordinatesString = dataRDD.filter(x => x.getPredicate.toString().equalsIgnoreCase(conf.getString("sansa.data.coordinatesPredicate")))
+      .map(x => (x.getSubject.toString().replace(conf.getString("sansa.data.poiPrefix"), "").replace("/geometry", "").toLong,
         pattern.findFirstIn(x.getObject.toString()).head.replace("POINT", "")
           .replace("^^http://www.opengis.net/ont/geosparql#wktLiteral", "").replaceAll("^\"|\"$", "")))
     // transform to Coordinate object
@@ -108,10 +108,10 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     * @return (poi, category_id)
     */
   def getPOIFlatCategoryId: RDD[(Long, Long)] = {
-    val poiFlatCategories = dataRDD.filter(x => x.getPredicate.toString().equalsIgnoreCase(conf.getString("slipo.data.categoryPOI")))
+    val poiFlatCategories = dataRDD.filter(x => x.getPredicate.toString().equalsIgnoreCase(conf.getString("sansa.data.categoryPOI")))
     poiFlatCategories.map(x => (
-      x.getSubject.toString().replace(conf.getString("slipo.data.poiPrefix"), "").toLong,
-      x.getObject.toString().replace(conf.getString("slipo.data.termPrefix"), "").toLong)
+      x.getSubject.toString().replace(conf.getString("sansa.data.poiPrefix"), "").toLong,
+      x.getObject.toString().replace(conf.getString("sansa.data.termPrefix"), "").toLong)
     )
   }
 
@@ -135,10 +135,10 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     */
   def getCategoryValues: RDD[(Long, Categories)] = {
     // get category id(s)
-    val categoryTriples = dataRDD.filter(x => x.getPredicate.toString().equalsIgnoreCase(conf.getString("slipo.data.termValueUri")))
+    val categoryTriples = dataRDD.filter(x => x.getPredicate.toString().equalsIgnoreCase(conf.getString("sansa.data.termValueUri")))
     // get category id and it's corresponding values
     val categoriesIdValues = categoryTriples.map(x => (
-      x.getSubject.toString().replace(conf.getString("slipo.data.termPrefix"), "").toLong,
+      x.getSubject.toString().replace(conf.getString("sansa.data.termPrefix"), "").toLong,
       x.getObject.toString().replaceAll("\"", "")))
     // group by id and put all values of category to a set
     categoriesIdValues.groupByKey().map(x => (x._1, Categories(scala.collection.mutable.Set(x._2.toList: _*))))
@@ -164,11 +164,11 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     println("rating")
     println(yelpPOIRating.count())
     val yelpPOICategoryMapped = yelpPOICategory.map(triple => (
-      triple.getSubject.toString().replace(conf.getString("slipo.data.poiPrefix"), "").toLong,
+      triple.getSubject.toString().replace(conf.getString("sansa.data.poiPrefix"), "").toLong,
       triple.getObject.toString()
     ))
     val yelpPOIRatingMapped = yelpPOIRating.map(triple => (
-      triple.getSubject.toString().replace(conf.getString("slipo.data.poiPrefix"), "").toLong,
+      triple.getSubject.toString().replace(conf.getString("sansa.data.poiPrefix"), "").toLong,
       triple.getObject.getLiteralValue.toString.toDouble
       ))
     yelpPOICategoryMapped.groupByKey().join(yelpPOIRatingMapped).map(x => (x._1, (Categories(scala.collection.mutable.Set(x._2._1.toList: _*)), x._2._2)))

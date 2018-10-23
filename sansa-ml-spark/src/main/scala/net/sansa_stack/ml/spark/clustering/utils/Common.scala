@@ -2,11 +2,12 @@ package net.sansa_stack.ml.spark.clustering.utils
 
 import java.io.PrintWriter
 
-import net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, Poi}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization
+
+import net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, Poi}
 
 object Common {
 

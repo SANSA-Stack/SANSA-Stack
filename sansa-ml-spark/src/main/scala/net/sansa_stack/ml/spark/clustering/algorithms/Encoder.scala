@@ -1,8 +1,10 @@
 package net.sansa_stack.ml.spark.clustering.algorithms
+
+import org.apache.spark.ml.feature.{ VectorAssembler, Word2Vec }
 import org.apache.spark.rdd._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import org.apache.spark.ml.feature.{ VectorAssembler, Word2Vec }
+
 
 class Encoder {
 

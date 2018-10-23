@@ -1,8 +1,9 @@
 package net.sansa_stack.ml.spark.clustering.algorithms
 
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.clustering.dbscan.DBSCAN
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.sql.SparkSession
+
 
 class dbSCAN {
 

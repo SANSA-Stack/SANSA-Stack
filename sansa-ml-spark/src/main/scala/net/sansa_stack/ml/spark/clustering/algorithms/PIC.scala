@@ -1,10 +1,11 @@
 package net.sansa_stack.ml.spark.clustering.algorithms
 
+import org.apache.spark.graphx.Edge
+import org.apache.spark.graphx.Graph
+import org.apache.spark.mllib.clustering.PowerIterationClustering
 import org.apache.spark.rdd._
 import org.apache.spark.sql._
-import org.apache.spark.graphx.Graph
-import org.apache.spark.graphx.Edge
-import org.apache.spark.mllib.clustering.PowerIterationClustering
+
 
 class PIC {
 
@@ -16,10 +17,10 @@ class PIC {
     val clusters = model.assignments.collect().groupBy(_.cluster).mapValues(_.map(_.id))
     clusters
   }
-
-  /* Power Iteration using implementation from SANSA
+/*
+   * Power Iteration using implementation from SANSA
    * */
-  def picSANSA(pairwisePOISimilarity: RDD[(Long, Long, Double)], numCentroids: Int, numIterations: Int, sparkSession: SparkSession) {
+    def picSANSA(pairwisePOISimilarity: RDD[(Long, Long, Double)], numCentroids: Int, numIterations: Int, sparkSession: SparkSession) {
     val verticeS = pairwisePOISimilarity.map(f => f._1)
     val verticeD = pairwisePOISimilarity.map(f => f._2)
     val indexedMap = verticeS.union(verticeD).distinct().zipWithIndex()
@@ -28,6 +29,6 @@ class PIC {
     val similarityGraph = Graph(vertices, edges)
     // val model = new RDFGraphPICClustering(sparkSession, similarityGraph, numCentroids, numIterations)
   }
-
 }
+
 

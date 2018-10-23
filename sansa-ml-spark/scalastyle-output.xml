@@ -1,45 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <checkstyle version="5.0">
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/algorithms/Kmeans.scala">
-  <error column="0" line="4" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.ml.clustering.KMeans is in wrong order relative to org.apache.spark.sql._."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/poi/poiClustering.scala">
-  <error column="0" line="6" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="There should at least one a single empty line separating groups 3rdParty and sansa."/>
-  <error column="0" line="9" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="net.sansa_stack.ml.spark.clustering.utils.Common is in wrong order relative to net.sansa_stack.ml.spark.clustering.utils.dataProcessing."/>
-  <error column="0" line="10" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.json4s._ should be in group 3rdParty, not sansa."/>
-  <error column="0" line="11" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="com.typesafe.config.ConfigFactory should be in group 3rdParty, not sansa."/>
-  <error column="0" line="12" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.json4s.jackson.Serialization should be in group 3rdParty, not sansa."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/algorithms/PIC.scala">
-  <error column="0" line="5" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.graphx.Graph is in wrong order relative to org.apache.spark.sql._."/>
-  <error column="0" line="6" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.graphx.Edge is in wrong order relative to org.apache.spark.graphx.Graph."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/utils/dataFiltering.scala">
-  <error column="0" line="5" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.jena.graph.Triple should be in group 3rdParty, not sansa."/>
-  <error column="0" line="6" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.rdd.RDD should be in group 3rdParty, not sansa."/>
-  <error column="0" line="7" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.sql.SparkSession should be in group 3rdParty, not sansa."/>
-  <error column="0" line="9" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="scala.collection.mutable.ArrayBuffer should be in group scala, not sansa."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/poi/filterTriples.scala">
-  <error column="0" line="8" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.sql.SparkSession should be in group 3rdParty, not sansa."/>
-  <error column="0" line="9" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.json4s.DefaultFormats should be in group 3rdParty, not sansa."/>
-  <error column="0" line="10" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.json4s.native.JsonMethods.parse should be in group 3rdParty, not sansa."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/utils/mergeData.scala">
-  <error column="0" line="12" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="net.sansa_stack.rdf.spark.io._ is in wrong order relative to org.json4s.DefaultFormats."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/algorithms/dbSCAN.scala">
-  <error column="0" line="4" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.mllib.linalg.Vectors is in wrong order relative to org.apache.spark.sql.SparkSession."/>
-  <error column="0" line="5" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.mllib.clustering.dbscan.DBSCAN is in wrong order relative to org.apache.spark.mllib.linalg.Vectors."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/algorithms/Encoder.scala">
-  <error column="0" line="2" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="There should at least one a single empty line separating groups java and 3rdParty."/>
-  <error column="0" line="5" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.ml.feature. is in wrong order relative to org.apache.spark.sql.types._."/>
- </file>
- <file name="/home/rajjat/IAIS/Projects/SANSA_ML/SANSA-ML/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering/utils/Common.scala">
-  <error column="0" line="6" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.SparkContext should be in group 3rdParty, not sansa."/>
-  <error column="0" line="7" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.apache.spark.rdd.RDD should be in group 3rdParty, not sansa."/>
-  <error column="0" line="8" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.json4s.DefaultFormats should be in group 3rdParty, not sansa."/>
-  <error column="0" line="9" source="org.scalastyle.scalariform.ImportOrderChecker" severity="warning" message="org.json4s.jackson.Serialization should be in group 3rdParty, not sansa."/>
- </file>
-</checkstyle>
+      
+    </checkstyle>

@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.clustering.algorithms
 
-import org.apache.spark.sql._
 import org.apache.spark.ml.clustering.KMeans
+import org.apache.spark.sql._
 import org.apache.spark.sql.SparkSession
 
 class Kmeans {
