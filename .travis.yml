@@ -13,9 +13,5 @@ scala:
 script:
   - mvn scalastyle:check
   - mvn test 
-branches:
-  only:
-    - master
-    - develop
 after_success:
   - mvn clean cobertura:cobertura jacoco:report coveralls:report
