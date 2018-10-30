@@ -22,6 +22,8 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
@@ -38,7 +40,7 @@
 
 		<jetty.version>9.4.8.v20171121</jetty.version>
 		<mortbay.jetty.version>6.1.26</mortbay.jetty.version>
-		
+
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
@@ -269,7 +271,7 @@
 					<exclusion>
 						<groupId>org.scalatest</groupId>
 						<artifactId>scalatest</artifactId>
-                    </exclusion>
+					</exclusion>
 				</exclusions>
 			</dependency>
 
@@ -398,6 +400,35 @@
 				<artifactId>scalatest-maven-plugin</artifactId>
 			</plugin>
 
+			<plugin>
+				<groupId>org.eluder.coveralls</groupId>
+				<artifactId>coveralls-maven-plugin</artifactId>
+				<version>4.3.0</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<configuration>
+					<format>xml</format>
+					<maxmem>256m</maxmem>
+					<!-- aggregated reports for multi-module projects -->
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.1</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 
 		<pluginManagement>
@@ -607,7 +638,8 @@
 					</configuration>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -669,26 +701,59 @@
 
 				<!-- enable scalatest -->
 				<plugin>
-				  <groupId>org.scalatest</groupId>
-				  <artifactId>scalatest-maven-plugin</artifactId>
-				  <version>1.0</version>
-				  <configuration>
-					<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-					<junitxml>.</junitxml>
-					<filereports>SANSA-RDF-Tests.txt</filereports>
-				  </configuration>
-				  <executions>
-					<execution>
-					  <id>test</id>
-					  <goals>
-						<goal>test</goal>
-					  </goals>
-					</execution>
-				  </executions>
+					<groupId>org.scalatest</groupId>
+					<artifactId>scalatest-maven-plugin</artifactId>
+					<version>1.0</version>
+					<configuration>
+						<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+						<junitxml>.</junitxml>
+						<filereports>SANSA-RDF-Tests.txt</filereports>
+					</configuration>
+					<executions>
+						<execution>
+							<id>test</id>
+							<goals>
+								<goal>test</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>cobertura-maven-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<reporting>
+		<plugins>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jdepend-maven-plugin</artifactId>
+				<version>2.0</version>
+			</plugin>
+
+		</plugins>
+
+	</reporting>
 
 
 	<distributionManagement>
@@ -708,15 +773,15 @@
 
 	<profiles>
 		<profile>
-		    <id>root-dir</id>
-		    <activation>
-			<file>
-			    <exists>${project.basedir}/../../scalastyle-config.xml</exists>
-			</file>
-		    </activation>
-		    <properties>
-			<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
-		    </properties>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
 		</profile>
 		<profile>
 			<id>doclint-java8-disable</id>
