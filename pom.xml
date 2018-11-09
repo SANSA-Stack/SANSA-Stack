@@ -160,7 +160,7 @@
 			</dependency>
 
 			<!-- Guava -->
-			<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava</artifactId> 
+			<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava</artifactId>
 				<version>19.0</version> </dependency> -->
 
 			<!-- RDF Layer -->
@@ -239,6 +239,12 @@
 				<scope>import</scope>
 			</dependency>
 
+            <!-- Commons-codec dependency: solve the issue of making clean install-->
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.11</version>
+            </dependency>
 
 		</dependencies>
 	</dependencyManagement>
