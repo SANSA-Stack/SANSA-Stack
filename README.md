@@ -10,3 +10,6 @@ Contains the SANSA Examples for [Apache Spark](http://spark.apache.org/).
 
 ### [sansa-examples-flink](https://github.com/SANSA-Stack/SANSA-Examples/tree/master/sansa-examples-flink)
 Contains the SANSA Examples for [Apache Flink](http://flink.apache.org/).
+
+## How to Contribute
+We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
