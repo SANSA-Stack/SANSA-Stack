@@ -1,9 +1,10 @@
 package net.sansa_stack.examples.flink.owl
 
-import net.sansa_stack.owl.flink.dataset.{ FunctionalSyntaxOWLAxiomsDataSetBuilder, ManchesterSyntaxOWLAxiomsDataSetBuilder }
-import org.apache.flink.api.scala.ExecutionEnvironment
-
 import scala.collection.mutable
+
+import org.apache.flink.api.scala.ExecutionEnvironment
+import net.sansa_stack.owl.flink.dataset.{ FunctionalSyntaxOWLAxiomsDataSetBuilder, ManchesterSyntaxOWLAxiomsDataSetBuilder }
+
 
 object OWLReaderDataSet {
 
@@ -20,12 +21,12 @@ object OWLReaderDataSet {
 
     println(".============================================.")
     println("| Dataset OWL reader example (" + syntax + " syntax)|")
-    println("`============================================´")
+    println(".============================================.")
 
     val env = ExecutionEnvironment.getExecutionEnvironment
 
     val dataSet = syntax match {
-      case "fun"   => FunctionalSyntaxOWLAxiomsDataSetBuilder.build(env, input)
+      case "fun" => FunctionalSyntaxOWLAxiomsDataSetBuilder.build(env, input)
       case "manch" => ManchesterSyntaxOWLAxiomsDataSetBuilder.build(env, input)
       case "owl_xml" =>
         throw new RuntimeException("'" + syntax + "' - Not supported, yet.")
@@ -38,7 +39,7 @@ object OWLReaderDataSet {
   }
 
   case class Config(
-    in:     String = "",
+    in: String = "",
     syntax: String = "")
 
   // the CLI parser

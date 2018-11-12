@@ -1,7 +1,9 @@
 package net.sansa_stack.examples.flink.rdf
+
 import scala.collection.mutable
-import org.apache.flink.api.scala.ExecutionEnvironment
+
 import net.sansa_stack.rdf.flink.data.{ RDFGraphLoader, RDFGraphWriter }
+import org.apache.flink.api.scala.ExecutionEnvironment
 
 object TripleWriter {
 
@@ -30,7 +32,7 @@ object TripleWriter {
   }
 
   case class Config(
-    in:  String = "",
+    in: String = "",
     out: String = "")
 
   val parser = new scopt.OptionParser[Config]("Triple writer example ") {

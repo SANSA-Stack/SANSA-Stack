@@ -1,10 +1,12 @@
 package net.sansa_stack.examples.flink.rdf
 
-import scala.collection.mutable
 import java.io.File
-import org.apache.flink.api.scala.ExecutionEnvironment
+
+import scala.collection.mutable
+
 import net.sansa_stack.rdf.flink.data.RDFGraphLoader
 import net.sansa_stack.rdf.flink.stats.RDFStatistics
+import org.apache.flink.api.scala.ExecutionEnvironment
 
 object RDFStats {
 
@@ -36,7 +38,7 @@ object RDFStats {
   }
 
   case class Config(
-    in:  String = "",
+    in: String = "",
     out: String = "")
 
   // the CLI parser

@@ -1,11 +1,12 @@
 package net.sansa_stack.examples.flink.ml.clustering
+
 import scala.collection.mutable
+
 import net.sansa_stack.ml.flink.clustering.{ RDFByModularityClustering => RDFByModularityClusteringAlg }
-import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.api.scala._
+import org.apache.flink.api.scala.ExecutionEnvironment
 
 object RDFByModularityClustering {
-  
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
