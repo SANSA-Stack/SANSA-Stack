@@ -3,8 +3,6 @@ package net.sansa_stack.examples.spark.owl
 import net.sansa_stack.owl.spark.dataset.{ FunctionalSyntaxOWLAxiomsDatasetBuilder, ManchesterSyntaxOWLAxiomsDatasetBuilder }
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.mutable
-
 object OWLReaderDataset {
 
   def main(args: Array[String]) {
@@ -20,7 +18,7 @@ object OWLReaderDataset {
 
     println(".============================================.")
     println("| Dataset OWL reader example (" + syntax + " syntax)|")
-    println("`============================================´")
+    println(".============================================.")
 
     val spark = SparkSession.builder
       .appName(s"Dataset OWL reader ( $input + )($syntax)")
@@ -30,7 +28,7 @@ object OWLReaderDataset {
       .getOrCreate()
 
     val dataset = syntax match {
-      case "fun"   => FunctionalSyntaxOWLAxiomsDatasetBuilder.build(spark, input)
+      case "fun" => FunctionalSyntaxOWLAxiomsDatasetBuilder.build(spark, input)
       case "manch" => ManchesterSyntaxOWLAxiomsDatasetBuilder.build(spark, input)
       case "owl_xml" =>
         throw new RuntimeException("'" + syntax + "' - Not supported, yet.")
@@ -43,7 +41,7 @@ object OWLReaderDataset {
   }
 
   case class Config(
-    in:     String = "",
+    in: String = "",
     syntax: String = "")
 
   // the CLI parser

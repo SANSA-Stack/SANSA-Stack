@@ -1,12 +1,12 @@
 package net.sansa_stack.examples.spark.rdf
 
-import org.apache.spark.sql.SparkSession
-import java.net.{ URI => JavaURI }
 import scala.collection.mutable
-import org.apache.spark.graphx.Graph
+
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
 import org.apache.jena.riot.Lang
+import org.apache.spark.graphx.Graph
+import org.apache.spark.sql.SparkSession
 
 /*
  * Computes the PageRank of Resources from an input .nt file.
@@ -61,5 +61,4 @@ object PageRank {
       text("path to file that contains the data (in N-Triples format)")
     help("help").text("prints this usage text")
   }
-
 }

@@ -50,8 +50,8 @@ object RDFGraphKernel {
   }
 
   case class Config(
-    in:        String = "",
-    iteration: Int    = 5)
+    in: String = "",
+    iteration: Int = 5)
 
   val parser = new scopt.OptionParser[Config]("Mines the Rules example") {
 
@@ -68,4 +68,3 @@ object RDFGraphKernel {
     help("help").text("prints this usage text")
   }
 }
-

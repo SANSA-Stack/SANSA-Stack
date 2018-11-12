@@ -1,10 +1,11 @@
 package net.sansa_stack.examples.spark.ml.mining
 
 import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
+
+import net.sansa_stack.ml.spark.mining.amieSpark.{ DfLoader, RDFGraphLoader }
 import net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB
-import net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }
 import net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm
+import org.apache.spark.sql.SparkSession
 
 /*
  * Mine Rules
@@ -32,7 +33,7 @@ object MineRules {
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
-      
+
     val hdfsPath = outputPath + "/"
 
     val know = new KB()
@@ -44,8 +45,8 @@ object MineRules {
 
     val algo = new Algorithm(know, 0.01, 3, 0.1, hdfsPath)
 
-    //var erg = algo.ruleMining(sparkSession.sparkContext, sparkSession.sqlContext)
-    //println(erg)
+    // var erg = algo.ruleMining(sparkSession.sparkContext, sparkSession.sqlContext)
+    // println(erg)
     var output = algo.ruleMining(spark.sparkContext, spark.sqlContext)
 
     var outString = output.map { x =>
@@ -55,7 +56,7 @@ object MineRules {
         if (i == 0) {
           temp = rdfTrp(i) + " <= "
         } else {
-          temp += rdfTrp(i) + " \u2227 "
+          temp += rdfTrp(i) + """ \u2227 """
         }
       }
       temp = temp.stripSuffix(" \u2227 ")
@@ -67,7 +68,7 @@ object MineRules {
   }
 
   case class Config(
-    in:  String = "",
+    in: String = "",
     out: String = "")
 
   val parser = new scopt.OptionParser[Config]("Mines the Rules example") {

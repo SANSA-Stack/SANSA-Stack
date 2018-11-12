@@ -1,13 +1,10 @@
 package net.sansa_stack.examples.spark.query
 
-import org.scalatest.FunSuite
-
-import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
-
+import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.jena.rdf.model.ModelFactory
-
-import org.apache.jena.rdfconnection.{ RDFConnectionFactory, RDFConnection }
+import org.apache.jena.rdfconnection.{ RDFConnection, RDFConnectionFactory }
+import org.scalatest.FunSuite
 
 class SparqlServerTests extends FunSuite {
   test("starting the default SPARQL server should succeed") {
@@ -33,4 +30,3 @@ class SparqlServerTests extends FunSuite {
     assert(true)
   }
 }
-

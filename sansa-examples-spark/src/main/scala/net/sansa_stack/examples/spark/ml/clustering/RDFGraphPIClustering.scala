@@ -1,15 +1,13 @@
 package net.sansa_stack.examples.spark.ml.clustering
 
 import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import org.apache.log4j.{ Level, Logger }
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import java.io.ByteArrayInputStream
-import org.apache.jena.riot.Lang
+
+import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
-import net.sansa_stack.rdf._
-import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.log4j.{ Level, Logger }
+import org.apache.spark.sql.SparkSession
 
 object RDFGraphPIClustering {
 

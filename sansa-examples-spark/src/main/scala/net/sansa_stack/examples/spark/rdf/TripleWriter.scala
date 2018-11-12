@@ -4,9 +4,10 @@ import java.io.File
 import java.net.URI
 
 import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import org.apache.jena.riot.Lang
+
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.riot.Lang
+import org.apache.spark.sql.SparkSession
 
 object TripleWriter {
 
@@ -41,7 +42,7 @@ object TripleWriter {
   }
 
   case class Config(
-    in:  String = "",
+    in: String = "",
     out: String = "")
 
   // the CLI parser

@@ -1,10 +1,9 @@
 package net.sansa_stack.examples.spark.ml.kge
 
-import org.apache.spark.sql._
-import net.sansa_stack.rdf.spark.kge.triples.Triples
+import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.{ kFold, Bootstrapping, Holdout }
 import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
-import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.{ Bootstrapping, Holdout }
-import net.sansa_stack.ml.spark.kge.linkprediction.crossvalidation.kFold
+import net.sansa_stack.rdf.spark.kge.triples.Triples
+import org.apache.spark.sql._
 
 object CrossValidation {
 
@@ -45,9 +44,9 @@ object CrossValidation {
     indexedData.numeric.take(10).foreach(println)
 
     val (train, test) = technique match {
-      case "holdout"       => new Holdout(numericData, 0.6f).crossValidation()
+      case "holdout" => new Holdout(numericData, 0.6f).crossValidation()
       case "bootstrapping" => new Bootstrapping(numericData).crossValidation()
-      case "kFold"         => new kFold(numericData, k, spark).crossValidation()
+      case "kFold" => new kFold(numericData, k, spark).crossValidation()
       case _ =>
         throw new RuntimeException("'" + technique + "' - Not supported, yet.")
     }
@@ -79,7 +78,7 @@ object CrossValidation {
       text("The k value (used only for technique'kFold')")
 
     checkConfig(c =>
-      if (c.technique == "kFold" && c.k == 0) failure("Option --k-Fold must not be empty if technique 'kFold	' is set")
+      if (c.technique == "kFold" && c.k == 0) failure("Option --k-Fold must not be empty if technique 'kFold' is set")
       else success)
 
     help("help").text("prints this usage text")

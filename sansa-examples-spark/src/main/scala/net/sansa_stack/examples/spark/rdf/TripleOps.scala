@@ -1,11 +1,12 @@
 package net.sansa_stack.examples.spark.rdf
 
+import scala.collection.mutable
+
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
-import org.apache.spark.sql.SparkSession
-import org.apache.jena.riot.Lang
-import scala.collection.mutable
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.riot.Lang
+import org.apache.spark.sql.SparkSession
 
 object TripleOps {
 
@@ -33,13 +34,13 @@ object TripleOps {
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
 
-    //Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
+    // Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
     println("All triples related to Dickens:\n" + triples.find(Some(NodeFactory.createURI("http://dbpedia.org/resource/Charles_Dickens")), None, None).collect().mkString("\n"))
 
-    //Triples filtered by predicate ( "http://dbpedia.org/ontology/influenced" )
+    // Triples filtered by predicate ( "http://dbpedia.org/ontology/influenced" )
     println("All triples for predicate influenced:\n" + triples.find(None, Some(NodeFactory.createURI("http://dbpedia.org/ontology/influenced")), None).collect().mkString("\n"))
 
-    //Triples filtered by object ( <http://dbpedia.org/resource/Henry_James> )
+    // Triples filtered by object ( <http://dbpedia.org/resource/Henry_James> )
     println("All triples influenced by Henry_James:\n" + triples.find(None, None, Some(NodeFactory.createURI("http://dbpedia.org/resource/Henry_James"))).collect().mkString("\n"))
 
     println("Number of triples: " + triples.distinct.count())
@@ -52,7 +53,7 @@ object TripleOps {
     val predicates = triples.filterPredicates(_.isVariable()).collect.mkString("\n")
     val objects = triples.filterObjects(_.isLiteral()).collect.mkString("\n")
 
-    //graph.getTriples.take(5).foreach(println(_))
+    // graph.getTriples.take(5).foreach(println(_))
 
     spark.stop
 

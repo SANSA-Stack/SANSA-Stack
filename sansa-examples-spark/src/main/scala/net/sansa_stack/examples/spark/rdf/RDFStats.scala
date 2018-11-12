@@ -1,12 +1,14 @@
 package net.sansa_stack.examples.spark.rdf
 
-import org.apache.spark.sql.SparkSession
-import java.net.URI
-import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.riot.Lang
-import scala.collection.mutable
 import java.io.File
+
+import scala.collection.mutable
+
+import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.stats._
+import org.apache.jena.riot.Lang
+import org.apache.spark.sql.SparkSession
+
 
 object RDFStats {
 
@@ -42,9 +44,7 @@ object RDFStats {
   }
 
   // the config object
-  case class Config(
-    in:  String = "",
-    out: String = "")
+  case class Config(in: String = "", out: String = "")
 
   // the CLI parser
   val parser = new scopt.OptionParser[Config]("RDF Dataset Statistics Example") {

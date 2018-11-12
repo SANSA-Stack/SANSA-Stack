@@ -1,9 +1,9 @@
 package net.sansa_stack.examples.spark.owl
 
 import net.sansa_stack.owl.spark.owl._
+
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.mutable
 
 object OWLReaderRDD {
 
@@ -20,7 +20,7 @@ object OWLReaderRDD {
 
     println(".============================================.")
     println("| RDD OWL reader example (" + syntax + " syntax)|")
-    println("`============================================´")
+    println("============================================")
 
     val spark = SparkSession.builder
       .appName(s"OWL reader example ( $input + )($syntax)")
@@ -30,7 +30,7 @@ object OWLReaderRDD {
       .getOrCreate()
 
     val rdd = syntax match {
-      case "fun"   => spark.owl(Syntax.FUNCTIONAL)(input)
+      case "fun" => spark.owl(Syntax.FUNCTIONAL)(input)
       case "manch" => spark.owl(Syntax.MANCHESTER)(input)
       case "owl_xml" =>
         throw new RuntimeException("'" + syntax + "' - Not supported, yet.")
@@ -43,7 +43,7 @@ object OWLReaderRDD {
   }
 
   case class Config(
-    in:     String = "",
+    in: String = "",
     syntax: String = "")
 
   // the CLI parser

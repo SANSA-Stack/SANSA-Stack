@@ -1,14 +1,14 @@
 package net.sansa_stack.examples.spark.query
 
+import scala.concurrent.duration.Duration
+
 import net.sansa_stack.query.spark.graph.jena.SparqlParser
-import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel, Config => modelConfig }
+import net.sansa_stack.query.spark.graph.jena.model.{ Config => modelConfig, IntermediateResult, SparkExecutionModel }
 import net.sansa_stack.rdf.spark.partition.graph.algo._
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.log4j.Logger
 import org.apache.spark.graphx.Graph
-
-import scala.concurrent.duration.Duration
 
 object GraphQuery {
 
@@ -16,7 +16,8 @@ object GraphQuery {
 
     parser.parse(args, Config()) match {
       case Some(config) => run(config)
-      case None         => println(parser.usage)
+      case None =>
+        println(parser.usage)
     }
   }
 
@@ -50,12 +51,12 @@ object GraphQuery {
 
     // Set number of partitions (if config.numParts is 0, number of partitions equals to that of previous graph)
     config.numParts match {
-      case 0     => numParts = prevG.edges.partitions.length
+      case 0 => numParts = prevG.edges.partitions.length
       case other => numParts = other
     }
 
     config.numIters match {
-      case 0     =>
+      case 0 =>
       case other => numIters = other
     }
 
@@ -91,7 +92,7 @@ object GraphQuery {
           partAlgo = new PathPartition[Node, Node](prevG, session, numParts).setNumIterations(numIters)
         }
         msg = "Start to execute path partitioning"
-      case ""    =>
+      case "" =>
       case other => println(s"the input $other doesn't match any options, no algorithm will be applied.")
     }
 

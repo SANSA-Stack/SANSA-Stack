@@ -1,9 +1,11 @@
 package net.sansa_stack.examples.spark.ml.clustering
 
 import scala.collection.mutable
-import org.apache.spark.sql.SparkSession
-import org.apache.log4j.{ Level, Logger }
+
 import net.sansa_stack.ml.spark.clustering.{ RDFByModularityClustering => RDFByModularityClusteringAlg }
+import org.apache.log4j.{ Level, Logger }
+import org.apache.spark.sql.SparkSession
+
 
 object RDFByModularityClustering {
 

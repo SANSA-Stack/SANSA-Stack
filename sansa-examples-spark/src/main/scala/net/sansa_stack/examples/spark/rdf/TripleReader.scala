@@ -1,8 +1,9 @@
 package net.sansa_stack.examples.spark.rdf
 
 import net.sansa_stack.rdf.spark.io._
-import org.apache.spark.sql.SparkSession
 import org.apache.jena.riot.Lang
+import org.apache.spark.sql.SparkSession
+
 
 object TripleReader {
 
@@ -32,7 +33,7 @@ object TripleReader {
 
     triples.take(5).foreach(println(_))
 
-    //triples.saveAsNTriplesFile(output)
+    // triples.saveAsNTriplesFile(output)
 
     spark.stop
 

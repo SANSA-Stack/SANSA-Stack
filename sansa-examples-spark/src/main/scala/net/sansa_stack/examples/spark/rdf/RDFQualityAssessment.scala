@@ -1,14 +1,13 @@
 package net.sansa_stack.examples.spark.rdf
 
-import org.apache.spark.sql.SparkSession
-import java.net.URI
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import scala.collection.mutable
 import java.io.File
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.qualityassessment._
-import net.sansa_stack.rdf.spark.io._
 
+import scala.collection.mutable
+
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.qualityassessment._
+import org.apache.jena.riot.Lang
+import org.apache.spark.sql.SparkSession
 
 object RDFQualityAssessment {
 
@@ -57,23 +56,23 @@ object RDFQualityAssessment {
 
     val AssessQualityStr = s"""
       completeness_schema:$completeness_schema
-      completeness_interlinking:$completeness_interlinking 
+      completeness_interlinking:$completeness_interlinking
       completeness_property:$completeness_property
-      syntacticvalidity_literalnumeric:$syntacticvalidity_literalnumeric 
+      syntacticvalidity_literalnumeric:$syntacticvalidity_literalnumeric
       syntacticvalidity_XSDDatatypeCompatibleLiterals:$syntacticvalidity_XSDDatatypeCompatibleLiterals
       availability_DereferenceableUris:$availability_DereferenceableUris
       relevancy_CoverageDetail:$relevancy_CoverageDetail
       relevancy_CoverageScope:$relevancy_CoverageScope
       relevancy_AmountOfTriples:$relevancy_AmountOfTriples
       performance_NoHashURIs:$performance_NoHashURIs
-      understandability_LabeledResources:$understandability_LabeledResources      
+      understandability_LabeledResources:$understandability_LabeledResources
       """
 
     println(s"\n AssessQuality for $rdf_quality_file :\n $AssessQualityStr")
   }
 
   case class Config(
-    in:  String = "",
+    in: String = "",
     out: String = "")
 
   val parser = new scopt.OptionParser[Config]("RDF Quality Assessment Example") {

@@ -1,17 +1,19 @@
 package net.sansa_stack.examples.spark.query
 
-import java.nio.file.{ FileVisitResult, Files, Path, Paths, SimpleFileVisitor }
-import java.nio.file.attribute.BasicFileAttributes
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io._
-import org.apache.spark.sql.SparkSession
 import java.io.IOException
-import org.apache.jena.graph.Triple
-import org.apache.spark.rdd.RDD
-import net.sansa_stack.rdf.spark.partition.semantic.RdfPartition
-import net.sansa_stack.query.spark.semantic.QuerySystem
+import java.nio.file.{ Files, FileVisitResult, Path, Paths, SimpleFileVisitor }
+import java.nio.file.attribute.BasicFileAttributes
 
-/*
+import net.sansa_stack.query.spark.semantic.QuerySystem
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.partition.semantic.RdfPartition
+import org.apache.jena.graph.Triple
+import org.apache.jena.riot.Lang
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
+
+
+/**
  * Run SPARQL queries over Spark using Semantic partitioning approach.
  *
  * @author Gezim Sejdiu
@@ -36,8 +38,8 @@ object Semantic {
     // variables initialization
     val numOfFilesPartition: Int = 1
     // val queryInputPath: String = queries //args(1)
-    //val partitionedDataPath: String = "src/main/resources/output/partitioned-data/"
-    //val queryResultPath: String = "src/main/resources/output/query-result/"
+    // val partitionedDataPath: String = "src/main/resources/output/partitioned-data/"
+    // val queryResultPath: String = "src/main/resources/output/query-result/"
     val symbol = Map(
       "space" -> " " * 5,
       "blank" -> " ",
@@ -124,7 +126,7 @@ object Semantic {
   // count total number of N-Triples
   def countNTriples(dataRDD: Either[RDD[Triple], RDD[String]]): Unit = {
     dataRDD match {
-      case Left(x)  => println(s"Number of N-Triples before partition: ${x.distinct.count}")
+      case Left(x) => println(s"Number of N-Triples before partition: ${x.distinct.count}")
       case Right(x) => println(s"Number of N-Triples after partition: ${x.distinct.count}")
     }
   }

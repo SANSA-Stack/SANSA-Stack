@@ -1,17 +1,18 @@
 package net.sansa_stack.examples.spark.query
 
-import java.net.URI
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, QueryExecutionUtilsSpark, QueryExecutionSpark, SparqlifyUtils3 }
-import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
-import org.apache.spark.sql.SparkSession
 import java.awt.Desktop
+import java.net.URI
 
 import scala.collection.mutable
 
-/*
+import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, QueryExecutionSpark, QueryExecutionUtilsSpark, SparqlifyUtils3 }
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.apache.jena.riot.Lang
+import org.apache.spark.sql.SparkSession
+
+/**
  * Run SPARQL queries over Spark using Sparqlify approach.
  */
 object Sparqlify {
@@ -58,7 +59,7 @@ object Sparqlify {
         server.join()
       case _ =>
         import net.sansa_stack.query.spark.query._
-        //val sparqlQuery = "SELECT * WHERE {?s ?p ?o} LIMIT 10"
+        // val sparqlQuery = "SELECT * WHERE {?s ?p ?o} LIMIT 10"
         val result = graphRdd.sparql(sparqlQuery)
         result.rdd.foreach(println)
     }
