@@ -63,6 +63,7 @@
 		<hadoop.version>2.8.3</hadoop.version>
 		<jena.version>3.7.0</jena.version>
 		<sansa.version>0.4.1-SNAPSHOT</sansa.version>
+		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
 	<dependencyManagement>
@@ -295,6 +296,32 @@
 					<version>2.19.1</version>
 				</plugin>
 
+				<!-- Scalastyle -->
+				<plugin>
+					<groupId>org.scalastyle</groupId>
+					<artifactId>scalastyle-maven-plugin</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<verbose>false</verbose>
+						<failOnViolation>true</failOnViolation>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
+						<failOnWarning>false</failOnWarning>
+						<sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+						<testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+						<!-- we use a central config located in the root directory -->
+						<configLocation>${scalastyle.config.path}</configLocation>
+						<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+						<outputEncoding>UTF-8</outputEncoding>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
 				<!-- Scalatest -->
 				<plugin>
 					<groupId>org.scalatest</groupId>
@@ -317,6 +344,20 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<profile>
+		    <id>root-dir</id>
+		    <activation>
+			<file>
+			    <exists>${project.basedir}/../../scalastyle-config.xml</exists>
+			</file>
+		    </activation>
+		    <properties>
+			<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+		    </properties>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>

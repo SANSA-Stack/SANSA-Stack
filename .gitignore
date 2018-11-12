@@ -21,4 +21,5 @@ project/plugins/project/
 *.iml
 
 deptree.txt
+scalastyle-output.xml
 
