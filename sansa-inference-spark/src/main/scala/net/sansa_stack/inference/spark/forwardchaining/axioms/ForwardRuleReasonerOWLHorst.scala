@@ -255,116 +255,6 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     var sameAsAxioms = allAxioms.filter(axiom => axiom.getAxiomType.equals(AxiomType.SAME_INDIVIDUAL))
     var SPOAxioms = allAxioms.subtract(typeAxioms.asInstanceOf[RDD[OWLAxiom]]).subtract(sameAsAxioms)
 
-    // Perform fix-point iteration i.e. we process a set of rules until no new data has been generated
-
-    var newData = true
-    var i = 0
-
-    // while (newData) {
-    i += 1
-
-    // -------------------- SPO Rules -----------------------------
-    // O3: (?P rdf:type owl:SymmetricProperty), (?X ?P ?Y) -> (?Y ?P ?X)
-
-    val O3 = objPropAssertion
-      .filter(a => symmetricObjPropBC.value.contains(a.getProperty))
-      .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a.getProperty, a.getObject, a.getSubject))
-
-    // 2. SubPropertyOf inheritance according to R3 is computed
-    // R3: a rdfs:subPropertyOf b . x a y  -> x b y .
-
-    val R3a = dataPropAssertion
-      .filter(a => subDataPropertyBC.value.contains(a.getProperty))
-      .flatMap(a => subDataPropertyBC.value(a.getProperty)
-        .map(s => dataFactory.getOWLDataPropertyAssertionAxiom(s, a.getSubject, a.getObject)))
-      .setName("R3a")
-
-    val R3b = objPropAssertion
-      .filter(a => subObjectPropertyBC.value.contains(a.getProperty))
-      .flatMap(a => subObjectPropertyBC.value(a.getProperty)
-        .map(s => dataFactory.getOWLObjectPropertyAssertionAxiom(s, a.getSubject, a.getObject)))
-      .setName("R3b")
-
-    // O7a: (P owl:inverseOf Q), (X P Y) -> (Y Q X)
-    val O7a = objPropAssertion
-      .filter(a => inverseObjPropBC.value.contains(a.getProperty))
-      .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(inverseObjPropBC.value(a.getProperty), a.getObject, a.getSubject))
-
-    // O7b: (P owl:inverseOf Q), (X Q Y) -> (Y P X)
-    val O7b = objPropAssertion
-      .filter(a => swapInverseObjPropBC.value.contains(a.getProperty))
-      .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(swapInverseObjPropBC.value(a.getProperty), a.getObject, a.getSubject))
-
-    dataPropAssertion = dataPropAssertion.union(R3a)
-    objPropAssertion = objPropAssertion.union(O3).union(R3b).union(O7a).union(O7b)
-    //  objPropAssertion.collect.foreach(println)
-
-    // todo : Add here O4
-    val newAxioms = new UnionRDD(sc, Seq(R3a.asInstanceOf[RDD[OWLAxiom]], objPropAssertion.asInstanceOf[RDD[OWLAxiom]]))
-      .distinct(parallelism)
-      .subtract(SPOAxioms, parallelism)
-
-    var newAxiomsCount = newAxioms.count()
-
-    if (i == 1 || newAxiomsCount > 0) {
-
-      SPOAxioms = SPOAxioms.union(newAxioms).distinct(parallelism)
-
-      // O4: (P rdf:type owl:TransitiveProperty), (X P Y), (Y P Z) -> (X P Z)
-      val O4_ = objPropAssertion
-        .filter(a => transtiveObjPropBC.value.contains(a.getProperty))
-        .asInstanceOf[RDD[OWLAxiom]]
-
-      //    val O4 = computeTransitiveClosure(O4_, AxiomType.TRANSITIVE_OBJECT_PROPERTY)
-      //      println("\n O4: \n----------------\n")
-      //      O4.collect().foreach(println)
-
-      //  SPOAxioms = SPOAxioms.union(O4)
-    }
-
-
-    SPOAxioms = SPOAxioms.union(R3a.asInstanceOf[RDD[OWLAxiom]])
-      .union(objPropAssertion.asInstanceOf[RDD[OWLAxiom]])
-      .distinct(parallelism)
-
-    // ---------------------- Type Rules -------------------------------
-    // 3. Domain and Range inheritance according to rdfs2 and rdfs3 is computed
-    // R4:  a rdfs:domain b . x a y  -->  x rdf:type b
-
-    val R4a = dataPropAssertion // .asInstanceOf[RDD[OWLDataPropertyAssertionAxiom]]
-      .filter(a => dataDomainMapBC.value.contains(a.getProperty))
-      .map(a => dataFactory.getOWLClassAssertionAxiom(dataDomainMapBC.value(a.getProperty), a.getSubject))
-      .setName("R4a")
-
-    val R4b = objPropAssertion // .asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
-      .filter(a => objDomainMapBC.value.contains(a.getProperty))
-      .map(a => dataFactory.getOWLClassAssertionAxiom(objDomainMapBC.value(a.getProperty), a.getSubject))
-      .setName("R4b")
-
-    // R5: a rdfs:range x . y a z  -->  z rdf:type x .
-
-    val R5a = dataPropAssertion.filter(a => dataRangeMapBC.value.contains(a.getProperty) && !a.getObject.isLiteral) // Add checking for non-literals
-      .map(a => dataFactory.getOWLClassAssertionAxiom
-    (dataRangeMapBC.value(a.getProperty).asInstanceOf[OWLClassExpression], a.getObject.asInstanceOf[OWLIndividual]))
-      .setName("R5a")
-
-    val R5b = objPropAssertion // .asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
-      .filter(a => objRangeMapBC.value.contains(a.getProperty))
-      .map(a => dataFactory.getOWLClassAssertionAxiom(objRangeMapBC.value(a.getProperty), a.getObject))
-      .setName("R5b")
-
-    typeAxioms = typeAxioms.union(R4a).union(R4b)
-      .union(R5a).union(R5b).distinct(parallelism)
-
-    // 4. SubClass inheritance according to rdfs9
-    // R6: x rdfs:subClassOf y . z rdf:type x -->  z rdf:type y .
-    val R6 = typeAxioms
-      .filter(a => subClassOfBC.value.contains(a.getClassExpression))
-      .flatMap(a => subClassOfBC.value(a.getClassExpression).map(s => dataFactory.getOWLClassAssertionAxiom(s, a.getIndividual)))
-      .setName("R6")
-
-    typeAxioms = typeAxioms.union(R6).distinct(parallelism)
-
     val eq: RDD[OWLClassExpression] = eqClass.map(a => a.getOperandsAsList.get(1))
     // eq.collect().foreach(println(_))
 
@@ -375,8 +265,8 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     val objHasVal = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.OBJECT_HAS_VALUE))
     val objAllValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.OBJECT_ALL_VALUES_FROM))
     val objSomeValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.OBJECT_SOME_VALUES_FROM))
-    val dataAllValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_ALL_VALUES_FROM))
-    val dataSomeValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_SOME_VALUES_FROM))
+//    val dataAllValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_ALL_VALUES_FROM))
+//    val dataSomeValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_SOME_VALUES_FROM))
 
     val dataHasValBC = sc.broadcast(dataHasVal.asInstanceOf[RDD[OWLDataHasValue]]
       .map(a => (a.getProperty, a.getFiller)).collect().toMap)
@@ -387,132 +277,316 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     val objAllValuesBC = sc.broadcast(objAllValues.asInstanceOf[RDD[OWLObjectAllValuesFrom]]
       .map(a => (a.getProperty, a.getFiller)).collect().toMap)
 
+    val objAllValuesBCSwapBC = sc.broadcast(objAllValues.asInstanceOf[RDD[OWLObjectAllValuesFrom]]
+      .map(a => (a.getFiller, a.getProperty)).collect().toMap)
+
     val objSomeValuesBC = sc.broadcast(objSomeValues.asInstanceOf[RDD[OWLObjectSomeValuesFrom]]
       .map(a => (a.getProperty, a.getFiller)).collect().toMap)
 
-    val dataAllValuesBC = sc.broadcast(dataAllValues.asInstanceOf[RDD[OWLDataAllValuesFrom]]
-      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
+    val objSomeValuesSwapBC = sc.broadcast(objSomeValues.asInstanceOf[RDD[OWLObjectSomeValuesFrom]]
+      .map(a => (a.getFiller, a.getProperty)).collect().toMap)
 
-    val dataSomeValuesBC = sc.broadcast(dataSomeValues.asInstanceOf[RDD[OWLDataSomeValuesFrom]]
-      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
+//    val dataAllValuesBC = sc.broadcast(dataAllValues.asInstanceOf[RDD[OWLDataAllValuesFrom]]
+//      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
 
+//    val dataSomeValuesBC = sc.broadcast(dataSomeValues.asInstanceOf[RDD[OWLDataSomeValuesFrom]]
+//      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
 
-   //    val ca = CollectionUtils
+    //    val dataSomeValuesSwapBC = sc.broadcast(dataSomeValues.asInstanceOf[RDD[OWLDataSomeValuesFrom]]
+    //      .map(a => (a.getFiller, a.getProperty)).collect().toMap)
+
+    //    val ca = CollectionUtils
     //      .toMultiMap(typeAxioms.map(a => (a.getClassExpression, a.getIndividual)).collect())
     //    val caBC = sc.broadcast(ca)
     //
     //    val e = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
     //      .filter(a => caBC.value.exists(n => a.contains(n._1)) && a.getOperandsAsList.get(1).isInstanceOf[OWLDataHasValue])
 
-    // O14: (R owl:hasValue V),(R owl:onProperty P),(X rdf:type R) -> (X P V)
-    // in OWLAxioms we have 3 cases where we can find OWLDataHasValue
-
-    // case a: OWLClassAssertion(OWLDataHasValue(P, w), i)
-    val O14_data_a = typeAxioms.map(a => (a.getClassExpression, a.getIndividual))
-        .filter(a => a._1.isInstanceOf[OWLDataHasValue])
-        .map(a => (a._1.asInstanceOf[OWLDataHasValue], a._2))
-        .map(a => dataFactory.getOWLDataPropertyAssertionAxiom(a._1.getProperty, a._2, a._1.getFiller))
 
 
-    // case b: OWLSubClassOf(S, OWLDataHasValue(P, w)) , OWLClassAssertion(S, i)
-    val subOperands = subClassof.asInstanceOf[RDD[OWLSubClassOfAxiom]]
-      .map(a => (a.getSubClass, a.getSuperClass))
+    // Perform fix-point iteration i.e. we process a set of rules until no new data has been generated
 
-    val sd = subOperands.filter(s => s._2.isInstanceOf[OWLDataHasValue])
-      .map(s => (s._1, s._2.asInstanceOf[OWLDataHasValue]))
+    var newData = true
+    var newTypeCount = 0L
+    var newAxiomsCount = 0L
+    var i = 0
 
-    val O14_data_b = typeAxioms.filter(a => subClassOfBC.value.contains(a.getClassExpression))
-      .map(a => (a.getClassExpression, a.getIndividual))
-      .join(sd).filter(x => x._2._2.isInstanceOf[OWLDataHasValue])
-      .map(a => dataFactory.getOWLDataPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+   while (newData) {
+     i += 1
 
-   // case c: OWLEquivelantClass(E, OWLDataHasValue(P, w)), OWLClassAssertion(E, i)
-    val eqOperands = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
-      .map(a => (a.getOperandsAsList.get(0), a.getOperandsAsList.get(1)))
+     // -------------------- SPO Rules -----------------------------
+     // O3: (?P rdf:type owl:SymmetricProperty), (?X ?P ?Y) -> (?Y ?P ?X)
 
-    val e = eqOperands.filter(eq => eq._2.isInstanceOf[OWLDataHasValue])
-      .map(eq => (eq._1, eq._2.asInstanceOf[OWLDataHasValue]))
+     val O3 = objPropAssertion
+       .filter(a => symmetricObjPropBC.value.contains(a.getProperty))
+       .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a.getProperty, a.getObject, a.getSubject))
 
-    val O14_data_c = typeAxioms.filter(a => equClassMapBC.value.contains(a.getClassExpression))
-      .map(a => (a.getClassExpression, a.getIndividual))
-      .join(e).filter(x => x._2._2.isInstanceOf[OWLDataHasValue])
-      .map(a => dataFactory.getOWLDataPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+     // 2. SubPropertyOf inheritance according to R3 is computed
+     // R3: a rdfs:subPropertyOf b . x a y  -> x b y .
 
-    val O14_data = O14_data_a.union(O14_data_b).union(O14_data_c).distinct(parallelism)
+     val R3a = dataPropAssertion
+       .filter(a => subDataPropertyBC.value.contains(a.getProperty))
+       .flatMap(a => subDataPropertyBC.value(a.getProperty)
+         .map(s => dataFactory.getOWLDataPropertyAssertionAxiom(s, a.getSubject, a.getObject)))
+       .setName("R3a")
 
-    dataPropAssertion = dataPropAssertion.union(O14_data)
+     val R3b = objPropAssertion
+       .filter(a => subObjectPropertyBC.value.contains(a.getProperty))
+       .flatMap(a => subObjectPropertyBC.value(a.getProperty)
+         .map(s => dataFactory.getOWLObjectPropertyAssertionAxiom(s, a.getSubject, a.getObject)))
+       .setName("R3b")
 
-//    println("\n O14 data: \n----------------\n")
-//    O14.collect().foreach(println)
+     // O7a: (P owl:inverseOf Q), (X P Y) -> (Y Q X)
+     val O7a = objPropAssertion
+       .filter(a => inverseObjPropBC.value.contains(a.getProperty))
+       .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(inverseObjPropBC.value(a.getProperty), a.getObject, a.getSubject))
 
-    // O14: (R owl:hasValue V),(R owl:onProperty P),(X rdf:type R) -> (X P V)
-    // we have the same 3 cases where we can find OWLObjectHasValue
+     // O7b: (P owl:inverseOf Q), (X Q Y) -> (Y P X)
+     val O7b = objPropAssertion
+       .filter(a => swapInverseObjPropBC.value.contains(a.getProperty))
+       .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(swapInverseObjPropBC.value(a.getProperty), a.getObject, a.getSubject))
 
-    // case a: OWLClassAssertion(OWLObjectHasValue(P, w), i)
-    val O14_obj_a = typeAxioms.map(a => (a.getClassExpression, a.getIndividual))
-      .filter(a => a._1.isInstanceOf[OWLObjectHasValue])
-      .map(a => (a._1.asInstanceOf[OWLObjectHasValue], a._2))
-      .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a._1.getProperty, a._2, a._1.getFiller))
+     dataPropAssertion = dataPropAssertion.union(R3a)
+     objPropAssertion = objPropAssertion.union(O3).union(R3b).union(O7a).union(O7b)
+     //  objPropAssertion.collect.foreach(println)
 
-    // case b: OWLSubClassOf(S, OWLObjectHasValue(P, w)) , OWLClassAssertion(S, i)
-    val so = subOperands.filter(s => s._2.isInstanceOf[OWLObjectHasValue])
-      .map(s => (s._1, s._2.asInstanceOf[OWLObjectHasValue]))
+     // todo : Add here O4
+     val newAxioms = new UnionRDD(sc, Seq(R3a.asInstanceOf[RDD[OWLAxiom]], objPropAssertion.asInstanceOf[RDD[OWLAxiom]]))
+       .distinct(parallelism)
+       .subtract(SPOAxioms, parallelism)
 
-    val O14_obj_b = typeAxioms.filter(a => subClassOfBC.value.contains(a.getClassExpression))
-      .map(a => (a.getClassExpression, a.getIndividual))
-      .join(so).filter(x => x._2._2.isInstanceOf[OWLObjectHasValue])
-      .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+     newAxiomsCount = newAxioms.count()
 
-    // case c: OWLEquivelantClass(E, OWLObjectHasValue(P, w)), OWLClassAssertion(E, i)
-    val eo = eqOperands.filter(eq => eq._2.isInstanceOf[OWLObjectHasValue])
-      .map(eq => (eq._1, eq._2.asInstanceOf[OWLObjectHasValue]))
+     if (i == 1 || newAxiomsCount > 0) {
 
-    val O14_obj_c = typeAxioms.filter(a => equClassMapBC.value.contains(a.getClassExpression))
-      .map(a => (a.getClassExpression, a.getIndividual))
-      .join(eo).filter(x => x._2._2.isInstanceOf[OWLObjectHasValue])
-      .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+       SPOAxioms = SPOAxioms.union(newAxioms).distinct(parallelism)
 
-    val O14_obj = O14_obj_a.union(O14_obj_b).union(O14_obj_c)
+       // O4: (P rdf:type owl:TransitiveProperty), (X P Y), (Y P Z) -> (X P Z)
+       val O4_ = objPropAssertion
+         .filter(a => transtiveObjPropBC.value.contains(a.getProperty))
+         .asInstanceOf[RDD[OWLAxiom]]
 
-    objPropAssertion = objPropAssertion.union(O14_obj).distinct(parallelism)
+       //    val O4 = computeTransitiveClosure(O4_, AxiomType.TRANSITIVE_OBJECT_PROPERTY)
+       //      println("\n O4: \n----------------\n")
+       //      O4.collect().foreach(println)
 
-//    println("\n O14 object: \n----------------\n")
-//    O14_obj.collect().foreach(println)
+       //  SPOAxioms = SPOAxioms.union(O4)
+     }
 
-    // O13: (R owl:hasValue V), (R owl:onProperty P), (U P V) -> (U rdf:type R)
-    // case a: OWLEquivalentClasses(E, OWLDataHasValue(P, w)), OWLDataPropertyAssertion(P, i, w) --> OWLClassAssertion(E, i)
 
-    val e_swap: RDD[(OWLDataPropertyExpression, OWLClassExpression)] = e.map(a => (a._2.getProperty, a._1))
-    val O13_data_a = dataPropAssertion.filter(a => dataHasValBC.value.contains(a.getProperty))
-        .map(a => (a.getProperty, a.getSubject))
-        .join(e_swap)
-        .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+     SPOAxioms = SPOAxioms.union(R3a.asInstanceOf[RDD[OWLAxiom]])
+       .union(objPropAssertion.asInstanceOf[RDD[OWLAxiom]])
+       .distinct(parallelism)
 
-    // case b: OWLSubClassOf(S, OWLDataHasValue(P, w)) , OWLClassAssertion(S, i)
-    val s_swap = sd.map(a => (a._2.getProperty, a._1))
-    val O13_data_b = dataPropAssertion.map(a => (a.getProperty, a.getSubject))
-      .join(s_swap)
-      .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+     // ---------------------- Type Rules -------------------------------
+     // 3. Domain and Range inheritance according to rdfs2 and rdfs3 is computed
+     // R4:  a rdfs:domain b . x a y  -->  x rdf:type b
 
-    // case a: OWLEquivalentClasses(E, OWLObjectHasValue(P, w)), OWLObjectPropertyAssertion(P, i, w) --> OWLClassAssertion(E, i)
-    val eo_swap = eo.map(a => (a._2.getProperty, a._1))
-    val O13_obj_a = objPropAssertion.filter(a => objHasValBC.value.contains(a.getProperty))
-      .map(a => (a.getProperty, a.getSubject))
-      .join(eo_swap)
-      .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+     val R4a = dataPropAssertion // .asInstanceOf[RDD[OWLDataPropertyAssertionAxiom]]
+       .filter(a => dataDomainMapBC.value.contains(a.getProperty))
+       .map(a => dataFactory.getOWLClassAssertionAxiom(dataDomainMapBC.value(a.getProperty), a.getSubject))
+       .setName("R4a")
 
-    // case b: OWLSubClassOf(S, OWLObjectHasValue(P, w)) , OWLClassAssertion(S, i)
-    val so_swap = so.map(a => (a._2.getProperty, a._1))
-    val O13_obj_b = objPropAssertion.map(a => (a.getProperty, a.getSubject))
-      .join(so_swap)
-      .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+     val R4b = objPropAssertion // .asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
+       .filter(a => objDomainMapBC.value.contains(a.getProperty))
+       .map(a => dataFactory.getOWLClassAssertionAxiom(objDomainMapBC.value(a.getProperty), a.getSubject))
+       .setName("R4b")
 
-    typeAxioms = new UnionRDD(sc, Seq(typeAxioms, O13_data_a, O13_data_b, O13_obj_a, O13_obj_b))
-        .distinct(parallelism)
+     // R5: a rdfs:range x . y a z  -->  z rdf:type x .
 
-    println("\n O13: \n----------------\n")
-    typeAxioms.collect().foreach(println)
+     val R5a = dataPropAssertion.filter(a => dataRangeMapBC.value.contains(a.getProperty) && !a.getObject.isLiteral) // Add checking for non-literals
+       .map(a => dataFactory.getOWLClassAssertionAxiom
+     (dataRangeMapBC.value(a.getProperty).asInstanceOf[OWLClassExpression], a.getObject.asInstanceOf[OWLIndividual]))
+       .setName("R5a")
 
+     val R5b = objPropAssertion // .asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
+       .filter(a => objRangeMapBC.value.contains(a.getProperty))
+       .map(a => dataFactory.getOWLClassAssertionAxiom(objRangeMapBC.value(a.getProperty), a.getObject))
+       .setName("R5b")
+
+//     typeAxioms = typeAxioms.union(R4a).union(R4b)
+//       .union(R5a).union(R5b).distinct(parallelism)
+
+     // 4. SubClass inheritance according to rdfs9
+     // R6: x rdfs:subClassOf y . z rdf:type x -->  z rdf:type y .
+     val R6 = typeAxioms
+       .filter(a => subClassOfBC.value.contains(a.getClassExpression))
+       .flatMap(a => subClassOfBC.value(a.getClassExpression).map(s => dataFactory.getOWLClassAssertionAxiom(s, a.getIndividual)))
+       .setName("R6")
+
+     typeAxioms = typeAxioms.union(R6).distinct(parallelism)
+
+     // O14: (R owl:hasValue V),(R owl:onProperty P),(X rdf:type R) -> (X P V)
+     // in OWLAxioms we have 3 cases where we can find OWLDataHasValue
+
+     // case a: OWLClassAssertion(OWLDataHasValue(P, w), i)
+     val O14_data_a = typeAxioms.map(a => (a.getClassExpression, a.getIndividual))
+       .filter(a => a._1.isInstanceOf[OWLDataHasValue])
+       .map(a => (a._1.asInstanceOf[OWLDataHasValue], a._2))
+       .map(a => dataFactory.getOWLDataPropertyAssertionAxiom(a._1.getProperty, a._2, a._1.getFiller))
+
+
+     // case b: OWLSubClassOf(S, OWLDataHasValue(P, w)) , OWLClassAssertion(S, i)
+     val subOperands = subClassof.asInstanceOf[RDD[OWLSubClassOfAxiom]]
+       .map(a => (a.getSubClass, a.getSuperClass))
+
+     val sd = subOperands.filter(s => s._2.isInstanceOf[OWLDataHasValue])
+       .map(s => (s._1, s._2.asInstanceOf[OWLDataHasValue]))
+
+     val O14_data_b = typeAxioms.filter(a => subClassOfBC.value.contains(a.getClassExpression))
+       .map(a => (a.getClassExpression, a.getIndividual))
+       .join(sd).filter(x => x._2._2.isInstanceOf[OWLDataHasValue])
+       .map(a => dataFactory.getOWLDataPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+
+     // case c: OWLEquivelantClass(E, OWLDataHasValue(P, w)), OWLClassAssertion(E, i)
+     val eqOperands = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+       .map(a => (a.getOperandsAsList.get(0), a.getOperandsAsList.get(1)))
+
+     val e = eqOperands.filter(eq => eq._2.isInstanceOf[OWLDataHasValue])
+       .map(eq => (eq._1, eq._2.asInstanceOf[OWLDataHasValue]))
+
+     val O14_data_c = typeAxioms.filter(a => equClassMapBC.value.contains(a.getClassExpression))
+       .map(a => (a.getClassExpression, a.getIndividual))
+       .join(e).filter(x => x._2._2.isInstanceOf[OWLDataHasValue])
+       .map(a => dataFactory.getOWLDataPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+
+     val O14_data = O14_data_a.union(O14_data_b).union(O14_data_c).distinct(parallelism)
+
+     dataPropAssertion = dataPropAssertion.union(O14_data)
+
+     //    println("\n O14 data: \n----------------\n")
+     //    O14.collect().foreach(println)
+
+     // O14: (R owl:hasValue V),(R owl:onProperty P),(X rdf:type R) -> (X P V)
+     // we have the same 3 cases where we can find OWLObjectHasValue
+
+     // case a: OWLClassAssertion(OWLObjectHasValue(P, w), i)
+     val O14_obj_a = typeAxioms.map(a => (a.getClassExpression, a.getIndividual))
+       .filter(a => a._1.isInstanceOf[OWLObjectHasValue])
+       .map(a => (a._1.asInstanceOf[OWLObjectHasValue], a._2))
+       .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a._1.getProperty, a._2, a._1.getFiller))
+
+     // case b: OWLSubClassOf(S, OWLObjectHasValue(P, w)) , OWLClassAssertion(S, i)
+     val so = subOperands.filter(s => s._2.isInstanceOf[OWLObjectHasValue])
+       .map(s => (s._1, s._2.asInstanceOf[OWLObjectHasValue]))
+
+     val O14_obj_b = typeAxioms.filter(a => subClassOfBC.value.contains(a.getClassExpression))
+       .map(a => (a.getClassExpression, a.getIndividual))
+       .join(so).filter(x => x._2._2.isInstanceOf[OWLObjectHasValue])
+       .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+
+     // case c: OWLEquivelantClass(E, OWLObjectHasValue(P, w)), OWLClassAssertion(E, i)
+     val eo = eqOperands.filter(eq => eq._2.isInstanceOf[OWLObjectHasValue])
+       .map(eq => (eq._1, eq._2.asInstanceOf[OWLObjectHasValue]))
+
+     val O14_obj_c = typeAxioms.filter(a => equClassMapBC.value.contains(a.getClassExpression))
+       .map(a => (a.getClassExpression, a.getIndividual))
+       .join(eo).filter(x => x._2._2.isInstanceOf[OWLObjectHasValue])
+       .map(a => dataFactory.getOWLObjectPropertyAssertionAxiom(a._2._2.getProperty, a._2._1, a._2._2.getFiller))
+
+     val O14_obj = O14_obj_a.union(O14_obj_b).union(O14_obj_c)
+
+     objPropAssertion = objPropAssertion.union(O14_obj).distinct(parallelism)
+
+     //    println("\n O14 object: \n----------------\n")
+     //    O14_obj.collect().foreach(println)
+
+     // O13: (R owl:hasValue V), (R owl:onProperty P), (U P V) -> (U rdf:type R)
+     // case a: OWLEquivalentClasses(E, OWLDataHasValue(P, w)), OWLDataPropertyAssertion(P, i, w) --> OWLClassAssertion(E, i)
+
+     val e_swap: RDD[(OWLDataPropertyExpression, OWLClassExpression)] = e.map(a => (a._2.getProperty, a._1))
+     val O13_data_a = dataPropAssertion.filter(a => dataHasValBC.value.contains(a.getProperty))
+       .map(a => (a.getProperty, a.getSubject))
+       .join(e_swap)
+       .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+
+     // case b: OWLSubClassOf(S, OWLDataHasValue(P, w)) , OWLClassAssertion(S, i)
+     val s_swap = sd.map(a => (a._2.getProperty, a._1))
+     val O13_data_b = dataPropAssertion.map(a => (a.getProperty, a.getSubject))
+       .join(s_swap)
+       .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+
+     // case a: OWLEquivalentClasses(E, OWLObjectHasValue(P, w)), OWLObjectPropertyAssertion(P, i, w) --> OWLClassAssertion(E, i)
+     val eo_swap = eo.map(a => (a._2.getProperty, a._1))
+     val O13_obj_a = objPropAssertion.filter(a => objHasValBC.value.contains(a.getProperty))
+       .map(a => (a.getProperty, a.getSubject))
+       .join(eo_swap)
+       .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+
+     // case b: OWLSubClassOf(S, OWLObjectHasValue(P, w)) , OWLClassAssertion(S, i)
+     val so_swap = so.map(a => (a._2.getProperty, a._1))
+     val O13_obj_b = objPropAssertion.map(a => (a.getProperty, a.getSubject))
+       .join(so_swap)
+       .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+
+//     typeAxioms = new UnionRDD(sc, Seq(typeAxioms, O13_data_a, O13_data_b, O13_obj_a, O13_obj_b))
+//       .distinct(parallelism)
+
+     // val eos: RDD[(OWLClassExpression, OWLObjectSomeValuesFrom)] = eqOperands.filter(eq => eq._2.isInstanceOf[OWLObjectSomeValuesFrom])
+     //  .map(eq => (eq._1, eq._2.asInstanceOf[OWLObjectSomeValuesFrom]))
+     //  val eosMapBC: Broadcast[Map[OWLClassExpression, OWLObjectSomeValuesFrom]] = sc.broadcast(eos.collect().toMap)
+
+     //    val O15_1 = typeAxioms.filter(a => equClassMapBC.value.contains(a.getClassExpression))
+     //        .map(a => (a.getClassExpression, a.getIndividual))
+     //        .join(eos)
+     //        .map(a => ((a._1, a._2._1), Nil))
+
+     //    val O15_data_1: RDD[(OWLLiteral, OWLIndividual)] = dataPropAssertion.filter(a => dataSomeValuesBC.value.contains(a.getProperty))
+     //      .map(a => (a.getObject, a.getSubject))
+
+     //    val O15_data_2: RDD[(OWLIndividual, OWLClassExpression)] = typeAxioms.filter(a => dataSomeValuesBC.value.contains(a.getClassExpression)
+     //      && equClassMapBC.value.contains(a.getClassExpression))
+     //      .map(a => (a.getIndividual, a.getClassExpression))
+     //
+     //    val O15_1 = O15_data_1.join(O15_data_2)
+     //      // .map(a => dataFactory.getOWLClassAssertionAxiom(a.))
+
+
+     // O15: (R owl:someValuesFrom D), (R owl:onProperty P), (X P A), (A rdf:type D ) -> (X rdf:type R )
+     val O15_obj_1 = objPropAssertion.filter(a => objSomeValuesBC.value.contains(a.getProperty))
+       .map(a => (a.getObject, a.getSubject)) // (A, X)
+
+     val O15_obj_2 = typeAxioms.filter(a => objSomeValuesSwapBC.value.contains(a.getClassExpression)
+       && equClassMapBC.value.contains(a.getClassExpression))
+       .map(a => (a.getIndividual, a.getClassExpression)) // (A, D)
+     //        .join(eos)
+     //        .map(a => (a._2._1, a._1))
+
+     val O15 = O15_obj_1.join(O15_obj_2) // Join on A to get (A, (X, D))
+       .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+
+
+     // O16: (R owl:allValuesFrom D), (R owl:onProperty P), (X P Y), (X rdf:type R ) -> (Y rdf:type D)
+     val O16_1: RDD[(OWLIndividual, OWLIndividual)] = objPropAssertion.filter(a => objAllValuesBC.value.contains(a.getProperty))
+       .map(a => (a.getSubject, a.getObject)) // (X, Y)
+
+     val O16_2: RDD[(OWLIndividual, OWLClassExpression)] = typeAxioms.filter(a => objAllValuesBCSwapBC.value.contains(a.getClassExpression)
+       && equClassMapBC.value.contains(a.getClassExpression))
+       .map(a => (a.getIndividual, a.getClassExpression)) // (X, R)
+
+     val O16 = O16_1.join(O16_2).map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
+
+     //    println("\n O16: \n----------------\n")
+     //    O16.collect().foreach(println)
+
+     val newTypeAxioms = new UnionRDD(sc, Seq(R4a, R4b, R5a, R5b, O13_data_a, O13_data_b, O13_obj_a, O13_obj_b, O15, O16))
+       .distinct(parallelism).subtract(typeAxioms, parallelism)
+
+     newTypeCount = newTypeAxioms.count()
+
+     if(newTypeCount > 0) {
+       // add type axioms
+       typeAxioms = typeAxioms.union(newTypeAxioms)
+     }
+     newData = newTypeCount > 0 || newAxiomsCount > 0
+   }
+
+    val infered: Long = allAxioms.count - newTypeCount - newAxiomsCount
+
+    println("Finish with " + infered + " Axioms")
+    // --------------------- SameAs Rules --------------------------
+
+    // O1: (?P rdf:type owl:FunctionalProperty), (?A ?P ?B), notLiteral(?B), (?A ?P ?C), notLiteral(?C), notEqual(?B ?C) -> (?B owl:sameAs ?C)
 
   }
 

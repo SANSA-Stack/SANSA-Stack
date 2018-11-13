@@ -3,7 +3,6 @@ package net.sansa_stack.inference.spark.forwardchaining.axioms
 import org.apache.spark.rdd.RDD
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
-
 import scala.reflect.ClassTag
 
 /*
@@ -15,101 +14,52 @@ class TransitiveReasoner extends Serializable{
   val m = OWLManager.createOWLOntologyManager()
   val f : OWLDataFactory = m.getOWLDataFactory
 
-
   def computeTransitiveClosure(axioms: RDD[OWLAxiom], T: AxiomType[_]) : RDD[OWLAxiom] = {
     if (axioms.count() <= 1) return axioms
 
-  val tcAxiom : RDD[OWLAxiom] = T match {
-    case AxiomType.SUBCLASS_OF =>
-        // we only need (s, o)
-        val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubClassOfAxiom]]
-          .map{a => (a.getSubClass, a.getSuperClass)}
-        val tc: RDD[(OWLClassExpression, OWLClassExpression)] = computeTransitiveClosure(subjectObjectPairs)
-        tc.map(x => f.getOWLSubClassOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
+    val tcAxiom : RDD[OWLAxiom] = T match {
+      case AxiomType.SUBCLASS_OF =>
+          // we only need (s, o)
+          val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubClassOfAxiom]]
+            .map{a => (a.getSubClass, a.getSuperClass)}
+          val tc: RDD[(OWLClassExpression, OWLClassExpression)] = computeTransitiveClosure(subjectObjectPairs)
+          tc.map(x => f.getOWLSubClassOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
 
-    case AxiomType.SUB_DATA_PROPERTY =>
-        val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubDataPropertyOfAxiom]]
-          .map{a => (a.getSubProperty, a.getSuperProperty)}
-        val tc = computeTransitiveClosure(subjectObjectPairs)
-        tc.map(x => f.getOWLSubDataPropertyOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
+      case AxiomType.SUB_DATA_PROPERTY =>
+          val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubDataPropertyOfAxiom]]
+            .map{a => (a.getSubProperty, a.getSuperProperty)}
+          val tc = computeTransitiveClosure(subjectObjectPairs)
+          tc.map(x => f.getOWLSubDataPropertyOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
 
-    case AxiomType.SUB_OBJECT_PROPERTY =>
-        val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubObjectPropertyOfAxiom]]
-          .map { a => (a.getSubProperty, a.getSuperProperty) }
-        val tc = computeTransitiveClosure(subjectObjectPairs)
-        tc.map(x => f.getOWLSubObjectPropertyOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
+      case AxiomType.SUB_OBJECT_PROPERTY =>
+          val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubObjectPropertyOfAxiom]]
+            .map { a => (a.getSubProperty, a.getSuperProperty) }
+          val tc = computeTransitiveClosure(subjectObjectPairs)
+          tc.map(x => f.getOWLSubObjectPropertyOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
 
-    case AxiomType.SUB_ANNOTATION_PROPERTY_OF =>
-        val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubAnnotationPropertyOfAxiom]]
-          .map { a => (a.getSubProperty, a.getSuperProperty) }
-        val tc = computeTransitiveClosure(subjectObjectPairs)
-        tc.map(x => f.getOWLSubAnnotationPropertyOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
+      case AxiomType.SUB_ANNOTATION_PROPERTY_OF =>
+          val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubAnnotationPropertyOfAxiom]]
+            .map { a => (a.getSubProperty, a.getSuperProperty) }
+          val tc = computeTransitiveClosure(subjectObjectPairs)
+          tc.map(x => f.getOWLSubAnnotationPropertyOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
 
-    case _ =>
-        println("No Transitive Closure")
+      case AxiomType.TRANSITIVE_OBJECT_PROPERTY =>
+          val obj = axioms.asInstanceOf[RDD[OWLTransitiveObjectPropertyAxiom]]
+          val prop = obj.first().getProperty
+        println(prop)
+          val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
+            .map{ a => (a.getSubject, a.getObject)}
+//          val tc = computeTransitiveClosure(subjectObjectPairs, prop)
+//          tc.map(x => f.getOWLObjectPropertyAssertionAxiom(prop, x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
         axioms
+
+      case _ =>
+          println("No Transitive Closure")
+          axioms
   }
 
    return tcAxiom
   }
-
-
-//  def computeSubClassTransitiveClosure(axioms: RDD[OWLAxiom]): RDD[OWLAxiom] = {
-//
-//   if (axioms.count() <= 1) return axioms
-//
-//   // we only need (s, o)
-//   val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubClassOfAxiom]]
-//      .map{a => (a.getSubClass, a.getSuperClass)}
-//
-//   val tc: RDD[(OWLClassExpression, OWLClassExpression)] = computeTransitiveClosure(subjectObjectPairs)
-//
-//   val tcAxiom : RDD[OWLAxiom] = tc.map(x => f.getOWLSubClassOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
-//   // val newAxioms = tcAxiom.asInstanceOf[RDD[OWLAxiom]].subtract(axioms)
-//
-// //   var newAxioms = axioms.union(unique)
-//
-//   return tcAxiom
-//  }
-//
-//
-//  def computeSubDataPropertyTransitiveClosure (axioms: RDD[OWLSubDataPropertyOfAxiom]): RDD[OWLSubDataPropertyOfAxiom] = {
-//
-//    if (axioms.count() <= 1) return axioms
-//
-//    // we only need (s, o)
-//    val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubDataPropertyOfAxiom]]
-//      .map{a => (a.getSubProperty, a.getSuperProperty)}
-//
-//    val tc = computeTransitiveClosure(subjectObjectPairs)
-//
-//    val tcAxiom = tc.map(x => f.getOWLSubDataPropertyOfAxiom(x._1, x._2))
-//
-//    // val newAxioms = tcAxiom.subtract(axioms)
-//
-//    //   var newAxioms = axioms.union(unique)
-//
-//    return tcAxiom
-//  }
-//
-//  def computeSubObjectPropertyTransitiveClosure (axioms: RDD[OWLAxiom]): RDD[OWLAxiom] = {
-//
-//    if (axioms.count() <= 1) return axioms
-//
-//    // we only need (s, o)
-//    val subjectObjectPairs = axioms.asInstanceOf[RDD[OWLSubObjectPropertyOfAxiom]]
-//      .map{a => (a.getSubProperty, a.getSuperProperty)}
-//
-//    val tc = computeTransitiveClosure(subjectObjectPairs)
-//
-//    val tcAxiom = tc.map(x => f.getOWLSubObjectPropertyOfAxiom(x._1, x._2)).asInstanceOf[RDD[OWLAxiom]]
-//
-//   // val newAxioms = tcAxiom.asInstanceOf[RDD[OWLAxiom]].subtract(axioms)
-//
-//    //   var newAxioms = axioms.union(unique)
-//
-//    return tcAxiom
-//  }
 
   def computeTransitiveClosure[A: ClassTag](pairs: RDD[(A, A)]): RDD[(A, A)] = {
     var tc = pairs
@@ -134,5 +84,9 @@ class TransitiveReasoner extends Serializable{
 
     tc
   }
+
+//  def computeTransitiveClosure[A: ClassTag](pairs: RDD[(A, A)], e: OWLObjectPropertyExpression): RDD[(A, A), A] = {
+//
+//  }
 
 }
