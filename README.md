@@ -54,7 +54,6 @@ _The mappings file can either be created manually or using the following graphic
 ### 2. Data Connection Configurations
 In order for data to connect to a data source, users need to provide a set of config parameters, in JSON format. This differs from data source to another, for example for a MongoDB collection, the config parameters could be: database host URL, database name, collection name, and replica set name.
 
-
 ```JSON
 {
   "type": "mongodb",
