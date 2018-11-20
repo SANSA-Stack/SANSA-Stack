@@ -8,10 +8,6 @@ cache:
   - "$HOME/.m2"
 scala:
 - 2.11.11
-jdk:
-  - oraclejdk8
-maven: 
-  version: 3.5.4
 script:
 - mvn scalastyle:check
 - mvn test
