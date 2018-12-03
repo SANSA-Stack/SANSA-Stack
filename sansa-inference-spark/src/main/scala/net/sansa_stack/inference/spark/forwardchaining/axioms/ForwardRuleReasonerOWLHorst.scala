@@ -2,7 +2,6 @@ package net.sansa_stack.inference.spark.forwardchaining.axioms
 
 import java.io.File
 
-import scala.collection.JavaConverters._
 import net.sansa_stack.inference.utils.CollectionUtils
 import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, OWLAxiomsRDD}
 import org.apache.spark.SparkContext
@@ -11,12 +10,12 @@ import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 
+import scala.collection.JavaConverters._
+
+
 class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) extends TransitiveReasoner{
 
   def this(sc: SparkContext) = this(sc, sc.defaultParallelism)
-
-  def apply(sc: SparkContext, parallelism: Int = 2): ForwardRuleReasonerOWLHorst =
-    new ForwardRuleReasonerOWLHorst(sc, parallelism)
 
   def apply(axioms: RDD[OWLAxiom], input: String): RDD[OWLAxiom] = {
 
@@ -627,7 +626,7 @@ object ForwardRuleReasonerOWLHorst{
 
   def main(args: Array[String]): Unit = {
 
-    val input = "/home/heba/SANSA_Inference/SANSA-Inference/sansa-inference-spark/src/main/resources/ont_functional.owl"
+    val input = getClass.getResource("/ont_functional.owl").getPath
 
     println("=====================================")
     println("|  OWLAxioms Forward Rule Reasoner  |")
@@ -637,16 +636,18 @@ object ForwardRuleReasonerOWLHorst{
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrator", "net.sansa_stack.inference.spark.forwardchaining.axioms.Registrator")
-      .appName("OWLAxioms Forward Rule Reasoner")
+      .appName("OWL Axiom Forward Chaining Rule Reasoner")
       .getOrCreate()
 
     val sc: SparkContext = sparkSession.sparkContext
 
     // Call the functional syntax OWLAxiom builder
-    var OWLAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
-   //  OWLAxiomsRDD.collect().foreach(println)
+    val owlAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
+    //  OWLAxiomsRDD.collect().foreach(println)
 
-    val RuleReasoner: RDD[OWLAxiom] = new ForwardRuleReasonerOWLHorst(sc, 2).apply(OWLAxiomsRDD, input)
+    val ruleReasoner = new ForwardRuleReasonerOWLHorst(sc, 2)
+    val res: RDD[OWLAxiom] = ruleReasoner(owlAxiomsRDD, input)
+    res.collect().foreach(println)
 
     sparkSession.stop
   }
