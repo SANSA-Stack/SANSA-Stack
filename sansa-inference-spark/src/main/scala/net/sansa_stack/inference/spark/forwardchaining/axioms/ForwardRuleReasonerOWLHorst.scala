@@ -621,6 +621,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     var inferedAxioms = sc.union(typeAxioms.asInstanceOf[RDD[OWLAxiom]], sameAsAxioms.asInstanceOf[RDD[OWLAxiom]], SPOAxioms)
         .subtract(axioms)
 
+    println("\n Finish with " + inferedAxioms.count + " Inferred Axioms after adding SameAs rules")
     println("\n...finished materialization in " + (Time/1000) + " sec.")
 
     inferedAxioms
