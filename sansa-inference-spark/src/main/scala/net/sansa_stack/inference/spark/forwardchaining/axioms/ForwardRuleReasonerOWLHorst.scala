@@ -21,22 +21,16 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
 
     val startTime = System.currentTimeMillis()
 
-    val owlFile: File = new File(input)
     val manager = OWLManager.createOWLOntologyManager()
-    val ontology: OWLOntology = manager.loadOntologyFromOntologyDocument(owlFile)
     val dataFactory = manager.getOWLDataFactory
 
-    val axiomsRDD = axioms.cache() // cache this RDD because it will be used quiet often
-
+    val axiomsRDD = axioms.cache() // cache this RDD because it will be used quite often
 
     // ------------ extract the schema elements -------------------
     val classes: RDD[OWLClass] = axiomsRDD.flatMap {
       case axiom: HasClassesInSignature => axiom.classesInSignature().iterator().asScala
       case _ => null
     }.filter(_ != null).distinct()
-
-    //    println("\n\nOWL Classes\n-------\n")
-    //    classes.collect().foreach(println)
 
     var subClassof = extractAxiom(axiomsRDD, AxiomType.SUBCLASS_OF)
     var subDataProperty = extractAxiom(axiomsRDD, AxiomType.SUB_DATA_PROPERTY)
@@ -61,10 +55,12 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     // O11a: (C owl:equivalentClass D) -> (C rdfs:subClassOf D )
     // O12b: (C owl:equivalentClass D) -> (D rdfs:subClassOf C )
 
-    var subC1 = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+    val subC1 = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+      .flatMap(equivClassesAxiom => equivClassesAxiom.asPairwiseAxioms().asScala)
       .map(a => dataFactory.getOWLSubClassOfAxiom(a.getOperandsAsList.get(0), a.getOperandsAsList.get(1)))
 
-    var subC2 = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+    val subC2 = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+      .flatMap(equivClassesAxiom => equivClassesAxiom.asPairwiseAxioms().asScala)
       .map(a => dataFactory.getOWLSubClassOfAxiom(a.getOperandsAsList.get(1), a.getOperandsAsList.get(0)))
 
     subClassof = sc.union(subClassof,
