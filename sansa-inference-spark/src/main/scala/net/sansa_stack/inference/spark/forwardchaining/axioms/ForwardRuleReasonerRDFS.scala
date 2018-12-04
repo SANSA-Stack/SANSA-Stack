@@ -50,8 +50,8 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
       case _ => null
     }.filter(_ != null).distinct()
 
-    println("\n\nOWL Classes\n-------\n")
-    classes.collect().foreach(println)
+//    println("\n\nOWL Classes\n-------\n")
+//    classes.collect().foreach(println)
 
     // OWLClassAssertionAxiom
     val classAsserAxiom = axiomsRDD
@@ -68,104 +68,78 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
 //
 //    b.take(b.count().toInt).foreach(println(_))
 
-    println("\n\nOWLClassAssertionAxioms\n-------\n")
-    classAsserAxiom.collect().foreach(println)
+//    println("\n\nOWLClassAssertionAxioms\n-------\n")
+//    classAsserAxiom.collect().foreach(println)
 
     // OWLSubClassofAxiom
     val subClassofAxiom: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.SUBCLASS_OF))
 
-    println("\n\nOWLSubClassofAxioms\n-------\n")
-    subClassofAxiom.collect().foreach(println)
+//    println("\n\nOWLSubClassofAxioms\n-------\n")
+//    subClassofAxiom.collect().foreach(println)
 
     // OWLSubDataPropertyofAxiom
     val subDataPropertyofAxiom = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.SUB_DATA_PROPERTY))
         // .asInstanceOf[RDD[OWLSubDataPropertyOfAxiom]]
-    println("\n\nOWLSubDataPropertyofAxioms\n-------\n")
-    subDataPropertyofAxiom.collect().foreach(println)
+//    println("\n\nOWLSubDataPropertyofAxioms\n-------\n")
+//    subDataPropertyofAxiom.collect().foreach(println)
 
     // OWLSubObjectPropertyofAxiom
     val subObjectPropertyofAxiom: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.SUB_OBJECT_PROPERTY))
-    println("\n\nOWLSubObjectPropertyofAxioms\n-------\n")
-    subObjectPropertyofAxiom.collect().foreach(println)
+
+//    println("\n\nOWLSubObjectPropertyofAxioms\n-------\n")
+//    subObjectPropertyofAxiom.collect().foreach(println)
 
     // OWLObjectPropertyDomainAxiom
     val objectProDomain: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.OBJECT_PROPERTY_DOMAIN))
 
-    println("\n\nOWLObjectPropertyDomainAxiom\n-------\n")
-    objectProDomain.collect().foreach(println)
+//    println("\n\nOWLObjectPropertyDomainAxiom\n-------\n")
+//    objectProDomain.collect().foreach(println)
 
     // OWLDataPropertyDomainAxiom
     val dataProDomain: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.DATA_PROPERTY_DOMAIN))
 
-    println("\n\nOWLDataPropertyDomainAxiom\n-------\n")
-    dataProDomain.collect().foreach(println)
+//    println("\n\nOWLDataPropertyDomainAxiom\n-------\n")
+//    dataProDomain.collect().foreach(println)
 
     // OWLDataPropertyRangeAxiom
     val dataProRange: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.DATA_PROPERTY_RANGE))
 
-    println("\n\nOWLDataPropertyRangeAxiom\n-------\n")
-    dataProRange.collect().foreach(println)
+//    println("\n\nOWLDataPropertyRangeAxiom\n-------\n")
+//    dataProRange.collect().foreach(println)
 
     // OWLObjectPropertyRangeAxiom
     val objProRange: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.OBJECT_PROPERTY_RANGE))
 
-    println("\n\nOWLObjectPropertyRangeAxiom\n-------\n")
-    objProRange.collect().foreach(println)
+//    println("\n\nOWLObjectPropertyRangeAxiom\n-------\n")
+//    objProRange.collect().foreach(println)
 
     // OWLDataPropertyAssertionAxiom
     val dataPropAsserAxiom: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.DATA_PROPERTY_ASSERTION))
 
-    println("\n\nOWLDataPropertyAssertionAxiom\n-------\n")
-    dataPropAsserAxiom.collect().foreach(println)
+//    println("\n\nOWLDataPropertyAssertionAxiom\n-------\n")
+//    dataPropAsserAxiom.collect().foreach(println)
 
     // OWLObjectPropertyAssertionAxiom
     val objPropAsserAxiom: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.OBJECT_PROPERTY_ASSERTION))
 
-    println("\n\nOWLObjectPropertyAssertionAxiom\n-------\n")
-    objPropAsserAxiom.collect().foreach(println)
+//    println("\n\nOWLObjectPropertyAssertionAxiom\n-------\n")
+//    objPropAsserAxiom.collect().foreach(println)
 
     // OWLSubAnnotationPropertyAssertionAxiom
     val subAnnProp: RDD[OWLAxiom] = axiomsRDD
       .filter(axiom => axiom.getAxiomType.equals(AxiomType.SUB_ANNOTATION_PROPERTY_OF))
 
-    println("\n\nOWLSubAnnotationPropertyOAxiom\n-------\n")
-    subAnnProp.collect().foreach(println)
-
-    // OWLIndividuals
-    val individuals : RDD[OWLNamedIndividual] = axiomsRDD.flatMap {
-      case axiom : HasIndividualsInSignature => axiom.individualsInSignature().collect(Collectors.toSet()).asScala
-      case _ => null
-    }.filter(_ != null).distinct()
-
-    println("\nIndividuals\n-----------")
-    individuals.collect().foreach(println)
-
-    // OWL Data Property
-    val dataProperty = axiomsRDD.flatMap{
-      case axiom : HasDataPropertiesInSignature => axiom.dataPropertiesInSignature().iterator().asScala
-      case _ => null
-    }.filter(_ != null).distinct()
-
-    println("\n Data properties: \n----------------\n")
-    dataProperty.collect().foreach(println)
-
-   //  annotated properties
-   val annotatedProperties: RDD[OWLAnnotationProperty] = axiomsRDD.flatMap{
-      case axiom : HasAnnotationPropertiesInSignature => axiom.annotationPropertiesInSignature.iterator().asScala
-      case _ => null
-   }.filter(_ != null).distinct()
-
-    println("\n Annotated properties: \n----------------\n")
-    annotatedProperties.collect().foreach(println)
+//    println("\n\nOWLSubAnnotationPropertyOAxiom\n-------\n")
+//    subAnnProp.collect().foreach(println)
 
    // start to calculate transitive rules
 
@@ -179,8 +153,8 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
     val tr = new TransitiveReasoner()
     val subClassOfAxiomsTrans = tr.computeTransitiveClosure(subClassofAxiom, AxiomType.SUBCLASS_OF).setName("rdfs11")
 
-    println("\n Transitive subClassOfAxiom closures: \n----------------\n")
-    subClassOfAxiomsTrans.collect().foreach(println)
+//    println("\n Transitive subClassOfAxiom closures: \n----------------\n")
+//    subClassOfAxiomsTrans.collect().foreach(println)
 
     /* rule 2 --> rule 2a, rule 2b
        rdfs5 x rdfs:subPropertyOf y .
@@ -191,18 +165,18 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
     // val subDataPropertyOfAxiomsTrans = tr.computeSubDataPropertyTransitiveClosure(subDataPropertyofAxiom).setName("rdfs5")
     val subDataPropertyOfAxiomsTrans = tr.computeTransitiveClosure(subDataPropertyofAxiom, AxiomType.SUB_DATA_PROPERTY).setName("rdfs5")
 
-    println("\n Transitive subDataPropertyOfAxiom closures: \n----------------\n")
-    subDataPropertyOfAxiomsTrans.collect().foreach(println)
+//    println("\n Transitive subDataPropertyOfAxiom closures: \n----------------\n")
+//    subDataPropertyOfAxiomsTrans.collect().foreach(println)
 
     val subObjectPropertyOfAxiomsTrans = tr.computeTransitiveClosure(subObjectPropertyofAxiom, AxiomType.SUB_OBJECT_PROPERTY).setName("rdfs5")
 
-    println("\n Transitive subObjectPropertyOfAxiom closures: \n----------------\n")
-    subObjectPropertyOfAxiomsTrans.collect().foreach(println)
+//    println("\n Transitive subObjectPropertyOfAxiom closures: \n----------------\n")
+//    subObjectPropertyOfAxiomsTrans.collect().foreach(println)
 
     val subAnnotationPropertyOfAxiomsTrans = tr.computeTransitiveClosure(subAnnProp, AxiomType.SUB_ANNOTATION_PROPERTY_OF)
 
-    println("\n Transitive subAnnotationPropertyOfAxiom closures: \n----------------\n")
-    subAnnotationPropertyOfAxiomsTrans.collect().foreach(println)
+//    println("\n Transitive subAnnotationPropertyOfAxiom closures: \n----------------\n")
+//    subAnnotationPropertyOfAxiomsTrans.collect().foreach(println)
 
     var allAxioms = axioms.union(subObjectPropertyOfAxiomsTrans)
       .union(subDataPropertyOfAxiomsTrans.asInstanceOf[RDD[OWLAxiom]])
@@ -336,7 +310,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
     val infered = allAxioms.subtract(axioms)
     val inferedCount = infered.count()
 
-    println("\n Finish with " + inferedCount + " Inferred Axioms from Schema, SPO and Type rules")
+    println("\n Finish with " + inferedCount + " Inferred Axioms")
     infered
 
  }
