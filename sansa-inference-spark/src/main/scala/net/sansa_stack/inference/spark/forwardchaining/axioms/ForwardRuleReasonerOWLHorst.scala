@@ -1,7 +1,5 @@
 package net.sansa_stack.inference.spark.forwardchaining.axioms
 
-import java.io.File
-
 import net.sansa_stack.inference.utils.CollectionUtils
 import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, OWLAxiomsRDD}
 import org.apache.spark.SparkContext
@@ -11,6 +9,15 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 
 import scala.collection.JavaConverters._
+
+/**
+  * A forward chaining implementation for the OWL Horst entailment regime that works
+  * on OWL axioms
+  *
+  * @param sc The Apache Spark context
+  * @param parallelism The degree of parallelism
+  * @author Heba Mohamed
+  */
 
 
 class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) extends TransitiveReasoner{
@@ -55,12 +62,13 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     // O11a: (C owl:equivalentClass D) -> (C rdfs:subClassOf D )
     // O12b: (C owl:equivalentClass D) -> (D rdfs:subClassOf C )
 
-    val subC1 = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+    val equClass_Pairs = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
       .flatMap(equivClassesAxiom => equivClassesAxiom.asPairwiseAxioms().asScala)
+
+    val subC1 = equClass_Pairs
       .map(a => dataFactory.getOWLSubClassOfAxiom(a.getOperandsAsList.get(0), a.getOperandsAsList.get(1)))
 
-    val subC2 = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
-      .flatMap(equivClassesAxiom => equivClassesAxiom.asPairwiseAxioms().asScala)
+    val subC2 = equClass_Pairs
       .map(a => dataFactory.getOWLSubClassOfAxiom(a.getOperandsAsList.get(1), a.getOperandsAsList.get(0)))
 
     subClassof = sc.union(subClassof,
@@ -93,10 +101,10 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     val objRangeMap = objectProRange.asInstanceOf[RDD[OWLObjectPropertyRangeAxiom]]
       .map(a => (a.getProperty, a.getRange)).collect().toMap
 
-    val equClassMap = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+    val equClassMap = equClass_Pairs
       .map(a => (a.getOperandsAsList.get(0), a.getOperandsAsList.get(1))).collect.toMap
 
-    val equClassSwapMap = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+    val equClassSwapMap =equClass_Pairs
       .map(a => (a.getOperandsAsList.get(1), a.getOperandsAsList.get(0))).collect.toMap
 
     // distribute the schema data structures by means of shared variables
@@ -109,7 +117,6 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     val objRangeMapBC = sc.broadcast(objRangeMap)
     val equClassMapBC = sc.broadcast(equClassMap)
     val equClassSwapMapBC = sc.broadcast(equClassSwapMap)
-    //    equClassSwapMapBC.value.foreach(println)
 
     // Compute the equivalence of classes and properties
     // O11c: (C rdfs:subClassOf D ), (D rdfs:subClassOf C ) -> (C owl:equivalentClass D)
@@ -123,10 +130,13 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     // O12a: (C owl:equivalentProperty D) -> (C rdfs:subPropertyOf D )
     // O12b: (C owl:equivalentProperty D) -> (D rdfs:subPropertyOf C )
 
-    var subDProp1 = equDataProp.asInstanceOf[RDD[OWLEquivalentDataPropertiesAxiom]]
+    var subDProp_Pairs = equDataProp.asInstanceOf[RDD[OWLEquivalentDataPropertiesAxiom]]
+      .flatMap(eq => eq.asPairwiseAxioms().asScala)
+
+    var subDProp1 = subDProp_Pairs
       .map(a => dataFactory.getOWLSubDataPropertyOfAxiom(a.getOperandsAsList.get(0), a.getOperandsAsList.get(1)))
 
-    var subDProp2 = equDataProp.asInstanceOf[RDD[OWLEquivalentDataPropertiesAxiom]]
+    var subDProp2 = subDProp_Pairs
       .map(a => dataFactory.getOWLSubDataPropertyOfAxiom(a.getOperandsAsList.get(1), a.getOperandsAsList.get(0)))
 
     subDataProperty = sc.union(subDataProperty,
@@ -137,10 +147,13 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     //    println("\n subDataProperty closures: \n----------------\n")
     //    subDataProperty.collect().foreach(println)
 
-    var subOProp1 = equObjProp.asInstanceOf[RDD[OWLEquivalentObjectPropertiesAxiom]]
+    var subOProp_Pairs = equObjProp.asInstanceOf[RDD[OWLEquivalentObjectPropertiesAxiom]]
+      .flatMap(eq => eq.asPairwiseAxioms().asScala)
+
+    var subOProp1 = subOProp_Pairs
       .map(a => dataFactory.getOWLSubObjectPropertyOfAxiom(a.getOperandsAsList.get(0), a.getOperandsAsList.get(1)))
 
-    var subOProp2 = equObjProp.asInstanceOf[RDD[OWLEquivalentObjectPropertiesAxiom]]
+    var subOProp2 = subOProp_Pairs
       .map(a => dataFactory.getOWLSubObjectPropertyOfAxiom(a.getOperandsAsList.get(1), a.getOperandsAsList.get(0)))
 
     subObjProperty = sc.union(subObjProperty,
@@ -618,7 +631,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     }
   }
 
-object ForwardRuleReasonerOWLHorst{
+ object ForwardRuleReasonerOWLHorst{
 
   def main(args: Array[String]): Unit = {
 
@@ -643,8 +656,8 @@ object ForwardRuleReasonerOWLHorst{
 
     val ruleReasoner = new ForwardRuleReasonerOWLHorst(sc, 2)
     val res: RDD[OWLAxiom] = ruleReasoner(owlAxiomsRDD, input)
-    res.collect().foreach(println)
+    // res.collect().foreach(println)
 
     sparkSession.stop
   }
-}
+ }
