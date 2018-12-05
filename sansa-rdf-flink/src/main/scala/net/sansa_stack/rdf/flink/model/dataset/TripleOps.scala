@@ -4,6 +4,7 @@ import net.sansa_stack.rdf.flink.utils.DataSetUtils.DataSetOps
 import org.apache.flink.api.java.ExecutionEnvironment
 import org.apache.flink.api.scala.{ DataSet, _ }
 import org.apache.jena.graph.{ Node, Triple }
+
 /**
  * Flink based implementation of DataSet[Triple].
  *
