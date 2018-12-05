@@ -1,44 +1,43 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.{Closeable, IOException, InputStream}
+import java.io.{ Closeable, InputStream, IOException }
 import java.util
+import java.util.concurrent.{ SynchronousQueue, TimeUnit }
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{SynchronousQueue, TimeUnit}
 
 import scala.collection.JavaConverters._
 
+import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.io.compress.{CodecPool, CompressionCodecFactory}
-import org.apache.hadoop.mapreduce.lib.input.{CombineFileInputFormat, CombineFileSplit}
-import org.apache.hadoop.mapreduce.{InputSplit, JobContext, RecordReader, TaskAttemptContext}
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
-import org.apache.jena.riot.system.{ErrorHandlerFactory, StreamRDFBase}
-import org.apache.jena.riot.{RDFLanguages, RDFParser, RiotException}
-
-import net.sansa_stack.rdf.common.annotation.Experimental
+import org.apache.hadoop.io.compress.{ CodecPool, CompressionCodecFactory }
+import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, RecordReader, TaskAttemptContext }
+import org.apache.hadoop.mapreduce.lib.input.{ CombineFileInputFormat, CombineFileSplit }
+import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.riot.{ RDFLanguages, RDFParser, RiotException }
+import org.apache.jena.riot.system.{ ErrorHandlerFactory, StreamRDFBase }
 
 /**
-  * A custom Hadoop input format that uses the Apache Jena RDF I/O technology (RIOT) to parse
-  * RDF data files.
-  * Read [[https://jena.apache.org/documentation/io/]]
-  * for more details.
-  *
-  * The following RDF formats are supported by Jena:
-  *  - N-Triples
-  *  - Turtle
-  *  - RDF/XML
-  *  - N-Quads
-  *  - JSON-LD
-  *  - RDF/JSON
-  *  - TriG
-  *  - TriX
-  *  - RDF Binary
-  *
-  * @since 0.3.0
-  * @author Lorenz Buehmann
-  */
+ * A custom Hadoop input format that uses the Apache Jena RDF I/O technology (RIOT) to parse
+ * RDF data files.
+ * Read [[https://jena.apache.org/documentation/io/]]
+ * for more details.
+ *
+ * The following RDF formats are supported by Jena:
+ *  - N-Triples
+ *  - Turtle
+ *  - RDF/XML
+ *  - N-Quads
+ *  - JSON-LD
+ *  - RDF/JSON
+ *  - TriG
+ *  - TriX
+ *  - RDF Binary
+ *
+ * @since 0.3.0
+ * @author Lorenz Buehmann
+ */
 @Experimental
 class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
 
@@ -49,10 +48,8 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
   override def listStatus(job: JobContext): util.List[FileStatus] =
     super.listStatus(job).asScala.filter(fs => RDFLanguages.filenameToLang(fs.getPath.getName) != null).asJava
 
-
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[LongWritable, Triple] =
     new RiotRecordReader
-
 
   class RiotRecordReader extends RecordReader[LongWritable, Triple] {
 
@@ -67,8 +64,7 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
     override def getProgress: Float = if (pump == null) 0 else pump.getProgress
 
     override def nextKeyValue(): Boolean = {
-      if (pump == null)
-        false
+      if (pump == null) false
       else {
         current = pump.getNext
         key.incrementAndGet
@@ -116,88 +112,87 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
       private var seek: Seekable = null
       private var in: InputStream = null
 
+      //      @throws[IOException]
+      //      @throws[InterruptedException]
+      //      def getNext = {
+      //        val s = queue.take
+      //        if (ex != null) throw new IOException("Exception while parsing: " + baseUri, ex)
+      //        if (s == END_STATEMENT) null
+      //        else s
+      //      }
 
-//      @throws[IOException]
-//      @throws[InterruptedException]
-//      def getNext = {
-//        val s = queue.take
-//        if (ex != null) throw new IOException("Exception while parsing: " + baseUri, ex)
-//        if (s == END_STATEMENT) null
-//        else s
-//      }
+      //      @throws[IOException]
+      //      def getProgress = this.synchronized {
+      //        (finishedSize + seek.getPos).toFloat / size.toFloat
+      //      }
+      //
+      //      @throws[IOException]
+      //      override def close(): Unit = {
+      //        if (in != null) {
+      //          in.close()
+      //          in = null
+      //        }
+      //      }
 
-//      @throws[IOException]
-//      def getProgress = this.synchronized {
-//        (finishedSize + seek.getPos).toFloat / size.toFloat
-//      }
-//
-//      @throws[IOException]
-//      override def close(): Unit = {
-//        if (in != null) {
-//          in.close()
-//          in = null
-//        }
-//      }
+      //      override def triple(triple: Triple): Unit = {
+      //        try
+      //          queue.put(triple)
+      //        catch {
+      //          case e: InterruptedException =>
+      //            throw new RiotException(e)
+      //        }
+      //      }
 
-//      override def triple(triple: Triple): Unit = {
-//        try
-//          queue.put(triple)
-//        catch {
-//          case e: InterruptedException =>
-//            throw new RiotException(e)
-//        }
-//      }
-
-//      override def run(): Unit = {
-//        try {
-//          val conf = context.getConfiguration
-//
-//          for (file <- paths) {
-//            println(file)
-//            try {
-//              val parser: RDFParser =
-//                this.synchronized {
-//                  if (seek != null) finishedSize += seek.getPos
-//                  close()
-//                  this.baseUri = file.toString
-//                  context.setStatus("Parsing " + baseUri)
-//                  val fs = file.getFileSystem(conf)
-//                  val fileIn = fs.open(file)
-//                  this.seek = fileIn
-//                  val codec = new CompressionCodecFactory(conf).getCodec(file)
-//                  if (codec != null)
-//                    in = codec.createInputStream(fileIn, CodecPool.getDecompressor(codec))
-//                  else
-//                    in = fileIn
-//
-//                  RDFParser.create()
-//                    .source(in)
-//                    .lang(RDFLanguages.filenameToLang(baseUri))
-//                    .errorHandler(ErrorHandlerFactory.errorHandlerNoWarnings)
-//                    //                    .base("http://example/base")
-//                    .build()
-//                }
-//
-//              parser.parse(this)
-//
-//            } catch {
-//              case e: Exception =>
-//                if (skipInvalid) logWarning("Exception while parsing RDF", e)
-//                else throw e
-//            }
-//          }
-//
-//        } catch {
-//          case e: Exception =>
-//            ex = e
-//        } finally try
-//          queue.put(END_STATEMENT)
-//
-//        catch {
-//          case ignore: InterruptedException =>
-//
-//        }
-//      }
+      //      override def run(): Unit = {
+      //        try {
+      //          val conf = context.getConfiguration
+      //
+      //          for (file <- paths) {
+      //            println(file)
+      //            try {
+      //              val parser: RDFParser =
+      //                this.synchronized {
+      //                  if (seek != null) finishedSize += seek.getPos
+      //                  close()
+      //                  this.baseUri = file.toString
+      //                  context.setStatus("Parsing " + baseUri)
+      //                  val fs = file.getFileSystem(conf)
+      //                  val fileIn = fs.open(file)
+      //                  this.seek = fileIn
+      //                  val codec = new CompressionCodecFactory(conf).getCodec(file)
+      //                  if (codec != null)
+      //                    in = codec.createInputStream(fileIn, CodecPool.getDecompressor(codec))
+      //                  else
+      //                    in = fileIn
+      //
+      //                  RDFParser.create()
+      //                    .source(in)
+      //                    .lang(RDFLanguages.filenameToLang(baseUri))
+      //                    .errorHandler(ErrorHandlerFactory.errorHandlerNoWarnings)
+      //                    //                    .base("http://example/base")
+      //                    .build()
+      //                }
+      //
+      //              parser.parse(this)
+      //
+      //            } catch {
+      //              case e: Exception =>
+      //                if (skipInvalid) logWarning("Exception while parsing RDF", e)
+      //                else throw e
+      //            }
+      //          }
+      //
+      //        } catch {
+      //          case e: Exception =>
+      //            ex = e
+      //        } finally try
+      //          queue.put(END_STATEMENT)
+      //
+      //        catch {
+      //          case ignore: InterruptedException =>
+      //
+      //        }
+      //      }
 
       private var ins: Seq[InputStream] = Seq()
       private var seeks: Seq[Seekable] = Seq()
@@ -205,11 +200,10 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
 
       @throws[IOException]
       @throws[InterruptedException]
-      def getNext = {
+      def getNext: Triple = {
         val s = queue.take
         if (ex != null) throw new IOException("Exception while parsing: " + baseUri, ex)
-
-//        val s = takeAny()
+        //        val s = takeAny()
 
         if (s == END_STATEMENT) null
         else s
@@ -220,7 +214,7 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
         var s: Triple = null
 
         queues.foreach(queue => {
-          if(s == null || s == END_STATEMENT) {
+          if (s == null || s == END_STATEMENT) {
             s = queue.take()
           }
         })
@@ -235,9 +229,9 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
           val conf = context.getConfiguration
 
           for (file <- paths) {
-//            val queue = new SynchronousQueue[Triple]()
-//            queues +:= queue
-//            pool.execute(new ParserRunner(file, conf, queue))
+            //            val queue = new SynchronousQueue[Triple]()
+            //            queues +:= queue
+            //            pool.execute(new ParserRunner(file, conf, queue))
             pool.execute(new ParserRunner(file, conf))
           }
           pool.shutdown()
@@ -266,15 +260,16 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
       }
 
       @throws[IOException]
-      def getProgress = this.synchronized {
+      def getProgress: Float = this.synchronized {
         (finishedSize + seeks.map(_.getPos).sum).toFloat / size.toFloat
       }
 
-      class ParserRunner(file: Path,
-                         conf: Configuration)
-//                         queue: SynchronousQueue[Triple])
+      class ParserRunner(
+        file: Path,
+        conf: Configuration)
+        //                         queue: SynchronousQueue[Triple])
         extends StreamRDFBase with Runnable {
-//        val queue: SynchronousQueue[Triple] = new SynchronousQueue[Triple]
+        //        val queue: SynchronousQueue[Triple] = new SynchronousQueue[Triple]
 
         override def run(): Unit = {
           logger.debug(s"parsing file $file")
@@ -289,14 +284,15 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
                 val fileIn = fs.open(file)
                 seeks :+= fileIn
                 val codec = new CompressionCodecFactory(conf).getCodec(file)
-                val in = if (codec != null)
+                val in = if (codec != null) {
                   codec.createInputStream(fileIn, CodecPool.getDecompressor(codec))
-                else
+                } else {
                   fileIn
+                }
 
                 ins :+= in
 
-//                queues :+= queue
+                //                queues :+= queue
 
                 RDFParser.create()
                   .source(in)

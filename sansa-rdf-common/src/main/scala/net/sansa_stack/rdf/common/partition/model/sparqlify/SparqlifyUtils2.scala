@@ -2,6 +2,10 @@ package net.sansa_stack.rdf.common.partition.model.sparqlify
 
 import java.util
 
+import scala.language.implicitConversions
+import scala.reflect.runtime.universe._
+
+import collection.JavaConverters._
 import com.google.common.collect.ImmutableMap
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import org.aksw.jena_sparql_api.utils.Vars
@@ -12,9 +16,7 @@ import org.aksw.obda.jena.domain.impl.ViewDefinition
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.expr.{Expr, ExprVar, NodeValue}
-import collection.JavaConverters._
-import scala.language.implicitConversions
-import scala.reflect.runtime.universe._
+
 
 object SparqlifyUtils2 {
   implicit def newExprVar(varName: String): ExprVar = new ExprVar(Var.alloc(varName))
