@@ -14,7 +14,7 @@ import org.apache.spark.sql.SparkSession
 
 
 /**
- *
+ * Provide a set of functions to deal with SQL tables and R2RML mappings.
  *
  * @author dgraux
  */
@@ -23,8 +23,9 @@ object R2RMLMappings extends Serializable {
   @transient val spark: SparkSession = SparkSession.builder().getOrCreate()
 
   /**
-   * Compute SQL tables
+   * Return instructions to create SQL tables
    * @param Path to the triple file
+   * @param Current SparkSession
    */
   def loadSQLTables(tripleFile: String, spark: SparkSession): Iterable[String] = {
     // Reading the NTriple file from its path.
@@ -48,6 +49,11 @@ object R2RMLMappings extends Serializable {
     schemaSQLTable
   }
 
+  /**
+   * Return instructions to fill SQL tables
+   * @param Path to the triple file
+   * @param Current SparkSession
+   */
   def insertSQLTables(tripleFile: String, spark: SparkSession): RDD[String] = {
     // Reading the NTriple file from its path.
     val graphRdd = NTripleReader.load(spark, URI.create(tripleFile))
@@ -70,7 +76,11 @@ object R2RMLMappings extends Serializable {
     insertSQL
   }
 
-
+  /**
+   * Return R2RML mappings
+   * @param Path to the triple file
+   * @param Current SparkSession
+   */
   def generateR2RMLMappings(tripleFile: String, spark: SparkSession): Iterable[String] = {
     var mappingNumber = 1
     // Reading the NTriple file from its path.
@@ -90,15 +100,4 @@ object R2RMLMappings extends Serializable {
     r2rmlMappings
   }
 
-
-
-
-    // schemaSQLTable.map{case nt => spark.sql(nt.toString)}
-    // insertSQL.collect().map{case insert => spark.sql(insert.toString)}
-
-
-
 }
-
-
-
