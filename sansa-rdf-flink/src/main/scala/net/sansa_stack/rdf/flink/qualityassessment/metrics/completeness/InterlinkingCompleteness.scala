@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
 import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
@@ -30,20 +29,19 @@ object InterlinkingCompleteness extends Serializable {
   @transient var env: ExecutionEnvironment = _
   val prefixes = DatasetUtils.getPrefixes()
 
-  def apply(rdfgraph: RDFGraph): Long = {
+  def apply(triples: DataSet[Triple]): Long = {
 
     /**
      * isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
      * union
      * isIRI(?s) && external(?s) && isIRI(?o) && internal(?o)
      */
-    val dataset = rdfgraph.triples
 
     val Interlinked =
-      dataset.filter(f =>
+      triples.filter(f =>
         f.getSubject.isURI() && isInternal(f.getSubject) && f.getObject.isURI() && isExternal(f.getObject))
         .union(
-          dataset.filter(f =>
+          triples.filter(f =>
             f.getSubject.isURI() && isExternal(f.getSubject) && f.getObject.isURI() && isInternal(f.getObject)))
 
     val numSubj = Interlinked.map(_.getSubject).distinct().count()

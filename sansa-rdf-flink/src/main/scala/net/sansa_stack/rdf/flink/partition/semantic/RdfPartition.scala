@@ -2,12 +2,11 @@ package net.sansa_stack.rdf.flink.partition.semantic
 
 import scala.reflect.ClassTag
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
-import net.sansa_stack.rdf.flink.model.RDFTriple
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.streaming.api.scala._
+import org.apache.jena.graph.Triple
 
 /*
  * RdfPartition - semantic partition of and RDF graph
@@ -17,11 +16,11 @@ import org.apache.flink.streaming.api.scala._
  */
 object RdfPartition extends Serializable {
 
-  implicit def partitionGraph[T <: RDFGraph: TypeInformation: ClassTag](
+  implicit def partitionGraph[T <: DataSet[Triple]: TypeInformation: ClassTag](
     symbol: Map[String, String],
-    rdfgraph: RDFGraph): DataSet[String] = {
+    triples: DataSet[Triple]): DataSet[String] = {
     // partition the data
-    val partitionedData = rdfgraph.triples
+    val partitionedData = triples
       .distinct
       .filter(
         line => {

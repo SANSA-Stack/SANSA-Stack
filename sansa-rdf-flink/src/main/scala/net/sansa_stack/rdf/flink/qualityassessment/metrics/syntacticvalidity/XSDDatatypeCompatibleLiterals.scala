@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{ Node, Triple }
@@ -14,14 +13,13 @@ object XSDDatatypeCompatibleLiterals {
 
   @transient var env: ExecutionEnvironment = _
 
-  def apply(rdfgraph: RDFGraph): Long = {
+  def apply(triples: DataSet[Triple]): Long = {
 
     /**
      * isLiteral(?o)&&getDatatype(?o) && isLexicalFormCompatibleWithDatatype(?o)
      */
-    val dataset = rdfgraph.triples
 
-    val noMalformedDatatypeLiterals = dataset.filter(f => f.getObject.isLiteral() && isLexicalFormCompatibleWithDatatype(f.getObject))
+    val noMalformedDatatypeLiterals = triples.filter(f => f.getObject.isLiteral() && isLexicalFormCompatibleWithDatatype(f.getObject))
 
     noMalformedDatatypeLiterals.map(_.getObject).distinct().count()
 
