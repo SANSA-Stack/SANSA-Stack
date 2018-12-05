@@ -7,20 +7,20 @@ import scala.reflect.ClassTag
 
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
+import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
+import net.sansa_stack.rdf.common.io.riot.lang.LangNTriplesSkipBad
+import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
 import org.apache.flink.streaming.api.scala._
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.graph.Triple
-import org.apache.jena.riot.SysRIOT.fmtMessage
+import org.apache.jena.riot.RIOT
+import org.apache.jena.riot.SysRIOT
+import org.apache.jena.riot.SysRIOT._
 import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
-import org.apache.jena.riot.{RIOT, SysRIOT}
 import org.slf4j.{Logger, LoggerFactory}
-
-import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
-import net.sansa_stack.rdf.common.io.riot.lang.LangNTriplesSkipBad
-import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 
 
 /**
@@ -181,7 +181,7 @@ object NTriplesReader {
       LoggerFactory.getLogger("errorLog"))
 
     println(s"size:${ds.count}")
-    println("sample data:\n" + ds.first(10).map { _.toString.replaceAll("[\\x00-\\x1f]","???")}.collect().mkString("\n"))
+    println("sample data:\n" + ds.first(10).map { _.toString.replaceAll("[\\x00-\\x1f]", "???")}.collect().mkString("\n"))
   }
 
 }
@@ -234,17 +234,3 @@ class CustomErrorHandler(val log: Logger = SysRIOT.getLogger) extends ErrorHandl
 
   override def fatal(message: String, line: Long, col: Long): Unit = logFatal(message, line, col)
 }
-
-//sealed trait ErrorParseMode {
-//  case object STOP extends ErrorParseMode
-//  case object SKIP extends ErrorParseMode
-//}
-//sealed trait WarningParseMode {
-//  case object STOP extends WarningParseMode
-//  case object SKIP extends WarningParseMode
-//  case object IGNORE extends WarningParseMode
-//}
-//@enum trait ErrorParseMode {
-//  object STOP
-//  object SKIP
-//}
