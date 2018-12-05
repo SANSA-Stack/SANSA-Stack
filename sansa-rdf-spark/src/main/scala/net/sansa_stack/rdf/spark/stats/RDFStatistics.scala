@@ -2,15 +2,14 @@ package net.sansa_stack.rdf.spark.stats
 
 import java.io.StringWriter
 
+import net.sansa_stack.rdf.spark.model.graph._
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.graph.{ Node, Triple }
 import org.apache.jena.sparql.expr.NodeValue
-import org.apache.jena.vocabulary.{OWL, RDF, RDFS, XSD}
+import org.apache.jena.vocabulary.{ OWL, RDF, RDFS, XSD }
 import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-
-import net.sansa_stack.rdf.spark.model.graph._
 
 /**
  * A Distributed implementation of RDF Statisctics.
@@ -127,14 +126,25 @@ object RDFStatistics extends Serializable {
    *  @param triples RDD of triples
    *  @return the depth of the graph
    */
-  def ClassHierarchyDepth(triples: RDD[Triple]): VertexRDD[Int] = {
-    val uc_triples = triples
+  def ClassHierarchyDepth(triples: RDD[Triple]): RDD[(Node, Int)] = {
+    val subClassOf = triples
       .filter(triple => (triple.predicateMatches(RDFS.subClassOf.asNode()) &&
         triple.getSubject.isURI && triple.getObject.isURI))
 
-    val graph = uc_triples.asGraph()
+    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL.Class.asNode()))
 
-    graph.inDegrees
+    val graph = triples.asGraph()
+    val subClassOfGraph = subClassOf.asGraph()
+    subClassOfGraph.cache()
+
+    val hrchyGraph = subClassOfGraph.hierarcyDepth()
+
+    graph.vertices
+      .keyBy(_._1)
+      .join(hrchyGraph.vertices)
+      .map { case (id, v) => (v._1._2, v._2._2) }
+      .sortBy(_._2, false)
+    // graph.inDegrees
   }
 
   /**
@@ -143,16 +153,25 @@ object RDFStatistics extends Serializable {
    *  @param triples RDD of triples
    *  @return the depth of the graph
    */
-  def PropertyHierarchyDepth(triples: RDD[Triple]): VertexRDD[Int] = {
+  def PropertyHierarchyDepth(triples: RDD[Triple]): RDD[(Node, Int)] = {
 
-    val uc_triples = triples
+    val subPropertyOf = triples
       .filter(triple => (triple.predicateMatches(RDFS.subPropertyOf.asNode()) &&
         triple.getSubject.isURI && triple.getObject.isURI))
 
-    val graph = uc_triples.asGraph()
+    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL.Class.asNode()))
 
-    graph.inDegrees
+    val graph = triples.asGraph()
+    val subPropertyOfGraph = subPropertyOf.asGraph()
+    subPropertyOfGraph.cache()
 
+    val hrchyGraph = subPropertyOfGraph.hierarcyDepth()
+
+    graph.vertices
+      .keyBy(_._1)
+      .join(hrchyGraph.vertices)
+      .map { case (id, v) => (v._1._2, v._2._2) }
+      .sortBy(_._2, false)
   }
 
   /**
@@ -291,14 +310,14 @@ object RDFStatistics extends Serializable {
     triples.filter(_.predicateMatches(OWL.sameAs.asNode()))
 
   /**
-    * 26. Links criterion.
-    *
-    * Computes the frequencies of links between entities of different namespaces. This measure is directed, i.e.
-    * a link from `ns1 -> ns2` is different from `ns2 -> ns1`.
-    *
-    * @param triples RDD of triples
-    * @return list of namespace combinations and their frequencies.
-    */
+   * 26. Links criterion.
+   *
+   * Computes the frequencies of links between entities of different namespaces. This measure is directed, i.e.
+   * a link from `ns1 -> ns2` is different from `ns2 -> ns1`.
+   *
+   * @param triples RDD of triples
+   * @return list of namespace combinations and their frequencies.
+   */
   def Links(triples: RDD[Triple]): RDD[(String, String, Int)] = {
     triples
       .filter(triple => (triple.getSubject.isURI && triple.getObject.isURI) && triple.getSubject.getNameSpace != triple.getObject.getNameSpace)
@@ -315,10 +334,10 @@ object RDFStatistics extends Serializable {
    */
   def MaxPerProperty(triples: RDD[Triple]): RDD[(Node, Node)] = {
     // int values (fast)
-//    triples
-//      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
-//      .map(t => (t.getPredicate, t.getObject.getLiteralValue.asInstanceOf[Int]))
-//      .reduceByKey(_ max _)
+    //    triples
+    //      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+    //      .map(t => (t.getPredicate, t.getObject.getLiteralValue.asInstanceOf[Int]))
+    //      .reduceByKey(_ max _)
 
     // generic (simple)
     triples
@@ -330,18 +349,18 @@ object RDFStatistics extends Serializable {
       })
 
     // generic (accumulator)
-//    triples
-//      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
-//      .map(t => (t.getPredicate, t.getObject))
-//      .aggregateByKey(new AggMax(null).createAccumulator())(
-//      (acc, v) => {
-//          acc.accumulate(BindingFactory.binding(null, v), null)
-//          acc},
-//        (acc1, acc2) => {
-//          acc1.accumulate(BindingFactory.binding(null, acc2.getValue().asNode()), null)
-//          acc1
-//        })
-//      .map(e => (e._1, e._2.getValue.asNode()))
+    //    triples
+    //      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+    //      .map(t => (t.getPredicate, t.getObject))
+    //      .aggregateByKey(new AggMax(null).createAccumulator())(
+    //      (acc, v) => {
+    //          acc.accumulate(BindingFactory.binding(null, v), null)
+    //          acc},
+    //        (acc1, acc2) => {
+    //          acc1.accumulate(BindingFactory.binding(null, acc2.getValue().asNode()), null)
+    //          acc1
+    //        })
+    //      .map(e => (e._1, e._2.getValue.asNode()))
   }
 
   /**
@@ -362,8 +381,7 @@ object RDFStatistics extends Serializable {
       .map(t => (t.getPredicate, t.getObject))
       .aggregateByKey((0.0, 0))(
         (elt, node) => (elt._1 + NodeValue.makeNode(node).getDouble, elt._2 + 1),
-        (elt1, elt2) => (elt1._1 + elt2._1, elt1._2 + elt2._2)
-      )
+        (elt1, elt2) => (elt1._1 + elt2._1, elt1._2 + elt2._2))
       .map(e => (e._1, e._2._1 / e._2._2))
   }
 

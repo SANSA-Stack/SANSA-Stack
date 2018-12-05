@@ -1,10 +1,9 @@
 package net.sansa_stack.rdf.spark.stats
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.NodeFactory
-
-import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
@@ -260,8 +259,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     val result = triples.statsLinks().collect().toSet
 
     val target = Set(
-      ("http://namespace1.org/show/218", "http://namespace2.org/show/218", 1)
-    )
+      ("http://namespace1.org/show/218", "http://namespace2.org/show/218", 1))
 
     assert(result == target)
   }
@@ -299,16 +297,23 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 1)
   }
 
-  test("4 - computing Class Hierarchy Depth should result in 3") {
+  test("4 - computing Class Hierarchy Depth should match") {
     val path = getClass.getResource("/stats/4_class_hierarchy.nt").getPath
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)
 
     val criteria = triples.classHierarchyDepth()
-    println(criteria.collect().mkString("\n"))
-    val cnt = criteria.count()
 
-    assert(cnt == 4)
+    val target = Set(
+      (NodeFactory.createURI("http://example.org/D"), 4),
+      (NodeFactory.createURI("http://example.org/E"), 3),
+      (NodeFactory.createURI("http://example.org/C"), 3),
+      (NodeFactory.createURI("http://example.org/B"), 2),
+      (NodeFactory.createURI("http://example.org/A"), 1))
+
+    val result = criteria.collect().toSet
+
+    assert(target == result)
   }
 
   test("28 - computing Max Value Per Property should match") {
@@ -321,8 +326,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
       (NodeFactory.createURI("http://example.org/dp1"), NodeFactory.createLiteral("123.0", XSDDatatype.XSDdouble)),
       (NodeFactory.createURI("http://example.org/ip2"), NodeFactory.createLiteral("1111", XSDDatatype.XSDint)),
       (NodeFactory.createURI("http://example.org/dp2"), NodeFactory.createLiteral("1111.0", XSDDatatype.XSDdouble)),
-      (NodeFactory.createURI("http://example.org/ip1"), NodeFactory.createLiteral("123", XSDDatatype.XSDint))
-    )
+      (NodeFactory.createURI("http://example.org/ip1"), NodeFactory.createLiteral("123", XSDDatatype.XSDint)))
 
     val result = triples.statsMaxPerProperty().collect().toSet
 
@@ -338,8 +342,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
       (NodeFactory.createURI("http://example.org/dp1"), (10.0 + (-30.0) + 123.0) / 3),
       (NodeFactory.createURI("http://example.org/dp2"), (1111.0 + (-90.0) + 2.0) / 3),
       (NodeFactory.createURI("http://example.org/ip1"), (10 + (-30) + 123) / 3.0),
-      (NodeFactory.createURI("http://example.org/ip2"), (1111 + (-90) + 2) / 3.0)
-    )
+      (NodeFactory.createURI("http://example.org/ip2"), (1111 + (-90) + 2) / 3.0))
 
     val result = triples.statsAvgPerProperty().collect().toSet
 
