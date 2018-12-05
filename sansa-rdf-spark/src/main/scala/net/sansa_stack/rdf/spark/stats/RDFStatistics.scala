@@ -1,9 +1,11 @@
 package net.sansa_stack.rdf.spark.stats
 
-import java.io.{ File, StringWriter }
+import java.io.StringWriter
 
 import net.sansa_stack.rdf.spark.model.graph._
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.sparql.expr.NodeValue
 import org.apache.jena.vocabulary.{ OWL, RDF, RDFS, XSD }
 import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
@@ -25,11 +27,11 @@ object RDFStatistics extends Serializable {
    */
   def run(triples: RDD[Triple]): RDD[String] = {
     Used_Classes(triples, spark).Voidify()
-      .union(DistinctEntities(triples, spark).Voidify)
-      .union(DistinctSubjects(triples, spark).Voidify)
-      .union(DistinctObjects(triples, spark).Voidify)
-      .union(PropertyUsage(triples, spark).Voidify)
-      .union(SPO_Vocabularies(triples, spark).Voidify)
+      .union(DistinctEntities(triples, spark).Voidify())
+      .union(DistinctSubjects(triples, spark).Voidify())
+      .union(DistinctObjects(triples, spark).Voidify())
+      .union(PropertyUsage(triples, spark).Voidify())
+      .union(SPO_Vocabularies(triples, spark).Voidify())
   }
 
   /**
@@ -61,7 +63,7 @@ object RDFStatistics extends Serializable {
     val voidify = prefix.concat(src).concat(stats.coalesce(1, true).collect().mkString).concat(end)
     println("\n" + voidify)
     pw.write(voidify)
-    val vidifyStats = spark.sparkContext.parallelize(Seq(pw.toString()))
+    val vidifyStats = spark.sparkContext.parallelize(Seq(pw.toString))
     vidifyStats.coalesce(1, shuffle = true).saveAsTextFile(output)
   }
 
@@ -124,14 +126,25 @@ object RDFStatistics extends Serializable {
    *  @param triples RDD of triples
    *  @return the depth of the graph
    */
-  def ClassHierarchyDepth(triples: RDD[Triple]): VertexRDD[Int] = {
-    val uc_triples = triples
-      .filter(triple => (triple.getPredicate.toString().equals(RDFS.subClassOf) &&
-        triple.getSubject.isURI() && triple.getObject.isURI()))
+  def ClassHierarchyDepth(triples: RDD[Triple]): RDD[(Node, Int)] = {
+    val subClassOf = triples
+      .filter(triple => (triple.predicateMatches(RDFS.subClassOf.asNode()) &&
+        triple.getSubject.isURI && triple.getObject.isURI))
 
-    val graph = uc_triples.asGraph()
+    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL.Class.asNode()))
 
-    graph.inDegrees
+    val graph = triples.asGraph()
+    val subClassOfGraph = subClassOf.asGraph()
+    subClassOfGraph.cache()
+
+    val hrchyGraph = subClassOfGraph.hierarcyDepth()
+
+    graph.vertices
+      .keyBy(_._1)
+      .join(hrchyGraph.vertices)
+      .map { case (id, v) => (v._1._2, v._2._2) }
+      .sortBy(_._2, false)
+    // graph.inDegrees
   }
 
   /**
@@ -140,16 +153,25 @@ object RDFStatistics extends Serializable {
    *  @param triples RDD of triples
    *  @return the depth of the graph
    */
-  def PropertyHierarchyDepth(triples: RDD[Triple]): VertexRDD[Int] = {
+  def PropertyHierarchyDepth(triples: RDD[Triple]): RDD[(Node, Int)] = {
 
-    val uc_triples = triples
-      .filter(triple => (triple.getPredicate.toString().equals(RDFS.subPropertyOf) &&
-        triple.getSubject.isURI() && triple.getObject.isURI()))
+    val subPropertyOf = triples
+      .filter(triple => (triple.predicateMatches(RDFS.subPropertyOf.asNode()) &&
+        triple.getSubject.isURI && triple.getObject.isURI))
 
-    val graph = uc_triples.asGraph()
+    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL.Class.asNode()))
 
-    graph.inDegrees
+    val graph = triples.asGraph()
+    val subPropertyOfGraph = subPropertyOf.asGraph()
+    subPropertyOfGraph.cache()
 
+    val hrchyGraph = subPropertyOfGraph.hierarcyDepth()
+
+    graph.vertices
+      .keyBy(_._1)
+      .join(hrchyGraph.vertices)
+      .map { case (id, v) => (v._1._2, v._2._2) }
+      .sortBy(_._2, false)
   }
 
   /**
@@ -159,14 +181,14 @@ object RDFStatistics extends Serializable {
    * @return the usage of subclasses on the given graph
    */
   def SubclassUsage(triples: RDD[Triple]): Long = {
-    triples.filter(triple => triple.getPredicate.toString().equals(RDFS.subClassOf))
+    triples.filter(triple => triple.predicateMatches(RDFS.subClassOf.asNode()))
       .count
   }
 
   /**
    * 14. Triples criterion
    *
-   * @param RDD of triples
+   * @param triples RDD of triples
    * @return the amount of triples of a given graph.
    */
   def Triples(triples: RDD[Triple]): Long =
@@ -175,11 +197,11 @@ object RDFStatistics extends Serializable {
   /**
    * 15.Entities mentioned criterion
    *
-   * @param tripls RDD of triples
+   * @param triples RDD of triples
    * @return  number of entities (resources / IRIs) that are mentioned within a RDF graph.
    */
   def EntitiesMentioned(triples: RDD[Triple]): Long = {
-    triples.filter(triple => (triple.getSubject.isURI() && triple.getPredicate.isURI() && triple.getObject.isURI()))
+    triples.filter(triple => (triple.getSubject.isURI && triple.getPredicate.isURI && triple.getObject.isURI))
       .count
   }
 
@@ -217,7 +239,7 @@ object RDFStatistics extends Serializable {
    * @return histogram of types used for literals.
    */
   def Datatypes(triples: RDD[Triple]): RDD[(String, Int)] = {
-    triples.filter(triple => (triple.getObject.isLiteral() && !triple.getObject.getLiteralDatatype.getURI.isEmpty()))
+    triples.filter(triple => (triple.getObject.isLiteral && !triple.getObject.getLiteralDatatype.getURI.isEmpty))
       .map(triple => (triple.getObject.getLiteralDatatype.getURI, 1))
       .reduceByKey(_ + _)
   }
@@ -229,7 +251,7 @@ object RDFStatistics extends Serializable {
    * @return histogram of languages used for literals.
    */
   def Languages(triples: RDD[Triple]): RDD[(String, Int)] = {
-    triples.filter(triple => (triple.getObject.isLiteral() && !triple.getObject.getLiteralLanguage.isEmpty()))
+    triples.filter(triple => (triple.getObject.isLiteral && !triple.getObject.getLiteralLanguage.isEmpty))
       .map(triple => (triple.getObject.getLiteralLanguage, 1))
       .reduceByKey(_ + _)
   }
@@ -241,10 +263,10 @@ object RDFStatistics extends Serializable {
    * @return the average typed string length used throughout the RDF graph.
    */
   def AvgTypedStringLength(triples: RDD[Triple]): Double = {
-    val typed_strngs = triples.filter(triple => (triple.getObject.isLiteral() && triple.getObject.getLiteralDatatypeURI.equals(XSD.xstring)))
-    val lenth_o = typed_strngs.map(_.getObject.toString().length()).sum()
-    val cnt = typed_strngs.count()
-    if (cnt > 0) lenth_o / cnt else 0
+    triples
+      .filter(triple => triple.getObject.isLiteral && triple.getObject.getLiteralDatatypeURI.equals(XSD.xstring.getURI))
+      .map(_.getObject.getLiteralLexicalForm.length)
+      .mean()
   }
 
   /**
@@ -254,10 +276,10 @@ object RDFStatistics extends Serializable {
    * @return the average untyped string length used throughout the RDF graph.
    */
   def AvgUntypedStringLength(triples: RDD[Triple]): Double = {
-    val typed_strngs = triples.filter(triple => (triple.getObject.isLiteral() && triple.getObject.getLiteralDatatypeURI.isEmpty()))
-    val lenth_o = typed_strngs.map(_.getObject.toString().length()).sum()
-    val cnt = typed_strngs.count()
-    if (cnt > 0) lenth_o / cnt else 0
+    triples
+      .filter(triple => triple.getObject.isLiteral && !triple.getObject.getLiteralLanguage.isEmpty) // since RDF 1.1 there is always a datatype, thus, we check for non-empty language tag
+      .map(_.getObject.getLiteralLexicalForm.length)
+      .mean()
   }
 
   /**
@@ -267,7 +289,7 @@ object RDFStatistics extends Serializable {
    * @return list of typed subjects.
    */
   def TypedSubjects(triples: RDD[Triple]): RDD[Node] =
-    triples.filter(triple => triple.getPredicate.toString().equals(RDF.`type`)).map(_.getSubject)
+    triples.filter(triple => triple.predicateMatches(RDF.`type`.asNode())).map(_.getSubject)
 
   /**
    * 24. Labeled subjects criterion.
@@ -276,7 +298,7 @@ object RDFStatistics extends Serializable {
    * @return list of labeled subjects.
    */
   def LabeledSubjects(triples: RDD[Triple]): RDD[Node] =
-    triples.filter(triple => triple.getPredicate.toString().equals(RDFS.label)).map(_.getSubject)
+    triples.filter(triple => triple.predicateMatches(RDFS.label.asNode())).map(_.getSubject)
 
   /**
    * 25. SameAs criterion.
@@ -285,52 +307,82 @@ object RDFStatistics extends Serializable {
    * @return list of triples with owl#sameAs as predicate
    */
   def SameAs(triples: RDD[Triple]): RDD[Triple] =
-    triples.filter(_.getPredicate.toString().equals(OWL.sameAs))
+    triples.filter(_.predicateMatches(OWL.sameAs.asNode()))
 
   /**
    * 26. Links criterion.
    *
+   * Computes the frequencies of links between entities of different namespaces. This measure is directed, i.e.
+   * a link from `ns1 -> ns2` is different from `ns2 -> ns1`.
+   *
    * @param triples RDD of triples
-   * @return list of namespaces and their frequentcies.
+   * @return list of namespace combinations and their frequencies.
    */
-  def Links(triples: RDD[Triple]): RDD[(String, Int)] = {
-    triples.filter(triple => ((triple.getSubject.isURI() && triple.getObject.isURI()) &&
-      triple.getSubject.getNameSpace != triple.getObject.getNameSpace))
-      .map(triple => (triple.getSubject.getNameSpace() + triple.getObject.getNameSpace()))
-      .map(f => (f, 1)).reduceByKey(_ + _)
+  def Links(triples: RDD[Triple]): RDD[(String, String, Int)] = {
+    triples
+      .filter(triple => (triple.getSubject.isURI && triple.getObject.isURI) && triple.getSubject.getNameSpace != triple.getObject.getNameSpace)
+      .map(triple => ((triple.getSubject.getNameSpace, triple.getObject.getNameSpace), 1))
+      .reduceByKey(_ + _)
+      .map(e => (e._1._1, e._1._2, e._2))
   }
 
   /**
-   * 28.Maximum per property {int,float,time} criterion
+   * 28.Maximum value per property {int,float,time} criterion
    *
    * @param triples RDD of triples
    * @return entities with their maximum values on the graph
    */
-  def MaxPerProperty(triples: RDD[Triple]): (Triple, Int) = {
-    val max_per_property_def = triples.filter(triple => (triple.getObject.toString().equals(XSD.xint)
-      | triple.getObject.toString().equals(XSD.xfloat) | triple.getObject.toString().equals(XSD.dateTime)))
-    val properties_fr = max_per_property_def.map(f => (f, 1)).reduceByKey(_ + _)
+  def MaxPerProperty(triples: RDD[Triple]): RDD[(Node, Node)] = {
+    // int values (fast)
+    //    triples
+    //      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+    //      .map(t => (t.getPredicate, t.getObject.getLiteralValue.asInstanceOf[Int]))
+    //      .reduceByKey(_ max _)
 
-    val ordered = properties_fr.takeOrdered(1)(Ordering[Int].reverse.on(_._2))
-    ordered.maxBy(_._2)
+    // generic (simple)
+    triples
+      .filter(t => t.getObject.isLiteral) // && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+      .map(t => (t.getPredicate, t.getObject))
+      .reduceByKey((n1, n2) => {
+        val ret = NodeValue.compare(NodeValue.makeNode(n1), NodeValue.makeNode(n2))
+        if (ret > 0) n1 else n2
+      })
+
+    // generic (accumulator)
+    //    triples
+    //      .filter(t => t.getObject.isLiteral && (t.getObject.getLiteralDatatype == XSDDatatype.XSDint || t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger))
+    //      .map(t => (t.getPredicate, t.getObject))
+    //      .aggregateByKey(new AggMax(null).createAccumulator())(
+    //      (acc, v) => {
+    //          acc.accumulate(BindingFactory.binding(null, v), null)
+    //          acc},
+    //        (acc1, acc2) => {
+    //          acc1.accumulate(BindingFactory.binding(null, acc2.getValue().asNode()), null)
+    //          acc1
+    //        })
+    //      .map(e => (e._1, e._2.getValue.asNode()))
   }
 
   /**
-   * 29. Average per property {int,float,time} criterion
+   * 29. Average value per numeric property {int,float,time} criterion
    *
    * @param triples RDD of triples
-   * @return entities with their average values on the graph
+   * @return properties with their average values on the graph
    */
-  def AvgPerProperty(triples: RDD[Triple]): RDD[(Triple, Double)] = {
-    val avg_per_property_def = triples.filter(triple => (triple.getObject.toString().equals(XSD.xint)
-      | triple.getObject.toString().equals(XSD.xfloat) | triple.getObject.toString().equals(XSD.dateTime)))
-
-    val sumCountPair = avg_per_property_def.map((_, 1)).combineByKey(
-      (x: Int) => (x.toDouble, 1),
-      (pair1: (Double, Int), x: Int) => (pair1._1 + x, pair1._2 + 1),
-      (pair1: (Double, Int), pair2: (Double, Int)) => (pair1._1 + pair2._1, pair1._2 + pair2._2))
-    val average = sumCountPair.map(x => (x._1, (x._2._1 / x._2._2)))
-    average
+  def AvgPerProperty(triples: RDD[Triple]): RDD[(Node, Double)] = {
+    triples
+      .filter(t => t.getObject.isLiteral &&
+        (t.getObject.getLiteralDatatype == XSDDatatype.XSDint ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDinteger ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDshort ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDdecimal ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDfloat ||
+          t.getObject.getLiteralDatatype == XSDDatatype.XSDdouble))
+      .map(t => (t.getPredicate, t.getObject))
+      .aggregateByKey((0.0, 0))(
+        (elt, node) => (elt._1 + NodeValue.makeNode(node).getDouble, elt._2 + 1),
+        (elt1, elt2) => (elt1._1 + elt2._1, elt1._2 + elt2._2))
+      .map(e => (e._1, e._2._1 / e._2._2))
   }
 
 }
@@ -339,7 +391,7 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
 
   // ?p=rdf:type && isIRI(?o)
   def Filter(): RDD[Node] = triples.filter(f =>
-    f.getPredicate.toString().equals(RDF.`type`) && f.getObject.isURI())
+    f.predicateMatches(RDF.`type`.asNode()) && f.getObject.isURI)
     .map(_.getObject)
 
   // M[?o]++
@@ -378,10 +430,8 @@ class Classes_Defined(triples: RDD[Triple], spark: SparkSession) extends Seriali
 
   // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
   def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(RDFS.Class))
-      || (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(OWL.Class))
-      && !f.getSubject.isURI())
-
+    (f.predicateMatches(RDF.`type`.asNode()) && f.getSubject.isURI &&
+      (f.objectMatches(RDFS.Class.asNode()) || f.objectMatches(OWL.Class.asNode()))))
   // M[?o]++
   def Action(): RDD[Node] = Filter().map(_.getSubject).distinct()
 
@@ -401,9 +451,8 @@ object Classes_Defined {
 class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
   def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(OWL.ObjectProperty))
-      || (f.getPredicate.toString().equals(RDF.`type`) && f.getObject.toString().equals(RDF.Property))
-      && !f.getSubject.isURI())
+    (f.predicateMatches(RDF.`type`.asNode()) && f.getSubject.isURI &&
+      (f.objectMatches(OWL.ObjectProperty.asNode()) || f.objectMatches(RDF.Property.asNode()))))
 
   def Action(): RDD[Node] = Filter().map(_.getPredicate).distinct()
 
@@ -456,10 +505,13 @@ object PropertyUsage {
 
 class DistinctEntities(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
-  def Filter(): RDD[Triple] = triples.filter(f =>
-    (f.getSubject.isURI() && f.getPredicate.isURI() && f.getObject.isURI()))
+  def Filter(): RDD[Node] =
+    triples
+      .flatMap(t => Seq(t.getSubject, t.getPredicate, t.getObject))
+      .filter(_.isURI)
+      .distinct()
 
-  def Action(): RDD[Triple] = Filter().distinct()
+  def Action(): RDD[Node] = Filter().distinct()
 
   def PostProc(): Long = Action().count()
 
@@ -476,7 +528,7 @@ object DistinctEntities {
 
 class DistinctSubjects(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
-  def Filter(): RDD[Node] = triples.filter(f => f.getSubject.isURI()).map(_.getSubject)
+  def Filter(): RDD[Node] = triples.filter(f => f.getSubject.isURI).map(_.getSubject)
 
   def Action(): RDD[Node] = Filter().distinct()
 
@@ -495,7 +547,7 @@ object DistinctSubjects {
 
 class DistinctObjects(triples: RDD[Triple], spark: SparkSession) extends Serializable {
 
-  def Filter(): RDD[Node] = triples.filter(f => f.getObject.isURI()).map(_.getObject)
+  def Filter(): RDD[Node] = triples.filter(f => f.getObject.isURI).map(_.getObject)
 
   def Action(): RDD[Node] = Filter().distinct()
 
@@ -516,24 +568,24 @@ class SPO_Vocabularies(triples: RDD[Triple], spark: SparkSession) extends Serial
 
   def Filter(): RDD[Triple] = triples
 
-  def Action(node: Node): RDD[String] = Filter().map(f => node.getNameSpace()).cache()
+  def Action(node: Node): RDD[String] = Filter().map(f => node.getNameSpace).cache()
 
-  def SubjectVocabulariesAction(): RDD[String] = Filter().filter(_.getSubject.isURI()).map(f => (f.getSubject.getNameSpace()))
+  def SubjectVocabulariesAction(): RDD[String] = Filter().filter(_.getSubject.isURI()).map(f => (f.getSubject.getNameSpace))
 
   def SubjectVocabulariesPostProc(): RDD[(String, Int)] = SubjectVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
-  def PredicateVocabulariesAction(): RDD[String] = Filter().filter(_.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace()))
+  def PredicateVocabulariesAction(): RDD[String] = Filter().filter(_.getPredicate.isURI()).map(f => (f.getPredicate.getNameSpace))
 
   def PredicateVocabulariesPostProc(): RDD[(String, Int)] = PredicateVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
-  def ObjectVocabulariesAction(): RDD[String] = Filter().filter(_.getObject.isURI()).map(f => (f.getObject.getNameSpace()))
+  def ObjectVocabulariesAction(): RDD[String] = Filter().filter(_.getObject.isURI()).map(f => (f.getObject.getNameSpace))
 
   def ObjectVocabulariesPostProc(): RDD[(String, Int)] = ObjectVocabulariesAction()
     .map(f => (f, 1)).reduceByKey(_ + _)
 
-  def PostProc(node: Node): RDD[(String, Int)] = Filter().map(f => node.getNameSpace())
+  def PostProc(node: Node): RDD[(String, Int)] = Filter().map(f => node.getNameSpace)
     .map(f => (f, 1)).reduceByKey(_ + _)
 
   def Voidify(): RDD[String] = {

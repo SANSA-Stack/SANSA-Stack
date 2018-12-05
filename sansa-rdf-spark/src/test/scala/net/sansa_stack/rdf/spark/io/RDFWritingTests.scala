@@ -16,7 +16,7 @@ class RDFWritingTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
 
-  test("writing N-Triples file from DataFrame to disk should result in file with 9 triples") {
+  test("writing N-Triples file from DataFrame to disk should result in file with 10 triples") {
 
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
@@ -26,7 +26,7 @@ class RDFWritingTests extends FunSuite with DataFrameSuiteBase {
 
     // validate count
     val cnt1 = triples.count()
-    assert(cnt1 == 9)
+    assert(cnt1 == 10)
 
     // create temp dir
     val tmpDir = Files.createTempDirectory("sansa")
