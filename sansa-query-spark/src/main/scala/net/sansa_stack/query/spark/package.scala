@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark
 
 import scala.collection.JavaConverters._
 
+import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionSpark, SparqlifyUtils3 }
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
@@ -99,5 +100,15 @@ package object query {
         numOfFilesPartition).run()
     }
 
+  }
+
+  implicit class DataLake(spark: SparkSession) extends Serializable {
+
+    /**
+     * Querying a Data Lake.
+     */
+    def sparqlDL(sparqlQuery: String, mappingsFile: String, configFile: String): DataFrame = {
+      DataLakeEngine.run(sparqlQuery, mappingsFile, configFile, spark)
+    }
   }
 }
