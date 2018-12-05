@@ -2,10 +2,9 @@ package net.sansa_stack.rdf.spark.model
 
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.jena.graph.{ Node, Triple }
-import org.apache.spark.graphx.Graph
+import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-
 
 /**
  * Wrap up implicit classes/methods to load RDF data into [[GraphX]].
@@ -183,6 +182,12 @@ package object graph {
      */
     def intersection(other: Graph[Node, Node]): Graph[Node, Node] =
       GraphOps.intersection(graph, other)
+
+    /**
+     * Returns the lever at which vertex stands in the hierarchy.
+     */
+    def hierarcyDepth(): Graph[(VertexId, Int, Node), Node] =
+      GraphOps.hierarcyDepth(graph)
   }
 }
 
