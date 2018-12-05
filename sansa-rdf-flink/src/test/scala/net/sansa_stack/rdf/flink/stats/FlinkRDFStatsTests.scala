@@ -1,7 +1,8 @@
 package net.sansa_stack.rdf.flink.stats
 
-import net.sansa_stack.rdf.flink.data.{ RDFGraphLoader, RDFGraphWriter }
+import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
 class FlinkRDFStatsTests extends FunSuite {
@@ -12,7 +13,7 @@ class FlinkRDFStatsTests extends FunSuite {
   test("computing used classes should result in size 0") {
     val input = "src/test/resources/rdf.nt"
 
-    val triples = RDFGraphLoader.loadFromFile(input, env)
+    val triples = env.rdf(Lang.NTRIPLES)(input)
 
     val criteria = triples.statsUsedClasses()
     val cnt = criteria.count()
