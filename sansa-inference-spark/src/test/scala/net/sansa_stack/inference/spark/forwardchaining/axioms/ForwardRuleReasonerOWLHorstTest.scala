@@ -438,4 +438,30 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.contains(
       df.getOWLObjectPropertyAssertionAxiom(objProp02, indivB, indivA)))
   }
+
+  /**
+    * O7b:
+    *   Condition:
+    *     p owl:inverseOf q
+    *     v q w
+    *   Consequence:
+    *     w p v
+    */
+  test("Rule O7b should return correct results") {
+    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+
+    val input = getClass.getResource(resourcePath + "test_o7b.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // One axiom should be inferred:
+    // ObjectPropertyAssertion(:objProp01 :indivA :indivB)
+    assert(inferred.size == 1)
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
+  }
 }
