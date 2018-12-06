@@ -157,4 +157,41 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
     assert(inferred.contains(df.getOWLSubAnnotationPropertyOfAxiom(annProp04, annProp01)))
     assert(inferred.contains(df.getOWLSubAnnotationPropertyOfAxiom(annProp04, annProp02)))
   }
+
+  /**
+    * rdfs7
+    *   Condition:
+    *     aaa rdfs:subPropertyOf bbb .
+    *     xxx aaa yyy .
+    *   Consequence:
+    *     xxx bbb yyy .
+    */
+  test("Rule rdfs7 should return correct results") {
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val dataProp01 = df.getOWLDataProperty(defaultPrefix + "dataProp01")
+    val annProp01 = df.getOWLAnnotationProperty(defaultPrefix + "annProp01")
+
+    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+
+    val input = getClass.getResource(resourcePath + "test_rdfs7.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerRDFS(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Three axioms should be inferred:
+    // ObjectPropertyAssertion(:objProp02 :indivA :indivB)
+    // DataPropertyAssertion(:dataProp2 :indivA "ABCD")
+    // AnnotationAssertion(:annProp01 :indivA "wxyz")
+    assert(inferred.size == 3)
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
+    assert(inferred.contains(
+      df.getOWLDataPropertyAssertionAxiom(dataProp01, indivA,
+        df.getOWLLiteral("ABCD"))))
+    assert(inferred.contains(
+      df.getOWLAnnotationAssertionAxiom(annProp01, indivA.getIRI,
+        df.getOWLLiteral("wxyz"))))
+  }
 }
