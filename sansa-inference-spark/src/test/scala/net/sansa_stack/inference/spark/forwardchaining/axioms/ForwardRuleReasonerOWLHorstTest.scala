@@ -520,4 +520,54 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.contains(
       df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivG)))
   }
+
+  /**
+    * O11a:
+    *   Condition:
+    *     v owl:equivalentClass w
+    *   Consequence:
+    *     v rdfs:subClassOf w
+    *
+    * O11b:
+    *   Condition:
+    *     v owl:equivalentClass w
+    *   Consequence:
+    *     w rdfs:subClassOf v
+    */
+  test("Rule O11a and 11b should return correct results") {
+    val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
+    val cls02 = df.getOWLClass(defaultPrefix + "Cls02")
+    val cls03 = df.getOWLClass(defaultPrefix + "Cls03")
+    val cls04 = df.getOWLClass(defaultPrefix + "Cls04")
+    val cls05 = df.getOWLClass(defaultPrefix + "Cls05")
+
+    val input = getClass.getResource(resourcePath + "test_o11ab.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Eight axioms should be inferred
+    // SubClassOf(:Cls01 :Cls02)
+    // SubClassOf(:Cls01 :Cls03)
+    // SubClassOf(:Cls02 :Cls01)
+    // SubClassOf(:Cls02 :Cls03)
+    // SubClassOf(:Cls03 :Cls01)
+    // SubClassOf(:Cls03 :Cls02)
+    //
+    // SubClassOf(:Cls04 :Cls05)
+    // SubClassOf(:Cls05 :Cls04)
+
+    // Could be more than 8 since axioms like EquivalentClasses(:Cls01 :Cls02),
+    // EquivalentClasses(:Cls01 :Cls03) etc. seem to be inferred as well
+    assert(inferred.size >= 8)
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls01, cls02)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls01, cls03)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls02, cls01)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls02, cls03)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls03, cls01)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls03, cls02)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls05)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls05, cls04)))
+  }
 }
