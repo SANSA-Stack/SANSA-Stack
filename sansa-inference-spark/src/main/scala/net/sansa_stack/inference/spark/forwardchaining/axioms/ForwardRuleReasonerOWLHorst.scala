@@ -660,7 +660,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     //  OWLAxiomsRDD.collect().foreach(println)
 
     val ruleReasoner = new ForwardRuleReasonerOWLHorst(sc, 2)
-    val res: RDD[OWLAxiom] = ruleReasoner(owlAxiomsRDD, input)
+    val res: RDD[OWLAxiom] = ruleReasoner(owlAxiomsRDD)
     // res.collect().foreach(println)
 
     sparkSession.stop
