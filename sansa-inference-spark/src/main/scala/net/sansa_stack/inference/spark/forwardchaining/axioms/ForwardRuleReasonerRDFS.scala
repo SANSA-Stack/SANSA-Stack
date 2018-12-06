@@ -17,7 +17,10 @@ import org.apache.spark.broadcast.Broadcast
 
 /**
   * A forward chaining implementation for the RDFS entailment regime that works
-  * on OWL axioms
+  * on OWL axioms.
+  *
+  * Entailment pattern naming taken from
+  * https://www.w3.org/TR/rdf11-mt/#patterns-of-rdfs-entailment-informative
   *
   * @param sc The Apache Spark context
   * @param parallelism The degree of parallelism
@@ -30,14 +33,8 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
     new ForwardRuleReasonerRDFS(sc, parallelism)
 
 
-  def apply(axioms: RDD[OWLAxiom], input: String): RDD[OWLAxiom] = {
-
-    val owlFile: File = new File(input)
-
+  def apply(axioms: RDD[OWLAxiom]): RDD[OWLAxiom] = {
     val manager = OWLManager.createOWLOntologyManager()
-
-    val ontology: OWLOntology = manager.loadOntologyFromOntologyDocument(owlFile)
-
     val dataFactory = manager.getOWLDataFactory
 
     val axiomsRDD = axioms.cache()    // cache this RDD because it will be used quiet often

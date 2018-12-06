@@ -8,7 +8,6 @@ import org.scalatest.FunSuite
 import org.semanticweb.owlapi.model.OWLAxiom
 import org.apache.spark.rdd.RDD
 
-
 class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with DataFrameSuiteBase {
 
   val reasoner = new ForwardRuleReasonerRDFS(sc, 4)
@@ -17,8 +16,8 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
 
       val input = getClass.getResource("/ont_functional.owl").getPath
 
-      var owlAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input)
-      val reasoner: RDD[OWLAxiom] = new ForwardRuleReasonerRDFS(sc, 4).apply(owlAxiomsRDD, input)
+      val owlAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input)
+      val reasoner: RDD[OWLAxiom] = new ForwardRuleReasonerRDFS(sc, 4)(owlAxiomsRDD)
 
       assert(reasoner.count() == 16)
 
