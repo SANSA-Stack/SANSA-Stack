@@ -33,6 +33,47 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     val res: RDD[OWLAxiom] = reasoner(owlAxiomsRDD)
 
     assert(res.count() == 211)
+  }
+
+  /**
+    * R1:
+    *   Condition:
+    *     c rdfs:subClassOf c1
+    *     c1 rdfs:subClassOf c2
+    *   Consequence:
+    *     c rdfs:subClassOf c2
+    */
+  test("Rule R1 should return correct results") {
+    /*
+     * Class hierarchy:
+     *
+     *    :Cls01
+     *    /    \
+     * :Cls02  :Cls05
+     *   |
+     * :Cls03
+     *   |
+     * :Cls04
+     */
+    val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
+    val cls02 = df.getOWLClass(defaultPrefix + "Cls02")
+    val cls03 = df.getOWLClass(defaultPrefix + "Cls03")
+    val cls04 = df.getOWLClass(defaultPrefix + "Cls04")
+
+    val input = getClass.getResource(resourcePath + "test_r1.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Three new axioms should be inferred:
+    // SubClassOf(<http://ex.com/default#Cls04> <http://ex.com/default#Cls02>)
+    // SubClassOf(<http://ex.com/default#Cls03> <http://ex.com/default#Cls01>)
+    // SubClassOf(<http://ex.com/default#Cls04> <http://ex.com/default#Cls01>)
+    assert(inferred.size == 3)
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls03, cls01)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls01)))
+    assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls02)))
 
   }
 }
