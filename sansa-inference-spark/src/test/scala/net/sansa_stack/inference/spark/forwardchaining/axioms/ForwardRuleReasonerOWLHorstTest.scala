@@ -74,6 +74,70 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls03, cls01)))
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls01)))
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls02)))
+  }
+
+  /**
+    * R2:
+    *   Condition:
+    *     p rdfs:subPropertyOf p1
+    *     p1 rdfs:subPropertyOf p2
+    *   Consequence:
+    *     p rdfs:subPropertyOf p2
+    */
+  test("Rule R2 should return correct results") {
+    /*
+     * Property hierarchies:
+     *
+     *       :objProp01              :dataProp01             :annProp01
+     *        /      \                 /      \                /      \
+     * :objProp02  :objProp05  :dataProp02  :dataProp05  :annProp02  :annProp05
+     *       |                        |                       |
+     * :objProp03              :dataProp03               :annProp03
+     *       |                        |                       |
+     * :objProp04              :dataProp04               :annProp04
+     */
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val objProp02 = df.getOWLObjectProperty(defaultPrefix + "objProp02")
+    val objProp03 = df.getOWLObjectProperty(defaultPrefix + "objProp03")
+    val objProp04 = df.getOWLObjectProperty(defaultPrefix + "objProp04")
+
+    val dataProp01 = df.getOWLDataProperty(defaultPrefix + "dataProp01")
+    val dataProp02 = df.getOWLDataProperty(defaultPrefix + "dataProp02")
+    val dataProp03 = df.getOWLDataProperty(defaultPrefix + "dataProp03")
+    val dataProp04 = df.getOWLDataProperty(defaultPrefix + "dataProp04")
+
+    val annProp01 = df.getOWLAnnotationProperty(defaultPrefix + "annProp01")
+    val annProp02 = df.getOWLAnnotationProperty(defaultPrefix + "annProp02")
+    val annProp03 = df.getOWLAnnotationProperty(defaultPrefix + "annProp03")
+    val annProp04 = df.getOWLAnnotationProperty(defaultPrefix + "annProp04")
+
+
+    val input = getClass.getResource(resourcePath + "test_r2.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Nine axioms should be inferred:
+    // SubObjectPropertyOf(:objProp03 :objProp01)
+    // SubObjectPropertyOf(:objProp04 :objProp01)
+    // SubObjectPropertyOf(:objProp04 :objProp02)
+    // SubDataPropertyOf(:dataProp03 :dataProp01)
+    // SubDataPropertyOf(:dataProp04 :dataProp01)
+    // SubDataPropertyOf(:dataProp04 :dataProp02)
+    // SubAnnotationProperty(:annProp03 :annProp01)
+    // SubAnnotationProperty(:annProp04 :annProp01)
+    // SubAnnotationProperty(:annProp04 :annProp02)
+    assert(inferred.size == 9)
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp01)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp01)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp02)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp03, dataProp01)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp04, dataProp01)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp04, dataProp02)))
+    assert(inferred.contains(df.getOWLSubAnnotationPropertyOfAxiom(annProp03, annProp01)))
+    assert(inferred.contains(df.getOWLSubAnnotationPropertyOfAxiom(annProp04, annProp01)))
+    assert(inferred.contains(df.getOWLSubAnnotationPropertyOfAxiom(annProp04, annProp02)))
 
   }
 }
