@@ -19,3 +19,6 @@ project/plugins/project/
 .idea
 
 scalastyle-output.xml
+
+# Protege files
+catalog-v001.xml
