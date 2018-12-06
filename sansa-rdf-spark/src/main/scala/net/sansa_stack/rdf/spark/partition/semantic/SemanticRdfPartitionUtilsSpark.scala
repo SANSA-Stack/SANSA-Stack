@@ -2,81 +2,67 @@ package net.sansa_stack.rdf.spark.partition.semantic
 
 import java.util.concurrent.TimeUnit
 
+import net.sansa_stack.rdf.common.partition.utils.Symbols
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd._
 
-/*
- * RdfPartition - semantic partition of and RDF graph
- * @symbol - list of symbols.
- * @nTroplesRDD - a RDD of n-triples.
- * @return - semantic partition data.
+/**
+ * Semantic partition of and RDF graph
  */
-class RdfPartition(
-  symbol: Map[String, String],
-  nTriplesRDD: RDD[Triple],
-  partitionedDataPath: String,
-  numOfFilesPartition: Int) extends Serializable {
+object SemanticRdfPartitionUtilsSpark extends Serializable {
 
-  // execute partition
-  def partitionGraph(): RDD[String] = {
+  /**
+   * Apply semantic partitioning for a given RDF graph
+   * @param triples an RDD of triples.
+   * @return semantic partition data.
+   */
+  def partitionGraph(triples: RDD[Triple]): RDD[String] = {
+    val symbol = Symbols.symbol
     // partition the data
-    val partitionedData = nTriplesRDD
+    val partitionedData = triples
       .distinct
-      .filter(line => line.getSubject.getURI.nonEmpty) // ignore SUBJECT with empty URI
-      .map(line => {
-        // SUBJECT, PREDICATE and OBJECT
-        val getSubject = line.getSubject
-        val getPredicate = line.getPredicate
-        val getObject = line.getObject
-
-        var filteredPredicate: Any = getPredicate
-        var filteredObject: Any = getObject
+      .filter(_.getSubject.getURI.nonEmpty) // ignore SUBJECT with empty URI
+      .map(triple => {
+        var filteredPredicate: Any = triple.getPredicate
+        var filteredObject: Any = triple.getObject
 
         // set: PREDICATE
-        if (getPredicate.isURI && getPredicate.getURI.contains(this.symbol("hash"))) {
-          filteredPredicate = getPredicate.getURI.split(this.symbol("hash"))(1)
+        if (triple.getPredicate.isURI && triple.getPredicate.getURI.contains(symbol("hash"))) {
+          filteredPredicate = triple.getPredicate.getURI.split(symbol("hash"))(1)
 
           // set: OBJECT where PREDICATE is a "type"
-          if (filteredPredicate.equals("type") && getObject.isURI && getObject.getURI.contains(this.symbol("hash"))) {
-            filteredObject = this.symbol("colon") + getObject.getURI.split(this.symbol("hash"))(1)
-          } else if (getObject.isURI) {
-            filteredObject = this.symbol("less-than") + getObject + this.symbol("greater-than")
+          if (filteredPredicate.equals("type") && triple.getObject.isURI && triple.getObject.getURI.contains(symbol("hash"))) {
+            filteredObject = symbol("colon") + triple.getObject.getURI.split(symbol("hash"))(1)
+          } else if (triple.getObject.isURI) {
+            filteredObject = symbol("less-than") + triple.getObject + symbol("greater-than")
           } else {
-            filteredObject = getObject
+            filteredObject = triple.getObject
           }
 
           // add colon at the start
-          filteredPredicate = this.symbol("colon") + filteredPredicate
+          filteredPredicate = symbol("colon") + filteredPredicate
         } else {
           // PREDICATE
-          if (getPredicate.isURI) {
-            filteredPredicate = this.symbol("less-than") + getPredicate + this.symbol("greater-than")
+          if (triple.getPredicate.isURI) {
+            filteredPredicate = symbol("less-than") + triple.getPredicate + symbol("greater-than")
           }
 
           // OBJECT
-          if (getObject.isURI) {
-            filteredObject = this.symbol("less-than") + getObject + this.symbol("greater-than")
+          if (triple.getObject.isURI) {
+            filteredObject = symbol("less-than") + triple.getObject + symbol("greater-than")
           }
         }
 
         // (K,V) pair
         (
-          this.symbol("less-than") + getSubject + this.symbol("greater-than"),
-          filteredPredicate + this.symbol("space") + filteredObject + this.symbol("space"))
+          symbol("less-than") + triple.getSubject + symbol("greater-than"),
+          filteredPredicate + symbol("space") + filteredObject + symbol("space"))
       })
       .reduceByKey(_ + _) // group based on key
       .sortBy(x => x._1) // sort by key
-      .map(x => x._1 + this.symbol("space") + x._2) // output format
+      .map(x => x._1 + symbol("space") + x._2) // output format
 
     partitionedData
   }
 
-}
-
-object RdfPartition {
-  def apply(
-    symbol: Map[String, String],
-    nTriplesRDD: RDD[Triple],
-    partitionedDataPath: String,
-    numOfFilesPartition: Int): RdfPartition = new RdfPartition(symbol, nTriplesRDD, partitionedDataPath, numOfFilesPartition)
 }
