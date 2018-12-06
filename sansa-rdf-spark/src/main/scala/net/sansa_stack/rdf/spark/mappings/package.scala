@@ -16,16 +16,16 @@ package object mappings {
       *  3. The associated R2RML mappings.
       */
 
-    def loadIntoTable(tripleFilePath: String): Iterable[String] = {
-      R2RMLMappings.loadSQLTables(tripleFilePath, spark)
+    def loadIntoTable(triples: RDD[Triple]): Iterable[String] = {
+      R2RMLMappings.loadSQLTables(triples, spark)
     }
 
-    def insertIntoTable(tripleFilePath: String): RDD[String] = {
-      R2RMLMappings.insertSQLTables(tripleFilePath, spark)
+    def insertIntoTable(triples: RDD[Triple]): RDD[String] = {
+      R2RMLMappings.insertSQLTables(triples, spark)
     }
 
-    def obtainMappings(tripleFilePath: String): Iterable[String] = {
-      R2RMLMappings.generateR2RMLMappings(tripleFilePath, spark)
+    def obtainMappings(triples: RDD[Triple]): Iterable[String] = {
+      R2RMLMappings.generateR2RMLMappings(triples, spark)
     }
 
   }

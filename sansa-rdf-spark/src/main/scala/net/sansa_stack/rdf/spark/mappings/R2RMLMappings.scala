@@ -9,9 +9,10 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import net.sansa_stack.rdf.spark.partition._
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.jena.riot.Lang
 
 /**
  * Provide a set of functions to deal with SQL tables and R2RML mappings.
@@ -27,9 +28,7 @@ object R2RMLMappings extends Serializable {
    * @param Path to the triple file
    * @param Current SparkSession
    */
-  def loadSQLTables(tripleFile: String, spark: SparkSession): Iterable[String] = {
-    // Reading the NTriple file from its path.
-    val triples = spark.rdf(Lang.NTRIPLES)(tripleFile)
+  def loadSQLTables(triples: RDD[Triple], spark: SparkSession): Iterable[String] = {
     val partitions = triples.partitionGraph()
     // Generating commands to create SQL tables.
     val schemaSQLTable = partitions.map {
@@ -55,11 +54,8 @@ object R2RMLMappings extends Serializable {
    * @param Path to the triple file
    * @param Current SparkSession
    */
-  def insertSQLTables(tripleFile: String, spark: SparkSession): RDD[String] = {
-    // Reading the NTriple file from its path.
-    val triples = spark.rdf(Lang.NTRIPLES)(tripleFile)
-    val partitions = triples.partitionGraph()
-    val insertSQL = triples.getTriples.map {
+  def insertSQLTables(triples: RDD[Triple], spark: SparkSession): RDD[String] = {
+    val insertSQL = triples.map {      // .getTriples.map {
       case t =>
         var tablename = t.getPredicate.toString.replaceAll("[^A-Za-z0-9]", "_");
         var subj = RdfPartitionerDefault.getUriOrBNodeString(t.getSubject);
@@ -83,10 +79,8 @@ object R2RMLMappings extends Serializable {
    * @param Path to the triple file
    * @param Current SparkSession
    */
-  def generateR2RMLMappings(tripleFile: String, spark: SparkSession): Iterable[String] = {
+  def generateR2RMLMappings(triples: RDD[Triple], spark: SparkSession): Iterable[String] = {
     var mappingNumber = 1
-    // Reading the NTriple file from its path.
-    val triples = spark.rdf(Lang.NTRIPLES)(tripleFile)
     val partitions = triples.partitionGraph()
     val r2rmlMappings = partitions.map {
       case (p, rdd) =>
