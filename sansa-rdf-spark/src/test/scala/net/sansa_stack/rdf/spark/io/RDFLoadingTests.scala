@@ -23,7 +23,7 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
 
-  test("loading N-Triples file into DataFrame with REGEX parsing mode should result in 9 triples") {
+  test("loading N-Triples file into DataFrame with REGEX parsing mode should result in 10 triples") {
 
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
@@ -31,7 +31,7 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.read.rdf(lang)(path)
 
     val cnt = triples.count()
-    assert(cnt == 9)
+    assert(cnt == 10)
   }
 
   test("loading Turtle file into DataFrame should result in 12 triples") {
