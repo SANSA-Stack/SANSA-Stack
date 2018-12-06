@@ -212,7 +212,8 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
   /**
     * R5:
     *   Condition:
-    *     p rdfs:range o , s p v
+    *     p rdfs:range o
+    *     s p v
     *   Consequence:
     *     v rdf:type o
     */
@@ -264,5 +265,49 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.size == 2)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivA)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivB)))
+  }
+
+  /**
+    * O1:
+    *   Condition:
+    *     p rdf:type owl:FunctionalProperty
+    *     u p v
+    *     u p w
+    *   Consequence:
+    *     v owl:sameAs w
+    */
+  test("Rule O1 should return correct results") {
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+    val indivC = df.getOWLNamedIndividual(defaultPrefix + "indivC")
+    val indivD = df.getOWLNamedIndividual(defaultPrefix + "indivD")
+
+    val input = getClass.getResource(resourcePath + "test_o1.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // It should be either one axiom inferred:
+    //   SameIndividual(:indivB :indivC :indivD)
+    // or three pairwise axioms:
+    //   SameIndividual(:indivB :indivC)
+    //   SameIndividual(:indivB :indivD)
+    //   SameIndividual(:indivC :indivD)
+    // (where the individual operand pairs may be in arbitrary order)
+    // Permutations are assumed to be handled by the axiom's equals method
+    inferred.size match {
+      case 1 => assert(
+        inferred.contains(
+          df.getOWLSameIndividualAxiom(Seq(indivB, indivC, indivD).asJava)))
+      case 3 =>
+        assert( // B == C
+          inferred.contains(df.getOWLSameIndividualAxiom(indivB, indivC)))
+        assert( // B == D
+          inferred.contains(df.getOWLSameIndividualAxiom(indivB, indivD)))
+        assert(  // C == D
+          inferred.contains(df.getOWLSameIndividualAxiom(indivC, indivD))
+        )
+      case _ => assert(false)
+    }
   }
 }
