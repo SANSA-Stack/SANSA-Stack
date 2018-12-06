@@ -9,14 +9,14 @@ package object stats {
 
   implicit class StatsCriteria(triples: DataSet[Triple]) extends Logging {
 
-    @transient val env = ExecutionEnvironment.getExecutionEnvironment
+    val env = ExecutionEnvironment.getExecutionEnvironment
 
     /**
      * Compute distributed RDF dataset statistics.
      * @return VoID description of the given dataset
      */
     def stats: DataSet[String] =
-      RDFStatistics(triples, env).run()
+      RDFStatistics.run(triples)
 
     /**
      * <b>1. Used Classes Criterion </b> <br>
@@ -146,4 +146,25 @@ package object stats {
     def statsPropertiesDefined(): DataSet[Node] =
       PropertiesDefined(triples, env).Action()
   }
+
+  implicit class StatsCriteriaVoidify(stats: DataSet[String]) extends Logging {
+
+    /**
+     * Voidify RDF dataset based on the Vocabulary of Interlinked Datasets (VoID) [[https://www.w3.org/TR/void/]]
+     *
+     * @param source name of the Dataset:source--usualy the file's name
+     * @param output the directory to save RDF dataset summary
+     */
+    def voidify(source: String, output: String): Unit =
+      RDFStatistics.voidify(stats, source, output)
+
+    /**
+     * Prints the Voidiy version of the given RDF dataset
+     *
+     * @param source name of the Dataset:source--usualy the file's name
+     */
+    def print(source: String): Unit =
+      RDFStatistics.print(stats, source)
+  }
+
 }

@@ -11,7 +11,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.stats._
 
-  test("computing distinct subjects should result in size 3") {
+  test("computing distinct subjects should result in size 4") {
     val path = getClass.getResource("/loader/data.nt").getPath
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)

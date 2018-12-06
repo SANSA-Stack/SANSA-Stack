@@ -12,10 +12,21 @@ import org.apache.flink.api.scala.DataSet
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.graph.{ Node, Triple }
 
-class RDFStatistics(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
+/**
+ * A Distributed implementation of RDF Statisctics using Apache Flink.
+ *
+ * @author Gezim Sejdiu
+ */
+object RDFStatistics extends Serializable with Logging {
+  val env = ExecutionEnvironment.getExecutionEnvironment
 
-  def run(): DataSet[String] = {
-    Used_Classes(triples, env).Voidify
+  /**
+   * Compute distributed RDF dataset statistics.
+   * @param triples DataSet graph
+   * @return VoID description of the given dataset
+   */
+  def run(triples: DataSet[Triple]): DataSet[String] = {
+    Used_Classes(triples, ExecutionEnvironment.getExecutionEnvironment).Voidify
       .union(DistinctEntities(triples, env).Voidify)
       .union(DistinctSubjects(triples, env).Voidify)
       .union(DistinctObjects(triples, env).Voidify)
@@ -23,6 +34,13 @@ class RDFStatistics(triples: DataSet[Triple], env: ExecutionEnvironment) extends
       .union(SPO_Vocabularies(triples, env).Voidify)
   }
 
+  /**
+   * Voidify RDF dataset based on the Vocabulary of Interlinked Datasets (VoID) [[https://www.w3.org/TR/void/]]
+   *
+   * @param stats given RDF dataset statistics
+   * @param source name of the Dataset:source--usualy the file's name
+   * @param output the directory to save RDF dataset summary
+   */
   def voidify(stats: DataSet[String], source: String, output: String): Unit = {
     val pw = new StringWriter
 
@@ -49,10 +67,33 @@ class RDFStatistics(triples: DataSet[Triple], env: ExecutionEnvironment) extends
     vidifyStats.writeAsText(output, writeMode = FileSystem.WriteMode.OVERWRITE).setParallelism(1)
   }
 
-}
+  /**
+   * Prints the Voidiy version of the given RDF dataset
+   *
+   * @param stats given RDF dataset statistics
+   * @param source name of the Dataset:source--usualy the file's name
+   */
+  def print(stats: DataSet[String], source: String): Unit = {
+    val prefix = """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                    @prefix void: <http://rdfs.org/ns/void#> .
+                    @prefix void-ext: <http://stats.lod2.eu/rdf/void-ext/> .
+                    @prefix qb: <http://purl.org/linked-data/cube#> .
+                    @prefix dcterms: <http://purl.org/dc/terms/> .
+                    @prefix ls-void: <http://stats.lod2.eu/rdf/void/> .
+                    @prefix ls-qb: <http://stats.lod2.eu/rdf/qb/> .
+                    @prefix ls-cr: <http://stats.lod2.eu/rdf/qb/criteria/> .
+                    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                    @prefix xstats: <http://example.org/XStats#> .
+                    @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+                    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ."""
 
-object RDFStatistics {
-  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): RDFStatistics = new RDFStatistics(triples, env)
+    val src = "\n<http://stats.lod2.eu/rdf/void/?source=" + source + ">\n"
+    val end = "\na void:Dataset ."
+
+    val voidify = prefix.concat(src).concat(stats.setParallelism(1).collect().mkString).concat(end)
+    println("\n" + voidify)
+  }
+
 }
 
 class Used_Classes(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
