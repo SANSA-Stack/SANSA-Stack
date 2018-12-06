@@ -1,14 +1,22 @@
 package net.sansa_stack.inference.spark.forwardchaining.axioms
 
-import com.holdenkarau.spark.testing.{ SharedSparkContext, DataFrameSuiteBase }
-// import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
-import org.scalatest.FunSuite
-import org.semanticweb.owlapi.model.OWLAxiom
+import com.holdenkarau.spark.testing.{DataFrameSuiteBase, SharedSparkContext}
+import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, OWLAxiomsRDD}
 import org.apache.spark.rdd.RDD
+import org.scalatest.FunSuite
+import org.semanticweb.owlapi.apibinding.OWLManager
+import org.semanticweb.owlapi.model.OWLAxiom
 
+/**
+  * Entailment pattern naming taken from
+  * https://www.w3.org/TR/rdf11-mt/#patterns-of-rdfs-entailment-informative
+  */
 class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with DataFrameSuiteBase {
+  private val resourcePath = "/forward_chaining/axioms/"
+  private val defaultPrefix = "http://ex.com/default#"
+  private val df = OWLManager.getOWLDataFactory
+
+  import net.sansa_stack.owl.spark.owl._
 
   val reasoner = new ForwardRuleReasonerRDFS(sc, 4)
 
