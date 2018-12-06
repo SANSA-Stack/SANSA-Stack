@@ -464,4 +464,60 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.contains(
       df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
   }
+
+  /**
+    * O10:
+    *   Condition:
+    *     u p v
+    *     u owl:sameAs x
+    *     v owl:sameAs y
+    *   Consequence:
+    *     x p y
+    */
+  test("Rule O10 should return correct results") {
+    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+    val indivC = df.getOWLNamedIndividual(defaultPrefix + "indivC")
+    val indivD = df.getOWLNamedIndividual(defaultPrefix + "indivD")
+    val indivE = df.getOWLNamedIndividual(defaultPrefix + "indivE")
+    val indivF = df.getOWLNamedIndividual(defaultPrefix + "indivF")
+    val indivG = df.getOWLNamedIndividual(defaultPrefix + "indivG")
+    val indivH = df.getOWLNamedIndividual(defaultPrefix + "indivH")
+    val indivI = df.getOWLNamedIndividual(defaultPrefix + "indivI")
+    val indivJ = df.getOWLNamedIndividual(defaultPrefix + "indivJ")
+    val indivK = df.getOWLNamedIndividual(defaultPrefix + "indivK")
+    val indivL = df.getOWLNamedIndividual(defaultPrefix + "indivL")
+
+
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val objProp02 = df.getOWLObjectProperty(defaultPrefix + "objProp02")
+
+    val input = getClass.getResource(resourcePath + "test_o10.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Six axioms should be inferred:
+    // ObjectPropertyAssertion(:objProp01 :indivB :indivI)
+    // ObjectPropertyAssertion(:objProp01 :indivJ :indivD)
+    // ObjectPropertyAssertion(:objProp01 :indivB :indivD)
+    //
+    // ObjectPropertyAssertion(:objProp02 :indivE :indivK)
+    // ObjectPropertyAssertion(:objProp02 :indivL :indivG)
+    // ObjectPropertyAssertion(:objProp02 :indivE :indivG)
+    assert(inferred.size == 6)
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivI)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivJ, indivD)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivD)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivK)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivL, indivG)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivG)))
+  }
 }
