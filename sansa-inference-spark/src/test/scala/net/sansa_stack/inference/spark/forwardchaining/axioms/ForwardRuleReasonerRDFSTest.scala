@@ -194,4 +194,28 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
       df.getOWLAnnotationAssertionAxiom(annProp01, indivA.getIRI,
         df.getOWLLiteral("wxyz"))))
   }
+
+  /**
+    * rdfs9
+    *   Condition:
+    *     xxx rdfs:subClassOf yyy .
+    *     zzz rdf:type xxx .
+    *   Consequence:
+    *     zzz rdf:type yyy .
+    */
+  test("Rule rdfs9 should return correct results") {
+    val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+
+    val input = getClass.getResource(resourcePath + "test_rdfs9.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerRDFS(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // One axiom should be inferred:
+    // ClassAssertion(:Cls01 :indivB)
+    assert(inferred.size == 1)
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivB)))
+  }
 }
