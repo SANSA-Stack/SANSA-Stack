@@ -6,12 +6,12 @@ import java.net.URI
 import scala.collection.mutable
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import net.sansa_stack.rdf.spark.model.rdd.TripleOps
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.model._
+import net.sansa_stack.rdf.spark.partition._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-
+import org.apache.jena.riot.Lang
 
 /**
  * Provide a set of functions to deal with SQL tables and R2RML mappings.
@@ -29,11 +29,12 @@ object R2RMLMappings extends Serializable {
    */
   def loadSQLTables(tripleFile: String, spark: SparkSession): Iterable[String] = {
     // Reading the NTriple file from its path.
-    val graphRdd = NTripleReader.load(spark, URI.create(tripleFile))
-    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
+    val triples = spark.rdf(Lang.NTRIPLES)(tripleFile)
+    val partitions = triples.partitionGraph()
     // Generating commands to create SQL tables.
-    val schemaSQLTable = partitions.map{ case ( p, rdd) =>
-      /* Since data can be wrongly formatted,
+    val schemaSQLTable = partitions.map {
+      case (p, rdd) =>
+        /* Since data can be wrongly formatted,
        * just skip those details for the moment…
       p.layout.schema.toString match {
         case "net.sansa_stack.rdf.common.partition.schema.SchemaStringDouble" => "CREATE TABLE " + p.predicate.replaceAll("[^A-Za-z0-9]", "-") + " (s STRING, o FLOAT);" // No 'double' in SQL
@@ -44,7 +45,7 @@ object R2RMLMappings extends Serializable {
         case _ => println("error: schema unknown")
       }
       */
-      "CREATE TABLE IF NOT EXISTS " + p.predicate.replaceAll("[^A-Za-z0-9]", "_") + " (s STRING, o STRING, l STRING)"
+        "CREATE TABLE IF NOT EXISTS " + p.predicate.replaceAll("[^A-Za-z0-9]", "_") + " (s STRING, o STRING, l STRING)"
     }
     schemaSQLTable
   }
@@ -56,22 +57,23 @@ object R2RMLMappings extends Serializable {
    */
   def insertSQLTables(tripleFile: String, spark: SparkSession): RDD[String] = {
     // Reading the NTriple file from its path.
-    val graphRdd = NTripleReader.load(spark, URI.create(tripleFile))
-    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
-    val insertSQL = TripleOps.getTriples(graphRdd).map{ case t =>
-      var tablename = t.getPredicate.toString.replaceAll("[^A-Za-z0-9]", "_") ;
-      var subj = RdfPartitionerDefault.getUriOrBNodeString(t.getSubject);
-      var complement = if (t.getObject.isLiteral) {
-                         if ( t.getObject.getLiteralLanguage != "") {
-                           "\"" + t.getObject.getLiteralLexicalForm + "\" , \"" + t.getObject.getLiteralLanguage + "\""
-                         } else {
-                           "\"" + t.getObject.getLiteralLexicalForm + "\" , \"" + t.getObject.getLiteralDatatypeURI + "\""
-                         }
-                       } else {
-                          "\"" + RdfPartitionerDefault.getUriOrBNodeString(t.getObject) + "\" , \"\""
-                       } ;
-    var statement = "INSERT INTO " + tablename + " VALUES ( \"" +  subj + "\" , " + complement + " ) " ;
-      statement ;
+    val triples = spark.rdf(Lang.NTRIPLES)(tripleFile)
+    val partitions = triples.partitionGraph()
+    val insertSQL = triples.getTriples(triples).map {
+      case t =>
+        var tablename = t.getPredicate.toString.replaceAll("[^A-Za-z0-9]", "_");
+        var subj = RdfPartitionerDefault.getUriOrBNodeString(t.getSubject);
+        var complement = if (t.getObject.isLiteral) {
+          if (t.getObject.getLiteralLanguage != "") {
+            "\"" + t.getObject.getLiteralLexicalForm + "\" , \"" + t.getObject.getLiteralLanguage + "\""
+          } else {
+            "\"" + t.getObject.getLiteralLexicalForm + "\" , \"" + t.getObject.getLiteralDatatypeURI + "\""
+          }
+        } else {
+          "\"" + RdfPartitionerDefault.getUriOrBNodeString(t.getObject) + "\" , \"\""
+        };
+        var statement = "INSERT INTO " + tablename + " VALUES ( \"" + subj + "\" , " + complement + " ) ";
+        statement;
     }
     insertSQL
   }
@@ -84,17 +86,19 @@ object R2RMLMappings extends Serializable {
   def generateR2RMLMappings(tripleFile: String, spark: SparkSession): Iterable[String] = {
     var mappingNumber = 1
     // Reading the NTriple file from its path.
-    val graphRdd = NTripleReader.load(spark, URI.create(tripleFile))
-    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
-    val r2rmlMappings = partitions.map{ case ( p, rdd) =>
-      p.layout.schema.toString match { case _ =>
-        var mapping = "<TriplesMap" + mappingNumber.toString + "> a rr:TriplesMapClass ; "
-        mapping += "rr:logicalTable [rr:SQLQuery \"\"\"SELECT s , o , l FROM " + p.predicate.replaceAll("[^A-Za-z0-9]", "_") + " \"\"\"] ; "
-        mapping += "rr:subjectMap [ rr:column \"s\"] ; "
-        mapping += "rr:predicateObjectMap [ rr:predicate " + p.predicate + " ; rr:objectMap [ rr:column \"o\"] ] . "
-        mappingNumber+=1;
-        mapping;
-      }
+    val triples = spark.rdf(Lang.NTRIPLES)(tripleFile)
+    val partitions = triples.partitionGraph()
+    val r2rmlMappings = partitions.map {
+      case (p, rdd) =>
+        p.layout.schema.toString match {
+          case _ =>
+            var mapping = "<TriplesMap" + mappingNumber.toString + "> a rr:TriplesMapClass ; "
+            mapping += "rr:logicalTable [rr:SQLQuery \"\"\"SELECT s , o , l FROM " + p.predicate.replaceAll("[^A-Za-z0-9]", "_") + " \"\"\"] ; "
+            mapping += "rr:subjectMap [ rr:column \"s\"] ; "
+            mapping += "rr:predicateObjectMap [ rr:predicate " + p.predicate + " ; rr:objectMap [ rr:column \"o\"] ] . "
+            mappingNumber += 1;
+            mapping;
+        }
       // Since data can be bad-formatted we still have to be a bit prudent.
     }
     r2rmlMappings
