@@ -59,7 +59,7 @@ object R2RMLMappings extends Serializable {
     // Reading the NTriple file from its path.
     val triples = spark.rdf(Lang.NTRIPLES)(tripleFile)
     val partitions = triples.partitionGraph()
-    val insertSQL = triples.getTriples(triples).map {
+    val insertSQL = triples.getTriples.map {
       case t =>
         var tablename = t.getPredicate.toString.replaceAll("[^A-Za-z0-9]", "_");
         var subj = RdfPartitionerDefault.getUriOrBNodeString(t.getSubject);
