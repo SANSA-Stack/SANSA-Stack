@@ -175,6 +175,38 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.contains(
       df.getOWLAnnotationAssertionAxiom(annProp01, indivA.getIRI,
         df.getOWLLiteral("wxyz"))))
+  }
+
+  /**
+    * R4:
+    *   Condition:
+    *     s rdfs:domain x
+    *     u s y
+    *   Consequence:
+    *     u rdf:type x
+    */
+  test("Rule R4 should return correct results") {
+    val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
+    val cls02 = df.getOWLClass(defaultPrefix + "Cls02")
+    val cls03 = df.getOWLClass(defaultPrefix + "Cls03")
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+    val indivD = df.getOWLNamedIndividual(defaultPrefix + "indivD")
+    val indivF = df.getOWLNamedIndividual(defaultPrefix + "indivF")
+
+    val input = getClass.getResource(resourcePath + "test_r4.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Three axioms should be inferred:
+    // ClassAssertion(:Cls01 :indivB)
+    // ClassAssertion(:Cls02 :indivD)
+    // ClassAssertion(:Cls03 :indivF)
+    assert(inferred.size == 3)
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivB)))
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivD)))
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(cls03, indivF)))
 
   }
 }
