@@ -310,4 +310,48 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
       case _ => assert(false)
     }
   }
+
+  /**
+    * O2:
+    *   Condition:
+    *     p rdf:type owl:InverseFunctionalProperty
+    *     v p u
+    *     w p u
+    *   Consequence:
+    *     v owl:sameAs w
+    */
+  test("Rule O2 should return correct results") {
+    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
+    val indivC = df.getOWLNamedIndividual(defaultPrefix + "indivC")
+    val indivD = df.getOWLNamedIndividual(defaultPrefix + "indivD")
+
+    val input = getClass.getResource(resourcePath + "test_o2.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // It should be either one axiom inferred:
+    //   SameIndividual(:indivA :indivC :indivD)
+    // or three pairwise axioms:
+    //   SameIndividual(:indivA :indivC)
+    //   SameIndividual(:indivA :indivD)
+    //   SameIndividual(:indivC :indivD)
+    // (where the individual operand pairs may be in arbitrary order)
+    // Permutations are assumed to be handled by the axiom's equals method.
+    inferred.size match {
+      case 1 => assert(
+        inferred.contains(
+          df.getOWLSameIndividualAxiom(Seq(indivA, indivC, indivD).asJava)))
+      case 3 =>
+        assert( // B == C
+          inferred.contains(df.getOWLSameIndividualAxiom(indivA, indivC)))
+        assert( // B == D
+          inferred.contains(df.getOWLSameIndividualAxiom(indivA, indivD)))
+        assert(  // C == D
+          inferred.contains(df.getOWLSameIndividualAxiom(indivC, indivD))
+        )
+      case _ => assert(false)
+    }
+  }
 }
