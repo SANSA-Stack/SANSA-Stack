@@ -12,7 +12,11 @@ import scala.collection.JavaConverters._
 
 /**
   * A forward chaining implementation for the OWL Horst entailment regime that works
-  * on OWL axioms
+  * on OWL axioms.
+  *
+  * Rule names refer to the name scheme used in
+  * 'RORS: Enhanced Rule-based OWL Reasoning on Spark' by Liu, Feng, Zhang,
+  * Wang, Rao
   *
   * @param sc The Apache Spark context
   * @param parallelism The degree of parallelism
@@ -24,7 +28,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
 
   def this(sc: SparkContext) = this(sc, sc.defaultParallelism)
 
-  def apply(axioms: RDD[OWLAxiom], input: String): RDD[OWLAxiom] = {
+  def apply(axioms: RDD[OWLAxiom]): RDD[OWLAxiom] = {
 
     val startTime = System.currentTimeMillis()
 
