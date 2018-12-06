@@ -41,7 +41,7 @@ package object model {
      *
      * @return [[RDD[Triple]]] which contains list of the triples.
      */
-    def getTriples(triples: RDD[Triple]): RDD[Triple] =
+    def getTriples(): RDD[Triple] =
       TripleOps.getTriples(triples)
 
     /**
