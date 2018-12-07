@@ -30,7 +30,7 @@
 
 		<flink.version>1.7.0</flink.version>
 		<spark.version>2.4.0</spark.version>
-		<jena.version>3.7.0</jena.version>
+		<jena.version>3.9.0</jena.version>
 		<jsa.subversion>3</jsa.subversion>
 		<hadoop.version>2.8.3</hadoop.version>
 
@@ -38,7 +38,7 @@
 
 		<jetty.version>9.4.8.v20171121</jetty.version>
 		<mortbay.jetty.version>6.1.26</mortbay.jetty.version>
-		
+
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
@@ -275,7 +275,7 @@
 					<exclusion>
 						<groupId>org.scalatest</groupId>
 						<artifactId>scalatest</artifactId>
-                    </exclusion>
+					</exclusion>
 				</exclusions>
 			</dependency>
 
@@ -311,8 +311,11 @@
 				<version>${jena.version}</version> </dependency> -->
 
 
-			<!-- <dependency> <groupId>org.apache.commons</groupId> <artifactId>commons-compress</artifactId> 
-				<version>1.15</version> </dependency> -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.18</version>
+			</dependency>
 
 			<!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
 			<dependency>
@@ -324,12 +327,12 @@
 				<groupId>org.apache.hadoop</groupId>
 				<artifactId>hadoop-common</artifactId>
 				<version>${hadoop.version}</version>
-                <exclusions>
-                    <exclusion>
+				<exclusions>
+					<exclusion>
 						<groupId>com.google.guava</groupId>
 						<artifactId>guava</artifactId>
-                    </exclusion>
-                </exclusions>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<dependency>
@@ -619,7 +622,8 @@
 					</configuration>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -681,22 +685,22 @@
 
 				<!-- enable scalatest -->
 				<plugin>
-				  <groupId>org.scalatest</groupId>
-				  <artifactId>scalatest-maven-plugin</artifactId>
-				  <version>1.0</version>
-				  <configuration>
-					<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-					<junitxml>.</junitxml>
-					<filereports>SANSA-RDF-Tests.txt</filereports>
-				  </configuration>
-				  <executions>
-					<execution>
-					  <id>test</id>
-					  <goals>
-						<goal>test</goal>
-					  </goals>
-					</execution>
-				  </executions>
+					<groupId>org.scalatest</groupId>
+					<artifactId>scalatest-maven-plugin</artifactId>
+					<version>1.0</version>
+					<configuration>
+						<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+						<junitxml>.</junitxml>
+						<filereports>SANSA-RDF-Tests.txt</filereports>
+					</configuration>
+					<executions>
+						<execution>
+							<id>test</id>
+							<goals>
+								<goal>test</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -720,15 +724,15 @@
 
 	<profiles>
 		<profile>
-		    <id>root-dir</id>
-		    <activation>
-			<file>
-			    <exists>${project.basedir}/../../scalastyle-config.xml</exists>
-			</file>
-		    </activation>
-		    <properties>
-			<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
-		    </properties>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
 		</profile>
 		<profile>
 			<id>doclint-java8-disable</id>
