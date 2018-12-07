@@ -534,7 +534,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     *   Consequence:
     *     w rdfs:subClassOf v
     */
-  test("Rule O11a and 11b should return correct results") {
+  test("Rules O11a and 11b should return correct results") {
     val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
     val cls02 = df.getOWLClass(defaultPrefix + "Cls02")
     val cls03 = df.getOWLClass(defaultPrefix + "Cls03")
@@ -593,5 +593,116 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // EquivalentClasses(:Cls01 :Cls02)
     assert(inferred.size == 1)
     assert(inferred.contains(df.getOWLEquivalentClassesAxiom(cls01, cls02)))
+  }
+
+  /**
+    * O12a:
+    *   Condition:
+    *     v owl:equivalentProperty w
+    *   Consequence:
+    *     v rdfs:subPropertyOf w
+    *
+    * O12b:
+    *   Condition:
+    *     v owl:equivalentProperty w
+    *   Consequence:
+    *     w rdfs:subPropertyOf v
+    */
+  test("Rules O12a and 12b should return correct results") {
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val objProp02 = df.getOWLObjectProperty(defaultPrefix + "objProp02")
+    val objProp03 = df.getOWLObjectProperty(defaultPrefix + "objProp03")
+    val objProp04 = df.getOWLObjectProperty(defaultPrefix + "objProp04")
+    val objProp05 = df.getOWLObjectProperty(defaultPrefix + "objProp05")
+
+    var input = getClass.getResource(resourcePath + "test_o12ab_obj_props.owl").getPath
+
+    var axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    var reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    var inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Eight axioms should be inferred
+    // SubObjectPropertyOf(:objProp01 :objProp02)
+    // SubObjectPropertyOf(:objProp01 :objProp03)
+    // SubObjectPropertyOf(:objProp02 :objProp01)
+    // SubObjectPropertyOf(:objProp02 :objProp03)
+    // SubObjectPropertyOf(:objProp03 :objProp01)
+    // SubObjectPropertyOf(:objProp03 :objProp02)
+    //
+    // SubObjectPropertyOf(:objProp04 :objProp05)
+    // SubObjectPropertyOf(:objProp05 :objProp04)
+    //
+    // Could be more than 8 since axioms like
+    // EquivalentObjectProperties(:objProp01 :objProp02),
+    // EquivalentObjectProperties(:objProp01 :objProp03) etc. seem to be
+    // inferred as well
+    assert(inferred.size >= 8)
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp01, objProp02)))
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp01, objProp03)))
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp02, objProp01)))
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp02, objProp03)))
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp01)))
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp02)))
+
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp05)))
+    assert(inferred.contains(
+      df.getOWLSubObjectPropertyOfAxiom(objProp05, objProp04)))
+
+    // ---
+    val dataProp01 = df.getOWLDataProperty(defaultPrefix + "dataProp01")
+    val dataProp02 = df.getOWLDataProperty(defaultPrefix + "dataProp02")
+    val dataProp03 = df.getOWLDataProperty(defaultPrefix + "dataProp03")
+    val dataProp04 = df.getOWLDataProperty(defaultPrefix + "dataProp04")
+    val dataProp05 = df.getOWLDataProperty(defaultPrefix + "dataProp05")
+
+    input = getClass.getResource(resourcePath + "test_o12ab_data_props.owl").getPath
+
+    axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    inferred = reasoner.apply(axiomsRDD).collect()
+    // Eight axioms should be inferred
+    // SubDataPropertyOf(:dataProp01 :dataProp02)
+    // SubDataPropertyOf(:dataProp01 :dataProp03)
+    // SubDataPropertyOf(:dataProp02 :dataProp01)
+    // SubDataPropertyOf(:dataProp02 :dataProp03)
+    // SubDataPropertyOf(:dataProp03 :dataProp01)
+    // SubDataPropertyOf(:dataProp03 :dataProp02)
+    //
+    // SubDataPropertyOf(:dataProp04 :dataProp05)
+    // SubDataPropertyOf(:dataProp05 :dataProp04)
+    //
+    // Could be more than 8 since axioms like
+    // EquivalentDataProperties(:dataProp01 :dataProp02),
+    // EquivalentDataProperties(:dataProp01 :dataProp03) etc. seem to be
+    // inferred as well
+    assert(inferred.size >= 8)
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp01, dataProp02)))
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp01, dataProp03)))
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp02, dataProp01)))
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp02, dataProp03)))
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp03, dataProp01)))
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp03, dataProp02)))
+
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp04, dataProp05)))
+    assert(inferred.contains(
+      df.getOWLSubDataPropertyOfAxiom(dataProp05, dataProp04)))
+
+    // --
+    // There is no EquivalentAnnotationProperties( ) construct --> annotation
+    // property equivalence skipped
   }
 }
