@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>sansa-rdf-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.4.0</version>
+		<version>0.5.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sansa-rdf-common_2.11</artifactId>
@@ -31,6 +31,21 @@
 		<dependency>
 			<groupId>org.aksw.sparqlify</groupId>
 			<artifactId>sparqlify-core</artifactId>
+		</dependency>
+
+		<!-- Hadoop -->
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-mapreduce-client-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.typesafe.scala-logging</groupId>
+			<artifactId>scala-logging_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<dependency>

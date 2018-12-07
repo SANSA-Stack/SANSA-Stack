@@ -1,7 +1,5 @@
 package net.sansa_stack.rdf.flink
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
-import net.sansa_stack.rdf.flink.model.RDFTriple
 import net.sansa_stack.rdf.flink.utils.{ Logging, StatsPrefixes }
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
@@ -9,16 +7,16 @@ import org.apache.jena.graph.{ Node, Triple }
 
 package object stats {
 
-  implicit class StatsCriteria(triples: RDFGraph) extends Logging {
+  implicit class StatsCriteria(triples: DataSet[Triple]) extends Logging {
 
-    @transient val env = ExecutionEnvironment.getExecutionEnvironment
+    val env = ExecutionEnvironment.getExecutionEnvironment
 
     /**
      * Compute distributed RDF dataset statistics.
      * @return VoID description of the given dataset
      */
     def stats: DataSet[String] =
-      RDFStatistics(triples, env).run()
+      RDFStatistics.run(triples)
 
     /**
      * <b>1. Used Classes Criterion </b> <br>
@@ -29,7 +27,7 @@ package object stats {
      * <b>Action</b> : `S += ?o`
      * @return DataSet of classes/instances
      */
-    def statsUsedClasses(): DataSet[RDFTriple] =
+    def statsUsedClasses(): DataSet[Triple] =
       Used_Classes(triples, env).Filter()
 
     /**
@@ -84,7 +82,7 @@ package object stats {
      * <b>Action</b> : `S`
      * @return DataSet of distinct entities in the dataset.
      */
-    def statsDistinctEntities(): DataSet[RDFTriple] =
+    def statsDistinctEntities(): DataSet[Triple] =
       DistinctEntities(triples, env).Action()
 
     /**
@@ -124,7 +122,7 @@ package object stats {
      * <b>Action</b> : `M[?s]++`
      * @return DataSet of subjects used in the dataset.
      */
-    def statsDistinctSubjects(): DataSet[RDFTriple] =
+    def statsDistinctSubjects(): DataSet[Triple] =
       DistinctSubjects(triples, env).Action()
 
     /**
@@ -134,7 +132,7 @@ package object stats {
      * <b>Action</b> : `M[?o]++`
      * @return DataSet of objects used in the dataset.
      */
-    def statsDistinctObjects(): DataSet[RDFTriple] =
+    def statsDistinctObjects(): DataSet[Triple] =
       DistinctObjects(triples, env).Action()
 
     /**
@@ -148,4 +146,25 @@ package object stats {
     def statsPropertiesDefined(): DataSet[Node] =
       PropertiesDefined(triples, env).Action()
   }
+
+  implicit class StatsCriteriaVoidify(stats: DataSet[String]) extends Logging {
+
+    /**
+     * Voidify RDF dataset based on the Vocabulary of Interlinked Datasets (VoID) [[https://www.w3.org/TR/void/]]
+     *
+     * @param source name of the Dataset:source--usualy the file's name
+     * @param output the directory to save RDF dataset summary
+     */
+    def voidify(source: String, output: String): Unit =
+      RDFStatistics.voidify(stats, source, output)
+
+    /**
+     * Prints the Voidiy version of the given RDF dataset
+     *
+     * @param source name of the Dataset:source--usualy the file's name
+     */
+    def print(source: String): Unit =
+      RDFStatistics.print(stats, source)
+  }
+
 }

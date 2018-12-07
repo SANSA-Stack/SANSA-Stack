@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
 import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
@@ -20,7 +19,7 @@ object PropertyCompleteness {
   val subject = DatasetUtils.getSubjectClassURI()
   val property = DatasetUtils.getPropertyURI()
 
-  def apply(rdfgraph: RDFGraph): Long = {
+  def apply(triples: DataSet[Triple]): Long = {
 
     /**
      * -->Rule->Filter-->
@@ -31,8 +30,7 @@ object PropertyCompleteness {
      * -->Post-processing-->
      * |S| / |S2|
      */
-    val dataset = rdfgraph.triples
-    val s2 = dataset.filter(f =>
+    val s2 = triples.filter(f =>
       f.getPredicate.getLiteralLexicalForm.contains("rdf:type")
         && f.getObject.getLiteralLexicalForm.contains(subject))
 
