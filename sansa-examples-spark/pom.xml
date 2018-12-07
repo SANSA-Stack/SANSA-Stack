@@ -55,16 +55,12 @@
 		</dependency>
 
 		<!-- SANSA RDF -->
-		<!-- <dependency> <groupId>net.sansa-stack</groupId> <artifactId>sansa-rdf-spark-core</artifactId> 
-			<version>0.1.0-SNAPSHOT</version> </dependency> -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
-		<!-- <dependency> <groupId>net.sansa-stack</groupId> <artifactId>sansa-owl-spark</artifactId> 
-			<version>0.1.0-SNAPSHOT</version> </dependency> -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
@@ -146,11 +142,9 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
-		<!-- Commons-codec dependency: solve the issue related building the docker-->
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.11</version>
 		</dependency>
 <!--
 		<dependency>

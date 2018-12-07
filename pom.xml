@@ -58,10 +58,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
-		<spark.version>2.3.1</spark.version>
-		<flink.version>1.5.0</flink.version>
+		<spark.version>2.4.0</spark.version>
+		<flink.version>1.7.0</flink.version>
 		<hadoop.version>2.8.3</hadoop.version>
-		<jena.version>3.7.0</jena.version>
+		<jena.version>3.9.0</jena.version>
 		<sansa.version>0.4.1-SNAPSHOT</sansa.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
@@ -161,7 +161,7 @@
 			</dependency>
 
 			<!-- Guava -->
-			<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava</artifactId>
+			<!-- <dependency> <groupId>com.google.guava</groupId> <artifactId>guava</artifactId> 
 				<version>19.0</version> </dependency> -->
 
 			<!-- RDF Layer -->
@@ -240,12 +240,17 @@
 				<scope>import</scope>
 			</dependency>
 
-            <!-- Commons-codec dependency: solve the issue of making clean install-->
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.11</version>
-            </dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.11</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.18</version>
+			</dependency>
 
 		</dependencies>
 	</dependencyManagement>
@@ -347,15 +352,15 @@
 
 	<profiles>
 		<profile>
-		    <id>root-dir</id>
-		    <activation>
-			<file>
-			    <exists>${project.basedir}/../../scalastyle-config.xml</exists>
-			</file>
-		    </activation>
-		    <properties>
-			<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
-		    </properties>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
 		</profile>
 	</profiles>
 
