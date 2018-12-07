@@ -2,10 +2,12 @@ package net.sansa_stack.examples.flink.rdf
 
 import scala.collection.mutable
 
-import net.sansa_stack.rdf.flink.data.RDFGraphLoader
+import net.sansa_stack.rdf.flink.io._
+import net.sansa_stack.rdf.flink.model._
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.ExecutionEnvironment
-
+import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.riot.Lang
 
 object TripleOps {
   def main(args: Array[String]) {
@@ -24,22 +26,22 @@ object TripleOps {
     println("======================================")
     val env = ExecutionEnvironment.getExecutionEnvironment
 
-    val rdfgraph = RDFGraphLoader.loadFromFile(input, env)
+    val triples = env.rdf(Lang.NTRIPLES)(input)
 
-    rdfgraph.triples.collect().take(4).foreach(println(_))
+    triples.getTriples().collect().take(4).foreach(println(_))
     // Triples filtered by subject ( "http://dbpedia.org/resource/Charles_Dickens" )
-    println("All triples related to Dickens:\n" + rdfgraph.find(Some("http://commons.dbpedia.org/resource/Category:Places"), None, None).collect().mkString("\n"))
+    println("All triples related to Dickens:\n" + triples.find(Some(NodeFactory.createURI("http://commons.dbpedia.org/resource/Category:Places")), None, None).collect().mkString("\n"))
 
     // Triples filtered by predicate ( "http://dbpedia.org/ontology/influenced" )
-    println("All triples for predicate influenced:\n" + rdfgraph.find(None, Some("http://dbpedia.org/ontology/influenced"), None).collect().mkString("\n"))
+    println("All triples for predicate influenced:\n" + triples.find(None, Some(NodeFactory.createURI("http://dbpedia.org/ontology/influenced")), None).collect().mkString("\n"))
 
     // Triples filtered by object ( <http://dbpedia.org/resource/Henry_James> )
-    println("All triples influenced by Henry_James:\n" + rdfgraph.find(None, None, Some("<http://dbpedia.org/resource/Henry_James>")).collect().mkString("\n"))
+    println("All triples influenced by Henry_James:\n" + triples.find(None, None, Some(NodeFactory.createURI("<http://dbpedia.org/resource/Henry_James>"))).collect().mkString("\n"))
 
     // println("Number of triples: " + rdfgraph.triples.distinct.count())
-    println("Number of subjects: " + rdfgraph.getSubjects.map(_.toString).distinct().count)
-    println("Number of predicates: " + rdfgraph.getPredicates.map(_.toString).distinct.count())
-    println("Number of objects: " + rdfgraph.getPredicates.map(_.toString).distinct.count())
+    println("Number of subjects: " + triples.getSubjects.map(_.toString).distinct().count)
+    println("Number of predicates: " + triples.getPredicates.map(_.toString).distinct.count())
+    println("Number of objects: " + triples.getPredicates.map(_.toString).distinct.count())
 
   }
   case class Config(in: String = "")

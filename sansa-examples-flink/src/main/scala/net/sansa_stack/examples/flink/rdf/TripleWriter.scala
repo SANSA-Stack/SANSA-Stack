@@ -2,8 +2,9 @@ package net.sansa_stack.examples.flink.rdf
 
 import scala.collection.mutable
 
-import net.sansa_stack.rdf.flink.data.{ RDFGraphLoader, RDFGraphWriter }
+import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.jena.riot.Lang
 
 object TripleWriter {
 
@@ -24,8 +25,8 @@ object TripleWriter {
 
     val env = ExecutionEnvironment.getExecutionEnvironment
 
-    val rdfgraph = RDFGraphLoader.loadFromFile(input, env)
-    RDFGraphWriter.writeToFile(rdfgraph, output)
+    val triples = env.rdf(Lang.NTRIPLES)(input)
+    triples.saveAsNTriplesFile(output)
 
     env.execute(s"Triple writer example ($input)")
 
