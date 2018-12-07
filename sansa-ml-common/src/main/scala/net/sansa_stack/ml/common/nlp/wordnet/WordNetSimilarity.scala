@@ -6,11 +6,10 @@
  *  Inspired from:
  *  WordNet::Similarity of Ted Peterson
  *  and ws4j
- *  and ntlk project
+ *  and nltk project
 
  */
-package net.sansa_stack.ml.spark.nlp.wordnet
-
+package net.sansa_stack.ml.common.nlp.wordnet
 
 object WordNetSimilarity extends WordNet {
 
@@ -28,7 +27,7 @@ object WordNetSimilarity extends WordNet {
 
     val lcs = lowestCommonHypernym(synset1, synset2)
     if (lcs.isEmpty) return min
-    val depth = this.depth(lcs.head)
+    val depth = this.maxDepth(lcs.head)
     val depth1 = shortestHypernymPathLength(synset1, lcs.head) + depth
     val depth2 = shortestHypernymPathLength(synset2, lcs.head) + depth
     var score = 0.0
@@ -56,5 +55,5 @@ object WordNetSimilarity extends WordNet {
     else score = 1.toDouble / distance
     score
   }
-
+  
   }

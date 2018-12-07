@@ -18,6 +18,20 @@
 			<artifactId>scala-library</artifactId>
 		</dependency>
 
+		<!-- WordNet Library -->
+		<dependency>
+			<groupId>net.sf.extjwnl</groupId>
+			<artifactId>extjwnl</artifactId>
+			<version>1.9.4</version>
+		</dependency>
+
+		<!-- WordNet Library Dataset -->
+		<dependency>
+			<groupId>net.sf.extjwnl</groupId>
+			<artifactId>extjwnl-data-wn31-map</artifactId>
+			<version>1.0</version>
+		</dependency>
+
 		<!-- Test -->
 		<dependency>
 			<groupId>junit</groupId>

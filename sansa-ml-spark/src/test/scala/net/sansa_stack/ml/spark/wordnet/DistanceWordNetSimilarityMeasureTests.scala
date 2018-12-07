@@ -1,8 +1,9 @@
-package net.sansa_stack.ml.spark.nlp.wordnet
+package net.sansa_stack.ml.spark.wordnet
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sf.extjwnl.data._
+import net.sansa_stack.ml.common.nlp.wordnet.{WordNet, WordNetSimilarity}
 import org.scalatest.FunSuite
+import net.sf.extjwnl.data._
 
 class DistanceWordNetSimilarityMeasureTests extends FunSuite with DataFrameSuiteBase {
 
