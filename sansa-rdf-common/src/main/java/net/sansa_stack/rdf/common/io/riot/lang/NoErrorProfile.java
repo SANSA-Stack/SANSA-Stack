@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.riot.lang;
+package net.sansa_stack.rdf.common.io.riot.lang;
 
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Node;

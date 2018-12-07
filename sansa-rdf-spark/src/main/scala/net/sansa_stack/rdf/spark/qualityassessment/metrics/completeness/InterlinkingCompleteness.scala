@@ -42,7 +42,7 @@ object InterlinkingCompleteness {
             && f.getObject.isURI() && isInternal(f.getObject)))
 
     val numSubj = interlinked.map(_.getSubject).distinct().count()
-    val numObj = interlinked.map(_.getSubject).distinct().count()
+    val numObj = interlinked.map(_.getObject).distinct().count()
 
     val numResources = numSubj + numObj
     val numInterlinkedResources = interlinked.count()
