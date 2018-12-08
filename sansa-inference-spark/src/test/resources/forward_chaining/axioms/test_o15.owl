@@ -1,0 +1,43 @@
+Prefix(:=<http://ex.com/default#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+  <http://ex.com/ont/release/123/sample1.owl>
+
+  Declaration(ObjectProperty(:objProp01))
+  Declaration(ObjectProperty(:objProp02))
+
+  Declaration(Class(:Cls01))
+  Declaration(Class(:Cls02))
+  Declaration(Class(:Cls03))
+  Declaration(Class(:Cls04))
+  Declaration(Class(:Cls05))
+  Declaration(Class(:Cls06))
+  Declaration(Class(:Cls07))
+  Declaration(Class(:Cls08))
+
+  Declaration(NamedIndividual(:indivA))
+  Declaration(NamedIndividual(:indivB))
+  Declaration(NamedIndividual(:indivC))
+  Declaration(NamedIndividual(:indivD))
+  Declaration(NamedIndividual(:indivE))
+  Declaration(NamedIndividual(:indivF))
+  Declaration(NamedIndividual(:indivG))
+
+
+  EquivalentClasses(:Cls01 ObjectSomeValuesFrom(:objProp01 :Cls02))
+  EquivalentClasses(:Cls03 ObjectSomeValuesFrom(:objProp02 :Cls04))
+
+  ClassAssertion(:Cls02 :indivB)
+  ClassAssertion(:Cls05 :indivD)
+  ClassAssertion(:Cls06 :indivE)
+  ClassAssertion(:Cls07 :indivF)
+  ClassAssertion(:Cls08 :indivG)
+
+  # indivA should be detected as instance of :Cls01
+  ObjectPropertyAssertion(:objProp01 :indivA :indivB)
+
+  # These should not result in any class assertion inferences
+  ObjectPropertyAssertion(:objProp01 :indivC :indivD)
+  ObjectPropertyAssertion(:objProp02 :indivE :indivB)
+  ObjectPropertyAssertion(:objProp02 :indivF :indivG)
+)

@@ -799,7 +799,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     *   Consequence:
     *     u p v
     *
-    *  FIXME: Make this test check the exact count of inferred axioms
+    * FIXME: Make this test check the exact count of inferred axioms
     */
   test("Rule O14 should return correct results") {
     val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
@@ -824,5 +824,33 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.contains(
       df.getOWLDataPropertyAssertionAxiom(
         dataProp01, indivC, df.getOWLLiteral("ABCD"))))
+  }
+
+  /**
+    * O15:
+    *  Condition:
+    *     v owl:someValuesFrom w
+    *     v owl:onProperty p
+    *     u p x
+    *     x rdf:type w
+    *   Consequence:
+    *     u rdf:type v
+    *
+    * FIXME: Make this test check the exact count of inferred axioms
+    */
+  test("Rule O15 should return correct results") {
+    val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
+    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
+
+    val input = getClass.getResource(resourcePath + "test_o15.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // One axiom should be inferred:
+    // ClassAssertion(:Cls01 :indivA)
+    assert(inferred.size >= 1)
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivA)))
   }
 }
