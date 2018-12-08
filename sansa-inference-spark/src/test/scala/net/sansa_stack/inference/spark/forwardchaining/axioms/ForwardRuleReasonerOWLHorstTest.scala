@@ -473,16 +473,15 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     *     v owl:sameAs y
     *   Consequence:
     *     x p y
+    *
+    * FIXME: Currently this does not include RDFS/OWL vocabulary like p being
+    * rdf:type, rdfs:subClassOf, ...
     */
   test("Rule O10 should return correct results") {
-    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
     val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
-    val indivC = df.getOWLNamedIndividual(defaultPrefix + "indivC")
     val indivD = df.getOWLNamedIndividual(defaultPrefix + "indivD")
     val indivE = df.getOWLNamedIndividual(defaultPrefix + "indivE")
-    val indivF = df.getOWLNamedIndividual(defaultPrefix + "indivF")
     val indivG = df.getOWLNamedIndividual(defaultPrefix + "indivG")
-    val indivH = df.getOWLNamedIndividual(defaultPrefix + "indivH")
     val indivI = df.getOWLNamedIndividual(defaultPrefix + "indivI")
     val indivJ = df.getOWLNamedIndividual(defaultPrefix + "indivJ")
     val indivK = df.getOWLNamedIndividual(defaultPrefix + "indivK")
