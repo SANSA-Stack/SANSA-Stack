@@ -705,4 +705,35 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // There is no EquivalentAnnotationProperties( ) construct --> annotation
     // property equivalence skipped
   }
+
+  /**
+    * O12c:
+    *   Condition:
+    *     v owl:subPropertyOf w
+    *     w owl:subPropertyOf v
+    *   Consequence:
+    *     v rdfs:equivalentProperty w
+    */
+  test("Rule O12c should return correct results") {
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val objProp02 = df.getOWLObjectProperty(defaultPrefix + "objProp02")
+
+    val dataProp01 = df.getOWLDataProperty(defaultPrefix + "dataProp01")
+    val dataProp02 = df.getOWLDataProperty(defaultPrefix + "dataProp02")
+
+    val input = getClass.getResource(resourcePath + "test_o12c.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Two axioms should be inferred:
+    // EquivalentObjectProperties(:objProp01 :objProp02)
+    // EquivalentDataProperties(:dataProp01 :dataProp02)
+    assert(inferred.size == 2)
+    assert(inferred.contains(
+      df.getOWLEquivalentObjectPropertiesAxiom(objProp01, objProp02)))
+    assert(inferred.contains(
+      df.getOWLEquivalentDataPropertiesAxiom(dataProp01, dataProp02)))
+  }
 }
