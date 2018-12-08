@@ -3,12 +3,12 @@ Prefix(:=<http://ex.com/default#>)
 Ontology(<http://ex.com/ont/sample1.owl>
   <http://ex.com/ont/release/123/sample1.owl>
 
-  Declaration(Class(:Cls1))
-  Declaration(Class(:Cls2))
+  Declaration(Class(:Cls01))
+  Declaration(Class(:Cls02))
 
-  Declaration(Class(:Cls3))
-  Declaration(Class(:Cls4))
-  Declaration(Class(:Cls5))
+  Declaration(Class(:Cls03))
+  Declaration(Class(:Cls04))
+  Declaration(Class(:Cls05))
 
   # should be detected as equivalent classes
   SubClassOf(:Cls02 :Cls01)
