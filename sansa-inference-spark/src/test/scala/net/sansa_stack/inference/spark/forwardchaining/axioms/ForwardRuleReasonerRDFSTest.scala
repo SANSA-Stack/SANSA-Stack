@@ -27,7 +27,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
       val owlAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input)
       val reasoner: RDD[OWLAxiom] = new ForwardRuleReasonerRDFS(sc, 4)(owlAxiomsRDD)
 
-      assert(reasoner.count() == 16)
+      assert(reasoner.count() == 17)
 
   }
 

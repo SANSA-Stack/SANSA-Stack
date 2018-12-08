@@ -97,6 +97,7 @@ FunctionalDataProperty(bar:dataProp1)
 HasKey(bar:Cls1 () (bar:dataProp1))
 
 ## assertions  -- 63
+AnnotationAssertion(bar:annProp1 foo:indivB "ZYXW")
 SameIndividual(foo:sameAsIndivA foo:indivA)
 SameIndividual(foo:indivC foo:sameAsIndivC)
 DifferentIndividuals(foo:indivA foo:indivB)
