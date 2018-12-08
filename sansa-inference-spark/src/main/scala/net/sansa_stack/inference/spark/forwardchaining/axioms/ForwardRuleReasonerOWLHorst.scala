@@ -64,7 +64,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     // 1. we have to process owl:equivalentClass (resp. owl:equivalentProperty) before computing the transitive closure
     // of rdfs:subClassOf (resp. rdfs:sobPropertyOf)
     // O11a: (C owl:equivalentClass D) -> (C rdfs:subClassOf D )
-    // O12b: (C owl:equivalentClass D) -> (D rdfs:subClassOf C )
+    // O11b: (C owl:equivalentClass D) -> (D rdfs:subClassOf C )
 
     val equClass_Pairs = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
       .flatMap(equivClassesAxiom => equivClassesAxiom.asPairwiseAxioms().asScala)
@@ -108,7 +108,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     val equClassMap = equClass_Pairs
       .map(a => (a.getOperandsAsList.get(0), a.getOperandsAsList.get(1))).collect.toMap
 
-    val equClassSwapMap =equClass_Pairs
+    val equClassSwapMap = equClass_Pairs
       .map(a => (a.getOperandsAsList.get(1), a.getOperandsAsList.get(0))).collect.toMap
 
     // distribute the schema data structures by means of shared variables
@@ -286,8 +286,8 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     val objHasVal = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.OBJECT_HAS_VALUE))
     val objAllValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.OBJECT_ALL_VALUES_FROM))
     val objSomeValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.OBJECT_SOME_VALUES_FROM))
-//    val dataAllValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_ALL_VALUES_FROM))
-//    val dataSomeValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_SOME_VALUES_FROM))
+    val dataAllValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_ALL_VALUES_FROM))
+    val dataSomeValues = eq.filter(a => a.getClassExpressionType.equals(ClassExpressionType.DATA_SOME_VALUES_FROM))
 
     val dataHasValBC = sc.broadcast(dataHasVal.asInstanceOf[RDD[OWLDataHasValue]]
       .map(a => (a.getProperty, a.getFiller)).collect().toMap)
@@ -307,14 +307,14 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     val objSomeValuesSwapBC = sc.broadcast(objSomeValues.asInstanceOf[RDD[OWLObjectSomeValuesFrom]]
       .map(a => (a.getFiller, a.getProperty)).collect().toMap)
 
-//    val dataAllValuesBC = sc.broadcast(dataAllValues.asInstanceOf[RDD[OWLDataAllValuesFrom]]
-//      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
+    val dataAllValuesBC = sc.broadcast(dataAllValues.asInstanceOf[RDD[OWLDataAllValuesFrom]]
+      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
 
-//    val dataSomeValuesBC = sc.broadcast(dataSomeValues.asInstanceOf[RDD[OWLDataSomeValuesFrom]]
-//      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
+    val dataSomeValuesBC = sc.broadcast(dataSomeValues.asInstanceOf[RDD[OWLDataSomeValuesFrom]]
+      .map(a => (a.getProperty, a.getFiller)).collect().toMap)
 
-    //    val dataSomeValuesSwapBC = sc.broadcast(dataSomeValues.asInstanceOf[RDD[OWLDataSomeValuesFrom]]
-    //      .map(a => (a.getFiller, a.getProperty)).collect().toMap)
+    val dataSomeValuesSwapBC = sc.broadcast(dataSomeValues.asInstanceOf[RDD[OWLDataSomeValuesFrom]]
+      .map(a => (a.getFiller, a.getProperty)).collect().toMap)
 
     //    val ca = CollectionUtils
     //      .toMultiMap(typeAxioms.map(a => (a.getClassExpression, a.getIndividual)).collect())
@@ -322,8 +322,6 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     //
     //    val e = equClass.asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
     //      .filter(a => caBC.value.exists(n => a.contains(n._1)) && a.getOperandsAsList.get(1).isInstanceOf[OWLDataHasValue])
-
-
 
     // Perform fix-point iteration i.e. we process a set of rules until no new data has been generated
 
@@ -524,25 +522,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
 //     typeAxioms = new UnionRDD(sc, Seq(typeAxioms, O13_data_a, O13_data_b, O13_obj_a, O13_obj_b))
 //       .distinct(parallelism)
 
-     // val eos: RDD[(OWLClassExpression, OWLObjectSomeValuesFrom)] = eqOperands.filter(eq => eq._2.isInstanceOf[OWLObjectSomeValuesFrom])
-     //  .map(eq => (eq._1, eq._2.asInstanceOf[OWLObjectSomeValuesFrom]))
-     //  val eosMapBC: Broadcast[Map[OWLClassExpression, OWLObjectSomeValuesFrom]] = sc.broadcast(eos.collect().toMap)
-
-     //    val O15_1 = typeAxioms.filter(a => equClassMapBC.value.contains(a.getClassExpression))
-     //        .map(a => (a.getClassExpression, a.getIndividual))
-     //        .join(eos)
-     //        .map(a => ((a._1, a._2._1), Nil))
-
-     //    val O15_data_1: RDD[(OWLLiteral, OWLIndividual)] = dataPropAssertion.filter(a => dataSomeValuesBC.value.contains(a.getProperty))
-     //      .map(a => (a.getObject, a.getSubject))
-
-     //    val O15_data_2: RDD[(OWLIndividual, OWLClassExpression)] = typeAxioms.filter(a => dataSomeValuesBC.value.contains(a.getClassExpression)
-     //      && equClassMapBC.value.contains(a.getClassExpression))
-     //      .map(a => (a.getIndividual, a.getClassExpression))
-     //
-     //    val O15_1 = O15_data_1.join(O15_data_2)
-     //      // .map(a => dataFactory.getOWLClassAssertionAxiom(a.))
-
+     // Apply O15, O16 only on ObjectAssertions because we compare individuals
 
      // O15: (R owl:someValuesFrom D), (R owl:onProperty P), (X P A), (A rdf:type D ) -> (X rdf:type R )
      val O15_obj_1 = objPropAssertion.filter(a => objSomeValuesBC.value.contains(a.getProperty))
@@ -551,12 +531,9 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
      val O15_obj_2 = typeAxioms.filter(a => objSomeValuesSwapBC.value.contains(a.getClassExpression)
        && equClassMapBC.value.contains(a.getClassExpression))
        .map(a => (a.getIndividual, a.getClassExpression)) // (A, D)
-     //        .join(eos)
-     //        .map(a => (a._2._1, a._1))
 
      val O15 = O15_obj_1.join(O15_obj_2) // Join on A to get (A, (X, D))
        .map(a => dataFactory.getOWLClassAssertionAxiom(a._2._2, a._2._1))
-
 
      // O16: (R owl:allValuesFrom D), (R owl:onProperty P), (X P Y), (X rdf:type R ) -> (Y rdf:type D)
      val O16_1 = objPropAssertion.filter(a => objAllValuesBC.value.contains(a.getProperty))
@@ -574,11 +551,11 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
      newTypeCount = newTypeAxioms.count()
 
      if(newTypeCount > 0) {
-       // add type axioms
-       typeAxioms = typeAxioms.union(newTypeAxioms)
-     }
-     newData = newTypeCount > 0 || newAxiomsCount > 0
 
+       typeAxioms = typeAxioms.union(newTypeAxioms) // add type axioms
+     }
+
+     newData = newTypeCount > 0 || newAxiomsCount > 0
 
      newAxioms = sc.union(newAxioms, O14_data.asInstanceOf[RDD[OWLAxiom]], O14_obj.asInstanceOf[RDD[OWLAxiom]])
        .distinct(parallelism)
@@ -590,7 +567,8 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
 
     val infered: Long = allAxioms.count - newTypeCount - newAxiomsCount
 
-    println("\n Finish with " + infered + " Inferred Axioms from Schema, SPO and Type rules")
+  //  println("\n Finish with " + infered + " Inferred Axioms from Schema, SPO and Type rules")
+
     // --------------------- SameAs Rules --------------------------
 
     // O1: (P rdf:type owl:FunctionalProperty), (A P B), notLiteral(B), (A P C), notLiteral(C), notEqual(B C) -> (B owl:sameAs C)
@@ -614,9 +592,6 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
       .map(a => dataFactory.getOWLSameIndividualAxiom(a._2._1, a._2._2))      // A owl:sameAs C
       .distinct(parallelism)
 
-//    println("\n O2: \n----------------\n")
-//    O2.collect().foreach(println)
-
     var newSameAsAxioms = sc.union(O1, O2)
     sameAsAxioms = sc.union(sameAsAxioms, newSameAsAxioms).distinct(parallelism)
 
@@ -625,7 +600,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
     var inferedAxioms = sc.union(typeAxioms.asInstanceOf[RDD[OWLAxiom]], sameAsAxioms.asInstanceOf[RDD[OWLAxiom]], SPOAxioms)
         .subtract(axioms)
 
-    println("\n Finish with " + inferedAxioms.count + " Inferred Axioms after adding SameAs rules")
+   // println("\n Finish with " + inferedAxioms.count + " Inferred Axioms after adding SameAs rules")
     println("\n...finished materialization in " + (Time/1000) + " sec.")
 
     inferedAxioms
