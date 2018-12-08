@@ -31,7 +31,7 @@ Ontology(<http://ex.com/ont/sample1.owl>
   Declaration(NamedIndividual(:indivM))
 
   EquivalentClasses(:Cls01 ObjectHasValue(:objProp01 :indivB))
-  EquivalentClasses(:Cls02 DataHasValue(:objProp01 "ABCD"))
+  EquivalentClasses(:Cls02 DataHasValue(:dataProp01 "ABCD"))
 
   # :indivA should be detected as instance of :Cls01
   ObjectPropertyAssertion(:objProp01 :indivA :indivB)
