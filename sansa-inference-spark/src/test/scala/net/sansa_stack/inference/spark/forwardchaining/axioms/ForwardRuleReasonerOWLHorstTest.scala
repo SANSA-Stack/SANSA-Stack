@@ -789,4 +789,40 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
         df.getOWLDataHasValue(dataProp01, df.getOWLLiteral("ABCD")),
         indivI)))
   }
+
+  /**
+    * O14:
+    *   Condition:
+    *     v owl:hasValue w
+    *     v owl:onProperty p
+    *     u rdf:type v
+    *   Consequence:
+    *     u p v
+    *
+    *  FIXME: Make this test check the exact count of inferred axioms
+    */
+  test("Rule O14 should return correct results") {
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val dataProp01 = df.getOWLDataProperty(defaultPrefix + "dataProp01")
+
+    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+    val indivC = df.getOWLNamedIndividual(defaultPrefix + "indivC")
+
+    val input = getClass.getResource(resourcePath + "test_o14.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Two axioms should be inferred:
+    // ObjectPropertyAssertion(:objProp01 :indivA :indivB)
+    // DataPropertyAssertion(:dataProp01 :indivC "ABCD")
+    assert(inferred.size >= 2)
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
+    assert(inferred.contains(
+      df.getOWLDataPropertyAssertionAxiom(
+        dataProp01, indivC, df.getOWLLiteral("ABCD"))))
+  }
 }
