@@ -735,4 +735,58 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.contains(
       df.getOWLEquivalentDataPropertiesAxiom(dataProp01, dataProp02)))
   }
+
+  /**
+    * O13:
+    *   Condition:
+    *     v owl:hasValue w
+    *     v owl:onProperty p
+    *     u p v
+    *   Consequence:
+    *     u rdf:type v
+    *
+    * FIXME: for the test_o13.owl test data much more axioms are inferred
+    * which seem wrong. Thus, this test should be adapted to do an exact count
+    * on the inferred triples after the O13 rule was put into a separate method.
+    * Right now these wrongly inferred axioms are not detected.
+    */
+  test("Rule O13 should return correct results") {
+    val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
+    val cls02 = df.getOWLClass(defaultPrefix + "Cls02")
+
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val dataProp01 = df.getOWLDataProperty(defaultPrefix + "dataProp01")
+
+    val indivA = df.getOWLNamedIndividual(defaultPrefix + "indivA")
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+    val indivI = df.getOWLNamedIndividual(defaultPrefix + "indivI")
+
+    val input = getClass.getResource(resourcePath + "test_o13.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Two axioms should be inferred:
+    // ClassAssertion(:Cls01 :indivA)
+    // ClassAssertion(:Cls02 :indivI)
+    //
+    // With rule O10 also considering OWL vocabulary for inference (e.g. from
+    // :i rdf:type :ClsX . :ClsX owl:sameAs :ClsY infer :i rdf:type :ClsY)
+    // additionally
+    // ClassAssertion(ObjectHasValue(:objProp01 :indivB) :indivA)
+    // ClassAssertion(ObjectHasValue(:dataProp01 "ABCD") :indivI)
+    // should be inferred.
+    // FIXME: Make this a check on the exact count after having put the O13 inference into a separate method and just calling this particular method for testing
+    assert(inferred.size >= 4)
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivA)))
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivI)))
+    assert(inferred.contains(
+      df.getOWLClassAssertionAxiom(
+        df.getOWLObjectHasValue(objProp01, indivB), indivA)))
+    assert(inferred.contains(
+      df.getOWLClassAssertionAxiom(
+        df.getOWLDataHasValue(dataProp01, df.getOWLLiteral("ABCD")),
+        indivI)))
+  }
 }
