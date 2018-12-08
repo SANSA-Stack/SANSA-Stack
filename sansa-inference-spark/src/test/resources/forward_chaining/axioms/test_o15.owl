@@ -33,7 +33,7 @@ Ontology(<http://ex.com/ont/sample1.owl>
   ClassAssertion(:Cls07 :indivF)
   ClassAssertion(:Cls08 :indivG)
 
-  # indivA should be detected as instance of :Cls01
+  # :indivA should be detected as instance of :Cls01
   ObjectPropertyAssertion(:objProp01 :indivA :indivB)
 
   # These should not result in any class assertion inferences
