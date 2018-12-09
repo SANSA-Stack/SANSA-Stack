@@ -1,7 +1,8 @@
 package net.sansa_stack.examples.flink.owl
 
-import scala.collection.mutable
+import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 
+import scala.collection.mutable
 import net.sansa_stack.owl.flink.owl._
 import org.apache.flink.api.scala.ExecutionEnvironment
 
@@ -24,6 +25,11 @@ object OWLReaderDataSet {
     println(".============================================.")
 
     val env = ExecutionEnvironment.getExecutionEnvironment
+    // scalastyle:off classforname
+    env.getConfig.addDefaultKryoSerializer(
+      Class.forName("java.util.Collections$UnmodifiableCollection"),
+      classOf[UnmodifiableCollectionsSerializer])
+    // scalastyle:on classforname
 
     val dataSet = syntax match {
       case "fun" => env.owl(Syntax.FUNCTIONAL)(input)
