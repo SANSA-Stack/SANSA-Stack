@@ -67,34 +67,12 @@ package object query {
 
   implicit class Semantic(partitions: RDD[String]) extends Serializable {
 
-    val symbol = Map(
-      "space" -> " " * 5,
-      "blank" -> " ",
-      "tabs" -> "\t",
-      "newline" -> "\n",
-      "colon" -> ":",
-      "comma" -> ",",
-      "hash" -> "#",
-      "slash" -> "/",
-      "question-mark" -> "?",
-      "exclamation-mark" -> "!",
-      "curly-bracket-left" -> "{",
-      "curly-bracket-right" -> "}",
-      "round-bracket-left" -> "(",
-      "round-bracket-right" -> ")",
-      "less-than" -> "<",
-      "greater-than" -> ">",
-      "at" -> "@",
-      "dot" -> ".",
-      "dots" -> "...",
-      "asterisk" -> "*",
-      "up-arrows" -> "^^")
-
     /**
      * semantic partition of and RDF graph
      */
     def sparql(sparqlQuery: String)(input: String, output: String, numOfFilesPartition: Int): Unit = {
-      new QuerySystem(symbol, partitions,
+      new QuerySystem(
+        partitions,
         input,
         output,
         numOfFilesPartition).run()
