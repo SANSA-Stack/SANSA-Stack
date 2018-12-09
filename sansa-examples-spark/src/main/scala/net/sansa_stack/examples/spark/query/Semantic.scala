@@ -59,6 +59,7 @@ object Semantic {
     println("----------------------")
 
     val qs = new QuerySystem(
+      symbol = Symbols.symbol,
       partitionData,
       input,
       output,
