@@ -1,11 +1,10 @@
-package net.sansa_stack.ml.spark.wordnet
+package net.sansa_stack.ml.common.nlp.wordnet
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.ml.common.nlp.wordnet.{WordNet, WordNetSimilarity}
 import org.scalatest.FunSuite
 import net.sf.extjwnl.data._
 
-class DistanceWordNetSimilarityMeasureTests extends FunSuite with DataFrameSuiteBase {
+class DistanceWordNetSimilarityMeasureTests extends FunSuite {
 
   test("shortest path similarity between dog and cat synset should result in value 0.3") {
     try {

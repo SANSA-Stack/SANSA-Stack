@@ -1,11 +1,10 @@
-package net.sansa_stack.ml.spark.wordnet
+package net.sansa_stack.ml.common.nlp.wordnet
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.ml.common.nlp.wordnet.WordNet
 import net.sf.extjwnl.data._
 import org.scalatest.FunSuite
 
-class TestGetMaxDepth extends FunSuite with DataFrameSuiteBase {
+class TestGetMaxDepth extends FunSuite {
 
   test("Test the function that gets the maximum depth of dataset graph ") {
 

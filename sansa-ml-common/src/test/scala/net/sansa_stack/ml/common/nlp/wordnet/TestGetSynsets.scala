@@ -1,11 +1,10 @@
-package net.sansa_stack.ml.spark.wordnet
+package net.sansa_stack.ml.common.nlp.wordnet
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.ml.common.nlp.wordnet.WordNet
 import net.sf.extjwnl.data._
 import org.scalatest.FunSuite
 
-class TestGetSynsets extends FunSuite with DataFrameSuiteBase{
+class TestGetSynsets extends FunSuite {
 
   test("If The WordNet dictionary is correctly installed synsets must not be null ") {
 

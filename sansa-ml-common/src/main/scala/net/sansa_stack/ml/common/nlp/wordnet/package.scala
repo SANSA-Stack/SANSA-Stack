@@ -14,4 +14,3 @@ package object wordnet extends Serializable {
   val Adjective = POS.ADJECTIVE
   val Adjverb = POS.ADVERB
 }
-

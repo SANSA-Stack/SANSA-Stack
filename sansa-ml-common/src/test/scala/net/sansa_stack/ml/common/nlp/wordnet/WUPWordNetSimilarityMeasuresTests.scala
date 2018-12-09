@@ -1,13 +1,12 @@
-package net.sansa_stack.ml.spark.wordnet
+package net.sansa_stack.ml.common.nlp.wordnet
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.ml.common.nlp
 import net.sansa_stack.ml.common.nlp.wordnet.{WordNet, WordNetSimilarity}
 import org.scalatest.FunSuite
 //import net.didion.jwnl.data._
 import net.sf.extjwnl.data._
 
-class WUPWordNetSimilarityMeasuresTests extends FunSuite with DataFrameSuiteBase {
+class WUPWordNetSimilarityMeasuresTests extends FunSuite {
 
   test("wup similarity between dog and cat synset should result in value 0.3") {
     try {

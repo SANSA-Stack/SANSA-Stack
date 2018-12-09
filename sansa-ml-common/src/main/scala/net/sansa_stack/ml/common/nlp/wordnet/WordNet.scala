@@ -13,11 +13,9 @@
 package net.sansa_stack.ml.common.nlp.wordnet
 
 import java.io.Serializable
-
 import net.sf.extjwnl.data.{PointerType, PointerUtils, Word}
 import net.sf.extjwnl.dictionary.Dictionary
-
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.breakOut
 import scala.collection.mutable.ArrayBuffer
 
@@ -51,9 +49,8 @@ class WordNet extends Serializable {
     * @return : List[Synset]
     */
   def getSynsets(lemma: String): List[Synset] =
-    net.sf.extjwnl.data.POS.getAllPOS
+    net.sf.extjwnl.data.POS.getAllPOS.asScala
       .flatMap(pos => getSynsets(lemma, pos))(breakOut)
-
 
   /**
     * Returns a Synset given a String
@@ -68,7 +65,8 @@ class WordNet extends Serializable {
     val indexWord = WordNet.dict.getIndexWord(pos, lemma)
     var result = List.empty[Synset]
     if (indexWord != null) {
-      result = List(indexWord.getSenses()(sid))
+      val result_scala = indexWord.getSenses().asScala
+      result = List(result_scala(sid))
     }
     result
   }
@@ -84,7 +82,7 @@ class WordNet extends Serializable {
   def getSynsets(lemma: String, pos: POS): List[Synset] = {
     val iword = WordNet.dict.getIndexWord(pos, lemma)
     if (iword == null) List.empty[Synset]
-    else iword.getSenses.toList
+    else iword.getSenses.asScala.toList
   }
 
   /**
@@ -94,7 +92,7 @@ class WordNet extends Serializable {
     * @return : List[String]
     */
   def lemmaNames(synset: Synset): List[String] =
-    synset.getWords.map(_.getLemma)(breakOut)
+    synset.getWords.asScala.map(_.getLemma)(breakOut)
 
   /**
     * Input is a synset
@@ -177,7 +175,7 @@ class WordNet extends Serializable {
     * @return : List[Synset]
     */
   def relatedSynsets(synset: Synset, ptr: PointerType): List[Synset] =
-    synset.getPointers(ptr).map(ptr => ptr.getTarget.asInstanceOf[Synset])(breakOut)
+    synset.getPointers(ptr).asScala.map(ptr => ptr.getTarget.asInstanceOf[Synset])(breakOut)
 
   /**
     * Returns list of all hypernyms of a synset
@@ -189,8 +187,8 @@ class WordNet extends Serializable {
     PointerUtils
       .getHypernymTree(synset)
       .toList
-      .map(ptnl => ptnl
-        .map(ptn => ptn.getSynset)
+      .asScala.map(ptnl => ptnl
+        .asScala.map(ptn => ptn.getSynset)
         .toList)(breakOut)
 
   /**
@@ -298,6 +296,6 @@ class WordNet extends Serializable {
     */
   def relatedLemmas(word: Word, ptr: PointerType): List[Word] =
     word.getPointers(ptr)
-      .map(ptr => ptr.getTarget.asInstanceOf[Word])(breakOut)
+      .asScala.map(ptr => ptr.getTarget.asInstanceOf[Word])(breakOut)
 
 }
