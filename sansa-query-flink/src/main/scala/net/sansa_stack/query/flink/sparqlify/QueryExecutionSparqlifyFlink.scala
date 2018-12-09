@@ -10,7 +10,7 @@ import org.aksw.jena_sparql_api.core.{ QueryExecutionBaseSelect, QueryExecutionF
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
-import org.apache.flink  .api.java.typeutils.runtime.kryo.KryoSerializer
+import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer
 import org.apache.flink.api.scala.{ ExecutionEnvironment, _ }
 import org.apache.flink.table.api.scala.{ BatchTableEnvironment, _ }
 import org.apache.flink.types.Row
@@ -45,6 +45,9 @@ class QueryExecutionSparqlifyFlink(
 
   override def getTimeout1(): Long = -1
 
+  override def execJson(): org.apache.jena.atlas.json.JsonArray = throw new UnsupportedOperationException
+  override def execJsonItems(): java.util.Iterator[org.apache.jena.atlas.json.JsonObject] = throw new UnsupportedOperationException
+
 }
 
 object QueryExecutionSparqlifyFlink {
@@ -55,7 +58,7 @@ object QueryExecutionSparqlifyFlink {
 
     println("SQL Query: " + sqlQueryStr)
 
-    val dataset = flinkTable.sql(sqlQueryStr)
+    val dataset = flinkTable.sqlQuery(sqlQueryStr)
     // System.out.println("SqlQueryStr: " + sqlQueryStr);
     // System.out.println("VarDef: " + rewrite.getVarDefinition());
     val rowMapper = new FlinkRowMapperSparqlify(varDef, dataset.getSchema.getColumnNames)
