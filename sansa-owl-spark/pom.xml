@@ -6,11 +6,11 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-owl-parent_2.11</artifactId>
-        <version>0.4.1-SNAPSHOT</version>
+        <version>0.4.1</version>
     </parent>
 
     <artifactId>sansa-owl-spark_2.11</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.4.1</version>
 
     <name>SANSA OWL layer - SPARK</name>
     <description>A library to read OWL files into Spark.</description>
