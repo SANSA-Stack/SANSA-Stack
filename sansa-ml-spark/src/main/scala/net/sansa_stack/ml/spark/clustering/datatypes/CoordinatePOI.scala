@@ -6,5 +6,5 @@ package net.sansa_stack.ml.spark.clustering.datatypes
  * @param longitude
  * @param latitude
  */
-case class Coordinate(longitude: Double, latitude: Double)
+case class CoordinatePOI(longitude: Double, latitude: Double)
 

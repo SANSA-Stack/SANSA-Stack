@@ -7,7 +7,7 @@ import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import net.sansa_stack.ml.spark.clustering.datatypes.{Categories, Coordinate, Poi}
+import net.sansa_stack.ml.spark.clustering.datatypes.{Categories, CoordinatePOI, Poi}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 
 
@@ -23,7 +23,7 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
   val dataRDD: RDD[Triple] = loadNTriple(conf.getString("sansa.data.input"))
 
   // var poiCoordinates: RDD[(Long, Coordinate)] = this.getPOICoordinates(16.192851, 16.593533, 48.104194, 48.316388).sample(withReplacement = false, fraction = 0.01, seed = 0)
-  var poiCoordinates: RDD[(Long, Coordinate)] = this.getPOICoordinates
+  var poiCoordinates: RDD[(Long, CoordinatePOI)] = this.getPOICoordinates
   var poiFlatCategoryId: RDD[(Long, Long)] = this.getPOIFlatCategoryId
   var poiCategoryId: RDD[(Long, Set[Long])] = this.getCategoryId(poiCoordinates, poiFlatCategoryId).persist()
   var poiCategoryValueSet: RDD[(Long, Categories)] = this.getCategoryValues  // (category_id, Categories)
@@ -70,7 +70,7 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     * @param la_max max latitude
     * @return pois within certain coordinates
     */
-  def filterCoordinates(poiCoordinates: RDD[(Long, Coordinate)], lo_min: Double, lo_max: Double, la_min: Double, la_max: Double): RDD[(Long, Coordinate)] = {
+  def filterCoordinates(poiCoordinates: RDD[(Long, CoordinatePOI)], lo_min: Double, lo_max: Double, la_min: Double, la_max: Double): RDD[(Long, CoordinatePOI)] = {
     poiCoordinates.filter(x => (x._2.longitude >= lo_min && x._2.longitude <= lo_max)
       && (x._2.latitude >= la_min && x._2.latitude <= la_max))
   }
@@ -78,7 +78,7 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
   /**
     * get coordinate for all poi
     */
-  def getPOICoordinates: RDD[(Long, Coordinate)] = {
+  def getPOICoordinates: RDD[(Long, CoordinatePOI)] = {
     // get the coordinates of pois
     val pattern = "POINT(.+ .+)".r
     val poiCoordinatesString = dataRDD.filter(x => x.getPredicate.toString().equalsIgnoreCase(conf.getString("sansa.data.coordinatesPredicate")))
@@ -88,7 +88,7 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     // transform to Coordinate object
     poiCoordinatesString.mapValues(x => {
         val coordinates = x.replace("(", "").replace(")", "").split(" ")
-        Coordinate(coordinates(0).toDouble, coordinates(1).toDouble)
+        CoordinatePOI(coordinates(0).toDouble, coordinates(1).toDouble)
       })
   }
 
@@ -99,7 +99,7 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     * @param la_min min latitude
     * @param la_max max latitude
     */
-  def getPOICoordinates(lo_min: Double, lo_max: Double, la_min: Double, la_max: Double): RDD[(Long, Coordinate)] = {
+  def getPOICoordinates(lo_min: Double, lo_max: Double, la_min: Double, la_max: Double): RDD[(Long, CoordinatePOI)] = {
     this.filterCoordinates(poiCoordinates = this.getPOICoordinates, lo_min = lo_min, lo_max = lo_max, la_min = la_min, la_max = la_max)
   }
 
@@ -122,7 +122,7 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     * @param poiCategoryValueSet (category_id, Categories)
     * @return (poi, Categories)
     */
-  def getPOICategories(poiCoordinates: RDD[(Long, Coordinate)], poiFlatCategoryId: RDD[(Long, Long)], poiCategoryValueSet: RDD[(Long, Categories)]): RDD[(Long, Categories)] = {
+  def getPOICategories(poiCoordinates: RDD[(Long, CoordinatePOI)], poiFlatCategoryId: RDD[(Long, Long)], poiCategoryValueSet: RDD[(Long, Categories)]): RDD[(Long, Categories)] = {
     // from (poi, category_id) map-> (category_id, poi) join-> (category_id, (poi, Categories)) map-> (poi, Categories) groupByKey-> (poi_unique, Iterable(Categories))
     val poiCategorySets = poiFlatCategoryId.map(f => (f._2, f._1)).join(poiCategoryValueSet).map(f => (f._2._1, f._2._2)).groupByKey()
     // from (poi_unique, Iterable(Categories)) join-> (poi_unique, (Coordinate, Iterable(Categories))) map-> (poi_unique, Categories)
@@ -149,7 +149,7 @@ class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializ
     * @param poiCoordinates (poi_unique, Coordinate)
     * @param poiFlatCategoryId (poi, category_id)
     */
-  def getCategoryId(poiCoordinates: RDD[(Long, Coordinate)], poiFlatCategoryId: RDD[(Long, Long)]): RDD[(Long, Set[Long])] = {
+  def getCategoryId(poiCoordinates: RDD[(Long, CoordinatePOI)], poiFlatCategoryId: RDD[(Long, Long)]): RDD[(Long, Set[Long])] = {
     poiCoordinates.join(poiFlatCategoryId.groupByKey())
     .map(x => (x._1, x._2._2.toSet))
   }

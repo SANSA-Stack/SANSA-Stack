@@ -43,6 +43,8 @@ object SilviaClustering {
     val selectYourSimilarity = 0
 
     def clusterRdd(): RDD[List[String]] = {
+      println("Graph")
+      val a = graph.triplets
       graphXinBorderFlow(graph, orient, selectYourSimilarity)
     }
 
@@ -320,6 +322,9 @@ object SilviaClustering {
       }
 
       def makerdf(a: List[Long]): List[String] = {
+        print("a-----")
+        println(a)
+        print("----")
         var listuri: List[String] = List()
         val b: List[VertexId] = a
         for (i <- 0 until b.length) {
@@ -514,9 +519,8 @@ object SilviaClustering {
 
       result
     }
-
     val cRdd = clusterRdd()
-
-    cRdd.saveAsTextFile(output)
+    val zipwithindex = cRdd.zipWithIndex().map(f => (f._2, f._1))
+    zipwithindex.saveAsTextFile(output)
   }
 }

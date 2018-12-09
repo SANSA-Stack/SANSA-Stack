@@ -10,6 +10,7 @@ import scala.reflect.runtime.universe._
 import scala.util.control.Breaks._
 
 import breeze.linalg.{ squaredDistance, DenseVector, Vector }
+import org.apache.jena.graph.Node
 import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.graphx._
 import org.apache.spark.graphx.{ EdgeDirection, Graph }
@@ -19,9 +20,12 @@ import org.apache.spark.rdd.PairRDDFunctions
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
+
+
+
 object FirstHardeninginBorderFlow {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String): Unit = {
+  def apply(spark: SparkSession, graph: Graph[Node, Node], output: String, outputeval: String): Unit = {
 
     /**
      *
@@ -54,7 +58,8 @@ object FirstHardeninginBorderFlow {
         val x = f._1
         x
       })
-
+      println("hard")
+      sort.foreach(println)
       var X = sort.collect()
 
       neighborSort.unpersist()
@@ -406,7 +411,7 @@ object FirstHardeninginBorderFlow {
         val b: List[VertexId] = a
         for (i <- 0 until b.length) {
           verticescollect.map(v => {
-            if (b(i) == v._1) listuri = listuri.::(v._2)
+            if (b(i) == v._1) listuri = listuri.::(v._2.toString())
           })
 
         }

@@ -7,5 +7,5 @@ package net.sansa_stack.ml.spark.clustering.datatypes
  * @param coordinate, coordinate of poi
  * @param categories, categories of poi
  */
-case class Poi(poi_id: Long, coordinate: Coordinate, categories: Categories, review: Double)
+case class Poi(poi_id: Long, coordinate: CoordinatePOI, categories: Categories, review: Double)
 
