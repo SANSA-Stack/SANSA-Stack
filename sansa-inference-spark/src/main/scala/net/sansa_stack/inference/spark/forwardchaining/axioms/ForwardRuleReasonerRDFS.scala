@@ -244,7 +244,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
         .filter(a => subAnnPropertyBC.value.contains(a.getProperty))
         .flatMap(a => subAnnPropertyBC.value(a.getProperty)
         .map(s => dataFactory.getOWLAnnotationAssertionAxiom(s, a.getSubject, a.getValue)))
-      .setName("rdfs7b")
+      .setName("rdfs7c")
 
     SPOAxioms = sc.union(SPOAxioms,
       RDFS7a.asInstanceOf[RDD[OWLAxiom]],
@@ -361,33 +361,33 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
   }
 }
 
- object ForwardRuleReasonerRDFS{
-
-  def main(args: Array[String]): Unit = {
-
-    val input = getClass.getResource("/ont_functional.owl").getPath
-
-    println("=====================================")
-    println("|  OWLAxioms Forward Rule Reasoner  |")
-    println("=====================================")
-
-    val sparkSession = SparkSession.builder
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      // .config("spark.kryo.registrator", "net.sansa_stack.inference.spark.forwardchaining.axioms.Registrator")
-      .appName("OWL Axioms Forward Rule Reasoner")
-      .getOrCreate()
-
-    val sc: SparkContext = sparkSession.sparkContext
-
-    // Call the functional syntax OWLAxiom builder
-
-    var owlAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
-    // owlAxiomsRDD.collect().foreach(println)
-
-    val ruleReasoner = new ForwardRuleReasonerRDFS(sc, 2)
-    val res: RDD[OWLAxiom] = ruleReasoner(owlAxiomsRDD)
-
-    sparkSession.stop
-  }
- }
+// object ForwardRuleReasonerRDFS{
+//
+//  def main(args: Array[String]): Unit = {
+//
+//    val input = getClass.getResource("/ont_functional.owl").getPath
+//
+//    println("=====================================")
+//    println("|  OWLAxioms Forward Rule Reasoner  |")
+//    println("=====================================")
+//
+//    val sparkSession = SparkSession.builder
+//      .master("local[*]")
+//      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+//      // .config("spark.kryo.registrator", "net.sansa_stack.inference.spark.forwardchaining.axioms.Registrator")
+//      .appName("OWL Axioms Forward Rule Reasoner")
+//      .getOrCreate()
+//
+//    val sc: SparkContext = sparkSession.sparkContext
+//
+//    // Call the functional syntax OWLAxiom builder
+//
+//    var owlAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
+//    // owlAxiomsRDD.collect().foreach(println)
+//
+//    val ruleReasoner = new ForwardRuleReasonerRDFS(sc, 2)
+//    val res: RDD[OWLAxiom] = ruleReasoner(owlAxiomsRDD)
+//
+//    sparkSession.stop
+//  }
+// }
