@@ -16,6 +16,8 @@
 
     <properties>
         <spark.deps.scope>compile</spark.deps.scope>
+        <scala.version>2.11.11</scala.version>
+        <sansa.version>0.3.1-SNAPSHOT</sansa.version>
     </properties>
 
     <dependencies>
@@ -30,6 +32,12 @@
             <version>${project.parent.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
+        </dependency>
+
+        <!-- SANSA OWL -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
         </dependency>
 
         <!-- RDF Layer -->
@@ -125,6 +133,12 @@
             <artifactId>owlapi-parsers</artifactId>
         </dependency>
 
+        <!--Apache hadoop -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+        </dependency>
+
         <!-- Graph API -->
         <dependency>
             <groupId>org.scala-graph</groupId>
@@ -168,7 +182,6 @@
             <scope>test</scope>
         </dependency>
 
-
         <dependency>
             <groupId>org.specs2</groupId>
             <artifactId>specs2-core_${scala.binary.version}</artifactId>
@@ -179,12 +192,6 @@
             <artifactId>specs2-junit_${scala.binary.version}</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.groupon.dse</groupId>-->
-            <!--<artifactId>spark-metrics</artifactId>-->
-            <!--<version>2.0.1-SNAPSHOT</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
 
         <!-- Logging -->
         <dependency>

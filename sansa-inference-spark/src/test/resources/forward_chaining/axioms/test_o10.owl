@@ -1,0 +1,40 @@
+Prefix(:=<http://ex.com/default#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+  <http://ex.com/ont/release/123/sample1.owl>
+
+  Declaration(ObjectProperty(:objProp01))
+  Declaration(ObjectProperty(:objProp02))
+  Declaration(ObjectProperty(:objProp03))
+  Declaration(ObjectProperty(:objProp04))
+
+  Declaration(NamedIndividual(:indivA))
+  Declaration(NamedIndividual(:indivB))
+  Declaration(NamedIndividual(:indivD))
+  Declaration(NamedIndividual(:indivE))
+  Declaration(NamedIndividual(:indivF))
+  Declaration(NamedIndividual(:indivG))
+  Declaration(NamedIndividual(:indivH))
+
+  Declaration(NamedIndividual(:indivI))
+  Declaration(NamedIndividual(:indivJ))
+  Declaration(NamedIndividual(:indivK))
+  Declaration(NamedIndividual(:indivL))
+  Declaration(NamedIndividual(:indivM))
+  Declaration(NamedIndividual(:indivN))
+
+  SameIndividual(:indivA :indivB)
+  SameIndividual(:indivC :indivD)
+  SameIndividual(:indivE :indivF)
+  SameIndividual(:indivG :indivH)
+
+  ObjectPropertyAssertion(:objProp01 :indivA :indivI)
+  ObjectPropertyAssertion(:objProp01 :indivJ :indivC)
+  ObjectPropertyAssertion(:objProp01 :indivA :indivC)
+
+  ObjectPropertyAssertion(:objProp02 :indivF :indivK)
+  ObjectPropertyAssertion(:objProp02 :indivL :indivH)
+  ObjectPropertyAssertion(:objProp02 :indivF :indivH)
+
+  ObjectPropertyAssertion(:objProp03 :indivM :indivN)
+)

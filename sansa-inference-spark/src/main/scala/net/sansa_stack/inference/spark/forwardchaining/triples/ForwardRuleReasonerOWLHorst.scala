@@ -6,6 +6,7 @@ import net.sansa_stack.inference.utils.CollectionUtils
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.vocabulary.{OWL2, RDF, RDFS}
 import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.slf4j.LoggerFactory
 
