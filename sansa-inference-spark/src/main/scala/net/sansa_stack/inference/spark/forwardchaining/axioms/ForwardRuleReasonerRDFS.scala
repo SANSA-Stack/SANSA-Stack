@@ -351,7 +351,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
     val infered = allAxioms.subtract(axioms)
     val inferedCount = infered.count()
 
-    println("\n Finish with " + inferedCount + " Inferred Axioms")
+    println("Finished with " + inferedCount + " inferred axioms")
     infered
 
  }
