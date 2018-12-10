@@ -15,6 +15,7 @@ import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, SubqueryAlias}
 import org.apache.spark.sql.catalyst.plans.{Inner, logical}
 import net.sansa_stack.inference.spark.data.model.{EmptyRDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.utils.{Logging, Tuple0}
+import org.apache.spark.sql.catalyst.AliasIdentifier
 
 /**
   * An executor that works on the the native Scala data structures and uses Spark joins, filters etc.
@@ -349,7 +350,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
         projectList.toList
       case logical.Filter(condition, child) =>
         expressionsFor(child)
-      case SubqueryAlias(alias: String, child: LogicalPlan) =>
+      case SubqueryAlias(alias: AliasIdentifier, child: LogicalPlan) =>
         expressionsFor(child)
       case _ =>
         logicalPlan.expressions.toList

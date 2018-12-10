@@ -67,14 +67,13 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <scala.version>2.11.12</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
-    <sansa.version>0.3.1-SNAPSHOT</sansa.version>
-    <spark.version>2.3.1</spark.version>
-    <flink.version>1.5.0</flink.version>
-    <jena.version>3.7.0</jena.version>
+    <spark.version>2.4.0</spark.version>
+    <flink.version>1.7.0</flink.version>
+    <jena.version>3.9.0</jena.version>
     <sansa.stack.version>0.4.0</sansa.stack.version>
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
-    <sansa.owl.version>${sansa.stack.version}</sansa.owl.version>
+    <sansa.owl.version>0.4.1</sansa.owl.version>
     <jsa.subversion>1</jsa.subversion>
     <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
     <PermGen>64m</PermGen>
@@ -115,7 +114,7 @@
       <dependency>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-        <version>${sansa.version}</version>
+        <version>${sansa.owl.version}</version>
       </dependency>
       <!-- Query Layer -->
       <dependency>
@@ -340,6 +339,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-common</artifactId>
         <version>2.9.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.18</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
