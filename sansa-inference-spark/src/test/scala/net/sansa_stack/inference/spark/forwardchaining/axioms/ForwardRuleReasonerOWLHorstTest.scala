@@ -465,7 +465,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
       df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
   }
 
-  /** we exclude O10 because it needs more joins
+  /**
     * O10:
     *   Condition:
     *     u p v
@@ -477,48 +477,47 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     * FIXME: Currently this does not include RDFS/OWL vocabulary like p being
     * rdf:type, rdfs:subClassOf, ...
     */
-//  test("Rule O10 should return correct results") {
-//    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
-//    val indivD = df.getOWLNamedIndividual(defaultPrefix + "indivD")
-//    val indivE = df.getOWLNamedIndividual(defaultPrefix + "indivE")
-//    val indivG = df.getOWLNamedIndividual(defaultPrefix + "indivG")
-//    val indivI = df.getOWLNamedIndividual(defaultPrefix + "indivI")
-//    val indivJ = df.getOWLNamedIndividual(defaultPrefix + "indivJ")
-//    val indivK = df.getOWLNamedIndividual(defaultPrefix + "indivK")
-//    val indivL = df.getOWLNamedIndividual(defaultPrefix + "indivL")
-//
-//
-//    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
-//    val objProp02 = df.getOWLObjectProperty(defaultPrefix + "objProp02")
-//
-//    val input = getClass.getResource(resourcePath + "test_o10.owl").getPath
-//
-//    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
-//    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
-//    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
-//
-//    // Six axioms should be inferred:
-//    // ObjectPropertyAssertion(:objProp01 :indivB :indivI)
-//    // ObjectPropertyAssertion(:objProp01 :indivJ :indivD)
-//    // ObjectPropertyAssertion(:objProp01 :indivB :indivD)
-//    //
-//    // ObjectPropertyAssertion(:objProp02 :indivE :indivK)
-//    // ObjectPropertyAssertion(:objProp02 :indivL :indivG)
-//    // ObjectPropertyAssertion(:objProp02 :indivE :indivG)
-//    assert(inferred.size == 6)
-//    assert(inferred.contains(
-//      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivI)))
-//    assert(inferred.contains(
-//      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivJ, indivD)))
-//    assert(inferred.contains(
-//      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivD)))
-//    assert(inferred.contains(
-//      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivK)))
-//    assert(inferred.contains(
-//      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivL, indivG)))
-//    assert(inferred.contains(
-//      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivG)))
-//  }
+  ignore("Rule O10 should return correct results -- Rule O10 excluded because it needs more joins") {
+    val indivB = df.getOWLNamedIndividual(defaultPrefix + "indivB")
+    val indivD = df.getOWLNamedIndividual(defaultPrefix + "indivD")
+    val indivE = df.getOWLNamedIndividual(defaultPrefix + "indivE")
+    val indivG = df.getOWLNamedIndividual(defaultPrefix + "indivG")
+    val indivI = df.getOWLNamedIndividual(defaultPrefix + "indivI")
+    val indivJ = df.getOWLNamedIndividual(defaultPrefix + "indivJ")
+    val indivK = df.getOWLNamedIndividual(defaultPrefix + "indivK")
+    val indivL = df.getOWLNamedIndividual(defaultPrefix + "indivL")
+
+    val objProp01 = df.getOWLObjectProperty(defaultPrefix + "objProp01")
+    val objProp02 = df.getOWLObjectProperty(defaultPrefix + "objProp02")
+
+    val input = getClass.getResource(resourcePath + "test_o10.owl").getPath
+
+    val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
+    val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
+    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+
+    // Six axioms should be inferred:
+    // ObjectPropertyAssertion(:objProp01 :indivB :indivI)
+    // ObjectPropertyAssertion(:objProp01 :indivJ :indivD)
+    // ObjectPropertyAssertion(:objProp01 :indivB :indivD)
+    //
+    // ObjectPropertyAssertion(:objProp02 :indivE :indivK)
+    // ObjectPropertyAssertion(:objProp02 :indivL :indivG)
+    // ObjectPropertyAssertion(:objProp02 :indivE :indivG)
+    assert(inferred.size == 6)
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivI)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivJ, indivD)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivD)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivK)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivL, indivG)))
+    assert(inferred.contains(
+      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivG)))
+  }
 
   /**
     * O11a:
@@ -745,10 +744,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     *   Consequence:
     *     u rdf:type v
     *
-    * FIXME: for the test_o13.owl test data much more axioms are inferred
-    * which seem wrong. Thus, this test should be adapted to do an exact count
-    * on the inferred triples after the O13 rule was put into a separate method.
-    * Right now these wrongly inferred axioms are not detected.
+    * FIXME: Make this test check the exact count of inferred axioms
     */
   test("Rule O13 should return correct results") {
     val cls01 = df.getOWLClass(defaultPrefix + "Cls01")
