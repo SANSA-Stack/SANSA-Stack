@@ -214,6 +214,9 @@
 									<arg>-Xmax-classfile-name</arg>
 									<arg>128</arg>
 								</args>
+								<jvmArgs>
+									<jvmArg>-Xss2048K</jvmArg>
+								</jvmArgs>
 							</configuration>
 						</execution>
 					</executions>
