@@ -23,12 +23,12 @@ under the License.
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-inference-parent_2.11</artifactId>
-		<version>0.4.1-SNAPSHOT</version>
+		<version>0.5.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
-	<version>0.4.1-SNAPSHOT</version>
+	<version>0.5.0</version>
 
 	<name>Inference API - Flink</name>
 	<description>Apache Flink based inference layer for RDF and OWL</description>
