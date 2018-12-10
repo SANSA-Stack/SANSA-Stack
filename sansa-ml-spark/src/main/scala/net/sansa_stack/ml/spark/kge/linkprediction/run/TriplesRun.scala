@@ -1,9 +1,8 @@
 package net.sansa_stack.ml.spark.kge.linkprediction.run
 
-import com.google.common.base.Stopwatch
 import net.sansa_stack.rdf.spark.kge.convertor.ByIndex
 import net.sansa_stack.rdf.spark.kge.triples._
-import org.apache.log4j.{Level, Logger}
+import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql._
 
 object TriplesRun extends App {
@@ -24,27 +23,26 @@ object TriplesRun extends App {
 
   println("<<< STARTING >>>")
 
-  val watch = Stopwatch.createUnstarted()
+  var startTime = System.currentTimeMillis()
 
-  watch.start()
+  startTime = System.currentTimeMillis()
   val trp = new Triples("/home/hamed/workspace/TransE/DataSets/FB15k/freebase_mtr100_mte100-train.txt", "\t", false, false, spark)
-  watch.stop()
-  println("Reading triples done in " + watch.elapsed().toMillis + " seconds")
+  println("Reading triples done in " + (System.currentTimeMillis() - startTime) + " seconds")
 
-  watch.start()
+  startTime = System.currentTimeMillis()
   var num: Long = trp.triples.count()
-  watch.stop()
-  println("\n\n No triples = " + num.toString + " - Done in " + watch.elapsed().toMillis + " seconds.")
 
-  watch.start()
+  println("\n\n No triples = " + num.toString + " - Done in " + (System.currentTimeMillis() - startTime) + " seconds.")
+
+  startTime = System.currentTimeMillis()
   num = trp.getEntities().length
-  watch.stop()
-  println("\n\n No Entities = " + num.toString + " - Done in " + watch.elapsed().toMillis + " seconds.")
 
-  watch.start()
+  println("\n\n No Entities = " + num.toString + " - Done in " + (System.currentTimeMillis() - startTime) + " seconds.")
+
+  startTime = System.currentTimeMillis()
   num = trp.getRelations().length
-  watch.stop()
-  println("\n\n No Predicates = " + num.toString + " - Done in " + watch.elapsed().toMillis + " seconds.")
+
+  println("\n\n No Predicates = " + num.toString + " - Done in " + (System.currentTimeMillis() - startTime) + " seconds.")
   //  trp.getAllDistinctEntities().take(10).foreach(println)
   //  println("\n \n No entities = ",trp.getAllDistinctEntities().count() )
   //  println("\n \n No predicates = ",trp.getAllDistinctPredicates().count() )
