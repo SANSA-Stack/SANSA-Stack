@@ -70,10 +70,10 @@
     <spark.version>2.4.0</spark.version>
     <flink.version>1.7.0</flink.version>
     <jena.version>3.9.0</jena.version>
-    <sansa.stack.version>0.5.0</sansa.stack.version>
+    <sansa.stack.version>0.5.1-SNAPSHOT</sansa.stack.version>
     <sansa.rdf.version>${sansa.stack.version}</sansa.rdf.version>
     <sansa.query.version>${sansa.stack.version}</sansa.query.version>
-    <sansa.owl.version>0.4.1</sansa.owl.version>
+    <sansa.owl.version>0.4.2-SNAPSHOT</sansa.owl.version>
     <jsa.subversion>1</jsa.subversion>
     <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
     <PermGen>64m</PermGen>
