@@ -91,9 +91,6 @@ object RDFGraphInference {
     println(s"|G_inf| = ${inferredGraph.size()}")
 
     val jn = if (jobName.isEmpty) s"RDF Graph Inference ($profile)" else jobName
-
-    // run the program
-    env.execute(jn)
   }
 
   // the config object
