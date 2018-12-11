@@ -39,6 +39,11 @@
 			<version>1.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+		</dependency>
+
 		<!-- Override transitive tdb version via litmus -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -69,7 +74,7 @@
 			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+    
 		<!-- Ontop -->
 		<dependency>
 		  <groupId>it.unibz.inf.ontop</groupId>
@@ -81,7 +86,12 @@
 		  <artifactId>ontop-system-sql-owlapi</artifactId>
 		  <version>3.0.0-beta-2</version>
 		</dependency>
-
+    
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.17.Final</version>
+		</dependency>
 	</dependencies>
 
 	<build>
