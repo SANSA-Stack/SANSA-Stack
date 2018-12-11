@@ -65,7 +65,7 @@
 		<sansa.rdf.version>0.5.0</sansa.rdf.version>
 		<sansa.owl.version>0.4.1</sansa.owl.version>
 		<sansa.query.version>0.4.1-SNAPSHOT</sansa.query.version>
-		<sansa.inference.version>0.4.1-SNAPSHOT</sansa.inference.version>
+		<sansa.inference.version>0.5.0</sansa.inference.version>
 		<sansa.ml.version>0.4.1-SNAPSHOT</sansa.ml.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
