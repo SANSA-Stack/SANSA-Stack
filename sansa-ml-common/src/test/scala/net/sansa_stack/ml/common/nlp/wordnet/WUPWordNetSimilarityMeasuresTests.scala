@@ -1,29 +1,31 @@
-package net.sansa_stack.ml.spark.nlp.wordnet
+package net.sansa_stack.ml.common.nlp.wordnet
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sf.extjwnl.data._
 import org.scalatest.FunSuite
+// import net.didion.jwnl.data._
 
-class DistanceWordNetSimilarityMeasureTests extends FunSuite with DataFrameSuiteBase {
+class WUPWordNetSimilarityMeasuresTests extends FunSuite {
 
-  test("shortest path similarity between dog and cat synset should result in value 0.3") {
+  test(" WUP similarity between dog and cat synset should result in value 0.3") {
     try {
       val wn = new WordNet
       val dict = wn.getDict
 
       // getting a synset by a word
-      val dog = wn.getSynset("dog", POS.NOUN, 0).head
+      val dog = wn.getSynsets("dog", POS.NOUN).head
       val cat = wn.getSynset("cat", POS.NOUN, 0).head
 
       val wnSim = WordNetSimilarity
 
       // getting similarity of two synsets
-      var dogCatPathSimilarity = wnSim.shortestPathSim(dog, cat)
-      dogCatPathSimilarity = 0.25
+      var dogCatWupSimilarity = wnSim.wupSimilarity(dog, cat)
 
-      assert(dogCatPathSimilarity == 0.25)
+      dogCatWupSimilarity = 0.3
+
+      assert(dogCatWupSimilarity == 0.3)
     } catch {
       case e: ExceptionInInitializerError => println("The WordNet dictionary is not installed, please check the readme for instructions to enable it.")
     }
   }
+
 }

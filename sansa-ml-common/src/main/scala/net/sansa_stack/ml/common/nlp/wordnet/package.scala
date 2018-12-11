@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.nlp
+package net.sansa_stack.ml.common.nlp
 
 import java.io.Serializable
 
