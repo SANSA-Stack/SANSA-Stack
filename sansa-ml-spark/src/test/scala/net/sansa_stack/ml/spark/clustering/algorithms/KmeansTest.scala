@@ -6,9 +6,7 @@ import org.scalatest.FunSuite
 
 class KmeansTest extends FunSuite with DataFrameSuiteBase {
   test("Kmeans.mdsEncoding") {
-    val sqlCtx = sqlContext
-    import sqlCtx.implicits._
-    val mdsTestData = sc.parallelize(List((1.toLong, 2.toLong, 0.5), (1.toLong, 3.toLong, 1.0), (2.toLong, 3.toLong, 1.0)))
+    val mdsTestData = spark.sparkContext.parallelize(List((1.toLong, 2.toLong, 0.5), (1.toLong, 3.toLong, 1.0), (2.toLong, 3.toLong, 1.0)))
     mdsTestData.foreach(println)
     // val mdsTestDataRDD: RDD[(Long, Long, Double)] = sc.parallelize(mdsTestData)
     val (mdsEncodedDF, mdsEncoded) = new Encoder().mdsEncoding(mdsTestData, 3, 2, spark)
