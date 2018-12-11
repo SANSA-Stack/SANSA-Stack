@@ -30,30 +30,6 @@
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.json4s</groupId>
-			<artifactId>json4s-native_2.11</artifactId>
-			<version>3.2.11</version>
-		</dependency>
-
-		<!-- <dependency> <groupId>org.json4s</groupId> <artifactId>json4s-jackson_2.11</artifactId> 
-			<version>3.2.11</version> </dependency> -->
-
-		<dependency>
-			<groupId>com.github.haifengl</groupId>
-			<artifactId>smile-core</artifactId>
-			<version>1.5.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.haifengl</groupId>
-			<artifactId>smile-netlib</artifactId>
-			<version>1.5.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.json4s</groupId>
-			<artifactId>json4s-native_2.11</artifactId>
-			<version>3.2.11</version>
-		</dependency>
 		<!-- SANSA OWL -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
@@ -141,6 +117,24 @@
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 		</dependency>
+		
+		
+		<dependency>
+			<groupId>com.github.haifengl</groupId>
+			<artifactId>smile-core</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.haifengl</groupId>
+			<artifactId>smile-netlib</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json4s</groupId>
+			<artifactId>json4s-native_${scala.binary.version}</artifactId>
+			<version>3.6.2</version>
+		</dependency>
+		
 
 		<!-- https://mvnrepository.com/artifact/org.datasyslab/geospark -->
 		<dependency>
