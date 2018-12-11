@@ -4,6 +4,7 @@ import scala.collection.JavaConverters._
 
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.semantic.QuerySystem
+import net.sansa_stack.query.spark.sparql2sql.Sparql2Sql
 import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionSpark, SparqlifyUtils3 }
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import org.aksw.jena_sparql_api.core.ResultSetCloseable
@@ -100,6 +101,18 @@ package object query {
         numOfFilesPartition).run()
     }
 
+  }
+
+  implicit class Ontop(spark: SparkSession) extends Serializable {
+    // val spark = SparkSession.builder().getOrCreate()
+    /**
+     * Querying through Ontop
+     * ->It assumes that the relational tables have already been created
+     */
+    def sparqlOntop(sparqlFile: String, r2rmlFile: String, owlFile: String, propertyFile: String): DataFrame = {
+      var sqlQuery = Sparql2Sql.obtainSQL(sparqlFile, r2rmlFile, owlFile, propertyFile)
+      spark.sql(sqlQuery)
+    }
   }
 
   implicit class DataLake(spark: SparkSession) extends Serializable {
