@@ -99,7 +99,7 @@ class Encoder {
    * @return encoded coordinates for each poi in DataFrame
    */
   def mdsEncoding(distancePairs: RDD[(Long, Long, Double)], numPOIS: Int, dimension: Int, spark: SparkSession): (DataFrame, Array[(Long, Array[Double])]) = {
-    val poi2Coordinates = new multiDS().multiDimensionScaling(distancePairs, numPOIS, dimension)
+    val poi2Coordinates = new MultiDS().multiDimensionScaling(distancePairs, numPOIS, dimension)
     val poi2Coordinates2 = poi2Coordinates.map(x => x._1.toInt :: x._2.toList)
     // create schema
     val fields = Array.ofDim[StructField](dimension + 1)

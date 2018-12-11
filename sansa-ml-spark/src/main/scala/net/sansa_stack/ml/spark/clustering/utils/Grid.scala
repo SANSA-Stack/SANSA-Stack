@@ -3,13 +3,13 @@ package net.sansa_stack.ml.spark.clustering.utils
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashMap
 
-import net.sansa_stack.ml.spark.clustering.datatypes.DBPOI
+import net.sansa_stack.ml.spark.clustering.datatypes.DbPOI
 
-case class Grid(val poiArrBuf: ArrayBuffer[DBPOI], val eps: Double) {
+case class Grid(val poiArrBuf: ArrayBuffer[DbPOI], val eps: Double) {
 
     val startX = poiArrBuf.head.lon
     val startY = poiArrBuf.head.lat
-    val gridCell = HashMap[(Int, Int), ArrayBuffer[DBPOI]]()
+    val gridCell = HashMap[(Int, Int), ArrayBuffer[DbPOI]]()
 
     init()
 
@@ -28,9 +28,9 @@ case class Grid(val poiArrBuf: ArrayBuffer[DBPOI], val eps: Double) {
     }
 
 
-    def getNeighbours(dbpoi: DBPOI): ArrayBuffer[DBPOI] = {
+    def getNeighbours(dbpoi: DbPOI): ArrayBuffer[DbPOI] = {
 
-        val neighbourArrBuff = ArrayBuffer[DBPOI]()
+        val neighbourArrBuff = ArrayBuffer[DbPOI]()
 
         val celli = math.floor( (dbpoi.lon - startX) / eps).toInt
         val cellj = math.floor( (dbpoi.lat - startY) / eps).toInt

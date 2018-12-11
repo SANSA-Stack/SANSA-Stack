@@ -17,7 +17,7 @@ import net.sansa_stack.rdf.spark.io.NTripleReader
   * @param spark SparkSession
   * @param conf Configuration
   */
-class dataProcessing(val spark: SparkSession, val conf: Config) extends Serializable {
+class DataProcessing(val spark: SparkSession, val conf: Config) extends Serializable {
 
   // val dataRDD: RDD[Triple] = NTripleReader.load(spark, conf.getString("sansa.data.input")).persist()
   val dataRDD: RDD[Triple] = loadNTriple(conf.getString("sansa.data.input"))

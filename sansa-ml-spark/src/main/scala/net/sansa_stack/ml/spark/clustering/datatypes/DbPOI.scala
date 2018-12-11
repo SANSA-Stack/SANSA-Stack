@@ -1,8 +1,8 @@
 package net.sansa_stack.ml.spark.clustering.datatypes
 
-import net.sansa_stack.ml.spark.clustering.datatypes.dbstatusEnum._
+import net.sansa_stack.ml.spark.clustering.datatypes.DbStatusEnum._
 
-case class DBPOI(val poiId: String,
+case class DbPOI(val poiId: String,
                  val lon: Double,
                  val lat: Double) {
 

@@ -3,14 +3,14 @@ package net.sansa_stack.ml.spark.clustering.utils
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-import net.sansa_stack.ml.spark.clustering.datatypes.DBPOI
-import net.sansa_stack.ml.spark.clustering.datatypes.dbstatusEnum._
+import net.sansa_stack.ml.spark.clustering.datatypes.DbPOI
+import net.sansa_stack.ml.spark.clustering.datatypes.DbStatusEnum._
 
 case class DBCLusterer(val eps: Double, val minPts: Int) {
 
-    def clusterPois(poiArrBuff: ArrayBuffer[DBPOI]): ArrayBuffer[ArrayBuffer[DBPOI]] = {
+    def clusterPois(poiArrBuff: ArrayBuffer[DbPOI]): ArrayBuffer[ArrayBuffer[DbPOI]] = {
 
-        val clusterArrBuff = ArrayBuffer[ArrayBuffer[DBPOI]]()
+        val clusterArrBuff = ArrayBuffer[ArrayBuffer[DbPOI]]()
         val grid = Grid(poiArrBuff, eps)
 
         for{
@@ -35,15 +35,15 @@ case class DBCLusterer(val eps: Double, val minPts: Int) {
     }
 
 
-    def findCluster(dbpoi: DBPOI, neighbourArrBuff: ArrayBuffer[DBPOI], grid: Grid): ArrayBuffer[DBPOI] = {
+    def findCluster(dbpoi: DbPOI, neighbourArrBuff: ArrayBuffer[DbPOI], grid: Grid): ArrayBuffer[DbPOI] = {
 
         dbpoi.dbstatus = PARTOFCLUSTER
         dbpoi.isDense = true
 
-        val cluster = ArrayBuffer[DBPOI]()
+        val cluster = ArrayBuffer[DbPOI]()
         cluster.append(dbpoi)
 
-        val neighbourQueue = mutable.Queue[DBPOI]() ++ neighbourArrBuff
+        val neighbourQueue = mutable.Queue[DbPOI]() ++ neighbourArrBuff
 
         while(neighbourQueue.nonEmpty) {
             val poi = neighbourQueue.dequeue()

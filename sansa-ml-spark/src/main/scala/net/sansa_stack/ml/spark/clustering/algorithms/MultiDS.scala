@@ -3,7 +3,7 @@ package net.sansa_stack.ml.spark.clustering.algorithms
 import org.apache.spark.rdd._
 import smile.mds.MDS
 
-class multiDS {
+class MultiDS {
 
   /**
    * Multi-dimensional scaling

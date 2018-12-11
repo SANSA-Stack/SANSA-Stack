@@ -25,6 +25,6 @@ case class Datasets(input: String,
                     categoryPOI: String,
                     poiPrefix: String)
 
-case class appConfig(dataset: Datasets, clustering: Clustering, spark: Spark)
+case class AppConfig(dataset: Datasets, clustering: Clustering, spark: Spark)
 
 

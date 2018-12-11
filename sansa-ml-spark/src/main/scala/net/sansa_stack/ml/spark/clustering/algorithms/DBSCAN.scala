@@ -17,14 +17,14 @@ import org.datasyslab.geospark.spatialPartitioning.SpatialPartitioner
 import org.datasyslab.geospark.spatialRDD.PointRDD
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 
-import net.sansa_stack.ml.spark.clustering.datatypes.DBPOI
+import net.sansa_stack.ml.spark.clustering.datatypes.DbPOI
 import net.sansa_stack.ml.spark.clustering.datatypes.POI
 import net.sansa_stack.ml.spark.clustering.utils.DBCLusterer
 
 
 class DBSCAN() extends Serializable {
 
-    private var clusterRDD: RDD[DBPOI] = null
+    private var clusterRDD: RDD[DbPOI] = null
     private var mergingClusterNameVecBD: Broadcast[Vector[Set[String]]] = null
     private var boundaryPoisToKeepHMBD : Broadcast[HashMap[String, String]] = null
     private var spatialPartitionerBD   : Broadcast[SpatialPartitioner] = null
@@ -60,7 +60,7 @@ class DBSCAN() extends Serializable {
     /*
     * Performs DBSCAN and Returns the clusters.
     * */
-        def dbclusters(pointRDD_0: RDD[Point], eps: Double, minPts: Int, spark: SparkSession) : RDD[(String, Array[(String, DBPOI)])] = {
+        def dbclusters(pointRDD_0: RDD[Point], eps: Double, minPts: Int, spark: SparkSession) : RDD[(String, Array[(String, DbPOI)])] = {
 
         val pointRDD_1 = new JavaRDD[Point](pointRDD_0)
         val pointRDD = new PointRDD(pointRDD_1)
@@ -100,7 +100,7 @@ class DBSCAN() extends Serializable {
                                                     val isBoundaryP = (arrBuff.size > 1)
                                                     arrBuff.map{
                                                         pID => {
-                                                            val poi = DBPOI(point.getUserData.asInstanceOf[String], point.getX, point.getY)
+                                                            val poi = DbPOI(point.getUserData.asInstanceOf[String], point.getX, point.getY)
                                                             if (isBoundaryP) {
                                                                 poi.isBoundary = true
                                                             }
@@ -113,7 +113,7 @@ class DBSCAN() extends Serializable {
                                         }
                                     }
         // RDD[(pID, ArrayBuffer[DBPOI])]
-        val partitionRDD = flatMappedRDD.aggregateByKey(ArrayBuffer[DBPOI]())(
+        val partitionRDD = flatMappedRDD.aggregateByKey(ArrayBuffer[DbPOI]())(
             // SeqOp
             (zArrBuffDBPoi, poi) => zArrBuffDBPoi += poi,
 
@@ -231,7 +231,7 @@ class DBSCAN() extends Serializable {
 
 
         // RDD[clusterName, HashMap[poiID, poi]]
-        val dbclusterRDD = preFinalClusterRDD.aggregateByKey(HashMap[String, DBPOI]())(
+        val dbclusterRDD = preFinalClusterRDD.aggregateByKey(HashMap[String, DbPOI]())(
             // SeqOp
             (zPoiHM, poi) => zPoiHM += ((poi.poiId, poi)),
 

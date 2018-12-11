@@ -5,12 +5,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import scala.collection.mutable.ArrayBuffer
 
-import net.sansa_stack.ml.spark.clustering.datatypes.appConfig
+import net.sansa_stack.ml.spark.clustering.datatypes.AppConfig
 import net.sansa_stack.rdf.spark.io.NTripleReader
 
-
-
-class dataFiltering(val spark: SparkSession, val conf: appConfig) extends Serializable {
+class DataFiltering(val spark: SparkSession, val conf: AppConfig) extends Serializable {
 
   val dataRDD: RDD[Triple] = NTripleReader.load(spark, conf.dataset.input).persist()
 
