@@ -113,6 +113,7 @@ package object query {
       var sqlQuery = Sparql2Sql.obtainSQL(sparqlFile, r2rmlFile, owlFile, propertyFile)
       spark.sql(sqlQuery)
     }
+  }
 
   implicit class DataLake(spark: SparkSession) extends Serializable {
 
