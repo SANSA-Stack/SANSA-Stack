@@ -168,7 +168,7 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
         println(s"Number of filters of this star is: $nbrOfFiltersOfThisStar")
 
         /*******THIS IS JUST FOR TEST - REMOVE LATER*******/
-        println("Number of Spark executors (JUST FOR TEST): " + spark.sparkContext.getExecutorStorageStatus.length)
+        println("Number of Spark executors (JUST FOR TEST): " + spark.sparkContext.statusTracker.getExecutorInfos)
         println("Master URI (JUST FOR TEST): " + spark.sparkContext.master)
 
         (finalDF, nbrOfFiltersOfThisStar)
