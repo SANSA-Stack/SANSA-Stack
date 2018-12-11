@@ -1,14 +1,12 @@
 package net.sansa_stack.ml.common.nlp.wordnet
 
-import net.sansa_stack.ml.common.nlp
-import net.sansa_stack.ml.common.nlp.wordnet.{WordNet, WordNetSimilarity}
 import org.scalatest.FunSuite
-//import net.didion.jwnl.data._
 import net.sf.extjwnl.data._
+//import net.didion.jwnl.data._
 
 class WUPWordNetSimilarityMeasuresTests extends FunSuite {
 
-  test("wup similarity between dog and cat synset should result in value 0.3") {
+  test(" WUP similarity between dog and cat synset should result in value 0.3") {
     try {
       val wn = new WordNet
       val dict = wn.getDict

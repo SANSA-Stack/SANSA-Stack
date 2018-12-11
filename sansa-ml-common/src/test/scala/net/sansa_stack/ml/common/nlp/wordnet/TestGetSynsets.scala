@@ -1,6 +1,5 @@
 package net.sansa_stack.ml.common.nlp.wordnet
 
-import net.sansa_stack.ml.common.nlp.wordnet.WordNet
 import net.sf.extjwnl.data._
 import org.scalatest.FunSuite
 
