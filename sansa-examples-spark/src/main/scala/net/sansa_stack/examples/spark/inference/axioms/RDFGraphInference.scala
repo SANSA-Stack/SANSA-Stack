@@ -35,7 +35,6 @@ object RDFGraphInference {
     // load axioms from disk
     var owlAxioms = spark.owl(Syntax.FUNCTIONAL)(input)
     println(s"|G| = ${owlAxioms.count()}")
-    
     // create reasoner and compute inferred graph
     val inferredGraph = profile match {
       case RDFS => new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)(owlAxioms)
