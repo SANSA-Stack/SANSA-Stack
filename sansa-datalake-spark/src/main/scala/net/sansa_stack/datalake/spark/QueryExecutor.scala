@@ -43,7 +43,7 @@ trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
     def orderBy(joinPS: Any, direction: String, variable: String): T
 
     /* Group attributes based on aggregates function(s) */
-    def groupBy(joinPS: Any, groupBys: (ListBuffer[String], Set[(String,String)])): T
+    def groupBy(joinPS: Any, groupBys: (ListBuffer[String], Set[(String, String)])): T
 
     /* Return the first 'limitValue' values of the ParSet */
     def limit(joinPS: Any, limitValue: Int) : T

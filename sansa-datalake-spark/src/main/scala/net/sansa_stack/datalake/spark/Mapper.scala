@@ -17,8 +17,6 @@ import scala.collection.mutable.{HashMap, Set}
   */
 class Mapper (mappingsFile: String) {
 
-    //val logger = Logger("name")
-
     def findDataSources(
                            stars: mutable.HashMap[
                                 String,
@@ -32,22 +30,21 @@ class Mapper (mappingsFile: String) {
                         // returns
                         mutable.Set[(String,
                                         Set[(mutable.HashMap[String, String], String, String)],
-                                        HashMap[String, (Map[String, String],String)]
+                                        HashMap[String, (Map[String, String], String)]
                                     )] = {
 
-        //logger.info(queryString)
         val starSources :
             mutable.Set[(
                 String, // Star core
                 mutable.Set[(mutable.HashMap[String, String], String, String)], // A set of data sources relevant to the Star (pred_attr, src, srcType)
-                mutable.HashMap[String, (Map[String, String],String)] // A set of options of each relevant data source
+                mutable.HashMap[String, (Map[String, String], String)] // A set of options of each relevant data source
             )] = mutable.Set()
 
         var count = 0
 
         var starDatasourceTypeMap : Map[String, String] = Map()
 
-        for(s <-stars) {
+        for (s <-stars) {
             val subject = s._1 // core of the star
             val predicates_objects = s._2
 
@@ -56,27 +53,23 @@ class Mapper (mappingsFile: String) {
             count = count + 1
 
             // Options of relevant sources of one star
-            val optionsentityPerStar : mutable.HashMap[String, (Map[String,String],String)] = new HashMap()
+            val optionsentityPerStar : mutable.HashMap[String, (Map[String, String], String)] = new HashMap()
 
             // Iterate through the relevant data sources to get options
             // One star can have many relevant sources (containing its predicates)
-            for(d <- ds) {
-                //val pre_attr = d._1
+            for (d <- ds) {
                 val src = d._2
-                //val srcType = d._3
 
-                //var configFile = Config.get("datasets.descr")
-                println("configFile: " + configFile)
                 val queryString = scala.io.Source.fromFile(configFile)
                 val configJSON = try queryString.mkString finally queryString.close()
 
-                case class ConfigObject(source: String, options: Map[String,String], entity: String)
+                case class ConfigObject(source : String, options: Map[String, String], entity : String)
 
-                implicit val userReads: Reads[ConfigObject] = (
+                implicit val userReads : Reads[ConfigObject] = (
                     (__ \ 'source).read[String] and
-                    (__ \ 'options).read[Map[String,String]] and
+                    (__ \ 'options).read[Map[String, String]] and
                     (__ \ 'entity).read[String]
-                )(ConfigObject)
+                ) (ConfigObject)
 
                 val sources = (Json.parse(configJSON) \ "sources").as[Seq[ConfigObject]]
 
@@ -86,12 +79,12 @@ class Mapper (mappingsFile: String) {
                         val options = s.options
                         val entity = s.entity
 
-                        optionsentityPerStar.put(source, (options,entity))
+                        optionsentityPerStar.put(source, (options, entity))
                     }
                 }
             }
 
-            starSources.add((subject,ds,optionsentityPerStar))
+            starSources.add((subject, ds, optionsentityPerStar))
         }
 
         // return: subject (star core), list of (data source, options)
@@ -117,16 +110,14 @@ class Mapper (mappingsFile: String) {
             } else {
                 listOfPredicatesForQuery += "?mp rr:predicateObjectMap ?pom" + temp + " . " +
                     "?pom" + temp + " rr:predicate " + predicate + " . " +
-                    "?pom" + temp + " rr:objectMap ?om" + temp + " . " /* ?om" + temp + " rml:reference ?r . "*/
+                    "?pom" + temp + " rr:objectMap ?om" + temp + " . "
 
                 listOfPredicates.add(predicate)
                 temp +=1
 
             }
-            //if (temp == 0) else  listOfPredicatesForQuery += "?pom rr:predicate " + predicate + " . "
         }
 
-        //println("- Predicates for the query " + listOfPredicatesForQuery)
         val queryString = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#>" +
                             "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
                             "PREFIX foaf: <http://xmlns.com/foaf/spec/>" +
@@ -135,9 +126,6 @@ class Mapper (mappingsFile: String) {
                 "?mp rml:logicalSource ?ls . " +
                 "?ls rml:source ?src . " +
                 "?ls nosql:store ?type . " +
-                //"?mp rr:predicateObjectMap ?pom . " +
-                //"?pom rr:objectMap ?om . " +
-                //"?om rml:reference ?r . " +
                 listOfPredicatesForQuery +
             "}"
 
@@ -161,12 +149,11 @@ class Mapper (mappingsFile: String) {
             val src = soln.get("src").toString
             val srcType = soln.get("type").toString
 
-            println(">>> Relevant source detected [" + src + "] of type [" + srcType + "]") //NOTE: considering first only one src (??)
+            println(">>> Relevant source detected [" + src + "] of type [" + srcType + "]")
 
             val pred_attr: HashMap[String, String] = HashMap()
 
             for (p <- listOfPredicates) {
-                //println("pr: " + p)
 
                 val getAttributeOfPredicate = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> " +
                     "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
@@ -178,10 +165,8 @@ class Mapper (mappingsFile: String) {
                     "?pom rr:predicate  " + p + " . " +
                     "?pom rr:objectMap ?om . " +
                     "?om rml:reference ?r . " +
-                    //"?mp rr:subjectMap ?sm . " +
                     "}"
 
-                //println("GOING TO EXECUTE: " + getAttributeOfPredicate)
 
                 val query1 = QueryFactory.create(getAttributeOfPredicate)
                 val qe1 = QueryExecutionFactory.create(query1, model)
@@ -189,9 +174,7 @@ class Mapper (mappingsFile: String) {
                 while (results1.hasNext) {
                     val soln1 = results1.nextSolution()
                     val attr = soln1.get("r").toString
-                    //println("- Predicate " + p + " corresponds to attribute " + attr + " in " + src)
-                    pred_attr.put(p,attr)
-
+                    pred_attr.put(p, attr)
                 }
             }
             returnedSources.add((pred_attr, src, srcType))
@@ -201,5 +184,4 @@ class Mapper (mappingsFile: String) {
 
         returnedSources
     }
-
 }

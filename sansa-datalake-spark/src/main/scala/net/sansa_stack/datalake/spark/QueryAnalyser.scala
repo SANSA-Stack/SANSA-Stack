@@ -34,22 +34,22 @@ class QueryAnalyser(query: String) {
 
         println(s"\n- Projected vars: $project")
 
-        (project,q.isDistinct)
+        (project, q.isDistinct)
     }
 
     def getFilters : ArrayListMultimap[String, (String, String)] = {
         val q = QueryFactory.create(query)
-        val filters : ArrayListMultimap[String, (String,String)] = ArrayListMultimap.create[String,(String,String)]()
+        val filters : ArrayListMultimap[String, (String, String)] = ArrayListMultimap.create[String, (String, String)]()
 
         ElementWalker.walk(q.getQueryPattern, new ElementVisitorBase() { // ...when it's a block of triples...
             override def visit(ef: ElementFilter): Unit = { // ...go through all the triples...
-                val bits = ef.getExpr.toString.replace("(","").replace(")","").split(" ",3) // 3 not to split when the right operand is a string with possible white spaces
+                val bits = ef.getExpr.toString.replace("(", "").replace(")", "").split(" ", 3) // 3 not to split when the right operand is a string with possible white spaces
                 val operation = bits(1)
                 val leftOperand = bits(0)
                 val rightOperand = bits(2)
 
                 println(s"............-------........... $operation,($leftOperand,$rightOperand)")
-                filters.put(operation,(leftOperand,rightOperand))
+                filters.put(operation, (leftOperand, rightOperand))
             }
         })
 
@@ -60,16 +60,15 @@ class QueryAnalyser(query: String) {
         val q = QueryFactory.create(query)
         var orderBys : Set[(String,String)] = Set()
 
-        if(q.hasOrderBy) {
+        if (q.hasOrderBy) {
             val orderBy = q.getOrderBy.iterator()
 
             while(orderBy.hasNext) {
                 val it = orderBy.next()
 
-                orderBys += ((it.direction.toString,it.expression.toString))
+                orderBys += ((it.direction.toString, it.expression.toString))
             }
-        } else
-            orderBys = null
+        } else orderBys = null
 
         orderBys
     }
@@ -81,7 +80,7 @@ class QueryAnalyser(query: String) {
 
         if (q.hasGroupBy) {
             val groupByVars = q.getGroupBy.getVars.toList
-            for(gbv <- groupByVars) {
+            for (gbv <- groupByVars) {
                 val str = variablePredicateStar(gbv.toString())._1
                 val vr = variablePredicateStar(gbv.toString())._2
                 val ns_p = get_NS_predicate(vr)
@@ -104,10 +103,9 @@ class QueryAnalyser(query: String) {
                 aggregationFunctions += ((column, bits(0).substring(1))) // o_price_cbo -> sum
             }
 
-            (groupByCols,aggregationFunctions)
+            (groupByCols, aggregationFunctions)
 
-        } else
-            null
+        } else null
 
     }
 
@@ -116,7 +114,7 @@ class QueryAnalyser(query: String) {
         val q = QueryFactory.create(query)
         val originalBGP = q.getQueryPattern.toString
 
-        val bgp = originalBGP.replaceAll("\n", "").replaceAll("\\s+", " ").replace("{"," ").replace("}"," ") // See example below + replace breaklines + remove extra white spaces
+        val bgp = originalBGP.replaceAll("\n", "").replaceAll("\\s+", " ").replace("{", " ").replace("}", " ") // See example below + replace breaklines + remove extra white spaces
         val tps = bgp.split("\\.(?![^\\<\\[]*[\\]\\>])")
 
         println("\n- The BGP of the input query:  " + originalBGP)
@@ -128,7 +126,7 @@ class QueryAnalyser(query: String) {
         // Save [star]_[predicate]
         val star_pred_var : HashMap[(String,String), String] = HashMap()
 
-        for (i <- tps.indices) { //i <- 0 until tps.length
+        for (i <- tps.indices) { // i <- 0 until tps.length
             val triple = tps(i).trim
 
             println(s"triple: $triple")
@@ -157,12 +155,11 @@ class QueryAnalyser(query: String) {
         }
 
         (stars, star_pred_var)
-        // TODO: Support OPTIONAL later
     }
 
     def getTransformations (trans: String) = {
         // Transformations
-        val transformations = trans.trim().substring(1).split("&&") // [?k?a.l.+60, ?a?l.r.toInt]
+        val transformations = trans.trim().substring(1).split("&&") // E.g. [?k?a.l.+60, ?a?l.r.toInt]
         var transmap_left : Map[String,(String, Array[String])] = Map.empty
         var transmap_right : Map[String,Array[String]] = Map.empty
         for (t <- transformations) { // E.g. ?a?l.r.toInt.scl[61]
