@@ -77,7 +77,6 @@
 		</dependency>
 
 		<!-- JENA API -->
-
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
@@ -116,7 +115,6 @@
 		</dependency>
 
 		<!-- Connector dependencies -->
-
 		<dependency>
 			<groupId>com.datastax.spark</groupId>
 			<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
