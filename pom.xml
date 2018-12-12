@@ -195,6 +195,39 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.0.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.10.4</version>
+					<configuration>
+						<failOnError>false</failOnError>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
 				<!-- Scala Maven -->
 				<plugin>
 					<groupId>net.alchim31.maven</groupId>
@@ -233,6 +266,48 @@
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
 						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>com.amashchenko.maven.plugin</groupId>
+					<artifactId>gitflow-maven-plugin</artifactId>
+					<version>1.8.0</version>
+					<configuration>
+						<gitFlowConfig>
+							<versionTagPrefix>v</versionTagPrefix>
+						</gitFlowConfig>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.6</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+							<configuration>
+								<keyname>AKSW</keyname>
+								<passphraseServerId>${gpg.keyname}</passphraseServerId>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>1.6.8</version>
+					<extensions>true</extensions>
+					<configuration>
+						<serverId>ossrh</serverId>
+						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+						<autoReleaseAfterClose>true</autoReleaseAfterClose>
 					</configuration>
 				</plugin>
 
@@ -305,6 +380,58 @@
 			<properties>
 				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
 			</properties>
+		</profile>
+		<profile>
+			<id>release</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+						<configuration>
+							<additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 
