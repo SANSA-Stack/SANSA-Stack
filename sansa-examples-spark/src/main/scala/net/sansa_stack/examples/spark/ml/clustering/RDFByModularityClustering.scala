@@ -2,7 +2,7 @@ package net.sansa_stack.examples.spark.ml.clustering
 
 import scala.collection.mutable
 
-import net.sansa_stack.ml.spark.clustering.{ RDFByModularityClustering => RDFByModularityClusteringAlg }
+import net.sansa_stack.ml.spark.clustering.algorithms.{ RDFByModularityClustering => RDFByModularityClusteringAlg }
 import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql.SparkSession
 

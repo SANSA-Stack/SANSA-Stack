@@ -2,7 +2,7 @@ package net.sansa_stack.examples.spark.ml.clustering
 
 import scala.collection.mutable
 
-import net.sansa_stack.ml.spark.clustering.RDFGraphPowerIterationClustering
+import net.sansa_stack.ml.spark.clustering.algorithms.RDFGraphPowerIterationClustering
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
