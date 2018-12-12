@@ -19,4 +19,6 @@ project/plugins/project/
 
 # IntelliJ IDEA specific
 /.idea
-sansa-ml-parent_2.11.iml
+*.iml
+
+scalastyle-output.xml

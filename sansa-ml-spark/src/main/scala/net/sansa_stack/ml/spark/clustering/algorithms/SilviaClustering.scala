@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.clustering
+package net.sansa_stack.ml.spark.clustering.algorithms
 
 import java.io._
 import java.io.{ ByteArrayInputStream, FileNotFoundException, FileReader, IOException, StringWriter }
@@ -43,6 +43,7 @@ object SilviaClustering {
     val selectYourSimilarity = 0
 
     def clusterRdd(): RDD[List[String]] = {
+      val a = graph.triplets
       graphXinBorderFlow(graph, orient, selectYourSimilarity)
     }
 
@@ -514,9 +515,8 @@ object SilviaClustering {
 
       result
     }
-
     val cRdd = clusterRdd()
-
-    cRdd.saveAsTextFile(output)
+    val zipwithindex = cRdd.zipWithIndex().map(f => (f._2, f._1))
+    zipwithindex.saveAsTextFile(output)
   }
 }

@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.clustering
+package net.sansa_stack.ml.spark.clustering.algorithms
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._

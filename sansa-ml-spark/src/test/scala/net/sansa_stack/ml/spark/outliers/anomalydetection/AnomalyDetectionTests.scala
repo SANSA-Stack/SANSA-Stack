@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.anomalydetection
+package net.sansa_stack.ml.spark.outliers.anomalydetection
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
@@ -6,7 +6,6 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
 
 import net.sansa_stack.ml.spark.outliers.anomalydetection._
-
 class AnomalyDetectionTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
@@ -77,3 +76,5 @@ class AnomalyDetectionTests extends FunSuite with DataFrameSuiteBase {
   }
 
 }
+
+

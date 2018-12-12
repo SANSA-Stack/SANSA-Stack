@@ -13,6 +13,7 @@
 
 	<properties>
 		<hadoop.version>2.8.3</hadoop.version>
+		<geospark.version>1.1.3</geospark.version>
 	</properties>
 
 	<dependencies>
@@ -29,7 +30,6 @@
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
 		</dependency>
-
 		<!-- SANSA OWL -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
@@ -70,9 +70,9 @@
 		</dependency>
 		<!-- LZ4BlockInputStream -->
 		<dependency>
-    	<groupId>net.jpountz.lz4</groupId>
-    	<artifactId>lz4</artifactId>
-    	<version>1.3.0</version>
+			<groupId>net.jpountz.lz4</groupId>
+			<artifactId>lz4</artifactId>
+			<version>1.3.0</version>
 		</dependency>
 		<!-- HermiT reasoner -->
 		<dependency>
@@ -117,6 +117,48 @@
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 		</dependency>
+		
+		
+		<dependency>
+			<groupId>com.github.haifengl</groupId>
+			<artifactId>smile-core</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.haifengl</groupId>
+			<artifactId>smile-netlib</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json4s</groupId>
+			<artifactId>json4s-native_${scala.binary.version}</artifactId>
+			<version>3.6.2</version>
+		</dependency>
+		
+
+		<!-- https://mvnrepository.com/artifact/org.datasyslab/geospark -->
+		<dependency>
+			<groupId>org.datasyslab</groupId>
+			<artifactId>geospark</artifactId>
+			<version>${geospark.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/com.vividsolutions/jts -->
+		<dependency>
+			<groupId>com.vividsolutions</groupId>
+			<artifactId>jts</artifactId>
+			<version>1.13</version>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/org.datasyslab/geospark-sql -->
+		<dependency>
+			<groupId>org.datasyslab</groupId>
+			<artifactId>geospark-sql_2.3</artifactId>
+			<version>${geospark.version}</version>
+		</dependency>
 
 
 		<!-- Test -->
@@ -160,6 +202,19 @@
 				<artifactId>scala-maven-plugin</artifactId>
 			</plugin>
 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
@@ -405,6 +460,13 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+
+		<repository>
+			<id>dbscan-on-spark-repo</id>
+			<name>Repo for DBSCAN on Spark</name>
+			<url>http://dl.bintray.com/irvingc/maven</url>
+		</repository>
+
 		<repository>
 			<id>maven.aksw.internal</id>
 			<name>AKSW Release Repository</name>

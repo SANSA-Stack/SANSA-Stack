@@ -1,5 +1,3 @@
-package net.sansa_stack.ml.spark.clustering
-
 import java.io._
 import java.io.{ ByteArrayInputStream, FileNotFoundException, FileReader, IOException, StringWriter }
 import java.lang.{ Long => JLong }
@@ -346,7 +344,6 @@ object BorderFlow {
          val nu = neighborSort.lookup(u).distinct.head.toSet
          val nuX = nu.intersect(X.toSet).toList
         ( (nuX.intersect(listOfN(x))).size.toDouble)
-
          */
         jaccardNU
 
@@ -678,7 +675,6 @@ object BorderFlow {
          val nu = neighborSort.lookup(u).distinct.head.toSet
          val nuX = nu.intersect(X.toSet).toList
         ( (nuX.intersect(listOfN(x))).size.toDouble)
-
          */
         omega
 
@@ -837,3 +833,4 @@ object BorderFlow {
     rdfRDD.saveAsTextFile(output)
   }
 }
+
