@@ -5,7 +5,6 @@ import java.nio.file.{ Files, FileVisitResult, Path, Paths, SimpleFileVisitor }
 import java.nio.file.attribute.BasicFileAttributes
 
 import net.sansa_stack.query.spark.semantic.QuerySystem
-import net.sansa_stack.rdf.common.partition.utils.Symbols
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition._
 import org.apache.jena.graph.Triple
@@ -59,7 +58,6 @@ object Semantic {
     println("----------------------")
 
     val qs = new QuerySystem(
-      symbol = Symbols.symbol,
       partitionData,
       input,
       output,
