@@ -134,7 +134,7 @@ class Mapper (mappingsFile: String) {
 
         val in = FileManager.get().open(mappingsFile)
         if (in == null) {
-            throw new IllegalArgumentException("File: " + queryString + " not found")
+            throw new IllegalArgumentException("ERROR: File: " + queryString + " not found")
         }
 
         val model = ModelFactory.createDefaultModel()

@@ -259,13 +259,28 @@ class Run[A](executor: QueryExecutor[A]) {
 
     } catch {
       case ex : FileNotFoundException =>
-        println("One of input files ins't found")
+        println("ERROR: One of input files ins't found.")
         null
 
-      case ex : IndexOutOfBoundsException =>
-        println("IO Exception")
+      case ex : org.apache.jena.riot.RiotException =>
+        println("ERROR: invalid Mappings, check syntax.")
         null
 
+      case ex : org.apache.spark.SparkException =>
+        println("ERROR: invalid Spark Master.")
+        null
+
+      case ex : com.fasterxml.jackson.core.JsonParseException =>
+        println("ERROR: invalid JSON content in config file.")
+        null
+
+      case ex : java.lang.IllegalArgumentException =>
+        println("ERROR: invalid mappings.")
+        null
+
+      case ex : org.apache.jena.query.QueryParseException =>
+        println("ERROR: invalid query.")
+        null
     }
 
   }
