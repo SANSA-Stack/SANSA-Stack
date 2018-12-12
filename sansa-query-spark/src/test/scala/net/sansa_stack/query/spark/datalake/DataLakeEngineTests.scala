@@ -7,8 +7,8 @@ class TestDataLakeEngine extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.query.spark.query._
 
-  val configFile = getClass.getResource("/config_csv-only").getPath
-  val mappingsFile = getClass.getResource("/mappings_csv-only.ttl").getPath
+  val configFile = getClass.getResource("/config").getPath
+  val mappingsFile = getClass.getResource("/mappings.ttl").getPath
 
   test("running BSBM Q1 should result 10") {
 
