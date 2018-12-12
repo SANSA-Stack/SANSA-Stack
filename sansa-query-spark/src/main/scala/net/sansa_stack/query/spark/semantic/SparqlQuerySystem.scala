@@ -11,19 +11,18 @@ import scala.util.Try
 
 import com.google.common.collect.ArrayListMultimap
 import net.sansa_stack.query.spark.semantic.utils.Helpers._
+import net.sansa_stack.rdf.common.partition.utils.Symbols
 import org.apache.spark.rdd._
 
 /*
  * QuerySystem - query on semantic partition data
  *
- * @symbol - list of symbols.
  * @partitionData - a RDD of n-triples (formatted).
  * @queryInputPath - query file path.
  * @queryResultPath - path for output result.
  * @numOfFilesPartition - total number of files to save the partition data.
  */
 class QuerySystem(
-  symbol: Map[String, String],
   partitionData: RDD[String],
   queryInputPath: String,
   queryResultPath: String,
@@ -40,6 +39,7 @@ class QuerySystem(
   var workingTripleRDD: RDD[(String, List[String])] = _
   var workingPartialRDD: RDD[(String, List[String])] = _
   var unionOutputRDD: RDD[String] = _
+  val symbol = Symbols.symbol
 
   def run(): Unit = {
     // parse queries

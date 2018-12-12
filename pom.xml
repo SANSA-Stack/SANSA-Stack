@@ -23,7 +23,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 
-		<sansa.version>0.4.0</sansa.version>
+		<sansa.rdf.version>0.5.0</sansa.rdf.version>
 		<sansa.datalake.version>0.0.1-SNAPSHOT</sansa.datalake.version>
 
 		<scala.version>2.11.11</scala.version>
@@ -32,11 +32,11 @@
 
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<spark.version>2.3.1</spark.version>
-		<flink.version>1.5.0</flink.version>
+		<spark.version>2.4.0</spark.version>
+		<flink.version>1.7.0</flink.version>
 
-		<jena.version>3.7.0</jena.version>
-		<jsa.subversion>3</jsa.subversion>
+		<jena.version>3.9.0</jena.version>
+		<jsa.subversion>1</jsa.subversion>
 
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
@@ -212,19 +212,19 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${sansa.rdf.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${sansa.rdf.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${sansa.rdf.version}</version>
 			</dependency>
 
 
@@ -305,6 +305,12 @@
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
 				<version>19.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.18</version>
 			</dependency>
 
 			<dependency>

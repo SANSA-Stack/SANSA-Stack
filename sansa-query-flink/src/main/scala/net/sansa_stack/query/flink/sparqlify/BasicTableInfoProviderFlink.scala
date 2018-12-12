@@ -12,7 +12,7 @@ import org.apache.flink.table.api.scala.BatchTableEnvironment
 class BasicTableInfoProviderFlink(flinkTable: BatchTableEnvironment)
   extends BasicTableInfoProvider {
   override def getBasicTableInfo(queryString: String): BasicTableInfo = {
-    val table = flinkTable.sql(queryString)
+    val table = flinkTable.sqlQuery(queryString)
     val schema = table.getSchema
     val types = schema.getTypes
     val names = schema.getColumnNames
