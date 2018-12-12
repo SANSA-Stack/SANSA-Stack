@@ -225,7 +225,7 @@
 
 <#ProductMapping>
 	rml:logicalSource [
-		rml:source "Product";
+		rml:source "//Product";
 		nosql:store nosql:cassandra
 	];
 	rr:subjectMap [
