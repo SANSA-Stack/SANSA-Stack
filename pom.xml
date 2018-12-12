@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-examples-parent_2.11</artifactId>
-	<version>2018-06.1-SNAPSHOT</version>
+	<version>2018-12</version>
 	<packaging>pom</packaging>
 	<name>SANSA-Examples - Parent</name>
 	<description>SANSA examples</description>
