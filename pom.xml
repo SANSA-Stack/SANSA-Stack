@@ -24,7 +24,7 @@
 		<encoding>UTF-8</encoding>
 
 		<sansa.rdf.version>0.5.0</sansa.rdf.version>
-		<sansa.datalake.version>0.0.1-SNAPSHOT</sansa.datalake.version>
+		<sansa.datalake.version>0.1.0</sansa.datalake.version>
 
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
