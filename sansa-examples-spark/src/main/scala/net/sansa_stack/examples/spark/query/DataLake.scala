@@ -2,6 +2,7 @@ package net.sansa_stack.examples.spark.query
 
 import scala.collection.mutable
 
+import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.query._
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession
@@ -31,7 +32,8 @@ object DataLake {
       .master("local[*]")
       .getOrCreate()
 
-    val result = spark.sparqlDL(queryFile, mappingsFile, configFile)
+    // val result = spark.sparqlDL(queryFile, mappingsFile, configFile)
+    val result = DataLakeEngine.run(queryFile, mappingsFile, configFile, spark)
     result.show()
 
     spark.stop
@@ -40,8 +42,8 @@ object DataLake {
 
   case class Config(
     queryFile: String = getClass.getResource("/datalake/queries/Q1.sparql").getPath,
-    mappingsFile: String = getClass.getResource("/datalake/config_csv-only").getPath,
-    configFile: String = getClass.getResource("/datalake/mappings_csv-only.ttl").getPath)
+    mappingsFile: String = getClass.getResource("/datalake/config").getPath,
+    configFile: String = getClass.getResource("/datalake/mappings.ttl").getPath)
 
   val parser = new scopt.OptionParser[Config]("Sparqlify example") {
 
