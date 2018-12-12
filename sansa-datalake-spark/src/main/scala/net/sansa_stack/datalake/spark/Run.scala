@@ -3,7 +3,7 @@ package net.sansa_stack.datalake.spark
 import java.io.FileNotFoundException
 
 import org.apache.commons.lang.time.StopWatch
-import org.apache.log4j.{Level, Logger}
+import org.apache.log4j.{ Level, Logger }
 import net.sansa_stack.datalake.spark.utils.Helpers._
 
 import scala.collection.JavaConversions._
@@ -16,7 +16,8 @@ import org.apache.spark.sql.DataFrame
 class Run[A](executor: QueryExecutor[A]) {
 
   private var finalDataSet: A = _
-
+  val logger = Logger.getLogger(this.getClass.getName.stripSuffix("$"))
+  
   def application(queryFile: String, mappingsFile: String, configFile: String): DataFrame = {
 
     Logger.getLogger("ac.biu.nlp.nlp.engineml").setLevel(Level.OFF)
@@ -35,7 +36,6 @@ class Run[A](executor: QueryExecutor[A]) {
 
       val queryString = scala.io.Source.fromFile(queryFile)
       var query = try queryString.mkString finally queryString.close()
-
 
       // Transformations
       var transformExist = false
@@ -258,15 +258,14 @@ class Run[A](executor: QueryExecutor[A]) {
       finalDataSet.asInstanceOf[DataFrame]
 
     } catch {
-      case ex : FileNotFoundException =>
+      case ex: FileNotFoundException =>
         println("One of input files ins't found")
         null
 
-      case ex : IndexOutOfBoundsException =>
+      case ex: IndexOutOfBoundsException =>
         println("IO Exception")
         null
 
     }
-
   }
 }
