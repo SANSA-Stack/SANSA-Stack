@@ -23,8 +23,8 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 
-		<sansa.rdf.version>0.5.0</sansa.rdf.version>
-		<sansa.datalake.version>0.1.0</sansa.datalake.version>
+		<sansa.rdf.version>0.5.1-SNAPSHOT</sansa.rdf.version>
+		<sansa.datalake.version>0.1.1-SNAPSHOT</sansa.datalake.version>
 
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
