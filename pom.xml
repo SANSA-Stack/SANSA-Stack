@@ -62,11 +62,11 @@
 		<flink.version>1.7.0</flink.version>
 		<hadoop.version>2.8.3</hadoop.version>
 		<jena.version>3.9.0</jena.version>
-		<sansa.rdf.version>0.5.0</sansa.rdf.version>
-		<sansa.owl.version>0.4.1</sansa.owl.version>
-		<sansa.query.version>0.5.0</sansa.query.version>
-		<sansa.inference.version>0.5.0</sansa.inference.version>
-		<sansa.ml.version>0.5.0</sansa.ml.version>
+		<sansa.rdf.version>0.5.1-SNAPSHOT</sansa.rdf.version>
+		<sansa.owl.version>0.4.2-SNAPSHOT</sansa.owl.version>
+		<sansa.query.version>0.5.1-SNAPSHOT</sansa.query.version>
+		<sansa.inference.version>0.5.1-SNAPSHOT</sansa.inference.version>
+		<sansa.ml.version>0.5.1-SNAPSHOT</sansa.ml.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
