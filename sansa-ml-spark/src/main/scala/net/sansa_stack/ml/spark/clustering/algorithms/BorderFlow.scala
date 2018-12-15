@@ -10,7 +10,7 @@ import scala.util.control.Breaks._
 
 import breeze.linalg.{ squaredDistance, DenseVector, Vector }
 import org.apache.jena.datatypes.{ RDFDatatype, TypeMapper }
-import org.apache.jena.graph.{ Node => JenaNode, Node_ANY, Node_Blank, Node_Literal, Node_URI, Triple => JenaTriple, _ }
+import org.apache.jena.graph.{ Node, Node_ANY, Node_Blank, Node_Literal, Node_URI, Triple, _ }
 import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import org.apache.jena.riot.writer.NTriplesWriter
 import org.apache.jena.util._
@@ -28,7 +28,7 @@ import scopt.OptionParser
 
 object BorderFlow {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputevlsoft: String, outputevlhard: String): Unit = {
+  def apply(spark: SparkSession, graph: Graph[Node, Node], output: String, outputevlsoft: String, outputevlhard: String): Unit = {
 
     /**
      * undirected graph : orient =0
@@ -822,7 +822,7 @@ object BorderFlow {
       val b: List[VertexId] = a
       for (i <- 0 until b.length) {
         graph.vertices.collect().map(v => {
-          if (b(i) == v._1) listuri = listuri.::(v._2)
+          if (b(i) == v._1) listuri = listuri.::(v._2.toString())
         })
 
       }
