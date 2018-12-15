@@ -2,13 +2,12 @@ package net.sansa_stack.examples.spark.ml.clustering
 
 import scala.collection.mutable
 
-import net.sansa_stack.ml.spark.clustering.algorithms.FirstHardeninginBorderFlow
+import net.sansa_stack.ml.spark.clustering.algorithms.{ BorderFlow, FirstHardeninginBorderFlow }
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.graph._
 import org.apache.jena.riot.Lang
 import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql.SparkSession
-
 
 object BorderFlowClustering {
 
@@ -39,7 +38,7 @@ object BorderFlowClustering {
     val graph = triples.asGraph()
 
     val borderflow = algName match {
-      // case "borderflow" => BorderFlow(spark, graph, output, outputevlsoft, outputevlhard)
+      case "borderflow" => BorderFlow(spark, graph, output, outputevlsoft, outputevlhard)
       case "firsthardening" => FirstHardeninginBorderFlow(spark, graph, output, outputevlhard)
       case _ =>
         throw new RuntimeException("'" + algName + "' - Not supported, yet.")
