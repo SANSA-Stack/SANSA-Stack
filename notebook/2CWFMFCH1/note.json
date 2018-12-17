@@ -4,17 +4,21 @@
       "title": "1. Load Data",
       "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval input \u003d \"hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\"\nval lang \u003d Lang.NTRIPLES\nval graph \u003d spark.rdf(lang)(input)",
       "user": "anonymous",
-      "dateUpdated": "Apr 30, 2018 1:59:11 PM",
+      "dateUpdated": "2018-12-17 12:52:44.409",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
         "title": true,
-        "tableHide": true
+        "tableHide": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -25,24 +29,24 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.rdf.spark.io._\n\nimport org.apache.jena.riot.Lang\n\ninput: String \u003d hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ngraph: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[127] at map at package.scala:179\n"
+            "data": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\ninput: String \u003d hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ngraph: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[2] at mapPartitions at NTripleReader.scala:140\n"
           }
         ]
       },
       "apps": [],
       "jobName": "paragraph_1509621876108_-341284568",
       "id": "20171102-112436_172970529",
-      "dateCreated": "Nov 2, 2017 11:24:36 AM",
-      "dateStarted": "Apr 30, 2018 1:59:11 PM",
-      "dateFinished": "Apr 30, 2018 1:59:12 PM",
+      "dateCreated": "2017-11-02 11:24:36.000",
+      "dateStarted": "2018-12-17 12:52:44.430",
+      "dateFinished": "2018-12-17 12:53:07.964",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "2. Compute statistics (i.e. Property Distribution)",
-      "text": "import net.sansa_stack.rdf.spark.stats._\n\nval propertyDist \u003dgraph.statsPropertyUsage()\n                   .map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + propertyDist.take(100).mkString(\"\\n\"))",
+      "text": "import net.sansa_stack.rdf.spark.stats._\n\nval propertyDist \u003dgraph.statsPropertyUsage().\n                  map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + propertyDist.take(100).mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "Apr 30, 2018 1:57:27 PM",
+      "dateUpdated": "2018-12-17 12:53:35.376",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -57,10 +61,14 @@
           }
         },
         "editorSetting": {
-          "language": "scala"
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -71,20 +79,34 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.rdf.spark.stats._\n\npropertyDist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[11] at map at \u003cconsole\u003e:45\n"
+            "data": "import net.sansa_stack.rdf.spark.stats._\npropertyDist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[6] at map at \u003cconsole\u003e:38\n"
           },
           {
             "type": "TABLE",
-            "data": "Property Distribution\tFrequency\n label\t7183\ncreator\t1\ncreated\t1\ntitle\t1\ndescription\t1\nBFO_0000050\t7199\ngeo\t7183\nrights\t1\nnameOfficialEN\t69\nsource\t1\nrights\t1\nseeAlso\t3787\ntype\t9103\npopulation\t7183\n"
+            "data": "Property Distribution\tFrequency\n seeAlso\t3787\ntype\t9103\ncreated\t1\ntitle\t1\ngeo\t7183\nnameOfficialEN\t69\nrights\t1\npopulation\t7183\ncreator\t1\ndescription\t1\nlabel\t7183\nrights\t1\nBFO_0000050\t7199\nsource\t1\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d0",
+            "http://205386a76a9c:4040/jobs/job?id\u003d1",
+            "http://205386a76a9c:4040/jobs/job?id\u003d2"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1509621997083_-1710050944",
       "id": "20171102-112637_201407605",
-      "dateCreated": "Nov 2, 2017 11:26:37 AM",
-      "dateStarted": "Apr 30, 2018 1:54:11 PM",
-      "dateFinished": "Apr 30, 2018 1:54:22 PM",
+      "dateCreated": "2017-11-02 11:26:37.000",
+      "dateStarted": "2018-12-17 12:53:35.392",
+      "dateFinished": "2018-12-17 12:53:46.584",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -92,18 +114,22 @@
       "title": "3. Infer new Knowledge",
       "text": "import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport java.net.{ URI \u003d\u003e JavaURI }\n\nval RDFGraph \u003d RDFGraphLoader.loadFromDisk(spark, JavaURI.create(input), 4)\nval reasoner \u003d new ForwardRuleReasonerRDFS(spark.sparkContext)\nval inferredGraph \u003d reasoner.apply(RDFGraph)\ninferredGraph.cache()",
       "user": "anonymous",
-      "dateUpdated": "Apr 30, 2018 1:54:31 PM",
+      "dateUpdated": "2018-12-17 12:54:05.052",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
         "title": true,
         "tableHide": true,
-        "editorHide": false
+        "editorHide": false,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -114,24 +140,45 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\n\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\n\nimport java.net.{URI\u003d\u003eJavaURI}\n\nRDFGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[15] at map at RDFGraphLoader.scala:46)\n\nreasoner: net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS \u003d net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS@62f59222\n\ninferredGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[52] at distinct at ForwardRuleReasonerRDFS.scala:217)\n\nres2: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[52] at distinct at ForwardRuleReasonerRDFS.scala:217)\n"
+            "data": "import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport java.net.{URI\u003d\u003eJavaURI}\nRDFGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[9] at mapPartitions at NTripleReader.scala:140)\nreasoner: net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS \u003d net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS@7fd3723e\ninferredGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[46] at distinct at ForwardRuleReasonerRDFS.scala:223)\nres7: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[46] at distinct at ForwardRuleReasonerRDFS.scala:223)\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d3",
+            "http://205386a76a9c:4040/jobs/job?id\u003d4",
+            "http://205386a76a9c:4040/jobs/job?id\u003d5",
+            "http://205386a76a9c:4040/jobs/job?id\u003d6",
+            "http://205386a76a9c:4040/jobs/job?id\u003d7",
+            "http://205386a76a9c:4040/jobs/job?id\u003d8",
+            "http://205386a76a9c:4040/jobs/job?id\u003d9",
+            "http://205386a76a9c:4040/jobs/job?id\u003d10",
+            "http://205386a76a9c:4040/jobs/job?id\u003d11",
+            "http://205386a76a9c:4040/jobs/job?id\u003d12"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1509622028081_1197324639",
       "id": "20171102-112708_848247359",
-      "dateCreated": "Nov 2, 2017 11:27:08 AM",
-      "dateStarted": "Apr 30, 2018 1:54:31 PM",
-      "dateFinished": "Apr 30, 2018 1:54:38 PM",
+      "dateCreated": "2017-11-02 11:27:08.000",
+      "dateStarted": "2018-12-17 12:54:05.083",
+      "dateFinished": "2018-12-17 12:54:13.913",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "3.1 Compute statistics (i.e Class Distribution to the original graph)",
-      "text": "val rdf_stats_class_dist \u003d graph.statsClassUsageCount()\n                           .map(f \u003d\u003e f._1.toString.substring(f._1.toString.lastIndexOf(\"/\") + 1)+ \"\\t\" + f._2)\nprintln(\"%table Class Distribution\\tFrequency\\n \" + rdf_stats_class_dist.take(100).mkString(\"\\n\"))",
+      "text": "val rdf_stats_class_dist \u003d graph.statsClassUsageCount().\n                           map(f \u003d\u003e f._1.toString.substring(f._1.toString.lastIndexOf(\"/\") + 1)+ \"\\t\" + f._2)\nprintln(\"%table Class Distribution\\tFrequency\\n \" + rdf_stats_class_dist.take(100).mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "Apr 30, 2018 2:01:46 PM",
+      "dateUpdated": "2018-12-17 13:10:24.254",
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -140,7 +187,31 @@
             "graph": {
               "mode": "multiBarChart",
               "height": 300.0,
-              "optionOpen": false
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "Class Distribution",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "Frequency",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
             },
             "helium": {}
           }
@@ -149,7 +220,8 @@
           "language": "scala"
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -160,20 +232,34 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nrdf_stats_class_dist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[156] at map at \u003cconsole\u003e:60\n"
+            "data": "rdf_stats_class_dist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[51] at map at \u003cconsole\u003e:41\n"
           },
           {
             "type": "TABLE",
-            "data": "Class Distribution\tFrequency\n \n"
+            "data": "Class Distribution\tFrequency\n Dataset\t1\nfabio#WikipediaEntry\t1903\ncore#StateOrProvince\t16\ncore#PopulatedPlace\t7183\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d13",
+            "http://205386a76a9c:4040/jobs/job?id\u003d14",
+            "http://205386a76a9c:4040/jobs/job?id\u003d15"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1509622058566_569460406",
       "id": "20171102-112738_1999790335",
-      "dateCreated": "Nov 2, 2017 11:27:38 AM",
-      "dateStarted": "Apr 30, 2018 2:01:46 PM",
-      "dateFinished": "Apr 30, 2018 2:01:48 PM",
+      "dateCreated": "2017-11-02 11:27:38.000",
+      "dateStarted": "2018-12-17 12:54:16.547",
+      "dateFinished": "2018-12-17 12:54:19.100",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -181,7 +267,7 @@
       "title": "3.2 Compute statistics (i.e size of the inferred graph)",
       "text": "val O_graph \u003d \"original graph\" + \"\\t\" + graph.count \nval I_Graph \u003d \"\\n inferred graph\" + \"\\t\" + inferredGraph.size\n\nprintln(\"%table graph\\t size\\n \" + O_graph.union(I_Graph))\n\n//val I_Graph \u003d \"inferred graph\" + \"\\t\" + inferredGraph.size\n//println(\"%table graph\\t size\\n \" + I_Graph)",
       "user": "anonymous",
-      "dateUpdated": "Apr 30, 2018 2:00:45 PM",
+      "dateUpdated": "2018-12-17 13:10:24.312",
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -190,7 +276,31 @@
             "graph": {
               "mode": "multiBarChart",
               "height": 300.0,
-              "optionOpen": false
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "graph",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": " size",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
             },
             "helium": {}
           }
@@ -201,7 +311,8 @@
         "editorMode": "ace/mode/scala",
         "title": true,
         "tableHide": false,
-        "editorHide": false
+        "editorHide": false,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -212,7 +323,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nO_graph: String \u003d original graph\t41714\n\n\n\nI_Graph: String \u003d\n\"\n inferred graph\t52709\"\n"
+            "data": "O_graph: String \u003d original graph\t41714\nI_Graph: String \u003d\n\"\n inferred graph\t52709\"\n"
           },
           {
             "type": "TABLE",
@@ -220,30 +331,47 @@
           }
         ]
       },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d16",
+            "http://205386a76a9c:4040/jobs/job?id\u003d17"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "apps": [],
       "jobName": "paragraph_1509622096514_561642835",
       "id": "20171102-112816_1291571260",
-      "dateCreated": "Nov 2, 2017 11:28:16 AM",
-      "dateStarted": "Apr 30, 2018 2:00:45 PM",
-      "dateFinished": "Apr 30, 2018 2:00:53 PM",
+      "dateCreated": "2017-11-02 11:28:16.000",
+      "dateStarted": "2018-12-17 12:54:23.158",
+      "dateFinished": "2018-12-17 12:54:35.016",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "4. Compute resource ranking and get top 50 POIs.",
-      "text": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model.graph._\n\nval graph_rep \u003dgraph.asGraph()\n   // Create a subgraph based on the vertices connected by geoproperty.\n val geoSubgraph \u003d\n    graph_rep.subgraph(t \u003d\u003e t.attr \u003d\u003d\"http://www.w3.org/2006/vcard/ns#geo\")\n\nval pagerank \u003d geoSubgraph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(geoSubgraph.vertices)\n     .map({ case (k, (r, v)) \u003d\u003e (r, v, k) })\n     .sortBy(50 - _._1)\n\ncase class POI(geoloc:Long, rank:Double, lat: String, lon: String)\n val POIs \u003d report.filter(f\u003d\u003ef._2.isLiteral()\u0026\u0026 f._2.getLiteralLexicalForm().startsWith(\"geo:\")).map { f \u003d\u003e\n    val geoloc \u003d f._3\n    val rank \u003d f._1\n    val geo \u003d f._2.getLiteralLexicalForm.split(\"[:,]+\")\n    val lat \u003d geo(1)\n    val lon \u003d geo(2)\n\n    POI(geoloc, rank, lat, lon)\n\n  }.take(50)\n\nz.angularBind(\"pois\", POIs) // this is what sends the data to the map\n\nval reportPOI \u003d POIs.map(f \u003d\u003e f.geoloc + \"\\t\" + f.lat+\", \" + f.lon + \"\\t\" + f.rank)\nprintln(\"%table geoloc \\t geocord \\t rank \\n \" + reportPOI.mkString(\"\\n\"))",
+      "text": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model.graph._\n\nval graph_rep \u003dgraph.asGraph()\n   // Create a subgraph based on the vertices connected by geoproperty.\n val geoSubgraph \u003d\n    graph_rep.subgraph(t \u003d\u003e t.attr \u003d\u003d\"http://www.w3.org/2006/vcard/ns#geo\")\n\nval pagerank \u003d geoSubgraph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(geoSubgraph.vertices).\n      map({ case (k, (r, v)) \u003d\u003e (r, v, k) }).\n      sortBy(50 - _._1)\n\ncase class POI(geoloc:Long, rank:Double, lat: String, lon: String)\n val POIs \u003d report.filter(f\u003d\u003ef._2.isLiteral()\u0026\u0026 f._2.getLiteralLexicalForm().startsWith(\"geo:\")).map { f \u003d\u003e\n    val geoloc \u003d f._3\n    val rank \u003d f._1\n    val geo \u003d f._2.getLiteralLexicalForm.split(\"[:,]+\")\n    val lat \u003d geo(1)\n    val lon \u003d geo(2)\n\n    POI(geoloc, rank, lat, lon)\n\n  }.take(50)\n\nz.angularBind(\"pois\", POIs) // this is what sends the data to the map\n\nval reportPOI \u003d POIs.map(f \u003d\u003e f.geoloc + \"\\t\" + f.lat+\", \" + f.lon + \"\\t\" + f.rank)\nprintln(\"%table geoloc \\t geocord \\t rank \\n \" + reportPOI.mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "Mar 26, 2018 12:49:19 PM",
+      "dateUpdated": "2018-12-17 12:54:38.055",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
-          "language": "scala"
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
         "title": true,
-        "tableHide": true
+        "tableHide": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -254,16 +382,32 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport org.apache.spark.graphx.Graph\n\nimport net.sansa_stack.rdf.spark.model.graph._\n\ngraph_rep: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@44054402\n\ngeoSubgraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@6b7470ad\n\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[137] at RDD at VertexRDD.scala:57\n\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[148] at sortBy at \u003cconsole\u003e:53\n\ndefined class POI\nPOIs: Array[POI] \u003d Array(POI(7608,0.15,48.8726,11.07445), POI(6400,0.15,48.15,12), POI(29856,0.15,48.38824,9.29345), POI(24360,0.15,52.25,8.48333), POI(7136,0.15,50.1167,7.8), POI(9384,0.15,52.63353,13.32564), POI(5136,0.15,48.36631,8.80365), POI(6840,0.15,49.9885,10.8485), POI(9336,0.15,50.7833,7.83333), POI(10176,0.15,50.1833,10.3667), POI(24888,0.15,48.0833,10.7333), POI(30688,0.15,51.6833,6.86667), POI(11552,0.15,53,7.95), POI(6648,0.15,53.7,12.9), POI(30784,0.15,51.37997,7.70321), POI(30728,0.15,48.5,13.15), POI(11904,0.15,48.1833,8.41667), POI(3296,0.15,50.6,8.56667), POI(3568,0.15,47.65303,7.8277), POI(23752,0.15,51.3167,7.62917), POI(15680,0.15,51.6833,14.4167), POI(16904,0.15,52.0887,9.6312), POI(26928,0.15,52.12205,10.37607), POI(24696,0.15,48,10.2167), POI(1800,0.15,50.85,10....reportPOI: Array[String] \u003d Array(7608\t48.8726, 11.07445\t0.15, 6400\t48.15, 12\t0.15, 29856\t48.38824, 9.29345\t0.15, 24360\t52.25, 8.48333\t0.15, 7136\t50.1167, 7.8\t0.15, 9384\t52.63353, 13.32564\t0.15, 5136\t48.36631, 8.80365\t0.15, 6840\t49.9885, 10.8485\t0.15, 9336\t50.7833, 7.83333\t0.15, 10176\t50.1833, 10.3667\t0.15, 24888\t48.0833, 10.7333\t0.15, 30688\t51.6833, 6.86667\t0.15, 11552\t53, 7.95\t0.15, 6648\t53.7, 12.9\t0.15, 30784\t51.37997, 7.70321\t0.15, 30728\t48.5, 13.15\t0.15, 11904\t48.1833, 8.41667\t0.15, 3296\t50.6, 8.56667\t0.15, 3568\t47.65303, 7.8277\t0.15, 23752\t51.3167, 7.62917\t0.15, 15680\t51.6833, 14.4167\t0.15, 16904\t52.0887, 9.6312\t0.15, 26928\t52.12205, 10.37607\t0.15, 24696\t48, 10.2167\t0.15, 1800\t50.85, 10.2833\t0.15, 28328\t52.2316, 11.00176\t0.15, 11480\t53.5333, 9.43333\t0.15, 29600\t53.16118, 12.48287\t0...%table geoloc \t geocord \t rank \n 7608\t48.8726, 11.07445\t0.15\n6400\t48.15, 12\t0.15\n29856\t48.38824, 9.29345\t0.15\n24360\t52.25, 8.48333\t0.15\n7136\t50.1167, 7.8\t0.15\n9384\t52.63353, 13.32564\t0.15\n5136\t48.36631, 8.80365\t0.15\n6840\t49.9885, 10.8485\t0.15\n9336\t50.7833, 7.83333\t0.15\n10176\t50.1833, 10.3667\t0.15\n24888\t48.0833, 10.7333\t0.15\n30688\t51.6833, 6.86667\t0.15\n11552\t53, 7.95\t0.15\n6648\t53.7, 12.9\t0.15\n30784\t51.37997, 7.70321\t0.15\n30728\t48.5, 13.15\t0.15\n11904\t48.1833, 8.41667\t0.15\n3296\t50.6, 8.56667\t0.15\n3568\t47.65303, 7.8277\t0.15\n23752\t51.3167, 7.62917\t0.15\n15680\t51.6833, 14.4167\t0.15\n16904\t52.0887, 9.6312\t0.15\n26928\t52.12205, 10.37607\t0.15\n24696\t48, 10.2167\t0.15\n1800\t50.85, 10.2833\t0.15\n28328\t52.2316, 11.00176\t0.15\n11480\t53.5333, 9.43333\t0.15\n29600\t53.16118, 12.48287\t0.15\n13160\t51, 12.0167\t0.15\n28184\t47.7333, 8.43333\t0.15\n19448\t52.5667, 8.8\t0.15\n4688\t48.4, 7.76667\t0.15\n23928\t52.7411, 13.4568\t0.15\n27328\t52.95, 8.01667\t0.15\n8048\t50.0167, 7.11667\t0.15\n29152\t53.6833, 14.0833\t0.15\n25720\t48.2333, 8.55\t0.15\n8512\t51.1833, 11.4167\t0.15\n29640\t50.75, 12.65\t0.15\n26696\t50.9791, 13.5236\t0.15\n26376\t47.7804, 12.3209\t0.15\n16072\t54.1037, 11.8764\t0.15\n26464\t49.4503, 8.67472\t0.15\n13400\t50.15, 7.71667\t0.15\n21656\t48.186, 11.8693\t0.15\n29992\t48.21352, 9.0263\t0.15\n21296\t47.6137, 9.7708\t0.15\n8896\t48.25, 12.5833\t0.15\n30608\t49.3953, 8.44028\t0.15\n25968\t50.55, 7.1\t0.15\n"
+            "data": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model.graph._\ngraph_rep: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@4dff1fbc\ngeoSubgraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@475ec47c\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[133] at RDD at VertexRDD.scala:57\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[148] at sortBy at \u003cconsole\u003e:52\ndefined class POI\nPOIs: Array[POI] \u003d Array(POI(22720,0.9999999999999859,49.9138,7.0181), POI(11440,0.9999999999999859,52.60763,8.3663), POI(6440,0.9999999999999859,49.9,6.88333), POI(19800,0.9999999999999859,49.9239,9.80167), POI(23000,0.9999999999999859,48.38824,9.29345), POI(1280,0.9999999999999859,51.1167,14.1), POI(25480,0.9999999999999859,49.7914,9.26583), POI(30640,0.9999999999999859,51.1,13.03333), POI(24520,0.9999999999999859,54.30242,13.09284), POI(2040,0.9999999999999859,47.75,9.65), POI(2360,0.9999999999999859,52.4667,12.7333), POI(29600,0.9999999999999859,49.4667,7.58333), POI(25920,0.9999999999999859,50.5833,7.38333), POI(10720,0.9999999999999859,53.8676,11.68), POI(30560,0.9999999999999859,48.1833,12.4333), POI(25040,0.9999999999999859,54.5177,9.3848), POI(32240,0.9999999999999859,54.3833,9...reportPOI: Array[String] \u003d Array(22720\t49.9138, 7.0181\t0.9999999999999859, 11440\t52.60763, 8.3663\t0.9999999999999859, 6440\t49.9, 6.88333\t0.9999999999999859, 19800\t49.9239, 9.80167\t0.9999999999999859, 23000\t48.38824, 9.29345\t0.9999999999999859, 1280\t51.1167, 14.1\t0.9999999999999859, 25480\t49.7914, 9.26583\t0.9999999999999859, 30640\t51.1, 13.03333\t0.9999999999999859, 24520\t54.30242, 13.09284\t0.9999999999999859, 2040\t47.75, 9.65\t0.9999999999999859, 2360\t52.4667, 12.7333\t0.9999999999999859, 29600\t49.4667, 7.58333\t0.9999999999999859, 25920\t50.5833, 7.38333\t0.9999999999999859, 10720\t53.8676, 11.68\t0.9999999999999859, 30560\t48.1833, 12.4333\t0.9999999999999859, 25040\t54.5177, 9.3848\t0.9999999999999859, 32240\t54.3833, 9.6\t0.9999999999999859, 6760\t48.2333, 8.55\t0.9999999999999859, 14160\t52.3752, 8...%table geoloc \t geocord \t rank \n 22720\t49.9138, 7.0181\t0.9999999999999859\n11440\t52.60763, 8.3663\t0.9999999999999859\n6440\t49.9, 6.88333\t0.9999999999999859\n19800\t49.9239, 9.80167\t0.9999999999999859\n23000\t48.38824, 9.29345\t0.9999999999999859\n1280\t51.1167, 14.1\t0.9999999999999859\n25480\t49.7914, 9.26583\t0.9999999999999859\n30640\t51.1, 13.03333\t0.9999999999999859\n24520\t54.30242, 13.09284\t0.9999999999999859\n2040\t47.75, 9.65\t0.9999999999999859\n2360\t52.4667, 12.7333\t0.9999999999999859\n29600\t49.4667, 7.58333\t0.9999999999999859\n25920\t50.5833, 7.38333\t0.9999999999999859\n10720\t53.8676, 11.68\t0.9999999999999859\n30560\t48.1833, 12.4333\t0.9999999999999859\n25040\t54.5177, 9.3848\t0.9999999999999859\n32240\t54.3833, 9.6\t0.9999999999999859\n6760\t48.2333, 8.55\t0.9999999999999859\n14160\t52.3752, 8.9426\t0.9999999999999859\n22680\t53.4167, 9.61667\t0.9999999999999859\n10560\t54.4333, 12.6833\t0.9999999999999859\n10400\t50.3, 11.2667\t0.9999999999999859\n26000\t48.3167, 13.0833\t0.9999999999999859\n30600\t51.6833, 14.4167\t0.9999999999999859\n30120\t51.89235, 10.7101\t0.9999999999999859\n27480\t50.3167, 10.3667\t0.9999999999999859\n12080\t50.4167, 12.9833\t0.9999999999999859\n400\t49.38972, 9.21056\t0.9999999999999859\n120\t50.3875, 11.0625\t0.9999999999999859\n11160\t54.3734, 10.1278\t0.9999999999999859\n25560\t51.0167, 14.75\t0.9999999999999859\n22640\t49.68976, 6.71239\t0.9999999999999859\n8920\t50.6333, 10.1667\t0.9999999999999859\n14640\t51.4662, 8.31078\t0.9999999999999859\n3280\t53.2167, 14\t0.9999999999999859\n21560\t48.8, 11.1\t0.9999999999999859\n31120\t53.98734, 11.1973\t0.9999999999999859\n11760\t48.40053, 10.59583\t0.9999999999999859\n31840\t54.0833, 9.3\t0.9999999999999859\n16280\t49.2028, 7.9659\t0.9999999999999859\n19000\t49.9306, 8.15556\t0.9999999999999859\n15440\t47.85, 9.75\t0.9999999999999859\n18520\t49.8667, 10.4167\t0.9999999999999859\n1720\t48.25, 12.5833\t0.9999999999999859\n9080\t53.5424, 10.1729\t0.9999999999999859\n23080\t50.93835, 6.95428\t0.9999999999999859\n12800\t50.78333, 12.86667\t0.9999999999999859\n8480\t51.4667, 10.2333\t0.9999999999999859\n19520\t49.35, 7.68333\t0.9999999999999859\n5200\t48.2, 12.2833\t0.9999999999999859\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d18",
+            "http://205386a76a9c:4040/jobs/job?id\u003d19",
+            "http://205386a76a9c:4040/jobs/job?id\u003d20",
+            "http://205386a76a9c:4040/jobs/job?id\u003d21",
+            "http://205386a76a9c:4040/jobs/job?id\u003d22"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1509622142083_-934214916",
       "id": "20171102-112902_1189673617",
-      "dateCreated": "Nov 2, 2017 11:29:02 AM",
-      "dateStarted": "Mar 26, 2018 12:49:19 PM",
-      "dateFinished": "Mar 26, 2018 12:49:36 PM",
+      "dateCreated": "2017-11-02 11:29:02.000",
+      "dateStarted": "2018-12-17 12:54:38.072",
+      "dateFinished": "2018-12-17 12:55:19.951",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -271,7 +415,7 @@
       "title": "5.Show POI on the map",
       "text": "%angular\n\n\u003clink rel\u003d\"stylesheet\" href\u003d\"https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.css\" /\u003e\n\u003cdiv id\u003d\"map\" style\u003d\"height: 800px; width: 100%\"\u003e\u003c/div\u003e\n\n\u003cscript type\u003d\"text/javascript\"\u003e\nfunction initMap() {\n    var map \u003d L.map(\u0027map\u0027).setView([30.00, -30.00], 3);\n\n    L.tileLayer(\u0027http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\u0027, {\n        attribution: \u0027Map data \u0026copy; \u003ca href\u003d\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e contributors\u0027,\n        maxZoom: 12,\n        minZoom: 3\n    }).addTo(map);\n\n    var geoMarkers \u003d L.layerGroup().addTo(map);\n\n    var el \u003d angular.element($(\u0027#map\u0027).parent(\u0027.ng-scope\u0027));\n    angular.element(el).ready(function() {\n        window.locationWatcher \u003d el.scope().compiledScope.$watch(\u0027pois\u0027, function(newValue, oldValue) {\n            // geoMarkers.clearLayers(); -- if you want to only show new data clear the layer first\n            angular.forEach(newValue, function(poi) {\n                var marker \u003d L.marker([ poi.lat, poi.lon ])\n                  .bindPopup(poi.geoloc + \": \" + poi.rank)\n                  .addTo(geoMarkers);\n            });\n        })\n    });\n}\n\nif (window.locationWatcher) {\n    // clear existing watcher otherwise we\u0027ll have duplicates\n    window.locationWatcher();\n}\n\n// ensure we only load the script once, seems to cause issues otherwise\nif (window.L) {\n    initMap();\n} else {\n    console.log(\u0027Loading Leaflet library\u0027);\n    var sc \u003d document.createElement(\u0027script\u0027);\n    sc.type \u003d \u0027text/javascript\u0027;\n    sc.src \u003d \u0027https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.js\u0027;\n    sc.onload \u003d initMap;\n    sc.onerror \u003d function(err) { alert(err); }\n    document.getElementsByTagName(\u0027head\u0027)[0].appendChild(sc);\n}\n\u003c/script\u003e\n",
       "user": "anonymous",
-      "dateUpdated": "Nov 2, 2017 11:31:47 AM",
+      "dateUpdated": "2017-11-02 11:31:47.000",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -301,36 +445,330 @@
       "apps": [],
       "jobName": "paragraph_1509622213641_-1187071564",
       "id": "20171102-113013_1400142385",
-      "dateCreated": "Nov 2, 2017 11:30:13 AM",
-      "dateStarted": "Nov 2, 2017 11:30:50 AM",
-      "dateFinished": "Nov 2, 2017 11:30:51 AM",
+      "dateCreated": "2017-11-02 11:30:13.000",
+      "dateStarted": "2017-11-02 11:30:50.000",
+      "dateFinished": "2017-11-02 11:30:51.000",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     }
   ],
   "name": "Point of Interest Example",
   "id": "2CWFMFCH1",
+  "noteParams": {},
+  "noteForms": {},
   "angularObjects": {
-    "2DBDQB7PX:shared_process": [],
-    "2DBZJ737T:shared_process": [],
-    "2DBCSG3S2:shared_process": [],
-    "2DBH2T277:shared_process": [],
-    "2DEYQSXHV:shared_process": [],
-    "2DD2J6EF2:shared_process": [],
-    "2DD6WZ6A8:shared_process": [],
-    "2DD4HCCA1:shared_process": [],
-    "2DDFHGYKD:shared_process": [],
-    "2DDYG49H7:shared_process": [],
-    "2DBKD23WF:shared_process": [],
-    "2DD9SRPFY:shared_process": [],
-    "2DCKZBJNQ:shared_process": [],
-    "2DC2AKS5V:shared_process": [],
-    "2DFATPKWS:shared_process": [],
-    "2DF421H8E:shared_process": [],
-    "2DEXN15NV:shared_process": [],
-    "2DEMH9A9R:shared_process": [],
-    "2DBW7GZKB:shared_process": []
+    "angular:shared_process": [],
+    "spark:shared_process": [
+      {
+        "name": "pois",
+        "object": [
+          {
+            "geoloc": 22720.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.9138",
+            "lon": "7.0181"
+          },
+          {
+            "geoloc": 11440.0,
+            "rank": 0.9999999999999859,
+            "lat": "52.60763",
+            "lon": "8.3663"
+          },
+          {
+            "geoloc": 6440.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.9",
+            "lon": "6.88333"
+          },
+          {
+            "geoloc": 19800.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.9239",
+            "lon": "9.80167"
+          },
+          {
+            "geoloc": 23000.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.38824",
+            "lon": "9.29345"
+          },
+          {
+            "geoloc": 1280.0,
+            "rank": 0.9999999999999859,
+            "lat": "51.1167",
+            "lon": "14.1"
+          },
+          {
+            "geoloc": 25480.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.7914",
+            "lon": "9.26583"
+          },
+          {
+            "geoloc": 30640.0,
+            "rank": 0.9999999999999859,
+            "lat": "51.1",
+            "lon": "13.03333"
+          },
+          {
+            "geoloc": 24520.0,
+            "rank": 0.9999999999999859,
+            "lat": "54.30242",
+            "lon": "13.09284"
+          },
+          {
+            "geoloc": 2040.0,
+            "rank": 0.9999999999999859,
+            "lat": "47.75",
+            "lon": "9.65"
+          },
+          {
+            "geoloc": 2360.0,
+            "rank": 0.9999999999999859,
+            "lat": "52.4667",
+            "lon": "12.7333"
+          },
+          {
+            "geoloc": 29600.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.4667",
+            "lon": "7.58333"
+          },
+          {
+            "geoloc": 25920.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.5833",
+            "lon": "7.38333"
+          },
+          {
+            "geoloc": 10720.0,
+            "rank": 0.9999999999999859,
+            "lat": "53.8676",
+            "lon": "11.68"
+          },
+          {
+            "geoloc": 30560.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.1833",
+            "lon": "12.4333"
+          },
+          {
+            "geoloc": 25040.0,
+            "rank": 0.9999999999999859,
+            "lat": "54.5177",
+            "lon": "9.3848"
+          },
+          {
+            "geoloc": 32240.0,
+            "rank": 0.9999999999999859,
+            "lat": "54.3833",
+            "lon": "9.6"
+          },
+          {
+            "geoloc": 6760.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.2333",
+            "lon": "8.55"
+          },
+          {
+            "geoloc": 14160.0,
+            "rank": 0.9999999999999859,
+            "lat": "52.3752",
+            "lon": "8.9426"
+          },
+          {
+            "geoloc": 22680.0,
+            "rank": 0.9999999999999859,
+            "lat": "53.4167",
+            "lon": "9.61667"
+          },
+          {
+            "geoloc": 10560.0,
+            "rank": 0.9999999999999859,
+            "lat": "54.4333",
+            "lon": "12.6833"
+          },
+          {
+            "geoloc": 10400.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.3",
+            "lon": "11.2667"
+          },
+          {
+            "geoloc": 26000.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.3167",
+            "lon": "13.0833"
+          },
+          {
+            "geoloc": 30600.0,
+            "rank": 0.9999999999999859,
+            "lat": "51.6833",
+            "lon": "14.4167"
+          },
+          {
+            "geoloc": 30120.0,
+            "rank": 0.9999999999999859,
+            "lat": "51.89235",
+            "lon": "10.7101"
+          },
+          {
+            "geoloc": 27480.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.3167",
+            "lon": "10.3667"
+          },
+          {
+            "geoloc": 12080.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.4167",
+            "lon": "12.9833"
+          },
+          {
+            "geoloc": 400.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.38972",
+            "lon": "9.21056"
+          },
+          {
+            "geoloc": 120.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.3875",
+            "lon": "11.0625"
+          },
+          {
+            "geoloc": 11160.0,
+            "rank": 0.9999999999999859,
+            "lat": "54.3734",
+            "lon": "10.1278"
+          },
+          {
+            "geoloc": 25560.0,
+            "rank": 0.9999999999999859,
+            "lat": "51.0167",
+            "lon": "14.75"
+          },
+          {
+            "geoloc": 22640.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.68976",
+            "lon": "6.71239"
+          },
+          {
+            "geoloc": 8920.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.6333",
+            "lon": "10.1667"
+          },
+          {
+            "geoloc": 14640.0,
+            "rank": 0.9999999999999859,
+            "lat": "51.4662",
+            "lon": "8.31078"
+          },
+          {
+            "geoloc": 3280.0,
+            "rank": 0.9999999999999859,
+            "lat": "53.2167",
+            "lon": "14"
+          },
+          {
+            "geoloc": 21560.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.8",
+            "lon": "11.1"
+          },
+          {
+            "geoloc": 31120.0,
+            "rank": 0.9999999999999859,
+            "lat": "53.98734",
+            "lon": "11.1973"
+          },
+          {
+            "geoloc": 11760.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.40053",
+            "lon": "10.59583"
+          },
+          {
+            "geoloc": 31840.0,
+            "rank": 0.9999999999999859,
+            "lat": "54.0833",
+            "lon": "9.3"
+          },
+          {
+            "geoloc": 16280.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.2028",
+            "lon": "7.9659"
+          },
+          {
+            "geoloc": 19000.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.9306",
+            "lon": "8.15556"
+          },
+          {
+            "geoloc": 15440.0,
+            "rank": 0.9999999999999859,
+            "lat": "47.85",
+            "lon": "9.75"
+          },
+          {
+            "geoloc": 18520.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.8667",
+            "lon": "10.4167"
+          },
+          {
+            "geoloc": 1720.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.25",
+            "lon": "12.5833"
+          },
+          {
+            "geoloc": 9080.0,
+            "rank": 0.9999999999999859,
+            "lat": "53.5424",
+            "lon": "10.1729"
+          },
+          {
+            "geoloc": 23080.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.93835",
+            "lon": "6.95428"
+          },
+          {
+            "geoloc": 12800.0,
+            "rank": 0.9999999999999859,
+            "lat": "50.78333",
+            "lon": "12.86667"
+          },
+          {
+            "geoloc": 8480.0,
+            "rank": 0.9999999999999859,
+            "lat": "51.4667",
+            "lon": "10.2333"
+          },
+          {
+            "geoloc": 19520.0,
+            "rank": 0.9999999999999859,
+            "lat": "49.35",
+            "lon": "7.68333"
+          },
+          {
+            "geoloc": 5200.0,
+            "rank": 0.9999999999999859,
+            "lat": "48.2",
+            "lon": "12.2833"
+          }
+        ],
+        "noteId": "2CWFMFCH1"
+      }
+    ]
   },
-  "config": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
   "info": {}
 }
