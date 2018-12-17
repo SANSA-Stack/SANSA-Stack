@@ -1,10 +1,10 @@
 {
   "paragraphs": [
     {
-      "title": "Spark \u0027rdfs\u0027 Reasoning example",
+      "title": "Spark \u0027rdfs\u0027 Reasoning example on triples",
       "text": "import java.io.File\nimport java.net.URI\n\nimport net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport net.sansa_stack.inference.spark.data.writer.RDFGraphWriter\nimport net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\n\n// load triples from disk\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval output \u003d \"hdfs://namenode:8020/data/output/\"\nval argprofile \u003d \"rdfs\"\n\nval profile \u003d argprofile match {\n      case \"rdfs\"        \u003d\u003e ReasoningProfile.RDFS\n      case \"rdfs-simple\" \u003d\u003e ReasoningProfile.RDFS_SIMPLE\n      case \"owl-horst\"   \u003d\u003e ReasoningProfile.OWL_HORST\n      case \"transitive\"  \u003d\u003e ReasoningProfile.TRANSITIVE\n\n}\n\n// the degree of parallelism\nval parallelism \u003d 4\n\n// load triples from disk\nval graph \u003d RDFGraphLoader.loadFromDisk(spark, URI.create(input), parallelism)\nprintln(s\"|G|\u003d${graph.size()}\")\n\n// create reasoner\nval reasoner \u003d profile match {\n   case TRANSITIVE \u003d\u003e new TransitiveReasoner(spark.sparkContext, parallelism)\n   case RDFS       \u003d\u003e new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)\n   case RDFS_SIMPLE \u003d\u003e\n   var r \u003d new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism) //.level.+(RDFSLevel.SIMPLE)\n     r.level \u003d RDFSLevel.SIMPLE\n     r\n   case OWL_HORST \u003d\u003e new ForwardRuleReasonerOWLHorst(spark.sparkContext)\n}\n\n// compute inferred graph\nval inferredGraph \u003d reasoner.apply(graph)\nprintln(s\"|G_inferred|\u003d${inferredGraph.size()}\")\n\n// write triples to disk\n//RDFGraphWriter.writeToDisk(inferredGraph, output)\n\nval O_graph \u003d \"original graph\" + \"\\t\" + graph.size \nval I_Graph \u003d \"\\n inferred graph\" + \"\\t\" + inferredGraph.size\n\nprintln(\"%table graph\\t size\\n \" + O_graph.union(I_Graph))",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 13:09:04.664",
+      "dateUpdated": "2018-12-17 13:12:08.326",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -44,7 +44,9 @@
         },
         "editorSetting": {
           "language": "scala",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
         "title": true,
@@ -78,6 +80,145 @@
       "progressUpdateIntervalMs": 500
     },
     {
+      "title": "Spark \u0027rdfs\u0027 Reasoning example on axioms",
+      "text": "import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.forwardchaining.axioms.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner }\nimport net.sansa_stack.owl.spark.owl._\nimport org.apache.spark.rdd.RDD\nimport org.semanticweb.owlapi.model.OWLAxiom\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\n// load axioms from disk\nvar owlAxioms \u003d spark.owl(Syntax.FUNCTIONAL)(input)\nprintln(s\"|G| \u003d ${owlAxioms.count()}\")\n\n// the degree of parallelism\nval parallelism \u003d 4\n\n// create reasoner and compute inferred graph\nval inferredGraph_axioms \u003d new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)(owlAxioms)\n\nprintln(s\"|G_inf| \u003d ${inferredGraph_axioms.count()}\")\n\n\nval O_graph_axioms \u003d \"original graph\" + \"\\t\" + owlAxioms.count \nval I_axioms \u003d \"\\n inferred axioms\" + \"\\t\" + inferredGraph_axioms.count\nval I_Graph_axioms \u003d \"\\n inferred graph\" + \"\\t\" + (owlAxioms.count  + inferredGraph_axioms.count)\n\nprintln(\"%table graph\\t size\\n \" + O_graph_axioms.union(I_axioms).union(I_Graph_axioms))\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-12-17 13:24:12.284",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "1": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "graph": "string",
+                      " size": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "graph",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": " size",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.forwardchaining.axioms.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\nimport net.sansa_stack.owl.spark.owl._\nimport org.apache.spark.rdd.RDD\nimport org.semanticweb.owlapi.model.OWLAxiom\ninput: String \u003d hdfs://namenode:8020/data/ont_functional.owl\nowlAxioms: net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD \u003d MapPartitionsRDD[826] at filter at FunctionalSyntaxOWLAxiomsRDDBuilder.scala:26\n|G| \u003d 67\nparallelism: Int \u003d 4\nFinished with 4 inferred axioms\ninferredGraph_axioms: org.apache.spark.rdd.RDD[org.semanticweb.owlapi.model.OWLAxiom] \u003d MapPartitionsRDD[950] at subtract at ForwardRuleReasonerRDFS.scala:275\n|G_inf| \u003d 4\nO_graph_axioms: String \u003d original graph\t67\nI_axioms: String \u003d\n\"\n inferred axioms\t4\"\nI_Graph_axioms: String \u003d\n\"\n inferred graph\t71\"\n"
+          },
+          {
+            "type": "TABLE",
+            "data": "graph\t size\n original graph\t67\n inferred axioms\t4\n inferred graph\t71\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d170",
+            "http://205386a76a9c:4040/jobs/job?id\u003d171",
+            "http://205386a76a9c:4040/jobs/job?id\u003d172",
+            "http://205386a76a9c:4040/jobs/job?id\u003d173",
+            "http://205386a76a9c:4040/jobs/job?id\u003d174",
+            "http://205386a76a9c:4040/jobs/job?id\u003d175",
+            "http://205386a76a9c:4040/jobs/job?id\u003d176",
+            "http://205386a76a9c:4040/jobs/job?id\u003d177",
+            "http://205386a76a9c:4040/jobs/job?id\u003d178",
+            "http://205386a76a9c:4040/jobs/job?id\u003d179",
+            "http://205386a76a9c:4040/jobs/job?id\u003d180",
+            "http://205386a76a9c:4040/jobs/job?id\u003d181",
+            "http://205386a76a9c:4040/jobs/job?id\u003d182",
+            "http://205386a76a9c:4040/jobs/job?id\u003d183",
+            "http://205386a76a9c:4040/jobs/job?id\u003d184",
+            "http://205386a76a9c:4040/jobs/job?id\u003d185",
+            "http://205386a76a9c:4040/jobs/job?id\u003d186",
+            "http://205386a76a9c:4040/jobs/job?id\u003d187",
+            "http://205386a76a9c:4040/jobs/job?id\u003d188",
+            "http://205386a76a9c:4040/jobs/job?id\u003d189",
+            "http://205386a76a9c:4040/jobs/job?id\u003d190",
+            "http://205386a76a9c:4040/jobs/job?id\u003d191",
+            "http://205386a76a9c:4040/jobs/job?id\u003d192",
+            "http://205386a76a9c:4040/jobs/job?id\u003d193",
+            "http://205386a76a9c:4040/jobs/job?id\u003d194",
+            "http://205386a76a9c:4040/jobs/job?id\u003d195",
+            "http://205386a76a9c:4040/jobs/job?id\u003d196",
+            "http://205386a76a9c:4040/jobs/job?id\u003d197",
+            "http://205386a76a9c:4040/jobs/job?id\u003d198",
+            "http://205386a76a9c:4040/jobs/job?id\u003d199",
+            "http://205386a76a9c:4040/jobs/job?id\u003d200",
+            "http://205386a76a9c:4040/jobs/job?id\u003d201"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1501503287502_-938762787",
+      "id": "20170731-121447_2118263645",
+      "dateCreated": "2017-07-31 12:14:47.000",
+      "dateStarted": "2018-12-17 13:22:56.865",
+      "dateFinished": "2018-12-17 13:23:11.046",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
       "user": "anonymous",
       "config": {},
       "settings": {
@@ -85,9 +226,9 @@
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1501503287502_-938762787",
-      "id": "20170731-121447_2118263645",
-      "dateCreated": "2017-07-31 12:14:47.000",
+      "jobName": "paragraph_1545052624981_331235832",
+      "id": "20181217-131704_1109199740",
+      "dateCreated": "2018-12-17 13:17:04.981",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
