@@ -4,7 +4,7 @@
       "title": "Sparqlify example",
       "text": "import org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.query.spark.query._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\n\nval triples \u003d spark.rdf(lang)(input)\n\nval sparqlQuery \u003d \"\"\"SELECT ?s ?p ?o\n                            WHERE {?s ?p ?o }\n                     LIMIT 10\"\"\"\n    \nval result \u003d triples.sparql(sparqlQuery)\n        \nz.show(result)",
       "user": "anonymous",
-      "dateUpdated": "Mar 26, 2018 11:18:31 AM",
+      "dateUpdated": "2018-12-17 12:32:55.176",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -13,19 +13,49 @@
             "graph": {
               "mode": "table",
               "height": 300.0,
-              "optionOpen": false
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "C_3": "string",
+                      "C_4": "string",
+                      "C_5": "string",
+                      "C_10": "string",
+                      "C_6": "string",
+                      "C_7": "string",
+                      "C_8": "string",
+                      "C_9": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
             },
             "helium": {}
           }
         },
         "editorSetting": {
           "language": "scala",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
         "editorHide": false,
         "tableHide": false,
-        "title": true
+        "title": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -36,38 +66,57 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.io._\n\nimport net.sansa_stack.query.spark.query._\n\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[2787] at map at package.scala:179\n\n\n\n\nsparqlQuery: String \u003d\nSELECT ?s ?p ?o\n                            WHERE {?s ?p ?o }\n                     LIMIT 10\n\nresult: org.apache.spark.sql.DataFrame \u003d [C_3: string, C_11: string ... 6 more fields]\n"
+            "data": "import org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.query.spark.query._\ninput: String \u003d hdfs://namenode:8020/data/rdf.nt\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[2] at mapPartitions at NTripleReader.scala:140\nsparqlQuery: String \u003d\nSELECT ?s ?p ?o\n                            WHERE {?s ?p ?o }\n                     LIMIT 10\nresult: org.apache.spark.sql.DataFrame \u003d [C_3: string, C_4: string ... 6 more fields]\n"
           },
           {
             "type": "TABLE",
-            "data": "C_3\tC_11\tC_5\tC_6\tC_10\tC_7\tC_8\tC_9\nhttp://commons.dbpedia.org/property/artist\thttp://commons.dbpedia.org/resource/File:The_Death_of_Hyacinthos.gif\tnull\tJean Broc\tnull\ten\tnull\tnull\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:Buswachten.jpg\tnull\tnull\tnull\tnull\tnull\t2004-07-22\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:Groninger-museum.jpg\tnull\tnull\tnull\tnull\tnull\t2004-08-26\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:StationAssen3.jpg\tnull\tnull\tnull\tnull\tnull\t2004-07-22\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:De_Slegte,_Groningen.jpg\tnull\tnull\tnull\tnull\tnull\t2004-08-26\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:Paddestoel_003.jpg\tnull\tnull\tnull\tnull\tnull\t2004-08-20\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:BordUtrecht.jpg\tnull\tnull\tnull\tnull\tnull\t2004-07-22\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:Paddestoel_002.jpg\tnull\tnull\tnull\tnull\tnull\t2004-08-20\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:Groningen_003.jpg\tnull\tnull\tnull\tnull\tnull\t2004-08-26\nhttp://commons.dbpedia.org/property/date\thttp://commons.dbpedia.org/resource/File:StationAssen2.jpg\tnull\tnull\tnull\tnull\tnull\t2004-07-22\n"
+            "data": "C_3\tC_4\tC_5\tC_10\tC_6\tC_7\tC_8\tC_9\nhttp://commons.dbpedia.org/property/artist\tnull\tJean Broc\thttp://commons.dbpedia.org/resource/File:The_Death_of_Hyacinthos.gif\ten\tnull\tnull\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:Buswachten.jpg\tnull\tnull\t2004-07-22\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:Groninger-museum.jpg\tnull\tnull\t2004-08-26\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:StationAssen3.jpg\tnull\tnull\t2004-07-22\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:De_Slegte,_Groningen.jpg\tnull\tnull\t2004-08-26\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:Paddestoel_003.jpg\tnull\tnull\t2004-08-20\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:BordUtrecht.jpg\tnull\tnull\t2004-07-22\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:Paddestoel_002.jpg\tnull\tnull\t2004-08-20\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:Groningen_003.jpg\tnull\tnull\t2004-08-26\tnull\nhttp://commons.dbpedia.org/property/date\tnull\tnull\thttp://commons.dbpedia.org/resource/File:StationAssen2.jpg\tnull\tnull\t2004-07-22\tnull\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d0",
+            "http://205386a76a9c:4040/jobs/job?id\u003d1",
+            "http://205386a76a9c:4040/jobs/job?id\u003d2",
+            "http://205386a76a9c:4040/jobs/job?id\u003d3",
+            "http://205386a76a9c:4040/jobs/job?id\u003d4"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1504609209863_-361690439",
       "id": "20170905-110009_242595472",
-      "dateCreated": "Sep 5, 2017 11:00:09 AM",
-      "dateStarted": "Mar 26, 2018 11:18:02 AM",
-      "dateFinished": "Mar 26, 2018 11:18:07 AM",
+      "dateCreated": "2017-09-05 11:00:09.000",
+      "dateStarted": "2018-12-17 12:32:55.217",
+      "dateFinished": "2018-12-17 12:33:40.368",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Sparqlify Example with SPARQL Endpoint",
-      "text": "\nimport java.net.URI\n\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark\nimport net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\nimport org.apache.spark.sql.SparkSession\n\nimport scala.collection.mutable\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval graphRdd \u003d NTripleReader.load(spark, URI.create(input))\n    \nval partitions \u003d RdfPartitionUtilsSpark.partitionGraph(graphRdd)\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)\n    \nval port \u003d 7531\n    \nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()\n\n\nserver.join()",
+      "text": "\n\nimport scala.collection.mutable\n\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.query.spark.query._\nimport net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\n\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triples \u003d  spark.rdf(Lang.NTRIPLES)(input)\nval partitions \u003d triples.partitionGraph()\n\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, )\n    \nval port \u003d 7531\n    \nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()\n\n\nserver.join()",
       "user": "anonymous",
-      "dateUpdated": "Mar 26, 2018 9:44:16 AM",
+      "dateUpdated": "2018-12-17 12:35:28.461",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
           "language": "scala",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -76,34 +125,20 @@
       "apps": [],
       "jobName": "paragraph_1511348574973_-104865431",
       "id": "20171122-110254_218685772",
-      "dateCreated": "Nov 22, 2017 11:02:54 AM",
+      "dateCreated": "2017-11-22 11:02:54.000",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
   ],
   "name": "Query",
   "id": "2CFHT7P7X",
+  "noteParams": {},
+  "noteForms": {},
   "angularObjects": {
-    "2DA3BDJ3M:shared_process": [],
-    "2D8PBYP1Y:shared_process": [],
-    "2DA821HY5:shared_process": [],
-    "2D8NFQ99A:shared_process": [],
-    "2DANBPYM2:shared_process": [],
-    "2D9A5XT55:shared_process": [],
-    "2DAHUK2H4:shared_process": [],
-    "2D97ETERV:shared_process": [],
-    "2DB25EG5T:shared_process": [],
-    "2D95BFFNM:shared_process": [],
-    "2D9TENCFY:shared_process": [],
-    "2DCB6VE7N:shared_process": [],
-    "2D96QGZV1:shared_process": [],
-    "2DAACZERM:shared_process": [],
-    "2D9J8BSSQ:shared_process": [],
-    "2DBHH6JVZ:shared_process": [],
-    "2DA1VQMJ6:shared_process": [],
-    "2D8K42H1F:shared_process": [],
-    "2D8QGYDH5:shared_process": []
+    "spark:shared_process": []
   },
-  "config": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
   "info": {}
 }
