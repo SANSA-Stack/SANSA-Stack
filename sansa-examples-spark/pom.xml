@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>sansa-examples-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>2018-12.1-SNAPSHOT</version>
+		<version>2018-12</version>
 	</parent>
 	<artifactId>sansa-examples-spark_2.11</artifactId>
 	<name>SANSA Examples - Apache Spark</name>
@@ -147,6 +147,12 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+		</dependency>
+
 		<!-- <dependency> <groupId>com.holdenkarau</groupId> <artifactId>spark-testing-base_${scala.binary.version}</artifactId> 
 			</dependency> -->
 
@@ -250,7 +256,7 @@
 									<exclude>org.apache.avro:avro*</exclude>
 									<exclude>org.apache.commons:commons-lang3</exclude>
 									<exclude>org.apache.commons:commons-math3</exclude>
-									<exclude>org.apache.commons:commons-compress</exclude>
+									<!-- <exclude>org.apache.commons:commons-compress</exclude> -->
 									<exclude>org.apache.curator:curator*</exclude>
 									<exclude>org.apache.directory.api:*</exclude>
 									<exclude>org.apache.directory.server:*</exclude>
