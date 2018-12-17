@@ -1,21 +1,24 @@
 {
   "paragraphs": [
     {
-      "title": "Dataset OWL reader example (Functional syntax)",
-      "text": "import net.sansa_stack.owl.spark.dataset.FunctionalSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\nval dataset \u003d FunctionalSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
+      "title": "RDD OWL reader example (Functional syntax)",
+      "text": "import net.sansa_stack.owl.spark.owl._\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\nval dataset \u003d spark.owl(Syntax.FUNCTIONAL)(input)\ndataset.take(10).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "Dec 27, 2017 1:50:47 PM",
+      "dateUpdated": "2018-12-17 12:38:51.932",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
           "language": "scala",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
         "tableHide": false,
-        "title": true
+        "title": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -26,35 +29,51 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.owl.spark.dataset.FunctionalSyntaxOWLAxiomsDatasetBuilder\n\ninput: String \u003d hdfs://namenode:8020/data/ont_functional.owl\n\ndataset: net.sansa_stack.owl.spark.dataset.OWLAxiomsDataset \u003d [value: binary]\nDeclaration(Annotation(\u003chttp://ex.com/foo#ann\u003e \"some annotation\"^^xsd:string) Class(\u003chttp://ex.com/bar#Cls1\u003e))\nDeclaration(Class(\u003chttp://ex.com/bar#Cls2\u003e))\nDeclaration(Datatype(\u003chttp://ex.com/bar#dtype1\u003e))\nDeclaration(Datatype(\u003chttp://ex.com/bar#dtype2\u003e))\nDeclaration(ObjectProperty(\u003chttp://ex.com/bar#objProp1\u003e))\nDeclaration(ObjectProperty(\u003chttp://ex.com/bar#objProp2\u003e))\nDeclaration(DataProperty(\u003chttp://ex.com/bar#dataProp1\u003e))\nDeclaration(DataProperty(\u003chttp://ex.com/bar#dataProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\n"
+            "data": "import net.sansa_stack.owl.spark.owl._\ninput: String \u003d hdfs://namenode:8020/data/ont_functional.owl\ndataset: net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD \u003d MapPartitionsRDD[7] at filter at FunctionalSyntaxOWLAxiomsRDDBuilder.scala:26\nDeclaration(Annotation(\u003chttp://ex.com/foo#ann\u003e \"some annotation\"^^xsd:string) Class(\u003chttp://ex.com/bar#Cls1\u003e))\nDeclaration(Class(\u003chttp://ex.com/bar#Cls2\u003e))\nDeclaration(Datatype(\u003chttp://ex.com/bar#dtype1\u003e))\nDeclaration(Datatype(\u003chttp://ex.com/bar#dtype2\u003e))\nDeclaration(ObjectProperty(\u003chttp://ex.com/bar#objProp1\u003e))\nDeclaration(ObjectProperty(\u003chttp://ex.com/bar#objProp2\u003e))\nDeclaration(DataProperty(\u003chttp://ex.com/bar#dataProp1\u003e))\nDeclaration(DataProperty(\u003chttp://ex.com/bar#dataProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d0",
+            "http://205386a76a9c:4040/jobs/job?id\u003d1"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1494492505471_454897908",
       "id": "20170511-084825_834127049",
-      "dateCreated": "May 11, 2017 8:48:25 AM",
-      "dateStarted": "Dec 27, 2017 1:50:48 PM",
-      "dateFinished": "Dec 27, 2017 1:51:59 PM",
+      "dateCreated": "2017-05-11 08:48:25.000",
+      "dateStarted": "2018-12-17 12:38:51.956",
+      "dateFinished": "2018-12-17 12:39:23.855",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "title": "Dataset OWL reader example (Manchester syntax)",
-      "text": "import net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\nval input \u003d \"hdfs://namenode:8020/data/ont_manchester.owl\"\n\nval dataset \u003d ManchesterSyntaxOWLAxiomsDatasetBuilder.build(spark, input)\ndataset.take(10).foreach(println(_))",
+      "title": "RDD OWL reader example (Manchester syntax)",
+      "text": "import net.sansa_stack.owl.spark.owl._\n\nval input \u003d \"hdfs://namenode:8020/data/ont_manchester.owl\"\n\nval dataset \u003d spark.owl(Syntax.MANCHESTER)(input)\ndataset.take(10).foreach(println(_))",
       "user": "anonymous",
-      "dateUpdated": "Dec 21, 2017 2:18:27 PM",
+      "dateUpdated": "2018-12-17 12:40:00.799",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
         "results": {},
         "editorSetting": {
           "language": "scala",
-          "editOnDblClick": false
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
         "tableHide": false,
-        "title": true
+        "title": true,
+        "fontSize": 9.0
       },
       "settings": {
         "params": {},
@@ -65,22 +84,35 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "\nimport net.sansa_stack.owl.spark.dataset.ManchesterSyntaxOWLAxiomsDatasetBuilder\n\ninput: String \u003d hdfs://namenode:8020/data/ont_manchester.owl\n\ndataset: net.sansa_stack.owl.spark.dataset.OWLAxiomsDataset \u003d [value: binary]\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nSubAnnotationPropertyOf(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#annProp2\u003e)\nAnnotationPropertyDomain(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls1\u003e)\nAnnotationPropertyRange(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls2\u003e)\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#hasTitle\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#label\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/default#description\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#ann\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#hasName\u003e))\n"
+            "data": "import net.sansa_stack.owl.spark.owl._\ninput: String \u003d hdfs://namenode:8020/data/ont_manchester.owl\ndataset: net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD \u003d MapPartitionsRDD[15] at flatMap at ManchesterSyntaxOWLAxiomsRDDBuilder.scala:23\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp1\u003e))\nSubAnnotationPropertyOf(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#annProp2\u003e)\nAnnotationPropertyDomain(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls1\u003e)\nAnnotationPropertyRange(\u003chttp://ex.com/bar#annProp1\u003e \u003chttp://ex.com/bar#Cls2\u003e)\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#annProp2\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#hasTitle\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/bar#label\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/default#description\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#ann\u003e))\nDeclaration(AnnotationProperty(\u003chttp://ex.com/foo#hasName\u003e))\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://205386a76a9c:4040/jobs/job?id\u003d2",
+            "http://205386a76a9c:4040/jobs/job?id\u003d3"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1494494430280_1062578933",
       "id": "20170511-092030_318054404",
-      "dateCreated": "May 11, 2017 9:20:30 AM",
-      "dateStarted": "Dec 21, 2017 2:13:33 PM",
-      "dateFinished": "Dec 21, 2017 2:13:38 PM",
+      "dateCreated": "2017-05-11 09:20:30.000",
+      "dateStarted": "2018-12-17 12:40:00.811",
+      "dateFinished": "2018-12-17 12:40:04.223",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "user": "anonymous",
-      "dateUpdated": "May 11, 2017 9:50:18 AM",
+      "dateUpdated": "2017-05-11 09:50:18.000",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -98,34 +130,20 @@
       "apps": [],
       "jobName": "paragraph_1494496140789_-1258622693",
       "id": "20170511-094900_58929009",
-      "dateCreated": "May 11, 2017 9:49:00 AM",
+      "dateCreated": "2017-05-11 09:49:00.000",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
   ],
   "name": "OWL",
   "id": "2CFH4E3TG",
+  "noteParams": {},
+  "noteForms": {},
   "angularObjects": {
-    "2D4ERZXXW:shared_process": [],
-    "2D4EPAJD4:shared_process": [],
-    "2D3BKJA7V:shared_process": [],
-    "2D22Q8VER:shared_process": [],
-    "2D4BARTEP:shared_process": [],
-    "2D4VXHXBJ:shared_process": [],
-    "2D1HR4PUY:shared_process": [],
-    "2D28CYVNT:shared_process": [],
-    "2D3KBK32J:shared_process": [],
-    "2D376ADYX:shared_process": [],
-    "2D4ZA8GES:shared_process": [],
-    "2D5974FPG:shared_process": [],
-    "2D1RKBFHH:shared_process": [],
-    "2D4J5PAAQ:shared_process": [],
-    "2D55HQ7RC:shared_process": [],
-    "2D3H8E9AU:shared_process": [],
-    "2D271H4X8:shared_process": [],
-    "2D37JTAJZ:shared_process": [],
-    "2D4M2X1ES:shared_process": []
+    "spark:shared_process": []
   },
-  "config": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
   "info": {}
 }
