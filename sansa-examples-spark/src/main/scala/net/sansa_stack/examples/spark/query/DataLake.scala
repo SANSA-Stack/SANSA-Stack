@@ -24,7 +24,7 @@ object DataLake {
   def run(queryFile: String, mappingsFile: String, configFile: String): Unit = {
 
     println("======================================")
-    println("|   Sparqlify example                |")
+    println("|   DataLake (CSV) example           |")
     println("======================================")
 
     val spark = SparkSession.builder
