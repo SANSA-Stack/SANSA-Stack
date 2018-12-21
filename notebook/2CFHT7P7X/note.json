@@ -74,22 +74,6 @@
           }
         ]
       },
-      "runtimeInfos": {
-        "jobUrl": {
-          "propertyName": "jobUrl",
-          "label": "SPARK JOB",
-          "tooltip": "View in Spark web UI",
-          "group": "spark",
-          "values": [
-            "http://205386a76a9c:4040/jobs/job?id\u003d0",
-            "http://205386a76a9c:4040/jobs/job?id\u003d1",
-            "http://205386a76a9c:4040/jobs/job?id\u003d2",
-            "http://205386a76a9c:4040/jobs/job?id\u003d3",
-            "http://205386a76a9c:4040/jobs/job?id\u003d4"
-          ],
-          "interpreterSettingId": "spark"
-        }
-      },
       "apps": [],
       "jobName": "paragraph_1504609209863_-361690439",
       "id": "20170905-110009_242595472",
@@ -97,6 +81,47 @@
       "dateStarted": "2018-12-17 12:32:55.217",
       "dateFinished": "2018-12-17 12:33:40.368",
       "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "DataLake (CSV) example",
+      "text": "import net.sansa_stack.query.spark.query._\n\nval queryFile \u003d \"hdfs://namenode:8020/data/datalake/queries/Q1.sparql\"\nval mappingsFile  \u003d \"hdfs://namenode:8020/data/datalake/config\"\nval configFile \u003d \"hdfs://namenode:8020/data/datalake/mappings.ttl\"\n\n\nval result \u003d spark.sparqlDL(queryFile, mappingsFile, configFile)\n\nz.show(result)",
+      "user": "anonymous",
+      "dateUpdated": "2018-12-20 14:45:41.748",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import net.sansa_stack.query.spark.query._\nqueryFile: String \u003d hdfs://namenode:8020/data/datalake/queries/Q1.sparql\nmappingsFile: String \u003d hdfs://namenode:8020/data/datalake/config\nconfigFile: String \u003d hdfs://namenode:8020/data/datalake/mappings.ttl\n\n/*******************************************************************/\n/*                         QUERY ANALYSIS                          */\n/*******************************************************************/\nERROR: One of input files ins\u0027t found.\nresult: org.apache.spark.sql.DataFrame \u003d null\njava.lang.NullPointerException\n  at org.apache.zeppelin.interpreter.BaseZeppelinContext.show(BaseZeppelinContext.java:241)\n  at org.apache.zeppelin.interpreter.BaseZeppelinContext.show(BaseZeppelinContext.java:224)\n  ... 68 elided\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1545316466313_1169067992",
+      "id": "20181220-143426_1689489474",
+      "dateCreated": "2018-12-20 14:34:26.314",
+      "dateStarted": "2018-12-20 14:45:41.774",
+      "dateFinished": "2018-12-20 14:45:43.525",
+      "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
     {
