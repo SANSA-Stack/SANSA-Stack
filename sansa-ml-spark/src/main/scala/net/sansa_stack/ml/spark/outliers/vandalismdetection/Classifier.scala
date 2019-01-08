@@ -19,21 +19,16 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructField, StructType }
 
-class Classifiers extends Serializable {
+object Classifier extends Serializable {
 
-  // 1.ok -----
-  def RandomForestClassifer(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
+  // 1. Random Forest Classifer
+  def randomForestClassifer(train: DataFrame, test: DataFrame, spark: SparkSession): String = {
 
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    import org.apache.spark.sql.functions._ // for UDF
-    import org.apache.spark.sql.types._
+    train.createOrReplaceTempView("DB1")
+    test.createOrReplaceTempView("DB2")
 
-    DF_Training.registerTempTable("DB1")
-    DF_Testing.registerTempTable("DB2")
-
-    val TrainingData = sqlContext.sql("select Rid, features,FinalROLLBACK_REVERTED  from DB1")
-    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2")
+    val TrainingData = spark.sql("select Rid, features,FinalROLLBACK_REVERTED  from DB1")
+    val TestingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2")
 
     val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(TrainingData)
     val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
@@ -91,19 +86,14 @@ class Classifiers extends Serializable {
     finalResult
 
   }
-  // 2.ok------
-  def DecisionTreeClassifier(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
+  // 2. Decision Tree Classifier
+  def decisionTreeClassifier(train: DataFrame, test: DataFrame, spark: SparkSession): String = {
 
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    import org.apache.spark.sql.functions._ // for UDF
-    import org.apache.spark.sql.types._
+    train.createOrReplaceTempView("DB1")
+    test.createOrReplaceTempView("DB2")
 
-    DF_Training.registerTempTable("DB1")
-    DF_Testing.registerTempTable("DB2")
-
-    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB1")
-    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2")
+    val TrainingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB1")
+    val TestingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2")
 
     // Index labels, adding metadata to the label column.
     // Fit on whole dataset to include all labels in index.
@@ -164,19 +154,14 @@ class Classifiers extends Serializable {
 
   }
 
-  // 3.Ok --------
-  def LogisticRegrision(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
+  // 3. Logistic Regrision
+  def logisticRegrision(train: DataFrame, test: DataFrame, spark: SparkSession): String = {
 
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    import org.apache.spark.sql.functions._ // for UDF
-    import org.apache.spark.sql.types._
+    train.createOrReplaceTempView("DB1")
+    test.createOrReplaceTempView("DB2")
 
-    DF_Training.registerTempTable("DB1")
-    DF_Testing.registerTempTable("DB2")
-
-    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB1") // for logistic regrision
-    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB2") // for logistic regrision
+    val TrainingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB1") // for logistic regrision
+    val TestingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB2") // for logistic regrision
 
     val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(TrainingData)
 
@@ -234,19 +219,15 @@ class Classifiers extends Serializable {
     finalResult
 
   }
-  // 4. OK-----
-  def GradientBoostedTree(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
+  // 4.  Gradient Boosted Tree
+  def gradientBoostedTree(train: DataFrame, test: DataFrame, spark: SparkSession): String = {
 
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    import org.apache.spark.sql.functions._ // for UDF
-    import org.apache.spark.sql.types._
 
-    DF_Training.registerTempTable("DB1")
-    DF_Testing.registerTempTable("DB2")
+    train.createOrReplaceTempView("DB1")
+    train.createOrReplaceTempView("DB2")
 
-    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB1").cache()
-    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2").cache()
+    val TrainingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB1").cache()
+    val TestingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB2").cache()
 
     val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(TrainingData)
 
@@ -306,19 +287,14 @@ class Classifiers extends Serializable {
 
   }
 
-  // 5.Ok------------
-  def MultilayerPerceptronClassifier(DF_Training: DataFrame, DF_Testing: DataFrame, sc: SparkContext): String = {
+  // 5. Multilayer Perceptron Classifier
+  def multilayerPerceptronClassifier(train: DataFrame, test: DataFrame, spark: SparkSession): String = {
 
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    import org.apache.spark.sql.functions._ // for UDF
-    import org.apache.spark.sql.types._
+    train.createOrReplaceTempView("DB1")
+    train.createOrReplaceTempView("DB2")
 
-    DF_Training.registerTempTable("DB1")
-    DF_Testing.registerTempTable("DB2")
-
-    val TrainingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB1")
-    val TestingData = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB2")
+    val TrainingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB1")
+    val TestingData = spark.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB2")
 
     val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel").fit(TrainingData)
 
