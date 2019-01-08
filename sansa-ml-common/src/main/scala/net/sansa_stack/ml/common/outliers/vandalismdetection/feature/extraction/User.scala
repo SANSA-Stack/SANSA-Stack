@@ -1,16 +1,16 @@
 package net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction
 
-import java.util.{ Arrays
+import java.util.{ Arrays, List }
 import java.util.{ HashSet, Set }
 
-class UserFeatures extends Serializable {
+object User extends Serializable {
 
   // User Is Privileged :
-  def CheckName_isGlobalSysopUser(str: String): Boolean = {
+  def checkNameIsGlobalSysopUser(str: String): Boolean = {
 
-    val GlobalSysopUser: Array[String] = Array("Alan", "BRUTE", "Defender", "Glaisher", "Igna", "Jafeluv", "Kaganer", "Liliana-60", "Mh7kJ", "MoiraMoira", "PiRSquared17", "Pmlineditor", "Stryn",
+    val globalSysopUser: Array[String] = Array("Alan", "BRUTE", "Defender", "Glaisher", "Igna", "Jafeluv", "Kaganer", "Liliana-60", "Mh7kJ", "MoiraMoira", "PiRSquared17", "Pmlineditor", "Stryn",
       "Tiptoety", "Toto Azéro", "Vogone", "Wim b")
-    val users: Set[String] = new HashSet[String](Arrays.asList(GlobalSysopUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(globalSysopUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -22,7 +22,7 @@ class UserFeatures extends Serializable {
     result
   }
 
-  def CheckName_isGlobalRollBackerUser(str: String): Boolean = {
+  def checkNameIsGlobalRollBackerUser(str: String): Boolean = {
     val isGlobalRollBackerUser: Array[String] =
       Array(".snoopy.", "Addihockey10",
         "Ah3kal", "Alan", "Aldnonymous", "Alison", "Avicennasis",
@@ -53,8 +53,8 @@ class UserFeatures extends Serializable {
     result
   }
 
-  def CheckName_isGlobalStewarUser(str: String): Boolean = {
-    val GlobalStewarUser: Array[String] =
+  def checkNameIsGlobalStewarUser(str: String): Boolean = {
+    val globalStewarUser: Array[String] =
       Array("Ajraddatz", "Avraham", "Barras", "Bencmq",
         "Bennylin", "Billinghurst", "Bsadowski1", "DerHexer", "Elfix",
         "Hoo man", "J.delanoy", "Jyothis", "M7", "MBisanz",
@@ -63,7 +63,7 @@ class UserFeatures extends Serializable {
         "Rschen7754", "Ruslik0", "SPQRobin", "Savh", "Shanmugamp7",
         "Shizhao", "Snowolf", "Tegel", "Teles", "Trijnstel", "Vituzzu",
         "Wikitanvir")
-    val users: Set[String] = new HashSet[String](Arrays.asList(GlobalStewarUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(globalStewarUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -72,14 +72,12 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
 
-  def CheckName_isAdmin(str: String): Boolean = {
+  def checkNameIsAdmin(str: String): Boolean = {
 
-    val AdminNames: Array[String] =
+    val adminNames: Array[String] =
       Array("-revi", "555", "Abuse filter", "Addshore",
         "Ajraddatz", "Alan ffm", "AmaryllisGardener", "Andre Engels",
         "Andreasmperu", "Arkanosis", "Ash Crow", "Ayack", "Bene*",
@@ -101,8 +99,7 @@ class UserFeatures extends Serializable {
         "Vyom25", "Wagino 20100516", "Whym", "YMS", "Ymblanter",
         "Zolo", "분당선M", "콩가루")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(AdminNames: _*))
-
+    val users: Set[String] = new HashSet[String](Arrays.asList(adminNames: _*))
     var result: Boolean = false
     val input = str
     if (input != null) {
@@ -110,13 +107,12 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
-  def CheckName_isRollBackerUser(str: String): Boolean = {
 
-    val RollBackerUser: Array[String] =
+  def checkNameIsRollBackerUser(str: String): Boolean = {
+
+    val rollBackerUser: Array[String] =
       Array("Abián", "Aconcagua", "Aftabuzzaman",
         "Amire80", "Andrew Gray", "Aude", "AutomaticStrikeout",
         "Avocato", "Base", "Bináris", "Bluemersen", "Brackenheim",
@@ -141,7 +137,7 @@ class UserFeatures extends Serializable {
         "Ypnypn", "Zerabat", "Йо Асакура", "آرش", "درفش کاویانی",
         "فلورانس", "محمد عصام")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(RollBackerUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(rollBackerUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -154,8 +150,8 @@ class UserFeatures extends Serializable {
   }
 
   // isBot User :
-  def CheckName_isLocalBotUser(str: String): Boolean = {
-    val LocalBotUser: Array[String] =
+  def checkNameIsLocalBotUser(str: String): Boolean = {
+    val localBotUser: Array[String] =
       Array("AGbot", "AHbot", "Addbot", "AinaliBot",
         "AkkakkBot", "AlepfuBot", "Aplikasi-Bot", "AudeBot",
         "AvocatoBot", "AyackBot", "BaseBot", "BeneBot*", "BetaBot",
@@ -194,7 +190,7 @@ class UserFeatures extends Serializable {
         "WYImporterBot", "Whymbot", "Widar of zolo", "YasBot",
         "ZaBOTka", "ZedlikBot")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(LocalBotUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(localBotUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -203,14 +199,11 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
 
-  def CheckName_isGlobalbotUser(str: String): Boolean = {
-
-    val GlobalbotUser: Array[String] =
+  def checkNameIsGlobalbotUser(str: String): Boolean = {
+    val globalbotUser: Array[String] =
       Array("AHbot", "Addbot", "Aibot", "Alexbot",
         "AlleborgoBot", "AnankeBot", "ArthurBot", "AvicBot",
         "AvocatoBot", "BOT-Superzerocool", "BenzolBot",
@@ -233,7 +226,7 @@ class UserFeatures extends Serializable {
         "VolkovBot", "WarddrBOT", "WikitanvirBot", "Xqbot",
         "YFdyh-bot", "Zorrobot", "タチコマ robot")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(GlobalbotUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(globalbotUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -242,17 +235,15 @@ class UserFeatures extends Serializable {
       tmp = input.toLowerCase()
       result = users.contains(tmp)
     }
-
     result
-
   }
 
-  def CheckName_isExtensionBotUser(str: String): Boolean = {
+  def checkNameIsExtensionBotUser(str: String): Boolean = {
 
-    val ExtensionBotUser: Array[String] =
+    val extensionBotUser: Array[String] =
       Array("127.0.0.1", "Abuse filter", "Babel AutoCreate", "FuzzyBot", "MediaWiki message delivery", "Translation Notification Bot")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(ExtensionBotUser: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(extensionBotUser: _*))
 
     var result: Boolean = false
     val input = str
@@ -264,8 +255,7 @@ class UserFeatures extends Serializable {
     result
   }
 
-  def CheckName_isRegisterUser(str: String): Boolean = {
-
+  def checkNameIsRegisterUser(str: String): Boolean = {
     var result: Boolean = false
     if (str != "0000") {
 
@@ -274,8 +264,8 @@ class UserFeatures extends Serializable {
     result
   }
 
-  def CheckName_isBotUserWithoutBotFlagUser(str: String): Boolean = {
-    val BotUserWithoutBotFlagUser: Array[String] =
+  def checkNameIsBotUserWithoutBotFlagUser(str: String): Boolean = {
+    val botUserWithoutBotFlagUser: Array[String] =
       Array("1VeertjeBot", "AGbot", "Ajrbot",
         "AlepfuBot", "AxelBot", "BernsteinBot", "Bigbossrobot",
         "BonifazWolbot", "BotNinja", "Cheers!-bot", "Csvtodata",
@@ -297,8 +287,7 @@ class UserFeatures extends Serializable {
         "Xaris333Bot", "talk:Xaris333Bot", "Xqbot", "Yuibot",
         "Zielmicha Bot", "ÖdokBot", "레비:봇")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(BotUserWithoutBotFlagUser: _*))
-
+    val users: Set[String] = new HashSet[String](Arrays.asList(botUserWithoutBotFlagUser: _*))
     var result: Boolean = false
     val input = str
     if (input != null) {
@@ -309,14 +298,14 @@ class UserFeatures extends Serializable {
     result
   }
 
-  def CheckName_isPropertyCreator(str: String): Boolean = {
-    val PropertyCreator: Array[String] =
+  def checkNameIsPropertyCreator(str: String): Boolean = {
+    val propertyCreator: Array[String] =
       Array("Danrok", "Emw", "Fralambert",
         "GZWDer", "Ivan A. Krestinin", "Joshbaumgartner", "Kolja21",
         "MichaelSchoenitzer", "Micru", "Nightwish62", "Paperoastro",
         "PinkAmpersand", "Superm401", "Viscontino")
 
-    val users: Set[String] = new HashSet[String](Arrays.asList(PropertyCreator: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(propertyCreator: _*))
 
     var result: Boolean = false
     val input = str
@@ -327,16 +316,16 @@ class UserFeatures extends Serializable {
     }
     result
   }
-  def CheckName_isTranslator(str: String): Boolean = {
 
-    val Translator: Array[String] =
+  def checkNameIsTranslator(str: String): Boolean = {
+    val translator: Array[String] =
       Array("Base", "Bene*", "Beta16", "Brackenheim",
         "Chrumps", "Ebraminio", "GZWDer", "GeorgeBarnick",
         "Giftzwerg 88", "Jasper Deng", "John F. Lewis", "Kaganer",
         "Matěj Suchánek", "Michgrig", "Pasleim", "Ricordisamoa",
         "Rschen7754", "Saehrimnir", "Sjoerddebruin", "Vogone", "Whym",
         "Yair rand", "Ата", "분당선M")
-    val users: Set[String] = new HashSet[String](Arrays.asList(Translator: _*))
+    val users: Set[String] = new HashSet[String](Arrays.asList(translator: _*))
 
     var result: Boolean = false
     val input = str
@@ -348,7 +337,7 @@ class UserFeatures extends Serializable {
     result
   }
 
-  def IsRegisteroUser(str: String): Boolean = {
+  def isRegisteredUser(str: String): Boolean = {
     var flag = false
     if (str != "NA") {
       flag = true
@@ -356,16 +345,15 @@ class UserFeatures extends Serializable {
     flag
   }
 
-  def IsBirthDate(str: String): Boolean = {
-
+  def hasBirthDate(str: String): Boolean = {
     var flag = false
     if (str.contains("P569")) {
       flag = true
     }
-
     flag
   }
-  def IsDeathDate(str: String): Boolean = {
+  
+  def hasDeathDate(str: String): Boolean = {
     var flag = false
     if (str.contains("P570")) {
       flag = true

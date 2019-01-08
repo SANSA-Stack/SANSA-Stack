@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction
 
-class StatementFeatures extends Serializable {
+object Statement extends Serializable {
 
   def getProperty(comment: String): String = {
     var result: String = null

@@ -1,12 +1,12 @@
 package net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction
 
 import java.util.regex.{ Matcher, Pattern }
+
 import org.slf4j.{ Logger, LoggerFactory }
-import net.sansa_stack.ml.spark.outliers.vandalismdetection.SentencesFeatures
 
-class CommentProcessor extends Serializable {
+object Comment extends Serializable {
 
-  val logger: Logger = LoggerFactory.getLogger(classOf[SentencesFeatures])
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   // Some Operations related to  Comment Parsing : "Parsed Comments"
   val ROBUST_ROLLBACK_PATTERN: Pattern = Pattern.compile(
@@ -28,6 +28,7 @@ class CommentProcessor extends Serializable {
 
   val PRECISE_RESTORE_PATTERN: Pattern = Pattern.compile(
     ".*\\bRestored? revision (\\d+) by \\[\\[Special:Contributions\\/([^|]*)\\|\\2\\]\\].*")
+
   var text: String = ""
   var action1: String = ""
   var action2: String = ""
@@ -37,7 +38,7 @@ class CommentProcessor extends Serializable {
   var dataValue: String = ""
   var itemValue: String = ""
 
-  def ParsedComment(comment: String): String = {
+  def parseComment(comment: String): String = {
     this.text = comment
     if (comment != null) {
       if (isRollback(comment)) {
@@ -64,12 +65,11 @@ class CommentProcessor extends Serializable {
         }
       }
     }
-
     action1
   }
 
-  // ok : Used in  Revision Action - SubAction Features
-  def Extract_Actions_FromComments(comment: String): String = {
+  // Used in  Revision Action - SubAction Features
+  def extractActionsFromComments(comment: String): String = {
 
     var actions = ""
     if (comment != null) {
@@ -90,62 +90,52 @@ class CommentProcessor extends Serializable {
       } else if (isRemovePageProtection(comment)) {
         actions = "removePageProtection" + "_" + "NA"
       } else {
-
-        actions = Extract_ActionsOfNormalComment(comment)
-
+        actions = extractActionsOfNormalComment(comment)
       }
     }
     actions
   }
 
-  // Ok: helper for Revision Features:  extract Action- subaction from comment:
-  def Extract_ActionsOfNormalComment(comment: String): String = {
-
+  // Helper for Revision Features:  extract Action- subaction from comment:
+  def extractActionsOfNormalComment(comment: String): String = {
     var result: Boolean = false
-    var result_Str = ""
+    var resultStr = ""
     var suffixComment = ""
-    var Action1 = ""
-    var Action2 = ""
-    var Param = ""
+    var action1 = ""
+    var action2 = ""
+    var param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
-    var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 // == */
+    var asteriskStart = 0 // == /*
+    var asteriskEnd = 0 // == */
     var colon = 0
     if (comment != null) {
       val check_asterisk_Start = comment.contains("/*")
       if (check_asterisk_Start == true) { // start prpocess  /*   ------ */
-
         // place the symbol(/*) in the string comment
-        asterisk_Start = comment.indexOf("/*")
-
-        val check_asterisk_End = comment.contains("*/")
-
-        if (check_asterisk_End == true) { // for end
-
-          asterisk_End = comment.indexOf("*/")
-
+        asteriskStart = comment.indexOf("/*")
+        val check_asterisk_end = comment.contains("*/")
+        if (check_asterisk_end == true) { // for end
+          asteriskEnd = comment.indexOf("*/")
           // we add 2 to avoid print /*
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
+          var actionsParamsStr = comment.substring(asteriskStart + 2, asteriskEnd)
+          resultStr = actionsParamsStr
         } else {
           // we add 2 to avoid print /*
-          asterisk_End = comment.length()
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
-
+          asteriskEnd = comment.length()
+          var actionsParamsStr = comment.substring(asteriskStart + 2, asteriskEnd)
+          resultStr = actionsParamsStr
         }
 
         val str_colon: Boolean = comment.contains(":")
 
         if (str_colon == true) {
           colon = comment.indexOf(":")
-
           // denotes the end of action1 or action2 respectively
           var actionsEnd: Int = 0
-          if (colon != -1 && colon < asterisk_End) {
+          if (colon != -1 && colon < asteriskEnd) {
 
             actionsEnd = colon
-          } else { actionsEnd = asterisk_End }
+          } else { actionsEnd = asteriskEnd }
 
           val str_hyphenPos = comment.contains("-")
           val hyphenPos: Int = comment.indexOf("-")
@@ -154,60 +144,48 @@ class CommentProcessor extends Serializable {
 
             // Does the action consist of two parts?
             if (hyphenPos > -1 && hyphenPos < actionsEnd) {
-              Action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
-              Action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
-
+              action1 = comment.substring(asteriskStart + 3, hyphenPos).trim()
+              action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
             }
-
           } else {
-
-            Action1 = comment.substring(asterisk_Start + 3, colon).trim()
-            Action2 = "NA"
-
+            action1 = comment.substring(asteriskStart + 3, colon).trim()
+            action2 = "NA"
           }
-
         }
-
       } // end process
-
     }
-
-    Action1 + "_" + Action2
-
+    action1 + "_" + action2
   }
 
-  // Ok:using in character , word and sentences Features :  suffix =  CommentTail from Comment
-  def Extract_CommentTail(comment: String): String = {
-    // var result: Boolean = false
-    // var result_Str = ""
+  // Using in character , word and sentences Features :  suffix =  CommentTail from Comment
+  def extractCommentTail(comment: String): String = {
     var suffixComment = ""
 
-    var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 // == */
+    var asteriskStart = 0 // == /*
+    var asteriskEnd = 0 // == */
     var colon = 0
 
     if (comment != null) {
-      val check_asterisk_Start = comment.contains("/*")
-      if (check_asterisk_Start == true) { // start prpocess  /*   ------ */ to be sure it is normal
+      val checkAsteriskStart = comment.contains("/*")
+      if (checkAsteriskStart == true) { // start prpocess  /*   ------ */ to be sure it is normal
         // place the symbol(/*) in the string comment
-        asterisk_Start = comment.indexOf("/*")
-        val check_asterisk_End = comment.contains("*/")
+        asteriskStart = comment.indexOf("/*")
+        val checkAsteriskEnd = comment.contains("*/")
 
-        if (check_asterisk_End == true) { // for end of comment to be sure it is Normal
+        if (checkAsteriskEnd == true) { // for end of comment to be sure it is Normal
 
-          asterisk_End = comment.indexOf("*/")
-          val Checkempty_suffixComment = comment.substring(asterisk_End + 2)
-          if (Checkempty_suffixComment.nonEmpty) {
-            suffixComment = Checkempty_suffixComment
-
+          asteriskEnd = comment.indexOf("*/")
+          val checkEmptySuffixComment = comment.substring(asteriskEnd + 2)
+          if (checkEmptySuffixComment.nonEmpty) {
+            suffixComment = checkEmptySuffixComment
           } else {
             suffixComment = "NA".trim()
           }
           // we add 2 to avoid print /*
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
+          var actionsParamsStr = comment.substring(asteriskStart + 2, asteriskEnd)
         } else {
-          asterisk_End = comment.length()
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
+          asteriskEnd = comment.length()
+          var actionsParamsStr = comment.substring(asteriskStart + 2, asteriskEnd)
         }
         val str_colon: Boolean = comment.contains(":")
         if (str_colon == true) {
@@ -215,18 +193,18 @@ class CommentProcessor extends Serializable {
 
           // denotes the end of action1 or action2 respectively
           var actionsEnd: Int = 0
-          if (colon != -1 && colon < asterisk_End) {
+          if (colon != -1 && colon < asteriskEnd) {
 
             actionsEnd = colon
-          } else { actionsEnd = asterisk_End }
+          } else { actionsEnd = asteriskEnd }
 
         }
 
-        if (asterisk_End == -1) {
-          asterisk_End = comment.length
+        if (asteriskEnd == -1) {
+          asteriskEnd = comment.length
           suffixComment = "NA"
         } else {
-          suffixComment = comment.substring(asterisk_End + 2).trim()
+          suffixComment = comment.substring(asteriskEnd + 2).trim()
         }
 
       } // end process
@@ -237,53 +215,50 @@ class CommentProcessor extends Serializable {
   }
 
   // extract Action2 from Comment:
-  def Extract_Action2(comment: String): String = {
+  def extractAction2(comment: String): String = {
 
     var result: Boolean = false
-    var result_Str = ""
+    var resultStr = ""
     var suffixComment = ""
-    var Action1 = ""
-    var Action2 = ""
-    var Param = ""
+    var action1 = ""
+    var action2 = ""
+    var param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
-    var asterisk_Start = 0 // == /*
-    var asterisk_End = 0 // == */
+    var asteriskStart = 0 // == /*
+    var asteriskEnd = 0 // == */
     var colon = 0
     if (comment != null) {
-      val check_asterisk_Start = comment.contains("/*")
-      if (check_asterisk_Start == true) { // start prpocess  /*   ------ */
+      val checkAsteriskStart = comment.contains("/*")
+      if (checkAsteriskStart == true) { // start prpocess  /*   ------ */
 
         // place the symbol(/*) in the string comment
-        asterisk_Start = comment.indexOf("/*")
+        asteriskStart = comment.indexOf("/*")
 
         val check_asterisk_End = comment.contains("*/")
 
         if (check_asterisk_End == true) { // for end
-
-          asterisk_End = comment.indexOf("*/")
-
+          asteriskEnd = comment.indexOf("*/")
           // we add 2 to avoid print /*
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
+          var actionsParamsStr = comment.substring(asteriskStart + 2, asteriskEnd)
+          resultStr = actionsParamsStr
         } else {
           // we add 2 to avoid print /*
-          asterisk_End = comment.length()
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
-
+          asteriskEnd = comment.length()
+          var actionsParamsStr = comment.substring(asteriskStart + 2, asteriskEnd)
+          resultStr = actionsParamsStr
         }
 
-        val str_colon: Boolean = comment.contains(":")
+        val strColon: Boolean = comment.contains(":")
 
-        if (str_colon == true) {
+        if (strColon == true) {
           colon = comment.indexOf(":")
 
           // denotes the end of action1 or action2 respectively
           var actionsEnd: Int = 0
-          if (colon != -1 && colon < asterisk_End) {
+          if (colon != -1 && colon < asteriskEnd) {
 
             actionsEnd = colon
-          } else { actionsEnd = asterisk_End }
+          } else { actionsEnd = asteriskEnd }
 
           val str_hyphenPos = comment.contains("-")
           val hyphenPos: Int = comment.indexOf("-")
@@ -292,16 +267,15 @@ class CommentProcessor extends Serializable {
 
             // Does the action consist of two parts?
             if (hyphenPos > -1 && hyphenPos < actionsEnd) {
-              Action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
-              Action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
+              action1 = comment.substring(asteriskStart + 3, hyphenPos).trim()
+              action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
 
             }
 
           } else {
 
-            Action1 = comment.substring(asterisk_Start + 3, colon).trim()
-            Action2 = "NA"
-
+            action1 = comment.substring(asteriskStart + 3, colon).trim()
+            action2 = "NA"
           }
 
         }
@@ -309,20 +283,18 @@ class CommentProcessor extends Serializable {
       } // end process
 
     }
-
-    Action2
-
+    action2
   }
 
   // extract Action- subaction from comment:
-  def Extract_Actions_Revision_from_NormalComment(comment: String): String = {
+  def extractActionsRevisionFromNormalComment(comment: String): String = {
 
     var result: Boolean = false
     var result_Str = ""
     var suffixComment = ""
-    var Action1 = ""
-    var Action2 = ""
-    var Param = ""
+    var action1 = ""
+    var action2 = ""
+    var param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
     var asterisk_Start = 0 // == /*
     var asterisk_End = 0 // == */
@@ -330,25 +302,20 @@ class CommentProcessor extends Serializable {
     if (comment != null) {
       val check_asterisk_Start = comment.contains("/*")
       if (check_asterisk_Start == true) { // start prpocess  /*   ------ */
-
         // place the symbol(/*) in the string comment
         asterisk_Start = comment.indexOf("/*")
-
         val check_asterisk_End = comment.contains("*/")
 
         if (check_asterisk_End == true) { // for end
-
           asterisk_End = comment.indexOf("*/")
-
           // we add 2 to avoid print /*
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
+          var actionsParamsStr = comment.substring(asterisk_Start + 2, asterisk_End)
+          result_Str = actionsParamsStr
         } else {
           // we add 2 to avoid print /*
           asterisk_End = comment.length()
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
-
+          var actionsParamsStr = comment.substring(asterisk_Start + 2, asterisk_End)
+          result_Str = actionsParamsStr
         }
 
         val str_colon: Boolean = comment.contains(":")
@@ -370,16 +337,13 @@ class CommentProcessor extends Serializable {
 
             // Does the action consist of two parts?
             if (hyphenPos > -1 && hyphenPos < actionsEnd) {
-              Action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
-              Action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
-
+              action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
+              action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
             }
 
           } else {
-
-            Action1 = comment.substring(asterisk_Start + 3, colon).trim()
-            Action2 = "NA"
-
+            action1 = comment.substring(asterisk_Start + 3, colon).trim()
+            action2 = "NA"
           }
 
         }
@@ -387,21 +351,19 @@ class CommentProcessor extends Serializable {
       } // end process
 
     }
-
-    Action1 + "-" + Action2
-
+    action1 + "-" + action2
   }
 
   // extract the Params from Comment :
 
-  def Action_Param_Suffix_NormalCommentMap(comment: String): String = {
+  def actionParamSuffixNormalCommentMap(comment: String): String = {
 
     var result: Boolean = false
     var result_Str = ""
     var suffixComment = ""
-    var Action1 = ""
-    var Action2 = ""
-    var Param = ""
+    var action1 = ""
+    var action2 = ""
+    var param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
     var asterisk_Start = 0 // == /*
     var asterisk_End = 0 // == */
@@ -420,14 +382,13 @@ class CommentProcessor extends Serializable {
           asterisk_End = comment.indexOf("*/")
 
           // we add 2 to avoid print /*
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
+          var actionsParamsStr = comment.substring(asterisk_Start + 2, asterisk_End)
+          result_Str = actionsParamsStr
         } else {
           // we add 2 to avoid print /*
           asterisk_End = comment.length()
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
-
+          var actionsParamsStr = comment.substring(asterisk_Start + 2, asterisk_End)
+          result_Str = actionsParamsStr
         }
 
         val str_colon: Boolean = comment.contains(":")
@@ -449,17 +410,13 @@ class CommentProcessor extends Serializable {
 
             // Does the action consist of two parts?
             if (hyphenPos > -1 && hyphenPos < actionsEnd) {
-              Action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
-              Action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
+              action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
+              action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
 
             }
-
           } else {
-
-            Action1 = comment.substring(asterisk_Start + 3, colon).trim()
-
+            action1 = comment.substring(asterisk_Start + 3, colon).trim()
           }
-
         }
 
         if (asterisk_End == -1) {
@@ -472,18 +429,17 @@ class CommentProcessor extends Serializable {
       } // end process
 
     }
-
     suffixComment
-
   }
-  def Extract_Params(comment: String): String = {
+
+  def extractParams(comment: String): String = {
 
     var result: Boolean = false
     var result_Str = ""
     var suffixComment = ""
-    var Action1 = ""
-    var Action2 = ""
-    var Param = ""
+    var action1 = ""
+    var action2 = ""
+    var param = ""
     var parameters: Array[String] = Array.ofDim[String](0)
 
     var asterisk_Start = 0
@@ -504,16 +460,14 @@ class CommentProcessor extends Serializable {
           asterisk_End = comment.indexOf("*/")
 
           // we add 2 to avoid print /*
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
+          var actionsParamsStr = comment.substring(asterisk_Start + 2, asterisk_End)
+          result_Str = actionsParamsStr
 
         } else {
-
           // we add 2 to avoid print /*
-
           asterisk_End = comment.length()
-          var ActionsParams_string = comment.substring(asterisk_Start + 2, asterisk_End)
-          result_Str = ActionsParams_string
+          var actionsParamsStr = comment.substring(asterisk_Start + 2, asterisk_End)
+          result_Str = actionsParamsStr
 
         }
 
@@ -536,14 +490,12 @@ class CommentProcessor extends Serializable {
 
             // Does the action consist of two parts?
             if (hyphenPos > -1 && hyphenPos < actionsEnd) {
-              Action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
-              Action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
-
+              action1 = comment.substring(asterisk_Start + 3, hyphenPos).trim()
+              action2 = comment.substring(hyphenPos + 1, actionsEnd).trim()
             }
 
           } else {
-
-            Action1 = comment.substring(asterisk_Start + 3, colon).trim()
+            action1 = comment.substring(asterisk_Start + 3, colon).trim()
           }
         }
 
@@ -571,7 +523,6 @@ class CommentProcessor extends Serializable {
         } else {
 
           // do not thing
-
         }
 
       } // end process
@@ -582,10 +533,9 @@ class CommentProcessor extends Serializable {
 
     }
     parameters(0)
-
   }
 
-  // "Thecommentis" + result_Str + "&&&" + "Ac1:" + Action1 + "&&&" + "Ac2 :" + Action2 + "&&&" + "SF:" + suffixComment
+  // "The comment is" + result_Str + "&&&" + "Ac1:" + Action1 + "&&&" + "Ac2 :" + Action2 + "&&&" + "SF:" + suffixComment
   def isRollback(comment: String): Boolean = {
     var result: Boolean = false
     if (comment != null) {
@@ -595,8 +545,6 @@ class CommentProcessor extends Serializable {
         logger.debug("Robust but not precise rollback match (result = " + result + ") : " + tmp)
       }
     }
-    // result =  tmp.startsWith("Reverted");
-    // result =  tmp.startsWith("Reverted");
     result
   }
 
@@ -717,22 +665,18 @@ class CommentProcessor extends Serializable {
     result
   }
 
-  // ok - using in Extract_Revision_Language function in Revision Features class
-  def Check_CommentNormal_Or_Not(comment: String): Boolean = {
-
+  // Using in Extract_Revision_Language function in Revision Features class
+  def checkCommentNormalOrNot(comment: String): Boolean = {
     var result: Boolean = false
-
     val asterisk_Start: Int = comment.indexOf("/*")
     // Is there something of the form /* ... */?
     if (asterisk_Start != -1) {
       result = true
 
       var asterisk_End: Int = comment.indexOf("*/", asterisk_Start)
-
       // Is the closing ... */ missing? (The comment was shortened because it was too long)
       if (asterisk_End == -1) {
         asterisk_End = comment.length
-
       }
 
     } else {
@@ -740,9 +684,7 @@ class CommentProcessor extends Serializable {
       suffixComment = comment
       result = false
     }
-
     result
-
   }
 
   //   Parse a comment of the form /* action1-action2: param1, param2, ... */ value
