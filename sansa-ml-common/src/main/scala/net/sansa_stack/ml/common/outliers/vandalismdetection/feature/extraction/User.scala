@@ -352,7 +352,6 @@ object User extends Serializable {
     }
     flag
   }
-  
   def hasDeathDate(str: String): Boolean = {
     var flag = false
     if (str.contains("P570")) {

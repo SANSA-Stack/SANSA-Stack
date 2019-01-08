@@ -4,12 +4,13 @@ import java.math.BigInteger
 import java.net.InetAddress
 import java.util.ArrayList
 import java.util.regex.{ Matcher, Pattern }
+
 import org.apache.commons.lang3.ArrayUtils
+import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.streaming.StreamInputFormat
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.streaming.StreamInputFormat
 
 object XML extends Serializable {
 
@@ -25,10 +26,9 @@ object XML extends Serializable {
     // read data and save in RDD as block
     val triples = spark.sparkContext.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text]) // .distinct()
     val revisionTagTriples = triples.map { case (x, y) => (x.toString()) }
-    
     // Abend the revision in one line string
     val revisionInOneString = revisionTagTriples.map(line => abendRevision(line)).cache()
-    val revisions= revisionInOneString.map(line => buildRevision(line)).cache()
+    val revisions = revisionInOneString.map(line => buildRevision(line)).cache()
 
     revisions
 
@@ -226,7 +226,6 @@ object XML extends Serializable {
     }
     TimeStamp
   }
-  
   // Extract Json tage from the string object
   def getJSONRevision(str: String): ArrayList[String] = {
     val JsonRevision: ArrayList[String] = new ArrayList[String]()
@@ -321,7 +320,6 @@ object XML extends Serializable {
     }
     tem
   }
-  
   def getContributorIP(str: String): String = {
     var tem = ""
     if (str.contains("<ip>")) {
@@ -402,9 +400,7 @@ object XML extends Serializable {
       Id_user_Revision.trim()
     }
   }
-  
   def getComment(str: String): ArrayList[String] = {
-
     val comment: ArrayList[String] = new ArrayList[String]()
     val inputComment: CharSequence = str
     val pattStr_comment: String = "<comment>.*</comment>"
@@ -496,7 +492,7 @@ object XML extends Serializable {
 
     tem
   }
-  
+
   def cleaner(str: String): String = {
 
     val cleaned_value1 = str.replace("{", "").trim()

@@ -2,8 +2,8 @@ package net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction
 
 import java.util.regex.{ Matcher, Pattern }
 
-import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction.Comment._
 import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
+import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction.Comment._
 
 object Revision extends Serializable {
 

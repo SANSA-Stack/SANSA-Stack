@@ -4,7 +4,6 @@ import java.util.{ ArrayList, Arrays, List }
 import java.util.regex.{ Matcher, Pattern }
 
 import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
-
 import org.apache.commons.lang3.StringUtils
 
 object Word extends Serializable {

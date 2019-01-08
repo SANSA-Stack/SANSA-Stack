@@ -3,14 +3,15 @@ package net.sansa_stack.ml.spark.outliers.vandalismdetection.parser
 import java.io.ByteArrayInputStream
 import java.util.ArrayList
 import java.util.regex.Pattern
+
+import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.streaming.StreamInputFormat
 import org.apache.jena.graph.Triple
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructField, StructType }
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.streaming.StreamInputFormat
 
 object RDFXML extends Serializable {
 

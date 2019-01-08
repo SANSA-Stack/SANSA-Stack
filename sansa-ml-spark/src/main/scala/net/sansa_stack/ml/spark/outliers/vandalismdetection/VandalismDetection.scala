@@ -12,9 +12,10 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{ concat, lit }
 import org.json.JSONObject
-import net.sansa_stack.ml.spark.outliers.vandalismdetection.parser._
-import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction._
+
 import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
+import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction._
+import net.sansa_stack.ml.spark.outliers.vandalismdetection.parser._
 
 class VandalismDetection extends Serializable {
 
