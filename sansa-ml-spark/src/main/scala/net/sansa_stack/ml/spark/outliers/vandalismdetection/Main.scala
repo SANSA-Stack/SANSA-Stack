@@ -7,9 +7,8 @@ object Main {
 
   def main(args: Array[String]) {
 
-    val Start = new VandalismDetection()
-    val sparkConf = new SparkConf().setMaster("local[*]").setAppName("VandalismDetector")
-    val sc = new SparkContext(sparkConf)
+    val vd = new VandalismDetection()
+    val spark = SparkSession.builder().master("local[*]").appName("VandalismDetector").getOrCreate()
 
     println("*********************************************************************")
     println("Choose (1) for  Distributed RDF Parser Model or (2) for Distributed XML parser && Vandalism Detectioin ")
@@ -17,36 +16,33 @@ object Main {
     // Distributed RDF Parser:
     if (num == "1") {
 
-      Start.Start_RDF_Parser_Appraoch(sc)
+      vd.parseRDF(spark)
     } // Distributed Standard Parser and Vandalism Detection:
     else if (num == "2") {
 
-      val Training_Data = Start.Training_Start_StandardXMLParser_VD(sc)
-      val Testing_Data = Start.Testing_Start_StandardXMLParser_VD(sc)
-
-      val OBJClassifiers = new Classifiers()
+      val Training_Data = vd.parseStandardXML(spark)
+      val Testing_Data = vd.parseStandardXML(spark)
 
       // 1.Random Forest Classifer:
-      val RandomForestClassifer_Values = OBJClassifiers.RandomForestClassifer(Training_Data, Testing_Data, sc)
+      val RandomForestClassifer_Values = Classifier.randomForestClassifer(Training_Data, Testing_Data, spark)
 
       // 2.DecisionTreeClassifier
-      val DecisionTreeClassifier_values = OBJClassifiers.DecisionTreeClassifier(Training_Data, Testing_Data, sc)
+      val DecisionTreeClassifier_values = Classifier.decisionTreeClassifier(Training_Data, Testing_Data, spark)
 
       // 3.LogisticRegrision
-      val LogisticRegrision_values = OBJClassifiers.LogisticRegrision(Training_Data, Testing_Data, sc)
+      val LogisticRegrision_values = Classifier.logisticRegrision(Training_Data, Testing_Data, spark)
 
       // 4.GradientBoostedTree
-      val GradientBoostedTree_values = OBJClassifiers.GradientBoostedTree(Training_Data, Testing_Data, sc)
+      val GradientBoostedTree_values = Classifier.gradientBoostedTree(Training_Data, Testing_Data, spark)
 
       // 5.MultilayerPerceptronClassifier
-      val MultilayerPerceptronClassifier_values = OBJClassifiers.MultilayerPerceptronClassifier(Training_Data, Testing_Data, sc)
+      val MultilayerPerceptronClassifier_values = Classifier.multilayerPerceptronClassifier(Training_Data, Testing_Data, spark)
 
       println(RandomForestClassifer_Values)
       println(DecisionTreeClassifier_values)
       println(LogisticRegrision_values)
       println(GradientBoostedTree_values)
       println(MultilayerPerceptronClassifier_values)
-
     }
 
   }
