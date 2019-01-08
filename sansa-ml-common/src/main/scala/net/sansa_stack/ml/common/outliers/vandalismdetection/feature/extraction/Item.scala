@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.outliers.vandalismdetection
+package net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction
 
 import java.util.regex.{ Matcher, Pattern }
 

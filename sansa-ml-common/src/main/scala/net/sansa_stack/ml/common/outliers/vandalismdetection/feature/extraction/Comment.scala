@@ -1,8 +1,8 @@
-package net.sansa_stack.ml.spark.outliers.vandalismdetection
+package net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction
 
 import java.util.regex.{ Matcher, Pattern }
-
 import org.slf4j.{ Logger, LoggerFactory }
+import net.sansa_stack.ml.spark.outliers.vandalismdetection.SentencesFeatures
 
 class CommentProcessor extends Serializable {
 

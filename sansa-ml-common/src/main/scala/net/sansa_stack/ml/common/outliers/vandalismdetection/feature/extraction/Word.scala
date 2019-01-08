@@ -1,8 +1,7 @@
-package net.sansa_stack.ml.spark.outliers.vandalismdetection
+package net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction
 
 import java.util.{ ArrayList, Arrays, List }
 import java.util.regex.{ Matcher, Pattern }
-
 import org.apache.commons.lang3.StringUtils
 
 class WordsFeatures extends Serializable {

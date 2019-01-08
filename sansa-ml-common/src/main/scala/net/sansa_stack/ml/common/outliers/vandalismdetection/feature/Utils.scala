@@ -1,11 +1,9 @@
-package net.sansa_stack.ml.spark.outliers.vandalismdetection
+package net.sansa_stack.ml.common.outliers.vandalismdetection.feature
 
-import org.apache.spark.ml.linalg.{ Vector, Vectors }
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructField, StructType }
+import java.util.regex.{ Pattern
+import org port org.apache.spark.sql._
 
-class FacilitiesClass extends Serializable {
+object FacilitiesClass extends Serializable {
 
   def cleaner(str: String): String = {
     val cleaned_value1 = str.replace("{", "").trim()
@@ -75,20 +73,13 @@ class FacilitiesClass extends Serializable {
     dfr
   }
 
-  def RoundDouble(va: Double): Double = {
+  def roundDouble(va: Double): Double =
+    Math.round(va * 10000).toDouble / 10000
 
-    val rounded: Double = Math.round(va * 10000).toDouble / 10000
+  def stringToInt(str: String): Integer =
+    str.toInt
 
-    rounded
-  }
-
-  def stringToInt(str: String): Integer = {
-    val results = str.toInt
-    results
-
-  }
-
-  def Arraytring_ToVecotrDouble(str: String): Vector = {
+  def arrayString2VectorDouble(str: String): Vector = {
 
     val vector: Vector = Vectors.zeros(0)
     val str_recordList: Array[String] = str.split(",")
@@ -111,18 +102,14 @@ class FacilitiesClass extends Serializable {
 
     }
 
-    ToVector(double_recordList)
+    toVector(double_recordList)
 
   }
 
-  def ToVector(arra: Array[Double]): Vector = {
+  def toVector(arra: Array[Double]): Vector =
+    Vectors.dense(arra)
 
-    val vector: Vector = Vectors.dense(arra)
-
-    vector
-  }
-
-  def ArrayToString(arra: Array[Double]): String = {
+  def array2String(arra: Array[Double]): String = {
 
     var tem = ""
 
@@ -137,7 +124,23 @@ class FacilitiesClass extends Serializable {
       }
 
     }
-
     tem.trim()
+  }
+
+  // Character Features: ------ start calculation the Ratio for character:
+  def characterRatio(str: String, pattern: Pattern): Double = {
+    var charRatio: Double = -1.0;
+    if (str != null) {
+      val tem: String = pattern.matcher(str).replaceAll("")
+      val digits: Double = str.length() - tem.length()
+      charRatio = digits / str.length().toDouble
+    }
+    charRatio
+  }
+
+  def extractCharacterRatio(str: String, patternStr: String): Double = {
+    val pattern: Pattern = Pattern.compile(patternStr)
+    val result: Double = characterRatio(str, pattern)
+    result
   }
 }
