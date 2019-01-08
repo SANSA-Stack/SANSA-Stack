@@ -12,16 +12,16 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{ concat, lit }
 import org.json.JSONObject
+import net.sansa_stack.ml.spark.outliers.vandalismdetection.parser._
+import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.extraction._
+import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
 
 class VandalismDetection extends Serializable {
 
   // Function 1 : Distributed RDF Parser Approach
-  def Start_RDF_Parser_Appraoch(sc: SparkContext): Unit = {
+  def parseRDF(spark: SparkSession): Unit = {
 
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    import org.apache.spark.sql.functions._ // for UDF
-    import org.apache.spark.sql.types._
+    import spark.implicits._
 
     println("*********************************************************************")
     println("Distributed RDF Parser Model")
@@ -34,96 +34,67 @@ class VandalismDetection extends Serializable {
       // Streaming records:RDFJtriple file :
       val jobConf = new JobConf()
 
-      val JTriple_Parser_OBJ = new ParseJTriple()
-      val DRF_Builder_JTripleOBJ = new FacilitiesClass()
-      val RDD_JTriple = JTriple_Parser_OBJ.Start_JTriple_Parser(jobConf, sc)
-      RDD_JTriple.foreach(println)
+      val triples = JTriple.parse(jobConf, spark)
+      triples.foreach(println)
       // ----------------------------DF for RDF TRIX ------------------------------------------
-      //  Create SQLContext Object:
-      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      val DFR_JTriple = DRF_Builder_JTripleOBJ.RDD_TO_DFR_JTriple(RDD_JTriple, sqlContext)
-      DFR_JTriple.show()
+      val triplesDF = JTriple.toDF(triples, spark)
+      triplesDF.show()
 
     } else if (num == "2") {
 
       println("TRIX.........!!!!!!")
       // Streaming records:RDFTRIX file :
       val jobConf = new JobConf()
-      val TRIX_Parser_OBJ = new ParseTRIX()
-      val DRF_Builder_RDFTRIX_OBJ = new FacilitiesClass()
-      val RDD_TRIX = TRIX_Parser_OBJ.Start_TriX_Parser(jobConf, sc)
-      RDD_TRIX.foreach(println)
+      val triplesAsTRIX = TRIX.parse(jobConf, spark)
+      triplesAsTRIX.foreach(println)
       // ----------------------------DF for RDF TRIX ------------------------------------------
       //  Create SQLContext Object:
-      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      val DFR_TRIX = DRF_Builder_RDFTRIX_OBJ.RDD_TO_DFR_TRIX(RDD_TRIX, sqlContext)
-      DFR_TRIX.show()
+      val triplesAsTRIXDF = TRIX.toDF(triplesAsTRIX, spark)
+      triplesAsTRIXDF.show()
 
     } else if (num == "3") {
       println("RDF XML .........!!!!!!")
       // Streaming records:RDFXML file :
-      val jobConf_Record = new JobConf()
-      val jobConf_Prefixes = new JobConf()
+      val jobConf = new JobConf()
+      val jobConfPrefixes = new JobConf()
 
-      val RDFXML_Parser_OBJ = new ParseRDFXML()
-      val DRF_Builder_RDFXML_OBJ = new FacilitiesClass()
-
-      val RDD_RDFXML = RDFXML_Parser_OBJ.start_RDFXML_Parser(jobConf_Record, jobConf_Prefixes, sc)
-      RDD_RDFXML.foreach(println)
+      val triplesAsRDFXML = RDFXML.parse(jobConf, jobConfPrefixes, spark)
+      triplesAsRDFXML.foreach(println)
 
       // ----------------------------DF for RDF XML ------------------------------------------
       //  Create SQLContext Object:
-      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      val DFR_RDF_XML = DRF_Builder_RDFXML_OBJ.RDD_TO_DFR_RDFXML(RDD_RDFXML, sqlContext)
-      DFR_RDF_XML.show()
+      val triplesAsRDFXMLDF = RDFXML.toDF(triplesAsRDFXML, spark)
+      triplesAsRDFXMLDF.show()
 
     }
 
-    sc.stop()
   }
 
   // *********************************************************************************
   // Function 2:Training XML and Vandalism Detection
-  def Training_Start_StandardXMLParser_VD(sc: SparkContext): DataFrame = {
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-    import org.apache.spark.sql.functions._ // for UDF
+  def parseStandardXML(spark: SparkSession): DataFrame = {
+
+    import spark.sqlContext.implicits._
     import org.apache.spark.sql.types._
+    import org.apache.spark.sql.functions._ // for UDF
 
     // Streaming records:
     val jobConf = new JobConf()
-    val NormalXML_Parser_OBJ = new ParseNormalXML()
-    val RDD_OBJ = new ParseNormalXML()
+    val triples = XML.parse(spark).cache()
 
-    val Training_RDD_All_Record1 = RDD_OBJ.Training_DB_NormalXML_Parser_Input1(sc)
-    val Training_RDD_All_Record2 = RDD_OBJ.Training_DB_NormalXML_Parser_Input2(sc)
-    val Training_RDD_All_Record3 = RDD_OBJ.Training_DB_NormalXML_Parser_Input3(sc)
-    // RDD_All_Record1.foreach(println)
-    // RDD_All_Record2.foreach(println)
-    // RDD_All_Record3.foreach(println)
-
-    val Training_RDD_All_Record = Training_RDD_All_Record1.union(Training_RDD_All_Record2).union(Training_RDD_All_Record3).distinct().cache()
-
-    // println(RDD_All_Record.count())
-    println(Training_RDD_All_Record.count())
+    println(triples.count())
 
     // ======= Json part :
     // Json RDD : Each record has its Revision iD:
-    val JsonRDD = Training_RDD_All_Record.map(_.split("NNLL")).map(v => replacing_with_Quoto(v(0), v(8))).cache()
-    // JsonRDD.foreach(println)
-    // println(JsonRDD.count())
+    val JsonRDD = triples.map(_.split("NNLL")).map(v => replacingWithQuoto(v(0), v(8))).cache()
 
     // Data set
-    val Ds_Json = sqlContext.jsonRDD(JsonRDD).select("key", "id", "labels", "descriptions", "aliases", "claims", "sitelinks").cache()
-    // Ds_Json.show()
-    // println(Ds_Json.count())
+    val Ds_Json = spark.sqlContext.jsonRDD(JsonRDD).select("key", "id", "labels", "descriptions", "aliases", "claims", "sitelinks").cache()
 
     // ======= Tags part : // Contributor IP here is in Decimal format not IP format and It is converted in ParseNormalXml stage
-    val TagsRDD = Training_RDD_All_Record.map(_.split("NNLL")).map(x => (x(0), x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8), x(9), x(10), x(11))).cache()
+    val TagsRDD = triples.map(_.split("NNLL")).map(x => (x(0), x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8), x(9), x(10), x(11))).cache()
     val DF_Tags = TagsRDD.toDF("Rid", "Itemid", "comment", "pid", "time", "contributorIP",
       "contributorID", "contributorName", "JsonText", "model", "format", "sha").cache()
-    //    DF_Tags.show()
-    //    println(DF_Tags.count())
 
     // ======== Join Json part with Tag Part:============================
     // Joining to have full data
@@ -131,14 +102,14 @@ class VandalismDetection extends Serializable {
       .select("Rid", "itemid", "comment", "pid", "time", "contributorIP",
         "contributorID", "contributorName", "JsonText", "labels", "descriptions",
         "aliases", "claims", "sitelinks", "model", "format", "sha") // .orderBy("Rid", "Itemid")
-    DF_First_DF_Result_Join_Tags_and_Json.registerTempTable("Data1")
-    val dfr_DATA_JsonTages1 = sqlContext.sql("select * from Data1 order by itemid ,Rid ").cache()
+    DF_First_DF_Result_Join_Tags_and_Json.createTempView("Data1")
+    val dfr_DATA_JsonTages1 = spark.sql("select * from Data1 order by itemid ,Rid ").cache()
 
     val colNames = Seq("Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2",
       "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2",
       "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
     val DF_Second = DF_First_DF_Result_Join_Tags_and_Json.toDF(colNames: _*) // .distinct()
-    DF_Second.registerTempTable("Data2")
+    DF_Second.createTempView("Data2")
 
     // ===================================================================Parent // Previous Revision==============================================================================================================
 
@@ -149,13 +120,10 @@ class VandalismDetection extends Serializable {
     val x = RDD_After_JoinDF.map(row => (row(0).toString().toInt, row)).cache()
     val part = new RangePartitioner(4, x)
     val partitioned = x.partitionBy(part).persist() // persist is important for this case and obligatory.
-    // partitioned.foreach(println)
     //
     //      //=====================================================All Features Based on Categories of Features Data Type :==================================================================================
     //
-    val Result_all_Features = partitioned.map { case (x, y) => (x.toString() + "," + All_Features(y).toString()) } // we convert the Pair RDD to String one LineRDD to be able to make DF based on ","
-    // Result_all_Features.foreach(println)
-    // println("nayef" + Result_all_Features.count())
+    val Result_all_Features = partitioned.map { case (x, y) => (x.toString() + "," + allFeatures(y).toString()) } // we convert the Pair RDD to String one LineRDD to be able to make DF based on ","
 
     // Conver the RDD of All Features to  DataFrame:
 
@@ -218,12 +186,12 @@ class VandalismDetection extends Serializable {
         Nil)
 
     val rowRDD = Result_all_Features.map(line => line.split(",")).map(e ⇒ Row(e(0).toInt // character feature column
-    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble), e(11).toDouble, e(12).toDouble //
+    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, roundDouble(e(10).toDouble), e(11).toDouble, e(12).toDouble //
     , e(13).toDouble, e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble, e(21).toDouble, e(22).toDouble //
     , e(23).toDouble, e(24).toDouble, e(25).toDouble // Word Feature column
     , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble //
-    , RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
-    , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble // Statement Features Column:
+    , roundDouble(e(38).toDouble), roundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
+    , roundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble // Statement Features Column:
     , e(47), e(48), e(49) // User Features Column:
     , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble // Item Features column:
     , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble, e(68).toDouble //
@@ -233,32 +201,32 @@ class VandalismDetection extends Serializable {
     // a.User Frequency:
     // number of revisions a user has contributed
     // val resu= DF_Tags.groupBy("contributorID").agg(count("Rid"))
-    DF_Tags.registerTempTable("TagesTable")
-    val ContributorFreq_for_Each_Revision_DF = sqlContext
+    DF_Tags.createTempView("TagesTable")
+    val ContributorFreq_for_Each_Revision_DF = spark
       .sql("select contributorID as CIDUSER1, count(Rid) as NumberofRevisionsUserContributed from TagesTable where contributorID !='0' group by contributorID ") // .drop("CIDUSER1")
     // ContributorFreq_for_Each_Revision_DF.show()
 
     // b.Cumulated : Number of a unique Item a user has contributed.
-    val CumulatedNumberof_uniqueItemsForUser_DF = sqlContext
+    val CumulatedNumberof_uniqueItemsForUser_DF = spark
       .sql("select contributorID as CIDUSER2,  COUNT(DISTINCT itemid) as NumberofUniqueItemsUseredit from TagesTable where contributorID !='0' group by contributorID") // .drop("CIDUSER2")
     // CumulatedNumberof_uniqueItemsForUser_DF.show()
 
     // 1.Item Frequency:
     // number of revisions an Item has
-    val ItemFrequ_DF = sqlContext.sql("select itemid, count(Rid) as NumberRevisionItemHas from TagesTable  group by itemid")
+    val ItemFrequ_DF = spark.sql("select itemid, count(Rid) as NumberRevisionItemHas from TagesTable  group by itemid")
     // ItemFrequ_DF.show()
 
     // 2. Cumulate number of unique users have edited the Item : Did not consider the users IP. Contributor is an IP or Name. we consider name
-    val CumulatedNumberof_UniqueUserForItem_DF = sqlContext.sql("select itemid,  COUNT(DISTINCT contributorID) as NumberUniqUserEditItem from TagesTable where contributorID !='0' group by itemid")
+    val CumulatedNumberof_UniqueUserForItem_DF = spark.sql("select itemid,  COUNT(DISTINCT contributorID) as NumberUniqUserEditItem from TagesTable where contributorID !='0' group by itemid")
     // CumulatedNumberof_UniqueUserForItem_DF.show()
 
     // 3. freq each Item :
-    val Fre_Item_DF = sqlContext.sql("select itemid,  COUNT(itemid) as FreqItem from TagesTable  group by itemid")
+    val Fre_Item_DF = spark.sql("select itemid,  COUNT(itemid) as FreqItem from TagesTable  group by itemid")
     // Fre_Item_DF.show()
 
     // *****************************************************************************************************************************************
     // This is Main DataFrame:
-    val BeforeJoin_All_Features = sqlContext.createDataFrame(rowRDD, schema)
+    val BeforeJoin_All_Features = spark.createDataFrame(rowRDD, schema)
     // BeforeJoin_All_Features.show()
 
     // ********************************** User feature Join
@@ -288,7 +256,7 @@ class VandalismDetection extends Serializable {
 
     // *Geografical information Feature from Meta File
     // REVISION_ID|REVISION_SESSION_ID|USER_COUNTRY_CODE|USER_CONTINENT_CODE|USER_TIME_ZONE|USER_REGION_CODE|USER_CITY_NAME|USER_COUNTY_NAME|REVISION_TAGS
-    val df_GeoInf = sqlContext.read
+    val df_GeoInf = spark.read
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
@@ -296,7 +264,7 @@ class VandalismDetection extends Serializable {
         "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
     // df_GeoInf.show()
 
-    val df_Truth = sqlContext.read
+    val df_Truth = spark.read
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
@@ -357,7 +325,7 @@ class VandalismDetection extends Serializable {
       "percentile_approx(W3lowercaseratio, 0.5) as median27" + "," + "percentile_approx(W6badwordratio, 0.5) as median28" + "," +
       "percentile_approx(W7uppercaseratio, 0.5) as median27" + "," + "percentile_approx(W8banwordratio, 0.5) as median27" + " from df"
 
-    val medianValues = sqlContext.sql(Query).rdd
+    val medianValues = spark.sql(Query).rdd
     val Median = medianValues.first()
 
     // Median :
@@ -519,102 +487,29 @@ class VandalismDetection extends Serializable {
     // ************************************************Start Sentences  Features ****************************************************************************************
     // 1. Integer(Double)
     val Mean_S1CommentTailLength = Samples.agg(mean("S1CommentTailLength")).head()
-    val S1_Mean = RoundDouble(Mean_S1CommentTailLength.getDouble(0))
+    val S1_Mean = roundDouble(Mean_S1CommentTailLength.getDouble(0))
     val lkpUDFS1 = udf { (i: Double) => if (i == 0) S1_Mean else i }
     val df37 = df36.withColumn("FinalS1CommentTailLength", lkpUDFS1(col("S1CommentTailLength")))
 
     // 2. Double  but Not ratio values :
     val Mean_S2SimikaritySitelinkandLabel = Samples.agg(mean("S2SimikaritySitelinkandLabel")).head()
-    val S2_Mean = RoundDouble(Mean_S2SimikaritySitelinkandLabel.getDouble(0))
+    val S2_Mean = roundDouble(Mean_S2SimikaritySitelinkandLabel.getDouble(0))
     val lkpUDFS2 = udf { (i: Double) => if (i == 0) S2_Mean else i }
     val df39 = df37.withColumn("FinalS2SimikaritySitelinkandLabel", lkpUDFS2(col("S2SimikaritySitelinkandLabel")))
 
     // 3. Double  but Not ratio values :
     val Mean_S3SimilarityLabelandSitelink = Samples.agg(mean("S3SimilarityLabelandSitelink")).head()
-    val S3_Mean = RoundDouble(Mean_S3SimilarityLabelandSitelink.getDouble(0))
+    val S3_Mean = roundDouble(Mean_S3SimilarityLabelandSitelink.getDouble(0))
     val lkpUDFS3 = udf { (i: Double) => if (i == 0.0) S3_Mean else i }
     val df40 = df39.withColumn("FinalS3SimilarityLabelandSitelink", lkpUDFS3(col("S3SimilarityLabelandSitelink")))
 
     // 4.  Double  but Not ratio values :
     val Mean_S4SimilarityCommentComment = Samples.agg(mean("S4SimilarityCommentComment")).head()
-    val S4_Mean = RoundDouble(Mean_S4SimilarityCommentComment.getDouble(0))
+    val S4_Mean = roundDouble(Mean_S4SimilarityCommentComment.getDouble(0))
     val lkpUDFS4 = udf { (i: Double) => if (i == 0.0) S4_Mean else i }
     val df41 = df40.withColumn("FinalS4SimilarityCommentComment", lkpUDFS4(col("S4SimilarityCommentComment")))
 
-    // df41.show()
-    // ************************************************End Sentences  Features ****************************************************************************************
-    // *********************************************** Start Statement  Features ****************************************************************************************
-    // 1. String
-    // 2. String
-    // 3. String
-    // ************************************************End Statement  Features ****************************************************************************************
-    // *********************************************** Start User Features ****************************************************************************************
-
-    // 1.Boolean(Double)
-    // 2.Boolean(Double)
-    // 3.Boolean(Double)
-    // 4.Boolean(Double)
-    // 5.Boolean(Double)
-    // 6.Boolean(Double)
-    // 7. (Double) IP No need to fill Missing Data
-    // 8. (Double) ID No need to fill Missing Data
-    // 9.Boolean(Double)
-    // 10.Boolean(Double)
-
-    // *********************************************** End User Features ****************************************************************************************
-    // *********************************************** Start Item Features ****************************************************************************************
-    // 1. Integer (Double) No need to fill missing values
-    // 2. Integer (Double) No need to fill missing values
-    // 3. Integer (Double) No need to fill missing values
-    // 4. Integer (Double) No need to fill missing values
-    // 5. Integer (Double) No need to fill missing values
-    // 6. Integer (Double) No need to fill missing values
-    // 7. Integer (Double) No need to fill missing values
-    // 8. Integer (Double) No need to fill missing values
-    // 9. Integer (Double) No need to fill missing values
-    // 10. Integer (Double) No need to fill missing values
-    // 11. String
-    // *********************************************** End Item Features ****************************************************************************************
-    // *********************************************** Start Revision Features ****************************************************************************************
-    // 1.String
-    // 2.String
-    // 3.Boolean (Double)
-    // 4.Integer(Double)
-    // 5.String
-    // 6.String
-    // 7. Boolean(Double)
-    // 8. String
-    // 9.String
-    // 10. Integer (Double)
-    // 11.String
-    // 12. integer(Double)
-    // 13. Long(Double)
-    // 14. integer (Double)
-    // 15.String
-    // 16.String
-    // *********************************************** End Revision Features ****************************************************************************************
-    // *********************************************** Meta Data , Truth Data and Frequnces  ****************************************************************************************
-    // Meta
-    //  1.Revision Session :Integer (Converted to Double)
-    // 2. User Country Code
-    // 3.User Continent Code
-    // 4.User Time Size
-    // 5.User Region Code
-    // 6.User-city Name
-    // 7.User Country Name
-    // 8.RevisionTags
-
-    // Truth:
-    // 1.Undo
-
-    // Freq :
-
-    // 1.5 features
-
-    // Roll Boolean     :Boolean (Double)
-    // Undo             :Boolean (Double)
-
-    // *********************************************** End Revision Features ****************************************************************************************
+      // *********************************************** End Revision Features ****************************************************************************************
 
     // ===========================================================================String Features====================================================================================
 
@@ -695,53 +590,35 @@ class VandalismDetection extends Serializable {
       "FinalNumberofUniqueItemsUseredit", "FinalNumberRevisionItemHas", "FinalNumberUniqUserEditItem", "FinalFreqItem")).setOutputCol("features")
     val Training_Data = assembler.transform(test_new2)
 
-    // Prepare the data for classification:
-    //  NewData.registerTempTable("DB")
-    //  val Training_Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED  from DB")
-    // val Data = sqlContext.sql("select Rid, features, FinalROLLBACK_REVERTED as label from DB") // for logistic regrision
-
-    // Data.show()
-
-    // val TestClassifiers = new Classifiers()
-    //
-    //   TestClassifiers.RandomForestClassifer(Data, sqlContext)
-    //      // TestClassifiers.DecisionTreeClassifier(Data, sqlContext)
-    //      // TestClassifiers.LogisticRegrision(Data, sqlContext)
-    //      // TestClassifiers.GradientBoostedTree(Data, sqlContext)
-    //      // TestClassifiers.MultilayerPerceptronClassifier(Data, sqlContext)
-
-    Training_Data
+       Training_Data
 
   }
 
   // ***********************************************************************************************************************************************
   // Function 3:Testing XML and Vandalism Detection
-  def Testing_Start_StandardXMLParser_VD(sc: SparkContext): DataFrame = {
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
+  def testParseStandardXML(spark: SparkSession): DataFrame = {
+    import spark.sqlContext.implicits._
     import org.apache.spark.sql.functions._ // for UDF
     import org.apache.spark.sql.types._
 
     // Streaming records:
     val jobConf = new JobConf()
-    val NormalXML_Parser_OBJ = new ParseNormalXML()
-    val RDD_OBJ = new ParseNormalXML()
 
-    val Testing_RDD_All_Record = RDD_OBJ.Testing_DB_NormalXML_Parser(sc).cache()
+    val triples = XML.parse(spark).cache()
 
     // ======= Json part :
     // Json RDD : Each record has its Revision iD:
-    val JsonRDD = Testing_RDD_All_Record.map(_.split("NNLL")).map(v => replacing_with_Quoto(v(0), v(8))).cache()
+    val JsonRDD = triples.map(_.split("NNLL")).map(v => replacingWithQuoto(v(0), v(8))).cache()
     // JsonRDD.foreach(println)
     // println(JsonRDD.count())
 
     // Data set
-    val Ds_Json = sqlContext.jsonRDD(JsonRDD).select("key", "id", "labels", "descriptions", "aliases", "claims", "sitelinks").cache()
+    val Ds_Json = spark.sqlContext.jsonRDD(JsonRDD).select("key", "id", "labels", "descriptions", "aliases", "claims", "sitelinks").cache()
     // Ds_Json.show()
     // println(Ds_Json.count())
 
     // ======= Tags part : // Contributor IP here is in Decimal format not IP format and It is converted in ParseNormalXml stage
-    val TagsRDD = Testing_RDD_All_Record.map(_.split("NNLL")).map(x => (x(0), x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8), x(9), x(10), x(11))).cache()
+    val TagsRDD = triples.map(_.split("NNLL")).map(x => (x(0), x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8), x(9), x(10), x(11))).cache()
     val DF_Tags = TagsRDD.toDF("Rid", "Itemid", "comment", "pid", "time", "contributorIP",
       "contributorID", "contributorName", "JsonText", "model", "format", "sha").cache()
     //    DF_Tags.show()
@@ -753,7 +630,7 @@ class VandalismDetection extends Serializable {
       "contributorIP", "contributorID", "contributorName", "JsonText", "labels", "descriptions",
       "aliases", "claims", "sitelinks", "model", "format", "sha") // .orderBy("Rid", "Itemid")
     DF_First_DF_Result_Join_Tags_and_Json.registerTempTable("Data1")
-    val dfr_DATA_JsonTages1 = sqlContext.sql("select * from Data1 order by itemid ,Rid ").cache()
+    val dfr_DATA_JsonTages1 = spark.sql("select * from Data1 order by itemid ,Rid ").cache()
 
     val colNames = Seq("Rid2", "itemid2", "comment2", "pid2", "time2", "contributorIP2", "contributorID2", "contributorName2", "JsonText2", "labels2", "descriptions2",
       "aliases2", "claims2", "sitelinks2", "model2", "format2", "sha2")
@@ -773,7 +650,7 @@ class VandalismDetection extends Serializable {
     //
     //      //=====================================================All Features Based on Categories of Features Data Type :==================================================================================
     //
-    val Result_all_Features = partitioned.map { case (x, y) => (x.toString() + "," + All_Features(y).toString()) } // we convert the Pair RDD to String one LineRDD to be able to make DF based on ","
+    val Result_all_Features = partitioned.map { case (x, y) => (x.toString() + "," + allFeatures(y).toString()) } // we convert the Pair RDD to String one LineRDD to be able to make DF based on ","
     // Result_all_Features.foreach(println)
     // println("nayef" + Result_all_Features.count())
 
@@ -839,11 +716,11 @@ class VandalismDetection extends Serializable {
         Nil)
 
     val rowRDD = Result_all_Features.map(line => line.split(",")).map(e ⇒ Row(e(0).toInt // character feature column
-    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, RoundDouble(e(10).toDouble), e(11).toDouble, e(12).toDouble, e(13).toDouble //
+    , e(1).toDouble, e(2).toDouble, e(3).toDouble, e(4).toDouble, e(5).toDouble, e(6).toDouble, e(7).toDouble, e(8).toDouble, e(9).toDouble, roundDouble(e(10).toDouble), e(11).toDouble, e(12).toDouble, e(13).toDouble //
     , e(14).toDouble, e(15).toDouble, e(16).toDouble, e(17).toDouble, e(18).toDouble, e(19).toDouble, e(20).toDouble, e(21).toDouble, e(22).toDouble, e(23).toDouble, e(24).toDouble, e(25).toDouble // Word Feature column
     , e(26).toDouble, e(27).toDouble, e(28).toDouble, e(29).toDouble.toInt, e(30).toDouble, e(31).toDouble, e(32).toDouble, e(33).toDouble, e(34).toDouble, e(35).toDouble, e(36).toDouble, e(37).toDouble //
-    , RoundDouble(e(38).toDouble), RoundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
-    , RoundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble // Statement Features Column:
+    , roundDouble(e(38).toDouble), roundDouble(e(39).toDouble), e(40).toDouble, e(41).toDouble, e(42).toDouble // Sentences Features column:
+    , roundDouble(e(43).toDouble), e(44).toDouble, e(45).toDouble, e(46).toDouble // Statement Features Column:
     , e(47), e(48), e(49) // User Features Column:
     , e(50).toDouble, e(51).toDouble, e(52).toDouble, e(53).toDouble, e(54).toDouble, e(55).toDouble, e(56).toDouble, e(57).toDouble.toInt, e(58).toDouble, e(59).toDouble // Item Features column:
     , e(60).toDouble, e(61).toDouble, e(62).toDouble, e(63).toDouble, e(64).toDouble, e(65).toDouble, e(66).toDouble, e(67).toDouble //
@@ -854,32 +731,32 @@ class VandalismDetection extends Serializable {
     // number of revisions a user has contributed
     // val resu= DF_Tags.groupBy("contributorID").agg(count("Rid"))
     DF_Tags.registerTempTable("TagesTable")
-    val ContributorFreq_for_Each_Revision_DF = sqlContext
+    val ContributorFreq_for_Each_Revision_DF = spark
       .sql("select contributorID as CIDUSER1, count(Rid) as NumberofRevisionsUserContributed from TagesTable where contributorID !='0' group by contributorID ") // .drop("CIDUSER1")
     // ContributorFreq_for_Each_Revision_DF.show()
 
     // b.Cumulated : Number of a unique Item a user has contributed.
-    val CumulatedNumberof_uniqueItemsForUser_DF = sqlContext
+    val CumulatedNumberof_uniqueItemsForUser_DF = spark
       .sql("select contributorID as CIDUSER2,  COUNT(DISTINCT itemid) as NumberofUniqueItemsUseredit from TagesTable where contributorID !='0' group by contributorID") // .drop("CIDUSER2")
     // CumulatedNumberof_uniqueItemsForUser_DF.show()
 
     // 1.Item Frequency:
     // number of revisions an Item has
-    val ItemFrequ_DF = sqlContext
+    val ItemFrequ_DF = spark
       .sql("select itemid, count(Rid) as NumberRevisionItemHas from TagesTable  group by itemid")
     // ItemFrequ_DF.show()
 
     // 2. Cumulate number of unique users have edited the Item : Did not consider the users IP. Contributor is an IP or Name. we consider name
-    val CumulatedNumberof_UniqueUserForItem_DF = sqlContext.sql("select itemid,  COUNT(DISTINCT contributorID) as NumberUniqUserEditItem from TagesTable where contributorID !='0' group by itemid")
+    val CumulatedNumberof_UniqueUserForItem_DF = spark.sql("select itemid,  COUNT(DISTINCT contributorID) as NumberUniqUserEditItem from TagesTable where contributorID !='0' group by itemid")
     // CumulatedNumberof_UniqueUserForItem_DF.show()
 
     // 3. freq each Item :
-    val Fre_Item_DF = sqlContext.sql("select itemid,  COUNT(itemid) as FreqItem from TagesTable  group by itemid")
+    val Fre_Item_DF = spark.sql("select itemid,  COUNT(itemid) as FreqItem from TagesTable  group by itemid")
     // Fre_Item_DF.show()
 
     // *****************************************************************************************************************************************
     // This is Main DataFrame:
-    val BeforeJoin_All_Features = sqlContext.createDataFrame(rowRDD, schema)
+    val BeforeJoin_All_Features = spark.createDataFrame(rowRDD, schema)
     // BeforeJoin_All_Features.show()
 
     // ********************************** User feature Join
@@ -909,7 +786,7 @@ class VandalismDetection extends Serializable {
 
     // *Geografical information Feature from Meta File
     // REVISION_ID|REVISION_SESSION_ID|USER_COUNTRY_CODE|USER_CONTINENT_CODE|USER_TIME_ZONE|USER_REGION_CODE|USER_CITY_NAME|USER_COUNTY_NAME|REVISION_TAGS
-    val df_GeoInf = sqlContext.read
+    val df_GeoInf = spark.read
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
@@ -917,7 +794,7 @@ class VandalismDetection extends Serializable {
         "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
     // df_GeoInf.show()
 
-    val df_Truth = sqlContext.read
+    val df_Truth = spark.read
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
@@ -978,7 +855,7 @@ class VandalismDetection extends Serializable {
       "percentile_approx(W3lowercaseratio, 0.5) as median27" + "," + "percentile_approx(W6badwordratio, 0.5) as median28" + "," +
       "percentile_approx(W7uppercaseratio, 0.5) as median27" + "," + "percentile_approx(W8banwordratio, 0.5) as median27" + " from df"
 
-    val medianValues = sqlContext.sql(Query).rdd
+    val medianValues = spark.sql(Query).rdd
     val Median = medianValues.first()
 
     // Median :
@@ -1140,100 +1017,27 @@ class VandalismDetection extends Serializable {
     // ************************************************Start Sentences  Features ****************************************************************************************
     // 1. Integer(Double)
     val Mean_S1CommentTailLength = Samples.agg(mean("S1CommentTailLength")).head()
-    val S1_Mean = RoundDouble(Mean_S1CommentTailLength.getDouble(0))
+    val S1_Mean = roundDouble(Mean_S1CommentTailLength.getDouble(0))
     val lkpUDFS1 = udf { (i: Double) => if (i == 0) S1_Mean else i }
     val df37 = df36.withColumn("FinalS1CommentTailLength", lkpUDFS1(col("S1CommentTailLength")))
 
     // 2. Double  but Not ratio values :
     val Mean_S2SimikaritySitelinkandLabel = Samples.agg(mean("S2SimikaritySitelinkandLabel")).head()
-    val S2_Mean = RoundDouble(Mean_S2SimikaritySitelinkandLabel.getDouble(0))
+    val S2_Mean = roundDouble(Mean_S2SimikaritySitelinkandLabel.getDouble(0))
     val lkpUDFS2 = udf { (i: Double) => if (i == 0) S2_Mean else i }
     val df39 = df37.withColumn("FinalS2SimikaritySitelinkandLabel", lkpUDFS2(col("S2SimikaritySitelinkandLabel")))
 
     // 3. Double  but Not ratio values :
     val Mean_S3SimilarityLabelandSitelink = Samples.agg(mean("S3SimilarityLabelandSitelink")).head()
-    val S3_Mean = RoundDouble(Mean_S3SimilarityLabelandSitelink.getDouble(0))
+    val S3_Mean = roundDouble(Mean_S3SimilarityLabelandSitelink.getDouble(0))
     val lkpUDFS3 = udf { (i: Double) => if (i == 0.0) S3_Mean else i }
     val df40 = df39.withColumn("FinalS3SimilarityLabelandSitelink", lkpUDFS3(col("S3SimilarityLabelandSitelink")))
 
     // 4.  Double  but Not ratio values :
     val Mean_S4SimilarityCommentComment = Samples.agg(mean("S4SimilarityCommentComment")).head()
-    val S4_Mean = RoundDouble(Mean_S4SimilarityCommentComment.getDouble(0))
+    val S4_Mean = roundDouble(Mean_S4SimilarityCommentComment.getDouble(0))
     val lkpUDFS4 = udf { (i: Double) => if (i == 0.0) S4_Mean else i }
     val df41 = df40.withColumn("FinalS4SimilarityCommentComment", lkpUDFS4(col("S4SimilarityCommentComment")))
-
-    // df41.show()
-    // ************************************************End Sentences  Features ****************************************************************************************
-    // *********************************************** Start Statement  Features ****************************************************************************************
-    // 1. String
-    // 2. String
-    // 3. String
-    // ************************************************End Statement  Features ****************************************************************************************
-    // *********************************************** Start User Features ****************************************************************************************
-
-    // 1.Boolean(Double)
-    // 2.Boolean(Double)
-    // 3.Boolean(Double)
-    // 4.Boolean(Double)
-    // 5.Boolean(Double)
-    // 6.Boolean(Double)
-    // 7. (Double) IP No need to fill Missing Data
-    // 8. (Double) ID No need to fill Missing Data
-    // 9.Boolean(Double)
-    // 10.Boolean(Double)
-
-    // *********************************************** End User Features ****************************************************************************************
-    // *********************************************** Start Item Features ****************************************************************************************
-    // 1. Integer (Double) No need to fill missing values
-    // 2. Integer (Double) No need to fill missing values
-    // 3. Integer (Double) No need to fill missing values
-    // 4. Integer (Double) No need to fill missing values
-    // 5. Integer (Double) No need to fill missing values
-    // 6. Integer (Double) No need to fill missing values
-    // 7. Integer (Double) No need to fill missing values
-    // 8. Integer (Double) No need to fill missing values
-    // 9. Integer (Double) No need to fill missing values
-    // 10. Integer (Double) No need to fill missing values
-    // 11. String
-    // *********************************************** End Item Features ****************************************************************************************
-    // *********************************************** Start Revision Features ****************************************************************************************
-    // 1.String
-    // 2.String
-    // 3.Boolean (Double)
-    // 4.Integer(Double)
-    // 5.String
-    // 6.String
-    // 7. Boolean(Double)
-    // 8. String
-    // 9.String
-    // 10. Integer (Double)
-    // 11.String
-    // 12. integer(Double)
-    // 13. Long(Double)
-    // 14. integer (Double)
-    // 15.String
-    // 16.String
-    // *********************************************** End Revision Features ****************************************************************************************
-    // *********************************************** Meta Data , Truth Data and Frequnces  ****************************************************************************************
-    // Meta
-    // 1.Revision Session :Integer (Converted to Double)
-    // 2. User Country Code
-    // 3.User Continent Code
-    // 4.User Time Size
-    // 5.User Region Code
-    // 6.User-city Name
-    // 7.User Country Name
-    // 8.RevisionTags
-
-    // Truth:
-    // 1.Undo
-
-    // Freq :
-
-    // 1.5 features
-
-    // Roll Boolean     :Boolean (Double)
-    // Undo             :Boolean (Double)
 
     // *********************************************** End Revision Features ****************************************************************************************
 
@@ -1338,8 +1142,7 @@ class VandalismDetection extends Serializable {
   // ===========================================================================================================================================
   // =================================================Functions Part=============================================================================
 
-  def Ration(va: Double, median: Double): Double = {
-
+  def ratio(va: Double, median: Double): Double = {
     var tem = va
     if (tem == -1.0) {
       tem = median
@@ -1354,35 +1157,35 @@ class VandalismDetection extends Serializable {
 
   // Full All Features String:
 
-  def All_Features(row: Row): String = {
+  def allFeatures(row: Row): String = {
 
     var temp = ""
     // all characters
-    val character_Str_String = Character_Features(row)
+    val character_Str_String = characterFeatures(row)
     temp = character_Str_String
 
     // all Words
-    val Words_Str_String = Words_Features(row)
+    val Words_Str_String = wordFeatures(row)
     temp = temp + "," + Words_Str_String
 
     // all sentences
-    val Sentences_Str_String = Sentences_Features(row)
+    val Sentences_Str_String = sentenceFeatures(row)
     temp = temp + "," + Sentences_Str_String
 
     // all statements
-    val Statement_Str_String = Statement_Features(row)
+    val Statement_Str_String = statementFeatures(row)
     temp = temp + "," + Statement_Str_String
 
     // User Features -  there are 3 Joins in last stage when we have Data Frame
-    val User_Str_String = User_Features_Normal(row)
+    val User_Str_String = userFeaturesNormal(row)
     temp = temp + "," + User_Str_String
 
     // Item Features -  there are 3 Joins in last stage when we have Data Frame
-    val Item_Str_String = Item_Features(row)
+    val Item_Str_String = itemFeatures(row)
     temp = temp + "," + Item_Str_String
 
     // Revision Features
-    val Revision_Str_String = Revision_Features(row)
+    val Revision_Str_String = revisionFeatures(row)
     temp = temp + "," + Revision_Str_String
 
     temp.trim()
@@ -1390,7 +1193,7 @@ class VandalismDetection extends Serializable {
   }
 
   // Function for character features
-  def Character_Features(row: Row): String = {
+  def characterFeatures(row: Row): String = {
 
     var str_results = ""
     // 1. Row from  partitioned Pair RDD:
@@ -1400,15 +1203,12 @@ class VandalismDetection extends Serializable {
     // 3. row(2) =  represent the Comment:
     var CommentRecord_AsString = row(2).toString()
     // 4. extract comment tail from the Normal comment-Depending on the paperes, we apply character feature extraction on comment Tail
-    val CommentObj = new CommentProcessor()
-    val Temp_commentTail = CommentObj.Extract_CommentTail(CommentRecord_AsString)
+    val Temp_commentTail = Comment.extractCommentTail(CommentRecord_AsString)
 
     if (Temp_commentTail != "" && Temp_commentTail != "NA") { // That means the comment is normal comment:
-      val CharactersOBJ = new CharactersFeatures()
-      var vectorElements = CharactersOBJ.Vector_Characters_Feature(Temp_commentTail)
+      var vectorElements = Character.characterFeatures(Temp_commentTail)
 
-      val FacilityOBJ = new FacilitiesClass()
-      var Str_vector_Values = FacilityOBJ.ArrayToString(vectorElements)
+      var Str_vector_Values = arrayToString(vectorElements)
       str_results = Str_vector_Values
       // CharacterFeatures = Vector_AsArrayElements
       // new_Back_Row = Row(vectorElements)
@@ -1442,10 +1242,8 @@ class VandalismDetection extends Serializable {
       RatioValues(23) = 0
       RatioValues(24) = 0
 
-      val FacilityOBJ = new FacilitiesClass()
-      var Str_vector_Values = FacilityOBJ.ArrayToString(RatioValues)
+      var Str_vector_Values = arrayToString(RatioValues)
       str_results = Str_vector_Values
-      // new_Back_Row = Row(vector_Values)
 
     }
     // CharacterFeatures
@@ -1454,7 +1252,7 @@ class VandalismDetection extends Serializable {
   }
 
   // Function for Word features
-  def Words_Features(row: Row): String = {
+  def wordFeatures(row: Row): String = {
 
     var str_results = ""
     // Row from  partitioned Pair RDD:
@@ -1464,35 +1262,33 @@ class VandalismDetection extends Serializable {
     // row(2) =  represent the Comment:
     var CommentRecord_AsString = row(2).toString()
     // Extract comment tail from the Normal comment-Depending on the paperes, we apply character feature extraction on comment Tail
-    val CommentObj = new CommentProcessor()
-    val Temp_commentTail = CommentObj.Extract_CommentTail(CommentRecord_AsString)
+    val Temp_commentTail = Comment.extractCommentTail(CommentRecord_AsString)
     var tempQids = 0.0
     var temLinks = 0.0
     var temlangs = 0.0
 
     if (row(19) != null && row(25) != null) {
 
-      val WordsOBJ_countOf = new WordsFeatures()
 
       var current_Body_Revision = row(2).toString() + row(8).toString()
       var Prev_Body_Revision = row(19).toString() + row(25).toString()
 
       // Feature PortionOfQids
-      var count_Qids_Prev = WordsOBJ_countOf.GetNumberofQid(Prev_Body_Revision)
-      var count_Qids_Current = WordsOBJ_countOf.GetNumberofQid(current_Body_Revision)
-      var porortion_Qids = WordsOBJ_countOf.proportion(count_Qids_Prev, count_Qids_Current)
+      var count_Qids_Prev = Word.getNumberOfQId(Prev_Body_Revision)
+      var count_Qids_Current = Word.getNumberOfQId(current_Body_Revision)
+      var porortion_Qids = Word.proportion(count_Qids_Prev, count_Qids_Current)
       tempQids = porortion_Qids
 
       // Feature PortionOfLanguageAdded
-      var count_Lang_Prev = WordsOBJ_countOf.GetNumberofLanguageword(Prev_Body_Revision)
-      var count_lang_Current = WordsOBJ_countOf.GetNumberofLanguageword(current_Body_Revision)
-      var porportion_Lang = WordsOBJ_countOf.proportion(count_Lang_Prev, count_lang_Current)
+      var count_Lang_Prev = Word.getNumberofLanguageword(Prev_Body_Revision)
+      var count_lang_Current = Word.getNumberofLanguageword(current_Body_Revision)
+      var porportion_Lang = Word.proportion(count_Lang_Prev, count_lang_Current)
       temlangs = porportion_Lang
 
       // Feature PortionOfLinksAddes
-      var count_links_Prev = WordsOBJ_countOf.GetNumberofLinks(Prev_Body_Revision)
-      var count_links_Current = WordsOBJ_countOf.GetNumberofLinks(current_Body_Revision)
-      var porportion_links = WordsOBJ_countOf.proportion(count_links_Prev, count_links_Current)
+      var count_links_Prev = Word.getNumberOfLinks(Prev_Body_Revision)
+      var count_links_Current = Word.getNumberOfLinks(current_Body_Revision)
+      var porportion_links = Word.proportion(count_links_Prev, count_links_Current)
       temLinks = porportion_links
     } else {
 
@@ -1503,23 +1299,22 @@ class VandalismDetection extends Serializable {
     }
 
     if (Temp_commentTail != "" && Temp_commentTail != "NA") { // That means the comment is normal comment:
-      val WordsOBJ = new WordsFeatures()
 
       // 10- Features have Double type
-      var ArrayElements = WordsOBJ.Vector_Words_Feature(Temp_commentTail)
+      var ArrayElements = Word.wordFeatures(Temp_commentTail)
       //   new_Back_Row = Row(vectorElements_Doubles)
 
       var prevComment = row(19)
       if (prevComment != null) {
-        var Prev_commentTail = CommentObj.Extract_CommentTail(prevComment.toString())
+        var Prev_commentTail = Comment.extractCommentTail(prevComment.toString())
         if (Prev_commentTail != "") {
 
           // 11.Feature Current_Previous_CommentTial_NumberSharingWords:
 
-          val NumberSharingWords = WordsOBJ.Current_Previous_CommentTial_NumberSharingWords(Temp_commentTail, Prev_commentTail)
+          val NumberSharingWords = Word.currentPreviousCommentTialNumberSharingWords(Temp_commentTail, Prev_commentTail)
           ArrayElements(12) = NumberSharingWords.toDouble
           // 12.Feature Current_Previous_CommentTial_NumberSharingWords without Stopword:
-          val NumberSharingWordsWithoutStopwords = WordsOBJ.Current_Previous_CommentTial_NumberSharingWords_WithoutStopWords(Temp_commentTail, Prev_commentTail)
+          val NumberSharingWordsWithoutStopwords = Word.currentPreviousCommentTialNumberSharingWordsWithoutStopWords(Temp_commentTail, Prev_commentTail)
           ArrayElements(13) = NumberSharingWordsWithoutStopwords.toDouble
 
         }
@@ -1530,12 +1325,7 @@ class VandalismDetection extends Serializable {
       ArrayElements(15) = temlangs
       ArrayElements(16) = temLinks
 
-      //      val FacilityOBJ = new FacilitiesClass()
-      //      var vector_Values = FacilityOBJ.ToVector(ArrayElements)
-      //      new_Back_Row = Row(vector_Values)
-
-      val FacilityOBJ = new FacilitiesClass()
-      var Str_vector_Values = FacilityOBJ.ArrayToString(ArrayElements)
+      var Str_vector_Values = arrayToString(ArrayElements)
       str_results = Str_vector_Values
 
     } else {
@@ -1559,12 +1349,7 @@ class VandalismDetection extends Serializable {
       RatioValues(15) = temlangs
       RatioValues(16) = temLinks
 
-      //      val FacilityOBJ = new FacilitiesClass()
-      //      val vector_Values = FacilityOBJ.ToVector(RatioValues)
-      //      new_Back_Row = Row(vector_Values)
-
-      val FacilityOBJ = new FacilitiesClass()
-      var Str_vector_Values = FacilityOBJ.ArrayToString(RatioValues)
+      var Str_vector_Values = arrayToString(RatioValues)
       str_results = Str_vector_Values
 
     }
@@ -1574,7 +1359,7 @@ class VandalismDetection extends Serializable {
   }
 
   // Function for Sentences features
-  def Sentences_Features(row: Row): String = {
+  def sentenceFeatures(row: Row): String = {
 
     var str_results = ""
     // This will be used to save values in vector
@@ -1587,8 +1372,7 @@ class VandalismDetection extends Serializable {
     // 3. row(2) =  represent the Full Comment:
     var CommentRecord_AsString = row(2).toString()
     // 4. extract comment tail from the Normal comment-Depending on the paperes, we apply character feature extraction on comment Tail
-    val CommentObj = new CommentProcessor()
-    val Temp_commentTail = CommentObj.Extract_CommentTail(CommentRecord_AsString)
+    val Temp_commentTail = Comment.extractCommentTail(CommentRecord_AsString)
 
     if (Temp_commentTail != "" && Temp_commentTail != "NA") {
 
@@ -1600,11 +1384,10 @@ class VandalismDetection extends Serializable {
 
       // Feature 2 similarity  between comment contain Sitelink and label :
       // Check the language in comment that contain sitelinkword: --------------------
-      val Sitelink_inCommentObj = new SentencesFeatures()
 
       if (CommentRecord_AsString.contains("sitelink")) { // start 1 loop
         // 1. First step : get the language from comment
-        val languagesitelink_from_Comment = Sitelink_inCommentObj.extract_CommentSiteLink_LanguageType(CommentRecord_AsString).trim()
+        val languagesitelink_from_Comment = Sentence.extractCommentSiteLinkLanguageType(CommentRecord_AsString).trim()
 
         // 2. second step: get  the Label tage from json table :
         if (row(9).toString() != "[]") { // start 2 loop
@@ -1616,7 +1399,7 @@ class VandalismDetection extends Serializable {
           if (jsonStr.contains(""""language"""" + ":" + key_lang)) {
             val value_from_Label: String = jsonObj.getJSONObject(text_lang).getString("value")
             val result = StringUtils.getJaroWinklerDistance(Temp_commentTail, value_from_Label)
-            DoubleValues(1) = RoundDouble(result)
+            DoubleValues(1) = roundDouble(result)
           } else {
             DoubleValues(1) = 0.0
           }
@@ -1636,10 +1419,9 @@ class VandalismDetection extends Serializable {
 
       // Feature 3 similarity between comment contain label word and sitelink
       // Check the language in comment that contain Label word:-----------------------
-      val Label_inCommentObj = new SentencesFeatures()
       if (CommentRecord_AsString.contains("label")) {
         // 1. First step : get the language from comment
-        val languageLabel_from_Comment = Label_inCommentObj.extract_CommentLabel_LanguageType(CommentRecord_AsString).trim()
+        val languageLabel_from_Comment = Sentence.extractCommentLabelLanguageType(CommentRecord_AsString).trim()
         // 2. second step: get  the site link  tage from json table :
         if (row(13).toString() != "[]") { // start 2 loop
           val jsonStr = "\"\"\"" + row(13).toString() + "\"\"\"" // row(13) is the sitelink record
@@ -1649,7 +1431,7 @@ class VandalismDetection extends Serializable {
           if (jsonStr.contains(""""site"""" + ":" + key_lang)) {
             val value_from_sitelink: String = jsonObj.getJSONObject(text_lang).getString("title")
             val result = StringUtils.getJaroWinklerDistance(Temp_commentTail, value_from_sitelink)
-            DoubleValues(2) = RoundDouble(result)
+            DoubleValues(2) = roundDouble(result)
 
           } else {
             DoubleValues(2) = 0.0
@@ -1668,20 +1450,15 @@ class VandalismDetection extends Serializable {
 
       val prevComment = row(19)
       if (prevComment != null) {
-        var Prev_commentTail = CommentObj.Extract_CommentTail(prevComment.toString())
+        var Prev_commentTail = Comment.extractCommentTail(prevComment.toString())
         val Similarityresult = StringUtils.getJaroWinklerDistance(Temp_commentTail, Prev_commentTail)
-        DoubleValues(3) = RoundDouble(Similarityresult)
+        DoubleValues(3) = roundDouble(Similarityresult)
       } else {
         DoubleValues(3) = 0.0
 
       }
 
-      //      val FacilityOBJ = new FacilitiesClass()
-      //      val vector_Values = FacilityOBJ.ToVector(DoubleValues)
-      //      new_Back_Row = Row(vector_Values)
-
-      val FacilityOBJ = new FacilitiesClass()
-      var Str_vector_Values = FacilityOBJ.ArrayToString(DoubleValues)
+      var Str_vector_Values = arrayToString(DoubleValues)
       str_results = Str_vector_Values
 
     } else {
@@ -1691,12 +1468,7 @@ class VandalismDetection extends Serializable {
       DoubleValues(2) = 0.0
       DoubleValues(3) = 0.0
 
-      //      val FacilityOBJ = new FacilitiesClass()
-      //      val vector_Values = FacilityOBJ.ToVector(DoubleValues)
-      //      new_Back_Row = Row(vector_Values)
-
-      val FacilityOBJ = new FacilitiesClass()
-      var Str_vector_Values = FacilityOBJ.ArrayToString(DoubleValues)
+      var Str_vector_Values = arrayToString(DoubleValues)
       str_results = Str_vector_Values
 
     }
@@ -1707,15 +1479,14 @@ class VandalismDetection extends Serializable {
   }
 
   // statement Features :
-  def Statement_Features(row: Row): String = {
+  def statementFeatures(row: Row): String = {
     var full_Str_Result = ""
     // 1. row(2) =  represent the Comment:
     var fullcomment = row(2).toString()
-    val StatementOBJ = new StatementFeatures()
 
-    val property = StatementOBJ.getProperty(fullcomment)
-    val DataValue = StatementOBJ.getDataValue(fullcomment)
-    val Itemvalue = StatementOBJ.getItemValue(fullcomment)
+    val property = Statement.getProperty(fullcomment)
+    val DataValue = Statement.getDataValue(fullcomment)
+    val Itemvalue = Statement.getItemValue(fullcomment)
 
     // Feature 1 - Property
     if (property != null) {
@@ -1745,7 +1516,7 @@ class VandalismDetection extends Serializable {
     full_Str_Result.trim()
   }
   // User Normal Features :
-  def User_Features_Normal(row: Row): String = {
+  def userFeaturesNormal(row: Row): String = {
 
     var str_results = ""
     var DoubleValues = new Array[Double](10) // you should change the index when add more element feature
@@ -1759,14 +1530,13 @@ class VandalismDetection extends Serializable {
     var contributor_IP = row(5).toString()
     if (contributor_Name != "NA") {
 
-      val useFeatureOBJ = new UserFeatures()
 
       // 1. Is privileged :  There are 5 cases : if one of these cases is true that mean it is privileged else it is not privileged user
-      var flag_case1 = useFeatureOBJ.CheckName_isGlobalSysopUser(contributor_Name)
-      var flag_case2 = useFeatureOBJ.CheckName_isGlobalRollBackerUser(contributor_Name)
-      var flag_case3 = useFeatureOBJ.CheckName_isGlobalStewarUser(contributor_Name)
-      var flag_case4 = useFeatureOBJ.CheckName_isAdmin(contributor_Name)
-      var flag_case5 = useFeatureOBJ.CheckName_isRollBackerUser(contributor_Name)
+      var flag_case1 = User.checkNameIsGlobalSysopUser(contributor_Name)
+      var flag_case2 = User.checkNameIsGlobalRollBackerUser(contributor_Name)
+      var flag_case3 = User.checkNameIsGlobalStewarUser(contributor_Name)
+      var flag_case4 = User.checkNameIsAdmin(contributor_Name)
+      var flag_case5 = User.checkNameIsRollBackerUser(contributor_Name)
 
       if (flag_case1 == true || flag_case2 == true || flag_case3 == true || flag_case4 == true || flag_case5 == true) {
 
@@ -1778,9 +1548,9 @@ class VandalismDetection extends Serializable {
       }
 
       // 2. is BotUser : There are 3 cases  :
-      var flag_case1_1 = useFeatureOBJ.CheckName_isLocalBotUser(contributor_Name)
-      var flag_case2_2 = useFeatureOBJ.CheckName_isGlobalbotUser(contributor_Name)
-      var flag_case3_3 = useFeatureOBJ.CheckName_isExtensionBotUser(contributor_Name)
+      var flag_case1_1 = User.checkNameIsLocalBotUser(contributor_Name)
+      var flag_case2_2 = User.checkNameIsGlobalbotUser(contributor_Name)
+      var flag_case3_3 = User.checkNameIsExtensionBotUser(contributor_Name)
 
       if (flag_case1_1 == true || flag_case2_2 == true || flag_case3_3 == true) {
 
@@ -1792,7 +1562,7 @@ class VandalismDetection extends Serializable {
       }
 
       // 3. is Bot User without BotflagUser : There is 1 case  :
-      var flag_BUWBF = useFeatureOBJ.CheckName_isBotUserWithoutBotFlagUser(contributor_Name)
+      var flag_BUWBF = User.checkNameIsBotUserWithoutBotFlagUser(contributor_Name)
 
       if (flag_BUWBF == true) {
         DoubleValues(2) = 1.0
@@ -1803,7 +1573,7 @@ class VandalismDetection extends Serializable {
       }
 
       // 4. is Property  creator :
-      var flagCreator = useFeatureOBJ.CheckName_isPropertyCreator(contributor_Name)
+      var flagCreator = User.checkNameIsPropertyCreator(contributor_Name)
 
       if (flagCreator == true) {
         DoubleValues(3) = 1.0
@@ -1814,7 +1584,7 @@ class VandalismDetection extends Serializable {
       }
 
       // 5. is translator :
-      var flagTranslator = useFeatureOBJ.CheckName_isTranslator(contributor_Name)
+      var flagTranslator = User.checkNameIsTranslator(contributor_Name)
       if (flagTranslator == true) {
         DoubleValues(4) = 1.0
       } else {
@@ -1822,7 +1592,7 @@ class VandalismDetection extends Serializable {
       }
 
       // 6. is register user:
-      var flagRegistered = useFeatureOBJ.IsRegisteroUser(contributor_Name)
+      var flagRegistered = User.isRegisteredUser(contributor_Name)
       if (flagRegistered == true) {
         DoubleValues(5) = 1.0
       } else {
@@ -1856,9 +1626,8 @@ class VandalismDetection extends Serializable {
 
     // 9- 10  BitrthDate  - DeatDate:
 
-    var DateObj = new UserFeatures()
-    var BirthDate = DateObj.IsBirthDate(full_comment)
-    var DeathDate = DateObj.IsDeathDate(full_comment)
+    var BirthDate = User.hasBirthDate(full_comment)
+    var DeathDate = User.hasDeathDate(full_comment)
 
     if (BirthDate == true) {
       DoubleValues(8) = 1.0
@@ -1872,33 +1641,25 @@ class VandalismDetection extends Serializable {
       DoubleValues(9) = 0.0
 
     }
-
-    //    val FacilityOBJ = new FacilitiesClass()
-    //    val vector_Values = FacilityOBJ.ToVector(DoubleValues)
-    //    new_Back_Row = Row(vector_Values)
-    //    new_Back_Row
-
-    val FacilityOBJ = new FacilitiesClass()
-    var Str_vector_Values = FacilityOBJ.ArrayToString(DoubleValues)
+    var Str_vector_Values = arrayToString(DoubleValues)
     str_results = Str_vector_Values
 
     str_results.trim()
 
   }
 
-  def Item_Features(row: Row): String = {
+  def itemFeatures(row: Row): String = {
 
     var str_results = ""
     var DoubleValues = new Array[Double](11)
     // Row from  partitioned Pair RDD:
     var new_Back_Row = Row()
-    var ItemOBJ = new ItemFeatures()
 
     // 1. Feature depending on Label:
     var NumberOfLabel = 0.0
     var Label_String = row(9).toString()
     if (Label_String != "[]") {
-      NumberOfLabel = ItemOBJ.Get_NumberOfLabels(Label_String)
+      NumberOfLabel = Item.getNumberOfLabels(Label_String)
       DoubleValues(0) = NumberOfLabel
     } else {
       NumberOfLabel = 0.0
@@ -1908,7 +1669,7 @@ class VandalismDetection extends Serializable {
     var Description_String = row(10).toString()
     var NumberOfDescription = 0.0
     if (Description_String != "[]") {
-      NumberOfDescription = ItemOBJ.Get_NumberOfDescription(Description_String)
+      NumberOfDescription = Item.getNumberOfDescription(Description_String)
       DoubleValues(1) = NumberOfDescription
 
     } else {
@@ -1920,7 +1681,7 @@ class VandalismDetection extends Serializable {
     var Aliases_String = row(11).toString()
     var NumberOfAliases = 0.0
     if (Aliases_String != "[]") {
-      NumberOfAliases = ItemOBJ.Get_NumberOfAliases(Aliases_String)
+      NumberOfAliases = Item.getNumberOfAliases(Aliases_String)
       DoubleValues(2) = NumberOfAliases
 
     } else {
@@ -1932,7 +1693,7 @@ class VandalismDetection extends Serializable {
     var Claims_String = row(12).toString()
     var NumberOfClaims = 0.0
     if (Claims_String != "[]") {
-      NumberOfClaims = ItemOBJ.Get_NumberOfClaim(Claims_String)
+      NumberOfClaims = Item.getNumberOfClaim(Claims_String)
       DoubleValues(3) = NumberOfClaims
 
     } else {
@@ -1944,7 +1705,7 @@ class VandalismDetection extends Serializable {
     var SiteLink_String = row(13).toString()
     var NumberOfSitelink = 0.0
     if (SiteLink_String != "[]") {
-      NumberOfSitelink = ItemOBJ.Get_NumberOfSiteLinks(SiteLink_String)
+      NumberOfSitelink = Item.getNumberOfSiteLinks(SiteLink_String)
       DoubleValues(4) = NumberOfSitelink
 
     } else {
@@ -1957,7 +1718,7 @@ class VandalismDetection extends Serializable {
     var statement_String = row(12).toString() // from claim
     var NumberOfstatement = 0.0
     if (statement_String != "[]") {
-      NumberOfstatement = ItemOBJ.Get_NumberOfstatements(statement_String)
+      NumberOfstatement = Item.getNumberOfstatements(statement_String)
       DoubleValues(5) = NumberOfstatement
 
     } else {
@@ -1970,7 +1731,7 @@ class VandalismDetection extends Serializable {
     var References_String = row(12).toString() // from claim
     var NumberOfReferences = 0.0
     if (References_String != "[]") {
-      NumberOfReferences = ItemOBJ.Get_NumberOfReferences(References_String)
+      NumberOfReferences = Item.getNumberOfReferences(References_String)
       DoubleValues(6) = NumberOfReferences
 
     } else {
@@ -1982,7 +1743,7 @@ class VandalismDetection extends Serializable {
     var Qualifier_String = row(12).toString() // from claim
     var NumberOfQualifier = 0.0
     if (Qualifier_String != "[]") {
-      NumberOfQualifier = ItemOBJ.Get_NumberOfQualifier(Qualifier_String)
+      NumberOfQualifier = Item.getNumberOfQualifier(Qualifier_String)
       DoubleValues(7) = NumberOfQualifier
 
     } else {
@@ -1995,7 +1756,7 @@ class VandalismDetection extends Serializable {
     var Qualifier_String_order = row(12).toString() // from claim
     var NumberOfQualifier_order = 0.0
     if (Qualifier_String_order != "[]") {
-      NumberOfQualifier_order = ItemOBJ.Get_NumberOfQualifier_Order(Qualifier_String_order)
+      NumberOfQualifier_order = Item.getNumberOfQualifierOrder(Qualifier_String_order)
       DoubleValues(8) = NumberOfQualifier_order
 
     } else {
@@ -2008,7 +1769,7 @@ class VandalismDetection extends Serializable {
     var BadgesString = row(13).toString() // from claim
     var NumberOfBadges = 0.0
     if (BadgesString != "[]") {
-      NumberOfBadges = ItemOBJ.Get_NumberOfBadges(BadgesString)
+      NumberOfBadges = Item.getNumberOfBadges(BadgesString)
       DoubleValues(9) = NumberOfBadges
 
     } else {
@@ -2019,24 +1780,17 @@ class VandalismDetection extends Serializable {
 
     // 11. Item Title (instead of Item  ID)
     var Item_Id_Title = row(1).toString().replace("Q", "")
-    var Item = Item_Id_Title.trim().toDouble
-    DoubleValues(10) = Item
+    var items = Item_Id_Title.trim().toDouble
+    DoubleValues(10) = items
 
-    //    val FacilityOBJ = new FacilitiesClass()
-    //    val vector_Values = FacilityOBJ.ToVector(DoubleValues)
-    //    new_Back_Row = Row(vector_Values)
-    //    new_Back_Row
-    //
-
-    val FacilityOBJ = new FacilitiesClass()
-    var Str_vector_Values = FacilityOBJ.ArrayToString(DoubleValues)
+    var Str_vector_Values = arrayToString(DoubleValues)
     str_results = Str_vector_Values
 
     str_results.trim()
 
   }
 
-  def Revision_Features(row: Row): String = {
+  def revisionFeatures(row: Row): String = {
 
     // var DoubleValues = new Array[Double](6)
     var full_Str_Result = ""
@@ -2051,8 +1805,7 @@ class VandalismDetection extends Serializable {
     // 1. Revision Language :---------------------------------------------------------------------------------
 
     var comment_for_Language = row(2).toString()
-    val CommentLanguageOBJ = new RevisionFeatures()
-    val language = CommentLanguageOBJ.Extract_Revision_Language(fullcomment)
+    val language = Revision.extractRevisionLanguage(fullcomment)
     if (language != null && language != "NA") {
       full_Str_Result = language.trim()
     } else {
@@ -2075,8 +1828,7 @@ class VandalismDetection extends Serializable {
     }
 
     // 3. Is it Latin Language or Not:-------------------------------------------------------------------------
-    val revisionFeatureOBJ = new RevisionFeatures()
-    val flagLatin = revisionFeatureOBJ.Check_ContainLanguageLatin_NonLatin(language)
+    val flagLatin = Revision.checkContainLanguageLatinNonLatin(language)
 
     if (flagLatin == true) {
 
@@ -2091,14 +1843,13 @@ class VandalismDetection extends Serializable {
     // var Jason_Text = row(8).toString()
 
     // replacing_with_Quoto for cleaning the Json tag from extr tags such as <SHA>...
-    var Jason_Text = replacing_with_Quoto(row(0).toString(), row(8).toString())
+    var Jason_Text = replacingWithQuoto(row(0).toString(), row(8).toString())
     var Json_Length = Jason_Text.length()
 
     full_Str_Result = full_Str_Result + "," + Json_Length.toString()
 
     // 5. Revision Action -:-----------------------------------------------------------------------
-    val CommentProcessOBJ1 = new CommentProcessor()
-    val actions1 = CommentProcessOBJ1.Extract_Actions_FromComments(fullcomment)
+    val actions1 = Comment.extractActionsFromComments(fullcomment)
 
     var ActionsArray1: Array[String] = actions1.split("_", 2)
     var action1 = ActionsArray1(0).toString()
@@ -2109,8 +1860,7 @@ class VandalismDetection extends Serializable {
     // 6.  Revision Prev-Action :-------------------------------------------------------------------------------
     if (row(19) != null) {
       var Prev_fullcomment1 = row(19).toString()
-      val Prev_CommentProcessOBJ1 = new CommentProcessor()
-      val Prev_actions1 = Prev_CommentProcessOBJ1.Extract_Actions_FromComments(fullcomment)
+      val Prev_actions1 = Comment.extractActionsFromComments(fullcomment)
       var Prev_ActionsArray1: Array[String] = Prev_actions1.split("_", 2)
       var Prev_action1 = ActionsArray1(0).trim()
       //      var Prev_SubAction = ActionsArray(1).trim()
@@ -2169,13 +1919,11 @@ class VandalismDetection extends Serializable {
 
     // 11. ContentType: take Action1 as input : --------------------------------------------------------------
 
-    val CommentProcessOBJ_New = new CommentProcessor()
-    val actions_New = CommentProcessOBJ_New.Extract_Actions_FromComments(fullcomment)
+    val actions_New = Comment.extractActionsFromComments(fullcomment)
 
     var ActionsArrayNew: Array[String] = actions_New.split("_", 2)
     var actionNew = ActionsArrayNew(0)
-    var CTOBJ = new RevisionFeatures()
-    var contentType = CTOBJ.getContentType(actionNew.trim())
+    var contentType = Revision.getContentType(actionNew.trim())
     full_Str_Result = full_Str_Result + "," + contentType.trim()
 
     // 12. Bytes Increase (  subtract Bytes current revision with previous revision ):--------------------------------------------------------------
@@ -2226,9 +1974,9 @@ class VandalismDetection extends Serializable {
 
     if (row(21) != null) {
 
-      var CurrentTime = DateToLong(row(4).toString())
+      var CurrentTime = dateToLong(row(4).toString())
 
-      var PreviousTime = DateToLong(row(21).toString())
+      var PreviousTime = dateToLong(row(21).toString())
 
       var FinalTime = CurrentTime - PreviousTime
 
@@ -2245,8 +1993,7 @@ class VandalismDetection extends Serializable {
     full_Str_Result = full_Str_Result + "," + lengthcomment
 
     // 15. Revision SubAction:
-    val CommentProcessOBJ2 = new CommentProcessor()
-    val actions2 = CommentProcessOBJ2.Extract_Actions_FromComments(fullcomment)
+    val actions2 = Comment.extractActionsFromComments(fullcomment)
 
     var ActionsArray2: Array[String] = actions2.split("_", 2)
     var SubAction2 = ActionsArray2(1)
@@ -2255,8 +2002,7 @@ class VandalismDetection extends Serializable {
     // 16.Prev_revision SubAction:
     if (row(19) != null) {
       var Prev_fullcomment2 = row(19).toString()
-      val Prev_CommentProcessOBJ2 = new CommentProcessor()
-      val Prev_actions2 = Prev_CommentProcessOBJ2.Extract_Actions_FromComments(fullcomment)
+      val Prev_actions2 = Comment.extractActionsFromComments(fullcomment)
       var Prev_ActionsArray2: Array[String] = Prev_actions2.split("_", 2)
       var Prev_SubAction2 = ActionsArray2(1).trim()
       full_Str_Result = full_Str_Result + "," + Prev_SubAction2.trim()
@@ -2277,13 +2023,7 @@ class VandalismDetection extends Serializable {
 
   //  ========================
 
-  def RoundDouble(va: Double): Double = {
-
-    val rounded: Double = Math.round(va * 10000).toDouble / 1000
-    rounded
-
-  }
-  def DateToLong(strDate: String): Long = {
+  def dateToLong(strDate: String): Long = {
 
     var str = strDate.replace("T", " ")
     str = str.replace("Z", "").trim()
@@ -2293,7 +2033,7 @@ class VandalismDetection extends Serializable {
     tsTime1
   }
 
-  def replacing_with_Quoto(keyValue: String, str: String): String = {
+  def replacingWithQuoto(keyValue: String, str: String): String = {
     var Full_Key = "\"" + "key" + "\"" + ":" + "\"" + keyValue + "\"" + ","
     var container = str
     // val x= '"'+'"'+'"'+str+'"'+'"'+'"'
