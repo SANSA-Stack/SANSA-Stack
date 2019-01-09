@@ -12,16 +12,18 @@ object Main {
 
     println("*********************************************************************")
     println("Choose (1) for  Distributed RDF Parser Model or (2) for Distributed XML parser && Vandalism Detectioin ")
-    val num = scala.io.StdIn.readLine()
+    val rdfType = args(0)
+    val input = args(1)
+    val prefixes = args(2)
     // Distributed RDF Parser:
-    if (num == "1") {
+    if (rdfType == "1") {
 
-      vd.parseRDF(spark)
+      vd.parseRDF(spark, input, prefixes, rdfType)
     } // Distributed Standard Parser and Vandalism Detection:
-    else if (num == "2") {
+    else if (rdfType == "2") {
 
-      val Training_Data = vd.parseStandardXML(spark)
-      val Testing_Data = vd.parseStandardXML(spark)
+      val Training_Data = vd.parseStandardXML(input, spark)
+      val Testing_Data = vd.parseStandardXML(input, spark)
 
       // 1.Random Forest Classifer:
       val RandomForestClassifer_Values = Classifier.randomForestClassifer(Training_Data, Testing_Data, spark)

@@ -1,7 +1,5 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection
 
-import java.util.Scanner
-
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.{ RangePartitioner, SparkContext }
@@ -20,7 +18,7 @@ import net.sansa_stack.ml.spark.outliers.vandalismdetection.parser._
 class VandalismDetection extends Serializable {
 
   // Function 1 : Distributed RDF Parser Approach
-  def parseRDF(spark: SparkSession): Unit = {
+  def parseRDF(spark: SparkSession, input: String, prefixes: String = "", rdfType: String): Unit = {
 
     import spark.implicits._
 
@@ -29,37 +27,36 @@ class VandalismDetection extends Serializable {
     println("Please Enter 1 for JTriple and  2 for TRIX  process and 3 for RDFXML:")
     println("*********************************************************************")
 
-    val num = scala.io.StdIn.readLine()
-    if (num == "1") {
+    if (rdfType == "1") {
       println("JTriple.........!!!!!!")
       // Streaming records:RDFJtriple file :
       val jobConf = new JobConf()
 
-      val triples = JTriple.parse(jobConf, spark)
+      val triples = JTriple.parse(jobConf, input, spark)
       triples.foreach(println)
       // ----------------------------DF for RDF TRIX ------------------------------------------
       val triplesDF = JTriple.toDF(triples, spark)
       triplesDF.show()
 
-    } else if (num == "2") {
+    } else if (rdfType == "2") {
 
       println("TRIX.........!!!!!!")
       // Streaming records:RDFTRIX file :
       val jobConf = new JobConf()
-      val triplesAsTRIX = TRIX.parse(jobConf, spark)
+      val triplesAsTRIX = TRIX.parse(jobConf, input, spark)
       triplesAsTRIX.foreach(println)
       // ----------------------------DF for RDF TRIX ------------------------------------------
       //  Create SQLContext Object:
       val triplesAsTRIXDF = TRIX.toDF(triplesAsTRIX, spark)
       triplesAsTRIXDF.show()
 
-    } else if (num == "3") {
+    } else if (rdfType == "3") {
       println("RDF XML .........!!!!!!")
       // Streaming records:RDFXML file :
       val jobConf = new JobConf()
       val jobConfPrefixes = new JobConf()
 
-      val triplesAsRDFXML = RDFXML.parse(jobConf, jobConfPrefixes, spark)
+      val triplesAsRDFXML = RDFXML.parse(jobConf, jobConfPrefixes, input, prefixes, spark)
       triplesAsRDFXML.foreach(println)
 
       // ----------------------------DF for RDF XML ------------------------------------------
@@ -73,7 +70,7 @@ class VandalismDetection extends Serializable {
 
   // *********************************************************************************
   // Function 2:Training XML and Vandalism Detection
-  def parseStandardXML(spark: SparkSession): DataFrame = {
+  def parseStandardXML(input: String, spark: SparkSession): DataFrame = {
 
     import spark.sqlContext.implicits._
     import org.apache.spark.sql.types._
@@ -81,7 +78,7 @@ class VandalismDetection extends Serializable {
 
     // Streaming records:
     val jobConf = new JobConf()
-    val triples = XML.parse(spark).cache()
+    val triples = XML.parse(input, spark).cache()
 
     println(triples.count())
 
@@ -510,7 +507,7 @@ class VandalismDetection extends Serializable {
     val lkpUDFS4 = udf { (i: Double) => if (i == 0.0) S4_Mean else i }
     val df41 = df40.withColumn("FinalS4SimilarityCommentComment", lkpUDFS4(col("S4SimilarityCommentComment")))
 
-      // *********************************************** End Revision Features ****************************************************************************************
+    // *********************************************** End Revision Features ****************************************************************************************
 
     // ===========================================================================String Features====================================================================================
 
@@ -591,13 +588,13 @@ class VandalismDetection extends Serializable {
       "FinalNumberofUniqueItemsUseredit", "FinalNumberRevisionItemHas", "FinalNumberUniqUserEditItem", "FinalFreqItem")).setOutputCol("features")
     val Training_Data = assembler.transform(test_new2)
 
-       Training_Data
+    Training_Data
 
   }
 
   // ***********************************************************************************************************************************************
   // Function 3:Testing XML and Vandalism Detection
-  def testParseStandardXML(spark: SparkSession): DataFrame = {
+  def testParseStandardXML(input: String, spark: SparkSession): DataFrame = {
     import spark.sqlContext.implicits._
     import org.apache.spark.sql.functions._ // for UDF
     import org.apache.spark.sql.types._
@@ -605,7 +602,7 @@ class VandalismDetection extends Serializable {
     // Streaming records:
     val jobConf = new JobConf()
 
-    val triples = XML.parse(spark).cache()
+    val triples = XML.parse(input, spark).cache()
 
     // ======= Json part :
     // Json RDD : Each record has its Revision iD:
@@ -1270,7 +1267,6 @@ class VandalismDetection extends Serializable {
 
     if (row(19) != null && row(25) != null) {
 
-
       var current_Body_Revision = row(2).toString() + row(8).toString()
       var Prev_Body_Revision = row(19).toString() + row(25).toString()
 
@@ -1530,7 +1526,6 @@ class VandalismDetection extends Serializable {
     var contributor_ID = row(6).toString()
     var contributor_IP = row(5).toString()
     if (contributor_Name != "NA") {
-
 
       // 1. Is privileged :  There are 5 cases : if one of these cases is true that mean it is privileged else it is not privileged user
       var flag_case1 = User.checkNameIsGlobalSysopUser(contributor_Name)
