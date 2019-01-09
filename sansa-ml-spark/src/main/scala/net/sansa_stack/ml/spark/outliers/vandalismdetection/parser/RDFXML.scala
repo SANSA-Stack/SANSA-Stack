@@ -15,7 +15,7 @@ import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructF
 
 object RDFXML extends Serializable {
 
-  def parse(jobConf: JobConf, jobConfPrefixes: JobConf, spark: SparkSession): RDD[String] = {
+  def parse(jobConf: JobConf, jobConfPrefixes: JobConf, input: String, prefixes: String, spark: SparkSession): RDD[String] = {
 
     jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
     jobConf.set("stream.recordreader.begin", "<rdf:Description") // start Tag
@@ -25,8 +25,8 @@ object RDFXML extends Serializable {
     jobConfPrefixes.set("stream.recordreader.begin", "<rdf:RDF") // start Tag
     jobConfPrefixes.set("stream.recordreader.end", ">") // End Tag
 
-    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/Germany.rdf") // input path from Hadoop
-    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConfPrefixes, "hdfs://localhost:9000/mydata/Germany.rdf") // input path from Hadoop
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, input)
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConfPrefixes, prefixes)
 
     // ------------ RDF XML Record
     // read data and save in RDD as block- RDFXML Record

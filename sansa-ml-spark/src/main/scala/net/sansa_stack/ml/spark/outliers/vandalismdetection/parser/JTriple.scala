@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.outliers.vandalismdetection.parser
 
-import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.io.Text
+import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.streaming.StreamInputFormat
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -9,13 +9,13 @@ import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructF
 
 object JTriple extends Serializable {
 
-  def parse(jobConf: JobConf, spark: SparkSession): RDD[String] = {
+  def parse(jobConf: JobConf, input: String, spark: SparkSession): RDD[String] = {
 
     jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
     jobConf.set("stream.recordreader.begin", """"s":""") // start Tag
     jobConf.set("stream.recordreader.end", "}") // End Tag
 
-    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/xxx.json") // input path from Hadoop
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, input)
 
     // read data and save in RDD as block- JTriple Record
     val triples = spark.sparkContext.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text])

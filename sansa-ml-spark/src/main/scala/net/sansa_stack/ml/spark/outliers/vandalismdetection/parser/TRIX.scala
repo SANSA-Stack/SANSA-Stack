@@ -12,13 +12,13 @@ import org.apache.spark.sql.types.{ DoubleType, IntegerType, StringType, StructF
 
 object TRIX extends Serializable {
 
-  def parse(jobConf: JobConf, spark: SparkSession): RDD[String] = {
+  def parse(jobConf: JobConf, input: String, spark: SparkSession): RDD[String] = {
 
     jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
     jobConf.set("stream.recordreader.begin", "<triple>") // start Tag
     jobConf.set("stream.recordreader.end", "</triple>") // End Tag
 
-    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/xx.trix") // input path from Hadoop
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, input)
 
     // read data and save in RDD as block- TRIX Record
     val triples = spark.sparkContext.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text])

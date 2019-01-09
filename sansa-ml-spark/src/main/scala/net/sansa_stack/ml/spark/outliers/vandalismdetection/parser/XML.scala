@@ -9,19 +9,19 @@ import org.apache.commons.lang3.ArrayUtils
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.streaming.StreamInputFormat
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 object XML extends Serializable {
 
-  def parse(spark: SparkSession): RDD[String] = {
+  def parse(input: String, spark: SparkSession): RDD[String] = {
 
     // Streaming records:==================================================================Input Files
     val jobConf = new JobConf()
     jobConf.set("stream.recordreader.class", "org.apache.hadoop.streaming.StreamXmlRecordReader")
     jobConf.set("stream.recordreader.begin", "<revision>") // start Tag
     jobConf.set("stream.recordreader.end", "</revision>") // End Tag
-    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, "hdfs://localhost:9000/mydata/3.xml") // input path from Hadoop
+    org.apache.hadoop.mapred.FileInputFormat.addInputPaths(jobConf, input)
 
     // read data and save in RDD as block
     val triples = spark.sparkContext.hadoopRDD(jobConf, classOf[org.apache.hadoop.streaming.StreamInputFormat], classOf[org.apache.hadoop.io.Text], classOf[org.apache.hadoop.io.Text]) // .distinct()
