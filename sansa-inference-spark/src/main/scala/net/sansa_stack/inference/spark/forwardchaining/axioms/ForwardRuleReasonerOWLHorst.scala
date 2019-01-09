@@ -609,8 +609,10 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 2) exten
 
    // println("\n Finish with " + inferedAxioms.count + " Inferred Axioms after adding SameAs rules")
     println("\n...finished materialization in " + (time/1000) + " sec.")
+   
+    val inferedGraph = inferedAxioms.union(axioms)
 
-    inferedAxioms
+    inferedGraph
   }
 
   def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {
