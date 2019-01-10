@@ -4,29 +4,30 @@ import java.util.{ ArrayList, Arrays, List }
 import java.util.regex.{ Matcher, Pattern }
 
 import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
+
 import org.apache.commons.lang3.StringUtils
 
 object Word extends Serializable {
   def wordFeatures(StrValue: String): Array[Double] = {
     var RatioValues = new Array[Double](17)
-    // 1. Double for LanguageWord Ratio - ok
+    // 1. Double for LanguageWord Ratio
     val languageWord = languageWordRatioCharacter(StrValue)
     if (!languageWord.isNaN()) {
       RatioValues(0) = roundDouble(languageWord)
     }
-    // 2. Boolean --> Double for Contain language word - ok (1 Boolean)
+    // 2. Boolean --> Double for Contain language word  (1 Boolean)
     val isContainLanguageWord = containLanguageWord(StrValue)
     if (isContainLanguageWord == true) {
       RatioValues(1) = 1.0
     } else if (isContainLanguageWord == false) {
       RatioValues(1) = 0.0
     }
-    // 3.Double for LowerCaseWord Ratio - ok
+    // 3.Double for LowerCaseWord Ratio
     val lowerCaseWord = lowercaseWordRatio(StrValue)
     if (!lowerCaseWord.isNaN()) {
       RatioValues(2) = roundDouble(lowerCaseWord)
     }
-    // 4.Integer --> to Double for LongestWord - ok (1 Integer)
+    // 4.Integer --> to Double for LongestWord (1 Integer)
     val longWord = longestWord(StrValue)
     if (longWord != null) {
       val castedValue = longWord.toDouble
@@ -39,7 +40,7 @@ object Word extends Serializable {
     } else if (isWordContainURL == false) {
       RatioValues(4) = 0.0
     }
-    // 6.Double for  Bad Word Ratio - ok
+    // 6.Double for  Bad Word Ratio
     val badWord = BadWordRatio(StrValue)
     if (!badWord.isNaN()) {
       RatioValues(5) = roundDouble(badWord)
@@ -49,7 +50,7 @@ object Word extends Serializable {
     if (!upperCaseWord.isNaN()) {
       RatioValues(6) = roundDouble(upperCaseWord)
     }
-    // 8.Double for Ban Word Ratio - ok
+    // 8.Double for Ban Word Ratio
     val banWord = BanWordRatio(StrValue)
     if (!banWord.isNaN()) {
       RatioValues(7) = roundDouble(banWord)
@@ -138,7 +139,7 @@ object Word extends Serializable {
     "|\\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02|\\u067e\\u069a\\u062a\\u0648|\\u1019\\u103c\\u1014\\u103a\\u1019\\u102c\\u1018\\u102c\\u101e\\u102c|\\u4e2d\\u6587(\\u7b80\\u4f53" +
     "|\\u7e41\\u9ad4)?|\\u4e2d\\u6587\\uff08(\\u7b80\\u4f53?|\\u7e41\\u9ad4)\\uff09|\\u7b80\\u4f53|\\u7e41\\u9ad4)"
 
-  val patternLanguageWordRatio: Pattern = Pattern.compile(regexLanguageWordRatio);
+  val patternLanguageWordRatio: Pattern = Pattern.compile(regexLanguageWordRatio)
 
   def languageWordRatioCharacter(str: String): Double = {
     val result: Double = wordRatio(str, patternLanguageWordRatio)
@@ -170,8 +171,8 @@ object Word extends Serializable {
     "|\\u067e\\u069a\\u062a\\u0648|\\u1019\\u103c\\u1014\\u103a\\u1019\\u102c\\u1018\\u102c\\u101e\\u102c|\\u4e2d\\u6587(\\u7b80\\u4f53|\\u7e41\\u9ad4)?|\\u4e2d\\u6587\\uff08(\\u7b80\\u4f53?" +
     "|\\u7e41\\u9ad4)\\uff09|\\u7b80\\u4f53|\\u7e41\\u9ad4)( language)??($|\\n)"
 
-  val patternContainLanguageWord: Pattern = Pattern.compile(regexContainLanguageWord);
-  val matcherContainLanguageWord: Matcher = patternContainLanguageWord.matcher("");
+  val patternContainLanguageWord: Pattern = Pattern.compile(regexContainLanguageWord)
+  val matcherContainLanguageWord: Matcher = patternContainLanguageWord.matcher("")
   def containLanguageWord(str: String): Boolean = {
     var text: String = str
     var result: Boolean = false
@@ -199,7 +200,7 @@ object Word extends Serializable {
   // 5.word Contain URL :
   val patternWordContainURL: Pattern = Pattern.compile("\\b(https?:\\/\\/|www\\.)\\S{10}.*", Pattern.CASE_INSENSITIVE
     | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherWordContainURL: Matcher = patternWordContainURL.matcher("");
+  val matcherWordContainURL: Matcher = patternWordContainURL.matcher("")
 
   def containURLWord(str: String): Boolean = {
     var text: String = str
@@ -214,8 +215,8 @@ object Word extends Serializable {
 
   // 6. Longest Word
   val patternLongestWord: Pattern = Pattern.compile("\\p{IsAlphabetic}+", Pattern.CASE_INSENSITIVE
-    | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ);
-  val matcherLongestWord: Matcher = patternWordContainURL.matcher("");
+    | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcherLongestWord: Matcher = patternWordContainURL.matcher("")
 
   def longestWord(str: String): Integer = {
     var max: Integer = null
@@ -233,7 +234,7 @@ object Word extends Serializable {
     }
     max
   }
-  // 7. Bad Word : It is Ok
+  // 7. Bad Word
   val luisVonAhnWordlist: Array[String] =
     Array("abbo", "abo",
       "abortion", "abuse", "addict", "addicts", "adult", "africa",
@@ -494,21 +495,21 @@ object Word extends Serializable {
     results
   }
 
-  // 8. Contain Bad Word:It is ok
+  // 8. Contain Bad Word
   val tokensContainBadWord: List[String] = new ArrayList[String](Arrays.asList(luisVonAhnWordlist: _*))
   val patternStringContainBadWord: String = ".*\\b(" + StringUtils.join(tokensContainBadWord, "|") + ")\\b.*"
   val patternContainBadWord: Pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherContainBadWord: Matcher = patternContainBadWord.matcher("");
+  val matcherContainBadWord: Matcher = patternContainBadWord.matcher("")
 
   def containBadWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      results = matcherContainBadWord.reset(text).matches();
+      results = matcherContainBadWord.reset(text).matches()
     }
     results
   }
-  // 9.Ban Builder Word:It is OK
+  // 9.Ban Builder Word
   val banBuilderWordList: Array[String] = Array("$#!+", "$1ut", "$h1t",
     "$hit", "$lut", "'ho", "'hobag", "a$$", "anal", "anus", "ass",
     "assmunch", "b1tch", "ballsack", "bastard", "beaner",
@@ -644,13 +645,15 @@ object Word extends Serializable {
   val tokensBanBuilder: List[String] = new ArrayList[String](Arrays.asList(banBuilderWordList: _*))
   val patternStringBanBuilder: String = ".*\\b(" + StringUtils.join(tokensBanBuilder, "|") + ")\\b.*"
   val patternBanBuilder: Pattern = Pattern.compile(patternStringBanBuilder, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherBanBuilder: Matcher = patternBanBuilder.matcher("");
+  val matcherBanBuilder: Matcher = patternBanBuilder.matcher("")
 
   def banBuilderWordListWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      results = matcherBanBuilder.reset(text).matches();
+      text = text.trim()
+      text = text.toLowerCase()
+      results = matcherBanBuilder.reset(text).matches()
     }
     results
   }
@@ -673,14 +676,14 @@ object Word extends Serializable {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      text = text.trim();
-      text = text.toLowerCase();
-      results = matcherContainLanguageWord.reset(text).matches();
+      text = text.trim()
+      text = text.toLowerCase()
+      results = matcherContainLanguageWord.reset(text).matches()
     }
     results
   }
 
-  // 12. Male Names: It is ok
+  // 12. Male Names
   val maleNames: Array[String] = Array("AARON", "ADAM", "ADRIAN",
     "ALAN", "ALBERT", "ALBERTO", "ALEX", "ALEXANDER", "ALFRED",
     "ALFREDO", "ALLAN", "ALLEN", "ALVIN", "ANDRE", "ANDREW", "ANDY",
@@ -730,19 +733,19 @@ object Word extends Serializable {
 
   val tokensMaleName: List[String] = new ArrayList[String](Arrays.asList(maleNames: _*))
   val patternStringMaleName: String = ".*\\b(" + StringUtils.join(tokensMaleName, "|") + ")\\b.*"
-  val patternMaleName: Pattern = Pattern.compile(patternStringMaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ);
-  val matcherMaleName: Matcher = patternMaleName.matcher("");
+  val patternMaleName: Pattern = Pattern.compile(patternStringMaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcherMaleName: Matcher = patternMaleName.matcher("")
 
   def maleNameWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      results = matcherMaleName.reset(text).matches();
+      results = matcherMaleName.reset(text).matches()
     }
     results
   }
 
-  // 13. Female Names: It is ok
+  // 13. Female Names
   val femaleNames: Array[String] = Array("AGNES", "ALICE",
     "ALICIA", "ALLISON", "ALMA", "AMANDA", "AMBER", "AMY", "ANA",
     "ANDREA", "ANGELA", "ANITA", "ANN", "ANNA", "ANNE", "ANNETTE",
@@ -794,13 +797,13 @@ object Word extends Serializable {
 
   val tokensFemaleName: List[String] = new ArrayList[String](Arrays.asList(femaleNames: _*))
   val patternStringFemaleName: String = ".*\\b(" + StringUtils.join(tokensFemaleName, "|") + ")\\b.*"
-  val patternFeMaleName: Pattern = Pattern.compile(patternStringFemaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ);
-  val matcherFeMaleName: Matcher = patternFeMaleName.matcher("");
+  val patternFeMaleName: Pattern = Pattern.compile(patternStringFemaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcherFeMaleName: Matcher = patternFeMaleName.matcher("")
   def femaleNameWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      results = matcherFeMaleName.reset(text).matches();
+      results = matcherFeMaleName.reset(text).matches()
     }
     results
   }
@@ -911,8 +914,8 @@ object Word extends Serializable {
 
   val tokensStopWords: List[String] = new ArrayList[String](Arrays.asList(stopWord: _*))
   val patternStringStopWord: String = ".*\\b(" + StringUtils.join(tokensStopWords, "|") + ")\\b.*"
-  val patternStopWords: Pattern = Pattern.compile(patternStringStopWord, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ);
-  val matcherStopWord: Matcher = patternStopWords.matcher("");
+  val patternStopWords: Pattern = Pattern.compile(patternStringStopWord, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcherStopWord: Matcher = patternStopWords.matcher("")
 
   def currentPreviousCommentTialNumberSharingWordsWithoutStopWords(str_current: String, Str_Prev: String): Integer = {
     var results = -1
@@ -931,7 +934,7 @@ object Word extends Serializable {
 
         var text: String = word
         if (text != null) {
-          flag = matcherStopWord.reset(text).matches();
+          flag = matcherStopWord.reset(text).matches()
           if (word.trim().!=("") && flag != true && prev_commentTail.contains(word)) {
             results = results + 1
           }

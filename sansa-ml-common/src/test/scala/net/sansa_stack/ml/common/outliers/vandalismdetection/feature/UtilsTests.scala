@@ -1,9 +1,10 @@
 package net.sansa_stack.ml.common.outliers.vandalismdetection.feature
 
+import java.util.regex.{ Matcher, Pattern }
+
 import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
+
 import org.scalatest.FunSuite
-import java.util.regex.Pattern
-import java.util.regex.Matcher
 
 class UtilsTests extends FunSuite {
 
