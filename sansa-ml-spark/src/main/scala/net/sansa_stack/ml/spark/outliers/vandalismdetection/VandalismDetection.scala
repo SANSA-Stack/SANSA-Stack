@@ -70,7 +70,7 @@ class VandalismDetection extends Serializable {
 
   // *********************************************************************************
   // Function 2:Training XML and Vandalism Detection
-  def parseStandardXML(input: String, spark: SparkSession): DataFrame = {
+  def parseStandardXML(input: String, metaFile: String, truthFile: String, spark: SparkSession): DataFrame = {
 
     import spark.sqlContext.implicits._
     import org.apache.spark.sql.types._
@@ -79,8 +79,6 @@ class VandalismDetection extends Serializable {
     // Streaming records:
     val jobConf = new JobConf()
     val triples = XML.parse(input, spark).cache()
-
-    println(triples.count())
 
     // ======= Json part :
     // Json RDD : Each record has its Revision iD:
@@ -258,7 +256,7 @@ class VandalismDetection extends Serializable {
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
-      .load("hdfs://localhost:9000/mydata/Meta.csv").select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE",
+      .load(metaFile).select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE",
         "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
     // df_GeoInf.show()
 
@@ -266,7 +264,7 @@ class VandalismDetection extends Serializable {
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
-      .load("hdfs://localhost:9000/mydata/truth.csv").select("REVISION_ID", "ROLLBACK_REVERTED", "UNDO_RESTORE_REVERTED")
+      .load(truthFile).select("REVISION_ID", "ROLLBACK_REVERTED", "UNDO_RESTORE_REVERTED")
     // df_GeoInf.show()
 
     val AfterJoinGeoInfo_All_Features = AfterJoinItem5_All_Features.as("T1").join(df_GeoInf.as("T2"), $"T1.Rid" === $"T2.REVISION_ID", "leftouter").drop("REVISION_ID").cache()
@@ -594,7 +592,7 @@ class VandalismDetection extends Serializable {
 
   // ***********************************************************************************************************************************************
   // Function 3:Testing XML and Vandalism Detection
-  def testParseStandardXML(input: String, spark: SparkSession): DataFrame = {
+  def testParseStandardXML(input: String, metaFile: String, truthFile: String, spark: SparkSession): DataFrame = {
     import spark.sqlContext.implicits._
     import org.apache.spark.sql.functions._ // for UDF
     import org.apache.spark.sql.types._
@@ -607,20 +605,14 @@ class VandalismDetection extends Serializable {
     // ======= Json part :
     // Json RDD : Each record has its Revision iD:
     val JsonRDD = triples.map(_.split("NNLL")).map(v => replacingWithQuoto(v(0), v(8))).cache()
-    // JsonRDD.foreach(println)
-    // println(JsonRDD.count())
 
     // Data set
     val Ds_Json = spark.sqlContext.jsonRDD(JsonRDD).select("key", "id", "labels", "descriptions", "aliases", "claims", "sitelinks").cache()
-    // Ds_Json.show()
-    // println(Ds_Json.count())
 
     // ======= Tags part : // Contributor IP here is in Decimal format not IP format and It is converted in ParseNormalXml stage
     val TagsRDD = triples.map(_.split("NNLL")).map(x => (x(0), x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8), x(9), x(10), x(11))).cache()
     val DF_Tags = TagsRDD.toDF("Rid", "Itemid", "comment", "pid", "time", "contributorIP",
       "contributorID", "contributorName", "JsonText", "model", "format", "sha").cache()
-    //    DF_Tags.show()
-    //    println(DF_Tags.count())
 
     // ======== Join Json part with Tag Part:============================
     // Joining to have full data
@@ -644,13 +636,10 @@ class VandalismDetection extends Serializable {
     val x = RDD_After_JoinDF.map(row => (row(0).toString().toInt, row)).cache()
     val part = new RangePartitioner(4, x)
     val partitioned = x.partitionBy(part).persist() // persist is important for this case and obligatory.
-    // partitioned.foreach(println)
     //
     //      //=====================================================All Features Based on Categories of Features Data Type :==================================================================================
     //
     val Result_all_Features = partitioned.map { case (x, y) => (x.toString() + "," + allFeatures(y).toString()) } // we convert the Pair RDD to String one LineRDD to be able to make DF based on ","
-    // Result_all_Features.foreach(println)
-    // println("nayef" + Result_all_Features.count())
 
     // Conver the RDD of All Features to  DataFrame:
 
@@ -788,7 +777,7 @@ class VandalismDetection extends Serializable {
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
-      .load("hdfs://localhost:9000/mydata/Meta.csv").select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE",
+      .load(metaFile).select("REVISION_ID", "REVISION_SESSION_ID", "USER_COUNTRY_CODE", "USER_CONTINENT_CODE", "USER_TIME_ZONE",
         "USER_REGION_CODE", "USER_CITY_NAME", "USER_COUNTY_NAME", "REVISION_TAGS")
     // df_GeoInf.show()
 
@@ -796,7 +785,7 @@ class VandalismDetection extends Serializable {
       .format("com.databricks.spark.csv")
       .option("header", "true") // Use first line of all files as header
       .option("inferSchema", "true") // Automatically infer data types
-      .load("hdfs://localhost:9000/mydata/truth.csv").select("REVISION_ID", "ROLLBACK_REVERTED", "UNDO_RESTORE_REVERTED")
+      .load(truthFile).select("REVISION_ID", "ROLLBACK_REVERTED", "UNDO_RESTORE_REVERTED")
     // df_GeoInf.show()
 
     val AfterJoinGeoInfo_All_Features = AfterJoinItem5_All_Features.as("T1").join(df_GeoInf.as("T2"), $"T1.Rid" === $"T2.REVISION_ID", "leftouter").drop("REVISION_ID").cache()
@@ -1863,7 +1852,6 @@ class VandalismDetection extends Serializable {
       full_Str_Result = full_Str_Result + "," + Prev_action1.trim()
       // full_Str_Result = full_Str_Result + "," + Prev_SubAction.trim()
 
-      // println(row(16).toString())
     } else {
 
       full_Str_Result = full_Str_Result + "," + "NA"

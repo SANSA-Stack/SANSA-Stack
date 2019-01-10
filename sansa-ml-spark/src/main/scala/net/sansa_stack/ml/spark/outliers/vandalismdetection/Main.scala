@@ -15,6 +15,8 @@ object Main {
     val rdfType = args(0)
     val input = args(1)
     val prefixes = args(2)
+    val metaFile = args(3)
+    val truthFile = args(4)
     // Distributed RDF Parser:
     if (rdfType == "1") {
 
@@ -22,8 +24,8 @@ object Main {
     } // Distributed Standard Parser and Vandalism Detection:
     else if (rdfType == "2") {
 
-      val Training_Data = vd.parseStandardXML(input, spark)
-      val Testing_Data = vd.parseStandardXML(input, spark)
+      val Training_Data = vd.parseStandardXML(input, metaFile, truthFile, spark)
+      val Testing_Data = vd.parseStandardXML(input, metaFile, truthFile, spark)
 
       // 1.Random Forest Classifer:
       val RandomForestClassifer_Values = Classifier.randomForestClassifer(Training_Data, Testing_Data, spark)
