@@ -9,18 +9,18 @@ import net.sansa_stack.ml.spark.outliers.vandalismdetection.parser._
 
 class VandalismDetectionTests extends FunSuite with DataFrameSuiteBase {
 
-  test("parsing RDF data of JTriple format should result in 0") {
+  test("parsing XML data should match") {
 
-    val input = getClass.getResource("/outliers/vandalismdetection/data.json").getPath
+    val input = getClass.getResource("/outliers/vandalismdetection/wdvc16_2016_01.xml").getPath
 
     val jobConf = new JobConf()
-    val triples = JTriple.parse(jobConf, input, spark)
+    val triples = XML.parse(input, spark)
     val size = triples.count()
 
-    assert(size == 0)
+    assert(size == 4291)
   }
 
-  test("parsing RDF data of XML format should result in 0") {
+  test("Detecting vandalism on the set of wikidata should result in 0 outliers") {
 
     val input = getClass.getResource("/outliers/vandalismdetection/wdvc16_2016_01.xml").getPath
     val metaFile = getClass.getResource("/outliers/vandalismdetection/wdvc16_meta.csv").getPath

@@ -17,60 +17,9 @@ import net.sansa_stack.ml.spark.outliers.vandalismdetection.parser._
 
 class VandalismDetection extends Serializable {
 
-  // Function 1 : Distributed RDF Parser Approach
-  def parseRDF(spark: SparkSession, input: String, prefixes: String = "", rdfType: String): Unit = {
-
-    import spark.implicits._
-
-    println("*********************************************************************")
-    println("Distributed RDF Parser Model")
-    println("Please Enter 1 for JTriple and  2 for TRIX  process and 3 for RDFXML:")
-    println("*********************************************************************")
-
-    if (rdfType == "1") {
-      println("JTriple.........!!!!!!")
-      // Streaming records:RDFJtriple file :
-      val jobConf = new JobConf()
-
-      val triples = JTriple.parse(jobConf, input, spark)
-      triples.foreach(println)
-      // ----------------------------DF for RDF TRIX ------------------------------------------
-      val triplesDF = JTriple.toDF(triples, spark)
-      triplesDF.show()
-
-    } else if (rdfType == "2") {
-
-      println("TRIX.........!!!!!!")
-      // Streaming records:RDFTRIX file :
-      val jobConf = new JobConf()
-      val triplesAsTRIX = TRIX.parse(jobConf, input, spark)
-      triplesAsTRIX.foreach(println)
-      // ----------------------------DF for RDF TRIX ------------------------------------------
-      //  Create SQLContext Object:
-      val triplesAsTRIXDF = TRIX.toDF(triplesAsTRIX, spark)
-      triplesAsTRIXDF.show()
-
-    } else if (rdfType == "3") {
-      println("RDF XML .........!!!!!!")
-      // Streaming records:RDFXML file :
-      val jobConf = new JobConf()
-      val jobConfPrefixes = new JobConf()
-
-      val triplesAsRDFXML = RDFXML.parse(jobConf, jobConfPrefixes, input, prefixes, spark)
-      triplesAsRDFXML.foreach(println)
-
-      // ----------------------------DF for RDF XML ------------------------------------------
-      //  Create SQLContext Object:
-      val triplesAsRDFXMLDF = RDFXML.toDF(triplesAsRDFXML, spark)
-      triplesAsRDFXMLDF.show()
-
-    }
-
-  }
-
   // *********************************************************************************
   // Function 2:Training XML and Vandalism Detection
-  def parseStandardXML(input: String, metaFile: String, truthFile: String, spark: SparkSession): DataFrame = {
+  def run(input: String, metaFile: String, truthFile: String, spark: SparkSession): DataFrame = {
 
     import spark.sqlContext.implicits._
     import org.apache.spark.sql.types._
@@ -592,7 +541,7 @@ class VandalismDetection extends Serializable {
 
   // ***********************************************************************************************************************************************
   // Function 3:Testing XML and Vandalism Detection
-  def testParseStandardXML(input: String, metaFile: String, truthFile: String, spark: SparkSession): DataFrame = {
+  def testRun(input: String, metaFile: String, truthFile: String, spark: SparkSession): DataFrame = {
     import spark.sqlContext.implicits._
     import org.apache.spark.sql.functions._ // for UDF
     import org.apache.spark.sql.types._
