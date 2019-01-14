@@ -21,7 +21,6 @@ class ManchesterSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedS
   def rdd: OWLExpressionsRDD = {
     if (_rdd == null) {
       _rdd = spark.owlExpressions(syntax)(filePath)
-//        sc, "hdfs://localhost:9000/ont_manchester.owl")
       _rdd.cache()
     }
 

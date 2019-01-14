@@ -29,7 +29,6 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
   def dataSet: OWLAxiomsDataSet = {
     if (_dataSet == null) {
       _dataSet = env.owl(syntax)(this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath)
-      //        env, "hdfs://localhost:9000/ont_manchester.owl")
     }
 
     _dataSet
