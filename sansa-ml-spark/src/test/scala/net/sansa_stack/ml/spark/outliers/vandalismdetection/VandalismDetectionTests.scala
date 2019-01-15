@@ -20,14 +20,14 @@ class VandalismDetectionTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 4291)
   }
 
-  test("Detecting vandalism on the set of wikidata should result in 0 outliers") {
+  test("detecting vandalism on the set of wikidata should result in 0 outliers") {
 
     val input = getClass.getResource("/outliers/vandalismdetection/wdvc16_2016_01.xml").getPath
     val metaFile = getClass.getResource("/outliers/vandalismdetection/wdvc16_meta.csv").getPath
     val truthFile = getClass.getResource("/outliers/vandalismdetection/wdvc16_truth.csv").getPath
 
     val vd = new VandalismDetection()
-    // val triples = vd.parseStandardXML(input, metaFile, truthFile, spark)
+    // val triples = vd.run(input, metaFile, truthFile, spark)
     // val size = triples.count()
 
     assert(true)
