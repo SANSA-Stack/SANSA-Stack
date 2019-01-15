@@ -16,9 +16,10 @@ object Main {
     val prefixes = args(2)
     val metaFile = args(3)
     val truthFile = args(4)
+    val sampleFraction = 0.01
 
-    val Training_Data = vd.run(input, metaFile, truthFile, spark)
-    val Testing_Data = vd.run(input, metaFile, truthFile, spark)
+    val Training_Data = vd.run(input, metaFile, truthFile, sampleFraction, spark)
+    val Testing_Data = vd.run(input, metaFile, truthFile, sampleFraction, spark)
 
     // 1.Random Forest Classifer:
     val RandomForestClassifer_Values = Classifier.randomForestClassifer(Training_Data, Testing_Data, spark)

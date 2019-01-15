@@ -27,7 +27,8 @@ class VandalismDetectionTests extends FunSuite with DataFrameSuiteBase {
     val truthFile = getClass.getResource("/outliers/vandalismdetection/wdvc16_truth.csv").getPath
 
     val vd = new VandalismDetection()
-    // val triples = vd.run(input, metaFile, truthFile, spark)
+
+    // val triples = vd.run(input, metaFile, truthFile, sampleFraction = 0.001, spark)
     // val size = triples.count()
 
     assert(true)
