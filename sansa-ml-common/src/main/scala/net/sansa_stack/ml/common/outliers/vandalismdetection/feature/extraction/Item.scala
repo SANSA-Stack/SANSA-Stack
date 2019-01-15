@@ -27,7 +27,7 @@ object Item extends Serializable {
     stringMatchValue(str, """"title"""" + ":")
 
   // 6. from claims tag
-  def getNumberOfstatements(str: String): Double =
+  def getNumberOfStatements(str: String): Double =
     stringMatchValue(str, """"statement"""")
 
   // 7. from claims tag

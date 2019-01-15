@@ -584,7 +584,7 @@ class VandalismDetection extends Serializable {
     val RDD_After_JoinDF = DF_Joined.rdd.distinct()
     val x = RDD_After_JoinDF.map(row => (row(0).toString().toInt, row)).cache()
     val part = new RangePartitioner(4, x)
-    val partitioned = x.partitionBy(part).persist() // persist is important for this case and obligatory.
+    val partitioned = x.partitionBy(part).persist()
     //
     //      //=====================================================All Features Based on Categories of Features Data Type :==================================================================================
     //
@@ -1652,7 +1652,7 @@ class VandalismDetection extends Serializable {
     var statement_String = row(12).toString() // from claim
     var NumberOfstatement = 0.0
     if (statement_String != "[]") {
-      NumberOfstatement = Item.getNumberOfstatements(statement_String)
+      NumberOfstatement = Item.getNumberOfStatements(statement_String)
       DoubleValues(5) = NumberOfstatement
 
     } else {
