@@ -91,7 +91,7 @@ Modifiers   := (LIMITk)? (ORDER BY(ASC|DESC)? Var)? (GROUP BYVar+)?
 ```
 
 ## Usage
-The usage of the Semantic Data Lake is documented under the respective SANSA-Query [datalake component](https://github.com/SANSA-Stack/SANSA-Query/tree/feature/datalake/sansa-query-spark/src/main/scala/net/sansa_stack/query/spark/datalake).
+The usage of the Semantic Data Lake is documented under the respective SANSA-Query [datalake component](https://github.com/SANSA-Stack/SANSA-Query/tree/develop/sansa-query-spark/src/main/scala/net/sansa_stack/query/spark/datalake).
 
 ## How to Contribute
 We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
