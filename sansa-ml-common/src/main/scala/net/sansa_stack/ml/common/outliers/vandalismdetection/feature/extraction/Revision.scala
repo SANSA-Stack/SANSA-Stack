@@ -76,10 +76,11 @@ object Revision extends Serializable {
 
   def extractRevisionLanguage(comment: String): String = {
 
-    var langeType = ""
+    var langeType = "NA"
     val flag = checkCommentNormalOrNot(comment)
 
     if (flag == true) { // it is normal comment
+
       val start_point: Int = comment.indexOf("|")
       val end_point: Int = comment.indexOf("*/")
       if (start_point != -1 && end_point != -1) {
@@ -92,7 +93,6 @@ object Revision extends Serializable {
       } else {
         langeType = "NA"
       }
-
     } else {
       langeType = "NA"
     }

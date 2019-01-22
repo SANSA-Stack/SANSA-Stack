@@ -16,11 +16,10 @@ object Sentence extends Serializable {
 
   // we check the type of Normal comment if it contains Aliases  .
   def extractCommentAliasesLanguageType(comment: String): String = {
-
     var langeType = ""
     var suffix = ""
 
-    val flag = checkCommentNormalOrNot(comment)
+    val flag = Comment.checkCommentNormalOrNot(comment)
 
     if (flag == true) { // it is normal comment
 
@@ -40,7 +39,8 @@ object Sentence extends Serializable {
           }
         }
 
-        val suffixComment = extractCommentTail(comment)
+        val suffixComment = Comment.extractCommentTail(comment)
+
         if (suffixComment != "NA") {
           suffix = suffixComment.trim()
         }
@@ -55,7 +55,7 @@ object Sentence extends Serializable {
     var langeType = ""
     var suffix = ""
 
-    val flag = checkCommentNormalOrNot(comment)
+    val flag = Comment.checkCommentNormalOrNot(comment)
 
     if (flag == true) { // it is normal comment
 
@@ -75,7 +75,8 @@ object Sentence extends Serializable {
           }
         }
 
-        val suffixComment = extractCommentTail(comment)
+        val suffixComment = Comment.extractCommentTail(comment)
+
         if (suffixComment != "NA") {
           suffix = suffixComment.trim()
         }
@@ -90,7 +91,7 @@ object Sentence extends Serializable {
     var langeType = ""
     var suffix = ""
 
-    val flag = checkCommentNormalOrNot(comment)
+    val flag = Comment.checkCommentNormalOrNot(comment)
 
     if (flag == true) { // it is normal comment
 
@@ -110,7 +111,8 @@ object Sentence extends Serializable {
           }
         }
 
-        val suffixComment = extractCommentTail(comment)
+        val suffixComment = Comment.extractCommentTail(comment)
+
         if (suffixComment != "NA") {
           suffix = suffixComment.trim()
         }
@@ -123,7 +125,7 @@ object Sentence extends Serializable {
   def extractCommentSiteLinkLanguageType(comment: String): String = {
 
     var langeType = ""
-    val flag = checkCommentNormalOrNot(comment)
+    val flag = Comment.checkCommentNormalOrNot(comment)
 
     if (flag == true) { // it is normal comment
 

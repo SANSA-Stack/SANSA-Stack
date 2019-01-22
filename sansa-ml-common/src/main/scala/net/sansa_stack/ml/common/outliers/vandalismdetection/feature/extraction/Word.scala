@@ -7,13 +7,17 @@ import org.apache.commons.lang3.StringUtils
 
 import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
 
-object Word extends Serializable {
+class Word extends Serializable {
+
   def wordFeatures(StrValue: String): Array[Double] = {
+
     var RatioValues = new Array[Double](17)
     // 1. Double for LanguageWord Ratio
     val languageWord = languageWordRatioCharacter(StrValue)
     if (!languageWord.isNaN()) {
       RatioValues(0) = roundDouble(languageWord)
+    } else {
+      RatioValues(0) = 0.0
     }
     // 2. Boolean --> Double for Contain language word  (1 Boolean)
     val isContainLanguageWord = containLanguageWord(StrValue)
@@ -21,39 +25,53 @@ object Word extends Serializable {
       RatioValues(1) = 1.0
     } else if (isContainLanguageWord == false) {
       RatioValues(1) = 0.0
+    } else {
+      RatioValues(1) = 0.0
     }
     // 3.Double for LowerCaseWord Ratio
     val lowerCaseWord = lowercaseWordRatio(StrValue)
     if (!lowerCaseWord.isNaN()) {
       RatioValues(2) = roundDouble(lowerCaseWord)
+    } else {
+      RatioValues(2) = 0.0
     }
     // 4.Integer --> to Double for LongestWord (1 Integer)
     val longWord = longestWord(StrValue)
     if (longWord != null) {
       val castedValue = longWord.toDouble
       RatioValues(3) = castedValue
+    } else {
+      RatioValues(3) = 0.0
     }
-    // 5.Boolean --> Double for word Contain URL -ok(2 boolean)
+    // 5.Boolean --> Double for word Contain URL (2 boolean)
     val isWordContainURL = containURLWord(StrValue)
     if (isWordContainURL == true) {
       RatioValues(4) = 1.0
     } else if (isWordContainURL == false) {
       RatioValues(4) = 0.0
+    } else {
+      RatioValues(4) = 0.0
     }
     // 6.Double for  Bad Word Ratio
-    val badWord = BadWordRatio(StrValue)
+    val badWord = badWordRatio(StrValue)
     if (!badWord.isNaN()) {
       RatioValues(5) = roundDouble(badWord)
+    } else {
+      RatioValues(5) = 0.0
     }
-    // 7. Double for UppercaseWord Ratio -ok
+    // 7. Double for UppercaseWord Ratio
     val upperCaseWord = uppercaseWordRatio(StrValue)
     if (!upperCaseWord.isNaN()) {
       RatioValues(6) = roundDouble(upperCaseWord)
+    } else {
+      RatioValues(6) = 0.0
     }
     // 8.Double for Ban Word Ratio
-    val banWord = BanWordRatio(StrValue)
+    val banWord = banWordRatio(StrValue)
     if (!banWord.isNaN()) {
       RatioValues(7) = roundDouble(banWord)
+    } else {
+      RatioValues(7) = 0.0
     }
 
     // 9.Boolean Femal FirstName (3 Boolean )
@@ -61,6 +79,8 @@ object Word extends Serializable {
     if (isFemalFirstName == true) {
       RatioValues(8) = 1.0
     } else if (isFemalFirstName == false) {
+      RatioValues(8) = 0.0
+    } else {
       RatioValues(8) = 0.0
     }
 
@@ -70,6 +90,8 @@ object Word extends Serializable {
       RatioValues(9) = 1.0
     } else if (isMaleFirstName == false) {
       RatioValues(9) = 0.0
+    } else {
+      RatioValues(9) = 0.0
     }
 
     // 11. Boolean containBadWord_word (5 Boolean )
@@ -77,6 +99,8 @@ object Word extends Serializable {
     if (isContainBad_Word == true) {
       RatioValues(10) = 1.0
     } else if (isContainBad_Word == false) {
+      RatioValues(10) = 0.0
+    } else {
       RatioValues(10) = 0.0
     }
 
@@ -86,16 +110,18 @@ object Word extends Serializable {
       RatioValues(11) = 1.0
     } else if (isContainBan_Word == false) {
       RatioValues(11) = 0.0
+    } else {
+      RatioValues(11) = 0.0
     }
     RatioValues
   }
 
   def wordRatio(str: String, pattern: Pattern): Double = {
     val pattern_splitting: Pattern = Pattern.compile("\\s+")
-    var wordRatio: Double = -1.0;
+    var wordRatio: Double = 0.0
     val words: Array[String] = pattern_splitting.split(str.trim())
     if (words.length > 0) {
-      wordRatio = 0;
+      wordRatio = 0
     }
     val matcher: Matcher = pattern.matcher("")
     for (word <- words) {
@@ -109,77 +135,95 @@ object Word extends Serializable {
   }
 
   // 1.Language Words Ratio :
-  val regexLanguageWordRatio: String = "(a(frikaa?ns|lbanian?|lemanha|ng(lais|ol)|ra?b(e?|[ei]c|ian?|isc?h)" +
-    "|rmenian?|ssamese|azeri|z[e\\u0259]rba(ijani?|ycan(ca)?|yjan)|\\u043d\\u0433\\u043b\\u0438\\u0439\\u0441\\u043a\\u0438\\u0439)" +
-    "|b(ahasa( (indonesia|jawa|malaysia|melayu))?|angla|as(k|qu)e|[aeo]ng[ao]?li|elarusian?|okm\\u00e5l|osanski" +
-    "|ra[sz]il(ian?)?|ritish( kannada)?|ulgarian?)|c(ebuano|hina|hinese( simplified)?|zech|roat([eo]|ian?)" +
-    "|atal[a\\u00e0]n?|\\u0440\\u043f\\u0441\\u043a\\u0438|antonese)|[c\\u010d](esky|e[s\\u0161]tina)\r\n" +
-    "|d(an(isc?h|sk)|e?uts?ch)|e(esti|ll[hi]nika|ng(els|le(ski|za)|lisc?h)|spa(g?[n\\u00f1]h?i?ol|nisc?h)" +
-    "|speranto|stonian|usk[ae]ra)|f(ilipino|innish|ran[c\\u00e7](ais|e|ez[ao])|ren[cs]h|arsi|rancese)" +
-    "|g(al(ego|ician)|uja?rati|ree(ce|k)|eorgian|erman[ay]?|ilaki)|h(ayeren|ebrew|indi|rvatski|ungar(y|ian))" +
-    "|i(celandic|ndian?|ndonesian?|ngl[e\\u00ea]se?|ngilizce|tali(ano?|en(isch)?))|ja(pan(ese)?|vanese)" +
-    "|k(a(nn?ada|zakh)|hmer|o(rean?|sova)|urd[i\\u00ee])|l(at(in[ao]?|vi(an?|e[s\\u0161]u))|ietuvi[u\\u0173]" +
-    "|ithuanian?)|m(a[ck]edon(ian?|ski)|agyar|alay(alam?|sian?)?|altese|andarin|arathi|elayu|ontenegro|ongol(ian?)" +
-    "|yanmar)|n(e(d|th)erlands?|epali|orw(ay|egian)|orsk( bokm[a\\u00e5]l)?|ynorsk)|o(landese|dia)|p(ashto" +
-    "|ersi?an?|ol(n?isc?h|ski)|or?tugu?[e\\u00ea]se?(( d[eo])? brasil(eiro)?| ?\\(brasil\\))?|unjabi)|r(om[a\\u00e2i]ni?[a\\u0103]n?|um(ano" +
-    "|\\u00e4nisch)|ussi([ao]n?|sch))|s(anskrit|erbian|imple english|inha?la|lov(ak(ian?)?|en\\u0161?[c\\u010d]ina|en(e|ij?an?)|uomi)" +
-    "|erbisch|pagnolo?|panisc?h|rbeska|rpski|venska|c?wedisc?h|hqip)|t(a(galog|mil)|elugu|hai(land)?|i[e\\u1ebf]ngv i[e\\u1ec7]t" +
-    "|[u\\u00fc]rk([c\\u00e7]e|isc?h|i\\u015f|ey))|u(rdu|zbek)|v(alencia(no?)?|ietnamese)|welsh" +
-    "|(\\u0430\\u043d\\u0433\\u043b\\u0438\\u0438\\u0441|[k\\u043a]\\u0430\\u043b\\u043c\\u044b\\u043a\\u0441" +
-    "|[k\\u043a]\\u0430\\u0437\\u0430\\u0445\\u0441|\\u043d\\u0435\\u043c\\u0435\\u0446|[p\\u0440]\\u0443\\u0441\\u0441" +
-    "|[y\\u0443]\\u0437\\u0431\\u0435\\u043a\\u0441)\\u043a\\u0438\\u0439( \\u044f\\u0437\\u044b\\u043a)??|\\u05e2\\u05d1\\u05e8\\u05d9\\u05ea" +
-    "|[k\\u043a\\u049b](\\u0430\\u0437\\u0430[\\u043a\\u049b]\\u0448\\u0430|\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430|\\u0438\\u0440\\u0438\\u043b\\u043b)" +
-    "|\\u0443\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a(\\u0430|\\u043e\\u044e)|\\u0431(\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f" +
-    "|\\u044a\\u043b\\u0433\\u0430\\u0440\\u0441\\u043a\\u0438( \\u0435\\u0437\\u0438\\u043a)?)|\\u03b5\\u03bb\\u03bb[\\u03b7\\u03b9]\\u03bd\\u03b9\\u03ba(\\u03ac|\\u03b1)" +
-    "|\\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8|\\u0939\\u093f\\u0928\\u094d\\u0926\\u0940|\\u0e44\\u0e17\\u0e22|[m\\u043c]\\u043e\\u043d\\u0433\\u043e\\u043b(\\u0438\\u0430)?" +
-    "|([c\\u0441]\\u0440\\u043f|[m\\u043c]\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d)\\u0441\\u043a\\u0438|\\u0627\\u0644\\u0639\\u0631\\u0628\\u064a\\u0629|\\u65e5\\u672c\\u8a9e" +
-    "|\\ud55c\\uad6d(\\ub9d0|\\uc5b4)|\\u200c\\u0939\\u093f\\u0928\\u0926\\u093c\\u093f|\\u09ac\\u09be\\u0982\\u09b2\\u09be|\\u0a2a\\u0a70\\u0a1c\\u0a3e\\u0a2c\\u0a40" +
-    "|\\u092e\\u0930\\u093e\\u0920\\u0940|\\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1|\\u0627\\u064f\\u0631\\u062f\\u064f\\u0648|\\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd" +
-    "|\\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41|\\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0|\\u0641\\u0627\\u0631\\u0633\\u06cc|\\u067e\\u0627\\u0631\\u0633\\u06cc" +
-    "|\\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02|\\u067e\\u069a\\u062a\\u0648|\\u1019\\u103c\\u1014\\u103a\\u1019\\u102c\\u1018\\u102c\\u101e\\u102c|\\u4e2d\\u6587(\\u7b80\\u4f53" +
-    "|\\u7e41\\u9ad4)?|\\u4e2d\\u6587\\uff08(\\u7b80\\u4f53?|\\u7e41\\u9ad4)\\uff09|\\u7b80\\u4f53|\\u7e41\\u9ad4)"
-
-  val patternLanguageWordRatio: Pattern = Pattern.compile(regexLanguageWordRatio)
+  val regex_LanguageWordRatio: String = """(a(frikaa?ns|lbanian?|lemanha|ng(lais|ol)|ra?b(e?|[ei]c|ian?|isc?h)
+    |rmenian?|ssamese|azeri|z[e\\u0259]rba(ijani?|ycan(ca)?|yjan)|\\u043d\\u0433\\u043b\\u0438\\u0439\\u0441
+    \\u043a\\u0438\\u0439)|b(ahasa( (indonesia|jawa|malaysia|melayu))?|angla|as(k|qu)e|[aeo]ng[ao]?li|elarusian?
+    |okm\\u00e5l|osanski|ra[sz]il(ian?)?|ritish( kannada)?|ulgarian?)|c(ebuano|hina|hinese( simplified)?|zech
+    |roat([eo]|ian?)|atal[a\\u00e0]n?|\\u0440\\u043f\\u0441\\u043a\\u0438|antonese)|[c\\u010d](esky|e[s
+    \\u0161]tina)\r\n|d(an(isc?h|sk)|e?uts?ch)|e(esti|ll[hi]nika|ng(els|le(ski|za)|lisc?h)|spa(g?[n\\u00f1]
+    h?i?ol|nisc?h)|speranto|stonian|usk[ae]ra)|f(ilipino|innish|ran[c\\u00e7](ais|e|ez[ao])|ren[cs]h|arsi|rancese)
+    |g(al(ego|ician)|uja?rati|ree(ce|k)|eorgian|erman[ay]?|ilaki)|h(ayeren|ebrew|indi|rvatski|ungar(y|ian))
+    |i(celandic|ndian?|ndonesian?|ngl[e\\u00ea]se?|ngilizce|tali(ano?|en(isch)?))|ja(pan(ese)?|vanese)
+    |k(a(nn?ada|zakh)|hmer|o(rean?|sova)|urd[i\\u00ee])|l(at(in[ao]?|vi(an?|e[s\\u0161]u))|ietuvi[u\\u0173]
+    |ithuanian?)|m(a[ck]edon(ian?|ski)|agyar|alay(alam?|sian?)?|altese|andarin|arathi|elayu|ontenegro
+    |ongol(ian?)|yanmar)|n(e(d|th)erlands?|epali|orw(ay|egian)|orsk( bokm[a\\u00e5]l)?|ynorsk)|o(landese|dia)
+    |p(ashto|ersi?an?|ol(n?isc?h|ski)|or?tugu?[e\\u00ea]se?(( d[eo])? brasil(eiro)?| ?\\(brasil\\))?|unjabi)
+    |r(om[a\\u00e2i]ni?[a\\u0103]n?|um(ano|\\u00e4nisch)|ussi([ao]n?|sch))|s(anskrit|erbian|imple english
+    |inha?la|lov(ak(ian?)?|en\\u0161?[c\\u010d]ina|en(e|ij?an?)|uomi)|erbisch|pagnolo?|panisc?h|rbeska|rpski
+    |venska|c?wedisc?h|hqip)|t(a(galog|mil)|elugu|hai(land)?|i[e\\u1ebf]ng vi[e\\u1ec7]t|[u\\u00fc]rk([c\\u00e7]e
+    |isc?h|i\\u015f|ey))|u(rdu|zbek)|v(alencia(no?)?|ietnamese)|welsh|(\\u0430\\u043d\\u0433\\u043b\\u0438
+    \\u0438\\u0441|[k\\u043a]\\u0430\\u043b\\u043c\\u044b\\u043a\\u0441|[k\\u043a]\\u0430\\u0437\\u0430
+    \\u0445\\u0441|\\u043d\\u0435\\u043c\\u0435\\u0446|[p\\u0440]\\u0443\\u0441\\u0441|[y\\u0443]\\u0437
+    \\u0431\\u0435\\u043a\\u0441)\\u043a\\u0438\\u0439( \\u044f\\u0437\\u044b\\u043a)??|\\u05e2\\u05d1
+    \\u05e8\\u05d9\\u05ea|[k\\u043a\\u049b](\\u0430\\u0437\\u0430[\\u043a\\u049b]\\u0448\\u0430|\\u044b
+    \\u0440\\u0433\\u044b\\u0437\\u0447\\u0430|\\u0438\\u0440\\u0438\\u043b\\u043b)|\\u0443\\u043a
+    \\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a(\\u0430|\\u043e\\u044e)|\\u0431(\\u0435\\u043b
+    \\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f|\\u044a\\u043b\\u0433\\u0430\\u0440\\u0441\\u043a
+    \\u0438( \\u0435\\u0437\\u0438\\u043a)?)|\\u03b5\\u03bb\\u03bb[\\u03b7\\u03b9]\\u03bd\\u03b9\\u03ba
+    (\\u03ac|\\u03b1)|\\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8|\\u0939\\u093f\\u0928\\u094d
+    \\u0926\\u0940|\\u0e44\\u0e17\\u0e22|[m\\u043c]\\u043e\\u043d\\u0433\\u043e\\u043b(\\u0438\\u0430)?
+    |([c\\u0441]\\u0440\\u043f|[m\\u043c]\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d)\\u0441\\u043a\\u0438
+    |\\u0627\\u0644\\u0639\\u0631\\u0628\\u064a\\u0629|\\u65e5\\u672c\\u8a9e|\\ud55c\\uad6d(\\ub9d0|\\uc5b4)
+    |\\u200c\\u0939\\u093f\\u0928\\u0926\\u093c\\u093f|\\u09ac\\u09be\\u0982\\u09b2\\u09be|\\u0a2a\\u0a70
+    \\u0a1c\\u0a3e\\u0a2c\\u0a40|\\u092e\\u0930\\u093e\\u0920\\u0940|\\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1|
+    \\u0627\\u064f\\u0631\\u062f\\u064f\\u0648|\\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd|\\u0c24\\u0c46\\u0c32
+    \\u0c41\\u0c17\\u0c41|\\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0|\\u0641\\u0627\\u0631\\u0633
+    \\u06cc|\\u067e\\u0627\\u0631\\u0633\\u06cc|\\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02|\\u067e\\u069a
+    \\u062a\\u0648|\\u1019\\u103c\\u1014\\u103a\\u1019\\u102c\\u1018\\u102c\\u101e\\u102c|\\u4e2d\\u6587
+    (\\u7b80\\u4f53|\\u7e41\\u9ad4)?|\\u4e2d\\u6587\\uff08(\\u7b80\\u4f53?|\\u7e41\\u9ad4)\\uff09|\\u7b80
+    \\u4f53|\\u7e41\\u9ad4)"""
+  val pattern_LanguageWordRatio: Pattern = Pattern.compile(regex_LanguageWordRatio)
 
   def languageWordRatioCharacter(str: String): Double = {
-    val result: Double = wordRatio(str, patternLanguageWordRatio)
+    val result: Double = wordRatio(str, pattern_LanguageWordRatio)
     result
   }
   // 2. Contain language word :
-  val regexContainLanguageWord: String = "(^|\\n)([ei]n )??(a(frikaa?ns|lbanian?|lemanha|ng(lais|ol)|ra?b(e?|[ei]c|ian?|isc?h)" +
-    "|rmenian?|ssamese|azeri|z[e\\u0259]rba(ijani?|ycan(ca)?|yjan)|\\u043d\\u0433\\u043b\\u0438\\u0439\\u0441\\u043a\\u0438\\u0439)" +
-    "|b(ahasa( (indonesia|jawa|malaysia|melayu))?|angla|as(k|qu)e|[aeo]ng[ao]?li|elarusian?|okm\\u00e5l|osanski|ra[sz]il(ian?)?" +
-    "|ritish( kannada)?|ulgarian?)|c(ebuano|hina|hinese( simplified)?|zech|roat([eo]|ian?)|atal[a\\u00e0]n?|\\u0440\\u043f\\u0441\\u043a\\u0438|antonese)" +
-    "|[c\\u010d](esky|e[s\\u0161]tina)\r\n|d(an(isc?h|sk)|e?uts?ch)|e(esti|ll[hi]nika|ng(els|le(ski|za)|lisc?h)|spa(g?[n\\u00f1]h?i?ol|nisc?h)" +
-    "|speranto|stonian|usk[ae]ra)|f(ilipino|innish|ran[c\\u00e7](ais|e|ez[ao])|ren[cs]h|arsi|rancese)|g(al(ego|ician)|uja?rati|ree(ce|k)" +
-    "|eorgian|erman[ay]?|ilaki)|h(ayeren|ebrew|indi|rvatski|ungar(y|ian))|i(celandic|ndian?|ndonesian?|ngl[e\\u00ea]se?|ngilizce|tali(ano?|en(isch)?))" +
-    "|ja(pan(ese)?|vanese)|k(a(nn?ada|zakh)|hmer|o(rean?|sova)|urd[i\\u00ee])|l(at(in[ao]?|vi(an?|e[s\\u0161]u))|ietuvi[u\\u0173]|ithuanian?)|m(a[ck]edon(ian?" +
-    "|ski)|agyar|alay(alam?|sian?)?|altese|andarin|arathi|elayu|ontenegro|ongol(ian?)|yanmar)|n(e(d|th)erlands?|epali|orw(ay|egian)|orsk( bokm[a\\u00e5]l)?|ynorsk)|o(landese|dia)" +
-    "|p(ashto|ersi?an?|ol(n?isc?h|ski)|or?tugu?[e\\u00ea]se?(( d[eo])? brasil(eiro)?| ?\\(brasil\\))?|unjabi)|r(om[a\\u00e2i]ni?[a\\u0103]n?|um(ano|\\u00e4nisch)" +
-    "|ussi([ao]n?|sch))|s(anskrit|erbian|imple english|inha?la|lov(ak(ian?)?|en\\u0161?[c\\u010d]ina|en(e|ij?an?)|uomi)|erbisch|pagnolo?|panisc?h|rbeska|rpski|venska|c?wedisc?h|hqip)" +
-    "|t(a(galog|mil)|elugu|hai(land)?|i[e\\u1ebf]ng vi[e\\u1ec7]t|[u\\u00fc]rk([c\\u00e7]e|isc?h|i\\u015f|ey))|u(rdu|zbek)|v(alencia(no?)?|ietnamese)" +
-    "|welsh|(\\u0430\\u043d\\u0433\\u043b\\u0438\\u0438\\u0441|[k\\u043a]\\u0430\\u043b\\u043c\\u044b\\u043a\\u0441|[k\\u043a]\\u0430\\u0437\\u0430\\u0445\\u0441|\\u043d\\u0435\\u043c\\u0435\\u0446" +
-    "|[p\\u0440]\\u0443\\u0441\\u0441|[y\\u0443]\\u0437\\u0431\\u0435\\u043a\\u0441)\\u043a\\u0438\\u0439( \\u044f\\u0437\\u044b\\u043a)??|\\u05e2\\u05d1\\u05e8\\u05d9\\u05ea" +
-    "|[k\\u043a\\u049b](\\u0430\\u0437\\u0430[\\u043a\\u049b]\\u0448\\u0430|\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430|\\u0438\\u0440\\u0438\\u043b\\u043b)" +
-    "|\\u0443\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a(\\u0430|\\u043e\\u044e)|\\u0431(\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f" +
-    "|\\u044a\\u043b\\u0433\\u0430\\u0440\\u0441\\u043a\\u0438( \\u0435\\u0437\\u0438\\u043a)?)|\\u03b5\\u03bb\\u03bb[\\u03b7\\u03b9]\\u03bd\\u03b9\\u03ba(\\u03ac|\\u03b1)" +
-    "|\\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8|\\u0939\\u093f\\u0928\\u094d\\u0926\\u0940|\\u0e44\\u0e17\\u0e22|[m\\u043c]\\u043e\\u043d\\u0433\\u043e\\u043b(\\u0438\\u0430)?|([c\\u0441]\\u0440\\u043f" +
-    "|[m\\u043c]\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d)\\u0441\\u043a\\u0438|\\u0627\\u0644\\u0639\\u0631\\u0628\\u064a\\u0629|\\u65e5\\u672c\\u8a9e|\\ud55c\\uad6d(\\ub9d0" +
-    "|\\uc5b4)|\\u200c\\u0939\\u093f\\u0928\\u0926\\u093c\\u093f|\\u09ac\\u09be\\u0982\\u09b2\\u09be|\\u0a2a\\u0a70\\u0a1c\\u0a3e\\u0a2c\\u0a40|\\u092e\\u0930\\u093e\\u0920\\u0940" +
-    "|\\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1|\\u0627\\u064f\\u0631\\u062f\\u064f\\u0648|\\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd|\\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41" +
-    "|\\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0|\\u0641\\u0627\\u0631\\u0633\\u06cc|\\u067e\\u0627\\u0631\\u0633\\u06cc|\\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02" +
-    "|\\u067e\\u069a\\u062a\\u0648|\\u1019\\u103c\\u1014\\u103a\\u1019\\u102c\\u1018\\u102c\\u101e\\u102c|\\u4e2d\\u6587(\\u7b80\\u4f53|\\u7e41\\u9ad4)?|\\u4e2d\\u6587\\uff08(\\u7b80\\u4f53?" +
-    "|\\u7e41\\u9ad4)\\uff09|\\u7b80\\u4f53|\\u7e41\\u9ad4)( language)??($|\\n)"
+  val regex_ContainLanguageWord: String = """(^|\\n)([ei]n )??(a(frikaa?ns|lbanian?|lemanha|ng(lais|ol)|ra?b(e?
+    |[ei]c|ian?|isc?h)|rmenian?|ssamese|azeri|z[e\\u0259]rba(ijani?|ycan(ca)?|yjan)|\\u043d\\u0433\\u043b\\u0438
+    \\u0439\\u0441\\u043a\\u0438\\u0439)|b(ahasa( (indonesia|jawa|malaysia|melayu))?|angla|as(k|qu)e|[aeo]ng[ao]
+    ?li|elarusian?|okm\\u00e5l|osanski|ra[sz]il(ian?)?|ritish( kannada)?|ulgarian?)|c(ebuano|hina|hinese(
+    simplified)?|zech|roat([eo]|ian?)|atal[a\\u00e0]n?|\\u0440\\u043f\\u0441\\u043a\\u0438|antonese)|[c\\u010d]
+    (esky|e[s\\u0161]tina)\r\n|d(an(isc?h|sk)|e?uts?ch)|e(esti|ll[hi]nika|ng(els|le(ski|za)|lisc?h)|spa(g?[n
+    \\u00f1]h?i?ol|nisc?h)|speranto|stonian|usk[ae]ra)|f(ilipino|innish|ran[c\\u00e7](ais|e|ez[ao])|ren[cs]h
+    |arsi|rancese)|g(al(ego|ician)|uja?rati|ree(ce|k)|eorgian|erman[ay]?|ilaki)|h(ayeren|ebrew|indi|rvatski
+    |ungar(y|ian))|i(celandic|ndian?|ndonesian?|ngl[e\\u00ea]se?|ngilizce|tali(ano?|en(isch)?))|ja(pan(ese)?
+    |vanese)|k(a(nn?ada|zakh)|hmer|o(rean?|sova)|urd[i\\u00ee])|l(at(in[ao]?|vi(an?|e[s\\u0161]u))|ietuvi[u\\u0173]
+    |ithuanian?)|m(a[ck]edon(ian?|ski)|agyar|alay(alam?|sian?)?|altese|andarin|arathi|elayu|ontenegro|ongol(ian?)
+    |yanmar)|n(e(d|th)erlands?|epali|orw(ay|egian)|orsk( bokm[a\\u00e5]l)?|ynorsk)|o(landese|dia)|p(ashto|ersi?an?
+    |ol(n?isc?h|ski)|or?tugu?[e\\u00ea]se?(( d[eo])? brasil(eiro)?| ?\\(brasil\\))?|unjabi)|r(om[a\\u00e2i]ni?
+    [a\\u0103]n?|um(ano|\\u00e4nisch)|ussi([ao]n?|sch))|s(anskrit|erbian|imple english|inha?la|lov(ak(ian?)?
+    |en\\u0161?[c\\u010d]ina|en(e|ij?an?)|uomi)|erbisch|pagnolo?|panisc?h|rbeska|rpski|venska|c?wedisc?h|hqip)
+    |t(a(galog|mil)|elugu|hai(land)?|i[e\\u1ebf]ng vi[e\\u1ec7]t|[u\\u00fc]rk([c\\u00e7]e|isc?h|i\\u015f|ey))
+    |u(rdu|zbek)|v(alencia(no?)?|ietnamese)|welsh|(\\u0430\\u043d\\u0433\\u043b\\u0438\\u0438\\u0441|[k\\u043a]
+    \\u0430\\u043b\\u043c\\u044b\\u043a\\u0441|[k\\u043a]\\u0430\\u0437\\u0430\\u0445\\u0441|\\u043d\\u0435\\u043c
+    \\u0435\\u0446|[p\\u0440]\\u0443\\u0441\\u0441|[y\\u0443]\\u0437\\u0431\\u0435\\u043a\\u0441)\\u043a\\u0438
+    \\u0439( \\u044f\\u0437\\u044b\\u043a)??|\\u05e2\\u05d1\\u05e8\\u05d9\\u05ea|[k\\u043a\\u049b](\\u0430\\u0437
+    \\u0430[\\u043a\\u049b]\\u0448\\u0430|\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430|\\u0438\\u0440\\u0438
+    \\u043b\\u043b)|\\u0443\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a(\\u0430|\\u043e\\u044e)|
+    \\u0431(\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f|\\u044a\\u043b\\u0433\\u0430\\u0440
+    \\u0441\\u043a\\u0438( \\u0435\\u0437\\u0438\\u043a)?)|\\u03b5\\u03bb\\u03bb[\\u03b7\\u03b9]\\u03bd\\u03b9
+    \\u03ba(\\u03ac|\\u03b1)|\\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8|\\u0939\\u093f\\u0928\\u094d
+    \\u0926\\u0940|\\u0e44\\u0e17\\u0e22|[m\\u043c]\\u043e\\u043d\\u0433\\u043e\\u043b(\\u0438\\u0430)?|([c
+    \\u0441]\\u0440\\u043f|[m\\u043c]\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d)\\u0441\\u043a\\u0438|\\u0627
+    \\u0644\\u0639\\u0631\\u0628\\u064a\\u0629|\\u65e5\\u672c\\u8a9e|\\ud55c\\uad6d(\\ub9d0|\\uc5b4)|\\u200c
+    \\u0939\\u093f\\u0928\\u0926\\u093c\\u093f|\\u09ac\\u09be\\u0982\\u09b2\\u09be|\\u0a2a\\u0a70\\u0a1c\\u0a3e
+    \\u0a2c\\u0a40|\\u092e\\u0930\\u093e\\u0920\\u0940|\\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1|\\u0627\\u064f\\u0631
+    \\u062f\\u064f\\u0648|\\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd|\\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41|\\u0a97
+    \\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0|\\u0641\\u0627\\u0631\\u0633\\u06cc|\\u067e\\u0627\\u0631\\u0633
+    \\u06cc|\\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02|\\u067e\\u069a\\u062a\\u0648|\\u1019\\u103c\\u1014\\u103a
+    \\u1019\\u102c\\u1018\\u102c\\u101e\\u102c|\\u4e2d\\u6587(\\u7b80\\u4f53|\\u7e41\\u9ad4)?|\\u4e2d\\u6587
+    \\uff08(\\u7b80\\u4f53?|\\u7e41\\u9ad4)\\uff09|\\u7b80\\u4f53|\\u7e41\\u9ad4)( language)??($|\\n)"""
+  val pattern_ContainLanguageWord: Pattern = Pattern.compile(regex_ContainLanguageWord)
+  val matcher_ContainLanguageWord: Matcher = pattern_ContainLanguageWord.matcher("")
 
-  val patternContainLanguageWord: Pattern = Pattern.compile(regexContainLanguageWord)
-  val matcherContainLanguageWord: Matcher = patternContainLanguageWord.matcher("")
   def containLanguageWord(str: String): Boolean = {
     var text: String = str
     var result: Boolean = false
     if (text != null) {
       text = text.trim()
       text = text.toLowerCase()
-      result = matcherContainLanguageWord.reset(text).matches()
+      result = matcher_ContainLanguageWord.reset(text).matches()
     }
     result
   }
@@ -198,9 +242,9 @@ object Word extends Serializable {
     result
   }
   // 5.word Contain URL :
-  val patternWordContainURL: Pattern = Pattern.compile("\\b(https?:\\/\\/|www\\.)\\S{10}.*", Pattern.CASE_INSENSITIVE
+  val pattern_WordContainURL: Pattern = Pattern.compile("\\b(https?:\\/\\/|www\\.)\\S{10}.*", Pattern.CASE_INSENSITIVE
     | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherWordContainURL: Matcher = patternWordContainURL.matcher("")
+  val matcher_WordContainURL: Matcher = pattern_WordContainURL.matcher("")
 
   def containURLWord(str: String): Boolean = {
     var text: String = str
@@ -208,25 +252,26 @@ object Word extends Serializable {
     if (text != null) {
       text = text.trim()
       text = text.toLowerCase()
-      result = matcherWordContainURL.reset(text).matches()
+      result = matcher_WordContainURL.reset(text).matches()
     }
     result
   }
 
   // 6. Longest Word
-  val patternLongestWord: Pattern = Pattern.compile("\\p{IsAlphabetic}+", Pattern.CASE_INSENSITIVE
+  val pattern_longestWord: Pattern = Pattern.compile("\\p{IsAlphabetic}+", Pattern.CASE_INSENSITIVE
     | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherLongestWord: Matcher = patternWordContainURL.matcher("")
+  val matcher_longestWord: Matcher = pattern_WordContainURL.matcher("")
 
   def longestWord(str: String): Integer = {
     var max: Integer = null
     var text: String = str
     if (text != null) {
-      max = 0;
+      max = 0
       text = text.trim()
-      matcherLongestWord.reset(text)
-      while (matcherLongestWord.find()) {
-        var lenght: Integer = matcherLongestWord.end() - matcherLongestWord.start()
+      matcher_longestWord.reset(text)
+      while (matcher_longestWord.find()) {
+
+        var lenght: Integer = matcher_longestWord.end() - matcher_longestWord.start()
         if (lenght > max) {
           max = lenght
         }
@@ -234,7 +279,7 @@ object Word extends Serializable {
     }
     max
   }
-  // 7. Bad Word
+  // 7. Bad Word : It is Ok
   val luisVonAhnWordlist: Array[String] =
     Array("abbo", "abo",
       "abortion", "abuse", "addict", "addicts", "adult", "africa",
@@ -485,7 +530,7 @@ object Word extends Serializable {
   val patternString: String = StringUtils.join(tokens, "|")
   val pattern_badWord: Pattern = Pattern.compile(patternString)
 
-  def BadWordRatio(str: String): Double = {
+  def badWordRatio(str: String): Double = {
     var results: Double = 0.0
     var text: String = str
     if (text != null) {
@@ -495,22 +540,23 @@ object Word extends Serializable {
     results
   }
 
-  // 8. Contain Bad Word
-  val tokensContainBadWord: List[String] = new ArrayList[String](Arrays.asList(luisVonAhnWordlist: _*))
-  val patternStringContainBadWord: String = ".*\\b(" + StringUtils.join(tokensContainBadWord, "|") + ")\\b.*"
-  val patternContainBadWord: Pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherContainBadWord: Matcher = patternContainBadWord.matcher("")
+  // 8. Contain Bad Word:It is ok
+  val tokens_containbadword: List[String] = new ArrayList[String](Arrays.asList(luisVonAhnWordlist: _*))
+  val patternString_containBadword: String = ".*\\b(" + StringUtils.join(tokens_containbadword, "|") + ")\\b.*"
+  val pattern_containBadword: Pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcher_ContainBadWord: Matcher = pattern_containBadword.matcher("")
 
   def containBadWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      results = matcherContainBadWord.reset(text).matches()
+      results = matcher_ContainBadWord.reset(text).matches()
     }
     results
   }
-  // 9.Ban Builder Word
-  val banBuilderWordList: Array[String] = Array("$#!+", "$1ut", "$h1t",
+
+  // 9.Ban Builder Word:It is OK
+  val BanBuilderWordlist: Array[String] = Array("$#!+", "$1ut", "$h1t",
     "$hit", "$lut", "'ho", "'hobag", "a$$", "anal", "anus", "ass",
     "assmunch", "b1tch", "ballsack", "bastard", "beaner",
     "beastiality", "biatch", "beeyotch", "bitch", "bitchy", "blow job",
@@ -642,49 +688,86 @@ object Word extends Serializable {
     "assfucker", "dillweed", "cracker", "teabagging", "shitt", "azz",
     "fuk", "fucknugget", "cuntlick", "g@y", "@ss", "beotch")
 
-  val tokensBanBuilder: List[String] = new ArrayList[String](Arrays.asList(banBuilderWordList: _*))
-  val patternStringBanBuilder: String = ".*\\b(" + StringUtils.join(tokensBanBuilder, "|") + ")\\b.*"
-  val patternBanBuilder: Pattern = Pattern.compile(patternStringBanBuilder, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherBanBuilder: Matcher = patternBanBuilder.matcher("")
+  val tokens_banBuilder: List[String] = new ArrayList[String](Arrays.asList(BanBuilderWordlist: _*))
+  val patternString_banBuilder: String = ".*\\b(" + StringUtils.join(tokens_banBuilder, "|") + ")\\b.*"
+  val pattern_banBuilder: Pattern = Pattern.compile(patternString_banBuilder, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcher_BanBuilder: Matcher = pattern_banBuilder.matcher("")
 
   def banBuilderWordListWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      text = text.trim()
-      text = text.toLowerCase()
-      results = matcherBanBuilder.reset(text).matches()
+      results = matcher_BanBuilder.reset(text).matches()
     }
     results
   }
   // 10 Ban word Ratio:
-  val tokensBan: List[String] = new ArrayList[String](Arrays.asList(banBuilderWordList: _*))
-  val patternStringBan: String = StringUtils.join(tokensBan, "|")
-  val patternBanWord: Pattern = Pattern.compile(patternStringBan)
+  val tokens_ban: List[String] = new ArrayList[String](Arrays.asList(BanBuilderWordlist: _*))
+  val patternString_ban: String = StringUtils.join(tokens_ban, "|")
+  val pattern_banWord: Pattern = Pattern.compile(patternString_ban)
 
-  def BanWordRatio(str: String): Double = {
+  def banWordRatio(str: String): Double = {
     var results: Double = 0.0
     var text: String = str
     if (text != null) {
       text = text.toLowerCase()
-      results = wordRatio(text, patternBanWord)
+      results = wordRatio(text, pattern_banWord)
     }
     results
+
   }
-  // 11.Contain language word
+
+  // 11.Contain language word:It is ok
+  val regex_containLanguageWord: String = """.*(a(frikaa?ns|lbanian?|lemanha|ng(lais|ol)|ra?b(e?|[ei]c|ian?
+    |isc?h)|rmenian?|ssamese|azeri|z[e\\u0259]rba(ijani?|ycan(ca)?|yjan)|\\u043d\\u0433\\u043b\\u0438\\u0439
+    \\u0441\\u043a\\u0438\\u0439)|b(ahasa( (indonesia|jawa|malaysia|melayu))?|angla|as(k|qu)e|[aeo]ng[ao]?li
+    |elarusian?|okm\\u00e5l|osanski|ra[sz]il(ian?)?|ritish( kannada)?|ulgarian?)|c(ebuano|hina|hinese( simplified)?
+    |zech|roat([eo]|ian?)|atal[a\\u00e0]n?|\\u0440\\u043f\\u0441\\u043a\\u0438|antonese)|[c\\u010d](esky|e[s\\u0161]tina)
+    \r\n|d(an(isc?h|sk)|e?uts?ch)|e(esti|ll[hi]nika|ng(els|le(ski|za)|lisc?h)|spa(g?[n\\u00f1]h?i?ol|nisc?h)|speranto
+    |stonian|usk[ae]ra)|f(ilipino|innish|ran[c\\u00e7](ais|e|ez[ao])|ren[cs]h|arsi|rancese)|g(al(ego|ician)
+    |uja?rati|ree(ce|k)|eorgian|erman[ay]?|ilaki)|h(ayeren|ebrew|indi|rvatski|ungar(y|ian))|i(celandic|ndian?
+    |ndonesian?|ngl[e\\u00ea]se?|ngilizce|tali(ano?|en(isch)?))|ja(pan(ese)?|vanese)|k(a(nn?ada|zakh)|hmer|o(rean?
+    |sova)|urd[i\\u00ee])|l(at(in[ao]?|vi(an?|e[s\\u0161]u))|ietuvi[u\\u0173]|ithuanian?)|m(a[ck]edon(ian?|ski)
+    |agyar|alay(alam?|sian?)?|altese|andarin|arathi|elayu|ontenegro|ongol(ian?)|yanmar)|n(e(d|th)erlands?|epali
+    |orw(ay|egian)|orsk( bokm[a\\u00e5]l)?|ynorsk)|o(landese|dia)|p(ashto|ersi?an?|ol(n?isc?h|ski)|or?tugu?[e\\u00ea]se?
+    (( d[eo])? brasil(eiro)?| ?\\(brasil\\))?|unjabi)|r(om[a\\u00e2i]ni?[a\\u0103]n?|um(ano|\\u00e4nisch)|ussi([ao]n?
+    |sch))|s(anskrit|erbian|imple english|inha?la|lov(ak(ian?)?|en\\u0161?[c\\u010d]ina|en(e|ij?an?)|uomi)|erbisch
+    |pagnolo?|panisc?h|rbeska|rpski|venska|c?wedisc?h|hqip)|t(a(galog|mil)|elugu|hai(land)?|i[e\\u1ebf]ng vi[e\\u1ec7]t
+    |[u\\u00fc]rk([c\\u00e7]e|isc?h|i\\u015f|ey))|u(rdu|zbek)|v(alencia(no?)?|ietnamese)|welsh|(\\u0430\\u043d\\u0433
+    \\u043b\\u0438\\u0438\\u0441|[k\\u043a]\\u0430\\u043b\\u043c\\u044b\\u043a\\u0441|[k\\u043a]\\u0430\\u0437\\u0430
+    \\u0445\\u0441|\\u043d\\u0435\\u043c\\u0435\\u0446|[p\\u0440]\\u0443\\u0441\\u0441|[y\\u0443]\\u0437\\u0431\\u0435
+    \\u043a\\u0441)\\u043a\\u0438\\u0439( \\u044f\\u0437\\u044b\\u043a)??|\\u05e2\\u05d1\\u05e8\\u05d9\\u05ea|[k\\u043a
+    \\u049b](\\u0430\\u0437\\u0430[\\u043a\\u049b]\\u0448\\u0430|\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430|
+    \\u0438\\u0440\\u0438\\u043b\\u043b)|\\u0443\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a(\\u0430|
+    \\u043e\\u044e)|\\u0431(\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f|\\u044a\\u043b\\u0433
+    \\u0430\\u0440\\u0441\\u043a\\u0438( \\u0435\\u0437\\u0438\\u043a)?)|\\u03b5\\u03bb\\u03bb[\\u03b7\\u03b9]
+    \\u03bd\\u03b9\\u03ba(\\u03ac|\\u03b1)|\\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8|\\u0939\\u093f\\u0928
+    \\u094d\\u0926\\u0940|\\u0e44\\u0e17\\u0e22|[m\\u043c]\\u043e\\u043d\\u0433\\u043e\\u043b(\\u0438\\u0430)?|([c
+    \\u0441]\\u0440\\u043f|[m\\u043c]\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d)\\u0441\\u043a\\u0438|\\u0627\\u0644
+    \\u0639\\u0631\\u0628\\u064a\\u0629|\\u65e5\\u672c\\u8a9e|\\ud55c\\uad6d(\\ub9d0|\\uc5b4)|\\u200c\\u0939\\u093f
+    \\u0928\\u0926\\u093c\\u093f|\\u09ac\\u09be\\u0982\\u09b2\\u09be|\\u0a2a\\u0a70\\u0a1c\\u0a3e\\u0a2c\\u0a40|
+    \\u092e\\u0930\\u093e\\u0920\\u0940|\\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1|\\u0627\\u064f\\u0631\\u062f\\u064f\\u0648
+    |\\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd|\\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41|\\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe
+    \\u0aa4\\u0ac0|\\u0641\\u0627\\u0631\\u0633\\u06cc|\\u067e\\u0627\\u0631\\u0633\\u06cc|\\u0d2e\\u0d32\\u0d2f\\u0d3e
+    \\u0d33\\u0d02|\\u067e\\u069a\\u062a\\u0648|\\u1019\\u103c\\u1014\\u103a\\u1019\\u102c\\u1018\\u102c\\u101e\\u102c
+    |\\u4e2d\\u6587(\\u7b80\\u4f53|\\u7e41\\u9ad4)?|\\u4e2d\\u6587\\uff08(\\u7b80\\u4f53?|\\u7e41\\u9ad4)\\uff09
+    |\\u7b80\\u4f53|\\u7e41\\u9ad4).*"""
+  val pattern_forContainLanguageWord: Pattern = Pattern.compile(regex_containLanguageWord)
+  val matcher_containLanguageWord: Matcher = pattern_forContainLanguageWord.matcher("")
+
   def containLanguageBadWordWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
       text = text.trim()
       text = text.toLowerCase()
-      results = matcherContainLanguageWord.reset(text).matches()
+      results = matcher_containLanguageWord.reset(text).matches()
     }
     results
   }
 
   // 12. Male Names
-  val maleNames: Array[String] = Array("AARON", "ADAM", "ADRIAN",
+  val MaleNames: Array[String] = Array("AARON", "ADAM", "ADRIAN",
     "ALAN", "ALBERT", "ALBERTO", "ALEX", "ALEXANDER", "ALFRED",
     "ALFREDO", "ALLAN", "ALLEN", "ALVIN", "ANDRE", "ANDREW", "ANDY",
     "ANGEL", "ANTHONY", "ANTONIO", "ARMANDO", "ARNOLD", "ARTHUR",
@@ -731,22 +814,22 @@ object Word extends Serializable {
     "WALLACE", "WALTER", "WARREN", "WAYNE", "WESLEY", "WILLARD",
     "WILLIAM", "WILLIE", "ZACHARY")
 
-  val tokensMaleName: List[String] = new ArrayList[String](Arrays.asList(maleNames: _*))
-  val patternStringMaleName: String = ".*\\b(" + StringUtils.join(tokensMaleName, "|") + ")\\b.*"
-  val patternMaleName: Pattern = Pattern.compile(patternStringMaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherMaleName: Matcher = patternMaleName.matcher("")
+  val tokens_maleName: List[String] = new ArrayList[String](Arrays.asList(MaleNames: _*))
+  val patternString_MaleName: String = ".*\\b(" + StringUtils.join(tokens_maleName, "|") + ")\\b.*"
+  val pattern_MaleName: Pattern = Pattern.compile(patternString_MaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcher_MaleName: Matcher = pattern_MaleName.matcher("")
 
   def maleNameWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      results = matcherMaleName.reset(text).matches()
+      results = matcher_MaleName.reset(text).matches()
     }
     results
   }
 
   // 13. Female Names
-  val femaleNames: Array[String] = Array("AGNES", "ALICE",
+  val FemaleNames: Array[String] = Array("AGNES", "ALICE",
     "ALICIA", "ALLISON", "ALMA", "AMANDA", "AMBER", "AMY", "ANA",
     "ANDREA", "ANGELA", "ANITA", "ANN", "ANNA", "ANNE", "ANNETTE",
     "ANNIE", "APRIL", "ARLENE", "ASHLEY", "AUDREY", "BARBARA",
@@ -795,32 +878,35 @@ object Word extends Serializable {
     "VIOLA", "VIOLET", "VIRGINIA", "VIVIAN", "WANDA", "WENDY",
     "WILLIE", "WILMA", "YOLANDA", "YVONNE")
 
-  val tokensFemaleName: List[String] = new ArrayList[String](Arrays.asList(femaleNames: _*))
-  val patternStringFemaleName: String = ".*\\b(" + StringUtils.join(tokensFemaleName, "|") + ")\\b.*"
-  val patternFeMaleName: Pattern = Pattern.compile(patternStringFemaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherFeMaleName: Matcher = patternFeMaleName.matcher("")
+  val tokens_FemaleName: List[String] = new ArrayList[String](Arrays.asList(FemaleNames: _*))
+  val patternString_FemaleName: String = ".*\\b(" + StringUtils.join(tokens_FemaleName, "|") + ")\\b.*"
+  val pattern_FeMaleName: Pattern = Pattern.compile(patternString_FemaleName, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcher_FeMaleName: Matcher = pattern_FeMaleName.matcher("")
+
   def femaleNameWord(str: String): Boolean = {
     var results: Boolean = false
     var text: String = str
     if (text != null) {
-      results = matcherFeMaleName.reset(text).matches()
+      results = matcher_FeMaleName.reset(text).matches()
     }
     results
   }
 
   def currentPreviousCommentTialNumberSharingWords(str_current: String, Str_Prev: String): Integer = {
-    var results = -1
+    var results = 0
     var pattern: Pattern = null
     pattern = Pattern.compile("\\s+")
+
     var current_CommentTail = str_current
-    var prev_commentTail = Str_Prev
+    var Prev_commentTail = Str_Prev
+
     if (current_CommentTail != "") {
-      var words: Array[String] = pattern.split(current_CommentTail.trim())
-      if (words.length > 0) {
+      var Words: Array[String] = pattern.split(current_CommentTail.trim())
+      if (Words.length > 0) {
         results = 0
       }
-      for (word <- words) {
-        if (word.trim().!=("") && prev_commentTail.contains(word)) {
+      for (word <- Words) {
+        if (word.trim().!=("") && Prev_commentTail.contains(word)) {
           results = results + 1
         }
       }
@@ -828,7 +914,7 @@ object Word extends Serializable {
     results
   }
 
-  val stopWord: Array[String] = Array("a's", "able", "about",
+  val StopWord: Array[String] = Array("a's", "able", "about",
     "above", "according", "accordingly", "across", "actually", "after",
     "afterwards", "again", "against", "ain't", "all", "allow",
     "allows", "almost", "alone", "along", "already", "also",
@@ -912,30 +998,28 @@ object Word extends Serializable {
     "yourself", "yourselves", "zero", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
     "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")
 
-  val tokensStopWords: List[String] = new ArrayList[String](Arrays.asList(stopWord: _*))
-  val patternStringStopWord: String = ".*\\b(" + StringUtils.join(tokensStopWords, "|") + ")\\b.*"
-  val patternStopWords: Pattern = Pattern.compile(patternStringStopWord, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
-  val matcherStopWord: Matcher = patternStopWords.matcher("")
+  val tokens_StopWords: List[String] = new ArrayList[String](Arrays.asList(StopWord: _*))
+  val patternString_stopword: String = ".*\\b(" + StringUtils.join(tokens_StopWords, "|") + ")\\b.*"
+  val pattern_stopwords: Pattern = Pattern.compile(patternString_stopword, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL | Pattern.CANON_EQ)
+  val matcher_stopword: Matcher = pattern_stopwords.matcher("")
 
   def currentPreviousCommentTialNumberSharingWordsWithoutStopWords(str_current: String, Str_Prev: String): Integer = {
-    var results = -1
+    var results = 0
     var pattern: Pattern = null
     pattern = Pattern.compile("\\s+")
     var current_CommentTail = str_current
-    var prev_commentTail = Str_Prev
-
+    var Prev_commentTail = Str_Prev
     if (current_CommentTail != "") {
-      var words: Array[String] = pattern.split(current_CommentTail.trim())
-      if (words.length > 0) {
+      var Words: Array[String] = pattern.split(current_CommentTail.trim())
+      if (Words.length > 0) {
         results = 0
       }
-      for (word <- words) {
+      for (word <- Words) {
         var flag: Boolean = false
-
         var text: String = word
         if (text != null) {
-          flag = matcherStopWord.reset(text).matches()
-          if (word.trim().!=("") && flag != true && prev_commentTail.contains(word)) {
+          flag = matcher_stopword.reset(text).matches()
+          if (word.trim().!=("") && flag != true && Prev_commentTail.contains(word)) {
             results = results + 1
           }
         }
@@ -943,11 +1027,10 @@ object Word extends Serializable {
     }
     results
   }
-
   def getNumberOfLinks(str: String): Double =
     stringMatchValue(str, "https?:\\/\\/|www\\.")
 
-  val regexStr = "(a(frikaa?ns|lbanian?|lemanha|ng(lais|ol)|ra?b(e?|" +
+  val RegexStr = "(a(frikaa?ns|lbanian?|lemanha|ng(lais|ol)|ra?b(e?|" +
     "[ei]c|ian?|isc?h)|rmenian?|ssamese|azeri|z[eə]rba" +
     "(ijani?|ycan(ca)?|yjan)|нглийский)|b(ahasa( (indonesia|" +
     "jawa|malaysia|melayu))?|angla|as(k|qu)e|[aeo]ng[ao]?li|" +
@@ -978,15 +1061,14 @@ object Word extends Serializable {
     "[kк]алмыкс|[kк]азахс|немец|[pр]усс|[yу]збекс|" +
     "татарс)кий( язык)??|עברית|[kкқ](аза[кқ]ша|ыргызча|" +
     "ирилл)|українськ(а|ою)|б(еларуская|" +
-    "ългарски( език)?)|ελλ[ηι]" +
-    "νικ(ά|α)|ქართული|हिन्दी|ไทย|[mм]онгол(иа)?|([cс]рп|" +
+    "ългарски( език)?)|ελλ[ηι]" + "νικ(ά|α)|ქართული|हिन्दी|ไทย|[mм]онгол(иа)?|([cс]рп|" +
     "[mм]акедон)ски|العربية|日本語|한국(말|어)|‌हिनद़ि| " +
     " বাংলা|ਪੰਜਾਬੀ|मराठी|ಕನ್ನಡ|اُردُو|தமிழ்|తెలుగు|ગુજરાતી|" +
     "فارسی|پارسی|മലയാളം|پښتو|မြန်မာဘာသာ|中文(简体|繁體)?|" +
     "中文（(简体?|繁體)）|简体|繁體)"
 
-  def getNumberofLanguageword(str: String): Double =
-    stringMatchValue(str, regexStr)
+  def getNumberOfLanguageWord(str: String): Double =
+    stringMatchValue(str, RegexStr)
 
   def getNumberOfQId(str: String): Double =
     stringMatchValue(str, "Q\\d{1,8}")

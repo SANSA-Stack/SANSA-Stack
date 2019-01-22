@@ -4,151 +4,210 @@ import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
 
 object Character extends Serializable {
 
-  def characterFeatures(strValue: String): Array[Double] = {
+  def characterFeatures(StrValue: String): Array[Double] = {
 
     // Reference for this :  http://www.mpi.nl/corpus/html/elan/apa.html
-    var ratioValues = new Array[Double](25)
+    var RatioValues = new Array[Double](25)
 
     // 1.Double result Value for uppercase Ration
-    val uppercase = uppercaseRationCharacter(strValue)
+    val uppercase = uppercaseRationCharacter(StrValue)
     if (!uppercase.isNaN()) {
-      ratioValues(0) = roundDouble(uppercase)
+      RatioValues(0) = roundDouble(uppercase)
+    } else {
+      RatioValues(0) = 0.0
     }
     // 2.Double result Value for lowerCase Ratio
-    val lowerCase = lowercaseRationCharacter(strValue)
+    val lowerCase = lowercaseRationCharacter(StrValue)
     if (!lowerCase.isNaN()) {
-      ratioValues(1) = roundDouble(lowerCase)
-    }
-    // 3.Double result Value for  Alphanumeric Ratio
-    val Alphanumeric = alphanumericRationCharacter(strValue)
-    if (!Alphanumeric.isNaN()) {
-      ratioValues(2) = roundDouble(Alphanumeric)
-    }
-    // 4.Double result Value for ASCII Ratio
-    val ASCII = ASCIIRationCharacter(strValue)
-    if (!ASCII.isNaN()) {
-      ratioValues(3) = roundDouble(ASCII)
-    }
-    // 5.Double result Value for Bracket Ratio
-    val Bracket = bracketRationCharacter(strValue)
-    if (!Bracket.isNaN()) {
-      ratioValues(4) = roundDouble(Bracket)
+      RatioValues(1) = roundDouble(lowerCase)
+    } else {
+      RatioValues(1) = 0.0
 
     }
+    // 3.Double result Value for  Alphanumeric Ratio
+    val Alphanumeric = alphanumericRationCharacter(StrValue)
+    if (!Alphanumeric.isNaN()) {
+      RatioValues(2) = roundDouble(Alphanumeric)
+    } else {
+      RatioValues(2) = 0.0
+    }
+    // 4.Double result Value for ASCII Ratio
+    val ASCII = ASCIIRationCharacter(StrValue)
+    if (!ASCII.isNaN()) {
+      RatioValues(3) = roundDouble(ASCII)
+    } else {
+      RatioValues(3) = 0.0
+    }
+    // 5.Double result Value for Bracket Ratio
+    val Bracket = bracketRationCharacter(StrValue)
+    if (!Bracket.isNaN()) {
+      RatioValues(4) = roundDouble(Bracket)
+
+    } else {
+      RatioValues(4) = 0.0
+    }
+
     // 6.Double result Value for Digits Ratio
-    val Digits = digitsRationCharacter(strValue)
+    val Digits = digitsRationCharacter(StrValue)
     if (!Digits.isNaN()) {
-      ratioValues(5) = roundDouble(Digits)
+      RatioValues(5) = roundDouble(Digits)
+    } else {
+      RatioValues(5) = 0.0
     }
     // 7.Double result Value for Latin Ratio
-    val Latin = latinCharacter(strValue)
+    val Latin = latinCharacter(StrValue)
     if (!Latin.isNaN()) {
-      ratioValues(6) = roundDouble(Latin)
+      RatioValues(6) = roundDouble(Latin)
+    } else {
+
+      RatioValues(6) = 0.0
     }
     // 8.Double result Value for WhiteSpace Ratio
-    val WhiteSpace = whiteSpaceCharacter(strValue)
+    val WhiteSpace = whiteSpaceCharacter(StrValue)
     if (!WhiteSpace.isNaN()) {
-      ratioValues(7) = roundDouble(WhiteSpace)
+      RatioValues(7) = roundDouble(WhiteSpace)
+    } else {
+      RatioValues(7) = 0.0
     }
     // 9.Double result Value for punc Ratio
-    val punc = punctCharacter(strValue)
+    val punc = punctCharacter(StrValue)
     if (!punc.isNaN()) {
-      ratioValues(8) = roundDouble(punc)
+      RatioValues(8) = roundDouble(punc)
+    } else {
+      RatioValues(8) = 0.0
     }
     // 10. Integer to Double result Value for LongCharacterSequence (1 integer)
-    val LongCharacterSequence = longCharacterSequenceCharacter(strValue)
+    val LongCharacterSequence = longCharacterSequenceCharacter(StrValue)
     if (!LongCharacterSequence.isNaN()) {
-      ratioValues(9) = LongCharacterSequence
+      RatioValues(9) = LongCharacterSequence
+    } else {
+      RatioValues(9) = 0.0
     }
 
     // 11.Double result Value for ArabicCharacter
-    val ArabicCharacter = arabicRationCharacter(strValue)
+    val ArabicCharacter = arabicRationCharacter(StrValue)
     if (!ArabicCharacter.isNaN()) {
-      ratioValues(10) = roundDouble(ArabicCharacter)
+      RatioValues(10) = roundDouble(ArabicCharacter)
+    } else {
+      RatioValues(10)
     }
 
     // 12.Double result Value for Bengali
-    val Bengali = bengaliRationCharacter(strValue)
+    val Bengali = bengaliRationCharacter(StrValue)
     if (!Bengali.isNaN()) {
-      ratioValues(11) = roundDouble(Bengali)
+      RatioValues(11) = roundDouble(Bengali)
 
+    } else {
+      RatioValues(11) = 0.0
     }
 
     // 13.Double result Value for Brahmi
-    val Brahmi = brahmiRationCharacter(strValue)
+    val Brahmi = brahmiRationCharacter(StrValue)
     if (!Brahmi.isNaN()) {
-      ratioValues(12) = roundDouble(Brahmi)
+      RatioValues(12) = roundDouble(Brahmi)
+
+    } else {
+      RatioValues(12) = 0.0
     }
 
     // 14.Double result Value for Cyrillic
-    val Cyrillic = cyrillicRationCharacter(strValue)
+    val Cyrillic = cyrillicRationCharacter(StrValue)
     if (!Cyrillic.isNaN()) {
-      ratioValues(13) = roundDouble(Cyrillic)
+      RatioValues(13) = roundDouble(Cyrillic)
+
+    } else {
+      RatioValues(13) = 0.0
     }
     // 15.Double result Value for Han
-    val Han = hanRatioCharacter(strValue)
+    val Han = hanRatioCharacter(StrValue)
     if (!Han.isNaN()) {
-      ratioValues(14) = roundDouble(Han)
+      RatioValues(14) = roundDouble(Han)
+
+    } else {
+      RatioValues(14) = 0.0
     }
 
     // 16.Double result Value for Malysia
-    val Malysia = malaysRatioCharacter(strValue)
+    val Malysia = malaysRatioCharacter(StrValue)
     if (!Malysia.isNaN()) {
-      ratioValues(15) = roundDouble(Malysia)
+      RatioValues(15) = roundDouble(Malysia)
+    } else {
+      RatioValues(15) = 0.0
     }
 
     // 17.Double result Value for Tami
-    val Tami = tamilRatioCharacter(strValue)
+    val Tami = tamilRatioCharacter(StrValue)
     if (!Tami.isNaN()) {
-      ratioValues(16) = roundDouble(Tami)
+      RatioValues(16) = roundDouble(Tami)
+    } else {
+      RatioValues(16) = 0.0
     }
     // 18.Double result Value for Telugu
-    val Telugu = teluguRatioCharacter(strValue)
+    val Telugu = teluguRatioCharacter(StrValue)
     if (!Telugu.isNaN()) {
-      ratioValues(17) = roundDouble(Telugu)
+      RatioValues(17) = roundDouble(Telugu)
 
+    } else {
+      RatioValues(17) = 0.0
     }
     // 19.Double result Value for  Symbol
-    val Symbol = symbolCharacter(strValue)
+    val Symbol = symbolCharacter(StrValue)
     if (!Symbol.isNaN()) {
-      ratioValues(18) = roundDouble(Symbol)
+      RatioValues(18) = roundDouble(Symbol)
 
+    } else {
+      RatioValues(18) = 0.0
     }
     // 20. Double Alphabets Ration:
-    val Alphabets = alphabetsRationCharacter(strValue)
+    val Alphabets = alphabetsRationCharacter(StrValue)
     if (!Alphabets.isNaN()) {
-      ratioValues(19) = roundDouble(Alphabets)
+      RatioValues(19) = roundDouble(Alphabets)
+    } else {
+      RatioValues(19) = 0.0
     }
     // 21. Double AVisible character Ratio:
-    val Visible = visibleRationCharacter(strValue)
+    val Visible = visibleRationCharacter(StrValue)
     if (!Visible.isNaN()) {
-      ratioValues(20) = roundDouble(Visible)
+      RatioValues(20) = roundDouble(Visible)
+    } else {
+
+      RatioValues(20) = 0.0
     }
 
     // 22. Double Printable character Ratio:
-    val Printable = printableRationCharacter(strValue)
+    val Printable = printableRationCharacter(StrValue)
     if (!Printable.isNaN()) {
-      ratioValues(21) = roundDouble(Printable)
+      RatioValues(21) = roundDouble(Printable)
+    } else {
+      RatioValues(21) = 0.0
     }
 
     // 23.Double Blank character Ratio:
-    val Blank = blankRationCharacter(strValue)
+    val Blank = blankRationCharacter(StrValue)
     if (!Blank.isNaN()) {
-      ratioValues(22) = roundDouble(Blank)
+      RatioValues(22) = roundDouble(Blank)
+    } else {
+      RatioValues(22) = 0.0
+
     }
 
     // 24.Double A control character:
-    val Control = controlRationCharacter(strValue)
+    val Control = controlRationCharacter(StrValue)
     if (!Control.isNaN()) {
-      ratioValues(23) = roundDouble(Control)
-    }
-    // 25. Double A hexadecimal digit :
-    val hexadecimal = hexaRationCharacter(strValue)
-    if (!hexadecimal.isNaN()) {
-      ratioValues(24) = roundDouble(hexadecimal)
+      RatioValues(23) = roundDouble(Control)
+    } else {
+      RatioValues(23) = 0.0
     }
 
-    ratioValues
+    // 25. Double A hexadecimal digit :
+    val hexadecimal = hexaRationCharacter(StrValue)
+    if (!hexadecimal.isNaN()) {
+      RatioValues(24) = roundDouble(hexadecimal)
+    } else {
+      RatioValues(24) = 0.0
+    }
+
+    RatioValues
   }
 
   // 1.Uppercase Ratio:
@@ -280,4 +339,3 @@ object Character extends Serializable {
   def hexaRationCharacter(str: String): Double =
     extractCharacterRatio(str, "\\p{XDigit}")
 }
-

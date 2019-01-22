@@ -33,8 +33,6 @@ object Classifier extends Serializable {
     val labelIndexer = new StringIndexer().setInputCol("FinalROLLBACK_REVERTED").setOutputCol("indexedLabel").fit(TrainingData)
     val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
 
-    //    val Array(TrainingData) = TrainingData//.randomSplit(Array(0.100))
-    //    val Array(DF_Testing) = DF_Testing//.randomSplit(Array(0.100))
 
     // Train a RandomForest model.
     val rf = new RandomForestClassifier().setImpurity("gini").setMaxDepth(3).setNumTrees(20).setFeatureSubsetStrategy("auto").setSeed(5043)
@@ -101,8 +99,6 @@ object Classifier extends Serializable {
     // Automatically identify categorical features, and index them.
     val featureIndexer = new VectorIndexer().setInputCol("features").setOutputCol("indexedFeatures").setMaxCategories(4).fit(TrainingData)
 
-    // Split the data into training and test sets (30% held out for testing).
-    //    val Array(trainingData, testData) = Data.randomSplit(Array(0.7, 0.3))
 
     // Train a DecisionTree model.
     val dt = new DecisionTreeClassifier().setLabelCol("indexedLabel").setFeaturesCol("indexedFeatures")
