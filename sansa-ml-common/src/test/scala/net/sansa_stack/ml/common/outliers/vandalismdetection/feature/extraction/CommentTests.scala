@@ -103,20 +103,4 @@ class CommentTests extends FunSuite {
     val action = checkCommentNormalOrNot(comment2)
     assert(action == true)
   }
-
-  test("getting a value of the item while parsing the comment should match") {
-    val itemValue = getItemValue(comment2)
-    assert(itemValue == null)
-  }
-
-  test("getting a property while parsing the comment should match") {
-    val property = getProperty(comment2)
-    assert(property == null)
-  }
-
-  test("getting a data value while parsing the comment should match") {
-    val dataValue = getDataValue(comment2)
-    assert(dataValue == null)
-  }
-
 }

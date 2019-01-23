@@ -726,9 +726,9 @@ object Comment extends Serializable {
       // There is NOT something of the form /* ... */
       suffixComment = comment
     }
-    property = getProperty(suffixComment)
-    dataValue = getDataValue(suffixComment)
-    itemValue = getItemValue(suffixComment)
+    property = Statement.getProperty(suffixComment)
+    dataValue = Statement.getDataValue(suffixComment)
+    itemValue = Statement.getItemValue(suffixComment)
     action1 = trim(action1)
     action2 = trim(action2)
     for (i <- 0 until parameters.length) {
@@ -741,47 +741,6 @@ object Comment extends Serializable {
     var result: String = str
     if (str != null) {
       result = str.trim()
-    }
-    result
-  }
-
-  def getItemValue(comment: String): String = {
-    var result: String = null
-    if (comment != null) {
-      val pattern: String = "]]: [[Q"
-      val index1: Int = comment.indexOf(pattern)
-      val index2: Int = comment.indexOf("]]", index1 + pattern.length)
-      if (index1 != -1 && index2 != -1) {
-        result = comment.substring(index1 + pattern.length, index2)
-      }
-    }
-    result
-  }
-
-  def getProperty(comment: String): String = {
-    var result: String = null
-    if (comment != null) {
-      val pattern: String = "[[Property:"
-      val index1: Int = comment.indexOf(pattern)
-      val index2: Int = comment.indexOf("]]", index1 + pattern.length)
-      if (index1 != -1 && index2 != -1) {
-        result = comment.substring(index1 + pattern.length, index2)
-      }
-    }
-    result
-  }
-
-  def getDataValue(comment: String): String = {
-    var result: String = null
-    if (comment != null) {
-      val antiPattern: String = "]]: [[Q"
-      if (!comment.contains(antiPattern)) {
-        val pattern: String = "]]: "
-        val index1: Int = comment.indexOf(pattern)
-        if (index1 != -1) {
-          result = comment.substring(index1 + pattern.length)
-        }
-      }
     }
     result
   }

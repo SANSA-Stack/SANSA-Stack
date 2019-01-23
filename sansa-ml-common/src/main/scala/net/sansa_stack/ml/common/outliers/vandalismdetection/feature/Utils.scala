@@ -7,9 +7,10 @@ object Utils extends Serializable {
   def cleaner(str: String): String = {
     val cleaned_value1 = str.replace("{", "").trim()
     val cleaned_value2 = str.replace("}", "").trim()
-    val cleaned_value3 = cleaned_value2.replace("\"", "");
-    cleaned_value3
+    val cleaned_value3 = cleaned_value2.replace("\"", "").trim()
+    cleaned_value3.trim()
   }
+
   def splitBycomma(str: String): Array[String] = {
     val namesList: Array[String] = str.split(",")
     namesList
