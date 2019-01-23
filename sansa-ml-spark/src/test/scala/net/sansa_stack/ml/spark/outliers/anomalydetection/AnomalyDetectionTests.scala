@@ -6,6 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
 
 import net.sansa_stack.ml.spark.outliers.anomalydetection._
+
 class AnomalyDetectionTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
