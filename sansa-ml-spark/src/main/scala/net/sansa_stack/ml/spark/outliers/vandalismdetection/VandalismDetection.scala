@@ -6,6 +6,7 @@ import org.apache.spark.{ RangePartitioner, SparkContext }
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{ VectorAssembler, Word2Vec, Word2VecModel }
 import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions.{ concat, lit }
@@ -18,7 +19,7 @@ import net.sansa_stack.ml.spark.outliers.vandalismdetection.parser._
 class VandalismDetection extends Serializable {
 
   // Training XML and Vandalism Detection
-  def run(input: String, metaFile: String, truthFile: String, sampleFraction: Double, spark: SparkSession): DataFrame = {
+  def run(triples: RDD[String], metaFile: String, truthFile: String, sampleFraction: Double, spark: SparkSession): DataFrame = {
     val sqlContext = new org.apache.spark.sql.SQLContext(spark.sparkContext)
     import sqlContext.implicits._
     import org.apache.spark.sql.functions._
@@ -26,7 +27,6 @@ class VandalismDetection extends Serializable {
 
     // Streaming records:
     val jobConf = new JobConf()
-    val triples = XML.parse(input, spark)
 
     // ======= Tags part : // Contributor IP here is in Decimal format not IP format and It is converted in ParseNormalXml stage
     val TagsRDD_x = triples.filter(line => line.nonEmpty).map(line => line.split("<1VandalismDetector2>"))
@@ -627,37 +627,7 @@ class VandalismDetection extends Serializable {
 
   }
 
-  def NAstrToDouble(str: String): Double = {
-
-    var tem = 0.0
-
-    if (str == "NA") {
-
-      tem = 0.0
-    } else {
-
-      tem = str.toDouble
-    }
-
-    tem
-  }
-
-  def ratio(va: Double, median: Double): Double = {
-
-    var tem = va
-    if (tem == -1.0) {
-      tem = median
-
-    } else {
-
-      tem = va
-    }
-    tem
-
-  }
-
   // Full All Features String:
-
   def allFeatures(row: Row): String = {
 
     var temp = ""

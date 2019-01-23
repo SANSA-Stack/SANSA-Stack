@@ -12,6 +12,8 @@ import org.apache.hadoop.streaming.StreamInputFormat
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
+import net.sansa_stack.ml.common.outliers.vandalismdetection.feature.Utils._
+
 object XML extends Serializable {
 
   def parse(input: String, spark: SparkSession): RDD[String] = {
@@ -365,14 +367,6 @@ object XML extends Serializable {
       tem = sha.trim()
     }
     tem
-  }
-  def cleaner(str: String): String = {
-
-    val cleaned_value1 = str.replace("{", "").trim()
-    val cleaned_value2 = str.replace("}", "").trim()
-    val cleaned_value3 = cleaned_value2.replace("\"", "").trim();
-
-    cleaned_value3.trim()
   }
 
   // Append Map the content of arraylist in multi string lines :
