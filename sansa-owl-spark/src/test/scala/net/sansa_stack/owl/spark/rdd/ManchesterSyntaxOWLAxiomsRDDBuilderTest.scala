@@ -29,7 +29,6 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
   def rdd: OWLAxiomsRDD = {
     if (_rdd == null) {
       _rdd = spark.owl(syntax)(filePath)
-      //        sc, "hdfs://localhost:9000/ont_manchester.owl")
       _rdd.cache()
     }
 

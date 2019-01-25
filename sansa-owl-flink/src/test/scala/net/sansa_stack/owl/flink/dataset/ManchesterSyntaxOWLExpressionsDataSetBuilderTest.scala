@@ -12,7 +12,6 @@ class ManchesterSyntaxOWLExpressionsDataSetBuilderTest extends FunSuite {
   def dataSet: OWLExpressionsDataSet = {
     if (_dataSet == null) {
       _dataSet = env.owlExpressions(syntax)(this.getClass.getClassLoader.getResource("ont_manchester.owl").getPath)
-      //        env, "hdfs://localhost:9000/ont_manchester.owl")
     }
     _dataSet
   }

@@ -1,6 +1,7 @@
 # SANSA OWL
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-owl-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-owl-parent_2.11)
 [![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20OWL%20Layer/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20OWL%20Layer/job/develop/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
 ## Description
@@ -46,9 +47,14 @@ or parsed [OWL API](http://owlapi.sourceforge.net/) axiom objects. We call these
 
 ## Usage
 
-The following Scala code shows how to read an OWL file in Functional Syntax (be it a local file or a file residing in HDFS) into a Spark dataset:
+The following Scala code shows how to read an OWL file in Functional Syntax (be it a local file or a file residing in HDFS) into a Spark RDD:
 ```scala
-val dataset = FunctionalSyntaxOWLAxiomsDatasetBuilder.build(sparkSession, "path/to/functional/syntax/file.owl")
+import net.sansa_stack.owl.spark.owl._
+
+val syntax = Syntax.FUNCTIONAL
+val input = "path/to/functional/syntax/file.owl"
+
+val rdd = spark.owl(syntax)(input)
 ```
 We also provide builder objects for the other described OWL formats and data structures. The same holds for the Flink implementations. An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#owl-processing). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 

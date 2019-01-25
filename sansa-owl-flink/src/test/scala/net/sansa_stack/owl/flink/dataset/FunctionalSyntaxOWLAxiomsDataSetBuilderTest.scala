@@ -21,7 +21,6 @@ class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
   def dataSet: OWLAxiomsDataSet = {
     if (_dataSet == null) {
       _dataSet = env.owl(syntax)(this.getClass.getClassLoader.getResource("ont_functional.owl").getPath)
-      //        env, "hdfs://localhost:9000/ont_functional.owl")
     }
     _dataSet
   }
