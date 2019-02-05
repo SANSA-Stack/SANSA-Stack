@@ -104,8 +104,20 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
     def sortStarsByWeight(starDataTypesMap: Map[String, mutable.Set[String]], filters: Map[String, Integer], configFile: String) = {
         //var configFile = Config.get("datasets.weights")
 
-        val queryString = scala.io.Source.fromFile(configFile)
-        val configJSON = try queryString.mkString finally queryString.close()
+        var configJSON = ""
+        if(!configFile.startsWith("hdfs://")) {
+                var configs = scala.io.Source.fromFile(configFile)
+                configJSON = try configs.mkString finally configs.close()
+        } else {
+                val host_port = configFile.split("/")(2).split(":")
+                val host = host_port(0)
+                val port = host_port(1)
+                val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+                val path = new org.apache.hadoop.fs.Path(configFile)
+                val stream = hdfs.open(path)
+                def readLines = scala.io.Source.fromInputStream(stream)
+                configJSON = readLines.mkString
+        }
 
         case class ConfigObject(datasource: String, weight: Double)
 

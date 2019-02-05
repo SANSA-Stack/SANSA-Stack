@@ -34,8 +34,20 @@ class Run[A](executor: QueryExecutor[A]) {
 
     try {
 
-      val queryString = scala.io.Source.fromFile(queryFile)
-      var query = try queryString.mkString finally queryString.close()
+      var query = ""
+      if(!queryFile.startsWith("hdfs://")) {
+              var queryFromFile = scala.io.Source.fromFile(queryFile)
+              query = try queryFromFile.mkString finally queryFromFile.close()
+      } else {
+              val host_port = queryFile.split("/")(2).split(":")
+              val host = host_port(0)
+              val port = host_port(1)
+              val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+              val path = new org.apache.hadoop.fs.Path(queryFile)
+              val stream = hdfs.open(path)
+              def readLines = scala.io.Source.fromInputStream(stream)
+              query = readLines.mkString
+      }
 
       // Transformations
       var transformExist = false
