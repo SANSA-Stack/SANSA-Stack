@@ -1,0 +1,100 @@
+Prefix(:=<http://ex.com/default#>)
+Prefix(foo:=<http://ex.com/foo#>)
+Prefix(bar:=<http://ex.com/bar#>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+<http://ex.com/ont/release/123/sample1.owl>
+#Import(<http://www.example.com/my/2.0>)
+# annotations
+Annotation(foo:hasName "Name")
+    Annotation(bar:hasTitle "Title")
+Annotation(:description "A longer
+description running over
+several lines")
+
+## declarations
+# class declarations
+Declaration(Annotation(foo:ann "some annotation") Class(bar:Cls1))
+Declaration(Class(bar:Cls2))
+# datatype declarations
+Declaration(Datatype(bar:dtype1))
+Declaration(Datatype(bar:dtype2))
+# object property declarations
+Declaration(ObjectProperty(bar:objProp1))
+Declaration(ObjectProperty(bar:objProp2))
+# data property declarations
+Declaration(DataProperty(bar:dataProp1))
+Declaration(DataProperty(bar:dataProp2))
+# annotation property declarations
+Declaration(AnnotationProperty(bar:annProp1))
+Declaration(AnnotationProperty(bar:annProp2))
+# named individual declarations
+Declaration(NamedIndividual(foo:indivA))
+Declaration(NamedIndividual(foo:indivB))
+
+## annotation axioms
+AnnotationAssertion(bar:label bar:Cls1 "Class 1")
+SubAnnotationPropertyOf(bar:annProp1 bar:annProp2)
+AnnotationPropertyDomain(bar:annProp1 bar:Cls1)
+AnnotationPropertyRange(bar:annProp1 bar:Cls2)
+
+## class expressions  -- 20
+EquivalentClasses(bar:IntersectionCls ObjectIntersectionOf(bar:Cls1 bar:Cls2))
+EquivalentClasses(bar:UnionCls ObjectUnionOf(bar:Cls1 bar:Cls2))
+EquivalentClasses(bar:ComplementCls ObjectComplementOf(bar:Cls1))
+EquivalentClasses(bar:AllIndividualsCls ObjectOneOf(foo:indivA foo:indivB))
+EquivalentClasses(bar:SomeProp1Cls1 ObjectSomeValuesFrom(bar:objProp1 bar:Cls1))
+EquivalentClasses(bar:AllProp1Cls1 ObjectAllValuesFrom(bar:objProp1 bar:Cls1))
+EquivalentClasses(bar:HasValProp1IndivB ObjectHasValue(bar:objProp1 foo:indivB))
+EquivalentClasses(bar:HasSelfProp1 ObjectHasSelf(bar:objProp1))
+EquivalentClasses(bar:Min2Prop1Cls1 ObjectMinCardinality(2 bar:objProp1 bar:Cls1))
+EquivalentClasses(bar:Max3Prop1Cls1 ObjectMaxCardinality(3 bar:objProp1 bar:Cls1))
+EquivalentClasses(bar:Exact5Prop1Cls1 ObjectExactCardinality(5 bar:objProp1 bar:Cls1))
+EquivalentClasses(bar:DataSomeIntLT20 DataSomeValuesFrom(bar:dataProp2 DatatypeRestriction(xsd:integer xsd:maxExclusive "20"^^xsd:integer)))
+EquivalentClasses(bar:DataAllIntGT10 DataAllValuesFrom(bar:dataProp2 DatatypeRestriction(xsd:integer xsd:minInclusive "10"^^xsd:integer)))
+EquivalentClasses(bar:DataHasVal5 DataHasValue(bar:dataProp2 "5"^^xsd:integer))
+EquivalentClasses(bar:DataMin3Prop1 DataMinCardinality(3 bar:dataProp1))
+EquivalentClasses(bar:DataMax2Prop1 DataMaxCardinality(2 bar:dataProp1))
+EquivalentClasses(bar:DataExact5Prop1 DataExactCardinality(5 bar:dataProp1))
+SubClassOf(bar:Cls1 bar:UnionCls)
+DisjointClasses(bar:DataMin3Prop1 bar:DataMax2Prop1)
+DisjointUnion(bar:Cl1OrNegate bar:Cls1 bar:ComplementCls1)
+
+## object property axioms  -- 40
+EquivalentObjectProperties(bar:invObjProp1 ObjectInverseOf(bar:objProp1))
+SubObjectPropertyOf(bar:subObjProp1 bar:objProp1)
+EquivalentObjectProperties(bar:sameAsObjProp1 bar:objProp1)
+DisjointObjectProperties(bar:objProp1 bar:objProp2)
+InverseObjectProperties(bar:invObjProp1 bar:objProp1)
+ObjectPropertyDomain(bar:objProp1 bar:Cls1)
+ObjectPropertyRange(bar:objProp1 bar:AllIndividualsCls)
+FunctionalObjectProperty(bar:objProp2)
+InverseFunctionalObjectProperty(bar:invObjProp1)
+ReflexiveObjectProperty(bar:objProp1)
+IrreflexiveObjectProperty(bar:objProp2)
+SymmetricObjectProperty(bar:objProp2)
+AsymmetricObjectProperty(bar:asymmObjProp)
+TransitiveObjectProperty(bar:objProp1)
+
+## data property axioms
+DataPropertyRange(bar:dataProp1 xsd:string)
+DataPropertyDomain(bar:dataProp1 bar:Cls1)
+DataPropertyRange(bar:dataProp2 xsd:int)
+DataPropertyDomain(bar:dataProp2 bar:Cls1)
+SubDataPropertyOf(bar:subDataProp1 bar:dataProp1)
+EquivalentDataProperties(bar:sameAsDataProp1 bar:dataProp1)
+DisjointDataProperties(bar:dataProp1 bar:dataProp2)
+FunctionalDataProperty(bar:dataProp1)
+HasKey(bar:Cls1 () (bar:dataProp1))
+
+## assertions  -- 63
+SameIndividual(foo:sameAsIndivA foo:indivA)
+DifferentIndividuals(foo:indivA foo:indivB)
+ClassAssertion(bar:Cls1 foo:indivA)
+ObjectPropertyAssertion(bar:objProp1 foo:indivA foo:indivB)
+NegativeObjectPropertyAssertion(bar:Prop2 foo:indivB foo:indivA)
+DataPropertyAssertion(bar:dataProp1 foo:indivA "ABCD")
+DataPropertyAssertion(bar:dataProp1 foo:indivB "BCDE")
+NegativeDataPropertyAssertion(bar:dataProp2 foo:indivA "23"^^xsd:integer)
+)

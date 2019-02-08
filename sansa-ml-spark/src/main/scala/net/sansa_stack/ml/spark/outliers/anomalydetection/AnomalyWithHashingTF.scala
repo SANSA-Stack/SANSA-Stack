@@ -169,7 +169,6 @@ class AnomalyWithHashingTF(nTriplesRDD: RDD[Triple], objList: List[String],
     val model = mh.fit(featurizedData)
 
     val dffilter = model.approxSimilarityJoin(featurizedData, featurizedData, 0.45)
-    println("dffilter")
 
     val opiu = dffilter.filter($"datasetA.id".isNotNull).filter($"datasetB.id".isNotNull)
       .filter(($"datasetA.id" =!= $"datasetB.id"))
