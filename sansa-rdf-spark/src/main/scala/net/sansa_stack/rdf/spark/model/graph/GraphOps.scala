@@ -248,6 +248,42 @@ object GraphOps {
     Graph(graph.vertices.subtract(other.vertices.distinct()), graph.edges.subtract(other.edges.distinct()))
   }
 
+  /**
+   * Returns the lever at which vertex stands in the hierarchy.
+   * @param graph the RDF graph
+   */
+  def hierarcyDepth(graph: Graph[Node, Node]): Graph[(VertexId, Int, Node), Node] = {
+
+    val initialMsg = (0L, 0, Node.ANY)
+    val initialGraph = graph.mapVertices((id, v) => (id, 0, v))
+
+    def setMsg(vertexId: Long, value: (Long, Int, Node), message: (Long, Int, Node)): (Long, Int, Node) = {
+      if (message._2 < 1) { // initialize
+        (value._1, value._2 + 1, value._3)
+      } else {
+        (message._1, value._2 + 1, message._3)
+      }
+    }
+
+    def sendMsg(triplet: EdgeTriplet[(Long, Int, Node), _]): Iterator[(Long, (Long, Int, Node))] = {
+      val sourceVertex = triplet.srcAttr
+      val destinationVertex = triplet.dstAttr
+      Iterator((triplet.dstId, (sourceVertex._1, sourceVertex._2, sourceVertex._3)))
+    }
+
+    def mergeMsg(msg1: (Long, Int, Node), msg2: (Long, Int, Node)): (Long, Int, Node) = {
+      msg2
+    }
+
+    initialGraph.pregel(
+      initialMsg,
+      Int.MaxValue,
+      EdgeDirection.Out)(
+        setMsg,
+        sendMsg,
+        mergeMsg)
+  }
+
   /** Stores a map from the vertex id of a landmark to the distance to that landmark. */
   type SPMap = Map[VertexId, Int]
 

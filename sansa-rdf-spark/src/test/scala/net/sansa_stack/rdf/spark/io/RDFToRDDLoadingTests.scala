@@ -11,7 +11,9 @@ import org.scalatest.FunSuite
  */
 class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
 
-  test("loading N-Triples file into RDD should result in 9 triples") {
+  import net.sansa_stack.rdf.spark.io._
+
+  test("loading N-Triples file into RDD should result in 10 triples") {
 
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
@@ -19,7 +21,7 @@ class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang)(path)
 
     val cnt = triples.count()
-    assert(cnt == 9)
+    assert(cnt == 10)
   }
 
   test("loading N-Quads file into RDD should result in 28 triples") {

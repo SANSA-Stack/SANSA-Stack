@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
 import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
@@ -15,7 +14,7 @@ import org.apache.jena.graph.{ Node, Triple }
 object SchemaCompleteness {
   @transient var env: ExecutionEnvironment = _
 
-  def apply(rdfgraph: RDFGraph): Double = {
+  def apply(triples: DataSet[Triple]): Double = {
 
     /**
      * -->Rule->Filter-->
@@ -25,14 +24,13 @@ object SchemaCompleteness {
      * -->Post-processing-->
      * |S| intersect |SC| / |SC|
      */
-    val dataset = rdfgraph.triples
 
-    val p2_o = dataset.filter(f =>
+    val p2_o = triples.filter(f =>
       f.getPredicate.getLocalName.equals("type")
         && f.getObject.isURI())
 
     val S = p2_o.map(_.getPredicate).distinct()
-    val SC = dataset.map(_.getObject).distinct()
+    val SC = triples.map(_.getObject).distinct()
 
     val S_intersection_SC = S.collect().intersect(SC.collect()).distinct
 

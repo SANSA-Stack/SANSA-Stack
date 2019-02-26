@@ -5,8 +5,6 @@ import java.io.StringWriter
 
 import scala.reflect.ClassTag
 
-import net.sansa_stack.rdf.flink.data.RDFGraph
-import net.sansa_stack.rdf.flink.model.RDFTriple
 import net.sansa_stack.rdf.flink.utils.{ Logging, StatsPrefixes }
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala._
@@ -14,17 +12,35 @@ import org.apache.flink.api.scala.DataSet
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.graph.{ Node, Triple }
 
-class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+/**
+ * A Distributed implementation of RDF Statisctics using Apache Flink.
+ *
+ * @author Gezim Sejdiu
+ */
+object RDFStatistics extends Serializable with Logging {
+  val env = ExecutionEnvironment.getExecutionEnvironment
 
-  def run(): DataSet[String] = {
-    Used_Classes(rdfgraph, env).Voidify
-      .union(DistinctEntities(rdfgraph, env).Voidify)
-      .union(DistinctSubjects(rdfgraph, env).Voidify)
-      .union(DistinctObjects(rdfgraph, env).Voidify)
-      .union(PropertyUsage(rdfgraph, env).Voidify)
-      .union(SPO_Vocabularies(rdfgraph, env).Voidify)
+  /**
+   * Compute distributed RDF dataset statistics.
+   * @param triples DataSet graph
+   * @return VoID description of the given dataset
+   */
+  def run(triples: DataSet[Triple]): DataSet[String] = {
+    Used_Classes(triples, ExecutionEnvironment.getExecutionEnvironment).Voidify
+      .union(DistinctEntities(triples, env).Voidify)
+      .union(DistinctSubjects(triples, env).Voidify)
+      .union(DistinctObjects(triples, env).Voidify)
+      .union(PropertyUsage(triples, env).Voidify)
+      .union(SPO_Vocabularies(triples, env).Voidify)
   }
 
+  /**
+   * Voidify RDF dataset based on the Vocabulary of Interlinked Datasets (VoID) [[https://www.w3.org/TR/void/]]
+   *
+   * @param stats given RDF dataset statistics
+   * @param source name of the Dataset:source--usualy the file's name
+   * @param output the directory to save RDF dataset summary
+   */
   def voidify(stats: DataSet[String], source: String, output: String): Unit = {
     val pw = new StringWriter
 
@@ -51,20 +67,43 @@ class RDFStatistics(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
     vidifyStats.writeAsText(output, writeMode = FileSystem.WriteMode.OVERWRITE).setParallelism(1)
   }
 
+  /**
+   * Prints the Voidiy version of the given RDF dataset
+   *
+   * @param stats given RDF dataset statistics
+   * @param source name of the Dataset:source--usualy the file's name
+   */
+  def print(stats: DataSet[String], source: String): Unit = {
+    val prefix = """@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+                    @prefix void: <http://rdfs.org/ns/void#> .
+                    @prefix void-ext: <http://stats.lod2.eu/rdf/void-ext/> .
+                    @prefix qb: <http://purl.org/linked-data/cube#> .
+                    @prefix dcterms: <http://purl.org/dc/terms/> .
+                    @prefix ls-void: <http://stats.lod2.eu/rdf/void/> .
+                    @prefix ls-qb: <http://stats.lod2.eu/rdf/qb/> .
+                    @prefix ls-cr: <http://stats.lod2.eu/rdf/qb/criteria/> .
+                    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+                    @prefix xstats: <http://example.org/XStats#> .
+                    @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+                    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ."""
+
+    val src = "\n<http://stats.lod2.eu/rdf/void/?source=" + source + ">\n"
+    val end = "\na void:Dataset ."
+
+    val voidify = prefix.concat(src).concat(stats.setParallelism(1).collect().mkString).concat(end)
+    println("\n" + voidify)
+  }
+
 }
 
-object RDFStatistics {
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): RDFStatistics = new RDFStatistics(rdfgraph, env)
-}
-
-class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class Used_Classes(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
   // ?p=rdf:type && isIRI(?o)
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
-    f.predicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.`object`.isURI())
+  def Filter(): DataSet[Triple] = triples.filter(f =>
+    f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.isURI())
 
   // M[?o]++
-  def Action(): AggregateDataSet[(Node, Int)] = Filter().map(f => f.`object`)
+  def Action(): AggregateDataSet[(Node, Int)] = Filter().map(f => f.getObject)
     .map(f => (f, 1))
     .groupBy(0)
     .sum(1)
@@ -89,14 +128,14 @@ class Used_Classes(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serial
 }
 object Used_Classes {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): Used_Classes = new Used_Classes(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): Used_Classes = new Used_Classes(triples, env)
 
 }
 
-class Classes_Defined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class Classes_Defined(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
   // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
+  def Filter(): DataSet[Triple] = triples.filter(f =>
     (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.RDFS_CLASS))
       || (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.OWL_CLASS))
       && !f.getSubject.isURI())
@@ -114,12 +153,12 @@ class Classes_Defined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Ser
 }
 object Classes_Defined {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): Classes_Defined = new Classes_Defined(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): Classes_Defined = new Classes_Defined(triples, env)
 }
 
-class PropertiesDefined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class PropertiesDefined(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
+  def Filter(): DataSet[Triple] = triples.filter(f =>
     (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.OWL_OBJECT_PROPERTY))
       || (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.RDF_PROPERTY))
       && !f.getSubject.isURI())
@@ -135,12 +174,12 @@ class PropertiesDefined(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends S
 }
 object PropertiesDefined {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): PropertiesDefined = new PropertiesDefined(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): PropertiesDefined = new PropertiesDefined(triples, env)
 }
 
-class PropertyUsage(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class PropertyUsage(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples
+  def Filter(): DataSet[Triple] = triples
 
   // M[?p]++
   def Action(): AggregateDataSet[(Node, Int)] = Filter().map(_.getPredicate)
@@ -168,15 +207,15 @@ class PropertyUsage(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Seria
 }
 object PropertyUsage {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): PropertyUsage = new PropertyUsage(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): PropertyUsage = new PropertyUsage(triples, env)
 }
 
-class DistinctEntities(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class DistinctEntities(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f =>
+  def Filter(): DataSet[Triple] = triples.filter(f =>
     (f.getSubject.isURI() && f.getPredicate.isURI() && f.getObject.isURI()))
 
-  def Action(): DataSet[RDFTriple] = Filter().distinct()
+  def Action(): DataSet[Triple] = Filter().distinct()
 
   def PostProc(): Long = Action().count()
 
@@ -188,14 +227,14 @@ class DistinctEntities(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object DistinctEntities {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): DistinctEntities = new DistinctEntities(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): DistinctEntities = new DistinctEntities(triples, env)
 }
 
-class DistinctSubjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class DistinctSubjects(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f => f.getSubject.isURI())
+  def Filter(): DataSet[Triple] = triples.filter(f => f.getSubject.isURI())
 
-  def Action(): DataSet[RDFTriple] = Filter().distinct()
+  def Action(): DataSet[Triple] = Filter().distinct()
 
   def PostProc(): Long = Action().count()
 
@@ -207,14 +246,14 @@ class DistinctSubjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object DistinctSubjects {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): DistinctSubjects = new DistinctSubjects(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): DistinctSubjects = new DistinctSubjects(triples, env)
 }
 
-class DistinctObjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class DistinctObjects(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples.filter(f => f.getObject.isURI())
+  def Filter(): DataSet[Triple] = triples.filter(f => f.getObject.isURI())
 
-  def Action(): DataSet[RDFTriple] = Filter().distinct()
+  def Action(): DataSet[Triple] = Filter().distinct()
 
   def PostProc(): Long = Action().count()
 
@@ -226,12 +265,12 @@ class DistinctObjects(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Ser
 }
 object DistinctObjects {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): DistinctObjects = new DistinctObjects(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): DistinctObjects = new DistinctObjects(triples, env)
 }
 
-class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Serializable with Logging {
+class SPO_Vocabularies(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
-  def Filter(): DataSet[RDFTriple] = rdfgraph.triples
+  def Filter(): DataSet[Triple] = triples
 
   def Action(node: Node): DataSet[String] = Filter().map(f => node.getNameSpace())
 
@@ -262,5 +301,5 @@ class SPO_Vocabularies(rdfgraph: RDFGraph, env: ExecutionEnvironment) extends Se
 }
 object SPO_Vocabularies {
 
-  def apply(rdfgraph: RDFGraph, env: ExecutionEnvironment): SPO_Vocabularies = new SPO_Vocabularies(rdfgraph, env)
+  def apply(triples: DataSet[Triple], env: ExecutionEnvironment): SPO_Vocabularies = new SPO_Vocabularies(triples, env)
 }
