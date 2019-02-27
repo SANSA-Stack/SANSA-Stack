@@ -14,6 +14,6 @@ jdk:
   - oraclejdk8
 script:
   - mvn scalastyle:check
-  - mvn test 
+  - mvn clean test 
 after_success:
   - mvn jacoco:report coveralls:report
