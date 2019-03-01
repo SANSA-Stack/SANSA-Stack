@@ -26,7 +26,7 @@ class CommentTests extends FunSuite {
 
   test("extracting tail while parsing the comment should match") {
     val tail = extractCommentTail(comment2)
-    assert(tail == "Ein Kontinent")
+    assert(tail.trim() == "Ein Kontinent")
   }
 
   test("extracting action2 while parsing the comment should match") {
@@ -41,7 +41,7 @@ class CommentTests extends FunSuite {
 
   test("extracting param suffix while parsing a normal comment should match") {
     val paramSuffix = actionParamSuffixNormalCommentMap(comment2)
-    assert(paramSuffix == "Ein Kontinent")
+    assert(paramSuffix == "")
   }
 
   test("extracting params while parsing the comment should match") {

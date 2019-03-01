@@ -32,7 +32,7 @@ class UtilsTests extends FunSuite {
 
   test("converting array to string should match") {
     val array = Seq(3.1416, 2.0, 3.0).toArray
-    assert(arrayToString(array) == "3.1416,2.0,3.0")
+    assert(arrayToString(array) == "3.1416<1VandalismDetector2>2.0<1VandalismDetector2>3.0")
   }
 
   test("ratio of the characters should match") {
