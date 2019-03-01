@@ -3,7 +3,7 @@ package net.sansa_stack.ml.common.nlp.wordnet
 import net.sf.extjwnl.data._
 import org.scalatest.FunSuite
 
-class DistanceWordNetSimilarityMeasureTests extends FunSuite {
+class DistanceWordNetSimilarityTests extends FunSuite {
 
   test("shortest path similarity between dog and cat synset should result in value 0.3") {
     try {

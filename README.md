@@ -1,6 +1,7 @@
 # SANSA-ML
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-ml-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-ml-parent_2.11)
 [![Build Status](https://ci.aksw.org/jenkins/job/SANSA-ML/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA-ML//job/develop/)
+[![Coverage Status](https://coveralls.io/repos/github/SANSA-Stack/SANSA-ML/badge.svg?branch=develop)](https://coveralls.io/github/SANSA-Stack/SANSA-ML?branch=develop)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 

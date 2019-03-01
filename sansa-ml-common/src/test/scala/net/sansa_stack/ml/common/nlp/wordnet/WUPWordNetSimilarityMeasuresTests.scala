@@ -2,7 +2,6 @@ package net.sansa_stack.ml.common.nlp.wordnet
 
 import net.sf.extjwnl.data._
 import org.scalatest.FunSuite
-// import net.didion.jwnl.data._
 
 class WUPWordNetSimilarityMeasuresTests extends FunSuite {
 

@@ -3,7 +3,7 @@ package net.sansa_stack.ml.common.nlp.wordnet
 import net.sf.extjwnl.data._
 import org.scalatest.FunSuite
 
-class TestAllHypernims extends FunSuite {
+class AllHypernimsTests extends FunSuite {
 
   test("Tests getting all hypernyms of the the first synset in the word cat") {
     try {
