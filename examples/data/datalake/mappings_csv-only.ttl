@@ -15,8 +15,8 @@
 
 <#ProducerMapping>
 	rml:logicalSource [
-		rml:source "//Producer";
-		nosql:store nosql:jdbc
+		rml:source "hdfs://namenode:8020/data/datalake/data/producer.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{nr}";
@@ -55,8 +55,8 @@
 
 <#ReviewMapping>
 	rml:logicalSource [
-		rml:source "hdfs://namenode:8020/data/datalake/data/review.parquet";
-		nosql:store nosql:parquet
+		rml:source "hdfs://namenode:8020/data/datalake/data/review.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{nr}";
@@ -165,8 +165,8 @@
 
 <#OfferMapping>
 	rml:logicalSource [
-		rml:source "//Offer";
-		nosql:store nosql:mongodb
+		rml:source "hdfs://namenode:8020/data/datalake/data/offer.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{_id}";
@@ -225,8 +225,8 @@
 
 <#ProductMapping>
 	rml:logicalSource [
-		rml:source "//Product";
-		nosql:store nosql:cassandra
+		rml:source "hdfs://namenode:8020/data/datalake/data/product.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{nr}";

@@ -11,44 +11,43 @@
 		"entity": "Person"
 	}
 	,	{
-		"type": "parquet",
+		"type": "csv",
 		"options": {
-			"spark_sql_parquet_filterPushdown": "true"
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
 		},
-		"source": "hdfs://namenode:8020/data/datalake/data/review.parquet",
+		"source": "hdfs://namenode:8020/data/datalake/data/review.csv",
 		"entity": "Review"
 	}
 	,	{
-		"type": "mongodb",
+		"type": "csv",
 		"options": {
-			"url": "127.0.0.1",
-			"database": "bsbm",
-			"collection": "offer",
-			"options": ""
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
 		},
-		"source": "//Offer",
+		"source": "hdfs://namenode:8020/data/datalake/data/offer.csv",
 		"entity": "Offer"
 	}
 	,	{
-		"type": "cassandra",
+		"type": "csv",
 		"options": {
-			"keyspace": "db",
-			"table": "product"
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
 		},
-		"source": "//Product",
+		"source": "hdfs://namenode:8020/data/datalake/data/product.csv",
 		"entity": "Product"
 	}
 	,	{
-		"type": "jdbc",
+		"type": "csv",
 		"options": {
-			"url": "jdbc:mysql://localhost:3306/benchmark?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&useSSL=false",
-
-			"driver": "com.mysql.cj.jdbc.Driver",
-			"dbtable": "producer",
-			"user": "root",
-			"password": "root"
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
 		},
-		"source": "//Producer",
+		"source": "hdfs://namenode:8020/data/datalake/data/producer.csv",
 		"entity": "Producer"
 	}
 	],
