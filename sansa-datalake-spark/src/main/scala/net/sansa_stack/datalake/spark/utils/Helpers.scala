@@ -1,6 +1,7 @@
 package net.sansa_stack.datalake.spark.utils
 
 import java.util
+import java.io.ByteArrayInputStream
 
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
@@ -114,7 +115,22 @@ object Helpers {
 
         //println("GOING TO EXECUTE: " + getID)
 
-        var in = FileManager.get().open(mappingsFile)
+        var mappingsString = ""
+        if(!mappingsFile.startsWith("hdfs://")) {
+                var mappings = scala.io.Source.fromFile(mappingsFile)
+                mappingsString = try mappings.mkString finally mappings.close()
+        } else {
+                val host_port = mappingsFile.split("/")(2).split(":")
+                val host = host_port(0)
+                val port = host_port(1)
+                val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+                val path = new org.apache.hadoop.fs.Path(mappingsFile)
+                val stream = hdfs.open(path)
+                def readLines = scala.io.Source.fromInputStream(stream)
+                mappingsString = readLines.mkString
+        }
+
+        val in = new ByteArrayInputStream(mappingsString.getBytes)
 
         var model = ModelFactory.createDefaultModel()
         model.read(in, null, "TURTLE")

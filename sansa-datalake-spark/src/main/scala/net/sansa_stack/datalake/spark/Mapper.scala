@@ -7,6 +7,8 @@ import org.apache.jena.util.FileManager
 
 import scala.collection.mutable
 
+import java.io.ByteArrayInputStream
+
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -60,8 +62,20 @@ class Mapper (mappingsFile: String) {
             for (d <- ds) {
                 val src = d._2
 
-                val queryString = scala.io.Source.fromFile(configFile)
-                val configJSON = try queryString.mkString finally queryString.close()
+                var configJSON = ""
+                if(!configFile.startsWith("hdfs://")) {
+                        var configs = scala.io.Source.fromFile(configFile)
+                        configJSON = try configs.mkString finally configs.close()
+                } else {
+                        val host_port = configFile.split("/")(2).split(":")
+                        val host = host_port(0)
+                        val port = host_port(1)
+                        val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+                        val path = new org.apache.hadoop.fs.Path(configFile)
+                        val stream = hdfs.open(path)
+                        def readLines = scala.io.Source.fromInputStream(stream)
+                        configJSON = readLines.mkString
+                }
 
                 case class ConfigObject(source : String, options: Map[String, String], entity : String)
 
@@ -132,7 +146,23 @@ class Mapper (mappingsFile: String) {
         println("...for this, the following query will be executed: " + queryString + " on " + mappingsFile)
         val query = QueryFactory.create(queryString)
 
-        val in = FileManager.get().open(mappingsFile)
+        var mappingsString = ""
+        if(!mappingsFile.startsWith("hdfs://")) {
+                var mappings = scala.io.Source.fromFile(mappingsFile)
+                mappingsString = try mappings.mkString finally mappings.close()
+        } else {
+                val host_port = mappingsFile.split("/")(2).split(":")
+                val host = host_port(0)
+                val port = host_port(1)
+                val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+                val path = new org.apache.hadoop.fs.Path(mappingsFile)
+                val stream = hdfs.open(path)
+                def readLines = scala.io.Source.fromInputStream(stream)
+                mappingsString = readLines.mkString
+        }
+
+        val in = new ByteArrayInputStream(mappingsString.getBytes)
+
         if (in == null) {
             throw new IllegalArgumentException("ERROR: File: " + queryString + " not found")
         }
