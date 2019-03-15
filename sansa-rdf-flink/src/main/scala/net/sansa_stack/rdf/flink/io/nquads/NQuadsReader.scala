@@ -161,7 +161,6 @@ object NQuadsReader {
           // filter out null values
           Iterators.filter(it, Predicates.notNull[Quad]())
         }
-      p
       new IteratorResourceClosing[Quad](it, input).asScala
     })
       .map(_.asTriple())
