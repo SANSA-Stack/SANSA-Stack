@@ -13,7 +13,6 @@
 package net.sansa_stack.ml.common.nlp.wordnet
 
 import java.io.Serializable
-
 import net.sf.extjwnl.data.{PointerType, PointerUtils, Word}
 import net.sf.extjwnl.dictionary.Dictionary
 import scala.collection.JavaConverters._

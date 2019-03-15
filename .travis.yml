@@ -1,10 +1,15 @@
+env:
+  global:
+    secure: jOR0sND0CgthkkH7HX3EXAcdBFLH4Q3foM+5Q4xe79lI7ieiRWtJt9IIyCs4K4XHW3lZM9Wdv12Zeb3frwH1mh1oSV3qKqJI9kcbdKwwTB7VV0Ct60lrohln1q0lCJ6BF0QnOwHdPfvwDK9fO/12/cUpR9Qez4JfjtZu183zxU7IGk/Rhv2h69ZQzwYz4qyMWgCW2GH4GBtxOgPEUci8iM41EeWnkXrJaPMb0HmO8tXQiL2+kjgpPKOV/L2Za7VhV83zG9Cxr/G2MmHajqWS3bNm/96MAzudRLdDq1c7s2UkNCudSFCGhM3dO60aDx64bou0Xuy20qmBKaEstfem0cLE3+cJl8vppoFROHV7bYhMc6GPTIFsw2asIbH1689oqDV6HXyqq/ajydmMD9yofarjHqfhj643ePUGMuUpCv+8Xiqfk5nypqWQENWv9mLQDD9fXPwTBD+2qi7zT29/8Lps1khNq0ons0BOBkH1G8175bsmjiqyaskhaM0RcSMX1+aK16sGATsPACo7wfwUhg4oZidmtX0ZeL4EOKpGBI/c8EFCjrv+eU1y69QDCNdGcR6z3HZqW/Ef2BrNAp2vmnmX4tsQAjIPqQ29O+ZZDpdMqEOoKtSbc3Z1Iw+hKvoOx4X8X01ig32fpGiUApQqTmnKIgIFuo9SZ5yefbwgHyw=
 language: scala
 sudo: false
 cache:
   directories:
-  - $HOME/.m2
+  - "$HOME/.m2"
 scala:
-  - 2.11.11
+- 2.11.11
 script:
-  - mvn scalastyle:check
-  - mvn test 
+- mvn scalastyle:check
+- mvn test
+after_success:
+  - mvn clean test jacoco:report coveralls:report
