@@ -68,7 +68,7 @@ class DBSCAN() extends Serializable {
         pointRDD.analyze()
 
         // Perform Spatial Partitioning with QuadTree
-        pointRDD.spatialPartitioning(GridType.QUADTREE, 16)
+        pointRDD.spatialPartitioning(GridType.QUADTREE, 2)
 
         // val boundaryEnvelopes = pointRDD.getPartitioner.getGrids
         // writeBoundaryEnvsToFile(pointRDD, outputFile + "_Envelopes_only.txt", geometryFactory)
@@ -255,6 +255,3 @@ class DBSCAN() extends Serializable {
     }
 
 }
-
-
-
