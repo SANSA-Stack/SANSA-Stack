@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.common.partition.core
 
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault._
+import net.sansa_stack.rdf.common.partition.schema.{ SchemaStringString, SchemaStringStringLang }
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
 import org.scalatest.FunSuite
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault._
-import net.sansa_stack.rdf.common.partition.schema.{ SchemaStringString, SchemaStringStringLang }
 
 /**
  * @author Gezim Sejdiu

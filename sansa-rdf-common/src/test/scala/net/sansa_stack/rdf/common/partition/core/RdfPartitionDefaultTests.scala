@@ -1,10 +1,13 @@
 package net.sansa_stack.rdf.common.partition.core
 
-import org.scalatest.FunSuite
-
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringStringLang
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.scalatest.FunSuite
 
+
+/**
+ * @author Gezim Sejdiu
+ */
 class RdfPartitionDefaultTests extends FunSuite {
 
   val triple = Triple.create(

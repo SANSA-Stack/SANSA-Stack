@@ -1,12 +1,15 @@
 package net.sansa_stack.rdf.common.partition.layout
 
-import org.scalatest.FunSuite
-
 import net.sansa_stack.rdf.common.partition.layout.TripleLayoutDouble._
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringDouble
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.scalatest.FunSuite
 
+
+/**
+ * @author Gezim Sejdiu
+ */
 class TripleLayoutDoubleTests extends FunSuite {
 
   val triple = Triple.create(

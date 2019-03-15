@@ -1,10 +1,12 @@
 package net.sansa_stack.rdf.common.partition.utils
 
-import org.scalatest.FunSuite
-
 import net.sansa_stack.rdf.common.partition.utils.RdfTerm._
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.scalatest.FunSuite
 
+/**
+ * @author Gezim Sejdiu
+ */
 class RdfTermTests extends FunSuite {
 
   val triple = Triple.create(
