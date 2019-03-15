@@ -83,8 +83,6 @@
 		fat-jar can be executed on a cluster. Change the value of Program-Class if 
 		your program entry point changes. -->
 	<build>
-		<sourceDirectory>src/main/scala</sourceDirectory>
-		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

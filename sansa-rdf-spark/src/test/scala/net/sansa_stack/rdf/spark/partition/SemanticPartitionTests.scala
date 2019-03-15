@@ -9,7 +9,7 @@ class SemanticPartitionTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.partition._
 
-  test("partitioning N-Triples file into Semantic Partition should result in size 37") {
+  test("partitioning N-Triples file into Semantic Partition should match") {
     val path = getClass.getResource("/rdf.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -20,6 +20,5 @@ class SemanticPartitionTests extends FunSuite with DataFrameSuiteBase {
     val size = partitions.count()
 
     assert(size == 34)
-
   }
 }
