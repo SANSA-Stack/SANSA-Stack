@@ -9,7 +9,7 @@ class SparqlifyPartitionTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.partition._
 
-  test("partitioning N-Triples file into Sparqlify Partition (Vertical Partition) should result in size 30") {
+  test("partitioning N-Triples file into Sparqlify Partition (Vertical Partition) should match") {
     val path = getClass.getResource("/rdf.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
