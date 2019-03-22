@@ -40,7 +40,10 @@ To restart Zeppelin without restarting the whole stack:
 ```
 make restart
 ```
-
+Stop the whole stack:
+```
+make down
+```
 # Executing Examples From Command Line
 It is also possible to execute the applications from the command line. Get SANSA-Examples jar and start the cluster if you already have not done it:
 ```
