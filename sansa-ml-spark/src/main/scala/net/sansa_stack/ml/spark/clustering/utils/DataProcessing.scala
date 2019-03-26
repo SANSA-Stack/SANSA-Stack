@@ -17,12 +17,7 @@ import net.sansa_stack.rdf.spark.io.NTripleReader
   * @param spark SparkSession
   * @param conf Configuration
   */
-class DataProcessing(val spark: SparkSession, val conf: Config) extends Serializable {
-
-  // val dataRDD: RDD[Triple] = NTripleReader.load(spark, conf.getString("sansa.data.input")).persist()
-  val dataRDD: RDD[Triple] = loadNTriple(conf.getString("sansa.data.input"))
-
-  // var poiCoordinates: RDD[(Long, Coordinate)] = this.getPOICoordinates(16.192851, 16.593533, 48.104194, 48.316388).sample(withReplacement = false, fraction = 0.01, seed = 0)
+class DataProcessing(val spark: SparkSession, val conf: Config, dataRDD: RDD[Triple]) extends Serializable {
   var poiCoordinates: RDD[(Long, CoordinatePOI)] = this.getPOICoordinates
   var poiFlatCategoryId: RDD[(Long, Long)] = this.getPOIFlatCategoryId
   var poiCategoryId: RDD[(Long, Set[Long])] = this.getCategoryId(poiCoordinates, poiFlatCategoryId).persist()

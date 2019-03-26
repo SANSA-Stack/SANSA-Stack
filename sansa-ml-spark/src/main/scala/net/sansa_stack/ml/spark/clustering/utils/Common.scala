@@ -40,7 +40,8 @@ object Common {
   def writeClusteringResult(sparkContext: SparkContext, clusters: Map[Int, Array[Long]], pois: RDD[Poi], fileWriter: PrintWriter): Unit = {
     val assignments = clusters.toList.sortBy { case (k, v) => v.length }
     val poisKeyPair = pois.keyBy(f => f.poi_id).persist()
-    val clustersPois = Clusters(assignments.size, assignments.map(_._2.length).toArray, assignments.map(f => Cluster(f._1, join(sparkContext, f._2, poisKeyPair))))
+    val assm = assignments.toArray
+    val clustersPois = Clusters(assignments.size, assignments.map(_._2.length).toArray, assm.map(f => Cluster(f._1, join(sparkContext, f._2, poisKeyPair))))
     implicit val formats = DefaultFormats
     Serialization.writePretty(clustersPois, fileWriter)
   }
