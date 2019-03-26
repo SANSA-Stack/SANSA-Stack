@@ -5,5 +5,5 @@ package net.sansa_stack.ml.spark.clustering.datatypes
  * @param clusterSizes size of each cluster
  * @param clusters a list of cluster
  */
-case class Clusters(numOfClusters: Int, clusterSizes: Array[Int], clusters: List[Cluster])
+case class Clusters(numOfClusters: Int, clusterSizes: Array[Int], clusters: Array[Cluster])
 
