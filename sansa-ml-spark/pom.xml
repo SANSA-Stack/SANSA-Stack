@@ -141,8 +141,7 @@
 			<groupId>org.datasyslab</groupId>
 			<artifactId>geospark</artifactId>
 			<version>${geospark.version}</version>
-			<scope>provided</scope>
-		</dependency>
+ 		</dependency>
 
 
 		<!-- https://mvnrepository.com/artifact/com.vividsolutions/jts -->
