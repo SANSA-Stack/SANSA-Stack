@@ -2,9 +2,9 @@
   "paragraphs": [
     {
       "title": "Loading data and creating KV pair of poiID,categories",
-      "text": "%spark\nimport org.apache.jena.riot.Lang\nimport com.typesafe.config.ConfigFactory\nimport net.sansa_stack.ml.spark.clustering.utils.DataProcessing\nimport net.sansa_stack.rdf.spark.io._\n\n\nval input \u003d \"hdfs://namenode:8020/data/input.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval conf \u003d ConfigFactory.load()\nval data \u003d new DataProcessing(spark \u003d spark, conf \u003d conf,triples)\nval pois \u003d data.pois\nval poiCategorySet \u003d pois.map(poi \u003d\u003e (poi.poi_id, poi.categories.categories.toSet)).persist()",
+      "text": "%spark\nimport org.apache.jena.riot.Lang\nimport com.typesafe.config.ConfigFactory\nimport net.sansa_stack.ml.spark.clustering.utils.DataProcessing\nimport net.sansa_stack.rdf.spark.io._\n\n\nval input \u003d \"hdfs://namenode:8020/data/clusteringPipeline.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval conf \u003d ConfigFactory.load()\nval data \u003d new DataProcessing(spark \u003d spark, conf \u003d conf,triples)\nval pois \u003d data.pois\nval poiCategorySet \u003d pois.map(poi \u003d\u003e (poi.poi_id, poi.categories.categories.toSet)).persist()",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:33:49.041",
+      "dateUpdated": "2019-03-29 15:55:35.921",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -17,7 +17,8 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -28,7 +29,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import org.apache.jena.riot.Lang\nimport com.typesafe.config.ConfigFactory\nimport net.sansa_stack.ml.spark.clustering.utils.DataProcessing\nimport net.sansa_stack.rdf.spark.io._\ninput: String \u003d hdfs://namenode:8020/data/input.nt\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[2] at mapPartitions at NTripleReader.scala:140\nconf: com.typesafe.config.Config \u003d Config(SimpleConfigObject({\"SPARK_SUBMIT\":\"true\",\"awt\":{\"toolkit\":\"sun.awt.X11.XToolkit\"},\"file\":{\"encoding\":{\"pkg\":\"sun.io\"},\"separator\":\"/\"},\"java\":{\"awt\":{\"graphicsenv\":\"sun.awt.X11GraphicsEnvironment\",\"printerjob\":\"sun.print.PSPrinterJob\"},\"class\":{\"path\":\"/opt/zeppelin/interpreter/spark/spark-interpreter-0.8.0.jar:/opt/zeppelin/lib/interpreter/wagon-http-1.0.jar:/opt/zeppelin/lib/interpreter/aether-impl-1.12.jar:/opt/zeppelin/lib/interpreter/maven-plugin-api-3.0.jar:/opt/zeppelin/lib/interpreter/commons-configuration-1.9.jar:/opt/zeppelin/lib/interpreter/jline-2.12.1.jar:/opt/zeppelin/lib/interpreter/bcprov-jdk15on-1.52.jar:/opt/zeppelin/lib/interpreter/commons-io-2.4.jar:/opt/zeppelin/lib/interpreter/commons-exec-1.3.jar:/opt/zeppelin/lib/interpr...http://example.org/hasRating\ncategory\n0\nrating\n0\n--------pois--------------\ndata: net.sansa_stack.ml.spark.clustering.utils.DataProcessing \u003d net.sansa_stack.ml.spark.clustering.utils.DataProcessing@4809a687\npois: org.apache.spark.rdd.RDD[net.sansa_stack.ml.spark.clustering.datatypes.Poi] \u003d MapPartitionsRDD[40] at map at DataProcessing.scala:33\npoiCategorySet: org.apache.spark.rdd.RDD[(Long, scala.collection.immutable.Set[String])] \u003d MapPartitionsRDD[41] at map at \u003cconsole\u003e:41\n"
+            "data": "import org.apache.jena.riot.Lang\nimport com.typesafe.config.ConfigFactory\nimport net.sansa_stack.ml.spark.clustering.utils.DataProcessing\nimport net.sansa_stack.rdf.spark.io._\ninput: String \u003d hdfs://namenode:8020/data/clusteringPipeline.nt\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[2] at mapPartitions at NTripleReader.scala:140\nconf: com.typesafe.config.Config \u003d Config(SimpleConfigObject({\"SPARK_SUBMIT\":\"true\",\"awt\":{\"toolkit\":\"sun.awt.X11.XToolkit\"},\"file\":{\"encoding\":{\"pkg\":\"sun.io\"},\"separator\":\"/\"},\"java\":{\"awt\":{\"graphicsenv\":\"sun.awt.X11GraphicsEnvironment\",\"printerjob\":\"sun.print.PSPrinterJob\"},\"class\":{\"path\":\"/opt/zeppelin/interpreter/spark/spark-interpreter-0.8.0.jar:/opt/zeppelin/lib/interpreter/wagon-http-1.0.jar:/opt/zeppelin/lib/interpreter/aether-impl-1.12.jar:/opt/zeppelin/lib/interpreter/maven-plugin-api-3.0.jar:/opt/zeppelin/lib/interpreter/commons-configuration-1.9.jar:/opt/zeppelin/lib/interpreter/jline-2.12.1.jar:/opt/zeppelin/lib/interpreter/bcprov-jdk15on-1.52.jar:/opt/zeppelin/lib/interpreter/commons-io-2.4.jar:/opt/zeppelin/lib/interpreter/commons-exec-1.3.jar:/opt/zeppelin/lib/interpr...http://example.org/hasRating\ncategory\n0\nrating\n0\n--------pois--------------\ndata: net.sansa_stack.ml.spark.clustering.utils.DataProcessing \u003d net.sansa_stack.ml.spark.clustering.utils.DataProcessing@6019addc\npois: org.apache.spark.rdd.RDD[net.sansa_stack.ml.spark.clustering.datatypes.Poi] \u003d MapPartitionsRDD[40] at map at DataProcessing.scala:33\npoiCategorySet: org.apache.spark.rdd.RDD[(Long, scala.collection.immutable.Set[String])] \u003d MapPartitionsRDD[41] at map at \u003cconsole\u003e:41\n"
           }
         ]
       },
@@ -39,11 +40,11 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://48c71a556caf:4040/jobs/job?id\u003d0",
-            "http://48c71a556caf:4040/jobs/job?id\u003d1",
-            "http://48c71a556caf:4040/jobs/job?id\u003d2",
-            "http://48c71a556caf:4040/jobs/job?id\u003d3",
-            "http://48c71a556caf:4040/jobs/job?id\u003d4"
+            "http://e1e0531ae608:4040/jobs/job?id\u003d0",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d1",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d2",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d3",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d4"
           ],
           "interpreterSettingId": "spark"
         }
@@ -52,8 +53,8 @@
       "jobName": "paragraph_1553612144969_1117968957",
       "id": "20190326-145544_1831909808",
       "dateCreated": "2019-03-26 14:55:44.969",
-      "dateStarted": "2019-03-29 11:33:49.116",
-      "dateFinished": "2019-03-29 11:34:39.423",
+      "dateStarted": "2019-03-29 15:55:36.194",
+      "dateFinished": "2019-03-29 15:56:15.936",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -61,7 +62,7 @@
       "title": "Applying K-means Clustering Algorithm on Categories",
       "text": "%spark\nimport net.sansa_stack.ml.spark.clustering.algorithms.Encoder\nimport net.sansa_stack.ml.spark.clustering.algorithms.Kmeans\n\nval (avgVectorDF, word2Vec) \u003d new Encoder().wordVectorEncoder(poiCategorySet, spark)\nval avgVectorClusters \u003d new Kmeans().kmClustering(numClusters \u003d 8,\n                                                     maxIter\u003d5,\n                                                     df\u003davgVectorDF,\n                                                     spark\u003dspark)",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:34:39.518",
+      "dateUpdated": "2019-03-29 15:56:15.984",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -74,7 +75,8 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -96,21 +98,21 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://48c71a556caf:4040/jobs/job?id\u003d5",
-            "http://48c71a556caf:4040/jobs/job?id\u003d6",
-            "http://48c71a556caf:4040/jobs/job?id\u003d7",
-            "http://48c71a556caf:4040/jobs/job?id\u003d8",
-            "http://48c71a556caf:4040/jobs/job?id\u003d9",
-            "http://48c71a556caf:4040/jobs/job?id\u003d10",
-            "http://48c71a556caf:4040/jobs/job?id\u003d11",
-            "http://48c71a556caf:4040/jobs/job?id\u003d12",
-            "http://48c71a556caf:4040/jobs/job?id\u003d13",
-            "http://48c71a556caf:4040/jobs/job?id\u003d14",
-            "http://48c71a556caf:4040/jobs/job?id\u003d15",
-            "http://48c71a556caf:4040/jobs/job?id\u003d16",
-            "http://48c71a556caf:4040/jobs/job?id\u003d17",
-            "http://48c71a556caf:4040/jobs/job?id\u003d18",
-            "http://48c71a556caf:4040/jobs/job?id\u003d19"
+            "http://e1e0531ae608:4040/jobs/job?id\u003d5",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d6",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d7",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d8",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d9",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d10",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d11",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d12",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d13",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d14",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d15",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d16",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d17",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d18",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d19"
           ],
           "interpreterSettingId": "spark"
         }
@@ -119,16 +121,16 @@
       "jobName": "paragraph_1553612392104_1953497213",
       "id": "20190326-145952_2107438766",
       "dateCreated": "2019-03-26 14:59:52.104",
-      "dateStarted": "2019-03-29 11:34:39.675",
-      "dateFinished": "2019-03-29 11:34:59.805",
+      "dateStarted": "2019-03-29 15:56:16.143",
+      "dateFinished": "2019-03-29 15:56:38.208",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Save the output in the HDFS",
-      "text": "%spark\n\n   import net.sansa_stack.ml.spark.clustering.utils.Common\n   import net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, Poi}\n\n   val path \u003d\"hdfs://namenode:8020/data/resultKMeans\"\n   val assignments \u003d avgVectorClusters.toList.sortBy { case (k, v) \u003d\u003e v.length }\n   val assm\u003dassignments.toArray\n   val poisKeyPair \u003d pois.keyBy(f \u003d\u003e f.poi_id).persist()\n\n   val clustersPois \u003d Clusters(assignments.size, assignments.map(_._2.length).toArray, assm.map(f \u003d\u003e Cluster(f._1, Common.join( spark.sparkContext,f._2, poisKeyPair))))\n   \n   val newAssignment \u003d assignments.map(f \u003d\u003e (f._1, spark.sparkContext.parallelize(f._2).map(x \u003d\u003e (x, x)).join(poisKeyPair).map(x \u003d\u003e ( x._2._2.poi_id, x._2._2.categories, x._2._2.coordinate)).collect()))\n   val newAssignmentRDD \u003d spark.sparkContext.parallelize(newAssignment)\n   val newAssignmentRDDTriple2 \u003d newAssignmentRDD.map(cluster \u003d\u003e (cluster._1, cluster._2.flatMap(poi \u003d\u003e\n                                          List{(poi._1.toString,( poi._2.categories.mkString(\";\"))+\",\", poi._3.latitude, poi._3.longitude)\n                                          }\n                                                     \n                                      ).toList)) \n   val res\u003dnewAssignmentRDDTriple2.flatMap(f\u003d\u003e(f._2.map(g\u003d\u003e(f._1,(f._1,g._1,g._2,g._3,g._4))))).groupByKey\n   val res1\u003dres.map(f\u003d\u003e(f._2.toList))\n  // res1.coalesce(1)saveAsTextFile(path)\n\n",
+      "text": "%spark\n\n   import net.sansa_stack.ml.spark.clustering.utils.Common\n   import net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, Poi}\n   \n  \n   val assignments \u003d avgVectorClusters.toList.sortBy { case (k, v) \u003d\u003e v.length }\n   val assm\u003dassignments.toArray\n   val poisKeyPair \u003d pois.keyBy(f \u003d\u003e f.poi_id).persist()\n\n   val clustersPois \u003d Clusters(assignments.size, assignments.map(_._2.length).toArray, assm.map(f \u003d\u003e Cluster(f._1, Common.join( spark.sparkContext,f._2, poisKeyPair))))\n   \n   val newAssignment \u003d assignments.map(f \u003d\u003e (f._1, spark.sparkContext.parallelize(f._2).map(x \u003d\u003e (x, x)).join(poisKeyPair).map(x \u003d\u003e ( x._2._2.poi_id, x._2._2.categories, x._2._2.coordinate)).collect()))\n   val newAssignmentRDD \u003d spark.sparkContext.parallelize(newAssignment)\n   val newAssignmentRDDTriple2 \u003d newAssignmentRDD.map(cluster \u003d\u003e (cluster._1, cluster._2.flatMap(poi \u003d\u003e\n                                          List{(poi._1.toString,( poi._2.categories.mkString(\";\"))+\",\", poi._3.latitude, poi._3.longitude)\n                                          }\n                                                     \n                                      ).toList)) \n   val res\u003dnewAssignmentRDDTriple2.flatMap(f\u003d\u003e(f._2.map(g\u003d\u003e(f._1,(f._1,g._1,g._2,g._3,g._4))))).groupByKey\n   val res1\u003dres.map(f\u003d\u003e(f._2.toList))",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:34:59.880",
+      "dateUpdated": "2019-03-29 15:56:38.242",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -141,7 +143,8 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -152,7 +155,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import net.sansa_stack.ml.spark.clustering.utils.Common\nimport net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, Poi}\npath: String \u003d hdfs://namenode:8020/data/resultKMeans\nassignments: List[(Int, Array[Long])] \u003d List((7,Array(257520, 271982, 309845, 299228, 303589, 303511, 296511, 303512, 303513, 269554, 304815, 237297, 309097, 306058, 298799)), (6,Array(264440, 310200, 309620, 312161, 312061, 311921, 307662, 302403, 257043, 301584, 281264, 308424, 310844, 247764, 298025, 279245, 303525, 270306, 310726, 298567, 308728, 310148, 308008, 306329, 270711, 270831, 295551, 270332, 305132, 260054, 298954, 307134, 295135, 307115, 306776, 307076, 284576, 310697, 272037, 271137, 266598, 268318, 307279, 268319)), (5,Array(305460, 257780, 265862, 307742, 271542, 270463, 305204, 252684, 266824, 270044, 270324, 293545, 303645, 264945, 253385, 309006, 311248, 302508, 256049, 311949, 293229, 299750, 298790, 312210, 271252, 305372, 258752, 293052, 290313, 308973, 311674, 2...assm: Array[(Int, Array[Long])] \u003d Array((7,Array(257520, 271982, 309845, 299228, 303589, 303511, 296511, 303512, 303513, 269554, 304815, 237297, 309097, 306058, 298799)), (6,Array(264440, 310200, 309620, 312161, 312061, 311921, 307662, 302403, 257043, 301584, 281264, 308424, 310844, 247764, 298025, 279245, 303525, 270306, 310726, 298567, 308728, 310148, 308008, 306329, 270711, 270831, 295551, 270332, 305132, 260054, 298954, 307134, 295135, 307115, 306776, 307076, 284576, 310697, 272037, 271137, 266598, 268318, 307279, 268319)), (5,Array(305460, 257780, 265862, 307742, 271542, 270463, 305204, 252684, 266824, 270044, 270324, 293545, 303645, 264945, 253385, 309006, 311248, 302508, 256049, 311949, 293229, 299750, 298790, 312210, 271252, 305372, 258752, 293052, 290313, 308973, 311674, 299194...poisKeyPair: org.apache.spark.rdd.RDD[(Long, net.sansa_stack.ml.spark.clustering.datatypes.Poi)] \u003d MapPartitionsRDD[108] at keyBy at \u003cconsole\u003e:45\nclustersPois: net.sansa_stack.ml.spark.clustering.datatypes.Clusters \u003d Clusters(8,[I@3279153,[Lnet.sansa_stack.ml.spark.clustering.datatypes.Cluster;@480e5ed9)\nnewAssignment: List[(Int, Array[(Long, net.sansa_stack.ml.spark.clustering.datatypes.Categories, net.sansa_stack.ml.spark.clustering.datatypes.CoordinatePOI)])] \u003d List((7,Array((257520,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJuru00E2pu00E7unwhCgh, Vkrsslqj)),CoordinatePOI(16.8229039998619,48.599525000054705)), (271982,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJuru00E2pu00E7unwhCgh, Vkrsslqj)),CoordinatePOI(16.6281369996704,48.663378000426604)), (309845,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJuru00E2pu00E7unwhCgh, Vkrsslqj)),CoordinatePOI(16.8192019998238,48.6338920003431)), (299228,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJ...newAssignmentRDD: org.apache.spark.rdd.RDD[(Int, Array[(Long, net.sansa_stack.ml.spark.clustering.datatypes.Categories, net.sansa_stack.ml.spark.clustering.datatypes.CoordinatePOI)])] \u003d ParallelCollectionRDD[205] at parallelize at \u003cconsole\u003e:55\nnewAssignmentRDDTriple2: org.apache.spark.rdd.RDD[(Int, List[(String, String, Double, Double)])] \u003d MapPartitionsRDD[206] at map at \u003cconsole\u003e:58\nres: org.apache.spark.rdd.RDD[(Int, Iterable[(Int, String, String, Double, Double)])] \u003d ShuffledRDD[208] at groupByKey at \u003cconsole\u003e:59\nres1: org.apache.spark.rdd.RDD[List[(Int, String, String, Double, Double)]] \u003d MapPartitionsRDD[209] at map at \u003cconsole\u003e:61\n"
+            "data": "import net.sansa_stack.ml.spark.clustering.utils.Common\nimport net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, Poi}\nassignments: List[(Int, Array[Long])] \u003d List((7,Array(257520, 271982, 309845, 299228, 303589, 303511, 296511, 303512, 303513, 269554, 304815, 237297, 309097, 306058, 298799)), (6,Array(264440, 310200, 309620, 312161, 312061, 311921, 307662, 302403, 257043, 301584, 281264, 308424, 310844, 247764, 298025, 279245, 303525, 270306, 310726, 298567, 308728, 310148, 308008, 306329, 270711, 270831, 295551, 270332, 305132, 260054, 298954, 307134, 295135, 307115, 306776, 307076, 284576, 310697, 272037, 271137, 266598, 268318, 307279, 268319)), (5,Array(305460, 257780, 265862, 307742, 271542, 270463, 305204, 252684, 266824, 270044, 270324, 293545, 303645, 264945, 253385, 309006, 311248, 302508, 256049, 311949, 293229, 299750, 298790, 312210, 271252, 305372, 258752, 293052, 290313, 308973, 311674, 2...assm: Array[(Int, Array[Long])] \u003d Array((7,Array(257520, 271982, 309845, 299228, 303589, 303511, 296511, 303512, 303513, 269554, 304815, 237297, 309097, 306058, 298799)), (6,Array(264440, 310200, 309620, 312161, 312061, 311921, 307662, 302403, 257043, 301584, 281264, 308424, 310844, 247764, 298025, 279245, 303525, 270306, 310726, 298567, 308728, 310148, 308008, 306329, 270711, 270831, 295551, 270332, 305132, 260054, 298954, 307134, 295135, 307115, 306776, 307076, 284576, 310697, 272037, 271137, 266598, 268318, 307279, 268319)), (5,Array(305460, 257780, 265862, 307742, 271542, 270463, 305204, 252684, 266824, 270044, 270324, 293545, 303645, 264945, 253385, 309006, 311248, 302508, 256049, 311949, 293229, 299750, 298790, 312210, 271252, 305372, 258752, 293052, 290313, 308973, 311674, 299194...poisKeyPair: org.apache.spark.rdd.RDD[(Long, net.sansa_stack.ml.spark.clustering.datatypes.Poi)] \u003d MapPartitionsRDD[108] at keyBy at \u003cconsole\u003e:45\nclustersPois: net.sansa_stack.ml.spark.clustering.datatypes.Clusters \u003d Clusters(8,[I@2902d4f2,[Lnet.sansa_stack.ml.spark.clustering.datatypes.Cluster;@52f71459)\nnewAssignment: List[(Int, Array[(Long, net.sansa_stack.ml.spark.clustering.datatypes.Categories, net.sansa_stack.ml.spark.clustering.datatypes.CoordinatePOI)])] \u003d List((7,Array((257520,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJuru00E2pu00E7unwhCgh, Vkrsslqj)),CoordinatePOI(16.8229039998619,48.599525000054705)), (271982,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJuru00E2pu00E7unwhCgh, Vkrsslqj)),CoordinatePOI(16.6281369996704,48.663378000426604)), (309845,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJuru00E2pu00E7unwhCgh, Vkrsslqj)),CoordinatePOI(16.8192019998238,48.6338920003431)), (299228,Categories(Set(VxshupdunhwvKshupdunhwvChq, PdunhwChq, PdunwCgh, Vxshupu00E7unwhxqgJ...newAssignmentRDD: org.apache.spark.rdd.RDD[(Int, Array[(Long, net.sansa_stack.ml.spark.clustering.datatypes.Categories, net.sansa_stack.ml.spark.clustering.datatypes.CoordinatePOI)])] \u003d ParallelCollectionRDD[205] at parallelize at \u003cconsole\u003e:55\nnewAssignmentRDDTriple2: org.apache.spark.rdd.RDD[(Int, List[(String, String, Double, Double)])] \u003d MapPartitionsRDD[206] at map at \u003cconsole\u003e:58\nres: org.apache.spark.rdd.RDD[(Int, Iterable[(Int, String, String, Double, Double)])] \u003d ShuffledRDD[208] at groupByKey at \u003cconsole\u003e:59\nres1: org.apache.spark.rdd.RDD[List[(Int, String, String, Double, Double)]] \u003d MapPartitionsRDD[209] at map at \u003cconsole\u003e:61\n"
           }
         ]
       },
@@ -163,22 +166,22 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://48c71a556caf:4040/jobs/job?id\u003d20",
-            "http://48c71a556caf:4040/jobs/job?id\u003d21",
-            "http://48c71a556caf:4040/jobs/job?id\u003d22",
-            "http://48c71a556caf:4040/jobs/job?id\u003d23",
-            "http://48c71a556caf:4040/jobs/job?id\u003d24",
-            "http://48c71a556caf:4040/jobs/job?id\u003d25",
-            "http://48c71a556caf:4040/jobs/job?id\u003d26",
-            "http://48c71a556caf:4040/jobs/job?id\u003d27",
-            "http://48c71a556caf:4040/jobs/job?id\u003d28",
-            "http://48c71a556caf:4040/jobs/job?id\u003d29",
-            "http://48c71a556caf:4040/jobs/job?id\u003d30",
-            "http://48c71a556caf:4040/jobs/job?id\u003d31",
-            "http://48c71a556caf:4040/jobs/job?id\u003d32",
-            "http://48c71a556caf:4040/jobs/job?id\u003d33",
-            "http://48c71a556caf:4040/jobs/job?id\u003d34",
-            "http://48c71a556caf:4040/jobs/job?id\u003d35"
+            "http://e1e0531ae608:4040/jobs/job?id\u003d20",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d21",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d22",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d23",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d24",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d25",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d26",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d27",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d28",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d29",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d30",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d31",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d32",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d33",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d34",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d35"
           ],
           "interpreterSettingId": "spark"
         }
@@ -187,8 +190,8 @@
       "jobName": "paragraph_1553614974355_693765751",
       "id": "20190326-154254_663957556",
       "dateCreated": "2019-03-26 15:42:54.356",
-      "dateStarted": "2019-03-29 11:34:59.972",
-      "dateFinished": "2019-03-29 11:35:16.513",
+      "dateStarted": "2019-03-29 15:56:38.462",
+      "dateFinished": "2019-03-29 15:56:51.871",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -196,7 +199,7 @@
       "title": "Binding K-means clustering result from spark to angular",
       "text": "%spark\nz.angularBind(\"clustersPois\", clustersPois)",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:35:16.602",
+      "dateUpdated": "2019-03-29 15:56:51.938",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -209,7 +212,8 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -223,16 +227,16 @@
       "jobName": "paragraph_1553615064669_1382129232",
       "id": "20190326-154424_1364100402",
       "dateCreated": "2019-03-26 15:44:24.669",
-      "dateStarted": "2019-03-29 11:35:16.670",
-      "dateFinished": "2019-03-29 11:35:17.679",
+      "dateStarted": "2019-03-29 15:56:52.064",
+      "dateFinished": "2019-03-29 15:56:52.691",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Reading K-means clustering output and preparing it for DBSCAN algo",
-      "text": "%spark\n    import com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }\n    val path \u003d \"hdfs://namenode:8020/data/resultKMeans/part-00000\"\n    val geometryFactory \u003d new GeometryFactory()\n\n    val dbParam \u003d spark.sparkContext.textFile(path).map { str \u003d\u003e\n      val parts \u003d str.split(\", \\\\(\").toList\n       \n      val rm \u003d parts.map(f \u003d\u003e f.replace(\"List((\", \"\")).toList\n      val id \u003d rm.map(f \u003d\u003e {\n        val poid \u003d f.subSequence(0, 6).toString\n        val poidremve\u003dpoid.replace(\",\", \"\")\n        val categories \u003d f.subSequence(7, f.indexOf(\")\")).toString()\n\n        val vategories1 \u003d categories.subSequence(0, categories.indexOf(\",,\")).toString()\n\n        val latLong \u003d categories.subSequence(categories.indexOf(\",,\") + 2, categories.length()).toString()\n\n        val lat \u003d latLong.subSequence(0, latLong.indexOf(\",\")).toString().toDouble\n      // print(\"lat\u003d\"+lat)\n        val long \u003d latLong.subSequence(latLong.indexOf(\",\") + 1, latLong.length()).toString().toDouble\n\n        val point \u003d geometryFactory.createPoint(new Coordinate(long, lat))\n        point.setUserData(poidremve)\n\n        point\n      })\n\n      id\n\n    }\n",
+      "text": "%spark\n    import com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }\n   \n    val geometryFactory \u003d new GeometryFactory()\n\n    val dbParam \u003d res1.collect.map(str \u003d\u003estr.map{parts\u003d\u003e\n       val poid\u003dparts._1.toString\n       val lat \u003d parts._4\n       val long\u003d parts._5\n       val point \u003d geometryFactory.createPoint(new Coordinate(long, lat))\n       point.setUserData(poid)\n       point\n    })\n      ",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:35:17.764",
+      "dateUpdated": "2019-03-29 15:56:52.741",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -245,7 +249,8 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/scala",
-        "title": true
+        "title": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -256,48 +261,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import com.vividsolutions.jts.geom.{Coordinate, Envelope, GeometryFactory, Point}\npath: String \u003d hdfs://namenode:8020/data/resultKMeans/part-00000\ngeometryFactory: com.vividsolutions.jts.geom.GeometryFactory \u003d com.vividsolutions.jts.geom.GeometryFactory@8fe4a7\ndbParam: org.apache.spark.rdd.RDD[List[com.vividsolutions.jts.geom.Point]] \u003d MapPartitionsRDD[212] at map at \u003cconsole\u003e:39\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1553615083886_664110814",
-      "id": "20190326-154443_1593479549",
-      "dateCreated": "2019-03-26 15:44:43.886",
-      "dateStarted": "2019-03-29 11:35:17.848",
-      "dateFinished": "2019-03-29 11:35:19.459",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "Apply DBSCAN on each K-means cluster",
-      "text": "%spark\nimport net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN\nimport scala.util.parsing.json._\nimport org.json4s.jackson.Serialization.write\nimport org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }   \n  \n    case class Coordinate2(longitude: Double, latitude: Double)\n    case class Cluster2(cluster_id: String, cluster_id_kmeans:String,poi_in_cluster:  Array[Coordinate2])\n    case class Clusters1(numOfClusters: Int, clusterSizes:Array[Int], clusters: Array[Cluster2])\n    \n    val broadcastRDD \u003d spark.sparkContext.broadcast(dbParam.collect())\n    val convertRDD\u003dbroadcastRDD.value.map{case u\u003d\u003espark.sparkContext.parallelize(u)}\n    \n     val dbscan\u003dnew DBSCAN()\n    val k \u003d convertRDD.map(f \u003d\u003e dbscan.dbclusters(f, 0.001, 2, spark))\n    \n    val clusterIDPOIidPair \u003d k.map(arr \u003d\u003e arr.map(f \u003d\u003e (f._1, f._2.map(g \u003d\u003e (g._1,g._2.lat,g._2.lon)))).groupByKey())\n    val temp\u003d clusterIDPOIidPair.reduce( _ ++ _ )\n    \n \n     val col\u003dtemp.collect().toArray\n     val exp\u003dcol.map(f\u003d\u003e(f._1,f._2.map(f\u003d\u003e(f.length)).toArray)).toArray\n     \n     def subsequenceT(a:String):String\u003d{\n     a.substring(0, 1)\n     }\n     \n      def findTerm(gt: (String, Iterable[Array[(String, Double, Double)]])):Cluster2\u003d{\n      val a\u003dgt._1\n      val c\u003dgt._2.map(f\u003d\u003ef.head).map(f\u003d\u003ef._1).head\n      val func\u003dsubsequenceT(c)\n        val b\u003dgt._2.flatMap(f\u003d\u003ef.map(f\u003d\u003e(Coordinate2(f._3,f._2))))\n      (Cluster2(a,func,b.toArray))\n    }\n    \n    val newdata\u003dcol.map(f\u003d\u003ef._2.map(f\u003d\u003ef.length).toArray).flatMap(f\u003d\u003ef).toArray\n    val pois\u003dClusters1(exp.size, newdata,col.map(g\u003d\u003efindTerm(g)))\n",
-      "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:35:19.553",
-      "config": {
-        "colWidth": 12.0,
-        "fontSize": 9.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false,
-          "completionKey": "TAB",
-          "completionSupport": true
-        },
-        "editorMode": "ace/mode/scala",
-        "title": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "import net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN\nimport scala.util.parsing.json._\nimport org.json4s.jackson.Serialization.write\nimport org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport com.vividsolutions.jts.geom.{Coordinate, Envelope, GeometryFactory, Point}\ndefined class Coordinate2\ndefined class Cluster2\ndefined class Clusters1\nbroadcastRDD: org.apache.spark.broadcast.Broadcast[Array[List[com.vividsolutions.jts.geom.Point]]] \u003d Broadcast(99)\nconvertRDD: Array[org.apache.spark.rdd.RDD[com.vividsolutions.jts.geom.Point]] \u003d Array(ParallelCollectionRDD[213] at parallelize at \u003cconsole\u003e:54, ParallelCollectionRDD[214] at parallelize at \u003cconsole\u003e:54, ParallelCollectionRDD[215] at parallelize at \u003cconsole\u003e:54, ParallelCollectionRDD[216] at parallelize at \u003cconsole\u003e:54, ParallelCollectionRDD[217] at parallelize at \u003cconsole\u003e:54, ParallelCollectionRDD[218] at parallelize at \u003cconsole\u003e:54, ParallelCollectionRDD[219] at parallelize at \u003cconsole\u003e:54, ParallelCollectionRDD[220] at parallelize at \u003cconsole\u003e:54)\ndbscan: net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN \u003d net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN@5c75a636\nk: Array[org.apache.spark.rdd.RDD[(String, Array[(String, net.sansa_stack.ml.spark.clustering.datatypes.DbPOI)])]] \u003d Array(MapPartitionsRDD[234] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[248] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[262] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[276] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[290] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[304] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[318] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[332] at mapValues at DBSCAN.scala:243)\nclusterIDPOIidPair: Array[org.apache.spark.rdd.RDD[(String, Iterable[Array[(String, Double, Double)]])]] \u003d Array(ShuffledRDD[334] at groupByKey at \u003cconsole\u003e:60, ShuffledRDD[336] at groupByKey at \u003cconsole\u003e:60, ShuffledRDD[338] at groupByKey at \u003cconsole\u003e:60, ShuffledRDD[340] at groupByKey at \u003cconsole\u003e:60, ShuffledRDD[342] at groupByKey at \u003cconsole\u003e:60, ShuffledRDD[344] at groupByKey at \u003cconsole\u003e:60, ShuffledRDD[346] at groupByKey at \u003cconsole\u003e:60, ShuffledRDD[348] at groupByKey at \u003cconsole\u003e:60)\ntemp: org.apache.spark.rdd.RDD[(String, Iterable[Array[(String, Double, Double)]])] \u003d UnionRDD[355] at $plus$plus at \u003cconsole\u003e:62\ncol: Array[(String, Iterable[Array[(String, Double, Double)]])] \u003d Array((6p0,CompactBuffer([Lscala.Tuple3;@54483dee)), (6p0,CompactBuffer([Lscala.Tuple3;@676719ae)), (3p0,CompactBuffer([Lscala.Tuple3;@19f29bc8)), (3p0,CompactBuffer([Lscala.Tuple3;@1ecc47fc)), (6p1,CompactBuffer([Lscala.Tuple3;@b7ebe86)), (6p1,CompactBuffer([Lscala.Tuple3;@540b6c2e)), (3p1,CompactBuffer([Lscala.Tuple3;@592a91bc)), (5p0c6p2,CompactBuffer([Lscala.Tuple3;@2525cec2)), (3p1,CompactBuffer([Lscala.Tuple3;@5bd1de6e)), (0p0,CompactBuffer([Lscala.Tuple3;@54b4b326)), (5p0c6p2,CompactBuffer([Lscala.Tuple3;@591e7f7d)), (0p1,CompactBuffer([Lscala.Tuple3;@52c6e942)), (6p3,CompactBuffer([Lscala.Tuple3;@7b16fda)), (4p0,CompactBuffer([Lscala.Tuple3;@76edc189)), (3p1,CompactBuffer([Lscala.Tuple3;@5c22bdbe)), (0p0,CompactBu...exp: Array[(String, Array[Int])] \u003d Array((6p0,Array(12)), (6p0,Array(4)), (3p0,Array(3)), (3p0,Array(6)), (6p1,Array(5)), (6p1,Array(4)), (3p1,Array(3)), (5p0c6p2,Array(4)), (3p1,Array(3)), (0p0,Array(12)), (5p0c6p2,Array(4)), (0p1,Array(3)), (6p3,Array(3)), (4p0,Array(3)), (3p1,Array(3)), (0p0,Array(3)), (1p0,Array(3)), (3p2,Array(4)), (3p0,Array(3)), (6p0,Array(5)), (3p0,Array(4)), (6p1,Array(3)), (5p0c6p2,Array(3)), (4p0,Array(3)))\nsubsequenceT: (a: String)String\nfindTerm: (gt: (String, Iterable[Array[(String, Double, Double)]]))Cluster2\nnewdata: Array[Int] \u003d Array(12, 4, 3, 6, 5, 4, 3, 4, 3, 12, 4, 3, 3, 3, 3, 3, 3, 4, 3, 5, 4, 3, 3, 3)\npois: Clusters1 \u003d Clusters1(24,[I@540bf4e6,[LCluster2;@5dd92813)\n"
+            "data": "import com.vividsolutions.jts.geom.{Coordinate, Envelope, GeometryFactory, Point}\ngeometryFactory: com.vividsolutions.jts.geom.GeometryFactory \u003d com.vividsolutions.jts.geom.GeometryFactory@b4512b9\ndbParam: Array[List[com.vividsolutions.jts.geom.Point]] \u003d Array(List(POINT (16.494674100274498 48.8013823002562)\t4, POINT (16.6140334005221 48.6650886002061)\t4, POINT (16.8788778994018 48.6874705003213)\t4, POINT (16.4674975001346 48.6593195997678)\t4, POINT (16.8226410002513 48.6047870002229)\t4, POINT (16.8987188997447 48.6012407002608)\t4, POINT (16.300496099692303 48.7180624998784)\t4, POINT (16.9055978993825 48.6086976003381)\t4, POINT (16.3796834004515 48.7151277995643)\t4, POINT (16.8343225998653 48.7164782000123)\t4, POINT (16.3872921002346 48.718713700271095)\t4, POINT (16.6551867000966 48.6530342997782)\t4, POINT (16.609828499754197 48.7409987999413)\t4, POINT (16.8785503001676 48.6875616001898)\t4, POINT (16.907841599688002 48.6067340001497)\t4, POINT (16.789597899971803 48.60053860011619..."
           }
         ]
       },
@@ -308,49 +272,25 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://48c71a556caf:4040/jobs/job?id\u003d36",
-            "http://48c71a556caf:4040/jobs/job?id\u003d37",
-            "http://48c71a556caf:4040/jobs/job?id\u003d38",
-            "http://48c71a556caf:4040/jobs/job?id\u003d39",
-            "http://48c71a556caf:4040/jobs/job?id\u003d40",
-            "http://48c71a556caf:4040/jobs/job?id\u003d41",
-            "http://48c71a556caf:4040/jobs/job?id\u003d42",
-            "http://48c71a556caf:4040/jobs/job?id\u003d43",
-            "http://48c71a556caf:4040/jobs/job?id\u003d44",
-            "http://48c71a556caf:4040/jobs/job?id\u003d45",
-            "http://48c71a556caf:4040/jobs/job?id\u003d46",
-            "http://48c71a556caf:4040/jobs/job?id\u003d47",
-            "http://48c71a556caf:4040/jobs/job?id\u003d48",
-            "http://48c71a556caf:4040/jobs/job?id\u003d49",
-            "http://48c71a556caf:4040/jobs/job?id\u003d50",
-            "http://48c71a556caf:4040/jobs/job?id\u003d51",
-            "http://48c71a556caf:4040/jobs/job?id\u003d52",
-            "http://48c71a556caf:4040/jobs/job?id\u003d53",
-            "http://48c71a556caf:4040/jobs/job?id\u003d54",
-            "http://48c71a556caf:4040/jobs/job?id\u003d55",
-            "http://48c71a556caf:4040/jobs/job?id\u003d56",
-            "http://48c71a556caf:4040/jobs/job?id\u003d57",
-            "http://48c71a556caf:4040/jobs/job?id\u003d58",
-            "http://48c71a556caf:4040/jobs/job?id\u003d59",
-            "http://48c71a556caf:4040/jobs/job?id\u003d60",
-            "http://48c71a556caf:4040/jobs/job?id\u003d61"
+            "http://e1e0531ae608:4040/jobs/job?id\u003d36"
           ],
           "interpreterSettingId": "spark"
         }
       },
       "apps": [],
-      "jobName": "paragraph_1553615115409_-1845613816",
-      "id": "20190326-154515_1427207508",
-      "dateCreated": "2019-03-26 15:45:15.409",
-      "dateStarted": "2019-03-29 11:35:19.696",
-      "dateFinished": "2019-03-29 11:35:35.329",
+      "jobName": "paragraph_1553615083886_664110814",
+      "id": "20190326-154443_1593479549",
+      "dateCreated": "2019-03-26 15:44:43.886",
+      "dateStarted": "2019-03-29 15:56:52.910",
+      "dateFinished": "2019-03-29 15:56:54.821",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "%spark\nz.angularBind(\"someScopeVar\", pois)\n",
+      "title": "Apply DBSCAN on each K-means cluster",
+      "text": "%spark\nimport net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN\nimport scala.util.parsing.json._\nimport org.json4s.jackson.Serialization.write\nimport org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }   \n  \n    case class Coordinate2(longitude: Double, latitude: Double)\n    case class Cluster2(cluster_id: String, cluster_id_kmeans:String,poi_in_cluster:  Array[Coordinate2])\n    case class Clusters1(numOfClusters: Int, clusterSizes:Array[Int], clusters: Array[Cluster2])\n    \n    val broadcastRDD \u003d spark.sparkContext.broadcast(dbParam)\n    val convertRDD\u003dbroadcastRDD.value.map{case u\u003d\u003espark.sparkContext.parallelize(u)}\n    \n     val dbscan\u003dnew DBSCAN()\n    val k \u003d convertRDD.map(f \u003d\u003e dbscan.dbclusters(f, 0.001, 2, spark))\n    \n    val clusterIDPOIidPair \u003d k.map(arr \u003d\u003e arr.map(f \u003d\u003e (f._1, f._2.map(g \u003d\u003e (g._1,g._2.lat,g._2.lon)))).groupByKey())\n    val temp\u003d clusterIDPOIidPair.reduce( _ ++ _ )\n    \n \n     val col\u003dtemp.collect().toArray\n     val exp\u003dcol.map(f\u003d\u003e(f._1,f._2.map(f\u003d\u003e(f.length)).toArray)).toArray\n     \n     def subsequenceT(a:String):String\u003d{\n     a.substring(0, 1)\n     }\n     \n      def findTerm(gt: (String, Iterable[Array[(String, Double, Double)]])):Cluster2\u003d{\n      val a\u003dgt._1\n      val c\u003dgt._2.map(f\u003d\u003ef.head).map(f\u003d\u003ef._1).head\n      val func\u003dsubsequenceT(c)\n        val b\u003dgt._2.flatMap(f\u003d\u003ef.map(f\u003d\u003e(Coordinate2(f._3,f._2))))\n      (Cluster2(a,func,b.toArray))\n    }\n    \n    val newdata\u003dcol.map(f\u003d\u003ef._2.map(f\u003d\u003ef.length).toArray).flatMap(f\u003d\u003ef).toArray\n    val pois\u003dClusters1(exp.size, newdata,col.map(g\u003d\u003efindTerm(g)))",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:35:35.395",
+      "dateUpdated": "2019-03-29 15:56:54.915",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -362,7 +302,85 @@
           "completionKey": "TAB",
           "completionSupport": true
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/scala",
+        "title": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN\nimport scala.util.parsing.json._\nimport org.json4s.jackson.Serialization.write\nimport org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport com.vividsolutions.jts.geom.{Coordinate, Envelope, GeometryFactory, Point}\ndefined class Coordinate2\ndefined class Cluster2\ndefined class Clusters1\nbroadcastRDD: org.apache.spark.broadcast.Broadcast[Array[List[com.vividsolutions.jts.geom.Point]]] \u003d Broadcast(99)\nconvertRDD: Array[org.apache.spark.rdd.RDD[com.vividsolutions.jts.geom.Point]] \u003d Array(ParallelCollectionRDD[210] at parallelize at \u003cconsole\u003e:82, ParallelCollectionRDD[211] at parallelize at \u003cconsole\u003e:82, ParallelCollectionRDD[212] at parallelize at \u003cconsole\u003e:82, ParallelCollectionRDD[213] at parallelize at \u003cconsole\u003e:82, ParallelCollectionRDD[214] at parallelize at \u003cconsole\u003e:82, ParallelCollectionRDD[215] at parallelize at \u003cconsole\u003e:82, ParallelCollectionRDD[216] at parallelize at \u003cconsole\u003e:82, ParallelCollectionRDD[217] at parallelize at \u003cconsole\u003e:82)\ndbscan: net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN \u003d net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN@6a1f2364\nk: Array[org.apache.spark.rdd.RDD[(String, Array[(String, net.sansa_stack.ml.spark.clustering.datatypes.DbPOI)])]] \u003d Array(MapPartitionsRDD[231] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[245] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[259] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[273] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[287] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[301] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[315] at mapValues at DBSCAN.scala:243, MapPartitionsRDD[329] at mapValues at DBSCAN.scala:243)\nclusterIDPOIidPair: Array[org.apache.spark.rdd.RDD[(String, Iterable[Array[(String, Double, Double)]])]] \u003d Array(ShuffledRDD[331] at groupByKey at \u003cconsole\u003e:88, ShuffledRDD[333] at groupByKey at \u003cconsole\u003e:88, ShuffledRDD[335] at groupByKey at \u003cconsole\u003e:88, ShuffledRDD[337] at groupByKey at \u003cconsole\u003e:88, ShuffledRDD[339] at groupByKey at \u003cconsole\u003e:88, ShuffledRDD[341] at groupByKey at \u003cconsole\u003e:88, ShuffledRDD[343] at groupByKey at \u003cconsole\u003e:88, ShuffledRDD[345] at groupByKey at \u003cconsole\u003e:88)\ntemp: org.apache.spark.rdd.RDD[(String, Iterable[Array[(String, Double, Double)]])] \u003d UnionRDD[352] at $plus$plus at \u003cconsole\u003e:90\ncol: Array[(String, Iterable[Array[(String, Double, Double)]])] \u003d Array()\nexp: Array[(String, Array[Int])] \u003d Array()\nsubsequenceT: (a: String)String\nfindTerm: (gt: (String, Iterable[Array[(String, Double, Double)]]))Cluster2\nnewdata: Array[Int] \u003d Array()\npois: Clusters1 \u003d Clusters1(0,[I@26140139,[LCluster2;@4da9c5ec)\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://e1e0531ae608:4040/jobs/job?id\u003d37",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d38",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d39",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d40",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d41",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d42",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d43",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d44",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d45",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d46",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d47",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d48",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d49",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d50",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d51",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d52",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d53",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d54",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d55",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d56",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d57",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d58",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d59",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d60",
+            "http://e1e0531ae608:4040/jobs/job?id\u003d61"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1553615115409_-1845613816",
+      "id": "20190326-154515_1427207508",
+      "dateCreated": "2019-03-26 15:45:15.409",
+      "dateStarted": "2019-03-29 15:56:55.073",
+      "dateFinished": "2019-03-29 15:57:08.993",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark\nz.angularBind(\"someScopeVar\", pois)\n",
+      "user": "anonymous",
+      "dateUpdated": "2019-03-29 15:57:09.037",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -376,15 +394,15 @@
       "jobName": "paragraph_1553615199741_1945601806",
       "id": "20190326-154639_1105372939",
       "dateCreated": "2019-03-26 15:46:39.741",
-      "dateStarted": "2019-03-29 11:35:35.508",
-      "dateFinished": "2019-03-29 11:35:36.146",
+      "dateStarted": "2019-03-29 15:57:09.192",
+      "dateFinished": "2019-03-29 15:57:09.848",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%angular\n\u003c!DOCTYPE html\u003e\n\u003chtml\u003e\n  \u003chead\u003e\n      \u003ctitle\u003eSLIPO\u003c/title\u003e\n      \u003c!-- Convex hull library --\u003e\n    \u003clink rel\u003d\"stylesheet\" href\u003d\"//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css\" /\u003e \n    \u003clink rel\u003d\"stylesheet\" href\u003d\"https://unpkg.com/leaflet@1.3.1/dist/leaflet.css\" integrity\u003d\"sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ\u003d\u003d\" crossorigin\u003d\"\"/\u003e\n    \u003cscript src\u003d\"https://unpkg.com/leaflet@1.3.1/dist/leaflet.js\" integrity\u003d\"sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw\u003d\u003d\" crossorigin\u003d\"\"\u003e\u003c/script\u003e\n\n      \u003clink rel\u003d\"stylesheet\" href\u003d\"https://fastcdn.org/Leaflet.awesome-markers/2.0.1/leaflet.awesome-markers.css\"\u003e  \n        \n    \n     \u003c!--  \u003cscript src\u003d\"https://fastcdn.org/Leaflet.awesome-markers/2.0.1/leaflet.awesome-markers.js\"\u003e\u003c/script\u003e --\u003e\n   \u003cscript\u003e\n      \n      /*\n       Leaflet.AwesomeMarkers, a plugin that adds colorful iconic markers for Leaflet, based on the Font Awesome icons\n       (c) 2012-2013, Lennard Voogdt\n\n      http://leafletjs.com\n      https://github.com/lvoogdt\n     */\n\n     /*global L*/\n\n(function (window, document, undefined) {\n    \"use strict\";\n    /*\n     * Leaflet.AwesomeMarkers assumes that you have already included the Leaflet library.\n     */\n\n    L.AwesomeMarkers \u003d {};\n\n    L.AwesomeMarkers.version \u003d \u00272.0.1\u0027;\n\n    L.AwesomeMarkers.Icon \u003d L.Icon.extend({\n        options: {\n            iconSize: [35, 45],\n            iconAnchor:   [17, 42],\n            popupAnchor: [1, -32],\n            shadowAnchor: [10, 12],\n            shadowSize: [36, 16],\n            className: \u0027awesome-marker\u0027,\n            prefix: \u0027glyphicon\u0027,\n            spinClass: \u0027fa-spin\u0027,\n            extraClasses: \u0027\u0027,\n            icon: \u0027home\u0027,\n            markerColor: \u0027blue\u0027,\n            iconColor: \u0027white\u0027\n        },\n\n        initialize: function (options) {\n            options \u003d L.Util.setOptions(this, options);\n        },\n\n        createIcon: function () {\n            var div \u003d document.createElement(\u0027div\u0027),\n                options \u003d this.options;\n\n            if (options.icon) {\n                div.innerHTML \u003d this._createInner();\n            }\n\n            if (options.bgPos) {\n                div.style.backgroundPosition \u003d\n                    (-options.bgPos.x) + \u0027px \u0027 + (-options.bgPos.y) + \u0027px\u0027;\n            }\n\n            this._setIconStyles(div, \u0027icon-\u0027 + options.markerColor);\n            return div;\n        },\n\n        _createInner: function() {\n            var iconClass, iconSpinClass \u003d \"\", iconColorClass \u003d \"\", iconColorStyle \u003d \"\", options \u003d this.options;\n\n            if(options.icon.slice(0,options.prefix.length+1) \u003d\u003d\u003d options.prefix + \"-\") {\n                iconClass \u003d options.icon;\n            } else {\n                iconClass \u003d options.prefix + \"-\" + options.icon;\n            }\n\n            if(options.spin \u0026\u0026 typeof options.spinClass \u003d\u003d\u003d \"string\") {\n                iconSpinClass \u003d options.spinClass;\n            }\n\n            if(options.iconColor) {\n                if(options.iconColor \u003d\u003d\u003d \u0027white\u0027 || options.iconColor \u003d\u003d\u003d \u0027black\u0027) {\n                    iconColorClass \u003d \"icon-\" + options.iconColor;\n                } else {\n                    iconColorStyle \u003d \"style\u003d\u0027color: \" + options.iconColor + \"\u0027 \";\n                }\n            }\n\n            return \"\u003ci \" + iconColorStyle + \"class\u003d\u0027\" + options.extraClasses + \" \" + options.prefix + \" \" + iconClass + \" \" + iconSpinClass + \" \" + iconColorClass + \"\u0027\u003e\u003c/i\u003e\";\n        },\n\n        _setIconStyles: function (img, name) {\n            var options \u003d this.options,\n                size \u003d L.point(options[name \u003d\u003d\u003d \u0027shadow\u0027 ? \u0027shadowSize\u0027 : \u0027iconSize\u0027]),\n                anchor;\n\n            if (name \u003d\u003d\u003d \u0027shadow\u0027) {\n                anchor \u003d L.point(options.shadowAnchor || options.iconAnchor);\n            } else {\n                anchor \u003d L.point(options.iconAnchor);\n            }\n\n            if (!anchor \u0026\u0026 size) {\n                anchor \u003d size.divideBy(2, true);\n            }\n\n            img.className \u003d \u0027awesome-marker-\u0027 + name + \u0027 \u0027 + options.className;\n\n            if (anchor) {\n                img.style.marginLeft \u003d (-anchor.x) + \u0027px\u0027;\n                img.style.marginTop  \u003d (-anchor.y) + \u0027px\u0027;\n            }\n\n            if (size) {\n                img.style.width  \u003d size.x + \u0027px\u0027;\n                img.style.height \u003d size.y + \u0027px\u0027;\n            }\n        },\n\n        createShadow: function () {\n            var div \u003d document.createElement(\u0027div\u0027);\n\n            this._setIconStyles(div, \u0027shadow\u0027);\n            return div;\n      }\n    });\n        \n    L.AwesomeMarkers.icon \u003d function (options) {\n        return new L.AwesomeMarkers.Icon(options);\n    };\n\n}(this, document));\n\n\n\u003c/script\u003e \n\n     \u003cscript src\u003d\"http://cdn.jsdelivr.net/gh/Rajjat/FrontEND/resources/hull.js\"\u003e\u003c/script\u003e\n  \n          \n  \u003c/head\u003e\n  \u003cbody\u003e\n     \u003cdiv id\u003d\"someId1\"\u003e\u003c/div\u003e\n     \u003cdiv id\u003d\"someId\"\u003e\u003c/div\u003e\n     \u003cdiv id\u003d\"demo\"\u003e\n     \u003ccenter\u003e\n\t \u003cdiv id\u003d\"mapid\" style\u003d\"width: 130%; height: 800px;\"\u003e\u003c/div\u003e\n     \u003c/center\u003e\n     \n     \u003cscript\u003e\n      \n      var mymap \u003d L.map(\u0027mapid\u0027).setView([48.6,16.7], 11);\n\t\n      L.tileLayer(\u0027https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token\u003dpk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw\u0027, {\n      maxZoom: 18,\n      attribution: \u0027Map data \u0026copy; \u003ca href\u003d\"http://openstreetmap.org\"\u003eOpenStreetMap\u003c/a\u003e contributors, \u0027 +\n      \u0027\u003ca href\u003d\"http://creativecommons.org/licenses/by-sa/2.0/\"\u003eCC-BY-SA\u003c/a\u003e, \u0027 +\n      \u0027Imagery © \u003ca href\u003d\"http://mapbox.com\"\u003eMapbox\u003c/a\u003e\u0027,\n      id: \u0027mapbox.streets\u0027\n      }).addTo(mymap);\n\n      \n      var colorMarker \u003d [];\n      colorMarker[0] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027red\u0027});\n      colorMarker[1] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027green\u0027});\n      colorMarker[2] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027darkred\u0027});\n      colorMarker[3] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027orange\u0027});\n      colorMarker[4] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027darkgreen\u0027});\n      colorMarker[5] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027blue\u0027});\n      colorMarker[6] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027purple\u0027});\n      colorMarker[7] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027darkpurple\u0027});\n      colorMarker[8] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027cadetblue\u0027});\n      colorMarker[9] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027darkblue\u0027});\n      // colorMarker[10] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027cadetblue\u0027});\n      // colorMarker[11] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027cadetblue\u0027});\n      // colorMarker[12] \u003d L.AwesomeMarkers.icon({icon: \u0027\u0027,markerColor: \u0027cadetblue\u0027});\n\n      var colorHull \u003d [];\n      colorHull[0] \u003d \u0027#e84c38\u0027 ;\n      colorHull[1] \u003d \u0027#93c827\u0027 ;\n      colorHull[2] \u003d \u0027#b54347\u0027 ;\n      colorHull[3] \u003d \u0027#f89b31\u0027 ;\n      colorHull[4] \u003d \u0027#919625\u0027 ;\n      colorHull[5] \u003d \u0027#3db2e5\u0027 ;\n      colorHull[6] \u003d \u0027#d759bb\u0027 ;\n      colorHull[7] \u003d \u0027#5e3c6f\u0027 ;\n      colorHull[8] \u003d \u0027#4e7080\u0027 ;\n      colorHull[9] \u003d \u0027#0066a4\u0027 ;\n      \n\n    \n      \n      \n      var element1 \u003d $(\u0027#someId1\u0027);\n      var angularVar1 \u003d \u0027clustersPois\u0027;\n      var scope1 \u003d angular.element(element1.parent(\u0027.ng-scope\u0027)).scope().compiledScope;\n      window.watcher \u003d scope1.$watch(angularVar1, function(newVal1, oldVal1){\n      var jsonE1 \u003d JSON.stringify(newVal1);\n      var data1 \u003d JSON.parse(jsonE1);\n      for (i\u003d0;i\u003cdata1.numOfClusters;i++){\n\t   for (j\u003d0;j\u003cdata1.clusterSizes[i];j++){\n\t        L.marker([data1.clusters[i].poi_in_cluster[j].coordinate.latitude,data1.clusters[i].poi_in_cluster[j].coordinate.longitude], {icon: colorMarker[data1.clusters[i].cluster_id]}).addTo(mymap).bindPopup(data1.clusters[i].poi_in_cluster[j].categories.categories.toString());\n        }\n      }\n     });\n     \n     \n     \n     var element \u003d $(\u0027#someId\u0027);\n     var angularVar \u003d \u0027someScopeVar\u0027;\n     var scope \u003d angular.element(element.parent(\u0027.ng-scope\u0027)).scope().compiledScope;\n     window.watcher \u003d scope.$watch(angularVar, function(newVal, oldVal){\n     var jsonE \u003d JSON.stringify(newVal);\n     var data \u003d JSON.parse(jsonE);\n     \n      for (i\u003d0;i\u003cdata.numOfClusters;i++){\n        var poly \u003d [];\n\t  for (j\u003d0;j\u003cdata.clusterSizes[i];j++){\n\t\t\t\tpoly[j]\u003d[];\n\t\t\t\tpoly[j] \u003d [ data.clusters[i].poi_in_cluster[j].latitude , data.clusters[i].poi_in_cluster[j].longitude ] ; // reversed\n\t\t\t\t}\n\t\t    L.polygon(hull(poly,10)).setStyle({fillColor: colorHull[data.clusters[i].cluster_id_kmeans] , color: colorHull[data.clusters[i].cluster_id_kmeans]}).addTo(mymap) ;\n     }\n});\n     \n\n     \n    \u003c/script\u003e\n  \u003c/body\u003e\n\n\u003c/html\u003e",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:35:39.193",
+      "dateUpdated": "2019-03-29 15:57:09.898",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -417,25 +435,39 @@
       "jobName": "paragraph_1553642287579_1813224761",
       "id": "20190326-231807_747853558",
       "dateCreated": "2019-03-26 23:18:07.579",
-      "dateStarted": "2019-03-29 11:35:36.303",
-      "dateFinished": "2019-03-29 11:35:39.123",
+      "dateStarted": "2019-03-29 15:57:10.048",
+      "dateFinished": "2019-03-29 15:57:13.499",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%angular\n",
       "user": "anonymous",
-      "dateUpdated": "2019-03-29 11:35:36.205",
-      "config": {},
+      "dateUpdated": "2019-03-29 15:57:13.539",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/undefined",
+        "tableHide": false
+      },
       "settings": {
         "params": {},
         "forms": {}
       },
       "apps": [],
-      "jobName": "paragraph_1553859336204_257790253",
-      "id": "20190329-113536_242625457",
-      "dateCreated": "2019-03-29 11:35:36.204",
-      "status": "READY",
+      "jobName": "paragraph_1553871043915_722334490",
+      "id": "20190329-145043_711938555",
+      "dateCreated": "2019-03-29 14:50:43.915",
+      "status": "FINISHED",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     }
   ],
@@ -449,591 +481,9 @@
       {
         "name": "someScopeVar",
         "object": {
-          "numOfClusters": 24.0,
-          "clusterSizes": [
-            12.0,
-            4.0,
-            3.0,
-            6.0,
-            5.0,
-            4.0,
-            3.0,
-            4.0,
-            3.0,
-            12.0,
-            4.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            4.0,
-            3.0,
-            5.0,
-            4.0,
-            3.0,
-            3.0,
-            3.0
-          ],
-          "clusters": [
-            {
-              "cluster_id": "6p0",
-              "cluster_id_kmeans": "0",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.9055057003045,
-                  "latitude": 48.607391999773
-                },
-                {
-                  "longitude": 16.9055107003045,
-                  "latitude": 48.607389999773005
-                },
-                {
-                  "longitude": 16.9053766995752,
-                  "latitude": 48.6062574996079
-                },
-                {
-                  "longitude": 16.903899099497302,
-                  "latitude": 48.604790000218
-                },
-                {
-                  "longitude": 16.9049259997748,
-                  "latitude": 48.6059109998847
-                },
-                {
-                  "longitude": 16.9034277995777,
-                  "latitude": 48.606405000383795
-                },
-                {
-                  "longitude": 16.9042578995222,
-                  "latitude": 48.605648399699
-                },
-                {
-                  "longitude": 16.9053796995752,
-                  "latitude": 48.6062544996079
-                },
-                {
-                  "longitude": 16.9045764994601,
-                  "latitude": 48.605482699788105
-                },
-                {
-                  "longitude": 16.9042083004734,
-                  "latitude": 48.604676600304195
-                },
-                {
-                  "longitude": 16.9049900001323,
-                  "latitude": 48.606825500210796
-                },
-                {
-                  "longitude": 16.9044108996993,
-                  "latitude": 48.6064939998753
-                }
-              ]
-            },
-            {
-              "cluster_id": "6p0",
-              "cluster_id_kmeans": "1",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.9054663000063,
-                  "latitude": 48.60750909973709
-                },
-                {
-                  "longitude": 16.9057299996784,
-                  "latitude": 48.606148699935595
-                },
-                {
-                  "longitude": 16.9055200998973,
-                  "latitude": 48.606567399928004
-                },
-                {
-                  "longitude": 16.9057329996784,
-                  "latitude": 48.606151699935594
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p0",
-              "cluster_id_kmeans": "4",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.684697200561203,
-                  "latitude": 48.696502900346495
-                },
-                {
-                  "longitude": 16.6847266998875,
-                  "latitude": 48.6970320000339
-                },
-                {
-                  "longitude": 16.6850430993739,
-                  "latitude": 48.6969902004567
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p0",
-              "cluster_id_kmeans": "0",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.6294845998452,
-                  "latitude": 48.668599899631396
-                },
-                {
-                  "longitude": 16.6306621000031,
-                  "latitude": 48.667782899578796
-                },
-                {
-                  "longitude": 16.629258400519497,
-                  "latitude": 48.668962600027
-                },
-                {
-                  "longitude": 16.631234999715,
-                  "latitude": 48.6676096997942
-                },
-                {
-                  "longitude": 16.6285173005703,
-                  "latitude": 48.668809499694
-                },
-                {
-                  "longitude": 16.6300969001413,
-                  "latitude": 48.6678678003059
-                }
-              ]
-            },
-            {
-              "cluster_id": "6p1",
-              "cluster_id_kmeans": "0",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.9070300994903,
-                  "latitude": 48.6067894996336
-                },
-                {
-                  "longitude": 16.9087069000261,
-                  "latitude": 48.6071383996717
-                },
-                {
-                  "longitude": 16.907159800154,
-                  "latitude": 48.6068033003052
-                },
-                {
-                  "longitude": 16.9080166001491,
-                  "latitude": 48.606719400076805
-                },
-                {
-                  "longitude": 16.9073669004009,
-                  "latitude": 48.606820099721205
-                }
-              ]
-            },
-            {
-              "cluster_id": "6p1",
-              "cluster_id_kmeans": "1",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.7875391006602,
-                  "latitude": 48.6019024999545
-                },
-                {
-                  "longitude": 16.787393599769,
-                  "latitude": 48.601916400214996
-                },
-                {
-                  "longitude": 16.7865084002282,
-                  "latitude": 48.6019122997377
-                },
-                {
-                  "longitude": 16.7864281998657,
-                  "latitude": 48.6015272003282
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p1",
-              "cluster_id_kmeans": "4",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.6304039998076,
-                  "latitude": 48.6713840002031
-                },
-                {
-                  "longitude": 16.630736600071,
-                  "latitude": 48.6710225002093
-                },
-                {
-                  "longitude": 16.630734600071,
-                  "latitude": 48.6710195002093
-                }
-              ]
-            },
-            {
-              "cluster_id": "5p0c6p2",
-              "cluster_id_kmeans": "0",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.716768099768398,
-                  "latitude": 48.600565700430195
-                },
-                {
-                  "longitude": 16.7167630997684,
-                  "latitude": 48.6005607004302
-                },
-                {
-                  "longitude": 16.7167630997684,
-                  "latitude": 48.6005667004302
-                },
-                {
-                  "longitude": 16.7167620997684,
-                  "latitude": 48.6005647004302
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p1",
-              "cluster_id_kmeans": "0",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.632834900338,
-                  "latitude": 48.6619677001684
-                },
-                {
-                  "longitude": 16.6332105999743,
-                  "latitude": 48.6608937995843
-                },
-                {
-                  "longitude": 16.632529900074502,
-                  "latitude": 48.6615973996814
-                }
-              ]
-            },
-            {
-              "cluster_id": "0p0",
-              "cluster_id_kmeans": "0",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.385290900641902,
-                  "latitude": 48.722015099692
-                },
-                {
-                  "longitude": 16.383893500140502,
-                  "latitude": 48.7214373004094
-                },
-                {
-                  "longitude": 16.384782699868,
-                  "latitude": 48.7213611003148
-                },
-                {
-                  "longitude": 16.3849281998886,
-                  "latitude": 48.7228944003159
-                },
-                {
-                  "longitude": 16.3860028003221,
-                  "latitude": 48.7207994001795
-                },
-                {
-                  "longitude": 16.3861648005715,
-                  "latitude": 48.7203550995148
-                },
-                {
-                  "longitude": 16.386224600564,
-                  "latitude": 48.720644599782894
-                },
-                {
-                  "longitude": 16.3863541002749,
-                  "latitude": 48.7205472001236
-                },
-                {
-                  "longitude": 16.384789699868,
-                  "latitude": 48.7213621003148
-                },
-                {
-                  "longitude": 16.386712200050702,
-                  "latitude": 48.7199398998737
-                },
-                {
-                  "longitude": 16.384789699868,
-                  "latitude": 48.7213651003148
-                },
-                {
-                  "longitude": 16.38538960004,
-                  "latitude": 48.7217193995781
-                }
-              ]
-            },
-            {
-              "cluster_id": "5p0c6p2",
-              "cluster_id_kmeans": "1",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.9069396000725,
-                  "latitude": 48.606363899933996
-                },
-                {
-                  "longitude": 16.9078211993101,
-                  "latitude": 48.6068952998129
-                },
-                {
-                  "longitude": 16.9069396000725,
-                  "latitude": 48.606368899934
-                },
-                {
-                  "longitude": 16.9078211993101,
-                  "latitude": 48.6068962998129
-                }
-              ]
-            },
-            {
-              "cluster_id": "0p1",
-              "cluster_id_kmeans": "0",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.384941600203,
-                  "latitude": 48.7194059001707
-                },
-                {
-                  "longitude": 16.384394400197802,
-                  "latitude": 48.719726299692894
-                },
-                {
-                  "longitude": 16.384441700165503,
-                  "latitude": 48.719887999852205
-                }
-              ]
-            },
-            {
-              "cluster_id": "6p3",
-              "cluster_id_kmeans": "1",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.8284950998518,
-                  "latitude": 48.6284192004151
-                },
-                {
-                  "longitude": 16.828655699690202,
-                  "latitude": 48.6284467999028
-                },
-                {
-                  "longitude": 16.8291688999347,
-                  "latitude": 48.6276052999384
-                }
-              ]
-            },
-            {
-              "cluster_id": "4p0",
-              "cluster_id_kmeans": "1",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.7963653006314,
-                  "latitude": 48.6454621003654
-                },
-                {
-                  "longitude": 16.796400699541397,
-                  "latitude": 48.6456120996482
-                },
-                {
-                  "longitude": 16.7963996995414,
-                  "latitude": 48.6456150996482
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p1",
-              "cluster_id_kmeans": "2",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.7837360004344,
-                  "latitude": 48.6013409997777
-                },
-                {
-                  "longitude": 16.7842480003208,
-                  "latitude": 48.601094000328494
-                },
-                {
-                  "longitude": 16.7839730001616,
-                  "latitude": 48.6002229997862
-                }
-              ]
-            },
-            {
-              "cluster_id": "0p0",
-              "cluster_id_kmeans": "2",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.5848859997703,
-                  "latitude": 48.7202320002312
-                },
-                {
-                  "longitude": 16.5849918994152,
-                  "latitude": 48.7193173998021
-                },
-                {
-                  "longitude": 16.5851096002192,
-                  "latitude": 48.720632499787
-                }
-              ]
-            },
-            {
-              "cluster_id": "1p0",
-              "cluster_id_kmeans": "2",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.682254500470403,
-                  "latitude": 48.6967877003386
-                },
-                {
-                  "longitude": 16.6812938995594,
-                  "latitude": 48.6966090997787
-                },
-                {
-                  "longitude": 16.6829442997378,
-                  "latitude": 48.6974320003975
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p2",
-              "cluster_id_kmeans": "2",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.8236070000784,
-                  "latitude": 48.5986420001435
-                },
-                {
-                  "longitude": 16.8241270002911,
-                  "latitude": 48.5974880001222
-                },
-                {
-                  "longitude": 16.824492000099998,
-                  "latitude": 48.5965470002706
-                },
-                {
-                  "longitude": 16.823610000544,
-                  "latitude": 48.59818100016
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p0",
-              "cluster_id_kmeans": "2",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.8299691001904,
-                  "latitude": 48.627545500083
-                },
-                {
-                  "longitude": 16.8300705002907,
-                  "latitude": 48.6268661996617
-                },
-                {
-                  "longitude": 16.830001099976197,
-                  "latitude": 48.6260959002837
-                }
-              ]
-            },
-            {
-              "cluster_id": "6p0",
-              "cluster_id_kmeans": "3",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.909242099543203,
-                  "latitude": 48.609149899866
-                },
-                {
-                  "longitude": 16.909453699954803,
-                  "latitude": 48.609911600440896
-                },
-                {
-                  "longitude": 16.910418699716,
-                  "latitude": 48.610256399864504
-                },
-                {
-                  "longitude": 16.909904699477398,
-                  "latitude": 48.6099209001789
-                },
-                {
-                  "longitude": 16.9093421001615,
-                  "latitude": 48.6100580997788
-                }
-              ]
-            },
-            {
-              "cluster_id": "3p0",
-              "cluster_id_kmeans": "3",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.628507100267402,
-                  "latitude": 48.667598499779295
-                },
-                {
-                  "longitude": 16.6286055998543,
-                  "latitude": 48.6667866002755
-                },
-                {
-                  "longitude": 16.6286075998543,
-                  "latitude": 48.6667846002755
-                },
-                {
-                  "longitude": 16.6279309002441,
-                  "latitude": 48.668316899591595
-                }
-              ]
-            },
-            {
-              "cluster_id": "6p1",
-              "cluster_id_kmeans": "3",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.828300599521,
-                  "latitude": 48.6286854002111
-                },
-                {
-                  "longitude": 16.8282961006244,
-                  "latitude": 48.6287386997698
-                },
-                {
-                  "longitude": 16.8289950005307,
-                  "latitude": 48.6277869996548
-                }
-              ]
-            },
-            {
-              "cluster_id": "5p0c6p2",
-              "cluster_id_kmeans": "3",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.7612610000951,
-                  "latitude": 48.612158999592
-                },
-                {
-                  "longitude": 16.761086200312903,
-                  "latitude": 48.6120293998373
-                },
-                {
-                  "longitude": 16.7609270005281,
-                  "latitude": 48.6124279996222
-                }
-              ]
-            },
-            {
-              "cluster_id": "4p0",
-              "cluster_id_kmeans": "3",
-              "poi_in_cluster": [
-                {
-                  "longitude": 16.9034319993578,
-                  "latitude": 48.6443650002063
-                },
-                {
-                  "longitude": 16.9031277005512,
-                  "latitude": 48.6449657001605
-                },
-                {
-                  "longitude": 16.903066899531098,
-                  "latitude": 48.6447083997182
-                }
-              ]
-            }
-          ]
+          "numOfClusters": 0.0,
+          "clusterSizes": [],
+          "clusters": []
         },
         "noteId": "2E8M78CS2"
       },
