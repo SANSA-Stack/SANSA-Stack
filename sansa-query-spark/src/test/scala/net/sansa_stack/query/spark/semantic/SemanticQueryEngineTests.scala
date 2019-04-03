@@ -1,11 +1,10 @@
 package net.sansa_stack.query.spark.semantic
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.scalatest.FunSuite
-import org.apache.jena.riot.Lang
-
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition._
+import org.apache.jena.riot.Lang
+import org.scalatest.FunSuite
 
 class SemanticQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 

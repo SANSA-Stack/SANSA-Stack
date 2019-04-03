@@ -23,7 +23,7 @@ import org.apache.spark.rdd._
  * @numOfFilesPartition - total number of files to save the partition data.
  */
 class QuerySystem(
-  partitionData:  RDD[String],
+  partitionData: RDD[String],
   queryInputPath: String)
   extends Serializable {
   var _selectVariables: Map[Int, ArrayBuffer[String]] = Map()
@@ -1203,13 +1203,13 @@ class QuerySystem(
   // FILTER comparison
   def filterComparison(a: String, b: String, operator: String): Boolean = {
     val result: Boolean = operator match {
-      case "<"        => a < b
-      case ">"        => a > b
+      case "<" => a < b
+      case ">" => a > b
       case "=" | "==" => a.equals(b)
-      case ">="       => a > b || a.equals(b)
-      case "<="       => a < b || a.equals(b)
-      case "!="       => !a.equals(b)
-      case _          => throw new IllegalStateException(s"FILTER - Wrong Operator Found: $operator")
+      case ">=" => a > b || a.equals(b)
+      case "<=" => a < b || a.equals(b)
+      case "!=" => !a.equals(b)
+      case _ => throw new IllegalStateException(s"FILTER - Wrong Operator Found: $operator")
     }
 
     result
