@@ -23,10 +23,9 @@ import org.apache.spark.rdd._
  * @numOfFilesPartition - total number of files to save the partition data.
  */
 class QuerySystem(
-  partitionData: RDD[String],
-  queryInputPath: String,
-  queryResultPath: String,
-  numOfFilesPartition: Int) extends Serializable {
+  partitionData:  RDD[String],
+  queryInputPath: String)
+  extends Serializable {
   var _selectVariables: Map[Int, ArrayBuffer[String]] = Map()
   var _whereVariables: Map[Int, ArrayBuffer[String]] = Map()
   var _WhereTriples: Map[Int, ArrayBuffer[String]] = Map()
@@ -39,14 +38,14 @@ class QuerySystem(
   var workingTripleRDD: RDD[(String, List[String])] = _
   var workingPartialRDD: RDD[(String, List[String])] = _
   var unionOutputRDD: RDD[String] = _
+  var outputRDD: RDD[String] = _
   val symbol = Symbols.symbol
 
-  def run(): Unit = {
+  def run(): RDD[String] = {
     // parse queries
     for (qID <- this.fetchQueries.indices) {
       // refactor queries
       val refactoredQueries = this.refactorUnionQueries(this.fetchQueries(qID), qID)
-
       // start process time
       val startTime = System.nanoTime()
 
@@ -71,6 +70,7 @@ class QuerySystem(
 
     // overall process time
     overallQueriesTime(_queriesProcessTime)
+    outputRDD
   }
 
   // -------------------------------
@@ -619,7 +619,7 @@ class QuerySystem(
     if (tmpRDD.partitions.nonEmpty) {
       // only one WHERE clause triple query
       if (numOfWhereClauseTriples.equals(1)) {
-        var outputRDD = tmpRDD
+        outputRDD = tmpRDD
           .filter(data => {
             var status = false
 
@@ -655,9 +655,9 @@ class QuerySystem(
           else unionOutputRDD = unionOutputRDD.union(outputRDD)
         }
 
+        outputRDD.take(5).foreach(println)
         // display output
         if (_unionOp(qID)("last")) {
-          val resultPath = this.queryResultPath + "/" + qID + "/"
 
           // case: UNION
           if (_unionOp(qID)("isUnion")) {
@@ -666,14 +666,10 @@ class QuerySystem(
 
           // case: LIMIT
           if (_queriesLimit.get(qID).isDefined) {
-            outputRDD
-              .repartition(this.numOfFilesPartition)
+            outputRDD = outputRDD
               .mapPartitions(_.take(_queriesLimit(qID)))
-              .saveAsTextFile(resultPath)
           } else {
-            outputRDD
-              .repartition(this.numOfFilesPartition)
-              .saveAsTextFile(resultPath)
+            outputRDD = outputRDD
           }
         }
       }
@@ -1041,7 +1037,6 @@ class QuerySystem(
 
       // output result to file
       if (_unionOp(qID)("last")) {
-        val resultPath = this.queryResultPath + "/" + qID + "/"
 
         // case: UNION
         if (_unionOp(qID)("isUnion")) {
@@ -1050,17 +1045,14 @@ class QuerySystem(
 
         // case: LIMIT
         if (_queriesLimit.get(qID).isDefined) {
-          tmpRDD
-            .repartition(this.numOfFilesPartition)
+          tmpRDD = tmpRDD
             .mapPartitions(_.take(_queriesLimit(qID)))
-            .saveAsTextFile(resultPath)
         } else {
-          tmpRDD
-            .repartition(this.numOfFilesPartition)
-            .saveAsTextFile(resultPath)
+          tmpRDD = tmpRDD
         }
       }
     }
+    outputRDD = tmpRDD
   }
 
   // apply FILTER on the query
@@ -1211,13 +1203,13 @@ class QuerySystem(
   // FILTER comparison
   def filterComparison(a: String, b: String, operator: String): Boolean = {
     val result: Boolean = operator match {
-      case "<" => a < b
-      case ">" => a > b
+      case "<"        => a < b
+      case ">"        => a > b
       case "=" | "==" => a.equals(b)
-      case ">=" => a > b || a.equals(b)
-      case "<=" => a < b || a.equals(b)
-      case "!=" => !a.equals(b)
-      case _ => throw new IllegalStateException(s"FILTER - Wrong Operator Found: $operator")
+      case ">="       => a > b || a.equals(b)
+      case "<="       => a < b || a.equals(b)
+      case "!="       => !a.equals(b)
+      case _          => throw new IllegalStateException(s"FILTER - Wrong Operator Found: $operator")
     }
 
     result
