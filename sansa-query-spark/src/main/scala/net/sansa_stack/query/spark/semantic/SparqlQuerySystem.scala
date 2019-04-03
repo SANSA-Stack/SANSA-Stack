@@ -63,13 +63,7 @@ class QuerySystem(
         // query engine
         this.queryEngine(qID)
       }
-
-      // end process time
-      _queriesProcessTime.append(queryTime((System.nanoTime() - startTime), symbol))
     }
-
-    // overall process time
-    overallQueriesTime(_queriesProcessTime)
     outputRDD
   }
 
@@ -482,20 +476,11 @@ class QuerySystem(
 
   // query engine
   def queryEngine(qID: Int): Unit = {
-    if (_unionOp(qID)("first")) {
-      if (_unionOp(qID)("first").equals(_unionOp(qID)("last"))) println(s"Query No: ${qID + 1}")
-      else println(s"Query No: ${qID + 1} - UNION")
-    }
-
     // validate number of WHERE clause triples
     if (_numOfWhereClauseTriples(qID).equals(1)) {
-      println("No. of WHERE clause Triples: 1")
-
       // process first triple
       this.runFirstTriple(qID)
     } else {
-      println(s"No. of WHERE clause Triples: ${_numOfWhereClauseTriples(qID)}")
-
       // process all triples of a query
       this.runAllTriplesOfQuery(qID)
     }
@@ -655,7 +640,6 @@ class QuerySystem(
           else unionOutputRDD = unionOutputRDD.union(outputRDD)
         }
 
-        outputRDD.take(5).foreach(println)
         // display output
         if (_unionOp(qID)("last")) {
 
