@@ -29,6 +29,7 @@ package object query {
     val spark = SparkSession.builder().getOrCreate()
     /**
      * Default partition - using VP.
+     * @param sparqlQuery a SPARQL query
      */
     def sparql(sparqlQuery: String): DataFrame = {
       val partitions = triples.partitionGraph()
@@ -48,6 +49,7 @@ package object query {
     val spark = SparkSession.builder().getOrCreate()
     /**
      * Default partition - using VP.
+     * @param sparqlQuery a SPARQL query
      */
     def sparql(sparqlQuery: String): DataFrame = {
       val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
@@ -69,14 +71,13 @@ package object query {
   implicit class Semantic(partitions: RDD[String]) extends Serializable {
 
     /**
-     * semantic partition of and RDF graph
+     * Semantic partition of and RDF graph
+     * @param queryInputPath -- a path to the SPARQL queries.
      */
-    def sparql(sparqlQuery: String)(input: String, output: String, numOfFilesPartition: Int): Unit = {
+    def sparql(queryInputPath: String): RDD[String] = {
       new QuerySystem(
         partitions,
-        input,
-        output,
-        numOfFilesPartition).run()
+        queryInputPath).run()
     }
 
   }
