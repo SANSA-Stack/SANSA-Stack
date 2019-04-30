@@ -59,7 +59,8 @@ object SemanticRdfPartitionUtilsSpark extends Serializable {
           filteredPredicate + symbol("space") + filteredObject + symbol("space"))
       })
       .reduceByKey(_ + _) // group based on key
-      .sortBy(x => x._1) // sort by key
+      // .sortBy(x => x._1) // sort by key
+      // .map(_.swap).sortByKey(false)
       .map(x => x._1 + symbol("space") + x._2) // output format
 
     partitionedData
