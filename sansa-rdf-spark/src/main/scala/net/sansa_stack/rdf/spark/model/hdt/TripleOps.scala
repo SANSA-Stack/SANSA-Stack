@@ -230,10 +230,9 @@ object TripleOps {
 
 
   def main(args: Array[String]) {
-    val inputRDFFile="/Users/jignesh/Desktop/Fiverr/Abakar/SANSA-RDF/sansa-rdf-spark/src/main/resources/rdf.nt"
-    //val inputRDFFile=null //"/home/abakar/IdeaProjects/RDF-Data-Compression-N-Triples-in-SANSA-Stack-using-Scala-and-Spark/src/main/resources/Input-Data/Small/dbpedia/sample.nt"
-    val compressedInputDir=null //"/Users/jignesh/Desktop/Fiverr/Abakar/output"
-    val outputDir="/Users/jignesh/Desktop/Fiverr/Abakar/outputData"
+    val inputRDFFile= "/home/abakar/IdeaProjects/RDF-Data-Compression-N-Triples-in-SANSA-Stack-using-Scala-and-Spark/src/main/resources/Input-Data/Small/dbpedia/sample.nt"
+    val compressedInputDir=null
+    val outputDir="/home/abakar/IdeaProjects/RDF-Data-Compression-N-Triples-in-SANSA-Stack-using-Scala-and-Spark"
     //Initialized the spark session
     val spark = SparkSession.builder
       .appName(s"Data Compression")
