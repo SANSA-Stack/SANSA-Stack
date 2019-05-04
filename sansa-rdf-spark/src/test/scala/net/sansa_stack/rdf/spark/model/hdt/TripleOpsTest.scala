@@ -4,6 +4,13 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql
 import org.scalatest.FunSuite
 
+
+/*
+* @author Abakar Bouba
+*
+* Unit Test code of net.sansa_stack.rdf.spark.model.hdt.TripleOps
+*/
+
 class TripleOpsTest extends FunSuite with DataFrameSuiteBase  {
 
 
