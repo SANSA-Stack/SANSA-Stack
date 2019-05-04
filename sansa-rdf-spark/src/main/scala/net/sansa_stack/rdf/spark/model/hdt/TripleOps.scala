@@ -136,19 +136,17 @@ class TripleOps {
 
       val triplesDF=convertRDDGraphToDF(rddGraph)
       triplesDF.printSchema()
-      triplesDF.show(5)
       triplesDF.cache()
+
       objectDF=getDistinctObjectDictDF(rddGraph)
       objectDF.printSchema()
-      objectDF.show(5)
 
       predicateDF=getDistinctPredicateDictDF(rddGraph)
       predicateDF.printSchema()
-      predicateDF.show(5)
 
       subjectDF=getDistinctSubjectDictDF(rddGraph)
       subjectDF.printSchema()
-      subjectDF.show(5)
+
       logger.info(subjectDF.count() +"  "+ objectDF.count()+"  "+ predicateDF.count())
       registerDictionariesAsView(subjectDF,objectDF,predicateDF);
 
@@ -171,7 +169,6 @@ class TripleOps {
     else if(compressedDir!=null && !compressedDir.isEmpty){
 
       tripleFactTable=spark.read.schema(tripleSchema).csv(compressedDir+TripleOps.TRIPLE_DIR)
-      tripleFactTable.show(5)
       subjectDF=spark.read.schema(dictionarySchema).csv(compressedDir+TripleOps.SUBJECT_DIR)
       objectDF=spark.read.schema(dictionarySchema).csv(compressedDir+TripleOps.OBJECT_DIR)
       predicateDF=spark.read.schema(dictionarySchema).csv(compressedDir+TripleOps.PREDICATE_DIR)
@@ -230,9 +227,9 @@ object TripleOps {
 
 
   def main(args: Array[String]) {
-    val inputRDFFile= "/home/abakar/IdeaProjects/RDF-Data-Compression-N-Triples-in-SANSA-Stack-using-Scala-and-Spark/src/main/resources/Input-Data/Small/dbpedia/sample.nt"
+    val inputRDFFile="/home/abakar/IdeaProjects/RDF-Data-Compression-N-Triples-in-SANSA-Stack-using-Scala-and-Spark/src/main/resources/Input-Data/Small/dbpedia/sample.nt"
     val compressedInputDir=null
-    val outputDir="/home/abakar/IdeaProjects/RDF-Data-Compression-N-Triples-in-SANSA-Stack-using-Scala-and-Spark"
+    val outputDir="/home/abakar/IdeaProjects/Output"
     //Initialized the spark session
     val spark = SparkSession.builder
       .appName(s"Data Compression")
