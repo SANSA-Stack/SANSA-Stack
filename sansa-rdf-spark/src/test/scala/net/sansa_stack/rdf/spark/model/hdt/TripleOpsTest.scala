@@ -8,9 +8,9 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
 
 
-class TripleOpsTest extends FunSuite // with DataFrameSuiteBase
+class TripleOpsTest extends FunSuite with DataFrameSuiteBase
  {
-  val spark: SparkSession = new sql.SparkSession.Builder().master("local[*]").getOrCreate()
+  // val spark: SparkSession = new sql.SparkSession.Builder().master("local[*]").getOrCreate()
   val tripleOps: TripleOps = new TripleOps()
   val inputTestFile: String = getClass.getResource("/loader/compression-data.nt").getPath
   val result: RDD[graph.Triple] = tripleOps.readRDFFromFile(inputTestFile)
