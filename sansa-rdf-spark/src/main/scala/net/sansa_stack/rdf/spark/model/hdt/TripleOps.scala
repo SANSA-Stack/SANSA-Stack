@@ -110,17 +110,13 @@ class TripleOps {
       val rddGraph : RDD[graph.Triple] = readRDFFromFile(input)
 
       val triplesDF = convertRDDGraphToDF(rddGraph)
-      triplesDF.printSchema()
       triplesDF.cache()
 
       objectDF = getDistinctObjectDictDF(rddGraph)
-      objectDF.printSchema()
 
       predicateDF = getDistinctPredicateDictDF(rddGraph)
-      predicateDF.printSchema()
 
       subjectDF = getDistinctSubjectDictDF(rddGraph)
-      subjectDF.printSchema()
 
       registerDictionariesAsView(subjectDF, objectDF, predicateDF)
 
