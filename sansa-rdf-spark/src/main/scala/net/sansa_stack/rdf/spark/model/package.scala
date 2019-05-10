@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{ DataFrame, Dataset }
+import org.apache.spark.sql.{ DataFrame, Dataset, SaveMode, SparkSession }
 
 /**
  * Wrap up implicit classes/methods for RDF data into [[RDD]].
@@ -269,6 +269,65 @@ package object model {
     def saveAsNTriplesFile(path: String): Unit =
       TripleOps.saveAsNTriplesFile(triples, path)
 
+  }
+
+  /**
+   * Adds all methods to [[RDD]] that allows to use HDT TripleOps functions.
+   */
+  implicit class HDTTripleOperations(triples: RDD[Triple]) extends Logging {
+
+    import net.sansa_stack.rdf.spark.model.hdt.TripleOps
+
+    /**
+     * Convert an RDD of triples into a DataFrame of hdt.
+     * @return a DataFrame of hdt triples.
+     * @see [[net.sansa_stack.rdf.spark.model.hdt.TripleOps.hdtToDF]]
+     */
+    def asHDT(): DataFrame =
+      TripleOps.asHDT(triples)
+
+    /**
+     * This is key function of TripleOps that read RDF file and create Dictionaries and Index Table and register them as Spark In memory Table
+     * @param input Input RDF File Path [Either One of the input is require]
+     * @param compressedDir Input compressed-directory Path to read compressed data directly [Either One of the input is require]
+     * @param registerAsTable If true, it register all the DF as Spark table
+     * @return Returns the Tuple4 [IndexDataFrame,SubjectDictDataFrame,ObjectDictDataFrame,PredicateDictDataFrame]
+     */
+    def getHDT(): DataFrame =
+      TripleOps.getHDT(triples)
+
+  }
+
+  /**
+   * Adds methods, `readHDTFromDist`, to [[SparkSession]] that allows to read
+   * hdt files.
+   */
+  implicit class HDTReader(spark: SparkSession) {
+    import net.sansa_stack.rdf.spark.model.hdt.TripleOps
+
+    /**
+     * Read hdt data from disk.
+     * @param input -- path to hdt data.
+     * @retun DataFrame of hdt, subject, predicate, and object view.
+     */
+    def readHDTFromDisk(input: String): (DataFrame, DataFrame, DataFrame, DataFrame) =
+      TripleOps.readHDTFromDisk(input)
+  }
+
+  /**
+   * Adds methods, `readHDTFromDist`, to [[SparkSession]] that allows to read
+   * hdt files.
+   */
+  implicit class HDTWriter(hdt_tables: (DataFrame, DataFrame, DataFrame, DataFrame)) {
+    import net.sansa_stack.rdf.spark.model.hdt.TripleOps
+
+    /**
+     * Function saves the Index and Dictionaries Dataframe into given path
+     * @param output path to be written
+     */
+    def saveAsCSV(output: String): Unit =
+      TripleOps.saveAsCSV(hdt_tables._1, hdt_tables._2, hdt_tables._3, hdt_tables._4,
+        output, org.apache.spark.sql.SaveMode.Overwrite)
   }
 
   /**
