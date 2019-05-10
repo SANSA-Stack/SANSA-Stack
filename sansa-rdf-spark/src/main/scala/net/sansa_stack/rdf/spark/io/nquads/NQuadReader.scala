@@ -7,6 +7,8 @@ import scala.reflect.ClassTag
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
+import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
+import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.graph.Triple
@@ -18,8 +20,6 @@ import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{ Logger, LoggerFactory }
-import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
-import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
 
 /**
  * An N-Triples reader. One triple per line is assumed.
