@@ -10,25 +10,10 @@ import org.apache.spark.sql.{ DataFrame, Dataset, Row, SparkSession  }
 class Reader(spark: SparkSession, input: String) extends java.io.Serializable {
   import spark.implicits._
 
-  def read: RDD[Triple] = {
-    val start = Helper.start
-    val rdd = spark.rdf(Lang.RDFXML)(input)
-    Helper.measureTime(start, s"\nTime measurement RDF")
-    rdd
-  }
+  def read: RDD[Triple] = spark.rdf(Lang.RDFXML)(input)
 
-  def readDF: DataFrame = {
-    val start = Helper.start
-    val df = spark.read.rdf(Lang.NTRIPLES)(input)
-      .toDF(Helper.getNodeMethods: _*) // rename columns to corresp. triple methods
-    Helper.measureTime(start, s"\nTime measurement DataFrame")
-    df
-  }
+  def readDF: DataFrame =
+    spark.read.rdf(Lang.NTRIPLES)(input).toDF(Helper.getNodeMethods: _*)
 
-  def readDS: Dataset[Triple3S] = {
-    var start = Helper.start
-    val ds = readDF.as[Triple3S]
-    Helper.measureTime(start, s"\nTime measurement Dataset")
-    ds
-  }
+  def readDS: Dataset[Triple3S] = readDF.as[Triple3S]
 }

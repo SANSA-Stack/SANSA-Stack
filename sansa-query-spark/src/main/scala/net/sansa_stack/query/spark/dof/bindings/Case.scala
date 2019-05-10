@@ -10,12 +10,10 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.parallel.mutable.ParArray
 
 object Case{
-  // TODO: remove bindings, only query left?
   def apply[R, N, T, A]
   (bindings: Bindings[R, N, T, A], dofTriple: DofTriple)
     : Case[R, N, T, A] = {
     val dof = dofTriple._1
-    Helper.log("\nCase " + dof + ": " + dofTriple._2)
     dof match {
       case -3 | -1 | 1 | 3 => return new Case(bindings, dofTriple)
       case _ => throw new Exception("Illegal value for dof=" + dof)
@@ -37,18 +35,11 @@ object Case{
   }
 }
 
-class Case[R, N, T, A]
-  (bindings: Bindings[R, N, T, A], dofTriple: DofTriple)
-  extends Serializable {
-  val model = bindings.getModel
-  val triple = dofTriple._2
-  val dof = dofTriple._1
-
-  def process: Boolean = {
-    val start = Helper.start
-    val result = model.process(triple, bindings.mapV)
-    Helper.measureTime(start, s"\nCase " + dof + " time=")
+class Case[R, N, T, A] (bindings: Bindings[R, N, T, A], dofTriple: DofTriple)
+      extends Serializable {
+  def process: Unit = {
+    val triple = dofTriple._2
+    val result = bindings.getModel.process(triple, bindings.mapV)
     bindings.saveResult(triple, result)
-    true// TODO: check with false when a triple returns an empty result
   }
 }

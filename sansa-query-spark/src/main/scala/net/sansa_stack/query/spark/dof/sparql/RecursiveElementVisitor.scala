@@ -67,19 +67,12 @@ class RecursiveElementVisitor[R, N: ClassTag, T, A](model: Tensor[R, N, T, A]) e
   def result: Result[A] = _result
   def result_=(value: Result[A]): Unit = _result = value
 
-  private var pattern = new Pattern()
-  def getPattern: Pattern = pattern
-
   override def visit(el: ElementPathBlock): Unit =
     {
-      // println("PATHBLOCK")
-
       val constraints = Pattern.traverse(el)
       val current = new Builder(model, constraints).application
 
-      val start = Helper.start
       result = model.unionResult(result, current)
-      Helper.measureTime(start, s"\nUnion results time=")
 
       startElement(el);
       endElement(el);
@@ -94,7 +87,6 @@ class RecursiveElementVisitor[R, N: ClassTag, T, A](model: Tensor[R, N, T, A]) e
   override def visit(el: ElementDataset): Unit =
     {
       startElement(el);
-      // el.getPatternElement().visit(this) ;
       endElement(el);
     }
 
@@ -112,7 +104,6 @@ class RecursiveElementVisitor[R, N: ClassTag, T, A](model: Tensor[R, N, T, A]) e
 
   override def visit(el: ElementUnion): Unit =
     {
-      // println("UNION")
       startElement(el);
 
       for (subElement <- el.getElements.asScala) {
@@ -126,7 +117,6 @@ class RecursiveElementVisitor[R, N: ClassTag, T, A](model: Tensor[R, N, T, A]) e
 
   override def visit(el: ElementOptional): Unit =
     {
-      // println("OPTIONAL")
       startElement(el);
       el.getOptionalElement().visit(this);
       endElement(el);

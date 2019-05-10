@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.dof
 
-object Tests {
+object Queries {
   val sparqlQueries = List(
     // 0
     """

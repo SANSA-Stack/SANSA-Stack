@@ -11,16 +11,11 @@ class Builder[R, N: ClassTag, T, A](model: Tensor[R, N, T, A], constraints: Cons
     var proceed = true
     val bindings = new Bindings(model, constraints)
     var T = bindings.recalcDof(constraints.dofs)
-    T.foreach(Helper.log)
     while (proceed && T.nonEmpty) {
       val triple = T(0)
       T = T.drop(1)
-      proceed = Dof(bindings, triple)
-      if (proceed) {
-        T = bindings.recalcDof(T)
-      }
-
-      // bindings.mapV.print
+      Dof(bindings, triple)
+      T = bindings.recalcDof(T)
     }
     bindings.result
   }

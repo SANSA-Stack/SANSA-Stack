@@ -19,17 +19,16 @@ class Bindings[R, N: ClassTag, T, A](model: Tensor[R, N, T, A], constraints: Con
   def getModel: Tensor[R, N, T, A] = model
 
   def saveResult(triple: Triple, rdd: A): Unit = {
-    val start = Helper.start
     result = model.saveResult(triple, result, rdd)
-    Helper.measureTime(start, s"\nSave result time=")
   }
 
+  /**
+   * Updates the DOFs of each triple in the query pattern,
+   * depending on the number of bounded and unbounded variables.
+   */
   def recalcDof(triples: DofTripleList): List[(Int, Triple)] = {
     def calcDof(triple: Triple) = {
-      // how many constants (or variables to which there exists a non-empty set associated in V)
-      var k = 0;
-      // how many variables (to which an empty set is associated in V)
-      var v = 0;
+      var (k, v) = (0, 0);
 
       Helper.getNodes(triple).foreach(node => {
         if (mapV.isUnbounded(node)) {
@@ -40,7 +39,6 @@ class Bindings[R, N: ClassTag, T, A](model: Tensor[R, N, T, A], constraints: Con
         }
       })
 
-      // Helper.log("dof(t,V)=" + (v-k))
       v - k
     }
 

@@ -26,24 +26,15 @@ class RDDTensor(spark: SparkSession, reader: Reader)
   def readData: RDD[Triple] = reader.read
 
   def buildTensor: RDD[Seq[Long]] = {
-    // 1. object
-    // Count shows that distinct() on RDD[Nodes] looses entity.
-    // distinct() on RDD[String] does not
-    // println(data.count)
+    // 1. objects
     val dataO = data.map(t => (t.getObject.toString(), (t.getSubject.toString(), t.getPredicate.toString())))
     val jointO = dataO.join(spo.getObject.rddStr)
-    // println(jointO.count)
-    // 2. subjects TODO: keep indexes with values?
+    // 2. subjects
     val dataS = jointO.map(t => (t._2._1._1, (t._2._1._2, t._2._2)))
     val jointS = dataS.join(spo.getSubject.rddStr)
-    // println(jointS.count)
-    // 3. predicate TODO: keep indexes with values?
+    // 3. predicates
     val dataP = jointS.map(t => (t._2._1._1, (t._2._2, t._2._1._2)))
     val jointP = dataP.join(spo.getPredicate.rddStr)
-    // println(jointP.count)
-    // add indexes and join them as last column in tensor
-    // 17*10^6 indexes - do we really need all of them?
-    // val tensor = jointP.zipWithIndex.map(t => Seq(t._1._2._2, t._1._2._1._1, t._1._2._1._2, t._2))
     val tensor = jointP.map(t => Seq(t._2._2, t._2._1._1, t._2._1._2))
 
     tensor
@@ -64,7 +55,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
     RDD[(Long, Seq[Long])] = tensor.map(row => (row(index), row))
 
   /*
-   * Build tensor traversing on triple variables/constants
+   * Builds tensor by traversing via data set triples
    */
   def traverse(triple: Triple, mapV: VariableMap[String]): RDD[Seq[Long]] = {
     var traversed = tensor
@@ -72,10 +63,8 @@ class RDDTensor(spark: SparkSession, reader: Reader)
       case (method, index) =>
         val node = Helper.getNode(triple, method)
         val nodeS = node.toString
-        // Helper.log(method + " " + index + " " + node)
-        // println(node)
         val entity = getSpoField(method)
-        var rdd = sparkContext.emptyRDD[(Long, String)]
+        var rdd = spark.sparkContext.emptyRDD[(Long, String)]
 
         if (node.isVariable) { // get values from mapV if they exist
           var values = mapV.get(node)
@@ -88,17 +77,13 @@ class RDDTensor(spark: SparkSession, reader: Reader)
           rdd = entity.reverserddStr.filter(item => item._2 == nodeS)
         }
 
-        // rdd.foreach(l => Helper.log(l.toString))
-        // use row(index) as key to apply join()
         traversed = transform(traversed, index).join(rdd).map(row => row._2._1)
-        // temp.foreach(Helper.log(_))
     }
-    // traversed.foreach(println)
     traversed
   }
 
   /*
-   * Update mapV with RDD from tensor values for triple variables
+   * Updates mapV with RDD from tensor values for triple variables
    */
   def updateMapV(triple: Triple, mapV: VariableMap[String], tensor: RDD[Seq[Long]]): Unit = {
     Helper.nodeMethodsZip.foreach {
@@ -113,7 +98,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
   }
 
   /*
-   * Join obtained result with previous ones
+   * Joins obtained result with previous ones
    */
   def mapTensorIndexesToNodes(triple: Triple, tensor: RDD[Seq[Long]]): RDD[VarNodeMap[String]] = {
     var result: RDD[(Long, VarNodeMap[String])] = null
@@ -174,9 +159,8 @@ class RDDTensor(spark: SparkSession, reader: Reader)
   }
 
   /*
-   * transform from RDD[Map[Var,Node)] to RDD[(List(Keys), Set(Var))]
-   * to use for further union by the same keys
-   * Use List[Key] instead of Set[Key] to have the same order always
+   * Transforms RDD[Map[Var,Node)] to RDD[(List(Keys), Set(Var))]
+   * in order to use in further union operation with the same keys
    * */
   def transform(result: Result[ResultRDD[String]], keysI: List[Var], keysU: List[Var]):
     RDD[(List[String], List[String])] = result.rdd.map(row => {
@@ -216,12 +200,9 @@ class RDDTensor(spark: SparkSession, reader: Reader)
       .map(_.mkString(" "))
       .sorted
 
-  def compareResult(
-    result: Result[ResultRDD[String]],
-    expected: RDD[String],
-    resultVars: List[Var]): Boolean = {
-    // return true
-    var start = Helper.start
+  def compareResult(result: Result[ResultRDD[String]],
+                    expected: RDD[String],
+                    resultVars: List[Var]): Boolean = {
     val rddString = result.rdd.map(row => {
       val resultRow = resultVars.flatMap((v: Var) => {
         if (row.keySet.exists(_ == v)) {
@@ -233,8 +214,6 @@ class RDDTensor(spark: SparkSession, reader: Reader)
       resultRow.mkString(" ")
     })
 
-    val isEqual = isRDDEquals(expected, rddString)
-    Helper.measureTime(start, s"\nResult vs. expected time=")
-    isEqual
+    isRDDEquals(expected, rddString)
   }
 }

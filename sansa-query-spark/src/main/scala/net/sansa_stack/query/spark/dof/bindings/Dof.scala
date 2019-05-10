@@ -6,7 +6,8 @@ import org.apache.jena.query.Query
 
 object Dof {
 
-  def apply[R, N, T, A](bindings: Bindings[R, N, T, A], dofTriple: DofTriple): Boolean = Case(bindings, dofTriple).process
+  def apply[R, N, T, A](bindings: Bindings[R, N, T, A], dofTriple: DofTriple): Unit =
+    Case(bindings, dofTriple).process
 
   def dof(node: Node): Int = if (node.isVariable) 1 else -1
 

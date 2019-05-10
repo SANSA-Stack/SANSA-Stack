@@ -1,52 +1,38 @@
 package net.sansa_stack.query.spark.dof
 
 import collection.JavaConverters._
+import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.dof.node.Helper
 import net.sansa_stack.query.spark.dof.sparql.{ QueryExecutionFactory, Sparql }
 import net.sansa_stack.query.spark.dof.tensor.{ TensorRush, TensorStore }
-import org.scalatest.ConfigMap
+import net.sansa_stack.query.spark.graph.jena.model.SparkExecutionModel
+import org.scalatest.FunSuite
 import scala.collection.immutable.TreeMap
 import scala.io.Source
 
-// @RunWith(value = classOf[Parameterized])
-class TestSpec extends TestBase {
-  var logger: Logger = null
-  var FROM_ID = 0
-  var TO_ID = 0
+class TestSpec extends FunSuite with DataFrameSuiteBase {
+  val FROM_ID = 0
+  val TO_ID = 26
   var FROM_TENSOR = 0
-  var TO_TENSOR = 0
-  var mode = ""
+  var TO_TENSOR = 4
+  var mode = "test"
   var externalTests = ""
   var externalQueryId = -1
   var runs = 0
 
-  override def beforeAll(configMap: ConfigMap): Unit = {
-    def getParam(name: String, default: String = "") =
-      if (configMap.contains(name)) configMap.getOrElse(name, "").toString
-      else default
+  test("Query test") {
+    SparkExecutionModel.createSparkSession(spark)
+    load(tr)
 
-    println("Args passed: " + configMap.mkString(" "))
-    FROM_ID = getParam("from_id", "0").toInt // 26 use 23 to run all tests when building in IDE or in maven
-    TO_ID = getParam("to_id", "26").toInt // 0 use 23 to run all tests when building in IDE or in maven
-    mode = getParam("mode", "test") // "" use "test" to run all tests when building in IDE or in maven
-    FROM_TENSOR = getParam("from_tensor", "0").toInt
-    TO_TENSOR = getParam("to_tensor", "4").toInt
-    init(getParam("master"), getParam("output_dir"))
-    load(tr, getParam("path"))
-
-    externalTests = getParam("externalQueries", "") // "/home/hduser/dof/queries" external tests dir
-    externalQueryId = getParam("externalQueryId", "-1").toInt
-    runs = getParam("runs", "0").toInt // for warm/no-warm test running
-
-    val useHelper = getParam("useHelper", "false").toBoolean
-    Helper.DEBUG = useHelper
-    Helper.SHOW_TIME_MEASUREMENT = useHelper
-
-    logger = new Logger(getParam("useLogger", "false").toBoolean)
-    logger.log("\n") // try to keep first log line
+    for (index <- FROM_ID to TO_ID)
+      index match {
+        case i if i < 18 || i == 23 => runInternalTest(i)
+        case i if i < 21 => runInternalTest(i, 1)
+        case i if i < 23 => runInternalTest(i, 3)
+        case i if i < 27 => runInternalTest(i, 4)
+        case _ => println(s"no test $index found")
+    }
   }
-
-  run
 
   def runExternalTests: Unit = {
     val pattern = "\\w*?([\\d]+)\\.dat".r
@@ -71,149 +57,23 @@ class TestSpec extends TestBase {
       })
   }
 
-  def run: Unit = {
-
-    "Query 0" should "match the reference results" in {
-      runInternalTest(0, 0)
-    }
-
-    "Query 1" should "match the reference results" in {
-      runInternalTest(1)
-    }
-
-    "Query 2" should "match the reference results" in {
-      runInternalTest(2)
-    }
-
-    "Query 3" should "match the reference results" in {
-      runInternalTest(3)
-    }
-
-    "Query 4" should "match the reference results" in {
-      runInternalTest(4)
-    }
-
-    "Query 5" should "match the reference results" in {
-      runInternalTest(5)
-    }
-
-    "Query 6" should "match the reference results" in {
-      runInternalTest(6)
-    }
-
-    "Query 7" should "match the reference results" in {
-      runInternalTest(7)
-    }
-
-    "Query 8" should "match the reference results" in {
-      runInternalTest(8)
-    }
-
-    "Query 9" should "match the reference results" in {
-      runInternalTest(9)
-    }
-
-    "Query 10" should "match the reference results" in {
-      runInternalTest(10)
-    }
-
-    "Query 11" should "match the reference results" in {
-      runInternalTest(11)
-    }
-
-    "Query 12" should "match the reference results" in {
-      runInternalTest(12)
-    }
-
-    "Query 13" should "match the reference results" in {
-      runInternalTest(13)
-    }
-
-    "Query 14" should "match the reference results" in {
-      runInternalTest(14)
-    }
-
-    "Query 15" should "match the reference results" in {
-      runInternalTest(15)
-    }
-
-    "Query 16" should "match the reference results" in {
-      runInternalTest(16)
-    }
-
-    "Query 17" should "match the reference results" in {
-      runInternalTest(17)
-    }
-
-    "Query 18" should "match the reference results" in {
-      runInternalTest(18, 1)
-    }
-
-    "Query 19" should "match the reference results" in {
-      runInternalTest(19, 1)
-    }
-
-    "Query 20" should "match the reference results" in {
-      runInternalTest(20, 1)
-    }
-
-    "Query 21" should "match the reference results" in {
-      runInternalTest(21, 3)
-    }
-
-    "Query 22" should "match the reference results" in {
-      runInternalTest(22, 3)
-    }
-
-    "Optional 23" should "match the reference results" in {
-      runInternalTest(23)
-    }
-
-    "Watdiv 24" should "match the reference results" in {
-      runInternalTest(24, 4)
-    }
-
-    "Watdiv 25" should "match the reference results" in {
-      runInternalTest(25, 4)
-    }
-
-    "Watdiv 26" should "match the reference results" in {
-      runInternalTest(26, 4)
-    }
-
-    "Dbpedia 27" should "match the reference results" in {
-      runInternalTest(27, 5)
-    }
-
-    "Dbpedia 28" should "match the reference results" in {
-      runInternalTest(28, 5)
-    }
-
-    "External test" should "init beforeAll" in {
-      if (externalTests != "") runExternalTests
-    }
-  }
-
   lazy val tr: TensorRush = TensorStore.instantiateUniqueStore(spark)
 
   def load(tr: TensorRush, basePath: String = ""): Unit = {
-    println("Loading LUBM1 ... ")
-    // val start = Helper.start
+    println("Loading datasets ... ")
     for (fileNumber <- (FROM_TENSOR to TO_TENSOR).par) {
       val resource = s"university0_$fileNumber.nt"
 
-      val path = if (basePath == null || basePath.isEmpty) getClass.getResource(resource).getPath()
-      else basePath + resource
-      // val path = "hdfs://localhost:9000/user/hduser/" + resource
-      println(s"Loading file $resource --> $path")
+      val path = if (basePath == null || basePath.isEmpty) {
+                   getClass.getResource(resource).getPath()
+                 } else {
+                   basePath + resource
+                 }
 
-      val start = Helper.start
       tr.addTensor(path, fileNumber)
-      Helper.measureTime(start, s"Tensor creation time for $resource")
-      println(s"Done loading $resource.")
+      println(s"File loaded $resource --> $path")
     }
-    // Helper.measureTime(start, "Total tensor creation time")
-    println("Finished loading LUBM1.")
+    println("Finished loading datasets.")
   }
 
   type Bindings = TreeMap[String, String]
@@ -223,27 +83,18 @@ class TestSpec extends TestBase {
 
   def runInternalTest(queryId: Int, tensorId: Int = 0): Unit = {
     if (queryId >= FROM_ID && queryId <= TO_ID) {
-      runTest(queryId, Tests.sparqlQueries(queryId), tensorId)
+      println(s"Query $queryId")
+      runTest(queryId, Queries.sparqlQueries(queryId), tensorId)
     }
   }
 
-  def runTest(queryId: Int, queryStr: String, tensorId: Int = 0): Unit = {
-    Helper.log("\nQuery " + queryId)
-    val start = Helper.start
-    val result = executeOnQueryEngine(queryId, queryStr, tensorId)
-    Helper.measureTime(start, s"\nTime measurement Query $queryId")
-  }
+  def runTest(queryId: Int, queryStr: String, tensorId: Int = 0): Unit =
+    executeOnQueryEngine(queryId, queryStr, tensorId)
 
   def executeOnQueryEngine(queryId: Int, queryStr: String, tensorId: Int): Unit = {
     val model = tr.getModels(tensorId)
     val query = QueryExecutionFactory.makeQuery(queryStr)
-    val start = Helper.start
     val result = Sparql(query, model)
-    val long = Helper.measure(start, s"Total querying time")
-    Helper.log("\n" + long)
-    logger.log(s"Tensor $tensorId. Query $queryId")
-    logger.log(result)
-    logger.log(s"$long\n")
 
     if (mode == "test") {
       val resultVars = query.getProjectVars.asScala.toList
@@ -258,7 +109,6 @@ class TestSpec extends TestBase {
       var output = ""
       if (!compare) {
         output = model.output(result, resultVars).mkString("\n")
-        Helper.log(output)
       }
       assert(compare, s"TR result for query $queryId did not match reference result:\nTR=\n$output \nreference result=\n$rr.")
     }

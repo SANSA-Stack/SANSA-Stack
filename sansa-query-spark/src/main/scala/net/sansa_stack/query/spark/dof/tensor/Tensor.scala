@@ -20,7 +20,7 @@ abstract class Tensor[R, N: ClassTag, T, A](spark: SparkSession, reader: Reader)
   private val _tensor = buildTensor
   def tensor: T = _tensor
 
-  def sparkContext: SparkContext = spark.sparkContext
+  def sparkContext: SparkSession = spark
 
   def isRDDEquals(expected: RDD[String], result: RDD[String]): Boolean = {
     // return expected.subtract(result).isEmpty
