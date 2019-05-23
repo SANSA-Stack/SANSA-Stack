@@ -33,13 +33,7 @@ object RDFXMLSyntaxParsing {
 
 trait RDFXMLSyntaxParsing {
 
-  // private val logger = Logger(classOf[FunctionalSyntaxParsing])
-
-//  private def parser = new OWLXMLParserFactory().createParser()
-
   private def man = OWLManager.createOWLOntologyManager()
-
-  // private def ontConf = man.getOntologyLoaderConfiguration
 
   def RecordParse(record: String, prefixes: String): ArrayList[OWLAxiom] = {
 
@@ -109,7 +103,6 @@ trait RDFXMLSyntaxParsing {
     new Thread(new Runnable() {
       def run() : Unit = {
         model.write(o, "RDF/XML-ABBREV")
-   //     model.write(System.out, "RDF/XML")
 
         try {
           o.close()
@@ -127,7 +120,7 @@ trait RDFXMLSyntaxParsing {
 
 /**
   * Trait to support the parsing of prefixes from expressions given in
-  * functional syntax.
+  * RDFXML syntax.
   */
 trait RDFXMLSyntaxPrefixParsing {
   /**

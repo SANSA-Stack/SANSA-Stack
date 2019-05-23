@@ -76,22 +76,15 @@ class RDFXMLSyntaxOWLExpressionsRDDBuilder extends Serializable with RDFXMLSynta
 
     val pref: String = tmp_Prefixes.reduce((a, b) => a + "\n" + b)
 
-//    val tmp: Array[(String, String)] = rawRDD.filter(isPrefix(_)).map(parsePrefix).collect()
-//    val prefixesMap: Map[String, String] = tmp.toMap
-
     val OWLAxiomsList = rawRDD.map(record => RecordParse(record, pref))
                               .filter(x => !x.isEmpty)
 
     val OWLAxiomsRDD: RDD[OWLAxiom] = OWLAxiomsList.flatMap(line => line.iterator().asScala)
                         .distinct()
 
-//    val builder = new RDFXMLSyntaxExpressionBuilder(prefixesMap)
-//
-//    OWLAxiomsRDD.map(x => builder.clean(x.toString)).filter(_ != null)
-
-
     println("Axioms are : \n")
     OWLAxiomsRDD.foreach(println(_))
+
     println("Axioms count = " + OWLAxiomsRDD.count())
 
     OWLAxiomsRDD
