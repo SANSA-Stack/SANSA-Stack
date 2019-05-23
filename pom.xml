@@ -68,8 +68,10 @@
         <spark.version>2.4.0</spark.version>
         <flink.version>1.7.0</flink.version>
         <hadoop.common.version>2.8.1</hadoop.common.version>
+        <hadoop.version>2.8.3</hadoop.version>
         <hadoop.mapreduce-client.version>2.8.1</hadoop.mapreduce-client.version>
         <owlapi.version>5.1.5</owlapi.version>
+        <jena.version>3.11.0</jena.version>
         <scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
     </properties>
 
@@ -99,6 +101,29 @@
                 <groupId>de.javakaffee</groupId>
                 <artifactId>kryo-serializers</artifactId>
                 <version>0.42</version>
+            </dependency>
+
+            <!-- Apache JENA 3.x-->
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena</artifactId>
+                <version>${jena.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-core</artifactId>
+                <version>${jena.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-arq</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-tdb</artifactId>
+                <version>${jena.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Apache Flink dependencies -->

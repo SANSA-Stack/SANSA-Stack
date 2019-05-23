@@ -15,6 +15,9 @@
     <name>SANSA OWL layer - SPARK</name>
     <description>A library to read OWL files into Spark.</description>
 
+    <properties>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
@@ -22,10 +25,62 @@
             <version>${project.version}</version>
         </dependency>
 
+
+
+        <!-- To remove warnings from xerec parser -->
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>2.7.2</version>
+            <scope>${my-scope}</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.parsers</groupId>
+            <artifactId>jaxp-ri</artifactId>
+            <version>1.4.5</version>
+        </dependency>
+
+        <!-- Apache JENA 3.x-->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena</artifactId>
+            <version>${jena.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>${jena.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-tdb</artifactId>
+            <version>${jena.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+
         <!-- Scala dependencies -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
+        </dependency>
+
+        <!-- Scala java8 -->
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-java8-compat_2.12</artifactId>
+            <version>0.9.0</version>
         </dependency>
 
         <!-- Spark dependencies -->
@@ -47,9 +102,22 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-streaming</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging_${scala.binary.version}</artifactId>
         </dependency>
 
         <!-- OWL API dependencies -->

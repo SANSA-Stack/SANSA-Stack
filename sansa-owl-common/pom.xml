@@ -19,6 +19,11 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-java8-compat_2.12</artifactId>
+            <version>0.9.0</version>
+        </dependency>
 
         <!-- OWL API dependencies -->
         <dependency>
@@ -30,10 +35,41 @@
             <artifactId>owlapi-apibinding</artifactId>
         </dependency>
 
+        <!-- Apache JENA 3.x-->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena</artifactId>
+            <version>${jena.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>${jena.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-tdb</artifactId>
+            <version>${jena.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+
         <!-- parsing dependencies -->
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <!-- scala-java8 -->
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-java8-compat_2.12</artifactId>
+            <version>0.9.0</version>
         </dependency>
 
         <!-- Testing dependencies -->

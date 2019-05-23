@@ -29,6 +29,12 @@
             <artifactId>scala-library</artifactId>
         </dependency>
 
+        <!-- Logging dependencies -->
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging_2.11</artifactId>
+        </dependency>
+
         <!-- Apache Flink dependencies -->
         <dependency>
             <groupId>org.apache.flink</groupId>
