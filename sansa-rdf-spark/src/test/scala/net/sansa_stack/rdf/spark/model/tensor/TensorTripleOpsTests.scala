@@ -19,7 +19,7 @@ class TensorTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val tensor = triples.asTensor()
     val size = tensor.count()
 
-    assert(size == 450)
+    assert(size == 442)
   }
 
   test("getting number of entities from RDD of triples should match") {
@@ -30,7 +30,7 @@ class TensorTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val num = triples.getNumEntities()
 
-    assert(num == 30)
+    assert(num == 24)
   }
 
   test("getting number of relations from RDD of triples should match") {
@@ -41,7 +41,7 @@ class TensorTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val num = triples.getNumRelations()
 
-    assert(num == 26)
+    assert(num == 22)
   }
 
 }

@@ -5,8 +5,6 @@ import org.apache.jena.graph.{ Node, Triple }
 import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import net.sansa_stack.rdf.spark.io.RDFReader
-import org.apache.spark.rdd.RDD.rddToPairRDDFunctions
 
 /**
  * Created by nilesh
