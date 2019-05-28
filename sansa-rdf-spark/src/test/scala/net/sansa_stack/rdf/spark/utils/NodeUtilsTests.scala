@@ -5,6 +5,7 @@ import org.apache.jena.graph.{ Node, NodeFactory, Triple }
 import org.scalatest.FunSuite
 
 class NodeUtilsTests extends FunSuite with DataFrameSuiteBase {
+
   test("getting the value of the node should match") {
 
     val triple = Triple.create(

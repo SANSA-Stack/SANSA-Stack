@@ -144,6 +144,7 @@ object NodeUtils extends Serializable {
 
   def checkLiteral(node: Node): String =
     if (node.isLiteral) node.getLiteralLexicalForm else node.toString()
+
   def isLabeled(node: Node): Boolean =
     (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS.label)
 
