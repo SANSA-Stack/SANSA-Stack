@@ -1,19 +1,24 @@
 package net.sansa_stack.datalake.spark
 
+import com.typesafe.scalalogging.Logger
+
 import java.io.FileNotFoundException
 
 import org.apache.commons.lang.time.StopWatch
 import org.apache.log4j.{ Level, Logger }
+import org.apache.spark.sql.DataFrame
+
 import net.sansa_stack.datalake.spark.utils.Helpers._
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import org.apache.spark.sql.DataFrame
 
 /**
  * Created by mmami on 26.01.17.
  */
 class Run[A](executor: QueryExecutor[A]) {
+
+  val logger = Logger("SANSA-DataLake")
 
   private var finalDataSet: A = _
   val logger = Logger.getLogger(this.getClass.getName.stripSuffix("$"))
@@ -28,9 +33,7 @@ class Run[A](executor: QueryExecutor[A]) {
     Logger.getLogger("akka").setLevel(Level.ERROR)
 
     // 1. Read SPARQL query
-    println("\n/*******************************************************************/")
-    println("/*                         QUERY ANALYSIS                          */")
-    println("/*******************************************************************/")
+    logger.info("QUERY ANALYSIS startigng...")
 
     try {
 
@@ -77,7 +80,7 @@ class Run[A](executor: QueryExecutor[A]) {
         }
       }
 
-      println(s"predicateStar: $variablePredicateStar")
+      logger.info(s"predicateStar: $variablePredicateStar")
 
       val prefixes = qa.getPrefixes
       val (select, distinct) = qa.getProject
@@ -88,15 +91,13 @@ class Run[A](executor: QueryExecutor[A]) {
       var limit: Int = 0
       if (qa.hasLimit) limit = qa.getLimit()
 
-      println("\n- Predicates per star:")
+      logger.info("- Predicates per star:")
 
       val star_predicate_var = stars._2 // TODO: assuming no (star,predicate) with two vars?
-      println("star_predicate_var: " + star_predicate_var)
+      logger.info("star_predicate_var: " + star_predicate_var)
 
       // 3. Generate plan of joins
-      println("\n/*******************************************************************/")
-      println("/*                  PLAN GENERATION & MAPPINGS                     */")
-      println("/*******************************************************************/")
+      logger.info("PLAN GENERATION & MAPPINGS starting...")
       val pl = new Planner(stars._1)
       val pln = pl.generateJoinPlan
       val joins = pln._1
@@ -108,10 +109,10 @@ class Run[A](executor: QueryExecutor[A]) {
       val neededPredicatesAll = neededPredicates._1 // all predicates used
       val neededPredicatesSelect = neededPredicates._2 // only projected out predicates
 
-      println("--> Needed predicates all: " + neededPredicatesAll)
+      logger.info("--> Needed predicates all: " + neededPredicatesAll)
 
       // 4. Check mapping file
-      println("---> MAPPING CONSULTATION")
+      logger.info("---> MAPPING CONSULTATION")
 
       val mappers = new Mapper(mappingsFile)
       val results = mappers.findDataSources(stars._1, configFile)
@@ -121,7 +122,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
       var starDataTypesMap: Map[String, mutable.Set[String]] = Map()
 
-      println("\n---> GOING NOW TO JOIN STUFF")
+      logger.info("---> GOING NOW TO JOIN STUFF")
       for (s <- results) {
         val star = s._1
         val datasources = s._2
@@ -131,7 +132,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
         starDataTypesMap += (star -> dataTypes)
 
-        println("* Getting DF relevant to the star: " + star)
+        logger.info("* Getting DF relevant to the star: " + star)
 
         // Transformations
         var leftJoinTransformations: (String, Array[String]) = null
@@ -148,12 +149,12 @@ class Run[A](executor: QueryExecutor[A]) {
             // Get the predicate of the join
             val joinLeftPredicate = joinPairs((str, rightOperand))
             leftJoinTransformations = (joinLeftPredicate, ops)
-            println("Transform (left) on predicate " + joinLeftPredicate + " using " + ops.mkString("_"))
+            logger.info("Transform (left) on predicate " + joinLeftPredicate + " using " + ops.mkString("_"))
           }
 
           if (transmap_right.keySet.contains(str)) {
             rightJoinTransformations = transmap_right(str)
-            println("Transform (right) ID using " + rightJoinTransformations.mkString("..."))
+            logger.info("Transform (right) ID using " + rightJoinTransformations.mkString("..."))
           }
         }
 
@@ -164,7 +165,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
           starNbrFilters += star -> numberOfFiltersOfThisStar
 
-          println("...with DataFrame schema: " + ds)
+          logger.info("...with DataFrame schema: " + ds)
         } else if (!joinedToFlag.contains(star) && !joinedFromFlag.contains(star)) {
           val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, false, star, prefixes, select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations, joinPairs)
 
@@ -172,22 +173,21 @@ class Run[A](executor: QueryExecutor[A]) {
 
           starNbrFilters += star -> numberOfFiltersOfThisStar
 
-          println("...with DataFrame schema: " + ds)
+          logger.info("...with DataFrame schema: " + ds)
         }
       }
 
-      println("\n/*******************************************************************/")
-      println("/*                         QUERY EXECUTION                         */")
-      println("/*******************************************************************/")
-      println(s"- Here are the (Star, ParSet) pairs: \n $star_df")
-      println(s"- Here are join pairs: $joins")
-      println(s"- Number of predicates per star: $starNbrFilters ")
+      logger.info("QUERY EXECUTION...")
+      logger.info("- Here are the (Star, ParSet) pairs:")
+      logger.info(star_df)
+      logger.info(s"- Here are join pairs: $joins")
+      logger.info(s"- Number of predicates per star: $starNbrFilters ")
 
       val starWeights = pl.sortStarsByWeight(starDataTypesMap, starNbrFilters, configFile)
-      println(s"- Stars weighted (performance + nbr of filters): $starWeights \n")
+      logger.info(s"- Stars weighted (performance + nbr of filters): $starWeights")
 
       val sortedScoredJoins = pl.reorder(joins, starDataTypesMap, starNbrFilters, starWeights, configFile)
-      println(s"- Sorted scored joins: $sortedScoredJoins")
+      logger.info(s"- Sorted scored joins: $sortedScoredJoins")
       val startingJoin = sortedScoredJoins.head
 
       // Convert starting join to: (leftStar, (rightStar, joinVar)) so we can remove it from $joins
@@ -197,13 +197,13 @@ class Run[A](executor: QueryExecutor[A]) {
           firstJoin = startingJoin._1._1 -> (startingJoin._1._2, j.getValue._2)
         }
       }
-      println(s"- Starting join: $firstJoin \n")
+      logger.info(s"- Starting join: $firstJoin")
 
       finalDataSet = executor.join(joins, prefixes, star_df)
 
       // Project out columns from the final global join results
       var columnNames = Seq[String]()
-      println(s"\n--> Needed predicates select: $neededPredicatesSelect")
+      logger.info(s"--> Needed predicates select: $neededPredicatesSelect")
       for (i <- neededPredicatesSelect) {
         val star = i._1
         val ns_predicate = i._2
@@ -214,20 +214,20 @@ class Run[A](executor: QueryExecutor[A]) {
       }
 
       if (groupBys != null) {
-        println(s"groupBys: $groupBys")
+        logger.info(s"groupBys: $groupBys")
         finalDataSet = executor.groupBy(finalDataSet, groupBys)
 
         // Add aggregation columns to the final project ones
         for (gb <- groupBys._2) {
-          println("-> Add to Project list:" + gb._2)
+          logger.info("-> Add to Project list:" + gb._2)
           columnNames = columnNames :+ gb._2 + "(" + gb._1 + ")"
         }
       }
 
-      println(s"SELECTED column names: $columnNames")
+      logger.info(s"SELECTED column names: $columnNames")
 
       if (orderBys != null) {
-        println(s"orderBys: $orderBys")
+        logger.info(s"orderBys: $orderBys")
 
         var orderByList: Set[(String, String)] = Set()
         for (o <- orderBys) {
@@ -239,7 +239,7 @@ class Run[A](executor: QueryExecutor[A]) {
           orderByList += ((column, orderDirection))
         }
 
-        println(s"ORDER BY list: $orderByList (-1 ASC, -2 DESC)")
+        logger.info(s"ORDER BY list: $orderByList (-1 ASC, -2 DESC)")
 
         for (o <- orderByList) {
           val variable = o._1
@@ -249,12 +249,12 @@ class Run[A](executor: QueryExecutor[A]) {
         }
       }
 
-      println("|__ Has distinct? " + distinct)
+      logger.info("|__ Has distinct? " + distinct)
       finalDataSet = executor.project(finalDataSet, columnNames, distinct)
 
       if (limit > 0) finalDataSet = executor.limit(finalDataSet, limit)
 
-      println("- Final results schema: ")
+      logger.info("- Final results schema: ")
 
       val stopwatch: StopWatch = new StopWatch
       stopwatch.start

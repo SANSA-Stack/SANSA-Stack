@@ -1,5 +1,7 @@
 package net.sansa_stack.datalake.spark.utils
 
+import com.typesafe.scalalogging.Logger
+
 import java.util
 import java.io.ByteArrayInputStream
 
@@ -13,6 +15,9 @@ import scala.collection.mutable
   * Created by mmami on 26.07.17.
   */
 object Helpers {
+
+    val logger = Logger("SANSA-DataLake")
+
     def invertMap(prolog: util.Map[String, String]): Map[String, String] = {
         var star_df : Map[String, String] = Map.empty
 
@@ -75,7 +80,6 @@ object Helpers {
         var i = 0
 
         for (v <- pred_attr) {
-            //println("pred_attr: " + pred_attr)
             val attr = v._2
             val ns_predicate = Helpers.get_NS_predicate(v._1)
 
@@ -85,13 +89,10 @@ object Helpers {
 
             val objVar = star_predicate_var(("?" + star, "<" + NS + predicate + ">"))
 
-            println("-> Variable: " + objVar + " exists in WHERE, is it in SELECT? " + select.contains(objVar.replace("?","")))
+            logger.info("-> Variable: " + objVar + " exists in WHERE, is it in SELECT? " + select.contains(objVar.replace("?","")))
 
-            //if (select.contains(objVar.replace("?",""))) {
             if (neededPredicates.contains(v._1)) {
                 val c = attr + " AS `" + star + "_" + predicate + "_" + prefixes(NS) + "`"
-                //println("SELECT CLAUSE: " + c)
-                //columns = if(i == 0) columns + v else columns + "," + columns
                 if (i == 0) columns += c else columns += "," + c
                 i += 1
             }
@@ -101,7 +102,6 @@ object Helpers {
     }
 
     def getID(sourcePath: String, mappingsFile: String): String = {
-        //var mappingsFile = Config.get("mappings.file")
 
         var getID = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#>" +
             "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
@@ -112,8 +112,6 @@ object Helpers {
                 "?mp rr:subjectMap ?sm . " +
                 "?sm rr:template ?t " +
             "}"
-
-        //println("GOING TO EXECUTE: " + getID)
 
         var mappingsString = ""
         if(!mappingsFile.startsWith("hdfs://")) {
@@ -159,27 +157,5 @@ object Helpers {
         //mongodb://db1.example.net,db2.example.net:27002,db3.example.net:27003/?db_name&replicaSet=YourReplicaSetName
         //mongodb://172.18.160.16,172.18.160.17,172.18.160.18/db.offer?replicaSet=mongo-rs
     }
-
-    // Special MongoDB helpers
-    /*implicit class DocumentObservable[C](val observable: Observable[Document]) extends ImplicitObservable[Document] {
-        override val converter: (Document) => String = (doc) => doc.toJson
-    }
-
-    implicit class GenericObservable[C](val observable: Observable[C]) extends ImplicitObservable[C] {
-        override val converter: (C) => String = (doc) => doc.toString
-    }
-
-    trait ImplicitObservable[C] {
-        val observable: Observable[C]
-        val converter: (C) => String
-
-        def results(): Seq[C] = Await.result(observable.toFuture(), Duration(100, TimeUnit.SECONDS))
-        def headResult() = Await.result(observable.head(), Duration(100, TimeUnit.SECONDS))
-        def printResults(initial: String = ""): Unit = {
-            if (initial.length > 0) print(initial)
-            results().foreach(res => println(converter(res)))
-        }
-        def printHeadResult(initial: String = ""): Unit = println(s"${initial}${converter(headResult())}")
-    }*/
 
 }

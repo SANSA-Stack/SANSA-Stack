@@ -1,5 +1,6 @@
-
 package net.sansa_stack.datalake.spark
+
+import com.typesafe.scalalogging.Logger
 
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
@@ -18,6 +19,8 @@ import scala.collection.mutable.{HashMap, Set}
   * Created by mmami on 30.01.17.
   */
 class Mapper (mappingsFile: String) {
+
+    val logger = Logger("SANSA-DataLake")
 
     def findDataSources(
                            stars: mutable.HashMap[
@@ -50,7 +53,7 @@ class Mapper (mappingsFile: String) {
             val subject = s._1 // core of the star
             val predicates_objects = s._2
 
-            println(s"\n- Going to find datasources relevant to $subject...")
+            logger.info(s"\n- Going to find datasources relevant to $subject...")
             val ds = findDataSource(predicates_objects) // One or more relevant data sources
             count = count + 1
 
@@ -112,13 +115,13 @@ class Mapper (mappingsFile: String) {
 
         var temp = 0
 
-        println("...with the (Predicate,Object) pairs: " + predicates_objects)
+        logger.info("...with the (Predicate,Object) pairs: " + predicates_objects)
 
         for(v <- predicates_objects) {
             val predicate = v._1
 
             if(predicate == "rdf:type" || predicate == "a") {
-                println("...of class: " + v._2)
+                logger.info("...of class: " + v._2)
                 listOfPredicatesForQuery += "?mp rr:subjectMap ?sm . ?sm rr:class " + v._2 + " . "
 
             } else {
@@ -143,7 +146,7 @@ class Mapper (mappingsFile: String) {
                 listOfPredicatesForQuery +
             "}"
 
-        println("...for this, the following query will be executed: " + queryString + " on " + mappingsFile)
+        logger.info("...for this, the following query will be executed: " + queryString + " on " + mappingsFile)
         val query = QueryFactory.create(queryString)
 
         var mappingsString = ""
@@ -179,7 +182,7 @@ class Mapper (mappingsFile: String) {
             val src = soln.get("src").toString
             val srcType = soln.get("type").toString
 
-            println(">>> Relevant source detected [" + src + "] of type [" + srcType + "]")
+            logger.info(">>> Relevant source detected [" + src + "] of type [" + srcType + "]")
 
             val pred_attr: HashMap[String, String] = HashMap()
 

@@ -3,12 +3,15 @@ package net.sansa_stack.datalake.spark
 import java.util
 
 import com.google.common.collect.ArrayListMultimap
+import com.typesafe.scalalogging.Logger
+
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.syntax.{ElementFilter, ElementVisitorBase, ElementWalker}
 
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
 import scala.collection.JavaConversions._
+
 import net.sansa_stack.datalake.spark.utils.Helpers._
 
 /**
@@ -17,13 +20,15 @@ import net.sansa_stack.datalake.spark.utils.Helpers._
 
 class QueryAnalyser(query: String) {
 
+    val logger = Logger("SANSA-DataLake")
+
     def getPrefixes : Map[String, String] = {
         val q = QueryFactory.create(query)
         val prolog = q.getPrologue().getPrefixMapping.getNsPrefixMap
 
         val prefix: Map[String, String] = invertMap(prolog)
 
-        println("\n- Prefixes: " + prefix)
+        logger.info("\n- Prefixes: " + prefix)
 
         prefix
     }
@@ -32,7 +37,7 @@ class QueryAnalyser(query: String) {
         val q = QueryFactory.create(query)
         val project = q.getResultVars
 
-        println(s"\n- Projected vars: $project")
+        logger.info(s"\n- Projected vars: $project")
 
         (project, q.isDistinct)
     }
@@ -48,7 +53,7 @@ class QueryAnalyser(query: String) {
                 val leftOperand = bits(0)
                 val rightOperand = bits(2)
 
-                println(s"............-------........... $operation,($leftOperand,$rightOperand)")
+                logger.info(s"............-------........... $operation,($leftOperand,$rightOperand)")
                 filters.put(operation, (leftOperand, rightOperand))
             }
         })
@@ -90,7 +95,7 @@ class QueryAnalyser(query: String) {
             }
 
             val agg = q.getAggregators
-            println("agg: " + agg)
+            logger.info("agg: " + agg)
             for(ag <- agg) { // toPrefixString returns (aggregate_function aggregate_var) eg. (sum ?price)
                 val bits = ag.getAggregator.toPrefixString.split(" ")
 
@@ -117,8 +122,8 @@ class QueryAnalyser(query: String) {
         val bgp = originalBGP.replaceAll("\n", "").replaceAll("\\s+", " ").replace("{", " ").replace("}", " ") // See example below + replace breaklines + remove extra white spaces
         val tps = bgp.split("\\.(?![^\\<\\[]*[\\]\\>])")
 
-        println("\n- The BGP of the input query:  " + originalBGP)
-        println("\n- Number of triple-stars detected: " + tps.length)
+        logger.info("\n- The BGP of the input query:  " + originalBGP)
+        logger.info("\n- Number of triple-stars detected: " + tps.length)
 
         val stars = new HashMap[String, Set[Tuple2[String,String]]] with MultiMap[String, Tuple2[String,String]]
         // Multi-map to add/append elements to the value
@@ -129,7 +134,7 @@ class QueryAnalyser(query: String) {
         for (i <- tps.indices) { // i <- 0 until tps.length
             val triple = tps(i).trim
 
-            println(s"triple: $triple")
+            logger.info(s"triple: $triple")
 
             if(!triple.contains(';')) { // only one predicate attached to the subject
                 val tripleBits = triple.split(" ")

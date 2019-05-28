@@ -3,7 +3,10 @@ package net.sansa_stack.datalake.spark
 import java.util
 
 import com.google.common.collect.ArrayListMultimap
+import com.typesafe.scalalogging.Logger
+
 import net.sansa_stack.datalake.spark.utils.Helpers._
+
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, Reads, __}
 
@@ -18,9 +21,11 @@ import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
   */
 class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String, (String, String)]) {
 
+    val logger = Logger("SANSA-DataLake")
+
     def getNeededPredicates(star_predicate_var: mutable.HashMap[(String, String), String], joins: ArrayListMultimap[String, (String, String)], select_vars: util.List[String]) : (Set[String],Set[(String, String)]) = {
 
-        println("star_predicate_var: " + star_predicate_var)
+        logger.info("star_predicate_var: " + star_predicate_var)
         val predicates : Set[String] = Set.empty
         val predicatesForSelect : Set[(String, String)] = Set.empty
 
@@ -29,7 +34,7 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
 
         val join_left_right_vars = join_right_vars.union(join_left_vars.asScala)
 
-        println("--> Left & right join operands: " + join_left_right_vars)
+        logger.info("--> Left & right join operands: " + join_left_right_vars)
 
         for (t <- star_predicate_var) {
             val s_p = t._1
@@ -50,7 +55,7 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
     def generateJoinPlan: (ArrayListMultimap[String, (String, String)], Set[String], Set[String], Map[(String, String), String]) = {
 
         var keys = stars.keySet.toSeq
-        println("Stars: " + keys.toString())
+        logger.info("Stars: " + keys.toString())
         var joins : ArrayListMultimap[String, (String, String)] = ArrayListMultimap.create[String, (String, String)]()
         var joinPairs : Map[(String, String), String] = Map.empty
 
@@ -77,7 +82,7 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
 
     def reorder(joins: ArrayListMultimap[String, (String, String)], starDataTypesMap: Map[String, mutable.Set[String]], starNbrFilters: Map[String, Integer], starWeights: Map[String, Double], configFile: String) = {
 
-        println("...REORDERING JOINS, if needed...")
+        logger.info("...REORDERING JOINS, if needed...")
 
         var joinsToReorder : ListBuffer[(String, String)] = ListBuffer()
 
