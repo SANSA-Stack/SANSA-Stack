@@ -179,12 +179,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>com.typesafe.scala-logging</groupId>
-				<artifactId>scala-logging_${scala.binary.version}</artifactId>
-				<version>3.5.0</version>
-			</dependency>
-
-			<dependency>
 				<groupId>de.javakaffee</groupId>
 				<artifactId>kryo-serializers</artifactId>
 				<version>0.41</version>
@@ -510,7 +504,7 @@
 					</configuration>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>

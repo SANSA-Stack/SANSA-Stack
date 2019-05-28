@@ -18,7 +18,8 @@ import net.sansa_stack.datalake.spark.utils.Helpers._
 
 class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExecutor[DataFrame] {
 
-    val logger = Logger("SANSA-DataLake")
+    
+    override val logger = Logger("SANSA-DataLake")
 
     def getType() : DataFrame = {
         val dataframe : DataFrame = null

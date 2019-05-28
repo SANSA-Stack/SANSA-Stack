@@ -5,7 +5,6 @@ import com.typesafe.scalalogging.Logger
 import java.io.FileNotFoundException
 
 import org.apache.commons.lang.time.StopWatch
-import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql.DataFrame
 
 import net.sansa_stack.datalake.spark.utils.Helpers._
@@ -18,25 +17,16 @@ import scala.collection.mutable
  */
 class Run[A](executor: QueryExecutor[A]) {
 
-  val logger = Logger("SANSA-DataLake")
-
   private var finalDataSet: A = _
-  val logger = Logger.getLogger(this.getClass.getName.stripSuffix("$"))
 
   def application(queryFile: String, mappingsFile: String, configFile: String): DataFrame = {
 
-    Logger.getLogger("ac.biu.nlp.nlp.engineml").setLevel(Level.OFF)
-    Logger.getLogger("org.BIU.utils.logging.ExperimentLogger").setLevel(Level.OFF)
-    Logger.getRootLogger.setLevel(Level.OFF)
-
-    Logger.getLogger("org").setLevel(Level.ERROR)
-    Logger.getLogger("akka").setLevel(Level.ERROR)
+    val logger = Logger("SANSA-DataLake")
 
     // 1. Read SPARQL query
     logger.info("QUERY ANALYSIS startigng...")
 
     try {
-
       var query = ""
       if(!queryFile.startsWith("hdfs://")) {
               var queryFromFile = scala.io.Source.fromFile(queryFile)
@@ -179,7 +169,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
       logger.info("QUERY EXECUTION...")
       logger.info("- Here are the (Star, ParSet) pairs:")
-      logger.info(star_df)
+      logger.info(s"  $star_df")
       logger.info(s"- Here are join pairs: $joins")
       logger.info(s"- Number of predicates per star: $starNbrFilters ")
 
