@@ -1,0 +1,4 @@
+X Y M
+a Paul p@ex.it
+c Mary m2@ex.com
+c Mary m1@ex.it
