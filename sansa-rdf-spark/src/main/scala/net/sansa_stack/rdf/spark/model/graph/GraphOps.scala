@@ -1,5 +1,7 @@
 package net.sansa_stack.rdf.spark.model.graph
 
+import java.io.StringWriter
+
 import scala.Iterator
 import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
@@ -282,6 +284,31 @@ object GraphOps {
         setMsg,
         sendMsg,
         mergeMsg)
+  }
+
+  def saveGraphToJson(graph: Graph[_, _], output: String): Unit = {
+    val pw = new StringWriter
+    pw.write(toGraphJson(graph))
+    val spark: SparkSession = SparkSession.builder().getOrCreate()
+    val graphAsJson = spark.sparkContext.parallelize(Seq(pw.toString))
+    graphAsJson.coalesce(1, shuffle = true).saveAsTextFile(output)
+  }
+
+  def toGraphJson(graph: Graph[_, _]): String = {
+    val verts = graph.vertices.collect
+    val edges = graph.edges.collect
+
+    val nmap = verts.zipWithIndex.map(v => (v._1._1.toLong, v._2)).toMap
+
+    val vtxt = verts.map(v =>
+      "{\"val\":\"" + v._2.toString + "\"}").mkString(",\n")
+
+    val etxt = edges.map(e =>
+      "{\"source\":" + nmap(e.srcId).toString +
+        ",\"target\":" + nmap(e.dstId).toString +
+        ",\"value\":" + e.attr.toString + "}").mkString(",\n")
+
+    "{ \"nodes\":[\n" + vtxt + "\n],\"links\":[" + etxt + "]\n}"
   }
 
   /** Stores a map from the vertex id of a landmark to the distance to that landmark. */
