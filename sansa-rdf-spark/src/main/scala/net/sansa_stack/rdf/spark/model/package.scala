@@ -331,6 +331,36 @@ package object model {
   }
 
   /**
+   * Adds all methods to [[RDD]] that allows to use Tensor TripleOps functions.
+   */
+  implicit class TensorTripleOperations(triples: RDD[Triple]) extends Logging {
+
+    import net.sansa_stack.rdf.spark.model.tensor.TripleOps
+
+    /**
+     * Return all the mapped triples (tensor) based on their relations
+     * @return all the mapped triples (tensor) based on their relations
+     */
+    def asTensor(): RDD[(Long, Long, Long)] =
+      TripleOps.getMappedTriples(triples)
+
+    /**
+     * Return size of the entities in the graph
+     * @return size of the entities in the graph
+     */
+    def getNumEntities(): Long =
+      TripleOps.getNumEntities(triples)
+
+    /**
+     * Return size of the relations in the graph
+     * @return size of the relations in the graph
+     */
+    def getNumRelations(): Long =
+      TripleOps.getNumRelations(triples)
+
+  }
+
+  /**
    * Adds all methods to [[DataFrame]] that allows to use TripleOps functions.
    */
   implicit class DFTripleOperations(triples: DataFrame) extends Logging {
