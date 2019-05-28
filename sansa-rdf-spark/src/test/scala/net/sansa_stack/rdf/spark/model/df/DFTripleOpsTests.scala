@@ -10,7 +10,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.model._
 
-  test("converting DataFrame of triples into RDD of Triples should result in size 10") {
+  test("converting DataFrame of triples into RDD of Triples should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -22,7 +22,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 10)
   }
 
-  test("converting DataFrame of triples into DataSet should result in size 10") {
+  test("converting DataFrame of triples into DataSet should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -34,7 +34,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 10)
   }
 
-  test("getting all the subjects should result in size 10") {
+  test("getting all the subjects should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -46,7 +46,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 10)
   }
 
-  test("getting all the predicates should result in size 10") {
+  test("getting all the predicates should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -58,7 +58,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 10)
   }
 
-  test("getting all the objects should result in size 10") {
+  test("getting all the objects should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -70,7 +70,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 10)
   }
 
-  test("union of two RDF graph should result in size 20") {
+  test("union of two RDF graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -85,7 +85,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 20)
   }
 
-  test("difference of two RDF graph should result in size 0") {
+  test("difference of two RDF graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -100,7 +100,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 0)
   }
 
-  test("intersection of two RDF graph should result in size 10") {
+  test("intersection of two RDF graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -121,7 +121,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 10)
   }
 
-  test("add a statement to the RDF graph should result in size 11") {
+  test("add a statement to the RDF graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -139,7 +139,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 11)
   }
 
-  test("add a list of statements to the RDF graph should result in size 13") {
+  test("add a list of statements to the RDF graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -169,7 +169,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 13)
   }
 
-  test("remove a statement from the RDF graph should result in size 10") {
+  test("remove a statement from the RDF graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
