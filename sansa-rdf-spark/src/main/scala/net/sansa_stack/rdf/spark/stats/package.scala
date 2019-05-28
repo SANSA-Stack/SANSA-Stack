@@ -66,7 +66,7 @@ package object stats {
      *  <b>4. Class hierarchy depth criterion </b> <br>
      *  @return the depth of the graph
      */
-    def classHierarchyDepth(): RDD[(Node, Int)] =
+    def statsClassHierarchyDepth(): RDD[(Node, Int)] =
       RDFStatistics.ClassHierarchyDepth(triples)
     /**
      * <b>5. Property Usage Criterion </b> <br>
@@ -106,7 +106,7 @@ package object stats {
      *
      *  @return the depth of the graph
      */
-    def PropertyHierarchyDepth(): RDD[(Node, Int)] =
+    def statsPropertyHierarchyDepth(): RDD[(Node, Int)] =
       RDFStatistics.PropertyHierarchyDepth(triples)
 
     /**

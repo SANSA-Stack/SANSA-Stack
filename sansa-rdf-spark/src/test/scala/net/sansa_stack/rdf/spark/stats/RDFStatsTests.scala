@@ -302,7 +302,7 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)
 
-    val criteria = triples.classHierarchyDepth()
+    val criteria = triples.statsClassHierarchyDepth()
 
     val target = Set(
       (NodeFactory.createURI("http://example.org/D"), 4),
