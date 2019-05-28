@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
 
 class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.model.graph._
+  import net.sansa_stack.rdf.spark.model._
 
   test("loading N-Triples file into Graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath

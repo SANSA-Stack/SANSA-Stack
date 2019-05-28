@@ -2,7 +2,7 @@ package net.sansa_stack.rdf.spark.stats
 
 import java.io.StringWriter
 
-import net.sansa_stack.rdf.spark.model.graph._
+import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.jena.sparql.expr.NodeValue
