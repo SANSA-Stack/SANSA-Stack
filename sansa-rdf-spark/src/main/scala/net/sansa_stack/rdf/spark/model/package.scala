@@ -939,6 +939,13 @@ package object model {
      */
     def hierarcyDepth(): Graph[(VertexId, Int, Node), Node] =
       GraphOps.hierarcyDepth(graph)
+
+    /**
+     * Save the Graph to JSON format
+     * @param output the output
+     */
+    def saveGraphToJson(output: String): Unit =
+      GraphOps.saveGraphToJson(graph, output)
   }
 
 }

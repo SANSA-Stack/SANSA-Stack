@@ -286,6 +286,11 @@ object GraphOps {
         mergeMsg)
   }
 
+  /**
+   * Save the Graph to JSON format
+   * @param graph the Graph representation of triples
+   * @param output the output
+   */
   def saveGraphToJson(graph: Graph[_, _], output: String): Unit = {
     val pw = new StringWriter
     pw.write(toGraphJson(graph))
