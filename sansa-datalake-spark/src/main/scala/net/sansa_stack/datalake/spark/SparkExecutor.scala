@@ -499,9 +499,6 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
         val aa = aggSet.toList
         val newJDF : DataFrame = jDF.asInstanceOf[DataFrame].groupBy(cols: _*).agg(aa.head, aa.tail : _*)
 
-
-        // df.groupBy("department").agg(max("age"), sum("expense"))
-        // ("o_price_cbo","sum"),("o_price_cbo","max")
         newJDF.printSchema()
 
         newJDF

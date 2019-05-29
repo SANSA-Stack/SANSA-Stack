@@ -1,7 +1,6 @@
 package net.sansa_stack.datalake.spark.utils
 
 import com.typesafe.scalalogging.Logger
-
 import java.util
 import java.io.ByteArrayInputStream
 
@@ -10,6 +9,7 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.util.FileManager
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by mmami on 26.07.17.
@@ -114,18 +114,44 @@ object Helpers {
             "}"
 
         var mappingsString = ""
-        if(!mappingsFile.startsWith("hdfs://")) {
-                var mappings = scala.io.Source.fromFile(mappingsFile)
-                mappingsString = try mappings.mkString finally mappings.close()
+        if (mappingsFile.startsWith("hdfs://")) {
+            val host_port = mappingsFile.split("/")(2).split(":")
+            val host = host_port(0)
+            val port = host_port(1)
+            val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+            val path = new org.apache.hadoop.fs.Path(mappingsFile)
+            val stream = hdfs.open(path)
+
+            def readLines = scala.io.Source.fromInputStream(stream)
+
+            mappingsString = readLines.mkString
+        } else if (mappingsFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
+            val bucket_key = mappingsFile.replace("s3://","").split("/")
+            val bucket = bucket_key.apply(0) // apply(x) = (x)
+            val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
+
+            import com.amazonaws.services.s3.AmazonS3Client
+            import com.amazonaws.services.s3.model.GetObjectRequest
+            import java.io.BufferedReader
+            import java.io.InputStreamReader
+            import scala.collection.JavaConversions._
+
+            val s3 = new AmazonS3Client
+
+            val s3object = s3.getObject(new GetObjectRequest(bucket, key))
+
+            val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
+            val lines = new ArrayBuffer[String]()
+            var line: String = null
+            while ({line = reader.readLine; line != null}) {
+                lines.add(line)
+            }
+            reader.close()
+
+            mappingsString = lines.mkString("\n")
         } else {
-                val host_port = mappingsFile.split("/")(2).split(":")
-                val host = host_port(0)
-                val port = host_port(1)
-                val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-                val path = new org.apache.hadoop.fs.Path(mappingsFile)
-                val stream = hdfs.open(path)
-                def readLines = scala.io.Source.fromInputStream(stream)
-                mappingsString = readLines.mkString
+            var mappings = scala.io.Source.fromFile(mappingsFile)
+            mappingsString = try mappings.mkString finally mappings.close()
         }
 
         val in = new ByteArrayInputStream(mappingsString.getBytes)

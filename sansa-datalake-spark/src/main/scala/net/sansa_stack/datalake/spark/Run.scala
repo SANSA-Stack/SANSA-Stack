@@ -1,16 +1,15 @@
 package net.sansa_stack.datalake.spark
 
 import com.typesafe.scalalogging.Logger
-
 import java.io.FileNotFoundException
 
 import org.apache.commons.lang.time.StopWatch
 import org.apache.spark.sql.DataFrame
-
 import net.sansa_stack.datalake.spark.utils.Helpers._
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by mmami on 26.01.17.
@@ -28,19 +27,47 @@ class Run[A](executor: QueryExecutor[A]) {
 
     try {
       var query = ""
-      if(!queryFile.startsWith("hdfs://")) {
-              var queryFromFile = scala.io.Source.fromFile(queryFile)
-              query = try queryFromFile.mkString finally queryFromFile.close()
+      if (queryFile.startsWith("hdfs://")) {
+        val host_port = queryFile.split("/")(2).split(":")
+        val host = host_port(0)
+        val port = host_port(1)
+        val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+        val path = new org.apache.hadoop.fs.Path(queryFile)
+        val stream = hdfs.open(path)
+        def readLines = scala.io.Source.fromInputStream(stream)
+
+        query = readLines.mkString
+      } else if (queryFile.startsWith("s3")) { // E.g., s3://sansa-datalake/Q1.sparql
+        val bucket_key = queryFile.replace("s3://","").split("/")
+
+        val bucket = bucket_key.apply(0) // apply(x) = (x)
+        val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
+
+        import com.amazonaws.services.s3.AmazonS3Client
+        import com.amazonaws.services.s3.model.GetObjectRequest
+        import java.io.BufferedReader
+        import java.io.InputStreamReader
+        import scala.collection.JavaConversions._
+
+        val s3 = new AmazonS3Client
+        val s3object = s3.getObject(new GetObjectRequest(bucket, key))
+
+        val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
+        val lines = new ArrayBuffer[String]()
+        var line: String = null
+        while ({line = reader.readLine; line != null}) {
+          lines.add(line)
+        }
+        reader.close()
+        lines.toArray
+
+        query = lines.mkString("\n")
       } else {
-              val host_port = queryFile.split("/")(2).split(":")
-              val host = host_port(0)
-              val port = host_port(1)
-              val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-              val path = new org.apache.hadoop.fs.Path(queryFile)
-              val stream = hdfs.open(path)
-              def readLines = scala.io.Source.fromInputStream(stream)
-              query = readLines.mkString
+          var queryFromFile = scala.io.Source.fromFile(queryFile)
+          query = try queryFromFile.mkString finally queryFromFile.close()
       }
+
+      println(s"Going to execute the query:\n$query")
 
       // Transformations
       var transformExist = false
@@ -255,33 +282,45 @@ class Run[A](executor: QueryExecutor[A]) {
 
       val timeTaken = stopwatch.getTime
 
-      println(s"timeTaken: $timeTaken")
+      println(s"Time of query execution: $timeTaken ms")
 
       finalDataSet.asInstanceOf[DataFrame]
 
     } catch {
       case ex : FileNotFoundException =>
-        println("ERROR: One of input files ins't found.")
+        println("ERROR: One of input files ins't found." + ex.getStackTraceString)
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : org.apache.jena.riot.RiotException =>
-        println("ERROR: invalid Mappings, check syntax.")
+        println("ERROR: invalid Mappings. Check syntax. (Report it: " + ex + ").")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : org.apache.spark.SparkException =>
-        println("ERROR: invalid Spark Master.")
+        println("ERROR: invalid Spark Master. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : com.fasterxml.jackson.core.JsonParseException =>
-        println("ERROR: invalid JSON content in config file.")
+        println("ERROR: invalid JSON content in config file. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : java.lang.IllegalArgumentException =>
-        println("ERROR: invalid mappings.")
+        println("ERROR: invalid mappings. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : org.apache.jena.query.QueryParseException =>
-        println("ERROR: invalid query.")
+        println("ERROR: invalid query. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
+        null
+
+      case ex : com.amazonaws.services.s3.model.AmazonS3Exception =>
+        println(ex.getStackTraceString)
+        println("ERROR: Access to Amazon S3 denied. Check bucket name and key. Check you have ~/.aws/credentials file " +
+          "with the correct content: \n[default]\naws_access_key_id=...\naws_secret_access_key=...")
         null
     }
   }

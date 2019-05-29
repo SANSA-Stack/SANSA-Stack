@@ -4,9 +4,7 @@ import java.util
 
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
-
 import net.sansa_stack.datalake.spark.utils.Helpers._
-
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, Reads, __}
 
@@ -14,7 +12,7 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
-import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
+import scala.collection.mutable.{ArrayBuffer, HashMap, ListBuffer, MultiMap, Set}
 
 /**
   * Created by mmami on 06.07.17.
@@ -110,18 +108,44 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
         //var configFile = Config.get("datasets.weights")
 
         var configJSON = ""
-        if(!configFile.startsWith("hdfs://")) {
-                var configs = scala.io.Source.fromFile(configFile)
-                configJSON = try configs.mkString finally configs.close()
+        if (configFile.startsWith("hdfs://")) {
+            val host_port = configFile.split("/")(2).split(":")
+            val host = host_port(0)
+            val port = host_port(1)
+            val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+            val path = new org.apache.hadoop.fs.Path(configFile)
+            val stream = hdfs.open(path)
+
+            def readLines = scala.io.Source.fromInputStream(stream)
+
+            configJSON = readLines.mkString
+        } else if (configFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
+            val bucket_key = configFile.replace("s3://","").split("/")
+            val bucket = bucket_key.apply(0) // apply(x) = (x)
+            val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
+
+            import com.amazonaws.services.s3.AmazonS3Client
+            import com.amazonaws.services.s3.model.GetObjectRequest
+            import java.io.BufferedReader
+            import java.io.InputStreamReader
+            import scala.collection.JavaConversions._
+
+            val s3 = new AmazonS3Client
+
+            val s3object = s3.getObject(new GetObjectRequest(bucket, key))
+
+            val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
+            val lines = new ArrayBuffer[String]()
+            var line: String = null
+            while ({line = reader.readLine; line != null}) {
+                lines.add(line)
+            }
+            reader.close()
+
+            configJSON = lines.mkString("\n")
         } else {
-                val host_port = configFile.split("/")(2).split(":")
-                val host = host_port(0)
-                val port = host_port(1)
-                val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-                val path = new org.apache.hadoop.fs.Path(configFile)
-                val stream = hdfs.open(path)
-                def readLines = scala.io.Source.fromInputStream(stream)
-                configJSON = readLines.mkString
+            var configs = scala.io.Source.fromFile(configFile)
+            configJSON = try configs.mkString finally configs.close()
         }
 
         case class ConfigObject(datasource: String, weight: Double)
@@ -138,7 +162,7 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
             scoresByDatasource += w.datasource -> w.weight
         }
 
-        println(s"- We use the following scores of the datasource types: $scoresByDatasource \n")
+        logger.info(s"- We use the following scores of the datasource types: $scoresByDatasource \n")
 
         val scores = starScores(starDataTypesMap, scoresByDatasource, filters)
 

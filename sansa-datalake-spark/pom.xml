@@ -131,18 +131,25 @@
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>1.9.6</version>
+		</dependency>
+
 		<!-- Loggings -->
 		<dependency>
           <groupId>com.typesafe.scala-logging</groupId>
           <artifactId>scala-logging_${scala.binary.version}</artifactId>
           <version>3.9.0</version>
-      </dependency>
-      <dependency>
-          <groupId>ch.qos.logback</groupId>
-          <artifactId>logback-classic</artifactId>
-          <version>1.2.3</version>
-          <scope>test</scope>
-      </dependency>
+	    </dependency>
+
+	    <dependency>
+		    <groupId>ch.qos.logback</groupId>
+		    <artifactId>logback-classic</artifactId>
+		   <version>1.2.3</version>
+		    <scope>test</scope>
+	    </dependency>
 	</dependencies>
 
 	<build>
