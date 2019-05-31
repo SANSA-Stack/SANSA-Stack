@@ -14,6 +14,14 @@
     <version>0.4.2-SNAPSHOT</version>
 
     <dependencies>
+
+        <!-- SANSA OWL Spark dependencies -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Scala dependencies -->
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -24,6 +32,14 @@
             <artifactId>scala-java8-compat_2.12</artifactId>
             <version>0.9.0</version>
         </dependency>
+
+        <!-- slf4j Logger dependencies -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.26</version>
+        </dependency>
+
 
         <!-- OWL API dependencies -->
         <dependency>
@@ -59,7 +75,19 @@
             <scope>provided</scope>
         </dependency>
 
-
+        <!-- Spark dependencies -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.javakaffee</groupId>
+            <artifactId>kryo-serializers</artifactId>
+        </dependency>
         <!-- parsing dependencies -->
         <dependency>
             <groupId>org.scala-lang.modules</groupId>
