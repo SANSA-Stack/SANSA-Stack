@@ -7,7 +7,7 @@ import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import net.sansa_stack.ml.spark.clustering.datatypes.{Categories, CoordinatePOI, Poi}
+import net.sansa_stack.ml.spark.clustering.datatypes.{Categories, CoordinatePOI, POI}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 
 
@@ -24,13 +24,13 @@ class DataProcessing(val spark: SparkSession, val conf: Config, dataRDD: RDD[Tri
   var poiCategoryValueSet: RDD[(Long, Categories)] = this.getCategoryValues  // (category_id, Categories)
   var poiCategories: RDD[(Long, Categories)] = this.getPOICategories(poiCoordinates, poiFlatCategoryId, poiCategoryValueSet)  // (poi_id, Categories)
   val poiYelpCategories: RDD[(Long, (Categories, Double))] = this.getYelpCategories(dataRDD).sample(withReplacement = false, fraction = 0.1, seed = 0)
-  var pois: RDD[Poi] = { if (!poiYelpCategories.isEmpty()) {
+  var pois: RDD[POI] = { if (!poiYelpCategories.isEmpty()) {
     // val poiAllCategories: RDD[(Long, Categories, Double)] = poiCategories.join(poiYelpCategories).map(x => (x._1, (Categories(x._2._1.categories++x._2._2._1.categories), x._2._2._2))
     val poiAllCategories: RDD[(Long, (Categories, Double))] = poiYelpCategories.join(poiCategories).map(x => (x._1, (Categories(x._2._1._1.categories++x._2._2.categories), x._2._1._2)))
-    poiCoordinates.join(poiAllCategories).map(x => Poi(x._1, x._2._1, x._2._2._1, x._2._2._2)).persist()
+    poiCoordinates.join(poiAllCategories).map(x => POI(x._1, x._2._1, x._2._2._1, x._2._2._2)).persist()
   } else {
     println("--------pois--------------")
-    poiCoordinates.join(poiCategories).map(x => Poi(x._1, x._2._1, x._2._2, 0.0)).persist()
+    poiCoordinates.join(poiCategories).map(x => POI(x._1, x._2._1, x._2._2, 0.0)).persist()
   }}
 
   def loadNTriple(tripleFilePath: String): RDD[Triple] = {
