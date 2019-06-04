@@ -15,12 +15,6 @@
 
     <dependencies>
 
-        <!-- SANSA OWL Spark dependencies -->
-        <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- Scala dependencies -->
         <dependency>
