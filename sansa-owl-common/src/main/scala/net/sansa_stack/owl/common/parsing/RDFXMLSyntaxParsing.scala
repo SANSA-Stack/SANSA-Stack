@@ -13,12 +13,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
-import org.semanticweb.owlapi.util._
 import org.semanticweb.owlapi.util.OWLAPIStreamUtils.asList
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
 /**
   * Object containing several constants used by the RDFXMLSyntaxParsing
@@ -39,10 +37,6 @@ object RDFXMLSyntaxParsing {
   */
 
 trait RDFXMLSyntaxParsing {
-
-  // private val logger = Logger(classOf[FunctionalSyntaxParsing])
-
-  //  private def parser = new OWLXMLParserFactory().createParser()
 
   private def man = OWLManager.createOWLOntologyManager()
 
@@ -138,8 +132,12 @@ trait RDFXMLSyntaxParsing {
 
     axiomsRDD.cache()
 
-    // case 1: Handler for wrong domain axioms
-    val declaration = axiomsRDD.filter(a => a.getAxiomType.equals(AxiomType.DECLARATION))
+    /* Case 1: Handler for wrong domain axioms
+     * OWLDataPropertyDomain and OWLObjectPropertyDomain
+     * converted wrong to OWLAnnotationPropertyDomain
+     */
+
+    val declaration = extractAxiom(axiomsRDD, AxiomType.DECLARATION)
       .asInstanceOf[RDD[OWLDeclarationAxiom]]
 
     val dataProperties = declaration.filter(a => a.getEntity.isOWLDataProperty)
@@ -154,93 +152,99 @@ trait RDFXMLSyntaxParsing {
     val dataBC = sc.broadcast(dd)
     val objBC = sc.broadcast(oo)
 
-    val annDomain = axiomsRDD.filter(a => a.getAxiomType.equals(AxiomType.ANNOTATION_PROPERTY_DOMAIN))
+    val annDomain = extractAxiom(axiomsRDD, AxiomType.ANNOTATION_PROPERTY_DOMAIN)
 
-    val transform = annDomain.asInstanceOf[RDD[OWLAnnotationPropertyDomainAxiom]]
-        .map { a =>
+    val domainTransform = annDomain.asInstanceOf[RDD[OWLAnnotationPropertyDomainAxiom]]
+      .map { a =>
 
-            val prop = a.getProperty
+        val prop = a.getProperty.getIRI
+        val domain = a.getDomain
 
-            //       val prop1 = a.getProperty
-            val name = a.getProperty.getIRI
-            //       println("name = " + prop1)
-            val domain = a.getDomain
+        // Annotation property domain axiom turned to object property domain after parsing.
+        if (objBC.value.contains(prop)) {
 
-            if (objBC.value.contains(name)) {
-              val c = dataFactory.getOWLClass(domain)
-              val p = dataFactory.getOWLObjectProperty(name.toString)
+          val c = dataFactory.getOWLClass(domain)
+          val p = dataFactory.getOWLObjectProperty(prop.toString)
+          val obj = dataFactory.getOWLObjectPropertyDomainAxiom(p, c, asList(a.annotations))
 
-//              LOGGER.warn("Annotation property domain axiom turned to object property domain after parsing. " +
-//                "This could introduce errors if the original domain was an anonymous expression: {} is the new domain.", domain)
+          obj
 
-              val obj = dataFactory.getOWLObjectPropertyDomainAxiom(p, c, asList(a.annotations))
+        } else if (dataBC.value.contains(prop)) {
 
-              obj
+          // Annotation property domain axiom turned to object property domain after parsing.
+          val c = dataFactory.getOWLClass(domain)
+          val p = dataFactory.getOWLDataProperty(prop.toString)
+          val obj = dataFactory.getOWLDataPropertyDomainAxiom(p, c, asList(a.annotations))
 
-            } else if (dataBC.value.contains(name)) {
+          obj
 
-              val c = dataFactory.getOWLClass(domain)
-              val p = dataFactory.getOWLDataProperty(name.toString)
+        } else {
 
-//              LOGGER.warn("Annotation property domain axiom turned to object property domain after parsing. " +
-//                "This could introduce errors if the original domain was an anonymous expression: {} is the new domain.", domain)
+          val obj = dataFactory
+            .getOWLAnnotationPropertyDomainAxiom(a.getProperty.asOWLAnnotationProperty, domain, asList(a.annotations))
+            .asInstanceOf[OWLAxiom]
+          obj
 
-              val obj = dataFactory.getOWLDataPropertyDomainAxiom(p, c, asList(a.annotations))
+        }
+      }
 
-              obj
-            } else {
+    /* Case 2: Handler for wrong subPropertyOf axioms
+      * OWLSubPropertyOf converted wrong to OWLSubAnnotationPropertyOf
+      * instead of OWLSubDataPropertyOf or OWLSubObjectPropertyOf
+      */
 
-              val obj = dataFactory.getOWLAnnotationPropertyDomainAxiom(prop.asOWLAnnotationProperty, domain, asList(a.annotations))
-                .asInstanceOf[OWLAxiom]
-              obj
-            }
-          }
-    val differenceRDD = axiomsRDD.subtract(annDomain)
-    val correctRDD = differenceRDD.union(transform)
+    val subAnnotationProperty = extractAxiom(axiomsRDD, AxiomType.SUB_ANNOTATION_PROPERTY_OF)
+
+
+    val subPropertyTransform = subAnnotationProperty.asInstanceOf[RDD[OWLSubAnnotationPropertyOfAxiom]]
+      .map { a =>
+
+        val subProperty = a.getSubProperty.getIRI
+        val supProperty = a.getSuperProperty.getIRI
+
+
+        // SubAnnotationPropertyOf axiom turned to SubObjectPropertyOf after parsing.
+        if (objBC.value.contains(subProperty)) {
+
+          val sub = dataFactory.getOWLObjectProperty(subProperty.toString)
+          val sup = dataFactory.getOWLObjectProperty(supProperty.toString)
+          val obj = dataFactory.getOWLSubObjectPropertyOfAxiom(sub, sup, asList(a.annotations))
+
+          obj
+
+        } else if (dataBC.value.contains(subProperty)) {
+
+          // SubAnnotationPropertyOf axiom turned to SubDataPropertyOf after parsing.
+          val sub = dataFactory.getOWLDataProperty(subProperty.toString)
+          val sup = dataFactory.getOWLDataProperty(supProperty.toString)
+          val obj = dataFactory.getOWLSubDataPropertyOfAxiom(sub, sup, asList(a.annotations))
+
+          obj
+
+        } else {
+
+          val obj = dataFactory
+              .getOWLSubAnnotationPropertyOfAxiom(a.getSubProperty.asOWLAnnotationProperty,
+                                                  a.getSuperProperty.asOWLAnnotationProperty(),
+                                                  asList(a.annotations))
+              .asInstanceOf[OWLAxiom]
+          obj
+
+        }
+      }
+
+    val differenceRDD = axiomsRDD.subtract(annDomain).subtract(subAnnotationProperty)
+    val correctRDD = sc.union(differenceRDD, domainTransform, subPropertyTransform)
 
     correctRDD.foreach(println(_))
 
     correctRDD
   }
 
-  // def visit(ax: OWLAnnotationPropertyDomainAxiom): OWLAxiom = {
-  //
-  //    val prop = ax.getProperty
-  //      val prop1 = prop.getIRI
-  //    val domain = ax.getDomain
-  //      println("\n prop: " + prop1)
-  //
-  //    if (prop.isOWLObjectProperty) {
-  //
-  //      // turn to object property domain
-  //      val d = dataFactory.getOWLClass(domain)
-  //
-  //      LOGGER.warn("Annotation property domain axiom turned to object property domain after parsing. " +
-  //        "This could introduce errors if the original domain was an anonymous expression: {} is the new domain.", domain)
-  //
-  //      var obj = dataFactory.getOWLObjectPropertyDomainAxiom(prop.asOWLObjectProperty, d, asList(ax.annotations))
-  //                .asInstanceOf[OWLAxiom]
-  //      return obj
-  //
-  //    } else if (prop.isDataPropertyExpression) {
-  //
-  //      // turn to data property domain
-  //      val d = dataFactory.getOWLClass(domain)
-  //
-  //      LOGGER.warn("Annotation property domain axiom turned to data property domain after parsing. " +
-  //        "This could introduce errors if the original domain was an anonymous expression: {} is the new domain.", domain)
-  //
-  //      var obj = dataFactory.getOWLDataPropertyDomainAxiom(prop.asOWLDataProperty, d, asList(ax.annotations))
-  //                .asInstanceOf[OWLAxiom]
-  //
-  //      return obj
-  //
-  //    } else {
-  //      var obj = dataFactory.getOWLAnnotationPropertyDomainAxiom(prop.asOWLAnnotationProperty, domain, asList(ax.annotations()))
-  //        .asInstanceOf[OWLAxiom]
-  //      return obj
-  //    }
-  //  }
+
+  def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {
+    axiom.filter(a => a.getAxiomType.equals(T))
+  }
 }
 
 /**

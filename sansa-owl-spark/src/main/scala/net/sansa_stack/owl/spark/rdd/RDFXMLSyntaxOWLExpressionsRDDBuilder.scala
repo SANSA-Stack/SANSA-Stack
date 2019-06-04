@@ -6,11 +6,9 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.SparkContext
 import org.semanticweb.owlapi.model.OWLAxiom
+
 import net.sansa_stack.owl.common.parsing.{RDFXMLSyntaxParsing, RDFXMLSyntaxPrefixParsing}
-
-
 
 class RDFXMLSyntaxOWLExpressionsRDDBuilder extends Serializable with RDFXMLSyntaxPrefixParsing with RDFXMLSyntaxParsing {
 
@@ -84,15 +82,6 @@ class RDFXMLSyntaxOWLExpressionsRDDBuilder extends Serializable with RDFXMLSynta
     val OWLAxiomsRDD: RDD[OWLAxiom] = OWLAxiomsList.flatMap(line => line.iterator().asScala)
                         .distinct()
 
-//    val builder = new RDFXMLSyntaxExpressionBuilder(prefixesMap)
-//
-//    OWLAxiomsRDD.map(x => builder.clean(x.toString)).filter(_ != null)
-
-
-//    println("Axioms are : \n")
-//    OWLAxiomsRDD.foreach(println(_))
-//    println("Axioms count = " + OWLAxiomsRDD.count())
-
     val refinedRDD = refineOWLAxioms (spark.sparkContext, OWLAxiomsRDD)
     println("Axioms count = " + refinedRDD.count())
 
@@ -116,13 +105,8 @@ object RDFXMLSyntaxOWLExpressionsRDDBuilder {
       .appName("RDF/XML Parser")
       .getOrCreate()
 
- //   Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
     Logger.getLogger(this.getClass).setLevel(Level.ERROR)
-
- //   val sc: SparkContext = sparkSession.sparkContext
-
-  //  sparkSession.sparkContext.setLogLevel("ALL")
 
     val RDFXMLBuilder = new RDFXMLSyntaxOWLExpressionsRDDBuilder
     val rdd = RDFXMLBuilder.build(sparkSession, input)
