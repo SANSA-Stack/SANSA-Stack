@@ -61,17 +61,12 @@ class DBSCAN() extends Serializable {
     * Performs DBSCAN and Returns the clusters.
     * */
         def dbclusters(pointRDD_0: RDD[Point], eps: Double, minPts: Int, spark: SparkSession) : RDD[(String, Array[(String, DbPOI)])] = {
-
         val pointRDD_1 = new JavaRDD[Point](pointRDD_0)
         val pointRDD = new PointRDD(pointRDD_1)
 
         pointRDD.analyze()
-
         // Perform Spatial Partitioning with QuadTree
         pointRDD.spatialPartitioning(GridType.QUADTREE, 2)
-
-        // val boundaryEnvelopes = pointRDD.getPartitioner.getGrids
-        // writeBoundaryEnvsToFile(pointRDD, outputFile + "_Envelopes_only.txt", geometryFactory)
         this.spatialPartitionerBD = spark.sparkContext.broadcast(pointRDD.getPartitioner)
 
         // RDD[partitionID, dbpoi]
