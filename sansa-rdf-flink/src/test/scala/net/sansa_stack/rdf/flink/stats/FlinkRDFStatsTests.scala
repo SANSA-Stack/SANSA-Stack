@@ -12,12 +12,13 @@ class FlinkRDFStatsTests extends FunSuite {
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 
-  test("computing used classes should result in size 0") {
+  test("1. computing used classes should result in size 0") {
     val path = getClass.getResource("/data.nt").getPath
 
     val triples = env.rdf(Lang.NTRIPLES)(path)
-
+    
     val criteria = triples.statsUsedClasses()
+    
     val cnt = criteria.count()
 
     assert(cnt == 0)
