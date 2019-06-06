@@ -4,6 +4,7 @@ import net.sansa_stack.rdf.flink.qualityassessment.metrics.availability._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.licensing._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity._
+import net.sansa_stack.rdf.flink.qualityassessment.metrics.performance._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
@@ -87,6 +88,12 @@ package object qualityassessment {
      */
     def assessMachineReadableLicense(): Double =
       MachineReadableLicense.assessMachineReadableLicense(triples)
+
+    /**
+     * Checks if a URI contains hashs.
+     */
+    def assessNoHashUris(): Double =
+      NoHashURIs.assessNoHashUris(triples)
 
     /**
      * Check if the incorrect numeric range for the given predicate and given class of subjects.
