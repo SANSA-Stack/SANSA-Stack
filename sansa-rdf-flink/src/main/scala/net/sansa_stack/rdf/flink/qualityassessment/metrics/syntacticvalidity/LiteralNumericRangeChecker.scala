@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity
 
-import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
+import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{ Node, Triple }
@@ -12,14 +12,6 @@ import org.apache.jena.graph.{ Node, Triple }
  * The range is specified by the user by indicating the lower and the upper bound of the value.
  */
 object LiteralNumericRangeChecker {
-
-  @transient var env: ExecutionEnvironment = _
-
-  val subject = DatasetUtils.getSubjectClassURI()
-  val property = DatasetUtils.getPropertyURI()
-
-  val lowerBound = DatasetUtils.getLowerBound();
-  val upperBound = DatasetUtils.getUpperBound();
 
   def apply(triples: DataSet[Triple]): Long = {
 

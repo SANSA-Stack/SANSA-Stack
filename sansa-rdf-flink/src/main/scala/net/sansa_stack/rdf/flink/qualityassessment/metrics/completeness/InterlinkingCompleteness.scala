@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
+import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.api.scala.ExecutionEnvironment
@@ -25,9 +25,7 @@ import org.apache.jena.graph.{ Node, Triple }
  *
  * Zaveri et. al [http://www.semantic-web-journal.net/system/files/swj414.pdf]
  */
-object InterlinkingCompleteness extends Serializable {
-  @transient var env: ExecutionEnvironment = _
-  val prefixes = DatasetUtils.getPrefixes()
+object InterlinkingCompleteness {
 
   def apply(triples: DataSet[Triple]): Long = {
 
