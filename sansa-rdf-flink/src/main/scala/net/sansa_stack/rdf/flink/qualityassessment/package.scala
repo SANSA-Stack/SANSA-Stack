@@ -3,8 +3,9 @@ package net.sansa_stack.rdf.flink
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.availability._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.licensing._
-import net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.performance._
+import net.sansa_stack.rdf.flink.qualityassessment.metrics.relevancy._
+import net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
@@ -94,6 +95,27 @@ package object qualityassessment {
      */
     def assessNoHashUris(): Double =
       NoHashURIs.assessNoHashUris(triples)
+
+    /**
+     * Computes the size of the triples.
+     */
+    def assessAmountOfTriples(): Double =
+      AmountOfTriples.assessAmountOfTriples(triples)
+
+    /**
+     * This metric measures the the coverage (i.e. number of entities described
+     * in a dataset) and level of detail (i.e. number of properties) in a dataset
+     * to ensure that the data retrieved is appropriate for the task at hand.
+     */
+    def assessCoverageDetail(): Double =
+      CoverageDetail.assessCoverageDetail(triples)
+
+    /**
+     * This metric calculate the coverage of a dataset referring to the covered scope.
+     * This covered scope is expressed as the number of 'instances' statements are made about.
+     */
+    def assessCoverageScope(): Double =
+      CoverageScope.assessCoverageScope(triples)
 
     /**
      * Check if the incorrect numeric range for the given predicate and given class of subjects.
