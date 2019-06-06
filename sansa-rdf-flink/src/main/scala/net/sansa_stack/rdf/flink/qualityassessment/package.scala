@@ -7,6 +7,7 @@ import net.sansa_stack.rdf.flink.qualityassessment.metrics.performance._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.relevancy._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.reprconciseness._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity._
+import net.sansa_stack.rdf.flink.qualityassessment.metrics.understandability._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
@@ -149,6 +150,12 @@ package object qualityassessment {
      */
     def assessXSDDatatypeCompatibleLiterals(): Long =
       XSDDatatypeCompatibleLiterals.assessXSDDatatypeCompatibleLiterals(triples)
+
+    /**
+     * This metric assess the labeled resources.
+     */
+    def assessLabeledResources(): Double =
+      LabeledResources.assessLabeledResources(triples)
 
   }
 
