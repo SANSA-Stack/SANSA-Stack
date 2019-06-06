@@ -258,8 +258,8 @@ trait RDFXMLSyntaxPrefixParsing {
     * pair (prefix, namespace URI)
     *
     * @param line Sth like
-    * xmlns:="http://swat.cse.lehigh.edu/onto/univ-bench.owl#"
-	  * xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    *             xmlns:="http://swat.cse.lehigh.edu/onto/univ-bench.owl#"
+    *             xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     */
 
   def parsePrefix(line: String): (String, String) = {
