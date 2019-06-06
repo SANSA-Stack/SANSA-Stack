@@ -48,15 +48,15 @@ public final class TokenizerTextForgiving implements Tokenizer
     
     public static boolean Checking = false;
 
-    private Token token = null;
-    private final StringBuilder stringBuilder = new StringBuilder(200);
-    private final PeekReader reader;
-    private final boolean lineMode;        // Whether whitespace includes or excludes NL (in its various forms).  
-    private boolean finished = false;
-    private TokenChecker checker = null;
-	private RiotException bad = null;
+    protected Token token = null;
+    protected final StringBuilder stringBuilder = new StringBuilder(200);
+    protected final PeekReader reader;
+    protected final boolean lineMode;        // Whether whitespace includes or excludes NL (in its various forms).  
+    protected boolean finished = false;
+    protected TokenChecker checker = null;
+    protected RiotException bad = null;
 
-	private static class ErrorHandlerTokenizer implements ErrorHandler {
+	public static class ErrorHandlerTokenizer implements ErrorHandler {
         @Override public void warning(String message, long line, long col) {
             // Warning/continue.
             //ErrorHandlerFactory.errorHandlerStd.warning(message, line, col);
@@ -72,8 +72,8 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     };
     // The code assumes that errors throw exception and so stop parsing.
-    private static final ErrorHandler defaultErrorHandler = new ErrorHandlerTokenizer();
-    private ErrorHandler errorHandler = defaultErrorHandler;
+    public static final ErrorHandler defaultErrorHandler = new ErrorHandlerTokenizer();
+    protected ErrorHandler errorHandler = defaultErrorHandler;
 
     public TokenizerTextForgiving(PeekReader reader) {
         this(reader, false);
@@ -204,7 +204,7 @@ public final class TokenizerTextForgiving implements Tokenizer
 		}
 	}
     
-    private void skip() {
+    protected void skip() {
         int ch = EOF;
         for (;;) {
             if ( reader.eof() )
@@ -234,7 +234,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     }
 
-    private Token parseToken() {
+    protected Token parseToken() {
         token = new Token(getLine(), getColumn());
 
         int ch = reader.peekChar();
@@ -490,12 +490,12 @@ public final class TokenizerTextForgiving implements Tokenizer
     }
 
     
-    private static final boolean VeryVeryLaxIRI = false;
+    protected static final boolean VeryVeryLaxIRI = false;
     // Spaces in IRI are illegal.
-    private static final boolean AllowSpacesInIRI = false;
+    protected static final boolean AllowSpacesInIRI = false;
     
     // [8]  IRIREF  ::= '<' ([^#x00-#x20<>"{}|^`\] | UCHAR)* '>'
-    private String readIRI() {
+    protected String readIRI() {
         stringBuilder.setLength(0);
         for (;;) {
             int ch = reader.readChar();
@@ -542,7 +542,7 @@ public final class TokenizerTextForgiving implements Tokenizer
     }
     
     // Read a unicode escape : does not allow \\ bypass
-    private final int readUnicodeEscape() {
+    protected final int readUnicodeEscape() {
         int ch = reader.readChar();
         if ( ch == EOF )
             error("Broken escape sequence");
@@ -556,7 +556,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         return 0;
     }
 
-    private void readPrefixedNameOrKeyword(Token token) {
+    protected void readPrefixedNameOrKeyword(Token token) {
         long posn = reader.getPosition();
         String prefixPart = readPrefixPart(); // Prefix part or keyword
         token.setImage(prefixPart);
@@ -598,13 +598,13 @@ public final class TokenizerTextForgiving implements Tokenizer
     PN_LOCAL_ESC  ::=  '\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | "'" | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' | '%' )
     */
     
-    private String readPrefixPart()
+    protected String readPrefixPart()
     { return readSegment(false); }
     
-    private String readLocalPart()
+    protected String readLocalPart()
     { return readSegment(true); }
 
-    private String readSegment(boolean isLocalPart) { 
+    protected String readSegment(boolean isLocalPart) { 
         // Prefix: PN_CHARS_BASE                       ((PN_CHARS|'.')* PN_CHARS)?
         // Local: ( PN_CHARS_U | ':' | [0-9] | PLX )   ((PN_CHARS | '.' | ':' | PLX)* (PN_CHARS | ':' | PLX) )?
 
@@ -689,7 +689,7 @@ public final class TokenizerTextForgiving implements Tokenizer
     }
 
     // Process PLX (percent or character escape for a prefixed name)
-    private void processPLX(int ch)
+    protected void processPLX(int ch)
     {
         if ( ch == CH_PERCENT )
         {
@@ -718,7 +718,7 @@ public final class TokenizerTextForgiving implements Tokenizer
     
     // Get characters between two markers.
     // strEscapes may be processed
-    private String readString(int startCh, int endCh) {
+    protected String readString(int startCh, int endCh) {
         long y = getLine();
         long x = getColumn();
         stringBuilder.setLength(0);
@@ -745,7 +745,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     }
 
-    private String readLongString(int quoteChar, boolean endNL) {
+    protected String readLongString(int quoteChar, boolean endNL) {
         stringBuilder.setLength(0);
         for (;;) {
             int ch = reader.readChar();
@@ -766,7 +766,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     }
 
-    private String readWord(boolean leadingDigitAllowed)
+    protected String readWord(boolean leadingDigitAllowed)
     { return readWordSub(leadingDigitAllowed, false); }
 
     // A 'word' is used in several places:
@@ -774,21 +774,21 @@ public final class TokenizerTextForgiving implements Tokenizer
     //   prefix part of prefix name 
     //   local part of prefix name (allows digits)
     
-    static private char[] extraCharsWord = new char[] {'_', '.' , '-'};
+    static protected char[] extraCharsWord = new char[] {'_', '.' , '-'};
     
-    private String readWordSub(boolean leadingDigitAllowed, boolean leadingSignAllowed) {
+    protected String readWordSub(boolean leadingDigitAllowed, boolean leadingSignAllowed) {
         return readCharsAnd(leadingDigitAllowed, leadingSignAllowed, extraCharsWord, false);
     }
 
-    static private char[] extraCharsVar = new char[]{'_', '.', '-', '?', '@', '+'};
+    static protected char[] extraCharsVar = new char[]{'_', '.', '-', '?', '@', '+'};
 
-    private String readVarName() {
+    protected String readVarName() {
         return readCharsAnd(true, true, extraCharsVar, true);
     }
     
     // See also readBlankNodeLabel
     
-    private String readCharsAnd(boolean leadingDigitAllowed, boolean leadingSignAllowed, char[] extraChars,
+    protected String readCharsAnd(boolean leadingDigitAllowed, boolean leadingSignAllowed, char[] extraChars,
                                 boolean allowFinalDot) {
         stringBuilder.setLength(0);
         int idx = 0;
@@ -833,7 +833,7 @@ public final class TokenizerTextForgiving implements Tokenizer
 
     // BLANK_NODE_LABEL    ::=     '_:' (PN_CHARS_U | [0-9]) ((PN_CHARS | '.')* PN_CHARS)?
 
-    private String readBlankNodeLabel() {
+    protected String readBlankNodeLabel() {
         stringBuilder.setLength(0);
         // First character.
         {
@@ -892,7 +892,7 @@ public final class TokenizerTextForgiving implements Tokenizer
      * [148]  DOUBLE  ::=  [0-9]+ '.' [0-9]* EXPONENT | '.' ([0-9])+ EXPONENT | ([0-9])+ EXPONENT
      * []     hex             ::=     0x0123456789ABCDEFG
      */
-    private void readNumber() {
+    protected void readNumber() {
         // One entry, definitely a number.
         // Beware of '.' as a (non) decimal.
         /*
@@ -973,7 +973,7 @@ public final class TokenizerTextForgiving implements Tokenizer
             token.setType(TokenType.INTEGER);
     }
 
-    private void readHex(PeekReader reader, StringBuilder sb) {
+    protected void readHex(PeekReader reader, StringBuilder sb) {
         // Just after the 0x, which are in sb
         int x = 0;
         for (;;) {
@@ -989,7 +989,7 @@ public final class TokenizerTextForgiving implements Tokenizer
             error("No hex characters after " + sb.toString());
     }
 
-    private int readDigits(StringBuilder buffer) {
+    protected int readDigits(StringBuilder buffer) {
         int count = 0;
         for (;;) {
             int ch = reader.peekChar();
@@ -1002,7 +1002,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         return count;
     }
 
-    private void readPossibleSign(StringBuilder sb) {
+    protected void readPossibleSign(StringBuilder sb) {
         int ch = reader.peekChar();
         if ( ch == '-' || ch == '+' ) {
             reader.readChar();
@@ -1014,7 +1014,7 @@ public final class TokenizerTextForgiving implements Tokenizer
     // On return:
     //   If false, have moved over no more characters (due to pushbacks) 
     //   If true, at end of 3 quotes
-    private boolean threeQuotes(int ch) {
+    protected boolean threeQuotes(int ch) {
         // reader.readChar(); // Read first quote.
         int ch2 = reader.peekChar();
         if ( ch2 != ch ) {
@@ -1035,7 +1035,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         return true;
     }
 
-    private boolean exponent(StringBuilder sb) {
+    protected boolean exponent(StringBuilder sb) {
         int ch = reader.peekChar();
         if ( ch != 'e' && ch != 'E' )
             return false;
@@ -1048,7 +1048,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         return true;
     }
 
-    private String langTag() {
+    protected String langTag() {
         stringBuilder.setLength(0);
         a2z(stringBuilder);
         if ( stringBuilder.length() == 0 )
@@ -1069,7 +1069,7 @@ public final class TokenizerTextForgiving implements Tokenizer
     }
     
     // ASCII-only e.g. in lang tags.
-    private void a2z(StringBuilder sb2) {
+    protected void a2z(StringBuilder sb2) {
         for (;;) {
             int ch = reader.peekChar();
             if ( isA2Z(ch) ) {
@@ -1080,7 +1080,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     }
 
-    private void a2zN(StringBuilder sb2) {
+    protected void a2zN(StringBuilder sb2) {
         for (;;) {
             int ch = reader.peekChar();
             if ( isA2ZN(ch) ) {
@@ -1091,7 +1091,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     }
 
-    private void insertCodepoint(StringBuilder buffer, int ch) {
+    protected void insertCodepoint(StringBuilder buffer, int ch) {
         if ( Character.charCount(ch) == 1 )
             buffer.append((char)ch);
         else {
@@ -1116,64 +1116,64 @@ public final class TokenizerTextForgiving implements Tokenizer
 
     // ---- Routines to check tokens
 
-    private void checkBlankNode(String blankNodeLabel) {
+    protected void checkBlankNode(String blankNodeLabel) {
         if ( checker != null )
             checker.checkBlankNode(blankNodeLabel);
     }
 
-    private void checkLiteralLang(String lexicalForm, String langTag) {
+    protected void checkLiteralLang(String lexicalForm, String langTag) {
         if ( checker != null )
             checker.checkLiteralLang(lexicalForm, langTag);
     }
 
-    private void checkLiteralDT(String lexicalForm, Token datatype) {
+    protected void checkLiteralDT(String lexicalForm, Token datatype) {
         if ( checker != null )
             checker.checkLiteralDT(lexicalForm, datatype);
     }
 
-    private void checkString(String string) {
+    protected void checkString(String string) {
         if ( checker != null )
             checker.checkString(string);
     }
 
-    private void checkURI(String uriStr) {
+    protected void checkURI(String uriStr) {
         if ( checker != null )
             checker.checkURI(uriStr);
     }
 
-    private void checkNumber(String image, String datatype) {
+    protected void checkNumber(String image, String datatype) {
         if ( checker != null )
             checker.checkNumber(image, datatype);
     }
 
-    private void checkVariable(String tokenImage) {
+    protected void checkVariable(String tokenImage) {
         if ( checker != null )
             checker.checkVariable(tokenImage);
     }
 
-    private void checkDirective(int cntrlCode) {
+    protected void checkDirective(int cntrlCode) {
         if ( checker != null )
             checker.checkDirective(cntrlCode);
     }
 
-    private void checkKeyword(String tokenImage) {
+    protected void checkKeyword(String tokenImage) {
         if ( checker != null )
             checker.checkKeyword(tokenImage);
     }
 
-    private void checkPrefixedName(String tokenImage, String tokenImage2) {
+    protected void checkPrefixedName(String tokenImage, String tokenImage2) {
         if ( checker != null )
             checker.checkPrefixedName(tokenImage, tokenImage2);
     }
 
-    private void checkControl(int code) {
+    protected void checkControl(int code) {
         if ( checker != null )
             checker.checkControl(code);
     }
 
     // ---- Escape sequences
 
-    private final int readLiteralEscape() {
+    protected final int readLiteralEscape() {
         int c = reader.readChar();
         if ( c == EOF )
             error("Escape sequence not completed");
@@ -1195,7 +1195,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     }
 
-    private final int readCharEscape() {
+    protected final int readCharEscape() {
         // PN_LOCAL_ESC ::= '\' ( '_' | '~' | '.' | '-' | '!' | '$' | '&' | "'"
         // | '(' | ')' | '*' | '+' | ',' | ';' | '=' | '/' | '?' | '#' | '@' |
         // '%' )
@@ -1216,17 +1216,17 @@ public final class TokenizerTextForgiving implements Tokenizer
         }
     }
     
-    private final
+    protected final
     int readUnicode4Escape() { return readHexSequence(4); }
     
-    private final int readUnicode8Escape() {
+    protected final int readUnicode8Escape() {
         int ch8 = readHexSequence(8);
         if ( ch8 > Character.MAX_CODE_POINT )
             error("Illegal code point in \\U sequence value: 0x%08X", ch8);
         return ch8;
     }
 
-    private final int readHexSequence(int N) {
+    protected final int readHexSequence(int N) {
         int x = 0;
         for (int i = 0; i < N; i++) {
             int d = readHexChar();
@@ -1237,7 +1237,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         return x;
     }
 
-    private final int readHexChar() {
+    protected final int readHexChar() {
         int ch = reader.readChar();
         if ( ch == EOF )
             error("Not a hexadecimal character (end of file)");
@@ -1249,7 +1249,7 @@ public final class TokenizerTextForgiving implements Tokenizer
         return -1;
     }
 
-    private boolean expect(String str) {
+    protected boolean expect(String str) {
         for (int i = 0; i < str.length(); i++) {
             char want = str.charAt(i);
             if ( reader.eof() ) {
@@ -1267,13 +1267,13 @@ public final class TokenizerTextForgiving implements Tokenizer
         return true;
     }
 
-    private void warning(String message, Object... args) {
+    protected void warning(String message, Object... args) {
         String msg = String.format(message, args);
         errorHandler.warning(msg, reader.getLineNum(), reader.getColNum());
         //exception(message, args); 
     }
     
-    private void error(String message, Object... args) {
+    protected void error(String message, Object... args) {
         String msg = String.format(message, args);
         long line = reader.getLineNum();
         long col = reader.getColNum();
