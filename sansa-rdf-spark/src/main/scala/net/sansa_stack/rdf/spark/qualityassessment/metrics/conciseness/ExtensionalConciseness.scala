@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics.conciseness
 
-import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
-import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
+import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
+import net.sansa_stack.rdf.common.qualityassessment.utils.vocabularies.DQV
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row

@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics.interlinking
 
-import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
+import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.jena.vocabulary.OWL
 import org.apache.spark.rdd.RDD
