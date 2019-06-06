@@ -1,33 +1,36 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
+import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{ Node, Triple }
 
 /**
- * This metric measures the interlinking completeness. Since any resource of a
- * dataset can be interlinked with another resource of a foreign dataset this
- * metric makes a statement about the ratio of interlinked resources to
- * resources that could potentially be interlinked.
- *
- * An interlink here is assumed to be a statement like
- *
- *   <local resource> <some predicate> <external resource>
- *
- * or
- *
- *   <external resource> <some predicate> <local resource>
- *
- * Local resources are those that share the same URI prefix of the considered
- * dataset, external resources are those that don't.
- *
- * Zaveri et. al [http://www.semantic-web-journal.net/system/files/swj414.pdf]
+ * @author Gezim Sejdiu
  */
 object InterlinkingCompleteness {
 
-  def apply(triples: DataSet[Triple]): Long = {
+  /**
+   * This metric measures the interlinking completeness. Since any resource of a
+   * dataset can be interlinked with another resource of a foreign dataset this
+   * metric makes a statement about the ratio of interlinked resources to
+   * resources that could potentially be interlinked.
+   *
+   * An interlink here is assumed to be a statement like
+   *
+   *   <local resource> <some predicate> <external resource>
+   *
+   * or
+   *
+   *   <external resource> <some predicate> <local resource>
+   *
+   * Local resources are those that share the same URI prefix of the considered
+   * dataset, external resources are those that don't.
+   *
+   * Zaveri et. al [http://www.semantic-web-journal.net/system/files/swj414.pdf]
+   */
+  def assessInterlinkingCompleteness(triples: DataSet[Triple]): Long = {
 
     /**
      * isIRI(?s) && internal(?s) && isIRI(?o) && external(?o)
@@ -43,7 +46,7 @@ object InterlinkingCompleteness {
             f.getSubject.isURI() && isExternal(f.getSubject) && f.getObject.isURI() && isInternal(f.getObject)))
 
     val numSubj = Interlinked.map(_.getSubject).distinct().count()
-    val numObj = Interlinked.map(_.getSubject).distinct().count()
+    val numObj = Interlinked.map(_.getObject).distinct().count()
 
     val numResources = numSubj + numObj
     val numInterlinkedResources = Interlinked.count()
@@ -54,14 +57,4 @@ object InterlinkingCompleteness {
 
     value
   }
-
-  /**
-   *  Checks if a resource ?node is local
-   */
-  def isInternal(node: Node): Boolean = prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
-
-  /**
-   *  Checks if a resource ?node is local
-   */
-  def isExternal(node: Node): Boolean = !prefixes.contains(if (node.isLiteral) node.getLiteralLexicalForm else node.toString())
 }

@@ -6,14 +6,17 @@ import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{ Node, Triple }
 
 /**
- * Check if the incorrect numeric range for the given predicate and given class of subjects.
- * A user should specify the RDF class, the RDF property for which he would like to verify
- * if the values are in the specified range determined by the user.
- * The range is specified by the user by indicating the lower and the upper bound of the value.
+ * @author Gezim Sejdiu
  */
 object LiteralNumericRangeChecker {
 
-  def apply(triples: DataSet[Triple]): Long = {
+  /**
+   * Check if the incorrect numeric range for the given predicate and given class of subjects.
+   * A user should specify the RDF class, the RDF property for which he would like to verify
+   * if the values are in the specified range determined by the user.
+   * The range is specified by the user by indicating the lower and the upper bound of the value.
+   */
+  def assessLiteralNumericRangeChecker(triples: DataSet[Triple]): Long = {
 
     /**
      * -->Rule->Filter-->

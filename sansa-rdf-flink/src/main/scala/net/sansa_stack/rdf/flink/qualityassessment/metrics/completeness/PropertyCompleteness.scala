@@ -7,16 +7,17 @@ import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{ Node, Triple }
 
 /**
- * This metric measures the property completeness by checking
- * the missing object values for the given predicate and given class of subjects.
- * A user specifies the RDF class and the RDF predicate, then it checks for each pair
- * whether instances of the given RDF class contain the specified RDF predicate.
+ * @author Gezim Sejdiu
  */
 object PropertyCompleteness {
 
-  @transient var env: ExecutionEnvironment = _
-
-  def apply(triples: DataSet[Triple]): Long = {
+  /**
+   * This metric measures the property completeness by checking
+   * the missing object values for the given predicate and given class of subjects.
+   * A user specifies the RDF class and the RDF predicate, then it checks for each pair
+   * whether instances of the given RDF class contain the specified RDF predicate.
+   */
+  def assessPropertyCompleteness(triples: DataSet[Triple]): Long = {
 
     /**
      * -->Rule->Filter-->
