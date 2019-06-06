@@ -8,9 +8,9 @@ import net.sansa_stack.rdf.flink.qualityassessment.metrics.relevancy._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.reprconciseness._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.understandability._
-import org.apache.jena.graph.{ Node, Triple }
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
+import org.apache.jena.graph.{ Node, Triple }
 
 /**
  * @author Gezim Sejdiu

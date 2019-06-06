@@ -1,14 +1,14 @@
 package net.sansa_stack.rdf.flink.model
 
+import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
 import net.sansa_stack.rdf.flink.io._
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
-import org.apache.jena.riot.Lang
+import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.api.scala.createTypeInformation
+import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
-import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
-import org.apache.flink.api.common.typeinfo.TypeInformation
 
 class FlinkGraphTripleOpsTests extends FunSuite {
 

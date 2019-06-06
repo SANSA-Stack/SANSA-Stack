@@ -3,7 +3,6 @@ package net.sansa_stack.rdf.flink.model
 import net.sansa_stack.rdf.flink.io._
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
 import org.apache.jena.riot.Lang
-import org.apache.flink.api.common.ExecutionConfig
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.scalatest.FunSuite
@@ -19,7 +18,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
-    
+
     val graph = triples.getTriples()
     val size = graph.count()
 
@@ -177,5 +176,4 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
     assert(contains)
   }
-  
 }

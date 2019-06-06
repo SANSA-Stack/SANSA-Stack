@@ -11,9 +11,7 @@ import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.vocabulary.RDF
-import org.apache.jena.vocabulary.RDFS
-import org.apache.jena.vocabulary.OWL
+import org.apache.jena.vocabulary.{ OWL, RDF, RDFS }
 
 /**
  * A Distributed implementation of RDF Statisctics using Apache Flink.
@@ -140,7 +138,7 @@ class Classes_Defined(triples: DataSet[Triple], env: ExecutionEnvironment) exten
   // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
   def Filter(): DataSet[Triple] = triples.filter(f =>
     (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDFS.Class.asNode()))
-      || (f.getPredicate.matches(RDF.`type`.asNode())  && f.getObject.matches(OWL.Class.asNode()))
+      || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(OWL.Class.asNode()))
       && !f.getSubject.isURI())
 
   // M[?o]++
