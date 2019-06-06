@@ -132,10 +132,11 @@ trait RDFXMLSyntaxParsing {
 
     axiomsRDD.cache()
 
-    /* Case 1: Handler for wrong domain axioms
-     * OWLDataPropertyDomain and OWLObjectPropertyDomain
-     * converted wrong to OWLAnnotationPropertyDomain
-     */
+  /**
+    *  Case 1: Handler for wrong domain axioms
+    *  OWLDataPropertyDomain and OWLObjectPropertyDomain
+    *  converted wrong to OWLAnnotationPropertyDomain
+   */
 
     val declaration = extractAxiom(axiomsRDD, AxiomType.DECLARATION)
       .asInstanceOf[RDD[OWLDeclarationAxiom]]
@@ -188,13 +189,13 @@ trait RDFXMLSyntaxParsing {
         }
       }
 
-    /* Case 2: Handler for wrong subPropertyOf axioms
-      * OWLSubPropertyOf converted wrong to OWLSubAnnotationPropertyOf
-      * instead of OWLSubDataPropertyOf or OWLSubObjectPropertyOf
-      */
+  /**
+    * Case 2: Handler for wrong subPropertyOf axioms
+    * OWLSubPropertyOf converted wrong to OWLSubAnnotationPropertyOf
+    * instead of OWLSubDataPropertyOf or OWLSubObjectPropertyOf
+    */
 
     val subAnnotationProperty = extractAxiom(axiomsRDD, AxiomType.SUB_ANNOTATION_PROPERTY_OF)
-
 
     val subPropertyTransform = subAnnotationProperty.asInstanceOf[RDD[OWLSubAnnotationPropertyOfAxiom]]
       .map { a =>
