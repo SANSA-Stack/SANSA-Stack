@@ -258,8 +258,8 @@ trait RDFXMLSyntaxPrefixParsing {
     * pair (prefix, namespace URI)
     *
     * @param line Sth like
-    *             xmlns:="http://swat.cse.lehigh.edu/onto/univ-bench.owl#"
-	  *             xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    * xmlns:="http://swat.cse.lehigh.edu/onto/univ-bench.owl#"
+	  * xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     */
 
   def parsePrefix(line: String): (String, String) = {
@@ -283,15 +283,14 @@ trait RDFXMLSyntaxPrefixParsing {
   }
 }
 
-
-
  class RDFXMLSyntaxExpressionBuilder (val prefixes: Map[String, String]) extends Serializable {
 
    def clean(expression: String): String = {
 
      var trimmedExpr = expression.trim
 
-     /* Throw away expressions that are of no use for further processing:
+    /**
+      * Throw away expressions that are of no use for further processing:
       * 1) empty lines
       * 2) first line of the xml file
       * 3) the closing, </rdf:RDF> tag
