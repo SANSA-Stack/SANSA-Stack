@@ -1,15 +1,17 @@
-package net.sansa_stack.rdf.spark.qualityassessment.utils
+package net.sansa_stack.rdf.common.qualityassessment.utils
 
 import java.io.IOException
 import java.net.{ HttpURLConnection, MalformedURLException, ProtocolException }
 import java.net.URL
 
-import net.sansa_stack.rdf.spark.qualityassessment.utils.DatasetUtils._
-import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.vocabulary.RDFS
+import scala.collection.Seq
 import scala.util.matching.Regex
-import org.apache.jena.vocabulary.OWL
+
+import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
+import net.sansa_stack.rdf.common.qualityassessment.utils.vocabularies.DQV
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.vocabulary.{OWL, RDFS }
+
 
 /**
  * Node Utils.

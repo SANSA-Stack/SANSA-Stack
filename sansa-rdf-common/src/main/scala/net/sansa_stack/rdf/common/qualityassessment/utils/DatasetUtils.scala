@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.qualityassessment.utils
+package net.sansa_stack.rdf.common.qualityassessment.utils
 
 import collection.JavaConverters._
 import com.typesafe.config.{ Config, ConfigFactory }

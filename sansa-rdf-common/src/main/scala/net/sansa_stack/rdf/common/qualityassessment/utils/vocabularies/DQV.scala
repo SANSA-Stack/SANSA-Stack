@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.qualityassessment.vocabularies
+package net.sansa_stack.rdf.common.qualityassessment.utils.vocabularies
 
 /**
  * Data Quality Vocabulary
