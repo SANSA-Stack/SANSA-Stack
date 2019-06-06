@@ -19,7 +19,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
-
+    
     val graph = triples.getTriples()
     val size = graph.count()
 
