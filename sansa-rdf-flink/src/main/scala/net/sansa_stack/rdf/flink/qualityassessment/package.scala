@@ -5,6 +5,7 @@ import net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.licensing._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.performance._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.relevancy._
+import net.sansa_stack.rdf.flink.qualityassessment.metrics.reprconciseness._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.flink.api.scala._
@@ -116,6 +117,22 @@ package object qualityassessment {
      */
     def assessCoverageScope(): Double =
       CoverageScope.assessCoverageScope(triples)
+
+    /**
+     * This metric calculates the number of non Queryable URIs.
+     * It computes the ratio between the number of all non queryable URIs
+     * and the total number of URIs on the dataset.
+     */
+    def assessQueryParamFreeURIs(): Double =
+      QueryParamFreeURIs.assessQueryParamFreeURIs(triples)
+
+    /**
+     * This metric calculates the number of long URIs.
+     * It computes the ratio between the number of all long URIs
+     * and the total number of URIs on the dataset.
+     */
+    def assessShortURIs(): Double =
+      ShortURIs.assessShortURIs(triples)
 
     /**
      * Check if the incorrect numeric range for the given predicate and given class of subjects.
