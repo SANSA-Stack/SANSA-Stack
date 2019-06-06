@@ -1,11 +1,9 @@
-package net.sansa_stack.rdf.spark.qualityassessment.utils
+package net.sansa_stack.rdf.common.qualityassessment.utils
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.rdf.spark.qualityassessment.utils._
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.graph.{ NodeFactory, Triple}
 import org.scalatest.FunSuite
 
-class QANodeUtilsTests extends FunSuite with DataFrameSuiteBase {
+class QANodeUtilsTests extends FunSuite {
 
   val triple = Triple.create(
     NodeFactory.createURI("http://dbpedia.org/resource/Guy_de_Maupassant"),
