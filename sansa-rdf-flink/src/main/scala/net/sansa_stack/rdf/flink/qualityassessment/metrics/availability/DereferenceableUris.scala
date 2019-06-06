@@ -3,7 +3,6 @@ package net.sansa_stack.rdf.flink.qualityassessment.metrics.availability
 import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
-import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{ Node, Triple }
 
 /*

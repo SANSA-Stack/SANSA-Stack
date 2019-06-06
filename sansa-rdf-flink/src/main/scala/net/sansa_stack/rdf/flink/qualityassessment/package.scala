@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.flink
 
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.availability._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness._
+import net.sansa_stack.rdf.flink.qualityassessment.metrics.licensing._
 import net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.flink.api.scala._
@@ -66,6 +67,26 @@ package object qualityassessment {
      */
     def assessSchemaCompleteness(): Double =
       SchemaCompleteness.assessSchemaCompleteness(triples)
+
+    /**
+     * Human -readable indication of a license
+     * This metric checks whether a human-readable text, stating the of licensing model
+     * attributed to the resource, has been provided as part of the dataset.
+     * It looks for objects containing literal values and analyzes the text
+     * searching for key, licensing related terms.
+     */
+    def assessHumanReadableLicense(): Double =
+      HumanReadableLicense.assessHumanReadableLicense(triples)
+
+    /**
+     * Machine -readable indication of a license
+     * This metric checks whether a machine-readable text, stating the of licensing model
+     * attributed to the resource, has been provided as part of the dataset.
+     * It looks for objects containing literal values and analyzes the text
+     * searching for key, licensing related terms.
+     */
+    def assessMachineReadableLicense(): Double =
+      MachineReadableLicense.assessMachineReadableLicense(triples)
 
     /**
      * Check if the incorrect numeric range for the given predicate and given class of subjects.
