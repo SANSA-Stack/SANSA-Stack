@@ -58,7 +58,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<scala.version>2.11.11</scala.version>
 		<scala.binary.version>2.11</scala.binary.version>
-		<spark.version>2.4.0</spark.version>
+		<spark.version>2.4.3</spark.version>
 		<flink.version>1.7.0</flink.version>
 		<jena.version>3.9.0</jena.version>
 		<sansa.rdf.version>0.5.1-SNAPSHOT</sansa.rdf.version>
