@@ -32,8 +32,8 @@
 
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<spark.version>2.4.0</spark.version>
-		<flink.version>1.7.0</flink.version>
+		<spark.version>2.4.3</spark.version>
+		<flink.version>1.8.0</flink.version>
 
 		<jena.version>3.9.0</jena.version>
 		<jsa.subversion>1</jsa.subversion>
