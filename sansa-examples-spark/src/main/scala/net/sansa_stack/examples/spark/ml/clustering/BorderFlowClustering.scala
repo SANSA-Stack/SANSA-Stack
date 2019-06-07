@@ -4,7 +4,7 @@ import scala.collection.mutable
 
 import net.sansa_stack.ml.spark.clustering.algorithms.{ BorderFlow, FirstHardeninginBorderFlow }
 import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model.graph._
+import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang
 import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql.SparkSession

@@ -3,7 +3,7 @@ package net.sansa_stack.examples.spark.rdf
 import scala.collection.mutable
 
 import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model.graph._
+import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang
 import org.apache.spark.graphx.Graph
 import org.apache.spark.sql.SparkSession
