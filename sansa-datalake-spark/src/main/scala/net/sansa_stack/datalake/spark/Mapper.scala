@@ -1,21 +1,20 @@
-
 package net.sansa_stack.datalake.spark
 
+import com.typesafe.scalalogging.Logger
+import java.io.ByteArrayInputStream
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.util.FileManager
-
-import scala.collection.mutable
-
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-
-import scala.collection.mutable.{HashMap, Set}
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by mmami on 30.01.17.
   */
 class Mapper (mappingsFile: String) {
+
+    val logger = Logger("SANSA-DataLake")
 
     def findDataSources(
                            stars: mutable.HashMap[
@@ -29,8 +28,8 @@ class Mapper (mappingsFile: String) {
                         ) :
                         // returns
                         mutable.Set[(String,
-                                        Set[(mutable.HashMap[String, String], String, String)],
-                                        HashMap[String, (Map[String, String], String)]
+                                        mutable.Set[(mutable.HashMap[String, String], String, String)],
+                                        mutable.HashMap[String, (Map[String, String], String)]
                                     )] = {
 
         val starSources :
@@ -42,26 +41,62 @@ class Mapper (mappingsFile: String) {
 
         var count = 0
 
-        var starDatasourceTypeMap : Map[String, String] = Map()
-
-        for (s <-stars) {
+        for (s <- stars) {
             val subject = s._1 // core of the star
             val predicates_objects = s._2
 
-            println(s"\n- Going to find datasources relevant to $subject...")
+            logger.info(s"\n- Going to find datasources relevant to $subject...")
             val ds = findDataSource(predicates_objects) // One or more relevant data sources
             count = count + 1
 
             // Options of relevant sources of one star
-            val optionsentityPerStar : mutable.HashMap[String, (Map[String, String], String)] = new HashMap()
+            val optionsentityPerStar : mutable.HashMap[String, (Map[String, String], String)] = new mutable.HashMap()
 
             // Iterate through the relevant data sources to get options
             // One star can have many relevant sources (containing its predicates)
             for (d <- ds) {
                 val src = d._2
 
-                val queryString = scala.io.Source.fromFile(configFile)
-                val configJSON = try queryString.mkString finally queryString.close()
+                var configJSON = ""
+                if (configFile.startsWith("hdfs://")) {
+                    val host_port = configFile.split("/")(2).split(":")
+                    val host = host_port(0)
+                    val port = host_port(1)
+                    val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+                    val path = new org.apache.hadoop.fs.Path(configFile)
+                    val stream = hdfs.open(path)
+
+                    def readLines = scala.io.Source.fromInputStream(stream)
+
+                    configJSON = readLines.mkString
+                } else if (configFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
+                    val bucket_key = configFile.replace("s3://", "").split("/")
+                    val bucket = bucket_key.apply(0) // apply(x) = (x)
+                    val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
+
+                    import com.amazonaws.services.s3.AmazonS3Client
+                    import com.amazonaws.services.s3.model.GetObjectRequest
+                    import java.io.BufferedReader
+                    import java.io.InputStreamReader
+                    import scala.collection.JavaConverters._
+
+                    val s3 = new AmazonS3Client
+
+                    val s3object = s3.getObject(new GetObjectRequest(bucket, key))
+
+                    val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
+                    val lines = new ArrayBuffer[String].asJava
+                    var line: String = null
+                    while ({line = reader.readLine; line != null}) {
+                      lines.add(line)
+                    }
+                    reader.close()
+
+                    configJSON = lines.asScala.mkString("\n")
+                } else {
+                    val configs = scala.io.Source.fromFile(configFile)
+                    configJSON = try configs.mkString finally configs.close()
+                }
 
                 case class ConfigObject(source : String, options: Map[String, String], entity : String)
 
@@ -88,23 +123,23 @@ class Mapper (mappingsFile: String) {
         }
 
         // return: subject (star core), list of (data source, options)
-        return starSources
+        starSources
     }
 
-    private def findDataSource(predicates_objects: Set[(String, String)]) : Set[(HashMap[String, String], String, String)] = {
+    private def findDataSource(predicates_objects: mutable.Set[(String, String)]) : mutable.Set[(mutable.HashMap[String, String], String, String)] = {
         var listOfPredicatesForQuery = ""
-        val listOfPredicates : Set[String] = Set()
-        val returnedSources : Set[(HashMap[String, String], String, String)] = Set()
+        val listOfPredicates : mutable.Set[String] = mutable.Set()
+        val returnedSources : mutable.Set[(mutable.HashMap[String, String], String, String)] = mutable.Set()
 
         var temp = 0
 
-        println("...with the (Predicate,Object) pairs: " + predicates_objects)
+        logger.info("...with the (Predicate, Object) pairs: " + predicates_objects)
 
         for(v <- predicates_objects) {
             val predicate = v._1
 
             if(predicate == "rdf:type" || predicate == "a") {
-                println("...of class: " + v._2)
+                logger.info("...of class: " + v._2)
                 listOfPredicatesForQuery += "?mp rr:subjectMap ?sm . ?sm rr:class " + v._2 + " . "
 
             } else {
@@ -129,10 +164,52 @@ class Mapper (mappingsFile: String) {
                 listOfPredicatesForQuery +
             "}"
 
-        println("...for this, the following query will be executed: " + queryString + " on " + mappingsFile)
+        logger.info("...for this, the following query will be executed: " + queryString + " on " + mappingsFile)
         val query = QueryFactory.create(queryString)
 
-        val in = FileManager.get().open(mappingsFile)
+        var mappingsString = ""
+        if (mappingsFile.startsWith("hdfs://")) {
+            val host_port = mappingsFile.split("/")(2).split(":")
+            val host = host_port(0)
+            val port = host_port(1)
+            val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+            val path = new org.apache.hadoop.fs.Path(mappingsFile)
+            val stream = hdfs.open(path)
+
+            def readLines = scala.io.Source.fromInputStream(stream)
+
+            mappingsString = readLines.mkString
+        } else if (mappingsFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
+            val bucket_key = mappingsFile.replace("s3://", "").split("/")
+            val bucket = bucket_key.apply(0) // apply(x) = (x)
+            val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
+
+            import com.amazonaws.services.s3.AmazonS3Client
+            import com.amazonaws.services.s3.model.GetObjectRequest
+            import java.io.BufferedReader
+            import java.io.InputStreamReader
+            import scala.collection.JavaConverters._
+
+            val s3 = new AmazonS3Client
+
+            val s3object = s3.getObject(new GetObjectRequest(bucket, key))
+
+            val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
+            val lines = new ArrayBuffer[String].asJava
+            var line: String = null
+            while ({line = reader.readLine; line != null}) {
+              lines.add(line)
+            }
+            reader.close()
+
+            mappingsString = lines.asScala.mkString("\n")
+        } else {
+            var mappings = scala.io.Source.fromFile(mappingsFile)
+            mappingsString = try mappings.mkString finally mappings.close()
+        }
+
+        val in = new ByteArrayInputStream(mappingsString.getBytes)
+
         if (in == null) {
             throw new IllegalArgumentException("ERROR: File: " + queryString + " not found")
         }
@@ -149,9 +226,9 @@ class Mapper (mappingsFile: String) {
             val src = soln.get("src").toString
             val srcType = soln.get("type").toString
 
-            println(">>> Relevant source detected [" + src + "] of type [" + srcType + "]")
+            logger.info(">>> Relevant source detected [" + src + "] of type [" + srcType + "]")
 
-            val pred_attr: HashMap[String, String] = HashMap()
+            val pred_attr: mutable.HashMap[String, String] = mutable.HashMap()
 
             for (p <- listOfPredicates) {
 

@@ -4,7 +4,7 @@
 
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-datalake-parent_2.11</artifactId>
-	<version>0.1.0</version>
+	<version>0.1.1</version>
 	<packaging>pom</packaging>
 
 	<name>SANSA Stack - DataLake Layer - Parent</name>
@@ -27,7 +27,7 @@
 		<scala.binary.version>2.11</scala.binary.version>
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<spark.version>2.4.0</spark.version>
+		<spark.version>2.4.3</spark.version>
 		<jena.version>3.9.0</jena.version>
 
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
@@ -176,12 +176,6 @@
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-arq</artifactId>
 				<version>${jena.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.typesafe.scala-logging</groupId>
-				<artifactId>scala-logging_${scala.binary.version}</artifactId>
-				<version>3.5.0</version>
 			</dependency>
 
 			<dependency>
@@ -510,7 +504,7 @@
 					</configuration>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>

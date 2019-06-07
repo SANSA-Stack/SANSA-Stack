@@ -3,7 +3,7 @@ package net.sansa_stack.datalake.spark
 import java.util
 
 import com.google.common.collect.ArrayListMultimap
-
+import com.typesafe.scalalogging.Logger
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, ListBuffer, Set}
 
@@ -12,20 +12,22 @@ import scala.collection.mutable.{HashMap, ListBuffer, Set}
   */
 trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
 
-    /* Generates a ParSet with the number of filters (on predicates) in the star */
-    def query(sources : Set[(HashMap[String, String], String, String)],
-              optionsMap: HashMap[String, (Map[String, String],String)],
-              toJoinWith: Boolean,
-              star: String,
-              prefixes: Map[String, String],
-              select: util.List[String],
-              star_predicate_var: mutable.HashMap[(String, String), String],
-              neededPredicates: Set[String],
-              filters: ArrayListMultimap[String, (String, String)],
-              leftJoinTransformations: (String, Array[String]),
-              rightJoinTransformations: Array[String],
-              joinPairs: Map[(String,String), String]
-             ) : (T, Integer)
+  val logger = Logger("SANSA-DataLake")
+
+  /* Generates a ParSet with the number of filters (on predicates) in the star */
+  def query(sources : Set[(HashMap[String, String], String, String)],
+            optionsMap: HashMap[String, (Map[String, String], String)],
+            toJoinWith: Boolean,
+            star: String,
+            prefixes: Map[String, String],
+            select: util.List[String],
+            star_predicate_var: mutable.HashMap[(String, String), String],
+            neededPredicates: Set[String],
+            filters: ArrayListMultimap[String, (String, String)],
+            leftJoinTransformations: (String, Array[String]),
+            rightJoinTransformations: Array[String],
+            joinPairs: Map[(String, String), String]
+            ) : (T, Integer)
 
     /* Transforms a ParSet to another ParSet based on the SPARQL TRANSFORM clause */
     def transform(ps: Any, column: String, transformationsArray : Array[String]): Any

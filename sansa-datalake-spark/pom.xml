@@ -7,16 +7,14 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-datalake-parent_2.11</artifactId>
-		<version>0.1.0</version>
+		<version>0.1.1</version>
 	</parent>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_${scala.binary.version}</artifactId>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
@@ -43,7 +41,6 @@
 			<artifactId>spark-mllib_2.11</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
 
 		<!-- Test -->
 		<dependency>
@@ -86,12 +83,6 @@
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging_${scala.binary.version}</artifactId>
-		</dependency>
-
 
 		<dependency>
 			<groupId>com.typesafe</groupId>
@@ -140,6 +131,25 @@
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>1.9.6</version>
+		</dependency>
+
+		<!-- Loggings -->
+		<dependency>
+          <groupId>com.typesafe.scala-logging</groupId>
+          <artifactId>scala-logging_${scala.binary.version}</artifactId>
+          <version>3.9.0</version>
+	    </dependency>
+
+	    <dependency>
+		    <groupId>ch.qos.logback</groupId>
+		    <artifactId>logback-classic</artifactId>
+		   <version>1.2.3</version>
+		    <scope>test</scope>
+	    </dependency>
 	</dependencies>
 
 	<build>

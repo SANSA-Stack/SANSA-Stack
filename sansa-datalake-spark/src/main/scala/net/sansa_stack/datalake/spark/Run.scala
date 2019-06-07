@@ -2,13 +2,14 @@ package net.sansa_stack.datalake.spark
 
 import java.io.FileNotFoundException
 
-import org.apache.commons.lang.time.StopWatch
-import org.apache.log4j.{ Level, Logger }
+import com.typesafe.scalalogging.Logger
 import net.sansa_stack.datalake.spark.utils.Helpers._
-
-import scala.collection.JavaConversions._
-import scala.collection.mutable
+import org.apache.commons.lang.time.StopWatch
 import org.apache.spark.sql.DataFrame
+import scala.collection.JavaConverters._
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+
 
 /**
  * Created by mmami on 26.01.17.
@@ -16,26 +17,56 @@ import org.apache.spark.sql.DataFrame
 class Run[A](executor: QueryExecutor[A]) {
 
   private var finalDataSet: A = _
-  val logger = Logger.getLogger(this.getClass.getName.stripSuffix("$"))
 
   def application(queryFile: String, mappingsFile: String, configFile: String): DataFrame = {
 
-    Logger.getLogger("ac.biu.nlp.nlp.engineml").setLevel(Level.OFF)
-    Logger.getLogger("org.BIU.utils.logging.ExperimentLogger").setLevel(Level.OFF)
-    Logger.getRootLogger.setLevel(Level.OFF)
-
-    Logger.getLogger("org").setLevel(Level.ERROR)
-    Logger.getLogger("akka").setLevel(Level.ERROR)
+    val logger = Logger("SANSA-DataLake")
 
     // 1. Read SPARQL query
-    println("\n/*******************************************************************/")
-    println("/*                         QUERY ANALYSIS                          */")
-    println("/*******************************************************************/")
+    logger.info("QUERY ANALYSIS startigng...")
 
     try {
+      var query = ""
+      if (queryFile.startsWith("hdfs://")) {
+        val host_port = queryFile.split("/")(2).split(":")
+        val host = host_port(0)
+        val port = host_port(1)
+        val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
+        val path = new org.apache.hadoop.fs.Path(queryFile)
+        val stream = hdfs.open(path)
+        def readLines = scala.io.Source.fromInputStream(stream)
 
-      val queryString = scala.io.Source.fromFile(queryFile)
-      var query = try queryString.mkString finally queryString.close()
+        query = readLines.mkString
+      } else if (queryFile.startsWith("s3")) { // E.g., s3://sansa-datalake/Q1.sparql
+        val bucket_key = queryFile.replace("s3://", "").split("/")
+
+        val bucket = bucket_key.apply(0) // apply(x) = (x)
+        val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
+
+        import com.amazonaws.services.s3.AmazonS3Client
+        import com.amazonaws.services.s3.model.GetObjectRequest
+        import java.io.BufferedReader
+        import java.io.InputStreamReader
+
+        val s3 = new AmazonS3Client
+        val s3object = s3.getObject(new GetObjectRequest(bucket, key))
+
+        val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
+        val lines = new ArrayBuffer[String]().asJava
+        var line: String = null
+        while ({line = reader.readLine; line != null}) {
+          lines.add(line)
+        }
+        reader.close()
+        lines.toArray
+
+        query = lines.asScala.mkString("\n")
+      } else {
+          val queryFromFile = scala.io.Source.fromFile(queryFile)
+          query = try queryFromFile.mkString finally queryFromFile.close()
+      }
+
+      println(s"Going to execute the query:\n$query")
 
       // Transformations
       var transformExist = false
@@ -65,7 +96,7 @@ class Run[A](executor: QueryExecutor[A]) {
         }
       }
 
-      println(s"predicateStar: $variablePredicateStar")
+      logger.info(s"predicateStar: $variablePredicateStar")
 
       val prefixes = qa.getPrefixes
       val (select, distinct) = qa.getProject
@@ -74,17 +105,15 @@ class Run[A](executor: QueryExecutor[A]) {
       val groupBys = qa.getGroupBy(variablePredicateStar, prefixes)
 
       var limit: Int = 0
-      if (qa.hasLimit) limit = qa.getLimit()
+      if (qa.hasLimit) limit = qa.getLimit
 
-      println("\n- Predicates per star:")
+      logger.info("- Predicates per star:")
 
       val star_predicate_var = stars._2 // TODO: assuming no (star,predicate) with two vars?
-      println("star_predicate_var: " + star_predicate_var)
+      logger.info("star_predicate_var: " + star_predicate_var)
 
       // 3. Generate plan of joins
-      println("\n/*******************************************************************/")
-      println("/*                  PLAN GENERATION & MAPPINGS                     */")
-      println("/*******************************************************************/")
+      logger.info("PLAN GENERATION & MAPPINGS starting...")
       val pl = new Planner(stars._1)
       val pln = pl.generateJoinPlan
       val joins = pln._1
@@ -96,10 +125,10 @@ class Run[A](executor: QueryExecutor[A]) {
       val neededPredicatesAll = neededPredicates._1 // all predicates used
       val neededPredicatesSelect = neededPredicates._2 // only projected out predicates
 
-      println("--> Needed predicates all: " + neededPredicatesAll)
+      logger.info("--> Needed predicates all: " + neededPredicatesAll)
 
       // 4. Check mapping file
-      println("---> MAPPING CONSULTATION")
+      logger.info("---> MAPPING CONSULTATION")
 
       val mappers = new Mapper(mappingsFile)
       val results = mappers.findDataSources(stars._1, configFile)
@@ -109,7 +138,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
       var starDataTypesMap: Map[String, mutable.Set[String]] = Map()
 
-      println("\n---> GOING NOW TO JOIN STUFF")
+      logger.info("---> GOING NOW TO JOIN STUFF")
       for (s <- results) {
         val star = s._1
         val datasources = s._2
@@ -119,7 +148,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
         starDataTypesMap += (star -> dataTypes)
 
-        println("* Getting DF relevant to the star: " + star)
+        logger.info("* Getting DF relevant to the star: " + star)
 
         // Transformations
         var leftJoinTransformations: (String, Array[String]) = null
@@ -136,62 +165,65 @@ class Run[A](executor: QueryExecutor[A]) {
             // Get the predicate of the join
             val joinLeftPredicate = joinPairs((str, rightOperand))
             leftJoinTransformations = (joinLeftPredicate, ops)
-            println("Transform (left) on predicate " + joinLeftPredicate + " using " + ops.mkString("_"))
+            logger.info("Transform (left) on predicate " + joinLeftPredicate + " using " + ops.mkString("_"))
           }
 
           if (transmap_right.keySet.contains(str)) {
             rightJoinTransformations = transmap_right(str)
-            println("Transform (right) ID using " + rightJoinTransformations.mkString("..."))
+            logger.info("Transform (right) ID using " + rightJoinTransformations.mkString("..."))
           }
         }
 
         if (joinedToFlag.contains(star) || joinedFromFlag.contains(star)) {
-          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, true, star, prefixes, select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations, joinPairs)
+          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, toJoinWith = true, star, prefixes,
+            select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations,
+            joinPairs)
 
           star_df += (star -> ds) // DataFrame representing a star
 
           starNbrFilters += star -> numberOfFiltersOfThisStar
 
-          println("...with DataFrame schema: " + ds)
+          logger.info("...with DataFrame schema: " + ds)
         } else if (!joinedToFlag.contains(star) && !joinedFromFlag.contains(star)) {
-          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, false, star, prefixes, select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations, joinPairs)
+          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, toJoinWith = false, star, prefixes,
+            select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations,
+            joinPairs)
 
           star_df += (star -> ds) // DataFrame representing a star
 
           starNbrFilters += star -> numberOfFiltersOfThisStar
 
-          println("...with DataFrame schema: " + ds)
+          logger.info("...with DataFrame schema: " + ds)
         }
       }
 
-      println("\n/*******************************************************************/")
-      println("/*                         QUERY EXECUTION                         */")
-      println("/*******************************************************************/")
-      println(s"- Here are the (Star, ParSet) pairs: \n $star_df")
-      println(s"- Here are join pairs: $joins")
-      println(s"- Number of predicates per star: $starNbrFilters ")
+      logger.info("QUERY EXECUTION...")
+      logger.info("- Here are the (Star, ParSet) pairs:")
+      logger.info(s"  $star_df")
+      logger.info(s"- Here are join pairs: $joins")
+      logger.info(s"- Number of predicates per star: $starNbrFilters ")
 
       val starWeights = pl.sortStarsByWeight(starDataTypesMap, starNbrFilters, configFile)
-      println(s"- Stars weighted (performance + nbr of filters): $starWeights \n")
+      logger.info(s"- Stars weighted (performance + nbr of filters): $starWeights")
 
       val sortedScoredJoins = pl.reorder(joins, starDataTypesMap, starNbrFilters, starWeights, configFile)
-      println(s"- Sorted scored joins: $sortedScoredJoins")
+      logger.info(s"- Sorted scored joins: $sortedScoredJoins")
       val startingJoin = sortedScoredJoins.head
 
       // Convert starting join to: (leftStar, (rightStar, joinVar)) so we can remove it from $joins
       var firstJoin: (String, (String, String)) = null
-      for (j <- joins.entries) {
+      for (j <- joins.entries.asScala) {
         if (j.getKey == startingJoin._1._1 && j.getValue._1 == startingJoin._1._2) {
           firstJoin = startingJoin._1._1 -> (startingJoin._1._2, j.getValue._2)
         }
       }
-      println(s"- Starting join: $firstJoin \n")
+      logger.info(s"- Starting join: $firstJoin")
 
       finalDataSet = executor.join(joins, prefixes, star_df)
 
       // Project out columns from the final global join results
       var columnNames = Seq[String]()
-      println(s"\n--> Needed predicates select: $neededPredicatesSelect")
+      logger.info(s"--> Needed predicates select: $neededPredicatesSelect")
       for (i <- neededPredicatesSelect) {
         val star = i._1
         val ns_predicate = i._2
@@ -202,20 +234,20 @@ class Run[A](executor: QueryExecutor[A]) {
       }
 
       if (groupBys != null) {
-        println(s"groupBys: $groupBys")
+        logger.info(s"groupBys: $groupBys")
         finalDataSet = executor.groupBy(finalDataSet, groupBys)
 
         // Add aggregation columns to the final project ones
         for (gb <- groupBys._2) {
-          println("-> Add to Project list:" + gb._2)
+          logger.info("-> Add to Project list:" + gb._2)
           columnNames = columnNames :+ gb._2 + "(" + gb._1 + ")"
         }
       }
 
-      println(s"SELECTED column names: $columnNames")
+      logger.info(s"SELECTED column names: $columnNames")
 
       if (orderBys != null) {
-        println(s"orderBys: $orderBys")
+        logger.info(s"orderBys: $orderBys")
 
         var orderByList: Set[(String, String)] = Set()
         for (o <- orderBys) {
@@ -227,7 +259,7 @@ class Run[A](executor: QueryExecutor[A]) {
           orderByList += ((column, orderDirection))
         }
 
-        println(s"ORDER BY list: $orderByList (-1 ASC, -2 DESC)")
+        logger.info(s"ORDER BY list: $orderByList (-1 ASC, -2 DESC)")
 
         for (o <- orderByList) {
           val variable = o._1
@@ -237,49 +269,61 @@ class Run[A](executor: QueryExecutor[A]) {
         }
       }
 
-      println("|__ Has distinct? " + distinct)
+      logger.info("|__ Has distinct? " + distinct)
       finalDataSet = executor.project(finalDataSet, columnNames, distinct)
 
       if (limit > 0) finalDataSet = executor.limit(finalDataSet, limit)
 
-      println("- Final results schema: ")
+      logger.info("- Final results schema: ")
 
       val stopwatch: StopWatch = new StopWatch
-      stopwatch.start
+      stopwatch.start()
 
       executor.run(finalDataSet)
 
-      stopwatch.stop
+      stopwatch.stop()
 
       val timeTaken = stopwatch.getTime
 
-      println(s"timeTaken: $timeTaken")
+      println(s"Time of query execution: $timeTaken ms")
 
       finalDataSet.asInstanceOf[DataFrame]
 
     } catch {
       case ex : FileNotFoundException =>
-        println("ERROR: One of input files ins't found.")
+        println("ERROR: One of input files ins't found." + ex.getStackTrace)
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : org.apache.jena.riot.RiotException =>
-        println("ERROR: invalid Mappings, check syntax.")
+        println("ERROR: invalid Mappings. Check syntax. (Report it: " + ex + ").")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : org.apache.spark.SparkException =>
-        println("ERROR: invalid Spark Master.")
+        println("ERROR: invalid Spark Master. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : com.fasterxml.jackson.core.JsonParseException =>
-        println("ERROR: invalid JSON content in config file.")
+        println("ERROR: invalid JSON content in config file. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : java.lang.IllegalArgumentException =>
-        println("ERROR: invalid mappings.")
+        println("ERROR: invalid mappings. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
         null
 
       case ex : org.apache.jena.query.QueryParseException =>
-        println("ERROR: invalid query.")
+        println("ERROR: invalid query. (Report it: " + ex + ")")
+        logger.debug(ex.getStackTraceString)
+        null
+
+      case ex : com.amazonaws.services.s3.model.AmazonS3Exception =>
+        println(ex.getStackTraceString)
+        println("ERROR: Access to Amazon S3 denied. Check bucket name and key. Check you have ~/.aws/credentials file " +
+          "with the correct content: \n[default]\naws_access_key_id=...\naws_secret_access_key=...")
         null
     }
   }

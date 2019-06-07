@@ -17,7 +17,6 @@ object Main extends App {
     val hadoopConfig = spark.conf
 
     val executor : SparkExecutor = new SparkExecutor(spark, mappingsFile)
-    // val finalResults = executor.getType()
 
     val run = new Run[DataFrame](executor)
     run.application(queryFile, mappingsFile, configFile)
