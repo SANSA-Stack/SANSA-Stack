@@ -52,7 +52,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-table_${scala.binary.version}</artifactId>
+			<artifactId>flink-table-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-planner_${scala.binary.version}</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-api-scala_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Apache JENA 3.x -->
