@@ -90,6 +90,14 @@ Var         := "?string"
 Modifiers   := (LIMITk)? (ORDER BY(ASC|DESC)? Var)? (GROUP BYVar+)?
 ```
 
+### File Storage format
+The previous three files can be stored either locally, in HDFS on in an AWS S3 bucket. For the latter, make sure to have your credentials ([see](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html)) stored in ~/.aws/credentials (C:\Users\USERNAME\.aws\credentials on Windows), in the following form:
+```
+[default]
+aws_access_key_id=...
+aws_secret_access_key=...
+```
+
 ## Usage
 The usage of the Semantic Data Lake is documented under the respective SANSA-Query [datalake component](https://github.com/SANSA-Stack/SANSA-Query/tree/develop/sansa-query-spark/src/main/scala/net/sansa_stack/query/spark/datalake).
 

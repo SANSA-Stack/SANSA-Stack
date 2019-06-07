@@ -4,15 +4,12 @@ import java.util
 
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
-
+import net.sansa_stack.datalake.spark.utils.Helpers._
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.syntax.{ElementFilter, ElementVisitorBase, ElementWalker}
-
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
-import scala.collection.JavaConversions._
-
-import net.sansa_stack.datalake.spark.utils.Helpers._
 
 /**
   * Created by mmami on 05.07.17.
@@ -24,7 +21,7 @@ class QueryAnalyser(query: String) {
 
     def getPrefixes : Map[String, String] = {
         val q = QueryFactory.create(query)
-        val prolog = q.getPrologue().getPrefixMapping.getNsPrefixMap
+        val prolog = q.getPrologue.getPrefixMapping.getNsPrefixMap
 
         val prefix: Map[String, String] = invertMap(prolog)
 
@@ -61,9 +58,9 @@ class QueryAnalyser(query: String) {
         filters
     }
 
-    def getOrderBy = {
+    def getOrderBy: mutable.Set[(String, String)] = {
         val q = QueryFactory.create(query)
-        var orderBys : Set[(String,String)] = Set()
+        var orderBys : Set[(String, String)] = Set()
 
         if (q.hasOrderBy) {
             val orderBy = q.getOrderBy.iterator()
@@ -78,23 +75,23 @@ class QueryAnalyser(query: String) {
         orderBys
     }
 
-    def getGroupBy(variablePredicateStar: Map[String, (String, String)], prefixes: Map[String, String]) = {
+    def getGroupBy(variablePredicateStar: Map[String, (String, String)], prefixes: Map[String, String]): (ListBuffer[String], mutable.Set[(String, String)]) = {
         val q = QueryFactory.create(query)
         val groupByCols : ListBuffer[String] = ListBuffer()
-        var aggregationFunctions : Set[(String,String)] = Set()
+        var aggregationFunctions : Set[(String, String)] = Set()
 
         if (q.hasGroupBy) {
-            val groupByVars = q.getGroupBy.getVars.toList
+            val groupByVars = q.getGroupBy.getVars.asScala.toList
             for (gbv <- groupByVars) {
                 val str = variablePredicateStar(gbv.toString())._1
                 val vr = variablePredicateStar(gbv.toString())._2
                 val ns_p = get_NS_predicate(vr)
                 val column = omitQuestionMark(str) + "_" + ns_p._2 + "_" + prefixes(ns_p._1)
 
-                groupByCols.add(column)
+                groupByCols.asJava.add(column)
             }
 
-            val agg = q.getAggregators
+            val agg = q.getAggregators.asScala
             logger.info("agg: " + agg)
             for(ag <- agg) { // toPrefixString returns (aggregate_function aggregate_var) eg. (sum ?price)
                 val bits = ag.getAggregator.toPrefixString.split(" ")
@@ -114,7 +111,7 @@ class QueryAnalyser(query: String) {
 
     }
 
-    def getStars : (mutable.HashMap[String, mutable.Set[(String, String)]] with mutable.MultiMap[String, (String, String)], mutable.HashMap[(String,String), String]) = {
+    def getStars : (mutable.HashMap[String, mutable.Set[(String, String)]] with mutable.MultiMap[String, (String, String)], mutable.HashMap[(String, String), String]) = {
 
         val q = QueryFactory.create(query)
         val originalBGP = q.getQueryPattern.toString
@@ -125,11 +122,11 @@ class QueryAnalyser(query: String) {
         logger.info("\n- The BGP of the input query:  " + originalBGP)
         logger.info("\n- Number of triple-stars detected: " + tps.length)
 
-        val stars = new HashMap[String, Set[Tuple2[String,String]]] with MultiMap[String, Tuple2[String,String]]
+        val stars = new HashMap[String, Set[Tuple2[String, String]]] with MultiMap[String, Tuple2[String, String]]
         // Multi-map to add/append elements to the value
 
         // Save [star]_[predicate]
-        val star_pred_var : HashMap[(String,String), String] = HashMap()
+        val star_pred_var : HashMap[(String, String), String] = HashMap()
 
         for (i <- tps.indices) { // i <- 0 until tps.length
             val triple = tps(i).trim
@@ -162,29 +159,30 @@ class QueryAnalyser(query: String) {
         (stars, star_pred_var)
     }
 
-    def getTransformations (trans: String) = {
+    def getTransformations (trans: String): (Map[String, (String, Array[String])], Map[String, Array[String]]) = {
         // Transformations
         val transformations = trans.trim().substring(1).split("&&") // E.g. [?k?a.l.+60, ?a?l.r.toInt]
-        var transmap_left : Map[String,(String, Array[String])] = Map.empty
-        var transmap_right : Map[String,Array[String]] = Map.empty
+        var transmap_left : Map[String, (String, Array[String])] = Map.empty
+        var transmap_right : Map[String, Array[String]] = Map.empty
         for (t <- transformations) { // E.g. ?a?l.r.toInt.scl[61]
             val tbits = t.trim.split("\\.", 2) // E.g.[?a?l, r.toInt.scl(_+61)]
-            val vars = tbits(0).substring(1).split("\\?") // [a, l]
-            val operation = tbits(1) // E.g. r.toInt.scl(_+60)
-            val temp = operation.split("\\.", 2) // E.g. [r, toInt.scl(_+61)]
-            val lORr = temp(0) // E.g. r
-            val functions = temp(1).split("\\.") // E.g. [toInt, scl(_+61)]
-            if (lORr == "l")
+        val vars = tbits(0).substring(1).split("\\?") // [a, l]
+        val operation = tbits(1) // E.g. r.toInt.scl(_+60)
+        val temp = operation.split("\\.", 2) // E.g. [r, toInt.scl(_+61)]
+        val lORr = temp(0) // E.g. r
+        val functions = temp(1).split("\\.") // E.g. [toInt, scl(_+61)]
+            if (lORr == "l") {
                 transmap_left += (vars(0) -> (vars(1), functions))
-            else
+            } else {
                 transmap_right += (vars(1) -> functions)
-        }
+            }
 
+        }
         (transmap_left, transmap_right)
     }
 
     def hasLimit: Boolean = QueryFactory.create(query).hasLimit
 
-    def getLimit() = QueryFactory.create(query).getLimit.toInt
+    def getLimit: Int = QueryFactory.create(query).getLimit.toInt
 
 }

@@ -1,13 +1,11 @@
 package net.sansa_stack.datalake.spark.utils
 
-import com.typesafe.scalalogging.Logger
-import java.util
 import java.io.ByteArrayInputStream
+import java.util
 
+import com.typesafe.scalalogging.Logger
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.util.FileManager
-
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -31,11 +29,11 @@ object Helpers {
         star_df
     }
 
-    def omitQuestionMark(str: String): String = str.replace("?","")
+    def omitQuestionMark(str: String): String = str.replace("?", "")
 
 
     def omitNamespace(URI: String): String = {
-        val URIBits = URI.replace("<","").replace(">","").replace("#","/").split("/")
+        val URIBits = URI.replace("<", "").replace(">", "").replace("#", "/").split("/")
         URIBits(URIBits.length-1)
     }
 
@@ -45,7 +43,7 @@ object Helpers {
 
     def get_NS_predicate(predicateURI: String): (String, String) = {
 
-        val url = predicateURI.replace("<","").replace(">","")
+        val url = predicateURI.replace("<", "").replace(">", "")
         val URIBits = url.split("/")
 
         var pred = ""
@@ -57,18 +55,18 @@ object Helpers {
 
         val ns = url.replace(pred, "")
 
-        (ns,pred)
+        (ns, pred)
     }
 
     def getTypeFromURI(typeURI: String) : String = {
-        var dataType = typeURI.split("#") // from nosql ns
+        val dataType = typeURI.split("#") // from nosql ns
 
-        var rtrn = dataType(dataType.length-1)
+        val rtrn = dataType(dataType.length-1)
 
         rtrn
     }
 
-    def getSelectColumnsFromSet(pred_attr: mutable.HashMap[String,String],
+    def getSelectColumnsFromSet(pred_attr: mutable.HashMap[String, String],
                                 star: String,
                                 prefixes: Map[String, String],
                                 select: util.List[String],
@@ -89,7 +87,7 @@ object Helpers {
 
             val objVar = star_predicate_var(("?" + star, "<" + NS + predicate + ">"))
 
-            logger.info("-> Variable: " + objVar + " exists in WHERE, is it in SELECT? " + select.contains(objVar.replace("?","")))
+            logger.info("-> Variable: " + objVar + " exists in WHERE, is it in SELECT? " + select.contains(objVar.replace("?", "")))
 
             if (neededPredicates.contains(v._1)) {
                 val c = attr + " AS `" + star + "_" + predicate + "_" + prefixes(NS) + "`"
@@ -126,7 +124,7 @@ object Helpers {
 
             mappingsString = readLines.mkString
         } else if (mappingsFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
-            val bucket_key = mappingsFile.replace("s3://","").split("/")
+            val bucket_key = mappingsFile.replace("s3://", "").split("/")
             val bucket = bucket_key.apply(0) // apply(x) = (x)
             val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
 
@@ -134,7 +132,7 @@ object Helpers {
             import com.amazonaws.services.s3.model.GetObjectRequest
             import java.io.BufferedReader
             import java.io.InputStreamReader
-            import scala.collection.JavaConversions._
+            import scala.collection.JavaConverters._
 
             val s3 = new AmazonS3Client
 
@@ -144,7 +142,7 @@ object Helpers {
             val lines = new ArrayBuffer[String]()
             var line: String = null
             while ({line = reader.readLine; line != null}) {
-                lines.add(line)
+                lines.asJava.add(line)
             }
             reader.close()
 
@@ -156,32 +154,33 @@ object Helpers {
 
         val in = new ByteArrayInputStream(mappingsString.getBytes)
 
-        var model = ModelFactory.createDefaultModel()
+        val model = ModelFactory.createDefaultModel()
         model.read(in, null, "TURTLE")
 
         var id = ""
 
-        var query1 = QueryFactory.create(getID)
-        var qe1 = QueryExecutionFactory.create(query1, model)
-        var results1 = qe1.execSelect()
+        val query1 = QueryFactory.create(getID)
+        val qe1 = QueryExecutionFactory.create(query1, model)
+        val results1 = qe1.execSelect()
         while (results1.hasNext) {
-            var soln1 = results1.nextSolution()
-            var template = soln1.get("t").toString
+            val soln1 = results1.nextSolution()
+            val template = soln1.get("t").toString
 
-            var templateBits = template.split("/")
-            id = templateBits(templateBits.length-1).replace("{","").replace("}","")
+            val templateBits = template.split("/")
+            id = templateBits(templateBits.length-1).replace("{", "").replace("}", "")
         }
 
         id
     }
 
-    def makeMongoURI(uri: String, database: String, collection: String, options: String) = {
-        if(options == null)
-            s"mongodb://${uri}/${database}.${collection}"
-        else
-            s"mongodb://${uri}/${database}.${collection}?${options}"
-        //mongodb://db1.example.net,db2.example.net:27002,db3.example.net:27003/?db_name&replicaSet=YourReplicaSetName
-        //mongodb://172.18.160.16,172.18.160.17,172.18.160.18/db.offer?replicaSet=mongo-rs
+    def makeMongoURI(uri: String, database: String, collection: String, options: String): String = {
+        if (options == null) {
+            s"mongodb://$uri/$database.$collection"
+        } else {
+            s"mongodb://$uri/$database.$collection?$options"
+        }
+        // mongodb://db1.example.net,db2.example.net:27002,db3.example.net:27003/?db_name&replicaSet=YourReplicaSetName
+        // mongodb://172.18.160.16,172.18.160.17,172.18.160.18/db.offer?replicaSet=mongo-rs
     }
 
 }

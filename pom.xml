@@ -27,7 +27,7 @@
 		<scala.binary.version>2.11</scala.binary.version>
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<spark.version>2.4.0</spark.version>
+		<spark.version>2.4.3</spark.version>
 		<jena.version>3.9.0</jena.version>
 
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>

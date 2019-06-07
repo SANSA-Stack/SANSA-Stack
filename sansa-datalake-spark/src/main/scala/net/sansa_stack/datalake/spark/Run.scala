@@ -1,15 +1,15 @@
 package net.sansa_stack.datalake.spark
 
-import com.typesafe.scalalogging.Logger
 import java.io.FileNotFoundException
 
+import com.typesafe.scalalogging.Logger
+import net.sansa_stack.datalake.spark.utils.Helpers._
 import org.apache.commons.lang.time.StopWatch
 import org.apache.spark.sql.DataFrame
-import net.sansa_stack.datalake.spark.utils.Helpers._
-
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+
 
 /**
  * Created by mmami on 26.01.17.
@@ -38,7 +38,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
         query = readLines.mkString
       } else if (queryFile.startsWith("s3")) { // E.g., s3://sansa-datalake/Q1.sparql
-        val bucket_key = queryFile.replace("s3://","").split("/")
+        val bucket_key = queryFile.replace("s3://", "").split("/")
 
         val bucket = bucket_key.apply(0) // apply(x) = (x)
         val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
@@ -47,13 +47,12 @@ class Run[A](executor: QueryExecutor[A]) {
         import com.amazonaws.services.s3.model.GetObjectRequest
         import java.io.BufferedReader
         import java.io.InputStreamReader
-        import scala.collection.JavaConversions._
 
         val s3 = new AmazonS3Client
         val s3object = s3.getObject(new GetObjectRequest(bucket, key))
 
         val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-        val lines = new ArrayBuffer[String]()
+        val lines = new ArrayBuffer[String]().asJava
         var line: String = null
         while ({line = reader.readLine; line != null}) {
           lines.add(line)
@@ -61,9 +60,9 @@ class Run[A](executor: QueryExecutor[A]) {
         reader.close()
         lines.toArray
 
-        query = lines.mkString("\n")
+        query = lines.asScala.mkString("\n")
       } else {
-          var queryFromFile = scala.io.Source.fromFile(queryFile)
+          val queryFromFile = scala.io.Source.fromFile(queryFile)
           query = try queryFromFile.mkString finally queryFromFile.close()
       }
 
@@ -106,7 +105,7 @@ class Run[A](executor: QueryExecutor[A]) {
       val groupBys = qa.getGroupBy(variablePredicateStar, prefixes)
 
       var limit: Int = 0
-      if (qa.hasLimit) limit = qa.getLimit()
+      if (qa.hasLimit) limit = qa.getLimit
 
       logger.info("- Predicates per star:")
 
@@ -176,7 +175,9 @@ class Run[A](executor: QueryExecutor[A]) {
         }
 
         if (joinedToFlag.contains(star) || joinedFromFlag.contains(star)) {
-          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, true, star, prefixes, select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations, joinPairs)
+          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, toJoinWith = true, star, prefixes,
+            select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations,
+            joinPairs)
 
           star_df += (star -> ds) // DataFrame representing a star
 
@@ -184,7 +185,9 @@ class Run[A](executor: QueryExecutor[A]) {
 
           logger.info("...with DataFrame schema: " + ds)
         } else if (!joinedToFlag.contains(star) && !joinedFromFlag.contains(star)) {
-          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, false, star, prefixes, select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations, joinPairs)
+          val (ds, numberOfFiltersOfThisStar) = executor.query(datasources, options, toJoinWith = false, star, prefixes,
+            select, star_predicate_var, neededPredicatesAll, filters, leftJoinTransformations, rightJoinTransformations,
+            joinPairs)
 
           star_df += (star -> ds) // DataFrame representing a star
 
@@ -209,7 +212,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
       // Convert starting join to: (leftStar, (rightStar, joinVar)) so we can remove it from $joins
       var firstJoin: (String, (String, String)) = null
-      for (j <- joins.entries) {
+      for (j <- joins.entries.asScala) {
         if (j.getKey == startingJoin._1._1 && j.getValue._1 == startingJoin._1._2) {
           firstJoin = startingJoin._1._1 -> (startingJoin._1._2, j.getValue._2)
         }
@@ -274,11 +277,11 @@ class Run[A](executor: QueryExecutor[A]) {
       logger.info("- Final results schema: ")
 
       val stopwatch: StopWatch = new StopWatch
-      stopwatch.start
+      stopwatch.start()
 
       executor.run(finalDataSet)
 
-      stopwatch.stop
+      stopwatch.stop()
 
       val timeTaken = stopwatch.getTime
 
@@ -288,7 +291,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
     } catch {
       case ex : FileNotFoundException =>
-        println("ERROR: One of input files ins't found." + ex.getStackTraceString)
+        println("ERROR: One of input files ins't found." + ex.getStackTrace)
         logger.debug(ex.getStackTraceString)
         null
 

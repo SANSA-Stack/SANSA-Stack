@@ -6,5 +6,5 @@ cache:
 scala:
   - 2.11.11
 script:
-#  - mvn scalastyle:check
+  - mvn scalastyle:check
   - mvn test

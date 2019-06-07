@@ -4,7 +4,6 @@ import java.util
 
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
-
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, ListBuffer, Set}
 
@@ -17,7 +16,7 @@ trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
 
   /* Generates a ParSet with the number of filters (on predicates) in the star */
   def query(sources : Set[(HashMap[String, String], String, String)],
-            optionsMap: HashMap[String, (Map[String, String],String)],
+            optionsMap: HashMap[String, (Map[String, String], String)],
             toJoinWith: Boolean,
             star: String,
             prefixes: Map[String, String],
@@ -27,7 +26,7 @@ trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
             filters: ArrayListMultimap[String, (String, String)],
             leftJoinTransformations: (String, Array[String]),
             rightJoinTransformations: Array[String],
-            joinPairs: Map[(String,String), String]
+            joinPairs: Map[(String, String), String]
             ) : (T, Integer)
 
     /* Transforms a ParSet to another ParSet based on the SPARQL TRANSFORM clause */
