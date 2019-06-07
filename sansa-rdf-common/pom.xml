@@ -49,6 +49,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.javakaffee</groupId>
+			<artifactId>kryo-serializers</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
@@ -58,6 +63,11 @@
 			<groupId>org.specs</groupId>
 			<artifactId>specs</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.typesafe</groupId>
+			<artifactId>config</artifactId>
 		</dependency>
 	</dependencies>
 

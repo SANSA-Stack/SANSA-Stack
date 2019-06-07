@@ -1,15 +1,17 @@
-package net.sansa_stack.rdf.spark.qualityassessment.utils
+package net.sansa_stack.rdf.common.qualityassessment.utils
 
 import java.io.IOException
 import java.net.{ HttpURLConnection, MalformedURLException, ProtocolException }
 import java.net.URL
 
-import net.sansa_stack.rdf.spark.qualityassessment.utils.DatasetUtils._
-import net.sansa_stack.rdf.spark.qualityassessment.vocabularies.DQV
-import net.sansa_stack.rdf.spark.utils.StatsPrefixes._
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.vocabulary.RDFS
+import scala.collection.Seq
 import scala.util.matching.Regex
+
+import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
+import net.sansa_stack.rdf.common.qualityassessment.utils.vocabularies.DQV
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.vocabulary.{OWL, RDFS }
+
 
 /**
  * Node Utils.
@@ -144,14 +146,15 @@ object NodeUtils extends Serializable {
 
   def checkLiteral(node: Node): String =
     if (node.isLiteral) node.getLiteralLexicalForm else node.toString()
+
   def isLabeled(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_LABEL)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS.label)
 
   def isRDFSClass(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS_CLASS)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS.Class)
 
   def isOWLClass(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL_CLASS)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL.Class)
 
   def resourceTooLong(node: Node): Boolean =
     (node.getURI().length() >= shortURIThreshold)

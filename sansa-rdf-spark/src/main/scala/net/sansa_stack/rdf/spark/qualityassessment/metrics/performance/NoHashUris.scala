@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics.performance
 
-import net.sansa_stack.rdf.spark.qualityassessment.utils.NodeUtils._
+import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.rdd.RDD
 

@@ -20,7 +20,7 @@ import org.apache.spark.sql.SparkSession
  */
 package object qualityassessment {
 
-  implicit class QualityAssessmentReader(triples: RDD[Triple]) {
+  implicit class QualityAssessmentOperations(triples: RDD[Triple]) {
 
     /**
      * This metric calculates the number of valid redirects of URI.

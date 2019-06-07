@@ -1,5 +1,7 @@
 package net.sansa_stack.rdf.spark.model.graph
 
+import java.nio.file.{ Files, Path, Paths }
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
@@ -7,7 +9,7 @@ import org.scalatest.FunSuite
 
 class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.model.graph._
+  import net.sansa_stack.rdf.spark.model._
 
   test("loading N-Triples file into Graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
@@ -105,5 +107,26 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val cnt = objectsAsLiterals.size()
     assert(cnt == 7)
+  }
+
+  test("converting graph to Json should match") {
+
+    val input = getClass.getResource("/loader/data.nt")
+    val path = input.getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val graph = triples.asGraph()
+
+    // create temp dir
+    val outputDir = Files.createTempDirectory("sansa-graph")
+    outputDir.toFile.deleteOnExit()
+
+    val output = outputDir.toString() + "/data.json"
+    graph.saveGraphToJson(output)
+
+    assert(true)
+
   }
 }
