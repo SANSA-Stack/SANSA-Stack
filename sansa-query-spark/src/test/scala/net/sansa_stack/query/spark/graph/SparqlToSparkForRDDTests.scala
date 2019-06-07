@@ -11,7 +11,7 @@ import org.scalatest.FunSuite
 class TestSparqlToSparkForRDD extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
-  import net.sansa_stack.rdf.spark.model.graph._
+  import net.sansa_stack.rdf.spark.model._
 
   test("bgp matching test") {
     val path = "sansa-query-spark/src/test/resources/S2X.nt"

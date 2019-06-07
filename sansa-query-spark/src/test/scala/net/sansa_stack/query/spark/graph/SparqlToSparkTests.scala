@@ -14,7 +14,7 @@ import org.scalatest.FunSuite
 
 class TestSparqlToSpark extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.model.graph._
+  import net.sansa_stack.rdf.spark.model._
 
   test("read a N-Triple file and convert into a graph with 43 triplets") {
 

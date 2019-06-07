@@ -13,7 +13,7 @@ import net.sansa_stack.rdf.common.partition.core.{ RdfPartition, RdfPartitionDef
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
 import net.sansa_stack.rdf.spark.kryo.sparqlify.RestrictedExprSerializer
-import net.sansa_stack.rdf.spark.utils.kryo.jena.JenaKryoSerializers._
+import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
 import org.aksw.jena_sparql_api.views.RestrictedExpr
