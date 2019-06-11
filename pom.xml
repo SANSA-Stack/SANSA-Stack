@@ -288,18 +288,20 @@
 
 
 			<!-- Benchmarking bsbm and visualization of the results -->
+
 			<dependency>
 				<groupId>org.aksw.bsbm</groupId>
-				<artifactId>bsbm-jsa</artifactId>
-				<version>3.1.2</version>
+				<artifactId>bsbm-core</artifactId>
+				<version>3.1.3-SNAPSHOT</version>
 			</dependency>
 
+<!--
 			<dependency>
 				<groupId>org.aksw.beast</groupId>
 				<artifactId>beast-bundle</artifactId>
 				<version>1.0.0</version>
 			</dependency>
-
+-->
 
 			<dependency>
 				<groupId>com.google.guava</groupId>

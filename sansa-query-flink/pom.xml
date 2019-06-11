@@ -34,11 +34,13 @@
 			<scope>test</scope>
 		</dependency>
 
+
 		<dependency>
 			<groupId>org.aksw.bsbm</groupId>
-			<artifactId>bsbm-jsa</artifactId>
+			<artifactId>bsbm-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>

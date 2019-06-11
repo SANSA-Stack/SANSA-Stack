@@ -53,9 +53,8 @@
 
 		<dependency>
 			<groupId>org.aksw.bsbm</groupId>
-			<artifactId>bsbm-jsa</artifactId>
-			<!-- TODO This dep should become test scope eventually -->
-			<!-- <scope>test</scope> -->
+			<artifactId>bsbm-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Scala -->
