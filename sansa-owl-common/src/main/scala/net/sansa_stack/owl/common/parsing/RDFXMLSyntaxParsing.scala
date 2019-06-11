@@ -1,21 +1,20 @@
 package net.sansa_stack.owl.common.parsing
 
 import java.io._
-import java.util.ArrayList
+import java.util
 
-import scala.collection.immutable.Stream
-import scala.compat.java8.StreamConverters._
-import scala.util.matching.Regex
-
-import collection.JavaConverters._
 import org.apache.jena.rdf.model.{Model, ModelFactory, Statement}
-import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.util.OWLAPIStreamUtils.asList
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
+import scala.collection.JavaConverters._
+import scala.collection.immutable.Stream
+import scala.compat.java8.StreamConverters._
+import scala.util.matching.Regex
 
 
 /**
@@ -42,14 +41,10 @@ trait RDFXMLSyntaxParsing {
 
   private def dataFactory = man.getOWLDataFactory
 
-  val LOGGER: Logger = LoggerFactory.getLogger(classOf[RDFXMLSyntaxExpressionBuilder])
-  // private var obj = OWLObject
+  private val logger: Logger = LoggerFactory.getLogger(classOf[RDFXMLSyntaxExpressionBuilder])
 
-  // private def ontConf = man.getOntologyLoaderConfiguration
-
-  def RecordParse(record: String, prefixes: String): ArrayList[OWLAxiom] = {
-
-    var OWLAxioms = new ArrayList[OWLAxiom]()
+  def parseRecord(record: String, prefixes: String): util.ArrayList[OWLAxiom] = {
+    val owlAxioms = new util.ArrayList[OWLAxiom]()
 
     val model = ModelFactory.createDefaultModel()
     val modelText = "<?xml version=\"1.0\" encoding=\"utf-8\" ?> \n" + prefixes + record + "</rdf:RDF>"
@@ -57,18 +52,18 @@ trait RDFXMLSyntaxParsing {
 
     val iter = model.listStatements()
 
-    while (iter.hasNext()) {
+    while (iter.hasNext) {
       val stmt = iter.next()
       val axiomSet = makeAxiom(stmt).toList.asJavaCollection
-      OWLAxioms.addAll(axiomSet)
+      owlAxioms.addAll(axiomSet)
     }
 
-    OWLAxioms
+    owlAxioms
   }
 
   /**
-    * Builds a snippet conforming to the RDFXML syntax which then can
-    * be parsed by the OWLAPI RDFXML syntax parser.
+    * Builds a snippet conforming to the RDF/XML syntax which then can
+    * be parsed by the OWL API RDF/XML syntax parser.
     * A single expression, e.g.
     *
     * <rdf:RDF
@@ -83,20 +78,16 @@ trait RDFXMLSyntaxParsing {
     * @param st A Statement containing an expression in RDFXML syntax
     * @return The set of axioms corresponding to the expression.
     */
-
   def makeAxiom(st: Statement): Set[OWLAxiom] = {
 
     val model = ModelFactory.createDefaultModel
-
     model.add(st)
 
     val ontology: OWLOntology = getOWLOntology(model)
-
     val axiomSet: Set[OWLAxiom] = ontology.axioms().toScala[Stream].toSet
 
     axiomSet
   }
-
 
   /**
     * To get the corresponding OWLOntology of a certain model
@@ -104,7 +95,6 @@ trait RDFXMLSyntaxParsing {
     * @param model Model
     * @return OWLOntology corresponding to that model
     */
-
   def getOWLOntology(model: Model): OWLOntology = {
     val in = new PipedInputStream
     val o = new PipedOutputStream(in)
@@ -119,140 +109,172 @@ trait RDFXMLSyntaxParsing {
         } catch {
           case e: IOException => e.printStackTrace()
         }
-
       }
     }).start()
-    val ontology: OWLOntology = man.loadOntologyFromOntologyDocument(in)
-    ontology
 
+    val ontology: OWLOntology = man.loadOntologyFromOntologyDocument(in)
+
+    ontology
   }
 
+  /**
+    * Handler for wrong domain axioms
+    * OWLDataPropertyDomain and OWLObjectPropertyDomain
+    * converted wrongly to OWLAnnotationPropertyDomain
+    */
+  private def fixWrongPropertyDomainAxioms(
+                                            sc: SparkContext,
+                                            propertyDomainAxioms: RDD[OWLAxiom],
+                                            dataPropertiesBC: Broadcast[Array[IRI]],
+                                            objPropertiesBC: Broadcast[Array[IRI]]):
+      RDD[OWLAxiom] = {
 
-  def refineOWLAxioms(sc: SparkContext, axiomsRDD: RDD[OWLAxiom]): RDD[OWLAxiom] = {
+    val correctedPropertyDomainAxioms: RDD[OWLAxiom] =
+      propertyDomainAxioms
+        .asInstanceOf[RDD[OWLAnnotationPropertyDomainAxiom]]
+        .map { annPropDomAxiom =>
 
-    axiomsRDD.cache()
+          val prop = annPropDomAxiom.getProperty.getIRI
+          val domain = annPropDomAxiom.getDomain
+
+          // Annotation property domain axiom turned into object property domain after parsing.
+          if (objPropertiesBC.value.contains(prop)) {
+
+            // FIXME: Case of non-atomic class expressions not handled
+            val domainClass = dataFactory.getOWLClass(domain)
+            val objProp = dataFactory.getOWLObjectProperty(prop)
+            val propertyDomainAxiom =
+              dataFactory.getOWLObjectPropertyDomainAxiom(objProp, domainClass, asList(annPropDomAxiom.annotations))
+
+            propertyDomainAxiom.asInstanceOf[OWLAxiom]
+
+          } else if (dataPropertiesBC.value.contains(prop)) {
+
+            // Annotation property domain axiom turned into data property domain after parsing.
+            // FIXME: Case of non-atomic class expressions not handled
+            val domainClass = dataFactory.getOWLClass(domain)
+            val dataProp = dataFactory.getOWLDataProperty(prop.toString)
+            val propertyDomainAxiom =
+              dataFactory.getOWLDataPropertyDomainAxiom(dataProp, domainClass, asList(annPropDomAxiom.annotations))
+
+            propertyDomainAxiom.asInstanceOf[OWLAxiom]
+
+          } else {
+
+            annPropDomAxiom
+          }
+      }
+
+    correctedPropertyDomainAxioms
+  }
 
   /**
-    *  Case 1: Handler for wrong domain axioms
-    *  OWLDataPropertyDomain and OWLObjectPropertyDomain
-    *  converted wrong to OWLAnnotationPropertyDomain
-   */
+    * Handler for wrong subPropertyOf axioms
+    * OWLSubPropertyOf converted wrongly to OWLSubAnnotationPropertyOf
+    * instead of OWLSubDataPropertyOf or OWLSubObjectPropertyOf
+    */
+  private def fixWrongPropertySubclassAxioms(
+                                              sc: SparkContext,
+                                              allSubAnnotationPropertyAxioms: RDD[OWLAxiom],
+                                              dataPropertiesBC: Broadcast[Array[IRI]],
+                                              objPropertiesBC: Broadcast[Array[IRI]]):
+      RDD[OWLAxiom] = {
 
-    val declaration = extractAxiom(axiomsRDD, AxiomType.DECLARATION)
-      .asInstanceOf[RDD[OWLDeclarationAxiom]]
+    val correctedSubPropertyAxioms =
+      allSubAnnotationPropertyAxioms
+        .asInstanceOf[RDD[OWLSubAnnotationPropertyOfAxiom]]
+        .map { subAnnPropAxiom =>
 
-    val dataProperties = declaration.filter(a => a.getEntity.isOWLDataProperty)
-      .map(a => a.getEntity.getIRI)
+          val subProperty = subAnnPropAxiom.getSubProperty.getIRI
+          val supProperty = subAnnPropAxiom.getSuperProperty.getIRI
 
-    val objectProperties = declaration.filter(a => a.getEntity.isOWLObjectProperty)
-      .map(a => a.getEntity.getIRI)
+          // SubAnnotationPropertyOf axiom turned into SubObjectPropertyOf after parsing.
+          if (objPropertiesBC.value.contains(subProperty)) {
+
+            val subObjProperty = dataFactory.getOWLObjectProperty(subProperty)
+            val superObjProperty = dataFactory.getOWLObjectProperty(supProperty)
+            val subObjPropertyAxiom =
+              dataFactory.getOWLSubObjectPropertyOfAxiom(subObjProperty, superObjProperty, asList(subAnnPropAxiom.annotations))
+
+            subObjPropertyAxiom.asInstanceOf[OWLAxiom]
+
+          } else if (dataPropertiesBC.value.contains(subProperty)) {
+
+            // SubAnnotationPropertyOf axiom turned to SubDataPropertyOf after parsing.
+            val subDataProperty = dataFactory.getOWLDataProperty(subProperty)
+            val superDataProperty = dataFactory.getOWLDataProperty(supProperty)
+            val subDataPropertyAxiom =
+              dataFactory.getOWLSubDataPropertyOfAxiom(subDataProperty, superDataProperty, asList(subAnnPropAxiom.annotations))
+
+            subDataPropertyAxiom.asInstanceOf[OWLAxiom]
+
+          } else {
+
+            subAnnPropAxiom
+          }
+      }
+
+    correctedSubPropertyAxioms
+  }
+
+  def refineOWLAxioms(sc: SparkContext, axiomsRDD: RDD[OWLAxiom]): RDD[OWLAxiom] = {
+    axiomsRDD.cache()
+
+    val allDeclarations: RDD[OWLDeclarationAxiom] =
+      axiomsRDD
+        .filter(axiom => axiom.getAxiomType.equals(AxiomType.DECLARATION))
+        .asInstanceOf[RDD[OWLDeclarationAxiom]]
+
+    val dataProperties: RDD[IRI] =
+      allDeclarations
+        .filter(a => a.getEntity.isOWLDataProperty)
+        .map(a => a.getEntity.getIRI)
+
+    val objectProperties: RDD[IRI] =
+      allDeclarations
+        .filter(a => a.getEntity.isOWLObjectProperty)
+        .map(a => a.getEntity.getIRI)
 
     val dd = dataProperties.collect()
     val oo = objectProperties.collect()
 
-    val dataBC = sc.broadcast(dd)
-    val objBC = sc.broadcast(oo)
+    val dataPropertiesBC = sc.broadcast(dd)
+    val objPropertiesBC = sc.broadcast(oo)
 
-    val annDomain = extractAxiom(axiomsRDD, AxiomType.ANNOTATION_PROPERTY_DOMAIN)
+    val annotationPropertyDomainAxioms: RDD[OWLAxiom] =
+      axiomsRDD
+        .filter(axiom => axiom.getAxiomType.equals(AxiomType.ANNOTATION_PROPERTY_DOMAIN))
 
-    val domainTransform = annDomain.asInstanceOf[RDD[OWLAnnotationPropertyDomainAxiom]]
-      .map { a =>
+    val correctedPropertyDomainAxioms =
+      fixWrongPropertyDomainAxioms(sc, annotationPropertyDomainAxioms, dataPropertiesBC, objPropertiesBC)
 
-        val prop = a.getProperty.getIRI
-        val domain = a.getDomain
+    val subAnnotationPropertyAxioms =
+      axiomsRDD
+        .filter(axiom => axiom.getAxiomType.equals(AxiomType.SUB_ANNOTATION_PROPERTY_OF))
 
-        // Annotation property domain axiom turned to object property domain after parsing.
-        if (objBC.value.contains(prop)) {
+    val correctedPropertySubclassAxioms =
+      fixWrongPropertySubclassAxioms(sc, subAnnotationPropertyAxioms, dataPropertiesBC, objPropertiesBC)
 
-          val c = dataFactory.getOWLClass(domain)
-          val p = dataFactory.getOWLObjectProperty(prop.toString)
-          val obj = dataFactory.getOWLObjectPropertyDomainAxiom(p, c, asList(a.annotations))
+    val differenceRDD = axiomsRDD
+      .subtract(annotationPropertyDomainAxioms)
+      .subtract(subAnnotationPropertyAxioms)
 
-          obj
-
-        } else if (dataBC.value.contains(prop)) {
-
-          // Annotation property domain axiom turned to object property domain after parsing.
-          val c = dataFactory.getOWLClass(domain)
-          val p = dataFactory.getOWLDataProperty(prop.toString)
-          val obj = dataFactory.getOWLDataPropertyDomainAxiom(p, c, asList(a.annotations))
-
-          obj
-
-        } else {
-
-          val obj = dataFactory
-            .getOWLAnnotationPropertyDomainAxiom(a.getProperty.asOWLAnnotationProperty, domain, asList(a.annotations))
-            .asInstanceOf[OWLAxiom]
-          obj
-
-        }
-      }
-
-  /**
-    * Case 2: Handler for wrong subPropertyOf axioms
-    * OWLSubPropertyOf converted wrong to OWLSubAnnotationPropertyOf
-    * instead of OWLSubDataPropertyOf or OWLSubObjectPropertyOf
-    */
-
-    val subAnnotationProperty = extractAxiom(axiomsRDD, AxiomType.SUB_ANNOTATION_PROPERTY_OF)
-
-    val subPropertyTransform = subAnnotationProperty.asInstanceOf[RDD[OWLSubAnnotationPropertyOfAxiom]]
-      .map { a =>
-
-        val subProperty = a.getSubProperty.getIRI
-        val supProperty = a.getSuperProperty.getIRI
-
-
-        // SubAnnotationPropertyOf axiom turned to SubObjectPropertyOf after parsing.
-        if (objBC.value.contains(subProperty)) {
-
-          val sub = dataFactory.getOWLObjectProperty(subProperty.toString)
-          val sup = dataFactory.getOWLObjectProperty(supProperty.toString)
-          val obj = dataFactory.getOWLSubObjectPropertyOfAxiom(sub, sup, asList(a.annotations))
-
-          obj
-
-        } else if (dataBC.value.contains(subProperty)) {
-
-          // SubAnnotationPropertyOf axiom turned to SubDataPropertyOf after parsing.
-          val sub = dataFactory.getOWLDataProperty(subProperty.toString)
-          val sup = dataFactory.getOWLDataProperty(supProperty.toString)
-          val obj = dataFactory.getOWLSubDataPropertyOfAxiom(sub, sup, asList(a.annotations))
-
-          obj
-
-        } else {
-
-          val obj = dataFactory
-              .getOWLSubAnnotationPropertyOfAxiom(a.getSubProperty.asOWLAnnotationProperty,
-                                                  a.getSuperProperty.asOWLAnnotationProperty(),
-                                                  asList(a.annotations))
-              .asInstanceOf[OWLAxiom]
-          obj
-
-        }
-      }
-
-    val differenceRDD = axiomsRDD.subtract(annDomain).subtract(subAnnotationProperty)
-    val correctRDD = sc.union(differenceRDD, domainTransform, subPropertyTransform)
-
-    correctRDD.foreach(println(_))
+    val correctRDD = sc.union(
+      differenceRDD,
+      correctedPropertyDomainAxioms,
+      correctedPropertySubclassAxioms)
 
     correctRDD
   }
-
-
-  def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {
-    axiom.filter(a => a.getAxiomType.equals(T))
-  }
 }
+
 
 /**
   * Trait to support the parsing of prefixes from expressions given in
-  * RFDXML syntax.
+  * RFD/XML syntax.
   */
 trait RDFXMLSyntaxPrefixParsing {
+
   /**
     * Parses the prefix declaration of a namespace URI and returns the
     * pair (prefix, namespace URI)
@@ -261,18 +283,15 @@ trait RDFXMLSyntaxPrefixParsing {
     *             xmlns:="http://swat.cse.lehigh.edu/onto/univ-bench.owl#"
     *             xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     */
-
   def parsePrefix(line: String): (String, String) = {
-
     var prefix, uri: String = null
-    var temp: String = line
 
     line.trim match {
       case RDFXMLSyntaxParsing.prefixPattern(p, u) =>
         prefix = p
         uri = u
-
     }
+
     if (prefix.isEmpty) prefix = RDFXMLSyntaxParsing._empty
 
     (prefix, uri)
@@ -283,24 +302,24 @@ trait RDFXMLSyntaxPrefixParsing {
   }
 }
 
- class RDFXMLSyntaxExpressionBuilder (val prefixes: Map[String, String]) extends Serializable {
+
+class RDFXMLSyntaxExpressionBuilder (val prefixes: Map[String, String]) extends Serializable {
 
    def clean(expression: String): String = {
-
      var trimmedExpr = expression.trim
 
-    /**
-      * Throw away expressions that are of no use for further processing:
-      * 1) empty lines
-      * 2) first line of the xml file
-      * 3) the closing, </rdf:RDF> tag
-      * 4) prefix declaration
-      */
+     /**
+       * Throw away expressions that are of no use for further processing:
+       * 1) empty lines
+       * 2) first line of the xml file
+       * 3) the closing, </rdf:RDF> tag
+       * 4) prefix declarations
+       */
      val discardExpression: Boolean =
        trimmedExpr.isEmpty  || // 1)
-         trimmedExpr.startsWith("<?xml") ||  // 2)
-         trimmedExpr.startsWith("</rdf:RDF") ||  // 3)
-         trimmedExpr.startsWith("<rdf:RDF") // 4)
+         trimmedExpr.toLowerCase.startsWith("<?xml") ||  // 2)
+         trimmedExpr.toLowerCase.startsWith("</rdf:rdf") ||  // 3)
+         trimmedExpr.toLowerCase.startsWith("<rdf:rdf") // 4)
 
      if (discardExpression) {
        null
@@ -311,27 +330,29 @@ trait RDFXMLSyntaxPrefixParsing {
          val p = prefix + ":"
 
          if (trimmedExpr.contains(p)) {
-           val v: String = "<" + prefixes.get(prefix).get
+           val v: String = "<" + prefixes(prefix)
 
-           val pattern = (p + "([a-zA-Z][0-9a-zA-Z_-]*)\\b").r
+           val localPartPattern = (p + "([a-zA-Z][0-9a-zA-Z_-]*)\\b").r
 
            // Append ">" to all matched local parts: "foo:car" --> "foo:car>"
-           trimmedExpr = pattern.replaceAllIn(trimmedExpr, m => s"${m.matched}>")
+           trimmedExpr = localPartPattern.replaceAllIn(trimmedExpr, m => s"${m.matched}>")
+
            // Expand prefix: "foo:car>" --> "http://foo.org/res#car>"
            trimmedExpr = trimmedExpr.replace(p.toCharArray, v.toCharArray)
          }
        }
 
-       // handle default prefix e.g. :Bar --> http://foo.com/defaultPath#Bar
-
-       val pattern = ":[^/][a-zA-Z][0-9a-zA-Z_-]*".r
-       val v: String = "<" + prefixes.get(FunctionalSyntaxParsing._empty).get
+       // Handle default prefix e.g. :Bar --> http://foo.com/defaultPath#Bar
+       val emptyPrefixPattern = ":[^/][a-zA-Z][0-9a-zA-Z_-]*".r
+       val v: String = "<" + prefixes(RDFXMLSyntaxParsing._empty)
 
        if (prefixes.contains(RDFXMLSyntaxParsing._empty)) {
-         pattern.findAllIn(trimmedExpr).foreach(hit => {
-           val full = hit.replace(":".toCharArray, v.toCharArray)
-           trimmedExpr = trimmedExpr.replace(hit, full + ">")
-         })
+         emptyPrefixPattern
+           .findAllIn(trimmedExpr)
+           .foreach(hit => {
+            val full = hit.replace(":".toCharArray, v.toCharArray)
+            trimmedExpr = trimmedExpr.replace(hit, full + ">")
+           })
        }
 
        trimmedExpr
