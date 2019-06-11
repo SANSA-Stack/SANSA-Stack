@@ -72,7 +72,12 @@
         <hadoop.mapreduce-client.version>2.8.1</hadoop.mapreduce-client.version>
         <owlapi.version>5.1.5</owlapi.version>
         <jena.version>3.11.0</jena.version>
-        <scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+        <!-- since the scalastyle plugin is only executed in the child modules -->
+        <scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+        <!-- Default case for the child modules. Will be overridden and set to
+             true by the root-dir profile which detects when we're in the parent
+             module -->
+        <scalastyle.skip>false</scalastyle.skip>
     </properties>
 
 
@@ -106,24 +111,8 @@
             <!-- Apache JENA 3.x-->
             <dependency>
                 <groupId>org.apache.jena</groupId>
-                <artifactId>jena</artifactId>
-                <version>${jena.version}</version>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jena</groupId>
                 <artifactId>jena-core</artifactId>
                 <version>${jena.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jena</groupId>
-                <artifactId>jena-arq</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jena</groupId>
-                <artifactId>jena-tdb</artifactId>
-                <version>${jena.version}</version>
-                <scope>provided</scope>
             </dependency>
 
             <!-- Apache Flink dependencies -->
@@ -212,7 +201,6 @@
                 <artifactId>guice-multibindings</artifactId>
                 <version>4.0</version>
             </dependency>
-
 
             <!-- MLlib dependencies -->
             <dependency>
@@ -332,6 +320,7 @@
                     <artifactId>scalastyle-maven-plugin</artifactId>
                     <version>1.0.0</version>
                     <configuration>
+                        <skip>${scalastyle.skip}</skip>
                         <verbose>false</verbose>
                         <failOnViolation>true</failOnViolation>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
@@ -359,15 +348,19 @@
 
     <profiles>
         <!-- profile necessary for Scalastyle plugin to find the conf file -->
+        <!-- if the file ./scalastyle-config.xml exists, we're in the parent
+             module (or 'root directory'). In this case it doesn't make sense to
+             run the scalastyle plugin. Thus the ${scalastyle.skip} property is
+             set to true and the plugin won't be executed -->
         <profile>
             <id>root-dir</id>
             <activation>
                 <file>
-                    <exists>${project.basedir}/../../scalastyle-config.xml</exists>
+                    <exists>scalastyle-config.xml</exists>
                 </file>
             </activation>
             <properties>
-                <scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+                <scalastyle.skip>true</scalastyle.skip>
             </properties>
         </profile>
 
