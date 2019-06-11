@@ -348,6 +348,11 @@
 				<artifactId>jena-sparql-api-server-standalone</artifactId>
 				<version>${jsa.version}</version>
 				<exclusions>
+                                        <exclusion>
+                                                <groupId>com.sun.xml.bind</groupId>
+                                                <artifactId>jaxb-impl</artifactId>
+                                        </exclusion>
+
 					<!-- <exclusion> <groupId>xml-apis</groupId> <artifactId>xml-apis</artifactId> 
 						</exclusion> <exclusion> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-xml</artifactId> 
 						</exclusion> -->
@@ -373,6 +378,26 @@
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-core</artifactId>
             </exclusion>
+            <exclusion>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-server</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-client</artifactId>
+            </exclusion>
+
+            <exclusion>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-json</artifactId>
+            </exclusion>
+
+
+            <exclusion>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>jersey-guice</artifactId>
+            </exclusion>
+
 
 					<exclusion>
 						<groupId>org.eclipse.jetty</groupId>
