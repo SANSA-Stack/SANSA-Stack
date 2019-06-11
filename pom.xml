@@ -35,8 +35,8 @@
 		<spark.version>2.4.3</spark.version>
 		<flink.version>1.8.0</flink.version>
 
-		<jena.version>3.9.0</jena.version>
-		<jsa.subversion>1</jsa.subversion>
+		<jena.version>3.11.0</jena.version>
+		<jsa.subversion>1-SNAPSHOT</jsa.subversion>
 
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
@@ -324,7 +324,7 @@
 			<dependency>
 				<groupId>org.aksw.sparqlify</groupId>
 				<artifactId>sparqlify-core</artifactId>
-				<version>0.8.5</version>
+				<version>0.8.7-SNAPSHOT</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.aksw.sparqlify</groupId>
