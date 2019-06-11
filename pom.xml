@@ -367,6 +367,19 @@
 				<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
 				<version>2.1.0_0.6.0</version>
 				<scope>test</scope>
+
+				<exclusions>
+            <exclusion>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-core</artifactId>
+            </exclusion>
+
+					<exclusion>
+						<groupId>org.eclipse.jetty</groupId>
+						<artifactId>jetty-util</artifactId>
+					</exclusion>
+				</exclusions>
+
 			</dependency>
 
 			<dependency>
