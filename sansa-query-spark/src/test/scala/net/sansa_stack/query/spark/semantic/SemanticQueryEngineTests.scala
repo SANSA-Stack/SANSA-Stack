@@ -13,7 +13,7 @@ class SemanticQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   test("result of running BSBM Q1 should match") {
 
     val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
-    val query = getClass.getResource("/queries/bsbm/Q1.sparql").getPath
+    val query = getClass.getResource("/semantic/queries/bsbm/Q1.sparql").getPath
     val triples = spark.rdf(Lang.NTRIPLES)(input)
 
     val partitionTriples = triples.partitionGraphAsSemantic()
@@ -28,7 +28,7 @@ class SemanticQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   test("result of running BSBM Q2 should match") {
 
     val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
-    val query = getClass.getResource("/queries/bsbm/Q2.sparql").getPath
+    val query = getClass.getResource("/semantic/queries/bsbm/Q2.sparql").getPath
     val triples = spark.rdf(Lang.NTRIPLES)(input)
 
     val partitionTriples = triples.partitionGraphAsSemantic()
@@ -43,7 +43,7 @@ class SemanticQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   test("result of running BSBM Q3 should match") {
 
     val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
-    val query = getClass.getResource("/queries/bsbm/Q3.sparql").getPath
+    val query = getClass.getResource("/semantic/queries/bsbm/Q3.sparql").getPath
     val triples = spark.rdf(Lang.NTRIPLES)(input)
 
     val partitionTriples = triples.partitionGraphAsSemantic()
