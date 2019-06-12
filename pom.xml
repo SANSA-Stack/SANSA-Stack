@@ -416,7 +416,7 @@
 			<dependency>
 				<groupId>it.unibz.inf.ontop</groupId>
 				<artifactId>ontop-system-sql-owlapi</artifactId>
-				<version>$ontop.version}</version>
+				<version>${ontop.version}</version>
 			</dependency>
 
 
