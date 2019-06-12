@@ -23,10 +23,12 @@ import org.apache.spark.rdd.PairRDDFunctions
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-object SilviaClustering {
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String): Unit = {
 
+class SilviaClustering(graph: Graph[String, String]) extends ClusterAlgo{
+
+  // def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String): Unit = {
+def run(): RDD[(Long, List[String])] = {
     Logger.getRootLogger.setLevel(Level.WARN)
 
     /**
@@ -432,6 +434,10 @@ object SilviaClustering {
         unionList = List()
 
       }
+      // spark intialization
+      val spark = SparkSession.builder.getOrCreate()
+       import spark.implicits._
+
       val rdfRDD = spark.sparkContext.parallelize(rdfString)
 
       def avgAsoft(c: List[Long], d: Long): Double = {
@@ -509,7 +515,7 @@ object SilviaClustering {
       val evaluateString: List[String] = List(avsoft.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
-      evaluateStringRDD.saveAsTextFile(outputeval)
+    //  evaluateStringRDD.saveAsTextFile(outputeval)
 
       val result = rdfRDD
 
@@ -517,6 +523,11 @@ object SilviaClustering {
     }
     val cRdd = clusterRdd()
     val zipwithindex = cRdd.zipWithIndex().map(f => (f._2, f._1))
-    zipwithindex.saveAsTextFile(output)
+    zipwithindex
+  //  zipwithindex.saveAsTextFile(output)
   }
 }
+object SilviaClustering {
+  def apply(input: Graph[String, String]): SilviaClustering = new SilviaClustering(input)
+}
+

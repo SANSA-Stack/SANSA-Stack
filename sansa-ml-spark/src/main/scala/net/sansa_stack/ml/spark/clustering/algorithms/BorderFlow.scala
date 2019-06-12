@@ -26,9 +26,11 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import scopt.OptionParser
 
-object BorderFlow {
+class BorderFlow(graph: Graph[Node, Node]) extends ClusterAlgo{
 
-  def apply(spark: SparkSession, graph: Graph[Node, Node], output: String, outputevlsoft: String, outputevlhard: String): Unit = {
+  def run(): RDD[(Long, List[String])] = {
+  val spark = SparkSession.builder.getOrCreate()
+  import spark.implicits._
 
     /**
      * undirected graph : orient =0
@@ -801,13 +803,13 @@ object BorderFlow {
       val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
-      evaluateStringRDD.saveAsTextFile(outputevlhard)
+ //     evaluateStringRDD.saveAsTextFile(outputevlhard)
 
       val avsoft = evaluateSoft.sum / evaluateSoft.size
       val evaluateStringS: List[String] = List(avsoft.toString())
       val evaluateStringRDDS = spark.sparkContext.parallelize(evaluateStringS)
 
-      evaluateStringRDDS.saveAsTextFile(outputevlsoft)
+  //    evaluateStringRDDS.saveAsTextFile(outputevlsoft)
       // println(s"averagesoft: $avsoft\n")
 
       bigList
@@ -831,8 +833,11 @@ object BorderFlow {
 
     val rdf = clusterRdd.map(x => makerdf(x))
     val rdfRDD = spark.sparkContext.parallelize(rdf)
-
-    rdfRDD.saveAsTextFile(output)
+    val cluster = rdfRDD.zipWithIndex().map(f => (f._2, f._1))
+    cluster
   }
+}
+object BorderFlow {
+  def apply(input: Graph[Node, Node]): BorderFlow = new BorderFlow(input)
 }
 

@@ -6,11 +6,10 @@ import com.typesafe.config.Config
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import scala.collection.mutable.ArrayBuffer
 
 import net.sansa_stack.ml.spark.clustering.datatypes.{Categories, CoordinatePOI, POI}
 import net.sansa_stack.rdf.spark.io.NTripleReader
-
-
 
 /**
   * load TomTom dataset
@@ -29,7 +28,6 @@ class DataProcessing(val spark: SparkSession, val conf: Config, dataRDD: RDD[Tri
     val poiAllCategories: RDD[(Long, (Categories, Double))] = poiYelpCategories.join(poiCategories).map(x => (x._1, (Categories(x._2._1._1.categories++x._2._2.categories), x._2._1._2)))
     poiCoordinates.join(poiAllCategories).map(x => POI(x._1, x._2._1, x._2._2._1, x._2._2._2)).persist()
   } else {
-    println("--------pois--------------")
     poiCoordinates.join(poiCategories).map(x => POI(x._1, x._2._1, x._2._2, 0.0)).persist()
   }}
 
@@ -167,6 +165,48 @@ class DataProcessing(val spark: SparkSession, val conf: Config, dataRDD: RDD[Tri
       triple.getObject.getLiteralValue.toString.toDouble
       ))
     yelpPOICategoryMapped.groupByKey().join(yelpPOIRatingMapped).map(x => (x._1, (Categories(scala.collection.mutable.Set(x._2._1.toList: _*)), x._2._2)))
+  }
+ def get_triples(a: String, poiArray: Array[Long], dataRDD: RDD[Triple], spark: SparkSession): RDD[(String, Triple)] = {
+    // create an array of subjects related with each poi
+    val subjects = ArrayBuffer[String]()
+    for (i <- 0 until poiArray.length - 1) {
+      subjects ++= createSubjects(poiArray(i))
+    }
+    // RDD[Triple] => RDD[(subject, Triple)]
+    val dataRDDPair = dataRDD.map(f => (f.getSubject.getURI, f)).persist()
+    // create RDD[(subject, subject)] from Array[subjects]
+    val subjectsRDD = spark.sparkContext.parallelize(subjects.toSet.toList).map(f => (f, f)).persist()
+    // get RDD[Triples] with subject in Array[subjects]
+    val viennaTriples = subjectsRDD.join(dataRDDPair).map(f => (a, f._2._2)).persist()
+    // find filtered Triples with prediction category, and get their object => RDD[Object]
+    val viennaCatgoriesObjects = viennaTriples.filter(f => f._2.getPredicate.getURI.equals("http://slipo.eu/def#category")).map(f => f._2.getObject.getURI).distinct().persist()
+    // RDD[Object] => RDD[(Object, Object)]
+    val viennaPoiCategoriesRDD = viennaCatgoriesObjects.map(f => (f, f)).persist()
+    // RDD[(Object, Object)] => RDD[Triples], where Object is Subject in Triples
+    val viennaCategoryTriples = viennaPoiCategoriesRDD.join(dataRDDPair).map(f => f._2._2)
+    // RDD[Triples] => RDD[(Key, Triple)], where key=subject+predicate+object, because there are some duplicated triples in the tomtom data
+    val temp = viennaCategoryTriples.map(f => (f.getSubject.getURI + f.getPredicate.getURI + f.getObject.toString(), f)).persist()
+    // remove duplicated triples
+    val categoryTriples = temp.reduceByKey((v1, v2) => v1).map(f => (a, f._2)).persist()
+    val union = (viennaTriples.union(categoryTriples))
+
+    union
+  }
+  /**
+    * @param poiID id of a poi
+    * @return an array of subject in RDF triples with related to this poi
+    */
+  def createSubjects(poiID: Long): ArrayBuffer[String] = {
+    val subjects = ArrayBuffer[String]()
+    val id = "http://example.org/id/poi/".concat(poiID.toString)
+    subjects.+=(id)
+    subjects.+=(id.concat("/address"))
+    subjects.+=(id.concat("/phone"))
+    subjects.+=(id.concat("/geometry"))
+    subjects.+=(id.concat("/name"))
+    subjects.+=(id.concat("/accuracy_info"))
+    subjects.+=(id.concat("/brandname"))
+    subjects
   }
 }
 

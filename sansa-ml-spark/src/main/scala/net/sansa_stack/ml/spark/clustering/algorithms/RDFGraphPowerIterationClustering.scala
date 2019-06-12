@@ -28,9 +28,26 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 
-object RDFGraphPowerIterationClustering {
+class RDFGraphPowerIterationClustering(graph: Graph[String, String]) extends ClusterAlgo with Serializable {
+  var k = 0
+  var maxIterations = 0
 
-  def apply(spark: SparkSession, graph: Graph[String, String], output: String, k: Int = 2, maxIterations: Int = 5): RDD[(Int, String)] = {
+  def setK(K: Int): this.type = {
+    k = K
+    println(k)
+    this
+  }
+  /**
+   * set maximum iterations for Kmeans,PIC etc
+   * @param iter
+   */
+  def setMaxIterations(iter: Int): this.type = {
+    maxIterations = iter
+    println(maxIterations)
+    this
+  }
+
+  def run(): RDD[(Int, List[String])] = {
 
     def clusterRdd(): RDD[(Int, String)] = {
       SimilaritesInPIC()
@@ -206,7 +223,11 @@ object RDFGraphPowerIterationClustering {
       (ClustersAsURL)
     }
     val clrdd = clusterRdd()
-    clrdd
+    val clrddgrp = clrdd.groupByKey().map(f => (f._1, f._2.toList))
+    clrddgrp
 
   }
+}
+object RDFGraphPowerIterationClustering {
+  def apply(input: Graph[String, String]): RDFGraphPowerIterationClustering = new RDFGraphPowerIterationClustering(input)
 }
