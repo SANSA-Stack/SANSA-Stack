@@ -7,11 +7,11 @@
     <parent>
         <artifactId>sansa-owl-parent_2.11</artifactId>
         <groupId>net.sansa-stack</groupId>
-        <version>0.4.2-SNAPSHOT</version>
+        <version>0.4.2</version>
     </parent>
 
     <artifactId>sansa-owl-flink_2.11</artifactId>
-    <version>0.4.2-SNAPSHOT</version>
+    <version>0.4.2</version>
 
     <name>SANSA OWL layer - Flink</name>
     <description>A library to read OWL files into Flink.</description>
