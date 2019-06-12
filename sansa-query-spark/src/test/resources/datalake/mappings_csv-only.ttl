@@ -15,8 +15,8 @@
 
 <#ProducerMapping>
 	rml:logicalSource [
-		rml:source "//Producer";
-		nosql:store nosql:jdbc
+		rml:source "src/test/resources/datalake/Data/producer.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{nr}";
@@ -55,8 +55,8 @@
 
 <#ReviewMapping>
 	rml:logicalSource [
-		rml:source "src/main/resources/Data/review.parquet";
-		nosql:store nosql:parquet
+		rml:source "src/test/resources/datalake/Data/review.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{nr}";
@@ -130,7 +130,7 @@
 
 <#PersonMapping>
 	rml:logicalSource [
-		rml:source "src/main/resources/Data/person.csv";
+		rml:source "src/test/resources/datalake/Data/person.csv";
 		nosql:store nosql:csv
 	];
 	rr:subjectMap [
@@ -165,8 +165,8 @@
 
 <#OfferMapping>
 	rml:logicalSource [
-		rml:source "//Offer";
-		nosql:store nosql:mongodb
+		rml:source "src/test/resources/datalake/Data/offer.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{_id}";
@@ -225,8 +225,8 @@
 
 <#ProductMapping>
 	rml:logicalSource [
-		rml:source "//Product";
-		nosql:store nosql:cassandra
+		rml:source "src/test/resources/datalake/Data/product.csv";
+		nosql:store nosql:csv
 	];
 	rr:subjectMap [
 		rr:template "http://example.com/{nr}";
