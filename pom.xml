@@ -1,621 +1,1215 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>net.sansa-stack</groupId>
-    <artifactId>sansa-parent</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>SANSA - Parent</name>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.sansa-stack</groupId>
+	<artifactId>sansa-parent</artifactId>
+	<version>0.5.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>SANSA - Parent</name>
 
-    <description>SANSA Parent Project for managing common dependencies, plugins, meta-data, properties, etc.
+	<description>SANSA Parent project for managing common dependencies, plugins, meta-data, properties, etc.
     </description>
 
-    <organization>
-        <name>Smart Data Analytics (SDA) Research Group</name>
-        <url>http://sda.tech/</url>
-    </organization>
+	<organization>
+		<name>Smart Data Analytics (SDA) Research Group</name>
+		<url>http://sda.tech/</url>
+	</organization>
 
-    <inceptionYear>2016</inceptionYear>
+	<inceptionYear>2016</inceptionYear>
 
-    <url>http://sansa-stack.net/</url>
+	<url>http://sansa-stack.net/</url>
 
-    <licenses>
-        <license>
-            <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
-            <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+	<licenses>
+		<license>
+			<name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-    <properties>
-        <maven.version>3.1</maven.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<properties>
+		<maven.version>3.1</maven.version>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <scala.version>2.11.11</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
+		<scala.version>2.11.11</scala.version>
+		<scala.binary.version>2.11</scala.binary.version>
+		<scala.classifier>${scala.binary.version}</scala.classifier>
+		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-        <spark.version>2.3.0</spark.version>
-        <spark.binary.version>2.3</spark.binary.version>
+		<flink.version>1.8.0</flink.version>
+		<spark.version>2.4.3</spark.version>
 
-        <flink.version>1.4.2</flink.version>
+		<hadoop.version>2.9.2</hadoop.version>
 
-        <jena.version>3.7.0</jena.version>
-        <owlapi.version>5.1.4</owlapi.version>
+		<jena.version>3.11.0</jena.version>
+		<jsa.subversion>1-SNAPSHOT</jsa.subversion>
+		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
-        <sansa.version>0.3.1-SNAPSHOT</sansa.version>
-        <scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
-    </properties>
+		<jetty.version>9.4.8.v20171121</jetty.version>
+		<mortbay.jetty.version>6.1.26</mortbay.jetty.version>
 
+		<owlapi.version>5.1.4</owlapi.version>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Scala -->
-            <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-library</artifactId>
-                <version>${scala.version}</version>
-            </dependency>
-
-            <!-- SANSA RDF -->
-            <dependency>
-                <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-                <version>${sansa.version}</version>
-            </dependency>
-
-            <!-- SANSA OWL -->
-            <dependency>
-                <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-                <version>${sansa.version}</version>
-            </dependency>
-
-            <!-- Apache Spark Core, SQL, MLLib -->
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_${scala.binary.version}</artifactId>
-                <version>${spark.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.binary.version}</artifactId>
-                <version>${spark.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-mllib_${scala.binary.version}</artifactId>
-                <version>${spark.version}</version>
-            </dependency>
-
-            <!-- Apache Flink -->
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-scala_${scala.binary.version}</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-clients_${scala.binary.version}</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-gelly-scala_${scala.binary.version}</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-
-            <!-- Apache JENA 3.x -->
-            <dependency>
-                <groupId>org.apache.jena</groupId>
-                <artifactId>jena-core</artifactId>
-                <version>${jena.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jena</groupId>
-                <artifactId>jena-arq</artifactId>
-                <version>${jena.version}</version>
-            </dependency>
-
-            <!-- OWL API -->
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-api</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-apibinding</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-impl</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-parsers</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-
-            <!-- Test -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>3.0.5</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.specs2</groupId>
-                <artifactId>specs2-core_${scala.binary.version}</artifactId>
-                <version>4.0.3</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.specs2</groupId>
-                <artifactId>specs2-junit_${scala.binary.version}</artifactId>
-                <version>4.0.3</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- Logging -->
-            <dependency>
-                <groupId>com.typesafe.scala-logging</groupId>
-                <artifactId>scala-logging_${scala.binary.version}</artifactId>
-                <version>3.9.0</version>
-            </dependency>
-
-            <!-- Guava -->
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>22.0</version>
-            </dependency>
-
-            <!-- Shapeless lib -->
-            <dependency>
-                <groupId>com.chuusai</groupId>
-                <artifactId>shapeless_${scala.binary.version}</artifactId>
-                <version>2.3.2</version>
-            </dependency>
-
-            <!-- Scopt -->
-            <dependency>
-                <groupId>com.github.scopt</groupId>
-                <artifactId>scopt_${scala.binary.version}</artifactId>
-                <version>3.7.0</version>
-            </dependency>
-
-            <!-- Config API -->
-            <dependency>
-                <groupId>com.typesafe</groupId>
-                <artifactId>config</artifactId>
-                <version>1.3.3</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <!-- Scala Maven -->
-                <plugin>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>3.3.1</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>compile</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                            <configuration>
-                                <scalaVersion>${scala.version}</scalaVersion>
-                                <recompileMode>incremental</recompileMode>
-                                <!--<useZincServer>true</useZincServer>-->
-                                <args>
-                                    <arg>-unchecked</arg>
-                                    <arg>-deprecation</arg>
-                                    <arg>-feature</arg>
-                                    <arg>-dependencyfile</arg>
-                                    <arg>${project.build.directory}/.scala_dependencies</arg>
-                                    <arg>-Xmax-classfile-name</arg>
-                                    <arg>128</arg>
-                                </args>
-                                <jvmArgs>
-                                    <jvmArg>-Xms1024m</jvmArg>
-                                    <jvmArg>-Xmx1024m</jvmArg>
-                                    <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-                                    <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
-                                    <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
-                                </jvmArgs>
-                                <!--<javacArgs>-->
-                                <!--<javacArg>-source</javacArg>-->
-                                <!--<javacArg>${java.version}</javacArg>-->
-                                <!--<javacArg>-target</javacArg>-->
-                                <!--<javacArg>${java.version}</javacArg>-->
-                                <!--<javacArg>-Xlint:all,-serial,-path</javacArg>-->
-                                <!--</javacArgs>-->
-
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <scalaVersion>${scala.version}</scalaVersion>
-                        <recompileMode>incremental</recompileMode>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.7.0</version>
-                    <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                    </configuration>
-                </plugin>
-
-                <!-- Surefire -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20.1</version>
-                </plugin>
-
-                <!-- Scalatest -->
-                <plugin>
-                    <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest-maven-plugin</artifactId>
-                    <version>2.0.0</version>
-                    <configuration>
-                        <tagsToExclude>net.sansa_stack.test.conformance.IntegrationTestSuite</tagsToExclude>
-                    </configuration>
-                </plugin>
-
-                <!-- Gitflow -->
-                <plugin>
-                    <groupId>com.amashchenko.maven.plugin</groupId>
-                    <artifactId>gitflow-maven-plugin</artifactId>
-                    <version>1.8.0</version>
-
-                    <configuration>
-                        <installProject>false</installProject>
-                        <verbose>false</verbose>
-
-                        <gitFlowConfig>
-                            <productionBranch>master</productionBranch>
-                            <developmentBranch>develop</developmentBranch>
-                            <featureBranchPrefix>feature/</featureBranchPrefix>
-                            <releaseBranchPrefix>release/</releaseBranchPrefix>
-                            <hotfixBranchPrefix>hotfix/</hotfixBranchPrefix>
-                            <supportBranchPrefix>support/</supportBranchPrefix>
-                            <versionTagPrefix>v</versionTagPrefix>
-                            <origin>origin</origin>
-                        </gitFlowConfig>
-                        <pushRemote>false</pushRemote>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.5</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-versions</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireMavenVersion>
-                                        <version>${maven.version}</version>
-                                    </requireMavenVersion>
-                                    <!--<requireJavaVersion>-->
-                                    <!--<version>${java.version}</version>-->
-                                    <!--</requireJavaVersion>-->
-                                    <bannedDependencies>
-                                        <excludes>
-                                            <!--
-                                              Akka depends on io.netty:netty, which puts classes under the org.jboss.netty
-                                              package. This conflicts with the classes in org.jboss.netty:netty
-                                              artifact, so we have to ban that artifact here. In Netty 4.x, the classes
-                                              are under the io.netty package, so it's fine for us to depend on both
-                                              io.netty:netty and io.netty:netty-all.
-                                            -->
-                                            <exclude>org.jboss.netty</exclude>
-                                            <exclude>org.codehaus.groovy</exclude>
-                                        </excludes>
-                                        <searchTransitive>true</searchTransitive>
-                                    </bannedDependencies>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.0.0</version>
-                    <executions>
-                        <execution>
-                            <id>add-source</id>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>add-source</goal>
-                            </goals>
-                            <configuration>
-                                <sources>
-                                    <source>src/main/scala_${scala.binary.version}</source>
-                                </sources>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>com.versioneye</groupId>
-                    <artifactId>versioneye-maven-plugin</artifactId>
-                    <version>3.11.4</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.1.1</version>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.0.2</version>
-                </plugin>
+		<sansa.version>${project.version}</sansa.version>
+		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+	</properties>
 
 
-            </plugins>
-        </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>enforce-maven</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>3.1</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+	<dependencyManagement>
+		<dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>maven.aksw.internal</id>
-            <name>AKSW Release Repository</name>
-            <url>http://maven.aksw.org/archiva/repository/internal</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven.aksw.snapshots</id>
-            <name>AKSW Snapshot Repository</name>
-            <url>http://maven.aksw.org/archiva/repository/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
-    <repositories>
-        <repository>
-            <id>oss-sonatype</id>
-            <name>oss-sonatype</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>apache-snapshot</id>
-            <name>Apache repository (snapshots)</name>
-            <url>https://repository.apache.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>maven.aksw.snapshots</id>
-            <name>AKSW Snapshot Repository</name>
-            <url>http://maven.aksw.org/archiva/repository/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>maven.aksw.internal</id>
-            <name>AKSW Release Repository</name>
-            <url>http://maven.aksw.org/archiva/repository/internal</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+			<!-- Kryo -->
+			<dependency>
+				<groupId>de.javakaffee</groupId>
+				<artifactId>kryo-serializers</artifactId>
+				<version>0.41</version>
+			</dependency>
 
-    <profiles>
 
-        <!-- the profile used for deployment to Sonatype Maven repository -->
-        <profile>
-            <id>ossrh</id>
-            <distributionManagement>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <version>3.2.2</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>compile</goal>
-                                    <goal>testCompile</goal>
-                                </goals>
-                                <configuration>
-                                    <scalaVersion>${scala.version}</scalaVersion>
-                                    <recompileMode>incremental</recompileMode>
-                                    <useZincServer>true</useZincServer>
-                                    <args>
-                                        <arg>-unchecked</arg>
-                                        <arg>-deprecation</arg>
-                                        <arg>-feature</arg>
-                                        <arg>-dependencyfile</arg>
-                                        <arg>${project.build.directory}/.scala_dependencies</arg>
-                                        <arg>-Xmax-classfile-name</arg>
-                                        <arg>128</arg>
-                                    </args>
-                                    <jvmArgs>
-                                        <jvmArg>-Xms1024m</jvmArg>
-                                        <jvmArg>-Xmx1024m</jvmArg>
-                                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-                                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
-                                        <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
-                                    </jvmArgs>
-                                    <!--<javacArgs>-->
-                                    <!--<javacArg>-source</javacArg>-->
-                                    <!--<javacArg>${java.version}</javacArg>-->
-                                    <!--<javacArg>-target</javacArg>-->
-                                    <!--<javacArg>${java.version}</javacArg>-->
-                                    <!--<javacArg>-Xlint:all,-serial,-path</javacArg>-->
-                                    <!--</javacArgs>-->
 
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>doc-jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
+			<!-- Scala -->
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-library</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
 
-                    </plugin>
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scala-reflect</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
 
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
+			<dependency>
+				<groupId>org.scala-lang</groupId>
+				<artifactId>scalap</artifactId>
+				<version>${scala.version}</version>
+			</dependency>
 
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
 
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                                <configuration>
-                                    <keyname>AKSW</keyname>
-                                    <passphraseServerId>${gpg.keyname}</passphraseServerId>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+			<!-- Miscellaneous -->
+
+			<!-- Is this still needed? Claus 2019-06-12 -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+				<version>1.18</version>
+			</dependency>
+
+
+
+
+			<!-- Servlet engines -->
+			<dependency>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty</artifactId>
+				<!-- <scope>provided</scope> -->
+				<version>${mortbay.jetty.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-util</artifactId>
+				<!-- <scope>provided</scope> -->
+				<version>${mortbay.jetty.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-util</artifactId>
+				<version>${jetty.version}</version>
+			</dependency>
+
+
+			<!-- HADOOP dependencies (mainly used for InputFormat definitions) -->
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-mapreduce-client-core</artifactId>
+				<version>${hadoop.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.servlet</groupId>
+						<artifactId>servlet-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-server</artifactId>
+					</exclusion>
+
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-client</artifactId>
+					</exclusion>
+
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-json</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jersey.contribs</groupId>
+						<artifactId>jersey-guice</artifactId>
+					</exclusion>
+
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-common</artifactId>
+				<version>${hadoop.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.servlet</groupId>
+						<artifactId>servlet-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-server</artifactId>
+					</exclusion>
+
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-json</artifactId>
+					</exclusion>
+
+
+					<exclusion>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<!-- SPARK -->
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-core_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+				<!-- Experimental exclusions ~ Claus, 5.1 -->
+				<exclusions>
+					<exclusion>
+						<groupId>javax.ws.rs</groupId>
+						<artifactId>javax.ws.rs-api</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-sql_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-graphx_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-streaming_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-mllib_${scala.binary.version}</artifactId>
+				<scope>provided</scope>
+				<version>${spark.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.spark</groupId>
+				<artifactId>spark-hive_${scala.binary.version}</artifactId>
+				<version>${spark.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>com.holdenkarau</groupId>
+				<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+				<version>2.3.0_0.9.0</version>
+
+				<!-- Experimental exclusions ~ Claus, 5.1 -->
+				<exclusions>
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-server</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-client</artifactId>
+					</exclusion>
+
+					<exclusion>
+						<groupId>com.sun.jersey</groupId>
+						<artifactId>jersey-json</artifactId>
+					</exclusion>
+
+					<exclusion>
+						<groupId>com.sun.jersey.contribs</groupId>
+						<artifactId>jersey-guice</artifactId>
+					</exclusion>
+
+					<exclusion>
+						<groupId>org.eclipse.jetty</groupId>
+						<artifactId>jetty-util</artifactId>
+					</exclusion>
+
+				</exclusions>
+			</dependency>
+
+			<!-- Spark-Bench -->
+			<dependency>
+				<groupId>com.ibm.sparktc.sparkbench</groupId>
+				<artifactId>sparkbench</artifactId>
+				<version>2.3.0_0.4.0</version>
+			</dependency>
+
+
+			<!-- FLINK -->
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-scala_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-clients_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-gelly-scala_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-table-common</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-table-planner_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-table-api-scala_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+			<!-- required since Flink 1.3 to custom Hadoop based input formats -->
+			<dependency>
+				<groupId>org.apache.flink</groupId>
+				<artifactId>flink-hadoop-compatibility_${scala.binary.version}</artifactId>
+				<version>${flink.version}</version>
+			</dependency>
+
+
+			<!-- SANSA RDF -->
+			<dependency>
+				<groupId>org.specs</groupId>
+				<artifactId>specs</artifactId>
+				<version>1.2.5</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.scalatest</groupId>
+						<artifactId>scalatest</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+
+
+
+
+			<dependency>
+				<groupId>org.aksw.sparqlify</groupId>
+				<artifactId>sparqlify-core</artifactId>
+				<version>0.8.7-SNAPSHOT</version>
+				<exclusions>
+					<!-- <exclusion> <groupId>cglib</groupId> <artifactId>cglib</artifactId> 
+						</exclusion> -->
+
+					<exclusion>
+						<groupId>org.aksw.sparqlify</groupId>
+						<artifactId>sparqlify-tests</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.hive</groupId>
+						<artifactId>hive-jdbc</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.springframework.batch</groupId>
+						<artifactId>spring-batch-infrastructure</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+
+			<!-- SANSA OWL -->
+			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+
+			<!-- Apache JENA 3.x -->
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-core</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+
+			<!-- Jena's (newer) vesion of jackson conflicts with hadoop's and causes 
+				it to crash -->
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-arq</artifactId>
+				<version>${jena.version}</version>
+			</dependency>
+
+
+
+
+			<!-- OWL API -->
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-api</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-apibinding</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-impl</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+				<artifactId>owlapi-parsers</artifactId>
+				<version>${owlapi.version}</version>
+			</dependency>
+
+			<!-- Test -->
+			<!-- <dependency> -->
+			<!-- <groupId>org.specs</groupId> -->
+			<!-- <artifactId>specs</artifactId> -->
+			<!-- <version>1.2.5</version> -->
+			<!-- <exclusions> -->
+			<!-- <exclusion> -->
+			<!-- <groupId>org.scalatest</groupId> -->
+			<!-- <artifactId>scalatest</artifactId> -->
+			<!-- </exclusion> -->
+			<!-- </exclusions> -->
+			<!-- </dependency> -->
+
+
+
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.12</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.scalatest</groupId>
+				<artifactId>scalatest_${scala.binary.version}</artifactId>
+				<version>3.0.5</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.specs2</groupId>
+				<artifactId>specs2-core_${scala.binary.version}</artifactId>
+				<version>4.0.3</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.specs2</groupId>
+				<artifactId>specs2-junit_${scala.binary.version}</artifactId>
+				<version>4.0.3</version>
+				<scope>test</scope>
+			</dependency>
+
+			<!-- Logging -->
+			<dependency>
+				<groupId>com.typesafe.scala-logging</groupId>
+				<artifactId>scala-logging_${scala.binary.version}</artifactId>
+				<version>3.9.0</version>
+			</dependency>
+
+			<!-- Guava -->
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>22.0</version>
+			</dependency>
+
+			<!-- Shapeless lib -->
+			<dependency>
+				<groupId>com.chuusai</groupId>
+				<artifactId>shapeless_${scala.binary.version}</artifactId>
+				<version>2.3.2</version>
+			</dependency>
+
+			<!-- Scopt -->
+			<dependency>
+				<groupId>com.github.scopt</groupId>
+				<artifactId>scopt_${scala.binary.version}</artifactId>
+				<version>3.7.0</version>
+			</dependency>
+
+			<!-- Config API -->
+			<dependency>
+				<groupId>com.typesafe</groupId>
+				<artifactId>config</artifactId>
+				<version>1.3.3</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<reporting>
+		<plugins>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jdepend-maven-plugin</artifactId>
+				<version>2.0</version>
+			</plugin>
+
+		</plugins>
+
+	</reporting>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>com.amashchenko.maven.plugin</groupId>
+				<artifactId>gitflow-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.scalatest</groupId>
+				<artifactId>scalatest-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eluder.coveralls</groupId>
+				<artifactId>coveralls-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+
+
+		<pluginManagement>
+			<plugins>
+				<!-- Scala Maven -->
+				<plugin>
+					<groupId>net.alchim31.maven</groupId>
+					<artifactId>scala-maven-plugin</artifactId>
+					<version>3.3.1</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>add-source</goal>
+								<goal>compile</goal>
+								<goal>testCompile</goal>
+							</goals>
+							<configuration>
+								<scalaVersion>${scala.version}</scalaVersion>
+								<recompileMode>incremental</recompileMode>
+								<useZincServer>true</useZincServer>
+								<args>
+									<arg>-unchecked</arg>
+									<arg>-deprecation</arg>
+									<arg>-feature</arg>
+									<arg>-dependencyfile</arg>
+									<arg>${project.build.directory}/.scala_dependencies</arg>
+									<arg>-Xmax-classfile-name</arg>
+									<arg>128</arg>
+								</args>
+								<jvmArgs>
+									<jvmArg>-Xms1024m</jvmArg>
+									<jvmArg>-Xmx1024m</jvmArg>
+									<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+									<jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+									<jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+								</jvmArgs>
+								<!--<javacArgs> -->
+								<!--<javacArg>-source</javacArg> -->
+								<!--<javacArg>${java.version}</javacArg> -->
+								<!--<javacArg>-target</javacArg> -->
+								<!--<javacArg>${java.version}</javacArg> -->
+								<!--<javacArg>-Xlint:all,-serial,-path</javacArg> -->
+								<!--</javacArgs> -->
+
+							</configuration>
+						</execution>
+					</executions>
+					<configuration>
+						<scalaVersion>${scala.version}</scalaVersion>
+						<recompileMode>incremental</recompileMode>
+					</configuration>
+				</plugin>
+
+
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.7.0</version>
+					<configuration>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
+						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+
+				<!-- Surefire -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<!-- <version>2.18.1</version> -->
+					<version>2.20.1</version>
+
+					<configuration>
+						<useFile>false</useFile>
+						<disableXmlReport>true</disableXmlReport>
+						<!-- If you have classpath issue like NoDefClassError,... -->
+						<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+						<includes>
+							<include>**/*Test.*</include>
+							<include>**/*Suite.*</include>
+						</includes>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-project-info-reports-plugin</artifactId>
+					<version>2.9</version>
+					<configuration>
+						<dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+						<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-report-plugin</artifactId>
+					<version>2.20</version>
+				</plugin>
+
+				<!-- Scalatest -->
+				<plugin>
+					<groupId>org.scalatest</groupId>
+					<artifactId>scalatest-maven-plugin</artifactId>
+					<version>2.0.0</version>
+					<configuration>
+						<tagsToExclude>net.sansa_stack.test.conformance.IntegrationTestSuite</tagsToExclude>
+					</configuration>
+				</plugin>
+
+
+				<!-- Legacy scalatest dependency - remove if the newer one works -->
+				<!-- <plugin> -->
+				<!-- <groupId>org.scalatest</groupId> -->
+				<!-- <artifactId>scalatest-maven-plugin</artifactId> -->
+				<!-- <version>1.0</version> -->
+				<!-- <configuration> -->
+				<!-- <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory> -->
+				<!-- <junitxml>.</junitxml> -->
+				<!-- <filereports>SANSA-RDF-Tests.txt</filereports> -->
+				<!-- </configuration> -->
+				<!-- <executions> -->
+				<!-- <execution> -->
+				<!-- <id>test</id> -->
+				<!-- <goals> -->
+				<!-- <goal>test</goal> -->
+				<!-- </goals> -->
+				<!-- </execution> -->
+				<!-- </executions> -->
+				<!-- </plugin> -->
+
+				<!-- Gitflow -->
+				<plugin>
+					<groupId>com.amashchenko.maven.plugin</groupId>
+					<artifactId>gitflow-maven-plugin</artifactId>
+					<version>1.8.0</version>
+					<configuration>
+						<installProject>false</installProject>
+						<pushRemote>false</pushRemote>
+						<gitFlowConfig>
+							<versionTagPrefix>v</versionTagPrefix>
+							<!-- These values should be defaults -->
+							<!-- <productionBranch>master</productionBranch> -->
+							<!-- <developmentBranch>develop</developmentBranch> -->
+							<!-- <featureBranchPrefix>feature/</featureBranchPrefix> -->
+							<!-- <releaseBranchPrefix>release/</releaseBranchPrefix> -->
+							<!-- <hotfixBranchPrefix>hotfix/</hotfixBranchPrefix> -->
+							<!-- <supportBranchPrefix>support/</supportBranchPrefix> -->
+							<!-- <origin>origin</origin> -->
+						</gitFlowConfig>
+					</configuration>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<version>2.5</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.0.0-M1</version>
+					<executions>
+						<execution>
+							<id>enforce-versions</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<requireMavenVersion>
+										<version>${maven.version}</version>
+									</requireMavenVersion>
+									<!--<requireJavaVersion> -->
+									<!--<version>${java.version}</version> -->
+									<!--</requireJavaVersion> -->
+									<bannedDependencies>
+										<excludes>
+											<!-- Akka depends on io.netty:netty, which puts classes under 
+												the org.jboss.netty package. This conflicts with the classes in org.jboss.netty:netty 
+												artifact, so we have to ban that artifact here. In Netty 4.x, the classes 
+												are under the io.netty package, so it's fine for us to depend on both io.netty:netty 
+												and io.netty:netty-all. -->
+											<exclude>org.jboss.netty</exclude>
+											<exclude>org.codehaus.groovy</exclude>
+										</excludes>
+										<searchTransitive>true</searchTransitive>
+									</bannedDependencies>
+								</rules>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>3.0.0</version>
+					<executions>
+						<execution>
+							<id>add-source</id>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>add-source</goal>
+							</goals>
+							<configuration>
+								<sources>
+									<source>src/main/scala_${scala.binary.version}</source>
+								</sources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>com.versioneye</groupId>
+					<artifactId>versioneye-maven-plugin</artifactId>
+					<version>3.11.4</version>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.0.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.0.0-M1</version>
+					<configuration>
+						<failOnError>false</failOnError>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.1.1</version>
+					<executions>
+						<!-- Run shade goal on package phase -->
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>shade</goal>
+							</goals>
+							<configuration>
+								<shadedArtifactAttached>true</shadedArtifactAttached>
+								<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+								<filters>
+									<filter>
+										<artifact>*:*</artifact>
+										<excludes>
+											<exclude>META-INF/*.SF</exclude>
+											<exclude>META-INF/*.DSA</exclude>
+											<exclude>META-INF/*.RSA</exclude>
+										</excludes>
+									</filter>
+								</filters>
+								<transformers>
+									<transformer
+										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+									<!-- add Main-Class to manifest file -->
+									<!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+									<!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
+									<!-- </transformer> -->
+								</transformers>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.0.2</version>
+				</plugin>
+
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.1.0</version>
+				</plugin>
+
+				<plugin>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>3.0.2</version>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.6</version>
+					<configuration>
+						<reportPlugins>
+							<plugin>
+								<artifactId>maven-project-info-reports-plugin</artifactId>
+								<version>2.9</version>
+							</plugin>
+							<plugin>
+								<groupId>net.alchim31.maven</groupId>
+								<artifactId>scala-maven-plugin</artifactId>
+							</plugin>
+						</reportPlugins>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>cobertura-maven-plugin</artifactId>
+					<version>2.7</version>
+					<configuration>
+						<format>xml</format>
+						<maxmem>256m</maxmem>
+						<!-- aggregated reports for multi-module projects -->
+						<aggregate>true</aggregate>
+					</configuration>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.8.1</version>
+					<executions>
+						<execution>
+							<id>prepare-agent</id>
+							<goals>
+								<goal>prepare-agent</goal>
+							</goals>
+						</execution>
+					</executions>
+
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-pmd-plugin</artifactId>
+					<version>3.8</version>
+					<configuration>
+						<linkXref>true</linkXref>
+						<sourceEncoding>utf-8</sourceEncoding>
+						<minimumTokens>100</minimumTokens>
+						<targetJdk>1.8</targetJdk>
+					</configuration>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jdepend-maven-plugin</artifactId>
+					<version>2.0</version>
+				</plugin>
+
+				<!-- Scalastyle -->
+				<plugin>
+					<groupId>org.scalastyle</groupId>
+					<artifactId>scalastyle-maven-plugin</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<verbose>false</verbose>
+						<failOnViolation>true</failOnViolation>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
+						<failOnWarning>false</failOnWarning>
+						<sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
+						<testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
+						<!-- we use a central config located in the root directory -->
+						<configLocation>${scalastyle.config.path}</configLocation>
+						<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
+						<outputEncoding>UTF-8</outputEncoding>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											net.alchim31.maven
+										</groupId>
+										<artifactId>
+											scala-maven-plugin
+										</artifactId>
+										<versionRange>
+											[3.3.1,)
+										</versionRange>
+										<goals>
+											<goal>testCompile</goal>
+											<goal>compile</goal>
+											<goal>add-source</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.eluder.coveralls</groupId>
+					<artifactId>coveralls-maven-plugin</artifactId>
+					<version>4.3.0</version>
+					<configuration>
+						<repoToken>${env.COVERALLS_TOKEN}</repoToken>
+						<sourceEncoding>UTF-8</sourceEncoding>
+						<sourceDirectories>
+							<sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+						</sourceDirectories>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+		</repository>
+		<snapshotRepository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>oss-sonatype</id>
+			<name>oss-sonatype</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>apache-snapshot</id>
+			<name>Apache repository (snapshots)</name>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<profiles>
+
+		<!-- the profile used for deployment to Sonatype Maven repository -->
+		<profile>
+			<id>ossrh</id>
+			<distributionManagement>
+				<repository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>net.alchim31.maven</groupId>
+						<artifactId>scala-maven-plugin</artifactId>
+						<version>3.2.2</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>compile</goal>
+									<goal>testCompile</goal>
+								</goals>
+								<configuration>
+									<scalaVersion>${scala.version}</scalaVersion>
+									<recompileMode>incremental</recompileMode>
+									<useZincServer>true</useZincServer>
+									<args>
+										<arg>-unchecked</arg>
+										<arg>-deprecation</arg>
+										<arg>-feature</arg>
+										<arg>-dependencyfile</arg>
+										<arg>${project.build.directory}/.scala_dependencies</arg>
+										<arg>-Xmax-classfile-name</arg>
+										<arg>128</arg>
+									</args>
+									<jvmArgs>
+										<jvmArg>-Xms1024m</jvmArg>
+										<jvmArg>-Xmx1024m</jvmArg>
+										<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+										<jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+										<jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+									</jvmArgs>
+									<!--<javacArgs> -->
+									<!--<javacArg>-source</javacArg> -->
+									<!--<javacArg>${java.version}</javacArg> -->
+									<!--<javacArg>-target</javacArg> -->
+									<!--<javacArg>${java.version}</javacArg> -->
+									<!--<javacArg>-Xlint:all,-serial,-path</javacArg> -->
+									<!--</javacArgs> -->
+
+								</configuration>
+							</execution>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>doc-jar</goal>
+								</goals>
+							</execution>
+						</executions>
+
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>verify</phase>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<configuration>
+									<keyname>AKSW</keyname>
+									<passphraseServerId>${gpg.keyname}</passphraseServerId>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.8</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 
 </project>
