@@ -20,3 +20,6 @@ project/plugins/project/
 .idea/
 *.iml
 *.swp
+
+# Scala style checker
+*/scalastyle-output.xml
