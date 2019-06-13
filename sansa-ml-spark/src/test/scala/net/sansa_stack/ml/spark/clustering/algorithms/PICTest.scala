@@ -7,7 +7,7 @@ import net.sansa_stack.rdf.spark.model.graph._
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
-import net.sansa_stack.ml.spark.clustering.algorithms.clustering._
+import net.sansa_stack.ml.spark.clustering._
 
 class PICTest extends FunSuite with DataFrameSuiteBase {
   test("PIC.picSparkML") {

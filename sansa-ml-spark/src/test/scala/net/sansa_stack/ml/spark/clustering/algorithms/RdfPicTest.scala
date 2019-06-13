@@ -7,7 +7,7 @@ import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
-import net.sansa_stack.ml.spark.clustering.algorithms.clustering._
+import net.sansa_stack.ml.spark.clustering._
 
 class RdfPicTest extends FunSuite with DataFrameSuiteBase {
 
@@ -16,7 +16,6 @@ class RdfPicTest extends FunSuite with DataFrameSuiteBase {
     val lang = Lang.NTRIPLES
     val path = getClass.getResource("/Cluster/Clustering_sampledata.txt").getPath
     val triples = spark.rdf(lang)(path)
-    val graph = triples.asStringGraph()
     val cluster = triples.cluster(ClusteringAlgorithm.RDFGraphPowerIterationClustering).asInstanceOf[RDFGraphPowerIterationClustering]
     val runTest = cluster.setK(conf.getInt("sansa.clustering.pic.number_clusters")).
       setMaxIterations(conf.getInt("sansa.clustering.pic.iterations")).run()
