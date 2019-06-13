@@ -11,3 +11,6 @@ buildNumber.properties
 *.idea
 /.cache-main
 /.classpath
+/.cache-tests
+/.project
+/.settings/

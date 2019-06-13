@@ -1,15 +1,24 @@
 package net.sansa_stack.ml.spark.clustering.algorithms
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.spark.rdd.RDD
+import com.typesafe.config.ConfigFactory
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.model.graph._
+import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
+
+import net.sansa_stack.ml.spark.clustering._
 
 class PICTest extends FunSuite with DataFrameSuiteBase {
   test("PIC.picSparkML") {
-    val testData = List((1.toLong, 2.toLong, 1.0), (1.toLong, 3.toLong, 0.0), (2.toLong, 3.toLong, 0.0))
-    val testDataRDD: RDD[(Long, Long, Double)] = spark.sparkContext.parallelize(testData)
-    val clusters = new PIC().picSparkML(testDataRDD, 2, 1, sparkSession = spark)
-    assert(clusters.size === 2)
+    val conf = ConfigFactory.load()
+    val lang = Lang.NTRIPLES
+    val path = getClass.getResource("/Cluster/testDatasetForSansa.nt").getPath
+    val triples = spark.rdf(lang)(path)
+    val cluster = triples.cluster(ClusteringAlgorithm.PIC).asInstanceOf[PIC]
+    val runTest = cluster.setK(conf.getInt("sansa.clustering.pic.number_clusters")).
+                setMaxIterations(conf.getInt("sansa.clustering.pic.iterations")).run()
+    assert(runTest.count() == 2)
   }
 }
 

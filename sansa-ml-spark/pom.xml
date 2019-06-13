@@ -101,9 +101,7 @@
 		<!-- Apache JENA 3.x -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
-			<artifactId>apache-jena-libs</artifactId>
-			<type>pom</type>
-			<version>${jena.version}</version>
+			<artifactId>jena-core</artifactId>
 		</dependency>
 
 		<!-- BigDL Library -->
@@ -141,7 +139,7 @@
 			<groupId>org.datasyslab</groupId>
 			<artifactId>geospark</artifactId>
 			<version>${geospark.version}</version>
- 		</dependency>
+		</dependency>
 
 
 		<!-- https://mvnrepository.com/artifact/com.vividsolutions/jts -->

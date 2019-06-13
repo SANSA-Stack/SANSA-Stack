@@ -36,6 +36,12 @@
 			<version>1.0</version>
 		</dependency>
 
+		<!-- Apache JENA 3.x -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+		</dependency>
+
 		<!-- Test -->
 		<dependency>
 			<groupId>junit</groupId>

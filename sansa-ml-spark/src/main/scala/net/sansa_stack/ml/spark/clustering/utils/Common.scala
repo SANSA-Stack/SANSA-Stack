@@ -9,6 +9,7 @@ import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization
 
 import net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, POI}
+import net.sansa_stack.ml.spark.clustering.datatypes.DbPOI
 
 object Common {
   val prefixID = "http://example.org/id/poi/"
@@ -48,7 +49,7 @@ object Common {
    /**
     * serialize clustering results to .nt file
     */
-  def seralizeToNT(sparkContext: SparkContext, clusters: Map[Int, Array[Long]], pois: RDD[POI]): Unit = {
+  def seralizeToNT(sparkContext: SparkContext, clusters: Map[Int, Array[Long]], pois: RDD[POI]): RDD[(Int, List[Triple])] = {
     val assignments = clusters.toList.sortBy { case (k, v) => v.length }
     val poisKeyPair = pois.keyBy(f => f.poi_id).persist()
     val newAssignment = assignments.map(f => (f._1, sparkContext.parallelize(f._2).map(x => (x, x)).join(poisKeyPair).map(x => ( x._2._2.poi_id, x._2._2.categories, x._2._2.coordinate)).collect()))
@@ -64,9 +65,8 @@ object Common {
                                           )}
                                             ).toList)
     )
-    newAssignmentRDDTriple.saveAsTextFile("results/triples")
+    newAssignmentRDDTriple
   }
-
 }
 
 

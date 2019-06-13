@@ -14,6 +14,8 @@ import org.apache.spark.sql.functions.{ col, udf }
 import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
 
+import net.sansa_stack.ml.common.outliers.anomalydetection.Utils
+
 /*
  *
  * AnomalyDetection - Anomaly detection of numerical data
@@ -32,7 +34,7 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val getObjectLiteral = getObjectList()
 
     // remove the literal which has ^^xsd:date or xsd:langstring(only considering numerical)
-    val removedLangString = getObjectLiteral.filter(f => searchedge(f.getObject.toString(), objList))
+    val removedLangString = getObjectLiteral.filter(f => Utils.searchedge(f.getObject.toString(), objList))
 
     val removewiki = removedLangString.filter(f => (!f.getPredicate.toString().contains("wikiPageID")) &&
       (!f.getPredicate.toString().contains("wikiPageRevisionID")))
@@ -65,62 +67,23 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
   def getHyp(): RDD[Triple] = nTriplesRDD.filter(f => f.getPredicate.toString().equals(hypernym))
 
   def getObjectList(): RDD[Triple] = nTriplesRDD.filter(f => f.getObject.isLiteral())
-
-  def triplesWithNumericLit(objLit: RDD[Triple]): RDD[Triple] = objLit.filter(f => isNumeric(f.getObject.toString()))
-
-  def propwithsubject(a: RDD[Triple]): RDD[(String, String)] = a.map(f => (getLocalName1(f.getSubject), getLocalName1(f.getPredicate)))
-  def isNumeric(x: String): Boolean =
-    {
-      if (x.contains("^")) {
-        val c = x.indexOf('^')
-        val subject = x.substring(1, c - 1)
-
-        if (isAllDigits(subject)) true
-        else false
-      } else false
-    }
-
-  def isAllDigits(x: String): Boolean = {
-    var found = false
-    for (ch <- x) {
-      if (ch.isDigit || ch == '.') {
-        found = true
-      } else if (ch.isLetter) {
-
-        found = false
-      }
-    }
-
-    found
-  }
-
-  def searchedge(x: String, y: List[String]): Boolean = {
-    if (x.contains("^")) {
-      val c = x.indexOf('^')
-      val subject = x.substring(c + 2)
-      y.contains(subject)
-    } else false
-  }
-
+  def triplesWithNumericLit(objLit: RDD[Triple]): RDD[Triple] = objLit.filter(f => Utils.isNumeric(f.getObject.toString()))
   def rdfType(getHypernym: RDD[Triple]): RDD[(String, HashSet[String])] = {
 
     // filter triples with predicate as rdf:type
     val triplesWithRDFType = nTriplesRDD.filter(_.getPredicate.toString() == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 
-    val triplesWithDBpedia = triplesWithRDFType.filter(f => searchType(f.getObject.toString(), triplesType))
+    val triplesWithDBpedia = triplesWithRDFType.filter(f => Utils.searchType(f.getObject.toString(), triplesType))
 
     val subWithType1 = triplesWithDBpedia.map(f =>
-      // ...
-      (getLocalName1(f.getSubject), (getLocalName1(f.getObject)))) // .reduceByKey(_ ++ _) //.partitionBy(new HashPartitioner(8)).persist()
-
+        (Utils.getLocalName(f.getSubject), Utils.getLocalName(f.getObject)))
     val initialSet1 = mutable.HashSet.empty[String]
     val addToSet1 = (s: mutable.HashSet[String], v: String) => s += v
     val mergePartitionSets1 = (p1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2
     val uniqueByKey1 = subWithType1.aggregateByKey(initialSet1)(addToSet1, mergePartitionSets1)
 
     val hyper1 = getHypernym.map(f =>
-      (getLocalName1(f.getSubject), (getLocalName1(f.getObject) + ("hypernym")))) // .partitionBy(new HashPartitioner(8)).persist
-
+        (Utils.getLocalName(f.getSubject), Utils.getLocalName(f.getObject) + ("hypernym")))
     val initialSet = mutable.HashSet.empty[String]
     val addToSet = (s: mutable.HashSet[String], v: String) => s += v
     val mergePartitionSets = (p1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2
@@ -137,16 +100,6 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
 
   }
 
-  def getLocalName1(x: Node): String = {
-    var a = x.toString().lastIndexOf("/")
-    val b = x.toString().substring(a + 1)
-    b
-  }
-  def searchType(x: String, y: List[String]): Boolean = {
-    if (y.exists(x.contains)) {
-      true
-    } else false
-  }
   def jSimilarity(
     TriplesWithNumericLiteral: RDD[Triple],
     rdfTypeDBwiki: RDD[(String, HashSet[String])], mapSubWithTriples: RDD[(String, mutable.Set[(String, String, Object)])]): RDD[(Set[(String, String, Object)])] = {
@@ -236,36 +189,11 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     clusterOfProp
 
   }
-  def isContains(a: List[Node], b: List[Node]): Boolean = {
-    if (a.forall(b.contains) || b.forall(a.contains)) {
-      true
-    } else false
-  }
 
-  def removeSupType(a: RDD[((String, HashSet[String]), (String, HashSet[String]))]): RDD[((String, HashSet[String]), (String, HashSet[String]))] = {
-
-    val rdd1 = a.map(f => f._1._2.toSet)
-    val rdd2 = a.map(f => f._2._2.toSet)
-    val intersectRDD = a.map(f => f._1._2.toSet.intersect(f._2._2.toSet))
-    val countRDD = intersectRDD.filter({
-      case b => b.size > 0
-    })
-    if (!countRDD.isEmpty()
-      && !intersectRDD.equals(rdd1)
-      && !intersectRDD.equals(rdd2)) {
-
-      val clusterOfProp = a.map({
-        case ((a, iter), (b, iter1)) => ((a, iter.filter(f => !searchType(f.toString(), listSuperType))),
-          (b, iter1.filter(f => !searchType(f.toString(), listSuperType))))
-      })
-
-      clusterOfProp
-    } else a
-  }
   def propClustering(triplesWithNumericLiteral: RDD[Triple]): RDD[(String, mutable.Set[(String, String, Object)])] = {
 
-    val subMap = triplesWithNumericLiteral.map(f => (getLocalName1(f.getSubject),
-      (getLocalName1(f.getSubject), getLocalName1(f.getPredicate), getNumber(f.getObject.toString())))) // .partitionBy(new HashPartitioner(8)) //make a function instead of using
+    val subMap = triplesWithNumericLiteral.map(f => (Utils.getLocalName(f.getSubject),
+      (Utils.getLocalName(f.getSubject), Utils.getLocalName(f.getPredicate), Utils.getNumber(f.getObject.toString())))) // .partitionBy(new HashPartitioner(8)) //make a function instead of using
 
     val initialSet = mutable.Set.empty[(String, String, Object)]
     val addToSet = (s: mutable.Set[(String, String, Object)], v: (String, String, Object)) => s += v
@@ -273,14 +201,6 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     val uniqueByKey = subMap.aggregateByKey(initialSet)(addToSet, mergePartitionSets)
 
     uniqueByKey
-  }
-
-  def getNumber(a: String): Object = {
-    val c = a.indexOf('^')
-    val subject = a.substring(1, c - 1)
-
-    subject
-
   }
 
   def sim(seq1: HashSet[String], seq2: HashSet[String]): Double = {
@@ -365,20 +285,11 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
 
     if (!outliers.head(1).isEmpty) {
       val join = dfWithoutSchema.crossJoin(outliers)
-
-      // val joinfilt=join.filter(df(colName).isNull || df(colName) === "" || df(colName).isNaN)
       result = join.filter(matcher _).distinct()
       result.select("outliers").show(100, false)
-      // _result.select("dt").show(20, false)
-      // result.filter($"outliers".isNotNull).select("outliers")
-
-      //  val res=result.where(result.col("outliers").isNotNull && result.col("outliers") =!= "").select("outliers")
       result
     }
     result
-    //
-    //    // result.show()
-    //    result.where(result.col("outliers").isNotNull)
   }
 
   def iqr2(cluster: Seq[(String, String, Object)], anomalyListLimit: Int): Seq[(String, String, Object)] = {
@@ -404,15 +315,9 @@ class AnomalyDetectionWithCountVetcorizerModel(nTriplesRDD: RDD[Triple], objList
     //    println("upperRange="+upperRange)
     val yse = c.filter(p => (p < lowerRange || p > upperRange))
 
-    val xde = cluster.filter(f => search(f._3.toString().toDouble, yse))
+    val xde = cluster.filter(f => Utils.search(f._3.toString().toDouble, yse))
 
     xde
-  }
-
-  def search(a: Double, b: Array[Double]): Boolean = {
-    if (b.contains(a)) true
-    else false
-
   }
 }
 object AnomalyDetectionWithCountVetcorizerModel {
