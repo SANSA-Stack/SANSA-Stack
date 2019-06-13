@@ -803,15 +803,9 @@ class BorderFlow(graph: Graph[Node, Node]) extends ClusterAlgo{
       val evaluateString: List[String] = List(av.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
 
- //     evaluateStringRDD.saveAsTextFile(outputevlhard)
-
       val avsoft = evaluateSoft.sum / evaluateSoft.size
       val evaluateStringS: List[String] = List(avsoft.toString())
       val evaluateStringRDDS = spark.sparkContext.parallelize(evaluateStringS)
-
-  //    evaluateStringRDDS.saveAsTextFile(outputevlsoft)
-      // println(s"averagesoft: $avsoft\n")
-
       bigList
     }
 

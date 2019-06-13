@@ -36,33 +36,7 @@
 			<version>1.0</version>
 		</dependency>
 
-	<!-- Apache Spark Core -->
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_${scala.binary.version}</artifactId>
-			<version>${spark.version}</version>
-		</dependency>
-
-		<!-- Apache Spark SQL -->
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-sql_${scala.binary.version}</artifactId>
-			<version>${spark.version}</version>
-		</dependency>
-		<!-- Apache Spark MLlib -->
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
-			<version>${spark.version}</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.github.fommil.netlib/all -->
-		<dependency>
-			<groupId>com.github.fommil.netlib</groupId>
-			<artifactId>all</artifactId>
-			<version>1.1.2</version>
-			<type>pom</type>
-		</dependency>
-<!-- Apache JENA 3.x -->
+	<!-- Apache JENA 3.x -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>apache-jena-libs</artifactId>

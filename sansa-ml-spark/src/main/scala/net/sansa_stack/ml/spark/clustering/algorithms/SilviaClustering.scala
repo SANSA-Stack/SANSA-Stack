@@ -26,8 +26,6 @@ import org.apache.spark.sql.SparkSession
 
 
 class SilviaClustering(graph: Graph[String, String]) extends ClusterAlgo{
-
-  // def apply(spark: SparkSession, graph: Graph[String, String], output: String, outputeval: String): Unit = {
 def run(): RDD[(Long, List[String])] = {
     Logger.getRootLogger.setLevel(Level.WARN)
 
@@ -514,17 +512,12 @@ def run(): RDD[(Long, List[String])] = {
 
       val evaluateString: List[String] = List(avsoft.toString())
       val evaluateStringRDD = spark.sparkContext.parallelize(evaluateString)
-
-    //  evaluateStringRDD.saveAsTextFile(outputeval)
-
       val result = rdfRDD
-
       result
     }
     val cRdd = clusterRdd()
     val zipwithindex = cRdd.zipWithIndex().map(f => (f._2, f._1))
     zipwithindex
-  //  zipwithindex.saveAsTextFile(output)
   }
 }
 object SilviaClustering {

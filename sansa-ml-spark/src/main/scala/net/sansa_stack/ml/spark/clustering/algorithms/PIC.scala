@@ -30,16 +30,14 @@ class PIC(input: RDD[Triple]) extends Serializable with ClusterAlgo {
 
   def setK(K: Int): this.type = {
     noofcluster = K
-    println(noofcluster)
     this
   }
   /**
-   * set maximum iterations for Kmeans,PIC etc
+   * set maximum iterations for PIC
    * @param iter
    */
   def setMaxIterations(iter: Int): this.type = {
     noOfIter = iter
-    println(noOfIter)
     this
   }
 
@@ -49,29 +47,18 @@ class PIC(input: RDD[Triple]) extends Serializable with ClusterAlgo {
 
     val poiCategorySetVienna = pois.map(poi => (poi.poi_id, poi.categories.categories.toSet)).persist()
     val poiCartesian = poiCategorySetVienna.cartesian(poiCategorySetVienna)
-    println("Cartesian: " + poiCartesian.count())
     val pairwisePOICategorySet = poiCartesian.filter {
       case (a, b) =>
-        println(a._1.toString + "; " + b._1.toString)
         a._1 < b._1
     }
-    println(pairwisePOICategorySet.count())
-    println("end of cartesian")
-    // from ((sid, ()), (did, ())) to (sid, did, similarity)
     val pairwisePOISimilarity = pairwisePOICategorySet.map(x => (x._1._1.toLong, x._2._1.toLong,
       new Distances().jaccardSimilarity(x._1._2, x._2._2))).persist()
-    println("get similarity matrix")
-
     val picDistanceMatrix = pairwisePOISimilarity.map(x => Distance(x._1, x._2, 1 - x._3)).collect()
-    // Serialization.writePretty(picDistanceMatrix, picDistanceMatrixWriter)
-    // picDistanceMatrixWriter.close()
-    println("start pic clustering")
     val clustersPIC = picSparkML(
       pairwisePOISimilarity,
       noofcluster,
       noOfIter,
       spark)
-    println("end pic clustering")
     val picClusters = Common.seralizeToNT(spark.sparkContext, clustersPIC, pois)
     picClusters
   }
@@ -93,7 +80,6 @@ class PIC(input: RDD[Triple]) extends Serializable with ClusterAlgo {
     val vertices = indexedMap.map(f => (f._2, f._1))
     val edges = pairwisePOISimilarity.map(f => Edge(f._1, f._2, f._3)) // from similarity to int
     val similarityGraph = Graph(vertices, edges)
-    // val model = new RDFGraphPICClustering(sparkSession, similarityGraph, numCentroids, numIterations)
   }
 
 }

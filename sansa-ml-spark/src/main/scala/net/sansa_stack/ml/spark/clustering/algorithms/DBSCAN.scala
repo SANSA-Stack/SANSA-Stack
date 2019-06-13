@@ -47,9 +47,8 @@ class DBSCAN(input: RDD[Triple]) extends Serializable with ClusterAlgo {
   val dataProcessing = new DataProcessing(spark, conf, input)
   val pois = dataProcessing.pois
 
-  def seteps(K: Double): this.type = {
-    epsilon = K
-    println(epsilon)
+  def seteps(eps: Double): this.type = {
+    epsilon = eps
     this
   }
   /**
@@ -58,7 +57,6 @@ class DBSCAN(input: RDD[Triple]) extends Serializable with ClusterAlgo {
    */
   def setMinPts(points: Int): this.type = {
     minPoints = points
-    println(minPoints)
     this
   }
   def run(): RDD[(String, List[Triple])] = {
@@ -273,8 +271,6 @@ class DBSCAN(input: RDD[Triple]) extends Serializable with ClusterAlgo {
 
       // CombOp
       (hm1, hm2) => hm1 ++= hm2)
-    // RDD[(String, Array[POI])]
-    // dbclusterRDD.foreach(println)
     val k = dbclusterRDD.mapValues(_.toArray)
     k
   }

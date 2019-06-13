@@ -34,7 +34,6 @@ class Kmeans(input: RDD[Triple]) extends ClusterAlgo {
 
   def run(): RDD[(Int, List[Triple])] = {
     val poiCategorySetVienna = pois.map(poi => (poi.poi_id, poi.categories.categories.toSet)).persist()
-    println("Start one hot encoding km")
     val (oneHotDF, oneHotMatrix) = new Encoder().oneHotEncoding(poiCategorySetVienna, spark)
     oneHotClusters = kmClustering(
       numClusters = noofcluster,
@@ -43,7 +42,6 @@ class Kmeans(input: RDD[Triple]) extends ClusterAlgo {
       spark = spark)
     val temp = Common.seralizeToNT(spark.sparkContext, oneHotClusters, pois)
     temp
-    //  Common.seralizeToNT(spark.sparkContext, oneHotClusters, pois,"results/onehot.txt")
   }
 
   /**

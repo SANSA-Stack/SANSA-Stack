@@ -80,17 +80,14 @@ class AnomalyWithHashingTF(nTriplesRDD: RDD[Triple], objList: List[String],
     val triplesWithDBpedia = triplesWithRDFType.filter(f => Utils.searchType(f.getObject.toString(), triplesType))
 
     val subWithType1 = triplesWithDBpedia.map(f =>
-      // ...
-      (Utils.getLocalName(f.getSubject), (Utils.getLocalName(f.getObject)))) // .reduceByKey(_ ++ _) //.partitionBy(new HashPartitioner(8)).persist()
-
+       (Utils.getLocalName(f.getSubject), Utils.getLocalName(f.getObject)))
     val initialSet1 = mutable.HashSet.empty[String]
     val addToSet1 = (s: mutable.HashSet[String], v: String) => s += v
     val mergePartitionSets1 = (p1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2
     val uniqueByKey1 = subWithType1.aggregateByKey(initialSet1)(addToSet1, mergePartitionSets1)
 
     val hyper1 = getHypernym.map(f =>
-      (Utils.getLocalName(f.getSubject), (Utils.getLocalName(f.getObject) + ("hypernym")))) // .partitionBy(new HashPartitioner(8)).persist
-
+      (Utils.getLocalName(f.getSubject), Utils.getLocalName(f.getObject) + ("hypernym")))
     val initialSet = mutable.HashSet.empty[String]
     val addToSet = (s: mutable.HashSet[String], v: String) => s += v
     val mergePartitionSets = (p1: mutable.HashSet[String], p2: mutable.HashSet[String]) => p1 ++= p2

@@ -65,8 +65,7 @@ object Common {
                                           )}
                                             ).toList)
     )
-   // newAssignmentRDDTriple.saveAsTextFile("results/triples")
-    newAssignmentRDDTriple // .saveAsTextFile(path)
+    newAssignmentRDDTriple
   }
 }
 
