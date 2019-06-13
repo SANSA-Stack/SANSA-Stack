@@ -59,6 +59,8 @@
 		<ontop.version>3.0.0-beta-2</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
+		<sansa.owl.version>0.4.2-SNAPSHOT</sansa.owl.version>
+		<sansa.datalake.version>0.1.1-SNAPSHOT</sansa.datalake.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
@@ -450,7 +452,7 @@
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
 				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${sansa.owl.version}</version>
 			</dependency>
 
 
