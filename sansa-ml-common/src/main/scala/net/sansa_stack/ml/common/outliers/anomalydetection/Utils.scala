@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.common.outliers.anomalyDetection
+package net.sansa_stack.ml.common.outliers.anomalydetection
 
 import scala.collection.mutable
 import scala.collection.mutable.HashSet

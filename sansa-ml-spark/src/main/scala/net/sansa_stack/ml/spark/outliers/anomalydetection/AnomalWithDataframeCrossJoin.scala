@@ -15,7 +15,7 @@ import org.apache.spark.sql.functions.{ col, udf }
 import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
 
-import net.sansa_stack.ml.common.outliers.anomalyDetection.Utils
+import net.sansa_stack.ml.common.outliers.anomalydetection.Utils
 /* Dataframe CrossJoin works well for smaller datasets(for e.g. 3.6GB)
  * For Big datasets(16.6GB), it is computationally expensive.
  *
