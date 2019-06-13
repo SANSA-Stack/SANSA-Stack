@@ -2,25 +2,26 @@ package net.sansa_stack.examples.spark.ml.clustering
 
 import scala.collection.mutable
 
-import net.sansa_stack.ml.spark.clustering.algorithms.{ SilviaClustering => AlgSilviaClustering }
+import net.sansa_stack.ml.spark.clustering._
+import net.sansa_stack.ml.spark.clustering.algorithms.SilviaClustering
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang
 import org.apache.log4j.{ Level, Logger }
 import org.apache.spark.sql.SparkSession
 
-object SilviaClustering {
+object SilviaClusteringExample {
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.out, config.outeval)
+        run(config.in, config.out)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: String, output: String, outputeval: String): Unit = {
+  def run(input: String, output: String): Unit = {
 
     val spark = SparkSession.builder
       .appName(s"SilviaClustering example ( $input )")
@@ -38,15 +39,15 @@ object SilviaClustering {
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
 
-    val graph = triples.asStringGraph()
+    val silvia = triples.cluster(ClusteringAlgorithm.SilviaClustering).asInstanceOf[SilviaClustering].run()
 
-    AlgSilviaClustering(spark, graph, output, outputeval)
+    silvia.collect.foreach(println)
 
     spark.stop
 
   }
 
-  case class Config(in: String = "", out: String = "", outeval: String = "")
+  case class Config(in: String = "", out: String = "")
 
   val parser = new scopt.OptionParser[Config]("SilviaClustering") {
 
@@ -56,13 +57,9 @@ object SilviaClustering {
       action((x, c) => c.copy(in = x)).
       text("path to file contains the input files")
 
-    opt[String]('o', "output").required().valueName("<directory>").
+    opt[String]('o', "output").optional().valueName("<directory>").
       action((x, c) => c.copy(out = x)).
       text("the output directory")
-
-    opt[String]('e', "outputeval").required().valueName("<directory>").
-      action((x, c) => c.copy(outeval = x)).
-      text("the output evaluation directory")
 
     help("help").text("prints this usage text")
   }

@@ -2,6 +2,7 @@ package net.sansa_stack.examples.spark.ml.clustering
 
 import scala.collection.mutable
 
+import net.sansa_stack.ml.spark.clustering._
 import net.sansa_stack.ml.spark.clustering.algorithms.RDFGraphPowerIterationClustering
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
@@ -36,10 +37,10 @@ object RDFGraphPIClustering {
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
 
-    val graph = triples.asStringGraph()
+    val cluster = triples.cluster(ClusteringAlgorithm.RDFGraphPowerIterationClustering).asInstanceOf[RDFGraphPowerIterationClustering]
+      .setK(k).setMaxIterations(maxIterations).run()
 
-    val cluster = RDFGraphPowerIterationClustering(spark, graph, output, k, maxIterations)
-    cluster.saveAsTextFile(output)
+    cluster.collect.foreach(println)
 
     spark.stop
 
