@@ -1,11 +1,12 @@
 package net.sansa_stack.ml.spark
 
-import net.sansa_stack.ml.spark.clustering.algorithms._
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
+import net.sansa_stack.ml.spark.clustering.algorithms._
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.model._
 
 package object clustering {
   object ClusteringAlgorithm extends Enumeration {
@@ -22,7 +23,7 @@ package object clustering {
   implicit class clusterT(input: RDD[Triple]) extends Enumeration {
     def cluster(name: ClusteringAlgorithm.Value): ClusterAlgo = name match {
       case ClusteringAlgorithm.KMeans => new Kmeans(input)
-      case ClusteringAlgorithm.DBSCAN  => new DBSCAN(input)
+      case ClusteringAlgorithm.DBSCAN => new DBSCAN(input)
       case ClusteringAlgorithm.PIC => new PIC(input)
       case ClusteringAlgorithm.BorderFlow => new BorderFlow(input.asGraph())
       case ClusteringAlgorithm.SilviaClustering => new SilviaClustering(input.asStringGraph())
