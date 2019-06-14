@@ -2,11 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
-		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<version>0.5.1-SNAPSHOT</version>
 	</parent>
+
 	<artifactId>sansa-ml-flink_2.11</artifactId>
 	<name>ML API - Apache Flink</name>
 	<description>RDF/OWL Machine Learning Library for Apache Flink</description>
@@ -61,13 +63,11 @@
 		<dependency>
 			<groupId>org.specs2</groupId>
 			<artifactId>specs2-core_${scala.binary.version}</artifactId>
-			<version>2.4.16</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.scalatest</groupId>
 			<artifactId>scalatest_${scala.binary.version}</artifactId>
-			<version>2.2.4</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -125,7 +125,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.12</version>
 				<executions>
 					<!-- Add src/main/scala to eclipse build path -->
 					<execution>

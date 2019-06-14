@@ -58,23 +58,13 @@
 		<module>sansa-ml-spark</module>
 	</modules>
 
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<sansa.rdf.version>0.5.1-SNAPSHOT</sansa.rdf.version>
-		<sansa.owl.version>0.4.2-SNAPSHOT</sansa.owl.version>
-		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
-	</properties>
-
 	<dependencyManagement>
 		<dependencies>
 			<!-- SANSA RDF -->
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.rdf.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- SANSA OWL -->
