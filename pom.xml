@@ -64,7 +64,7 @@
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${sansa.rdf.version}</version>
 			</dependency>
 
 			<!-- SANSA OWL -->
