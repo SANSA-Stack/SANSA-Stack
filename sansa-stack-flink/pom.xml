@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>sansa-stack-parent</artifactId>
 		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-stack-parent</artifactId>
 		<version>2018-12</version>
 	</parent>
 
@@ -27,10 +27,8 @@
 		</dependency>
 
 		<!-- Query Layer -->
-		<!--<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-query-flink_${scala.binary.version}</artifactId>
-		</dependency>-->
+		<!--<dependency> <groupId>${project.groupId}</groupId> <artifactId>sansa-query-flink_${scala.binary.version}</artifactId> 
+			</dependency> -->
 
 		<!-- Inference Layer -->
 		<dependency>
