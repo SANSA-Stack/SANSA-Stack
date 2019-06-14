@@ -3,10 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<version>0.5.1-SNAPSHOT</version>
 	</parent>
+
 	<artifactId>sansa-ml-spark_2.11</artifactId>
 	<name>ML API - Apache Spark</name>
 	<description>RDF/OWL Machine Learning Library for Apache Spark</description>
@@ -85,12 +86,10 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-mapreduce-client-core</artifactId>
-			<version>${hadoop.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
-			<version>${hadoop.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
