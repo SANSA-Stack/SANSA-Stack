@@ -2,13 +2,10 @@ package net.sansa_stack.inference.flink.data
 
 import java.net.URI
 
-import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 
+import net.sansa_stack.rdf.flink.io.ntriples.NTriplesReader
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
-
-import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
 
 
 /**
@@ -28,27 +25,7 @@ object RDFGraphLoader {
   }
 
   def loadFromDisk(paths: Seq[URI], env: ExecutionEnvironment): RDFGraph = {
-//    // create a configuration object
-//    val parameters = new Configuration
-//
-//    // set the recursive enumeration parameter
-//    parameters.setBoolean("recursive.file.enumeration", true)
-//    env.readTextFile(f).withParameters(parameters)
-
-    val tmp: List[String] = paths.map(path => path.toString).toList
-
-    val triples = tmp
-      .map(f => env.readTextFile(f)) // no support to read from multiple paths at once, thus, map + union here
-      .reduce(_ union _) // TODO Flink 1.5.0 supports multiple paths via FileInputFormat
-      .mapPartition(p => {
-        // convert iterator to input stream
-        val is = ReadableByteChannelFromIterator.toInputStream(p.asJava)
-
-        RDFDataMgr.createIteratorTriples(is, Lang.NTRIPLES, null).asScala
-      })
-      .name("triples")
-
-    RDFGraph(triples)
+    RDFGraph(NTriplesReader.load(env, paths))
   }
 
   def main(args: Array[String]): Unit = {
@@ -56,7 +33,8 @@ object RDFGraphLoader {
 
     val path = args(0)
 
-    val env = ExecutionEnvironment.getExecutionEnvironment
+//    val env = ExecutionEnvironment.getExecutionEnvironment
+    val env = ExecutionEnvironment.createLocalEnvironment(parallelism = 2)
 
     val ds = RDFGraphLoader.loadFromDisk(path, env).triples
 
