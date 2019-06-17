@@ -21,7 +21,8 @@ import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 
 /**
-  * The class to compute the RDFS materialization of a given RDF graph.
+  * A class to compute the materialization of a given RDF graph for a given reasoning profile.
+  * Basically, used as the main class for inference.
   *
   * @author Lorenz Buehmann
   *
@@ -66,6 +67,7 @@ object RDFGraphMaterializer {
 
     // set up the execution environment
     val env = ExecutionEnvironment.getExecutionEnvironment
+    //  and disable logging to standard out
     env.getConfig.disableSysoutLogging()
 //    env.setParallelism(4)
 
@@ -89,10 +91,10 @@ object RDFGraphMaterializer {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    println(s"|G_inf| = ${inferredGraph.size}")
+//    println(s"|G_inf| = ${inferredGraph.size}")
 
     // write triples to disk
-//    RDFGraphWriter.writeToDisk(inferredGraph, output, writeToSingleFile, sortedOutput)
+    RDFGraphWriter.writeToDisk(inferredGraph, output, writeToSingleFile, sortedOutput)
 
     //    println(env.getExecutionPlan())
 
@@ -118,7 +120,7 @@ object RDFGraphMaterializer {
 
   // the CLI parser
   val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
-    head("RDFGraphMaterializer", "0.4.0")
+    head("RDFGraphMaterializer", "0.5.0")
 
 //    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
 //      action((x, c) => c.copy(in = x)).
