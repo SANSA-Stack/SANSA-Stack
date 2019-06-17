@@ -22,3 +22,22 @@ project/plugins/project/
 *.iml
 
 scalastyle-output.xml
+
+
+# eclipse conf file
+.settings
+.classpath
+.project
+.manager
+.scala_dependencies
+.cashe
+.cache-main
+.cache-tests
+.classpath
+
+# not sure what creates this project folder
+project
+
+# mvn dependency:tree > deptree.txt
+deptree.txt
+
