@@ -6,7 +6,9 @@ import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.flink.util.Collector
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.sparql.util.NodeComparator
 
+import net.sansa_stack.inference.flink.utils.NodeKey
 import net.sansa_stack.inference.utils.Profiler
 
 /**
@@ -186,28 +188,65 @@ trait TransitiveReasoner extends Profiler{
     * @return a DataSet containing the transitive closure of the triples
     */
   def computeTransitiveClosureOptSemiNaive(triples: DataSet[Triple]): DataSet[Triple] = {
+
+    // apparently, we have to use pairs for (subject, object) because the Jena Triple is not a Scala tuple
+    // and we have to provide positions of key and value in the iterate method
+    // the initial set of edges is used as input for both, the workset and the solutionset
+    val initialTC = triples.map(t => (NodeKey(t.getSubject), NodeKey(t.getObject)))
+    val pred = triples.first(1).collect().head.getPredicate
+
     log.info("computing TC...")
-    def iterate(s: DataSet[Triple], ws: DataSet[Triple]): (DataSet[Triple], DataSet[Triple]) = {
-      val resolvedRedirects = triples.join(ws)
-        .where { _.getSubject }
-        .equalTo { _.getObject }
+    def iterate(s: DataSet[(NodeKey, NodeKey)], ws: DataSet[(NodeKey, NodeKey)])
+    : (DataSet[(NodeKey, NodeKey)], DataSet[(NodeKey, NodeKey)]) = {
+      val resolvedRedirects = initialTC.join(ws)
+        .where(0)
+        .equalTo(1)
         .map { joinResult => joinResult match {
-          case (redirect, link) =>
-            Triple.create(link.getSubject, redirect.getPredicate, redirect.getObject)
+          case (redirect, link) => (link._1, redirect._2)
         }
         }.name("TC-From-Iteration")
       (resolvedRedirects, resolvedRedirects)
     }
 
-    val tc = triples
-      .iterateDelta(triples, 10, Array("s", "o"))(iterate)
+    val tc = initialTC
+      .iterateDelta(initialTC, 10, Array(0))(iterate)
       .name("Final-TC")
     log.info("finished computing TC")
     //      .map { cl => cl}
     //      .name("Final-Redirect-Result")
-    tc
+    tc.map(t => Triple.create(t._1.node, pred, t._2.node))
   }
 
-
+//  /**
+//    * Computes the transitive closure on a DataSet of triples.
+//    * Note, that the assumption is that all triples do have the same predicate.
+//    * This implementation uses the Flink iterate operator (see
+//    * [[https://ci.apache.org/projects/flink/flink-docs-master/dev/batch/iterations.html"]])
+//    *
+//    * @param triples the DataSet of triples
+//    * @return a DataSet containing the transitive closure of the triples
+//    */
+//  def computeTransitiveClosureOptSemiNaive(triples: DataSet[Triple]): DataSet[Triple] = {
+//    log.info("computing TC...")
+//    def iterate(s: DataSet[Triple], ws: DataSet[Triple]): (DataSet[Triple], DataSet[Triple]) = {
+//      val resolvedRedirects = triples.join(ws)
+//        .where { _.getSubject }
+//        .equalTo { _.getObject }
+//        .map { joinResult => joinResult match {
+//          case (redirect, link) =>
+//            Triple.create(link.getSubject, redirect.getPredicate, redirect.getObject)
+//        }
+//        }.name("TC-From-Iteration")
+//      (resolvedRedirects, resolvedRedirects)
+//    }
+//
+//    val tc = triples
+//      .iterateDelta(triples, 10, Array("s", "o"))(iterate)
+//      .name("Final-TC")
+//    log.info("finished computing TC")
+//    //      .map { cl => cl}
+//    //      .name("Final-Redirect-Result")
+//    tc
+//  }
 
 }

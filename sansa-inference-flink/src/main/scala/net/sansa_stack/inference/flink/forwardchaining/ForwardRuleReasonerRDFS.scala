@@ -270,7 +270,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       .union(
         Seq(otherTriples, subClassOfTriplesTrans, subPropertyOfTriplesTrans, typeTriples, triplesRDFS7, triplesRDFS9)
       )
-      .distinct()
+      .distinct(t => t.hashCode())
 
     // we perform also additional rules if enabled
     if (level != SIMPLE) {
