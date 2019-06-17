@@ -7,8 +7,8 @@
 # Matching is does against the remote URL in the repo's git config - so this process is
 # independent from local folder names.
 
-#order=(parent rdf owl query inference ml examples)
-order=(parent rdf owl query ml examples)
+order=(parent rdf owl query inference ml examples)
+#order=(parent rdf owl query ml examples)
 
 
 cd ..
@@ -32,6 +32,6 @@ done
 echo "${folders[@]}"
 
 for f in "${folders[@]}"; do
-  (cd "$f" && mvn $@)
+  (cd "$f" && git pull && mvn $@)
 done
 
