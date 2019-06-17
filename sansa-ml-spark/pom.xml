@@ -92,7 +92,6 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-streaming</artifactId>
-			<version>${hadoop.version}</version>
 		</dependency>
 
 		<!-- Apache JENA 3.x -->
