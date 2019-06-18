@@ -14,7 +14,7 @@
 
     <properties>
         <spark.deps.scope>compile</spark.deps.scope>
-        <scala.version>2.11.11</scala.version>
+      
         <sansa.version>0.3.1-SNAPSHOT</sansa.version>
     </properties>
 
