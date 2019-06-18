@@ -6,7 +6,7 @@ cache:
 scala:
   - 2.11.12
 jdk:
-  - oraclejdk8
+  - openjdk8
 script:
   - mvn scalastyle:check
   - mvn test
