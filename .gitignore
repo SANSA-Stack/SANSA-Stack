@@ -1,5 +1,6 @@
 *.class
 *.log
+*.swp
 
 # sbt specific
 .cache
@@ -19,6 +20,20 @@ project/plugins/project/
 .idea
 
 scalastyle-output.xml
+
+# eclipse conf file
+.settings
+.classpath
+.project
+.manager
+.scala_dependencies
+.cashe
+.cache-main
+.cache-tests
+.classpath
+#.coveralls.yml
+deptree.txt
+
 
 # Protege files
 catalog-v001.xml
