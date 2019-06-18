@@ -863,6 +863,7 @@
 									<arg>128</arg>
 								</args>
 								<jvmArgs>
+									<jvmArg>-Xss5m</jvmArg>
 									<jvmArg>-Xms1024m</jvmArg>
 									<jvmArg>-Xmx1024m</jvmArg>
 									<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
@@ -879,11 +880,13 @@
 
 							</configuration>
 						</execution>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>doc-jar</goal>
+							</goals>
+						</execution>
 					</executions>
-					<configuration>
-						<scalaVersion>${scala.version}</scalaVersion>
-						<recompileMode>incremental</recompileMode>
-					</configuration>
 				</plugin>
 
 
@@ -1371,56 +1374,47 @@
 			</distributionManagement>
 			<build>
 				<plugins>
-					<plugin>
-						<groupId>net.alchim31.maven</groupId>
-						<artifactId>scala-maven-plugin</artifactId>
-						<version>3.2.2</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>compile</goal>
-									<goal>testCompile</goal>
-								</goals>
-								<configuration>
-									<scalaVersion>${scala.version}</scalaVersion>
-									<recompileMode>incremental</recompileMode>
-									<useZincServer>true</useZincServer>
-									<args>
-										<arg>-unchecked</arg>
-										<arg>-deprecation</arg>
-										<arg>-feature</arg>
-										<arg>-dependencyfile</arg>
-										<arg>${project.build.directory}/.scala_dependencies</arg>
-										<arg>-Xmax-classfile-name</arg>
-										<arg>128</arg>
-									</args>
-									<jvmArgs>
-										<jvmArg>-Xss5m</jvmArg>
-										<jvmArg>-Xms1024m</jvmArg>
-										<jvmArg>-Xmx1024m</jvmArg>
-										<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-										<jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
-										<jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
-									</jvmArgs>
-									<!--<javacArgs> -->
-									<!--<javacArg>-source</javacArg> -->
-									<!--<javacArg>${java.version}</javacArg> -->
-									<!--<javacArg>-target</javacArg> -->
-									<!--<javacArg>${java.version}</javacArg> -->
-									<!--<javacArg>-Xlint:all,-serial,-path</javacArg> -->
-									<!--</javacArgs> -->
-
-								</configuration>
-							</execution>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>doc-jar</goal>
-								</goals>
-							</execution>
-						</executions>
-
-					</plugin>
+					<!-- <plugin> -->
+					<!-- <groupId>net.alchim31.maven</groupId> -->
+					<!-- <artifactId>scala-maven-plugin</artifactId> -->
+					<!-- <version>3.2.2</version> -->
+					<!-- <executions> -->
+					<!-- <execution> -->
+					<!-- <goals> -->
+					<!-- <goal>compile</goal> -->
+					<!-- <goal>testCompile</goal> -->
+					<!-- </goals> -->
+					<!-- <configuration> -->
+					<!-- <scalaVersion>${scala.version}</scalaVersion> -->
+					<!-- <recompileMode>incremental</recompileMode> -->
+					<!-- <useZincServer>true</useZincServer> -->
+					<!-- <args> -->
+					<!-- <arg>-unchecked</arg> -->
+					<!-- <arg>-deprecation</arg> -->
+					<!-- <arg>-feature</arg> -->
+					<!-- <arg>-dependencyfile</arg> -->
+					<!-- <arg>${project.build.directory}/.scala_dependencies</arg> -->
+					<!-- <arg>-Xmax-classfile-name</arg> -->
+					<!-- <arg>128</arg> -->
+					<!-- </args> -->
+					<!-- <jvmArgs> -->
+					<!-- <jvmArg>-Xss5m</jvmArg> -->
+					<!-- <jvmArg>-Xms1024m</jvmArg> -->
+					<!-- <jvmArg>-Xmx1024m</jvmArg> -->
+					<!-- <jvmArg>-XX:PermSize=${PermGen}</jvmArg> -->
+					<!-- <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg> -->
+					<!-- <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg> -->
+					<!-- </jvmArgs> -->
+					<!-- </configuration> -->
+					<!-- </execution> -->
+					<!-- <execution> -->
+					<!-- <id>attach-javadocs</id> -->
+					<!-- <goals> -->
+					<!-- <goal>doc-jar</goal> -->
+					<!-- </goals> -->
+					<!-- </execution> -->
+					<!-- </executions> -->
+					<!-- </plugin> -->
 
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
