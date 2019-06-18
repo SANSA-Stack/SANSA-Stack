@@ -7,12 +7,16 @@
 # Matching is does against the remote URL in the repo's git config - so this process is
 # independent from local folder names.
 
+#set -e
+
 order=(parent rdf owl query inference ml examples)
 #order=(parent rdf owl query ml examples)
 
 
 cd ..
-configs=`find . -name config | grep '\.git'`
+cwd=`pwd`
+
+configs=`find . -name config | grep '\.git'` || true
 
 folders=()
 
@@ -32,6 +36,13 @@ done
 echo "${folders[@]}"
 
 for f in "${folders[@]}"; do
-  (cd "$f" && git pull && mvn $@)
+  cd "$cwd"
+  cd "$f"
+  git pull
+  mvn $@
+
+  xx=$?
+  test $xx -ne 0 && exit $xx
 done
+
 
