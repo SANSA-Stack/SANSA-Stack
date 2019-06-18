@@ -91,9 +91,10 @@
 		</dependency>
 	</dependencies>
 
-	<build>
 		<!-- <sourceDirectory>src/main/java</sourceDirectory> -->
 		<!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
+<!--
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -111,6 +112,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
+-->
 
 </project>
