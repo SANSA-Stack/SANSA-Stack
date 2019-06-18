@@ -55,7 +55,8 @@
 		<jsa.subversion>1-SNAPSHOT</jsa.subversion>
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
-		<jetty.version>9.4.8.v20171121</jetty.version>
+		<!-- Jetty is pulled in from at least sparqlify - the current dep declarations do not cover all mentioned jetty deps -->
+		<!-- <jetty.version>9.4.9.4.18.v20190429</jetty.version> -->
 		<mortbay.jetty.version>6.1.26</mortbay.jetty.version>
 
 		<!-- origin: sansa-query -->
@@ -190,12 +191,13 @@
 				<version>${mortbay.jetty.version}</version>
 			</dependency>
 
+<!--
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
-
+-->
 
 			<!-- HADOOP dependencies (mainly used for InputFormat definitions) -->
 			<dependency>
