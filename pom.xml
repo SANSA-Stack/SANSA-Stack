@@ -864,7 +864,7 @@
 									<arg>128</arg>
 								</args>
 								<jvmArgs>
-									<jvmArg>-Xss5m</jvmArg>
+									<jvmArg>-Xss10m</jvmArg>
 									<jvmArg>-Xms1024m</jvmArg>
 									<jvmArg>-Xmx1024m</jvmArg>
 									<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
