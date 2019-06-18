@@ -26,7 +26,7 @@ object JenaKryoSerializers {
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
       val s = input.readString()
-      println(s"parsing:$s")
+//      println(s"parsing:$s")
         RiotLib.parse(s)
     }
   }
