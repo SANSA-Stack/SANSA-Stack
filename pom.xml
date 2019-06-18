@@ -854,6 +854,7 @@
 								<recompileMode>incremental</recompileMode>
 								<useZincServer>true</useZincServer>
 								<args>
+									<arg>-target:jvm-1.8</arg>
 									<arg>-unchecked</arg>
 									<arg>-deprecation</arg>
 									<arg>-feature</arg>
