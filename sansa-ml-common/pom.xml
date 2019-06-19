@@ -2,12 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+	<artifactId>sansa-ml-common_2.11</artifactId>
+	
 	<parent>
 		<artifactId>sansa-ml-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
 		<version>0.5.1-SNAPSHOT</version>
 	</parent>
-	<artifactId>sansa-ml-common_2.11</artifactId>
+	
 	<name>ML API - Common</name>
 	<description>Common objects for the SANSA Machine Learning Layer</description>
 	<inceptionYear>2016</inceptionYear>
