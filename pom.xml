@@ -52,7 +52,7 @@
 		<hadoop.version>2.9.2</hadoop.version>
 
 		<jena.version>3.11.0</jena.version>
-		<jsa.subversion>1-SNAPSHOT</jsa.subversion>
+		<jsa.subversion>1</jsa.subversion>
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
 		<!-- Jetty is pulled in from at least sparqlify - the current dep declarations do not cover all mentioned jetty deps -->
@@ -505,7 +505,7 @@
 			<dependency>
 				<groupId>org.aksw.sparqlify</groupId>
 				<artifactId>sparqlify-core</artifactId>
-				<version>0.8.7-SNAPSHOT</version>
+				<version>0.8.7</version>
 				<exclusions>
 					<!-- <exclusion> <groupId>cglib</groupId> <artifactId>cglib</artifactId> 
 						</exclusion> -->
