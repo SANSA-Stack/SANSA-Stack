@@ -1,18 +1,17 @@
-package net.sansa_stack.query.spark.sparqlify.server
+package net.sansa_stack.query.spark.sparqlify
 
 import java.io.File
 
-import scala.collection.JavaConverters._
-
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
-import benchmark.testdriver.{ LocalSPARQLParameterPool, SPARQLConnection2, TestDriver, TestDriverUtils }
-import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, SparqlifyUtils3 }
+import benchmark.testdriver.{LocalSPARQLParameterPool, SPARQLConnection2, TestDriver}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
-import org.apache.jena.riot.{ RDFDataMgr, RDFFormat }
-import org.apache.jena.sparql.engine.binding.{ Binding, BindingHashMap }
-import org.apache.spark.sql.{ Row, SparkSession }
+import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.apache.spark.sql.{Row, SparkSession}
+
 
 object MainSansaBSBM {
 
@@ -52,6 +51,7 @@ object MainSansaBSBM {
 
     val model = serializer.getModel()
 
+    import collection.JavaConverters._
     val it = model.getGraph.find().asScala.toSeq
     // val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
 
@@ -63,18 +63,23 @@ object MainSansaBSBM {
 
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
 
-    val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
+    val conn = new SparqlQueryConnectionJsa(
+      new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
 
     val testDriver = new TestDriver()
     testDriver.processProgramParameters(Array("http://example.org/foobar/sparql", "-w", "1", "-runs", "1"))
     testDriver.setParameterPool(new LocalSPARQLParameterPool(testDriverParams, testDriver.getSeed()))
-    testDriver.setServer(new SPARQLConnection2(qef))
+    testDriver.setServer(new SPARQLConnection2(conn))
 
     testDriver.init()
-    val statsModel = TestDriverUtils.runWithCharts(testDriver, "http://example.org/sansa-bsbm-experiment/")
+    val stats = testDriver.runCore("http://example.org/resource/default-bsbm-experiment")
+    println("Got BSBM stats: " + stats)
 
-    System.out.println("Result model triples: " + statsModel.size())
-    RDFDataMgr.write(System.out, statsModel, RDFFormat.TURTLE_PRETTY)
+    // val statsModel = TestDriverUtils.runWithCharts(testDriver, "http://example.org/sansa-bsbm-experiment/")
+
+    // System.out.println("Result model triples: " + statsModel.size())
+    // RDFDataMgr.write(System.out, statsModel, RDFFormat.TURTLE_PRETTY)
+
 
     // val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
     // server.join()

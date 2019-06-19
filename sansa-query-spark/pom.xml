@@ -53,9 +53,8 @@
 
 		<dependency>
 			<groupId>org.aksw.bsbm</groupId>
-			<artifactId>bsbm-jsa</artifactId>
-			<!-- TODO This dep should become test scope eventually -->
-			<!-- <scope>test</scope> -->
+			<artifactId>bsbm-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Scala -->
@@ -79,12 +78,10 @@
 		<dependency>
 		  <groupId>it.unibz.inf.ontop</groupId>
 		  <artifactId>ontop-owlapi</artifactId>
-		  <version>3.0.0-beta-2</version>
 		</dependency>
 		<dependency>
 		  <groupId>it.unibz.inf.ontop</groupId>
 		  <artifactId>ontop-system-sql-owlapi</artifactId>
-		  <version>3.0.0-beta-2</version>
 		</dependency>
     
 		<dependency>
@@ -94,9 +91,10 @@
 		</dependency>
 	</dependencies>
 
-	<build>
 		<!-- <sourceDirectory>src/main/java</sourceDirectory> -->
 		<!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
+<!--
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -114,6 +112,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
+-->
 
 </project>
