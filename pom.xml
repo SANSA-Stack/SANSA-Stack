@@ -1,8 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.sansa-stack</groupId>
+
     <artifactId>sansa-owl-parent_2.11</artifactId>
     <version>0.4.3-SNAPSHOT</version>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent</artifactId>
+		<version>0.5.1-SNAPSHOT</version>
+	</parent>
+
     <packaging>pom</packaging>
     <name>OWL - Parent</name>
 
@@ -59,281 +66,7 @@
         <module>sansa-owl-common</module>
     </modules>
 
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.11.11</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
-        <spark.version>2.4.3</spark.version>
-        <flink.version>1.8.0</flink.version>
-        <hadoop.common.version>2.8.1</hadoop.common.version>
-        <hadoop.mapreduce-client.version>2.8.1</hadoop.mapreduce-client.version>
-        <owlapi.version>5.1.5</owlapi.version>
-        <!-- since the scalastyle plugin is only executed in the child modules -->
-        <scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
-        <!-- Default case for the child modules. Will be overridden and set to
-             true by the root-dir profile which detects when we're in the parent
-             module -->
-        <scalastyle.skip>false</scalastyle.skip>
-    </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Scala dependencies -->
-            <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-library</artifactId>
-                <version>${scala.version}</version>
-            </dependency>
-
-            <!-- Apache Spark dependencies -->
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_${scala.binary.version}</artifactId>
-                <version>${spark.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.binary.version}</artifactId>
-                <version>${spark.version}</version>
-            </dependency>
-            <!-- For serialization of final Java collections as used in OWL API -->
-            <dependency>
-                <groupId>de.javakaffee</groupId>
-                <artifactId>kryo-serializers</artifactId>
-                <version>0.42</version>
-            </dependency>
-
-            <!-- Apache Flink dependencies -->
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-core</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-scala_2.11</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-clients_2.11</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-filesystems</artifactId>
-                <version>${flink.version}</version>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-hadoop-compatibility_2.11</artifactId>
-                <version>${flink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-shaded-hadoop</artifactId>
-                <version>${flink.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <!-- 
-            Hadoop dependencies (used for custom InputFormat definition in
-            Spark; Flink comes with custom package 
-            org.apache.flink:flink-shaded-hadoop2 which contains all class
-            definitions) -->
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-mapreduce-client-core</artifactId>
-                <version>${hadoop.mapreduce-client.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-common</artifactId>
-                <version>${hadoop.common.version}</version>
-            </dependency>
-
-            <!-- OWL API-->
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-api</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-apibinding</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-impl</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.owlapi</groupId>
-                <artifactId>owlapi-parsers</artifactId>
-                <version>${owlapi.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.inject</groupId>
-                <artifactId>guice</artifactId>
-                <version>4.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.inject.extensions</groupId>
-                <artifactId>guice-assistedinject</artifactId>
-                <version>4.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.inject.extensions</groupId>
-                <artifactId>guice-multibindings</artifactId>
-                <version>4.0</version>
-            </dependency>
-
-
-            <!-- MLlib dependencies -->
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-mllib_2.10</artifactId>
-                <version>1.6.1</version>
-            </dependency>
-
-            <!-- parsing dependencies -->
-            <dependency>
-                <groupId>org.scala-lang.modules</groupId>
-                <artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
-                <version>1.0.6</version>
-            </dependency>
-
-            <!-- Testing dependencies -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>3.0.8</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.holdenkarau</groupId>
-                <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
-                <version>${spark.version}_0.12.0</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- Logging dependencies -->
-            <dependency>
-                <groupId>com.typesafe.scala-logging</groupId>
-                <artifactId>scala-logging_${scala.binary.version}</artifactId>
-                <version>3.9.2</version>
-            </dependency>
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.17</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>net.alchim31.maven</groupId>
-                    <artifactId>scala-maven-plugin</artifactId>
-                    <version>4.0.2</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>compile</goal>
-                                <goal>testCompile</goal>
-                            </goals>
-                            <configuration>
-                                <args>
-                                    <arg>-dependencyfile</arg>
-                                    <arg>${project.build.directory}/.scala_dependencies</arg>
-                                </args>
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <scalaVersion>${scala.version}</scalaVersion>
-                        <recompileMode>incremental</recompileMode>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
-                    <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest-maven-plugin</artifactId>
-                    <version>2.0.0</version>
-                    <executions>
-                        <execution>
-                            <id>test</id>
-                            <goals>
-                                <goal>test</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <plugin>
-                    <groupId>com.amashchenko.maven.plugin</groupId>
-                    <artifactId>gitflow-maven-plugin</artifactId>
-                    <version>1.12.0</version>
-                    <configuration>
-                        <gitFlowConfig>
-                            <versionTagPrefix>v</versionTagPrefix>
-                        </gitFlowConfig>
-                        <pushRemote>false</pushRemote>
-                    </configuration>
-                </plugin>
-
-                <!-- Scalastyle -->
-                <plugin>
-                    <groupId>org.scalastyle</groupId>
-                    <artifactId>scalastyle-maven-plugin</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <skip>${scalastyle.skip}</skip>
-                        <verbose>false</verbose>
-                        <failOnViolation>true</failOnViolation>
-                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                        <failOnWarning>false</failOnWarning>
-                        <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
-                        <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
-                        <!-- we use a central config located in the root directory -->
-                        <configLocation>${scalastyle.config.path}</configLocation>
-                        <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
-                        <outputEncoding>UTF-8</outputEncoding>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-            </plugins>
-        </pluginManagement>
-    </build>
 
 
     <profiles>
@@ -342,17 +75,17 @@
              module (or 'root directory'). In this case it doesn't make sense to
              run the scalastyle plugin. Thus the ${scalastyle.skip} property is
              set to true and the plugin won't be executed -->
-        <profile>
-            <id>root-dir</id>
-            <activation>
-                <file>
-                    <exists>scalastyle-config.xml</exists>
-                </file>
-            </activation>
-            <properties>
-                <scalastyle.skip>true</scalastyle.skip>
-            </properties>
-        </profile>
+<!--         <profile> -->
+<!--             <id>root-dir</id> -->
+<!--             <activation> -->
+<!--                 <file> -->
+<!--                     <exists>scalastyle-config.xml</exists> -->
+<!--                 </file> -->
+<!--             </activation> -->
+<!--             <properties> -->
+<!--                 <scalastyle.skip>true</scalastyle.skip> -->
+<!--             </properties> -->
+<!--         </profile> -->
 
         <!-- the profile used for deployment to Sonatype Maven repository -->
         <profile>
@@ -460,4 +193,46 @@
             </build>
         </profile>
     </profiles>
+
+	<repositories>
+		<repository>
+			<id>oss-sonatype</id>
+			<name>oss-sonatype</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>apache-snapshot</id>
+			<name>Apache repository (snapshots)</name>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 </project>

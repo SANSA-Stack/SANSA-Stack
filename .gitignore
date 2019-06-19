@@ -3,6 +3,8 @@
 
 pom.xml.versionsBackup
 
+*.bak
+
 # sbt specific
 .cache
 .history
@@ -20,6 +22,18 @@ project/plugins/project/
 .idea/
 *.iml
 *.swp
+
+# eclipse conf file
+.settings
+.classpath
+.project
+.manager
+.scala_dependencies
+.cashe
+.cache-main
+.cache-tests
+.classpath
+
 
 # Scala style checker
 */scalastyle-output.xml

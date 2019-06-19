@@ -10,6 +10,7 @@
         <version>0.4.3-SNAPSHOT</version>
     </parent>
 
+    <name>SANSA OWL layer - Common</name>
     <artifactId>sansa-owl-common_2.11</artifactId>
     <version>0.4.3-SNAPSHOT</version>
 
@@ -49,26 +50,26 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-            </plugin>
+<!--     <build> -->
+<!--         <plugins> -->
+<!--             <plugin> -->
+<!--                 <groupId>net.alchim31.maven</groupId> -->
+<!--                 <artifactId>scala-maven-plugin</artifactId> -->
+<!--             </plugin> -->
 
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
+<!--             <plugin> -->
+<!--                 <artifactId>maven-compiler-plugin</artifactId> -->
+<!--             </plugin> -->
 
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-            </plugin>
+<!--             <plugin> -->
+<!--                 <groupId>org.scalatest</groupId> -->
+<!--                 <artifactId>scalatest-maven-plugin</artifactId> -->
+<!--             </plugin> -->
 
-            <plugin>
-                <groupId>org.scalastyle</groupId>
-                <artifactId>scalastyle-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+<!--             <plugin> -->
+<!--                 <groupId>org.scalastyle</groupId> -->
+<!--                 <artifactId>scalastyle-maven-plugin</artifactId> -->
+<!--             </plugin> -->
+<!--         </plugins> -->
+<!--     </build> -->
 </project>
