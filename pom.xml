@@ -3,8 +3,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-
-
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-parent</artifactId>
 	<version>0.6.0-SNAPSHOT</version>
@@ -67,12 +65,7 @@
 		<ontop.version>3.0.0-beta-2</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
-		<sansa.rdf.version>0.6.0-SNAPSHOT</sansa.rdf.version>
-		<sansa.owl.version>0.4.3-SNAPSHOT</sansa.owl.version>
-		<sansa.query.version>0.6.0-SNAPSHOT</sansa.query.version>
 		<sansa.datalake.version>0.1.2-SNAPSHOT</sansa.datalake.version>
-		<sansa.inference.version>0.5.2-SNAPSHOT</sansa.inference.version>
-		<sansa.ml.version>0.5.2-SNAPSHOT</sansa.ml.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 	</properties>
 
