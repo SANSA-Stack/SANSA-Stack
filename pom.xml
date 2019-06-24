@@ -157,19 +157,19 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 		</dependencies>
