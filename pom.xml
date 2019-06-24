@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.6.0-SNAPSHOT</version>
 	</parent>
 
 	<packaging>pom</packaging>
@@ -157,25 +157,19 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
-				<version>${sansa.rdf.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
-				<version>${sansa.rdf.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
-				<version>${sansa.rdf.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-spark${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 		</dependencies>
