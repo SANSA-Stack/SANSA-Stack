@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sansa-owl-parent_2.11</artifactId>
-    <version>0.4.3-SNAPSHOT</version>
+    <version>0.5.1-SNAPSHOT</version>
 
-	<parent>
-		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent</artifactId>
+        <version>0.5.1-SNAPSHOT</version>
+    </parent>
 
     <packaging>pom</packaging>
     <name>OWL - Parent</name>
@@ -66,27 +66,7 @@
         <module>sansa-owl-common</module>
     </modules>
 
-
-
-
     <profiles>
-        <!-- profile necessary for Scalastyle plugin to find the conf file -->
-        <!-- if the file ./scalastyle-config.xml exists, we're in the parent
-             module (or 'root directory'). In this case it doesn't make sense to
-             run the scalastyle plugin. Thus the ${scalastyle.skip} property is
-             set to true and the plugin won't be executed -->
-<!--         <profile> -->
-<!--             <id>root-dir</id> -->
-<!--             <activation> -->
-<!--                 <file> -->
-<!--                     <exists>scalastyle-config.xml</exists> -->
-<!--                 </file> -->
-<!--             </activation> -->
-<!--             <properties> -->
-<!--                 <scalastyle.skip>true</scalastyle.skip> -->
-<!--             </properties> -->
-<!--         </profile> -->
-
         <!-- the profile used for deployment to Sonatype Maven repository -->
         <profile>
             <id>release</id>
@@ -194,45 +174,45 @@
         </profile>
     </profiles>
 
-	<repositories>
-		<repository>
-			<id>oss-sonatype</id>
-			<name>oss-sonatype</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>apache-snapshot</id>
-			<name>Apache repository (snapshots)</name>
-			<url>https://repository.apache.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.aksw.snapshots</id>
-			<name>AKSW Snapshot Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.aksw.internal</id>
-			<name>AKSW Release Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/internal</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+    <repositories>
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>apache-snapshot</id>
+            <name>Apache repository (snapshots)</name>
+            <url>https://repository.apache.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>maven.aksw.snapshots</id>
+            <name>AKSW Snapshot Repository</name>
+            <url>http://maven.aksw.org/archiva/repository/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>maven.aksw.internal</id>
+            <name>AKSW Release Repository</name>
+            <url>http://maven.aksw.org/archiva/repository/internal</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>
