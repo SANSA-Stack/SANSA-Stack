@@ -23,3 +23,7 @@ project/plugins/project/
 deptree.txt
 scalastyle-output.xml
 
+
+# Files generated for spark runs
+sansa-examples-spark/data/
+
