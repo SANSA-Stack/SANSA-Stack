@@ -29,13 +29,11 @@
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<!-- SANSA OWL -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Scala -->
