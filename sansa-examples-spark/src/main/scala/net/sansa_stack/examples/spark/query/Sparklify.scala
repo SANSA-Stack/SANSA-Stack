@@ -15,7 +15,7 @@ import org.apache.spark.sql.SparkSession
 /**
  * Run SPARQL queries over Spark using Sparqlify approach.
  */
-object Sparqlify {
+object Sparklify {
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
@@ -28,7 +28,7 @@ object Sparqlify {
   def run(input: String, sparqlQuery: String = "", endpoint: Boolean = true, port: String = "7531"): Unit = {
 
     println("======================================")
-    println("|   Sparqlify example                |")
+    println("|   Sparklify example                |")
     println("======================================")
 
     val spark = SparkSession.builder
@@ -70,7 +70,7 @@ object Sparqlify {
 
   case class Config(in: String = "", sparql: String = "", endpoint: Boolean = true, port: String = "7531")
 
-  val parser = new scopt.OptionParser[Config]("Sparqlify example") {
+  val parser = new scopt.OptionParser[Config]("Sparklify example") {
 
     head(" Sparqlify example")
 
