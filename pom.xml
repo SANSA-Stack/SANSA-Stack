@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -8,10 +7,11 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.6.0-SNAPSHOT</version>
 	</parent>
 
 	<packaging>pom</packaging>
+
 
 	<name>SANSA Stack - RDF Layer - Parent</name>
 	<description>RDF Toolkit for Spark and Flink</description>
@@ -75,7 +75,7 @@
 			<dependency>
 				<groupId>net.sansa-stack</groupId>
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- <dependency> -->
