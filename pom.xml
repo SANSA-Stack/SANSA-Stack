@@ -804,7 +804,7 @@
 			</plugin>
 
 			<plugin>
-				<groupId>com.amashchenko.maven.plugin</groupId>
+				<groupId>org.aksw.maven.plugin</groupId>
 				<artifactId>gitflow-maven-plugin</artifactId>
 			</plugin>
 
@@ -984,9 +984,9 @@
 
 				<!-- Gitflow -->
 				<plugin>
-					<groupId>com.amashchenko.maven.plugin</groupId>
+					<groupId>org.aksw.maven.plugin</groupId>
 					<artifactId>gitflow-maven-plugin</artifactId>
-					<version>1.8.0</version>
+					<version>1.12.1</version>
 					<configuration>
 						<installProject>false</installProject>
 						<pushRemote>false</pushRemote>
