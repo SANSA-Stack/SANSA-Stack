@@ -26,7 +26,6 @@ object JenaKryoSerializers {
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
       val s = input.readString()
-//      println(s"parsing:$s")
         RiotLib.parse(s)
     }
   }
@@ -170,13 +169,9 @@ object JenaKryoSerializers {
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaQuad]): JenaQuad = {
       val g = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
-      println(s"g:$g")
       val s = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
-      println(s"s:$s")
       val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
-      println(s"p:$p")
       val o = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
-      println(s"o:$o")
       new JenaQuad(g, s, p, o)
     }
   }
