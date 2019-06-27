@@ -1,11 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.6.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sansa-inference-parent_2.11</artifactId>
@@ -71,9 +72,9 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.rdf.version}</version>
-				<!-- we have to exclude an old version here transitively included by
-					a Kafka dependency of Spark Don't know how Spark 2.3 is able to work with
+				<version>${project.version}</version>
+				<!-- we have to exclude an old version here transitively included by 
+					a Kafka dependency of Spark Don't know how Spark 2.3 is able to work with 
 					Kafka 0.10 right now ... -->
 				<exclusions>
 					<exclusion>
@@ -84,15 +85,15 @@
 			</dependency>
 			<!-- SANSA OWL -->
 			<dependency>
-				<groupId>net.sansa-stack</groupId>
+				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.owl.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-spark-sparqlify</artifactId>
-				<version>${sansa.query.version}</version>
+				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
 		</dependencies>
