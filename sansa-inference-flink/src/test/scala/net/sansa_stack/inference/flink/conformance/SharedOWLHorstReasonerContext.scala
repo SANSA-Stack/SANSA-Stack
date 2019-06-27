@@ -13,20 +13,13 @@ import org.scalatest.{BeforeAndAfterAll, Suite}
   * @author Lorenz Buehmann
   */
 @RunWith(classOf[Parameterized])
-trait SharedOWLHorstReasonerContext extends BeforeAndAfterAll with ReasonerContextProvider{
+trait SharedOWLHorstReasonerContext
+  extends SharedReasonerContext[ForwardRuleReasonerOWLHorst] {
   self: Suite =>
-
-  @transient private var _reasoner: ForwardRuleReasonerOWLHorst = _
-
-  val reasoner: ForwardRuleReasoner = _reasoner
-
-  @transient private var _env: ExecutionEnvironment = _
-  def env: ExecutionEnvironment = _env
 
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    _env = ExecutionEnvironment.getExecutionEnvironment
     _reasoner = new ForwardRuleReasonerOWLHorst(env)
   }
 }
