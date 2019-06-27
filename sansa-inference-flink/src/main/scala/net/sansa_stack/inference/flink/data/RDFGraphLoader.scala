@@ -25,7 +25,7 @@ object RDFGraphLoader {
   }
 
   def loadFromDisk(paths: Seq[URI], env: ExecutionEnvironment): RDFGraph = {
-    RDFGraph(NTriplesReader.load(env, paths))
+    RDFGraph(NTriplesReader.load(env, paths).name("triples"))
   }
 
   def main(args: Array[String]): Unit = {

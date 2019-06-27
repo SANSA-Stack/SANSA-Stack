@@ -7,7 +7,9 @@ import java.nio.charset.StandardCharsets
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.scala._
 import org.apache.flink.core.fs.FileSystem
+import org.apache.jena.graph.GraphUtil
 import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.jena.sparql.util.TripleComparator
 import org.slf4j.LoggerFactory
 
@@ -52,32 +54,36 @@ object RDFGraphWriter {
 
     // sort triples if enabled
     val tmp = if (sorted) {
-      graph.triples// .sortPartition(t => t, Order.ASCENDING) // map(t => (t, t)).sortPartition(1, Order.DESCENDING).map(_._1)
+      graph.triples.sortPartition(_.hashCode(), Order.ASCENDING)
     } else {
       graph.triples
     }
 
-    if (singleFile) {
-      tmp.setParallelism(1)
-    }
-
-    tmp
+    val sink = tmp
       .map(new JenaTripleToNTripleString()) // to N-TRIPLES string
       .writeAsText(path.toString, writeMode = FileSystem.WriteMode.OVERWRITE)
+
+    // write to single file if enabled
+    if (singleFile) {
+      sink.setParallelism(1)
+    }
 
     logger.info("finished writing triples to disk in " + (System.currentTimeMillis()-startTime) + "ms.")
   }
 
+  /**
+    * Converts an RDF graph to an Apache Jena in-memory model.
+    *
+    * @note For large graphs this can be too expensive
+    * and lead to a OOM exception
+    *
+    * @param graph the RDF graph
+    *
+    * @return the in-memory Apache Jena model containing the triples
+    */
   def convertToModel(graph: RDFGraph) : Model = {
-    val modelString = graph.triples.map(new JenaTripleToNTripleString())
-      .collect().mkString("\n")
-
     val model = ModelFactory.createDefaultModel()
-
-    if(!modelString.trim.isEmpty) {
-      model.read(new ByteArrayInputStream(modelString.getBytes(StandardCharsets.UTF_8)), null, "N-TRIPLES")
-    }
-
+    GraphUtil.add(model.getGraph, graph.triples.collect().toArray)
     model
   }
 }
