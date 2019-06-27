@@ -1,108 +1,141 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sansa-owl-parent_2.11</artifactId>
-    <parent>
-        <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-parent</artifactId>
-        <version>0.6.0-SNAPSHOT</version>
-    </parent>
+	<artifactId>sansa-owl-parent_2.11</artifactId>
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent</artifactId>
+		<version>0.6.0-SNAPSHOT</version>
+	</parent>
 
-    <packaging>pom</packaging>
-    <name>OWL - Parent</name>
+	<packaging>pom</packaging>
+	<name>OWL - Parent</name>
 
-    <description>SANSA OWL is a library to read OWL files into Spark or Flink.
+	<description>SANSA OWL is a library to read OWL files into Spark or Flink.
         It allows files to reside in HDFS as well as in a local file system and distributes them across Spark
         RDDs/Datasets or Flink DataSets.
     </description>
 
-    <organization>
-        <name>Smart Data Analytics (SDA) research group</name>
-        <url>http://sda.tech</url>
-    </organization>
+	<organization>
+		<name>Smart Data Analytics (SDA) research group</name>
+		<url>http://sda.tech</url>
+	</organization>
 
-    <inceptionYear>2016</inceptionYear>
+	<inceptionYear>2016</inceptionYear>
 
-    <url>http://sansa-stack.net/</url>
+	<url>http://sansa-stack.net/</url>
 
-    <licenses>
-        <license>
-            <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
-            <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+	<licenses>
+		<license>
+			<name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-    <scm>
-        <connection>scm:git:https://github.com/SANSA-Stack/SANSA-OWL.git</connection>
-        <url>https://github.com/SANSA-Stack/SANSA-OWL</url>
-        <developerConnection>scm:git:https://github.com/SANSA-Stack/SANSA-OWL.git</developerConnection>
-    </scm>
+	<scm>
+		<connection>scm:git:https://github.com/SANSA-Stack/SANSA-OWL.git</connection>
+		<url>https://github.com/SANSA-Stack/SANSA-OWL</url>
+		<developerConnection>scm:git:https://github.com/SANSA-Stack/SANSA-OWL.git</developerConnection>
+	</scm>
 
-    <developers>
-        <developer>
-            <id>patrick</id>
-            <name>Patrick Westphal</name>
-            <email>pwestphal@informatik.uni-leipzig.de</email>
-            <organization>AKSW, Department of Computer Science, University of Leipzig</organization>
-            <organizationUrl>http://www.aksw.org</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>0</timezone>
-        </developer>
-    </developers>
+	<developers>
+		<developer>
+			<id>patrick</id>
+			<name>Patrick Westphal</name>
+			<email>pwestphal@informatik.uni-leipzig.de</email>
+			<organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+			<organizationUrl>http://www.aksw.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
+	</developers>
 
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/SANSA-Stack/SANSA-OWL</url>
-    </issueManagement>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/SANSA-Stack/SANSA-OWL</url>
+	</issueManagement>
 
-    <modules>
-        <module>sansa-owl-flink</module>
-        <module>sansa-owl-spark</module>
-        <module>sansa-owl-common</module>
-    </modules>
+	<modules>
+		<module>sansa-owl-flink</module>
+		<module>sansa-owl-spark</module>
+		<module>sansa-owl-common</module>
+	</modules>
 
-    <repositories>
-        <repository>
-            <id>oss-sonatype</id>
-            <name>oss-sonatype</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>apache-snapshot</id>
-            <name>Apache repository (snapshots)</name>
-            <url>https://repository.apache.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>maven.aksw.snapshots</id>
-            <name>AKSW Snapshot Repository</name>
-            <url>http://maven.aksw.org/archiva/repository/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>maven.aksw.internal</id>
-            <name>AKSW Release Repository</name>
-            <url>http://maven.aksw.org/archiva/repository/internal</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+	<repositories>
+		<repository>
+			<id>oss-sonatype</id>
+			<name>oss-sonatype</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>oss-sonatype-releases</id>
+			<name>oss-sonatype</name>
+			<url>https://oss.sonatype.org/content/repositories/releases/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>apache-snapshot</id>
+			<name>Apache repository (snapshots)</name>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
+	<profiles>
+		<profile>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>
