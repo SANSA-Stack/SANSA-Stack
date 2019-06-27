@@ -15,7 +15,7 @@
     <dependency>
       <groupId>net.sansa-stack</groupId>
       <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
-      <version>${parent.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
 
     <dependency>
