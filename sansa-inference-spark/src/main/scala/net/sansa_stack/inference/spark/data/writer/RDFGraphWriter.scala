@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.spark.data.model.RDFGraph
 import net.sansa_stack.inference.utils.{JenaTripleToNTripleString, RDFTripleOrdering, RDFTripleToNTripleString}
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.jena.graph.{GraphUtil, Node, NodeFactory, Triple}
+import org.apache.jena.rdf.model.impl.StatementImpl
 import org.apache.jena.sparql.util.TripleComparator
 
 /**
@@ -118,16 +119,10 @@ object RDFGraphWriter {
     * @return the in-memory Apache Jena model containing the triples
     */
   def convertToModel(graph: RDFGraph): Model = {
-    val modelString = graph.triples
-      .map(new JenaTripleToNTripleString())
-      .collect()
-      .mkString("\n")
+    val triples = graph.triples.collect()
 
     val model = ModelFactory.createDefaultModel()
-
-    if (!modelString.trim.isEmpty) {
-      model.read(new ByteArrayInputStream(modelString.getBytes(StandardCharsets.UTF_8)), null, "N-TRIPLES")
-    }
+    GraphUtil.add(model.getGraph, triples)
 
     model
   }
