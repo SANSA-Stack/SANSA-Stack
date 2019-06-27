@@ -1,7 +1,10 @@
 package net.sansa_stack.test.conformance
 
+import java.io.ByteArrayOutputStream
+
 import scala.collection.mutable
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.PrefixMapping
 import org.junit.runner.RunWith
@@ -17,9 +20,10 @@ import net.sansa_stack.inference.data.{RDF, RDFOps}
   *
   */
 @RunWith(classOf[JUnitRunner])
-abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends FlatSpec with BeforeAndAfterAll {
-
-  val logger = com.typesafe.scalalogging.Logger("ConformanceTestBase")
+abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf])
+  extends FlatSpec
+    with BeforeAndAfterAll
+    with LazyLogging {
 
   behavior of ""
 
@@ -86,19 +90,29 @@ abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends 
       // compare models, i.e. the inferred model should contain exactly the triples of the conclusion graph
       val correctOutput = inferredModel.containsAll(testCase.outputGraph)
       if(!correctOutput) {
-        println("Missing triples in inferred graph:")
-        testCase.outputGraph.difference(inferredModel).write(System.out, "TURTLE")
+        logger.whenErrorEnabled {
+          logger.error("Missing triples in inferred graph:\n {}", toNTriplesString(testCase.outputGraph.difference(inferredModel)))
+        }
       }
       assert(correctOutput, "contains all expected triples")
 
 
       val isomorph = inferredModel.isIsomorphicWith(testCase.outputGraph)
       if(!isomorph) {
-        println("inferred graph:")
-        inferredModel.write(System.out, "TURTLE")
+        logger.whenErrorEnabled {
+          logger.error(s"Inferred graph not isomorph to target graph. Inferred triples:\n{}", toNTriplesString(inferredModel))
+        }
+
       }
       assert(isomorph, "input and output are isomorph")
     }
+  }
+
+  private def toNTriplesString(model: Model): String = {
+    val baos = new ByteArrayOutputStream()
+    model.write(baos, "N-Triples")
+    val s = new String(baos.toByteArray)
+    s
   }
 
   def computeInferredModel(triples: mutable.HashSet[Rdf#Triple]): Model
