@@ -32,14 +32,37 @@ object DataSetUtils {
     }
 
     /**
-      * Return a DataSet with the elements from this that are not in `other`.
+      * Returns a DataSet with the elements from this that are not in `other`.
       *
       * @param other the DataSet containing the element to be subtracted
       * @return the DataSet
       */
     def subtract(other: DataSet[T]): DataSet[T] = {
-      dataset.coGroup(other).where("*").equalTo("*")(new MinusCoGroupFunction[T](true)).name("subtract")
+      dataset.coGroup(other).where("*").equalTo("*")(
+        new MinusCoGroupFunction[T](true))
+        .name("subtract")
     }
+
+    import scala.reflect._
+    /**
+      * Returns a DataSet with the elements from this that are not in `other`.
+      * A key selector function for both datasets has to be given.
+      *
+      * @param other the DataSet containing the element to be subtracted
+      * @return the DataSet
+      */
+    def subtract[K: ClassTag : TypeInformation](other: DataSet[T], keySelectorThis: (T) => K, keySelectorOther: (T) => K): DataSet[T] = {
+
+      val typeInfo = TypeInformation.of(classTag[K].runtimeClass).asInstanceOf[TypeInformation[K]]
+      dataset.coGroup(other)
+        .where(keySelectorThis)
+        .equalTo(keySelectorOther)(typeInfo)(
+        new MinusCoGroupFunction[T](true))
+        .name("subtract")
+    }
+
+
+
   }
 
 }
