@@ -1,17 +1,14 @@
 package net.sansa_stack.test.conformance
 
-import java.io.{File, StringWriter}
-import java.nio.file.{Path, Paths}
+import scala.collection.mutable
 
-import net.sansa_stack.inference.data.{RDF, RDFOps}
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.PrefixMapping
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import scala.collection.mutable
 
-import net.sansa_stack.test.conformance.TestCases.getClass
+import net.sansa_stack.inference.data.{RDF, RDFOps}
 
 /**
   * The class is to test the conformance of each materialization rule of RDFS(simple) entailment.
@@ -88,10 +85,19 @@ abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends 
 
       // compare models, i.e. the inferred model should contain exactly the triples of the conclusion graph
       val correctOutput = inferredModel.containsAll(testCase.outputGraph)
+      if(!correctOutput) {
+        println("Missing triples in inferred graph:")
+        testCase.outputGraph.difference(inferredModel).write(System.out, "TURTLE")
+      }
       assert(correctOutput, "contains all expected triples")
 
+
       val isomorph = inferredModel.isIsomorphicWith(testCase.outputGraph)
-      assert(isomorph)
+      if(!isomorph) {
+        println("inferred graph:")
+        inferredModel.write(System.out, "TURTLE")
+      }
+      assert(isomorph, "input and output are isomorph")
     }
   }
 
