@@ -7,16 +7,14 @@
         <version>0.5.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-    <version>0.5.1-SNAPSHOT</version>
 
     <name>Inference API - Spark</name>
     <description>Apache Spark based inference layer for RDF and OWL</description>
 
     <properties>
         <spark.deps.scope>compile</spark.deps.scope>
-        <scala.version>2.11.11</scala.version>
+      
         <sansa.version>0.3.1-SNAPSHOT</sansa.version>
         <sansa.inference.version>0.5.1-SNAPSHOT</sansa.inference.version>
     </properties>
