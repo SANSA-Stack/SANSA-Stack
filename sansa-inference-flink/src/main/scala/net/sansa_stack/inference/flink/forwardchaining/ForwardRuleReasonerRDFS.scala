@@ -57,7 +57,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       extractTriples(schemaTriples, RDFS.subClassOf.asNode())
         .name("rdfs:subClassOf") // extract rdfs:subClassOf triples
     val subClassOfTriplesTrans =
-      computeTransitiveClosureOptSemiNaive(subClassOfTriples).name("rdfs11")
+      computeTransitiveClosureOptSemiNaive(subClassOfTriples, RDFS.subClassOf.asNode()).name("rdfs11")
 
     /*
         rdfs5 xxx rdfs:subPropertyOf yyy .
@@ -67,11 +67,11 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
       extractTriples(schemaTriples, RDFS.subPropertyOf.asNode())
         .name("rdfs:subPropertyOf") // extract rdfs:subPropertyOf triples
     val subPropertyOfTriplesTrans =
-      computeTransitiveClosureOptSemiNaive(subPropertyOfTriples).name("rdfs5")
+      computeTransitiveClosureOptSemiNaive(subPropertyOfTriples, RDFS.subPropertyOf.asNode()).name("rdfs5")
 
     // split by rdf:type
     val split = triplesDS.partitionBy(t => t.predicateMatches(RDF.`type`.asNode()))
-    var typeTriples = split._1
+    var typeTriples = split._1.name("rdf:type triples")
     var otherTriples = split._2
 
     // 2. SubPropertyOf inheritance according to rdfs7 is computed
@@ -212,10 +212,10 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
     }.name("rdfs3")
 
     // rdfs2 and rdfs3 generated rdf:type triples which we'll add to the existing ones
-    val triples23 = triplesRDFS2.union(triplesRDFS3)
+    val triples23 = triplesRDFS2.union(triplesRDFS3).name("inferred rdf:type triples")
 
     // all rdf:type triples here as intermediate result
-    typeTriples = typeTriples.union(triples23)
+    typeTriples = typeTriples.union(triples23).name("all rdf:type triples")
 
     // 4. SubClass inheritance according to rdfs9
 

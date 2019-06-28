@@ -5,6 +5,8 @@ import org.apache.flink.api.scala.DataSet
 import scala.collection.mutable
 
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.shared.PrefixMapping
+import org.apache.jena.sparql.util.FmtUtils
 
 /**
   * A forward chaining based reasoner.
@@ -50,7 +52,7 @@ trait ForwardRuleReasoner extends TransitiveReasoner{
     * @return the DataSet of triples that contain the predicate
     */
   def extractTriples(triples: DataSet[Triple], predicate: Node): DataSet[Triple] = {
-    triples.filter(triple => triple.predicateMatches(predicate))
+    triples.filter(triple => triple.predicateMatches(predicate)).name(s"${FmtUtils.stringForNode(predicate)} triples")
   }
 
   /**
@@ -66,21 +68,33 @@ trait ForwardRuleReasoner extends TransitiveReasoner{
                      subject: Option[Node],
                      predicate: Option[Node],
                      obj: Option[Node]): DataSet[Triple] = {
-    var extractedTriples = triples
+//    import net.sansa_stack.inference.utils.PredicateUtils._
+//    var extractedTriples = triples
+//    var filter = (t: Triple) => true
+//
+//    if(subject.isDefined) {
+//      filter = filter || (_.subjectMatches(subject.get))
+////      extractedTriples = extractedTriples.filter(triple => triple.subjectMatches(subject.get))
+//    }
+//
+//    if(predicate.isDefined) {
+//      filter = filter || (_.predicateMatches(predicate.get))
+////      extractedTriples = extractedTriples.filter(triple => triple.predicateMatches(predicate.get))
+//    }
+//
+//    if(obj.isDefined) {
+//      filter = filter || (_.objectMatches(obj.get))
+////      extractedTriples = extractedTriples.filter(triple => triple.objectMatches(obj.get))
+//    }
+//
+//    extractedTriples.filter(filter)
 
-    if(subject.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.subjectMatches(subject.get))
-    }
+    val filterFct = (t: Triple) =>
+        t.subjectMatches(subject.orNull) ||
+        t.predicateMatches(predicate.orNull) ||
+        t.objectMatches(obj.orNull)
 
-    if(predicate.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.predicateMatches(predicate.get))
-    }
-
-    if(obj.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.objectMatches(obj.get))
-    }
-
-    extractedTriples
+    triples.filter(filterFct)
   }
 
 }
