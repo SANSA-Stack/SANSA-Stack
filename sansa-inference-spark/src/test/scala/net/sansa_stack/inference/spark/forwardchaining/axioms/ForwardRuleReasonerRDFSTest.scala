@@ -27,7 +27,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
       val owlAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input)
       val reasoner: RDD[OWLAxiom] = new ForwardRuleReasonerRDFS(sc, 4)(owlAxiomsRDD)
 
-      assert(reasoner.count() == 17)
+      assert(reasoner.count() == 102)
 
   }
 
@@ -57,7 +57,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
     // ClassAssertion(:Cls01 :indivB)
     // ClassAssertion(:Cls02 :indivD)
     // ClassAssertion(:Cls03 :indivF)
-    assert(inferred.size == 3)
+    assert(inferred.size == 27)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivB)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivD)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls03, indivF)))
@@ -91,7 +91,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
     // doesn't generate a new axiom (which is consistent with what e.g. HermiT
     // does).
 
-    assert(inferred.size == 1)
+    assert(inferred.size == 25)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivC)))
   }
 
@@ -146,7 +146,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
     // SubAnnotationProperty(:annProp03 :annProp01)
     // SubAnnotationProperty(:annProp04 :annProp01)
     // SubAnnotationProperty(:annProp04 :annProp02)
-    assert(inferred.size == 9)
+    assert(inferred.size == 36)
     assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp01)))
     assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp01)))
     assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp02)))
@@ -184,7 +184,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
     // ObjectPropertyAssertion(:objProp02 :indivA :indivB)
     // DataPropertyAssertion(:dataProp2 :indivA "ABCD")
     // AnnotationAssertion(:annProp01 :indivA "wxyz")
-    assert(inferred.size == 3)
+    assert(inferred.size == 24)
     assert(inferred.contains(
       df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
     assert(inferred.contains(
@@ -215,7 +215,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
 
     // One axiom should be inferred:
     // ClassAssertion(:Cls01 :indivB)
-    assert(inferred.size == 1)
+    assert(inferred.size == 11)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivB)))
   }
 
@@ -254,7 +254,7 @@ class ForwardRuleReasonerRDFSTest extends FunSuite with SharedSparkContext with 
     // SubClassOf(<http://ex.com/default#Cls04> <http://ex.com/default#Cls02>)
     // SubClassOf(<http://ex.com/default#Cls03> <http://ex.com/default#Cls01>)
     // SubClassOf(<http://ex.com/default#Cls04> <http://ex.com/default#Cls01>)
-    assert(inferred.size == 3)
+    assert(inferred.size == 12)
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls03, cls01)))
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls01)))
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls02)))
