@@ -184,6 +184,7 @@
 		</dependency>
 	</dependencies>
 
+<!--
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -194,12 +195,12 @@
 			</plugin>
 
 
-			<!-- Scala Maven -->
+			<!- - Scala Maven - ->
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
 			</plugin>
-			<!-- enable scalatest -->
+			<!- - enable scalatest - ->
 			<plugin>
 				<groupId>org.scalatest</groupId>
 				<artifactId>scalatest-maven-plugin</artifactId>
@@ -219,8 +220,16 @@
 			</plugin>
 		</plugins>
 	</build>
+-->
 
 	<repositories>
+		<repository>
+			<id>dbscan-on-spark-repo</id>
+			<name>Repo for DBSCAN on Spark</name>
+			<url>http://dl.bintray.com/irvingc/maven</url>
+		</repository>
+
+<!--
 		<repository>
 			<id>oss-sonatype</id>
 			<name>oss-sonatype</name>
@@ -237,13 +246,6 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-
-		<repository>
-			<id>dbscan-on-spark-repo</id>
-			<name>Repo for DBSCAN on Spark</name>
-			<url>http://dl.bintray.com/irvingc/maven</url>
-		</repository>
-
 		<repository>
 			<id>maven.aksw.internal</id>
 			<name>AKSW Release Repository</name>
@@ -266,6 +268,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+-->
 	</repositories>
 
 </project>
