@@ -30,9 +30,9 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
 
     var owlAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input)
     val reasoner = new ForwardRuleReasonerOWLHorst(sc, 4)
-    val res: RDD[OWLAxiom] = reasoner(owlAxiomsRDD)
+    val inferred: RDD[OWLAxiom] = reasoner(owlAxiomsRDD)
 
-    assert(res.count() == 131)
+    assert(inferred.count() == 216) // 131
   }
 
   /**
@@ -64,13 +64,14 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
 
     val axiomsRDD = spark.owl(Syntax.FUNCTIONAL)(input)
     val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
-    val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
+    val inferred = reasoner.apply(axiomsRDD).collect()
 
     // Three new axioms should be inferred:
     // SubClassOf(<http://ex.com/default#Cls04> <http://ex.com/default#Cls02>)
     // SubClassOf(<http://ex.com/default#Cls03> <http://ex.com/default#Cls01>)
     // SubClassOf(<http://ex.com/default#Cls04> <http://ex.com/default#Cls01>)
-    assert(inferred.size == 3)
+
+    assert(inferred.size == 3 + 9)
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls03, cls01)))
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls01)))
     assert(inferred.contains(df.getOWLSubClassOfAxiom(cls04, cls02)))
@@ -128,7 +129,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // SubAnnotationProperty(:annProp03 :annProp01)
     // SubAnnotationProperty(:annProp04 :annProp01)
     // SubAnnotationProperty(:annProp04 :annProp02)
-    assert(inferred.size == 9)
+    assert(inferred.size == 9 + 27)
     assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp01)))
     assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp01)))
     assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp02)))
@@ -166,14 +167,12 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // ObjectPropertyAssertion(:objProp01 :indivA :indivB)
     // DataPropertyAssertion(:dataProp1 :indivA "ABCD")
     // AnnotationAssertion(:annProp01 :indivA "wxyz")
-    assert(inferred.size == 3)
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
-    assert(inferred.contains(
-      df.getOWLDataPropertyAssertionAxiom(dataProp01, indivA,
+    // assert(inferred.size == 3)
+    assert(inferred.size == 3 + 21)
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
+    assert(inferred.contains(df.getOWLDataPropertyAssertionAxiom(dataProp01, indivA,
         df.getOWLLiteral("ABCD"))))
-    assert(inferred.contains(
-      df.getOWLAnnotationAssertionAxiom(annProp01, indivA.getIRI,
+    assert(inferred.contains(df.getOWLAnnotationAssertionAxiom(annProp01, indivA.getIRI,
         df.getOWLLiteral("wxyz"))))
   }
 
@@ -203,7 +202,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // ClassAssertion(:Cls01 :indivB)
     // ClassAssertion(:Cls02 :indivD)
     // ClassAssertion(:Cls03 :indivF)
-    assert(inferred.size == 3)
+    assert(inferred.size == 3 + 24)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivB)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivD)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls03, indivF)))
@@ -236,7 +235,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     //   AnnotationAssertion(:annProp02 :indivF :someIRI)
     // doesn't generate a new axiom (which is consistent with what e.g. HermiT
     // does).
-    assert(inferred.size == 1)
+    assert(inferred.size == 1 + 24)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivC)))
   }
 
@@ -262,7 +261,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // Two axioms should be inferred:
     // ClassAssertion(bar:Cls1 :indivA)
     // ClassAssertion(bar:Cls1 :indivB)
-    assert(inferred.size == 2)
+    assert(inferred.size == 2 + 12)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivA)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivB)))
   }
@@ -287,19 +286,18 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     val reasoner = new ForwardRuleReasonerOWLHorst(sc, sc.defaultMinPartitions)
     val inferred: Seq[OWLAxiom] = reasoner.apply(axiomsRDD).collect()
 
-    // It should be either one axiom inferred:
+    // It should be either one axiom inferred: total 1 + 13
     //   SameIndividual(:indivB :indivC :indivD)
-    // or three pairwise axioms:
+    // or three pairwise axioms: total 3 + 13
     //   SameIndividual(:indivB :indivC)
     //   SameIndividual(:indivB :indivD)
     //   SameIndividual(:indivC :indivD)
     // (where the individual operand pairs may be in arbitrary order)
     // Permutations are assumed to be handled by the axiom's equals method
     inferred.size match {
-      case 1 => assert(
-        inferred.contains(
-          df.getOWLSameIndividualAxiom(Seq(indivB, indivC, indivD).asJava)))
-      case 3 =>
+      case 14 => assert(
+        inferred.contains(df.getOWLSameIndividualAxiom(Seq(indivB, indivC, indivD).asJava)))
+      case 16 =>
         assert( // B == C
           inferred.contains(df.getOWLSameIndividualAxiom(indivB, indivC)))
         assert( // B == D
@@ -340,10 +338,10 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // (where the individual operand pairs may be in arbitrary order)
     // Permutations are assumed to be handled by the axiom's equals method.
     inferred.size match {
-      case 1 => assert(
+      case 14 => assert(
         inferred.contains(
           df.getOWLSameIndividualAxiom(Seq(indivA, indivC, indivD).asJava)))
-      case 3 =>
+      case 16 =>
         assert( // B == C
           inferred.contains(df.getOWLSameIndividualAxiom(indivA, indivC)))
         assert( // B == D
@@ -376,9 +374,8 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
 
     // One axiom should be inferred:
     // ObjectPropertyAssertion(:objProp01 :indivB :indivA)
-    assert(inferred.size == 1)
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivA)))
+    assert(inferred.size == 1 + 8)
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivA)))
   }
 
   /**
@@ -407,7 +404,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // ObjectPropertyAssertion(:objProp01 :indivA :indivC)
     // ObjectPropertyAssertion(:objProp01 :indivA :indivD)
     // ObjectPropertyAssertion(:objProp01 :indivB :indivD)
-    assert(inferred.size == 3)
+    assert(inferred.size == 3 + 14)
     assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivC)))
     assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivD)))
     assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivD)))
@@ -434,9 +431,8 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
 
     // One axiom should be inferred:
     // ObjectPropertyAssertion(:objProp02 :indivB :indivA)
-    assert(inferred.size == 1)
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivB, indivA)))
+    assert(inferred.size == 1 + 9)
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp02, indivB, indivA)))
   }
 
   /**
@@ -460,9 +456,8 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
 
     // One axiom should be inferred:
     // ObjectPropertyAssertion(:objProp01 :indivA :indivB)
-    assert(inferred.size == 1)
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
+    assert(inferred.size == 1 + 9)
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivA, indivB)))
   }
 
   /**
@@ -504,19 +499,13 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // ObjectPropertyAssertion(:objProp02 :indivE :indivK)
     // ObjectPropertyAssertion(:objProp02 :indivL :indivG)
     // ObjectPropertyAssertion(:objProp02 :indivE :indivG)
-    assert(inferred.size == 6)
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivI)))
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivJ, indivD)))
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivD)))
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivK)))
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivL, indivG)))
-    assert(inferred.contains(
-      df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivG)))
+    assert(inferred.size == 6 + 28)
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivI)))
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivJ, indivD)))
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp01, indivB, indivD)))
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivK)))
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp02, indivL, indivG)))
+    assert(inferred.contains(df.getOWLObjectPropertyAssertionAxiom(objProp02, indivE, indivG)))
   }
 
   /**
@@ -589,7 +578,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
 
     // One axiom should be inferred:
     // EquivalentClasses(:Cls01 :Cls02)
-    assert(inferred.size == 1)
+    assert(inferred.size == 1 + 9)
     assert(inferred.contains(df.getOWLEquivalentClassesAxiom(cls01, cls02)))
   }
 
@@ -635,23 +624,15 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // EquivalentObjectProperties(:objProp01 :objProp03) etc. seem to be
     // inferred as well
     assert(inferred.size >= 8)
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp01, objProp02)))
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp01, objProp03)))
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp02, objProp01)))
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp02, objProp03)))
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp01)))
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp02)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp01, objProp02)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp01, objProp03)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp02, objProp01)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp02, objProp03)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp01)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp03, objProp02)))
 
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp05)))
-    assert(inferred.contains(
-      df.getOWLSubObjectPropertyOfAxiom(objProp05, objProp04)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp04, objProp05)))
+    assert(inferred.contains(df.getOWLSubObjectPropertyOfAxiom(objProp05, objProp04)))
 
     // ---
     val dataProp01 = df.getOWLDataProperty(defaultPrefix + "dataProp01")
@@ -681,23 +662,14 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // EquivalentDataProperties(:dataProp01 :dataProp03) etc. seem to be
     // inferred as well
     assert(inferred.size >= 8)
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp01, dataProp02)))
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp01, dataProp03)))
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp02, dataProp01)))
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp02, dataProp03)))
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp03, dataProp01)))
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp03, dataProp02)))
-
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp04, dataProp05)))
-    assert(inferred.contains(
-      df.getOWLSubDataPropertyOfAxiom(dataProp05, dataProp04)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp01, dataProp02)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp01, dataProp03)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp02, dataProp01)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp02, dataProp03)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp03, dataProp01)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp03, dataProp02)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp04, dataProp05)))
+    assert(inferred.contains(df.getOWLSubDataPropertyOfAxiom(dataProp05, dataProp04)))
 
     // --
     // There is no EquivalentAnnotationProperties( ) construct --> annotation
@@ -728,11 +700,9 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // Two axioms should be inferred:
     // EquivalentObjectProperties(:objProp01 :objProp02)
     // EquivalentDataProperties(:dataProp01 :dataProp02)
-    assert(inferred.size == 2)
-    assert(inferred.contains(
-      df.getOWLEquivalentObjectPropertiesAxiom(objProp01, objProp02)))
-    assert(inferred.contains(
-      df.getOWLEquivalentDataPropertiesAxiom(dataProp01, dataProp02)))
+    assert(inferred.size == 2 + 18)
+    assert(inferred.contains(df.getOWLEquivalentObjectPropertiesAxiom(objProp01, objProp02)))
+    assert(inferred.contains(df.getOWLEquivalentDataPropertiesAxiom(dataProp01, dataProp02)))
   }
 
   /**
@@ -777,13 +747,10 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     assert(inferred.size >= 4)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivA)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivI)))
-    assert(inferred.contains(
-      df.getOWLClassAssertionAxiom(
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(
         df.getOWLObjectHasValue(objProp01, indivB), indivA)))
-    assert(inferred.contains(
-      df.getOWLClassAssertionAxiom(
-        df.getOWLDataHasValue(dataProp01, df.getOWLLiteral("ABCD")),
-        indivI)))
+    assert(inferred.contains(df.getOWLClassAssertionAxiom(
+        df.getOWLDataHasValue(dataProp01, df.getOWLLiteral("ABCD")), indivI)))
   }
 
   /**
@@ -846,7 +813,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
 
     // One axiom should be inferred from O15:
     // ClassAssertion(:Cls01 :indivA)
-    assert(inferred.size == 8)
+    assert(inferred.size == 8 + 28)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls01, indivA)))
   }
 
@@ -880,7 +847,7 @@ class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext w
     // ClassAssertion(:Cls02 :indivB)
     // ClassAssertion(:Cls02 :indivC)
     // ClassAssertion(:Cls02 :indivD)
-    assert(inferred.size == 6)
+    assert(inferred.size == 6 + 17)
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivB)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivC)))
     assert(inferred.contains(df.getOWLClassAssertionAxiom(cls02, indivD)))

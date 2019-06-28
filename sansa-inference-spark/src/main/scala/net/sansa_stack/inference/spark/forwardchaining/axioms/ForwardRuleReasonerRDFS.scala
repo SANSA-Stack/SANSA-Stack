@@ -96,6 +96,23 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
       *        y rdfs:subClassOf z . x rdfs:subClassOf z .
     */
 
+//    val subClassOf = subClassofAxiom.asInstanceOf[RDD[OWLSubClassOfAxiom]]
+//    val op1 = subClassOf.map { a => (a.getSubClass, a.getSuperClass) }
+//    val op2 = subClassOf.map { a => (a.getSuperClass, a.getSubClass) }
+//    val subClass_ExtVP_OS = op2.join(op1).map(a => (a._1, a._2._1)).distinct()
+//    val subClass_ExtVP_SO = op1.join(op2).map(a => (a._1, a._2._1)).distinct()
+//
+//    var startTime = System.currentTimeMillis()
+//    val Trans = subClass_ExtVP_OS.join(subClass_ExtVP_SO).map(a => (a._2._1, a._2._2))
+//    var endTime = System.currentTimeMillis() - startTime
+//    println("\n...first --- " + (endTime) + " milisec.")
+//
+//    val res = Trans.map(a => dataFactory.getOWLSubClassOfAxiom(a._1, a._2)).distinct
+//
+//    println("\n ---- Trans ----\n")
+//    Trans.collect.foreach(println(_))
+//    startTime = System.currentTimeMillis()
+
     val tr = new TransitiveReasoner()
     val subClassOfAxiomsTrans = tr.computeTransitiveClosure(subClassofAxiom, AxiomType.SUBCLASS_OF)
       .setName("rdfs11")
@@ -272,12 +289,13 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
         .distinct(parallelism)
         .setName("typeAxioms + sameAsAxioms + SPOAxioms")
 
-    val infered = allAxioms.subtract(axioms)
-    val inferedCount = infered.count()
+    val inferred = allAxioms.subtract(axioms)
+    val inferredCount = inferred.count()
 
-    println("Finished with " + inferedCount + " inferred axioms")
-    infered
+    log.info(s"Finished with $inferredCount inferred axioms")
 
+//    inferred
+    allAxioms
  }
 
   def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {
