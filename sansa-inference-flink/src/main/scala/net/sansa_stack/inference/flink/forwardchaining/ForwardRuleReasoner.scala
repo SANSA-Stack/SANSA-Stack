@@ -68,26 +68,6 @@ trait ForwardRuleReasoner extends TransitiveReasoner{
                      subject: Option[Node],
                      predicate: Option[Node],
                      obj: Option[Node]): DataSet[Triple] = {
-//    import net.sansa_stack.inference.utils.PredicateUtils._
-//    var extractedTriples = triples
-//    var filter = (t: Triple) => true
-//
-//    if(subject.isDefined) {
-//      filter = filter || (_.subjectMatches(subject.get))
-////      extractedTriples = extractedTriples.filter(triple => triple.subjectMatches(subject.get))
-//    }
-//
-//    if(predicate.isDefined) {
-//      filter = filter || (_.predicateMatches(predicate.get))
-////      extractedTriples = extractedTriples.filter(triple => triple.predicateMatches(predicate.get))
-//    }
-//
-//    if(obj.isDefined) {
-//      filter = filter || (_.objectMatches(obj.get))
-////      extractedTriples = extractedTriples.filter(triple => triple.objectMatches(obj.get))
-//    }
-//
-//    extractedTriples.filter(filter)
 
     val filterFct = (t: Triple) =>
         t.subjectMatches(subject.orNull) ||

@@ -39,7 +39,7 @@ object RDFGraphLoader {
     val ds = RDFGraphLoader.loadFromDisk(path, env).triples
 
     println(s"size:${ds.count}")
-    println("sample data:\n" + ds.first(10).map { _.toString.replaceAll("[\\x00-\\x1f]","???")}.collect().mkString("\n"))
+    println("sample data:\n" + ds.first(10).map { _.toString.replaceAll("[\\x00-\\x1f]", "???")}.collect().mkString("\n"))
   }
 
 }
