@@ -23,7 +23,7 @@ under the License.
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-inference-parent_2.11</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.6.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
@@ -35,12 +35,12 @@ under the License.
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
-			<version>${parent.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-inference-tests_${scala.binary.version}</artifactId>
-			<version>${parent.version}</version>
+			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
