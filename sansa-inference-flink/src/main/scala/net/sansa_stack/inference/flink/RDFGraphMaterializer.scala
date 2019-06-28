@@ -93,15 +93,20 @@ object RDFGraphMaterializer {
     val inferredGraph = reasoner.apply(graph)
 //    println(s"|G_inf| = ${inferredGraph.size}")
 
+//    println(env.getExecutionPlan())
+
     // write triples to disk
     RDFGraphWriter.writeToDisk(inferredGraph, output, writeToSingleFile, sortedOutput)
 
-    //    println(env.getExecutionPlan())
+//    println(env.getExecutionPlan())
 
-    val jn = if (jobName.isEmpty) s"${profile} Reasoning" else jobName
+    val jn = if (jobName.isEmpty) s"$profile Reasoning" else jobName
 
     // run the program
     env.execute(jn)
+
+
+
   }
 
   // the config object
@@ -120,7 +125,7 @@ object RDFGraphMaterializer {
 
   // the CLI parser
   val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
-    head("RDFGraphMaterializer", "0.5.0")
+    head("RDFGraphMaterializer", "0.6.0")
 
 //    opt[Seq[File]]('i', "input").required().valueName("<path1>,<path2>,...").
 //      action((x, c) => c.copy(in = x)).
