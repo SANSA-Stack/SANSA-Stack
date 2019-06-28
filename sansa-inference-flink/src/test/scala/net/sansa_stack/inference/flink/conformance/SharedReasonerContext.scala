@@ -3,6 +3,7 @@ package net.sansa_stack.inference.flink.conformance
 import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers.{NodeSerializer, TripleSerializer}
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration
+import org.apache.flink.test.util.MiniClusterWithClientResource
 import org.apache.jena.graph.{Node, Triple}
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
@@ -26,6 +27,13 @@ trait SharedReasonerContext[R <: ForwardRuleReasoner]
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+
+    val miniClusterResource = new MiniClusterWithClientResource(
+      new MiniClusterResourceConfiguration.Builder()
+        .setNumberTaskManagers(1)
+        .setNumberSlotsPerTaskManager(DEFAULT_PARALLELISM)
+        .build)
+
     _env = ExecutionEnvironment.getExecutionEnvironment
     _env.setParallelism(4)
     _env.getConfig.disableSysoutLogging()

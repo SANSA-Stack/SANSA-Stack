@@ -1,14 +1,13 @@
 package net.sansa_stack.inference.flink.conformance
 
-import net.sansa_stack.inference.flink.forwardchaining.ForwardRuleReasoner
-import org.apache.flink.api.scala.ExecutionEnvironment
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import org.scalatest.Suite
+
 import net.sansa_stack.inference.flink.forwardchaining.ForwardRuleReasonerOWLHorst
-import org.scalatest.{BeforeAndAfterAll, Suite}
 
 /**
-  * Test context to share an RDFS reasoner.
+  * Test context to share an OWL Horst reasoner.
   *
   * @author Lorenz Buehmann
   */

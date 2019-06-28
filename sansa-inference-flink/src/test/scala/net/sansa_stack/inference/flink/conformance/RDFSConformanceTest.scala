@@ -11,7 +11,7 @@ import net.sansa_stack.inference.flink.data.{RDFGraph, RDFGraphWriter}
 import net.sansa_stack.test.conformance.RDFSConformanceTestBase
 
 /**
-  * The class is to test the conformance of each materialization rule of RDFS(simple) entailment.
+  * The class is used to check the conformance of each materialization rule of RDFS(simple) entailment.
   *
   * @author Lorenz Buehmann
   *
@@ -22,17 +22,15 @@ class RDFSConformanceTest
 
   override def computeInferredModel(triples: mutable.HashSet[Triple]): Model = {
     // distribute triples
-    val triplesRDD = env.fromCollection(triples)
+    val triplesDS = env.fromCollection(triples)
 
     // create graph
-    val graph = RDFGraph(triplesRDD)
+    val graph = RDFGraph(triplesDS)
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
 
-    inferredGraph.triples.print()
-
-    // convert to JENA model
+    // convert to Jena model
     val inferredModel = RDFGraphWriter.convertToModel(inferredGraph)
 
     inferredModel

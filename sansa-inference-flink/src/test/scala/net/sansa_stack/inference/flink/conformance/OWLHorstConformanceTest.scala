@@ -22,17 +22,15 @@ class OWLHorstConformanceTest
 
   override def computeInferredModel(triples: mutable.HashSet[Triple]): Model = {
     // distribute triples
-    val triplesRDD = env.fromCollection(triples)
+    val triplesDS = env.fromCollection(triples)
 
     // create graph
-    val graph = RDFGraph(triplesRDD)
+    val graph = RDFGraph(triplesDS)
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
 
-    inferredGraph.triples.print()
-
-    // convert to JENA model
+    // convert to Jena model
     val inferredModel = RDFGraphWriter.convertToModel(inferredGraph)
 
     inferredModel

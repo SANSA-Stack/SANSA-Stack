@@ -10,7 +10,7 @@ import net.sansa_stack.inference.flink.data.{RDFGraph, RDFGraphWriter}
 import net.sansa_stack.inference.flink.forwardchaining.ForwardRuleReasonerRDFS
 
 /**
-  * A forward chaining implementation of the RDFS entailment regime.
+  * Test class to check transitivity chain rule is applied correctly in the RDFS reasoner.
   *
   * @author Lorenz Buehmann
   */
