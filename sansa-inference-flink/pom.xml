@@ -524,12 +524,12 @@ under the License.
 											<exclude>org.apache.commons:commons-math</exclude>
 											<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>
 											<exclude>commons-logging:commons-logging</exclude>
-											<exclude>org.apache.httpcomponents:httpclient</exclude>
-											<exclude>org.apache.httpcomponents:httpcore</exclude>
+<!--											<exclude>org.apache.httpcomponents:httpclient</exclude>-->
+<!--											<exclude>org.apache.httpcomponents:httpcore</exclude>-->
 											<exclude>commons-codec:commons-codec</exclude>
-											<exclude>com.fasterxml.jackson.core:jackson-core</exclude>
-											<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
-											<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>
+											<!--<exclude>com.fasterxml.jackson.core:jackson-core</exclude>-->
+											<!--<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>-->
+											<!--<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>-->
 											<exclude>org.codehaus.jettison:jettison</exclude>
 											<exclude>stax:stax-api</exclude>
 											<exclude>com.typesafe:config</exclude>
