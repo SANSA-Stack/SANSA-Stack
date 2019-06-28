@@ -1,10 +1,12 @@
 package net.sansa_stack.inference.flink.forwardchaining
 
-import net.sansa_stack.inference.data.RDFTriple
 import net.sansa_stack.inference.flink.data.RDFGraph
 import org.apache.flink.api.scala.DataSet
-
 import scala.collection.mutable
+
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.shared.PrefixMapping
+import org.apache.jena.sparql.util.FmtUtils
 
 /**
   * A forward chaining based reasoner.
@@ -23,14 +25,23 @@ trait ForwardRuleReasoner extends TransitiveReasoner{
   def apply(graph: RDFGraph) : RDFGraph
 
   /**
+    * Applies forward chaining to the given set of RDF triples and returns a new set of RDF triples that
+    * contains all additional triples based on the underlying set of rules.
+    *
+    * @param triples the RDF triples
+    * @return the materialized RDF triples
+    */
+  def apply(triples: DataSet[Triple]) : DataSet[Triple] = apply(RDFGraph(triples)).triples
+
+  /**
     * Extracts all triples for the given predicate.
     *
     * @param triples the triples
     * @param predicate the predicate
     * @return the set of triples that contain the predicate
     */
-  def extractTriples(triples: mutable.Set[RDFTriple], predicate: String): mutable.Set[RDFTriple] = {
-    triples.filter(triple => triple.p == predicate)
+  def extractTriples(triples: mutable.Set[Triple], predicate: Node): mutable.Set[Triple] = {
+    triples.filter(triple => triple.predicateMatches(predicate))
   }
 
   /**
@@ -40,8 +51,8 @@ trait ForwardRuleReasoner extends TransitiveReasoner{
     * @param predicate the predicate
     * @return the DataSet of triples that contain the predicate
     */
-  def extractTriples(triples: DataSet[RDFTriple], predicate: String): DataSet[RDFTriple] = {
-    triples.filter(triple => triple.p == predicate)
+  def extractTriples(triples: DataSet[Triple], predicate: Node): DataSet[Triple] = {
+    triples.filter(triple => triple.predicateMatches(predicate)).name(s"${FmtUtils.stringForNode(predicate)} triples")
   }
 
   /**
@@ -53,25 +64,17 @@ trait ForwardRuleReasoner extends TransitiveReasoner{
     * @param obj the object
     * @return the DataSet of triples that match
     */
-  def extractTriples(triples: DataSet[RDFTriple],
-                     subject: Option[String],
-                     predicate: Option[String],
-                     obj: Option[String]): DataSet[RDFTriple] = {
-    var extractedTriples = triples
+  def extractTriples(triples: DataSet[Triple],
+                     subject: Option[Node],
+                     predicate: Option[Node],
+                     obj: Option[Node]): DataSet[Triple] = {
 
-    if(subject.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.s == subject.get)
-    }
+    val filterFct = (t: Triple) =>
+        t.subjectMatches(subject.orNull) ||
+        t.predicateMatches(predicate.orNull) ||
+        t.objectMatches(obj.orNull)
 
-    if(predicate.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.p == predicate.get)
-    }
-
-    if(obj.isDefined) {
-      extractedTriples = extractedTriples.filter(triple => triple.o == obj.get)
-    }
-
-    extractedTriples
+    triples.filter(filterFct)
   }
 
 }

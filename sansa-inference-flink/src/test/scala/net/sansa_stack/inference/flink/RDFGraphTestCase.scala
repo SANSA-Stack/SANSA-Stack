@@ -3,17 +3,20 @@ package net.sansa_stack.inference.flink
 import java.util
 import java.util.Comparator
 
+import scala.collection.JavaConverters._
+
 import com.google.common.collect.ComparisonChain
-import net.sansa_stack.inference.flink.data.RDFGraph
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}
 import org.apache.flink.test.util.MultipleProgramsTestBase.TestExecutionMode
 import org.apache.flink.test.util.{MultipleProgramsTestBase, TestBaseUtils}
+import org.apache.jena.graph.{NodeFactory, Triple}
+import org.apache.jena.sparql.util.TripleComparator
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import net.sansa_stack.inference.data.RDFTriple
 
-import scala.collection.JavaConverters._
+import net.sansa_stack.inference.data.RDFTriple
+import net.sansa_stack.inference.flink.data.RDFGraph
 
 /**
   * A test case for the computation of the transitive closure (TC).
@@ -26,19 +29,24 @@ class RDFGraphTestCase(mode: TestExecutionMode) extends MultipleProgramsTestBase
   def testSubtract(): Unit = {
     val env = ExecutionEnvironment.getExecutionEnvironment
 
+    val s1 = NodeFactory.createURI("s1")
+    val p1 = NodeFactory.createURI("p1")
+    val o1 = NodeFactory.createURI("o1")
+    val o2 = NodeFactory.createURI("o2")
+    val o3 = NodeFactory.createURI("o3")
 
     // generate dataset
     val g1 = RDFGraph(env.fromCollection(
       Seq(
-        RDFTriple("s1", "p1", "o1"),
-        RDFTriple("s1", "p1", "o2"),
-        RDFTriple("s1", "p1", "o3")
+        Triple.create(s1, p1, o1),
+        Triple.create(s1, p1, o2),
+        Triple.create(s1, p1, o3)
       )
     ))
     val g2 = RDFGraph(env.fromCollection(
       Seq(
-        RDFTriple("s1", "p1", "o1"),
-        RDFTriple("s1", "p1", "o2")
+        Triple.create(s1, p1, o1),
+        Triple.create(s1, p1, o2)
       )
     ))
 
@@ -47,17 +55,12 @@ class RDFGraphTestCase(mode: TestExecutionMode) extends MultipleProgramsTestBase
 
     val result = g_diff.triples.collect()
     val expected = Seq(
-      RDFTriple("s1", "p1", "o3")
+      Triple.create(s1, p1, o3)
     )
 
-    TestBaseUtils.compareResultCollections(new util.ArrayList(result.asJava), new util.ArrayList(expected.asJava), new Comparator[RDFTriple] {
-      override def compare(t1: RDFTriple, t2: RDFTriple): Int =
-        ComparisonChain.start()
-          .compare(t1.s, t2.s)
-          .compare(t1.p, t2.p)
-          .compare(t1.o, t2.o)
-        .result()
-    })
+    TestBaseUtils.compareResultCollections(
+      new util.ArrayList(result.asJava),
+      new util.ArrayList(expected.asJava),
+      new TripleComparator())
   }
-
 }

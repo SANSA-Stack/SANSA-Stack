@@ -45,19 +45,26 @@ under the License.
 			<scope>test</scope>
 		</dependency>
 
+        <!-- RDF Layer -->
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+            <version>${project.version}</version>
+		</dependency>
+
 		<!-- Apache Flink -->
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-scala_${scala.binary.version}</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-clients_${scala.binary.version}</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.apache.flink</groupId>-->
+<!--			<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.apache.flink</groupId>-->
+<!--			<artifactId>flink-clients_${scala.binary.version}</artifactId>-->
+<!--		</dependency>-->
 
 		<!-- Apache JENA 3.x-->
 		<dependency>
@@ -517,12 +524,12 @@ under the License.
 											<exclude>org.apache.commons:commons-math</exclude>
 											<exclude>org.apache.sling:org.apache.sling.commons.json</exclude>
 											<exclude>commons-logging:commons-logging</exclude>
-											<exclude>org.apache.httpcomponents:httpclient</exclude>
-											<exclude>org.apache.httpcomponents:httpcore</exclude>
+<!--											<exclude>org.apache.httpcomponents:httpclient</exclude>-->
+<!--											<exclude>org.apache.httpcomponents:httpcore</exclude>-->
 											<exclude>commons-codec:commons-codec</exclude>
-											<exclude>com.fasterxml.jackson.core:jackson-core</exclude>
-											<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
-											<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>
+											<!--<exclude>com.fasterxml.jackson.core:jackson-core</exclude>-->
+											<!--<exclude>com.fasterxml.jackson.core:jackson-databind</exclude>-->
+											<!--<exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>-->
 											<exclude>org.codehaus.jettison:jettison</exclude>
 											<exclude>stax:stax-api</exclude>
 											<exclude>com.typesafe:config</exclude>

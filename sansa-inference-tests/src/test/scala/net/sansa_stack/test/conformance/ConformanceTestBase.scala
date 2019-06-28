@@ -1,17 +1,17 @@
 package net.sansa_stack.test.conformance
 
-import java.io.{File, StringWriter}
-import java.nio.file.{Path, Paths}
+import java.io.ByteArrayOutputStream
 
-import net.sansa_stack.inference.data.{RDF, RDFOps}
+import scala.collection.mutable
+
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.PrefixMapping
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import scala.collection.mutable
 
-import net.sansa_stack.test.conformance.TestCases.getClass
+import net.sansa_stack.inference.data.{RDF, RDFOps}
 
 /**
   * The class is to test the conformance of each materialization rule of RDFS(simple) entailment.
@@ -20,9 +20,10 @@ import net.sansa_stack.test.conformance.TestCases.getClass
   *
   */
 @RunWith(classOf[JUnitRunner])
-abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends FlatSpec with BeforeAndAfterAll {
-
-  val logger = com.typesafe.scalalogging.Logger("ConformanceTestBase")
+abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf])
+  extends FlatSpec
+    with BeforeAndAfterAll
+    with LazyLogging {
 
   behavior of ""
 
@@ -88,11 +89,30 @@ abstract class ConformanceTestBase[Rdf <: RDF](val rdfOps: RDFOps[Rdf]) extends 
 
       // compare models, i.e. the inferred model should contain exactly the triples of the conclusion graph
       val correctOutput = inferredModel.containsAll(testCase.outputGraph)
+      if(!correctOutput) {
+        logger.whenErrorEnabled {
+          logger.error("Missing triples in inferred graph:\n {}", toNTriplesString(testCase.outputGraph.difference(inferredModel)))
+        }
+      }
       assert(correctOutput, "contains all expected triples")
 
+
       val isomorph = inferredModel.isIsomorphicWith(testCase.outputGraph)
-      assert(isomorph)
+      if(!isomorph) {
+        logger.whenErrorEnabled {
+          logger.error(s"Inferred graph not isomorph to target graph. Inferred triples:\n{}", toNTriplesString(inferredModel))
+        }
+
+      }
+      assert(isomorph, "input and output are isomorph")
     }
+  }
+
+  private def toNTriplesString(model: Model): String = {
+    val baos = new ByteArrayOutputStream()
+    model.write(baos, "N-Triples")
+    val s = new String(baos.toByteArray)
+    s
   }
 
   def computeInferredModel(triples: mutable.HashSet[Rdf#Triple]): Model

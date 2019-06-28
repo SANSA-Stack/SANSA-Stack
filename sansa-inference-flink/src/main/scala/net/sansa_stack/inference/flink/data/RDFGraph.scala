@@ -1,9 +1,8 @@
 package net.sansa_stack.inference.flink.data
 
-import net.sansa_stack.inference.flink.utils.DataSetUtils
 import org.apache.flink.api.scala.{DataSet, _}
-import org.apache.jena.graph.Triple
-import net.sansa_stack.inference.data.RDFTriple
+import org.apache.jena.graph.{Node, Triple}
+
 import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
 
 /**
@@ -12,7 +11,7 @@ import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
   * @author Lorenz Buehmann
   *
   */
-case class RDFGraph(triples: DataSet[RDFTriple]) {
+case class RDFGraph(triples: DataSet[Triple]) {
 
   /**
     * Returns a DataSet of triples that match with the given input.
@@ -22,11 +21,11 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
     * @param o the object
     * @return DataSet of triples
     */
-  def find(s: Option[String] = None, p: Option[String] = None, o: Option[String] = None): DataSet[RDFTriple] = {
+  def find(s: Option[Node] = None, p: Option[Node] = None, o: Option[Node] = None): DataSet[Triple] = {
     triples.filter(t =>
-        (s == None || t.s == s.get) &&
-        (p == None || t.p == p.get) &&
-        (o == None || t.o == o.get)
+        (s.isEmpty || t.subjectMatches(s.get)) &&
+        (p.isEmpty || t.predicateMatches(p.get)) &&
+        (o.isEmpty || t.objectMatches(o.get))
     )
   }
 
@@ -35,11 +34,11 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
     *
     * @return DataSet of triples
     */
-  def find(triple: Triple): DataSet[RDFTriple] = {
+  def find(triple: Triple): DataSet[Triple] = {
     find(
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject.toString),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.toString),
-      if (triple.getObject.isVariable) None else Option(triple.getObject.toString)
+      if (triple.getSubject.isVariable) None else Option(triple.getSubject),
+      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate),
+      if (triple.getObject.isVariable) None else Option(triple.getObject)
     )
   }
 
@@ -68,7 +67,5 @@ case class RDFGraph(triples: DataSet[RDFTriple]) {
     *
     * @return the number of triples
     */
-  def size(): Long = {
-    triples.count()
-  }
+  lazy val size: Long = triples.count()
 }
