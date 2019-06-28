@@ -289,12 +289,13 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
         .distinct(parallelism)
         .setName("typeAxioms + sameAsAxioms + SPOAxioms")
 
-    val infered = allAxioms.subtract(axioms)
-    val inferedCount = infered.count()
+    val inferred = allAxioms.subtract(axioms)
+    val inferredCount = inferred.count()
 
-    println("Finished with " + inferedCount + " inferred axioms")
-    infered
+    log.info(s"Finished with $inferredCount inferred axioms")
 
+//    inferred
+    allAxioms
  }
 
   def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {
