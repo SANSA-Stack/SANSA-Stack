@@ -88,7 +88,7 @@ For Apache Spark
 <dependency>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-spark_2.11</artifactId>
-  <version>0.4.0</version>
+  <version>0.6.0</version>
 </dependency>
 ```
 and for Apache Flink
@@ -96,7 +96,7 @@ and for Apache Flink
 <dependency>
   <groupId>net.sansa-stack</groupId>
   <artifactId>sansa-inference-flink_2.11</artifactId>
-  <version>0.4.0</version>
+  <version>0.6.0</version>
 </dependency>
 ```
 
@@ -106,12 +106,12 @@ Add the following lines to your SBT file:
 
 For Apache Spark add
 ```scala
-libraryDependencies += "net.sansa-stack" % "sansa-inference-spark_2.11" % "0.4.0"
+libraryDependencies += "net.sansa-stack" % "sansa-inference-spark_2.11" % "0.6.0"
 ```
 
 and for Apache Flink add
 ```scala
-libraryDependencies += "net.sansa-stack" % "sansa-inference-flink_2.11" % "0.4.0"
+libraryDependencies += "net.sansa-stack" % "sansa-inference-flink_2.11" % "0.6.0"
 ```
 ### Using Snapshots
 
@@ -120,7 +120,7 @@ Snapshot version are only avalibale via our custom Maven repository located at h
 ## Usage
 Besides using the Inference API in your application code, we also provide a command line interface with various options that allow for a convenient way to use the core reasoning algorithms:
 ```
-RDFGraphMaterializer 0.4.0
+RDFGraphMaterializer 0.6.0
 Usage: RDFGraphMaterializer [options]
 
   -i, --input <path1>,<path2>,...
@@ -166,6 +166,10 @@ will compute the RDFS materialization on the data contained in `test.nt` and wri
 Currently, the following reasoning profiles are supported:
 
 ##### RDFS
+The RDFS reasoner can be configured to work at two different compliance levels: 
+
+###### RDFS (Default)
+This implements all of the [RDFS closure rules](https://www.w3.org/TR/rdf11-mt/#patterns-of-rdfs-entailment-informative) with the exception of bNode entailments and datatypes (**rdfD 1**). RDFS axiomatic triples are also omitted. This is an expensive mode because all statements in the data graph need to be checked for possible use of container membership properties. It also generates type assertions for all resources and properties mentioned in the data (**rdf1**, **rdfs4a**, **rdfs4b**).
 
 ###### RDFS Simple
 
@@ -175,6 +179,7 @@ information that only serves to reason about the structure of the language
 itself and not about the data it describes.
 It is composed of the reserved vocabulary
 `rdfs:subClassOf`, `rdfs:subPropertyOf`, `rdf:type`, `rdfs:domain` and `rdfs:range`.
+This implements just the transitive closure of `rdfs:subClassOf` and `rdfs:subPropertyOf` relations, the `rdfs:domain` and `rdfs:range` entailments and the implications of `rdfs:subPropertyOf` and `rdfs:subClassOf` in combination with instance data. It omits all of the axiomatic triples. This is probably the most useful mode but it is a less complete implementation of the standard. 
 
 More details can be found in
 
