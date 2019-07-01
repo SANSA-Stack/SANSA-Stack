@@ -10,7 +10,6 @@
 		<version>0.6.0-SNAPSHOT</version>
 	</parent>
 
-	<version>2018-12.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>SANSA-Examples - Parent</name>
 	<description>SANSA examples</description>
@@ -58,34 +57,30 @@
 
 	</modules>
 
-	<properties>
-		<sansa.version>0.6.0-SNAPSHOT</sansa.version>
-	</properties>
-
 	<dependencyManagement>
 		<dependencies>
 			<!-- RDF Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<!-- OWL Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Query Layer -->
@@ -93,7 +88,7 @@
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
 				<!-- <version>${project.parent.version}</version> -->
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Inference Layer -->
@@ -112,12 +107,12 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 		</dependencies>
