@@ -72,7 +72,7 @@ object RDFGraphInference {
 
     // load triples from disk
     val graph = RDFGraphLoader.loadFromDisk(input, env)
-    println(s"|G| = ${graph.size()}")
+    println(s"|G| = ${graph.size}")
 
     // create reasoner
     val reasoner = profile match {
@@ -88,7 +88,7 @@ object RDFGraphInference {
 
     // compute inferred graph
     val inferredGraph = reasoner.apply(graph)
-    println(s"|G_inf| = ${inferredGraph.size()}")
+    println(s"|G_inf| = ${inferredGraph.size}")
 
     val jn = if (jobName.isEmpty) s"RDF Graph Inference ($profile)" else jobName
   }
