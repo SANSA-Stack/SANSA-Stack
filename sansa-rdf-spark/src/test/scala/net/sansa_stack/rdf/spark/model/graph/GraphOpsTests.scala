@@ -1,5 +1,7 @@
 package net.sansa_stack.rdf.spark.model.graph
 
+import java.nio.file.{ Files, Path, Paths }
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
@@ -7,9 +9,9 @@ import org.scalatest.FunSuite
 
 class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.model.graph._
+  import net.sansa_stack.rdf.spark.model._
 
-  test("loading N-Triples file into Graph should result in size 8") {
+  test("loading N-Triples file into Graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -21,7 +23,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(size == 8)
   }
 
-  test("conversation of Graph into RDD should result in 8 triples") {
+  test("conversation of Graph into RDD should result match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -35,7 +37,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 8)
   }
 
-  test("getting the triples of Graph should result in 8 triples") {
+  test("getting the triples of Graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -49,7 +51,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 8)
   }
 
-  test("getting the subjects/predicates/objects of Graph should result in 8 entities") {
+  test("getting the subjects/predicates/objects of Graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -65,7 +67,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt / 3 == 8)
   }
 
-  test("filtering the subjects as URI of the Graph should result in 8 entities") {
+  test("filtering the subjects as URI of the Graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -79,7 +81,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 8)
   }
 
-  test("filtering the predicate which are Variable on the graph should result in 0 entities") {
+  test("filtering the predicate which are Variable on the graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -93,7 +95,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 0)
   }
 
-  test("filtering the objects which are literals on the graph should result in 7 entities") {
+  test("filtering the objects which are literals on the graph should match") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
@@ -105,5 +107,26 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val cnt = objectsAsLiterals.size()
     assert(cnt == 7)
+  }
+
+  test("converting graph to Json should match") {
+
+    val input = getClass.getResource("/loader/data.nt")
+    val path = input.getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+
+    val graph = triples.asGraph()
+
+    // create temp dir
+    val outputDir = Files.createTempDirectory("sansa-graph")
+    outputDir.toFile.deleteOnExit()
+
+    val output = outputDir.toString() + "/data.json"
+    graph.saveGraphToJson(output)
+
+    assert(true)
+
   }
 }

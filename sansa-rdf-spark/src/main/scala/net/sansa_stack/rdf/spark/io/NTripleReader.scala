@@ -7,8 +7,8 @@ import scala.reflect.ClassTag
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
-import net.sansa_stack.rdf.spark.riot.lang.LangNTriplesSkipBad
-import net.sansa_stack.rdf.spark.riot.tokens.TokenizerTextForgiving
+import net.sansa_stack.rdf.common.io.riot.lang.LangNTriplesSkipBad
+import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.graph.Triple

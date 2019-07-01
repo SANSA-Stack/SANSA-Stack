@@ -1,20 +1,20 @@
 package net.sansa_stack.rdf.spark
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, StringWriter}
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, StringWriter }
 import java.util.Collections
 
 import com.google.common.collect.Iterators
-import com.typesafe.config.{Config, ConfigFactory}
-import net.sansa_stack.rdf.spark.io.nquads.{NQuadReader, NQuadsStringToJenaQuad}
-import net.sansa_stack.rdf.spark.io.ntriples.{JenaTripleToNTripleString, NTriplesStringToJenaTriple}
+import com.typesafe.config.{ Config, ConfigFactory }
+import net.sansa_stack.rdf.spark.io.nquads.{ NQuadReader, NQuadsStringToJenaQuad }
+import net.sansa_stack.rdf.spark.io.ntriples.{ JenaTripleToNTripleString, NTriplesStringToJenaTriple }
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
-import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
+import net.sansa_stack.rdf.spark.utils.{ Logging, ScalaUtils }
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{LongWritable, Text}
+import org.apache.hadoop.io.{ LongWritable, Text }
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.atlas.lib.CharSpace
-import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.riot.{ Lang, RDFDataMgr }
 import org.apache.jena.riot.lang.PipedTriplesStream
 import org.apache.jena.riot.out.NodeFormatterNT
 import org.apache.jena.riot.system.StreamOps
@@ -29,7 +29,7 @@ import org.apache.spark.sql._
 package object io {
 
   object RDFLang extends Enumeration {
-    val NTRIPLES, TURTLE, RDFXML = Value
+    val NTRIPLES, TURTLE, RDFXML, TRIX = Value
   }
 
   /**
@@ -78,7 +78,7 @@ package object io {
     def rdf(lang: Lang): String => DataFrame = lang match {
       case i if lang == Lang.NTRIPLES => ntriples
       case j if lang == Lang.TURTLE => turtle
-      case j if lang == Lang.RDFXML => rdfxml
+      case k if lang == Lang.RDFXML => rdfxml
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
     /**
@@ -139,27 +139,27 @@ package object io {
       import scala.collection.JavaConverters._
       // save only if there was no failure with the path before
       if (doSave) triples
-          .mapPartitions(p => {
-            val os = new ByteArrayOutputStream()
-            RDFDataMgr.writeTriples(os, p.asJava)
-            Collections.singleton(new String(os.toByteArray)).iterator().asScala
+        .mapPartitions(p => {
+          val os = new ByteArrayOutputStream()
+          RDFDataMgr.writeTriples(os, p.asJava)
+          Collections.singleton(new String(os.toByteArray)).iterator().asScala
 
-//            val os = new ByteArrayOutputStream()
-//            val fct = new com.google.common.base.Function[Triple, String]() {
-//              val sb = new StringBuilder()
-//              val nodeFmt = new NodeFormatterNT(CharSpace.UTF8)
-//              override def apply(t: Triple): String =
-//                nodeFmt.format(os, t.getSubject) +
-//              " " +
-//              nodeFmt.format(t.getPredicate) +
-//              " " +
-//              nodeFmt.format(t.getObject) +
-//              " .\n"
-//            }
+          //            val os = new ByteArrayOutputStream()
+          //            val fct = new com.google.common.base.Function[Triple, String]() {
+          //              val sb = new StringBuilder()
+          //              val nodeFmt = new NodeFormatterNT(CharSpace.UTF8)
+          //              override def apply(t: Triple): String =
+          //                nodeFmt.format(os, t.getSubject) +
+          //              " " +
+          //              nodeFmt.format(t.getPredicate) +
+          //              " " +
+          //              nodeFmt.format(t.getObject) +
+          //              " .\n"
+          //            }
 
-//            Iterators.transform(p, fct).asScala
-          })
-//        .map(converter) // map to N-Triples string
+          //            Iterators.transform(p, fct).asScala
+        })
+        //        .map(converter) // map to N-Triples string
         .saveAsTextFile(path)
 
     }
@@ -167,9 +167,9 @@ package object io {
   }
 
   /**
-    * Adds methods, `rdf(lang: Lang)`, `ntriples`, `nquads`, and `turtle`, to [[SparkSession]] that allows to read
-    * N-Triples, N-Quads and Turtle files.
-    */
+   * Adds methods, `rdf(lang: Lang)`, `ntriples`, `nquads`, and `turtle`, to [[SparkSession]] that allows to read
+   * N-Triples, N-Quads and Turtle files.
+   */
   implicit class RDFReader(spark: SparkSession) {
 
     import scala.collection.JavaConverters._
@@ -183,38 +183,39 @@ package object io {
       case i if lang == Lang.NTRIPLES => ntriples(allowBlankLines)
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
+      case l if lang == Lang.TRIX => trix
       case g if lang == Lang.NQUADS => nquads(allowBlankLines)
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
     /**
-      * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
-      *
-      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-      * @return the [[RDD]] of triples
-      */
+     * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
+     *
+     * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
+     * @return the [[RDD]] of triples
+     */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
       NTripleReader.load(spark, path)
     }
 
     /**
-      * Load RDF data in N-Quads syntax into an [[RDD]][Triple], i.e. the graph will be omitted.
-      *
-      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-      * @return the [[RDD]] of triples
-      */
+     * Load RDF data in N-Quads syntax into an [[RDD]][Triple], i.e. the graph will be omitted.
+     *
+     * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
+     * @return the [[RDD]] of triples
+     */
     def nquads(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
       NQuadReader.load(spark, path)
     }
 
     /**
-      * Load RDF data in RDF/XML syntax into an [[RDD]][Triple].
-      *
-      * Note, the data will not be splitted and only loaded via a single task because of the nature of XML and
-      * how Spark can handle this format.
-      *
-      * @return the [[RDD]] of triples
-      */
+     * Load RDF data in RDF/XML syntax into an [[RDD]][Triple].
+     *
+     * Note, the data will not be splitted and only loaded via a single task because of the nature of XML and
+     * how Spark can handle this format.
+     *
+     * @return the [[RDD]] of triples
+     */
     def rdfxml: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
       confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
@@ -227,7 +228,7 @@ package object io {
 
     /**
      * Load RDF data in Turtle syntax into an [[RDD]][Triple]
-      * @return the [[RDD]] of triples
+     * @return the [[RDD]] of triples
      */
     def turtle: String => RDD[Triple] = path => {
       val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
@@ -257,5 +258,21 @@ package object io {
         }.get
       })
     }
+
+    /**
+     * Load RDF data in TRIX syntax into an [[RDD]][Triple]
+     * @return the [[RDD]] of triples
+     */
+    def trix: String => RDD[Triple] = path => {
+      val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
+      confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
+      confHadoop.set("stream.recordreader.begin", "<triple>")
+      confHadoop.set("stream.recordreader.end", "</triple>")
+
+      spark.sparkContext.newAPIHadoopFile(
+        path, classOf[RiotFileInputFormat], classOf[LongWritable], classOf[Triple], confHadoop)
+        .map { case (_, v) => v }
+    }
+
   }
 }

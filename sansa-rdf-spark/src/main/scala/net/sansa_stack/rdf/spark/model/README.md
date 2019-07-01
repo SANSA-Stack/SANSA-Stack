@@ -25,7 +25,7 @@ In order to apply these transformations we first have to load the triples on one
 ### RDD TripleOps
 This model represents all triple manipulation based on RDD representation of the triples. It contains a set of operations on top of the RDF graph, represented as `RDD[Triple]`.
 ```scala
-import net.sansa_stack.rdf.spark.model.rdd._ 
+import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsDF = triplesRDD.toDF()
 ```
@@ -35,7 +35,7 @@ See the [net.sansa_stack.rdf.spark.model.rdd.TripleOps](rdd/TripleOps.scala) for
 ### DataFrame TripleOps
 This model represents all triple manipulation based on DataFrame representation of the triples. It contains a set of operations on top of the RDF graph.
 ```scala
-import net.sansa_stack.rdf.spark.model.df._ 
+import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsRDD = triplesDF.toRDD()
 ```
@@ -45,7 +45,7 @@ See the [net.sansa_stack.rdf.spark.model.df.TripleOps](df/TripleOps.scala) for m
 ### Dataset TripleOps
 This model represents all triple manipulation based on DataSet of triples representation of the triples. It contains a set of operations on top of the RDF graph.
 ```scala
-import net.sansa_stack.rdf.spark.model.ds._ 
+import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsDS = triples.toDS()
 val triplesAsDF = triplesAsDS.toDF()
@@ -57,7 +57,7 @@ See the [net.sansa_stack.rdf.spark.model.ds.TripleOps](ds/TripleOps.scala) for m
 ### Graph TripleOps
 This model represents all triple manipulation based on GraphX representation of the triples. It contains a set of operations on top of the RDF graph.
 ```scala
-import net.sansa_stack.rdf.spark.model.graph._ 
+import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsGraph = triples.asGraph()
 ```

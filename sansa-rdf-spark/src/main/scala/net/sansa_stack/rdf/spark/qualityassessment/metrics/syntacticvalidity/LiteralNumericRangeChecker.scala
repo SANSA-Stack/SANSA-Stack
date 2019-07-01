@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity
 
-import net.sansa_stack.rdf.spark.qualityassessment.utils.DatasetUtils._
+import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
 import org.apache.jena.graph.{ Node, Triple }
 import org.apache.spark.rdd.RDD
 

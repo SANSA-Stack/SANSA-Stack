@@ -5,12 +5,13 @@ import java.io.StringWriter
 
 import scala.reflect.ClassTag
 
-import net.sansa_stack.rdf.flink.utils.{ Logging, StatsPrefixes }
+import net.sansa_stack.rdf.flink.utils.Logging
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.vocabulary.{ OWL, RDF, RDFS }
 
 /**
  * A Distributed implementation of RDF Statisctics using Apache Flink.
@@ -100,7 +101,7 @@ class Used_Classes(triples: DataSet[Triple], env: ExecutionEnvironment) extends 
 
   // ?p=rdf:type && isIRI(?o)
   def Filter(): DataSet[Triple] = triples.filter(f =>
-    f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.isURI())
+    f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.isURI())
 
   // M[?o]++
   def Action(): AggregateDataSet[(Node, Int)] = Filter().map(f => f.getObject)
@@ -136,8 +137,8 @@ class Classes_Defined(triples: DataSet[Triple], env: ExecutionEnvironment) exten
 
   // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
   def Filter(): DataSet[Triple] = triples.filter(f =>
-    (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.RDFS_CLASS))
-      || (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.OWL_CLASS))
+    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDFS.Class.asNode()))
+      || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(OWL.Class.asNode()))
       && !f.getSubject.isURI())
 
   // M[?o]++
@@ -159,8 +160,8 @@ object Classes_Defined {
 class PropertiesDefined(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
 
   def Filter(): DataSet[Triple] = triples.filter(f =>
-    (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.OWL_OBJECT_PROPERTY))
-      || (f.getPredicate.toString().equals(StatsPrefixes.RDF_TYPE) && f.getObject.toString().equals(StatsPrefixes.RDF_PROPERTY))
+    (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(OWL.ObjectProperty.asNode()))
+      || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDF.Property.asNode()))
       && !f.getSubject.isURI())
   def Action(): DataSet[Node] = Filter().map(_.getPredicate).distinct()
 

@@ -1,20 +1,22 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
-import net.sansa_stack.rdf.flink.qualityassessment.dataset.DatasetUtils
+import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{ Node, Triple }
 
 /**
- * This metric measures the ratio of the number of classes and relations
- * of the gold standard existing in g, and the number of classes and
- * relations in the gold standard.
+ * @author Gezim Sejdiu
  */
 object SchemaCompleteness {
-  @transient var env: ExecutionEnvironment = _
 
-  def apply(triples: DataSet[Triple]): Double = {
+  /**
+   * This metric measures the ratio of the number of classes and relations
+   * of the gold standard existing in g, and the number of classes and
+   * relations in the gold standard.
+   */
+  def assessSchemaCompleteness(triples: DataSet[Triple]): Double = {
 
     /**
      * -->Rule->Filter-->

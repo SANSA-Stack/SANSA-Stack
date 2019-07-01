@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>sansa-rdf-parent_2.11</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.5.0</version>
+		<version>0.6.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sansa-rdf-common_2.11</artifactId>
@@ -49,6 +49,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.javakaffee</groupId>
+			<artifactId>kryo-serializers</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
@@ -59,21 +64,19 @@
 			<artifactId>specs</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.typesafe</groupId>
+			<artifactId>config</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
 			</plugin>
-
 			<plugin>
 				<groupId>org.scalastyle</groupId>
 				<artifactId>scalastyle-maven-plugin</artifactId>

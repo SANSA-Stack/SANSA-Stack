@@ -53,4 +53,15 @@ class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
     val cnt = triples.count()
     assert(cnt == 9)
   }
+
+  test("loading TRIX file into RDD should result in 9 triples") {
+    val path = getClass.getResource("/loader/data.trix").getPath
+
+    val lang: Lang = Lang.TRIX
+
+    val triples = spark.rdf(lang)(path)
+
+    val cnt = triples.count()
+    assert(cnt == 2)
+  }
 }
