@@ -1,17 +1,16 @@
 package net.sansa_stack.query.spark.sparqlify.server
 
-import java.io.File
+import java.io.{File, FileInputStream}
 
 import scala.collection.JavaConverters._
-
-import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, SparqlifyUtils3 }
+import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import org.apache.jena.sparql.engine.binding.{ Binding, BindingHashMap }
-import org.apache.spark.sql.{ Row, SparkSession }
+import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.apache.spark.sql.{Row, SparkSession}
 
 object MainSansaSparqlServer {
 
@@ -55,6 +54,8 @@ object MainSansaSparqlServer {
         |<http://someOnt/184298> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#AnnotationProperty> .
         |<http://snomedct-20170731T150000Z> <http://www.w3.org/2002/07/owl#versionInfo> "20170731T150000Z"@en .
       """.stripMargin
+
+    // val it = RDFDataMgr.createIteratorTriples(new FileInputStream("/home/raven/Projects/Playground/iswc2019-sansa-demo/geo_coordinates_mappingbased_en.wkt.types.ttl"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
 
     val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
