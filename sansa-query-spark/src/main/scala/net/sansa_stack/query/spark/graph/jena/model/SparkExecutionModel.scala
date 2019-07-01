@@ -4,7 +4,7 @@ import net.sansa_stack.query.spark.graph.jena.expression.{ Expression, Filter, P
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util._
 import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model.graph._
+import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.expr.ExprAggregator

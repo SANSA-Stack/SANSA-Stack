@@ -20,6 +20,10 @@ public class QueryExecutionUtilsSpark {
 		Multimap<Var, RestrictedExpr> varDef = rewrite.getVarDefinition().getMap();
 
 		String sqlQueryStr = rewrite.getSqlQueryString();
+
+		// FIXME HACK to get rid of incorrect double precision types in CASTs; needs fix in sparqlify
+		sqlQueryStr = sqlQueryStr.replaceAll("AS double precision\\)", "AS double)");
+
 		Dataset<Row> dataset = sparkSession.sql(sqlQueryStr);
 
 //		System.out.println("SqlQueryStr: " + sqlQueryStr);

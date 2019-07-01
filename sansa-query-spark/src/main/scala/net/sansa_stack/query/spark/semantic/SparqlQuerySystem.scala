@@ -24,9 +24,8 @@ import org.apache.spark.rdd._
  */
 class QuerySystem(
   partitionData: RDD[String],
-  queryInputPath: String,
-  queryResultPath: String,
-  numOfFilesPartition: Int) extends Serializable {
+  queryInputPath: String)
+  extends Serializable {
   var _selectVariables: Map[Int, ArrayBuffer[String]] = Map()
   var _whereVariables: Map[Int, ArrayBuffer[String]] = Map()
   var _WhereTriples: Map[Int, ArrayBuffer[String]] = Map()
@@ -39,14 +38,14 @@ class QuerySystem(
   var workingTripleRDD: RDD[(String, List[String])] = _
   var workingPartialRDD: RDD[(String, List[String])] = _
   var unionOutputRDD: RDD[String] = _
+  var outputRDD: RDD[String] = _
   val symbol = Symbols.symbol
 
-  def run(): Unit = {
+  def run(): RDD[String] = {
     // parse queries
     for (qID <- this.fetchQueries.indices) {
       // refactor queries
       val refactoredQueries = this.refactorUnionQueries(this.fetchQueries(qID), qID)
-
       // start process time
       val startTime = System.nanoTime()
 
@@ -64,13 +63,8 @@ class QuerySystem(
         // query engine
         this.queryEngine(qID)
       }
-
-      // end process time
-      _queriesProcessTime.append(queryTime((System.nanoTime() - startTime), symbol))
     }
-
-    // overall process time
-    overallQueriesTime(_queriesProcessTime)
+    outputRDD
   }
 
   // -------------------------------
@@ -482,20 +476,11 @@ class QuerySystem(
 
   // query engine
   def queryEngine(qID: Int): Unit = {
-    if (_unionOp(qID)("first")) {
-      if (_unionOp(qID)("first").equals(_unionOp(qID)("last"))) println(s"Query No: ${qID + 1}")
-      else println(s"Query No: ${qID + 1} - UNION")
-    }
-
     // validate number of WHERE clause triples
     if (_numOfWhereClauseTriples(qID).equals(1)) {
-      println("No. of WHERE clause Triples: 1")
-
       // process first triple
       this.runFirstTriple(qID)
     } else {
-      println(s"No. of WHERE clause Triples: ${_numOfWhereClauseTriples(qID)}")
-
       // process all triples of a query
       this.runAllTriplesOfQuery(qID)
     }
@@ -619,7 +604,7 @@ class QuerySystem(
     if (tmpRDD.partitions.nonEmpty) {
       // only one WHERE clause triple query
       if (numOfWhereClauseTriples.equals(1)) {
-        var outputRDD = tmpRDD
+        outputRDD = tmpRDD
           .filter(data => {
             var status = false
 
@@ -657,7 +642,6 @@ class QuerySystem(
 
         // display output
         if (_unionOp(qID)("last")) {
-          val resultPath = this.queryResultPath + "/" + qID + "/"
 
           // case: UNION
           if (_unionOp(qID)("isUnion")) {
@@ -666,14 +650,10 @@ class QuerySystem(
 
           // case: LIMIT
           if (_queriesLimit.get(qID).isDefined) {
-            outputRDD
-              .repartition(this.numOfFilesPartition)
+            outputRDD = outputRDD
               .mapPartitions(_.take(_queriesLimit(qID)))
-              .saveAsTextFile(resultPath)
           } else {
-            outputRDD
-              .repartition(this.numOfFilesPartition)
-              .saveAsTextFile(resultPath)
+            outputRDD = outputRDD
           }
         }
       }
@@ -1041,7 +1021,6 @@ class QuerySystem(
 
       // output result to file
       if (_unionOp(qID)("last")) {
-        val resultPath = this.queryResultPath + "/" + qID + "/"
 
         // case: UNION
         if (_unionOp(qID)("isUnion")) {
@@ -1050,17 +1029,14 @@ class QuerySystem(
 
         // case: LIMIT
         if (_queriesLimit.get(qID).isDefined) {
-          tmpRDD
-            .repartition(this.numOfFilesPartition)
+          tmpRDD = tmpRDD
             .mapPartitions(_.take(_queriesLimit(qID)))
-            .saveAsTextFile(resultPath)
         } else {
-          tmpRDD
-            .repartition(this.numOfFilesPartition)
-            .saveAsTextFile(resultPath)
+          tmpRDD = tmpRDD
         }
       }
     }
+    outputRDD = tmpRDD
   }
 
   // apply FILTER on the query
