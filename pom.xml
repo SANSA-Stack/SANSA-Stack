@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.6.0-SNAPSHOT</version>
 	</parent>
 
 	<version>2018-12.1-SNAPSHOT</version>
@@ -58,61 +58,66 @@
 
 	</modules>
 
+	<properties>
+		<sansa.version>0.6.0-SNAPSHOT</sansa.version>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- RDF Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.rdf.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.rdf.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<!-- OWL Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.owl.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.owl.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.query.version}</version>
+				<!-- <version>${project.parent.version}</version> -->
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- Inference Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.inference.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.inference.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 			<!-- ML Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.ml.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.ml.version}</version>
+				<version>${sansa.version}</version>
 			</dependency>
 
 		</dependencies>
