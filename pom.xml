@@ -2,10 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>net.sansa-stack</groupId>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent</artifactId>
+		<version>0.6.0-SNAPSHOT</version>
+	</parent>
+
 	<artifactId>sansa-stack-parent</artifactId>
-	<version>2018-12</version>
+
 	<packaging>pom</packaging>
+
 	<name>SANSA-Stack</name>
 
 	<modules>
@@ -35,25 +42,6 @@
 		<url>https://github.com/SANSA-Stack/SANSA-Stack</url>
 	</issueManagement>
 
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-		<scala.version>2.11.11</scala.version>
-		<scala.binary.version>2.11</scala.binary.version>
-
-		<spark.version>2.4.0</spark.version>
-		<flink.version>1.7.0</flink.version>
-		<sansa.rdf.version>0.5.0</sansa.rdf.version>
-		<sansa.owl.version>0.4.1</sansa.owl.version>
-		<sansa.query.version>0.5.0</sansa.query.version>
-		<sansa.inference.version>0.5.0</sansa.inference.version>
-		<sansa.ml.version>0.5.0</sansa.ml.version>
-	</properties>
-
-
-
 	<dependencyManagement>
 		<dependencies>
 
@@ -61,64 +49,64 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.rdf.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.rdf.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- OWL Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.owl.version}</version>
+				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.owl.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Query Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.query.version}</version>
+				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-query-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.query.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Inference Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.inference.version}</version>
+				<version>${project.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.inference.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- ML Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
-				<version>${sansa.ml.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
-				<version>${sansa.ml.version}</version>
+				<version>${project.version}</version>
 			</dependency>
 
 		</dependencies>
