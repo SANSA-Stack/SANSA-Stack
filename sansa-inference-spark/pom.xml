@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-inference-parent_2.11</artifactId>
-        <version>0.6.0</version>
+        <version>0.6.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
