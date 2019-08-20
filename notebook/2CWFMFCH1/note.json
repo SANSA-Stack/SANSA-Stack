@@ -2,9 +2,9 @@
   "paragraphs": [
     {
       "title": "1. Load Data",
-      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval input \u003d \"hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\"\nval lang \u003d Lang.NTRIPLES\nval graph \u003d spark.rdf(lang)(input)",
+      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval input \u003d \"hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 12:52:44.409",
+      "dateUpdated": "2019-08-20 12:06:23.982",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -29,7 +29,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\ninput: String \u003d hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ngraph: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[2] at mapPartitions at NTripleReader.scala:140\n"
+            "data": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\ninput: String \u003d hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[61] at mapPartitions at NTripleReader.scala:140\n"
           }
         ]
       },
@@ -37,16 +37,16 @@
       "jobName": "paragraph_1509621876108_-341284568",
       "id": "20171102-112436_172970529",
       "dateCreated": "2017-11-02 11:24:36.000",
-      "dateStarted": "2018-12-17 12:52:44.430",
-      "dateFinished": "2018-12-17 12:53:07.964",
+      "dateStarted": "2019-08-20 12:06:24.001",
+      "dateFinished": "2019-08-20 12:06:26.127",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "2. Compute statistics (i.e. Property Distribution)",
-      "text": "import net.sansa_stack.rdf.spark.stats._\n\nval propertyDist \u003dgraph.statsPropertyUsage().\n                  map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + propertyDist.take(100).mkString(\"\\n\"))",
+      "text": "import net.sansa_stack.rdf.spark.stats._\n\nval propertyDist \u003dtriples.statsPropertyUsage().\n                  map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + propertyDist.take(100).mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 12:53:35.376",
+      "dateUpdated": "2019-08-20 12:06:27.993",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -79,7 +79,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import net.sansa_stack.rdf.spark.stats._\npropertyDist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[6] at map at \u003cconsole\u003e:38\n"
+            "data": "import net.sansa_stack.rdf.spark.stats._\npropertyDist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[65] at map at \u003cconsole\u003e:61\n"
           },
           {
             "type": "TABLE",
@@ -94,9 +94,9 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://205386a76a9c:4040/jobs/job?id\u003d0",
-            "http://205386a76a9c:4040/jobs/job?id\u003d1",
-            "http://205386a76a9c:4040/jobs/job?id\u003d2"
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d21",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d22",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d23"
           ],
           "interpreterSettingId": "spark"
         }
@@ -105,8 +105,8 @@
       "jobName": "paragraph_1509621997083_-1710050944",
       "id": "20171102-112637_201407605",
       "dateCreated": "2017-11-02 11:26:37.000",
-      "dateStarted": "2018-12-17 12:53:35.392",
-      "dateFinished": "2018-12-17 12:53:46.584",
+      "dateStarted": "2019-08-20 12:06:28.026",
+      "dateFinished": "2019-08-20 12:06:30.084",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -114,7 +114,7 @@
       "title": "3. Infer new Knowledge",
       "text": "import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport java.net.{ URI \u003d\u003e JavaURI }\n\nval RDFGraph \u003d RDFGraphLoader.loadFromDisk(spark, JavaURI.create(input), 4)\nval reasoner \u003d new ForwardRuleReasonerRDFS(spark.sparkContext)\nval inferredGraph \u003d reasoner.apply(RDFGraph)\ninferredGraph.cache()",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 12:54:05.052",
+      "dateUpdated": "2019-08-20 12:06:41.227",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -140,7 +140,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport java.net.{URI\u003d\u003eJavaURI}\nRDFGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[9] at mapPartitions at NTripleReader.scala:140)\nreasoner: net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS \u003d net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS@7fd3723e\ninferredGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[46] at distinct at ForwardRuleReasonerRDFS.scala:223)\nres7: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[46] at distinct at ForwardRuleReasonerRDFS.scala:223)\n"
+            "data": "import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport java.net.{URI\u003d\u003eJavaURI}\nRDFGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[68] at mapPartitions at NTripleReader.scala:140)\nreasoner: net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS \u003d net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS@188b359c\ninferredGraph: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[105] at distinct at ForwardRuleReasonerRDFS.scala:223)\nres21: net.sansa_stack.inference.spark.data.model.RDFGraph \u003d RDFGraph(MapPartitionsRDD[105] at distinct at ForwardRuleReasonerRDFS.scala:223)\n"
           }
         ]
       },
@@ -151,16 +151,16 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://205386a76a9c:4040/jobs/job?id\u003d3",
-            "http://205386a76a9c:4040/jobs/job?id\u003d4",
-            "http://205386a76a9c:4040/jobs/job?id\u003d5",
-            "http://205386a76a9c:4040/jobs/job?id\u003d6",
-            "http://205386a76a9c:4040/jobs/job?id\u003d7",
-            "http://205386a76a9c:4040/jobs/job?id\u003d8",
-            "http://205386a76a9c:4040/jobs/job?id\u003d9",
-            "http://205386a76a9c:4040/jobs/job?id\u003d10",
-            "http://205386a76a9c:4040/jobs/job?id\u003d11",
-            "http://205386a76a9c:4040/jobs/job?id\u003d12"
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d24",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d25",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d26",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d27",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d28",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d29",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d30",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d31",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d32",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d33"
           ],
           "interpreterSettingId": "spark"
         }
@@ -169,16 +169,16 @@
       "jobName": "paragraph_1509622028081_1197324639",
       "id": "20171102-112708_848247359",
       "dateCreated": "2017-11-02 11:27:08.000",
-      "dateStarted": "2018-12-17 12:54:05.083",
-      "dateFinished": "2018-12-17 12:54:13.913",
+      "dateStarted": "2019-08-20 12:06:41.255",
+      "dateFinished": "2019-08-20 12:06:45.748",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "3.1 Compute statistics (i.e Class Distribution to the original graph)",
-      "text": "val rdf_stats_class_dist \u003d graph.statsClassUsageCount().\n                           map(f \u003d\u003e f._1.toString.substring(f._1.toString.lastIndexOf(\"/\") + 1)+ \"\\t\" + f._2)\nprintln(\"%table Class Distribution\\tFrequency\\n \" + rdf_stats_class_dist.take(100).mkString(\"\\n\"))",
+      "text": "val rdf_stats_class_dist \u003d triples.statsClassUsageCount().\n                           map(f \u003d\u003e f._1.toString.substring(f._1.toString.lastIndexOf(\"/\") + 1)+ \"\\t\" + f._2)\nprintln(\"%table Class Distribution\\tFrequency\\n \" + rdf_stats_class_dist.take(100).mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 13:10:24.254",
+      "dateUpdated": "2019-08-20 12:06:54.867",
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -232,7 +232,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "rdf_stats_class_dist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[51] at map at \u003cconsole\u003e:41\n"
+            "data": "rdf_stats_class_dist: org.apache.spark.rdd.RDD[String] \u003d MapPartitionsRDD[110] at map at \u003cconsole\u003e:64\n"
           },
           {
             "type": "TABLE",
@@ -247,9 +247,9 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://205386a76a9c:4040/jobs/job?id\u003d13",
-            "http://205386a76a9c:4040/jobs/job?id\u003d14",
-            "http://205386a76a9c:4040/jobs/job?id\u003d15"
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d34",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d35",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d36"
           ],
           "interpreterSettingId": "spark"
         }
@@ -258,16 +258,16 @@
       "jobName": "paragraph_1509622058566_569460406",
       "id": "20171102-112738_1999790335",
       "dateCreated": "2017-11-02 11:27:38.000",
-      "dateStarted": "2018-12-17 12:54:16.547",
-      "dateFinished": "2018-12-17 12:54:19.100",
+      "dateStarted": "2019-08-20 12:06:53.073",
+      "dateFinished": "2019-08-20 12:06:54.614",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "3.2 Compute statistics (i.e size of the inferred graph)",
-      "text": "val O_graph \u003d \"original graph\" + \"\\t\" + graph.count \nval I_Graph \u003d \"\\n inferred graph\" + \"\\t\" + inferredGraph.size\n\nprintln(\"%table graph\\t size\\n \" + O_graph.union(I_Graph))\n\n//val I_Graph \u003d \"inferred graph\" + \"\\t\" + inferredGraph.size\n//println(\"%table graph\\t size\\n \" + I_Graph)",
+      "text": "val O_graph \u003d \"original graph\" + \"\\t\" + triples.count \nval I_Graph \u003d \"\\n inferred graph\" + \"\\t\" + inferredGraph.size\n\nprintln(\"%table graph\\t size\\n \" + O_graph.union(I_Graph))\n\n//val I_Graph \u003d \"inferred graph\" + \"\\t\" + inferredGraph.size\n//println(\"%table graph\\t size\\n \" + I_Graph)",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 13:10:24.312",
+      "dateUpdated": "2019-08-20 12:06:56.657",
       "config": {
         "colWidth": 6.0,
         "enabled": true,
@@ -338,8 +338,8 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://205386a76a9c:4040/jobs/job?id\u003d16",
-            "http://205386a76a9c:4040/jobs/job?id\u003d17"
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d37",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d38"
           ],
           "interpreterSettingId": "spark"
         }
@@ -348,16 +348,16 @@
       "jobName": "paragraph_1509622096514_561642835",
       "id": "20171102-112816_1291571260",
       "dateCreated": "2017-11-02 11:28:16.000",
-      "dateStarted": "2018-12-17 12:54:23.158",
-      "dateFinished": "2018-12-17 12:54:35.016",
+      "dateStarted": "2019-08-20 12:06:56.677",
+      "dateFinished": "2019-08-20 12:07:05.665",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "4. Compute resource ranking and get top 50 POIs.",
-      "text": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model.graph._\n\nval graph_rep \u003dgraph.asGraph()\n   // Create a subgraph based on the vertices connected by geoproperty.\n val geoSubgraph \u003d\n    graph_rep.subgraph(t \u003d\u003e t.attr \u003d\u003d\"http://www.w3.org/2006/vcard/ns#geo\")\n\nval pagerank \u003d geoSubgraph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(geoSubgraph.vertices).\n      map({ case (k, (r, v)) \u003d\u003e (r, v, k) }).\n      sortBy(50 - _._1)\n\ncase class POI(geoloc:Long, rank:Double, lat: String, lon: String)\n val POIs \u003d report.filter(f\u003d\u003ef._2.isLiteral()\u0026\u0026 f._2.getLiteralLexicalForm().startsWith(\"geo:\")).map { f \u003d\u003e\n    val geoloc \u003d f._3\n    val rank \u003d f._1\n    val geo \u003d f._2.getLiteralLexicalForm.split(\"[:,]+\")\n    val lat \u003d geo(1)\n    val lon \u003d geo(2)\n\n    POI(geoloc, rank, lat, lon)\n\n  }.take(50)\n\nz.angularBind(\"pois\", POIs) // this is what sends the data to the map\n\nval reportPOI \u003d POIs.map(f \u003d\u003e f.geoloc + \"\\t\" + f.lat+\", \" + f.lon + \"\\t\" + f.rank)\nprintln(\"%table geoloc \\t geocord \\t rank \\n \" + reportPOI.mkString(\"\\n\"))",
+      "text": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model._\n\nval graph_rep \u003dtriples.asGraph()\n   // Create a subgraph based on the vertices connected by geoproperty.\n val geoSubgraph \u003d\n    graph_rep.subgraph(t \u003d\u003e t.attr \u003d\u003d\"http://www.w3.org/2006/vcard/ns#geo\")\n\nval pagerank \u003d geoSubgraph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(geoSubgraph.vertices).\n      map({ case (k, (r, v)) \u003d\u003e (r, v, k) }).\n      sortBy(50 - _._1)\n\ncase class POI(geoloc:Long, rank:Double, lat: String, lon: String)\n val POIs \u003d report.filter(f\u003d\u003ef._2.isLiteral()\u0026\u0026 f._2.getLiteralLexicalForm().startsWith(\"geo:\")).map { f \u003d\u003e\n    val geoloc \u003d f._3\n    val rank \u003d f._1\n    val geo \u003d f._2.getLiteralLexicalForm.split(\"[:,]+\")\n    val lat \u003d geo(1)\n    val lon \u003d geo(2)\n\n    POI(geoloc, rank, lat, lon)\n\n  }.take(50)\n\nz.angularBind(\"pois\", POIs) // this is what sends the data to the map\n\nval reportPOI \u003d POIs.map(f \u003d\u003e f.geoloc + \"\\t\" + f.lat+\", \" + f.lon + \"\\t\" + f.rank)\nprintln(\"%table geoloc \\t geocord \\t rank \\n \" + reportPOI.mkString(\"\\n\"))",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 12:54:38.055",
+      "dateUpdated": "2019-08-20 12:08:04.016",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -382,7 +382,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model.graph._\ngraph_rep: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@4dff1fbc\ngeoSubgraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@475ec47c\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[133] at RDD at VertexRDD.scala:57\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[148] at sortBy at \u003cconsole\u003e:52\ndefined class POI\nPOIs: Array[POI] \u003d Array(POI(22720,0.9999999999999859,49.9138,7.0181), POI(11440,0.9999999999999859,52.60763,8.3663), POI(6440,0.9999999999999859,49.9,6.88333), POI(19800,0.9999999999999859,49.9239,9.80167), POI(23000,0.9999999999999859,48.38824,9.29345), POI(1280,0.9999999999999859,51.1167,14.1), POI(25480,0.9999999999999859,49.7914,9.26583), POI(30640,0.9999999999999859,51.1,13.03333), POI(24520,0.9999999999999859,54.30242,13.09284), POI(2040,0.9999999999999859,47.75,9.65), POI(2360,0.9999999999999859,52.4667,12.7333), POI(29600,0.9999999999999859,49.4667,7.58333), POI(25920,0.9999999999999859,50.5833,7.38333), POI(10720,0.9999999999999859,53.8676,11.68), POI(30560,0.9999999999999859,48.1833,12.4333), POI(25040,0.9999999999999859,54.5177,9.3848), POI(32240,0.9999999999999859,54.3833,9...reportPOI: Array[String] \u003d Array(22720\t49.9138, 7.0181\t0.9999999999999859, 11440\t52.60763, 8.3663\t0.9999999999999859, 6440\t49.9, 6.88333\t0.9999999999999859, 19800\t49.9239, 9.80167\t0.9999999999999859, 23000\t48.38824, 9.29345\t0.9999999999999859, 1280\t51.1167, 14.1\t0.9999999999999859, 25480\t49.7914, 9.26583\t0.9999999999999859, 30640\t51.1, 13.03333\t0.9999999999999859, 24520\t54.30242, 13.09284\t0.9999999999999859, 2040\t47.75, 9.65\t0.9999999999999859, 2360\t52.4667, 12.7333\t0.9999999999999859, 29600\t49.4667, 7.58333\t0.9999999999999859, 25920\t50.5833, 7.38333\t0.9999999999999859, 10720\t53.8676, 11.68\t0.9999999999999859, 30560\t48.1833, 12.4333\t0.9999999999999859, 25040\t54.5177, 9.3848\t0.9999999999999859, 32240\t54.3833, 9.6\t0.9999999999999859, 6760\t48.2333, 8.55\t0.9999999999999859, 14160\t52.3752, 8...%table geoloc \t geocord \t rank \n 22720\t49.9138, 7.0181\t0.9999999999999859\n11440\t52.60763, 8.3663\t0.9999999999999859\n6440\t49.9, 6.88333\t0.9999999999999859\n19800\t49.9239, 9.80167\t0.9999999999999859\n23000\t48.38824, 9.29345\t0.9999999999999859\n1280\t51.1167, 14.1\t0.9999999999999859\n25480\t49.7914, 9.26583\t0.9999999999999859\n30640\t51.1, 13.03333\t0.9999999999999859\n24520\t54.30242, 13.09284\t0.9999999999999859\n2040\t47.75, 9.65\t0.9999999999999859\n2360\t52.4667, 12.7333\t0.9999999999999859\n29600\t49.4667, 7.58333\t0.9999999999999859\n25920\t50.5833, 7.38333\t0.9999999999999859\n10720\t53.8676, 11.68\t0.9999999999999859\n30560\t48.1833, 12.4333\t0.9999999999999859\n25040\t54.5177, 9.3848\t0.9999999999999859\n32240\t54.3833, 9.6\t0.9999999999999859\n6760\t48.2333, 8.55\t0.9999999999999859\n14160\t52.3752, 8.9426\t0.9999999999999859\n22680\t53.4167, 9.61667\t0.9999999999999859\n10560\t54.4333, 12.6833\t0.9999999999999859\n10400\t50.3, 11.2667\t0.9999999999999859\n26000\t48.3167, 13.0833\t0.9999999999999859\n30600\t51.6833, 14.4167\t0.9999999999999859\n30120\t51.89235, 10.7101\t0.9999999999999859\n27480\t50.3167, 10.3667\t0.9999999999999859\n12080\t50.4167, 12.9833\t0.9999999999999859\n400\t49.38972, 9.21056\t0.9999999999999859\n120\t50.3875, 11.0625\t0.9999999999999859\n11160\t54.3734, 10.1278\t0.9999999999999859\n25560\t51.0167, 14.75\t0.9999999999999859\n22640\t49.68976, 6.71239\t0.9999999999999859\n8920\t50.6333, 10.1667\t0.9999999999999859\n14640\t51.4662, 8.31078\t0.9999999999999859\n3280\t53.2167, 14\t0.9999999999999859\n21560\t48.8, 11.1\t0.9999999999999859\n31120\t53.98734, 11.1973\t0.9999999999999859\n11760\t48.40053, 10.59583\t0.9999999999999859\n31840\t54.0833, 9.3\t0.9999999999999859\n16280\t49.2028, 7.9659\t0.9999999999999859\n19000\t49.9306, 8.15556\t0.9999999999999859\n15440\t47.85, 9.75\t0.9999999999999859\n18520\t49.8667, 10.4167\t0.9999999999999859\n1720\t48.25, 12.5833\t0.9999999999999859\n9080\t53.5424, 10.1729\t0.9999999999999859\n23080\t50.93835, 6.95428\t0.9999999999999859\n12800\t50.78333, 12.86667\t0.9999999999999859\n8480\t51.4667, 10.2333\t0.9999999999999859\n19520\t49.35, 7.68333\t0.9999999999999859\n5200\t48.2, 12.2833\t0.9999999999999859\n"
+            "data": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model._\ngraph_rep: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@50233946\ngeoSubgraph: org.apache.spark.graphx.Graph[org.apache.jena.graph.Node,org.apache.jena.graph.Node] \u003d org.apache.spark.graphx.impl.GraphImpl@7609eade\npagerank: org.apache.spark.graphx.VertexRDD[Double] \u003d VertexRDDImpl[192] at RDD at VertexRDD.scala:57\nreport: org.apache.spark.rdd.RDD[(Double, org.apache.jena.graph.Node, org.apache.spark.graphx.VertexId)] \u003d MapPartitionsRDD[207] at sortBy at \u003cconsole\u003e:75\ndefined class POI\nPOIs: Array[POI] \u003d Array(POI(22720,0.9999999999999859,49.9138,7.0181), POI(11440,0.9999999999999859,52.60763,8.3663), POI(6440,0.9999999999999859,49.9,6.88333), POI(19800,0.9999999999999859,49.9239,9.80167), POI(23000,0.9999999999999859,48.38824,9.29345), POI(1280,0.9999999999999859,51.1167,14.1), POI(25480,0.9999999999999859,49.7914,9.26583), POI(30640,0.9999999999999859,51.1,13.03333), POI(24520,0.9999999999999859,54.30242,13.09284), POI(2040,0.9999999999999859,47.75,9.65), POI(2360,0.9999999999999859,52.4667,12.7333), POI(29600,0.9999999999999859,49.4667,7.58333), POI(25920,0.9999999999999859,50.5833,7.38333), POI(10720,0.9999999999999859,53.8676,11.68), POI(30560,0.9999999999999859,48.1833,12.4333), POI(25040,0.9999999999999859,54.5177,9.3848), POI(32240,0.9999999999999859,54.3833,9...reportPOI: Array[String] \u003d Array(22720\t49.9138, 7.0181\t0.9999999999999859, 11440\t52.60763, 8.3663\t0.9999999999999859, 6440\t49.9, 6.88333\t0.9999999999999859, 19800\t49.9239, 9.80167\t0.9999999999999859, 23000\t48.38824, 9.29345\t0.9999999999999859, 1280\t51.1167, 14.1\t0.9999999999999859, 25480\t49.7914, 9.26583\t0.9999999999999859, 30640\t51.1, 13.03333\t0.9999999999999859, 24520\t54.30242, 13.09284\t0.9999999999999859, 2040\t47.75, 9.65\t0.9999999999999859, 2360\t52.4667, 12.7333\t0.9999999999999859, 29600\t49.4667, 7.58333\t0.9999999999999859, 25920\t50.5833, 7.38333\t0.9999999999999859, 10720\t53.8676, 11.68\t0.9999999999999859, 30560\t48.1833, 12.4333\t0.9999999999999859, 25040\t54.5177, 9.3848\t0.9999999999999859, 32240\t54.3833, 9.6\t0.9999999999999859, 6760\t48.2333, 8.55\t0.9999999999999859, 14160\t52.3752, 8...%table geoloc \t geocord \t rank \n 22720\t49.9138, 7.0181\t0.9999999999999859\n11440\t52.60763, 8.3663\t0.9999999999999859\n6440\t49.9, 6.88333\t0.9999999999999859\n19800\t49.9239, 9.80167\t0.9999999999999859\n23000\t48.38824, 9.29345\t0.9999999999999859\n1280\t51.1167, 14.1\t0.9999999999999859\n25480\t49.7914, 9.26583\t0.9999999999999859\n30640\t51.1, 13.03333\t0.9999999999999859\n24520\t54.30242, 13.09284\t0.9999999999999859\n2040\t47.75, 9.65\t0.9999999999999859\n2360\t52.4667, 12.7333\t0.9999999999999859\n29600\t49.4667, 7.58333\t0.9999999999999859\n25920\t50.5833, 7.38333\t0.9999999999999859\n10720\t53.8676, 11.68\t0.9999999999999859\n30560\t48.1833, 12.4333\t0.9999999999999859\n25040\t54.5177, 9.3848\t0.9999999999999859\n32240\t54.3833, 9.6\t0.9999999999999859\n6760\t48.2333, 8.55\t0.9999999999999859\n14160\t52.3752, 8.9426\t0.9999999999999859\n22680\t53.4167, 9.61667\t0.9999999999999859\n10560\t54.4333, 12.6833\t0.9999999999999859\n10400\t50.3, 11.2667\t0.9999999999999859\n26000\t48.3167, 13.0833\t0.9999999999999859\n30600\t51.6833, 14.4167\t0.9999999999999859\n30120\t51.89235, 10.7101\t0.9999999999999859\n27480\t50.3167, 10.3667\t0.9999999999999859\n12080\t50.4167, 12.9833\t0.9999999999999859\n400\t49.38972, 9.21056\t0.9999999999999859\n120\t50.3875, 11.0625\t0.9999999999999859\n11160\t54.3734, 10.1278\t0.9999999999999859\n25560\t51.0167, 14.75\t0.9999999999999859\n22640\t49.68976, 6.71239\t0.9999999999999859\n8920\t50.6333, 10.1667\t0.9999999999999859\n14640\t51.4662, 8.31078\t0.9999999999999859\n3280\t53.2167, 14\t0.9999999999999859\n21560\t48.8, 11.1\t0.9999999999999859\n31120\t53.98734, 11.1973\t0.9999999999999859\n11760\t48.40053, 10.59583\t0.9999999999999859\n31840\t54.0833, 9.3\t0.9999999999999859\n16280\t49.2028, 7.9659\t0.9999999999999859\n19000\t49.9306, 8.15556\t0.9999999999999859\n15440\t47.85, 9.75\t0.9999999999999859\n18520\t49.8667, 10.4167\t0.9999999999999859\n1720\t48.25, 12.5833\t0.9999999999999859\n9080\t53.5424, 10.1729\t0.9999999999999859\n23080\t50.93835, 6.95428\t0.9999999999999859\n12800\t50.78333, 12.86667\t0.9999999999999859\n8480\t51.4667, 10.2333\t0.9999999999999859\n19520\t49.35, 7.68333\t0.9999999999999859\n5200\t48.2, 12.2833\t0.9999999999999859\n"
           }
         ]
       },
@@ -393,11 +393,11 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://205386a76a9c:4040/jobs/job?id\u003d18",
-            "http://205386a76a9c:4040/jobs/job?id\u003d19",
-            "http://205386a76a9c:4040/jobs/job?id\u003d20",
-            "http://205386a76a9c:4040/jobs/job?id\u003d21",
-            "http://205386a76a9c:4040/jobs/job?id\u003d22"
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d39",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d40",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d41",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d42",
+            "http://a2d6b1ec8163:4040/jobs/job?id\u003d43"
           ],
           "interpreterSettingId": "spark"
         }
@@ -406,8 +406,8 @@
       "jobName": "paragraph_1509622142083_-934214916",
       "id": "20171102-112902_1189673617",
       "dateCreated": "2017-11-02 11:29:02.000",
-      "dateStarted": "2018-12-17 12:54:38.072",
-      "dateFinished": "2018-12-17 12:55:19.951",
+      "dateStarted": "2019-08-20 12:07:17.036",
+      "dateFinished": "2019-08-20 12:07:59.251",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
