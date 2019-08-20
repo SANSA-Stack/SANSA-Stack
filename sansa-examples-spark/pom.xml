@@ -13,38 +13,47 @@
 	<description>SANSA Examples for Apache Spark</description>
 
 	<dependencies>
-		<!-- Scala -->
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-		</dependency>
-
-		<!-- Apache Spark Core -->
+		<!-- Apache Spark -->
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
+			<scope>provided</scope>
 			<!-- <exclusions> <exclusion> <groupId>org.mortbay.jetty</groupId> <artifactId>jetty</artifactId> 
 				</exclusion> <exclusion> <groupId>org.mortbay.jetty</groupId> <artifactId>jetty-util</artifactId> 
 				</exclusion> </exclusions> -->
 		</dependency>
-		<!-- Apache Spark SQL -->
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-sql_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
+			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
 			<version>${spark.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Apache JENA 3.x -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
-			<artifactId>apache-jena-libs</artifactId>
-			<type>pom</type>
+			<artifactId>jena-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-server-standalone</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>9.4.18.v20190429</version>
 		</dependency>
 
 		<!-- SANSA RDF -->
@@ -80,18 +89,6 @@
 			<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
-		<!-- Test -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 		<!-- Logging -->
 		<dependency>
 			<groupId>com.typesafe.scala-logging</groupId>
@@ -104,11 +101,30 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
+		<!-- BigDL Library -->
+		<dependency>
+			<groupId>com.intel.analytics.bigdl</groupId>
+			<artifactId>bigdl-SPARK_2.2</artifactId>
+			<version>0.3.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.haifengl</groupId>
+			<artifactId>smile-core</artifactId>
+			<version>1.5.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.haifengl</groupId>
+			<artifactId>smile-netlib</artifactId>
+			<version>1.5.0</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>
-		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
@@ -151,6 +167,8 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<shadedClassifierName>dist</shadedClassifierName>
+<!--							<finalName>dist-${project.artifactId}-${project.version}</finalName>-->
 							<artifactSet>
 								<excludes>
 									<exclude>asm:asm</exclude>
@@ -162,7 +180,7 @@
 									<exclude>com.google.code.findbugs:jsr305</exclude>
 									<exclude>com.google.code.gson:gson</exclude>
 									<exclude>com.google.inject.extensions:guice-servlet</exclude>
-									<exclude>com.google.guava:guava</exclude>
+<!--									<exclude>com.google.guava:guava</exclude>-->
 									<exclude>com.google.protobuf:protobuf-java</exclude>
 									<exclude>com.jcraft:jsch</exclude>
 									<exclude>com.ning:compress-lzf</exclude>
@@ -184,7 +202,7 @@
 									<exclude>commons-logging:commons-logging</exclude>
 									<exclude>commons-net:commons-net</exclude>
 									<exclude>io.dropwizard.metrics:metrics*</exclude>
-									<exckude>io.netty:netty*</exckude>
+									<exclude>io.netty:netty*</exclude>
 									<exclude>javax.activation:activation</exclude>
 									<exclude>javax.annotation:javax.annotation-api</exclude>
 									<exclude>javax.servlet:javax.servlet-api</exclude>
@@ -209,7 +227,7 @@
 									<exclude>org.apache.directory.server:*</exclude>
 									<exclude>org.apache.hadoop:*</exclude>
 									<exclude>org.apache.htrace:htrace-core</exclude>
-									<exclude>org.apache.httpcomponents:*</exclude>
+<!--									<exclude>org.apache.httpcomponents:*</exclude>-->
 									<exclude>org.apache.ivy:ivy</exclude>
 									<exclude>org.apache.mesos:mesos</exclude>
 									<exclude>org.apache.parquet:parquet*</exclude>
@@ -220,8 +238,8 @@
 									<exclude>org.codehaus.janino:*</exclude>
 									<exclude>org.codehaus.jettison:jettison</exclude>
 									<exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
-									<exckude>org.glassfish.hk2*</exckude>
-									<exclude>org.glassfish.jersey*</exclude>
+<!--									<exclude>org.glassfish.hk2*</exclude>-->
+<!--									<exclude>org.glassfish.jersey*</exclude>-->
 									<exclude>org.javassist:javassist</exclude>
 									<exclude>org.json4s:json4s*</exclude>
 									<exclude>org.mortbay.jetty:jetty*</exclude>
@@ -234,6 +252,29 @@
 									<exclude>org.xerial.snappy:snappy-java</exclude>
 									<exclude>oro:oro</exclude>
 									<exclude>xmlenc:xmlenc</exclude>
+
+									<exclude>org.netbeans.api:*</exclude>
+									<exclude>org.gephi:*</exclude>
+									<exclude>org.jfree:*</exclude>
+									<exclude>com.itextpdf:*</exclude>
+									<exclude>org.apache.poi:*</exclude>
+									<exclude>org.apache.batik:*</exclude>
+									<exclude>org.xerial:sqlite-jdbc</exclude>
+									<exclude>org.apache.jena:jena-osgi</exclude>
+
+									<exclude>org.eclipse.rdf4j:*</exclude>
+									<exclude>com.amazonaws:*</exclude>
+									<exclude>org.apache.xmlgraphics:*</exclude>
+									<exclude>org.netbeans.api:*</exclude>
+									<exclude>org.codehaus.groovy:*</exclude>
+									<exclude>org.apache.spark:*</exclude>
+									<exclude>org.apache.calcite:*</exclude>
+									<exclude>org.scalacheck:*</exclude>
+									<exclude>org.h2:*</exclude>
+
+									<exclude>com.intel.analytics.bigdl:*</exclude>
+
+
 								</excludes>
 							</artifactSet>
 							<filters>
@@ -243,6 +284,23 @@
 										<exclude>META-INF/*.SF</exclude>
 										<exclude>META-INF/*.DSA</exclude>
 										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>org.aksw.jena-sparql-api:*</artifact>
+									<includes>
+										<include>**</include>
+									</includes>
+								</filter>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>*.so</exclude>
+										<exclude>*.nt</exclude>
+										<exclude>*.dll</exclude>
+										<exclude>*.jnilib</exclude>
+										<exclude>*.txt</exclude>
+										<exclude>*.pom</exclude>
 									</excludes>
 								</filter>
 							</filters>
@@ -261,41 +319,6 @@
 				</executions>
 			</plugin>
 
-			<!-- disable surefire -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<useFile>false</useFile>
-					<disableXmlReport>true</disableXmlReport>
-					<!-- If you have classpath issue like NoDefClassError,... -->
-					<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
-					<includes>
-						<include>**/*Test.*</include>
-						<include>**/*Suite.*</include>
-					</includes>
-					<skipTests>true</skipTests>
-				</configuration>
-			</plugin>
-
-			<!-- enable scalatest -->
-			<plugin>
-				<groupId>org.scalatest</groupId>
-				<artifactId>scalatest-maven-plugin</artifactId>
-				<configuration>
-					<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-					<junitxml>.</junitxml>
-					<filereports>WDF TestSuite.txt</filereports>
-				</configuration>
-				<executions>
-					<execution>
-						<id>test</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.scalastyle</groupId>
 				<artifactId>scalastyle-maven-plugin</artifactId>
