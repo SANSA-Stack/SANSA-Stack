@@ -141,8 +141,12 @@ package object io {
       if (doSave) triples
         .mapPartitions(p => {
           val os = new ByteArrayOutputStream()
-          RDFDataMgr.writeTriples(os, p.asJava)
-          Collections.singleton(new String(os.toByteArray)).iterator().asScala
+          if (p.hasNext) {
+            RDFDataMgr.writeTriples(os, p.asJava)
+            Collections.singleton(new String(os.toByteArray)).iterator().asScala
+          } else {
+            Iterator()
+          }
 
           //            val os = new ByteArrayOutputStream()
           //            val fct = new com.google.common.base.Function[Triple, String]() {
