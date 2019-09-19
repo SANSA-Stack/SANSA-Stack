@@ -31,6 +31,7 @@ package object owl {
     def owl(syntax: Syntax.Value): String => OWLAxiomsRDD = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
+      case Syntax.OWLXML => owlXml
       case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
@@ -49,13 +50,21 @@ package object owl {
     def manchester: String => OWLAxiomsRDD = path => {
       ManchesterSyntaxOWLAxiomsRDDBuilder.build(spark, path)
     }
+    /**
+      * Load OWL data in OWL/XML syntax into an [[RDD]][OWLAxiom].
+      * @return the [[OWLAxiomsRDD]]
+      */
+
+    def owlXml: String => OWLAxiomsRDD = path => {
+      OWLXMLSyntaxOWLAxiomsRDDBuilder.build(spark, path)
+    }
 
   }
 
   implicit class OWLExpressionsRDDReader(spark: SparkSession) {
 
   /**
-     * Load RDF data into a `RDD[String]. Currently, only functional and manchester syntax are supported
+     * Load RDF data into a RDD[String]. Currently, only functional and manchester syntax are supported
      * @param syntax of the OWL (functional or manchester)
      * @return a [[OWLExpressionsRDD]]
      */
