@@ -5,7 +5,7 @@ import java.net.{BindException, InetAddress, URL}
 import java.util.concurrent.TimeUnit
 
 import com.google.common.base.StandardSystemProperty
-import com.google.common.collect.{ImmutableRangeSet, Range, RangeSet}
+import com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, ImmutableSortedSet, Range, RangeSet}
 import org.aksw.jena_sparql_api.ext.virtuoso.HealthcheckRunner
 import org.apache.jena.fuseki.FusekiException
 import org.apache.jena.fuseki.main.FusekiServer
@@ -16,6 +16,8 @@ import org.apache.jena.vocabulary.RDF
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
+
+import scala.util.Random
 
 
 object MainConjure {
@@ -34,23 +36,22 @@ object MainConjure {
   }
   */
 
-  def startSparqlEndpoint(): (FusekiServer, URL) = {
+  def startSparqlEndpoint(portRanges: ImmutableRangeSet[Integer]): (FusekiServer, URL) = {
 
+    import collection.JavaConverters._
+    val sortedPorts = portRanges.asSet(DiscreteDomain.integers).asScala.toList
+    val shuffledPorts = Random.shuffle(sortedPorts)
+
+    //println("Sorted ports: " + sortedPorts)
+
+    val name = "test"
     var result: (FusekiServer, URL) = null
 
-    var port = 3030
-    val name = "test"
-
-    // If the server is already up, we are done
     var url: URL = null
-    //    try {
-    //      HealthcheckRunner.checkUrl(url)
-    //    }
-    //    catch {
-    //      case _: Throwable =>
 
-    var retry = 10
-    while (retry > 0) {
+    var it = shuffledPorts.iterator
+    while(it.hasNext) {
+      val port = it.next
       url = HealthcheckRunner.createUrl("http://localhost:" + port + "/" + name)
       val ds = DatasetFactory.createTxnMem
 
@@ -63,20 +64,17 @@ object MainConjure {
 
       try {
         println(TaskContext.getPartitionId() + " Attempting to start: " + url)
-        println(TaskContext.getPartitionId() + " " + retry + " retries remaining")
         server.start();
 
         result = (server, url)
-        retry = 0
+        it = Iterator() /* break out of the loop */
       }
       catch {
         case e: FusekiException => e.getCause match {
           case f: BindException =>
             server.stop
             println(TaskContext.getPartitionId() + " BIND EXCEPTION")
-            port = port + 1
-            retry = retry - 1 /* already running */
-            if (retry <= 0) throw new RuntimeException("Giving up")
+            if (!it.hasNext) throw new RuntimeException("Tried all allowed ports - giving up")
           case e => throw new RuntimeException(e)
         }
       }
@@ -109,7 +107,8 @@ object MainConjure {
     }
 
     // Lambda that maps host names to allowed port ranges (for the triple store)
-    val hostToPortRanges: Function[String, RangeSet[Integer]] =
+    // Only ImmutableRangeSet provides the .asSet(discreteDomain) view
+    val hostToPortRanges: Function[String, ImmutableRangeSet[Integer]] =
       hostName => new ImmutableRangeSet.Builder[Integer].add(Range.closed(3030, 3040)).build()
 
     // File.createTempFile("spark-events")
@@ -129,7 +128,7 @@ object MainConjure {
 
     sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
 
-    val hostToPortRangesBroadcast: Broadcast[String => RangeSet[Integer]] =
+    val hostToPortRangesBroadcast: Broadcast[String => ImmutableRangeSet[Integer]] =
       sparkSession.sparkContext.broadcast(hostToPortRanges)
 
 
@@ -174,10 +173,17 @@ object MainConjure {
 
   //  def wrapperFactory[T, X]
 
-  //def mapWithConnectionFactory[T, X](hostToPortRangesBroadcast: Broadcast[String => RangeSet[Integer]]): (Iterator[T], (T, RDFConnection) => X) => Iterator[X] =
- //   (it: Iterator[T], fn: (T, RDFConnection) => X) => mapWithConnection[T, X](hostToPortRangesBroadcast, it, fn)
 
-  def mapWithConnection[T, X](hostToPortRangesBroadcast: Broadcast[String => RangeSet[Integer]])
+  /**
+    * Util function that performs life-cycle management of a SPARQL endpoint for items in a partition
+    * @param hostToPortRangesBroadcast Function that yields for a host name the allowed port ranges for spawning SPARQL endpoints
+    * @param it Iterator of items in the partition
+    * @param fn User defined map function that takes an item of the partition and an RDFConnection as input
+    * @tparam T Item type in the partition
+    * @tparam X Return type of the user defined map function
+    * @return
+    */
+  def mapWithConnection[T, X](hostToPortRangesBroadcast: Broadcast[String => ImmutableRangeSet[Integer]])
                              (it: Iterator[T])
                              (fn: (T, RDFConnection) => X): Iterator[X] = {
     val hostName = InetAddress.getLocalHost.getHostName
@@ -186,7 +192,7 @@ object MainConjure {
     val portRanges = hostToPortRanges(hostName)
     println("Port ranges: " + portRanges)
 
-    val (server, url) = startSparqlEndpoint()
+    val (server, url) = startSparqlEndpoint(portRanges)
 
     println(TaskContext.getPartitionId()  + " Got endpoint at " + url)
 
