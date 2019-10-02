@@ -36,7 +36,7 @@ public class QueryExecutionSparqlifySpark extends QueryExecutionBaseSelect {
 		List<Var> resultVars = rewrite.getProjectionOrder();
 
 		JavaRDD<Binding> rdd = QueryExecutionUtilsSpark.createQueryExecution(sparkSession, rewrite, query);
-		Iterator<Binding> it = rdd.toLocalIterator();
+		Iterator<Binding> it = rdd.collect().iterator();//.toLocalIterator();
 
 		ResultSet tmp = ResultSetUtils.create2(resultVars, it);
 		ResultSetCloseable result = new ResultSetCloseable(tmp);

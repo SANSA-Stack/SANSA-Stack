@@ -48,7 +48,7 @@ object SparqlifyUtils3 // extends StrictLogging
 
         val scalaSchema = p.layout.schema
         val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
-        val df = sparkSession.createDataFrame(rdd, sparkSchema)
+        val df = sparkSession.createDataFrame(rdd, sparkSchema).persist()
 
         df.createOrReplaceTempView(sqlEscaper.escapeTableName(tableName))
         config.getViewDefinitions.add(vd)
