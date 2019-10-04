@@ -42,7 +42,7 @@ object MainConjure {
     val sortedPorts = portRanges.asSet(DiscreteDomain.integers).asScala.toList
     val shuffledPorts = Random.shuffle(sortedPorts)
 
-    //println("Sorted ports: " + sortedPorts)
+    // println("Sorted ports: " + sortedPorts)
 
     val name = "test"
     var result: (FusekiServer, URL) = null

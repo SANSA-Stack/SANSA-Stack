@@ -31,17 +31,72 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-virtuoso</artifactId>
-			<version>3.11.0-1</version>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+			<version>3.12.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+			<version>3.12.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-fuseki-server</artifactId>
-			<version>3.11.0</version>
+			<version>3.12.0</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-tdb</artifactId>
+			<version>3.12.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<type>pom</type>
+			<version>3.12.0</version>
+		</dependency>
+
+        <dependency>
+        	<groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-core</artifactId>
+			<version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+        	<groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-mapper-annotations</artifactId>
+			<version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
+
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-virtuoso</artifactId>
+			<version>3.12.0-2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-server-standalone</artifactId>
+			<version>3.12.0-2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-algebra</artifactId>
+			<version>3.12.0-2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-views</artifactId>
+			<version>3.12.0-2-SNAPSHOT</version>
+		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -53,10 +108,6 @@
 			<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-server-standalone</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.apache.tinkerpop</groupId>
