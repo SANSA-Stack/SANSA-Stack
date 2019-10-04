@@ -144,13 +144,6 @@
 			<artifactId>config</artifactId>
 		</dependency>
 
-		<!-- Spark-Bench -->
-		<dependency>
-			<groupId>com.ibm.sparktc.sparkbench</groupId>
-			<artifactId>sparkbench</artifactId>
-			<!--<scope>test</scope> -->
-		</dependency>
-
 	</dependencies>
 
 	<build>
