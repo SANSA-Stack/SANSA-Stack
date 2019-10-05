@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.conjure
 
 import java.io.{ByteArrayOutputStream, File}
 import java.net.{BindException, InetAddress, URL}
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
 import com.google.common.base.StandardSystemProperty
@@ -10,14 +11,30 @@ import org.aksw.jena_sparql_api.ext.virtuoso.HealthcheckRunner
 import org.apache.jena.fuseki.FusekiException
 import org.apache.jena.fuseki.main.FusekiServer
 import org.apache.jena.query.DatasetFactory
-import org.apache.jena.rdfconnection.{RDFConnection, RDFConnectionRemote}
+import org.apache.jena.rdfconnection.{RDFConnection, RDFConnectionFactory, RDFConnectionRemote}
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
-import org.apache.jena.vocabulary.RDF
+import org.apache.jena.vocabulary.{DCAT, RDF}
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 
 import scala.util.Random
+import org.aksw.jena_sparql_api.common.DefaultPrefixes
+import org.aksw.jena_sparql_api.stmt.SparqlStmt
+import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl
+import org.apache.jena.query.Syntax
+import java.util.function.Function
+
+import com.google.common.hash.Hashing
+import com.google.gson.Gson
+import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils
+import org.aksw.jena_sparql_api.rx.SparqlRx
+import org.aksw.jena_sparql_api.utils.Vars
+import org.aksw.jena_sparql_api.utils.model.RDFNodeJsonLdUtils
+import org.apache.jena.rdf.model.Resource
+import org.apache.jena.sys.JenaSystem
+
+import collection.JavaConverters._
 
 
 object MainConjure {
@@ -38,7 +55,6 @@ object MainConjure {
 
   def startSparqlEndpoint(portRanges: ImmutableRangeSet[Integer]): (FusekiServer, URL) = {
 
-    import collection.JavaConverters._
     val sortedPorts = portRanges.asSet(DiscreteDomain.integers).asScala.toList
     val shuffledPorts = Random.shuffle(sortedPorts)
 
@@ -93,6 +109,18 @@ object MainConjure {
     return result
   }
 
+  // TODO If we had the DCAT suite domain model, it would look a bit easier
+  // Probably I should add it as another module to the jsa
+  def createPartitionKey(dcatDataset: Resource): String = {
+    val key = ResourceUtils.listPropertyValues(dcatDataset, DCAT.distribution, classOf[Resource]).toList.asScala
+      .flatMap(d => ResourceUtils.listPropertyValues(d, DCAT.downloadURL).toList.asScala)
+      .filter(_.isURIResource)
+      .map(_.asResource.getURI)
+      .sorted
+      .headOption.getOrElse("")
+
+    return key
+  }
 
   def main(args: Array[String]): Unit = {
 
@@ -108,7 +136,7 @@ object MainConjure {
 
     // Lambda that maps host names to allowed port ranges (for the triple store)
     // Only ImmutableRangeSet provides the .asSet(discreteDomain) view
-    val hostToPortRanges: Function[String, ImmutableRangeSet[Integer]] =
+    val hostToPortRanges: String => ImmutableRangeSet[Integer] =
       hostName => new ImmutableRangeSet.Builder[Integer].add(Range.closed(3030, 3040)).build()
 
     // File.createTempFile("spark-events")
@@ -118,10 +146,9 @@ object MainConjure {
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
-      .config("spark.kryo.registrator", String.join(
-        ", ",
+      .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorRDFNode"))
       .config("spark.default.parallelism", "4")
       .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
@@ -131,6 +158,73 @@ object MainConjure {
     val hostToPortRangesBroadcast: Broadcast[String => ImmutableRangeSet[Integer]] =
       sparkSession.sparkContext.broadcast(hostToPortRanges)
 
+    // TODO Circular init issue with DefaultPrefixes
+    // We could use ARQConstants.getGlobalPrefixMap()
+    JenaSystem.init
+
+    // Create a SPARQL parser with preconfigured prefixes
+    // Pure luxury!
+    val parser = SparqlStmtParserImpl.create(Syntax.syntaxARQ, DefaultPrefixes.prefixes, false)
+
+    val dcatQuery = parser.apply("""
+       CONSTRUCT {
+        ?a ?b ?c .
+        ?c ?d ?e
+      } {
+
+        { SELECT DISTINCT ?a {
+          ?a dcat:distribution [
+            dcat:byteSize ?byteSize
+          ]
+          FILTER(?byteSize < 100000)
+        } LIMIT 10 }
+
+        ?a ?b ?c
+        OPTIONAL { ?c ?d ?e }
+      }""").getAsQueryStmt.getQuery
+
+    val catalog = RDFDataMgr.loadModel("small.nt")
+    val conn = RDFConnectionFactory.connect(DatasetFactory.create(catalog))
+
+    val entries = SparqlRx.execConstructGrouped(conn, Vars.a, dcatQuery)
+        .toList.blockingGet
+        .asScala
+        .map(_.asResource);
+
+    // Prepare the data for distribution to the nodes
+
+    // TODO Maybe accumulate on the workers if distinct doesn't do that already
+    val dummyRdd = sparkSession.sparkContext.parallelize(Seq.range(0, 1000))
+
+    val workerHostNames = dummyRdd
+      .mapPartitions(_ => Iterator(InetAddress.getLocalHost.getHostName))
+      .distinct.collect.sorted.toList
+
+
+    println("Hostnames: " + workerHostNames)
+
+    val numHosts = workerHostNames.size
+    // Create hash from the lexicographically lowest downloadURL
+
+    // Use guava's hashing facilities to create a
+    // non JVM-dependent hash (in contrast to Object.hashCode)
+    val hashFunction = Hashing.goodFastHash(32)
+    val hashInt: Resource => Int = res => math.abs(hashFunction.newHasher.putString(
+      createPartitionKey(res), StandardCharsets.UTF_8).hash().asInt().toInt)
+
+    // Combine the data with the location preferences
+    val inputDataWithLocPrefs = entries.map(r => (r, Seq(workerHostNames(hashInt(r) % numHosts))))
+
+    val dcatRdd = sparkSession.sparkContext.makeRDD(inputDataWithLocPrefs);
+
+    for (item <- dcatRdd.collect) {
+      println(item)
+      RDFDataMgr.write(System.out, item.getModel, RDFFormat.TURTLE_PRETTY)
+    }
+
+//    println(testrdd.count)
+    if(true) return;
+
 
     val it = Seq.range(0, 1000)
       .map(i => s"CONSTRUCT WHERE { ?s$i ?p ?o }")
@@ -138,13 +232,12 @@ object MainConjure {
     val rdd = sparkSession.sparkContext.parallelize(it)
 
 
-    // TODO Maybe accumulate on the workers if distinct doesn't do that already
-    val workerHostNames = rdd
-      .mapPartitions(_ => Iterator(InetAddress.getLocalHost.getHostName))
-      .distinct.collect.toSet
 
+    // What we need:
+    // The set of datasets that should be operated upon
+    // For each worker, the set of valid local datasets
+    // Remote download of hdt files
 
-    println("Hostnames: " + workerHostNames)
 
     val statusReports = rdd
       .mapPartitions(it => mapWithConnection(hostToPortRangesBroadcast)(it)((item, conn) => {
