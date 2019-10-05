@@ -3,41 +3,42 @@ package net.sansa_stack.query.spark.conjure
 import java.io.{ByteArrayOutputStream, File}
 import java.net.{BindException, InetAddress, URL}
 import java.nio.charset.StandardCharsets
+import java.util.Collections
 import java.util.concurrent.TimeUnit
 
 import com.google.common.base.StandardSystemProperty
-import com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, ImmutableSortedSet, Range, RangeSet}
+import com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, Range}
+import com.google.common.hash.Hashing
+import com.typesafe.scalalogging.LazyLogging
+import org.aksw.jena_sparql_api.common.DefaultPrefixes
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRefUrl
+import org.aksw.jena_sparql_api.conjure.dataset.algebra._
+import org.aksw.jena_sparql_api.conjure.dataset.engine.OpExecutorDefault
 import org.aksw.jena_sparql_api.ext.virtuoso.HealthcheckRunner
+import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl
+import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils
+import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils
+import org.aksw.jena_sparql_api.rx.SparqlRx
+import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl
+import org.aksw.jena_sparql_api.utils.Vars
 import org.apache.jena.fuseki.FusekiException
 import org.apache.jena.fuseki.main.FusekiServer
-import org.apache.jena.query.DatasetFactory
+import org.apache.jena.query.{DatasetFactory, Syntax}
+import org.apache.jena.rdf.model.Resource
+import org.apache.jena.rdf.model.impl.{ModelCom, ResourceImpl}
 import org.apache.jena.rdfconnection.{RDFConnection, RDFConnectionFactory, RDFConnectionRemote}
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
+import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.{DCAT, RDF}
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 
+import scala.collection.JavaConverters._
 import scala.util.Random
-import org.aksw.jena_sparql_api.common.DefaultPrefixes
-import org.aksw.jena_sparql_api.stmt.SparqlStmt
-import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl
-import org.apache.jena.query.Syntax
-import java.util.function.Function
-
-import com.google.common.hash.Hashing
-import com.google.gson.Gson
-import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils
-import org.aksw.jena_sparql_api.rx.SparqlRx
-import org.aksw.jena_sparql_api.utils.Vars
-import org.aksw.jena_sparql_api.utils.model.RDFNodeJsonLdUtils
-import org.apache.jena.rdf.model.Resource
-import org.apache.jena.sys.JenaSystem
-
-import collection.JavaConverters._
 
 
-object MainConjure {
+object MainConjure extends LazyLogging {
 
   /*
   def startSparqlEndpoint(): Server = {
@@ -109,15 +110,21 @@ object MainConjure {
     return result
   }
 
-  // TODO If we had the DCAT suite domain model, it would look a bit easier
-  // Probably I should add it as another module to the jsa
-  def createPartitionKey(dcatDataset: Resource): String = {
-    val key = ResourceUtils.listPropertyValues(dcatDataset, DCAT.distribution, classOf[Resource]).toList.asScala
+  def getDcatDownloadUrl(dcatDataset: Resource): Option[String] = {
+    val url = ResourceUtils.listPropertyValues(dcatDataset, DCAT.distribution, classOf[Resource]).toList.asScala
       .flatMap(d => ResourceUtils.listPropertyValues(d, DCAT.downloadURL).toList.asScala)
       .filter(_.isURIResource)
       .map(_.asResource.getURI)
       .sorted
-      .headOption.getOrElse("")
+      .headOption
+
+    return url
+  }
+
+  // TODO If we had the DCAT suite domain model, it would look a bit easier
+  // Probably I should add it as another module to the jsa
+  def createPartitionKey(dcatDataset: Resource): String = {
+    val key = getDcatDownloadUrl(dcatDataset).getOrElse("")
 
     return key
   }
@@ -215,46 +222,139 @@ object MainConjure {
     // Combine the data with the location preferences
     val inputDataWithLocPrefs = entries.map(r => (r, Seq(workerHostNames(hashInt(r) % numHosts))))
 
+    for (item <- inputDataWithLocPrefs) {
+      println("Item: " + item)
+//      RDFDataMgr.write(System.out, item.getModel, RDFFormat.TURTLE_PRETTY)
+    }
+
+    // The RDD does not contain the location preferences anymore of course
     val dcatRdd = sparkSession.sparkContext.makeRDD(inputDataWithLocPrefs);
 
+    /*
     for (item <- dcatRdd.collect) {
       println(item)
       RDFDataMgr.write(System.out, item.getModel, RDFFormat.TURTLE_PRETTY)
     }
+    */
+
+    val v = OpVar.create("dataRef")
+    val opWorkflow = OpConstruct.create(v, parser.apply(
+      """ CONSTRUCT {
+        |   <env:datasetId>
+        |     eg:predicateReport ?report ;
+        |     .
+        |
+        |   ?report
+        |     eg:entry [
+        |       eg:predicate ?p ;
+        |       eg:numUses ?numTriples ;
+        |       eg:numUniqS ?numUniqS ;
+        |       eg:numUniqO ?numUniqO
+        |     ]
+        |   }
+        |   {
+        |     # TODO Allocate some URI based on the dataset id
+        |     BIND(BNODE() AS ?report)
+        |     { SELECT ?p (COUNT(*) AS ?numTriples) (COUNT(DISTINCT ?s) AS ?numUniqS) (COUNT(DISTINCT ?o) AS ?numUniqO) {
+        |       ?s ?p ?o
+        |     } GROUP BY ?p }
+        |   }
+      """.stripMargin).toString)
+
+    // TODO Get rid of this wonkiness: opWorkflow is usually some subclass of Resource
+    // for which kryo does not know a serializer - force a ResourceImpl view manually
+    val plainJenaResource = new ResourceImpl(opWorkflow.asNode, opWorkflow.getModel.asInstanceOf[ModelCom])
+
+    // println("Class is: " + plainJenaResource.getClass)
+    // println("Plain triples: " + plainJenaResource.listProperties().toList)
+
+    val workflowBroadcast: Broadcast[Resource] = sparkSession.sparkContext.broadcast(plainJenaResource)
+
+
+    val executiveRdd = dcatRdd.mapPartitions(it => {
+
+      val opPlainWorfklow = workflowBroadcast.value;
+      val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[Op])
+
+      // Set up the repo on the worker
+      // TODO Test for race conditions
+      val repo = HttpResourceRepositoryFromFileSystemImpl.createDefault
+      val executor = new OpExecutorDefault(repo)
+
+      it.map(dcat => {
+        logger.info("Processing: " + dcat)
+
+        val url = getDcatDownloadUrl(dcat).orNull
+        logger.info("Download URL is: " + dcat)
+        if(url != null) {
+          // Create a copy of the workflow spec and substitute the variables
+          val map = Collections.singletonMap("dataRef", OpDataRefResource.from(DataRefUrl.create(url)))
+
+          import scala.compat.java8.FunctionConverters._
+          val effectiveWorkflow = OpUtils.copyWithSubstitution(opWorkflow, ((x: String) => map.get(x).asInstanceOf[Op]).asJava)
+
+          val data = effectiveWorkflow.accept(executor)
+          val conn = data.openConnection
+          val model = conn.queryConstruct("CONSTRUCT WHERE { ?s ?p ?o }")
+          RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
+        }
+        "yay"
+      })
+    })
+
+    executiveRdd.count
+
+      // Set up a dataset processing expression
+//      logger.info("Conjure spec is:");
+//      RDFDataMgr.write(System.err, effectiveWorkflow.getModel(), RDFFormat.TURTLE_PRETTY);
+/*
+      try(RdfDataObject data = effectiveWorkflow.accept(executor)) {
+        try(RDFConnection conn = data.openConnection()) {
+          // Print out the data that is the process result
+          Model model = conn.queryConstruct("CONSTRUCT WHERE { ?s ?p ?o }");
+
+          RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY);
+        }
+      } catch(Exception e) {
+        logger.warn("Failed to process " + url, e);
+      }
+    }
+*/
+
+
 
 //    println(testrdd.count)
-    if(true) return;
+    if(false) {
+
+      val it = Seq.range(0, 1000)
+        .map(i => s"CONSTRUCT WHERE { ?s$i ?p ?o }")
+
+      val rdd = sparkSession.sparkContext.parallelize(it)
 
 
-    val it = Seq.range(0, 1000)
-      .map(i => s"CONSTRUCT WHERE { ?s$i ?p ?o }")
 
-    val rdd = sparkSession.sparkContext.parallelize(it)
-
-
-
-    // What we need:
-    // The set of datasets that should be operated upon
-    // For each worker, the set of valid local datasets
-    // Remote download of hdt files
+      // What we need:
+      // The set of datasets that should be operated upon
+      // For each worker, the set of valid local datasets
+      // Remote download of hdt files
 
 
-    val statusReports = rdd
-      .mapPartitions(it => mapWithConnection(hostToPortRangesBroadcast)(it)((item, conn) => {
-        println(TaskContext.getPartitionId() + " processing " + item)
-        val model = conn.queryConstruct(item)
-        val baos = new ByteArrayOutputStream
-        RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY)
-        val str = baos.toString("UTF-8")
-        (item, str)
-      }))
-      .collect
+      val statusReports = rdd
+        .mapPartitions(it => mapWithConnection(hostToPortRangesBroadcast)(it)((item, conn) => {
+          println(TaskContext.getPartitionId() + " processing " + item)
+          val model = conn.queryConstruct(item)
+          val baos = new ByteArrayOutputStream
+          RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY)
+          val str = baos.toString("UTF-8")
+          (item, str)
+        }))
+        .collect
 
-    println("RESULTS: ----------------------------")
-    for (item <- statusReports) {
-      // println(item)
+      println("RESULTS: ----------------------------")
+      for (item <- statusReports) {
+        // println(item)
+      }
     }
-
 
     sparkSession.stop
     sparkSession.close()
