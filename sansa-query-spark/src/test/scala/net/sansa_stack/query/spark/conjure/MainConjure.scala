@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 
-import com.google.common.base.StandardSystemProperty
+import com.google.common.base.{StandardSystemProperty, Stopwatch}
 import com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, Range}
 import com.google.common.hash.Hashing
 import com.typesafe.scalalogging.LazyLogging
@@ -148,17 +148,17 @@ object MainConjure extends LazyLogging {
       hostName => new ImmutableRangeSet.Builder[Integer].add(Range.closed(3030, 3040)).build()
 
     // File.createTempFile("spark-events")
+    val n = 4
 
     val sparkSession = SparkSession.builder
-      .master("local[8]")
+      .master(s"local[$n]")
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorRDFNode"))
-      .config("spark.default.parallelism", "4")
-      .config("spark.sql.shuffle.partitions", "4")
+      .config("spark.default.parallelism", s"$n")
+      .config("spark.sql.shuffle.partitions", s"$n")
       .getOrCreate()
 
     sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
@@ -185,13 +185,14 @@ object MainConjure extends LazyLogging {
             dcat:byteSize ?byteSize
           ]
           FILTER(?byteSize < 100000)
-        } LIMIT 10 }
+        } LIMIT 1000 }
 
         ?a ?b ?c
         OPTIONAL { ?c ?d ?e }
       }""").getAsQueryStmt.getQuery
 
-    val catalog = RDFDataMgr.loadModel("small.nt")
+//    val catalog = RDFDataMgr.loadModel("small.nt")
+    val catalog = RDFDataMgr.loadModel("http://localhost/~raven/conjure.test.dcat.ttl")
     val conn = RDFConnectionFactory.connect(DatasetFactory.create(catalog))
 
     val entries = SparqlRx.execConstructGrouped(conn, Vars.a, dcatQuery)
@@ -241,36 +242,34 @@ object MainConjure extends LazyLogging {
 
     val v = OpVar.create("dataRef")
     val opWorkflow = OpConstruct.create(v, parser.apply(
-      """ CONSTRUCT {
-        |   <env:datasetId>
-        |     eg:predicateReport ?report ;
-        |     .
-        |
-        |   ?report
-        |     eg:entry [
-        |       eg:predicate ?p ;
-        |       eg:numUses ?numTriples ;
-        |       eg:numUniqS ?numUniqS ;
-        |       eg:numUniqO ?numUniqO
-        |     ]
-        |   }
-        |   {
-        |     # TODO Allocate some URI based on the dataset id
-        |     BIND(BNODE() AS ?report)
-        |     { SELECT ?p (COUNT(*) AS ?numTriples) (COUNT(DISTINCT ?s) AS ?numUniqS) (COUNT(DISTINCT ?o) AS ?numUniqO) {
-        |       ?s ?p ?o
-        |     } GROUP BY ?p }
-        |   }
-      """.stripMargin).toString)
+      """CONSTRUCT {
+           <env:datasetId>
+             eg:predicateReport ?report ;
+             .
 
-    // TODO Get rid of this wonkiness: opWorkflow is usually some subclass of Resource
-    // for which kryo does not know a serializer - force a ResourceImpl view manually
-    val plainJenaResource = new ResourceImpl(opWorkflow.asNode, opWorkflow.getModel.asInstanceOf[ModelCom])
+           ?report
+             eg:entry [
+               eg:predicate ?p ;
+               eg:numUses ?numTriples ;
+               eg:numUniqS ?numUniqS ;
+               eg:numUniqO ?numUniqO
+             ]
+           }
+           {
+             # TODO Allocate some URI based on the dataset id
+             BIND(BNODE() AS ?report)
+             { SELECT ?p (COUNT(*) AS ?numTriples) (COUNT(DISTINCT ?s) AS ?numUniqS) (COUNT(DISTINCT ?o) AS ?numUniqO) {
+               ?s ?p ?o
+             } GROUP BY ?p }
+           }
+      """).toString)
 
-    // println("Class is: " + plainJenaResource.getClass)
-    // println("Plain triples: " + plainJenaResource.listProperties().toList)
 
-    val workflowBroadcast: Broadcast[Resource] = sparkSession.sparkContext.broadcast(plainJenaResource)
+    // Note .asResource yields a Jena ResourceImpl instead of 'this'
+    // so that kryo can serialize it
+    // The .asResource behavior is subject to change. If it breaks, create an implicit
+    // function such as Resource.toDefaultResource
+    val workflowBroadcast: Broadcast[Resource] = sparkSession.sparkContext.broadcast(opWorkflow.asResource)
 
 
     val executiveRdd = dcatRdd.mapPartitions(it => {
@@ -291,24 +290,27 @@ object MainConjure extends LazyLogging {
         val url = getDcatDownloadUrl(dcat).orNull
         logger.info("Download URL is: " + dcat)
         if(url != null) {
-          // val dataRef = DataRefUrl.create(url)
+          val dataRef = DataRefUrl.create(url)
 
-          val dataRef = DataRefOp.create(OpUpdateRequest.create(OpData.create,
-            parser.apply("INSERT DATA { <urn:s> <urn:p> <urn:o> }").toString))
+//          val dataRef = DataRefOp.create(OpUpdateRequest.create(OpData.create,
+//            parser.apply("INSERT DATA { <urn:s> <urn:p> <urn:o> }").toString))
 
           val map = Collections.singletonMap("dataRef", OpDataRefResource.from(dataRef))
-          val effectiveWorkflow = OpUtils.copyWithSubstitution(opWorkflow, ((x: String) => map.get(x).asInstanceOf[Op]).asJava)
+          val effectiveWorkflow = OpUtils.copyWithSubstitution(opWorkflow, map)
 
           val data = effectiveWorkflow.accept(executor)
           val conn = data.openConnection
           val model = conn.queryConstruct("CONSTRUCT WHERE { ?s ?p ?o }")
-          RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
+          // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
         }
         "yay"
       })
     })
 
-    executiveRdd.count
+
+    val stopwatch = Stopwatch.createStarted()
+    val evalResult = executiveRdd.count
+    println("Processed " + evalResult + " items in " + (stopwatch.stop.elapsed(TimeUnit.MILLISECONDS) * 0.001) + " seconds")
 
       // Set up a dataset processing expression
 //      logger.info("Conjure spec is:");

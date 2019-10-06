@@ -1,0 +1,53 @@
+# Local registry
+INSERT DATA {
+  [] eg:fileExtension ".hdt", ".hdt.gz" ; eg:contentType "application/x-hdt" .
+  [] eg:fileExtension ".sparql" ; eg:contentType "application/x-sparql" .
+  [] eg:fileExtension ".nt" ; eg:contentType "application/n-triples" .
+}
+
+
+CONSTRUCT {
+  ?dataset
+    a dcat:Dataset ;
+    dcterms:identifier ?id ;
+    dataid:groupId ?groupId ;
+    dataid:artifactId ?artifactId ;
+    dataid:version ?version ;
+    dcat:distribution ?distribution ;
+    .
+
+  ?distribution
+    dcat:downloadURL ?downloadUrl ;
+    dcat:byteSize ?byteSize ;
+    dcterms:format ?contentType ;
+    .
+}
+{
+  <> fs:find ?file .
+
+  FILTER(fs:isRegularFile(?file))
+  BIND(fs:size(?file) AS ?byteSize)
+
+  BIND(STRAFTER(STR(?file), STR(<>)) AS ?relPath)
+  FILTER(STRENDS(STR(?file), '.nt'))
+
+  OPTIONAL {
+    [] eg:fileExtension ?ext ; eg:contentType ?contentType
+    FILTER(STRENDS(?relPath, ?ext))
+  }
+
+  # TODO Slashes followed by numbers yields unwanted results
+  # <urn:123abc> will yield (ns, name) => ('urn:123', 'abc')
+  # Same goes for <...foo/123abc> => ('...foo/123', 'abc')
+  BIND(afn:localname(?file) AS ?artifactId)
+  BIND(STRAFTER(afn:namespace(?file), STR(<>)) AS ?groupId)
+  BIND("1.0.0" AS ?version)
+  BIND(CONCAT(?groupId, ':', ?artifactId, ':', ?version) AS ?id)
+
+  #FILTER(?artifactId = '069e709a054cdace094b3fe2be229096.hdt')
+
+  BIND(IRI(CONCAT(<env:BASE_URL>, '../dataset/', ?relPath)) AS ?dataset)
+  BIND(IRI(CONCAT(<env:BASE_URL>, '../distribution/', ?relPath)) AS ?distribution)
+  BIND(IRI(CONCAT(<env:BASE_URL>, ?relPath)) AS ?downloadUrl)
+}
+
