@@ -11,7 +11,7 @@ import com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, Range}
 import com.google.common.hash.Hashing
 import com.typesafe.scalalogging.LazyLogging
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
-import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRefUrl
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.{DataRefOp, DataRefUrl}
 import org.aksw.jena_sparql_api.conjure.dataset.algebra._
 import org.aksw.jena_sparql_api.conjure.dataset.engine.OpExecutorDefault
 import org.aksw.jena_sparql_api.ext.virtuoso.HealthcheckRunner
@@ -24,8 +24,8 @@ import org.aksw.jena_sparql_api.utils.Vars
 import org.apache.jena.fuseki.FusekiException
 import org.apache.jena.fuseki.main.FusekiServer
 import org.apache.jena.query.{DatasetFactory, Syntax}
-import org.apache.jena.rdf.model.Resource
 import org.apache.jena.rdf.model.impl.{ModelCom, ResourceImpl}
+import org.apache.jena.rdf.model.{ModelFactory, Resource}
 import org.apache.jena.rdfconnection.{RDFConnection, RDFConnectionFactory, RDFConnectionRemote}
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 import org.apache.jena.sys.JenaSystem
@@ -35,6 +35,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConverters._
+import scala.compat.java8.FunctionConverters._
 import scala.util.Random
 
 
@@ -228,7 +229,8 @@ object MainConjure extends LazyLogging {
     }
 
     // The RDD does not contain the location preferences anymore of course
-    val dcatRdd = sparkSession.sparkContext.makeRDD(inputDataWithLocPrefs);
+    val dcatRdd = sparkSession.sparkContext
+      .makeRDD(inputDataWithLocPrefs)
 
     /*
     for (item <- dcatRdd.collect) {
@@ -282,15 +284,19 @@ object MainConjure extends LazyLogging {
       val executor = new OpExecutorDefault(repo)
 
       it.map(dcat => {
+        val parser = SparqlStmtParserImpl.create(Syntax.syntaxARQ, DefaultPrefixes.prefixes, false)
+
         logger.info("Processing: " + dcat)
 
         val url = getDcatDownloadUrl(dcat).orNull
         logger.info("Download URL is: " + dcat)
         if(url != null) {
-          // Create a copy of the workflow spec and substitute the variables
-          val map = Collections.singletonMap("dataRef", OpDataRefResource.from(DataRefUrl.create(url)))
+          // val dataRef = DataRefUrl.create(url)
 
-          import scala.compat.java8.FunctionConverters._
+          val dataRef = DataRefOp.create(OpUpdateRequest.create(OpData.create,
+            parser.apply("INSERT DATA { <urn:s> <urn:p> <urn:o> }").toString))
+
+          val map = Collections.singletonMap("dataRef", OpDataRefResource.from(dataRef))
           val effectiveWorkflow = OpUtils.copyWithSubstitution(opWorkflow, ((x: String) => map.get(x).asInstanceOf[Op]).asJava)
 
           val data = effectiveWorkflow.accept(executor)

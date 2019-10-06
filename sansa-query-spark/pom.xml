@@ -1,207 +1,213 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-spark_2.11</artifactId>
+    <artifactId>sansa-query-spark_2.11</artifactId>
 
-	<parent>
-		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-query-parent_2.11</artifactId>
-		<version>0.6.1-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-query-parent_2.11</artifactId>
+        <version>0.6.1-SNAPSHOT</version>
+    </parent>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>2.6.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.6.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>2.6.7</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-arq</artifactId>
-			<version>3.12.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
-			<version>3.12.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-fuseki-server</artifactId>
-			<version>3.12.0</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-tdb</artifactId>
-			<version>3.12.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>apache-jena-libs</artifactId>
-			<type>pom</type>
-			<version>3.12.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-conjure</artifactId>
-			<version>3.12.0-2-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-        	<groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-core</artifactId>
-			<version>3.12.0-2-SNAPSHOT</version>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.6.7</version>
         </dependency>
 
         <dependency>
-        	<groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-mapper-annotations</artifactId>
-			<version>3.12.0-2-SNAPSHOT</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.6.7</version>
         </dependency>
 
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-virtuoso</artifactId>
-			<version>3.12.0-2-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.6.7</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-server-standalone</artifactId>
-			<version>3.12.0-2-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+            <version>3.12.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-algebra</artifactId>
-			<version>3.12.0-2-SNAPSHOT</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>3.12.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-views</artifactId>
-			<version>3.12.0-2-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-fuseki-server</artifactId>
+            <version>3.12.0</version>
+        </dependency>
 
 
-		<dependency>
-			<groupId>org.apache.tinkerpop</groupId>
-			<artifactId>spark-gremlin</artifactId>
-			<version>3.3.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-tdb</artifactId>
+            <version>3.12.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>io.github.litmus-benchmark-suite</groupId>
-			<artifactId>gremlinator</artifactId>
-			<version>1.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <type>pom</type>
+            <version>3.12.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-conjure</artifactId>
+            <version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
 
-		<!-- Override transitive tdb version via litmus -->
-<!--
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>apache-jena-libs</artifactId>
-			<type>pom</type>
-		</dependency>
--->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>27.0.1-jre</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.aksw.bsbm</groupId>
-			<artifactId>bsbm-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-core</artifactId>
+            <version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
 
-		<!-- Scala -->
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-mapper-annotations</artifactId>
+            <version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.holdenkarau</groupId>
-			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
-    
-		<!-- Ontop -->
-		<dependency>
-		  <groupId>it.unibz.inf.ontop</groupId>
-		  <artifactId>ontop-owlapi</artifactId>
-		</dependency>
-		<dependency>
-		  <groupId>it.unibz.inf.ontop</groupId>
-		  <artifactId>ontop-system-sql-owlapi</artifactId>
-		</dependency>
-    
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-all</artifactId>
-			<version>4.1.17.Final</version>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-virtuoso</artifactId>
+            <version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
 
-		<!-- <sourceDirectory>src/main/java</sourceDirectory> -->
-		<!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
-<!--
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-server-standalone</artifactId>
+            <version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
 
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-			</plugin>
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-algebra</artifactId>
+            <version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
 
-			<plugin>
-				<groupId>org.scalastyle</groupId>
-				<artifactId>scalastyle-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
--->
+        <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-views</artifactId>
+            <version>3.12.0-2-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>spark-gremlin</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.litmus-benchmark-suite</groupId>
+            <artifactId>gremlinator</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+        </dependency>
+
+        <!-- Override transitive tdb version via litmus -->
+        <!--
+                <dependency>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>apache-jena-libs</artifactId>
+                    <type>pom</type>
+                </dependency>
+        -->
+
+        <dependency>
+            <groupId>org.aksw.bsbm</groupId>
+            <artifactId>bsbm-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Scala -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.holdenkarau</groupId>
+            <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Ontop -->
+        <dependency>
+            <groupId>it.unibz.inf.ontop</groupId>
+            <artifactId>ontop-owlapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>it.unibz.inf.ontop</groupId>
+            <artifactId>ontop-system-sql-owlapi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.17.Final</version>
+        </dependency>
+    </dependencies>
+
+    <!-- <sourceDirectory>src/main/java</sourceDirectory> -->
+    <!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
+    <!--
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                </plugin>
+
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.scalastyle</groupId>
+                    <artifactId>scalastyle-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </build>
+    -->
 
 </project>
