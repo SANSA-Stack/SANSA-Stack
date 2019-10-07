@@ -6,11 +6,12 @@ import java.nio.charset.StandardCharsets
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 
+import com.google.common.hash.Hashing
 import com.typesafe.scalalogging.LazyLogging
 import org.aksw.dcat.ap.utils.DcatUtils
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
 import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRefUrl
-import org.aksw.jena_sparql_api.conjure.dataset.algebra._
+import org.aksw.jena_sparql_api.conjure.dataset.algebra.{OpConstruct, OpDataRefResource, OpUtils, OpVar}
 import org.aksw.jena_sparql_api.conjure.dataset.engine.OpExecutorDefault
 import org.aksw.jena_sparql_api.ext.virtuoso.HealthcheckRunner
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl
@@ -20,7 +21,6 @@ import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl
 import org.aksw.jena_sparql_api.utils.Vars
 import org.apache.jena.ext.com.google.common.base.{StandardSystemProperty, Stopwatch}
 import org.apache.jena.ext.com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, Range}
-import org.apache.jena.ext.com.google.common.hash.Hashing
 import org.apache.jena.fuseki.FusekiException
 import org.apache.jena.fuseki.main.FusekiServer
 import org.apache.jena.query.{DatasetFactory, Syntax}
@@ -31,11 +31,10 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.SparkSession
-import org.eclipse.jdt.internal.compiler.codegen.ConstantPool
 
 import scala.collection.JavaConverters._
 import scala.util.Random
+import org.apache.spark.sql._
 
 
 object MainConjure extends LazyLogging {
@@ -101,12 +100,12 @@ object MainConjure extends LazyLogging {
     val str = url.toString + "?query=SELECT%20*%20{%20%3Curn:s%3E%20%3Curn:p%3E%20%20?o%20}%20LIMIT%20%201"
     // logger.info(TaskContext.getPartitionId() + "Testing " + str)
     val checkUrl = HealthcheckRunner.createUrl(str)
-    logger.info(TaskContext.getPartitionId() + " Health check with " + checkUrl)
+    logger.info(TaskContext.getPartitionId + " Health check with " + checkUrl)
     new HealthcheckRunner(60, 1, TimeUnit.SECONDS, new Runnable {
       override def run(): Unit = HealthcheckRunner.checkUrl(checkUrl)
     })
 
-    logger.info(TaskContext.getPartitionId() + " Success!")
+    logger.info(TaskContext.getPartitionId + " Success!")
     return result
   }
 
@@ -153,7 +152,7 @@ object MainConjure extends LazyLogging {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorRDFNode"))
+        "net.sansa_stack.query.spark.conjure.KryoRegistratorRDFNode"))
       .config("spark.default.parallelism", s"$numThreads")
       .config("spark.sql.shuffle.partitions", s"$numThreads")
       .getOrCreate()
