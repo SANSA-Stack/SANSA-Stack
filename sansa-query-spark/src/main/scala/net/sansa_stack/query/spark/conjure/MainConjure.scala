@@ -32,6 +32,7 @@ import org.apache.jena.vocabulary.RDF
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
+import org.eclipse.jdt.internal.compiler.codegen.ConstantPool
 
 import scala.collection.JavaConverters._
 import scala.util.Random
@@ -272,15 +273,14 @@ object MainConjure extends LazyLogging {
 
     val executiveRdd = dcatRdd.mapPartitions(it => {
 
-      classOf[JenaSystem].synchronized {
-        JenaSystem.init()
-        println("TypeDecider stuff: " + JenaPluginUtils.getTypeDecider())
-      }
-
       val opPlainWorfklow = workflowBroadcast.value;
-      println("RECEIVED CONJURE WORKFLOW:")
+      println("RECEIVED CONJURE WORKFLOW:" + JenaPluginUtils.getTypeDecider)
       RDFDataMgr.write(System.out, opPlainWorfklow.getModel, RDFFormat.TURTLE_PRETTY)
-      val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[Op])
+
+
+      // scalastyle:off
+      val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, Class.forName("org.aksw.jena_sparql_api.conjure.dataset.algebra.Op"))
+      // scalastyle:on
 
       if(opWorkflow == null) {
         throw new RuntimeException("op of workflow was null, workflow itself was: " + opPlainWorfklow)
