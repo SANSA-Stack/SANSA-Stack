@@ -269,6 +269,10 @@ object MainConjure extends LazyLogging {
       val opPlainWorfklow = workflowBroadcast.value;
       val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[Op])
 
+      if(opWorkflow == null) {
+        throw new RuntimeException("op of workflow was null, workflow itself was: " + opPlainWorfklow)
+      }
+
       // Set up the repo on the worker
       // TODO Test for race conditions
       val repo = HttpResourceRepositoryFromFileSystemImpl.createDefault
