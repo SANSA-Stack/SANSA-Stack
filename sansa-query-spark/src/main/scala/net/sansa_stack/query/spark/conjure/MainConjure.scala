@@ -279,7 +279,7 @@ object MainConjure extends LazyLogging {
 
 
       // scalastyle:off
-      val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, Class.forName("org.aksw.jena_sparql_api.conjure.dataset.algebra.Op"))
+      val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[org.aksw.jena_sparql_api.conjure.dataset.algebra.Op])
       // scalastyle:on
 
       if(opWorkflow == null) {
