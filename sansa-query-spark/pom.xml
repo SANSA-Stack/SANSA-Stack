@@ -187,6 +187,20 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <!-- <sourceDirectory>src/main/java</sourceDirectory> -->
     <!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
     <!--

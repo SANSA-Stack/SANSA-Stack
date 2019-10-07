@@ -10,6 +10,7 @@ import com.google.common.base.{StandardSystemProperty, Stopwatch}
 import com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, Range}
 import com.google.common.hash.Hashing
 import com.typesafe.scalalogging.LazyLogging
+import org.aksw.dcat.ap.utils.DcatUtils
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
 import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.{DataRefOp, DataRefUrl}
 import org.aksw.jena_sparql_api.conjure.dataset.algebra._
@@ -111,21 +112,8 @@ object MainConjure extends LazyLogging {
     return result
   }
 
-  def getDcatDownloadUrl(dcatDataset: Resource): Option[String] = {
-    val url = ResourceUtils.listPropertyValues(dcatDataset, DCAT.distribution, classOf[Resource]).toList.asScala
-      .flatMap(d => ResourceUtils.listPropertyValues(d, DCAT.downloadURL).toList.asScala)
-      .filter(_.isURIResource)
-      .map(_.asResource.getURI)
-      .sorted
-      .headOption
-
-    return url
-  }
-
-  // TODO If we had the DCAT suite domain model, it would look a bit easier
-  // Probably I should add it as another module to the jsa
   def createPartitionKey(dcatDataset: Resource): String = {
-    val key = getDcatDownloadUrl(dcatDataset).getOrElse("")
+    val key = Option(DcatUtils.getFirstDownloadUrl(dcatDataset)).getOrElse("")
 
     return key
   }
@@ -148,17 +136,18 @@ object MainConjure extends LazyLogging {
       hostName => new ImmutableRangeSet.Builder[Integer].add(Range.closed(3030, 3040)).build()
 
     // File.createTempFile("spark-events")
-    val n = 4
+    val numThreads = 4
+    val numPartitions = numThreads * 1
 
     val sparkSession = SparkSession.builder
-      .master(s"local[$n]")
+      .master(s"local[$numThreads]")
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorRDFNode"))
-      .config("spark.default.parallelism", s"$n")
-      .config("spark.sql.shuffle.partitions", s"$n")
+      .config("spark.default.parallelism", s"$numThreads")
+      .config("spark.sql.shuffle.partitions", s"$numThreads")
       .getOrCreate()
 
     sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
@@ -232,6 +221,7 @@ object MainConjure extends LazyLogging {
     // The RDD does not contain the location preferences anymore of course
     val dcatRdd = sparkSession.sparkContext
       .makeRDD(inputDataWithLocPrefs)
+      .coalesce(numPartitions)
 
     /*
     for (item <- dcatRdd.collect) {
@@ -271,6 +261,7 @@ object MainConjure extends LazyLogging {
     // function such as Resource.toDefaultResource
     val workflowBroadcast: Broadcast[Resource] = sparkSession.sparkContext.broadcast(opWorkflow.asResource)
 
+    println("NUM PARTITIONS = " + dcatRdd.getNumPartitions)
 
     val executiveRdd = dcatRdd.mapPartitions(it => {
 
@@ -287,7 +278,7 @@ object MainConjure extends LazyLogging {
 
         logger.info("Processing: " + dcat)
 
-        val url = getDcatDownloadUrl(dcat).orNull
+        val url = DcatUtils.getFirstDownloadUrl(dcat)
         logger.info("Download URL is: " + dcat)
         if(url != null) {
           val dataRef = DataRefUrl.create(url)
