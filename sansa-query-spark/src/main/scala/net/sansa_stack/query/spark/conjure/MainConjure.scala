@@ -265,11 +265,14 @@ object MainConjure extends LazyLogging {
     println("NUM PARTITIONS = " + dcatRdd.getNumPartitions)
 
     val executiveRdd = dcatRdd.mapPartitions(it => {
-      
-      JenaSystem.init();
+
+      classOf[JenaSystem].synchronized {
+        JenaSystem.init()
+        println("TypeDecider stuff: " + JenaPluginUtils.getTypeDecider())
+      }
 
       val opPlainWorfklow = workflowBroadcast.value;
-      val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[Op])
+      val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[Op.])
 
       if(opWorkflow == null) {
         throw new RuntimeException("op of workflow was null, workflow itself was: " + opPlainWorfklow)
