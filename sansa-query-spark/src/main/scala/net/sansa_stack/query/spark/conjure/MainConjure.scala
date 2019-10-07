@@ -58,7 +58,7 @@ object MainConjure extends LazyLogging {
     val sortedPorts = portRanges.asSet(DiscreteDomain.integers).asScala.toList
     val shuffledPorts = Random.shuffle(sortedPorts)
 
-    // println("Sorted ports: " + sortedPorts)
+    // logger.info("Sorted ports: " + sortedPorts)
 
     val name = "test"
     var result: (FusekiServer, URL) = null
@@ -79,7 +79,7 @@ object MainConjure extends LazyLogging {
         .build
 
       try {
-        println(TaskContext.getPartitionId() + " Attempting to start: " + url)
+        logger.info(TaskContext.getPartitionId() + " Attempting to start: " + url)
         server.start();
 
         result = (server, url)
@@ -89,23 +89,23 @@ object MainConjure extends LazyLogging {
         case e: FusekiException => e.getCause match {
           case f: BindException =>
             server.stop
-            println(TaskContext.getPartitionId() + " BIND EXCEPTION")
+            logger.info(TaskContext.getPartitionId() + " BIND EXCEPTION")
             if (!it.hasNext) throw new RuntimeException("Tried all allowed ports - giving up")
           case e => throw new RuntimeException(e)
         }
       }
     }
 
-    // println(TaskContext.getPartitionId() + "Creating URL...")
+    // logger.info(TaskContext.getPartitionId() + "Creating URL...")
     val str = url.toString + "?query=SELECT%20*%20{%20%3Curn:s%3E%20%3Curn:p%3E%20%20?o%20}%20LIMIT%20%201"
-    // println(TaskContext.getPartitionId() + "Testing " + str)
+    // logger.info(TaskContext.getPartitionId() + "Testing " + str)
     val checkUrl = HealthcheckRunner.createUrl(str)
-    println(TaskContext.getPartitionId() + " Health check with " + checkUrl)
+    logger.info(TaskContext.getPartitionId() + " Health check with " + checkUrl)
     new HealthcheckRunner(60, 1, TimeUnit.SECONDS, new Runnable {
       override def run(): Unit = HealthcheckRunner.checkUrl(checkUrl)
     })
 
-    println(TaskContext.getPartitionId() + " Success!")
+    logger.info(TaskContext.getPartitionId() + " Success!")
     return result
   }
 
@@ -117,8 +117,7 @@ object MainConjure extends LazyLogging {
 
   def main(args: Array[String]): Unit = {
 
-    // "http://localhost/~raven/conjure.test.dcat.ttl"
-    val catalogUrl = args(0)
+    val catalogUrl = if (args.length == 0) "http://localhost/~raven/conjure.test.dcat.ttl" else args(0)
     val limit = if (args.length > 1) args(1).toInt else 1000
 
 
@@ -140,8 +139,15 @@ object MainConjure extends LazyLogging {
     val numThreads = 4
     val numPartitions = numThreads * 1
 
-    val sparkSession = SparkSession.builder
-      // .master(s"local[$numThreads]")
+    val masterHostname = InetAddress.getLocalHost.getHostName;
+
+    val builder = SparkSession.builder
+
+    if (!masterHostname.toLowerCase.contains("qrowd")) {
+      builder.master(s"local[$numThreads]")
+    }
+
+    val sparkSession = builder
       .appName("Sansa-Conjure Test")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
@@ -200,7 +206,7 @@ object MainConjure extends LazyLogging {
       .distinct.collect.sorted.toList
 
 
-    println("Hostnames: " + workerHostNames)
+    logger.info("Hostnames: " + workerHostNames)
 
     val numHosts = workerHostNames.size
     // Create hash from the lexicographically lowest downloadURL
@@ -215,7 +221,7 @@ object MainConjure extends LazyLogging {
     val inputDataWithLocPrefs = entries.map(r => (r, Seq(workerHostNames(hashInt(r) % numHosts))))
 
     for (item <- inputDataWithLocPrefs) {
-      println("Item: " + item)
+      logger.info("Item: " + item)
 //      RDFDataMgr.write(System.out, item.getModel, RDFFormat.TURTLE_PRETTY)
     }
 
@@ -226,7 +232,7 @@ object MainConjure extends LazyLogging {
 
     /*
     for (item <- dcatRdd.collect) {
-      println(item)
+      logger.info(item)
       RDFDataMgr.write(System.out, item.getModel, RDFFormat.TURTLE_PRETTY)
     }
     */
@@ -262,13 +268,13 @@ object MainConjure extends LazyLogging {
     // function such as Resource.toDefaultResource
     val workflowBroadcast: Broadcast[Resource] = sparkSession.sparkContext.broadcast(opWorkflow.asResource)
 
-    println("NUM PARTITIONS = " + dcatRdd.getNumPartitions)
+    logger.info("NUM PARTITIONS = " + dcatRdd.getNumPartitions)
 
     val executiveRdd = dcatRdd.mapPartitions(it => {
 
       classOf[JenaSystem].synchronized {
         JenaSystem.init()
-        println("TypeDecider stuff: " + JenaPluginUtils.getTypeDecider())
+        logger.info("TypeDecider stuff: " + JenaPluginUtils.getTypeDecider())
       }
 
       val opPlainWorfklow = workflowBroadcast.value;
@@ -311,7 +317,7 @@ object MainConjure extends LazyLogging {
 
     val stopwatch = Stopwatch.createStarted()
     val evalResult = executiveRdd.count
-    println("Processed " + evalResult + " items in " + (stopwatch.stop.elapsed(TimeUnit.MILLISECONDS) * 0.001) + " seconds")
+    logger.info("Processed " + evalResult + " items in " + (stopwatch.stop.elapsed(TimeUnit.MILLISECONDS) * 0.001) + " seconds")
 
       // Set up a dataset processing expression
 //      logger.info("Conjure spec is:");
@@ -332,7 +338,7 @@ object MainConjure extends LazyLogging {
 
 
 
-//    println(testrdd.count)
+//    logger.info(testrdd.count)
     if(false) {
 
       val it = Seq.range(0, 1000)
@@ -350,7 +356,7 @@ object MainConjure extends LazyLogging {
 
       val statusReports = rdd
         .mapPartitions(it => mapWithConnection(hostToPortRangesBroadcast)(it)((item, conn) => {
-          println(TaskContext.getPartitionId() + " processing " + item)
+          logger.info(TaskContext.getPartitionId() + " processing " + item)
           val model = conn.queryConstruct(item)
           val baos = new ByteArrayOutputStream
           RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY)
@@ -359,9 +365,10 @@ object MainConjure extends LazyLogging {
         }))
         .collect
 
-      println("RESULTS: ----------------------------")
+      logger.info("RESULTS: ----------------------------")
+      logger.info("Num results: " + statusReports.length)
       for (item <- statusReports) {
-        // println(item)
+        // logger.info(item)
       }
     }
 
@@ -369,7 +376,7 @@ object MainConjure extends LazyLogging {
     sparkSession.close()
 
 
-    println("Done")
+    logger.info("Done")
   }
 
 
@@ -392,18 +399,18 @@ object MainConjure extends LazyLogging {
 
     val hostToPortRanges = hostToPortRangesBroadcast.value
     val portRanges = hostToPortRanges(hostName)
-    println("Port ranges: " + portRanges)
+    logger.info("Port ranges: " + portRanges)
 
     val (server, url) = startSparqlEndpoint(portRanges)
 
-    println(TaskContext.getPartitionId()  + " Got endpoint at " + url)
+    logger.info(TaskContext.getPartitionId()  + " Got endpoint at " + url)
 
     val conn = RDFConnectionRemote.create()
       .destination(url.toString)
       .build()
 
     val onClose = () => {
-      println(TaskContext.getPartitionId() + " stopping server")
+      logger.info(TaskContext.getPartitionId() + " stopping server")
       server.stop()
       conn.close()
     }
