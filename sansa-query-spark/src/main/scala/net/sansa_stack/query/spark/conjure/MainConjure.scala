@@ -12,31 +12,28 @@ import com.google.common.hash.Hashing
 import com.typesafe.scalalogging.LazyLogging
 import org.aksw.dcat.ap.utils.DcatUtils
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
-import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.{DataRefOp, DataRefUrl}
+import org.aksw.jena_sparql_api.conjure.dataref.rdf.api.DataRefUrl
 import org.aksw.jena_sparql_api.conjure.dataset.algebra._
 import org.aksw.jena_sparql_api.conjure.dataset.engine.OpExecutorDefault
 import org.aksw.jena_sparql_api.ext.virtuoso.HealthcheckRunner
 import org.aksw.jena_sparql_api.http.repository.impl.HttpResourceRepositoryFromFileSystemImpl
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils
-import org.aksw.jena_sparql_api.rdf.collections.ResourceUtils
 import org.aksw.jena_sparql_api.rx.SparqlRx
 import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl
 import org.aksw.jena_sparql_api.utils.Vars
 import org.apache.jena.fuseki.FusekiException
 import org.apache.jena.fuseki.main.FusekiServer
 import org.apache.jena.query.{DatasetFactory, Syntax}
-import org.apache.jena.rdf.model.impl.{ModelCom, ResourceImpl}
-import org.apache.jena.rdf.model.{ModelFactory, Resource}
+import org.apache.jena.rdf.model.Resource
 import org.apache.jena.rdfconnection.{RDFConnection, RDFConnectionFactory, RDFConnectionRemote}
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 import org.apache.jena.sys.JenaSystem
-import org.apache.jena.vocabulary.{DCAT, RDF}
+import org.apache.jena.vocabulary.RDF
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConverters._
-import scala.compat.java8.FunctionConverters._
 import scala.util.Random
 
 
