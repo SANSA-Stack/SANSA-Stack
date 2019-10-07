@@ -428,7 +428,9 @@ object MainConjure extends LazyLogging {
       val s: X = fn.apply(item, conn)
       s
     } catch {
-      case e => onClose; throw new RuntimeException(e)
+      // scalastyle:off
+      case e: Throwable => { onClose; throw new RuntimeException(e); }
+      // scalastyle:on
     })
   }
 }

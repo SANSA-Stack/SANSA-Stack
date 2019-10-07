@@ -49,6 +49,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <version>3.0.5</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>de.javakaffee</groupId>
             <artifactId>kryo-serializers</artifactId>
             <version>0.41</version>
@@ -135,6 +142,7 @@
             <version>${jsa.version}</version>
         </dependency>
 
+        <!--
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-server-standalone</artifactId>
@@ -146,7 +154,8 @@
             <artifactId>jena-sparql-api-algebra</artifactId>
             <version>${jsa.version}</version>
         </dependency>
-
+-->
+        
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-views</artifactId>
