@@ -274,10 +274,12 @@ object MainConjure extends LazyLogging {
 
       classOf[JenaSystem].synchronized {
         JenaSystem.init()
-        logger.info("TypeDecider stuff: " + JenaPluginUtils.getTypeDecider())
+        println("TypeDecider stuff: " + JenaPluginUtils.getTypeDecider())
       }
 
       val opPlainWorfklow = workflowBroadcast.value;
+      println("RECEIVED CONJURE WORKFLOW:")
+      RDFDataMgr.write(System.out, opPlainWorfklow.getModel, RDFFormat.TURTLE_PRETTY)
       val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[Op])
 
       if(opWorkflow == null) {
