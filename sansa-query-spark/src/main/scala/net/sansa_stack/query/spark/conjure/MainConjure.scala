@@ -117,6 +117,10 @@ object MainConjure extends LazyLogging {
 
   def main(args: Array[String]): Unit = {
 
+    // "http://localhost/~raven/conjure.test.dcat.ttl"
+    val catalogUrl = args(0)
+    val limit = if (args.length > 1) args(1).toInt else 1000
+
 
     val tmpDirStr = StandardSystemProperty.JAVA_IO_TMPDIR.value()
     if (tmpDirStr == null) {
@@ -160,7 +164,7 @@ object MainConjure extends LazyLogging {
     // Pure luxury!
     val parser = SparqlStmtParserImpl.create(Syntax.syntaxARQ, DefaultPrefixes.prefixes, false)
 
-    val dcatQuery = parser.apply("""
+    val dcatQuery = parser.apply(s"""
        CONSTRUCT {
         ?a ?b ?c .
         ?c ?d ?e
@@ -171,14 +175,14 @@ object MainConjure extends LazyLogging {
             dcat:byteSize ?byteSize
           ]
           FILTER(?byteSize < 100000)
-        } LIMIT 1000 }
+        } LIMIT $limit }
 
         ?a ?b ?c
         OPTIONAL { ?c ?d ?e }
       }""").getAsQueryStmt.getQuery
 
 //    val catalog = RDFDataMgr.loadModel("small.nt")
-    val catalog = RDFDataMgr.loadModel("http://localhost/~raven/conjure.test.dcat.ttl")
+    val catalog = RDFDataMgr.loadModel(catalogUrl)
     val conn = RDFConnectionFactory.connect(DatasetFactory.create(catalog))
 
     val entries = SparqlRx.execConstructGrouped(conn, Vars.a, dcatQuery)
