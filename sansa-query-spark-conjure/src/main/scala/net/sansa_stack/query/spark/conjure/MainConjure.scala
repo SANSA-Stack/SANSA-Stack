@@ -274,8 +274,10 @@ object MainConjure extends LazyLogging {
 
       val opPlainWorfklow = workflowBroadcast.value;
       println("RECEIVED CONJURE WORKFLOW:" + JenaPluginUtils.getTypeDecider)
-      RDFDataMgr.write(System.out, opPlainWorfklow.getModel, RDFFormat.TURTLE_PRETTY)
+      val baos = new ByteArrayOutputStream
+      RDFDataMgr.write(baos, opPlainWorfklow.getModel, RDFFormat.TURTLE_PRETTY)
 
+      throw new RuntimeException(baos.toString())
 
       // scalastyle:off
       val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[org.aksw.jena_sparql_api.conjure.dataset.algebra.Op])
