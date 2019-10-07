@@ -6,9 +6,6 @@ import java.nio.charset.StandardCharsets
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 
-import com.google.common.base.{StandardSystemProperty, Stopwatch}
-import com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, Range}
-import com.google.common.hash.Hashing
 import com.typesafe.scalalogging.LazyLogging
 import org.aksw.dcat.ap.utils.DcatUtils
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
@@ -21,6 +18,9 @@ import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils
 import org.aksw.jena_sparql_api.rx.SparqlRx
 import org.aksw.jena_sparql_api.stmt.SparqlStmtParserImpl
 import org.aksw.jena_sparql_api.utils.Vars
+import org.apache.jena.ext.com.google.common.base.{StandardSystemProperty, Stopwatch}
+import org.apache.jena.ext.com.google.common.collect.{DiscreteDomain, ImmutableRangeSet, Range}
+import org.apache.jena.ext.com.google.common.hash.Hashing
 import org.apache.jena.fuseki.FusekiException
 import org.apache.jena.fuseki.main.FusekiServer
 import org.apache.jena.query.{DatasetFactory, Syntax}
@@ -141,8 +141,8 @@ object MainConjure extends LazyLogging {
     val numPartitions = numThreads * 1
 
     val sparkSession = SparkSession.builder
-      .master(s"local[$numThreads]")
-      .appName("spark session example")
+      // .master(s"local[$numThreads]")
+      .appName("Sansa-Conjure Test")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
