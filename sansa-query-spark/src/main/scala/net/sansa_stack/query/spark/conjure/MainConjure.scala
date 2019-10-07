@@ -265,6 +265,8 @@ object MainConjure extends LazyLogging {
     println("NUM PARTITIONS = " + dcatRdd.getNumPartitions)
 
     val executiveRdd = dcatRdd.mapPartitions(it => {
+      
+      JenaSystem.init();
 
       val opPlainWorfklow = workflowBroadcast.value;
       val opWorkflow = JenaPluginUtils.polymorphicCast(opPlainWorfklow, classOf[Op])
