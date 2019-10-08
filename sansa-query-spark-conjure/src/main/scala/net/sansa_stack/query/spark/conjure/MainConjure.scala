@@ -119,6 +119,7 @@ object MainConjure extends LazyLogging {
 
     val catalogUrl = if (args.length == 0) "http://localhost/~raven/conjure.test.dcat.ttl" else args(0)
     val limit = if (args.length > 1) args(1).toInt else 1000
+    val numThreads = if (args.length > 2) args(2).toInt else 4
 
 
     val tmpDirStr = StandardSystemProperty.JAVA_IO_TMPDIR.value()
@@ -136,7 +137,6 @@ object MainConjure extends LazyLogging {
       hostName => new ImmutableRangeSet.Builder[Integer].add(Range.closed(3030, 3040)).build()
 
     // File.createTempFile("spark-events")
-    val numThreads = 4
     val numPartitions = numThreads * 1
 
     val masterHostname = InetAddress.getLocalHost.getHostName;
@@ -180,14 +180,15 @@ object MainConjure extends LazyLogging {
           ?a dcat:distribution [
             dcat:byteSize ?byteSize
           ]
-          FILTER(?byteSize < 100000)
         } LIMIT $limit }
 
         ?a ?b ?c
         OPTIONAL { ?c ?d ?e }
       }""").getAsQueryStmt.getQuery
 
-//    val catalog = RDFDataMgr.loadModel("small.nt")
+    //    FILTER(?byteSize < 100000)
+
+    //    val catalog = RDFDataMgr.loadModel("small.nt")
     val catalog = RDFDataMgr.loadModel(catalogUrl)
     val conn = RDFConnectionFactory.connect(DatasetFactory.create(catalog))
 
