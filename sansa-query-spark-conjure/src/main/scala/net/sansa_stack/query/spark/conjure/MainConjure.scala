@@ -271,7 +271,6 @@ object MainConjure extends LazyLogging {
     logger.info("NUM PARTITIONS = " + dcatRdd.getNumPartitions)
 
     val executiveRdd = dcatRdd.mapPartitions(it => {
-
       val opPlainWorfklow = workflowBroadcast.value;
       val baos = new ByteArrayOutputStream
       RDFDataMgr.write(baos, opPlainWorfklow.getModel, RDFFormat.TURTLE_PRETTY)
@@ -290,33 +289,45 @@ object MainConjure extends LazyLogging {
       val executor = new OpExecutorDefault(repo)
 
       it.map(dcat => {
-        val parser = SparqlStmtParserImpl.create(Syntax.syntaxARQ, DefaultPrefixes.prefixes, false)
+        try {
+          val parser = SparqlStmtParserImpl.create(Syntax.syntaxARQ, DefaultPrefixes.prefixes, false)
 
-        logger.info("Processing: " + dcat)
+          logger.info("Processing: " + dcat)
 
-        val url = DcatUtils.getFirstDownloadUrl(dcat)
-        logger.info("Download URL is: " + dcat)
-        if(url != null) {
-          val dataRef = DataRefUrl.create(url)
+          val url = DcatUtils.getFirstDownloadUrl(dcat)
+          logger.info("Download URL is: " + dcat)
+          if (url != null) {
+            val dataRef = DataRefUrl.create(url)
 
-//          val dataRef = DataRefOp.create(OpUpdateRequest.create(OpData.create,
-//            parser.apply("INSERT DATA { <urn:s> <urn:p> <urn:o> }").toString))
+            //          val dataRef = DataRefOp.create(OpUpdateRequest.create(OpData.create,
+            //            parser.apply("INSERT DATA { <urn:s> <urn:p> <urn:o> }").toString))
 
-          val map = Collections.singletonMap("dataRef", OpDataRefResource.from(dataRef))
-          val effectiveWorkflow = OpUtils.copyWithSubstitution(opWorkflow, map)
+            val map = Collections.singletonMap("dataRef", OpDataRefResource.from(dataRef))
+            val effectiveWorkflow = OpUtils.copyWithSubstitution(opWorkflow, map)
 
-          val data = effectiveWorkflow.accept(executor)
-          val conn = data.openConnection
-          val model = conn.queryConstruct("CONSTRUCT WHERE { ?s ?p ?o }")
-          // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
+            val data = effectiveWorkflow.accept(executor)
+            val conn = data.openConnection
+            val model = conn.queryConstruct("CONSTRUCT WHERE { ?s ?p ?o }")
+            // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
+          }
+          (dcat.asNode.toString, true)
+        } catch {
+          case e: Throwable => logger.warn("Failed to process " + dcat, e)
+            (dcat.asNode.toString, false)
         }
-        "yay"
       })
     })
 
 
     val stopwatch = Stopwatch.createStarted()
-    val evalResult = executiveRdd.count
+    val evalResult = executiveRdd.collect
+
+    logger.info("RESULTS: ----------------------------")
+    for (item <- evalResult) {
+      logger.info("Result status: " + item)
+    }
+
+
     logger.info("Processed " + evalResult + " items in " + (stopwatch.stop.elapsed(TimeUnit.MILLISECONDS) * 0.001) + " seconds")
 
       // Set up a dataset processing expression
