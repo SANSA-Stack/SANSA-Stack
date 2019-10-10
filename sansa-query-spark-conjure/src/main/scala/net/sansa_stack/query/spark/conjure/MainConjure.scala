@@ -263,7 +263,7 @@ object MainConjure extends LazyLogging {
       """).toString)
 
 
-    var opWorkflow = OpConstruct.create(v, parser.apply(
+    opWorkflow = OpConstruct.create(v, parser.apply(
       """CONSTRUCT {
           <env:datasetId> <urn:count> ?count
         } {
@@ -271,7 +271,7 @@ object MainConjure extends LazyLogging {
             ?s ?p ?o
           } }
         }
-      """).toString);
+      """).toString)
 
     // Note .asResource yields a Jena ResourceImpl instead of 'this'
     // so that kryo can serialize it
