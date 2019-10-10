@@ -533,6 +533,7 @@
                                 <goal>shade</goal>
                             </goals>
                             <configuration>
+                                <minimizeJar>true</minimizeJar>
                                 <shadedArtifactAttached>true</shadedArtifactAttached>
                                 <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                                 <filters>

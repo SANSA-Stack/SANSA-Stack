@@ -239,7 +239,7 @@ object MainConjure extends LazyLogging {
     */
 
     val v = OpVar.create("dataRef")
-    val opWorkflow = OpConstruct.create(v, parser.apply(
+    var opWorkflow = OpConstruct.create(v, parser.apply(
       """CONSTRUCT {
            <env:datasetId>
              eg:predicateReport ?report ;
@@ -262,6 +262,16 @@ object MainConjure extends LazyLogging {
            }
       """).toString)
 
+
+    var opWorkflow = OpConstruct.create(v, parser.apply(
+      """CONSTRUCT {
+          <env:datasetId> <urn:count> ?count
+        } {
+          { SELECT (COUNT(*) AS ?c) {
+            ?s ?p ?o
+          } }
+        }
+      """).toString);
 
     // Note .asResource yields a Jena ResourceImpl instead of 'this'
     // so that kryo can serialize it
@@ -297,6 +307,7 @@ object MainConjure extends LazyLogging {
 
           val url = DcatUtils.getFirstDownloadUrl(dcat)
           logger.info("Download URL is: " + dcat)
+          var outStr: String = null
           if (url != null) {
             val dataRef = DataRefUrl.create(url)
 
@@ -309,9 +320,12 @@ object MainConjure extends LazyLogging {
             val data = effectiveWorkflow.accept(executor)
             val conn = data.openConnection
             val model = conn.queryConstruct("CONSTRUCT WHERE { ?s ?p ?o }")
-            // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
+
+            val bout = new ByteArrayOutputStream
+            RDFDataMgr.write(bout, model, RDFFormat.TURTLE_PRETTY);
+            outStr = bout.toString
           }
-          (dcat.asNode.toString, true)
+          (dcat.asNode.toString, true, outStr)
         } catch {
           case e: Throwable => logger.warn("Failed to process " + dcat, e)
             (dcat.asNode.toString, false)
