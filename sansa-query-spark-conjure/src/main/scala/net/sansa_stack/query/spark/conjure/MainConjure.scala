@@ -118,7 +118,7 @@ object MainConjure extends LazyLogging {
   def main(args: Array[String]): Unit = {
 
     val catalogUrl = if (args.length == 0) "http://localhost/~raven/conjure.test.dcat.ttl" else args(0)
-    val limit = if (args.length > 1) args(1).toInt else 1000
+    val limit = if (args.length > 1) args(1).toInt else 10
     val numThreads = if (args.length > 2) args(2).toInt else 4
 
 
@@ -265,7 +265,7 @@ object MainConjure extends LazyLogging {
 
     opWorkflow = OpConstruct.create(v, parser.apply(
       """CONSTRUCT {
-          <env:datasetId> <urn:count> ?count
+          <env:datasetId> <urn:count> ?c
         } {
           { SELECT (COUNT(*) AS ?c) {
             ?s ?p ?o
@@ -343,7 +343,7 @@ object MainConjure extends LazyLogging {
     }
 
 
-    logger.info("Processed " + evalResult + " items in " + (stopwatch.stop.elapsed(TimeUnit.MILLISECONDS) * 0.001) + " seconds")
+    logger.info("Processed " + evalResult.length + " items in " + (stopwatch.stop.elapsed(TimeUnit.MILLISECONDS) * 0.001) + " seconds")
 
       // Set up a dataset processing expression
 //      logger.info("Conjure spec is:");
