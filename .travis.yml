@@ -7,9 +7,11 @@ cache:
   directories:
   - "$HOME/.m2"
 scala:
-- 2.11.11
+  - 2.11.11
+jdk:
+  - openjdk8
 script:
-- mvn scalastyle:check
-- mvn test
+  - mvn scalastyle:check
+  - mvn test
 after_success:
   - mvn clean test jacoco:report coveralls:report
