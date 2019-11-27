@@ -3,6 +3,7 @@ package net.sansa_stack.query.spark.sparqlify.server
 import java.io.{File, FileInputStream}
 
 import scala.collection.JavaConverters._
+
 import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
@@ -12,9 +13,13 @@ import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 import org.apache.spark.sql.{Row, SparkSession}
 
+import net.sansa_stack.rdf.spark.io.NTripleReader
+
 object MainSansaSparqlServer {
 
   def main(args: Array[String]): Unit = {
+
+    val uri = args.head
 
     val tempDirStr = System.getProperty("java.io.tmpdir")
     if (tempDirStr == null) {

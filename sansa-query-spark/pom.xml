@@ -160,14 +160,37 @@
     
 		<!-- Ontop -->
 		<dependency>
-		  <groupId>it.unibz.inf.ontop</groupId>
-		  <artifactId>ontop-owlapi</artifactId>
+			<groupId>it.unibz.inf.ontop</groupId>
+			<artifactId>ontop-owlapi</artifactId>
+			<version>4.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-		  <groupId>it.unibz.inf.ontop</groupId>
-		  <artifactId>ontop-system-sql-owlapi</artifactId>
+			<groupId>it.unibz.inf.ontop</groupId>
+			<artifactId>ontop-system-sql-owlapi</artifactId>
+			<version>4.0.0-SNAPSHOT</version>
 		</dependency>
-    
+		<!-- need to overwrite OWL API 5 with v4 used by Ontop -->
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-api</artifactId>
+			<version>4.5.7</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-apibinding</artifactId>
+			<version>4.5.7</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-impl</artifactId>
+			<version>4.5.7</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>owlapi-parsers</artifactId>
+			<version>4.5.7</version>
+		</dependency>
+
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
