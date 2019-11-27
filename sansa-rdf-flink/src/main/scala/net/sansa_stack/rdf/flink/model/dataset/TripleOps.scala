@@ -277,7 +277,7 @@ object TripleOps {
    * @param path path to the file containing N-Triples
    */
   def saveAsNTriplesFile(triples: DataSet[Triple], path: String): Unit = {
-    import net.sansa_stack.rdf.flink.io.ntriples._
+    import net.sansa_stack.rdf.common.io.ntriples.JenaTripleToNTripleString
     triples
       .map(new JenaTripleToNTripleString()) // map to N-Triples string
       .writeAsText(path)
