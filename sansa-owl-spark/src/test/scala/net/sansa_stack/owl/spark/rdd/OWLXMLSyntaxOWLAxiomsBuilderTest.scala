@@ -29,7 +29,7 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
   }
 
   test("The number of axioms should match") {
-    val expectedNumberOfAxioms = 93
+    val expectedNumberOfAxioms = 94
     assert(rdd.count() == expectedNumberOfAxioms)
   }
 
@@ -142,6 +142,7 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
 
     val expectedNumberOfAxioms = 40
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDeclarationAxiom])
+    filteredRDD.foreach(println(_))
 
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
@@ -179,7 +180,7 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDisjointClassesAxiom])
-
+    filteredRDD.foreach(println(_))
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
 
@@ -194,7 +195,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLClassAssertionAxiom])
-
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
 
@@ -477,21 +477,25 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
 
     val expectedNumberOfAxioms = 2
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLEquivalentObjectPropertiesAxiom])
-
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
 
   test("The number of generated OWLInverseObjectPropertiesAxiom objects should be correct") {
-    /* <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1">
+    /* <owl:ObjectProperty rdf:about="http://ex.com/bar#invObjProp1">
           <owl:inverseOf rdf:resource="http://ex.com/bar#objProp1"/>
+           <owl:equivalentProperty>
+            <rdf:Description>
+                <owl:inverseOf rdf:resource="http://ex.com/bar#objProp1"/>
+            </rdf:Description>
+        </owl:equivalentProperty>
        </owl:ObjectProperty>
     */
 
     // --> InverseObjectProperties(<http://ex.com/bar#invObjProp1> <http://ex.com/bar#objProp1>)
+    // --> InverseObjectProperties(ObjectInverseOf(<http://ex.com/bar#objProp1>) <http://ex.com/bar#objProp1>)
 
-    val expectedNumberOfAxioms = 1
+    val expectedNumberOfAxioms = 2
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLInverseObjectPropertiesAxiom])
-
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
 
