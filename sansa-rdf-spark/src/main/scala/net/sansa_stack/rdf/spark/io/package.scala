@@ -1,26 +1,21 @@
 package net.sansa_stack.rdf.spark
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, StringWriter }
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util.Collections
 
-import com.google.common.collect.Iterators
-import com.typesafe.config.{ Config, ConfigFactory }
-import net.sansa_stack.rdf.spark.io.nquads.{ NQuadReader, NQuadsStringToJenaQuad }
-import net.sansa_stack.rdf.spark.io.ntriples.{ JenaTripleToNTripleString, NTriplesStringToJenaTriple }
-import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
-import net.sansa_stack.rdf.spark.utils.{ Logging, ScalaUtils }
+import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{ LongWritable, Text }
+import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
-import org.apache.jena.atlas.lib.CharSpace
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
-import org.apache.jena.riot.lang.PipedTriplesStream
-import org.apache.jena.riot.out.NodeFormatterNT
-import org.apache.jena.riot.system.StreamOps
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+
+import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
+import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
+import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
@@ -30,6 +25,34 @@ package object io {
 
   object RDFLang extends Enumeration {
     val NTRIPLES, TURTLE, RDFXML, TRIX = Value
+  }
+
+  /**
+   * SaveMode is used to specify the expected behavior of saving an RDF dataset to a path.
+   */
+  object SaveMode extends Enumeration {
+    type SaveMode = Value
+    val
+
+    /**
+     * Overwrite mode means that when saving an RDF dataset to a path,
+     * if path already exists,
+     * the existing data is expected to be overwritten by the contents of the RDF dataset.
+     */
+    Overwrite,
+
+    /**
+     * ErrorIfExists mode means that when saving an RDF dataset to a path, if path already exists,
+     * an exception is expected to be thrown.
+     */
+    ErrorIfExists,
+
+    /**
+     * Ignore mode means that when saving an RDF dataset to a path, if path already exists,
+     * the save operation is expected to not save the contents of the RDF dataset and to not
+     * change the existing data.
+     */
+    Ignore = Value
   }
 
   /**
@@ -109,19 +132,27 @@ package object io {
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
-    val converter = new JenaTripleToNTripleString()
 
-    def saveAsNTriplesFile(path: String, mode: SaveMode = SaveMode.ErrorIfExists, exitOnError: Boolean = false): Unit = {
+    //     * @param singleFile write to a single file only (internally, this is done by RDD::coalesce(1) function)
+    //     *                   and is usually not recommended for large dataset because all data has to be moved
+    //     *                   to a single node).
+
+    /**
+     * Save the data in N-Triples format.
+     *
+     * @param path the path where the N-Triples file(s) will be written to
+     * @param mode the expected behavior of saving the data to a data source
+     * @param exitOnError whether to stop if an error occurred
+     */
+    def saveAsNTriplesFile(path: String,
+                           mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+                           exitOnError: Boolean = false): Unit = {
 
       val fsPath = new Path(path)
       val fs = fsPath.getFileSystem(triples.sparkContext.hadoopConfiguration)
 
       val doSave = if (fs.exists(fsPath)) {
         mode match {
-          case SaveMode.Append =>
-            sys.error(s"Append mode is not supported by ${this.getClass.getCanonicalName} !")
-            if (exitOnError) sys.exit(1)
-            false
           case SaveMode.Overwrite =>
             fs.delete(fsPath, true)
             true
@@ -136,38 +167,22 @@ package object io {
       } else {
         true
       }
+
       import scala.collection.JavaConverters._
       // save only if there was no failure with the path before
       if (doSave) triples
-        .mapPartitions(p => {
-          val os = new ByteArrayOutputStream()
+        .mapPartitions(p => { // process each partition
+          // check if partition is empty
           if (p.hasNext) {
+            val os = new ByteArrayOutputStream()
             RDFDataMgr.writeTriples(os, p.asJava)
-            Collections.singleton(new String(os.toByteArray)).iterator().asScala
+            Collections.singleton(os.toString("UTF-8").trim).iterator().asScala
           } else {
             Iterator()
           }
-
-          //            val os = new ByteArrayOutputStream()
-          //            val fct = new com.google.common.base.Function[Triple, String]() {
-          //              val sb = new StringBuilder()
-          //              val nodeFmt = new NodeFormatterNT(CharSpace.UTF8)
-          //              override def apply(t: Triple): String =
-          //                nodeFmt.format(os, t.getSubject) +
-          //              " " +
-          //              nodeFmt.format(t.getPredicate) +
-          //              " " +
-          //              nodeFmt.format(t.getObject) +
-          //              " .\n"
-          //            }
-
-          //            Iterators.transform(p, fct).asScala
         })
-        //        .map(converter) // map to N-Triples string
         .saveAsTextFile(path)
-
     }
-
   }
 
   /**
