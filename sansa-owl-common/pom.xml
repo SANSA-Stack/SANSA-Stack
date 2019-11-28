@@ -14,8 +14,6 @@
     <version>0.4.2-SNAPSHOT</version>
 
     <dependencies>
-
-
         <!-- Scala dependencies -->
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -27,13 +25,29 @@
             <version>0.9.0</version>
         </dependency>
 
+        <!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-streaming</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+
         <!-- slf4j Logger dependencies -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.26</version>
         </dependency>
-
 
         <!-- OWL API dependencies -->
         <dependency>
