@@ -10,6 +10,12 @@
         <version>0.6.1-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <version.ontop>4.0.0-SNAPSHOT</version.ontop>
+        <version.jena>3.12.0</version.jena>
+        <version.jsa>3.12.0-1</version.jsa>
+    </properties>
+
     <dependencies>
 
         <dependency>
@@ -33,32 +39,32 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>3.12.0</version>
+            <version>${version.jena}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-core</artifactId>
-            <version>3.12.0</version>
+            <version>${version.jena}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-fuseki-server</artifactId>
-            <version>3.12.0</version>
+            <version>${version.jena}</version>
         </dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
-			<version>3.12.0</version>
+            <version>${version.jena}</version>
 		</dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
-            <version>3.12.0</version>
+            <version>${version.jena}</version>
         </dependency>
 
         <dependency>
@@ -70,37 +76,37 @@
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-core</artifactId>
-            <version>3.12.0-2-SNAPSHOT</version>
+            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-mapper-annotations</artifactId>
-            <version>3.12.0-2-SNAPSHOT</version>
+            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-virtuoso</artifactId>
-            <version>3.12.0-2-SNAPSHOT</version>
+            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-server-standalone</artifactId>
-            <version>3.12.0-2-SNAPSHOT</version>
+            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-algebra</artifactId>
-            <version>3.12.0-2-SNAPSHOT</version>
+            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-views</artifactId>
-            <version>3.12.0-2-SNAPSHOT</version>
+            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
