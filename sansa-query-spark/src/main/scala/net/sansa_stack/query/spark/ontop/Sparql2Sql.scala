@@ -1,40 +1,32 @@
 package net.sansa_stack.query.spark.sparql2sql
 
-import java.io.{BufferedReader, File, FileInputStream, FileReader}
+import java.io.{File, FileInputStream}
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-import java.sql.{Connection, DriverManager, SQLException, Statement}
+import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
 import java.util.stream.Collectors.joining
 
+import scala.collection.JavaConverters._
+import scala.reflect.runtime.universe.typeOf
+
+import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
 import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
+import it.unibz.inf.ontop.iq.UnaryIQTree
 import it.unibz.inf.ontop.iq.node.NativeNode
 import it.unibz.inf.ontop.owlapi.OntopOWLFactory
-import org.apache.spark.sql.{Row, SparkSession}
-import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, OWLOntology}
-import scala.collection.JavaConverters._
-
-import it.unibz.inf.ontop.answering.reformulation.QueryReformulator
-import it.unibz.inf.ontop.answering.reformulation.input.InputQueryFactory
-import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
-import it.unibz.inf.ontop.iq.UnaryIQTree
-import it.unibz.inf.ontop.model.`type`.impl.H2SQLDBTypeFactory
 import it.unibz.inf.ontop.owlapi.connection.OntopOWLConnection
-import it.unibz.inf.ontop.spec.OBDASpecification
-import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{Row, SparkSession}
+import org.semanticweb.owlapi.apibinding.OWLManager
+import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, OWLOntology}
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.common.partition.layout.TripleLayout
-import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
-import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStringDouble, SchemaStringLong, SchemaStringString, SchemaStringStringType}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
+import net.sansa_stack.rdf.common.partition.schema._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import scala.reflect.runtime.universe.Type
-import scala.reflect.runtime.universe.typeOf
 
 object Sparql2Sql {
 
@@ -64,7 +56,7 @@ object Sparql2Sql {
         sqlQuery
     }
 
-    private def createOBDAMappingsforPartitions(partitions: Set[RdfPartitionDefault]): String = {
+    private def createOBDAMappingsforPartitions(partitions: Set[RdfPartitionComplex]): String = {
 
         def createMapping(id: String, property: String): String = {
             s"""
@@ -82,6 +74,14 @@ object Sparql2Sql {
                |""".stripMargin
         }
 
+        def createMappingLiteralWithType(id: String, property: String): String = {
+            s"""
+               |mappingId     $id
+               |source        SELECT `s`, `o`, `t` FROM `${escapeTablename(property)}`
+               |target        <{s}> <$property> "{o}"^^<{t}> .
+               |""".stripMargin
+        }
+
         def createMappingLang(id: String, property: String): String = {
             s"""
                |mappingId     $id
@@ -90,24 +90,29 @@ object Sparql2Sql {
                |""".stripMargin
         }
 
+        val triplesMapping = s"""
+                                   |mappingId     triples
+                                   |source        SELECT `s`, `p`, `o` FROM `triples`
+                                   |target        <{s}> <http://sansa.net/ontology/triples> "{o}" .
+                                   |""".stripMargin
+
         "[MappingDeclaration] @collection [[" +
           partitions
             .map {
-                case p@RdfPartitionDefault(subjectType, predicate, objectType, datatype, langTagPresent) =>
+                case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
                     objectType match {
                         case 1 => createMapping(escapeTablename(predicate), predicate)
                         case 2 => if (langTagPresent) createMappingLang(escapeTablename(predicate), predicate)
                         else createMappingLit(escapeTablename(predicate), predicate, datatype)
                     }
             }
-            .mkString("\n\n") + "]]"
+            .mkString("\n\n") + triplesMapping + "]]"
     }
 
     val baseDir = new File("/tmp/ontop-spark")
 
     def main(args: Array[String]): Unit = {
         import net.sansa_stack.rdf.spark.io._
-        import org.apache.jena.riot.Lang
 
         val spark = SparkSession.builder
           .master("local")
@@ -148,21 +153,14 @@ object Sparql2Sql {
         triplesRDD = triplesRDD.filter(t => schemaProperties.contains(t.getPredicate.getURI))
 
         // do partitioning here
-        val partitions: Map[RdfPartitionDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD)
+        val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex)
         partitions.foreach {
             case (p, rdd) =>
-                val vd = SparqlifyUtils2.createViewDefinition(p)
-
-                val tableName = vd.getLogicalTable match {
-                    case o: LogicalTableTableName => o.getTableName
-                    case _ => throw new RuntimeException("Table name required - instead got: " + vd)
-                }
-
                 val scalaSchema = p.layout.schema
                 val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
                 val df = spark.createDataFrame(rdd, sparkSchema).persist()
 
-                df.createOrReplaceTempView(escapeTablename(p.predicate))
+                df.createOrReplaceTempView("`" + escapeTablename(p.predicate) + "`")
         }
         println(s"num partitions: ${partitions.size}")
 
@@ -175,130 +173,21 @@ object Sparql2Sql {
         val ontopProperties = new Properties()
         ontopProperties.load(propertiesInputStream)
 
-        // create the mappings
+        // create the mappings and write to file read by Ontop
+        val mappings = createOBDAMappingsforPartitions(partitions.keySet)
         var mappingFile = File.createTempFile("ontop-mappings", "tmp", baseDir)
-        println(mappingFile.getAbsolutePath)
-        Files.write(
-            mappingFile.toPath,
-            createOBDAMappingsforPartitions(partitions.keySet).getBytes(StandardCharsets.UTF_8))
-        //    mappingFile = new File(baseDir, "ontop-mappings1137406897844479900tmp")
+        mappingFile = new File(baseDir, "spark-mappings.obda")
+        println(s"mappings location: ${mappingFile.getAbsolutePath}");
+        Files.write(mappingFile.toPath, mappings.getBytes(StandardCharsets.UTF_8))
 
-        // create DB and OBDA mappings
+        // create DB used by Ontop to extract metadata
         createTempDB(ontopProperties, partitions)
-
-        def createTempDB(dbProps: Properties, partitions: Map[RdfPartitionDefault, RDD[Row]]) = {
-            val driver = dbProps.getProperty("jdbc.driver")
-            val url = dbProps.getProperty("jdbc.url", JDBC_URL)
-            val username = dbProps.getProperty("jdbc.user", JDBC_USER)
-            val password = dbProps.getProperty("jdbc.password", JDBC_PASSWORD)
-
-            var connection: Connection = null
-
-            try {
-                Class.forName(driver)
-                connection = DriverManager.getConnection(url, username, password)
-
-                val statement = connection.createStatement()
-                partitions.foreach {
-                    case (p, rdd) =>
-
-                        val vd = SparqlifyUtils2.createViewDefinition(p)
-
-                        val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
-                        println(p.predicate + "\t" + sparkSchema + "\t" + p.asInstanceOf[RdfPartitionDefault].layout.schema)
-
-                        p match {
-                            case RdfPartitionDefault(subjectType, predicate, objectType, datatype, langTagPresent) =>
-                               objectType match {
-                                   case 1 => statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
-                                     "s varchar(255) NOT NULL," +
-                                     "o varchar(255) NOT NULL" +
-                                     ")")
-                                   case 2 => if (langTagPresent) {
-                                                   statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
-                                                     "s varchar(255) NOT NULL," +
-                                                     "o varchar(255) NOT NULL," +
-                                                     "l varchar(10) NOT NULL" +
-                                                     ")")
-                                               } else {
-                                                    println(s"datatype: $datatype")
-                                                   if (p.layout.schema == typeOf[SchemaStringLong]) {
-                                                       statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
-                                                         "s varchar(255) NOT NULL," +
-                                                         "o BIGINT NOT NULL" +
-                                                         ")")
-                                                   } else if (p.layout.schema == typeOf[SchemaStringDouble]) {
-                                                       statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
-                                                         "s varchar(255) NOT NULL," +
-                                                         "o DOUBLE NOT NULL" +
-                                                         ")")
-                                                   } else if (p.layout.schema == typeOf[SchemaStringString]) {
-                                                       statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
-                                                         "s varchar(255) NOT NULL," +
-                                                         "o varchar(255) NOT NULL" +
-                                                         ")")
-                                                   } else if (p.layout.schema == typeOf[SchemaStringStringType]) {
-                                                       statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
-                                                         "s varchar(255) NOT NULL," +
-                                                         "o varchar(255) NOT NULL," +
-                                                         "t varchar(255) NOT NULL" +
-                                                         ")")
-                                                   } else if (p.layout.schema == typeOf[SchemaStringDate]) {
-                                                       statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
-                                                         "s varchar(255) NOT NULL," +
-                                                         "o DATE NOT NULL" +
-                                                         ")")
-                                                   } else {
-                                                       println(s"couldn't create table for schema ${p.layout.schema}")
-                                                   }
-
-                                               }
-                               }
-                            case _ => println("")
-                        }
-                }
-                val numTables = statement.executeBatch().length
-                println(s"created $numTables tables")
-            } catch {
-                case e: SQLException => e.printStackTrace()
-            }
-            connection.commit()
-            connection.close()
-        }
-
-
-
-
-        val lang = Lang.NTRIPLES
-        val triples = spark
-          .read
-          .rdf(lang)(data)
-//        triples.take(5).foreach(println(_))
-
-
-
-        // vertical partitioning
-        // get all properties in dataset
-//        val properties = triples.select("p").distinct().collect().map(row => row.getString(0)).toSet
-//
-//        val relevantProperties = objectProperties.filter(properties.contains)
-
-        // create the database
-//        createDB(ontopProperties, relevantProperties)
-//
-//        // create Spark SQL tables
-//        relevantProperties
-//          .foreach(op =>
-//              triples
-//                .filter(s"p = '$op'")
-//                .persist()
-//                .createOrReplaceTempView(escapeTablename(op))
-//          )
-
 
         // setup Ontop connection
         val conn = initOntopConnection(mappingFile, ont, ontopProperties)
-        var input = ""
+        var input = "select * where {?s <http://sansa-stack.net/ontology/someBooleanProperty> ?o; " +
+          "<http://sansa-stack.net/ontology/someIntegerProperty> ?o2; " +
+          "<http://sansa-stack.net/ontology/someDecimalProperty> ?o3} limit 10"
         println("enter SPARQL query (press 'q' to quit): ")
         while (input != "q") {
             input = scala.io.StdIn.readLine()
@@ -316,9 +205,7 @@ object Sparql2Sql {
             // create SQL query
             val sql = toSQL(conn, sparqlQuery)
               .replace("\"", "`")
-              //      .replace("OFFSET 0 ROWS", "")
               .replace("`PUBLIC`.", "")
-            //        .replaceAll("FETCH NEXT (\\d+) ROWS ONLY", "LIMIT \\1")
             println(sql)
 
             // run query
@@ -332,8 +219,91 @@ object Sparql2Sql {
         spark.stop()
     }
 
-    import java.sql.DriverManager
-    import java.sql.Connection
+    private def createTempDB(dbProps: Properties, partitions: Map[RdfPartitionComplex, RDD[Row]]) = {
+        val driver = dbProps.getProperty("jdbc.driver")
+        val url = dbProps.getProperty("jdbc.url", JDBC_URL)
+        val username = dbProps.getProperty("jdbc.user", JDBC_USER)
+        val password = dbProps.getProperty("jdbc.password", JDBC_PASSWORD)
+
+        var connection: Connection = null
+
+        try {
+            Class.forName(driver)
+            connection = DriverManager.getConnection(url, username, password)
+
+            val statement = connection.createStatement()
+            partitions.foreach {
+                case (p, rdd) =>
+
+                    val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
+                    println(p.predicate + "\t" + sparkSchema + "\t" + p.asInstanceOf[RdfPartitionComplex].layout.schema)
+
+                    p match {
+                        case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
+                            objectType match {
+                                case 1 => statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
+                                  "s varchar(255) NOT NULL," +
+                                  "o varchar(255) NOT NULL" +
+                                  ")")
+                                case 2 => if (langTagPresent) {
+                                    statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
+                                      "s varchar(255) NOT NULL," +
+                                      "o varchar(255) NOT NULL," +
+                                      "l varchar(10) NOT NULL" +
+                                      ")")
+                                } else {
+                                    println(s"datatype: $datatype")
+                                    if (p.layout.schema == typeOf[SchemaStringStringType]) {
+                                        statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (" +
+                                          "s varchar(255) NOT NULL," +
+                                          "o varchar(255) NOT NULL," +
+                                          "t varchar(255) NOT NULL" +
+                                          ")")
+                                    } else {
+                                        val mapping = Map(
+                                            typeOf[SchemaStringLong] -> "LONG",
+                                            typeOf[SchemaStringDouble] -> "DOUBLE",
+                                            typeOf[SchemaStringFloat] -> "FLOAT",
+                                            typeOf[SchemaStringDecimal] -> "DECIMAL",
+                                            typeOf[SchemaStringBoolean] -> "BOOLEAN",
+                                            typeOf[SchemaStringString] -> "VARCHAR(255)",
+                                            typeOf[SchemaStringDate] -> "DATE"
+                                        ) // .map(e => (typeOf[e._1.type], e._2))
+                                        val colType = mapping.get(p.layout.schema)
+
+                                        if (colType.isDefined) {
+                                            val stmt =
+                                                s"""
+                                                   |CREATE TABLE IF NOT EXISTS ${escapeTablename(predicate)} (
+                                                   |s varchar(255) NOT NULL,
+                                                   |o ${colType.get} NOT NULL)
+                                                   |""".stripMargin
+
+                                            statement.addBatch(stmt)
+                                        } else {
+                                            println(s"couldn't create table for schema ${p.layout.schema}")
+                                        }
+                                    }
+                                }
+                            }
+                        case _ => println("")
+                    }
+            }
+            statement.addBatch(s"CREATE TABLE IF NOT EXISTS triples (" +
+              "s varchar(255) NOT NULL," +
+              "p varchar(255) NOT NULL," +
+              "o varchar(255) NOT NULL" +
+              ")")
+            val numTables = statement.executeBatch().length
+            println(s"created $numTables tables")
+        } catch {
+            case e: SQLException => e.printStackTrace()
+        }
+        connection.commit()
+        connection.close()
+    }
+
+    import java.sql.{Connection, DriverManager}
 
     private val JDBC_URL = "jdbc:h2:mem:questjunitdb"
     private val JDBC_USER = "sa"
@@ -460,24 +430,11 @@ object Sparql2Sql {
     }
 
     private def escapeTablename(path: String): String =
-        URLEncoder.encode(path, StandardCharsets.UTF_8.toString).toLowerCase.replace('%', 'P').replace('.', 'C')
-
-
-    private def createOBDAMappings(properties: Set[String]): String = {
-
-        def createMapping(id: String, property: String): String = {
-            s"""
-               |mappingId     $id
-               |source        SELECT `s`, `o` FROM `${escapeTablename(property)}`
-               |target        <{s}> <$property> <{o}> .
-               |""".stripMargin
-        }
-
-        "[MappingDeclaration] @collection [[" +
-          properties
-            .map(op => createMapping(escapeTablename(op), op))
-            .mkString("\n\n") + "]]"
-    }
+        URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
+          .toLowerCase
+          .replace('%', 'P')
+          .replace('.', 'C')
+          .replace("-", "dash")
 
 }
 
