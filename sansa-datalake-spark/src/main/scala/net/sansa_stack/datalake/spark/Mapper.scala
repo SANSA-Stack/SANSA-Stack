@@ -2,16 +2,17 @@ package net.sansa_stack.datalake.spark
 
 import com.typesafe.scalalogging.Logger
 import java.io.ByteArrayInputStream
+
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.util.FileManager
+import org.apache.spark.sql.AnalysisException
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
-/**
-  * Created by mmami on 30.01.17.
-  */
+import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+
 class Mapper (mappingsFile: String) {
 
     val logger = Logger("SANSA-DataLake")
@@ -28,14 +29,14 @@ class Mapper (mappingsFile: String) {
                         ) :
                         // returns
                         mutable.Set[(String,
-                                        mutable.Set[(mutable.HashMap[String, String], String, String)],
+                                        mutable.Set[(mutable.HashMap[String, String], String, String, mutable.HashMap[String, (String, Boolean)])],
                                         mutable.HashMap[String, (Map[String, String], String)]
                                     )] = {
 
         val starSources :
             mutable.Set[(
                 String, // Star core
-                mutable.Set[(mutable.HashMap[String, String], String, String)], // A set of data sources relevant to the Star (pred_attr, src, srcType)
+                mutable.Set[(mutable.HashMap[String, String], String, String, mutable.HashMap[String, (String, Boolean)])], // A set of data sources relevant to the Star (pred_attr, src, srcType)
                 mutable.HashMap[String, (Map[String, String], String)] // A set of options of each relevant data source
             )] = mutable.Set()
 
@@ -98,9 +99,9 @@ class Mapper (mappingsFile: String) {
                     configJSON = try configs.mkString finally configs.close()
                 }
 
-                case class ConfigObject(source : String, options: Map[String, String], entity : String)
+                case class ConfigObject(source: String, options: Map[String, String], entity: String)
 
-                implicit val userReads : Reads[ConfigObject] = (
+                implicit val userReads: Reads[ConfigObject] = (
                     (__ \ 'source).read[String] and
                     (__ \ 'options).read[Map[String, String]] and
                     (__ \ 'entity).read[String]
@@ -126,19 +127,19 @@ class Mapper (mappingsFile: String) {
         starSources
     }
 
-    private def findDataSource(predicates_objects: mutable.Set[(String, String)]) : mutable.Set[(mutable.HashMap[String, String], String, String)] = {
+    private def findDataSource(predicates_objects: mutable.Set[(String, String)]) : mutable.Set[(mutable.HashMap[String, String], String, String, mutable.HashMap[String, (String, Boolean)])] = {
         var listOfPredicatesForQuery = ""
         val listOfPredicates : mutable.Set[String] = mutable.Set()
-        val returnedSources : mutable.Set[(mutable.HashMap[String, String], String, String)] = mutable.Set()
+        val returnedSources : mutable.Set[(mutable.HashMap[String, String], String, String, mutable.HashMap[String, (String, Boolean)])] = mutable.Set()
 
         var temp = 0
 
         logger.info("...with the (Predicate, Object) pairs: " + predicates_objects)
 
-        for(v <- predicates_objects) {
+        for (v <- predicates_objects) {
             val predicate = v._1
 
-            if(predicate == "rdf:type" || predicate == "a") {
+            if (predicate == "rdf:type" || predicate == "a") {
                 logger.info("...of class: " + v._2)
                 listOfPredicatesForQuery += "?mp rr:subjectMap ?sm . ?sm rr:class " + v._2 + " . "
 
@@ -211,7 +212,7 @@ class Mapper (mappingsFile: String) {
         val in = new ByteArrayInputStream(mappingsString.getBytes)
 
         if (in == null) {
-            throw new IllegalArgumentException("ERROR: File: " + queryString + " not found")
+            throw new IllegalArgumentException("ERROR: File: " + mappingsString + " not found")
         }
 
         val model = ModelFactory.createDefaultModel()
@@ -226,35 +227,161 @@ class Mapper (mappingsFile: String) {
             val src = soln.get("src").toString
             val srcType = soln.get("type").toString
 
-            logger.info(">>> Relevant source detected [" + src + "] of type [" + srcType + "]")
+            logger.info(">>> Relevant source detected [" + src + "] of type [" + srcType + "]") // considering only first one src
 
-            val pred_attr: mutable.HashMap[String, String] = mutable.HashMap()
+            val predicate_attribute: mutable.HashMap[String, String] = mutable.HashMap()
+            val predicate_transformations: mutable.HashMap[String, (String, Boolean)] = mutable.HashMap()
 
+            // We will look for predicate transformations (subject transformations later on)
             for (p <- listOfPredicates) {
 
                 val getAttributeOfPredicate = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> " +
                     "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
                     "PREFIX foaf: <http://xmlns.com/foaf/spec/>" +
-                    "SELECT ?r WHERE {" +
+                    "SELECT ?om ?r ?id WHERE {" +
                     "?mp rml:logicalSource ?ls . " +
                     "?ls rml:source \"" + src + "\" . " +
+                    "?mp rr:subjectMap ?sm . " +
+                    "?sm rr:template ?id . " +
                     "?mp rr:predicateObjectMap ?pom . " +
                     "?pom rr:predicate  " + p + " . " +
                     "?pom rr:objectMap ?om . " +
-                    "?om rml:reference ?r . " +
+                    "OPTIONAL {?om rml:reference ?r} . " +
                     "}"
-
 
                 val query1 = QueryFactory.create(getAttributeOfPredicate)
                 val qe1 = QueryExecutionFactory.create(query1, model)
                 val results1 = qe1.execSelect()
+
                 while (results1.hasNext) {
                     val soln1 = results1.nextSolution()
-                    val attr = soln1.get("r").toString
-                    pred_attr.put(p, attr)
+                    val om = soln1.getResource("om")
+
+                    var fn = ""
+                    var attr = ""
+                    var trans : ListBuffer[String] = ListBuffer()
+
+                    if (om.getURI != null) { // the case of FunctionMap
+
+                        // Get function
+                        val queryString = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> " +
+                          "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
+                          "PREFIX foaf: <http://xmlns.com/foaf/spec/>" +
+                          "PREFIX edm: <http://www.europeana.eu/schemas/edm/>" +
+                          "PREFIX fnml: <http://semweb.mmlab.be/ns/fnml#>" +
+                          "PREFIX fno: <http://w3id.org/function/ontology#>" +
+                          "PREFIX grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>" +
+                          "SELECT ?fn ?ref WHERE {" +
+                          "<#" + om.getLocalName + "> fnml:functionValue ?fv . " +
+                          "?fv rml:logicalSource \"" + src + "\" . " +
+                          "?fv rr:predicateObjectMap ?pom . " +
+                          "?pom rr:predicate  fno:executes . " +
+                          "?pom rr:objectMap ?om . " +
+                          "?om rr:constant ?fn . " +
+                          "?fv rr:predicateObjectMap ?pom1 . " +  // we don't use multiple ?pom's coz we don't know how
+                          "?pom1 rr:predicate  ?param . " +       // many params we have, eg. toUpperCase only 1 param.
+                          "?pom1 rr:objectMap ?om1 . " +          // so, 1st ref is the attribute, rest are fnt params
+                          "?om1 rr:reference ?ref . " +
+                          "}"
+
+                        val query2 = QueryFactory.create(queryString)
+                        val qe2 = QueryExecutionFactory.create(query2, model)
+                        val results2 = qe2.execSelect()
+                        while (results2.hasNext) {
+                            val soln2 = results2.nextSolution()
+
+                            fn = soln2.get("fn").toString
+                            attr = soln2.get("ref").toString // Used also for pred_attr.put()
+
+                            trans += fn
+                            trans += attr
+                        }
+                        trans = trans.distinct // to omit duplicates, in this case the function URI e.g. _:greaterThan
+
+                        logger.info(s"Transformations for predicate $p (attr: $attr): $trans")
+                        predicate_transformations.put(p, (trans.mkString(" "), false))
+
+                    } else {
+                        try {
+                            attr = soln1.get("r").toString
+                        } catch {
+                        case ae: NullPointerException => val logger = println("ERROR: Relevant source detected but cannot " +
+                          "be read due to mappings issues. For example, are you using `rr:parentTriplesMap` instead of `rml:reference`?")
+                            System.exit(1)
+                        }
+                    }
+
+                    predicate_attribute.put(p, attr)
                 }
             }
-            returnedSources.add((pred_attr, src, srcType))
+
+            // We will look for subject transformations
+            val getAttributeOfPredicate = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> " +
+              "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
+              "PREFIX foaf: <http://xmlns.com/foaf/spec/>" +
+              "SELECT ?fn ?id WHERE {" +
+              "?mp rml:logicalSource ?ls . " +
+              "?ls rml:source \"" + src + "\" . " +
+              "?mp rr:subjectMap ?sm . " +
+              "?sm rr:objectMap ?fn ." +
+              "}"
+
+                val query1 = QueryFactory.create(getAttributeOfPredicate)
+                val qe1 = QueryExecutionFactory.create(query1, model)
+                val results1 = qe1.execSelect()
+                
+                while (results1.hasNext) {
+                val soln1 = results1.nextSolution()
+                val fnMap = soln1.getResource("fn")
+
+                var fn = ""
+                var attr = ""
+                var trans : ListBuffer[String] = ListBuffer()
+
+                if (fnMap != null) { // the case of FunctionMap
+                    // Get function
+                    val queryString = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#> " +
+                      "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
+                      "PREFIX foaf: <http://xmlns.com/foaf/spec/>" +
+                      "PREFIX edm: <http://www.europeana.eu/schemas/edm/>" +
+                      "PREFIX fnml: <http://semweb.mmlab.be/ns/fnml#>" +
+                      "PREFIX fno: <http://w3id.org/function/ontology#>" +
+                      "PREFIX grel: <http://users.ugent.be/~bjdmeest/function/grel.ttl#>" +
+                      "SELECT ?fn ?ref WHERE {" +
+                      "<#" + fnMap.getLocalName + "> fnml:functionValue ?fv . " +
+                      "?fv rml:logicalSource \"" + src + "\" . " +
+                      "?fv rr:predicateObjectMap ?pom . " +
+                      "?pom rr:predicate  fno:executes . " +
+                      "?pom rr:objectMap ?om . " +
+                      "?om rr:constant ?fn . " +
+                      "?fv rr:predicateObjectMap ?pom1 . " + // we don't use multiple ?pom's coz we don't know how
+                      "?pom1 rr:predicate  ?param . " + // many params we have, eg. toUpperCase only 1 param.
+                      "?pom1 rr:objectMap ?om1 . " + // so, 1st ref is the attribute, rest are fnt params
+                      "?om1 rr:reference ?ref . " +
+                      "}"
+
+                    // val id = soln1.get("id").toString.stripSuffix("}").split("\\{")(1) // get 'id' from 'url{id}'
+
+                    val query2 = QueryFactory.create(queryString)
+                    val qe2 = QueryExecutionFactory.create(query2, model)
+                    val results2 = qe2.execSelect()
+                    while (results2.hasNext) {
+                        val soln2 = results2.nextSolution()
+
+                        fn = soln2.get("fn").toString
+                        attr = soln2.get("ref").toString // Used also for pred_attr.put()
+
+                        trans += fn
+                        trans += attr
+                    }
+                    trans = trans.distinct // to omit duplicates, in this case the function URI e.g. _:greaterThan
+
+                    logger.info(s"Transformations for subject/ID ($attr): $trans")
+                    predicate_transformations.put("ID", (trans.mkString(" "), true))
+                }
+            }
+
+            returnedSources.add((predicate_attribute, src, srcType, predicate_transformations))
         }
 
         qe.close() // Important: free up resources used running the query

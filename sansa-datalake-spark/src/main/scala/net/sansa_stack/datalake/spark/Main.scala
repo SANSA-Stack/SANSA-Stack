@@ -1,5 +1,6 @@
 package net.sansa_stack.datalake.spark
 
+import org.apache.commons.lang.time.StopWatch
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -18,7 +19,16 @@ object Main extends App {
 
     val executor : SparkExecutor = new SparkExecutor(spark, mappingsFile)
 
+    val stopwatch: StopWatch = new StopWatch
+    stopwatch.start()
+
     val run = new Run[DataFrame](executor)
-    run.application(queryFile, mappingsFile, configFile)
+    run.application(queryFile, mappingsFile, configFile, executorID)
+
+    stopwatch.stop()
+
+    val timeTaken = stopwatch.getTime
+
+    println(s"Query execution time: $timeTaken ms")
 
 }
