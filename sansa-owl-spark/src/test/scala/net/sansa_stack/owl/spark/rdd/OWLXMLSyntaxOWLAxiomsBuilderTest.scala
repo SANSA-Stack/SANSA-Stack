@@ -1,13 +1,13 @@
-package net.sansa_stack.owl.spark.rdd
+ package net.sansa_stack.owl.spark.rdd
 
-import com.holdenkarau.spark.testing.SharedSparkContext
-import org.apache.spark.sql.SparkSession
-import org.scalatest.FunSuite
-import org.semanticweb.owlapi.model._
+ import com.holdenkarau.spark.testing.SharedSparkContext
+ import org.apache.spark.sql.SparkSession
+ import org.scalatest.FunSuite
+ import org.semanticweb.owlapi.model._
 
-import net.sansa_stack.owl.spark.owl._
+ import net.sansa_stack.owl.spark.owl._
 
-class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext {
+ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext {
 
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
     .config(
@@ -46,11 +46,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
           <foo:ann>some annotation</foo:ann>
       </owl:Class>
    */
-
-    // The output is
-    // --> AnnotationAssertion(<http://ex.com/foo#ann> <http://ex.com/bar#Cls1> "some annotation"^^xsd:string)
-    // --> AnnotationAssertion(<http://ex.com/bar#label> <http://ex.com/bar#Cls1> "Class 1"^^xsd:string)
-
 
     val expectedNumberOfAxioms = 2
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLAnnotationAssertionAxiom])
@@ -98,51 +93,9 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
 
 
   test("The number of generated OWLDeclarationAxiom objects should be correct") {
-      //  -->    Declaration(AnnotationProperty(<http://ex.com/bar#annProp1>))
-      //  -->    Declaration(AnnotationProperty(<http://ex.com/bar#annProp2>))
-      //  -->    Declaration(AnnotationProperty(<http://ex.com/bar#label>))
-      //  -->    Declaration(AnnotationProperty(<http://ex.com/foo#ann>))
-      //  -->    Declaration(Class(<http://ex.com/bar#AllIndividualsCls>))
-      //  -->    Declaration(Class(<http://ex.com/bar#AllProp1Cls1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#Cl1OrNegate>))
-      //  -->    Declaration(Class(<http://ex.com/bar#Cls1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#Cls2>))
-      //  -->    Declaration(Class(<http://ex.com/bar#ComplementCls>))
-      //  -->    Declaration(Class(<http://ex.com/bar#ComplementCls1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#DataAllIntGT10>))
-      //  -->    Declaration(Class(<http://ex.com/bar#DataExact5Prop1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#DataHasVal5>))
-      //  -->    Declaration(Class(<http://ex.com/bar#DataMax2Prop1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#DataMin3Prop1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#DataSomeIntLT20>))
-      //  -->    Declaration(Class(<http://ex.com/bar#Exact5Prop1Cls1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#HasSelfProp1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#HasValProp1IndivB>))
-      //  -->    Declaration(Class(<http://ex.com/bar#IntersectionCls>))
-      //  -->    Declaration(Class(<http://ex.com/bar#Max3Prop1Cls1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#Min2Prop1Cls1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#SomeProp1Cls1>))
-      //  -->    Declaration(Class(<http://ex.com/bar#UnionCls>))
-      //  -->    Declaration(DataProperty(<http://ex.com/bar#dataProp1>))
-      //  -->    Declaration(DataProperty(<http://ex.com/bar#dataProp2>))
-      //  -->    Declaration(DataProperty(<http://ex.com/bar#sameAsDataProp1>))
-      //  -->    Declaration(DataProperty(<http://ex.com/bar#subDataProp1>))
-      //  -->    Declaration(Datatype(<http://ex.com/bar#dtype1>))
-      //  -->    Declaration(Datatype(<http://ex.com/bar#dtype2>))
-      //  -->    Declaration(NamedIndividual(<http://ex.com/foo#indivA>))
-      //  -->    Declaration(NamedIndividual(<http://ex.com/foo#indivB>))
-      //  -->    Declaration(ObjectProperty(<http://ex.com/bar#asymmObjProp>))
-      //  -->    Declaration(ObjectProperty(<http://ex.com/bar#invObjProp1>))
-      //  -->    Declaration(ObjectProperty(<http://ex.com/bar#objProp1>))
-      //  -->    Declaration(ObjectProperty(<http://ex.com/bar#objProp2>))
-      //  -->    Declaration(ObjectProperty(<http://ex.com/bar#Prop2>))
-      //  -->    Declaration(ObjectProperty(<http://ex.com/bar#sameAsObjProp1>))
-      //  -->    Declaration(ObjectProperty(<http://ex.com/bar#subObjProp1>))
-
 
     val expectedNumberOfAxioms = 40
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDeclarationAxiom])
-    filteredRDD.foreach(println(_))
 
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
@@ -157,8 +110,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
           </owl:disjointUnionOf>
        </owl:Class>
      */
-
-    // --> DisjointUnion(<http://ex.com/bar#Cl1OrNegate> <http://ex.com/bar#Cls1> <http://ex.com/bar#ComplementCls1> )
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDisjointUnionAxiom])
@@ -176,11 +127,8 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:Class>
     */
 
-    // --> DisjointClasses(<http://ex.com/bar#DataMax2Prop1> <http://ex.com/bar#DataMin3Prop1>)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDisjointClassesAxiom])
-    filteredRDD.foreach(println(_))
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
 
@@ -190,8 +138,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
             <rdf:type rdf:resource="http://ex.com/bar#Cls1"/>
        </owl:NamedIndividual>
     */
-
-    // --> ClassAssertion(<http://ex.com/bar#Cls1> <http://ex.com/foo#indivA>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLClassAssertionAxiom])
@@ -212,23 +158,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
         </owl:equivalentClass>
       </owl:Class>
     */
-    // -->   EquivalentClasses(<http://ex.com/bar#AllIndividualsCls> ObjectOneOf(<http://ex.com/foo#indivA> <http://ex.com/foo#indivB>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#AllProp1Cls1> ObjectAllValuesFrom(<http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#ComplementCls> ObjectComplementOf(<http://ex.com/bar#Cls1>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#DataAllIntGT10> DataAllValuesFrom(<http://ex.com/bar#dataProp2> DataRangeRestriction(xsd:integer facetRestriction(minInclusive "10"^^xsd:integer))) )
-    // -->   EquivalentClasses(<http://ex.com/bar#DataExact5Prop1> DataExactCardinality(5 <http://ex.com/bar#dataProp1> rdfs:Literal) )
-    // -->   EquivalentClasses(<http://ex.com/bar#DataHasVal5> DataHasValue(<http://ex.com/bar#dataProp2> "5"^^xsd:integer) )
-    // -->   EquivalentClasses(<http://ex.com/bar#DataMax2Prop1> DataMaxCardinality(2 <http://ex.com/bar#dataProp1> rdfs:Literal) )
-    // -->   EquivalentClasses(<http://ex.com/bar#DataMin3Prop1> DataMinCardinality(3 <http://ex.com/bar#dataProp1> rdfs:Literal) )
-    // -->   EquivalentClasses(<http://ex.com/bar#DataSomeIntLT20> DataSomeValuesFrom(<http://ex.com/bar#dataProp2> DataRangeRestriction(xsd:integer facetRestriction(maxExclusive "20"^^xsd:integer))) )
-    // -->   EquivalentClasses(<http://ex.com/bar#Exact5Prop1Cls1> ObjectExactCardinality(5 <http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#HasSelfProp1> ObjectHasSelf(<http://ex.com/bar#objProp1>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#HasValProp1IndivB> ObjectHasValue(<http://ex.com/bar#objProp1> <http://ex.com/foo#indivB>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#IntersectionCls> ObjectIntersectionOf(<http://ex.com/bar#Cls1> <http://ex.com/bar#Cls2>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#Max3Prop1Cls1> ObjectMaxCardinality(3 <http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#Min2Prop1Cls1> ObjectMinCardinality(2 <http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#SomeProp1Cls1> ObjectSomeValuesFrom(<http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>) )
-    // -->   EquivalentClasses(<http://ex.com/bar#UnionCls> ObjectUnionOf(<http://ex.com/bar#Cls1> <http://ex.com/bar#Cls2>) )
 
     val expectedNumberOfAxioms = 17
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLEquivalentClassesAxiom])
@@ -243,8 +172,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
           <rdfs:subClassOf rdf:resource="http://ex.com/bar#UnionCls"/>
       </owl:Class>
      */
-
-    // --> SubClassOf(<http://ex.com/bar#Cls1> <http://ex.com/bar#UnionCls>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLSubClassOfAxiom])
@@ -261,8 +188,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:DatatypeProperty>
     */
 
-    // --> FunctionalDataProperty(<http://ex.com/bar#dataProp1>)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLFunctionalDataPropertyAxiom])
 
@@ -275,9 +200,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
           <rdfs:domain rdf:resource="http://ex.com/bar#Cls1"/>
       </owl:DatatypeProperty>
     */
-
-    // --> DataPropertyDomain(<http://ex.com/bar#dataProp1> <http://ex.com/bar#Cls1>)
-    // --> DataPropertyDomain(<http://ex.com/bar#dataProp2> <http://ex.com/bar#Cls1>)
 
     val expectedNumberOfAxioms = 2
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDataPropertyDomainAxiom])
@@ -292,9 +214,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
           <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
       </owl:DatatypeProperty>
     */
-
-    // --> DataPropertyRange(<http://ex.com/bar#dataProp1> xsd:string)
-    // --> DataPropertyRange(<http://ex.com/bar#dataProp2> xsd:int)
 
     val expectedNumberOfAxioms = 2
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDataPropertyRangeAxiom])
@@ -312,8 +231,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:DatatypeProperty>
     */
 
-    // --> DisjointDataProperties(<http://ex.com/bar#dataProp1> <http://ex.com/bar#dataProp2> )
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDisjointDataPropertiesAxiom])
 
@@ -329,8 +246,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:DatatypeProperty>
     */
 
-    // --> EquivalentDataProperties(<http://ex.com/bar#dataProp1> <http://ex.com/bar#sameAsDataProp1> )
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLEquivalentDataPropertiesAxiom])
 
@@ -343,8 +258,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
           <rdfs:subPropertyOf rdf:resource="http://ex.com/bar#dataProp1"/>
        </owl:DatatypeProperty>
     */
-
-    // --> SubDataPropertyOf(<http://ex.com/bar#subDataProp1> <http://ex.com/bar#dataProp1>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLSubDataPropertyOfAxiom])
@@ -363,8 +276,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:NamedIndividual>
     */
 
-    // --> NegativeDataPropertyAssertion(<http://ex.com/bar#dataProp2> <http://ex.com/foo#indivA> "23"^^xsd:integer)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLNegativeDataPropertyAssertionAxiom])
 
@@ -378,8 +289,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
             </owl:hasKey>
        </owl:Class>
     */
-
-    // --> HasKey(<http://ex.com/bar#Cls1> () (<http://ex.com/bar#dataProp1> ))
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLHasKeyAxiom])
@@ -398,7 +307,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:NamedIndividual>
     */
 
-    // --> DifferentIndividuals(<http://ex.com/foo#indivA> <http://ex.com/foo#indivB> )
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDifferentIndividualsAxiom])
 
@@ -410,8 +318,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
             <owl:sameAs rdf:resource="http://ex.com/foo#sameAsIndivA"/>
        </owl:NamedIndividual>
     */
-
-    // --> SameIndividual(<http://ex.com/foo#indivA> <http://ex.com/foo#sameAsIndivA> )
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLSameIndividualAxiom])
@@ -431,8 +337,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
        </owl:NamedIndividual>
     */
 
-    // --> NegativeObjectPropertyAssertion(<http://ex.com/bar#Prop2> <http://ex.com/foo#indivB> <http://ex.com/foo#indivA>)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLNegativeObjectPropertyAssertionAxiom])
 
@@ -447,7 +351,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
        </owl:ObjectProperty>
     */
 
-    // --> DisjointObjectProperties(<http://ex.com/bar#objProp1> <http://ex.com/bar#objProp2> )
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLDisjointObjectPropertiesAxiom])
 
@@ -472,9 +375,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
        </owl:ObjectProperty>
     */
 
-    // --> EquivalentObjectProperties(<http://ex.com/bar#invObjProp1> ObjectInverseOf(<http://ex.com/bar#objProp1>) )
-    // --> EquivalentObjectProperties(<http://ex.com/bar#objProp1> <http://ex.com/bar#sameAsObjProp1> )
-
     val expectedNumberOfAxioms = 2
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLEquivalentObjectPropertiesAxiom])
     assert(filteredRDD.count() == expectedNumberOfAxioms)
@@ -491,9 +391,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
        </owl:ObjectProperty>
     */
 
-    // --> InverseObjectProperties(<http://ex.com/bar#invObjProp1> <http://ex.com/bar#objProp1>)
-    // --> InverseObjectProperties(ObjectInverseOf(<http://ex.com/bar#objProp1>) <http://ex.com/bar#objProp1>)
-
     val expectedNumberOfAxioms = 2
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLInverseObjectPropertiesAxiom])
     assert(filteredRDD.count() == expectedNumberOfAxioms)
@@ -504,8 +401,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
            <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
        </owl:ObjectProperty>
     */
-
-    // --> AsymmetricObjectProperty(<http://ex.com/bar#asymmObjProp>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLAsymmetricObjectPropertyAxiom])
@@ -519,8 +414,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
        </owl:ObjectProperty>
     */
 
-    // --> FunctionalObjectProperty(<http://ex.com/bar#objProp2>)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLFunctionalObjectPropertyAxiom])
 
@@ -532,8 +425,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
             <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
        </owl:ObjectProperty>
     */
-
-    // --> InverseFunctionalObjectProperty(<http://ex.com/bar#invObjProp1>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLInverseFunctionalObjectPropertyAxiom])
@@ -547,8 +438,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:ObjectProperty>
     */
 
-    // --> IrreflexiveObjectProperty(<http://ex.com/bar#objProp2>)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLIrreflexiveObjectPropertyAxiom])
 
@@ -560,8 +449,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
             <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ReflexiveProperty"/>
          </owl:ObjectProperty>
       */
-
-    // --> ReflexiveObjectProperty(<http://ex.com/bar#objProp1>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLReflexiveObjectPropertyAxiom])
@@ -575,8 +462,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
         </owl:ObjectProperty>
     */
 
-    // --> SymmetricObjectProperty(<http://ex.com/bar#objProp2>)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLSymmetricObjectPropertyAxiom])
 
@@ -588,8 +473,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
             <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
         </owl:ObjectProperty>
     */
-
-    // --> TransitiveObjectProperty(<http://ex.com/bar#objProp1>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLTransitiveObjectPropertyAxiom])
@@ -603,8 +486,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
       </owl:ObjectProperty>
     */
 
-    // --> ObjectPropertyDomain(<http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>)
-
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLObjectPropertyDomainAxiom])
 
@@ -616,8 +497,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
          <rdfs:range rdf:resource="http://ex.com/bar#AllIndividualsCls"/>
       </owl:ObjectProperty>
     */
-
-    // --> ObjectPropertyRange(<http://ex.com/bar#objProp1> <http://ex.com/bar#AllIndividualsCls>)
 
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLObjectPropertyRangeAxiom])
@@ -631,7 +510,6 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
         </owl:ObjectProperty>
     */
 
-    // --> SubObjectPropertyOf(<http://ex.com/bar#subObjProp1> <http://ex.com/bar#objProp1>)
     val expectedNumberOfAxioms = 1
     val filteredRDD = rdd.filter(axiom => axiom.isInstanceOf[OWLSubObjectPropertyOfAxiom])
 
@@ -645,4 +523,4 @@ class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext 
     assert(filteredRDD.count() == expectedNumberOfAxioms)
   }
 
-}
+ }
