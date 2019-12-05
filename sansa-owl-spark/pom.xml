@@ -25,25 +25,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- To remove warnings from xerec parser -->
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-            <version>2.7.2</version>
-            <scope>${my-scope}</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.parsers</groupId>
-            <artifactId>jaxp-ri</artifactId>
-            <version>1.4.5</version>
-        </dependency>
-
         <!-- Apache JENA 3.x-->
         <dependency>
             <groupId>org.apache.jena</groupId>
