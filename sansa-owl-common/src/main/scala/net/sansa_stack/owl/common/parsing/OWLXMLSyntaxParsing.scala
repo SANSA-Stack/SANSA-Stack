@@ -121,8 +121,6 @@ object OWLXMLSyntaxParsing extends Serializable {
 
         // get axioms from the loaded ontology
         val axioms: Set[OWLAxiom] = ontology.axioms().toScala[Set]
-        // axioms.foreach(println(_))
-
         axioms
 
       } else {
@@ -131,63 +129,6 @@ object OWLXMLSyntaxParsing extends Serializable {
       }
       extractedAxioms
     }
-
-    //    def makeAxiom(spark: SparkSession,
-    //                  dataPropertiesBC: Broadcast[Array[IRI]],
-    //                  objPropertiesBC: Broadcast[Array[IRI]],
-    //                  xmlString: String,
-    //                  prefixString: String,
-    //                  expression: String): OWLAxiomsRDD = {
-    //
-    //      // compose a string consisting of xml version, owlXml prefixes, owlXml expressions
-    //      val axiomString = xmlString + "\n" + prefixString + "\n" + expression + "\n" + "</rdf:RDF>"
-    //
-    //      // load an ontology from file
-    //      val ontology = try {
-    //        // load an ontology from an input stream
-    //        manager.loadOntologyFromOntologyDocument(new StringDocumentSource(axiomString))
-    //      } catch {
-    //        case e: OWLOntologyCreationException => null
-    //      }
-    //
-    //      val extractedAxioms = if (ontology!=null) {
-    //
-    //        // get the ontology format
-    //        val format = manager.getOntologyFormat(ontology)
-    //        val owlXmlFormat = new OWLXMLDocumentFormat
-    //
-    //        // copy all the prefixes from OWL document format to OWL XML format
-    //        if (format != null && format.isPrefixOWLDocumentFormat) {
-    //          owlXmlFormat.copyPrefixesFrom(format.asPrefixOWLDocumentFormat)
-    //        }
-    //
-    //        // get axioms from the loaded ontology
-    //        val axioms: Seq[OWLAxiom] = ontology.axioms().toScala[Seq]
-    //
-    //        try {
-    //          println("refined: \n")
-    //
-    //          val axiomsRDD: RDD[OWLAxiom] = spark.sparkContext.parallelize(axioms)
-    //
-    //          if (!axiomsRDD.isEmpty()) {
-    //
-    //
-    //            val refinedAxioms = refineOWLAxioms(spark.sparkContext, axiomsRDD)
-    //
-    //            refinedAxioms.foreach(println(_))
-    //            refinedAxioms
-    //          }
-    //          else null
-    //        } catch {
-    //            case e: NullPointerException => logger.warn("No axioms created" + ": " + e.getMessage)
-    //            null
-    //        }
-    //      } else {
-    //        //    logger.warn("No ontology was created for expression \n" + expression + "\n")
-    //        null
-    //      }
-    //      extractedAxioms
-    //    }
 
     /**
       * Trait to support the parsing of input OWL files in OWLXML syntax.

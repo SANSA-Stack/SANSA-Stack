@@ -11,7 +11,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model._
-import net.sansa_stack.owl.common.OWLSyntax
+
 import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
 import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing.OWLXMLSyntaxParsing
 
@@ -44,8 +44,6 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
 
     val sc = spark.sparkContext
 
-    var startTime = System.currentTimeMillis()
-
     // get RDD consisting of xmlVersion
     val xmlVersionRDD = owlRecordsRDD._1.first()
 
@@ -55,7 +53,7 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
     // get RDD consisting of owl expressions in owlXml syntax
     val owlExpressionsRDD: OWLExpressionsRDD = owlRecordsRDD._3
 
-    println("\nStart schema records parsing ........ ")
+    logger.info("Start schema records parsing ........ ")
 
     // for each owl expressions try to extract axioms in it,
     // if not print the corresponding expression for which axioms could not extracted using owl api
@@ -70,21 +68,12 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
     }).filter(_ != null)
       .persist(StorageLevel.MEMORY_AND_DISK)
 
-    val schemaAxiomsRdd = expr2Axiom.flatMap(x => x.toList.distinct.asJavaCollection.asScala)
-          //                          .persist(StorageLevel.MEMORY_AND_DISK)
-
-    var time = System.currentTimeMillis() - startTime
-
-    println("\nSchema done in " + time + " milliSeconds\n")
+    val schemaAxiomsRdd = expr2Axiom.flatMap(x => x.toList.asJavaCollection.asScala)
 
     val bc = broadcastProperties(spark.sparkContext, schemaAxiomsRdd)
     val dataBC = bc._1
     val objBC = bc._2
     val annBC = bc._3
-
-    startTime = System.currentTimeMillis()
-
-    println("\nStart instance records parsing ........ \n")
 
     var owlAxiomsRDD = schemaAxiomsRdd
 
@@ -92,18 +81,15 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
 
     val instanceRecords: Map[String, Map[String, String]] = assertionSyntaxParsing(owlAxiomsRDD)
 
-    startTime = System.currentTimeMillis()
-
-    val rdd = if (instanceRecords.size == 0) {
-
-      println("\nStart schema refinement phase ...... \n")
-
-      val refinedRDD = owlAxiomsRDD.map(axiom => RefineOWLAxioms.refineOWLAxiom(axiom, dataBC, objBC, annBC))
-                                   .filter(_ != null)
+    var rdd = if (instanceRecords.size == 0) {
+                  val refinedRDD = owlAxiomsRDD.map(axiom => RefineOWLAxioms.refineOWLAxiom(axiom, dataBC, objBC, annBC))
+                                               .filter(_ != null)
 
       refinedRDD
 
     } else {
+
+      logger.info("Start instance records parsing ........ ")
 
       val expression = new OWLXMLSyntaxExpressionBuilder(spark, filePath)
 
@@ -127,11 +113,7 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
         i = i + 1
       }
 
-      time = System.currentTimeMillis() - startTime
-
-      println("\nInstances done within " + time/1000 + " Seconds\n")
-
-      owlAxiomsRDD = expr2Axiom.flatMap(x => x.toList.distinct.asJavaCollection.asScala)
+      owlAxiomsRDD = expr2Axiom.flatMap(x => x.toList.asJavaCollection.asScala)
 
       expr2Axiom.unpersist(false)
 
@@ -141,11 +123,17 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
       refinedRDD
     }
 
-    time = System.currentTimeMillis() - startTime
+    rdd.persist(StorageLevel.MEMORY_AND_DISK)
+    rdd = rdd.repartition(4*parallelism).distinct(4*parallelism)
 
-    println("\nRefinement done within " + time/1000 + " Seconds\n")
+//    logger.info("\nNumber of parsed axioms is " + rdd.count() + "\n")
 
-    rdd.distinct(parallelism)
+//    rdd.coalesce(1, shuffle = true)
+//          .saveAsTextFile("/home/heba/Documents/PhD/LUBM_Benchmark/ParsedOntologies/Output")
+
+    rdd.unpersist(false)
+
+    rdd
  }
 
   def broadcastProperties (sc: SparkContext,
@@ -167,9 +155,9 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
                                        .map(a => a.getEntity.getIRI)
                                       . persist(StorageLevel.MEMORY_AND_DISK)
 
-    val data = dataProperties.collect()
-    val obj = objectProperties.collect()
-    val ann = annProperties.collect()
+    val data = dataProperties.repartition(2*parallelism).collect()
+    val obj = objectProperties.repartition(2*parallelism).collect()
+    val ann = annProperties.repartition(2*parallelism).collect()
 
     val dataPropertiesBC = sc.broadcast(data)
     val objPropertiesBC = sc.broadcast(obj)
