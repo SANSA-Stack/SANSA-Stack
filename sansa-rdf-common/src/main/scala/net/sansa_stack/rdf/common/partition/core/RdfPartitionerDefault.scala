@@ -95,7 +95,7 @@ object RdfPartitionerDefault
     v match {
       case w if (w == classOf[java.lang.Byte] || w == classOf[java.lang.Short] || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long]) => TripleLayoutLong
       case w if (w == classOf[java.lang.Float] || w == classOf[java.lang.Double]) => TripleLayoutDouble
-      case w if dtypeIri == XSD.date.getURI => TripleLayoutStringDate()
+      case w if dtypeIri == XSD.date.getURI => TripleLayoutStringDate
       // case w if(w == classOf[String]) => TripleLayoutString
       case w => TripleLayoutString
       // case _ => TripleLayoutStringDatatype

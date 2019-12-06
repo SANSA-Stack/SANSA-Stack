@@ -17,12 +17,12 @@ import org.apache.jena.graph.Triple
  *
  * @author Lorenz Buehmann
  */
-class TripleLayoutStringDate(val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("y-M-d"))
+object TripleLayoutStringDate
   extends TripleLayout {
   override def schema: Type = typeOf[SchemaStringDate]
 
   // this is a more error tolerant date parser also allowing 1999-5-5 etc.
-//  private val formatter = DateTimeFormatter.ofPattern("y-M-d")
+  private val formatter = DateTimeFormatter.ofPattern("y-M-d")
 
   override def fromTriple(t: Triple): SchemaStringDate = {
     val s = t.getSubject
@@ -37,6 +37,9 @@ class TripleLayoutStringDate(val formatter: DateTimeFormatter = DateTimeFormatte
   }
 }
 
+/*
 object TripleLayoutStringDate {
   def apply(formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("y-M-d")): TripleLayoutStringDate = new TripleLayoutStringDate(formatter)
 }
+ */
+
