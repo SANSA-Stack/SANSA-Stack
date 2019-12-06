@@ -4,7 +4,7 @@
 
 	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-datalake-parent_2.11</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<version>0.1.2</version>
 	<packaging>pom</packaging>
 
 	<name>SANSA Stack - DataLake Layer - Parent</name>
