@@ -23,7 +23,7 @@ object Main extends App {
     stopwatch.start()
 
     val run = new Run[DataFrame](executor)
-    run.application(queryFile, mappingsFile, configFile, executorID)
+    run.application(queryFile, mappingsFile, configFile)
 
     stopwatch.stop()
 

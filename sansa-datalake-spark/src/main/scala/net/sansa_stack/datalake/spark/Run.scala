@@ -16,7 +16,7 @@ class Run[A](executor: QueryExecutor[A]) {
 
   private var finalDataSet: A = _
 
-  def application(queryFile: String, mappingsFile: String, configFile: String, executorID: String): DataFrame = {
+  def application(queryFile: String, mappingsFile: String, configFile: String): DataFrame = {
 
     val logger = Logger("SANSA-DataLake")
 
