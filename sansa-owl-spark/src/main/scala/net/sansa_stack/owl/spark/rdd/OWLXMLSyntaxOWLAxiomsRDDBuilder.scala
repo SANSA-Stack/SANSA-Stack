@@ -3,8 +3,7 @@ package net.sansa_stack.owl.spark.rdd
 import scala.collection.JavaConverters._
 
 import com.typesafe.scalalogging.{Logger => ScalaLogger}
-import org.apache.log4j.{Level, Logger => Log4JLogger}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -13,7 +12,12 @@ import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model._
 
 import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
-import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing.OWLXMLSyntaxParsing
+
+/**
+  * An implementation for building RDD[OWLAxioms] out from OWL/XML syntax format
+  *
+  * @author Heba Mohamed
+  */
 
 object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
 
@@ -125,11 +129,6 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
 
     rdd.persist(StorageLevel.MEMORY_AND_DISK)
     rdd = rdd.repartition(4*parallelism).distinct(4*parallelism)
-
-//    logger.info("\nNumber of parsed axioms is " + rdd.count() + "\n")
-
-//    rdd.coalesce(1, shuffle = true)
-//          .saveAsTextFile("/home/heba/Documents/PhD/LUBM_Benchmark/ParsedOntologies/Output")
 
     rdd.unpersist(false)
 

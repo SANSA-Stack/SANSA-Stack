@@ -32,9 +32,6 @@ object OWLXMLSyntaxOWLExpressionsRDDBuilder {
 
 class OWLXMLSyntaxExpressionBuilder(spark: SparkSession, filePath: String) extends Serializable {
 
-  // define an empty RDD of generic type
-  private val owlRecordRDD : org.apache.spark.rdd.RDD[String] = spark.sparkContext.emptyRDD
-
   // get xml version string as an RDD
   private val xmlVersionRDD = getRecord(OWLXMLSyntaxParsing.OWLXMLSyntaxPattern("versionPattern"))
 
@@ -84,7 +81,7 @@ class OWLXMLSyntaxExpressionBuilder(spark: SparkSession, filePath: String) exten
 
     val unionOwlExpressionsRDD = for {
       (pattern, tags) <- owlRecordPatterns
-    } yield owlRecordRDD.union(getRecord(tags))
+    } yield (getRecord(tags))
 
     val owlExpressionsRDD = unionOwlExpressionsRDD.reduce(_ union _)
 

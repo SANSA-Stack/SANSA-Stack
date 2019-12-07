@@ -71,7 +71,7 @@ package object owl {
     def owlExpressions(syntax: Syntax.Value): String => OWLExpressionsRDD = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
-//      case Syntax.OWLXML => owlXml
+      case Syntax.OWLXML => owlXml
       case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
