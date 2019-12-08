@@ -1,20 +1,33 @@
 package net.sansa_stack.query.spark.hdt
 
-import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.Algebra
+import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.sparql.algebra.OpWalker
-import net.sansa_stack.rdf.spark.model.hdt._
 
-object Sparql2HDT {
+/**
+  * A SPARQL to SQL rewritter based on HDT schema.
+  *
+  * @author David Ibhaluobe, Gezim Sejdiu.
+  */
+object Sparql2SQL {
 
-  val ops = SparqlOpVisitor
-
-  def getHDTFilter(cond: Expr): String = {
+  /**
+    * Map FILTER conditions over HDT schema.
+    *
+    * @param cond a FILTER condition.
+    * @return a filter operator based on the HDT schema fields.
+    */
+  def filterHDT(cond: Expr): String =
     createFilterString(cond)
-  }
 
-  def getColumnName(value: String) = {
+  /**
+    * Return HDT column names.
+    *
+    * @param value one of SPO.
+    * @return HDT column name.
+    */
+  def getColumnName(value: String): String = {
     if (value.trim.equalsIgnoreCase("?S")) {
       "subjects_hdt.name"
     } else if (value.trim.equalsIgnoreCase("?P")) {
@@ -26,6 +39,12 @@ object Sparql2HDT {
     }
   }
 
+  /**
+    * Return a complete FILTER expression.
+    *
+    * @param cond a FILTER operator.
+    * @return a complete FILTER expression.
+    */
   def createFilterString(cond: Expr): String = {
     var fName = cond.getFunction.getFunctionName(null);
     val argsList = cond.getFunction.getArgs
@@ -37,12 +56,13 @@ object Sparql2HDT {
 
     } else if (fName.toUpperCase.trim.equals("SUBSTR")) {
 
-      if (argsList.size() == 2)
+      if (argsList.size() == 2) {
         s" substr(${getColumnName(argsList.get(0).toString)},${argsList.get(1).toString})"
-      else if (argsList.size() == 3)
+      }
+      else if (argsList.size() == 3) {
         s" substr(${getColumnName(argsList.get(0).toString)},${argsList.get(1).toString},${argsList.get(2).toString})"
-      else
-        ""
+      }
+      else ""
     } else if (fName.toUpperCase.trim.equals("STRENDS")) {
       s"${getColumnName(argsList.get(0).toString)} like '%${argsList.get(1).toString.replace("\"", "")}'"
       ""
@@ -95,24 +115,36 @@ object Sparql2HDT {
 
   }
 
+  /**
+    * Check if COUNT clause is present on SPARQL query.
+    *
+    * @return true if present, false otherwise.
+    */
   def isCountEnabled(): Boolean = {
-    var status = false
-    for (i <- 0 to ops.aggregatorList.size() - 1) {
-      if (ops.aggregatorList.get(i).getAggregator.getName.equalsIgnoreCase("COUNT")) {
-        status = true;
+    var found = false
+    for (i <- 0 to SparqlOpVisitor.aggregatorList.size() - 1) {
+      if (SparqlOpVisitor.aggregatorList.get(i).getAggregator.getName.equalsIgnoreCase("COUNT")) {
+        found = true;
       }
     }
-    status
+    found
   }
 
-  def getProjectionFields() = {
+  /**
+    * A solution sequence which is transformed into
+    * one involving only a subset of the variables
+    * present into SPARQL query.
+    *
+    * @return a projection fields.
+    */
+  def getProjectionFields(): String = {
     var result = ""
 
     if (isCountEnabled) {
       result = " count(*) "
     } else {
-      for (i <- 0 to ops.varList.size() - 1) {
-        val name = ops.varList.get(i).getVarName
+      for (i <- 0 to SparqlOpVisitor.varList.size() - 1) {
+        val name = SparqlOpVisitor.varList.get(i).getVarName
 
         if (name.equalsIgnoreCase("S")) {
           result += s"subjects_hdt.name as subject, "
@@ -127,35 +159,40 @@ object Sparql2HDT {
     result.reverse.replaceFirst(",", "").reverse
   }
 
+  /**
+    * Map WHERE conditions into clauses.
+    *
+    * @return a SQL WHERE clause using HDT schema.
+    */
   def getWhereCondition(): String = {
     var tempStr = ""
-    for (i <- 0 to ops.whereCondition.size() - 1) {
-      if (!ops.optional.get(i)) {
-        if (!ops.subjects.get(i).toString().toLowerCase().contains("?s")) {
-          tempStr += s" subjects_hdt.name='${ops.subjects.get(i)}' and"
+    for (i <- 0 to SparqlOpVisitor.whereCondition.size() - 1) {
+      if (!SparqlOpVisitor.optional.get(i)) {
+        if (!SparqlOpVisitor.subjects.get(i).toString().toLowerCase().contains("?s")) {
+          tempStr += s" subjects_hdt.name='${SparqlOpVisitor.subjects.get(i)}' and"
         }
-        if (!ops.objects.get(i).toString().toLowerCase().contains("?o")) {
-          tempStr += s" objects_hdt.name='${ops.objects.get(i)}' and"
+        if (!SparqlOpVisitor.objects.get(i).toString().toLowerCase().contains("?o")) {
+          tempStr += s" objects_hdt.name='${SparqlOpVisitor.objects.get(i)}' and"
         }
-        if (!ops.predicates.get(i).toString().toLowerCase().contains("?p")) {
-          tempStr += s" predicates_hdt.name='${ops.predicates.get(i)}' and"
+        if (!SparqlOpVisitor.predicates.get(i).toString().toLowerCase().contains("?p")) {
+          tempStr += s" predicates_hdt.name='${SparqlOpVisitor.predicates.get(i)}' and"
         }
       }
     }
     tempStr = tempStr.reverse.replaceFirst("dna", "").reverse
 
-    if (ops.optional.contains(true)) {
-      for (i <- 0 to ops.whereCondition.size() - 1) {
-        if (ops.optional.get(i)) {
+    if (SparqlOpVisitor.optional.contains(true)) {
+      for (i <- 0 to SparqlOpVisitor.whereCondition.size() - 1) {
+        if (SparqlOpVisitor.optional.get(i)) {
           tempStr += " or ( "
-          if (!ops.subjects.get(i).toString().toLowerCase().contains("?s")) {
-            tempStr += s" subjects_hdt.name='${ops.subjects.get(i)}' and"
+          if (!SparqlOpVisitor.subjects.get(i).toString().toLowerCase().contains("?s")) {
+            tempStr += s" subjects_hdt.name='${SparqlOpVisitor.subjects.get(i)}' and"
           }
-          if (!ops.objects.get(i).toString().toLowerCase().contains("?o")) {
-            tempStr += s" objects_hdt.name='${ops.objects.get(i)}' and"
+          if (!SparqlOpVisitor.objects.get(i).toString().toLowerCase().contains("?o")) {
+            tempStr += s" objects_hdt.name='${SparqlOpVisitor.objects.get(i)}' and"
           }
-          if (!ops.predicates.get(i).toString().toLowerCase().contains("?p")) {
-            tempStr += s" predicates_hdt.name='${ops.predicates.get(i)}' and"
+          if (!SparqlOpVisitor.predicates.get(i).toString().toLowerCase().contains("?p")) {
+            tempStr += s" predicates_hdt.name='${SparqlOpVisitor.predicates.get(i)}' and"
           }
           tempStr = tempStr.reverse.replaceFirst("dna", "").reverse
           tempStr += " )"
@@ -163,22 +200,32 @@ object Sparql2HDT {
       }
     }
 
-    if (tempStr.length > 5) { s" where (${tempStr})" }
-    else { " where 1=1 " }
+    if (tempStr.length > 5) {
+      s" where (${tempStr})"
+    }
+    else {
+      " where 1=1 "
+    }
 
   }
 
+
+  /**
+    * Get DISTINCT clauses.
+    *
+    * @return a DISTINCT clause mapped to HDT schema.
+    */
   def getDistinct(): String = {
-    if (ops.isDistinctEnabled) {
+    if (SparqlOpVisitor.isDistinctEnabled) {
 
       var groupBy = ""
-      for (i <- 0 to ops.varList.size() - 1) {
-        if (ops.subjects.contains(ops.varList.get(i))) {
+      for (i <- 0 to SparqlOpVisitor.varList.size() - 1) {
+        if (SparqlOpVisitor.subjects.contains(SparqlOpVisitor.varList.get(i))) {
           groupBy += s"subjects_hdt.name, "
-        } else if (ops.objects.contains(ops.varList.get(i))) {
+        } else if (SparqlOpVisitor.objects.contains(SparqlOpVisitor.varList.get(i))) {
           groupBy += s"objects_hdt.name, "
 
-        } else if (ops.predicates.contains(ops.varList.get(i))) {
+        } else if (SparqlOpVisitor.predicates.contains(SparqlOpVisitor.varList.get(i))) {
           groupBy += s"predicates_hdt.name, "
         }
       }
@@ -188,35 +235,47 @@ object Sparql2HDT {
     }
   }
 
+  /**
+    * Get FILTER expression
+    *
+    * @return a FILTER condition
+    */
   def getFilterCondition(): String = {
     var strCondition = ""
     var logicalOp = ""
 
-    for (i <- 0 to ops.filters.size() - 1) {
-      val cond = getHDTFilter(ops.filters.get(i));
+    for (i <- 0 to SparqlOpVisitor.filters.size() - 1) {
+      val cond = filterHDT(SparqlOpVisitor.filters.get(i));
       if (cond.length > 2) {
         strCondition += cond + " and "
       }
 
     }
-
     strCondition = strCondition.reverse.replaceFirst("dna", "").reverse
-    println(strCondition)
     if (strCondition.length > 5) s" ${strCondition}" else " 1=1"
   }
 
-  def getQuery(queryStr: String) = {
 
-    ops.reset
+  /**
+    * Return SQL query rewritten from SPARQL query and
+    * mapped into HDT partition.
+    *
+    * @param queryStr a SPARQL query string.
+    * @return SQL query.
+    */
+  def getQuery(queryStr: String): String = {
+    SparqlOpVisitor.reset
 
     val query = QueryFactory.create(queryStr)
     val op = Algebra.compile(query)
-    OpWalker.walk(op, ops)
-    val result = s"select ${getProjectionFields()}from hdt inner join subjects_hdt on hdt.s=subjects_hdt.index" +
+    OpWalker.walk(op, SparqlOpVisitor)
+
+    val sql = s"select ${getProjectionFields()}from hdt inner join subjects_hdt on hdt.s=subjects_hdt.index" +
       s" inner join objects_hdt on hdt.o=objects_hdt.index" +
       s" inner join predicates_hdt on hdt.p=predicates_hdt.index" +
       s" ${getWhereCondition()} and ${getFilterCondition()} ${getDistinct()}"
-    result
+
+    sql
   }
 
 }

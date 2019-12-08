@@ -2,15 +2,15 @@ package net.sansa_stack.query.spark.hdt
 
 import java.util
 
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.algebra.OpVisitor
 import org.apache.jena.sparql.algebra.op._
-import org.apache.jena.sparql.core.{ Quad, Var }
-import org.apache.jena.sparql.expr.{ Expr, ExprAggregator }
+import org.apache.jena.sparql.core.{Quad, Var}
+import org.apache.jena.sparql.expr.ExprAggregator
 
 /**
- * @author David Ibhaluobe, Gezim Sejdiu
- */
+  * @author David Ibhaluobe, Gezim Sejdiu
+  */
 object SparqlOpVisitor extends OpVisitor {
 
   val whereCondition = new util.ArrayList[Triple]()
