@@ -1,8 +1,6 @@
 package net.sansa_stack.rdf.spark.model.hdt
 
-import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Triple
-import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ DataFrame, Row, SaveMode, SparkSession }
 import org.apache.spark.sql.types.{ LongType, StringType, StructField, StructType }
@@ -19,8 +17,8 @@ object TripleOps {
     StructType(
       Seq(
         StructField(name = "s", dataType = StringType, nullable = false),
-        StructField(name = "p", dataType = StringType, nullable = false),
-        StructField(name = "o", dataType = StringType, nullable = false)))
+        StructField(name = "o", dataType = StringType, nullable = false),
+        StructField(name = "p", dataType = StringType, nullable = false)))
   }
 
   /**
@@ -35,11 +33,11 @@ object TripleOps {
   }
 
   /**
-   * Function converts RDD[graph.Triple] to DataFrame [Subject,Object,Predicate] by extracting SOP  value from each record
+   * Function converts RDD[graph.Triple] to DataFrame [Subject,Object,Predicate] by extracting SOP value from each record
    * @param triple: Input raw RDD[graph.Triple]
    * @return Returns DataFrame [Subject,Object,Predicate]
    */
-  def asHDT(triple: RDD[Triple]): DataFrame = {
+  def makeHDT(triple: RDD[Triple]): DataFrame = {
     spark.createDataFrame(triple.map(t => Row(t.getSubject.toString, t.getObject.toString(), t.getPredicate.toString())), hdtSchema)
   }
 
@@ -49,7 +47,7 @@ object TripleOps {
    * @return DataFrame Subject dictionary of [index,subject]
    */
   def getDistinctSubjectDictDF(triples: RDD[Triple]): DataFrame = {
-    spark.createDataFrame(triples.map(_.getSubject.toString()).distinct().zipWithIndex().map(t => Row(t._1, t._2)), dictionarySchema).cache()
+    spark.createDataFrame(triples.map(_.getSubject.toString()).distinct().zipWithIndex().map(t => Row(t._1, t._2)), dictionarySchema)
   }
 
   /**
@@ -58,7 +56,7 @@ object TripleOps {
    * @return DataFrame Predicate dictionary of [index,Prediate]
    */
   def getDistinctPredicateDictDF(triples: RDD[Triple]): DataFrame = {
-    spark.createDataFrame(triples.map(_.getPredicate.toString()).distinct().zipWithIndex().map(t => Row(t._1, t._2)), dictionarySchema).cache()
+    spark.createDataFrame(triples.map(_.getPredicate.toString()).distinct().zipWithIndex().map(t => Row(t._1, t._2)), dictionarySchema)
   }
 
   /**
@@ -67,19 +65,18 @@ object TripleOps {
    * @return DataFrame Object dictionary of [index , object]
    */
   def getDistinctObjectDictDF(triples: RDD[Triple]): DataFrame = {
-    spark.createDataFrame(triples.map(_.getObject.toString()).distinct().zipWithIndex().map(t => Row(t._1, t._2)), dictionarySchema).cache()
+    spark.createDataFrame(triples.map(_.getObject.toString()).distinct().zipWithIndex().map(t => Row(t._1, t._2)), dictionarySchema)
   }
 
   /**
-   * This is key function of TripleOps that read RDF file and create Dictionaries and Index Table and register them as Spark In memory Table
-   * @param input Input RDF File Path [Either One of the input is require]
-   * @param compressedDir Input compressed-directory Path to read compressed data directly [Either One of the input is require]
-   * @param registerAsTable If true, it register all the DF as Spark table
-   * @return Returns the Tuple4 [IndexDataFrame,SubjectDictDataFrame,ObjectDictDataFrame,PredicateDictDataFrame]
-   */
-  def getHDT(triples: RDD[Triple]): DataFrame = {
+    * Convert an RDD of triples into a DataFrame of hdt.
+    *
+    * @param triples RDD of triples.
+    * @return a DataFrame of hdt triples.
+    */
+  def asHDT(triples: RDD[Triple]): DataFrame = {
 
-    val hdtDF = asHDT(triples)
+    val hdtDF = makeHDT(triples)
 
     val object_hdt = getDistinctObjectDictDF(triples).createOrReplaceTempView("objects_hdt")
     val predicate_hdt = getDistinctPredicateDictDF(triples).createOrReplaceTempView("predicates_hdt")

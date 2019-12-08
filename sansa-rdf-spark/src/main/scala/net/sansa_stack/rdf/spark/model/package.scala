@@ -280,22 +280,12 @@ package object model {
     import net.sansa_stack.rdf.spark.model.hdt.TripleOps
 
     /**
-     * Convert an RDD of triples into a DataFrame of hdt.
-     * @return a DataFrame of hdt triples.
-     * @see [[net.sansa_stack.rdf.spark.model.hdt.TripleOps.hdtToDF]]
-     */
+      * Convert an RDD of triples into a DataFrame of hdt.
+      *
+      * @return a DataFrame of hdt triples.
+      */
     def asHDT(): DataFrame =
       TripleOps.asHDT(triples)
-
-    /**
-     * This is key function of TripleOps that read RDF file and create Dictionaries and Index Table and register them as Spark In memory Table
-     * @param input Input RDF File Path [Either One of the input is require]
-     * @param compressedDir Input compressed-directory Path to read compressed data directly [Either One of the input is require]
-     * @param registerAsTable If true, it register all the DF as Spark table
-     * @return Returns the Tuple4 [IndexDataFrame,SubjectDictDataFrame,ObjectDictDataFrame,PredicateDictDataFrame]
-     */
-    def getHDT(): DataFrame =
-      TripleOps.getHDT(triples)
 
   }
 
