@@ -46,7 +46,7 @@ object Sparql2SQL {
     * @return a complete FILTER expression.
     */
   def createFilterString(cond: Expr): String = {
-    var fName = cond.getFunction.getFunctionName(null);
+    var fName = cond.getFunction.getFunctionName(null)
     val argsList = cond.getFunction.getArgs
 
     if (fName.trim.equals("strstarts")) {
@@ -124,7 +124,7 @@ object Sparql2SQL {
     var found = false
     for (i <- 0 to SparqlOpVisitor.aggregatorList.size() - 1) {
       if (SparqlOpVisitor.aggregatorList.get(i).getAggregator.getName.equalsIgnoreCase("COUNT")) {
-        found = true;
+        found = true
       }
     }
     found
@@ -245,7 +245,7 @@ object Sparql2SQL {
     var logicalOp = ""
 
     for (i <- 0 to SparqlOpVisitor.filters.size() - 1) {
-      val cond = filterHDT(SparqlOpVisitor.filters.get(i));
+      val cond = filterHDT(SparqlOpVisitor.filters.get(i))
       if (cond.length > 2) {
         strCondition += cond + " and "
       }
