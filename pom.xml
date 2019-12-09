@@ -16,8 +16,7 @@
 	<description>SANSA OWL is a library to read OWL files into Spark or Flink.
         It allows files to reside in HDFS as well as in a local file system and distributes them across Spark
         RDDs/Datasets or Flink DataSets.
-    </description>
-
+  </description>
 	<organization>
 		<name>Smart Data Analytics (SDA) research group</name>
 		<url>http://sda.tech</url>
@@ -48,6 +47,17 @@
 			<email>pwestphal@informatik.uni-leipzig.de</email>
 			<organization>AKSW, Department of Computer Science, University of Leipzig</organization>
 			<organizationUrl>http://www.aksw.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
+    <developer>
+			<id>heba</id>
+			<name>Heba Mohamed</name>
+			<email>hmohamed@uni-bonn.de</email>
+			<organization>Computer Science Institute, University of Bonn</organization>
+			<organizationUrl>http://sda.tech</organizationUrl>
 			<roles>
 				<role>developer</role>
 			</roles>
@@ -137,5 +147,4 @@
 			</properties>
 		</profile>
 	</profiles>
-
 </project>

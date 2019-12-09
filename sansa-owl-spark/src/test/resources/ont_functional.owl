@@ -8,7 +8,7 @@ Ontology(<http://ex.com/ont/sample1.owl>
 #Import(<http://www.example.com/my/2.0>)
 # annotations
 Annotation(foo:hasName "Name")
-    Annotation(bar:hasTitle "Title")
+Annotation(bar:hasTitle "Title")
 Annotation(:description "A longer
 description running over
 several lines")

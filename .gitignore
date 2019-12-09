@@ -1,5 +1,6 @@
 *.class
 *.log
+catalog-v001.xml
 
 pom.xml.versionsBackup
 

@@ -24,13 +24,14 @@ package object owl {
   implicit class OWLAxiomReader(spark: SparkSession) {
 
     /**
-     * Load RDF data into a `RDD[OWLAxiom]. Currently, only functional and manchester syntax are supported
+     * Load RDF data into a RDD[OWLAxiom]. Currently, only functional and manchester syntax are supported
      * @param syntax of the OWL (functional or manchester)
      * @return a [[OWLAxiomsRDD]]
      */
     def owl(syntax: Syntax.Value): String => OWLAxiomsRDD = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
+      case Syntax.OWLXML => owlXml
       case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
@@ -49,19 +50,28 @@ package object owl {
     def manchester: String => OWLAxiomsRDD = path => {
       ManchesterSyntaxOWLAxiomsRDDBuilder.build(spark, path)
     }
+    /**
+      * Load OWL data in OWL/XML syntax into an [[RDD]][OWLAxiom].
+      * @return the [[OWLAxiomsRDD]]
+      */
+
+    def owlXml: String => OWLAxiomsRDD = path => {
+      OWLXMLSyntaxOWLAxiomsRDDBuilder.build(spark, path)
+    }
 
   }
 
   implicit class OWLExpressionsRDDReader(spark: SparkSession) {
 
   /**
-     * Load RDF data into a `RDD[String]. Currently, only functional and manchester syntax are supported
-     * @param syntax of the OWL (functional or manchester)
+     * Load RDF data into a RDD[String]. Currently, only functional, manchester and OWLXML syntax are supported
+     * @param syntax of the OWL (functional or manchester or OWLXML)
      * @return a [[OWLExpressionsRDD]]
      */
     def owlExpressions(syntax: Syntax.Value): String => OWLExpressionsRDD = syntax match {
       case Syntax.FUNCTIONAL => functional
       case Syntax.MANCHESTER => manchester
+      case Syntax.OWLXML => owlXml
       case _ => throw new IllegalArgumentException(s"${syntax} syntax not supported yet!")
     }
 
@@ -79,6 +89,14 @@ package object owl {
      */
     def manchester: String => OWLExpressionsRDD = path => {
       ManchesterSyntaxOWLExpressionsRDDBuilder.build(spark, path)
+    }
+
+    /**
+      * Load OWL data in OWLXML syntax into an [[RDD]][String].
+      * @return the [[OWLExpressionsRDD]]
+      */
+    def owlXml: String => OWLExpressionsRDD = path => {
+      OWLXMLSyntaxOWLExpressionsRDDBuilder.build(spark, path)._3
     }
 
   }
