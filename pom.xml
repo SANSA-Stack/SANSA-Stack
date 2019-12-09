@@ -761,6 +761,13 @@
 				<artifactId>jackson-module-scala_2.11</artifactId>
 				<version>2.10.1</version>
 			</dependency>
+
+			<!-- slf4j Logger dependencies -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.26</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
