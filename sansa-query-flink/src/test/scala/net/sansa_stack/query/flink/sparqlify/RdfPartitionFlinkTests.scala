@@ -16,9 +16,9 @@ import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
 import org.aksw.jena_sparql_api.views.RestrictedExpr
 import org.aksw.sparqlify.util.SparqlifyCoreInit
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
-import org.apache.flink.table.api.TableEnvironment
+import org.apache.flink.table.api.scala.BatchTableEnvironment
 import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.query.{ Query, ResultSetFormatter}
+import org.apache.jena.query.{Query, ResultSetFormatter}
 import org.scalatest._
 
 class TestRdfPartitionFlink extends FlatSpec {
@@ -47,7 +47,8 @@ class TestRdfPartitionFlink extends FlatSpec {
     env.getConfig.registerKryoType(classOf[Array[org.apache.jena.graph.Triple]])
     env.getConfig.registerKryoType(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
 
-    val flinkTable = TableEnvironment.getTableEnvironment(env)
+    val fbEnv = ExecutionEnvironment.getExecutionEnvironment
+    val flinkTable = BatchTableEnvironment.create(fbEnv)
 
     val serializer = new SerializerModel()
     Generator.init(Array[String]())
