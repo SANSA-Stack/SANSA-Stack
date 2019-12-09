@@ -9,4 +9,4 @@ script:
 - mvn scalastyle:check
 - mvn test
 jdk:
-- oraclejdk8
+- oraclejdk9
