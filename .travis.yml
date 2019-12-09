@@ -8,3 +8,5 @@ scala:
 script:
 - mvn scalastyle:check
 - mvn test
+jdk:
+- oraclejdk8
