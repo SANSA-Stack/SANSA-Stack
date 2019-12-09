@@ -30,3 +30,4 @@ deptree.txt
 tmp
 
 scalastyle-output.xml
+*.swp
