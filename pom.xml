@@ -121,14 +121,11 @@
 
 			<!-- Miscellaneous -->
 
-			<!-- Is this still needed? Claus 2019-06-12 -->
-<!-- Commented out for testing ~ Claus 2019-12-09
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-compress</artifactId>
 				<version>1.18</version>
 			</dependency>
--->
 
 			<!-- Datalake (used in sansa-query) -->
 			<dependency>
