@@ -43,7 +43,7 @@ class QueryExecutionSparqlifyFlink(
     result
   }
 
-  override def setInitialBinding(binding: Binding): Unit = throw new UnsupportedOperationException
+  // override def setInitialBinding(binding: Binding): Unit = throw new UnsupportedOperationException
 
   override def getTimeout1(): Long = -1
 
