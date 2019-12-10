@@ -51,7 +51,7 @@
 		<hadoop.version>2.8.1</hadoop.version>
 		<hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
-		<jena.version>3.13.1</jena.version>
+		<jena.version>3.11.0</jena.version>
 		<jsa.subversion>1</jsa.subversion>
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
