@@ -10,16 +10,18 @@ import play.api.libs.json.{__, Json, Reads}
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, HashMap, ListBuffer, MultiMap, Set}
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
-/**
-  * Created by mmami on 06.07.17.
-  */
+
 class Planner(stars: mutable.HashMap[String, mutable.Set[(String, String)]] with mutable.MultiMap[String, (String, String)]) {
 
     val logger = Logger("SANSA-DataLake")
 
-    def getNeededPredicates(star_predicate_var: mutable.HashMap[(String, String), String], joins: ArrayListMultimap[String, (String, String)], select_vars: util.List[String], groupBys: (ListBuffer[String], mutable.Set[(String, String)]), prefixes: Map[String, String]) : (mutable.Set[String], mutable.Set[(String, String)]) = {
+    def getNeededPredicates(star_predicate_var: mutable.HashMap[(String, String), String],
+                            joins: ArrayListMultimap[String, (String, String)],
+                            select_vars: util.List[String],
+                            groupBys: (ListBuffer[String], mutable.Set[(String, String)]),
+                            prefixes: Map[String, String]) : (mutable.Set[String], mutable.Set[(String, String)]) = {
 
         logger.info("star_predicate_var: " + star_predicate_var)
         val predicates : mutable.Set[String] = mutable.Set.empty

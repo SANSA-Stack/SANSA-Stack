@@ -5,17 +5,12 @@ import java.util
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
 import net.sansa_stack.datalake.spark.utils.Helpers._
-import net.sansa_stack.datalake.spark.utils.Helpers._
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.syntax.{ElementFilter, ElementVisitorBase, ElementWalker}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
+import scala.collection.mutable.ListBuffer
 
-
-/**
-  * Created by mmami on 05.07.17.
-  */
 
 class QueryAnalyser(query: String) {
 

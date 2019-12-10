@@ -6,10 +6,9 @@ import com.google.common.collect.ArrayListMultimap
 import com.mongodb.spark.config.ReadConfig
 import com.typesafe.scalalogging.Logger
 import net.sansa_stack.datalake.spark.utils.Helpers._
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{AnalysisException, Column, DataFrame, SparkSession}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
-
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable

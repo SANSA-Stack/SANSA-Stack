@@ -5,7 +5,8 @@ import java.util
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
 import scala.collection.mutable
-import scala.collection.mutable.{HashMap, ListBuffer, Set}
+import scala.collection.mutable.ListBuffer
+
 
 trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
 

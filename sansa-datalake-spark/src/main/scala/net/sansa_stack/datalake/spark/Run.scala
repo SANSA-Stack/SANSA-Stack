@@ -4,9 +4,7 @@ import java.io.FileNotFoundException
 
 import com.typesafe.scalalogging.Logger
 import net.sansa_stack.datalake.spark.utils.Helpers._
-import org.apache.commons.lang.time.StopWatch
 import org.apache.spark.sql.DataFrame
-
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

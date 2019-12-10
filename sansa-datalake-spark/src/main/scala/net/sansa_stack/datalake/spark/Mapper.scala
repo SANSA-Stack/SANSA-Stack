@@ -1,17 +1,15 @@
 package net.sansa_stack.datalake.spark
 
-import com.typesafe.scalalogging.Logger
 import java.io.ByteArrayInputStream
 
+import com.typesafe.scalalogging.Logger
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.util.FileManager
-import org.apache.spark.sql.AnalysisException
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+
 
 class Mapper (mappingsFile: String) {
 
