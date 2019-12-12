@@ -1,16 +1,10 @@
 package net.sansa_stack.examples.spark.query
 
-import java.io.IOException
-import java.nio.file.{ Files, FileVisitResult, Path, Paths, SimpleFileVisitor }
-import java.nio.file.attribute.BasicFileAttributes
-
+import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition._
-import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.query.spark.semantic.QuerySystem
 
 /**
  * Run SPARQL queries over Spark using Semantic partitioning approach.

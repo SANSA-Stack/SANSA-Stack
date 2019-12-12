@@ -1,12 +1,10 @@
 package net.sansa_stack.examples.spark.inference.axioms
 
-import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }
+import net.sansa_stack.inference.rules.ReasoningProfile
 import net.sansa_stack.inference.rules.ReasoningProfile._
-import net.sansa_stack.inference.spark.forwardchaining.axioms.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner }
+import net.sansa_stack.inference.spark.forwardchaining.axioms.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
 import net.sansa_stack.owl.spark.owl._
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.semanticweb.owlapi.model.OWLAxiom
 
 object RDFGraphInference {
 
@@ -49,9 +47,9 @@ object RDFGraphInference {
   }
 
   case class Config(
-    in: String = "",
-    profile: ReasoningProfile = ReasoningProfile.RDFS,
-    parallelism: Int = 4)
+                     in: String = "",
+                     profile: ReasoningProfile = ReasoningProfile.RDFS,
+                     parallelism: Int = 4)
 
   // read ReasoningProfile enum
   implicit val profilesRead: scopt.Read[ReasoningProfile.Value] =

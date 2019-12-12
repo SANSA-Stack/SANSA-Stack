@@ -1,7 +1,6 @@
 package net.sansa_stack.examples.spark.owl
 
 import net.sansa_stack.owl.spark.owl._
-
 import org.apache.spark.sql.SparkSession
 
 
