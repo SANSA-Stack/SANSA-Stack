@@ -100,7 +100,7 @@ object VerticalPartitioner {
       val ont = man.loadOntologyFromOntologyDocument(IRI.create(config.schemaPath))
       // get all object properties in schema file
       val objectProperties = ont.asInstanceOf[HasObjectPropertiesInSignature].getObjectPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
-      // get all object properties in schema file
+      // get all data properties in schema file
       val dataProperties = ont.asInstanceOf[HasDataPropertiesInSignature].getDataPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
       val schemaProperties = objectProperties ++ dataProperties ++ Set(RDF.`type`.getURI)
       // filter triples RDD
