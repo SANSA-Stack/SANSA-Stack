@@ -1,14 +1,22 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>net.sansa-stack</groupId>
 	<artifactId>sansa-datalake-parent_2.11</artifactId>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent</artifactId>
+		<version>0.6.1-SNAPSHOT</version>
+	</parent>
+
 	<version>0.1.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>SANSA Stack - DataLake Layer - Parent</name>
-	<description>A library to query heterogeneous data source uniformly using SPARQL</description>
+	<description>A library to query heterogeneous data sources uniformly using SPARQL</description>
 	<url>https://github.com/SANSA-Stack/SANSA-DataLake</url>
 	<inceptionYear>2015</inceptionYear>
 
@@ -16,21 +24,6 @@
 		<name>Smart Data Analytics (SDA) research group</name>
 		<url>http://sda.tech</url>
 	</organization>
-
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<encoding>UTF-8</encoding>
-
-		<scala.version>2.11.11</scala.version>
-		<scala.binary.version>2.11</scala.binary.version>
-		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
-
-		<spark.version>2.4.4</spark.version>
-		<jena.version>3.9.0</jena.version>
-
-		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
-	</properties>
 
 	<scm>
 		<url>https://github.com/SANSA-Stack/SANSA-DataLake</url>
