@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-datalake-parent_2.11</artifactId>
-		<version>0.1.1</version>
+		<version>0.1.2</version>
 	</parent>
 
 	<dependencies>
@@ -19,27 +19,6 @@
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-sql_${scala.binary.version}</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-streaming_${scala.binary.version}</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-mllib_2.11</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- Test -->
@@ -73,7 +52,7 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<!-- JENA API -->
+		<!-- Jena API -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
@@ -105,7 +84,7 @@
 			<artifactId>play_${scala.binary.version}</artifactId>
 		</dependency>
 
-		<!-- Connector dependencies -->
+		<!-- Spark Connectors -->
 		<dependency>
 			<groupId>com.datastax.spark</groupId>
 			<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
@@ -137,7 +116,7 @@
 			<version>1.9.6</version>
 		</dependency>
 
-		<!-- Loggings -->
+		<!-- Logging -->
 		<dependency>
           <groupId>com.typesafe.scala-logging</groupId>
           <artifactId>scala-logging_${scala.binary.version}</artifactId>
@@ -164,5 +143,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

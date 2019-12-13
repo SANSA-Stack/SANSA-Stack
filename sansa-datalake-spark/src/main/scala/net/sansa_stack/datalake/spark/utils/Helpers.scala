@@ -3,9 +3,11 @@ package net.sansa_stack.datalake.spark.utils
 import java.io.ByteArrayInputStream
 import java.util
 
+import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
+
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -64,6 +66,51 @@ object Helpers {
         val rtrn = dataType(dataType.length-1)
 
         rtrn
+    }
+
+    def getSelectColumnsFromSet(pred_attr: mutable.HashMap[String, String],
+                                star: String,
+                                prefixes: Map[String, String],
+                                select: util.List[String],
+                                star_predicate_var: mutable.HashMap[(String, String), String],
+                                neededPredicates: mutable.Set[String],
+                                filters: ArrayListMultimap[String, (String, String)]
+                               ): String = {
+
+        var columns = ""
+        var i = 0
+
+        for (v <- pred_attr) {
+            val attr = v._2
+            val ns_predicate = Helpers.get_NS_predicate(v._1)
+
+            val ns_predicate_bits = ns_predicate
+            val NS = ns_predicate_bits._1
+            val predicate = ns_predicate_bits._2
+
+            val objVar = star_predicate_var(("?" + star, "<" + NS + predicate + ">"))
+
+            logger.info("-> Variable: " + objVar + " exists in WHERE, is it in SELECT? " + select.contains(objVar.replace("?", "")))
+
+            if (neededPredicates.contains(v._1)) {
+                val c = " `" + attr + "` AS `" + star + "_" + predicate + "_" + prefixes(NS) + "`"
+
+                if (i == 0) columns += c else columns += "," + c
+                i += 1
+            }
+
+            if (filters.keySet().contains(objVar)) {
+                val c = " `" + attr + "` AS `" + star + "_" + predicate + "_" + prefixes(NS) + "`"
+
+                if (!columns.contains(c)) { // if the column has already been added from the SELECT predicates
+                    if (i == 0) columns += c else columns += "," + c
+                    i += 1
+                }
+
+            }
+        }
+
+        columns
     }
 
     def getSelectColumnsFromSet(pred_attr: mutable.HashMap[String, String],
@@ -181,6 +228,21 @@ object Helpers {
         }
         // mongodb://db1.example.net,db2.example.net:27002,db3.example.net:27003/?db_name&replicaSet=YourReplicaSetName
         // mongodb://172.18.160.16,172.18.160.17,172.18.160.18/db.offer?replicaSet=mongo-rs
+    }
+
+    def getFunctionFromURI(URI: String): String = {
+        val functionName = URI match {
+            case "http://users.ugent.be/~bjdmeest/function/grel.ttl#scale" => "scl"
+            case "http://users.ugent.be/~bjdmeest/function/grel.ttl#substitute" => "substit"
+            case "http://users.ugent.be/~bjdmeest/function/grel.ttl#skip" => "skp"
+            case "http://users.ugent.be/~bjdmeest/function/grel.ttl#replace" => "replc"
+            case "http://users.ugent.be/~bjdmeest/function/grel.ttl#prefix" => "prefix"
+            case "http://users.ugent.be/~bjdmeest/function/grel.ttl#postfix" => "postfix"
+            case "http://users.ugent.be/~bjdmeest/function/grel.ttl#toInt" => "toInt"
+            case _ => ""
+        }
+
+        functionName
     }
 
 }

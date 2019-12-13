@@ -5,29 +5,27 @@ import java.util
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
 import scala.collection.mutable
-import scala.collection.mutable.{HashMap, ListBuffer, Set}
+import scala.collection.mutable.ListBuffer
 
-/**
-  * Created by mmami on 07.03.18.
-  */
+
 trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
 
   val logger = Logger("SANSA-DataLake")
 
   /* Generates a ParSet with the number of filters (on predicates) in the star */
-  def query(sources : Set[(HashMap[String, String], String, String)],
-            optionsMap: HashMap[String, (Map[String, String], String)],
+  def query(sources : mutable.Set[(mutable.HashMap[String, String], String, String, mutable.HashMap[String, (String, Boolean)])],
+            optionsMap: mutable.HashMap[String, (Map[String, String], String)],
             toJoinWith: Boolean,
             star: String,
             prefixes: Map[String, String],
             select: util.List[String],
             star_predicate_var: mutable.HashMap[(String, String), String],
-            neededPredicates: Set[String],
+            neededPredicates: mutable.Set[String],
             filters: ArrayListMultimap[String, (String, String)],
             leftJoinTransformations: (String, Array[String]),
             rightJoinTransformations: Array[String],
             joinPairs: Map[(String, String), String]
-            ) : (T, Integer)
+            ) : (T, Integer, String)
 
     /* Transforms a ParSet to another ParSet based on the SPARQL TRANSFORM clause */
     def transform(ps: Any, column: String, transformationsArray : Array[String]): Any
@@ -45,7 +43,7 @@ trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
     def orderBy(joinPS: Any, direction: String, variable: String): T
 
     /* Group attributes based on aggregates function(s) */
-    def groupBy(joinPS: Any, groupBys: (ListBuffer[String], Set[(String, String)])): T
+    def groupBy(joinPS: Any, groupBys: (ListBuffer[String], mutable.Set[(String, String)])): T
 
     /* Return the first 'limitValue' values of the ParSet */
     def limit(joinPS: Any, limitValue: Int) : T

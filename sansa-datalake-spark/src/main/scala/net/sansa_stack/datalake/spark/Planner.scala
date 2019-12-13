@@ -10,66 +10,73 @@ import play.api.libs.json.{__, Json, Reads}
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, HashMap, ListBuffer, MultiMap, Set}
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
-/**
-  * Created by mmami on 06.07.17.
-  */
-class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String, (String, String)]) {
+
+class Planner(stars: mutable.HashMap[String, mutable.Set[(String, String)]] with mutable.MultiMap[String, (String, String)]) {
 
     val logger = Logger("SANSA-DataLake")
 
-    def getNeededPredicates(star_predicate_var: mutable.HashMap[(String, String), String], joins: ArrayListMultimap[String, (String, String)],
-                            select_vars: util.List[String]) : (Set[String], Set[(String, String)]) = {
+    def getNeededPredicates(star_predicate_var: mutable.HashMap[(String, String), String],
+                            joins: ArrayListMultimap[String, (String, String)],
+                            select_vars: util.List[String],
+                            groupBys: (ListBuffer[String], mutable.Set[(String, String)]),
+                            prefixes: Map[String, String]) : (mutable.Set[String], mutable.Set[(String, String)]) = {
 
         logger.info("star_predicate_var: " + star_predicate_var)
-        val predicates : Set[String] = Set.empty
-        val predicatesForSelect : Set[(String, String)] = Set.empty
+        val predicates : mutable.Set[String] = mutable.Set.empty
+        val predicatesForSelect : mutable.Set[(String, String)] = mutable.Set.empty
 
         val join_left_vars = joins.keySet()
         val join_right_vars = joins.values().asScala.map(x => x._1).toSet // asScala, converts Java Collection to Scala Collection
 
         val join_left_right_vars = join_right_vars.union(join_left_vars.asScala)
 
-        logger.info("--> Left & right join operands: " + join_left_right_vars)
+        logger.info("--> All (left & right) join operands: " + join_left_right_vars)
 
         for (t <- star_predicate_var) {
             val s_p = t._1
             val o = t._2
 
-            val occurrences = star_predicate_var groupBy ( _._2 ) mapValues( _.size ) // To capture variables (objects) used in more than one predicate
+            val occurrences = star_predicate_var groupBy ( _._2 ) mapValues ( _.size ) // To capture variables (objects) used in more than one predicate
 
             if (select_vars.contains(o.replace("?", "")) || join_left_vars.contains(o) || join_right_vars.contains(o) || occurrences(o) > 1) {
                 predicates.add(s_p._2)
             }
 
-
             if (select_vars.contains(o.replace("?", ""))) {
                 predicatesForSelect.add(s_p)
             }
+            if (groupBys != null ) {
+                // Forming e.g. "failure_isFailureOf_fsmt"
+                val groupByPredicate = s_p._1.replace("?", "") + "_" + omitNamespace(s_p._2) + "_" + prefixes(get_NS_predicate(s_p._2)._1)
 
+                if (groupBys._2.map(_._1).contains(groupByPredicate)) { // map to get only cols eg failure_isFailureOf from Set((failure_isFailureOf_fsmt,count))
+                    predicates.add(s_p._2)
+                }
+            }
         }
 
         (predicates, predicatesForSelect)
     }
 
-    def generateJoinPlan: (ArrayListMultimap[String, (String, String)], Set[String], Set[String], Map[(String, String), String]) = {
+    def generateJoinPlan: (ArrayListMultimap[String, (String, String)], mutable.Set[String], mutable.Set[String], Map[(String, String), String]) = {
 
         val keys = stars.keySet.toSeq
         logger.info("Stars: " + keys.toString())
         val joins : ArrayListMultimap[String, (String, String)] = ArrayListMultimap.create[String, (String, String)]()
         var joinPairs : Map[(String, String), String] = Map.empty
 
-        val joinedToFlag : Set[String] = Set()
-        val joinedFromFlag : Set[String] = Set()
+        val joinedToFlag : mutable.Set[String] = mutable.Set()
+        val joinedFromFlag : mutable.Set[String] = mutable.Set()
 
-        for(i <- keys.indices) {
-            var currentSubject = keys(i)
-            var valueSet = stars(currentSubject)
+        for (i <- keys.indices) {
+            val currentSubject = keys(i)
+            val valueSet = stars(currentSubject)
             for(p_o <- valueSet) {
-                var o = p_o._2
+                val o = p_o._2
                 if (keys.contains(o)) { // A previous star of o
-                    var p = p_o._1
+                    val p = p_o._1
                     joins.put(currentSubject, (o, p))
                     joinPairs += (omitQuestionMark(currentSubject), omitQuestionMark(o)) -> p
                     joinedToFlag.add(o)
@@ -94,7 +101,7 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
 
         val scoredJoins = getScoredJoins(joins, starWeights)
 
-        val sortedScoredJoins = ListMap(scoredJoins.toSeq.sortWith(_._2 > _._2) : _*)
+        val sortedScoredJoins = ListMap(scoredJoins.toSeq.sortWith(_._2 > _._2): _*)
 
         sortedScoredJoins
     }
@@ -163,7 +170,7 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
             scoresByDatasource += w.datasource -> w.weight
         }
 
-        logger.info(s"- We use the following scores of the datasource types: $scoresByDatasource \n")
+        logger.info(s"- We use the following scores of the data source types: $scoresByDatasource \n")
 
         val scores = starScores(starDataTypesMap, scoresByDatasource, filters)
 
@@ -189,7 +196,7 @@ class Planner(stars: HashMap[String, Set[(String, String)]] with MultiMap[String
                 } else {
                     datasourceTypeWeight = weightsByDatasource(datasourceType)
                 }
-                // Add  the number of filters to the score of the star
+                // Add up the number of filters to the score of the star
             }
             // else, we keep 0, as we are assuming if there are more than 1 data sources, queryig & union-ing them would be expensive
             scores += (star -> datasourceTypeWeight)

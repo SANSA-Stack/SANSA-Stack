@@ -9,11 +9,8 @@ import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.syntax.{ElementFilter, ElementVisitorBase, ElementWalker}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.{HashMap, ListBuffer, MultiMap, Set}
+import scala.collection.mutable.ListBuffer
 
-/**
-  * Created by mmami on 05.07.17.
-  */
 
 class QueryAnalyser(query: String) {
 
@@ -50,7 +47,7 @@ class QueryAnalyser(query: String) {
                 val leftOperand = bits(0)
                 val rightOperand = bits(2)
 
-                logger.info(s"............-------........... $operation,($leftOperand,$rightOperand)")
+                logger.info(s"Filter: $operation,($leftOperand,$rightOperand)")
                 filters.put(operation, (leftOperand, rightOperand))
             }
         })
@@ -60,7 +57,7 @@ class QueryAnalyser(query: String) {
 
     def getOrderBy: mutable.Set[(String, String)] = {
         val q = QueryFactory.create(query)
-        var orderBys : Set[(String, String)] = Set()
+        var orderBys : mutable.Set[(String, String)] = mutable.Set()
 
         if (q.hasOrderBy) {
             val orderBy = q.getOrderBy.iterator()
@@ -70,7 +67,9 @@ class QueryAnalyser(query: String) {
 
                 orderBys += ((it.direction.toString, it.expression.toString))
             }
-        } else orderBys = null
+        } else {
+            orderBys = null
+        }
 
         orderBys
     }
@@ -78,7 +77,7 @@ class QueryAnalyser(query: String) {
     def getGroupBy(variablePredicateStar: Map[String, (String, String)], prefixes: Map[String, String]): (ListBuffer[String], mutable.Set[(String, String)]) = {
         val q = QueryFactory.create(query)
         val groupByCols : ListBuffer[String] = ListBuffer()
-        var aggregationFunctions : Set[(String, String)] = Set()
+        var aggregationFunctions : mutable.Set[(String, String)] = mutable.Set()
 
         if (q.hasGroupBy) {
             val groupByVars = q.getGroupBy.getVars.asScala.toList
@@ -107,7 +106,9 @@ class QueryAnalyser(query: String) {
 
             (groupByCols, aggregationFunctions)
 
-        } else null
+        } else {
+            null
+        }
 
     }
 
@@ -117,23 +118,23 @@ class QueryAnalyser(query: String) {
         val originalBGP = q.getQueryPattern.toString
 
         val bgp = originalBGP.replaceAll("\n", "").replaceAll("\\s+", " ").replace("{", " ").replace("}", " ") // See example below + replace breaklines + remove extra white spaces
-        val tps = bgp.split("\\.(?![^\\<\\[]*[\\]\\>])")
+        val triples = bgp.split("\\.(?![^\\<\\[]*[\\]\\>])")
 
         logger.info("\n- The BGP of the input query:  " + originalBGP)
-        logger.info("\n- Number of triple-stars detected: " + tps.length)
+        logger.info("\n- Number of triple-stars detected: " + triples.length)
 
-        val stars = new HashMap[String, Set[Tuple2[String, String]]] with MultiMap[String, Tuple2[String, String]]
+        val stars = new mutable.HashMap[String, mutable.Set[(String, String)]] with mutable.MultiMap[String, (String, String)]
         // Multi-map to add/append elements to the value
 
         // Save [star]_[predicate]
-        val star_pred_var : HashMap[(String, String), String] = HashMap()
+        val star_pred_var : mutable.HashMap[(String, String), String] = mutable.HashMap()
 
-        for (i <- tps.indices) { // i <- 0 until tps.length
-            val triple = tps(i).trim
+        for (i <- triples.indices) { // i <- 0 until triples.length
+            val triple = triples(i).trim
 
-            logger.info(s"triple: $triple")
+            logger.info(s"Triple: $triple")
 
-            if(!triple.contains(';')) { // only one predicate attached to the subject
+            if (!triple.contains(';')) { // only one predicate attached to the subject
                 val tripleBits = triple.split(" ")
                 stars.addBinding(tripleBits(0), (tripleBits(1), tripleBits(2)))
                 // addBinding` because standard methods like `+` will overwrite the complete key-value pair instead of adding the value to the existing key
@@ -147,7 +148,7 @@ class QueryAnalyser(query: String) {
                 stars.addBinding(sbj, (firsTripleBits(1), firsTripleBits(2))) // add that first triple
                 star_pred_var.put((sbj, firsTripleBits(1)), firsTripleBits(2))
 
-                for(i <- 1 until triples.length) {
+                for (i <- 1 until triples.length) {
                     val t = triples(i).trim.split(" ")
                     stars.addBinding(sbj, (t(0), t(1)))
 
