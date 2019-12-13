@@ -14,56 +14,56 @@ class QANodeUtilsTests extends FunSuite {
 
     val isExternal = NodeUtils.isExternal(triple.getSubject)
 
-    assert(isExternal == false)
+    assert(!isExternal)
   }
 
   test("checking if resource is internal should match") {
 
     val isInternal = NodeUtils.isInternal(triple.getSubject)
 
-    assert(isInternal == true)
+    assert(isInternal)
   }
 
   test("checking if resource is lexical form compatible with datatype should match") {
 
     val isLexicalFormCompatibleWithDatatype = NodeUtils.isLexicalFormCompatibleWithDatatype(triple.getObject)
 
-    assert(isLexicalFormCompatibleWithDatatype == true)
+    assert(isLexicalFormCompatibleWithDatatype)
   }
 
   test("checking if resource is license statement should match") {
 
     val isLicenseStatement = NodeUtils.isLicenseStatement(triple.getObject)
 
-    assert(isLicenseStatement == false)
+    assert(!isLicenseStatement)
   }
 
   test("checking if resource has licence indications should match") {
 
     val hasLicenceIndications = NodeUtils.hasLicenceIndications(triple.getPredicate)
 
-    assert(hasLicenceIndications == false)
+    assert(!hasLicenceIndications)
   }
 
   test("checking if resource has licence associated should match") {
 
     val hasLicenceAssociated = NodeUtils.hasLicenceAssociated(triple.getPredicate)
 
-    assert(hasLicenceAssociated == false)
+    assert(!hasLicenceAssociated)
   }
 
   test("checking if resource has broken link should match") {
 
     val isBroken = NodeUtils.isBroken(triple.getPredicate)
 
-    assert(isBroken == false)
+    assert(!isBroken)
   }
 
   test("checking if resource is hash URI should match") {
 
     val isHashUri = NodeUtils.isHashUri(triple.getPredicate)
 
-    assert(isHashUri == false)
+    assert(!isHashUri)
   }
 
   test("getting the parent URI of the resource should match") {
@@ -88,35 +88,35 @@ class QANodeUtilsTests extends FunSuite {
 
     val isLabeled = NodeUtils.isLabeled(triple.getObject)
 
-    assert(isLabeled == false)
+    assert(!isLabeled)
   }
 
   test("checking if the resource is an RDFS class should match") {
 
     val isRDFSClass = NodeUtils.isRDFSClass(triple.getPredicate)
 
-    assert(isRDFSClass == false)
+    assert(!isRDFSClass)
   }
 
   test("checking if the resource is an OWL class should match") {
 
     val isOWLClass = NodeUtils.isOWLClass(triple.getPredicate)
 
-    assert(isOWLClass == false)
+    assert(!isOWLClass)
   }
 
   test("checking if the resource is too long should match") {
 
     val resourceTooLong = NodeUtils.resourceTooLong(triple.getSubject)
 
-    assert(resourceTooLong == false)
+    assert(!resourceTooLong)
   }
 
   test("checking if the resource has query sting should match") {
 
     val hasQueryString = NodeUtils.hasQueryString(triple.getSubject)
 
-    assert(hasQueryString == false)
+    assert(!hasQueryString)
   }
 
 }
