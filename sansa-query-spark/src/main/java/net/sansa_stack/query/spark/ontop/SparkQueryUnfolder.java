@@ -56,7 +56,7 @@ public class SparkQueryUnfolder extends AbstractIntensionalQueryMerger implement
     }
 
     @Override
-    protected QueryMergingTransformer createTransformer(ImmutableSet<Variable> knownVariables) {
+    protected AbstractIntensionalQueryMerger.QueryMergingTransformer createTransformer(ImmutableSet<Variable> knownVariables) {
         return new SparkQueryUnfolder.BasicQueryUnfoldingTransformer(coreUtilsFactory.createVariableGenerator(knownVariables));
     }
 
@@ -101,17 +101,16 @@ public class SparkQueryUnfolder extends AbstractIntensionalQueryMerger implement
         }
 
         private Optional<IQ> getStarDefinition(RDFAtomPredicate predicate) {
-//            OntopMappingConfiguration defaultConfiguration = OntopMappingConfiguration.defaultBuilder()
-//                    .enableTestMode()
-//                    .build();
-//            Injector injector = defaultConfiguration.getInjector();
-//
-//            AtomFactory af = injector.getInstance(AtomFactory.class);
-//
-//
-//
-//
-//            iqFactory.createIntensionalDataNode(af.getDataAtom(predicate.));
+            OntopMappingConfiguration defaultConfiguration = OntopMappingConfiguration.defaultBuilder()
+                    .enableTestMode()
+                    .build();
+            Injector injector = defaultConfiguration.getInjector();
+
+            AtomFactory af = injector.getInstance(AtomFactory.class);
+
+
+//            IntensionalDataNode node = iqFactory.createIntensionalDataNode(af.getDataAtom(predicate));
+
             return queryMerger.mergeDefinitions(mapping.getQueries(predicate));
         }
 
