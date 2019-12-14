@@ -14,8 +14,8 @@ class BasicTableInfoProviderFlink(flinkTable: BatchTableEnvironment)
   override def getBasicTableInfo(queryString: String): BasicTableInfo = {
     val table = flinkTable.sqlQuery(queryString)
     val schema = table.getSchema
-    val types = schema.getTypes
-    val names = schema.getColumnNames
+    val types = schema.getFieldDataTypes
+    val names = schema.getFieldNames
     val map = (0 until types.length).map { i =>
       (names(i), types(i).toString)
     } toMap

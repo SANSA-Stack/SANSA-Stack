@@ -2,7 +2,7 @@ package net.sansa_stack.query.spark
 
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.semantic.QuerySystem
-import net.sansa_stack.query.spark.sparql2sql.Sparql2Sql
+import net.sansa_stack.query.spark.ontop.Sparql2Sql
 import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionSpark, SparqlifyUtils3 }
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import org.apache.jena.graph.Triple
