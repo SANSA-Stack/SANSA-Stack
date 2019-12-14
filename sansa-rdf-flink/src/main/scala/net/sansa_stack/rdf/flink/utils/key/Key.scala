@@ -14,5 +14,3 @@ abstract class Key[T <: Key[T]] extends Comparable[T] {
     */
   def get(pos: Int): Any
 }
-
-
