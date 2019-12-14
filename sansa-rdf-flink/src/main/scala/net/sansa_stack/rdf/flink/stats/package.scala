@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.flink
 import net.sansa_stack.rdf.flink.utils.Logging
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 
 package object stats {
 
@@ -43,7 +43,7 @@ package object stats {
      * <b>Action</b> : `M[?o]++ `
      * @return DataSet of classes used in the dataset and their frequencies.
      */
-    def statsClassUsageCount(): AggregateDataSet[(Node, Int)] =
+    def statsClassUsageCount(): DataSet[(Node, Int)] =
       Used_Classes(triples, env).Action()
 
     /**
@@ -72,7 +72,7 @@ package object stats {
      * <b>Action</b> : `M[?p]++ `
      * @return DataSet of predicates used in the dataset and their frequencies.
      */
-    def statsPropertyUsage(): AggregateDataSet[(Node, Int)] =
+    def statsPropertyUsage(): DataSet[(Node, Int)] =
       PropertyUsage(triples, env).Action()
 
     /**
