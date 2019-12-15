@@ -6,11 +6,12 @@ import java.io.StringWriter
 import scala.reflect.ClassTag
 import net.sansa_stack.rdf.flink.utils.{Logging, NodeKey}
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.api.java.aggregation.Aggregations
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
-import org.apache.jena.vocabulary.{OWL, RDF, RDFS}
+import org.apache.jena.vocabulary.{OWL, RDF, RDFS, XSD}
 
 /**
   * A Distributed implementation of RDF Statisctics using Apache Flink.
@@ -97,6 +98,105 @@ object RDFStatistics extends Serializable with Logging {
     println("\n" + voidify)
   }
 
+  /**
+    * * 17. Literals criterion
+    *
+    * @param triples Dataset of triples
+    * @return number of triples that are referencing literals to subjects.
+    */
+  def literals(triples: DataSet[Triple]): DataSet[Triple] =
+    triples.filter(_.getObject.isLiteral())
+
+  /**
+    * 18. Blanks as subject criterion
+    *
+    * @param triples DataSet of triples
+    * @return number of triples where blanknodes are used as subjects.
+    */
+  def blanksAsSubject(triples: DataSet[Triple]): DataSet[Triple] =
+    triples.filter(_.getSubject.isBlank())
+
+  /**
+    * 19. Blanks as object criterion
+    *
+    * @param triples DataSet of triples
+    * @return number of triples where blanknodes are used as objects.
+    */
+  def blanksAsObject(triples: DataSet[Triple]): DataSet[Triple] =
+    triples.filter(_.getObject.isBlank())
+
+  /**
+    * 20. Datatypes criterion
+    *
+    * @param triples DataSet of triples
+    * @return histogram of types used for literals.
+    */
+  def dataTypes(triples: DataSet[Triple]): DataSet[(String, Int)] = {
+    triples.filter(triple => (triple.getObject.isLiteral && !triple.getObject.getLiteralDatatype.getURI.isEmpty))
+      .map(triple => (triple.getObject.getLiteralDatatype.getURI, 1))
+      .groupBy(0)
+      .sum(1)
+  }
+
+  /**
+    * 21. Languages criterion
+    *
+    * @param triples DataSet of triples
+    * @return histogram of languages used for literals.
+    */
+  def languages(triples: DataSet[Triple]): DataSet[(String, Int)] = {
+    triples.filter(triple => (triple.getObject.isLiteral && !triple.getObject.getLiteralLanguage.isEmpty))
+      .map(triple => (triple.getObject.getLiteralLanguage, 1))
+      .groupBy(0)
+      .sum(1)
+  }
+
+  /**
+    * 24. Typed subjects criterion.
+    *
+    * @param triples DataSet of triples
+    * @return list of typed subjects.
+    */
+  def typedSubjects(triples: DataSet[Triple]): DataSet[Node] =
+    triples.filter(triple => triple.predicateMatches(RDF.`type`.asNode())).map(_.getSubject)
+
+
+  /**
+    * 24. Labeled subjects criterion.
+    *
+    * @param triples DataSet of triples
+    * @return list of labeled subjects.
+    */
+  def labeledSubjects(triples: DataSet[Triple]): DataSet[Node] =
+    triples.filter(triple => triple.predicateMatches(RDFS.label.asNode())).map(_.getSubject)
+
+  /**
+    * 25. SameAs criterion.
+    *
+    * @param triples DataSet of triples
+    * @return list of triples with owl#sameAs as predicate
+    */
+  def sameAs(triples: DataSet[Triple]): DataSet[Triple] =
+    triples.filter(_.predicateMatches(OWL.sameAs.asNode()))
+
+  /**
+    * 26. Links criterion.
+    *
+    * Computes the frequencies of links between entities of different namespaces. This measure is directed, i.e.
+    * a link from `ns1 -> ns2` is different from `ns2 -> ns1`.
+    *
+    * @param triples DataSet of triples
+    * @return list of namespace combinations and their frequencies.
+    */
+  def links(triples: DataSet[Triple]): DataSet[(String, String, Int)] = {
+    triples
+      .filter(triple => (triple.getSubject.isURI && triple.getObject.isURI) && triple.getSubject.getNameSpace != triple.getObject.getNameSpace)
+      .map(triple => ((triple.getSubject.getNameSpace, triple.getObject.getNameSpace), 1))
+      .groupBy(0)
+      .sum(1)
+      .map(e => (e._1._1, e._1._2, e._2))
+  }
+
 }
 
 class Used_Classes(triples: DataSet[Triple], env: ExecutionEnvironment) extends Serializable with Logging {
@@ -169,7 +269,7 @@ class PropertiesDefined(triples: DataSet[Triple], env: ExecutionEnvironment) ext
       || (f.getPredicate.matches(RDF.`type`.asNode()) && f.getObject.matches(RDF.Property.asNode()))
       && !f.getSubject.isURI())
 
-  def Action(): DataSet[Node] = Filter().map(_.getPredicate).distinct()
+  def Action(): DataSet[Node] = Filter().map(_.getPredicate).distinct(_.hashCode())
 
   def PostProc(): Long = Action().count()
 
@@ -265,7 +365,7 @@ class DistinctObjects(triples: DataSet[Triple], env: ExecutionEnvironment) exten
 
   def Filter(): DataSet[Triple] = triples.filter(f => f.getObject.isURI())
 
-  def Action(): DataSet[Triple] = Filter().distinct()
+  def Action(): DataSet[Triple] = Filter().distinct(_.hashCode())
 
   def PostProc(): Long = Action().count()
 
@@ -320,3 +420,5 @@ object SPO_Vocabularies {
 
   def apply(triples: DataSet[Triple], env: ExecutionEnvironment): SPO_Vocabularies = new SPO_Vocabularies(triples, env)
 }
+
+
