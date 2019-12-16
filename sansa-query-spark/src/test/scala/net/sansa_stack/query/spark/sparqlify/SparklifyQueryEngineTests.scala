@@ -73,6 +73,17 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
   // TODO Separate issue-related queries from BSBM
 
+  test("result of running issue17 (strafter) should match") {
+
+    val input = getClass.getResource("/datasets/issue43.nt").getPath
+
+    val triples = spark.rdf(Lang.NTRIPLES)(input)
+
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(STRAFTER(?o, 'Cl') = 'are')}").count() == 1)
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(STRAFTER(?o, 'Cl') = 'foo')}").count() == 0)
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(STRSTARTS(?o, 'Cl'))}").count() == 1)
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(STRENDS(?o, 'are'))}").count() == 1)
+  }
 
   test("result of running issue34 should match") {
 
