@@ -37,7 +37,7 @@ object OWLReaderDataset {
     }
 
     dataset.take(10).foreach(println(_))
-
+    spark.stop()
   }
 
   case class Config(
