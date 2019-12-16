@@ -3,16 +3,12 @@ package net.sansa_stack.rdf.flink.model
 import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
 import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.common.typeinfo.TypeInformation
-import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.flink.api.scala.createTypeInformation
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
 class FlinkGraphTripleOpsTests extends FunSuite {
-
-  import net.sansa_stack.rdf.flink.model._
 
   val env = ExecutionEnvironment.getExecutionEnvironment
   test("constructing the Graph from DataSet should match") {
