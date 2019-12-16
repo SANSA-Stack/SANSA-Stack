@@ -93,6 +93,17 @@
 				<version>0.41</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.twitter</groupId>
+				<artifactId>chill_2.11</artifactId>
+				<version>0.9.3</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.twitter</groupId>
+				<artifactId>chill-java</artifactId>
+				<version>0.9.3</version>
+			</dependency>
 
 			<!-- Scala -->
 			<dependency>
