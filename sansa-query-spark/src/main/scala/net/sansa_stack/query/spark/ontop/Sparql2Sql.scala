@@ -343,7 +343,7 @@ object Sparql2Sql {
 //    sql
   }
 
-  val useHive: Boolean = true
+  val useHive: Boolean = false
   val useStatistics: Boolean = true
 
   private def createSparkTable(session: SparkSession, p: RdfPartitionComplex, rdd: RDD[Row]) = {
@@ -351,6 +351,7 @@ object Sparql2Sql {
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = session.createDataFrame(rdd, sparkSchema).persist()
+    df.show(false)
 
     println(s"creating Spark table ${escapeTablename(name)}")
 
@@ -358,6 +359,7 @@ object Sparql2Sql {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
 
       val schemaDDL = session.createDataFrame(rdd, sparkSchema).schema.toDDL
+      session.sql(s"DROP TABLE IF EXISTS `${escapeTablename(name)}`")
       val query =
         s"""
            |CREATE TABLE IF NOT EXISTS `${escapeTablename(name)}`
@@ -367,17 +369,17 @@ object Sparql2Sql {
            |AS SELECT * FROM `${escapeTablename(name)}_tmp`
            |""".stripMargin
       session.sql(query)
-        if (useStatistics) {
-            session.sql(s"ANALYZE TABLE `${escapeTablename(name)}` COMPUTE STATISTICS FOR COLUMNS s, o")
-        }
+      if (useStatistics) {
+        session.sql(s"ANALYZE TABLE `${escapeTablename(name)}` COMPUTE STATISTICS FOR COLUMNS s, o")
+      }
     } else {
-      //        df.createOrReplaceTempView("`" + escapeTablename(name) + "`")
+              df.createOrReplaceTempView("`" + escapeTablename(name) + "`")
       //          df.write.partitionBy("s").format("parquet").saveAsTable(escapeTablename(name))
     }
 
   }
 
-  def asSQL(session: SparkSession, sparqlQuery: String, triples: RDD[Triple], properties: Properties): String = {
+  def asSQL(session: SparkSession, sparqlQuery: String, triples: RDD[Triple], properties: Properties): (String, Map[Variable, Variable]) = {
     // do partitioning here
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex)
     partitions.foreach {
@@ -399,7 +401,7 @@ object Sparql2Sql {
 
   @throws[OBDASpecificationException]
   @throws[OntopReformulationException]
-  def createSQLQuery(sparqlQuery: String, obda_file: File, properties: Properties): String = {
+  def createSQLQuery(sparqlQuery: String, obda_file: File, properties: Properties): (String, Map[Variable, Variable]) = {
     val queryReformulator = createReformulator(obda_file, properties)
     val inputQueryFactory = queryReformulator.getInputQueryFactory
 
@@ -413,9 +415,17 @@ object Sparql2Sql {
       .map(n => n.asInstanceOf[NativeNode].getNativeQueryString)
       .getOrElse(throw new RuntimeException("Cannot extract the SQL query from\n" + executableQuery))
 
-    print(executableQuery.getTree.getRootNode.asInstanceOf[NativeNode].getColumnNames)
+    val tree = executableQuery.getTree.asInstanceOf[UnaryIQTree]
+      .getRootNode.asInstanceOf[ConstructionNodeImpl]
 
-    sqlQuery
+    val substitution = executableQuery.getTree.asInstanceOf[UnaryIQTree]
+      .getRootNode.asInstanceOf[ConstructionNodeImpl]
+      .getSubstitution
+
+    val columnMappings = tree.getVariables.asScala.map(v => (v, substitution.get(v).getVariableStream.findFirst().get())).toMap
+
+
+    (sqlQuery, columnMappings)
   }
 
   /**

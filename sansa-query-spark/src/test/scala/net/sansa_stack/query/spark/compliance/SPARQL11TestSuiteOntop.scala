@@ -1,49 +1,33 @@
 package net.sansa_stack.query.spark.compliance
 
-import java.io.InputStream
-import java.net.{JarURLConnection, URL}
-import java.nio.file.Files
 import java.util.Properties
 
 import scala.collection.JavaConverters._
 
 import com.google.common.collect.ImmutableSet
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import it.unibz.inf.ontop.test.sparql.ManifestTestUtils
-import org.apache.jena.graph.Triple
-import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSuite}
+import org.apache.jena.graph.NodeFactory
+import org.apache.jena.query._
+import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.sparql.core.Var
+import org.apache.jena.sparql.engine.ResultSetStream
+import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
+import org.apache.jena.sparql.expr.NodeValue
+import org.apache.jena.sparql.resultset.SPARQLResult
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types._
 
 import net.sansa_stack.query.spark.sparql2sql.Sparql2Sql
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import net.sansa_stack.rdf.spark.utils.Logging
 
 /**
+ * SPARQL 1.1 test suite for Ontop-based SPARQL-to-SQL implementation.
+ *
+ *
  * @author Lorenz Buehmann
  */
-class SPARQL11Test
-  extends FunSuite
-    with DataFrameSuiteBase
-    with Logging {
+class SPARQL11TestSuiteOntop
+  extends SPARQL11TestSuite {
 
-  private val aggregatesManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#"
-  private val bindManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bind/manifest#"
-  private val bindingsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bindings/manifest#"
-  private val functionsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/functions/manifest#"
-  private val constructManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#"
-  private val csvTscResManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/csv-tsv-res/manifest#"
-  private val groupingManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/grouping/manifest#"
-  private val negationManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation/manifest#"
-  private val existsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/exists/manifest#"
-  private val projectExpressionManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/project-expression/manifest#"
-  private val propertyPathManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/property-path/manifest#"
-  private val subqueryManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#"
-  private val serviceManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/service/manifest#"
-
-  private val IGNORE = ImmutableSet.of(/* AGGREGATES */
+  override lazy val IGNORE = ImmutableSet.of(/* AGGREGATES */
     // TODO: support GROUP_CONCAT
     aggregatesManifest + "agg-groupconcat-01", aggregatesManifest + "agg-groupconcat-02", aggregatesManifest + "agg-groupconcat-03", // TODO: support IF
     aggregatesManifest + "agg-err-02", /* BINDINGS
@@ -86,8 +70,6 @@ class SPARQL11Test
     subqueryManifest + "subquery14")
 
 
-
-
   var ontopProperties: Properties = _
 
   override def beforeAll(): Unit = {
@@ -96,68 +78,86 @@ class SPARQL11Test
     ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
   }
 
+  override def runQuery(query: Query, data: Model): SPARQLResult = {
+    // distribute on Spark
+    val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
 
-  val testData = ManifestTestUtils.parametersFromSuperManifest("/testcases-dawg-sparql-1.1/manifest-all.ttl", IGNORE)
+    // convert to SQL
+    val (sqlQuery, columnMapping) = Sparql2Sql.asSQL(spark, query.toString(), triplesRDD, ontopProperties)
 
-  testData.asScala
-    .filter(data => !IGNORE.contains(data(0).asInstanceOf[String]))
-    .slice(0, 100)
-//    .filter(data => data(1) == "Aggregates-\"AVG\"")
-    .foreach { d =>
+    // we have to replace some parts of the SQL query // TODO not sure how to do it in Ontop properly
+    val sql = sqlQuery.replace("\"", "`")
+      .replace("`PUBLIC`.", "")
+    println(s"SQL query: $sql")
 
-    val queryFileURL = d(2).asInstanceOf[String]
-    val dataset = d(4).asInstanceOf[org.eclipse.rdf4j.query.impl.SimpleDataset]
-    val testName = d(1).asInstanceOf[String]
+    // run SQL query
+    var resultDF = spark.sql(sql)
 
-    test(s"testing $testName") {
-      val queryString = readQueryString(queryFileURL)
-      println(s"SPARQL query: $queryString")
-
-      // load data
-      val datasetURL = dataset.getDefaultGraphs.iterator().next().toString
-      val triples = loadData(spark, datasetURL)
-
-      // convert to SQL
-      val sql = Sparql2Sql.asSQL(spark, queryString, triples, ontopProperties)
-        .replace("\"", "`")
-        .replace("`PUBLIC`.", "")
-      println(s"SQL query: $sql")
-
-      // run query
-      val result = spark.sql(sql)
-      result.show(false)
-      result.printSchema()
+    // get the correct column names
+    resultDF = columnMapping.foldLeft(resultDF) {
+      case (df, (sparqlVar, sqlVar)) => df.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
     }
-
-  }
-
-  def readQueryString(queryFileURL: String): String = {
-    val is = new URL(queryFileURL).openStream
-
-    scala.io.Source.fromInputStream(is).mkString
-  }
-
-  def loadData(spark: SparkSession, datasetURL: String): RDD[Triple] = {
-    import java.io.IOException
-    import java.net.MalformedURLException
-    try {
-      val url = new URL(datasetURL)
-      val conn = url.openConnection.asInstanceOf[JarURLConnection]
-      val in = conn.getInputStream
-      val data = ModelFactory.createDefaultModel()
-      RDFDataMgr.read(data, in, null, Lang.TURTLE)
-      data.write(System.out, "N-Triples")
-
-      spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
-
-    } catch {
-      case e: MalformedURLException =>
-        System.err.println("Malformed input URL: " + datasetURL)
-        throw e
-      case e: IOException =>
-        System.err.println("IO error open connection")
-         throw e
+    // and for whatever reason, Ontop generates sometimes more columns as necessary
+    if (query.isSelectType) {
+      println("result DF before selection")
+      resultDF.show(false)
+      val vars = query.getProjectVars.asScala.map(_.getVarName).toList
+      resultDF = resultDF.select(vars.head, vars.tail: _*)
     }
+    println("result DF")
+    resultDF.show(false)
+    resultDF.printSchema()
+
+    val result = if (query.isSelectType) {
+      // convert to bindings
+      val model = ModelFactory.createDefaultModel()
+      val vars = resultDF.schema.fieldNames.toList.asJava
+      val resultsActual = new ResultSetStream(vars, model, toBindings(resultDF).toList.asJava.iterator())
+      new SPARQLResult(resultsActual)
+    } else if (query.isAskType) {
+      // map DF entry to boolean
+      val b = resultDF.collect().head.getAs[Int](0) == 1
+      new SPARQLResult(b)
+    } else {
+      fail("unsupported query type")
+      null
+    }
+    result
   }
 
+  override def toBinding(row: Row): Binding = {
+    val binding = BindingFactory.create()
+
+    val fields = row.schema.fields
+
+    fields.foreach(f => {
+      // check for null value first
+      if (row.getAs[String](f.name) != null) {
+        val v = Var.alloc(f.name)
+        val node = if (f.dataType == StringType && row.getAs[String](f.name).startsWith("http://")) {
+          NodeFactory.createURI(row.getAs[String](f.name))
+        } else {
+          val nodeValue = f.dataType match {
+            case DoubleType => NodeValue.makeDouble(row.getAs[Double](f.name))
+            case FloatType => NodeValue.makeFloat(row.getAs[Float](f.name))
+            case StringType => NodeValue.makeString(row.getAs[String](f.name))
+            case IntegerType => NodeValue.makeInteger(row.getAs[Int](f.name))
+            case LongType => NodeValue.makeInteger(row.getAs[Long](f.name))
+            case ShortType => NodeValue.makeInteger(row.getAs[Long](f.name))
+            case BooleanType => NodeValue.makeBoolean(row.getAs[Boolean](f.name))
+//            case NullType =>
+            case x if x.isInstanceOf[DecimalType] => NodeValue.makeDecimal(row.getAs[java.math.BigDecimal](f.name))
+            //        case DateType =>
+            case _ => throw new RuntimeException("unsupported Spark data type")
+          }
+          nodeValue.asNode()
+        }
+
+        binding.add(v, node)
+      }
+
+    })
+
+    binding
+  }
 }
