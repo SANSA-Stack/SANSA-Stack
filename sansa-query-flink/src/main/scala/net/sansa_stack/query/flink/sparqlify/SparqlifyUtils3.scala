@@ -52,6 +52,8 @@ object SparqlifyUtils3
             flinkTable.registerDataSet(tableName, ds.map { r => r.asInstanceOf[SchemaStringDouble] })
           case q if q =:= typeOf[SchemaStringStringLang] =>
             flinkTable.registerDataSet(tableName, ds.map { r => r.asInstanceOf[SchemaStringStringLang] })
+          case q if q =:= typeOf[SchemaStringDate] =>
+            flinkTable.registerDataSet(tableName, ds.map { r => r.asInstanceOf[SchemaStringDate] })
           case _ =>
             throw new RuntimeException("Unhandled schema type: " + q)
         }
