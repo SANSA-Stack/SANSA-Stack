@@ -74,6 +74,17 @@
 			</roles>
 			<timezone>0</timezone>
 		</developer>
+		<developer>
+			<id>GezimSejdiu</id>
+			<name>Gezim Sejdiu</name>
+			<url>https://gezimsejdiu.github.io/</url>
+			<organization>SDA</organization>
+			<organizationUrl>http://sda.tech</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
 	</developers>
 
 	<modules>
