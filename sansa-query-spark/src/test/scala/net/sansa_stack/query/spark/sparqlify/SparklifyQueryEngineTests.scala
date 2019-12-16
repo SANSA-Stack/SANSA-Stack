@@ -73,6 +73,20 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
   // TODO Separate issue-related queries from BSBM
 
+  test("result of running issue15 should match") {
+
+    val input = getClass.getResource("/datasets/issue43.nt").getPath
+
+    val triples = spark.rdf(Lang.NTRIPLES)(input)
+
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(REGEX(STR(?o), 'Clare')) }").count() == 1)
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(REGEX(STR(?o), 'clare', 'i')) }").count() == 1)
+
+    // Counter checks
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(REGEX(STR(?o), 'clare')) }").count() == 0)
+    assert(triples.sparql("SELECT * { ?s ?p ?o FILTER(REGEX(STR(?o), 'foobar')) }").count() == 0)
+  }
+
   test("result of running issue17 (strafter) should match") {
 
     val input = getClass.getResource("/datasets/issue43.nt").getPath
@@ -97,6 +111,15 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
     val size = result.count()
 
     assert(size == 1)
+  }
+
+  test("result of running issue35 should match") {
+
+    val input = getClass.getResource("/datasets/issue43.nt").getPath
+
+    val triples = spark.rdf(Lang.NTRIPLES)(input)
+
+    assert(triples.sparql("SELECT DISTINCT ?s ?o { ?s <http://xmlns.com/foaf/0.1/name> ?o } ORDER BY ?o").count() == 1)
   }
 
   // FIXME The result set of 43 has incorrect bnode labels
