@@ -79,11 +79,6 @@
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>3.5.0</version>
-    </dependency>
 
     <!-- Scopt CLI API-->
     <dependency>
