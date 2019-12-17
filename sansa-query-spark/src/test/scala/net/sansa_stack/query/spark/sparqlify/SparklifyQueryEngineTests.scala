@@ -21,7 +21,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.eventLog.enabled", "true")
+//      .set("spark.eventLog.enabled", "true")
       .set("spark.kryo.registrator", String.join(
         ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
