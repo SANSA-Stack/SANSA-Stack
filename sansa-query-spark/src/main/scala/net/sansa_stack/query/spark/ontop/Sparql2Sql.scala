@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.sparql2sql
+package net.sansa_stack.query.spark.ontop
 
 import java.io.{File, FileInputStream, StringReader}
 import java.net.URLEncoder
