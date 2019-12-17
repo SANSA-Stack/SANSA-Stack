@@ -1,19 +1,18 @@
 package net.sansa_stack.query.flink.sparqlify
 
 import scala.reflect.runtime.universe.typeOf
-
 import com.typesafe.scalalogging.StrictLogging
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
 import net.sansa_stack.rdf.common.partition.schema._
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.sparqlify.config.syntax.Config
-import org.aksw.sparqlify.core.algorithms.{ CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl }
+import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
-import org.aksw.sparqlify.core.sql.common.serialization.{ SqlEscaperBacktick, SqlEscaperBase, SqlEscaperDoubleQuote }
-import org.aksw.sparqlify.util.{ SparqlifyUtils, SqlBackendConfig }
+import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperBase, SqlEscaperDoubleQuote}
+import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
 import org.aksw.sparqlify.validation.LoggerCount
-import org.apache.flink.api.scala.{ DataSet, ExecutionEnvironment, _ }
+import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
 import org.apache.flink.table.api.scala.BatchTableEnvironment
 
 object SparqlifyUtils3
@@ -25,6 +24,7 @@ object SparqlifyUtils3
     val backendConfig = new SqlBackendConfig(new DatatypeToStringFlink(), new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
+    val sqlFunctionMapping = SparqlifyCoreInit.loadSqlFunctionDefinitions("functions-spark.xml")
 
     val ers = SparqlifyUtils.createDefaultExprRewriteSystem()
     val mappingOps = SparqlifyUtils.createDefaultMappingOps(ers)
@@ -52,6 +52,8 @@ object SparqlifyUtils3
             flinkTable.registerDataSet(tableName, ds.map { r => r.asInstanceOf[SchemaStringDouble] })
           case q if q =:= typeOf[SchemaStringStringLang] =>
             flinkTable.registerDataSet(tableName, ds.map { r => r.asInstanceOf[SchemaStringStringLang] })
+          case q if q =:= typeOf[SchemaStringDate] =>
+            flinkTable.registerDataSet(tableName, ds.map { r => r.asInstanceOf[SchemaStringDate] })
           case _ =>
             throw new RuntimeException("Unhandled schema type: " + q)
         }
@@ -62,7 +64,7 @@ object SparqlifyUtils3
 
     val basicTableInfoProvider = new BasicTableInfoProviderFlink(flinkTable)
 
-    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
+    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper, sqlFunctionMapping)
     rewriter
   }
 

@@ -1,14 +1,10 @@
 package net.sansa_stack.query.spark
 
-import scala.collection.JavaConverters._
-
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.semantic.QuerySystem
-import net.sansa_stack.query.spark.sparql2sql.Sparql2Sql
+import net.sansa_stack.query.spark.ontop.Sparql2Sql
 import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionSpark, SparqlifyUtils3 }
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import org.aksw.jena_sparql_api.core.ResultSetCloseable
-import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
 import org.apache.spark.rdd.RDD
@@ -79,6 +75,19 @@ package object query {
         partitions,
         queryInputPath).run()
     }
+
+  }
+
+  implicit class HDT(hdt: DataFrame) extends Serializable {
+    import net.sansa_stack.query.spark.hdt._
+
+    /**
+      * Querying HDT.
+      * @param query a SPARQL query.
+      * @return a DataFrame of result set.
+      */
+    def sparqlHDT(query: String): DataFrame =
+     hdt.sparkSession.sql(Sparql2SQL.getQuery(query))
 
   }
 

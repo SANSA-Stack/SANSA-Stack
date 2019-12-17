@@ -4,25 +4,21 @@ import scala.collection.JavaConverters._
 
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
-import benchmark.testdriver.LocalSPARQLParameterPool
-import benchmark.testdriver.SPARQLConnection2
-import benchmark.testdriver.TestDriver
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import net.sansa_stack.rdf.common.partition.core.{ RdfPartition, RdfPartitionDefault }
+import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
 import net.sansa_stack.rdf.spark.kryo.sparqlify.RestrictedExprSerializer
-import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
 import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
 import org.aksw.jena_sparql_api.views.RestrictedExpr
 import org.aksw.sparqlify.util.SparqlifyCoreInit
-import org.apache.flink.api.scala.{ DataSet, ExecutionEnvironment, _ }
-import org.apache.flink.table.api.TableEnvironment
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.query.{ Dataset, Query, ResultSetFormatter }
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
+import org.apache.flink.table.api.scala.BatchTableEnvironment
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.query.{Query, ResultSetFormatter}
 import org.scalatest._
 
 class TestRdfPartitionFlink extends FlatSpec {
@@ -51,7 +47,8 @@ class TestRdfPartitionFlink extends FlatSpec {
     env.getConfig.registerKryoType(classOf[Array[org.apache.jena.graph.Triple]])
     env.getConfig.registerKryoType(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
 
-    val flinkTable = TableEnvironment.getTableEnvironment(env)
+    val fbEnv = ExecutionEnvironment.getExecutionEnvironment
+    val flinkTable = BatchTableEnvironment.create(fbEnv)
 
     val serializer = new SerializerModel()
     Generator.init(Array[String]())
@@ -76,13 +73,17 @@ class TestRdfPartitionFlink extends FlatSpec {
     val qef = FluentQueryExecutionFactory.from(new QueryExecutionFactorySparqlifyFlink(env, flinkTable, rewriter))
       .config()
       .withQueryTransform(new java.util.function.Function[Query, Query] {
-        override def apply(qq: Query): Query = { qq.setOffset(Query.NOLIMIT); qq }
+        override def apply(qq: Query): Query = {
+          qq.setOffset(Query.NOLIMIT);
+          qq
+        }
       })
       .withParser(SparqlQueryParserImpl.create())
       .end()
       .create()
 
-    val str = """
+    val str =
+      """
 PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
 PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -97,17 +98,17 @@ WHERE {
 """
 
     /**
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:producer ?p .
-     * ?p rdfs:label ?producer .
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> dc:publisher ?p .
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productFeature ?f .
-     * ?f rdfs:label ?productFeature .
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyTextual1 ?propertyTextual1 .
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyTextual2 ?propertyTextual2 .
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyTextual3 ?propertyTextual3 .
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyNumeric1 ?propertyNumeric1 .
-     * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyNumeric2 ?propertyNumeric2 .
-     */
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:producer ?p .
+      * ?p rdfs:label ?producer .
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> dc:publisher ?p .
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productFeature ?f .
+      * ?f rdfs:label ?productFeature .
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyTextual1 ?propertyTextual1 .
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyTextual2 ?propertyTextual2 .
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyTextual3 ?propertyTextual3 .
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyNumeric1 ?propertyNumeric1 .
+      * <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer2/Product72> bsbm:productPropertyNumeric2 ?propertyNumeric2 .
+      */
 
     println(ResultSetFormatter.asText(qef.createQueryExecution(str).execSelect()))
 

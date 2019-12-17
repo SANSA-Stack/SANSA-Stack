@@ -1,31 +1,31 @@
 package net.sansa_stack.query.flink.sparqlify
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
 
 import scala.collection.JavaConverters._
 
-import com.esotericsoftware.kryo.io.{ Input, Output }
-import org.aksw.jena_sparql_api.core.{ QueryExecutionBaseSelect, QueryExecutionFactory, ResultSetCloseable }
+import com.esotericsoftware.kryo.io.{Input, Output}
+import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, QueryExecutionFactory, ResultSetCloseable}
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer
-import org.apache.flink.api.scala.{ ExecutionEnvironment, _ }
-import org.apache.flink.table.api.scala.{ BatchTableEnvironment, _ }
+import org.apache.flink.api.scala.{ExecutionEnvironment, _}
+import org.apache.flink.table.api.scala.{BatchTableEnvironment, _}
 import org.apache.flink.types.Row
-import org.apache.jena.query.{ Query, QueryExecution }
+import org.apache.jena.query.{Query, QueryExecution}
 import org.apache.jena.sparql.engine.binding.Binding
 
 /**
- * Created by Simon Bin on 12/06/17.
- */
+  * Created by Simon Bin on 12/06/17.
+  */
 class QueryExecutionSparqlifyFlink(
-  query: Query,
-  subFactory: QueryExecutionFactory,
-  val sparqlSqlRewriter: SparqlSqlStringRewriter,
-  val flinkEnv: ExecutionEnvironment,
-  val flinkTable: BatchTableEnvironment) extends QueryExecutionBaseSelect(query, subFactory) {
+                                    query: Query,
+                                    subFactory: QueryExecutionFactory,
+                                    val sparqlSqlRewriter: SparqlSqlStringRewriter,
+                                    val flinkEnv: ExecutionEnvironment,
+                                    val flinkTable: BatchTableEnvironment) extends QueryExecutionBaseSelect(query, subFactory) {
 
   override def executeCoreSelectX(query: Query): QueryExecution = throw new UnsupportedOperationException
 
@@ -43,9 +43,12 @@ class QueryExecutionSparqlifyFlink(
     result
   }
 
+  // override def setInitialBinding(binding: Binding): Unit = throw new UnsupportedOperationException
+
   override def getTimeout1(): Long = -1
 
   override def execJson(): org.apache.jena.atlas.json.JsonArray = throw new UnsupportedOperationException
+
   override def execJsonItems(): java.util.Iterator[org.apache.jena.atlas.json.JsonObject] = throw new UnsupportedOperationException
 
 }
@@ -61,8 +64,7 @@ object QueryExecutionSparqlifyFlink {
     val dataset = flinkTable.sqlQuery(sqlQueryStr)
     // System.out.println("SqlQueryStr: " + sqlQueryStr);
     // System.out.println("VarDef: " + rewrite.getVarDefinition());
-    val rowMapper = new FlinkRowMapperSparqlify(varDef, dataset.getSchema.getColumnNames)
-    println(rowMapper)
+    val rowMapper = new FlinkRowMapperSparqlify(varDef, dataset.getSchema.getFieldNames)
     val config = flinkEnv.getConfig
     // Function<Row, Binding> fn = x -> rowMapper.apply(x);
     // org.apache.spark.api.java.function.Function<Row, Binding> y = x -> rowMapper.apply(x);

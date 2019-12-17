@@ -10,8 +10,7 @@ import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
 import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
-import org.aksw.sparqlify.util.SparqlifyUtils
-import org.aksw.sparqlify.util.SqlBackendConfig
+import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
 import org.aksw.sparqlify.validation.LoggerCount
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
@@ -27,6 +26,7 @@ object SparqlifyUtils3 // extends StrictLogging
     val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) // new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
+    val sqlFunctionMapping = SparqlifyCoreInit.loadSqlFunctionDefinitions("functions-spark.xml")
 
     val ers = SparqlifyUtils.createDefaultExprRewriteSystem()
     val mappingOps = SparqlifyUtils.createDefaultMappingOps(ers)
@@ -56,7 +56,7 @@ object SparqlifyUtils3 // extends StrictLogging
 
     val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
 
-    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper)
+    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper, sqlFunctionMapping)
     //   val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
 
     //    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))

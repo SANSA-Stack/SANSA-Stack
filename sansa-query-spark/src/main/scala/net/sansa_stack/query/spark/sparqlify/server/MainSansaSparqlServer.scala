@@ -1,25 +1,23 @@
 package net.sansa_stack.query.spark.sparqlify.server
 
-import java.io.{File, FileInputStream}
-
-import scala.collection.JavaConverters._
+import java.io.File
 
 import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import scala.collection.JavaConverters._
 
 object MainSansaSparqlServer {
 
   def main(args: Array[String]): Unit = {
-
-    val uri = args.head
 
     val tempDirStr = System.getProperty("java.io.tmpdir")
     if (tempDirStr == null) {
@@ -60,14 +58,12 @@ object MainSansaSparqlServer {
         |<http://snomedct-20170731T150000Z> <http://www.w3.org/2002/07/owl#versionInfo> "20170731T150000Z"@en .
       """.stripMargin
 
-    // val it = RDFDataMgr.createIteratorTriples(new FileInputStream("/home/raven/Projects/Playground/iswc2019-sansa-demo/geo_coordinates_mappingbased_en.wkt.types.ttl"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
-
     val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
     // val map = graphRdd.partitionGraphByPredicates
-    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
+    val partitions: Map[RdfPartitionDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
 
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
 
