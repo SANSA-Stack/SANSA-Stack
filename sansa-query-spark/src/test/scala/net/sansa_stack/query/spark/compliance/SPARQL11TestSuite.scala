@@ -1,23 +1,18 @@
 package net.sansa_stack.query.spark.compliance
 
+import java.io.InputStreamReader
 import java.net.{JarURLConnection, URL}
+import java.util
 
 import scala.collection.JavaConverters._
 
 import com.google.common.collect.ImmutableSet
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import it.unibz.inf.ontop.test.sparql.ManifestTestUtils
-import org.apache.jena.graph.NodeFactory
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.resultset.rw.ResultsStAX
 import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.jena.sparql.core.Var
-import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
-import org.apache.jena.sparql.expr.NodeValue
 import org.apache.jena.sparql.resultset.{ResultSetCompare, SPARQLResult}
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row}
 import org.scalatest.FunSuite
 
 import net.sansa_stack.rdf.spark.utils.Logging
@@ -25,12 +20,10 @@ import net.sansa_stack.rdf.spark.utils.Logging
 /**
  * SPARQL 1.1 test suite.
  *
- *
  * @author Lorenz Buehmann
  */
 abstract class SPARQL11TestSuite
   extends FunSuite
-    with DataFrameSuiteBase
     with Logging {
 
   protected val aggregatesManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#"
@@ -50,13 +43,14 @@ abstract class SPARQL11TestSuite
   // contains the list of ignored tests cases, must be overridden
   lazy val IGNORE: ImmutableSet[String] = ImmutableSet.of()
 
-  val testData = ManifestTestUtils.parametersFromSuperManifest("/testcases-dawg-sparql-1.1/manifest-all.ttl", IGNORE)
+  val testData: util.Collection[Array[AnyRef]] = ManifestTestUtils.parametersFromSuperManifest("/testcases-dawg-sparql-1.1/manifest-all.ttl", IGNORE)
 
   // the main loop over the test data starts here
   // single ScalaTest is generated per query
   testData.asScala
     .filter(data => !IGNORE.contains(data(0).asInstanceOf[String]))
-    .slice(0, 50)
+    .slice(0, 200)
+    .filter(data => data(1) == "Sub query-\"sq01 - Subquery within graph pattern\"")
 //    .filter(data => data(1) == "BIND-\"bind05 - BIND\"")
     //    .filter(data => data(1) == "Aggregates-\"AVG\"")
     .foreach { d =>
@@ -74,8 +68,14 @@ abstract class SPARQL11TestSuite
         println(s"SPARQL query:\n $query")
 
         // load data
-        val datasetURL = dataset.getDefaultGraphs.iterator().next().toString
-        val data = loadData(datasetURL)
+        val dg = dataset.getDefaultGraphs
+        val datasetURL =
+          if (!dg.isEmpty) {
+            dataset.getDefaultGraphs.iterator().next()
+          } else {
+            dataset.getNamedGraphs.iterator().next()
+          }
+        val data = loadData(datasetURL.toString)
         data.setNsPrefix("", "http://www.example.org/")
         println("Data:")
         data.write(System.out, "Turtle")
@@ -100,7 +100,7 @@ abstract class SPARQL11TestSuite
   def runQuery(query: Query, data: Model): SPARQLResult
 
   private def processAsk(query: Query, resultExpected: SPARQLResult, resultActual: SPARQLResult) = {
-    assert("Result of ASK query does not match", resultActual.getBooleanResult, resultExpected.getBooleanResult)
+    assert(resultActual.getBooleanResult == resultExpected.getBooleanResult, "Result of ASK query does not match")
   }
 
   private def processSelect(query: Query, results: SPARQLResult, resultsAct: SPARQLResult) = {
@@ -136,7 +136,7 @@ abstract class SPARQL11TestSuite
           |""".stripMargin
       )
     }
-    assert("Results OF SELECT query do not match", b, true)
+    assert(b, "Results of SELECT query do not match")
 
   }
 
@@ -158,54 +158,6 @@ abstract class SPARQL11TestSuite
     }
   }
 
-  /**
-   * Convert DataFrame to array of bindings.
-   */
-  protected def toBindings(df: DataFrame): Array[Binding] = {
-    df.rdd.collect().map(row => toBinding(row))
-  }
-
-  val decimalType = DataTypes.createDecimalType()
-
-  /**
-   * Convert single row to a binding.
-   */
-  protected def toBinding(row: Row): Binding = {
-    val binding = BindingFactory.create()
-
-    val fields = row.schema.fields
-
-    fields.foreach(f => {
-      // check for null value first
-      if (row.getAs[String](f.name) != null) {
-        val v = Var.alloc(f.name)
-        val node = if (f.dataType == StringType && row.getAs[String](f.name).startsWith("http://")) {
-          NodeFactory.createURI(row.getAs[String](f.name))
-        } else {
-          val nodeValue = f.dataType match {
-            case DoubleType => NodeValue.makeDouble(row.getAs[Double](f.name))
-            case FloatType => NodeValue.makeFloat(row.getAs[Float](f.name))
-            case StringType => NodeValue.makeString(row.getAs[String](f.name))
-            case IntegerType => NodeValue.makeInteger(row.getAs[Int](f.name))
-            case LongType => NodeValue.makeInteger(row.getAs[Long](f.name))
-            case ShortType => NodeValue.makeInteger(row.getAs[Long](f.name))
-            case BooleanType => NodeValue.makeBoolean(row.getAs[Boolean](f.name))
-//            case NullType =>
-            case x if x.isInstanceOf[DecimalType] => NodeValue.makeDecimal(row.getAs[java.math.BigDecimal](f.name))
-            //        case DateType =>
-            case _ => throw new RuntimeException("unsupported Spark data type")
-          }
-          nodeValue.asNode()
-        }
-
-        binding.add(v, node)
-      }
-
-    })
-
-    binding
-  }
-
   private def readQueryString(queryFileURL: String): String = {
     val is = new URL(queryFileURL).openStream
 
@@ -220,14 +172,16 @@ abstract class SPARQL11TestSuite
   }
 
   private def loadData(datasetURL: String): Model = {
+    println(s"loading data from $datasetURL")
     import java.io.IOException
     import java.net.MalformedURLException
     try {
       val url = new URL(datasetURL)
       val conn = url.openConnection.asInstanceOf[JarURLConnection]
       val in = conn.getInputStream
+
       val data = ModelFactory.createDefaultModel()
-      RDFDataMgr.read(data, in, null, Lang.TURTLE)
+      RDFDataMgr.read(data, in, null, if (datasetURL.endsWith(".rdf")) Lang.RDFXML else Lang.TURTLE)
       data
     } catch {
       case e: MalformedURLException =>

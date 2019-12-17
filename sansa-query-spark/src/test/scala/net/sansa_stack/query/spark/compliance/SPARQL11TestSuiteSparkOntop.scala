@@ -16,7 +16,7 @@ import org.apache.jena.sparql.resultset.SPARQLResult
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 
-import net.sansa_stack.query.spark.sparql2sql.Sparql2Sql
+import net.sansa_stack.query.spark.ontop.Sparql2Sql
 
 /**
  * SPARQL 1.1 test suite for Ontop-based SPARQL-to-SQL implementation.
@@ -24,8 +24,8 @@ import net.sansa_stack.query.spark.sparql2sql.Sparql2Sql
  *
  * @author Lorenz Buehmann
  */
-class SPARQL11TestSuiteOntop
-  extends SPARQL11TestSuite {
+class SPARQL11TestSuiteSparkOntop
+  extends SPARQL11TestSuiteSpark {
 
   override lazy val IGNORE = ImmutableSet.of(/* AGGREGATES */
     // TODO: support GROUP_CONCAT
