@@ -118,6 +118,17 @@ services:
       ENABLE_INIT_DAEMON: "false"
     volumes:
       - ./examples/data:/data
+  owl-reader-rdf-xml:
+    build: ./examples
+    networks:
+      - spark-net
+    environment:
+      SPARK_APPLICATION_MAIN_CLASS: "net.sansa_stack.examples.spark.owl.OWLReaderRDD"
+      #SPARK_APPLICATION_ARGS: "--input /data/ont_functional.owl --syntax fun"
+      SPARK_APPLICATION_ARGS: "--input hdfs://namenode:8020/data/ont_OWLXML.owl --syntax owl_xml"
+      ENABLE_INIT_DAEMON: "false"
+    volumes:
+      - ./examples/data:/data
   owl-dataset-reader-manchester:
     build: ./examples
     networks:

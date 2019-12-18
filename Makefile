@@ -58,6 +58,10 @@ cli-owl-reader-functional:
 	docker-compose -f docker-compose-app.yml build owl-reader-functional
 	docker-compose -f docker-compose-app.yml up owl-reader-functional
 
+cli-owl-reader-rdf-xml:
+	docker-compose -f docker-compose-app.yml build owl-reader-rdf-xml
+	docker-compose -f docker-compose-app.yml up owl-reader-rdf-xml
+
 cli-owl-dataset-reader-manchester:
 	docker-compose -f docker-compose-app.yml build owl-dataset-reader-manchester
 	docker-compose -f docker-compose-app.yml up owl-dataset-reader-manchester
