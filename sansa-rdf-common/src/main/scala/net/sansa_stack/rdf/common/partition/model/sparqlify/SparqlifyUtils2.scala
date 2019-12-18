@@ -47,7 +47,11 @@ object SparqlifyUtils2 {
     val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
     val langPart = if (p.langTagPresent) "_lang" else ""
 
-    val tableName = predPart + dtPart + langPart // .replace("#", "__").replace("-", "_")
+    val sTermTypePart = if (p.subjectType == 0) "sbn" else ""
+    val oTermTypePart = if (p.objectType == 0) "obn" else ""
+
+    val tableName = predPart + dtPart + langPart + sTermTypePart + oTermTypePart
+    // .replace("#", "__").replace("-", "_")
 
     val quad = new Quad(Quad.defaultGraphIRI, Vars.s, pn, Vars.o)
     // val quadPattern = new QuadPattern()
