@@ -4,46 +4,7 @@
       "title": "RDF By Modularity Clustering example",
       "text": "import scala.collection.mutable\nimport org.apache.spark.sql.SparkSession\nimport org.apache.log4j.{ Level, Logger }\nimport net.sansa_stack.ml.spark.clustering.algorithms.RDFByModularityClustering\n\nval graphFile \u003d \"hdfs://namenode:8020/data/Clustering_sampledata.nt\"\nval outputFile \u003d \"hdfs://namenode:8020/data/clustering.out\"\nval numIterations \u003d 10\n\nRDFByModularityClustering(sc, numIterations, graphFile, outputFile)",
       "user": "anonymous",
-      "dateUpdated": "2018-12-17 12:42:10.861",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false
-        },
-        "editorMode": "ace/mode/scala",
-        "title": true,
-        "fontSize": 9.0
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "import scala.collection.mutable\nimport org.apache.spark.sql.SparkSession\nimport org.apache.log4j.{Level, Logger}\nimport net.sansa_stack.ml.spark.clustering.algorithms.RDFByModularityClustering\ngraphFile: String \u003d hdfs://namenode:8020/data/Clustering_sampledata.nt\noutputFile: String \u003d hdfs://namenode:8020/data/clustering.out\nnumIterations: Int \u003d 10\nThe number of nodes in the knowledge graph is 8 and the number of edges is 13.\nThe first ten edges of the graph look like the following: \n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user1\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user6\u003e)\n(\u003chttp://twitter/user2\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user3\u003e,\u003chttp://twitter/user4\u003e)\n(\u003chttp://twitter/user4\u003e,\u003chttp://twitter/user5\u003e)\n(\u003chttp://twitter/user5\u003e,\u003chttp://twitter/user6\u003e)\nStarting iteration\n\n1\n2\n3\n4\n5\n6\n7\nThe computed clusters are:\nCluster1  contains:\n\u003chttp://twitter/user4\u003e, \u003chttp://twitter/user7\u003e, \u003chttp://twitter/user5\u003e, \u003chttp://twitter/user6\u003e, \n\nCluster2  contains:\n\u003chttp://twitter/user0\u003e, \u003chttp://twitter/user2\u003e, \u003chttp://twitter/user1\u003e, \u003chttp://twitter/user3\u003e, \n\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1494503254565_1530513202",
-      "id": "20170511-114734_1804790867",
-      "dateCreated": "2017-05-11 11:47:34.000",
-      "dateStarted": "2018-12-17 12:42:10.885",
-      "dateFinished": "2018-12-17 12:42:25.077",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "Power Iteration Clustering example",
-      "text": "\nimport net.sansa_stack.ml.spark.clustering._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.model._\n\nval input \u003d \"hdfs://namenode:8020/data/Clustering_sampledata.nt\"\n\nval maxIterations \u003d 10\nval k \u003d2\n\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval cluster \u003d triples.cluster(ClusteringAlgorithm.RDFGraphPowerIterationClustering).asInstanceOf[RDFGraphPowerIterationClustering].\n              setK(k).setMaxIterations(maxIterations).run()\n\ncluster.take(5).foreach(println)",
-      "user": "anonymous",
-      "dateUpdated": "2019-08-20 11:45:32.876",
+      "dateUpdated": "2019-12-18 22:03:46.941",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -67,7 +28,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import net.sansa_stack.ml.spark.clustering._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.model._\ninput: String \u003d hdfs://namenode:8020/data/Clustering_sampledata.nt\noutput: String \u003d hdfs://namenode:8020/data/Clustering_sampledataOutput\nmaxIterations: Int \u003d 10\nk: Int \u003d 2\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[70] at mapPartitions at NTripleReader.scala:140\n2\n10\naverageSil: 0.5252976190476191\n\ncluster: org.apache.spark.rdd.RDD[(Int, List[String])] \u003d MapPartitionsRDD[582] at map at RDFGraphPowerIterationClustering.scala:226\n(0,List(http://twitter/user4, http://twitter/user5, http://twitter/user6, http://twitter/user7))\n(1,List(http://twitter/user0, http://twitter/user1, http://twitter/user2, http://twitter/user3))\n"
+            "data": "import scala.collection.mutable\nimport org.apache.spark.sql.SparkSession\nimport org.apache.log4j.{Level, Logger}\nimport net.sansa_stack.ml.spark.clustering.algorithms.RDFByModularityClustering\ngraphFile: String \u003d hdfs://namenode:8020/data/Clustering_sampledata.nt\noutputFile: String \u003d hdfs://namenode:8020/data/clustering.out\nnumIterations: Int \u003d 10\nThe number of nodes in the knowledge graph is 8 and the number of edges is 13.\nThe first ten edges of the graph look like the following: \n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user1\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user0\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user2\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user1\u003e,\u003chttp://twitter/user6\u003e)\n(\u003chttp://twitter/user2\u003e,\u003chttp://twitter/user3\u003e)\n(\u003chttp://twitter/user3\u003e,\u003chttp://twitter/user4\u003e)\n(\u003chttp://twitter/user4\u003e,\u003chttp://twitter/user5\u003e)\n(\u003chttp://twitter/user5\u003e,\u003chttp://twitter/user6\u003e)\nStarting iteration\n\n1\n2\n3\n4\n5\n6\n7\nThe computed clusters are:\nCluster1  contains:\n\u003chttp://twitter/user4\u003e, \u003chttp://twitter/user5\u003e, \u003chttp://twitter/user6\u003e, \u003chttp://twitter/user7\u003e, \n\nCluster2  contains:\n\u003chttp://twitter/user0\u003e, \u003chttp://twitter/user2\u003e, \u003chttp://twitter/user1\u003e, \u003chttp://twitter/user3\u003e, \n\n"
           }
         ]
       },
@@ -78,136 +39,47 @@
           "tooltip": "View in Spark web UI",
           "group": "spark",
           "values": [
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d0",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d1",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d2",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d3",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d4",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d5",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d6",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d7",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d8",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d9",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d10",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d11",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d12",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d13",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d14",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d15",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d16",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d17",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d18",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d19",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d20",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d21",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d22",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d23",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d24",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d25",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d26",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d27",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d28",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d29",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d30",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d31",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d32",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d33",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d34",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d35",
-            "http://a2d6b1ec8163:4040/jobs/job?id\u003d36"
+            "http://f54df7154670:4040/jobs/job?id\u003d0",
+            "http://f54df7154670:4040/jobs/job?id\u003d1",
+            "http://f54df7154670:4040/jobs/job?id\u003d2",
+            "http://f54df7154670:4040/jobs/job?id\u003d3",
+            "http://f54df7154670:4040/jobs/job?id\u003d4",
+            "http://f54df7154670:4040/jobs/job?id\u003d5",
+            "http://f54df7154670:4040/jobs/job?id\u003d6",
+            "http://f54df7154670:4040/jobs/job?id\u003d7",
+            "http://f54df7154670:4040/jobs/job?id\u003d8",
+            "http://f54df7154670:4040/jobs/job?id\u003d9",
+            "http://f54df7154670:4040/jobs/job?id\u003d10",
+            "http://f54df7154670:4040/jobs/job?id\u003d11",
+            "http://f54df7154670:4040/jobs/job?id\u003d12",
+            "http://f54df7154670:4040/jobs/job?id\u003d13",
+            "http://f54df7154670:4040/jobs/job?id\u003d14",
+            "http://f54df7154670:4040/jobs/job?id\u003d15",
+            "http://f54df7154670:4040/jobs/job?id\u003d16",
+            "http://f54df7154670:4040/jobs/job?id\u003d17",
+            "http://f54df7154670:4040/jobs/job?id\u003d18",
+            "http://f54df7154670:4040/jobs/job?id\u003d19",
+            "http://f54df7154670:4040/jobs/job?id\u003d20",
+            "http://f54df7154670:4040/jobs/job?id\u003d21",
+            "http://f54df7154670:4040/jobs/job?id\u003d22"
           ],
           "interpreterSettingId": "spark"
         }
       },
       "apps": [],
-      "jobName": "paragraph_1530191591127_-1927077565",
-      "id": "20180628-131311_2050756697",
-      "dateCreated": "2018-06-28 13:13:11.000",
-      "dateStarted": "2019-08-20 11:42:55.354",
-      "dateFinished": "2019-08-20 11:44:57.551",
+      "jobName": "paragraph_1494503254565_1530513202",
+      "id": "20170511-114734_1804790867",
+      "dateCreated": "2017-05-11 11:47:34.000",
+      "dateStarted": "2019-12-18 22:03:46.998",
+      "dateFinished": "2019-12-18 22:04:26.438",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
-      "title": "Mines the Rules example (experimental)",
-      "text": "import scala.collection.mutable\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\nimport net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\nval input \u003d \"hdfs://namenode:8020/data/MineRules_sampledata.tsv\"\nval outputPath \u003d \"hdfs://namenode:8020/output\"\nval hdfsPath \u003d outputPath + \"/\"\n\nval know \u003d new KB()\nknow.sethdfsPath(hdfsPath)\nknow.setKbSrc(input)\n\nknow.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))\nknow.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, spark.sparkContext, spark.sqlContext, 2))\n\nval algo \u003d new Algorithm(know, 0.01, 3, 0.1, hdfsPath)\n\nvar output \u003d algo.ruleMining(spark.sparkContext, spark.sqlContext)\nvar outString \u003d output.map { x \u003d\u003e\n    var rdfTrp \u003d x.getRule()\n    var temp \u003d \"\"\n    for (i \u003c- 0 to rdfTrp.length - 1) {\n      if (i \u003d\u003d 0) {\n        temp \u003d rdfTrp(i) + \" \u003c\u003d \"\n      } else {\n        temp +\u003d rdfTrp(i) + \" \\u2227 \"\n      }\n    }\n    temp \u003d temp.stripSuffix(\" \\u2227 \")\n    temp\n  }.toSeq\n  \nvar rddOut \u003d spark.sparkContext.parallelize(outString).repartition(1)\n\n//rddOut.saveAsTextFile(outputPath + \"/testOut\")\nrddOut.take(5).foreach(println)",
+      "title": "Power Iteration Clustering example",
+      "text": "\nimport net.sansa_stack.ml.spark.clustering._\nimport net.sansa_stack.ml.spark.clustering.algorithms._\n\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.model._\n\nval input \u003d \"hdfs://namenode:8020/data/Clustering_sampledata.nt\"\n\nval maxIterations \u003d 10\nval k \u003d2\n\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval cluster \u003d triples.cluster(ClusteringAlgorithm.RDFGraphPowerIterationClustering).asInstanceOf[RDFGraphPowerIterationClustering].\n              setK(k).setMaxIterations(maxIterations).run()\n\ncluster.take(5).foreach(println)",
       "user": "anonymous",
-      "dateUpdated": "2018-06-28 13:09:28.000",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false
-        },
-        "editorMode": "ace/mode/scala",
-        "title": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "\nimport scala.collection.mutable\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.{RDFGraphLoader, DfLoader}\n\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\ninput: String \u003d hdfs://namenode:8020/data/MineRules_sampledata.tsv\n\noutputPath: String \u003d hdfs://namenode:8020/output\n\nhdfsPath: String \u003d hdfs://namenode:8020/output/\n\nknow: net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB \u003d net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB@3612329\n\nalgo: net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm \u003d net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm@5ca2dc0e\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\norg.apache.spark.SparkException: Job 550 cancelled part of cancelled job group zeppelin-20170511-114911_1382631593\n  at org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1435)\n  at org.apache.spark.scheduler.DAGScheduler.handleJobCancellation(DAGScheduler.scala:1375)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleJobGroupCancelled$1.apply$mcVI$sp(DAGScheduler.scala:788)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleJobGroupCancelled$1.apply(DAGScheduler.scala:788)\n  at org.apache.spark.scheduler.DAGScheduler$$anonfun$handleJobGroupCancelled$1.apply(DAGScheduler.scala:788)\n  at scala.collection.mutable.HashSet.foreach(HashSet.scala:78)\n  at org.apache.spark.scheduler.DAGScheduler.handleJobGroupCancelled(DAGScheduler.scala:788)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:1625)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1605)\n  at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1594)\n  at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:48)\n  at org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:628)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1925)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1938)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1951)\n  at org.apache.spark.SparkContext.runJob(SparkContext.scala:1965)\n  at org.apache.spark.rdd.RDD$$anonfun$collect$1.apply(RDD.scala:936)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:151)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:112)\n  at org.apache.spark.rdd.RDD.withScope(RDD.scala:362)\n  at org.apache.spark.rdd.RDD.collect(RDD.scala:935)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.bindingExists(KBObject.scala:469)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$bindingExists$2.apply(KBObject.scala:558)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$bindingExists$2.apply(KBObject.scala:506)\n  at scala.collection.IndexedSeqOptimized$class.foreach(IndexedSeqOptimized.scala:33)\n  at scala.collection.mutable.ArrayOps$ofRef.foreach(ArrayOps.scala:186)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.bindingExists(KBObject.scala:506)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1$$anonfun$apply$3.apply(KBObject.scala:631)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1$$anonfun$apply$3.apply(KBObject.scala:613)\n  at scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n  at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:48)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1.apply(KBObject.scala:613)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB$$anonfun$countProjectionQueriesDF$1.apply(KBObject.scala:612)\n  at scala.collection.mutable.HashMap$$anonfun$foreach$1.apply(HashMap.scala:99)\n  at scala.collection.mutable.HashMap$$anonfun$foreach$1.apply(HashMap.scala:99)\n  at scala.collection.mutable.HashTable$class.foreachEntry(HashTable.scala:230)\n  at scala.collection.mutable.HashMap.foreachEntry(HashMap.scala:40)\n  at scala.collection.mutable.HashMap.foreach(HashMap.scala:99)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.countProjectionQueriesDF(KBObject.scala:612)\n  at net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB.addClosingAtom(KBObject.scala:1191)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm.refine(MineRules.scala:250)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm$$anonfun$ruleMining$1$$anonfun$apply$mcVI$sp$1.apply$mcVI$sp(MineRules.scala:197)\n  at scala.collection.immutable.Range.foreach$mVc$sp(Range.scala:160)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm$$anonfun$ruleMining$1.apply$mcVI$sp(MineRules.scala:170)\n  at scala.collection.immutable.Range.foreach$mVc$sp(Range.scala:160)\n  at net.sansa_stack.ml.spark.mining.amieSpark.MineRules$Algorithm.ruleMining(MineRules.scala:122)\n  ... 46 elided\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1494503351941_-977125242",
-      "id": "20170511-114911_1382631593",
-      "dateCreated": "2017-05-11 11:49:11.000",
-      "dateStarted": "2018-06-28 13:09:28.000",
-      "dateFinished": "2018-06-28 13:11:04.000",
-      "status": "ERROR",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "Detecting Numerical Outliers in the dataset (experimental)",
-      "text": "import scala.collection.mutable\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.spark.storage.StorageLevel\nimport net.sansa_stack.ml.spark.outliers.anomalydetection._\nimport org.apache.spark.rdd.RDD\n\n\nval numofpartition   \u003d 10\nval threshold        \u003d 0.45\nval anomalyListLimit \u003d 5\n\nval input \u003d \"hdfs://namenode:8020/data/outliers_dataset.nt\"\n\n//N-Triples Reader\nval lang \u003d Lang.NTRIPLES\nval triplesRDD \u003d spark.rdf(lang)(input).repartition(numofpartition).persist()\n\n//filtering numeric literal having xsd type double,integer,nonNegativeInteger and squareKilometre\nval objList \u003d List(\n  \"http://www.w3.org/2001/XMLSchema#double\",\n  \"http://www.w3.org/2001/XMLSchema#integer\",\n  \"http://www.w3.org/2001/XMLSchema#nonNegativeInteger\",\n  \"http://dbpedia.org/datatype/squareKilometre\")\n\n//helful for considering only Dbpedia type as their will be yago type,wikidata type also\nval triplesType \u003d List(\"http://dbpedia.org/ontology\")\n\n//some of the supertype which are present for most of the subject\nval listSuperType \u003d List(\n  \"http://dbpedia.org/ontology/Activity\", \"http://dbpedia.org/ontology/Organisation\",\n  \"http://dbpedia.org/ontology/Agent\", \"http://dbpedia.org/ontology/SportsLeague\",\n  \"http://dbpedia.org/ontology/Person\", \"http://dbpedia.org/ontology/Athlete\",\n  \"http://dbpedia.org/ontology/Event\", \"http://dbpedia.org/ontology/Place\",\n  \"http://dbpedia.org/ontology/PopulatedPlace\", \"http://dbpedia.org/ontology/Region\",\n  \"http://dbpedia.org/ontology/Species\", \"http://dbpedia.org/ontology/Eukaryote\",\n  \"http://dbpedia.org/ontology/Location\")\n\n//hypernym URI\nval hypernym \u003d \"http://purl.org/linguistics/gold/hypernym\"\n\nvar clusterOfSubject: RDD[(Set[(String, String, Object)])] \u003d null\nprintln(\"AnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \")\n\nval outDetection \u003d new AnomalyWithHashingTF(triplesRDD, objList, triplesType, threshold, listSuperType, spark, hypernym, numofpartition) with Serializable\nclusterOfSubject \u003d outDetection.run()\n\nval setData \u003d clusterOfSubject.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)\nval setDataStore \u003d setData.map(f \u003d\u003e f.toSeq)\n\nval setDataSize \u003d setDataStore.filter(f \u003d\u003e f.size \u003e anomalyListLimit)\n\nval test \u003d setDataSize.map(f \u003d\u003e outDetection.iqr2(f, anomalyListLimit))\n\ntest.take(5).foreach(println)\n\n//val testfilter \u003d test.filter(f \u003d\u003e f.size \u003e 0) //.distinct()\n//val testfilterDistinct \u003d testfilter.flatMap(f \u003d\u003e f)\n\n//testfilterDistinct.take(10).foreach(println)\n",
-      "user": "anonymous",
-      "dateUpdated": "2018-06-28 13:11:53.000",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "scala"
-        },
-        "editorMode": "ace/mode/scala",
-        "title": true
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "\nimport scala.collection.mutable\n\nimport org.apache.jena.riot.Lang\n\nimport net.sansa_stack.rdf.spark.io._\n\nimport org.apache.spark.storage.StorageLevel\n\nimport net.sansa_stack.ml.spark.outliers.anomalydetection._\n\nimport org.apache.spark.rdd.RDD\n\nnumofpartition: Int \u003d 10\n\nthreshold: Double \u003d 0.45\n\nanomalyListLimit: Int \u003d 5\n\ninput: String \u003d hdfs://namenode:8020/data/outliers_dataset.nt\n\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\n\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[1599] at repartition at \u003cconsole\u003e:49\n\nobjList: List[String] \u003d List(http://www.w3.org/2001/XMLSchema#double, http://www.w3.org/2001/XMLSchema#integer, http://www.w3.org/2001/XMLSchema#nonNegativeInteger, http://dbpedia.org/datatype/squareKilometre)\n\ntriplesType: List[String] \u003d List(http://dbpedia.org/ontology)\n\nlistSuperType: List[String] \u003d List(http://dbpedia.org/ontology/Activity, http://dbpedia.org/ontology/Organisation, http://dbpedia.org/ontology/Agent, http://dbpedia.org/ontology/SportsLeague, http://dbpedia.org/ontology/Person, http://dbpedia.org/ontology/Athlete, http://dbpedia.org/ontology/Event, http://dbpedia.org/ontology/Place, http://dbpedia.org/ontology/PopulatedPlace, http://dbpedia.org/ontology/Region, http://dbpedia.org/ontology/Species, http://dbpedia.org/ontology/Eukaryote, http://dbpedia.org/ontology/Location)\n\nhypernym: String \u003d http://purl.org/linguistics/gold/hypernym\n\nclusterOfSubject: org.apache.spark.rdd.RDD[Set[(String, String, Object)]] \u003d null\nAnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \n\noutDetection: net.sansa_stack.ml.spark.outliers.anomalydetection.AnomalyWithHashingTF with Serializable \u003d $anon$1@5769804f\n\n\n\n\njava.lang.NoSuchMethodError: org.apache.spark.RangePartitioner$.$lessinit$greater$default$4()I\n  at net.sansa_stack.ml.spark.outliers.anomalydetection.AnomalyWithHashingTF.jSimilarity(AnomalyWithHashingTF.scala:166)\n  at net.sansa_stack.ml.spark.outliers.anomalydetection.AnomalyWithHashingTF.run(AnomalyWithHashingTF.scala:63)\n  ... 50 elided\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1494503670410_82299729",
-      "id": "20170511-115430_1909909659",
-      "dateCreated": "2017-05-11 11:54:30.000",
-      "dateStarted": "2018-06-28 13:11:53.000",
-      "dateFinished": "2018-06-28 13:12:00.000",
-      "status": "ERROR",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "RDF Graph Kernel example",
-      "text": "import net.sansa_stack.ml.spark.kernel._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval t0 \u003d System.nanoTime\nval lang \u003d Lang.NTRIPLES\nval iteration \u003d2\nval input \u003d \"hdfs://namenode:8020/data/aifb-fixed_no_schema4.nt\"\n\nval triples \u003d spark.rdf(lang)(input).\n              filter(_.getPredicate.getURI !\u003d \"http://swrc.ontoware.org/ontology#employs\")\n\nval rdfFastGraphKernel \u003d RDFFastGraphKernel(spark, triples, \"http://swrc.ontoware.org/ontology#affiliation\")\nval data \u003d rdfFastGraphKernel.getMLLibLabeledPoints\n\nval t1 \u003d System.nanoTime\nRDFFastTreeGraphKernelUtil.printTime(\"Initialization\", t0, t1)\n\nRDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data, 4, iteration)\n\nval t2 \u003d System.nanoTime\nRDFFastTreeGraphKernelUtil.printTime(\"Run Prediction\", t1, t2)",
-      "user": "anonymous",
-      "dateUpdated": "2018-12-17 12:46:56.504",
+      "dateUpdated": "2019-12-18 22:07:32.067",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -231,16 +103,323 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "import net.sansa_stack.ml.spark.kernel._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nt0: Long \u003d 16678485159439\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\niteration: Int \u003d 2\ninput: String \u003d hdfs://namenode:8020/data/aifb-fixed_no_schema4.nt\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[628] at filter at \u003cconsole\u003e:68\nrdfFastGraphKernel: net.sansa_stack.ml.spark.kernel.RDFFastGraphKernel \u003d net.sansa_stack.ml.spark.kernel.RDFFastGraphKernel@111c8510\ndata: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] \u003d MapPartitionsRDD[681] at map at RDFFastGraphKernel.scala:73\nt1: Long \u003d 16698555550346\nInitialization: 20.070390907 s\n(data count,177)\nAverage Accuracy: 0.7801857585139318\nFeature Computation/Read: 2.668846294 s\nModel learning/testing: 112.079530386 s\nt2: Long \u003d 16814452793835\nRun Prediction: 115.897243489 s\n"
+            "data": "import net.sansa_stack.ml.spark.clustering._\nimport net.sansa_stack.ml.spark.clustering.algorithms._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.model._\ninput: String \u003d hdfs://namenode:8020/data/Clustering_sampledata.nt\nmaxIterations: Int \u003d 10\nk: Int \u003d 2\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[80] at mapPartitions at NTripleReader.scala:140\n2\n10\naverageSil: 0.5252976190476191\n\ncluster: org.apache.spark.rdd.RDD[(Int, List[String])] \u003d MapPartitionsRDD[592] at map at RDFGraphPowerIterationClustering.scala:226\n(0,List(http://twitter/user4, http://twitter/user5, http://twitter/user6, http://twitter/user7))\n(1,List(http://twitter/user0, http://twitter/user1, http://twitter/user2, http://twitter/user3))\n"
           }
         ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://f54df7154670:4040/jobs/job?id\u003d23",
+            "http://f54df7154670:4040/jobs/job?id\u003d24",
+            "http://f54df7154670:4040/jobs/job?id\u003d25",
+            "http://f54df7154670:4040/jobs/job?id\u003d26",
+            "http://f54df7154670:4040/jobs/job?id\u003d27",
+            "http://f54df7154670:4040/jobs/job?id\u003d28",
+            "http://f54df7154670:4040/jobs/job?id\u003d29",
+            "http://f54df7154670:4040/jobs/job?id\u003d30",
+            "http://f54df7154670:4040/jobs/job?id\u003d31",
+            "http://f54df7154670:4040/jobs/job?id\u003d32",
+            "http://f54df7154670:4040/jobs/job?id\u003d33",
+            "http://f54df7154670:4040/jobs/job?id\u003d34",
+            "http://f54df7154670:4040/jobs/job?id\u003d35",
+            "http://f54df7154670:4040/jobs/job?id\u003d36",
+            "http://f54df7154670:4040/jobs/job?id\u003d37",
+            "http://f54df7154670:4040/jobs/job?id\u003d38",
+            "http://f54df7154670:4040/jobs/job?id\u003d39",
+            "http://f54df7154670:4040/jobs/job?id\u003d40",
+            "http://f54df7154670:4040/jobs/job?id\u003d41",
+            "http://f54df7154670:4040/jobs/job?id\u003d42",
+            "http://f54df7154670:4040/jobs/job?id\u003d43",
+            "http://f54df7154670:4040/jobs/job?id\u003d44",
+            "http://f54df7154670:4040/jobs/job?id\u003d45",
+            "http://f54df7154670:4040/jobs/job?id\u003d46",
+            "http://f54df7154670:4040/jobs/job?id\u003d47",
+            "http://f54df7154670:4040/jobs/job?id\u003d48",
+            "http://f54df7154670:4040/jobs/job?id\u003d49",
+            "http://f54df7154670:4040/jobs/job?id\u003d50",
+            "http://f54df7154670:4040/jobs/job?id\u003d51",
+            "http://f54df7154670:4040/jobs/job?id\u003d52",
+            "http://f54df7154670:4040/jobs/job?id\u003d53",
+            "http://f54df7154670:4040/jobs/job?id\u003d54",
+            "http://f54df7154670:4040/jobs/job?id\u003d55",
+            "http://f54df7154670:4040/jobs/job?id\u003d56",
+            "http://f54df7154670:4040/jobs/job?id\u003d57",
+            "http://f54df7154670:4040/jobs/job?id\u003d58",
+            "http://f54df7154670:4040/jobs/job?id\u003d59"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1530191591127_-1927077565",
+      "id": "20180628-131311_2050756697",
+      "dateCreated": "2018-06-28 13:13:11.000",
+      "dateStarted": "2019-12-18 22:07:32.088",
+      "dateFinished": "2019-12-18 22:09:07.781",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Mines the Rules example (experimental)",
+      "text": "import scala.collection.mutable\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\nimport net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\nval input \u003d \"hdfs://namenode:8020/data/MineRules_sampledata.tsv\"\nval outputPath \u003d \"hdfs://namenode:8020/output\"\nval hdfsPath \u003d outputPath + \"/\"\n\nval know \u003d new KB()\nknow.sethdfsPath(hdfsPath)\nknow.setKbSrc(input)\n\nknow.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))\nknow.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, spark.sparkContext, spark.sqlContext, 2))\n\nval algo \u003d new Algorithm(know, 0.01, 3, 0.1, hdfsPath)\n\nvar output \u003d algo.ruleMining(spark.sparkContext, spark.sqlContext)\nvar outString \u003d output.map { x \u003d\u003e\n    var rdfTrp \u003d x.getRule()\n    var temp \u003d \"\"\n    for (i \u003c- 0 to rdfTrp.length - 1) {\n      if (i \u003d\u003d 0) {\n        temp \u003d rdfTrp(i) + \" \u003c\u003d \"\n      } else {\n        temp +\u003d rdfTrp(i) + \" \\u2227 \"\n      }\n    }\n    temp \u003d temp.stripSuffix(\" \\u2227 \")\n    temp\n  }.toSeq\n  \nvar rddOut \u003d spark.sparkContext.parallelize(outString).repartition(1)\n\n//rddOut.saveAsTextFile(outputPath + \"/testOut\")\nrddOut.take(5).foreach(println)",
+      "user": "anonymous",
+      "dateUpdated": "2019-12-18 22:09:16.853",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true,
+        "fontSize": 9.0
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import scala.collection.mutable\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\nimport net.sansa_stack.ml.spark.mining.amieSpark.{RDFGraphLoader, DfLoader}\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\ninput: String \u003d hdfs://namenode:8020/data/MineRules_sampledata.tsv\noutputPath: String \u003d hdfs://namenode:8020/output\nhdfsPath: String \u003d hdfs://namenode:8020/output/\nknow: net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB \u003d net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB@493659e4\n\u003cconsole\u003e:57: error: not enough arguments for method apply: (index: Int)Char in class StringOps.\nUnspecified value parameter index.\n       know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))\n                                                                ^\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1494503351941_-977125242",
+      "id": "20170511-114911_1382631593",
+      "dateCreated": "2017-05-11 11:49:11.000",
+      "dateStarted": "2019-12-18 22:09:16.882",
+      "dateFinished": "2019-12-18 22:09:21.437",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Detecting Numerical Outliers in the dataset (experimental)",
+      "text": "import scala.collection.mutable\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.spark.storage.StorageLevel\nimport net.sansa_stack.ml.spark.outliers.anomalydetection._\nimport org.apache.spark.rdd.RDD\n\n\nval numofpartition   \u003d 10\nval threshold        \u003d 0.45\nval anomalyListLimit \u003d 5\n\nval input \u003d \"hdfs://namenode:8020/data/outliers_dataset.nt\"\n\n//N-Triples Reader\nval lang \u003d Lang.NTRIPLES\nval triplesRDD \u003d spark.rdf(lang)(input).repartition(numofpartition).persist()\n\n//filtering numeric literal having xsd type double,integer,nonNegativeInteger and squareKilometre\nval objList \u003d List(\n  \"http://www.w3.org/2001/XMLSchema#double\",\n  \"http://www.w3.org/2001/XMLSchema#integer\",\n  \"http://www.w3.org/2001/XMLSchema#nonNegativeInteger\",\n  \"http://dbpedia.org/datatype/squareKilometre\")\n\n//helful for considering only Dbpedia type as their will be yago type,wikidata type also\nval triplesType \u003d List(\"http://dbpedia.org/ontology\")\n\n//some of the supertype which are present for most of the subject\nval listSuperType \u003d List(\n  \"http://dbpedia.org/ontology/Activity\", \"http://dbpedia.org/ontology/Organisation\",\n  \"http://dbpedia.org/ontology/Agent\", \"http://dbpedia.org/ontology/SportsLeague\",\n  \"http://dbpedia.org/ontology/Person\", \"http://dbpedia.org/ontology/Athlete\",\n  \"http://dbpedia.org/ontology/Event\", \"http://dbpedia.org/ontology/Place\",\n  \"http://dbpedia.org/ontology/PopulatedPlace\", \"http://dbpedia.org/ontology/Region\",\n  \"http://dbpedia.org/ontology/Species\", \"http://dbpedia.org/ontology/Eukaryote\",\n  \"http://dbpedia.org/ontology/Location\")\n\n//hypernym URI\nval hypernym \u003d \"http://purl.org/linguistics/gold/hypernym\"\n\nvar clusterOfSubject: RDD[(Set[(String, String, Object)])] \u003d null\nprintln(\"AnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \")\n\nval outDetection \u003d new AnomalyWithHashingTF(triplesRDD, objList, triplesType, threshold, listSuperType, spark, hypernym, numofpartition) with Serializable\nclusterOfSubject \u003d outDetection.run()\n\nval setData \u003d clusterOfSubject.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)\nval setDataStore \u003d setData.map(f \u003d\u003e f.toSeq)\n\nval setDataSize \u003d setDataStore.filter(f \u003d\u003e f.size \u003e anomalyListLimit)\n\nval test \u003d setDataSize.map(f \u003d\u003e outDetection.iqr2(f, anomalyListLimit))\n\ntest.take(5).foreach(println)\n\n//val testfilter \u003d test.filter(f \u003d\u003e f.size \u003e 0) //.distinct()\n//val testfilterDistinct \u003d testfilter.flatMap(f \u003d\u003e f)\n\n//testfilterDistinct.take(10).foreach(println)\n",
+      "user": "anonymous",
+      "dateUpdated": "2019-12-18 22:09:33.003",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true,
+        "fontSize": 9.0
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import scala.collection.mutable\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.spark.storage.StorageLevel\nimport net.sansa_stack.ml.spark.outliers.anomalydetection._\nimport org.apache.spark.rdd.RDD\nnumofpartition: Int \u003d 10\nthreshold: Double \u003d 0.45\nanomalyListLimit: Int \u003d 5\ninput: String \u003d hdfs://namenode:8020/data/outliers_dataset.nt\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\ntriplesRDD: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[599] at repartition at \u003cconsole\u003e:70\nobjList: List[String] \u003d List(http://www.w3.org/2001/XMLSchema#double, http://www.w3.org/2001/XMLSchema#integer, http://www.w3.org/2001/XMLSchema#nonNegativeInteger, http://dbpedia.org/datatype/squareKilometre)\ntriplesType: List[String] \u003d List(http://dbpedia.org/ontology)\nlistSuperType: List[String] \u003d List(http://dbpedia.org/ontology/Activity, http://dbpedia.org/ontology/Organisation, http://dbpedia.org/ontology/Agent, http://dbpedia.org/ontology/SportsLeague, http://dbpedia.org/ontology/Person, http://dbpedia.org/ontology/Athlete, http://dbpedia.org/ontology/Event, http://dbpedia.org/ontology/Place, http://dbpedia.org/ontology/PopulatedPlace, http://dbpedia.org/ontology/Region, http://dbpedia.org/ontology/Species, http://dbpedia.org/ontology/Eukaryote, http://dbpedia.org/ontology/Location)\nhypernym: String \u003d http://purl.org/linguistics/gold/hypernym\nclusterOfSubject: org.apache.spark.rdd.RDD[Set[(String, String, Object)]] \u003d null\nAnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \noutDetection: net.sansa_stack.ml.spark.outliers.anomalydetection.AnomalyWithHashingTF with Serializable \u003d $anon$1@111b8ada\nclusterOfSubject: org.apache.spark.rdd.RDD[Set[(String, String, Object)]] \u003d MapPartitionsRDD[674] at map at AnomalyWithHashingTF.scala:175\nsetData: org.apache.spark.rdd.RDD[Set[(String, String, Object)]] \u003d MapPartitionsRDD[678] at repartition at \u003cconsole\u003e:66\nsetDataStore: org.apache.spark.rdd.RDD[Seq[(String, String, Object)]] \u003d MapPartitionsRDD[679] at map at \u003cconsole\u003e:68\nsetDataSize: org.apache.spark.rdd.RDD[Seq[(String, String, Object)]] \u003d MapPartitionsRDD[680] at filter at \u003cconsole\u003e:72\norg.apache.spark.SparkException: Task not serializable\n  at org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:345)\n  at org.apache.spark.util.ClosureCleaner$.org$apache$spark$util$ClosureCleaner$$clean(ClosureCleaner.scala:335)\n  at org.apache.spark.util.ClosureCleaner$.clean(ClosureCleaner.scala:159)\n  at org.apache.spark.SparkContext.clean(SparkContext.scala:2299)\n  at org.apache.spark.rdd.RDD$$anonfun$map$1.apply(RDD.scala:371)\n  at org.apache.spark.rdd.RDD$$anonfun$map$1.apply(RDD.scala:370)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:151)\n  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:112)\n  at org.apache.spark.rdd.RDD.withScope(RDD.scala:363)\n  at org.apache.spark.rdd.RDD.map(RDD.scala:370)\n  ... 70 elided\nCaused by: java.io.NotSerializableException: org.apache.jena.riot.Lang\nSerialization stack:\n\t- object not serializable (class: org.apache.jena.riot.Lang, value: Lang:N-Triples)\n\t- field (class: $iw, name: lang, type: class org.apache.jena.riot.Lang)\n\t- object (class $iw, $iw@5113073d)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@4540165d)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@30d87d55)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@5f82aef0)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@3b43faa8)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@54d0cd0e)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@1eb99488)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@7cc07633)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@1c95070b)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@44a688bc)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@21d85261)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@3326774b)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@4a7c9413)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@654936e0)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@6456ded6)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@126a5dc9)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@20ed58c0)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@f005ae3)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@7da7b6a9)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@26832e80)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@64e359f2)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@6356e53b)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@6a5532ce)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@71e54c74)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@45ee12dc)\n\t- field (class: $iw, name: $iw, type: class $iw)\n\t- object (class $iw, $iw@7d406e03)\n\t- field (class: $line206420465478.$read, name: $iw, type: class $iw)\n\t- object (class $line206420465478.$read, $line206420465478.$read@7ccf9090)\n\t- field (class: $iw, name: $line206420465478$read, type: class $line206420465478.$read)\n\t- object (class $iw, $iw@58baa841)\n\t- field (class: $iw, name: $outer, type: class $iw)\n\t- object (class $iw, $iw@2a6b46eb)\n\t- field (class: $anonfun$1, name: $outer, type: class $iw)\n\t- object (class $anonfun$1, \u003cfunction1\u003e)\n  at org.apache.spark.serializer.SerializationDebugger$.improveException(SerializationDebugger.scala:40)\n  at org.apache.spark.serializer.JavaSerializationStream.writeObject(JavaSerializer.scala:46)\n  at org.apache.spark.serializer.JavaSerializerInstance.serialize(JavaSerializer.scala:100)\n  at org.apache.spark.util.ClosureCleaner$.ensureSerializable(ClosureCleaner.scala:342)\n  ... 79 more\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://f54df7154670:4040/jobs/job?id\u003d60",
+            "http://f54df7154670:4040/jobs/job?id\u003d61"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1494503670410_82299729",
+      "id": "20170511-115430_1909909659",
+      "dateCreated": "2017-05-11 11:54:30.000",
+      "dateStarted": "2019-12-18 22:09:33.031",
+      "dateFinished": "2019-12-18 22:09:56.977",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "RDF Graph Kernel example",
+      "text": "import net.sansa_stack.ml.spark.kernel._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval t0 \u003d System.nanoTime\nval lang \u003d Lang.NTRIPLES\nval iteration \u003d2\nval input \u003d \"hdfs://namenode:8020/data/aifb-fixed_no_schema4.nt\"\n\nval triples \u003d spark.rdf(lang)(input).\n              filter(_.getPredicate.getURI !\u003d \"http://swrc.ontoware.org/ontology#employs\")\n\nval rdfFastGraphKernel \u003d RDFFastGraphKernel(spark, triples, \"http://swrc.ontoware.org/ontology#affiliation\")\nval data \u003d rdfFastGraphKernel.getMLLibLabeledPoints\n\nval t1 \u003d System.nanoTime\nRDFFastTreeGraphKernelUtil.printTime(\"Initialization\", t0, t1)\n\nRDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data, 4, iteration)\n\nval t2 \u003d System.nanoTime\nRDFFastTreeGraphKernelUtil.printTime(\"Run Prediction\", t1, t2)",
+      "user": "anonymous",
+      "dateUpdated": "2019-12-18 22:10:06.531",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true,
+        "fontSize": 9.0
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import net.sansa_stack.ml.spark.kernel._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nt0: Long \u003d 14006158767810\nlang: org.apache.jena.riot.Lang \u003d Lang:N-Triples\niteration: Int \u003d 2\ninput: String \u003d hdfs://namenode:8020/data/aifb-fixed_no_schema4.nt\ntriples: org.apache.spark.rdd.RDD[org.apache.jena.graph.Triple] \u003d MapPartitionsRDD[684] at filter at \u003cconsole\u003e:77\nrdfFastGraphKernel: net.sansa_stack.ml.spark.kernel.RDFFastGraphKernel \u003d net.sansa_stack.ml.spark.kernel.RDFFastGraphKernel@f0625da\ndata: org.apache.spark.rdd.RDD[org.apache.spark.mllib.regression.LabeledPoint] \u003d MapPartitionsRDD[737] at map at RDFFastGraphKernel.scala:73\nt1: Long \u003d 14028249500042\nInitialization: 22.090732232 s\n(data count,177)\nAverage Accuracy: 0.7801857585139318\nFeature Computation/Read: 3.155665176 s\nModel learning/testing: 105.83245263 s\nt2: Long \u003d 14138026638465\nRun Prediction: 109.777138423 s\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://f54df7154670:4040/jobs/job?id\u003d62",
+            "http://f54df7154670:4040/jobs/job?id\u003d63",
+            "http://f54df7154670:4040/jobs/job?id\u003d64",
+            "http://f54df7154670:4040/jobs/job?id\u003d65",
+            "http://f54df7154670:4040/jobs/job?id\u003d66",
+            "http://f54df7154670:4040/jobs/job?id\u003d67",
+            "http://f54df7154670:4040/jobs/job?id\u003d68",
+            "http://f54df7154670:4040/jobs/job?id\u003d69",
+            "http://f54df7154670:4040/jobs/job?id\u003d70",
+            "http://f54df7154670:4040/jobs/job?id\u003d71",
+            "http://f54df7154670:4040/jobs/job?id\u003d72",
+            "http://f54df7154670:4040/jobs/job?id\u003d73",
+            "http://f54df7154670:4040/jobs/job?id\u003d74",
+            "http://f54df7154670:4040/jobs/job?id\u003d75",
+            "http://f54df7154670:4040/jobs/job?id\u003d76",
+            "http://f54df7154670:4040/jobs/job?id\u003d77",
+            "http://f54df7154670:4040/jobs/job?id\u003d78",
+            "http://f54df7154670:4040/jobs/job?id\u003d79",
+            "http://f54df7154670:4040/jobs/job?id\u003d80",
+            "http://f54df7154670:4040/jobs/job?id\u003d81",
+            "http://f54df7154670:4040/jobs/job?id\u003d82",
+            "http://f54df7154670:4040/jobs/job?id\u003d83",
+            "http://f54df7154670:4040/jobs/job?id\u003d84",
+            "http://f54df7154670:4040/jobs/job?id\u003d85",
+            "http://f54df7154670:4040/jobs/job?id\u003d86",
+            "http://f54df7154670:4040/jobs/job?id\u003d87",
+            "http://f54df7154670:4040/jobs/job?id\u003d88",
+            "http://f54df7154670:4040/jobs/job?id\u003d89",
+            "http://f54df7154670:4040/jobs/job?id\u003d90",
+            "http://f54df7154670:4040/jobs/job?id\u003d91",
+            "http://f54df7154670:4040/jobs/job?id\u003d92",
+            "http://f54df7154670:4040/jobs/job?id\u003d93",
+            "http://f54df7154670:4040/jobs/job?id\u003d94",
+            "http://f54df7154670:4040/jobs/job?id\u003d95",
+            "http://f54df7154670:4040/jobs/job?id\u003d96",
+            "http://f54df7154670:4040/jobs/job?id\u003d97",
+            "http://f54df7154670:4040/jobs/job?id\u003d98",
+            "http://f54df7154670:4040/jobs/job?id\u003d99",
+            "http://f54df7154670:4040/jobs/job?id\u003d100",
+            "http://f54df7154670:4040/jobs/job?id\u003d101",
+            "http://f54df7154670:4040/jobs/job?id\u003d102",
+            "http://f54df7154670:4040/jobs/job?id\u003d103",
+            "http://f54df7154670:4040/jobs/job?id\u003d104",
+            "http://f54df7154670:4040/jobs/job?id\u003d105",
+            "http://f54df7154670:4040/jobs/job?id\u003d106",
+            "http://f54df7154670:4040/jobs/job?id\u003d107",
+            "http://f54df7154670:4040/jobs/job?id\u003d108",
+            "http://f54df7154670:4040/jobs/job?id\u003d109",
+            "http://f54df7154670:4040/jobs/job?id\u003d110",
+            "http://f54df7154670:4040/jobs/job?id\u003d111",
+            "http://f54df7154670:4040/jobs/job?id\u003d112",
+            "http://f54df7154670:4040/jobs/job?id\u003d113",
+            "http://f54df7154670:4040/jobs/job?id\u003d114",
+            "http://f54df7154670:4040/jobs/job?id\u003d115",
+            "http://f54df7154670:4040/jobs/job?id\u003d116",
+            "http://f54df7154670:4040/jobs/job?id\u003d117",
+            "http://f54df7154670:4040/jobs/job?id\u003d118",
+            "http://f54df7154670:4040/jobs/job?id\u003d119",
+            "http://f54df7154670:4040/jobs/job?id\u003d120",
+            "http://f54df7154670:4040/jobs/job?id\u003d121",
+            "http://f54df7154670:4040/jobs/job?id\u003d122",
+            "http://f54df7154670:4040/jobs/job?id\u003d123",
+            "http://f54df7154670:4040/jobs/job?id\u003d124",
+            "http://f54df7154670:4040/jobs/job?id\u003d125",
+            "http://f54df7154670:4040/jobs/job?id\u003d126",
+            "http://f54df7154670:4040/jobs/job?id\u003d127",
+            "http://f54df7154670:4040/jobs/job?id\u003d128",
+            "http://f54df7154670:4040/jobs/job?id\u003d129",
+            "http://f54df7154670:4040/jobs/job?id\u003d130",
+            "http://f54df7154670:4040/jobs/job?id\u003d131",
+            "http://f54df7154670:4040/jobs/job?id\u003d132",
+            "http://f54df7154670:4040/jobs/job?id\u003d133",
+            "http://f54df7154670:4040/jobs/job?id\u003d134",
+            "http://f54df7154670:4040/jobs/job?id\u003d135",
+            "http://f54df7154670:4040/jobs/job?id\u003d136",
+            "http://f54df7154670:4040/jobs/job?id\u003d137",
+            "http://f54df7154670:4040/jobs/job?id\u003d138",
+            "http://f54df7154670:4040/jobs/job?id\u003d139",
+            "http://f54df7154670:4040/jobs/job?id\u003d140",
+            "http://f54df7154670:4040/jobs/job?id\u003d141",
+            "http://f54df7154670:4040/jobs/job?id\u003d142",
+            "http://f54df7154670:4040/jobs/job?id\u003d143",
+            "http://f54df7154670:4040/jobs/job?id\u003d144",
+            "http://f54df7154670:4040/jobs/job?id\u003d145",
+            "http://f54df7154670:4040/jobs/job?id\u003d146",
+            "http://f54df7154670:4040/jobs/job?id\u003d147",
+            "http://f54df7154670:4040/jobs/job?id\u003d148",
+            "http://f54df7154670:4040/jobs/job?id\u003d149",
+            "http://f54df7154670:4040/jobs/job?id\u003d150",
+            "http://f54df7154670:4040/jobs/job?id\u003d151",
+            "http://f54df7154670:4040/jobs/job?id\u003d152",
+            "http://f54df7154670:4040/jobs/job?id\u003d153",
+            "http://f54df7154670:4040/jobs/job?id\u003d154",
+            "http://f54df7154670:4040/jobs/job?id\u003d155",
+            "http://f54df7154670:4040/jobs/job?id\u003d156",
+            "http://f54df7154670:4040/jobs/job?id\u003d157",
+            "http://f54df7154670:4040/jobs/job?id\u003d158",
+            "http://f54df7154670:4040/jobs/job?id\u003d159",
+            "http://f54df7154670:4040/jobs/job?id\u003d160",
+            "http://f54df7154670:4040/jobs/job?id\u003d161",
+            "http://f54df7154670:4040/jobs/job?id\u003d162",
+            "http://f54df7154670:4040/jobs/job?id\u003d163",
+            "http://f54df7154670:4040/jobs/job?id\u003d164",
+            "http://f54df7154670:4040/jobs/job?id\u003d165",
+            "http://f54df7154670:4040/jobs/job?id\u003d166",
+            "http://f54df7154670:4040/jobs/job?id\u003d167",
+            "http://f54df7154670:4040/jobs/job?id\u003d168",
+            "http://f54df7154670:4040/jobs/job?id\u003d169",
+            "http://f54df7154670:4040/jobs/job?id\u003d170",
+            "http://f54df7154670:4040/jobs/job?id\u003d171",
+            "http://f54df7154670:4040/jobs/job?id\u003d172",
+            "http://f54df7154670:4040/jobs/job?id\u003d173"
+          ],
+          "interpreterSettingId": "spark"
+        }
       },
       "apps": [],
       "jobName": "paragraph_1530194203813_-2146646070",
       "id": "20180628-135643_1714444831",
       "dateCreated": "2018-06-28 13:56:43.000",
-      "dateStarted": "2018-12-17 12:46:56.544",
-      "dateFinished": "2018-12-17 12:49:14.651",
+      "dateStarted": "2019-12-18 22:10:06.560",
+      "dateFinished": "2019-12-18 22:12:20.878",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
