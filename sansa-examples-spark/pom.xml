@@ -262,7 +262,7 @@
 									<exclude>org.xerial:sqlite-jdbc</exclude>
 									<exclude>org.apache.jena:jena-osgi</exclude>
 
-									<exclude>org.eclipse.rdf4j:*</exclude>
+									<!--exclude>org.eclipse.rdf4j:*</exclude-->
 									<exclude>com.amazonaws:*</exclude>
 									<exclude>org.apache.xmlgraphics:*</exclude>
 									<exclude>org.netbeans.api:*</exclude>
