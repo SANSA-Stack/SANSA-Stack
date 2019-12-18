@@ -7,10 +7,9 @@ import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.flink.util.Collector
 import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.sparql.util.NodeComparator
 
-import net.sansa_stack.inference.flink.utils.NodeKey
 import net.sansa_stack.inference.utils.Profiler
+import net.sansa_stack.rdf.flink.utils.NodeKey
 
 /**
   * An engine to compute the transitive closure (TC) for a set of triples given in several datastructures.
