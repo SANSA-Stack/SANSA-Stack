@@ -69,6 +69,5 @@ make cli-clustering
 make cli-rule-mining
 ```
 
-# Notes
-* The instructions from this repo were tested on Ubuntu 16.04 with Docker engine 17.03.
-* Maintained by [Ivan Ermilov](https://github.com/earthquakesan/)
+## How to Contribute
+We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
