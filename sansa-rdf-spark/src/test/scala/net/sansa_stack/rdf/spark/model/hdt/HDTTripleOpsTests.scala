@@ -1,11 +1,7 @@
 package net.sansa_stack.rdf.spark.model.hdt
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.graph
 import org.apache.jena.riot.Lang
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql
-import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
 
 class HDTTripleOpsTests extends FunSuite with DataFrameSuiteBase {
@@ -30,7 +26,7 @@ class HDTTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)
 
-    val hdt = triples.getHDT()
+    val hdt = triples.asHDT()
 
     val subjects = spark.sql(s"select * from subjects_hdt").count()
 
@@ -41,7 +37,7 @@ class HDTTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)
 
-    val hdt = triples.getHDT()
+    val hdt = triples.asHDT()
 
     val predicates = spark.sql(s"select * from predicates_hdt").count()
 
@@ -52,7 +48,7 @@ class HDTTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)
 
-    val hdt = triples.getHDT()
+    val hdt = triples.asHDT()
 
     val objects = spark.sql(s"select * from objects_hdt").count()
 
