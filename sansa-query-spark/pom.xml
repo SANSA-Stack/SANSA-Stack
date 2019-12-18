@@ -120,6 +120,20 @@
             <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.11</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.11</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-graphx_2.11</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
