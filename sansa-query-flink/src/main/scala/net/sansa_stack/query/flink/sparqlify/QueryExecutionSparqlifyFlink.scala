@@ -57,7 +57,7 @@ object QueryExecutionSparqlifyFlink {
 
   def createQueryExecution(flinkEnv: ExecutionEnvironment, flinkTable: BatchTableEnvironment, rewrite: SparqlSqlStringRewrite, query: Query): DataSet[Binding] = {
     val varDef = rewrite.getVarDefinition.getMap
-    val sqlQueryStr = rewrite.getSqlQueryString.replace("SELECT true WHERE FALSE", "SELECT true FROM `empty_table` WHERE false")
+    val sqlQueryStr = rewrite.getSqlQueryString.replace("SELECT true WHERE FALSE", "SELECT true FROM `http://ex.org/empty_table` WHERE false")
 
     println("SQL Query: " + sqlQueryStr)
 
