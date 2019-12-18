@@ -79,7 +79,7 @@
       "title": "Power Iteration Clustering example",
       "text": "\nimport net.sansa_stack.ml.spark.clustering._\nimport net.sansa_stack.ml.spark.clustering.algorithms._\n\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.model._\n\nval input \u003d \"hdfs://namenode:8020/data/Clustering_sampledata.nt\"\n\nval maxIterations \u003d 10\nval k \u003d2\n\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval cluster \u003d triples.cluster(ClusteringAlgorithm.RDFGraphPowerIterationClustering).asInstanceOf[RDFGraphPowerIterationClustering].\n              setK(k).setMaxIterations(maxIterations).run()\n\ncluster.take(5).foreach(println)",
       "user": "anonymous",
-      "dateUpdated": "2019-12-18 22:07:32.067",
+      "dateUpdated": "2019-12-18 22:13:02.542",
       "config": {
         "colWidth": 12.0,
         "enabled": true,
@@ -162,47 +162,6 @@
       "dateStarted": "2019-12-18 22:07:32.088",
       "dateFinished": "2019-12-18 22:09:07.781",
       "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "title": "Mines the Rules example (experimental)",
-      "text": "import scala.collection.mutable\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\nimport net.sansa_stack.ml.spark.mining.amieSpark.{ RDFGraphLoader, DfLoader }\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\n\nval input \u003d \"hdfs://namenode:8020/data/MineRules_sampledata.tsv\"\nval outputPath \u003d \"hdfs://namenode:8020/output\"\nval hdfsPath \u003d outputPath + \"/\"\n\nval know \u003d new KB()\nknow.sethdfsPath(hdfsPath)\nknow.setKbSrc(input)\n\nknow.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))\nknow.setDFTable(DfLoader.loadFromFileDF(know.getKbSrc, spark.sparkContext, spark.sqlContext, 2))\n\nval algo \u003d new Algorithm(know, 0.01, 3, 0.1, hdfsPath)\n\nvar output \u003d algo.ruleMining(spark.sparkContext, spark.sqlContext)\nvar outString \u003d output.map { x \u003d\u003e\n    var rdfTrp \u003d x.getRule()\n    var temp \u003d \"\"\n    for (i \u003c- 0 to rdfTrp.length - 1) {\n      if (i \u003d\u003d 0) {\n        temp \u003d rdfTrp(i) + \" \u003c\u003d \"\n      } else {\n        temp +\u003d rdfTrp(i) + \" \\u2227 \"\n      }\n    }\n    temp \u003d temp.stripSuffix(\" \\u2227 \")\n    temp\n  }.toSeq\n  \nvar rddOut \u003d spark.sparkContext.parallelize(outString).repartition(1)\n\n//rddOut.saveAsTextFile(outputPath + \"/testOut\")\nrddOut.take(5).foreach(println)",
-      "user": "anonymous",
-      "dateUpdated": "2019-12-18 22:09:16.853",
-      "config": {
-        "colWidth": 12.0,
-        "enabled": true,
-        "results": {},
-        "editorSetting": {
-          "language": "scala",
-          "editOnDblClick": false,
-          "completionKey": "TAB",
-          "completionSupport": true
-        },
-        "editorMode": "ace/mode/scala",
-        "title": true,
-        "fontSize": 9.0
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "import scala.collection.mutable\nimport net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB\nimport net.sansa_stack.ml.spark.mining.amieSpark.{RDFGraphLoader, DfLoader}\nimport net.sansa_stack.ml.spark.mining.amieSpark.MineRules.Algorithm\ninput: String \u003d hdfs://namenode:8020/data/MineRules_sampledata.tsv\noutputPath: String \u003d hdfs://namenode:8020/output\nhdfsPath: String \u003d hdfs://namenode:8020/output/\nknow: net.sansa_stack.ml.spark.mining.amieSpark.KBObject.KB \u003d net.sansa_stack.ml.spark.mining.amieSpark.KBObject$KB@493659e4\n\u003cconsole\u003e:57: error: not enough arguments for method apply: (index: Int)Char in class StringOps.\nUnspecified value parameter index.\n       know.setKbGraph(RDFGraphLoader.loadFromFile(know.getKbSrc(), spark.sparkContext, 2))\n                                                                ^\n"
-          }
-        ]
-      },
-      "apps": [],
-      "jobName": "paragraph_1494503351941_-977125242",
-      "id": "20170511-114911_1382631593",
-      "dateCreated": "2017-05-11 11:49:11.000",
-      "dateStarted": "2019-12-18 22:09:16.882",
-      "dateFinished": "2019-12-18 22:09:21.437",
-      "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
     {
