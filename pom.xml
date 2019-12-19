@@ -174,9 +174,7 @@
 				<version>2.6.2</version>
 			</dependency>
 
-
-			<!-- Connector dependencies -->
-
+			<!-- Connectors -->
 			<dependency>
 				<groupId>com.datastax.spark</groupId>
 				<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
@@ -206,7 +204,13 @@
 				<artifactId>mysql-connector-java</artifactId>
 				<version>6.0.6</version>
 			</dependency>
-
+			
+			<!-- Amazon -->
+			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk</artifactId>
+				<version>${aws.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
