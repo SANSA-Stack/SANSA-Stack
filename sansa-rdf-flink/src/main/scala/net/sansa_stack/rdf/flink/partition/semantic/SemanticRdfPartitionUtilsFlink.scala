@@ -27,7 +27,7 @@ object SemanticRdfPartitionUtilsFlink extends Serializable {
     val symbol = Symbols.symbol
     // partition the data
     val partitionedData = triples
-      .distinct(_.hashCode())
+    // .distinct(_.hashCode())
       .filter(_.getSubject.getURI.nonEmpty)
       .map(triple => {
 
