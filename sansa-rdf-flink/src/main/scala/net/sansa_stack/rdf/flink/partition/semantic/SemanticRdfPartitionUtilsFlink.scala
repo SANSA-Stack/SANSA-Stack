@@ -10,23 +10,24 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.jena.graph.Triple
 
 /**
- * Semantic partition of and RDF graph
- *
- * @author Gezim Sejdiu
- */
+  * Semantic partition of and RDF graph
+  *
+  * @author Gezim Sejdiu
+  */
 object SemanticRdfPartitionUtilsFlink extends Serializable {
 
   /**
-   * Apply semantic partitioning for a given RDF graph
-   * @param triples an DataSet of triples.
-   * @return semantic partition data.
-   */
-  implicit def partitionGraph[T <: DataSet[Triple]: TypeInformation: ClassTag](
-    triples: DataSet[Triple]): DataSet[String] = {
+    * Apply semantic partitioning for a given RDF graph
+    *
+    * @param triples an DataSet of triples.
+    * @return semantic partition data.
+    */
+  implicit def partitionGraph[T <: DataSet[Triple] : TypeInformation : ClassTag](
+                                                                                  triples: DataSet[Triple]): DataSet[String] = {
     val symbol = Symbols.symbol
     // partition the data
     val partitionedData = triples
-      .distinct
+      .distinct(_.hashCode())
       .filter(_.getSubject.getURI.nonEmpty)
       .map(triple => {
 

@@ -7,17 +7,41 @@ import org.scalatest.FunSuite
 
 class FlinkAvailabilityTests extends FunSuite {
 
+  import net.sansa_stack.rdf.flink.qualityassessment._
+
   val env = ExecutionEnvironment.getExecutionEnvironment
 
-  test("getting the dereferenceable URIs should match") {
+  test("getting the Dereferenceable URIs should match") {
 
     val path = getClass.getResource("/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
-    val ratio = 0 // triples.assessDereferenceableUris()
-    assert(ratio == 0.0)
+    val ratio = triples.assessDereferenceableUris()
+    assert(ratio == 0.1320754716981132)
+  }
+
+  test("getting the Dereferenceable BackLinks should match") {
+
+    val path = getClass.getResource("/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = env.rdf(lang)(path)
+
+    val ratio = triples.assessDereferenceableBackLinks()
+    assert(ratio == 0.15384615384615385)
+  }
+
+  test("getting the Dereferenceable ForwardLinks should match") {
+
+    val path = getClass.getResource("/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val triples = env.rdf(lang)(path)
+
+    val ratio = triples.assessDereferenceableForwardLinks()
+    assert(ratio == 0.05660377358490566)
   }
 
 }

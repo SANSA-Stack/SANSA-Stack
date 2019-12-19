@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.flink.qualityassessment.metrics.availability
 import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 
 /*
  * @author Gezim Sejdiu
@@ -11,17 +11,17 @@ import org.apache.jena.graph.{ Node, Triple }
 object DereferenceableUris {
 
   /**
-   * This metric calculates the number of valid redirects of URI.
-   * It computes the ratio between the number of all valid redirects
-   * (subject + predicates + objects)a.k.a dereferencedURIS and
-   * the total number of URIs on the dataset.
-   */
+    * This metric calculates the number of valid redirects of URI.
+    * It computes the ratio between the number of all valid redirects
+    * (subject + predicates + objects)a.k.a dereferencedURIS and
+    * the total number of URIs on the dataset.
+    */
   def assessDereferenceableUris(dataset: DataSet[Triple]): Double = {
 
     val totalURIs = dataset.filter(_.getSubject.isURI())
       .union(dataset.filter(_.getPredicate.isURI()))
       .union(dataset.filter(_.getObject.isURI()))
-      .distinct()
+      .distinct(_.hashCode())
 
     // check object if URI and local
     val objects = dataset.filter(f =>
@@ -46,11 +46,11 @@ object DereferenceableUris {
   }
 
   /**
-   * This metric measures the extent to which a resource includes
-   * all triples from the dataset that have the resource's URI as the object.
-   * The ratio computed is the number of objects that are "back-links"
-   * (are part of the resource's URI) and the total number of objects.
-   */
+    * This metric measures the extent to which a resource includes
+    * all triples from the dataset that have the resource's URI as the object.
+    * The ratio computed is the number of objects that are "back-links"
+    * (are part of the resource's URI) and the total number of objects.
+    */
   def assessDereferenceableBackLinks(dataset: DataSet[Triple]): Double = {
     // check object if URI and local
     val objects = dataset.filter(f =>
@@ -63,11 +63,11 @@ object DereferenceableUris {
   }
 
   /**
-   * This metric measures the extent to which a resource includes
-   * all triples from the dataset that have the resource's URI as the subject.
-   * The ratio computed is the number of subjects that are "forward-links"
-   * (are part of the resource's URI) and the total number of subjects.
-   */
+    * This metric measures the extent to which a resource includes
+    * all triples from the dataset that have the resource's URI as the subject.
+    * The ratio computed is the number of subjects that are "forward-links"
+    * (are part of the resource's URI) and the total number of subjects.
+    */
   def assessDereferenceableForwardLinks(dataset: DataSet[Triple]): Double = {
     // check subject, if local and not a blank node
     val subjects = dataset.filter(f =>

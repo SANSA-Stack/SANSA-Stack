@@ -45,8 +45,8 @@ object InterlinkingCompleteness {
           triples.filter(f =>
             f.getSubject.isURI() && isExternal(f.getSubject) && f.getObject.isURI() && isInternal(f.getObject)))
 
-    val numSubj = Interlinked.map(_.getSubject).distinct().count()
-    val numObj = Interlinked.map(_.getObject).distinct().count()
+    val numSubj = Interlinked.map(_.getSubject).distinct(_.hashCode()).count()
+    val numObj = Interlinked.map(_.getObject).distinct(_.hashCode()).count()
 
     val numResources = numSubj + numObj
     val numInterlinkedResources = Interlinked.count()
