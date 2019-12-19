@@ -263,7 +263,7 @@
 									<exclude>org.apache.jena:jena-osgi</exclude>
 
 									<!--exclude>org.eclipse.rdf4j:*</exclude-->
-									<exclude>com.amazonaws:*</exclude>
+									<!--<exclude>com.amazonaws:*</exclude>-->
 									<exclude>org.apache.xmlgraphics:*</exclude>
 									<exclude>org.netbeans.api:*</exclude>
 									<exclude>org.codehaus.groovy:*</exclude>
