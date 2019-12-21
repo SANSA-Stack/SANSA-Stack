@@ -15,6 +15,7 @@
         <version.jena>3.13.1</version.jena>
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <version.jsa>${jena.version}-${jsa.subversion}</version.jsa>
+        <spark.deps.scope>provided</spark.deps.scope>
     </properties>
 
     <dependencies>
@@ -120,20 +121,27 @@
             <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-server-standalone</artifactId>
+		</dependency>
 
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.11</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-graphx_2.11</artifactId>
-        </dependency>
+		<!-- Spark dependencies -->
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_${scala.binary.version}</artifactId>
+			<scope>${spark.deps.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_${scala.binary.version}</artifactId>
+			<scope>${spark.deps.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
+			<scope>${spark.deps.scope}</scope>
+		</dependency>
 
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -152,14 +160,12 @@
             <artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
         </dependency>
 
-        <!-- Override transitive tdb version via litmus -->
-        <!--
-                <dependency>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>apache-jena-libs</artifactId>
-                    <type>pom</type>
-                </dependency>
-        -->
+		<!-- Override transitive tdb version via litmus -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<type>pom</type>
+		</dependency>
 
 		<dependency>
 			<groupId>org.aksw.bsbm</groupId>
