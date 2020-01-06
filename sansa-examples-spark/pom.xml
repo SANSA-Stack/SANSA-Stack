@@ -225,7 +225,34 @@
 									<exclude>org.apache.curator:curator*</exclude>
 									<exclude>org.apache.directory.api:*</exclude>
 									<exclude>org.apache.directory.server:*</exclude>
-									<exclude>org.apache.hadoop:*</exclude>
+									<!-- commented out and replaced by longer list naming each
+										Hadoop package (except hadoop-streaming) individually to avoid
+										excluding hadoop-streaming which is needed by SANSA-OWL -->
+									<!--exclude>org.apache.hadoop:*</exclude-->
+
+									<exclude>org.apache.hadoop:hadoop-annotations</exclude>
+									<exclude>org.apache.hadoop:hadoop-auth</exclude>
+									<exclude>org.apache.hadoop:hadoop-client</exclude>
+									<exclude>org.apache.hadoop:hadoop-common</exclude>
+									<exclude>org.apache.hadoop:hadoop-hdfs-client</exclude>
+									<exclude>org.apache.hadoop:hadoop-hdfs</exclude>
+									<exclude>org.apache.hadoop:hadoop-mapreduce-client-app</exclude>
+									<exclude>org.apache.hadoop:hadoop-mapreduce-client-common</exclude>
+									<exclude>org.apache.hadoop:hadoop-mapreduce-client-core</exclude>
+									<exclude>org.apache.hadoop:hadoop-mapreduce-client-hs</exclude>
+									<exclude>org.apache.hadoop:hadoop-mapreduce-client-jobclient</exclude>
+									<exclude>org.apache.hadoop:hadoop-mapreduce-client-shuffle</exclude>
+									<exclude>org.apache.hadoop:hadoop-minicluster</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-api</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-client</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-common</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-server-common</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-server-nodemanager</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-server-resourcemanager</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-server-tests</exclude>
+									<exclude>org.apache.hadoop:hadoop-yarn-server-web-proxy</exclude>
+
 									<exclude>org.apache.htrace:htrace-core</exclude>
 <!--									<exclude>org.apache.httpcomponents:*</exclude>-->
 									<exclude>org.apache.ivy:ivy</exclude>
