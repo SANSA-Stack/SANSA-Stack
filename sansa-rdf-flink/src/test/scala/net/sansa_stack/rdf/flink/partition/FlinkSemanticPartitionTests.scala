@@ -20,7 +20,7 @@ class FlinkSemanticPartitionTests
 
     val size = partitions.count()
 
-    assert(size == 38)
+    assert(size == 37)
 
   }
 }
