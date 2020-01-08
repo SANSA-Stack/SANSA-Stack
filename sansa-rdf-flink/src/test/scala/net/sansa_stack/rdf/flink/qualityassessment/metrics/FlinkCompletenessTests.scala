@@ -5,43 +5,44 @@ import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
-class FlinkAvailabilityTests extends FunSuite {
+class FlinkCompletenessTests extends FunSuite {
 
   import net.sansa_stack.rdf.flink.qualityassessment._
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 
-  test("getting the Dereferenceable URIs should match") {
+  test("assessing the Interlinking Completeness should match") {
 
     val path = getClass.getResource("/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
-    val ratio = triples.assessDereferenceableUris()
-    assert(ratio == 0.1320754716981132)
+    val value = triples.assessInterlinkingCompleteness()
+    assert(value == 0)
   }
 
-  test("getting the Dereferenceable BackLinks should match") {
+  test("assessing the Property Completeness should match") {
 
     val path = getClass.getResource("/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
-    val ratio = triples.assessDereferenceableBackLinks()
-    assert(ratio == 0.15384615384615385)
+    val value = triples.assessPropertyCompleteness()
+    assert(value == 0)
   }
 
-  test("getting the Dereferenceable ForwardLinks should match") {
+  test("assessing the Schema Completeness should match") {
 
     val path = getClass.getResource("/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
-    val ratio = triples.assessDereferenceableForwardLinks()
-    assert(ratio == 0.05660377358490566)
+    val ratio = triples.assessSchemaCompleteness()
+    assert(ratio == 0.0)
   }
+
 
 }

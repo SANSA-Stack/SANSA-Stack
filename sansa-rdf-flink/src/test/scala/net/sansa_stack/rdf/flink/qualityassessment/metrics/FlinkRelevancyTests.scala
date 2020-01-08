@@ -5,43 +5,43 @@ import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
-class FlinkAvailabilityTests extends FunSuite {
+class FlinkRelevancyTests extends FunSuite {
 
   import net.sansa_stack.rdf.flink.qualityassessment._
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 
-  test("getting the Dereferenceable URIs should match") {
+  test("assessing the amount of triples should match") {
 
     val path = getClass.getResource("/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
-    val ratio = triples.assessDereferenceableUris()
-    assert(ratio == 0.1320754716981132)
+    val cnt = triples.assessAmountOfTriples()
+    assert(cnt == 0.0)
   }
 
-  test("getting the Dereferenceable BackLinks should match") {
+  test("assessing the coverage scope of a dataset should match") {
 
     val path = getClass.getResource("/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
-    val ratio = triples.assessDereferenceableBackLinks()
-    assert(ratio == 0.15384615384615385)
+    val ratio = triples.assessCoverageScope()
+    assert(ratio == 0.0)
   }
 
-  test("getting the Dereferenceable ForwardLinks should match") {
+  test("assessing the coverage details of a dataset should match") {
 
     val path = getClass.getResource("/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
-    val ratio = triples.assessDereferenceableForwardLinks()
-    assert(ratio == 0.05660377358490566)
+    val ratio = triples.assessCoverageDetail()
+    assert(ratio == 0.22641509433962265)
   }
 
 }
