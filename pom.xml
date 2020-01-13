@@ -575,11 +575,11 @@
 			<id>root-dir</id>
 			<activation>
 				<file>
-					<exists>${basedir}/../../scalastyle-config.xml</exists>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
 				</file>
 			</activation>
 			<properties>
-				<scalastyle.config.path>${basedir}/../scalastyle-config.xml</scalastyle.config.path>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
 			</properties>
 		</profile>
 		<profile>
