@@ -57,6 +57,19 @@
 		</developer>
 	</developers>
 
+	<reporting>
+		<plugins>
+			<plugin>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.9</version>
+			</plugin>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- Scala -->
@@ -174,9 +187,7 @@
 				<version>2.6.2</version>
 			</dependency>
 
-
-			<!-- Connector dependencies -->
-
+			<!-- Connectors -->
 			<dependency>
 				<groupId>com.datastax.spark</groupId>
 				<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
@@ -206,7 +217,13 @@
 				<artifactId>mysql-connector-java</artifactId>
 				<version>6.0.6</version>
 			</dependency>
-
+			
+			<!-- Amazon -->
+			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk</artifactId>
+				<version>${aws.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -374,18 +391,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
 					<version>3.6</version>
-					<configuration>
-						<reportPlugins>
-							<plugin>
-								<artifactId>maven-project-info-reports-plugin</artifactId>
-								<version>2.9</version>
-							</plugin>
-							<plugin>
-								<groupId>net.alchim31.maven</groupId>
-								<artifactId>scala-maven-plugin</artifactId>
-							</plugin>
-						</reportPlugins>
-					</configuration>
 				</plugin>
 
 				<plugin>
@@ -570,11 +575,11 @@
 			<id>root-dir</id>
 			<activation>
 				<file>
-					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+					<exists>${basedir}/../../scalastyle-config.xml</exists>
 				</file>
 			</activation>
 			<properties>
-				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+				<scalastyle.config.path>${basedir}/../scalastyle-config.xml</scalastyle.config.path>
 			</properties>
 		</profile>
 		<profile>
