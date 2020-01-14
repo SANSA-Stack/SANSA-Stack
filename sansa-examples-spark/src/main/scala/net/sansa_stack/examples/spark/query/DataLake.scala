@@ -1,10 +1,6 @@
 package net.sansa_stack.examples.spark.query
 
-import scala.collection.mutable
-
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
-import net.sansa_stack.query.spark.query._
-import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession
 
 /**

@@ -3,9 +3,7 @@ package net.sansa_stack.examples.spark.query
 import java.awt.Desktop
 import java.net.URI
 
-import scala.collection.mutable
-
-import net.sansa_stack.query.spark.sparqlify.{ QueryExecutionFactorySparqlifySpark, QueryExecutionSpark, QueryExecutionUtilsSpark, SparqlifyUtils3 }
+import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
@@ -13,19 +11,20 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession
 
 /**
- * Run SPARQL queries over Spark using Sparqlify approach.
- */
+  * Run SPARQL queries over Spark using Sparqlify approach.
+  */
 object Sparklify {
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.sparql, config.endpoint, config.port)
+        run(config.in, config.sparql, config.run, config.port)
       case None =>
         println(parser.usage)
     }
   }
-  def run(input: String, sparqlQuery: String = "", endpoint: Boolean = true, port: String = "7531"): Unit = {
+
+  def run(input: String, sparqlQuery: String = "", run: String = "cli", port: String = "7531"): Unit = {
 
     println("======================================")
     println("|   Sparklify example                |")
@@ -44,8 +43,13 @@ object Sparklify {
     val lang = Lang.NTRIPLES
     val graphRdd = spark.rdf(lang)(input)
 
-    endpoint match {
-      case j if endpoint =>
+    run match {
+      case "cli" =>
+        import net.sansa_stack.query.spark.query._
+        // val sparqlQuery = "SELECT * WHERE {?s ?p ?o} LIMIT 10"
+        val result = graphRdd.sparql(sparqlQuery)
+        result.rdd.foreach(println)
+      case _ =>
         val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
         val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
 
@@ -57,18 +61,13 @@ object Sparklify {
           Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
         }
         server.join()
-      case _ =>
-        import net.sansa_stack.query.spark.query._
-        // val sparqlQuery = "SELECT * WHERE {?s ?p ?o} LIMIT 10"
-        val result = graphRdd.sparql(sparqlQuery)
-        result.rdd.foreach(println)
     }
 
     spark.stop
 
   }
 
-  case class Config(in: String = "", sparql: String = "", endpoint: Boolean = true, port: String = "7531")
+  case class Config(in: String = "", sparql: String = "SELECT * WHERE {?s ?p ?o} LIMIT 10", run: String = "cli", port: String = "7531")
 
   val parser = new scopt.OptionParser[Config]("Sparklify example") {
 
@@ -82,20 +81,16 @@ object Sparklify {
       action((x, c) => c.copy(sparql = x)).
       text("a SPARQL query")
 
-    opt[Boolean]('e', "endpoint").optional().valueName("SPARQL endpoint enabled").
-      action((x, c) => c.copy(endpoint = x)).
-      text("enable SPARQL endpoint , default:'enabled'")
+    opt[String]('r', "run").optional().valueName("Runner").
+      action((x, c) => c.copy(run = x)).
+      text("Runner method, default:'cli'")
 
     opt[String]('p', "port").optional().valueName("port").
       action((x, c) => c.copy(port = x)).
       text("port that SPARQL endpoint will be exposed, default:'7531'")
 
     checkConfig(c =>
-      if (!c.endpoint && c.sparql.isEmpty) failure("Option --sparql must not be empty if endpoint is disabled")
-      else success)
-
-    checkConfig(c =>
-      if (c.endpoint && c.port.isEmpty) failure("Option --port ust not be empty if endpoint is enabled")
+      if (c.run == "cli" && c.sparql.isEmpty) failure("Option --sparql must not be empty if cli is enabled")
       else success)
 
     help("help").text("prints this usage text")
