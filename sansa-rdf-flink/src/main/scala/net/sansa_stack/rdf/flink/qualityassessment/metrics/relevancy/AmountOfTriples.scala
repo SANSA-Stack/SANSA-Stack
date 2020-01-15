@@ -24,7 +24,7 @@ object AmountOfTriples {
 
     val triples = dataset.count().toDouble
 
-    val predicates = dataset.map(_.getPredicate).distinct().count().toDouble
+    val predicates = dataset.map(_.getPredicate).distinct(_.hashCode()).count().toDouble
 
     val value = if (triples >= high) 1
     else if (triples < high && triples >= mediumHigh) 0.75;

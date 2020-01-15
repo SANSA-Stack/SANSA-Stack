@@ -3,12 +3,12 @@ package net.sansa_stack.rdf.spark.model.df
 import org.apache.jena.graph.{ NodeFactory, Triple }
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 
 /**
  * Spark/DataFrame based implementation of DataFrame of triples.
  *
- * @author Gezim Sejdiu Lorenz Buehmann
+ * @author Gezim Sejdiu
+ * @author Lorenz Buehmann
  */
 
 object TripleOps {
@@ -315,7 +315,7 @@ object TripleOps {
    * @param path path to the file containing N-Triples
    */
   def saveAsNTriplesFile(triples: DataFrame, path: String): Unit = {
-    import net.sansa_stack.rdf.spark.io.ntriples._
+    import net.sansa_stack.rdf.common.io.ntriples.JenaTripleToNTripleString
     toRDD(triples)
       .map(new JenaTripleToNTripleString()) // map to N-Triples string
       .saveAsTextFile(path)

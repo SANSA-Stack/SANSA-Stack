@@ -18,7 +18,7 @@ object TripleLayoutStringDatatype
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
-    val result = if (o.isLiteral()) {
+    val result = if (o.isLiteral) {
       SchemaStringStringType(sStr, o.getLiteralLexicalForm, o.getLiteralDatatypeURI)
     } else {
       throw new RuntimeException("Layout only for literals")
