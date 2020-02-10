@@ -5,6 +5,7 @@ import java.io.InputStream
 import scala.reflect.ClassTag
 
 import com.google.common.io.ByteStreams
+
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, Path}
@@ -19,6 +20,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.execution.datasources.{CodecStreams, HadoopFileLinesReader, PartitionedFile}
 import org.apache.spark.unsafe.types.UTF8String
+import org.apache.spark.util.TaskCompletionListener
 
 
 
@@ -111,7 +113,10 @@ object TextInputRdfXmlDataSource extends RdfXmlDataSource[Text] {
                          file: PartitionedFile,
                          parser: JenaParser): Iterator[InternalRow] = {
     val linesReader = new HadoopFileLinesReader(file, conf)
-    Option(TaskContext.get()).foreach(_.addTaskCompletionListener(_ => linesReader.close()))
+    Option(TaskContext.get())
+      .foreach(_.addTaskCompletionListener(new TaskCompletionListener {
+        override def onTaskCompletion(context: TaskContext): Unit = linesReader.close()
+      }))
     linesReader.flatMap(parser.parse(_, createParser, textToUTF8String))
   }
 
@@ -149,7 +154,9 @@ object WholeFileRdfXmlDataSource extends RdfXmlDataSource[PortableDataStream] {
 
   private def createInputStream(config: Configuration, path: String): InputStream = {
     val inputStream = CodecStreams.createInputStream(config, new Path(path))
-    Option(TaskContext.get()).foreach(_.addTaskCompletionListener(_ => inputStream.close()))
+    Option(TaskContext.get()).foreach(_.addTaskCompletionListener(new TaskCompletionListener {
+      override def onTaskCompletion(context: TaskContext): Unit = inputStream.close()
+    }))
     inputStream
   }
 
