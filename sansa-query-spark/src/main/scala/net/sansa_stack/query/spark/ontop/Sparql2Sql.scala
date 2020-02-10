@@ -4,8 +4,8 @@ import java.io.{File, FileInputStream, StringReader}
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-import java.sql.{Connection, DriverManager, SQLException}
-import java.util.Properties
+import java.sql.{Connection, DriverManager, ResultSet, SQLException}
+import java.util.{Optional, Properties}
 import java.util.stream.Collectors
 import java.util.stream.Collectors.joining
 
@@ -13,15 +13,19 @@ import scala.collection.JavaConverters
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.typeOf
 
-import com.google.common.collect.ImmutableMap
-import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
+import com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
+import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException, OntopReformulationException}
 import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
-import it.unibz.inf.ontop.iq.UnaryIQTree
-import it.unibz.inf.ontop.iq.node.NativeNode
+import it.unibz.inf.ontop.iq.exception.EmptyQueryException
+import it.unibz.inf.ontop.iq.{IQ, IQTree, UnaryIQTree}
+import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
 import it.unibz.inf.ontop.iq.node.impl.ConstructionNodeImpl
-import it.unibz.inf.ontop.model.term.Variable
+import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
+import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
+import it.unibz.inf.ontop.model.term.{ImmutableTerm, TermFactory, Variable}
 import it.unibz.inf.ontop.owlapi.OntopOWLFactory
 import it.unibz.inf.ontop.owlapi.connection.OntopOWLConnection
+import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.sparql.util.FmtUtils
@@ -40,6 +44,7 @@ import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 object Sparql2Sql {
 
   val baseDir = new File("/tmp/ontop-spark")
+  baseDir.mkdirs()
 
   def obtainSQL(sparqlFile: String, r2rmlFile: String, owlFile: String, propertyFile: String): String = {
     var factory = OntopOWLFactory.defaultFactory();
@@ -239,7 +244,7 @@ object Sparql2Sql {
 
   import java.sql.{Connection, DriverManager}
 
-  private val JDBC_URL = "jdbc:h2:mem:questjunitdb"
+  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb"
   private val JDBC_USER = "sa"
   private val JDBC_PASSWORD = ""
 
@@ -347,13 +352,14 @@ object Sparql2Sql {
   val useStatistics: Boolean = true
 
   private def createSparkTable(session: SparkSession, p: RdfPartitionComplex, rdd: RDD[Row]) = {
+
     val name = createTableName(p)
+    println(s"creating Spark table ${escapeTablename(name)}")
+
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = session.createDataFrame(rdd, sparkSchema).persist()
     df.show(false)
-
-    println(s"creating Spark table ${escapeTablename(name)}")
 
     if (useHive) {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
@@ -379,7 +385,7 @@ object Sparql2Sql {
 
   }
 
-  def asSQL(session: SparkSession, sparqlQuery: String, triples: RDD[Triple], properties: Properties): (String, Map[Variable, Variable]) = {
+  def asSQL(session: SparkSession, sparqlQuery: String, triples: RDD[Triple], properties: Properties): OntopQueryRewrite = {
     // do partitioning here
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex)
     partitions.foreach {
@@ -393,39 +399,73 @@ object Sparql2Sql {
     println(s"mappings location: ${mappingFile.getAbsolutePath}");
     Files.write(mappingFile.toPath, mappings.getBytes(StandardCharsets.UTF_8))
 
-    // create the database the sl
+    // create the H2 database used by Ontop
     createTempDB(properties, partitions)
 
+    // finally, create the SQL query + some metadata used for mapping rows back to bindings
     createSQLQuery(sparqlQuery, mappingFile, properties)
   }
 
   @throws[OBDASpecificationException]
   @throws[OntopReformulationException]
-  def createSQLQuery(sparqlQuery: String, obda_file: File, properties: Properties): (String, Map[Variable, Variable]) = {
-    val queryReformulator = createReformulator(obda_file, properties)
+  def createSQLQuery(sparqlQuery: String, obda_file: File, properties: Properties): OntopQueryRewrite = {
+    val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(obda_file, properties)
     val inputQueryFactory = queryReformulator.getInputQueryFactory
 
     val query = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
     val executableQuery = queryReformulator.reformulateIntoNativeQuery(query)
-    val sqlQuery = Option(executableQuery.getTree)
+
+    val sqlQuery = extractSQLQuery(executableQuery)
+    val constructionNode = extractRootConstructionNode(executableQuery)
+    val nativeNode = extractNativeNode(executableQuery)
+    val signature = nativeNode.getVariables
+    val typeMap = nativeNode.getTypeMap
+
+    OntopQueryRewrite(sparqlQuery, sqlQuery, signature, typeMap, constructionNode,
+      executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory)
+  }
+
+  @throws[EmptyQueryException]
+  @throws[OntopInternalBugException]
+  private def extractSQLQuery(executableQuery: IQ): String = {
+    val tree = executableQuery.getTree
+    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
+    val queryString = Option(tree)
+      .filter((t: IQTree) => t.isInstanceOf[UnaryIQTree])
+      .map((t: IQTree) => t.asInstanceOf[UnaryIQTree].getChild.getRootNode)
+      .filter(n => n.isInstanceOf[NativeNode])
+      .map(n => n.asInstanceOf[NativeNode])
+      .map(_.getNativeQueryString)
+      .getOrElse(throw new MinorOntopInternalBugException("The query does not have the expected structure " +
+        "of an executable query\n" + executableQuery))
+    if (queryString == "") throw new EmptyQueryException
+    queryString
+  }
+
+  @throws[EmptyQueryException]
+  private def extractNativeNode(executableQuery: IQ): NativeNode = {
+    val tree = executableQuery.getTree
+    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
+    Option(tree)
       .filter(t => t.isInstanceOf[UnaryIQTree])
       .map(t => t.asInstanceOf[UnaryIQTree].getChild.getRootNode)
       .filter(n => n.isInstanceOf[NativeNode])
-      .map(n => n.asInstanceOf[NativeNode].getNativeQueryString)
-      .getOrElse(throw new RuntimeException("Cannot extract the SQL query from\n" + executableQuery))
+      .map(n => n.asInstanceOf[NativeNode])
+      .getOrElse(throw new MinorOntopInternalBugException("The query does not have the expected structure " +
+        "for an executable query\n" + executableQuery))
+  }
 
-    val tree = executableQuery.getTree.asInstanceOf[UnaryIQTree]
-      .getRootNode.asInstanceOf[ConstructionNodeImpl]
-
-    val substitution = executableQuery.getTree.asInstanceOf[UnaryIQTree]
-      .getRootNode.asInstanceOf[ConstructionNodeImpl]
-      .getSubstitution
-
-    val columnMappings = tree.getVariables.asScala.map(v => (v, substitution.get(v).getVariableStream.findFirst().get())).toMap
-
-
-    (sqlQuery, columnMappings)
+  @throws[EmptyQueryException]
+  @throws[OntopInternalBugException]
+  private def extractRootConstructionNode(executableQuery: IQ): ConstructionNode = {
+    val tree = executableQuery.getTree
+    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
+    Option(tree.getRootNode)
+      .filter(n => n.isInstanceOf[ConstructionNode])
+      .map(n => n.asInstanceOf[ConstructionNode])
+      .getOrElse(throw new MinorOntopInternalBugException(
+        "The \"executable\" query is not starting with a construction node\n" + executableQuery))
   }
 
   /**
@@ -439,7 +479,13 @@ object Sparql2Sql {
       .properties(properties)
       .enableTestMode
       .build
-    reformulationConfiguration.loadQueryReformulator
+
+    val termFactory = reformulationConfiguration.getTermFactory
+    val typeFactory = reformulationConfiguration.getTypeFactory
+    val queryReformulator = reformulationConfiguration.loadQueryReformulator
+    val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
+
+    (queryReformulator, termFactory, typeFactory, substitutionFactory)
   }
 
   @throws[OBDASpecificationException]
@@ -486,27 +532,30 @@ object Sparql2Sql {
     // read triples as RDD[Triple]
     var triplesRDD = spark.ntriples()(data)
 
-    // load optional schema file
-    val owlFile = args(1)
-    val man = OWLManager.createOWLOntologyManager()
-    val ont = man.loadOntologyFromOntologyDocument(new File(owlFile))
-    //    val cleanOnt = man.createOntology()
-    //    man.addAxioms(cleanOnt, ont.asInstanceOf[HasLogicalAxioms].getLogicalAxioms)
-    //
-    //    owlFile = "/tmp/clean-dbo.nt"
-    //    man.saveOntology(cleanOnt, new FileOutputStream(owlFile))
+    // load optional schema file and filter properties used for VP
+    var ont: OWLOntology = null
+    if (args.size == 2) {
+      val owlFile = args(1)
+      val man = OWLManager.createOWLOntologyManager()
+      ont = man.loadOntologyFromOntologyDocument(new File(owlFile))
+      //    val cleanOnt = man.createOntology()
+      //    man.addAxioms(cleanOnt, ont.asInstanceOf[HasLogicalAxioms].getLogicalAxioms)
+      //
+      //    owlFile = "/tmp/clean-dbo.nt"
+      //    man.saveOntology(cleanOnt, new FileOutputStream(owlFile))
 
-    // get all object properties in schema file
-    val objectProperties = ont.asInstanceOf[HasObjectPropertiesInSignature].getObjectPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
+      // get all object properties in schema file
+      val objectProperties = ont.asInstanceOf[HasObjectPropertiesInSignature].getObjectPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
 
-    // get all object properties in schema file
-    val dataProperties = ont.asInstanceOf[HasDataPropertiesInSignature].getDataPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
+      // get all object properties in schema file
+      val dataProperties = ont.asInstanceOf[HasDataPropertiesInSignature].getDataPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
 
-    var schemaProperties = objectProperties ++ dataProperties
-    schemaProperties = Set("http://dbpedia.org/ontology/birthPlace", "http://dbpedia.org/ontology/birthDate")
+      var schemaProperties = objectProperties ++ dataProperties
+      schemaProperties = Set("http://dbpedia.org/ontology/birthPlace", "http://dbpedia.org/ontology/birthDate")
 
-    // filter triples RDD
-    triplesRDD = triplesRDD.filter(t => schemaProperties.contains(t.getPredicate.getURI))
+      // filter triples RDD
+      triplesRDD = triplesRDD.filter(t => schemaProperties.contains(t.getPredicate.getURI))
+    }
 
     // do partitioning here
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex)
@@ -535,17 +584,39 @@ object Sparql2Sql {
     createTempDB(ontopProperties, partitions)
 
     // setup Ontop connection
-    val conn = initOntopConnection(mappings, mappingFile, ont, ontopProperties)
+    val conn: OntopOWLConnection =
+      if (ont != null) {
+        initOntopConnection(mappings, mappingFile, ont, ontopProperties)
+      } else {
+        null
+      }
     var input = "select * where {?s <http://sansa-stack.net/ontology/someBooleanProperty> ?o; " +
       "<http://sansa-stack.net/ontology/someIntegerProperty> ?o2; " +
       "<http://sansa-stack.net/ontology/someDecimalProperty> ?o3} limit 10"
     println("enter SPARQL query (press 'q' to quit): ")
     println("select * where {?s <http://dbpedia.org/ontology/birthPlace> ?o} limit 10")
+
     while (input != "q") {
       input = scala.io.StdIn.readLine()
 
       try {
-        runQuery(conn, input)
+        if (ont != null) {
+          runQuery(conn, input)
+        } else {
+          val sql =
+            if (input.startsWith("sql:")) {
+              input.substring(4)
+            } else {
+              val queryRewrite: OntopQueryRewrite = Sparql2Sql.asSQL(spark, input, triplesRDD, ontopProperties)
+              val sql = queryRewrite.sqlQuery.replace("\"", "`")
+                .replace("`PUBLIC`.", "")
+              sql
+            }
+          val result = spark.sql(sql)
+          result.show(false)
+          result.printSchema()
+
+        }
       } catch {
         case e: Exception => Console.err.println("failed to execute query")
           e.printStackTrace()
@@ -553,20 +624,27 @@ object Sparql2Sql {
 
     }
 
-    def runQuery(conn: OntopOWLConnection, sparqlQuery: String) = {
-      // create SQL query
-      val (sql, columnMapping) = toSQL(conn, sparqlQuery)
+    def runQuery(conn: OntopOWLConnection, query: String) = {
+      val result =
+        if (query.startsWith("sql:")) {
+          spark.sql(query.substring(4))
+        } else {
+          // create SQL query
+          val (sql, columnMapping) = toSQL(conn, query)
 
-      val sqlQuery = sql.replace("\"", "`").replace("`PUBLIC`.", "")
-      println(s"SQL query:\n $sqlQuery")
+          val sqlQuery = sql.replace("\"", "`").replace("`PUBLIC`.", "")
+          println(s"SQL query:\n $sqlQuery")
 
-      // run query
-      var result = spark.sql(sqlQuery)
+          // run query
+          var result = spark.sql(sqlQuery)
 
-      println(s"var mapping: $columnMapping")
-      columnMapping.foreach {
-        case (sparqlVar, sqlVar) => result = result.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
-      }
+          println(s"var mapping: $columnMapping")
+          columnMapping.foreach {
+            case (sparqlVar, sqlVar) => result = result.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
+          }
+          result
+        }
+
       result.show(false)
       result.printSchema()
     }
@@ -574,6 +652,20 @@ object Sparql2Sql {
     conn.close()
 
     spark.stop()
+  }
+
+  case class OntopQueryRewrite(sparqlQuery: String,
+                               sqlQuery: String,
+                               sqlSignature: ImmutableSortedSet[Variable],
+                               sqlTypeMap: ImmutableMap[Variable, DBTermType],
+                               constructionNode: ConstructionNode,
+                               answerAtom: DistinctVariableOnlyDataAtom,
+                               sparqlVar2Term: ImmutableSubstitution[ImmutableTerm],
+                               termFactory: TermFactory,
+                               typeFactory: TypeFactory,
+                               substitutionFactory: SubstitutionFactory
+                              ) {
+
   }
 
 }

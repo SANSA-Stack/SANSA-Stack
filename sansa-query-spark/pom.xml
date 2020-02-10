@@ -15,10 +15,17 @@
         <version.jena>3.13.1</version.jena>
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <version.jsa>${jena.version}-${jsa.subversion}</version.jsa>
-        <spark.deps.scope>provided</spark.deps.scope>
+        <spark.deps.scope>compile</spark.deps.scope>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

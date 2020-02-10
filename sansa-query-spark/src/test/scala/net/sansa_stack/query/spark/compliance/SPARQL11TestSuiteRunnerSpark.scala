@@ -1,44 +1,54 @@
 package net.sansa_stack.query.spark.compliance
 
-import java.net.{JarURLConnection, URL}
-import java.util
-
-import scala.collection.JavaConverters._
-
-import com.google.common.collect.ImmutableSet
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import it.unibz.inf.ontop.test.sparql.ManifestTestUtils
+import com.holdenkarau.spark.testing.{DataFrameSuiteBase, SharedSparkContext}
 import org.apache.jena.graph.NodeFactory
-import org.apache.jena.query._
-import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.resultset.rw.ResultsStAX
-import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.jena.sparql.expr.NodeValue
-import org.apache.jena.sparql.resultset.{ResultSetCompare, SPARQLResult}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row}
-import org.scalatest.FunSuite
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.scalatest.Suite
 
-import net.sansa_stack.rdf.spark.utils.Logging
+import net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuiteRunner
 
 /**
- * SPARQL 1.1 test suite on Apache Spark.
+ * SPARQL 1.1 test suite runner on Apache Spark.
  *
  *
  * @author Lorenz Buehmann
  */
-abstract class SPARQL11TestSuiteSpark
-  extends SPARQL11TestSuite
-  with DataFrameSuiteBase{
+abstract class SPARQL11TestSuiteRunnerSpark
+  extends SPARQLQueryEvaluationTestSuiteRunner
+//
+    with org.scalatest.BeforeAndAfterAll
+    with SharedSparkContext { self: Suite =>
+
+  @transient private var _spark: SparkSession = _
+
+//  def spark: SparkSession = _spark
+
+  lazy val spark = SparkSession.builder.config(conf.set("spark.sql.crossJoin.enabled", "true")).getOrCreate()
+
+  override def beforeAll(): Unit = {
+//    super.beforeAll()
+    conf.set("spark.sql.crossJoin.enabled", "true")
+    _spark = SparkSession.builder.config(conf).getOrCreate()
+  }
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    spark.stop()
+    _spark = null
+  }
+
+
 
 
   /**
    * Convert DataFrame to array of bindings.
    */
-  protected def toBindings(df: DataFrame): Array[Binding] = {
-    df.rdd.collect().map(row => toBinding(row))
+  protected def toBindings(df: DataFrame, metadata: AnyRef): Array[Binding] = {
+    df.rdd.collect().map(row => toBinding(row, metadata))
   }
 
   val decimalType = DataTypes.createDecimalType()
@@ -46,7 +56,7 @@ abstract class SPARQL11TestSuiteSpark
   /**
    * Convert single row to a binding.
    */
-  protected def toBinding(row: Row): Binding = {
+  protected def toBinding(row: Row, metadata: AnyRef): Binding = {
     val binding = BindingFactory.create()
 
     val fields = row.schema.fields
