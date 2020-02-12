@@ -88,7 +88,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.11</artifactId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>de.javakaffee</groupId>
@@ -104,12 +104,13 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Logging dependencies -->
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging_2.11</artifactId>
+            <artifactId>scala-logging_${scala.binary.version}</artifactId>
         </dependency>
     </dependencies>
 </project>
