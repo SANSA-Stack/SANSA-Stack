@@ -435,10 +435,10 @@ object OWLStats {
     println("|  Distributed OWL Statistics  |")
     println("================================")
 
-/**
+    /**
       * Create a SparkSession, do so by first creating a SparkConf object to configure the application .
       * 'Local' is a special value that runs Spark on one thread on the local machine, without connecting to a cluster.
-      * An application name used to identify the application on the cluster manager’s UI.
+      * An application name used to identify the application on the cluster manager's UI.
       */
 
     @transient val spark = SparkSession.builder
