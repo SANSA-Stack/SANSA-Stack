@@ -27,7 +27,7 @@ object DataSetUtils {
       */
     def partitionBy(f: T => Boolean): (DataSet[T], DataSet[T]) = {
       val passes = dataset.filter(f)
-      val fails = dataset.filter(e => !f(e)) // Flink doesn't have filterNot
+      val fails = dataset.filter((e: T) => !f(e)) // Flink doesn't have filterNot
       (passes, fails)
     }
 
