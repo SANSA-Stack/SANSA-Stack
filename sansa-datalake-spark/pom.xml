@@ -21,35 +21,16 @@
 			<artifactId>spark-sql_${scala.binary.version}</artifactId>
 		</dependency>
 
-		<!-- Test -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-hive_${scala.binary.version}</artifactId>
+			<scope>compile</scope>
 		</dependency>
 
 		<!-- Scala -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.holdenkarau</groupId>
-			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-hive_${scala.binary.version}</artifactId>
-			<scope>compile</scope>
 		</dependency>
 
 		<!-- Jena API -->
@@ -61,17 +42,6 @@
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.typesafe</groupId>
-			<artifactId>config</artifactId>
-		</dependency>
-
-		<!-- Spark-Bench -->
-		<dependency>
-			<groupId>com.ibm.sparktc.sparkbench</groupId>
-			<artifactId>sparkbench</artifactId>
 		</dependency>
 
 		<dependency>
@@ -119,7 +89,6 @@
 		<dependency>
           <groupId>com.typesafe.scala-logging</groupId>
           <artifactId>scala-logging_${scala.binary.version}</artifactId>
-          <version>3.9.0</version>
 	    </dependency>
 
 	    <dependency>
