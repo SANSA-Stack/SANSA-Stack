@@ -6,7 +6,12 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Main extends App {
 
-    var queryFile = args(0)
+    if (args.length != 4) {
+        System.err.println("Please provide path to query, mappings and config file as well as Spark master URL")
+        System.exit(0)
+    }
+
+    val queryFile = args(0)
     val mappingsFile = args(1)
     val configFile = args(2)
     val executorID = args(3)
@@ -28,5 +33,7 @@ object Main extends App {
     val timeTaken = stopwatch.getTime
 
     println(s"Query execution time: $timeTaken ms")
+
+    spark.stop()
 
 }

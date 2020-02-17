@@ -1,22 +1,23 @@
 package net.sansa_stack.datalake.spark.utils
 
 import java.io.ByteArrayInputStream
+import java.net.URI
 import java.util
 
+import scala.collection.mutable
+
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
-
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by mmami on 26.07.17.
   */
 object Helpers {
 
-    val logger = Logger("SANSA-DataLake")
+    val logger: Logger = Logger("SANSA-DataLake")
 
     def invertMap(prolog: util.Map[String, String]): Map[String, String] = {
         var star_df : Map[String, String] = Map.empty
@@ -148,7 +149,7 @@ object Helpers {
 
     def getID(sourcePath: String, mappingsFile: String): String = {
 
-        var getID = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#>" +
+        val queryStr = "PREFIX rml: <http://semweb.mmlab.be/ns/rml#>" +
             "PREFIX rr: <http://www.w3.org/ns/r2rml#>" +
             "PREFIX foaf: <http://xmlns.com/foaf/spec/>" +
             "SELECT ?t WHERE {" +
@@ -158,46 +159,7 @@ object Helpers {
                 "?sm rr:template ?t " +
             "}"
 
-        var mappingsString = ""
-        if (mappingsFile.startsWith("hdfs://")) {
-            val host_port = mappingsFile.split("/")(2).split(":")
-            val host = host_port(0)
-            val port = host_port(1)
-            val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-            val path = new org.apache.hadoop.fs.Path(mappingsFile)
-            val stream = hdfs.open(path)
-
-            def readLines = scala.io.Source.fromInputStream(stream)
-
-            mappingsString = readLines.mkString
-        } else if (mappingsFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
-            val bucket_key = mappingsFile.replace("s3://", "").split("/")
-            val bucket = bucket_key.apply(0) // apply(x) = (x)
-            val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
-
-            import com.amazonaws.services.s3.AmazonS3Client
-            import com.amazonaws.services.s3.model.GetObjectRequest
-            import java.io.BufferedReader
-            import java.io.InputStreamReader
-            import scala.collection.JavaConverters._
-
-            val s3 = new AmazonS3Client
-
-            val s3object = s3.getObject(new GetObjectRequest(bucket, key))
-
-            val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-            val lines = new ArrayBuffer[String]()
-            var line: String = null
-            while ({line = reader.readLine; line != null}) {
-                lines.asJava.add(line)
-            }
-            reader.close()
-
-            mappingsString = lines.mkString("\n")
-        } else {
-            var mappings = scala.io.Source.fromFile(mappingsFile)
-            mappingsString = try mappings.mkString finally mappings.close()
-        }
+        val mappingsString = readFileFromPath(mappingsFile)
 
         val in = new ByteArrayInputStream(mappingsString.getBytes)
 
@@ -206,16 +168,18 @@ object Helpers {
 
         var id = ""
 
-        val query1 = QueryFactory.create(getID)
-        val qe1 = QueryExecutionFactory.create(query1, model)
-        val results1 = qe1.execSelect()
-        while (results1.hasNext) {
-            val soln1 = results1.nextSolution()
-            val template = soln1.get("t").toString
+        val query = QueryFactory.create(queryStr)
+        val qe = QueryExecutionFactory.create(query, model)
+        val rs = qe.execSelect()
+        if (rs.hasNext) {
+            val qs = rs.next()
+            val template = qs.get("t").toString
 
             val templateBits = template.split("/")
             id = templateBits(templateBits.length-1).replace("{", "").replace("}", "")
         }
+        qe.close()
+        model.close()
 
         id
     }
@@ -243,6 +207,56 @@ object Helpers {
         }
 
         functionName
+    }
+
+    /**
+     * Reads file from path and returns its content as string.
+     * Supported protocols: hds, s3, file
+     *
+     * @param path the path to the file
+     * @return the content as string
+     */
+    def readFileFromPath(path: String): String = {
+        val uri = URI.create(path)
+
+        val scheme = uri.getScheme
+
+        val source = scheme match {
+            case "hdfs" =>
+                val hdfs = org.apache.hadoop.fs.FileSystem.get(uri, new org.apache.hadoop.conf.Configuration())
+                val hdfsPath = new org.apache.hadoop.fs.Path(uri)
+
+                scala.io.Source.fromInputStream(hdfs.open(hdfsPath))
+            case "s3" =>
+                val bucket_key = path.replace("s3://", "").split("/")
+                val bucket = bucket_key.apply(0) // apply(x) = (x)
+                val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
+
+                import com.amazonaws.services.s3.model.GetObjectRequest
+
+                val s3 = AmazonS3ClientBuilder.standard()
+                  .withRegion("us-east-1")
+                  .withForceGlobalBucketAccessEnabled(true)
+                  .build()
+
+                val s3object = s3.getObject(new GetObjectRequest(bucket, key))
+
+                scala.io.Source.fromInputStream(s3object.getObjectContent)
+            case "file" | null => // from local file system
+                scala.io.Source.fromFile(path)
+            case _ => throw new IllegalArgumentException(s"unsupported path (only s3, hdfs, and file supported yet): $path")
+        }
+
+        val content = source.mkString
+        source.close()
+
+        content
+    }
+
+    def main(args: Array[String]): Unit = {
+        println(Helpers.readFileFromPath("/tmp/flight.owl"))
+        println(Helpers.readFileFromPath("s3://sansa-datalake/Q1.sparql"))
+        println(Helpers.readFileFromPath("hdfs://localhost:8080/tmp/foo.bar"))
     }
 
 }

@@ -2,13 +2,16 @@ package net.sansa_stack.datalake.spark
 
 import java.io.ByteArrayInputStream
 
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
+
 import com.typesafe.scalalogging.Logger
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+
+import net.sansa_stack.datalake.spark.utils.Helpers
 
 
 class Mapper (mappingsFile: String) {
@@ -56,46 +59,7 @@ class Mapper (mappingsFile: String) {
             for (d <- ds) {
                 val src = d._2
 
-                var configJSON = ""
-                if (configFile.startsWith("hdfs://")) {
-                    val host_port = configFile.split("/")(2).split(":")
-                    val host = host_port(0)
-                    val port = host_port(1)
-                    val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-                    val path = new org.apache.hadoop.fs.Path(configFile)
-                    val stream = hdfs.open(path)
-
-                    def readLines = scala.io.Source.fromInputStream(stream)
-
-                    configJSON = readLines.mkString
-                } else if (configFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
-                    val bucket_key = configFile.replace("s3://", "").split("/")
-                    val bucket = bucket_key.apply(0) // apply(x) = (x)
-                    val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
-
-                    import com.amazonaws.services.s3.AmazonS3Client
-                    import com.amazonaws.services.s3.model.GetObjectRequest
-                    import java.io.BufferedReader
-                    import java.io.InputStreamReader
-                    import scala.collection.JavaConverters._
-
-                    val s3 = new AmazonS3Client
-
-                    val s3object = s3.getObject(new GetObjectRequest(bucket, key))
-
-                    val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-                    val lines = new ArrayBuffer[String].asJava
-                    var line: String = null
-                    while ({line = reader.readLine; line != null}) {
-                      lines.add(line)
-                    }
-                    reader.close()
-
-                    configJSON = lines.asScala.mkString("\n")
-                } else {
-                    val configs = scala.io.Source.fromFile(configFile)
-                    configJSON = try configs.mkString finally configs.close()
-                }
+                val configJSON = Helpers.readFileFromPath(configFile)
 
                 case class ConfigObject(source: String, options: Map[String, String], entity: String)
 
@@ -166,46 +130,7 @@ class Mapper (mappingsFile: String) {
         logger.info("...for this, the following query will be executed: " + queryString + " on " + mappingsFile)
         val query = QueryFactory.create(queryString)
 
-        var mappingsString = ""
-        if (mappingsFile.startsWith("hdfs://")) {
-            val host_port = mappingsFile.split("/")(2).split(":")
-            val host = host_port(0)
-            val port = host_port(1)
-            val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-            val path = new org.apache.hadoop.fs.Path(mappingsFile)
-            val stream = hdfs.open(path)
-
-            def readLines = scala.io.Source.fromInputStream(stream)
-
-            mappingsString = readLines.mkString
-        } else if (mappingsFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
-            val bucket_key = mappingsFile.replace("s3://", "").split("/")
-            val bucket = bucket_key.apply(0) // apply(x) = (x)
-            val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
-
-            import com.amazonaws.services.s3.AmazonS3Client
-            import com.amazonaws.services.s3.model.GetObjectRequest
-            import java.io.BufferedReader
-            import java.io.InputStreamReader
-            import scala.collection.JavaConverters._
-
-            val s3 = new AmazonS3Client
-
-            val s3object = s3.getObject(new GetObjectRequest(bucket, key))
-
-            val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-            val lines = new ArrayBuffer[String].asJava
-            var line: String = null
-            while ({line = reader.readLine; line != null}) {
-              lines.add(line)
-            }
-            reader.close()
-
-            mappingsString = lines.asScala.mkString("\n")
-        } else {
-            var mappings = scala.io.Source.fromFile(mappingsFile)
-            mappingsString = try mappings.mkString finally mappings.close()
-        }
+        val mappingsString = Helpers.readFileFromPath(mappingsFile)
 
         val in = new ByteArrayInputStream(mappingsString.getBytes)
 
@@ -303,7 +228,7 @@ class Mapper (mappingsFile: String) {
                         try {
                             attr = soln1.get("r").toString
                         } catch {
-                        case ae: NullPointerException => val logger = println("ERROR: Relevant source detected but cannot " +
+                        case _: NullPointerException => println("ERROR: Relevant source detected but cannot " +
                           "be read due to mappings issues. For example, are you using `rr:parentTriplesMap` instead of `rml:reference`?")
                             System.exit(1)
                         }

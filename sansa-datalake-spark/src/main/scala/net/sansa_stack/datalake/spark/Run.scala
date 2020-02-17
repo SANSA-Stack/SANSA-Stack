@@ -2,12 +2,14 @@ package net.sansa_stack.datalake.spark
 
 import java.io.FileNotFoundException
 
-import com.typesafe.scalalogging.Logger
-import net.sansa_stack.datalake.spark.utils.Helpers._
-import org.apache.spark.sql.DataFrame
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+
+import com.typesafe.scalalogging.Logger
+import org.apache.spark.sql.DataFrame
+
+import net.sansa_stack.datalake.spark.utils.Helpers
+import net.sansa_stack.datalake.spark.utils.Helpers._
 
 
 class Run[A](executor: QueryExecutor[A]) {
@@ -22,45 +24,7 @@ class Run[A](executor: QueryExecutor[A]) {
     logger.info("QUERY ANALYSIS startigng...")
 
     try {
-      var query = ""
-      if (queryFile.startsWith("hdfs://")) {
-        val host_port = queryFile.split("/")(2).split(":")
-        val host = host_port(0)
-        val port = host_port(1)
-        val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-        val path = new org.apache.hadoop.fs.Path(queryFile)
-        val stream = hdfs.open(path)
-        def readLines = scala.io.Source.fromInputStream(stream)
-
-        query = readLines.mkString
-      } else if (queryFile.startsWith("s3")) { // E.g., s3://sansa-datalake/Q1.sparql
-        val bucket_key = queryFile.replace("s3://", "").split("/")
-
-        val bucket = bucket_key.apply(0) // apply(x) = (x)
-        val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
-
-        import com.amazonaws.services.s3.AmazonS3Client
-        import com.amazonaws.services.s3.model.GetObjectRequest
-        import java.io.BufferedReader
-        import java.io.InputStreamReader
-
-        val s3 = new AmazonS3Client
-        val s3object = s3.getObject(new GetObjectRequest(bucket, key))
-
-        val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-        val lines = new ArrayBuffer[String]().asJava
-        var line: String = null
-        while ({line = reader.readLine; line != null}) {
-          lines.add(line)
-        }
-        reader.close()
-        lines.toArray
-
-        query = lines.asScala.mkString("\n")
-      } else {
-          val queryFromFile = scala.io.Source.fromFile(queryFile)
-          query = try queryFromFile.mkString finally queryFromFile.close()
-      }
+      var query = Helpers.readFileFromPath(queryFile)
 
       println(s"Going to execute the query:\n$query")
 
@@ -135,7 +99,7 @@ class Run[A](executor: QueryExecutor[A]) {
       var starNbrFilters: Map[String, Integer] = Map()
 
       var starDataTypesMap: Map[String, mutable.Set[String]] = Map()
-      var parsetIDs : Map[String, String] = Map() // Used when subject variables are projected out
+      val parsetIDs: Map[String, String] = Map() // Used when subject variables are projected out
 
       logger.info("---> GOING NOW TO COLLECT DATA")
 

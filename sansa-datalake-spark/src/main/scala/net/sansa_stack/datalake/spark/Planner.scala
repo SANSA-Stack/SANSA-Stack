@@ -2,15 +2,18 @@ package net.sansa_stack.datalake.spark
 
 import java.util
 
-import com.google.common.collect.ArrayListMultimap
-import com.typesafe.scalalogging.Logger
-import net.sansa_stack.datalake.spark.utils.Helpers._
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{__, Json, Reads}
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ListBuffer
+
+import com.google.common.collect.ArrayListMultimap
+import com.typesafe.scalalogging.Logger
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Json, Reads, __}
+
+import net.sansa_stack.datalake.spark.utils.Helpers
+import net.sansa_stack.datalake.spark.utils.Helpers._
 
 
 class Planner(stars: mutable.HashMap[String, mutable.Set[(String, String)]] with mutable.MultiMap[String, (String, String)]) {
@@ -116,45 +119,7 @@ class Planner(stars: mutable.HashMap[String, mutable.Set[(String, String)]] with
     }
 
     def sortStarsByWeight(starDataTypesMap: Map[String, mutable.Set[String]], filters: Map[String, Integer], configFile: String): Map[String, Double] = {
-        var configJSON = ""
-        if (configFile.startsWith("hdfs://")) {
-            val host_port = configFile.split("/")(2).split(":")
-            val host = host_port(0)
-            val port = host_port(1)
-            val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI("hdfs://" + host + ":" + port + "/"), new org.apache.hadoop.conf.Configuration())
-            val path = new org.apache.hadoop.fs.Path(configFile)
-            val stream = hdfs.open(path)
-
-            def readLines = scala.io.Source.fromInputStream(stream)
-
-            configJSON = readLines.mkString
-        } else if (configFile.startsWith("s3")) { // E.g., s3://sansa-datalake/config
-            val bucket_key = configFile.replace("s3://", "").split("/")
-            val bucket = bucket_key.apply(0) // apply(x) = (x)
-            val key = if (bucket_key.length > 2) bucket_key.slice(1, bucket_key.length).mkString("/") else bucket_key(1) // Case of folder
-
-            import com.amazonaws.services.s3.AmazonS3Client
-            import com.amazonaws.services.s3.model.GetObjectRequest
-            import java.io.BufferedReader
-            import java.io.InputStreamReader
-
-            val s3 = new AmazonS3Client
-
-            val s3object = s3.getObject(new GetObjectRequest(bucket, key))
-
-            val reader: BufferedReader = new BufferedReader(new InputStreamReader(s3object.getObjectContent))
-            val lines = new ArrayBuffer[String]()
-            var line: String = null
-            while ({line = reader.readLine; line != null}) {
-                lines.asJava.add(line)
-            }
-            reader.close()
-
-            configJSON = lines.mkString("\n")
-        } else {
-            val configs = scala.io.Source.fromFile(configFile)
-            configJSON = try configs.mkString finally configs.close()
-        }
+        val configJSON = Helpers.readFileFromPath(configFile)
 
         case class ConfigObject(datasource: String, weight: Double)
 
