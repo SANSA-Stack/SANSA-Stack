@@ -4,9 +4,9 @@ import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
-
 import scala.collection.immutable
+
+import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
 
 object OWLXMLSyntaxOWLExpressionsRDDBuilder {
 
