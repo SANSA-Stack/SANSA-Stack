@@ -1,7 +1,14 @@
 package net.sansa_stack.owl.spark
 
+import org.apache.hadoop.fs.Path
+import org.apache.spark.sql.SparkSession
+import org.semanticweb.owlapi.formats._
+import org.semanticweb.owlapi.model.OWLDocumentFormat
 
 import net.sansa_stack.owl.spark.rdd._
+
+
+class UnknownOWLFormatException(msg: String) extends Exception
 
 /**
  * Wrap up implicit classes/methods to read OWL data into either
@@ -136,5 +143,89 @@ package object owl {
      def owlXml: String => OWLExpressionsRDD = path => {
        OWLXMLSyntaxOWLExpressionsRDDBuilder.build(spark, path)._3
      }
+  }
+
+  implicit class OWLWriter(axioms: OWLAxiomsRDD) {
+    def save(
+              path: String,
+              format: OWLDocumentFormat,
+              saveMode: SaveMode.Value = SaveMode.ErrorIfExists,
+              exitOnError: Boolean = false): Unit = {
+
+      val fsPath = new Path(path)
+      val fs = fsPath.getFileSystem(axioms.sparkContext.hadoopConfiguration)
+
+      val doSave = if (fs.exists(fsPath)) {
+        saveMode match {
+          case SaveMode.Overwrite =>
+            fs.delete(fsPath, true)
+            true
+          case SaveMode.ErrorIfExists =>
+            sys.error(s"Given path $path already exists!")
+            if (exitOnError) sys.exit(1)
+            false
+          case SaveMode.Ignore => false
+          case _ =>
+            throw new IllegalStateException(s"Unsupported save mode $saveMode")
+        }
+      } else {
+        true
+      }
+
+      if (doSave) {
+        format match {
+          case format: FunctionalSyntaxDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: LabelFunctionalDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: KRSS2DocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: KRSSDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: DLSyntaxDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: OBODocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: RDFJsonDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: RDFJsonLDDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: NQuadsDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: NTriplesDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: ManchesterSyntaxDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: RDFXMLDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: TurtleDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: BinaryRDFDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: RioRDFXMLDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: N3DocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: TrixDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: RioTurtleDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: RDFaDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: TrigDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: OWLXMLDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: LatexAxiomsListDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: DLSyntaxDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case format: LatexDocumentFormat =>
+            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case _ =>
+            throw new UnknownOWLFormatException(s"OWL serialization format ${format.toString} unknown or not handled")
+        }
+      }
+    }
   }
 }
