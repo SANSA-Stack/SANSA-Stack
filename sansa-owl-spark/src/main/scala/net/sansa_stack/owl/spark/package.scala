@@ -4,8 +4,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.formats._
 import org.semanticweb.owlapi.model.OWLDocumentFormat
-
 import net.sansa_stack.owl.spark.rdd._
+import net.sansa_stack.owl.spark.writers.OWLFunctionalSyntaxWriter
 
 
 class UnknownOWLFormatException(msg: String) extends Exception
@@ -174,8 +174,7 @@ package object owl {
 
       if (doSave) {
         format match {
-          case format: FunctionalSyntaxDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case _: FunctionalSyntaxDocumentFormat => OWLFunctionalSyntaxWriter.save(path, axioms)
           case format: LabelFunctionalDocumentFormat =>
             throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case format: KRSS2DocumentFormat =>
