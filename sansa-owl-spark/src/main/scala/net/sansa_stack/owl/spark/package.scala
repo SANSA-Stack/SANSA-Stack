@@ -1,7 +1,5 @@
 package net.sansa_stack.owl.spark
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Dataset, SparkSession}
 
 import net.sansa_stack.owl.spark.rdd._
 
@@ -10,9 +8,39 @@ import net.sansa_stack.owl.spark.rdd._
  * [[org.apache.spark.sql.Dataset]] or [[org.apache.spark.rdd.RDD]].
  *
  * @author Gezim Sejdiu
+ * @author Patrick Westphal
  */
-
 package object owl {
+
+  /**
+    * SaveMode is used to specify the expected behavior of saving an OWL dataset/RDD to a path.
+    *
+    * FIXME: This code was copied from SANSA-RDF and should go into a dedicated SANSA commons package
+    */
+  object SaveMode extends Enumeration {
+    type SaveMode = Value
+    val
+
+    /**
+      * Overwrite mode means that when saving an OWL dataset/RDD to a path,
+      * if path already exists, the existing data is expected to be
+      * overwritten by the contents of the RDF dataset.
+      */
+    Overwrite,
+
+    /**
+      * ErrorIfExists mode means that when saving an OWL dataset/RDD to a
+      * path, if path already exists, an exception is expected to be thrown.
+      */
+    ErrorIfExists,
+
+    /**
+      * Ignore mode means that when saving an OWL dataset/RDD to a path, if
+      * path already exists, the save operation is expected to not save the
+      * contents of the RDF dataset and to not change the existing data.
+      */
+    Ignore = Value
+  }
 
   object Syntax extends Enumeration {
     val FUNCTIONAL, MANCHESTER, OWLXML = Value
