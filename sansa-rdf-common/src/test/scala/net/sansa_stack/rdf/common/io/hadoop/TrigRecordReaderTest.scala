@@ -47,14 +47,18 @@ class TrigRecordReaderTest extends FunSuite {
   test("multiple splits") {
 
     val nrOfSplits = 2
-    var splitLength = Math.ceil(length.toDouble / nrOfSplits).toInt
-    var currentLength = 0
+    val splitLength = Math.ceil(length.toDouble / nrOfSplits).toInt
 
-    while (currentLength <= length) {
-      val split = new FileSplit(path, 0, testFile.length(), null)
+    val reader = new TrigRecordReader()
+
+    for (i <- 0 to nrOfSplits) {
+      val start = i * splitLength
+      val end = Math.min((i + 1) * splitLength, length)
+
+      val split = new FileSplit(path, start, end, null)
       // setup
       val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
-      val reader = new TrigRecordReader()
+
       // initialize
       reader.initialize(split, context)
       // read all records in split
@@ -65,6 +69,7 @@ class TrigRecordReaderTest extends FunSuite {
         val item = (k, v)
         actual += item
       }
+
     }
 
   }
