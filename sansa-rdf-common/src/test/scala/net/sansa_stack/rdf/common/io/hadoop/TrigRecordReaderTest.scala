@@ -20,14 +20,17 @@ class TrigRecordReaderTest extends FunSuite {
 
   val conf = new Configuration(false)
   conf.set("fs.defaultFS", "file:///")
-  val testFile = new File("/tmp/test.trig")
-  val path = new Path(testFile.getAbsoluteFile.toURI)
 
-  val length = testFile.length()
+  val testFileName = "w3c_ex2.trig"
+  val testFile = new File(getClass.getClassLoader.getResource(testFileName).getPath)
+
+  val path = new Path(testFile.getAbsolutePath)
+
+  val fileLengthTotal = testFile.length()
 
   test("single split") {
 
-    val split = new FileSplit(path, 0, length, null)
+    val split = new FileSplit(path, 0, fileLengthTotal, null)
     // setup
     val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
     val reader = new TrigRecordReader()
@@ -47,13 +50,13 @@ class TrigRecordReaderTest extends FunSuite {
   test("multiple splits") {
 
     val nrOfSplits = 2
-    val splitLength = Math.ceil(length.toDouble / nrOfSplits).toInt
+    val splitLength = Math.ceil(fileLengthTotal.toDouble / nrOfSplits).toInt
 
     val reader = new TrigRecordReader()
 
     for (i <- 0 to nrOfSplits) {
       val start = i * splitLength
-      val end = Math.min((i + 1) * splitLength, length)
+      val end = Math.min((i + 1) * splitLength, fileLengthTotal)
 
       val split = new FileSplit(path, start, end, null)
       // setup

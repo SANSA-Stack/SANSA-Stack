@@ -4,6 +4,8 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, Sequen
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.util
+import java.util.concurrent.atomic.AtomicLong
+import java.util.regex.Pattern
 
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
 import org.aksw.jena_sparql_api.io.binseach.{CharSequenceFromSeekable, PageManagerForByteBuffer, PageNavigator, ReverseCharSequenceFromSeekable}
@@ -17,20 +19,22 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 
 /**
+ * A record reader for Trig RDF files.
+ *
  * @author Lorenz Buehmann
+ * @author Claus Stadler
  */
-class TrigRecordReader extends RecordReader[LongWritable, Dataset]{
+class TrigRecordReader extends RecordReader[LongWritable, Dataset] {
 
-  var start, end, position = 0L
-  var key = new LongWritable
-  var value: Dataset = DatasetFactory.create()
+  private val trigFwdPattern: Pattern = Pattern.compile("@base|@prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
+  private val trigBwdPattern: Pattern = Pattern.compile("esab@|xiferp@|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
 
-  import java.util.regex.Pattern
+  private var start, end, position = 0L
 
-  val trigFwdPattern: Pattern = Pattern.compile("@base|@prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
-  val trigBwdPattern: Pattern = Pattern.compile("esab@|xiferp@|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
+  private val currentKey = new AtomicLong
+  private var currentValue: Dataset = DatasetFactory.create()
 
-  var datasetFlow: util.Iterator[Dataset] = _
+  private var datasetFlow: util.Iterator[Dataset] = _
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     // split position in data (start one byte earlier to detect if
@@ -67,7 +71,7 @@ class TrigRecordReader extends RecordReader[LongWritable, Dataset]{
     val m = if (isFwd) fwdMatcher else bwdMatcher
 
     val availableRegionLength = if (isFwd) Ints.saturatedCast(pageManager.getEndPos)
-                                else Ints.saturatedCast(absMatcherStartPos + 1)
+    else Ints.saturatedCast(absMatcherStartPos + 1)
 
     m.region(0, availableRegionLength)
 
@@ -118,13 +122,24 @@ class TrigRecordReader extends RecordReader[LongWritable, Dataset]{
 
   }
 
-  override def nextKeyValue(): Boolean = datasetFlow.hasNext
+  override def nextKeyValue(): Boolean = {
+    if (datasetFlow == null || !datasetFlow.hasNext) false
+    else {
+      currentValue = datasetFlow.next()
+      currentKey.incrementAndGet
+      currentValue != null
+    }
+  }
 
-  override def getCurrentKey: LongWritable = null
+  override def getCurrentKey: LongWritable = if (currentValue == null) null else new LongWritable(currentKey.get)
 
-  override def getCurrentValue: Dataset = datasetFlow.next()
+  override def getCurrentValue: Dataset = currentValue
 
   override def getProgress: Float = 0
 
-  override def close(): Unit = null
+  override def close(): Unit = {
+    if (datasetFlow != null) {
+      datasetFlow = null
+    }
+  }
 }
