@@ -94,11 +94,11 @@ class TrigRecordReader extends RecordReader[LongWritable, Dataset] {
       // absPos += 5;
       nav.setPos(absPos)
       println(s"Attempting pos: $absPos")
-      val clonedNav = nav.clone
+      val navClone = nav.clone
       val maxQuadCount = 3
 
       val task = new java.util.concurrent.Callable[InputStream]() {
-        def call(): InputStream = new SequenceInputStream(new ByteArrayInputStream(prefixBytes), Channels.newInputStream(clonedNav))
+        def call(): InputStream = new SequenceInputStream(new ByteArrayInputStream(prefixBytes), Channels.newInputStream(navClone.clone))
       }
       val quadCount = RDFDataMgrRx.createFlowableQuads(task, Lang.TRIG, null)
         .limit(maxQuadCount)
@@ -112,8 +112,7 @@ class TrigRecordReader extends RecordReader[LongWritable, Dataset] {
         println(s"Candidate start pos $absPos yield $quadCount / $maxQuadCount quads")
 
         datasetFlow = RDFDataMgrRx.createFlowableDatasets(task, Lang.TRIG, null)
-          .toList
-          .blockingGet()
+          .blockingIterable()
           .iterator()
 
         return

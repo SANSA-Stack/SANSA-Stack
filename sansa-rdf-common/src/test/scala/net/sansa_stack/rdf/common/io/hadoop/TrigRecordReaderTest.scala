@@ -8,7 +8,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.TaskAttemptID
-import org.apache.hadoop.mapreduce.lib.input.FileSplit
+import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
 import org.apache.jena.query.Dataset
 import org.scalatest.FunSuite
@@ -50,20 +50,16 @@ class TrigRecordReaderTest extends FunSuite {
   test("multiple splits") {
 
     val nrOfSplits = 2
-    val splitLength = Math.ceil(fileLengthTotal.toDouble / nrOfSplits).toInt
 
     val reader = new TrigRecordReader()
 
-    for (i <- 0 to nrOfSplits) {
-      val start = i * splitLength
-      val end = Math.min((i + 1) * splitLength, fileLengthTotal)
-
-      val split = new FileSplit(path, start, end, null)
+    generateFileSplits(nrOfSplits).foreach { split =>
       // setup
       val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
 
       // initialize
       reader.initialize(split, context)
+
       // read all records in split
       val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
       while (reader.nextKeyValue()) {
@@ -72,9 +68,44 @@ class TrigRecordReaderTest extends FunSuite {
         val item = (k, v)
         actual += item
       }
-
     }
+  }
 
+  test("multiple splits parsed using InputFormat") {
+
+    val inputFormat = new TrigFileInputFormat()
+
+    val nrOfSplits = 2
+
+    val reader = new TrigRecordReader()
+
+    generateFileSplits(nrOfSplits).foreach { split =>
+      // setup
+      val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
+
+      // initialize
+      reader.initialize(split, context)
+
+      // read all records in split
+      val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
+      while (reader.nextKeyValue()) {
+        val k = reader.getCurrentKey
+        val v = reader.getCurrentValue
+        val item = (k, v)
+        actual += item
+      }
+    }
+  }
+
+  private def generateFileSplits(n: Int) = {
+    val splitLength = Math.ceil(fileLengthTotal.toDouble / n).toInt
+
+    for (i <- 0 to n) yield {
+      val start = i * splitLength
+      val end = Math.min((i + 1) * splitLength, fileLengthTotal)
+
+      new FileSplit(path, start, end, null)
+    }
   }
 
 }
