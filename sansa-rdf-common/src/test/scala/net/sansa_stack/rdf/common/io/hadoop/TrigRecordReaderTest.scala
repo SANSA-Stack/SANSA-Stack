@@ -3,15 +3,17 @@ package net.sansa_stack.rdf.common.io.hadoop
 import java.io.File
 
 import scala.collection.mutable
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapreduce.TaskAttemptID
+import org.apache.hadoop.mapreduce.{Job, RecordReader, TaskAttemptID}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
 import org.apache.jena.query.Dataset
+import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 import org.scalatest.FunSuite
+
+import scala.collection.JavaConverters._
 
 /**
  * @author Lorenz Buehmann
@@ -28,72 +30,62 @@ class TrigRecordReaderTest extends FunSuite {
 
   val fileLengthTotal = testFile.length()
 
-  test("single split") {
 
-    val split = new FileSplit(path, 0, fileLengthTotal, null)
-    // setup
-    val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
-    val reader = new TrigRecordReader()
-    // initialize
-    reader.initialize(split, context)
-    // read all records in split
+  val maxNumSplits = 3
+
+  /**
+   * Testing n splits by manually created RecordReader
+   */
+  for (i <- 1 to maxNumSplits) {
+    test(s"parsing Trig file provided by $i splits") {
+
+      val splits = generateFileSplits(i)
+
+      splits.foreach { split =>
+        // setup
+        val reader = new TrigRecordReader()
+
+        // initialize
+        reader.initialize(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
+
+        // read all records in split
+        consumeRecords(reader)
+      }
+    }
+  }
+
+  /**
+   * Testing n splits by RecordReader created from Inputformat (inkl. parsed prefixes)
+   */
+  test("multiple splits parsed using InputFormat") {
+
+    val job = Job.getInstance(conf)
+    val inputFormat = new TrigFileInputFormat()
+
+    // add input path of the file
+    FileInputFormat.addInputPath(job, new Path(testFile.getAbsolutePath))
+
+    // get splits from InputFormat
+    val splits = inputFormat.getSplits(job)
+
+    splits.asScala.foreach { split =>
+      // create the reader
+      val reader = inputFormat.createRecordReader(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
+
+      // read all records in split
+      consumeRecords(reader)
+    }
+  }
+
+  private def consumeRecords(reader: RecordReader[LongWritable, Dataset]) = {
     val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
     while (reader.nextKeyValue()) {
       val k = reader.getCurrentKey
       val v = reader.getCurrentValue
       val item = (k, v)
-      println(item._2)
       actual += item
-    }
-  }
-
-  test("multiple splits") {
-
-    val nrOfSplits = 2
-
-    val reader = new TrigRecordReader()
-
-    generateFileSplits(nrOfSplits).foreach { split =>
-      // setup
-      val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
-
-      // initialize
-      reader.initialize(split, context)
-
-      // read all records in split
-      val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
-      while (reader.nextKeyValue()) {
-        val k = reader.getCurrentKey
-        val v = reader.getCurrentValue
-        val item = (k, v)
-        actual += item
-      }
-    }
-  }
-
-  test("multiple splits parsed using InputFormat") {
-
-    val inputFormat = new TrigFileInputFormat()
-
-    val nrOfSplits = 2
-
-    val reader = new TrigRecordReader()
-
-    generateFileSplits(nrOfSplits).foreach { split =>
-      // setup
-      val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
-
-      // initialize
-      reader.initialize(split, context)
-
-      // read all records in split
-      val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
-      while (reader.nextKeyValue()) {
-        val k = reader.getCurrentKey
-        val v = reader.getCurrentValue
-        val item = (k, v)
-        actual += item
-      }
+      println(s"Graph ${k.get()}:")
+      RDFDataMgr.write(System.out, v, RDFFormat.TRIG_PRETTY)
     }
   }
 

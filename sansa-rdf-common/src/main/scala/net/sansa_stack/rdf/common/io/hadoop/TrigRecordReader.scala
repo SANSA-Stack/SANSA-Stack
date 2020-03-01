@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
 import org.apache.jena.ext.com.google.common.primitives.Ints
 import org.apache.jena.query.{Dataset, DatasetFactory}
-import org.apache.jena.rdf.model.ModelFactory
+import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 
 /**
@@ -24,7 +24,8 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-class TrigRecordReader extends RecordReader[LongWritable, Dataset] {
+class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().setNsPrefixes(DefaultPrefixes.prefixes))
+  extends RecordReader[LongWritable, Dataset] {
 
   private val trigFwdPattern: Pattern = Pattern.compile("@base|@prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
   private val trigBwdPattern: Pattern = Pattern.compile("esab@|xiferp@|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
@@ -75,12 +76,9 @@ class TrigRecordReader extends RecordReader[LongWritable, Dataset] {
 
     m.region(0, availableRegionLength)
 
-    // prepend default prefixes // TODO get prefixes from file before parsing happens and distribute them
-    val pm = ModelFactory.createDefaultModel()
-    pm.setNsPrefixes(DefaultPrefixes.prefixes)
+    // we have to prepend prefixes to help the parser as there is no other way to make it aware of those
     val baos = new ByteArrayOutputStream()
-    RDFDataMgr.write(baos, pm, RDFFormat.TURTLE_PRETTY)
-
+    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
     val prefixBytes = baos.toByteArray
 
     var matchCount = 0
