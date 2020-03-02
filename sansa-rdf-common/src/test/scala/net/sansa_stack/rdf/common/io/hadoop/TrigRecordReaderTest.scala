@@ -48,7 +48,7 @@ class TrigRecordReaderTest extends FunSuite {
       val splits = generateFileSplits(i)
 
       splits.foreach { split =>
-        println("split:" )
+        println(s"split (${split.getStart} - ${split.getStart + split.getLength}):" )
 
         val stream = split.getPath.getFileSystem(new TaskAttemptContextImpl(conf, new TaskAttemptID()).getConfiguration)
           .open(split.getPath)
@@ -70,7 +70,7 @@ class TrigRecordReaderTest extends FunSuite {
         val ds = consumeRecords(reader)
 
         // compare with target dataset
-        compareDatasets(targetDataset, ds)
+        assert(compareDatasets(targetDataset, ds), "datasets did not match")
       }
     }
   }
