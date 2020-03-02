@@ -5,6 +5,7 @@ import java.io.{ByteArrayInputStream, File, FileInputStream}
 import org.aksw.commons.collections.diff.{CollectionDiff, Diff, SetDiff}
 import org.aksw.jena_sparql_api.core.utils.FN_QuadDiffUnique
 import org.aksw.jena_sparql_api.update.QuadDiffIterator
+import org.aksw.jena_sparql_api.utils.DatasetGraphUtils
 
 import scala.collection.mutable
 import org.apache.hadoop.conf.Configuration
@@ -43,28 +44,30 @@ class TrigRecordReaderTest extends FunSuite {
   RDFDataMgr.read(targetDataset, new FileInputStream(testFile), Lang.TRIG)
 
 
-  val maxNumSplits = 2
+  val maxNumSplits = 3
 
   /**
    * Testing n splits by manually created RecordReader
    */
-  for (i <- maxNumSplits to maxNumSplits) {
+  for (i <- 3 to maxNumSplits) {
     test(s"parsing Trig file provided by $i splits") {
 
       val splits = generateFileSplits(i)
 
+      val ds = DatasetFactory.create()
       splits.foreach { split =>
         // println(s"split (${split.getStart} - ${split.getStart + split.getLength}):" )
 
-        val stream = split.getPath.getFileSystem(new TaskAttemptContextImpl(conf, new TaskAttemptID()).getConfiguration)
-          .open(split.getPath)
+        /*
+                val stream = split.getPath.getFileSystem(new TaskAttemptContextImpl(conf, new TaskAttemptID()).getConfiguration)
+                  .open(split.getPath)
 
-
-        val bufferSize = split.getLength.toInt
-        val buffer = new Array[Byte](bufferSize)
-        stream.readFully(split.getStart, buffer, 0, bufferSize)
-        println(new String(buffer))
-        stream.close()
+                val bufferSize = split.getLength.toInt
+                val buffer = new Array[Byte](bufferSize)
+                stream.readFully(split.getStart, buffer, 0, bufferSize)
+                println(new String(buffer))
+                stream.close()
+                */
 
         // setup
         val reader = new TrigRecordReader()
@@ -73,15 +76,15 @@ class TrigRecordReaderTest extends FunSuite {
         reader.initialize(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
 
         // read all records in split
-        val ds = consumeRecords(reader)
-
-        System.err.println("Consumed dataset")
-        RDFDataMgr.write(System.err, ds, RDFFormat.TRIG_PRETTY)
-
-        // compare with target dataset
-        val isEqual = compareDatasets(targetDataset, ds)
-        assert(isEqual, "datasets did not match")
+        val contrib = consumeRecords(reader)
+        DatasetGraphUtils.addAll(ds.asDatasetGraph(), contrib.asDatasetGraph())
+//        System.err.println("Dataset contribution")
+//        RDFDataMgr.write(System.err, ds, RDFFormat.TRIG_PRETTY)
       }
+
+      // compare with target dataset
+      val isEqual = compareDatasets(targetDataset, ds)
+      assert(isEqual, "datasets did not match")
     }
   }
 
@@ -124,9 +127,7 @@ class TrigRecordReaderTest extends FunSuite {
       // println(s"Dataset ${k.get()}:")
       // RDFDataMgr.write(System.out, v, RDFFormat.TRIG_PRETTY)
 
-      for (q <- v.asDatasetGraph().find().asScala) {
-        result.asDatasetGraph().add(q)
-      }
+      DatasetGraphUtils.addAll(result.asDatasetGraph(), v.asDatasetGraph())
     }
 
     // merge to single dataset

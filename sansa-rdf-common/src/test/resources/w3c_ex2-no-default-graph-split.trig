@@ -19,25 +19,6 @@
 
 <http://example.org/charlie>
     {
-       _:c foaf:name "Charlie" .
-       _:c foaf:mbox <mailto:charlie@work.example.org> .
-    }
-
-<http://example.org/delta>
-    {
-       _:d foaf:name "Delta" .
-       _:d foaf:mbox <mailto:delta@work.example.org> .
-    }
-
-<http://example.org/echo>
-    {
-       _:e foaf:name "Echo" .
-       _:e foaf:mbox <mailto:echo@work.example.org> .
-    }
-
-<http://example.org/foxtrot>
-    {
-       _:f foaf:name "Foxtrot" .
-       _:f foaf:mbox <mailto:foxtrot@work.example.org> .
-    }
+       _:c foaf:name "charlie" .
+       _:c foaf:mbox <mailto:char
 

@@ -12,6 +12,7 @@ import io.reactivex.functions.Predicate
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
+import org.apache.commons.io.IOUtils
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
@@ -19,6 +20,9 @@ import org.apache.jena.ext.com.google.common.primitives.Ints
 import org.apache.jena.query.{Dataset, DatasetFactory}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
+
+import scala.collection.JavaConverters._
+
 
 /**
  * A record reader for Trig RDF files.
@@ -60,15 +64,22 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
       val start = m.start
       val end = m.end
       // The matcher yields absolute byte positions from the beginning of the byte sequence
-      val matchPos = if (isFwd) start else -end + 1
+      val matchPos = if (isFwd) {
+        start
+      } else {
+        -end + 1
+      }
       val absPos = (absMatcherStartPos + matchPos).asInstanceOf[Int]
       // Artificially create errors
       // absPos += 5;
       seekable.setPos(absPos)
-      println(s"Attempting pos: $absPos")
       val probeSeek = seekable.cloneObject
 
+      // val by = seekable.get()
+      // println("by " + by)
       val probeResult = prober.apply(probeSeek)
+      System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
+
       if(probeResult) {
         return absPos
       }
@@ -79,9 +90,15 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
+    val tmp = createDatasetFlow(inputSplit, context)
 
-    val maxRecordLength = 10 * 1024
-    val probeRecordCount = 1
+    datasetFlow = tmp.blockingIterable().iterator()
+  }
+
+
+  def createDatasetFlow(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
+    val maxRecordLength = 200 // 10 * 1024
+    val probeRecordCount = 2
 
     val twiceMaxRecordLengthMinusOne = (2 * maxRecordLength - 1)
 
@@ -90,23 +107,29 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
     val prefixBytes = baos.toByteArray
 
+    // Clones the provided seekable!
+    val effectiveInputStreamSupp: Seekable => InputStream = seekable => {
+      val r = new SequenceInputStream(
+        new ByteArrayInputStream(prefixBytes),
+        Channels.newInputStream(seekable.cloneObject))
+      r
+    }
+
     val parser: Seekable => Flowable[Dataset] = seekable => {
       // TODO Close the cloned seekable
-      val task = new java.util.concurrent.Callable[InputStream] () {
-        def call (): InputStream = new SequenceInputStream (
-          new ByteArrayInputStream (prefixBytes),
-          Channels.newInputStream (seekable.cloneObject) )
+      val task = new java.util.concurrent.Callable[InputStream]() {
+        def call(): InputStream = effectiveInputStreamSupp.apply(seekable)
       }
 
-      val r = RDFDataMgrRx.createFlowableDatasets (task, Lang.TRIG, null)
+      val r = RDFDataMgrRx.createFlowableDatasets(task, Lang.TRIG, null)
       r
     }
 
     val prober: Seekable => Boolean = seekable => {
       val quadCount = parser(seekable)
-        .limit (probeRecordCount)
+        .limit(probeRecordCount)
         .count
-        .onErrorReturnItem (- 1L)
+        .onErrorReturnItem(-1L)
         .blockingGet() > 0
       quadCount
     }
@@ -127,20 +150,23 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     val splitLength = split.getLength
     val splitEnd = splitStart + splitLength
 
-    System.err.println("Processing split " + splitStart + " - " + splitEnd)
-
     // Block length is the maximum amound of data we need for processing of
     // an input split w.r.t. records crossing split boundaries
     // and extends over the start of the designated split region
     val blockStart = Math.max(splitStart - twiceMaxRecordLengthMinusOne, 0L)
     val blockLength = splitEnd - blockStart
 
+    System.err.println("Processing split " + blockStart + " <--| " + splitStart + " - " + splitEnd)
+
     // open a stream to the data, pointing to the start of the split
     val stream = split.getPath.getFileSystem(context.getConfiguration)
       .open(split.getPath)
 
 
-    val bufferSize = blockLength // inputSplit.getLength.toInt
+    // Note we could init the buffer from 0 to blocklength,
+    // with 0 corresponding to blockstart
+    // but then we would have to do more relative positioning
+    val bufferSize = splitEnd // blockLength // inputSplit.getLength.toInt
     val arr = new Array[Byte](Ints.checkedCast(bufferSize))
     stream.readFully(0, arr)
     val buffer = ByteBuffer.wrap(arr)
@@ -150,6 +176,9 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     val pageManager = new PageManagerForByteBuffer(buffer)
     val nav = new PageNavigator(pageManager)
 
+    // Initially position at splitStart within the block (i.e. the byte buffer)
+    val initNavPos = splitStart // splitStart - blockStart
+    nav.setPos(initNavPos)
 
     // Check the prior chunk
     var priorRecordEndsOnSplitBoundary = false;
@@ -160,13 +189,15 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
       priorRecordEndsOnSplitBoundary = true
     }
 
+
     var probeSuccessPos = 0L
-    if(!priorRecordEndsOnSplitBoundary) {
+    if (!priorRecordEndsOnSplitBoundary) {
       // Set up absolute positions
       val absProbeRegionStart = blockStart // Math.min(splitStart - twiceMaxRecordLengthMinusOne, 0L)
       val absProbeRegionEnd = Math.max(splitStart - maxRecordLength, 0L)
       // val absChunkEnd = splitStart
-      if(absProbeRegionStart < twiceMaxRecordLengthMinusOne && absProbeRegionStart != 0) {
+      val relProbeRegionStart = splitStart - absProbeRegionStart
+      if (relProbeRegionStart < twiceMaxRecordLengthMinusOne && absProbeRegionStart != 0) {
         System.err.println("WARNING: Insufficient preceding bytes before split start")
       }
 
@@ -204,17 +235,19 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
       val seekable = nav.clone
       seekable.setPos(absProbeRegionStart)
-      seekable.limitNext(blockLength)
+      seekable.limitNext(splitLength)
       val reverseCharSequence = new ReverseCharSequenceFromSeekable(seekable.clone)
       val bwdMatcher = trigBwdPattern.matcher(reverseCharSequence)
       bwdMatcher.region(0, relProbeRegionEnd)
 
       probeSuccessPos = findPosition(seekable, bwdMatcher, false, prober)
 
-      if(probeSuccessPos < 0) {
+      if (probeSuccessPos < 0) {
         throw new RuntimeException("No suitable start found")
       }
 
+      // Not sure whether or why we need +1 here
+      // probeSuccessPos = probeSuccessPos + 1
       // nav.setPos(probeSuccessPos)
     }
 
@@ -222,13 +255,40 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     nav.setPos(probeSuccessPos)
     nav.limitNext(parseLength)
 
-    val result: Flowable[Dataset] = parser(nav)
+    /*
+    val str = IOUtils.toString(effectiveInputStreamSupp.apply(nav))
+    System.err.println("Parser base data: "
+      + str
+      + "\nEND OF PARSER BASE DATA")
+    */
+
+    /*
+    System.err.println("Parser base data 2: "
+      + IOUtils.toString(effectiveInputStreamSupp.apply(nav))
+      + "\nEND OF PARSER BASE DATA 2")
+
+    if (probeSuccessPos > 0) {
+      val ds = DatasetFactory.create
+      RDFDataMgr.read(
+        ds,
+        new ByteArrayInputStream(str.getBytes()),
+        Lang.TRIG)
+
+      System.err.println("Got ds: " + ds.asDatasetGraph().size())
+    }
+    */
+
+    val baseResult: Flowable[Dataset] = parser(nav)
+
 
     val pred = new Predicate[Dataset] {
-      override def test(t: Dataset): Boolean = t.isEmpty
+      override def test(t: Dataset): Boolean = {
+        // System.err.println("Dataset filter saw graphs: " + t.listNames().asScala.toList)
+        !t.isEmpty
+      }
     }
 
-    val cnt = result
+    val cnt = baseResult
       .onErrorReturnItem(DatasetFactory.create())
       .filter(pred)
       .count()
@@ -236,11 +296,11 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
     System.err.println("Got " + cnt + " datasets")
 
-    datasetFlow = result
+    val result = baseResult
           .onErrorReturnItem(DatasetFactory.create())
-          .blockingIterable()
-          .iterator()
+          .filter(pred)
 
+    result
     /*
         // Lets start from this position
         nav.setPos(0)
@@ -282,14 +342,14 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
   override def nextKeyValue(): Boolean = {
     if (datasetFlow == null || !datasetFlow.hasNext) {
-      System.err.println("No more datasets")
+      System.err.println("nextKeyValue: No more datasets")
       false
     }
     else {
       currentValue = datasetFlow.next()
-      System.err.println("Got dataset:")
+      System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
       RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
-      System.err.println("Done")
+      System.err.println("nextKeyValue: Done getting dataset value")
       currentKey.incrementAndGet
       currentValue != null
     }
