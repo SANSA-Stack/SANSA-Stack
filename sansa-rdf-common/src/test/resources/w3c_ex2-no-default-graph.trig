@@ -4,29 +4,29 @@
 @prefix dc: <http://purl.org/dc/terms/> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<http://example.org/bob>
+<http://example.org/alpha>
     {
-       _:a foaf:name "Bob" .
-       _:a foaf:mbox <mailto:bob@oldcorp.example.org> .
+       _:b foaf:name "Alpha" .
+       _:b foaf:mbox <mailto:alpha@work.example.org> .
+    }
+
+<http://example.org/beta>
+    {
+       _:a foaf:name "Beta" .
+       _:a foaf:mbox <mailto:beta@oldcorp.example.org> .
        _:a foaf:knows _:b .
     }
 
-<http://example.org/alice>
+<http://example.org/charlie>
     {
-       _:b foaf:name "Alice" .
-       _:b foaf:mbox <mailto:alice@work.example.org> .
+       _:c foaf:name "charlie" .
+       _:c foaf:mbox <mailto:charlie@work.example.org> .
     }
 
-<http://example.org/cesar>
+<http://example.org/delta>
     {
-       _:c foaf:name "Cesar" .
-       _:c foaf:mbox <mailto:cesar@work.example.org> .
-    }
-
-<http://example.org/dora>
-    {
-       _:d foaf:name "Dora" .
-       _:d foaf:mbox <mailto:dora@work.example.org> .
+       _:d foaf:name "Delta" .
+       _:d foaf:mbox <mailto:delta@work.example.org> .
     }
 
 <http://example.org/echo>
