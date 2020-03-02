@@ -30,21 +30,22 @@ class TrigFileInputFormat extends FileInputFormat[LongWritable, Dataset] { // TO
   override def getSplits(job: JobContext): util.List[InputSplit] = {
     val splits = super.getSplits(job)
 
-    // TODO use first split and scan for prefixes, then pass those to the RecordReader
+    // we use first split and scan for prefixes and base IRI, then pass those to the RecordReader
+    // in createRecordReader() method
     if (!splits.isEmpty) {
       val firstSplit = splits.get(0).asInstanceOf[FileSplit]
 
       val dataset = DatasetFactory.create()
 
       val is = firstSplit.getPath.getFileSystem(job.getConfiguration).open(firstSplit.getPath)
-      val prefixStr = scala.io.Source.fromInputStream(is).getLines().filter(_.startsWith("@prefix")).mkString
-
-      println(prefixStr)
+      val prefixStr = scala.io.Source.fromInputStream(is).getLines()
+        .map(_.trim)
+        .filter(line => line.startsWith("@prefix") || line.startsWith("@base"))
+        .mkString
 
       RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
       prefixMapping = dataset.getUnionModel.removeAll()
     }
-
 
     splits
   }

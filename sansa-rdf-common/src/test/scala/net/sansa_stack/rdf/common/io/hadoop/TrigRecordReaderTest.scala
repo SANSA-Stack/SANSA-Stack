@@ -1,19 +1,21 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.File
+import java.io.{ByteArrayInputStream, File, FileInputStream}
 
 import scala.collection.mutable
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.{Job, RecordReader, TaskAttemptID}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
-import org.apache.jena.query.Dataset
-import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
+import org.apache.jena.query.{Dataset, DatasetFactory}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import org.scalatest.FunSuite
-
 import scala.collection.JavaConverters._
+
+import org.apache.jena.sparql.util.compose.DatasetLib
 
 /**
  * @author Lorenz Buehmann
@@ -30,6 +32,10 @@ class TrigRecordReaderTest extends FunSuite {
 
   val fileLengthTotal = testFile.length()
 
+  // read the target dataset
+  val targetDataset = DatasetFactory.create()
+  RDFDataMgr.read(targetDataset, new FileInputStream(testFile), Lang.TRIG)
+
 
   val maxNumSplits = 3
 
@@ -42,6 +48,18 @@ class TrigRecordReaderTest extends FunSuite {
       val splits = generateFileSplits(i)
 
       splits.foreach { split =>
+        println("split:" )
+
+        val stream = split.getPath.getFileSystem(new TaskAttemptContextImpl(conf, new TaskAttemptID()).getConfiguration)
+          .open(split.getPath)
+
+
+        val bufferSize = split.getLength.toInt
+        val buffer = new Array[Byte](bufferSize)
+        stream.readFully(split.getStart, buffer, 0, bufferSize)
+        println(new String(buffer))
+        stream.close()
+
         // setup
         val reader = new TrigRecordReader()
 
@@ -49,13 +67,16 @@ class TrigRecordReaderTest extends FunSuite {
         reader.initialize(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
 
         // read all records in split
-        consumeRecords(reader)
+        val ds = consumeRecords(reader)
+
+        // compare with target dataset
+        compareDatasets(targetDataset, ds)
       }
     }
   }
 
   /**
-   * Testing n splits by RecordReader created from Inputformat (inkl. parsed prefixes)
+   * Testing n splits by RecordReader created from Inputformat (incl. parsed prefixes)
    */
   test("multiple splits parsed using InputFormat") {
 
@@ -73,31 +94,51 @@ class TrigRecordReaderTest extends FunSuite {
       val reader = inputFormat.createRecordReader(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
 
       // read all records in split
-      consumeRecords(reader)
+      val ds = consumeRecords(reader)
+
+      // compare with target dataset
+      compareDatasets(targetDataset, ds)
     }
   }
 
-  private def consumeRecords(reader: RecordReader[LongWritable, Dataset]) = {
+  private def consumeRecords(reader: RecordReader[LongWritable, Dataset]): Dataset = {
     val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
     while (reader.nextKeyValue()) {
       val k = reader.getCurrentKey
       val v = reader.getCurrentValue
       val item = (k, v)
       actual += item
-      println(s"Graph ${k.get()}:")
+      println(s"Dataset ${k.get()}:")
       RDFDataMgr.write(System.out, v, RDFFormat.TRIG_PRETTY)
     }
+
+    // merge to single dataset
+    actual.map(_._2).foldLeft(DatasetFactory.create())((ds1, ds2) => DatasetLib.union(ds1, ds2))
   }
 
   private def generateFileSplits(n: Int) = {
     val splitLength = Math.ceil(fileLengthTotal.toDouble / n).toInt
 
-    for (i <- 0 to n) yield {
+    for (i <- 0 until n) yield {
       val start = i * splitLength
       val end = Math.min((i + 1) * splitLength, fileLengthTotal)
+      val length = end - start
 
-      new FileSplit(path, start, end, null)
+      new FileSplit(path, start, length, null)
     }
   }
+
+
+  private def compareDatasets(ds1: Dataset, ds2: Dataset): Boolean = {
+    // compare default graphs first
+    if (!ds1.getDefaultModel.isIsomorphicWith(ds2.getDefaultModel)) {
+      false
+    } else { // then compare the named graphs TODO this doesn't handle blank node graph names
+      ds1.listNames().asScala.forall(graphName1 =>
+        ds2.containsNamedModel(graphName1) &&
+        ds1.getNamedModel(graphName1).isIsomorphicWith(ds2.getNamedModel(graphName1)))
+    }
+  }
+
 
 }

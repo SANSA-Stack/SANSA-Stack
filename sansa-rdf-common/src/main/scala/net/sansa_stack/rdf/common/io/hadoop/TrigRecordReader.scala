@@ -93,7 +93,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
       nav.setPos(absPos)
       println(s"Attempting pos: $absPos")
       val navClone = nav.clone
-      val maxQuadCount = 3
+      val maxQuadCount = 2
 
       val task = new java.util.concurrent.Callable[InputStream]() {
         def call(): InputStream = new SequenceInputStream(new ByteArrayInputStream(prefixBytes), Channels.newInputStream(navClone.clone))
@@ -105,7 +105,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
         .blockingGet
 
       // if success, parse to Dataset
-      if (quadCount != 0) {
+      if (quadCount >= 0) {
         matchCount += 1
         println(s"Candidate start pos $absPos yield $quadCount / $maxQuadCount quads")
 
