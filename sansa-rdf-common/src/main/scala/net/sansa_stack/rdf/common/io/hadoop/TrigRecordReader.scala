@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.{Matcher, Pattern}
 
 import io.reactivex.Flowable
+import io.reactivex.functions.Predicate
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
@@ -80,7 +81,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
 
     val maxRecordLength = 10 * 1024
-    val maxQuadCount = 2
+    val probeRecordCount = 1
 
     val twiceMaxRecordLengthMinusOne = (2 * maxRecordLength - 1)
 
@@ -103,7 +104,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
     val prober: Seekable => Boolean = seekable => {
       val quadCount = parser(seekable)
-        .limit (maxQuadCount)
+        .limit (probeRecordCount)
         .count
         .onErrorReturnItem (- 1L)
         .blockingGet() > 0
@@ -125,6 +126,8 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     val splitStart = split.getStart
     val splitLength = split.getLength
     val splitEnd = splitStart + splitLength
+
+    System.err.println("Processing split " + splitStart + " - " + splitEnd)
 
     // Block length is the maximum amound of data we need for processing of
     // an input split w.r.t. records crossing split boundaries
@@ -183,7 +186,11 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     }
 
     if (priorRecordEndsOnSplitBoundary) {
-      /* nothing to do - we start at position 0 of the split */
+      /* we start at position 0 of the split */
+      /* TODO We should still probe for an offset between
+        0 and maxRecordLength for robustness
+       */
+      // TODO If the split is too small, we may not even get a single record
     }
     else {
       // Reverse search until probing into our chunk succeeds
@@ -215,8 +222,24 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     nav.setPos(probeSuccessPos)
     nav.limitNext(parseLength)
 
-    val result = parser(nav)
-    result
+    val result: Flowable[Dataset] = parser(nav)
+
+    val pred = new Predicate[Dataset] {
+      override def test(t: Dataset): Boolean = t.isEmpty
+    }
+
+    val cnt = result
+      .onErrorReturnItem(DatasetFactory.create())
+      .filter(pred)
+      .count()
+      .blockingGet()
+
+    System.err.println("Got " + cnt + " datasets")
+
+    datasetFlow = result
+          .onErrorReturnItem(DatasetFactory.create())
+          .blockingIterable()
+          .iterator()
 
     /*
         // Lets start from this position
@@ -258,9 +281,15 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
   }
 
   override def nextKeyValue(): Boolean = {
-    if (datasetFlow == null || !datasetFlow.hasNext) false
+    if (datasetFlow == null || !datasetFlow.hasNext) {
+      System.err.println("No more datasets")
+      false
+    }
     else {
       currentValue = datasetFlow.next()
+      System.err.println("Got dataset:")
+      RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
+      System.err.println("Done")
       currentKey.incrementAndGet
       currentValue != null
     }

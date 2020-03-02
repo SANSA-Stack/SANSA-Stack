@@ -1,0 +1,44 @@
+# This document contains a default graph and two named graphs.
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+<http://example.org/bob>
+    {
+       _:a foaf:name "Bob" .
+       _:a foaf:mbox <mailto:bob@oldcorp.example.org> .
+       _:a foaf:knows _:b .
+    }
+
+<http://example.org/alice>
+    {
+       _:b foaf:name "Alice" .
+       _:b foaf:mbox <mailto:alice@work.example.org> .
+    }
+
+<http://example.org/cesar>
+    {
+       _:c foaf:name "Cesar" .
+       _:c foaf:mbox <mailto:cesar@work.example.org> .
+    }
+
+<http://example.org/dora>
+    {
+       _:d foaf:name "Dora" .
+       _:d foaf:mbox <mailto:dora@work.example.org> .
+    }
+
+<http://example.org/echo>
+    {
+       _:e foaf:name "Echo" .
+       _:e foaf:mbox <mailto:echo@work.example.org> .
+    }
+
+<http://example.org/foxtrot>
+    {
+       _:f foaf:name "Dora" .
+       _:f foaf:mbox <mailto:foxtrot@work.example.org> .
+    }
+
+
