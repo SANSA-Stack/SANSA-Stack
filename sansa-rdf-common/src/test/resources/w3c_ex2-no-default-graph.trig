@@ -4,10 +4,10 @@
 @prefix dc: <http://purl.org/dc/terms/> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<http://example.org/alpha>
+<http://example.org/alfa>
     {
-       _:b foaf:name "Alpha" .
-       _:b foaf:mbox <mailto:alpha@work.example.org> .
+       _:b foaf:name "Alfa" .
+       _:b foaf:mbox <mailto:alfa@work.example.org> .
     }
 
 <http://example.org/bravo>

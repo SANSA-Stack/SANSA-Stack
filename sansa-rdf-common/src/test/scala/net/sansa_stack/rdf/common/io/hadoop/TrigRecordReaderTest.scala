@@ -44,7 +44,7 @@ class TrigRecordReaderTest extends FunSuite {
   RDFDataMgr.read(targetDataset, new FileInputStream(testFile), Lang.TRIG)
 
 
-  val maxNumSplits = 4
+  val maxNumSplits = 3
 
   /**
    * Testing n splits by manually created RecordReader

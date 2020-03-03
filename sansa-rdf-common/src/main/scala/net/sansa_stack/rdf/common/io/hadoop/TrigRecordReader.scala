@@ -92,13 +92,160 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
-    val tmp = createDatasetFlow(inputSplit, context)
+    val tmp = createDatasetFlowApproachEasyPeasy(inputSplit, context)
 
     datasetFlow = tmp.blockingIterable().iterator()
   }
 
 
-  def createDatasetFlow(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
+
+  def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
+    val maxRecordLength = 200 // 10 * 1024
+    val probeRecordCount = 1
+
+    val split = inputSplit.asInstanceOf[FileSplit]
+    val stream = split.getPath.getFileSystem(context.getConfiguration)
+      .open(split.getPath)
+
+    val splitStart = split.getStart
+    val splitLength = split.getLength
+    val splitEnd = splitStart + splitLength
+
+    // Get a buffer for the split + 1 mrl for finding the first record in the next split + extra bytes to perform
+    // record validation in the next split
+    // But also don't step over a complete split
+    val desiredBufferLength = splitLength + Math.min(maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
+    val arr = new Array[Byte](Ints.checkedCast(desiredBufferLength))
+    stream.skip(splitStart)
+    val bufferLength = stream.read(arr, 0, arr.length)
+
+    val extraLength = bufferLength - splitLength
+    val dataRegionEnd = splitEnd + extraLength
+
+    System.err.println("Processing split " + splitStart + " - " + splitEnd + " | --+" + extraLength + "--> " + dataRegionEnd)
+
+    val baos = new ByteArrayOutputStream()
+    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
+    val prefixBytes = baos.toByteArray
+
+
+    // Clones the provided seekable!
+    val effectiveInputStreamSupp: Seekable => InputStream = seekable => {
+      val r = new SequenceInputStream(
+        new ByteArrayInputStream(prefixBytes),
+        Channels.newInputStream(seekable.cloneObject))
+      r
+    }
+
+    val parser: Seekable => Flowable[Dataset] = seekable => {
+      // TODO Close the cloned seekable
+      val task = new java.util.concurrent.Callable[InputStream]() {
+        def call(): InputStream = effectiveInputStreamSupp.apply(seekable)
+      }
+
+      val r = RDFDataMgrRx.createFlowableDatasets(task, Lang.TRIG, null)
+      r
+    }
+
+    val isNonEmptyDataset = new Predicate[Dataset] {
+      override def test(t: Dataset): Boolean = {
+        // System.err.println("Dataset filter saw graphs: " + t.listNames().asScala.toList)
+        !t.isEmpty
+      }
+    }
+
+    val prober: Seekable => Boolean = seekable => {
+      val quadCount = parser(seekable)
+        .limit(probeRecordCount)
+        .count
+        .onErrorReturnItem(-1L)
+        .blockingGet() > 0
+      quadCount
+    }
+
+    val buffer = ByteBuffer.wrap(arr)
+    val pageManager = new PageManagerForByteBuffer(buffer)
+    val nav = new PageNavigator(pageManager)
+
+    nav.setPos(0L)
+    // Find the first record after the split end
+    var firstNextRecordPos = splitEnd;
+
+    {
+      // Set up absolute positions
+      val absProbeRegionStart = splitEnd
+      val absProbeRegionEnd = splitEnd + Math.min(maxRecordLength, extraLength) // = splitStart + bufferLength
+
+      val relProbeRegionStart = 0L
+      val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
+
+      // Data region is up to the end of the buffer
+      val relDataRegionEnd = absProbeRegionStart + extraLength
+
+      val seekable = nav.clone
+      seekable.setPos(absProbeRegionStart - splitStart)
+      seekable.limitNext(relDataRegionEnd)
+      val charSequence = new CharSequenceFromSeekable(seekable)
+      val fwdMatcher = trigFwdPattern.matcher(charSequence)
+      fwdMatcher.region(0, relProbeRegionEnd)
+
+      val matchPos = findPosition(seekable, fwdMatcher, true, prober)
+      if(matchPos >= 0) {
+        firstNextRecordPos = matchPos + splitStart
+      }
+    }
+
+
+    var firstThisRecordPos = -1L;
+    {
+      // Set up absolute positions
+      val absProbeRegionStart = splitStart
+      val absProbeRegionEnd = splitStart + Math.min(maxRecordLength, splitLength) // = splitStart + bufferLength
+
+      val relProbeRegionStart = 0L
+      val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
+
+      // Data region is up to the end of the buffer
+      val relDataRegionEnd = absProbeRegionStart + splitLength
+
+      val seekable = nav.clone
+      seekable.setPos(absProbeRegionStart - splitStart)
+      seekable.limitNext(relDataRegionEnd)
+      val charSequence = new CharSequenceFromSeekable(seekable)
+      val fwdMatcher = trigFwdPattern.matcher(charSequence)
+      fwdMatcher.region(0, relProbeRegionEnd)
+
+      val matchPos = findPosition(seekable, fwdMatcher, true, prober)
+      if(matchPos >= 0) {
+        firstThisRecordPos = matchPos + splitStart
+      }
+    }
+
+    var result: Flowable[Dataset] = null
+    if(firstThisRecordPos >= 0) {
+      val parseLength = firstNextRecordPos - firstThisRecordPos
+      nav.setPos(firstThisRecordPos - splitStart)
+      nav.limitNext(parseLength)
+      result = parser(nav)
+        //.onErrorReturnItem(EMPTY_DATASET)
+        //.filter(isNonEmptyDataset)
+    } else {
+      result = Flowable.empty()
+    }
+
+    val cnt = result
+      .count()
+      .blockingGet()
+
+    System.err.println("For effective region " + firstThisRecordPos + " - " + firstNextRecordPos + " got " + cnt + " datasets")
+
+    result
+  }
+
+
+
+
+  def createDatasetFlowApproachComplex(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
     val maxRecordLength = 200 // 10 * 1024
     val probeRecordCount = 1
 
@@ -189,8 +336,6 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     val initNavPos = splitStart // splitStart - blockStart
     nav.setPos(initNavPos)
 
-    // Check the prior chunk
-    var priorRecordEndsOnSplitBoundary = false;
 
     // FIXME Creating splits has to ensure splits don't end on block/chunk boundaries
     // TODO Clarify terminology once more
