@@ -20,4 +20,4 @@ It will modify all POM files from the SANSA projects and change the artitfact ID
 the suffix `_SCALAVERSION` will be modified.
 Moreover, we also replace the `scala.binary.version` in the POM file of the SANSA-Parent module.
 
-Note, currently the layers to process is hard coded in https://github.com/SANSA-Stack/SANSA-Parent/blob/scala-2.12/change-scala-version.sh#L51 , `order=(parent rdf ...)`, thus for additional projects this line has to be adapted, otherwise they will simply be ignored by the script.
+Note, currently the layers to process is hard coded in the array `order=(parent rdf ...)`, thus for additional projects this line has to be adapted, otherwise they will simply be ignored by the script.
