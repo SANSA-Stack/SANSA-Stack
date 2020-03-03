@@ -83,8 +83,7 @@ class TrigRecordReaderTest extends FunSuite {
       }
 
       // compare with target dataset
-      val isEqual = compareDatasets(targetDataset, ds)
-      assert(isEqual, "datasets did not match")
+      compareDatasets(targetDataset, ds)
     }
   }
 
@@ -148,7 +147,7 @@ class TrigRecordReaderTest extends FunSuite {
   }
 
 
-  private def compareDatasets(ds1: Dataset, ds2: Dataset): Boolean = {
+  private def compareDatasets(ds1: Dataset, ds2: Dataset): Unit = {
 
     /*
 
@@ -179,27 +178,23 @@ class TrigRecordReaderTest extends FunSuite {
     */
 
     // compare default graphs first
-    if (!ds1.getDefaultModel.getGraph.isIsomorphicWith(ds2.getDefaultModel.getGraph)) {
-      false
-    } else { // then compare the named graphs TODO this doesn't handle blank node graph names
-      val allNames = Sets.union(
-        ds1.listNames().asScala.toSet.asJava,
-        ds2.listNames().asScala.toSet.asJava).asScala
+    assert(ds1.getDefaultModel.getGraph.isIsomorphicWith(ds2.getDefaultModel.getGraph),
+      "default graphs do not match")
 
-      allNames.forall(g => {
-        val c1 = ds1.containsNamedModel(g)
-        val c2 = ds2.containsNamedModel(g)
-        var r = false
-        if(c1 && c2) {
-          val g1 = ds1.getNamedModel(g).getGraph
-          val g2 = ds2.getNamedModel(g).getGraph
-          val g1s = g1.size
-          val g2s = g2.size
-          r = g1.isIsomorphicWith(g2)
-        }
-        r
-      })
-    }
+    // then compare the named graphs
+    val allNames = (ds1.listNames().asScala ++ ds2.listNames().asScala).toSet
+
+    allNames.foreach(g => {
+      assert(ds1.containsNamedModel(g), s"graph <$g> not found in first dataset")
+      assert(ds2.containsNamedModel(g), s"graph <$g> not found in second dataset")
+
+      val g1 = ds1.getNamedModel(g).getGraph
+      val g2 = ds2.getNamedModel(g).getGraph
+
+      assert(g1.size == g2.size, s"size of graph <$g> not the same in both datasets")
+      assert(g1.isIsomorphicWith(g2), s"graph <$g> not isomorph")
+
+    })
   }
 
 
