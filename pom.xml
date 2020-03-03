@@ -99,7 +99,7 @@
 
 			<dependency>
 				<groupId>com.twitter</groupId>
-				<artifactId>chill_2.11</artifactId>
+				<artifactId>chill_${scala.binary.version}</artifactId>
 				<version>0.9.3</version>
 			</dependency>
 

@@ -1,21 +1,11 @@
-#!/usr/bin/env bash
-
-#
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+#!/bin/bash
+# This script allows running maven goals over multiple sansa maven projects
+# Usage exmples: [this-script.sh] clean install deploy
+# This script goes to the parent directory and then recursively searches for all
+# sansa git repos.
+# The keywords in the 'order' variable control in which order these repos are to be processed.
+# Matching is does against the remote URL in the repo's git config - so this process is
+# independent from local folder names.
 
 set -e
 
@@ -56,15 +46,41 @@ sed_i() {
 
 export -f sed_i
 
-BASEDIR=$(dirname $0)/..
-find "$BASEDIR" -name 'pom.xml' -not -path '*target*' -print \
+
+order=(parent rdf)
+#order=(parent rdf owl query inference ml examples)
+#order=(parent rdf owl query ml examples)
+
+BASEDIR=`pwd`
+cd ..
+cwd=`pwd`
+
+configs=`find . -name config | grep '\.git'` || true
+
+folders=()
+
+for x in "${order[@]}"; do
+  for y in $configs; do
+    match=`grep -c -i "git@github.com:SANSA-Stack/.*$x.*.git" "$y"` || true
+    if [ "$match" -ne 0 ]; then
+      f=`dirname $(dirname "$y")`
+      folders+=("$f")
+      break
+    fi
+  done
+done
+
+
+echo "folders tp process: ${folders[@]}"
+
+for f in "${folders[@]}"; do
+  find "$f" -name 'pom.xml' -not -path '*target*' -print \
   -exec bash -c "sed_i 's/\(artifactId.*\)_'$FROM_VERSION'/\1_'$TO_VERSION'/g' {}" \;
 
-# Also update <scala.binary.version> in parent POM
-# Match any scala binary version to ensure idempotency
+  xx=$?
+  test $xx -ne 0 && exit $xx
+done
+
+echo "changing scala binary version in parent"
 sed_i '1,/<scala\.binary\.version>[0-9]*\.[0-9]*</s/<scala\.binary\.version>[0-9]*\.[0-9]*</<scala.binary.version>'$TO_VERSION'</' \
   "$BASEDIR/pom.xml"
-
-# Update source of scaladocs
-echo "$BASEDIR/docs/_plugins/copy_api_dirs.rb"
-sed_i 's/scala\-'$FROM_VERSION'/scala\-'$TO_VERSION'/' "$BASEDIR/docs/_plugins/copy_api_dirs.rb"
