@@ -10,10 +10,10 @@
        _:b foaf:mbox <mailto:alpha@work.example.org> .
     }
 
-<http://example.org/beta>
+<http://example.org/bravo>
     {
-       _:a foaf:name "Beta" .
-       _:a foaf:mbox <mailto:beta@oldcorp.example.org> .
+       _:a foaf:name "Bravo" .
+       _:a foaf:mbox <mailto:bravo@oldcorp.example.org> .
        _:a foaf:knows _:b .
     }
 
@@ -40,4 +40,25 @@
        _:f foaf:name "Foxtrot" .
        _:f foaf:mbox <mailto:foxtrot@work.example.org> .
     }
+
+<http://example.org/golf>
+    {
+       _:a foaf:name "Golf" .
+       _:a foaf:mbox <mailto:golf@oldcorp.example.org> .
+       _:a foaf:knows _:b .
+    }
+
+<http://example.org/hotel>
+    {
+       _:a foaf:name "Hotel" .
+       _:a foaf:mbox <mailto:hotel@oldcorp.example.org> .
+    }
+
+<http://example.org/india>
+    {
+       _:a foaf:name "India" .
+       _:a foaf:mbox <mailto:india@oldcorp.example.org> .
+       _:a foaf:knows _:b .
+    }
+
 

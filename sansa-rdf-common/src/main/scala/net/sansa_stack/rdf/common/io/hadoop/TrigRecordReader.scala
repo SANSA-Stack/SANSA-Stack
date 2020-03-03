@@ -38,6 +38,8 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
   // private var start, end, position = 0L
 
+  private val EMPTY_DATASET: Dataset = DatasetFactory.create
+
   private val currentKey = new AtomicLong
   private var currentValue: Dataset = DatasetFactory.create()
 
@@ -98,7 +100,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
   def createDatasetFlow(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
     val maxRecordLength = 200 // 10 * 1024
-    val probeRecordCount = 2
+    val probeRecordCount = 1
 
     val twiceMaxRecordLengthMinusOne = (2 * maxRecordLength - 1)
 
@@ -123,6 +125,13 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
       val r = RDFDataMgrRx.createFlowableDatasets(task, Lang.TRIG, null)
       r
+    }
+
+    val isNonEmptyDataset = new Predicate[Dataset] {
+      override def test(t: Dataset): Boolean = {
+        // System.err.println("Dataset filter saw graphs: " + t.listNames().asScala.toList)
+        !t.isEmpty
+      }
     }
 
     val prober: Seekable => Boolean = seekable => {
@@ -185,11 +194,98 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
     // FIXME Creating splits has to ensure splits don't end on block/chunk boundaries
     // TODO Clarify terminology once more
-    if (blockStart == 0) {
+ /*   if (blockStart == 0) {
       priorRecordEndsOnSplitBoundary = true
+    }
+*/
+
+    // Find first valid offset in the current chunk - this serves as a boundary for scanning back
+    var firstRecordPos = 0L;
+
+    // if (!priorRecordEndsOnSplitBoundary) {
+    {
+      // Set up absolute positions
+      val absProbeRegionStart = splitStart // Math.min(splitStart - twiceMaxRecordLengthMinusOne, 0L)
+      val absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, splitEnd)
+      // val absChunkEnd = splitStart
+      val relProbeRegionStart = 0L // splitStart - absProbeRegionStart
+      // Set up the matcher using relative positions
+      val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
+
+      // Data region is up to the end of the split
+      val relDataRegionEnd = splitEnd - absProbeRegionStart
+
+      val seekable = nav.clone
+      seekable.setPos(absProbeRegionStart)
+      seekable.limitNext(relDataRegionEnd)
+      val charSequence = new CharSequenceFromSeekable(seekable)
+      val fwdMatcher = trigFwdPattern.matcher(charSequence)
+      fwdMatcher.region(0, relProbeRegionEnd)
+
+      firstRecordPos = findPosition(seekable, fwdMatcher, true, prober)
     }
 
 
+    var continueLoop = firstRecordPos >= 0
+
+
+    var effectiveFirstRecordPos = firstRecordPos
+
+    // Now search backwards from the firstRecordPos
+    // while the original previous boundary returns no records
+    var absReparsePos = splitStart
+    while(continueLoop) {
+      // Reverse search until probing into our chunk succeeds
+
+      // Note the values are 'backwards', i.e end < start
+      val absProbeRegionStart = absReparsePos
+      val absProbeRegionEnd = Math.max(splitStart - (maxRecordLength - 1), 0L)
+      // val chunkEnd = splitEnd
+
+      // Set up the matcher using relative positions
+      val relProbeRegionEnd = Ints.checkedCast(absProbeRegionStart - absProbeRegionEnd)
+
+      val relDataRegionEnd = splitEnd - firstRecordPos - 1 // (firstRecordPos - 1) - absProbeRegionStart
+      val seekable = nav.clone
+      seekable.setPos(absProbeRegionStart)
+      seekable.limitNext(relDataRegionEnd)
+      val reverseCharSequence = new ReverseCharSequenceFromSeekable(seekable.clone)
+      val bwdMatcher = trigBwdPattern.matcher(reverseCharSequence)
+      bwdMatcher.region(0, relProbeRegionEnd)
+
+      val absProbeSuccessPos = findPosition(seekable, bwdMatcher, false, prober)
+
+      if(absProbeSuccessPos >= 0) {
+        // For the given probe position, make sure that these records could not be created with the original boundary
+
+        val absValidateStart = absProbeSuccessPos
+        val absValidateEnd = firstRecordPos
+        val relValidateEnd = absValidateEnd - absValidateStart
+
+        val originalPriorChunk = nav.clone
+        seekable.setPos(absValidateStart)
+        seekable.limitNext(relValidateEnd)
+
+        val numValidateRecords = parser.apply(originalPriorChunk)
+          .onErrorReturnItem(EMPTY_DATASET)
+          .filter(isNonEmptyDataset)
+          .count()
+          .blockingGet()
+
+        if (numValidateRecords != 0) {
+          continueLoop = false
+        } else {
+          effectiveFirstRecordPos = absProbeSuccessPos
+          absReparsePos = effectiveFirstRecordPos - 1
+        }
+      } else {
+        continueLoop = false
+        // absReparsePos = absProbeSuccessPos - 1
+        // throw new RuntimeException("Should not happen")
+      }
+    }
+
+    /*
     var probeSuccessPos = 0L
     if (!priorRecordEndsOnSplitBoundary) {
       // Set up absolute positions
@@ -250,17 +346,25 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
       // probeSuccessPos = probeSuccessPos + 1
       // nav.setPos(probeSuccessPos)
     }
+*/
+    var result: Flowable[Dataset] = null
+    if(effectiveFirstRecordPos >= 0) {
+      val parseLength = splitEnd - effectiveFirstRecordPos
+      nav.setPos(effectiveFirstRecordPos)
+      nav.limitNext(parseLength)
+      result = parser(nav)
+        .onErrorReturnItem(EMPTY_DATASET)
+        .filter(isNonEmptyDataset)
+    } else {
+      result = Flowable.empty()
+    }
 
-    val parseLength = splitEnd - probeSuccessPos
-    nav.setPos(probeSuccessPos)
-    nav.limitNext(parseLength)
-
-    /*
-    val str = IOUtils.toString(effectiveInputStreamSupp.apply(nav))
-    System.err.println("Parser base data: "
-      + str
-      + "\nEND OF PARSER BASE DATA")
-    */
+      /*
+      val str = IOUtils.toString(effectiveInputStreamSupp.apply(nav))
+      System.err.println("Parser base data: "
+        + str
+        + "\nEND OF PARSER BASE DATA")
+      */
 
     /*
     System.err.println("Parser base data 2: "
@@ -278,27 +382,12 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     }
     */
 
-    val baseResult: Flowable[Dataset] = parser(nav)
-
-
-    val pred = new Predicate[Dataset] {
-      override def test(t: Dataset): Boolean = {
-        // System.err.println("Dataset filter saw graphs: " + t.listNames().asScala.toList)
-        !t.isEmpty
-      }
-    }
-
-    val cnt = baseResult
-      .onErrorReturnItem(DatasetFactory.create())
-      .filter(pred)
+    val cnt = result
       .count()
       .blockingGet()
 
     System.err.println("Got " + cnt + " datasets")
 
-    val result = baseResult
-          .onErrorReturnItem(DatasetFactory.create())
-          .filter(pred)
 
     result
     /*
