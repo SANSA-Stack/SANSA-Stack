@@ -47,8 +47,8 @@ sed_i() {
 export -f sed_i
 
 
-order=(parent rdf)
-#order=(parent rdf owl query inference ml examples)
+#order=(parent rdf)
+order=(parent rdf owl query inference ml examples)
 #order=(parent rdf owl query ml examples)
 
 BASEDIR=`pwd`
