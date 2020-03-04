@@ -18,7 +18,8 @@ import scala.collection.JavaConverters._
  *
  * @author Lorenz Buehmann
  */
-class TrigFileInputFormat extends FileInputFormat[LongWritable, Dataset] { // TODO use CombineFileInputFormat?
+class TrigFileInputFormat
+  extends FileInputFormat[LongWritable, Dataset] { // TODO use CombineFileInputFormat?
 
   var prefixMapping: Model = _
 
@@ -45,31 +46,34 @@ class TrigFileInputFormat extends FileInputFormat[LongWritable, Dataset] { // TO
       // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
       val prefixStr = scala.io.Source.fromInputStream(is).getLines()
         .map(_.trim)
-        .filter(_.isEmpty) // skip empty lines
-        .filter(_.startsWith("#")) // skip comments
+        .filterNot(_.isEmpty) // skip empty lines
+        .filterNot(_.startsWith("#")) // skip comments
         .filter(line => line.startsWith("@prefix") || line.startsWith("@base") ||
                         line.startsWith("prefix") || line.startsWith("base"))
-        .mkString
-      // TODO apparently, prefix declaration could span multiple lines, i.e. we would need to also consider the next
-      //  line after a prefix declaration
+        .mkString("\n")
+      // TODO apparently, prefix declarations could span multiple lines, i.e. technically we
+      //  also should consider the next line after a prefix declaration
 
       RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
-      prefixMapping = dataset.getUnionModel.removeAll()
+      // prefixes are located in default model
+      prefixMapping = dataset.getDefaultModel
     }
 
     splits.asScala
       .zipWithIndex
-      .map { case (split, idx) => IndexedInputSplit(split.asInstanceOf[FileSplit], idx).asInstanceOf[InputSplit] }
+      .map { case (split, idx) =>
+        IndexedInputSplit(split.asInstanceOf[FileSplit], idx, (idx + 1) == splits.size()).asInstanceOf[InputSplit] }
       .toList.asJava
   }
 
-  /**
-   * File input split with index position of split.
-   *
-   * @param split the file split
-   * @param idx index of split
-   */
-  case class IndexedInputSplit(split: FileSplit, idx: Int)
-    extends FileSplit(split.getPath, split.getStart, split.getLength, split.getLocations) {
-  }
+}
+
+/**
+ * File input split with index position of split.
+ *
+ * @param split the file split
+ * @param idx index of split
+ */
+case class IndexedInputSplit(split: FileSplit, idx: Int, isLastSplit: Boolean)
+  extends FileSplit(split.getPath, split.getStart, split.getLength, split.getLocations) {
 }

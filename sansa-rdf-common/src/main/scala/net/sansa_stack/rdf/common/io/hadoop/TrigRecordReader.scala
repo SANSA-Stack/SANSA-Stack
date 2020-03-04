@@ -30,7 +30,8 @@ import scala.collection.JavaConverters._
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().setNsPrefixes(DefaultPrefixes.prefixes))
+class TrigRecordReader(val prefixMapping: Model = ModelFactory.createDefaultModel().setNsPrefixes(DefaultPrefixes.prefixes),
+                       val maxRecordLength: Int = 200)
   extends RecordReader[LongWritable, Dataset] {
 
   private val trigFwdPattern: Pattern = Pattern.compile("@?base|@?prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
@@ -100,7 +101,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
 
   def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
-    val maxRecordLength = 200 // 10 * 1024
+//    val maxRecordLength = 200 // 10 * 1024
     val probeRecordCount = 1
 
     val split = inputSplit.asInstanceOf[FileSplit]

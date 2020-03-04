@@ -6,12 +6,12 @@ import org.aksw.commons.collections.diff.{CollectionDiff, Diff, SetDiff}
 import org.aksw.jena_sparql_api.core.utils.FN_QuadDiffUnique
 import org.aksw.jena_sparql_api.update.QuadDiffIterator
 import org.aksw.jena_sparql_api.utils.DatasetGraphUtils
-
 import scala.collection.mutable
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapreduce.{Job, RecordReader, TaskAttemptID}
+import org.apache.hadoop.mapreduce.{InputSplit, Job, RecordReader, TaskAttemptID}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
 import org.apache.jena.ext.com.google.common.collect.Sets
@@ -19,8 +19,8 @@ import org.apache.jena.query.{Dataset, DatasetFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import org.apache.jena.sparql.core.Quad
 import org.scalatest.FunSuite
-
 import scala.collection.JavaConverters._
+
 import org.apache.jena.sparql.util.compose.DatasetLib
 
 /**
@@ -46,6 +46,15 @@ class TrigRecordReaderTest extends FunSuite {
 
   val maxNumSplits = 3
 
+  val job = Job.getInstance(conf)
+  val inputFormat = new TrigFileInputFormat()
+
+  // add input path of the file
+  FileInputFormat.addInputPath(job, new Path(testFile.getAbsolutePath))
+
+  // call once to compute the prefixes
+  inputFormat.getSplits(job)
+
   /**
    * Testing n splits by manually created RecordReader
    */
@@ -70,7 +79,8 @@ class TrigRecordReaderTest extends FunSuite {
                 */
 
         // setup
-        val reader = new TrigRecordReader()
+        val reader = inputFormat.createRecordReader(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
+//        val reader = new TrigRecordReader()
 
         // initialize
         reader.initialize(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
@@ -142,7 +152,7 @@ class TrigRecordReaderTest extends FunSuite {
       val end = Math.min((i + 1) * splitLength, fileLengthTotal)
       val length = end - start
 
-      new FileSplit(path, start, length, null)
+      new FileSplit(path, start, length, null).asInstanceOf[InputSplit]
     }
   }
 
