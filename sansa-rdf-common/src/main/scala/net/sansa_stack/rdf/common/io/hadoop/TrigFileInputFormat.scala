@@ -26,8 +26,9 @@ class TrigFileInputFormat
   override def isSplitable(context: JobContext, file: Path): Boolean = true
 
   override def createRecordReader(inputSplit: InputSplit,
-                                  taskAttemptContext: TaskAttemptContext): RecordReader[LongWritable, Dataset] = {
-    new TrigRecordReader(prefixMapping)
+                                  context: TaskAttemptContext): RecordReader[LongWritable, Dataset] = {
+    val maxRecordLength = Option(context.getConfiguration.get("trig.record.maxLength")).getOrElse("200").toInt
+    new TrigRecordReader(prefixMapping, maxRecordLength)
   }
 
   override def getSplits(job: JobContext): util.List[InputSplit] = {

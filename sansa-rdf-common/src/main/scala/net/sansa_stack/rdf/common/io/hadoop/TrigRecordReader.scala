@@ -247,7 +247,7 @@ class TrigRecordReader(val prefixMapping: Model = ModelFactory.createDefaultMode
 
 
   def createDatasetFlowApproachComplex(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
-    val maxRecordLength = 200 // 10 * 1024
+//    val maxRecordLength = 200 // 10 * 1024
     val probeRecordCount = 1
 
     val twiceMaxRecordLengthMinusOne = 2 * maxRecordLength - 1
