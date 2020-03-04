@@ -1,17 +1,18 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.{ByteArrayInputStream, FileInputStream}
+import java.io.ByteArrayInputStream
 import java.util
+
+import scala.collection.JavaConverters._
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.compress.{CompressionCodecFactory, SplittableCompressionCodec}
+import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
 import org.apache.hadoop.mapreduce.{InputSplit, JobContext, RecordReader, TaskAttemptContext}
-import org.apache.hadoop.mapreduce.lib.input.{CombineFileInputFormat, CombineFileSplit, FileInputFormat, FileSplit}
 import org.apache.jena.query.{Dataset, DatasetFactory}
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.{Lang, RDFDataMgr}
-
-import scala.collection.JavaConverters._
 
 /**
  * A Hadoop file input format for Trig RDF files.
@@ -21,13 +22,20 @@ import scala.collection.JavaConverters._
 class TrigFileInputFormat
   extends FileInputFormat[LongWritable, Dataset] { // TODO use CombineFileInputFormat?
 
+  private val DEFAULT_MAX_RECORD_LENGTH: Int = 200
+
   var prefixMapping: Model = _
 
-  override def isSplitable(context: JobContext, file: Path): Boolean = true
+  override def isSplitable(context: JobContext, file: Path): Boolean = {
+    val codec = new CompressionCodecFactory(context.getConfiguration).getCodec(file)
+    if (null == codec) return true
+    codec.isInstanceOf[SplittableCompressionCodec]
+  }
 
   override def createRecordReader(inputSplit: InputSplit,
                                   context: TaskAttemptContext): RecordReader[LongWritable, Dataset] = {
-    val maxRecordLength = Option(context.getConfiguration.get("trig.record.maxLength")).getOrElse("200").toInt
+    val maxRecordLength = Option(context.getConfiguration.get("trig.record.maxLength"))
+                                .getOrElse(DEFAULT_MAX_RECORD_LENGTH.toString).toInt
     new TrigRecordReader(prefixMapping, maxRecordLength)
   }
 
