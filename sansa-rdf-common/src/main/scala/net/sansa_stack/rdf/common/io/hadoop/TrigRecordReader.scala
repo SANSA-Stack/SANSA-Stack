@@ -87,7 +87,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
       }
     }
 
-    return -1L
+    -1L
   }
 
 
@@ -169,7 +169,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 
     nav.setPos(0L)
     // Find the first record after the split end
-    var firstNextRecordPos = splitEnd;
+    var firstNextRecordPos = splitEnd
 
     {
       // Set up absolute positions
@@ -249,7 +249,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
     val maxRecordLength = 200 // 10 * 1024
     val probeRecordCount = 1
 
-    val twiceMaxRecordLengthMinusOne = (2 * maxRecordLength - 1)
+    val twiceMaxRecordLengthMinusOne = 2 * maxRecordLength - 1
 
     // we have to prepend prefixes to help the parser as there is no other way to make it aware of those
     val baos = new ByteArrayOutputStream()
@@ -345,7 +345,7 @@ class TrigRecordReader(prefixMapping: Model = ModelFactory.createDefaultModel().
 */
 
     // Find first valid offset in the current chunk - this serves as a boundary for scanning back
-    var firstRecordPos = 0L;
+    var firstRecordPos = 0L
 
     // if (!priorRecordEndsOnSplitBoundary) {
     {

@@ -11,6 +11,8 @@ import org.apache.jena.query.{Dataset, DatasetFactory}
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 
+import scala.collection.JavaConverters._
+
 /**
  * A Hadoop file input format for Trig RDF files.
  *
@@ -38,15 +40,36 @@ class TrigFileInputFormat extends FileInputFormat[LongWritable, Dataset] { // TO
       val dataset = DatasetFactory.create()
 
       val is = firstSplit.getPath.getFileSystem(job.getConfiguration).open(firstSplit.getPath)
+      // we do two steps here:
+      // 1. get all lines with base or prefix declaration
+      // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
       val prefixStr = scala.io.Source.fromInputStream(is).getLines()
         .map(_.trim)
-        .filter(line => line.startsWith("@prefix") || line.startsWith("@base"))
+        .filter(_.isEmpty) // skip empty lines
+        .filter(_.startsWith("#")) // skip comments
+        .filter(line => line.startsWith("@prefix") || line.startsWith("@base") ||
+                        line.startsWith("prefix") || line.startsWith("base"))
         .mkString
+      // TODO apparently, prefix declaration could span multiple lines, i.e. we would need to also consider the next
+      //  line after a prefix declaration
 
       RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
       prefixMapping = dataset.getUnionModel.removeAll()
     }
 
-    splits
+    splits.asScala
+      .zipWithIndex
+      .map { case (split, idx) => IndexedInputSplit(split.asInstanceOf[FileSplit], idx).asInstanceOf[InputSplit] }
+      .toList.asJava
+  }
+
+  /**
+   * File input split with index position of split.
+   *
+   * @param split the file split
+   * @param idx index of split
+   */
+  case class IndexedInputSplit(split: FileSplit, idx: Int)
+    extends FileSplit(split.getPath, split.getStart, split.getLength, split.getLocations) {
   }
 }
