@@ -117,7 +117,6 @@ class TrigRecordReader
 
 
   def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
-//    val maxRecordLength = 200 // 10 * 1024
 
     val split = inputSplit.asInstanceOf[FileSplit]
     val stream = split.getPath.getFileSystem(context.getConfiguration)
@@ -132,8 +131,15 @@ class TrigRecordReader
     // But also don't step over a complete split
     val desiredBufferLength = splitLength + Math.min(maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
     val arr = new Array[Byte](Ints.checkedCast(desiredBufferLength))
+
     stream.seek(splitStart)
     val bufferLength = stream.read(arr, 0, arr.length)
+
+    if(bufferLength < 0) {
+      throw new RuntimeException(s"Attempt to buffer $desiredBufferLength bytes from split failed")
+    }
+    System.err.println(s"Read $bufferLength bytes - requested: $desiredBufferLength")
+
 
     val extraLength = bufferLength - splitLength
     val dataRegionEnd = splitEnd + extraLength
