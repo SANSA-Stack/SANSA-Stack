@@ -40,6 +40,7 @@ class TrigRecordReader
   extends RecordReader[LongWritable, Dataset] {
 
   var maxRecordLength: Int = _
+  var probeRecordCount: Int = _
 
   private val trigFwdPattern: Pattern = Pattern.compile("@?base|@?prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
   private val trigBwdPattern: Pattern = Pattern.compile("esab@?|xiferp@?|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
@@ -102,6 +103,8 @@ class TrigRecordReader
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     val job = context.getConfiguration
     maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 1024 * 10)
+    probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
+
 
     val str = context.getConfiguration.get("prefixes")
     val model = ModelFactory.createDefaultModel()
@@ -115,7 +118,6 @@ class TrigRecordReader
 
   def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
 //    val maxRecordLength = 200 // 10 * 1024
-    val probeRecordCount = 1
 
     val split = inputSplit.asInstanceOf[FileSplit]
     val stream = split.getPath.getFileSystem(context.getConfiguration)
@@ -192,6 +194,9 @@ class TrigRecordReader
 
       val relProbeRegionStart = 0L
       val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
+
+
+      System.out.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
 
       // Data region is up to the end of the buffer
       val relDataRegionEnd = absProbeRegionStart + extraLength
@@ -587,14 +592,14 @@ class TrigRecordReader
 
   override def nextKeyValue(): Boolean = {
     if (datasetFlow == null || !datasetFlow.hasNext) {
-      System.err.println("nextKeyValue: No more datasets")
+      System.err.println("nextKeyValue: Drained all datasets from flow")
       false
     }
     else {
       currentValue = datasetFlow.next()
-      System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
-      RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
-      System.err.println("nextKeyValue: Done getting dataset value")
+      // System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
+      // RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
+      // System.err.println("nextKeyValue: Done getting dataset value")
       currentKey.incrementAndGet
       currentValue != null
     }
