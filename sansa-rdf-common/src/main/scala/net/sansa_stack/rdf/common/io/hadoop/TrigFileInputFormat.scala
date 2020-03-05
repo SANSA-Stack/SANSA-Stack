@@ -19,8 +19,6 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 class TrigFileInputFormat
   extends FileInputFormat[LongWritable, Dataset] { // TODO use CombineFileInputFormat?
 
-  private val DEFAULT_MAX_RECORD_LENGTH: Int = 200
-
   override def isSplitable(context: JobContext, file: Path): Boolean = {
     val codec = new CompressionCodecFactory(context.getConfiguration).getCodec(file)
     if (null == codec) return true
@@ -29,12 +27,10 @@ class TrigFileInputFormat
 
   override def createRecordReader(inputSplit: InputSplit,
                                   context: TaskAttemptContext): RecordReader[LongWritable, Dataset] = {
-    val maxRecordLength = Option(context.getConfiguration.get("trig.record.maxLength"))
-                                .getOrElse(DEFAULT_MAX_RECORD_LENGTH.toString).toInt
-    if(context.getConfiguration.get("prefixes") == null) {
+    if (context.getConfiguration.get("prefixes") == null) {
       Console.err.println("couldn't get prefixes from Job context")
     }
-    new TrigRecordReader(maxRecordLength)
+    new TrigRecordReader()
   }
 
   override def getSplits(job: JobContext): util.List[InputSplit] = {

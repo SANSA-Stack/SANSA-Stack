@@ -23,6 +23,8 @@ import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import scala.collection.JavaConverters._
 
+import org.apache.hadoop.conf.Configuration
+
 
 /**
  * A record reader for Trig RDF files.
@@ -30,14 +32,14 @@ import scala.collection.JavaConverters._
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-class TrigRecordReader(val maxRecordLength: Int = 200)
-  extends RecordReader[LongWritable, Dataset] {
-
-  // TODO Integrate these constants
+object TrigRecordReader {
   val MAX_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.maxlength"
   val PROBE_RECORD_COUNT = "mapreduce.input.trigrecordreader.probe.count"
+}
+class TrigRecordReader
+  extends RecordReader[LongWritable, Dataset] {
 
-
+  var maxRecordLength: Int = _
 
   private val trigFwdPattern: Pattern = Pattern.compile("@?base|@?prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
   private val trigBwdPattern: Pattern = Pattern.compile("esab@?|xiferp@?|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
@@ -98,12 +100,13 @@ class TrigRecordReader(val maxRecordLength: Int = 200)
 
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
+    val job = context.getConfiguration
+    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 1024 * 10)
+
     val str = context.getConfiguration.get("prefixes")
     val model = ModelFactory.createDefaultModel()
     if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE)
     val tmp = createDatasetFlowApproachEasyPeasy(inputSplit, context, model)
-
-
 
     datasetFlow = tmp.blockingIterable().iterator()
   }

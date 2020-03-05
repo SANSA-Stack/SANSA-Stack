@@ -30,6 +30,7 @@ class TrigRecordReaderTest extends FunSuite {
 
   val conf = new Configuration(false)
   conf.set("fs.defaultFS", "file:///")
+  conf.set(TrigRecordReader.MAX_RECORD_LENGTH, "200")
 
   // val testFileName = "w3c_ex2.trig"
   val testFileName = "w3c_ex2-no-default-graph.trig"
