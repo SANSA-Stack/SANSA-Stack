@@ -129,11 +129,21 @@ class TrigRecordReader
     // Get a buffer for the split + 1 mrl for finding the first record in the next split + extra bytes to perform
     // record validation in the next split
     // But also don't step over a complete split
-    val desiredBufferLength = splitLength + Math.min(maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
-    val arr = new Array[Byte](Ints.checkedCast(desiredBufferLength))
+    val rawDesiredBufferLength = splitLength + Math.min(maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
+    val desiredBufferLength = Ints.checkedCast(rawDesiredBufferLength)
+    val arr = new Array[Byte](desiredBufferLength)
 
     stream.seek(splitStart)
-    val bufferLength = stream.read(arr, 0, arr.length)
+
+    // FIXME We should not load the whole buffer into memory but just the portions we need
+    // Either we can reuse Hadoop stuff - or our PageManager would facilitate the same
+    var bufferLength = 0
+    var n = 0
+    do {
+      bufferLength += n
+      val remaining = desiredBufferLength - bufferLength
+      n = if (remaining == 0) -1 else stream.read(arr, bufferLength, remaining)
+    } while (n >= 0)
 
     if(bufferLength < 0) {
       throw new RuntimeException(s"Attempt to buffer $desiredBufferLength bytes from split failed")
