@@ -34,15 +34,19 @@ import org.apache.hadoop.conf.Configuration
  */
 object TrigRecordReader {
   val MAX_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.maxlength"
+  val MIN_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.minlength"
   val PROBE_RECORD_COUNT = "mapreduce.input.trigrecordreader.probe.count"
 }
 class TrigRecordReader
   extends RecordReader[LongWritable, Dataset] {
 
   var maxRecordLength: Int = _
+  var minRecordLength: Int = _
   var probeRecordCount: Int = _
 
-  private val trigFwdPattern: Pattern = Pattern.compile("@?base|@?prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
+  private val trigFwdPattern: Pattern = Pattern.compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE)
+
+  // This pattern is no longer needed and its not up to date
   private val trigBwdPattern: Pattern = Pattern.compile("esab@?|xiferp@?|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
 
   // private var start, end, position = 0L
@@ -101,6 +105,7 @@ class TrigRecordReader
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     val job = context.getConfiguration
     maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
+    minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 12)
     probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
 
 
@@ -112,17 +117,40 @@ class TrigRecordReader
     datasetFlow = tmp.blockingIterable().iterator()
   }
 
+  def skipOverNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
+    var result = -1L
+
+    val availableDataRegion = absDataRegionEnd - absProbeRegionStart
+    var nextProbePos = absProbeRegionStart
+    var i = 0
+    while (i < 2) {
+      val candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, prober)
+      if (candidatePos < 0) {
+        if (availableDataRegion >= maxRecordLength) {
+          throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
+        }
+
+        // Retain best found candidate position
+        // effectiveRecordRangeEnd = dataRegionEnd
+        i = 666 // break
+      } else {
+        result = candidatePos
+        if (i == 0) {
+          nextProbePos = candidatePos + minRecordLength
+        }
+        i += 1
+      }
+    }
+
+    result
+  }
 
   def findNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
     // Set up absolute positions
-    // val absProbeRegionStart = splitEnd
     val absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd) // = splitStart + bufferLength
-
-    val relProbeRegionStart = 0L
     val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
 
-
-    System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
+    // System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
 
     // Data region is up to the end of the buffer
     val relDataRegionEnd = absDataRegionEnd - absProbeRegionStart
@@ -229,88 +257,17 @@ class TrigRecordReader
     // Find the second record in the next split - i.e. after splitEnd (inclusive)
     // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
     // such as <g> { } | <g> { }   (where '|' denotes the split boundary)
-    var effectiveRecordRangeEnd = splitEnd
-    var i = 0
-    while (i < 2) {
-      val candidatePos = findNextRecord(nav, splitStart, effectiveRecordRangeEnd, maxRecordLength, dataRegionEnd, prober)
-      if (candidatePos < 0) { // TODO If ex
-        if (extraLength > maxRecordLength) {
-          throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $extraLength bytes were available")
-        }
-
-        effectiveRecordRangeEnd = dataRegionEnd
-        i = 666 // break
-      } else {
-        effectiveRecordRangeEnd = candidatePos
-        i += 1
-      }
+    var effectiveRecordRangeEnd = skipOverNextRecord(nav, splitStart, splitEnd, maxRecordLength, dataRegionEnd, prober)
+    if(effectiveRecordRangeEnd < 0) {
+      effectiveRecordRangeEnd = dataRegionEnd
     }
-/*
-    {
-      // Set up absolute positions
-      val absProbeRegionStart = splitEnd
-      val absProbeRegionEnd = splitEnd + Math.min(maxRecordLength, extraLength) // = splitStart + bufferLength
-
-      val relProbeRegionStart = 0L
-      val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
-
-
-      System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
-
-      // Data region is up to the end of the buffer
-      val relDataRegionEnd = absProbeRegionStart + extraLength
-
-      val seekable = nav.clone
-      seekable.setPos(absProbeRegionStart - splitStart)
-      seekable.limitNext(relDataRegionEnd)
-      val charSequence = new CharSequenceFromSeekable(seekable)
-      val fwdMatcher = trigFwdPattern.matcher(charSequence)
-      fwdMatcher.region(0, relProbeRegionEnd)
-
-      val matchPos = findPosition(seekable, fwdMatcher, true, prober)
-      if(matchPos >= 0) {
-        firstNextRecordPos = matchPos + splitStart
-      }
-    }
-*/
 
     // If we are at start 0, we parse from the beginning - otherwise we skip the first record
-
     val effectiveRecordRangeStart = if (splitStart == 0) {
       0L
     } else {
-      val firstThisRecordPos = findNextRecord(nav, splitStart, splitStart, maxRecordLength, splitEnd, prober)
-      val secondThisRecordPos = if (firstThisRecordPos == -1) -1 else findNextRecord(nav, splitStart, firstThisRecordPos, maxRecordLength, splitEnd, prober)
-      secondThisRecordPos
+      skipOverNextRecord(nav, splitStart, splitStart, maxRecordLength, splitEnd, prober)
     }
-
-
-    /*
-    var firstThisRecordPos = -1L;
-    {
-      // Set up absolute positions
-      val absProbeRegionStart = splitStart
-      val absProbeRegionEnd = splitStart + Math.min(maxRecordLength, splitLength) // = splitStart + bufferLength
-
-      val relProbeRegionStart = 0L
-      val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
-
-      // Data region is up to the end of the buffer
-      val relDataRegionEnd = absProbeRegionStart + splitLength
-
-      val seekable = nav.clone
-      seekable.setPos(absProbeRegionStart - splitStart)
-      seekable.limitNext(relDataRegionEnd)
-      val charSequence = new CharSequenceFromSeekable(seekable)
-      val fwdMatcher = trigFwdPattern.matcher(charSequence)
-      fwdMatcher.region(0, relProbeRegionEnd)
-
-      val matchPos = findPosition(seekable, fwdMatcher, true, prober)
-      if(matchPos >= 0) {
-        firstThisRecordPos = matchPos + splitStart
-      }
-    }
-*/
 
     var result: Flowable[Dataset] = null
     if(effectiveRecordRangeStart >= 0) {
@@ -324,12 +281,14 @@ class TrigRecordReader
       result = Flowable.empty()
     }
 
+    /*
     val cnt = result
       .count()
       .blockingGet()
 
     System.err.println("For effective region " + effectiveRecordRangeStart + " - " + effectiveRecordRangeEnd + " got " + cnt + " datasets")
-
+    */
+    
     result
   }
 
@@ -669,9 +628,9 @@ class TrigRecordReader
     }
     else {
       currentValue = datasetFlow.next()
-      // System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
-      // RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
-      // System.err.println("nextKeyValue: Done getting dataset value")
+      System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
+      RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
+      System.err.println("nextKeyValue: Done printing out dataset value")
       currentKey.incrementAndGet
       currentValue != null
     }
