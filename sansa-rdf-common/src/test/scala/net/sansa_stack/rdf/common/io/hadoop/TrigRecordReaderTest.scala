@@ -79,11 +79,11 @@ class TrigRecordReaderTest extends FunSuite {
                 */
 
         // setup
-        val reader = inputFormat.createRecordReader(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
+        val reader = inputFormat.createRecordReader(split, new TaskAttemptContextImpl(job.getConfiguration, new TaskAttemptID()))
 //        val reader = new TrigRecordReader()
 
         // initialize
-        reader.initialize(split, new TaskAttemptContextImpl(conf, new TaskAttemptID()))
+        reader.initialize(split, new TaskAttemptContextImpl(job.getConfiguration, new TaskAttemptID()))
 
         // read all records in split
         val contrib = consumeRecords(reader)
