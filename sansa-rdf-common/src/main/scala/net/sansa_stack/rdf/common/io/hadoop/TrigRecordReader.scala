@@ -234,8 +234,8 @@ class TrigRecordReader(prefixMapping: String,
       nav.setPos(firstThisRecordPos - splitStart)
       nav.limitNext(parseLength)
       result = parser(nav)
-        //.onErrorReturnItem(EMPTY_DATASET)
-        //.filter(isNonEmptyDataset)
+        // .onErrorReturnItem(EMPTY_DATASET)
+        // .filter(isNonEmptyDataset)
     } else {
       result = Flowable.empty()
     }
@@ -261,7 +261,7 @@ class TrigRecordReader(prefixMapping: String,
     // we have to prepend prefixes to help the parser as there is no other way to make it aware of those
 //    val baos = new ByteArrayOutputStream()
 //    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
-    val prefixBytes = prefixMapping.getBytes(Charset.forName("UTF-8")) //baos.toByteArray
+    val prefixBytes = prefixMapping.getBytes(Charset.forName("UTF-8")) // baos.toByteArray
 
     // Clones the provided seekable!
     val effectiveInputStreamSupp: Seekable => InputStream = seekable => {
