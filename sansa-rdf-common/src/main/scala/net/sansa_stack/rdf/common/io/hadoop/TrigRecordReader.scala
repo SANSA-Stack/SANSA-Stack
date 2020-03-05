@@ -102,7 +102,7 @@ class TrigRecordReader
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     val job = context.getConfiguration
-    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 1024 * 10)
+    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
     probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
 
 
@@ -196,7 +196,7 @@ class TrigRecordReader
       val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
 
 
-      System.out.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
+      System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
 
       // Data region is up to the end of the buffer
       val relDataRegionEnd = absProbeRegionStart + extraLength
