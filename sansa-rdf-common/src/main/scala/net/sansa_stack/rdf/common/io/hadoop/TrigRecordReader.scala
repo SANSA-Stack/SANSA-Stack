@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, SequenceInputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, SequenceInputStream, StringReader}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.charset.Charset
@@ -30,8 +30,7 @@ import scala.collection.JavaConverters._
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-class TrigRecordReader(prefixMapping: String,
-                       val maxRecordLength: Int = 200)
+class TrigRecordReader(val maxRecordLength: Int = 200)
   extends RecordReader[LongWritable, Dataset] {
 
   // TODO Integrate these constants
@@ -99,14 +98,19 @@ class TrigRecordReader(prefixMapping: String,
 
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
-    val tmp = createDatasetFlowApproachEasyPeasy(inputSplit, context)
+    val str = context.getConfiguration.get("prefixes")
+    val model = ModelFactory.createDefaultModel()
+    if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE)
+    val tmp = createDatasetFlowApproachEasyPeasy(inputSplit, context, model)
+
+
 
     datasetFlow = tmp.blockingIterable().iterator()
   }
 
 
 
-  def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
+  def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
 //    val maxRecordLength = 200 // 10 * 1024
     val probeRecordCount = 1
 
@@ -132,8 +136,8 @@ class TrigRecordReader(prefixMapping: String,
     System.err.println("Processing split " + splitStart + " - " + splitEnd + " | --+" + extraLength + "--> " + dataRegionEnd)
 
     val baos = new ByteArrayOutputStream()
-//    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
-    val prefixBytes = prefixMapping.getBytes(Charset.forName("UTF-8"))// baos.toByteArray
+    RDFDataMgr.write(baos, pm, RDFFormat.TURTLE_PRETTY)
+    val prefixBytes = baos.toByteArray
 
 
     // Clones the provided seekable!
@@ -249,19 +253,16 @@ class TrigRecordReader(prefixMapping: String,
     result
   }
 
-
-
-
-  def createDatasetFlowApproachComplex(inputSplit: InputSplit, context: TaskAttemptContext): Flowable[Dataset] = {
+  def createDatasetFlowApproachComplex(inputSplit: InputSplit, context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
 //    val maxRecordLength = 200 // 10 * 1024
     val probeRecordCount = 1
 
     val twiceMaxRecordLengthMinusOne = 2 * maxRecordLength - 1
 
     // we have to prepend prefixes to help the parser as there is no other way to make it aware of those
-//    val baos = new ByteArrayOutputStream()
-//    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
-    val prefixBytes = prefixMapping.getBytes(Charset.forName("UTF-8")) // baos.toByteArray
+    val baos = new ByteArrayOutputStream()
+    RDFDataMgr.write(baos, pm, RDFFormat.TURTLE_PRETTY)
+    val prefixBytes = baos.toByteArray
 
     // Clones the provided seekable!
     val effectiveInputStreamSupp: Seekable => InputStream = seekable => {

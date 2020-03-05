@@ -34,7 +34,7 @@ class TrigFileInputFormat
     if(context.getConfiguration.get("prefixes") == null) {
       Console.err.println("couldn't get prefixes from Job context")
     }
-    new TrigRecordReader(context.getConfiguration.get("prefixes"), maxRecordLength)
+    new TrigRecordReader(maxRecordLength)
   }
 
   override def getSplits(job: JobContext): util.List[InputSplit] = {
