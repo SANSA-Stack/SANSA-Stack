@@ -34,6 +34,12 @@ class TrigRecordReader(val prefixMapping: Model = ModelFactory.createDefaultMode
                        val maxRecordLength: Int = 200)
   extends RecordReader[LongWritable, Dataset] {
 
+  // TODO Integrate these constants
+  val MAX_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.maxlength"
+  val PROBE_RECORD_COUNT = "mapreduce.input.trigrecordreader.probe.count"
+
+
+
   private val trigFwdPattern: Pattern = Pattern.compile("@?base|@?prefix|(graph)?\\s*(<[^>]*>|_:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE)
   private val trigBwdPattern: Pattern = Pattern.compile("esab@?|xiferp@?|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
 
@@ -117,7 +123,7 @@ class TrigRecordReader(val prefixMapping: Model = ModelFactory.createDefaultMode
     // But also don't step over a complete split
     val desiredBufferLength = splitLength + Math.min(maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
     val arr = new Array[Byte](Ints.checkedCast(desiredBufferLength))
-    stream.skip(splitStart)
+    stream.seek(splitStart)
     val bufferLength = stream.read(arr, 0, arr.length)
 
     val extraLength = bufferLength - splitLength
