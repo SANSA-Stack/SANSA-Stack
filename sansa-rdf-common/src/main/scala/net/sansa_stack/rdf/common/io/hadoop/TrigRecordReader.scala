@@ -86,8 +86,6 @@ class TrigRecordReader
       seekable.setPos(absPos)
       val probeSeek = seekable.cloneObject
 
-      // val by = seekable.get()
-      // println("by " + by)
       val probeResult = prober.apply(probeSeek)
       System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
 
@@ -115,6 +113,32 @@ class TrigRecordReader
   }
 
 
+  def findNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
+    // Set up absolute positions
+    // val absProbeRegionStart = splitEnd
+    val absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd) // = splitStart + bufferLength
+
+    val relProbeRegionStart = 0L
+    val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
+
+
+    System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
+
+    // Data region is up to the end of the buffer
+    val relDataRegionEnd = absDataRegionEnd - absProbeRegionStart
+
+    val seekable = nav.clone
+    seekable.setPos(absProbeRegionStart - splitStart)
+    seekable.limitNext(relDataRegionEnd)
+    val charSequence = new CharSequenceFromSeekable(seekable)
+    val fwdMatcher = trigFwdPattern.matcher(charSequence)
+    fwdMatcher.region(0, relProbeRegionEnd)
+
+    val matchPos = findPosition(seekable, fwdMatcher, true, prober)
+
+    val result = if (matchPos >= 0) matchPos + splitStart else -1
+    result
+  }
 
   def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
 
@@ -129,7 +153,7 @@ class TrigRecordReader
     // Get a buffer for the split + 1 mrl for finding the first record in the next split + extra bytes to perform
     // record validation in the next split
     // But also don't step over a complete split
-    val rawDesiredBufferLength = splitLength + Math.min(maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
+    val rawDesiredBufferLength = splitLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
     val desiredBufferLength = Ints.checkedCast(rawDesiredBufferLength)
     val arr = new Array[Byte](desiredBufferLength)
 
@@ -200,9 +224,28 @@ class TrigRecordReader
     val nav = new PageNavigator(pageManager)
 
     nav.setPos(0L)
-    // Find the first record after the split end
-    var firstNextRecordPos = splitEnd
 
+
+    // Find the second record in the next split - i.e. after splitEnd (inclusive)
+    // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
+    // such as <g> { } | <g> { }   (where '|' denotes the split boundary)
+    var effectiveRecordRangeEnd = splitEnd
+    var i = 0
+    while (i < 2) {
+      val candidatePos = findNextRecord(nav, splitStart, effectiveRecordRangeEnd, maxRecordLength, dataRegionEnd, prober)
+      if (candidatePos < 0) { // TODO If ex
+        if (extraLength > maxRecordLength) {
+          throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $extraLength bytes were available")
+        }
+
+        effectiveRecordRangeEnd = dataRegionEnd
+        i = 666 // break
+      } else {
+        effectiveRecordRangeEnd = candidatePos
+        i += 1
+      }
+    }
+/*
     {
       // Set up absolute positions
       val absProbeRegionStart = splitEnd
@@ -229,8 +272,20 @@ class TrigRecordReader
         firstNextRecordPos = matchPos + splitStart
       }
     }
+*/
+
+    // If we are at start 0, we parse from the beginning - otherwise we skip the first record
+
+    val effectiveRecordRangeStart = if (splitStart == 0) {
+      0L
+    } else {
+      val firstThisRecordPos = findNextRecord(nav, splitStart, splitStart, maxRecordLength, splitEnd, prober)
+      val secondThisRecordPos = if (firstThisRecordPos == -1) -1 else findNextRecord(nav, splitStart, firstThisRecordPos, maxRecordLength, splitEnd, prober)
+      secondThisRecordPos
+    }
 
 
+    /*
     var firstThisRecordPos = -1L;
     {
       // Set up absolute positions
@@ -255,11 +310,12 @@ class TrigRecordReader
         firstThisRecordPos = matchPos + splitStart
       }
     }
+*/
 
     var result: Flowable[Dataset] = null
-    if(firstThisRecordPos >= 0) {
-      val parseLength = firstNextRecordPos - firstThisRecordPos
-      nav.setPos(firstThisRecordPos - splitStart)
+    if(effectiveRecordRangeStart >= 0) {
+      val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
+      nav.setPos(effectiveRecordRangeStart - splitStart)
       nav.limitNext(parseLength)
       result = parser(nav)
         // .onErrorReturnItem(EMPTY_DATASET)
@@ -272,7 +328,7 @@ class TrigRecordReader
       .count()
       .blockingGet()
 
-    System.err.println("For effective region " + firstThisRecordPos + " - " + firstNextRecordPos + " got " + cnt + " datasets")
+    System.err.println("For effective region " + effectiveRecordRangeStart + " - " + effectiveRecordRangeEnd + " got " + cnt + " datasets")
 
     result
   }
