@@ -1,9 +1,7 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
-
-import scala.collection.JavaConverters._
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
@@ -11,8 +9,7 @@ import org.apache.hadoop.io.compress.{CompressionCodecFactory, SplittableCompres
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
 import org.apache.hadoop.mapreduce.{InputSplit, JobContext, RecordReader, TaskAttemptContext}
 import org.apache.jena.query.{Dataset, DatasetFactory}
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 
 /**
  * A Hadoop file input format for Trig RDF files.
@@ -24,8 +21,6 @@ class TrigFileInputFormat
 
   private val DEFAULT_MAX_RECORD_LENGTH: Int = 200
 
-  var prefixMapping: Model = _
-
   override def isSplitable(context: JobContext, file: Path): Boolean = {
     val codec = new CompressionCodecFactory(context.getConfiguration).getCodec(file)
     if (null == codec) return true
@@ -36,7 +31,10 @@ class TrigFileInputFormat
                                   context: TaskAttemptContext): RecordReader[LongWritable, Dataset] = {
     val maxRecordLength = Option(context.getConfiguration.get("trig.record.maxLength"))
                                 .getOrElse(DEFAULT_MAX_RECORD_LENGTH.toString).toInt
-    new TrigRecordReader(prefixMapping, maxRecordLength)
+    if(context.getConfiguration.get("prefixes") == null) {
+      Console.err.println("couldn't get prefixes from Job context")
+    }
+    new TrigRecordReader(context.getConfiguration.get("prefixes"), maxRecordLength)
   }
 
   override def getSplits(job: JobContext): util.List[InputSplit] = {
@@ -65,24 +63,13 @@ class TrigFileInputFormat
 
       RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
       // prefixes are located in default model
-      prefixMapping = dataset.getDefaultModel
+//      prefixMapping = dataset.getDefaultModel
+      val baos = new ByteArrayOutputStream()
+      RDFDataMgr.write(baos, dataset.getDefaultModel, RDFFormat.TURTLE_PRETTY)
+      job.getConfiguration.set("prefixes", baos.toString("UTF-8"))
     }
 
-    splits.asScala
-      .zipWithIndex
-      .map { case (split, idx) =>
-        IndexedInputSplit(split.asInstanceOf[FileSplit], idx, (idx + 1) == splits.size()).asInstanceOf[InputSplit] }
-      .toList.asJava
+    splits
   }
 
-}
-
-/**
- * File input split with index position of split.
- *
- * @param split the file split
- * @param idx index of split
- */
-case class IndexedInputSplit(split: FileSplit, idx: Int, isLastSplit: Boolean)
-  extends FileSplit(split.getPath, split.getStart, split.getLength, split.getLocations) {
 }

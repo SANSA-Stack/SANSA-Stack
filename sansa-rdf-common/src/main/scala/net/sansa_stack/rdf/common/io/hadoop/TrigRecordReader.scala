@@ -3,6 +3,7 @@ package net.sansa_stack.rdf.common.io.hadoop
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, SequenceInputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
+import java.nio.charset.Charset
 import java.util
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.{Matcher, Pattern}
@@ -20,7 +21,6 @@ import org.apache.jena.ext.com.google.common.primitives.Ints
 import org.apache.jena.query.{Dataset, DatasetFactory}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
-
 import scala.collection.JavaConverters._
 
 
@@ -30,7 +30,7 @@ import scala.collection.JavaConverters._
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-class TrigRecordReader(val prefixMapping: Model = ModelFactory.createDefaultModel().setNsPrefixes(DefaultPrefixes.prefixes),
+class TrigRecordReader(prefixMapping: String,
                        val maxRecordLength: Int = 200)
   extends RecordReader[LongWritable, Dataset] {
 
@@ -132,8 +132,8 @@ class TrigRecordReader(val prefixMapping: Model = ModelFactory.createDefaultMode
     System.err.println("Processing split " + splitStart + " - " + splitEnd + " | --+" + extraLength + "--> " + dataRegionEnd)
 
     val baos = new ByteArrayOutputStream()
-    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
-    val prefixBytes = baos.toByteArray
+//    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
+    val prefixBytes = prefixMapping.getBytes(Charset.forName("UTF-8"))// baos.toByteArray
 
 
     // Clones the provided seekable!
@@ -259,9 +259,9 @@ class TrigRecordReader(val prefixMapping: Model = ModelFactory.createDefaultMode
     val twiceMaxRecordLengthMinusOne = 2 * maxRecordLength - 1
 
     // we have to prepend prefixes to help the parser as there is no other way to make it aware of those
-    val baos = new ByteArrayOutputStream()
-    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
-    val prefixBytes = baos.toByteArray
+//    val baos = new ByteArrayOutputStream()
+//    RDFDataMgr.write(baos, prefixMapping, RDFFormat.TURTLE_PRETTY)
+    val prefixBytes = prefixMapping.getBytes(Charset.forName("UTF-8")) //baos.toByteArray
 
     // Clones the provided seekable!
     val effectiveInputStreamSupp: Seekable => InputStream = seekable => {
