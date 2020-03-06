@@ -4,10 +4,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.formats._
 import org.semanticweb.owlapi.model.OWLDocumentFormat
-
 import net.sansa_stack.owl.spark.rdd._
 import net.sansa_stack.owl.spark.writers._
-
 
 class UnknownOWLFormatException(msg: String) extends Exception
 
@@ -184,8 +182,7 @@ package object owl {
           case _: OBODocumentFormat => OBOWriter.save(path, axioms)
           case _: RDFJsonDocumentFormat => RDFJsonWriter.save(path, axioms)
           case _: RDFJsonLDDocumentFormat => JsonLDWriter.save(path, axioms)
-          case format: NQuadsDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case _: NQuadsDocumentFormat => NQuadsWriter.save(path, axioms)
           case format: NTriplesDocumentFormat =>
             throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case format: ManchesterSyntaxDocumentFormat =>
