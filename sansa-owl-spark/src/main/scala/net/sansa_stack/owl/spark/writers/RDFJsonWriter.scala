@@ -17,7 +17,10 @@ import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 object RDFJsonWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit = {
     owlAxioms.mapPartitionsWithIndex((idx: Int, partition: Iterator[OWLAxiom]) => if (partition.hasNext) {
-      val snippets = partition.map(axiom => {
+      val snippets = partition.zipWithIndex.map(axiomWIndx => {
+        val axiom: OWLAxiom = axiomWIndx._1
+        val axiomIdx: Int = axiomWIndx._2
+
         // writer stuff...
         val os = new ByteArrayOutputStream()
         val osWriter = new OutputStreamWriter(os)
@@ -38,7 +41,7 @@ object RDFJsonWriter extends OWLWriterBase {
           .replaceFirst("\\{", "")  // remove per-partition opening curly brace
           .reverse.replaceFirst("\\}", "").reverse  // remove per-partition closing curly brace
           // make blank node IDs unique (by appending the partition ID)
-          .replaceAll("_:genid([0-9]+)", "_:genid$1" + s"_$idx")
+          .replaceAll("_:genid([0-9]+)", "_:genid$1" + s"_${axiomIdx}_$idx")
           .replaceAll("\\s+$", "")  // trim end
       })
       Collections.singleton(snippets.mkString(",")).iterator().asScala
