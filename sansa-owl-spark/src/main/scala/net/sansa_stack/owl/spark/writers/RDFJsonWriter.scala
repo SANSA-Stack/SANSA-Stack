@@ -21,7 +21,7 @@ protected class SANSARioRenderer(ont: OWLOntology, rdfJsonWriter: RDFJSONWriter,
   override def renderOntologyHeader(): Unit = None
 }
 
-object RDFJSonWriter extends OWLWriterBase {
+object RDFJsonWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit = {
     owlAxioms.mapPartitionsWithIndex((idx: Int, partition: Iterator[OWLAxiom]) => if (partition.hasNext) {
       val snippets = partition.map(axiom => {
