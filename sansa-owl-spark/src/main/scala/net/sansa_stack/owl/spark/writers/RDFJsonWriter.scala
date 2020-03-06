@@ -9,17 +9,10 @@ import org.eclipse.rdf4j.rio.RDFFormat
 import org.eclipse.rdf4j.rio.rdfjson.RDFJSONWriter
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.RDFJsonDocumentFormat
-import org.semanticweb.owlapi.model.{OWLAxiom, OWLOntology}
-import org.semanticweb.owlapi.rio.RioRenderer
+import org.semanticweb.owlapi.model.OWLAxiom
 
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
-
-protected class SANSARioRenderer(ont: OWLOntology, rdfJsonWriter: RDFJSONWriter, docFormat: RDFJsonDocumentFormat)
-  extends RioRenderer(ont, rdfJsonWriter, docFormat) {
-
-  override def renderOntologyHeader(): Unit = None
-}
 
 object RDFJsonWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit = {
