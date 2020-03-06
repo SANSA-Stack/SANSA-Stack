@@ -91,7 +91,7 @@ class TrigRecordReader
       val probeSeek = seekable.cloneObject
 
       val probeResult = prober.apply(probeSeek)
-      System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
+      // System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
 
       if(probeResult) {
         return absPos
@@ -200,13 +200,13 @@ class TrigRecordReader
     if(bufferLength < 0) {
       throw new RuntimeException(s"Attempt to buffer $desiredBufferLength bytes from split failed")
     }
-    System.err.println(s"Read $bufferLength bytes - requested: $desiredBufferLength")
+    // System.err.println(s"Read $bufferLength bytes - requested: $desiredBufferLength")
 
 
     val extraLength = bufferLength - splitLength
     val dataRegionEnd = splitEnd + extraLength
 
-    System.err.println("Processing split " + splitStart + " - " + splitEnd + " | --+" + extraLength + "--> " + dataRegionEnd)
+    // System.err.println("Processing split " + splitStart + " - " + splitEnd + " | --+" + extraLength + "--> " + dataRegionEnd)
 
     val baos = new ByteArrayOutputStream()
     RDFDataMgr.write(baos, pm, RDFFormat.TURTLE_PRETTY)
@@ -288,7 +288,7 @@ class TrigRecordReader
 
     System.err.println("For effective region " + effectiveRecordRangeStart + " - " + effectiveRecordRangeEnd + " got " + cnt + " datasets")
     */
-    
+
     result
   }
 
@@ -623,14 +623,14 @@ class TrigRecordReader
 
   override def nextKeyValue(): Boolean = {
     if (datasetFlow == null || !datasetFlow.hasNext) {
-      System.err.println("nextKeyValue: Drained all datasets from flow")
+      // System.err.println("nextKeyValue: Drained all datasets from flow")
       false
     }
     else {
       currentValue = datasetFlow.next()
-      System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
-      RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
-      System.err.println("nextKeyValue: Done printing out dataset value")
+      // System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
+      // RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
+      // System.err.println("nextKeyValue: Done printing out dataset value")
       currentKey.incrementAndGet
       currentValue != null
     }
