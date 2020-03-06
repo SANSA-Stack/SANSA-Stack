@@ -12,8 +12,6 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
 object OBOWriter extends OWLWriterBase {
-  private val nl = System.getProperty("line.separator")
-
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =
     owlAxioms.mapPartitions(partition => if (partition.hasNext) {
       val os = new ByteArrayOutputStream()

@@ -11,8 +11,6 @@ import org.semanticweb.owlapi.krss2.renderer.KRSS2OWLObjectRenderer
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
 object KRSS2SyntaxWriter extends OWLWriterBase {
-  private val nl = System.getProperty("line.separator")
-
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =
     owlAxioms.mapPartitions(partition => if (partition.hasNext) {
       val os = new ByteArrayOutputStream()

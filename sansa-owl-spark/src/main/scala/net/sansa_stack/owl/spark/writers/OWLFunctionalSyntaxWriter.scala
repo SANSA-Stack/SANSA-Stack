@@ -21,7 +21,7 @@ object OWLFunctionalSyntaxWriter extends OWLWriterBase {
       Collections.singleton(
         os.toString("UTF-8")
           .replaceAll(OWLXMLVocabulary.ONTOLOGY.getShortForm + "\\(", "")
-          .replaceAll(System.getProperty("line.separator") + "\\)", "")
+          .replaceAll(nl + "\\)", "")
           .trim).iterator().asScala
 
     } else {

@@ -4,13 +4,13 @@ import java.io.{ByteArrayOutputStream, OutputStreamWriter}
 import java.util.Collections
 
 import scala.collection.JavaConverters._
+
 import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.krss2.renderer.{KRSS2OWLObjectRenderer, KRSSObjectRenderer}
+import org.semanticweb.owlapi.krss2.renderer.KRSSObjectRenderer
+
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
 object KRSSSyntaxWriter extends OWLWriterBase {
-  private val nl = System.getProperty("line.separator")
-
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =
     owlAxioms.mapPartitions(partition => if (partition.hasNext) {
       val os = new ByteArrayOutputStream()
