@@ -13,7 +13,7 @@ import org.semanticweb.owlapi.model.{IRI, OWLAxiom}
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
 
-object RDFJsonLDWriter extends OWLWriterBase {
+object JsonLDWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit = {
     owlAxioms.mapPartitionsWithIndex((idx: Int, partition: Iterator[OWLAxiom]) => if (partition.hasNext) {
       val snippets = partition.map(axiom => {

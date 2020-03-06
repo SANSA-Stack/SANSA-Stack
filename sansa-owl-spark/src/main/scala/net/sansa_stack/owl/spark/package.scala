@@ -183,7 +183,7 @@ package object owl {
           case _: DLSyntaxDocumentFormat => DLSyntaxWriter.save(path, axioms)
           case _: OBODocumentFormat => OBOWriter.save(path, axioms)
           case _: RDFJsonDocumentFormat => RDFJsonWriter.save(path, axioms)
-          case _: RDFJsonLDDocumentFormat => RDFJsonLDWriter.save(path, axioms)
+          case _: RDFJsonLDDocumentFormat => JsonLDWriter.save(path, axioms)
           case format: NQuadsDocumentFormat =>
             throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case format: NTriplesDocumentFormat =>
