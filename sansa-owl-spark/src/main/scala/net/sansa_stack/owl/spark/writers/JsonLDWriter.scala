@@ -39,7 +39,7 @@ object JsonLDWriter extends OWLWriterBase {
         os.toString("UTF-8")
           .replaceFirst("\\[", "")  // remove per-partition opening brackets
           .reverse.replaceFirst("\\]", "").reverse  // remove per-partition closing brackets
-          // make blank node IDs unique (by appending the partition ID)
+          // make blank node IDs unique (by appending the axiom and partition ID)
           .replaceAll("_:genid([0-9]+)", "_:genid$1" + s"_${axiomIdx}_$idx")
           .replaceAll("\\s+$", "")  // trim end
       })
