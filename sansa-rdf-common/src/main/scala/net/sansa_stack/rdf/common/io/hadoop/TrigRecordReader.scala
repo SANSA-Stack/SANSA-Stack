@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.{Matcher, Pattern}
 
 import io.reactivex.Flowable
-import io.reactivex.functions.Predicate
+import io.reactivex.functions.{Consumer, Predicate}
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
@@ -21,13 +21,15 @@ import org.apache.jena.ext.com.google.common.primitives.Ints
 import org.apache.jena.query.{Dataset, DatasetFactory}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs
 import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import org.apache.hadoop.io.compress.{CodecPool, CompressionCodec, CompressionCodecFactory, Decompressor, SplitCompressionInputStream, SplittableCompressionCodec}
+import org.apache.hadoop.util.LimitInputStream
+import org.apache.jena.shared.PrefixMapping
 
 
 /**
@@ -116,27 +118,45 @@ class TrigRecordReader
     minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 12)
     probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
 
+    val str = context.getConfiguration.get("prefixes")
+    val model = ModelFactory.createDefaultModel()
+    if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE)
+
+    val baos = new ByteArrayOutputStream()
+    RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY)
+    val prefixBytes = baos.toByteArray
+
+
     val split = inputSplit.asInstanceOf[FileSplit]
     val rawStream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
 
     var stream: InputStream = rawStream
 
     var splitStart = split.getStart
-    var splitEnd = splitStart + split.getLength
+    val splitLength = split.getLength
+    var splitEnd = splitStart + splitLength
 
-    val rawDesiredBufferLength = split.getLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, split.getLength - 1)
+    // val rawDesiredBufferLength = split.getLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, split.getLength - 1)
 
     val file = split.getPath
 
     var fsSeek: fs.Seekable = rawStream
 
-
-
     val codec = new CompressionCodecFactory(job).getCodec(file)
+    var streamFactory: Long => (InputStream, Long, Long) = null
+
     if (null != codec) {
       isCompressedInput = true
       decompressor = CodecPool.getDecompressor(codec)
       if (codec.isInstanceOf[SplittableCompressionCodec]) {
+
+        streamFactory = (start: Long) => {
+          val cIn = codec.asInstanceOf[SplittableCompressionCodec].createInputStream(
+            stream, decompressor, start, start + splitLength,
+            SplittableCompressionCodec.READ_MODE.BYBLOCK)
+          (cIn, cIn.getAdjustedStart, cIn.getAdjustedEnd)
+        }
+        /*
         val cIn = codec.asInstanceOf[SplittableCompressionCodec].createInputStream(
             stream, decompressor, splitStart, splitEnd,
             SplittableCompressionCodec.READ_MODE.BYBLOCK)
@@ -146,22 +166,24 @@ class TrigRecordReader
 
         fsSeek = cIn
         stream = cIn
+        */
       } else {
 //        fsSeek.seek(splitStart)
       }
     } else {
-      fsSeek.seek(splitStart)
+      // fsSeek.seek(splitStart)
+      streamFactory = start => {
+        rawStream.seek(start)
+        (new LimitInputStream(rawStream, splitLength), start, start + splitLength)
+      }
     }
 
 
+    val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
+    val (arr, extraLength) = readToBuffer(streamFactory, splitStart, splitEnd, desiredExtraBytes)
 
 
-
-
-    val str = context.getConfiguration.get("prefixes")
-    val model = ModelFactory.createDefaultModel()
-    if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE)
-    val tmp = createDatasetFlowApproachEasyPeasy(splitStart, splitEnd, stream, context, model)
+    val tmp = createDatasetFlow(arr, extraLength, prefixBytes, splitStart)
 
     datasetFlow = tmp.blockingIterable().iterator()
   }
@@ -217,13 +239,15 @@ class TrigRecordReader
     result
   }
 
-  def readToBuffer(stream: InputStream, splitStart: Long, splitEnd: Long,
-                   requestedExtraBytes: Int, stream2: InputStream): (ArrayBuffer[Byte], Int) = {
-    val splitLength = splitEnd - splitStart
+  def readToBuffer(streamFactory: Long => (InputStream, Long, Long), splitStart: Long, splitEnd: Long,
+                   requestedExtraBytes: Int): (ArrayBuffer[Byte], Int) = {
 
     // Get a buffer for the split + 1 mrl for finding the first record in the next split + extra bytes to perform
     // record validation in the next split
     // But also don't step over a complete split
+
+    val (stream, adjustedStart, adjustedEnd) = streamFactory.apply(splitStart)
+
     val buffer = new ArrayBuffer[Byte]()
     val length = 65 * 1024
     val arr = new Array[Byte](length)
@@ -235,6 +259,8 @@ class TrigRecordReader
     } while (n >= 0)
 
 
+    // Can we ignore adjusted start / end at this stage?!
+    val (stream2, _, _) = streamFactory.apply(adjustedEnd)
     val arr2 = new Array[Byte](requestedExtraBytes)
     var actualExtraBytes = 0
     n = 0
@@ -252,28 +278,26 @@ class TrigRecordReader
     (buffer, actualExtraBytes)
   }
 
-  def createDatasetFlowApproachEasyPeasy(splitStart: Long, splitEnd: Long, stream: InputStream, stream2: InputStream,
-                                         context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
+  def printSeekable(seekable: Seekable): Unit = {
+    val tmp = seekable.cloneObject()
+    val pos = seekable.getPos
+    System.out.println(s"BUFFER: $pos" + IOUtils.toString(Channels.newInputStream(tmp)))
+  }
 
-    val splitLength = splitEnd - splitStart
-
-    // Get a buffer for the split + 1 mrl for finding the first record in the next split + extra bytes to perform
-    // record validation in the next split
-    // But also don't step over a complete split
-    val rawDesiredBufferLength = splitLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1)
-    val desiredBufferLength = Ints.checkedCast(rawDesiredBufferLength)
-    val (arr, extraLength) = readToBuffer(stream, splitStart, splitEnd, rawDesiredBufferLength)
-    // System.err.println(s"Read $bufferLength bytes - requested: $desiredBufferLength")
+  def createDatasetFlow(
+                         dataBuffer: ArrayBuffer[Byte],
+                         actualExtraBytes: Int,
+                         prefixBytes: Array[Byte],
+                         absSplitStart: Long): Flowable[Dataset] = {
 
 
-    val dataRegionEnd = splitEnd + extraLength
+
+    val splitStart = 0
+    val splitLength = dataBuffer.length - actualExtraBytes
+    val splitEnd = splitStart + splitLength
+    val dataRegionEnd = dataBuffer.length
 
     // System.err.println("Processing split " + splitStart + " - " + splitEnd + " | --+" + extraLength + "--> " + dataRegionEnd)
-
-    val baos = new ByteArrayOutputStream()
-    RDFDataMgr.write(baos, pm, RDFFormat.TURTLE_PRETTY)
-    val prefixBytes = baos.toByteArray
-
 
     // Clones the provided seekable!
     val effectiveInputStreamSupp: Seekable => InputStream = seekable => {
@@ -301,15 +325,19 @@ class TrigRecordReader
     }
 
     val prober: Seekable => Boolean = seekable => {
+      printSeekable(seekable)
       val quadCount = parser(seekable)
         .limit(probeRecordCount)
         .count
+        .doOnError(new Consumer[Throwable] {
+          override def accept(t: Throwable): Unit = t.printStackTrace
+        })
         .onErrorReturnItem(-1L)
         .blockingGet() > 0
       quadCount
     }
 
-    val buffer = ByteBuffer.wrap(arr)
+    val buffer = ByteBuffer.wrap(dataBuffer.toArray)
     val pageManager = new PageManagerForByteBuffer(buffer)
     val nav = new PageNavigator(pageManager)
 
@@ -325,7 +353,7 @@ class TrigRecordReader
     }
 
     // If we are at start 0, we parse from the beginning - otherwise we skip the first record
-    val effectiveRecordRangeStart = if (splitStart == 0) {
+    val effectiveRecordRangeStart = if (absSplitStart == 0) {
       0L
     } else {
       skipOverNextRecord(nav, splitStart, splitStart, maxRecordLength, splitEnd, prober)
