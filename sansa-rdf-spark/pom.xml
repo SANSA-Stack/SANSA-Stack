@@ -11,7 +11,7 @@
     </parent>
 
 	<properties>
-		<spark.deps.scope>compile</spark.deps.scope>
+		<spark.deps.scope>provided</spark.deps.scope>
 	</properties>
 
     <dependencies>
