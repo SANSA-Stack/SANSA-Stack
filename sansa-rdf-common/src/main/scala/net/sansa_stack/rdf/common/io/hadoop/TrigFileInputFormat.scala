@@ -43,21 +43,25 @@ class TrigFileInputFormat
 
       val dataset = DatasetFactory.create()
 
-      val is = firstSplit.getPath.getFileSystem(job.getConfiguration).open(firstSplit.getPath)
-      // we do two steps here:
-      // 1. get all lines with base or prefix declaration
-      // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
-      val prefixStr = scala.io.Source.fromInputStream(is).getLines()
-        .map(_.trim)
-        .filterNot(_.isEmpty) // skip empty lines
-        .filterNot(_.startsWith("#")) // skip comments
-        .filter(line => line.startsWith("@prefix") || line.startsWith("@base") ||
-                        line.startsWith("prefix") || line.startsWith("base"))
-        .mkString("\n")
-      // TODO apparently, prefix declarations could span multiple lines, i.e. technically we
-      //  also should consider the next line after a prefix declaration
+      // FIXME Code below breaks with encoded input
+      if (false) {
+        val is = firstSplit.getPath.getFileSystem(job.getConfiguration).open(firstSplit.getPath)
+        // we do two steps here:
+        // 1. get all lines with base or prefix declaration
+        // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
+        val prefixStr = scala.io.Source.fromInputStream(is).getLines()
+          .map(_.trim)
+          .filterNot(_.isEmpty) // skip empty lines
+          .filterNot(_.startsWith("#")) // skip comments
+          .filter(line => line.startsWith("@prefix") || line.startsWith("@base") ||
+          line.startsWith("prefix") || line.startsWith("base"))
+          .mkString("\n")
+        // TODO apparently, prefix declarations could span multiple lines, i.e. technically we
+        //  also should consider the next line after a prefix declaration
 
-      RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
+        RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
+      }
+
       // prefixes are located in default model
 //      prefixMapping = dataset.getDefaultModel
       val baos = new ByteArrayOutputStream()

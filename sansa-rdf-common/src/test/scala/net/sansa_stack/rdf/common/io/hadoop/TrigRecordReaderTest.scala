@@ -34,8 +34,10 @@ class TrigRecordReaderTest extends FunSuite {
   conf.set(TrigRecordReader.PROBE_RECORD_COUNT, "1")
 
   // val testFileName = "w3c_ex2.trig"
-  val testFileName = "w3c_ex2-no-default-graph.trig"
+  val referenceFileName = "nato-phonetic-alphabet-example.trig"
+  val testFileName = "nato-phonetic-alphabet-example.trig.bz2"
   // val testFile = new File("/home/raven/Projects/Eclipse/sparql-integrate-parent/tmp/unique-queries.one-week.trig")
+  val referenceFile = new File(getClass.getClassLoader.getResource(referenceFileName).getPath)
   val testFile = new File(getClass.getClassLoader.getResource(testFileName).getPath)
 
   val path = new Path(testFile.getAbsolutePath)
@@ -44,7 +46,7 @@ class TrigRecordReaderTest extends FunSuite {
 
   // read the target dataset
   val targetDataset = DatasetFactory.create()
-  RDFDataMgr.read(targetDataset, new FileInputStream(testFile), Lang.TRIG)
+  RDFDataMgr.read(targetDataset, new FileInputStream(referenceFile), Lang.TRIG)
 
 
   val maxNumSplits = 4
