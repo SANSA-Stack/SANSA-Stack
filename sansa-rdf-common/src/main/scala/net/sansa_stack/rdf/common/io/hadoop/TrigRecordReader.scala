@@ -89,6 +89,7 @@ class TrigRecordReader
     // By default use the given stream
     // We may need to wrap it with a decoder below
     var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+    var isEncoded = false
 
 
     var splitStart = split.getStart
@@ -108,15 +109,24 @@ class TrigRecordReader
       if (codec.isInstanceOf[SplittableCompressionCodec]) {
         val scc = codec.asInstanceOf[SplittableCompressionCodec]
 
-        stream = scc.createInputStream(stream, decompressor, splitStart, splitEnd,
+        val tmp = scc.createInputStream(stream, decompressor, splitStart, splitEnd,
           SplittableCompressionCodec.READ_MODE.BYBLOCK)
+
+        splitStart = tmp.getAdjustedStart
+        splitEnd = tmp.getAdjustedEnd
+
+        stream = tmp
+
+        isEncoded = true
       } else {
         throw new RuntimeException("Don't know how to handle codec: " + codec)
       }
+    } else {
+      stream.seek(splitStart)
     }
 
     val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
-    val (arr, extraLength) = readToBuffer(stream, splitStart, splitEnd, desiredExtraBytes)
+    val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
 
     val tmp = createDatasetFlow(arr, extraLength, prefixBytes, splitStart)
 
@@ -134,7 +144,7 @@ class TrigRecordReader
     * @param requestedExtraBytes Additional number of decoded bytes to read
     * @return
     */
-  def readToBuffer(stream: InputStream with fs.Seekable, splitStart: Long, splitEnd: Long,
+  def readToBuffer(stream: InputStream with fs.Seekable, isEncoded: Boolean, splitStart: Long, splitEnd: Long,
                    requestedExtraBytes: Int): (ArrayBuffer[Byte], Int) = {
 
     val splitLength = splitEnd - splitStart
@@ -143,14 +153,23 @@ class TrigRecordReader
     // Read data in blocks of 'length' size
     // It is important to understand that the
     // stream's read method by contract must return once it hits a block boundary
+    // This does not hold for non-encoded streams for which we count the bytes ourself
     val length = 1 * 1024 * 1024
     val blockBuffer = new Array[Byte](length)
 
     var n: Int = 0
     do {
       buffer ++= blockBuffer.slice(0, n)
-      n = stream.read(blockBuffer, 0, length)
-    } while (n >= 0 && stream.getPos <= splitEnd)
+
+      val streamPos = stream.getPos
+      if (streamPos >= splitEnd) {
+        n = -1
+      } else {
+        val readLimit = if (isEncoded) length else Math.min(length, Ints.checkedCast(splitLength - buffer.length))
+
+        n = stream.read(blockBuffer, 0, readLimit)
+      }
+    } while (n >= 0)
 
 
     val tailBuffer = new Array[Byte](requestedExtraBytes)
