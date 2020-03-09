@@ -35,10 +35,16 @@ class TrigRecordReaderTest extends FunSuite {
 
   // val testFileName = "w3c_ex2.trig"
   val referenceFileName = "nato-phonetic-alphabet-example.trig"
-  val testFileName = "nato-phonetic-alphabet-example.trig.bz2"
-  // val testFile = new File("/home/raven/Projects/Eclipse/sparql-integrate-parent/tmp/unique-queries.one-week.trig")
+  val testFileName = "nato-phonetic-alphabet-example.trig"
+  // val testFileName = "nato-phonetic-alphabet-example.trig.bz2"
+
   val referenceFile = new File(getClass.getClassLoader.getResource(referenceFileName).getPath)
   val testFile = new File(getClass.getClassLoader.getResource(testFileName).getPath)
+
+  // val referenceFile = new File("/home/raven/Projects/Data/Hobbit/hobbit-sensor-stream-150k.trig")
+  // val testFile = new File("/home/raven/Projects/Data/Hobbit/hobbit-sensor-stream-150k.trig")
+  // val testFile = new File("/home/raven/Projects/Eclipse/facete3-parent/version1/hobbit-sensor-stream-150k-events-data.trig.bz2")
+
 
   val path = new Path(testFile.getAbsolutePath)
 

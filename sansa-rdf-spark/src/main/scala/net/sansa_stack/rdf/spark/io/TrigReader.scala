@@ -19,7 +19,7 @@ object TrigReader {
     val path = args(0)
 
     val spark = SparkSession.builder
-      .master("local[4]")
+      // .master("local[4]")
       .appName("Trig reader")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrationRequired", "true")
@@ -31,6 +31,8 @@ object TrigReader {
       .getOrCreate()
 
     val hadoopConf = new Configuration()
+
+    // Sizes are somewhat skewed for bug-testing purposes
     hadoopConf.set("mapred.max.split.size", "10000321")
     hadoopConf.set("mapred.min.split.size", "10000321")
 

@@ -64,49 +64,6 @@ class TrigRecordReader
 
   private var datasetFlow: util.Iterator[Dataset] = _
 
-
-  /**
-    * Uses the matcher to find candidate probing positions, and returns the first positoin
-    * where probing succeeds.
-    * Matching ranges are part of the matcher configuration
-    *
-    * @param rawSeekable
-    * @param m
-    * @param isFwd
-    * @param prober
-    * @return
-    */
-  def findPosition(rawSeekable: Seekable, m: Matcher, isFwd: Boolean, prober: Seekable => Boolean): Long = {
-
-    val seekable = rawSeekable.cloneObject
-    val absMatcherStartPos = seekable.getPos
-
-    while (m.find) {
-      val start = m.start
-      val end = m.end
-      // The matcher yields absolute byte positions from the beginning of the byte sequence
-      val matchPos = if (isFwd) {
-        start
-      } else {
-        -end + 1
-      }
-      val absPos = (absMatcherStartPos + matchPos).asInstanceOf[Int]
-      // Artificially create errors
-      // absPos += 5;
-      seekable.setPos(absPos)
-      val probeSeek = seekable.cloneObject
-
-      val probeResult = prober.apply(probeSeek)
-      // System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
-
-      if(probeResult) {
-        return absPos
-      }
-    }
-
-    -1L
-  }
-
   private var isCompressedInput = false
   private var decompressor: Decompressor = null
 
@@ -128,9 +85,11 @@ class TrigRecordReader
 
 
     val split = inputSplit.asInstanceOf[FileSplit]
-    val rawStream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
 
-    var stream: InputStream = rawStream
+    // By default use the given stream
+    // We may need to wrap it with a decoder below
+    var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+
 
     var splitStart = split.getStart
     val splitLength = split.getLength
@@ -140,136 +99,69 @@ class TrigRecordReader
 
     val file = split.getPath
 
-    var fsSeek: fs.Seekable = rawStream
-
     val codec = new CompressionCodecFactory(job).getCodec(file)
-    var streamFactory: Long => (InputStream, Long, Long) = null
+    // var streamFactory: Long => (InputStream, Long, Long) = null
 
     if (null != codec) {
       isCompressedInput = true
       decompressor = CodecPool.getDecompressor(codec)
       if (codec.isInstanceOf[SplittableCompressionCodec]) {
+        val scc = codec.asInstanceOf[SplittableCompressionCodec]
 
-        streamFactory = (start: Long) => {
-          val cIn = codec.asInstanceOf[SplittableCompressionCodec].createInputStream(
-            stream, decompressor, start, start + splitLength,
-            SplittableCompressionCodec.READ_MODE.BYBLOCK)
-          (cIn, cIn.getAdjustedStart, cIn.getAdjustedEnd)
-        }
-        /*
-        val cIn = codec.asInstanceOf[SplittableCompressionCodec].createInputStream(
-            stream, decompressor, splitStart, splitEnd,
-            SplittableCompressionCodec.READ_MODE.BYBLOCK)
-
-        splitStart = cIn.getAdjustedStart
-        splitEnd = cIn.getAdjustedEnd
-
-        fsSeek = cIn
-        stream = cIn
-        */
+        stream = scc.createInputStream(stream, decompressor, splitStart, splitEnd,
+          SplittableCompressionCodec.READ_MODE.BYBLOCK)
       } else {
-//        fsSeek.seek(splitStart)
-      }
-    } else {
-      // fsSeek.seek(splitStart)
-      streamFactory = start => {
-        rawStream.seek(start)
-        (new LimitInputStream(rawStream, splitLength), start, start + splitLength)
+        throw new RuntimeException("Don't know how to handle codec: " + codec)
       }
     }
 
-
     val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
-    val (arr, extraLength) = readToBuffer(streamFactory, splitStart, splitEnd, desiredExtraBytes)
-
+    val (arr, extraLength) = readToBuffer(stream, splitStart, splitEnd, desiredExtraBytes)
 
     val tmp = createDatasetFlow(arr, extraLength, prefixBytes, splitStart)
 
     datasetFlow = tmp.blockingIterable().iterator()
   }
 
-  def skipOverNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
-    var result = -1L
-
-    val availableDataRegion = absDataRegionEnd - absProbeRegionStart
-    var nextProbePos = absProbeRegionStart
-    var i = 0
-    while (i < 2) {
-      val candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, prober)
-      if (candidatePos < 0) {
-        if (availableDataRegion >= maxRecordLength) {
-          throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
-        }
-
-        // Retain best found candidate position
-        // effectiveRecordRangeEnd = dataRegionEnd
-        i = 666 // break
-      } else {
-        result = candidatePos
-        if (i == 0) {
-          nextProbePos = candidatePos + minRecordLength
-        }
-        i += 1
-      }
-    }
-
-    result
-  }
-
-  def findNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
-    // Set up absolute positions
-    val absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd) // = splitStart + bufferLength
-    val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
-
-    // System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
-
-    // Data region is up to the end of the buffer
-    val relDataRegionEnd = absDataRegionEnd - absProbeRegionStart
-
-    val seekable = nav.clone
-    seekable.setPos(absProbeRegionStart - splitStart)
-    seekable.limitNext(relDataRegionEnd)
-    val charSequence = new CharSequenceFromSeekable(seekable)
-    val fwdMatcher = trigFwdPattern.matcher(charSequence)
-    fwdMatcher.region(0, relProbeRegionEnd)
-
-    val matchPos = findPosition(seekable, fwdMatcher, true, prober)
-
-    val result = if (matchPos >= 0) matchPos + splitStart else -1
-    result
-  }
-
-  def readToBuffer(streamFactory: Long => (InputStream, Long, Long), splitStart: Long, splitEnd: Long,
+  /**
+    * Transfers all decoded data that corresponds to the region
+    * between splitStart and splitEnd of the given stream
+    * plus a given number of extra bytes into a buffer
+    *
+    * @param stream The input stream, possibly compressed
+    * @param splitStart Start position of the split which may be encoded data
+    * @param splitEnd End position of the split which may be encoded data
+    * @param requestedExtraBytes Additional number of decoded bytes to read
+    * @return
+    */
+  def readToBuffer(stream: InputStream with fs.Seekable, splitStart: Long, splitEnd: Long,
                    requestedExtraBytes: Int): (ArrayBuffer[Byte], Int) = {
 
-    // Get a buffer for the split + 1 mrl for finding the first record in the next split + extra bytes to perform
-    // record validation in the next split
-    // But also don't step over a complete split
-
-    val (stream, adjustedStart, adjustedEnd) = streamFactory.apply(splitStart)
+    val splitLength = splitEnd - splitStart
 
     val buffer = new ArrayBuffer[Byte]()
-    val length = 65 * 1024
-    val arr = new Array[Byte](length)
+    // Read data in blocks of 'length' size
+    // It is important to understand that the
+    // stream's read method by contract must return once it hits a block boundary
+    val length = 1 * 1024 * 1024
+    val blockBuffer = new Array[Byte](length)
 
     var n: Int = 0
     do {
-      buffer ++= arr.slice(0, n)
-      n = stream.read(arr, 0, length)
-    } while (n >= 0)
+      buffer ++= blockBuffer.slice(0, n)
+      n = stream.read(blockBuffer, 0, length)
+    } while (n >= 0 && stream.getPos <= splitEnd)
 
 
-    // Can we ignore adjusted start / end at this stage?!
-    val (stream2, _, _) = streamFactory.apply(adjustedEnd)
-    val arr2 = new Array[Byte](requestedExtraBytes)
+    val tailBuffer = new Array[Byte](requestedExtraBytes)
     var actualExtraBytes = 0
     n = 0
     do {
       actualExtraBytes += n
       val remaining = requestedExtraBytes - actualExtraBytes
-      n = if (remaining == 0) -1 else stream2.read(arr2, actualExtraBytes, remaining)
+      n = if (remaining == 0) -1 else stream.read(tailBuffer, actualExtraBytes, remaining)
     } while (n >= 0)
-    buffer ++= arr2.slice(0, actualExtraBytes)
+    buffer ++= tailBuffer.slice(0, actualExtraBytes)
 
     if (actualExtraBytes < 0) {
       throw new RuntimeException(s"Attempt to buffer $requestedExtraBytes bytes from split failed")
@@ -278,11 +170,6 @@ class TrigRecordReader
     (buffer, actualExtraBytes)
   }
 
-  def printSeekable(seekable: Seekable): Unit = {
-    val tmp = seekable.cloneObject()
-    val pos = seekable.getPos
-    System.out.println(s"BUFFER: $pos" + IOUtils.toString(Channels.newInputStream(tmp)))
-  }
 
   def createDatasetFlow(
                          dataBuffer: ArrayBuffer[Byte],
@@ -297,7 +184,7 @@ class TrigRecordReader
     val splitEnd = splitStart + splitLength
     val dataRegionEnd = dataBuffer.length
 
-    // System.err.println("Processing split " + splitStart + " - " + splitEnd + " | --+" + extraLength + "--> " + dataRegionEnd)
+    // System.err.println(s"Processing split $absSplitStart: $splitStart - $splitEnd | --+$actualExtraBytes--> $dataRegionEnd")
 
     // Clones the provided seekable!
     val effectiveInputStreamSupp: Seekable => InputStream = seekable => {
@@ -325,13 +212,13 @@ class TrigRecordReader
     }
 
     val prober: Seekable => Boolean = seekable => {
-      printSeekable(seekable)
+      // printSeekable(seekable)
       val quadCount = parser(seekable)
         .limit(probeRecordCount)
         .count
-        .doOnError(new Consumer[Throwable] {
-          override def accept(t: Throwable): Unit = t.printStackTrace
-        })
+        // .doOnError(new Consumer[Throwable] {
+        //   override def accept(t: Throwable): Unit = t.printStackTrace
+        // })
         .onErrorReturnItem(-1L)
         .blockingGet() > 0
       quadCount
@@ -382,6 +269,101 @@ class TrigRecordReader
     result
   }
 
+
+  def findNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
+    // Set up absolute positions
+    val absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd) // = splitStart + bufferLength
+    val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
+
+    // System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
+
+    // Data region is up to the end of the buffer
+    val relDataRegionEnd = absDataRegionEnd - absProbeRegionStart
+
+    val seekable = nav.clone
+    seekable.setPos(absProbeRegionStart - splitStart)
+    seekable.limitNext(relDataRegionEnd)
+    val charSequence = new CharSequenceFromSeekable(seekable)
+    val fwdMatcher = trigFwdPattern.matcher(charSequence)
+    fwdMatcher.region(0, relProbeRegionEnd)
+
+    val matchPos = findFirstPositionWithProbeSuccess(seekable, fwdMatcher, true, prober)
+
+    val result = if (matchPos >= 0) matchPos + splitStart else -1
+    result
+  }
+
+
+  def skipOverNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
+    var result = -1L
+
+    val availableDataRegion = absDataRegionEnd - absProbeRegionStart
+    var nextProbePos = absProbeRegionStart
+    var i = 0
+    while (i < 2) {
+      val candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, prober)
+      if (candidatePos < 0) {
+        if (availableDataRegion >= maxRecordLength) {
+          throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
+        }
+
+        // Retain best found candidate position
+        // effectiveRecordRangeEnd = dataRegionEnd
+        i = 666 // break
+      } else {
+        result = candidatePos
+        if (i == 0) {
+          nextProbePos = candidatePos + minRecordLength
+        }
+        i += 1
+      }
+    }
+
+    result
+  }
+  /**
+    * Uses the matcher to find candidate probing positions, and returns the first positoin
+    * where probing succeeds.
+    * Matching ranges are part of the matcher configuration
+    *
+    * @param rawSeekable
+    * @param m
+    * @param isFwd
+    * @param prober
+    * @return
+    */
+  def findFirstPositionWithProbeSuccess(rawSeekable: Seekable, m: Matcher, isFwd: Boolean, prober: Seekable => Boolean): Long = {
+
+    val seekable = rawSeekable.cloneObject
+    val absMatcherStartPos = seekable.getPos
+
+    while (m.find) {
+      val start = m.start
+      val end = m.end
+      // The matcher yields absolute byte positions from the beginning of the byte sequence
+      val matchPos = if (isFwd) {
+        start
+      } else {
+        -end + 1
+      }
+      val absPos = (absMatcherStartPos + matchPos).asInstanceOf[Int]
+      // Artificially create errors
+      // absPos += 5;
+      seekable.setPos(absPos)
+      val probeSeek = seekable.cloneObject
+
+      val probeResult = prober.apply(probeSeek)
+      // System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
+
+      if(probeResult) {
+        return absPos
+      }
+    }
+
+    -1L
+  }
+
+
   override def nextKeyValue(): Boolean = {
     if (datasetFlow == null || !datasetFlow.hasNext) {
       // System.err.println("nextKeyValue: Drained all datasets from flow")
@@ -408,4 +390,11 @@ class TrigRecordReader
       datasetFlow = null
     }
   }
+
+  // def printSeekable(seekable: Seekable): Unit = {
+  //   val tmp = seekable.cloneObject()
+  //   val pos = seekable.getPos
+  //   System.out.println(s"BUFFER: $pos" + IOUtils.toString(Channels.newInputStream(tmp)))
+  // }
+
 }
