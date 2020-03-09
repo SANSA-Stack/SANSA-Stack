@@ -33,8 +33,8 @@ object TrigReader {
     val hadoopConf = new Configuration()
 
     // Sizes are somewhat skewed for bug-testing purposes
-    hadoopConf.set("mapred.max.split.size", "10000321")
-    hadoopConf.set("mapred.min.split.size", "10000321")
+    // hadoopConf.set("mapred.max.split.size", "10000321")
+    // hadoopConf.set("mapred.min.split.size", "10000321")
 
     val rdd = spark.sparkContext.newAPIHadoopFile(path, classOf[TrigFileInputFormat],
                                                   classOf[LongWritable], classOf[Dataset], hadoopConf)
