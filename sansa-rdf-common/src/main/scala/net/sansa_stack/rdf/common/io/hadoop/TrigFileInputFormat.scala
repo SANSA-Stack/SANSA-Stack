@@ -1,11 +1,12 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
 import java.util
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.io.compress.{CompressionCodecFactory, SplittableCompressionCodec}
+import org.apache.hadoop.io.compress.{CodecPool, CompressionCodecFactory, SplittableCompressionCodec}
 import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, FileSplit}
 import org.apache.hadoop.mapreduce.{InputSplit, JobContext, RecordReader, TaskAttemptContext}
 import org.apache.jena.query.{Dataset, DatasetFactory}
@@ -45,7 +46,7 @@ class TrigFileInputFormat
 
       // FIXME Code below breaks with encoded input
       if (false) {
-        val is = firstSplit.getPath.getFileSystem(job.getConfiguration).open(firstSplit.getPath)
+        val is = getStreamFromSplit(firstSplit, job.getConfiguration)
         // we do two steps here:
         // 1. get all lines with base or prefix declaration
         // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
@@ -70,6 +71,33 @@ class TrigFileInputFormat
     }
 
     splits
+  }
+
+  private def getStreamFromSplit(split: FileSplit, job: Configuration): InputStream = {
+    val file = split.getPath
+
+    // open the file and seek to the start of the split
+    val fs = file.getFileSystem(job)
+    val fileIn = fs.open(file)
+
+    val start = split.getStart
+    val end = start + split.getLength
+
+    val codec = new CompressionCodecFactory(job).getCodec(file)
+
+    if (null != codec) {
+      val decompressor = CodecPool.getDecompressor(codec)
+
+      if (codec.isInstanceOf[SplittableCompressionCodec]) {
+        codec.asInstanceOf[SplittableCompressionCodec].createInputStream(
+          fileIn, decompressor, start, end,
+          SplittableCompressionCodec.READ_MODE.BYBLOCK)
+      } else {
+        codec.createInputStream(fileIn, decompressor)
+      }
+    } else {
+      fileIn
+    }
   }
 
 }
