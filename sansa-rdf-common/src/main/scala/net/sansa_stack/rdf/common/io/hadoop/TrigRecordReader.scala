@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, SequenceInputStream, StringReader}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, IOException, InputStream, SequenceInputStream, StringReader}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.charset.Charset
@@ -15,7 +15,7 @@ import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.mapreduce.lib.input.FileSplit
+import org.apache.hadoop.mapreduce.lib.input.{CompressedSplitLineReader, FileSplit}
 import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
 import org.apache.jena.ext.com.google.common.primitives.Ints
 import org.apache.jena.query.{Dataset, DatasetFactory}
@@ -24,6 +24,9 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import scala.collection.JavaConverters._
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs
+import org.apache.hadoop.fs.{FSDataInputStream, Path}
+import org.apache.hadoop.io.compress.{CodecPool, CompressionCodec, CompressionCodecFactory, Decompressor, SplitCompressionInputStream, SplittableCompressionCodec}
 
 
 /**
@@ -101,9 +104,44 @@ class TrigRecordReader
     -1L
   }
 
+  private var isCompressedInput = false
+  private var decompressor: Decompressor = null
+
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     val job = context.getConfiguration
+
+    val split = inputSplit.asInstanceOf[FileSplit]
+    val rawStream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+
+    var stream: InputStream = rawStream
+
+    var splitStart = split.getStart
+    var splitEnd = splitStart + split.getLength
+
+    val file = split.getPath
+
+    var fsSeek: fs.Seekable = rawStream
+
+    val codec = new CompressionCodecFactory(job).getCodec(file)
+    if (null != codec) {
+      isCompressedInput = true
+      decompressor = CodecPool.getDecompressor(codec)
+      if (codec.isInstanceOf[SplittableCompressionCodec]) {
+        val cIn = codec.asInstanceOf[SplittableCompressionCodec].createInputStream(
+            stream, decompressor, splitStart, splitEnd,
+            SplittableCompressionCodec.READ_MODE.BYBLOCK)
+
+        splitStart = cIn.getAdjustedStart
+        splitEnd = cIn.getAdjustedEnd
+
+        fsSeek = cIn
+        stream = cIn
+      }
+    }
+
+    fsSeek.seek(splitStart)
+
     maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
     minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 12)
     probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
@@ -112,7 +150,7 @@ class TrigRecordReader
     val str = context.getConfiguration.get("prefixes")
     val model = ModelFactory.createDefaultModel()
     if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE)
-    val tmp = createDatasetFlowApproachEasyPeasy(inputSplit, context, model)
+    val tmp = createDatasetFlowApproachEasyPeasy(splitStart, splitEnd, stream, context, model)
 
     datasetFlow = tmp.blockingIterable().iterator()
   }
@@ -168,15 +206,10 @@ class TrigRecordReader
     result
   }
 
-  def createDatasetFlowApproachEasyPeasy(inputSplit: InputSplit, context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
+  def createDatasetFlowApproachEasyPeasy(splitStart: Long, splitEnd: Long, stream: InputStream,
+                                         context: TaskAttemptContext, pm: Model): Flowable[Dataset] = {
 
-    val split = inputSplit.asInstanceOf[FileSplit]
-    val stream = split.getPath.getFileSystem(context.getConfiguration)
-      .open(split.getPath)
-
-    val splitStart = split.getStart
-    val splitLength = split.getLength
-    val splitEnd = splitStart + splitLength
+    val splitLength = splitEnd - splitStart
 
     // Get a buffer for the split + 1 mrl for finding the first record in the next split + extra bytes to perform
     // record validation in the next split
@@ -185,7 +218,7 @@ class TrigRecordReader
     val desiredBufferLength = Ints.checkedCast(rawDesiredBufferLength)
     val arr = new Array[Byte](desiredBufferLength)
 
-    stream.seek(splitStart)
+
 
     // FIXME We should not load the whole buffer into memory but just the portions we need
     // Either we can reuse Hadoop stuff - or our PageManager would facilitate the same
