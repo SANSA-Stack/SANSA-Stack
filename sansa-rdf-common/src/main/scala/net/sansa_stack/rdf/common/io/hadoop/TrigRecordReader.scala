@@ -137,10 +137,14 @@ class TrigRecordReader
 
         fsSeek = cIn
         stream = cIn
+      } else {
+//        fsSeek.seek(splitStart)
       }
+    } else {
+      fsSeek.seek(splitStart)
     }
 
-    fsSeek.seek(splitStart)
+
 
     maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
     minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 12)
