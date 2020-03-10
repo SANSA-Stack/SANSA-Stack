@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.charset.Charset
 import java.util
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.{Matcher, Pattern}
 
@@ -29,6 +30,7 @@ import org.apache.hadoop.fs
 import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import org.apache.hadoop.io.compress.{CodecPool, CompressionCodec, CompressionCodecFactory, Decompressor, SplitCompressionInputStream, SplittableCompressionCodec}
 import org.apache.hadoop.util.LimitInputStream
+import org.apache.jena.ext.com.google.common.base.Stopwatch
 import org.apache.jena.shared.PrefixMapping
 
 
@@ -126,7 +128,11 @@ class TrigRecordReader
     }
 
     val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
+
+    val sw = Stopwatch.createStarted()
     val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
+
+    println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
 
     val tmp = createDatasetFlow(arr, extraLength, prefixBytes, splitStart)
 
