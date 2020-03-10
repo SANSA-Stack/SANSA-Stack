@@ -44,8 +44,6 @@ class TrigFileInputFormat
 
       val dataset = DatasetFactory.create()
 
-      // FIXME Code below breaks with encoded input
-      // if (false) {
         val is = getStreamFromSplit(firstSplit, job.getConfiguration)
         // we do two steps here:
         // 1. get all lines with base or prefix declaration
@@ -61,7 +59,6 @@ class TrigFileInputFormat
         //  also should consider the next line after a prefix declaration
 
         RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
-      // }
 
       // prefixes are located in default model
 //      prefixMapping = dataset.getDefaultModel

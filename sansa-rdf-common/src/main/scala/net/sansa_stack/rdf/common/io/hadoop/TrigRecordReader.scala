@@ -71,6 +71,7 @@ class TrigRecordReader
 
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
+    println("TRIG READER INITIALIZE CALLED")
     val job = context.getConfiguration
 
     maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
@@ -155,6 +156,7 @@ class TrigRecordReader
 
     val splitLength = splitEnd - splitStart
 
+    // TODO ArrayBuffer has linear complexity for appending; use a better data structure
     val buffer = new ArrayBuffer[Byte]()
     // Read data in blocks of 'length' size
     // It is important to understand that the
