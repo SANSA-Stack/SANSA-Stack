@@ -172,15 +172,15 @@ object NQuadReader {
     val path = args(0)
 
     val sparkSession = SparkSession.builder
-      .master("local")
+//      .master("local")
       .appName("N-Quad reader")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrationRequired", "true")
       // .config("spark.eventLog.enabled", "true")
       //      .config("spark.kryo.registrator", String.join(", ",
       //      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
-      .config("spark.default.parallelism", "4")
-      .config("spark.sql.shuffle.partitions", "4")
+//      .config("spark.default.parallelism", "4")
+//      .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
 
     //    val rdd = NTripleReader.load(sparkSession,
@@ -200,7 +200,7 @@ object NQuadReader {
 
     //    rdd.saveAsTextFile("/tmp/skip-new.txt")
 
-    println(rdd.count())
+    println(s"#parsed graphs: ${rdd.count()}")
     println("result:\n" + rdd.take(1000).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
 
     //    println("result:\n" + rdd.take(1000).mkString("\n"))
