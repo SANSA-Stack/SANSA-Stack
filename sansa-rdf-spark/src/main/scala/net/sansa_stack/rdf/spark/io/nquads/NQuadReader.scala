@@ -200,12 +200,9 @@ object NQuadReader {
 
     //    rdd.saveAsTextFile("/tmp/skip-new.txt")
 
-    println(s"#parsed graphs: ${rdd.count()}")
-    println("result:\n" + rdd.take(1000).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
+    println(s"#parsed quads: ${rdd.count()}")
+    println("10 sample quads:\n" + rdd.take(10).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
 
-    //    println("result:\n" + rdd.take(1000).mkString("\n"))
-
-    rdd.saveAsTextFile("/tmp/test-out.nq")
   }
 
 }
