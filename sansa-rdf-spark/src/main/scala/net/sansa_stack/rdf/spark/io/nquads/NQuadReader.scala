@@ -112,7 +112,6 @@ object NQuadReader {
     // parse the text file first
     val rdd = session.sparkContext
       .textFile(path, minPartitions = 20)
-      .coalesce(1)
 
     val strict = stopOnBadTerm == ErrorParseMode.STOP && stopOnWarnings == WarningParseMode.STOP
 
