@@ -70,6 +70,15 @@ class TrigRecordReader
   private var decompressor: Decompressor = null
 
 
+
+  protected var prefixBytes: Array[Byte] = null
+  protected var stream: InputStream with fs.Seekable = null
+  protected var isEncoded: Boolean = false
+  protected var splitStart: Long = -1
+  protected var splitLength: Long = -1
+  protected var splitEnd: Long = -1
+
+
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     println("TRIG READER INITIALIZE CALLED")
     val job = context.getConfiguration
@@ -84,20 +93,25 @@ class TrigRecordReader
 
     val baos = new ByteArrayOutputStream()
     RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY)
-    val prefixBytes = baos.toByteArray
+    // val prefixBytes = baos.toByteArray
+    prefixBytes = baos.toByteArray
 
 
     val split = inputSplit.asInstanceOf[FileSplit]
 
     // By default use the given stream
     // We may need to wrap it with a decoder below
-    var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
-    var isEncoded = false
+    // var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+    stream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+    isEncoded = false
 
 
-    var splitStart = split.getStart
-    val splitLength = split.getLength
-    var splitEnd = splitStart + splitLength
+    // var splitStart = split.getStart
+    // val splitLength = split.getLength
+    // var splitEnd = splitStart + splitLength
+    splitStart = split.getStart
+    splitLength = split.getLength
+    splitEnd = splitStart + splitLength
 
     // val rawDesiredBufferLength = split.getLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, split.getLength - 1)
 
@@ -127,6 +141,11 @@ class TrigRecordReader
     } else {
       stream.seek(splitStart)
     }
+
+
+  }
+
+  def initDatasetFlow(): Unit = {
 
     val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
 
@@ -392,7 +411,11 @@ class TrigRecordReader
 
 
   override def nextKeyValue(): Boolean = {
-    if (datasetFlow == null || !datasetFlow.hasNext) {
+    if (datasetFlow == null) {
+      initDatasetFlow()
+    }
+
+    if (!datasetFlow.hasNext) {
       // System.err.println("nextKeyValue: Drained all datasets from flow")
       false
     }
@@ -413,9 +436,6 @@ class TrigRecordReader
   override def getProgress: Float = 0
 
   override def close(): Unit = {
-    if (datasetFlow != null) {
-      datasetFlow = null
-    }
   }
 
   // def printSeekable(seekable: Seekable): Unit = {
