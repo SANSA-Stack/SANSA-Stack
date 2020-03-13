@@ -2,10 +2,11 @@ package net.sansa_stack.rdf.common.io.hadoop
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, IOException, InputStream, SequenceInputStream, StringReader}
 import java.nio.ByteBuffer
-import java.nio.channels.Channels
-import java.nio.charset.Charset
+import java.nio.channels.{Channels, ReadableByteChannel}
+import java.nio.charset.{Charset, StandardCharsets}
 import java.util
-import java.util.concurrent.TimeUnit
+import java.util.Collections
+import java.util.concurrent.{Callable, TimeUnit}
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.{Matcher, Pattern}
 
@@ -14,6 +15,7 @@ import io.reactivex.functions.{Consumer, Predicate}
 import org.aksw.jena_sparql_api.common.DefaultPrefixes
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
+import org.apache.commons.io
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.mapreduce.lib.input.{CompressedSplitLineReader, FileSplit}
@@ -66,12 +68,12 @@ class TrigRecordReader
 
   private var datasetFlow: util.Iterator[Dataset] = _
 
-  private var isCompressedInput = false
-  private var decompressor: Decompressor = null
+  protected var decompressor: Decompressor = null
 
 
-
+  protected var codec: CompressionCodec = null
   protected var prefixBytes: Array[Byte] = null
+  protected var rawStream: InputStream with fs.Seekable = null
   protected var stream: InputStream with fs.Seekable = null
   protected var isEncoded: Boolean = false
   protected var splitStart: Long = -1
@@ -80,7 +82,7 @@ class TrigRecordReader
 
 
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
-    println("TRIG READER INITIALIZE CALLED")
+    // println("TRIG READER INITIALIZE CALLED")
     val job = context.getConfiguration
 
     maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
@@ -102,7 +104,7 @@ class TrigRecordReader
     // By default use the given stream
     // We may need to wrap it with a decoder below
     // var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
-    stream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+    rawStream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
     isEncoded = false
 
 
@@ -117,47 +119,77 @@ class TrigRecordReader
 
     val file = split.getPath
 
-    val codec = new CompressionCodecFactory(job).getCodec(file)
+    codec = new CompressionCodecFactory(job).getCodec(file)
     // var streamFactory: Long => (InputStream, Long, Long) = null
 
     if (null != codec) {
-      isCompressedInput = true
-      decompressor = CodecPool.getDecompressor(codec)
+      // decompressor = CodecPool.getDecompressor(codec)
       if (codec.isInstanceOf[SplittableCompressionCodec]) {
-        val scc = codec.asInstanceOf[SplittableCompressionCodec]
-
-        val tmp = scc.createInputStream(stream, decompressor, splitStart, splitEnd,
-          SplittableCompressionCodec.READ_MODE.BYBLOCK)
-
-        splitStart = tmp.getAdjustedStart
-        splitEnd = tmp.getAdjustedEnd
-
-        stream = tmp
-
+        // val scc = codec.asInstanceOf[SplittableCompressionCodec]
         isEncoded = true
       } else {
         throw new RuntimeException("Don't know how to handle codec: " + codec)
       }
-    } else {
-      stream.seek(splitStart)
     }
-
-
   }
 
   def initDatasetFlow(): Unit = {
 
-    val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
 
     val sw = Stopwatch.createStarted()
-    val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
+    // val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
 
-    println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
+    // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
 
-    val tmp = createDatasetFlow(arr, extraLength, prefixBytes, splitStart)
+    val tmp = createDatasetFlow()
 
     datasetFlow = tmp.blockingIterable().iterator()
   }
+
+
+  def setStreamToInterval(start: Long, end: Long): (Long, Long) = {
+
+    var result: (Long, Long) = null
+
+    if (null != codec) {
+      val decompressor = CodecPool.getDecompressor(codec)
+
+      if (codec.isInstanceOf[SplittableCompressionCodec]) {
+        val scc = codec.asInstanceOf[SplittableCompressionCodec]
+
+        // rawStream.seek(start)
+        // try {
+          val tmp = scc.createInputStream(rawStream, decompressor, start, end,
+            SplittableCompressionCodec.READ_MODE.BYBLOCK)
+
+          // tmp.read(new Array[Byte](1))
+          // tmp.skip(0)
+          val adjustedStart = tmp.getAdjustedStart
+          val adjustedEnd = tmp.getAdjustedEnd
+
+          val rawPos = rawStream.getPos
+          // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
+
+          stream = tmp
+
+          result = (adjustedStart, adjustedEnd)
+        // } catch {
+        // case _ => result = setStreamToInterval(start - 1, start -1)
+        // }
+      } else {
+        throw new RuntimeException("Don't know how to handle codec: " + codec)
+      }
+    } else {
+      stream = rawStream
+      stream.seek(start)
+
+      result = (start, end)
+    }
+
+    result
+  }
+
+
 
   /**
     * Transfers all decoded data that corresponds to the region
@@ -217,18 +249,35 @@ class TrigRecordReader
   }
 
 
-  def createDatasetFlow(
-                         dataBuffer: ArrayBuffer[Byte],
-                         actualExtraBytes: Int,
-                         prefixBytes: Array[Byte],
-                         absSplitStart: Long): Flowable[Dataset] = {
+/*
+  def readToBuffer2(stream: InputStream with fs.Seekable, buffer: Array[Byte], initialOffset: Int, len: Int): Int = {
+
+    val startPos = stream.getPos
+    val splitEnd = startPos + len
+
+    var offset = initialOffset
+    var n: Int = 0
+    do {
+      val remaining = Math.min(buffer.length - offset, len)
+      if(remaining > 0) {
+        val streamPos = stream.getPos
+        n = stream.read(buffer, offset, remaining)
+
+        if(n >= 0) {
+          offset += n
+        }
+      } else {
+        n = -1
+      }
+    } while (n >= 0)
 
 
+    offset - initialOffset
+  }
+  */
 
-    val splitStart = 0
-    val splitLength = dataBuffer.length - actualExtraBytes
-    val splitEnd = splitStart + splitLength
-    val dataRegionEnd = dataBuffer.length
+
+  def createDatasetFlow(): Flowable[Dataset] = {
 
     // System.err.println(s"Processing split $absSplitStart: $splitStart - $splitEnd | --+$actualExtraBytes--> $dataRegionEnd")
 
@@ -270,34 +319,117 @@ class TrigRecordReader
       quadCount
     }
 
-    val buffer = ByteBuffer.wrap(dataBuffer.toArray)
-    val pageManager = new PageManagerForByteBuffer(buffer)
-    val nav = new PageNavigator(pageManager)
+    val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
 
-    nav.setPos(0L)
+    val tailBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
+    val headBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
+
+    // val inputSplit: InputSplit = null
+
+
+    // Set the stream to the end of the split and get the tail buffer
+    val (adjustedSplitEnd, _) = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes)
+    // val (adjustedSplitEnd, _) = setStreamToInterval(splitEnd, splitEnd + splitLength)
+
+    // val deltaSplitEnd = adjustedSplitEnd - splitEnd
+    // println(s"Adjusted split end $splitEnd to $adjustedSplitEnd [$deltaSplitEnd]")
+
+    val tailBufferLength = IOUtils.read(stream, tailBuffer, 0, tailBuffer.length)
+
+    // Set the stream to the start of the split and get the head buffer
+    // Note that we will use the stream in its state to read the body part
+
+    val (adjustedSplitStart, _) = setStreamToInterval(splitStart, adjustedSplitEnd)
+    // val (adjustedSplitStart, _) = setStreamToInterval(splitStart, splitEnd)
+    val headBufferLength = IOUtils.read(stream, headBuffer, 0, headBuffer.length)
+
+    val deltaSplitStart = adjustedSplitStart - splitStart
+    // println(s"Adjusted split start $splitStart to $adjustedSplitStart [$deltaSplitStart]")
+
+    // Stream is now positioned at beginning of body region
+    // And head and tail buffers have been populated
+
+
+    // Set up the body stream whose read method returns
+    // -1 upon reaching the split boundry
+    val bodyStream = Channels.newInputStream(new ReadableByteChannel {
+      val blockBuffer: Array[Byte] = new Array[Byte](1 * 1024 * 1024)
+      var lastRead = -1
+
+      override def read(dst: ByteBuffer): Int = {
+        var n: Int = 0
+        val streamPos = stream.getPos
+        val remainingSplitLen = Ints.saturatedCast(adjustedSplitEnd - streamPos)
+        if (remainingSplitLen <= 0) {
+          // println(s"Remaining splitlen $remainingSplitLen - $streamPos / $splitEnd / $adjustedSplitEnd")
+          // println(s"LAST BUFFER [size=$lastRead]: " + new String(blockBuffer, 0, lastRead, StandardCharsets.UTF_8))
+
+          n = -1
+        } else {
+          val remainingBufferLen = dst.remaining()
+          // If the stream is encoded we do not know how many bytes we need to read
+          // and rely on the read to return on the encoding block boundary
+//          val readLimit = if (isEncoded) remainingBufferLen
+//            else Math.min(remainingBufferLen, remainingSplitLen)
+          val readLimit = Math.min(Math.min(remainingBufferLen, remainingSplitLen), blockBuffer.length)
+
+          n = stream.read(blockBuffer, 0, readLimit)
+
+          // println(s"read limit = $readLimit - n = $n")
+          if(n >= 0) {
+            lastRead = n
+            dst.put(blockBuffer, 0, n)
+          }
+          // else {
+            // println(s"End of stream reached; lastRead=$lastRead")
+          // }
+        }
+        n
+      }
+      override def isOpen: Boolean = true
+      override def close(): Unit = {}
+    })
 
 
     // Find the second record in the next split - i.e. after splitEnd (inclusive)
     // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
     // such as <g> { } | <g> { }   (where '|' denotes the split boundary)
-    var effectiveRecordRangeEnd = skipOverNextRecord(nav, splitStart, splitEnd, maxRecordLength, dataRegionEnd, prober)
-    if(effectiveRecordRangeEnd < 0) {
-      effectiveRecordRangeEnd = dataRegionEnd
-    }
+    val tailNav = new PageNavigator(new PageManagerForByteBuffer(ByteBuffer.wrap(tailBuffer)))
+    val tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, tailBufferLength, prober)
+    val tailBytes = if (tmp < 0) 0 else Ints.checkedCast(tmp)
 
     // If we are at start 0, we parse from the beginning - otherwise we skip the first record
-    val effectiveRecordRangeStart = if (absSplitStart == 0) {
-      0L
+    val headBytes: Int = if (splitStart == 0) {
+      0
     } else {
-      skipOverNextRecord(nav, splitStart, splitStart, maxRecordLength, splitEnd, prober)
+      val headNav = new PageNavigator(new PageManagerForByteBuffer(ByteBuffer.wrap(headBuffer)))
+      Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, headBufferLength, prober))
     }
 
+    // println("HEAD BUFFER: " + new String(headBuffer, headBytes, headBufferLength - headBytes, StandardCharsets.UTF_8))
+    // println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
+
+    // Assemble the overall stream
+    val headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+
+    // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
+    val displacement = if (isEncoded) 1 else 0
+    val tailStream = new ByteArrayInputStream(tailBuffer, displacement, tailBytes - displacement)
+    // val tailStream = new ByteArrayInputStream(tailBuffer, 0, tailBytes)
+
+    val fullStream = new SequenceInputStream(Collections.enumeration(
+      util.Arrays.asList(headStream, bodyStream, tailStream)))
+
     var result: Flowable[Dataset] = null
-    if(effectiveRecordRangeStart >= 0) {
-      val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
-      nav.setPos(effectiveRecordRangeStart - splitStart)
-      nav.limitNext(parseLength)
-      result = parser(nav)
+    if(headBytes >= 0) {
+      result = RDFDataMgrRx.createFlowableDatasets(new Callable[InputStream] {
+        override def call(): InputStream = fullStream
+      }, Lang.TRIG, null)
+
+      // val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
+      // nav.setPos(effectiveRecordRangeStart - splitStart)
+      // nav.limitNext(parseLength)
+      // result = parser(nav)
         // .onErrorReturnItem(EMPTY_DATASET)
         // .filter(isNonEmptyDataset)
     } else {
