@@ -22,12 +22,6 @@ object TrigReader {
       // .master("local[4]")
       .appName("Trig reader")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      // .config("spark.kryo.registrationRequired", "true")
-      // .config("spark.eventLog.enabled", "true")
-      //      .config("spark.kryo.registrator", String.join(", ",
-      //      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
-      .config("spark.default.parallelism", "4")
-      .config("spark.sql.shuffle.partitions", "4")
       .getOrCreate()
 
     val hadoopConf = new Configuration()
@@ -40,6 +34,8 @@ object TrigReader {
                                                   classOf[LongWritable], classOf[Dataset], hadoopConf)
 
     println(s"#Datasets: ${rdd.count()}")
+
+    spark.stop()
 
   }
 }
