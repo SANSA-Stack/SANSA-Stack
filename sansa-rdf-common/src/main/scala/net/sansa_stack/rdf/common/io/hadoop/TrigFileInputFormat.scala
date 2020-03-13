@@ -3,6 +3,7 @@ package net.sansa_stack.rdf.common.io.hadoop
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
 import java.util
 
+import org.apache.commons.io.input.BoundedInputStream
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
@@ -44,7 +45,9 @@ class TrigFileInputFormat
 
       val dataset = DatasetFactory.create()
 
-        val is = getStreamFromSplit(firstSplit, job.getConfiguration)
+        var is = getStreamFromSplit(firstSplit, job.getConfiguration)
+
+        is = new BoundedInputStream(is, firstSplit.getLength)
         // we do two steps here:
         // 1. get all lines with base or prefix declaration
         // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
