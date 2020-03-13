@@ -9,6 +9,7 @@ import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -203,7 +204,7 @@ package object io {
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
       case l if lang == Lang.TRIX => trix
-      case g if lang == Lang.NQUADS => nquads(allowBlankLines)
+//      case g if lang == Lang.NQUADS => nquads(allowBlankLines)
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
@@ -221,9 +222,9 @@ package object io {
      * Load RDF data in N-Quads syntax into an [[RDD]][Triple], i.e. the graph will be omitted.
      *
      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-     * @return the [[RDD]] of triples
+     * @return the [[RDD]] of quads
      */
-    def nquads(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
+    def nquads(allowBlankLines: Boolean = false): String => RDD[Quad] = path => {
       NQuadReader.load(spark, path)
     }
 
