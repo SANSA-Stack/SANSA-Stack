@@ -45,9 +45,8 @@ class TrigFileInputFormat
 
       val dataset = DatasetFactory.create()
 
-        var is = getStreamFromSplit(firstSplit, job.getConfiguration)
+        val is = getStreamFromSplit(firstSplit, job.getConfiguration)
 
-        is = new BoundedInputStream(is, firstSplit.getLength)
         // we do two steps here:
         // 1. get all lines with base or prefix declaration
         // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
@@ -96,7 +95,7 @@ class TrigFileInputFormat
         codec.createInputStream(fileIn, decompressor)
       }
     } else {
-      fileIn
+      new BoundedInputStream(fileIn, split.getLength)
     }
   }
 
