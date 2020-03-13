@@ -208,7 +208,7 @@ object NQuadReader {
     parser.parse(args, Config()) match {
       case Some(config) =>
         val sparkSession = SparkSession.builder
-                .master("local")
+//                .master("local")
           .appName("N-Quad reader")
           .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
           .getOrCreate()
@@ -226,6 +226,8 @@ object NQuadReader {
           case "graphs" => println(s"#parsed graphs: ${rdd.map(_.getGraph).distinct().count()}")
           case "sample" => println(s"max ${config.sampleSize} sample quads:\n" + rdd.take(config.sampleSize).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
         }
+
+        sparkSession.stop()
 
       case None =>
       // arguments are bad, error message will have been displayed
