@@ -1,39 +1,31 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, IOException, InputStream, SequenceInputStream, StringReader}
+import java.io._
 import java.nio.ByteBuffer
 import java.nio.channels.{Channels, ReadableByteChannel}
-import java.nio.charset.{Charset, StandardCharsets}
 import java.util
 import java.util.Collections
-import java.util.concurrent.{Callable, TimeUnit}
+import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.{Matcher, Pattern}
 
+import scala.collection.mutable.ArrayBuffer
+
 import io.reactivex.Flowable
-import io.reactivex.functions.{Consumer, Predicate}
-import org.aksw.jena_sparql_api.common.DefaultPrefixes
+import io.reactivex.functions.Predicate
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
-import org.apache.commons.io
 import org.apache.commons.io.IOUtils
+import org.apache.hadoop.fs
 import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.mapreduce.lib.input.{CompressedSplitLineReader, FileSplit}
+import org.apache.hadoop.io.compress._
+import org.apache.hadoop.mapreduce.lib.input.FileSplit
 import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
+import org.apache.jena.ext.com.google.common.base.Stopwatch
 import org.apache.jena.ext.com.google.common.primitives.Ints
 import org.apache.jena.query.{Dataset, DatasetFactory}
-import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
-
-import scala.collection.JavaConverters._
-import scala.collection.mutable.ArrayBuffer
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs
-import org.apache.hadoop.fs.{FSDataInputStream, Path}
-import org.apache.hadoop.io.compress.{CodecPool, CompressionCodec, CompressionCodecFactory, Decompressor, SplitCompressionInputStream, SplittableCompressionCodec}
-import org.apache.hadoop.util.LimitInputStream
-import org.apache.jena.ext.com.google.common.base.Stopwatch
-import org.apache.jena.shared.PrefixMapping
 
 
 /**
@@ -68,13 +60,13 @@ class TrigRecordReader
 
   private var datasetFlow: util.Iterator[Dataset] = _
 
-  protected var decompressor: Decompressor = null
+  protected var decompressor: Decompressor = _
 
 
-  protected var codec: CompressionCodec = null
-  protected var prefixBytes: Array[Byte] = null
-  protected var rawStream: InputStream with fs.Seekable = null
-  protected var stream: InputStream with fs.Seekable = null
+  protected var codec: CompressionCodec = _
+  protected var prefixBytes: Array[Byte] = _
+  protected var rawStream: InputStream with fs.Seekable = _
+  protected var stream: InputStream with fs.Seekable = _
   protected var isEncoded: Boolean = false
   protected var splitStart: Long = -1
   protected var splitLength: Long = -1

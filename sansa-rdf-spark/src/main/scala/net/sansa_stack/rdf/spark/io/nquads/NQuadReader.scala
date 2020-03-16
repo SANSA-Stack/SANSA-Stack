@@ -170,7 +170,7 @@ object NQuadReader {
                      sampleSize: Int = 10)
 
   def main(args: Array[String]): Unit = {
-    val parser = new scopt.OptionParser[Config]("scopt") {
+    val parser = new scopt.OptionParser[Config]("N-Quad Reader") {
 
       head("N-Quad Reader", "0.7")
 
