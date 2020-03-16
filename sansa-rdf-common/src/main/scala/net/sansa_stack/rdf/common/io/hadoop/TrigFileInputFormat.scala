@@ -17,9 +17,16 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
  * A Hadoop file input format for Trig RDF files.
  *
  * @author Lorenz Buehmann
+ * @author Claus Stadler
  */
 class TrigFileInputFormat
   extends FileInputFormat[LongWritable, Dataset] { // TODO use CombineFileInputFormat?
+
+  private val logger = com.typesafe.scalalogging.Logger(this.getClass.getName)
+
+  val PREFIXES = "prefixes"
+  val PARSED_PREFIXES_LENGTH = "mapreduce.input.trigrecordreader.prefixes.maxlength"
+  val PARSED_PREFIXES_LENGTH_DEFAULT = 10 * 1024 // 10KB
 
   override def isSplitable(context: JobContext, file: Path): Boolean = {
     val codec = new CompressionCodecFactory(context.getConfiguration).getCodec(file)
@@ -29,7 +36,7 @@ class TrigFileInputFormat
 
   override def createRecordReader(inputSplit: InputSplit,
                                   context: TaskAttemptContext): RecordReader[LongWritable, Dataset] = {
-    if (context.getConfiguration.get("prefixes") == null) {
+    if (context.getConfiguration.get(PREFIXES) == null) {
       Console.err.println("couldn't get prefixes from Job context")
     }
     new TrigRecordReader()
@@ -41,31 +48,37 @@ class TrigFileInputFormat
     // we use first split and scan for prefixes and base IRI, then pass those to the RecordReader
     // in createRecordReader() method
     if (!splits.isEmpty) {
+
+      // take first split
       val firstSplit = splits.get(0).asInstanceOf[FileSplit]
 
-      val dataset = DatasetFactory.create()
+      // open input stream from split
+      val is = getStreamFromSplit(firstSplit, job.getConfiguration)
 
-        val is = getStreamFromSplit(firstSplit, job.getConfiguration)
-
-        // we do two steps here:
-        // 1. get all lines with base or prefix declaration
-        // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
-        val prefixStr = scala.io.Source.fromInputStream(is).getLines()
-          .map(_.trim)
-          .filterNot(_.isEmpty) // skip empty lines
-          .filterNot(_.startsWith("#")) // skip comments
-          .filter(line => line.startsWith("@prefix") || line.startsWith("@base") ||
+      // we do two steps here:
+      // 1. get all lines with base or prefix declaration
+      // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
+      val prefixStr = scala.io.Source.fromInputStream(is).getLines()
+        .map(_.trim)
+        .filterNot(_.isEmpty) // skip empty lines
+        .filterNot(_.startsWith("#")) // skip comments
+        .filter(line => line.startsWith("@prefix") || line.startsWith("@base") ||
           line.startsWith("prefix") || line.startsWith("base"))
-          .mkString("\n")
-        // TODO apparently, prefix declarations could span multiple lines, i.e. technically we
-        //  also should consider the next line after a prefix declaration
+        .mkString("\n")
+      // TODO apparently, prefix declarations could span multiple lines, i.e. technically we
+      //  also should consider the next line after a prefix declaration
 
-        RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
+      val dataset = DatasetFactory.create()
+      RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
+
+      logger.info(s"parsed ${dataset.getDefaultModel.getNsPrefixMap.size()} prefixes from first" +
+        s" ${job.getConfiguration.getLong(PARSED_PREFIXES_LENGTH, PARSED_PREFIXES_LENGTH_DEFAULT)} bytes")
 
       // prefixes are located in default model
-//      prefixMapping = dataset.getDefaultModel
       val baos = new ByteArrayOutputStream()
       RDFDataMgr.write(baos, dataset.getDefaultModel, RDFFormat.TURTLE_PRETTY)
+
+      // pass prefix string to job context object
       job.getConfiguration.set("prefixes", baos.toString("UTF-8"))
     }
 
@@ -80,19 +93,25 @@ class TrigFileInputFormat
     val fileIn = fs.open(file)
 
     val start = split.getStart
-    val end = start + split.getLength
+    var end = start + split.getLength
+
+    val maxPrefixesBytes = job.getLong(PARSED_PREFIXES_LENGTH, PARSED_PREFIXES_LENGTH_DEFAULT)
+    if (maxPrefixesBytes > end) {
+      logger.warn(s"Number of bytes set for prefixes parsing ($maxPrefixesBytes) larger than the size of the first" +
+        s" split ($end). Could be slow")
+    }
+    end = end max maxPrefixesBytes
 
     val codec = new CompressionCodecFactory(job).getCodec(file)
 
     if (null != codec) {
       val decompressor = CodecPool.getDecompressor(codec)
 
-      if (codec.isInstanceOf[SplittableCompressionCodec]) {
-        codec.asInstanceOf[SplittableCompressionCodec].createInputStream(
-          fileIn, decompressor, start, end,
-          SplittableCompressionCodec.READ_MODE.BYBLOCK)
-      } else {
-        codec.createInputStream(fileIn, decompressor)
+      codec match {
+        case splitableCodec: SplittableCompressionCodec =>
+          splitableCodec.createInputStream(fileIn, decompressor, start, end, SplittableCompressionCodec.READ_MODE.BYBLOCK)
+        case _ =>
+          codec.createInputStream(fileIn, decompressor)
       }
     } else {
       new BoundedInputStream(fileIn, split.getLength)
