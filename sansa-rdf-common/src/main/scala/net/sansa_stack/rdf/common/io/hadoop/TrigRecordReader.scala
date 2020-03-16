@@ -409,8 +409,9 @@ class TrigRecordReader
     val tailStream = new ByteArrayInputStream(tailBuffer, displacement, tailBytes - displacement)
     // val tailStream = new ByteArrayInputStream(tailBuffer, 0, tailBytes)
 
+    val prefixStream = new ByteArrayInputStream(prefixBytes)
     val fullStream = new SequenceInputStream(Collections.enumeration(
-      util.Arrays.asList(headStream, bodyStream, tailStream)))
+      util.Arrays.asList(prefixStream, headStream, bodyStream, tailStream)))
 
     var result: Flowable[Dataset] = null
     if(headBytes >= 0) {
