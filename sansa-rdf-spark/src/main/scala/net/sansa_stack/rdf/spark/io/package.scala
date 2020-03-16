@@ -8,12 +8,14 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.query.Dataset
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
+import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
@@ -291,6 +293,21 @@ package object io {
 
       spark.sparkContext.newAPIHadoopFile(
         path, classOf[RiotFileInputFormat], classOf[LongWritable], classOf[Triple], confHadoop)
+        .map { case (_, v) => v }
+    }
+
+    /**
+     * Load RDF data in Trig syntax into an [[RDD]][Dataset]
+     *
+     * @return the [[RDD]] of datasets
+     */
+    def trig: String => RDD[Dataset] = path => {
+      val confHadoop = spark.sparkContext.hadoopConfiguration
+
+      spark.sparkContext.newAPIHadoopFile(path,
+        classOf[TrigFileInputFormat],
+        classOf[LongWritable],
+        classOf[Dataset], confHadoop)
         .map { case (_, v) => v }
     }
 
