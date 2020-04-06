@@ -8,6 +8,8 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
+import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
@@ -250,32 +252,14 @@ package object io {
      * @return the [[RDD]] of triples
      */
     def turtle: String => RDD[Triple] = path => {
-      val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
-      confHadoop.set("textinputformat.record.delimiter", ".\n")
+      val confHadoop = spark.sparkContext.hadoopConfiguration
 
       // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
-      val turtleRDD = spark.sparkContext.newAPIHadoopFile(
-        path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], confHadoop)
-        .filter(!_._2.toString.trim.isEmpty)
-        .map { case (_, v) => v.toString.trim }
+      val rdd = spark.sparkContext.newAPIHadoopFile(
+        path, classOf[TurtleInputFormat], classOf[LongWritable], classOf[TripleWritable], confHadoop)
+        .map { case (_, v) => v.get() }
 
-      //      turtleRDD.collect().foreach(chunk => println("Chunk" + chunk))
-
-      // 2. we need the prefixes - two options:
-      // a) assume that all prefixes occur in the beginning of the document
-      // b) filter all lines that contain the prefixes
-      val prefixes = turtleRDD.filter(_.startsWith("@prefix"))
-
-      // we broadcast the prefixes
-      val prefixesBC = spark.sparkContext.broadcast(prefixes.collect())
-      //      println(prefixesBC.value.mkString(", "))
-
-      turtleRDD.flatMap(ttl => {
-        ScalaUtils.tryWithResource(new ByteArrayInputStream((prefixesBC.value.mkString("\n") + ttl).getBytes)) {
-          is =>
-            RDFDataMgr.createIteratorTriples(is, Lang.TURTLE, null).asScala.toSeq
-        }.get
-      })
+      rdd
     }
 
     /**
