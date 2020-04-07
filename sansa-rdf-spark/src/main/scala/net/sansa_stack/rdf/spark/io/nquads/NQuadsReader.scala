@@ -6,55 +6,55 @@ import scala.reflect.ClassTag
 
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
-import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
-import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
-import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
-import org.apache.jena.graph.Triple
-import org.apache.jena.riot.{ RIOT, SysRIOT }
-import org.apache.jena.riot.SysRIOT.fmtMessage
+import org.apache.jena.riot.RIOT
 import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
 import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
+
+import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
+import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseMode, WarningParseMode}
+import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
+import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 
 /**
- * An N-Triples reader. One triple per line is assumed.
+ * An N-Quads reader. One quad per line is assumed.
  *
  * @author Lorenz Buehmann
  */
 object NQuadReader {
 
   /**
-   * Loads N-Triples data from a file or directory into an RDD.
+   * Loads N-Quads data from a file or directory into an RDD.
    *
    * @param session the Spark session
-   * @param path    the path to the N-Triples file(s)
-   * @return the RDD of triples
+   * @param path    the path to the N-Quads file(s)
+   * @return the RDD of quads
    */
-  def load(session: SparkSession, path: URI): RDD[Triple] = {
+  def load(session: SparkSession, path: URI): RDD[Quad] = {
     load(session, path.toString)
   }
 
   /**
-   * Loads N-Triples data from a set of files or directories into an RDD.
+   * Loads N-Quads data from a set of files or directories into an RDD.
    * The path can also contain multiple paths
    * and even wildcards, e.g.
    * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
    *
    * @param session the Spark session
-   * @param paths   the path to the N-Triples file(s)
-   * @return the RDD of triples
+   * @param paths   the path to the N-Quads file(s)
+   * @return the RDD of quads
    */
-  def load(session: SparkSession, paths: Seq[URI]): RDD[Triple] = {
+  def load(session: SparkSession, paths: Seq[URI]): RDD[Quad] = {
     load(session, paths.mkString(","))
   }
 
   /**
-   * Loads N-Triples data from a file or directory into an RDD.
+   * Loads N-Quads data from a file or directory into an RDD.
    * The path can also contain multiple paths
    * and even wildcards, e.g.
    * `"/my/dir1,/my/paths/part-00[0-5]*,/another/dir,/a/specific/file"`
@@ -96,23 +96,22 @@ object NQuadReader {
    *
    *
    * @param session        the Spark session
-   * @param path           the path to the N-Triples file(s)
+   * @param path           the path to the N-Quads file(s)
    * @param stopOnBadTerm  stop parsing on encountering a bad RDF term
    * @param stopOnWarnings stop parsing on encountering a warning
    * @param checkRDFTerms  run with checking of literals and IRIs either on or off
    * @param errorLog       the logger used for error message handling
-   * @return the RDD of triples
+   * @return the RDD of quads
    */
   def load(session: SparkSession, path: String,
            stopOnBadTerm: ErrorParseMode.Value = ErrorParseMode.STOP,
            stopOnWarnings: WarningParseMode.Value = WarningParseMode.IGNORE,
            checkRDFTerms: Boolean = false,
-           errorLog: Logger = ErrorHandlerFactory.stdLogger): RDD[Triple] = {
+           errorLog: Logger = ErrorHandlerFactory.stdLogger): RDD[Quad] = {
 
     // parse the text file first
     val rdd = session.sparkContext
       .textFile(path, minPartitions = 20)
-      .coalesce(1)
 
     val strict = stopOnBadTerm == ErrorParseMode.STOP && stopOnWarnings == WarningParseMode.STOP
 
@@ -163,62 +162,82 @@ object NQuadReader {
         }
       new IteratorResourceClosing[Quad](it, input).asScala
     })
-      .map(_.asTriple())
   }
+
+  private case class Config(
+                     in: URI = null,
+                     mode: String = "",
+                     sampleSize: Int = 10)
 
   def main(args: Array[String]): Unit = {
-    if (args.length == 0) println("Usage: NQuadReader <PATH_TO_FILE>")
+    val parser = new scopt.OptionParser[Config]("N-Quads Reader") {
 
-    val path = args(0)
+      head("N-Quads Reader", "0.7")
 
-    val sparkSession = SparkSession.builder
-      .master("local")
-      .appName("N-Quad reader")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      // .config("spark.kryo.registrationRequired", "true")
-      // .config("spark.eventLog.enabled", "true")
-      //      .config("spark.kryo.registrator", String.join(", ",
-      //      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
-      .config("spark.default.parallelism", "4")
-      .config("spark.sql.shuffle.partitions", "4")
-      .getOrCreate()
+      cmd("quads")
+        .text("compute number of quads")
+        .action((x, c) => c.copy(mode = "quads"))
 
-    //    val rdd = NTripleReader.load(sparkSession,
-    //      path,
-    //      stopOnBadTerm = false,
-    //      stopOnWarnings = false,
-    //      checkRDFTerms = false,
-    //      strict = true,
-    //      LoggerFactory.getLogger("errorLog"))
-    val rdd = NQuadReader.load(
-      sparkSession,
-      path,
-      stopOnBadTerm = ErrorParseMode.SKIP,
-      stopOnWarnings = WarningParseMode.SKIP,
-      checkRDFTerms = true,
-      LoggerFactory.getLogger("errorLog"))
+      cmd("graphs")
+        .text("compute number of graphs")
+        .action((x, c) => c.copy(mode = "graphs"))
 
-    //    rdd.saveAsTextFile("/tmp/skip-new.txt")
+      cmd("sample")
+        .text("show sample of quads")
+        .action((x, c) => c.copy(mode = "sample"))
+        .children(
+          opt[Int]("size")
+            .abbr("n")
+            .action((x, c) => c.copy(sampleSize = x))
+            .text("sample size (too high number can be slow or lead to memory issues)"),
+          checkConfig(
+            c =>
+              if (c.mode == "sample" && c.sampleSize <= 0) failure("sample size must be > 0")
+              else success)
+        )
 
-    println(rdd.count())
-    println("result:\n" + rdd.take(1000).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
+      arg[URI]("<file>")
+        .action((x, c) => c.copy(in = x))
+        .text("URI to N-Quads file to process")
+        .valueName("<file>")
+        .required()
 
-    //    println("result:\n" + rdd.take(1000).mkString("\n"))
+    }
 
-    rdd.saveAsTextFile("/tmp/test-out.nq")
+    // parser.parse returns Option[C]
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+        val sparkSession = SparkSession.builder
+          //                .master("local")
+          .appName("N-Quads reader")
+          .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+          .getOrCreate()
+
+        val rdd = NQuadReader.load(
+          sparkSession,
+          config.in.getPath,
+          stopOnBadTerm = ErrorParseMode.SKIP,
+          stopOnWarnings = WarningParseMode.SKIP,
+          checkRDFTerms = true,
+          LoggerFactory.getLogger("errorLog"))
+
+        config.mode match {
+          case "quads" => println(s"#parsed quads: ${rdd.count()}")
+          case "graphs" => println(s"#parsed graphs: ${rdd.map(_.getGraph).distinct().count()}")
+          case "sample" => println(s"max ${config.sampleSize} sample quads:\n"
+            + rdd.take(config.sampleSize).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
+        }
+
+        sparkSession.stop()
+
+      case None =>
+      // arguments are bad, error message will have been displayed
+    }
   }
-
 }
 
-object ErrorParseMode extends Enumeration {
-  val STOP, SKIP = Value
-}
-
-object WarningParseMode extends Enumeration {
-  val STOP, SKIP, IGNORE = Value
-}
-
-private class NonSerializableObjectWrapper[T: ClassTag](constructor: => T) extends AnyRef with Serializable {
+private class NonSerializableObjectWrapper[T: ClassTag](constructor: => T)
+  extends AnyRef with Serializable {
   @transient private lazy val instance: T = constructor
 
   def get: T = instance
@@ -227,47 +246,3 @@ private class NonSerializableObjectWrapper[T: ClassTag](constructor: => T) exten
 private object NonSerializableObjectWrapper {
   def apply[T: ClassTag](constructor: => T): NonSerializableObjectWrapper[T] = new NonSerializableObjectWrapper[T](constructor)
 }
-
-/**
- * A custom error handler that doesn't throw an exception on fatal parse errors. This allows for simply skipping those
- * triples instead of aborting the whole parse process.
- *
- * @param log an optional logger
- */
-class CustomErrorHandler(val log: Logger = SysRIOT.getLogger) extends ErrorHandler {
-
-  /** report a warning */
-  def logWarning(message: String, line: Long, col: Long): Unit = {
-    if (log != null) log.warn(fmtMessage(message, line, col))
-  }
-
-  /** report an error */
-  def logError(message: String, line: Long, col: Long): Unit = {
-    if (log != null) log.error(fmtMessage(message, line, col))
-  }
-
-  /** report a catastrophic error */
-  def logFatal(message: String, line: Long, col: Long): Unit = {
-    if (log != null) logError(message, line, col)
-  }
-
-  override def warning(message: String, line: Long, col: Long): Unit = logWarning(message, line, col)
-
-  override def error(message: String, line: Long, col: Long): Unit = logError(message, line, col)
-
-  override def fatal(message: String, line: Long, col: Long): Unit = logFatal(message, line, col)
-}
-
-// sealed trait ErrorParseMode {
-//  case object STOP extends ErrorParseMode
-//  case object SKIP extends ErrorParseMode
-// }
-// sealed trait WarningParseMode {
-//  case object STOP extends WarningParseMode
-//  case object SKIP extends WarningParseMode
-//  case object IGNORE extends WarningParseMode
-// }
-// @enum trait ErrorParseMode {
-//  object STOP
-//  object SKIP
-// }

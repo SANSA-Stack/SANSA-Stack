@@ -1,33 +1,29 @@
 package net.sansa_stack.rdf.spark
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.ByteArrayOutputStream
 import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+import org.apache.hadoop.io.LongWritable
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.types.TripleWritable
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
+import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
-import net.sansa_stack.rdf.spark.utils.{Logging, ScalaUtils}
+import net.sansa_stack.rdf.spark.utils.Logging
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
  * [[RDD]].
  */
 package object io {
-
-  object RDFLang extends Enumeration {
-    val NTRIPLES, TURTLE, RDFXML, TRIX = Value
-  }
 
   /**
    * SaveMode is used to specify the expected behavior of saving an RDF dataset to a path.
@@ -130,7 +126,7 @@ package object io {
   // the RDD methods
 
   /**
-   * Adds methods, `ntriples` and `turtle`, to [[org.apache.spark.SparkContext]] that allows to write N-Triples and Turtle files.
+   * Adds methods, `saveAsNTriplesFile` to an RDD[Triple] that allows to write N-Triples files.
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
@@ -188,24 +184,92 @@ package object io {
   }
 
   /**
+   * Adds method `saveAsNQuadsFile` to an RDD[Quad] that allows to write N-Quads files.
+   */
+  implicit class RDFQuadsWriter[T](quads: RDD[Quad]) {
+
+    /**
+     * Save the data in N-Quads format.
+     *
+     * @param path the path where the N-Quads file(s) will be written to
+     * @param mode the expected behavior of saving the data to a data source
+     * @param exitOnError whether to stop if an error occurred
+     */
+    def saveAsNQuadsFile(path: String,
+             mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+             exitOnError: Boolean = false): Unit = {
+
+      val fsPath = new Path(path)
+      val fs = fsPath.getFileSystem(quads.sparkContext.hadoopConfiguration)
+
+      val doSave = if (fs.exists(fsPath)) {
+        mode match {
+          case SaveMode.Overwrite =>
+            fs.delete(fsPath, true)
+            true
+          case SaveMode.ErrorIfExists =>
+            sys.error(s"Given path $path already exists!")
+            if (exitOnError) sys.exit(1)
+            false
+          case SaveMode.Ignore => false
+          case _ =>
+            throw new IllegalStateException(s"Unsupported save mode $mode ")
+        }
+      } else {
+        true
+      }
+
+      import scala.collection.JavaConverters._
+      // save only if there was no failure with the path before
+      if (doSave) quads
+        .mapPartitions(p => { // process each partition
+          // check if partition is empty
+          if (p.hasNext) {
+            val os = new ByteArrayOutputStream()
+            RDFDataMgr.writeQuads(os, p.asJava)
+            Collections.singleton(os.toString("UTF-8").trim).iterator().asScala
+          } else {
+            Iterator()
+          }
+        })
+        .saveAsTextFile(path)
+    }
+  }
+
+  /**
    * Adds methods, `rdf(lang: Lang)`, `ntriples`, `nquads`, and `turtle`, to [[SparkSession]] that allows to read
    * N-Triples, N-Quads and Turtle files.
    */
   implicit class RDFReader(spark: SparkSession) {
 
-    import scala.collection.JavaConverters._
+    /**
+     * Load RDF data into an [[RDD]][Triple].
+     *
+     * Syntax is determined based on the file extension:
+     * If the URI ends ".rdf", it is assumed to be RDF/XML.
+     * If the URI ends ".nt", it is assumed to be N-Triples.
+     * If the URI ends ".ttl", it is assumed to be Turtle.
+     * If the URI ends ".owl", it is assumed to be RDF/XML.
+     *
+     * @return the [[RDD]] of RDF triples
+     */
+    def rdf(): String => RDD[Triple] = path => {
+      val lang = RDFLanguages.filenameToLang(path)
+      rdf(lang)(path)
+    }
+
+
 
     /**
-     * Load RDF data into an [[RDD]][Triple]. Currently, N-Triples, N-Quads and Turtle syntax are supported.
-     * @param lang the RDF language (N-Triples, N-Quads, Turtle)
-     * @return the [[RDD]]
+     * Load RDF data into an [[RDD]][Triple]. Currently, N-Triples, Turtle, RDF/XML and Trix syntax are supported.
+     * @param lang the RDF language (N-Triples, Turtle, RDF/XML, Trix)
+     * @return the [[RDD]] of RDF triples
      */
     def rdf(lang: Lang, allowBlankLines: Boolean = false): String => RDD[Triple] = lang match {
       case i if lang == Lang.NTRIPLES => ntriples(allowBlankLines)
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
       case l if lang == Lang.TRIX => trix
-      case g if lang == Lang.NQUADS => nquads(allowBlankLines)
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
@@ -225,7 +289,7 @@ package object io {
      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
      * @return the [[RDD]] of triples
      */
-    def nquads(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
+    def nquads(allowBlankLines: Boolean = false): String => RDD[Quad] = path => {
       NQuadReader.load(spark, path)
     }
 
