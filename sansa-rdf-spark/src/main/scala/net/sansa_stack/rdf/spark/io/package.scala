@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.spark
 
 import java.io.ByteArrayOutputStream
-import java.util.Collections
+import java.util.{Collections, Objects}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
@@ -253,8 +253,11 @@ package object io {
      *
      * @return the [[RDD]] of RDF triples
      */
-    def rdf(): String => RDD[Triple] = path => {
+    def rdf(path: String): RDD[Triple] = {
       val lang = RDFLanguages.filenameToLang(path)
+      if (lang == null) {
+        throw new IllegalArgumentException(s"couldn't determine syntax based on file extension in given path $path")
+      }
       rdf(lang)(path)
     }
 
