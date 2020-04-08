@@ -7,6 +7,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
@@ -254,11 +255,27 @@ package object io {
      * @return the [[RDD]] of RDF triples
      */
     def rdf(path: String): RDD[Triple] = {
+      // determine language based on file extension
       val lang = RDFLanguages.filenameToLang(path)
-      if (lang == null) {
-        throw new IllegalArgumentException(s"couldn't determine syntax based on file extension in given path $path")
+
+      // unknown format
+      if (!RDFLanguages.isTriples(lang)) {
+        throw new IllegalArgumentException(s"couldn't determine syntax for RDF triples based on file extension in given path $path")
       }
-      rdf(lang)(path)
+
+      // N-Triples can be handle efficiently via file splits
+      if (lang == Lang.NTRIPLES) {
+        NTripleReader.load(spark, path)
+      } else { // others can't
+        val confHadoop = spark.sparkContext.hadoopConfiguration
+
+        // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
+        val rdd = spark.sparkContext.newAPIHadoopFile(
+          path, classOf[TriplesInputFormat], classOf[LongWritable], classOf[TripleWritable], confHadoop)
+          .map { case (_, v) => v.get() }
+
+        rdd
+      }
     }
 
 
@@ -268,8 +285,8 @@ package object io {
      * @param lang the RDF language (N-Triples, Turtle, RDF/XML, Trix)
      * @return the [[RDD]] of RDF triples
      */
-    def rdf(lang: Lang, allowBlankLines: Boolean = false): String => RDD[Triple] = lang match {
-      case i if lang == Lang.NTRIPLES => ntriples(allowBlankLines)
+    def rdf(lang: Lang): String => RDD[Triple] = lang match {
+      case i if lang == Lang.NTRIPLES => ntriples()
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
       case l if lang == Lang.TRIX => trix
