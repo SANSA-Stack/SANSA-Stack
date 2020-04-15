@@ -13,7 +13,7 @@ SANSA uses the RDF data model for representing graphs consisting of triples with
 
 ## Usage
 
-We suggest to import the `net.sansa_stack.rdf.spark.io` package which adds the function `rdd()` to a Spark session. You can either explicitely specify the type of RDF serialization or let the API guess the format based on the file extension. 
+We suggest to import the `net.sansa_stack.rdf.spark.io` package which adds the function `rdf()` to a Spark session. You can either explicitely specify the type of RDF serialization or let the API guess the format based on the file extension. 
 
 For example, the following Scala code shows how to read an RDF file in N-Triples syntax (be it a local file or a file residing in HDFS) into a Spark RDD:
 ```scala
@@ -29,7 +29,7 @@ triples.take(5).foreach(println(_))
 ```
 
 ## Input
-We basically support reading most (if not all) of the common RDF formats due to the Apache Jena being our core parser backend. Note, some of the formats can be easily read from distributed data, i.e. multiple file splits can be processed in parallel which ideally results in a much higher loading performance. This holds especially for line based formats like N-Triples and N-Qauds, but we also do provide an (experimental) Trig parser which works on file splits distributed among the cluster nodes.
+We basically support reading most (if not all) of the common RDF formats due to the Apache Jena being our core parser backend. Note, some of the formats can be easily read from distributed data, i.e. multiple file splits can be processed in parallel which ideally results in a much higher loading performance. This holds especially for line based formats like N-Triples and N-Quads, but we also do provide an (experimental) Trig parser which works on file splits distributed among the cluster nodes.
 
 ### Triple Formats
 
