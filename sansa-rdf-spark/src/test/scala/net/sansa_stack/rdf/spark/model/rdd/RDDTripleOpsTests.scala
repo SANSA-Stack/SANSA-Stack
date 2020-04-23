@@ -2,7 +2,7 @@ package net.sansa_stack.rdf.spark.model.rdd
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.graph.{ NodeFactory, Triple }
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
@@ -14,7 +14,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.toDF()
     val size = graph.size()
@@ -26,7 +26,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.toDS()
     val size = graph.count()
@@ -38,7 +38,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.getSubjects()
     val size = graph.count()
@@ -50,7 +50,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.getPredicates()
     val size = graph.count()
@@ -62,7 +62,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.getObjects()
     val size = graph.count()
@@ -74,7 +74,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.filterSubjects(_.isURI())
     val size = graph.count()
@@ -86,7 +86,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.filterPredicates(_.isVariable())
     val size = graph.count()
@@ -98,7 +98,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.filterObjects(_.isLiteral())
     val size = graph.count()
@@ -110,9 +110,9 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
-    val other = spark.rdf(lang, allowBlankLines = true)(path)
+    val other = spark.rdf(lang)(path)
 
     val graph = triples.union(other)
 
@@ -125,9 +125,9 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
-    val other = spark.rdf(lang, allowBlankLines = true)(path)
+    val other = spark.rdf(lang)(path)
 
     val graph = triples.difference(other)
 
@@ -140,9 +140,9 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
-    val other = spark.rdf(lang, allowBlankLines = true)(path)
+    val other = spark.rdf(lang)(path)
 
     val graph = triples.intersection(other)
 
@@ -160,7 +160,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
       NodeFactory.createURI("http://xmlns.com/foaf/0.1/givenName"),
       NodeFactory.createLiteral("Guy De"))
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.add(triple)
 
@@ -190,7 +190,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val statements = Seq(triple1, triple2, triple3)
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.addAll(statements)
 
@@ -208,7 +208,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
       NodeFactory.createURI("http://www.w3.org/2000/01/rdf-schema#label"),
       NodeFactory.createLiteral("That Seventies Show", "en"))
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
     val graph = triples.remove(triple)
 
     val size = graph.count()
@@ -224,7 +224,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val predicate = NodeFactory.createURI("http://example.org/show/localName")
     val `object` = NodeFactory.createLiteral("That Seventies Show", "en")
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.find(Some(subject), Some(predicate), Some(`object`))
 
@@ -242,7 +242,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
       NodeFactory.createURI("http://example.org/show/localName"),
       NodeFactory.createLiteral("That Seventies Show", "en"))
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.find(triple)
 
@@ -258,7 +258,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val subject = NodeFactory.createURI("http://example.org/show/218")
     val predicate = NodeFactory.createURI("http://example.org/show/localName")
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val contains = triples.contains(Some(subject), Some(predicate))
 
@@ -274,7 +274,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
       NodeFactory.createURI("http://example.org/show/localName"),
       NodeFactory.createLiteral("That Seventies Show", "en"))
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val contains = triples.contains(triple)
 
@@ -285,7 +285,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val triple1 = Triple.create(
       NodeFactory.createURI("http://dbpedia.org/resource/Guy_de_Maupassant"),
@@ -304,7 +304,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val statements = Seq(triple1, triple2, triple3)
 
-    val addeddtriples = spark.rdf(lang, allowBlankLines = true)(path)
+    val addeddtriples = spark.rdf(lang)(path)
 
     val other = triples.addAll(statements)
 
