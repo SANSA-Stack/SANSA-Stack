@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.sansa-stack</groupId>
-	<artifactId>sansa-parent</artifactId>
+	<artifactId>sansa-parent_2.11</artifactId>
 	<version>0.7.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>SANSA - Parent</name>
@@ -72,6 +72,8 @@
 		<sansa.version>${project.version}</sansa.version>
 		<sansa.datalake.version>0.1.2</sansa.datalake.version>
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+
+		<CodeCacheSize>1g</CodeCacheSize>
 	</properties>
 
 
@@ -97,7 +99,7 @@
 
 			<dependency>
 				<groupId>com.twitter</groupId>
-				<artifactId>chill_2.11</artifactId>
+				<artifactId>chill_${scala.binary.version}</artifactId>
 				<version>0.9.3</version>
 			</dependency>
 
@@ -908,7 +910,7 @@
 				<plugin>
 					<groupId>net.alchim31.maven</groupId>
 					<artifactId>scala-maven-plugin</artifactId>
-					<version>4.0.2</version>
+					<version>4.3.1</version>
 					<executions>
 						<execution>
 							<goals>
@@ -918,6 +920,8 @@
 							</goals>
 							<configuration>
 								<scalaVersion>${scala.version}</scalaVersion>
+								<checkMultipleScalaVersions>true</checkMultipleScalaVersions>
+								<failOnMultipleScalaVersions>true</failOnMultipleScalaVersions>
 								<recompileMode>incremental</recompileMode>
 								<useZincServer>true</useZincServer>
 								<args>
@@ -934,8 +938,6 @@
 									<jvmArg>-Xss10m</jvmArg>
 									<jvmArg>-Xms1024m</jvmArg>
 									<jvmArg>-Xmx1024m</jvmArg>
-									<jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-									<jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
 									<jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
 								</jvmArgs>
 								<!--<javacArgs> -->
@@ -960,7 +962,7 @@
 
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.7.0</version>
+					<version>3.8.1</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
@@ -1267,7 +1269,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-pmd-plugin</artifactId>
-					<version>3.8</version>
+					<version>3.13.0</version>
 					<configuration>
 						<linkXref>true</linkXref>
 						<sourceEncoding>utf-8</sourceEncoding>
@@ -1460,6 +1462,21 @@
 	</repositories>
 
 	<profiles>
+
+		<!-- switch Scala version to 2.12 -->
+		<profile>
+			<id>scala-2.12</id>
+			<properties>
+				<scala.version>2.12.10</scala.version>
+				<scala.binary.version>2.12</scala.binary.version>
+			</properties>
+			<build>
+				<pluginManagement>
+					<plugins>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
 
 		<!-- the profile used for deployment to Sonatype Maven repository -->
 		<profile>
