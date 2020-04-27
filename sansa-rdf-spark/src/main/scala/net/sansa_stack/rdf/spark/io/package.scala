@@ -6,15 +6,15 @@ import java.util.{Collections, Objects}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
-import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
 import org.apache.jena.sparql.core.Quad
-import org.apache.jena.sparql.util.FmtUtils
+import org.apache.jena.sparql.util.{FmtUtils, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
+import org.apache.spark.sql.{Row, _}
 
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
@@ -74,6 +74,34 @@ package object io {
       if (n.isBlank) FmtUtils.stringForNode(n) else n.toString()
 
     }))
+  }
+
+  /**
+   * Converts a Spark SQL [[Row]] to a Triple.
+   * @param row the row with columns s,p,o
+   * @return the parsed triple
+   */
+  def fromRow(row: Row): org.apache.jena.graph.Triple = {
+    val sStr = row.getString(0)
+    val s = if (sStr.startsWith("_:")) NodeFactory.createBlankNode(sStr) else NodeFactoryExtra.parseNode(s"<$sStr>")
+    val p = NodeFactoryExtra.parseNode("<" + row.getString(1) + ">")
+    val oStr = row.getString(2)
+    val o = if (oStr.startsWith("_:")) {
+      NodeFactory.createBlankNode(oStr)
+    } else if (oStr.startsWith("http") && !oStr.contains("^^")) {
+      NodeFactory.createURI(oStr)
+    } else {
+      var lit = oStr
+      val idx = oStr.indexOf("^^")
+      if (idx > 0) {
+        val first = oStr.substring(0, idx)
+        val second = "<" + oStr.substring(idx + 2).trim + ">"
+        lit = first + "^^" + second
+      }
+      NodeFactoryExtra.parseNode(lit)
+    }
+
+    Triple.create(s, p, o)
   }
 
   // the DataFrame methods
