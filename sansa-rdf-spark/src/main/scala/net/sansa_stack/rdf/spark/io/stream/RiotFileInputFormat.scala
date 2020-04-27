@@ -29,10 +29,8 @@ import org.apache.jena.riot.system.{ ErrorHandlerFactory, StreamRDFBase }
  *  - N-Triples
  *  - Turtle
  *  - RDF/XML
- *  - N-Quads
  *  - JSON-LD
  *  - RDF/JSON
- *  - TriG
  *  - TriX
  *  - RDF Binary
  *

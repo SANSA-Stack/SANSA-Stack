@@ -122,6 +122,12 @@
             </exclusions>
         </dependency>
 
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-elephas-io</artifactId>
+			<version>${jena.version}</version>
+		</dependency>
+
         <dependency>
             <groupId>org.aksw.sparqlify</groupId>
             <artifactId>sparqlify-core</artifactId>
@@ -152,6 +158,11 @@
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
         </dependency>
+
+		<dependency>
+			<groupId>com.github.scopt</groupId>
+			<artifactId>scopt_${scala.binary.version}</artifactId>
+		</dependency>
 
     </dependencies>
 

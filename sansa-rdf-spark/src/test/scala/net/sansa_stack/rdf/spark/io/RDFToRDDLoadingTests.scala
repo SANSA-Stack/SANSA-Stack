@@ -5,7 +5,7 @@ import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
 /**
- * Tests for loading triples from either N-Triples are Turtle files into an [[org.apache.spark.rdd.RDD]].
+ * Tests for loading triples and quads from different syntax formats into an [[org.apache.spark.rdd.RDD]].
  *
  * @author Lorenz Buehmann
  */
@@ -24,14 +24,13 @@ class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 10)
   }
 
-  test("loading N-Quads file into RDD should result in 28 triples") {
+  test("loading N-Quads file into RDD should result in 28 quads") {
 
     val path = getClass.getResource("/loader/data.nq").getPath
-    val lang: Lang = Lang.NQUADS
 
-    val triples = spark.rdf(lang)(path)
+    val quads = spark.nquads()(path)
 
-    val cnt = triples.count()
+    val cnt = quads.count()
     assert(cnt == 28)
   }
 
