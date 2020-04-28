@@ -140,7 +140,7 @@ trait TransitiveReasoner extends Profiler{
           val terminate = prevPaths
             .coGroup(nextPaths)
             .where(0).equalTo(0) {
-            (prev, next, out: Collector[(Node, Node)]) => {
+            (prev: Iterator[(Node, Node)], next: Iterator[(Node, Node)], out: Collector[(Node, Node)]) => {
               val prevPaths = prev.toSet
               for (n <- next)
                 if (!prevPaths.contains(n)) out.collect(n)
@@ -166,7 +166,7 @@ trait TransitiveReasoner extends Profiler{
     var tc = edges
 
     // because join() joins on keys, in addition the pairs are stored in reversed order (o, s)
-    val edgesReversed = tc.map(t => (t._2, t._1))
+    val edgesReversed = tc.map((t: (A, A)) => (t._2, t._1))
 
     // the join is iterated until a fixed point is reached
     var i = 1
@@ -180,7 +180,7 @@ trait TransitiveReasoner extends Profiler{
       val join = tc.join(edgesReversed).where(0).equalTo(0)
       join.print()
       tc = tc
-        .union(join.map(x => (x._2._2, x._2._1)))
+        .union(join.map((x: ((A, A), (A, A))) => (x._2._2, x._2._1)))
         .distinct()
       nextCount = tc.count()
       i += 1
