@@ -31,7 +31,7 @@
         <!-- Logging dependencies -->
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging_2.11</artifactId>
+            <artifactId>scala-logging_${scala.binary.version}</artifactId>
         </dependency>
 
         <!-- Apache Flink dependencies -->
@@ -86,12 +86,12 @@
             <dependencies>
                 <dependency>
                     <groupId>org.apache.flink</groupId>
-                    <artifactId>flink-scala_2.11</artifactId>
+                    <artifactId>flink-scala_${scala.binary.version}</artifactId>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.flink</groupId>
-                    <artifactId>flink-clients_2.11</artifactId>
+                    <artifactId>flink-clients_${scala.binary.version}</artifactId>
                 </dependency>
             </dependencies>
         </profile>
