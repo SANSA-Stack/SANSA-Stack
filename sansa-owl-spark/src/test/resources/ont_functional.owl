@@ -1,7 +1,7 @@
 Prefix(:=<http://ex.com/default#>)
 Prefix(foo:=<http://ex.com/foo#>)
 Prefix(bar:=<http://ex.com/bar#>)
-Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(xsd:=<http://www.w3.org/2000/01/rdf-schema#>)
 
 Ontology(<http://ex.com/ont/sample1.owl>
 <http://ex.com/ont/release/123/sample1.owl>
@@ -34,7 +34,7 @@ Declaration(NamedIndividual(foo:indivA))
 Declaration(NamedIndividual(foo:indivB))
 
 ## annotation axioms
-AnnotationAssertion(bar:label bar:Cls1 "Class 1")
+AnnotationAssertion(xsd:label bar:Cls1 "Class 1")
 SubAnnotationPropertyOf(bar:annProp1 bar:annProp2)
 AnnotationPropertyDomain(bar:annProp1 bar:Cls1)
 AnnotationPropertyRange(bar:annProp1 bar:Cls2)
