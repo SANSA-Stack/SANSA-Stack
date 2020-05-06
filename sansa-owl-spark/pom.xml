@@ -117,6 +117,12 @@
             <artifactId>guice-multibindings</artifactId>
         </dependency>
 
+        <!-- HermiT reasoner -->
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>org.semanticweb.hermit</artifactId>
+        </dependency>
+
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.scalatest</groupId>
