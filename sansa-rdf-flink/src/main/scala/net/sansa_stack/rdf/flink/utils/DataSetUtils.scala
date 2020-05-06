@@ -22,11 +22,11 @@ object DataSetUtils {
      * data twice, thus, caching beforehand is recommended!
      *
      * @param f the boolean filter function
-     * @return two RDDs
+     * @return two Datasets
      */
     def partitionBy(f: T => Boolean): (DataSet[T], DataSet[T]) = {
       val passes = dataset.filter(f)
-      val fails = dataset.filter(e => !f(e)) // Flink doesn't have filterNot
+      val fails = dataset.filter((e: T) => !f(e)) // Flink doesn't have filterNot
       (passes, fails)
     }
 

@@ -8,7 +8,7 @@ import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
-import org.apache.jena.riot.SysRIOT.fmtMessage
+import org.apache.jena.riot.RIOT
 import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
 import org.apache.jena.riot.{RIOT, SysRIOT}
@@ -18,6 +18,7 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
 
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
+import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
 import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 
@@ -170,9 +171,9 @@ object NQuadReader {
                      sampleSize: Int = 10)
 
   def main(args: Array[String]): Unit = {
-    val parser = new scopt.OptionParser[Config]("N-Quad Reader") {
+    val parser = new scopt.OptionParser[Config]("N-Quads Reader") {
 
-      head("N-Quad Reader", "0.7")
+      head("N-Quads Reader", "0.7")
 
       cmd("quads")
         .text("compute number of quads")
@@ -198,7 +199,7 @@ object NQuadReader {
 
       arg[URI]("<file>")
         .action((x, c) => c.copy(in = x))
-        .text("URI to N-Quad file to process")
+        .text("URI to N-Quads file to process")
         .valueName("<file>")
         .required()
 
@@ -208,8 +209,8 @@ object NQuadReader {
     parser.parse(args, Config()) match {
       case Some(config) =>
         val sparkSession = SparkSession.builder
-//                .master("local")
-          .appName("N-Quad reader")
+          //                .master("local")
+          .appName("N-Quads reader")
           .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
           .getOrCreate()
 
@@ -224,7 +225,8 @@ object NQuadReader {
         config.mode match {
           case "quads" => println(s"#parsed quads: ${rdd.count()}")
           case "graphs" => println(s"#parsed graphs: ${rdd.map(_.getGraph).distinct().count()}")
-          case "sample" => println(s"max ${config.sampleSize} sample quads:\n" + rdd.take(config.sampleSize).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
+          case "sample" => println(s"max ${config.sampleSize} sample quads:\n"
+            + rdd.take(config.sampleSize).map { _.toString.replaceAll("[\\x00-\\x1f]", "???") }.mkString("\n"))
         }
 
         sparkSession.stop()
@@ -232,22 +234,11 @@ object NQuadReader {
       case None =>
       // arguments are bad, error message will have been displayed
     }
-
-
-
   }
-
 }
 
-object ErrorParseMode extends Enumeration {
-  val STOP, SKIP = Value
-}
-
-object WarningParseMode extends Enumeration {
-  val STOP, SKIP, IGNORE = Value
-}
-
-private class NonSerializableObjectWrapper[T: ClassTag](constructor: => T) extends AnyRef with Serializable {
+private class NonSerializableObjectWrapper[T: ClassTag](constructor: => T)
+  extends AnyRef with Serializable {
   @transient private lazy val instance: T = constructor
 
   def get: T = instance
@@ -256,47 +247,3 @@ private class NonSerializableObjectWrapper[T: ClassTag](constructor: => T) exten
 private object NonSerializableObjectWrapper {
   def apply[T: ClassTag](constructor: => T): NonSerializableObjectWrapper[T] = new NonSerializableObjectWrapper[T](constructor)
 }
-
-/**
- * A custom error handler that doesn't throw an exception on fatal parse errors. This allows for simply skipping those
- * triples instead of aborting the whole parse process.
- *
- * @param log an optional logger
- */
-class CustomErrorHandler(val log: Logger = SysRIOT.getLogger) extends ErrorHandler {
-
-  /** report a warning */
-  def logWarning(message: String, line: Long, col: Long): Unit = {
-    if (log != null) log.warn(fmtMessage(message, line, col))
-  }
-
-  /** report an error */
-  def logError(message: String, line: Long, col: Long): Unit = {
-    if (log != null) log.error(fmtMessage(message, line, col))
-  }
-
-  /** report a catastrophic error */
-  def logFatal(message: String, line: Long, col: Long): Unit = {
-    if (log != null) logError(message, line, col)
-  }
-
-  override def warning(message: String, line: Long, col: Long): Unit = logWarning(message, line, col)
-
-  override def error(message: String, line: Long, col: Long): Unit = logError(message, line, col)
-
-  override def fatal(message: String, line: Long, col: Long): Unit = logFatal(message, line, col)
-}
-
-// sealed trait ErrorParseMode {
-//  case object STOP extends ErrorParseMode
-//  case object SKIP extends ErrorParseMode
-// }
-// sealed trait WarningParseMode {
-//  case object STOP extends WarningParseMode
-//  case object SKIP extends WarningParseMode
-//  case object IGNORE extends WarningParseMode
-// }
-// @enum trait ErrorParseMode {
-//  object STOP
-//  object SKIP
-// }

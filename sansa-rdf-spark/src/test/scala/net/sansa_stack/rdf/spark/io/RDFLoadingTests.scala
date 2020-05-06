@@ -1,16 +1,19 @@
 package net.sansa_stack.rdf.spark.io
 
 import java.io.{ByteArrayInputStream, File, FileInputStream, FileOutputStream}
-import java.net.URL
-import java.nio.file.{Files, Path, Paths}
+import java.net.{URI, URL}
+import java.nio.file.{Files, Path}
 import java.util.zip.ZipInputStream
 
 import scala.collection.JavaConverters._
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.rdf.spark.io.index.TriplesIndexer
+
 import org.apache.jena.rdf.model.{ModelFactory, ResourceFactory}
 import org.apache.jena.riot.Lang
+import org.apache.jena.shared.impl.PrefixMappingImpl
+import org.apache.jena.sparql.serializer.SerializationContext
+import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.RDF
 import org.scalatest.FunSuite
 
@@ -19,7 +22,11 @@ import org.scalatest.FunSuite
   *
   * @author Lorenz Buehmann
   */
-class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
+class RDFLoadingTests
+  extends FunSuite
+    with DataFrameSuiteBase {
+
+  val logger = com.typesafe.scalalogging.Logger(classOf[RDFLoadingTests].getName)
 
   import net.sansa_stack.rdf.spark.io._
 
@@ -45,10 +52,9 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 12)
   }
 
-  test("loading RDF/XML file into DataFrame should result in 12 triples") {
+  test("loading RDF/XML file into DataFrame should result in 9 triples") {
 
     val path = getClass.getResource("/loader/data.rdf").getPath
-    val lang: Lang = Lang.TURTLE
 
     // This test only works when "wholeFile" is set to true
     val triples = spark.read.option("wholeFile", true).rdfxml(path)
@@ -101,56 +107,52 @@ class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
     val tests = manifest.listSubjectsWithProperty(
       RDF.`type`,
       ResourceFactory.createResource("http://www.w3.org/ns/rdftest#TestTurtleEval")).asScala
-    val files = tests.map(test =>
-      (test.getPropertyResourceValue(sourceProp).getURI, test.getPropertyResourceValue(targetProp).getURI)
-    )
+      .map(test =>
+        (test.getPropertyResourceValue(sourceProp).getURI, test.getPropertyResourceValue(targetProp).getURI)
+      )
 
-    files.foreach(file => {
-      try {
-        println(s"loading file ${file}")
-        // load the triples into the DataFrame
-        val triples = spark.read.rdf(lang)(file._1)
+    // need this to generate full URIs out of the triples via FmtUtils
+    val pm = new PrefixMappingImpl()
+    val sc = new SerializationContext(pm)
+    sc.setUsePlainLiterals(false)
 
-        // write triples to a string and load it into a Jena model
-        val ntriplesString = triples.collect().map(row => {
-          var s = row.getString(0)
-          s = if (s.startsWith("http")) s"<$s>" else s"_:$s"
-          val p = s"<${row.getString(1)}>"
-          var o = row.getString(2)
-          if (o.startsWith("http")) o = s"<$o>"
-          s"$s $p $o ."
-        })
-        .mkString("\n")
-        println(ntriplesString)
+    tests.foreach {
+      case (source, target) =>
+        try {
+          logger.debug(s"loading file ${source}")
+          // load the triples into the DataFrame
+          val triples = spark.read.rdf(lang)(source)
 
-        // write the triple as N-Triples and load into Jena model
-        val sourceModel = ModelFactory.createDefaultModel()
-        sourceModel.read(new ByteArrayInputStream(ntriplesString.getBytes), null, "TURTLE")
+          // write triples to a string and load it into a Jena model
+          val ntriplesString = triples.collect()
+            .map(fromRow)
+            .map(t => FmtUtils.stringForTriple(t, sc) + " .")
+            .mkString("\n")
+          logger.debug(ntriplesString)
 
-        // load the reference data into a Jena model
-        val targetModel = ModelFactory.createDefaultModel()
-        targetModel.read(new ByteArrayInputStream(ntriplesString.getBytes), relativeIRI, "TURTLE")
+          // write the triple as N-Triples and load into Jena model
+          val sourceModel = ModelFactory.createDefaultModel()
+          sourceModel.read(new ByteArrayInputStream(ntriplesString.getBytes), null, "TURTLE")
 
-        // check for isomorphism
-        val isomorph = sourceModel.isIsomorphicWith(targetModel)
-        println(s"isomorph: $isomorph")
-      } catch {
-        case e: Exception => println(e.getMessage) // e.printStackTrace()
+          // load the reference data into a Jena model
+          val targetModel = ModelFactory.createDefaultModel()
+          targetModel.read(new FileInputStream(new File(URI.create(source))), relativeIRI, "TURTLE")
+
+          // check for isomorphism
+          val isomorph = sourceModel.isIsomorphicWith(targetModel)
+
+          if (!isomorph) {
+            println(source)
+            triples.show(false)
+            println(ntriplesString)
+
+            targetModel.write(System.out, "N-Triples")
+            fail("parsed data from Dataframe not same as original data")
+          }
+        } catch {
+          case e: Exception => println(e.getMessage) // e.printStackTrace()
+        }
       }
 
-    })
-
-  }
-
-  test("bla") {
-    val sourceModel = ModelFactory.createDefaultModel()
-    val turtleFile = new File(getClass.getResource("/loader/data.ttl").getPath)
-    val fileInputStream = new FileInputStream(turtleFile)
-    sourceModel.read(fileInputStream, null, "TURTLE")
-
-    sourceModel.listStatements().asScala.toSeq.foreach(st => {
-      val s = st.getSubject
-      if (s.isAnon) println(s.getId.getLabelString)
-    })
   }
 }
