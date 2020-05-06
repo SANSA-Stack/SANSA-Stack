@@ -319,6 +319,7 @@ package object io {
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
       case l if lang == Lang.TRIX => trix
+      case g if lang == Lang.NQUADS => nquads(allowBlankLines)
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 

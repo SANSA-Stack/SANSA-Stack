@@ -165,7 +165,7 @@ object NQuadReader {
     })
   }
 
-  case class Config(
+  private case class Config(
                      in: URI = null,
                      mode: String = "",
                      sampleSize: Int = 10)
