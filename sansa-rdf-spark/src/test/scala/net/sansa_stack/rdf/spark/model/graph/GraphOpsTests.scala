@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.model.graph
 
-import java.nio.file.{ Files, Path, Paths }
+import java.nio.file.Files
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
@@ -15,7 +15,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
     val size = graph.size()
@@ -27,7 +27,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
 
@@ -41,11 +41,11 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
 
-    val graph2rdd = graph.getTriples
+    val graph2rdd = graph.getTriples()
 
     val cnt = graph2rdd.count()
     assert(cnt == 8)
@@ -55,7 +55,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
 
@@ -71,7 +71,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
 
@@ -85,7 +85,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
 
@@ -99,7 +99,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/loader/data.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
 
@@ -115,7 +115,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val path = input.getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang, allowBlankLines = true)(path)
+    val triples = spark.rdf(lang)(path)
 
     val graph = triples.asGraph()
 
@@ -123,7 +123,7 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
     val outputDir = Files.createTempDirectory("sansa-graph")
     outputDir.toFile.deleteOnExit()
 
-    val output = outputDir.toString() + "/data.json"
+    val output = outputDir.toString + "/data.json"
     graph.saveGraphToJson(output)
 
     assert(true)

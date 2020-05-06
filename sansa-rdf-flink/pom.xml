@@ -27,7 +27,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+			<artifactId>sansa-rdf-common_${scala.binary.version}</artifactId>
 		</dependency>
 
 		<!-- Apache Flink -->
