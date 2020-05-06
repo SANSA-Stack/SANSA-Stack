@@ -1976,8 +1976,6 @@ class OWLStats(spark: SparkSession) extends Serializable {
   }
 }
 
-
-
 // Criterion 1.
 class UsedClasses (axioms: RDD[OWLAxiom], spark: SparkSession) {
 
@@ -2009,6 +2007,7 @@ class UsedClassesCount (axioms: RDD[OWLAxiom], spark: SparkSession) {
   // ?p=rdf:type && isIRI(?o)
   // ClassAssertions (C, indv)
   def filter(): RDD[OWLClassExpression] = {
+
     val usedClasses = owlAxioms.extractAxioms(axioms, AxiomType.CLASS_ASSERTION)
                                .asInstanceOf[RDD[OWLClassAssertionAxiom]]
                                .map(_.getClassExpression)
