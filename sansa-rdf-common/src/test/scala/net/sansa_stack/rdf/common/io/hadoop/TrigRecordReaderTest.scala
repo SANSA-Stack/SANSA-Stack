@@ -38,12 +38,12 @@ class TrigRecordReaderTest extends FunSuite {
   val testFileName = "nato-phonetic-alphabet-example.trig"
   // val testFileName = "nato-phonetic-alphabet-example.trig.bz2"
 
-  val referenceFile = new File(getClass.getClassLoader.getResource(referenceFileName).getPath)
-  val testFile = new File(getClass.getClassLoader.getResource(testFileName).getPath)
+  // val referenceFile = new File(getClass.getClassLoader.getResource(referenceFileName).getPath)
+  // val testFile = new File(getClass.getClassLoader.getResource(testFileName).getPath)
 
-  // val referenceFile = new File("/home/raven/Projects/Data/Hobbit/hobbit-sensor-stream-150k.trig")
+  val referenceFile = new File("/home/raven/Projects/Data/Hobbit/hobbit-sensor-stream-150k.trig")
   // val testFile = new File("/home/raven/Projects/Data/Hobbit/hobbit-sensor-stream-150k.trig")
-  // val testFile = new File("/home/raven/Projects/Eclipse/facete3-parent/version1/hobbit-sensor-stream-150k-events-data.trig.bz2")
+  val testFile = new File("/home/raven/Projects/Eclipse/facete3-parent/version1/hobbit-sensor-stream-150k-events-data.trig.bz2")
 
 
   val path = new Path(testFile.getAbsolutePath)
@@ -55,7 +55,7 @@ class TrigRecordReaderTest extends FunSuite {
   RDFDataMgr.read(targetDataset, new FileInputStream(referenceFile), Lang.TRIG)
 
 
-  val maxNumSplits = 4
+  val maxNumSplits = 10
 
   val job = Job.getInstance(conf)
   val inputFormat = new TrigFileInputFormat()
@@ -75,6 +75,7 @@ class TrigRecordReaderTest extends FunSuite {
       val splits = generateFileSplits(i)
 
       val ds = DatasetFactory.create()
+      var totalContrib = 0
       splits.foreach { split =>
         // println(s"split (${split.getStart} - ${split.getStart + split.getLength}):" )
 
@@ -98,10 +99,13 @@ class TrigRecordReaderTest extends FunSuite {
 
         // read all records in split
         val contrib = consumeRecords(reader)
+        totalContrib += contrib.listNames().asScala.size
         DatasetGraphUtils.addAll(ds.asDatasetGraph(), contrib.asDatasetGraph())
 //        System.err.println("Dataset contribution")
 //        RDFDataMgr.write(System.err, ds, RDFFormat.TRIG_PRETTY)
       }
+
+      println("Dataset contains " + ds.listNames().asScala.size + " named graphs - total contribs = " + totalContrib)
 
       // compare with target dataset
       compareDatasets(targetDataset, ds)
@@ -139,6 +143,7 @@ class TrigRecordReaderTest extends FunSuite {
   private def consumeRecords(reader: RecordReader[LongWritable, Dataset]): Dataset = {
     val result = DatasetFactory.create
     // val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
+    // var counter = 0;
     while (reader.nextKeyValue()) {
       val k = reader.getCurrentKey
       val v = reader.getCurrentValue
@@ -147,8 +152,12 @@ class TrigRecordReaderTest extends FunSuite {
       // println(s"Dataset ${k.get()}:")
       // RDFDataMgr.write(System.out, v, RDFFormat.TRIG_PRETTY)
 
+
       DatasetGraphUtils.addAll(result.asDatasetGraph(), v.asDatasetGraph())
+      // counter += 1
     }
+
+    // println(s"Counted $counter records")
 
     // merge to single dataset
     // actual.map(_._2).foldLeft(DatasetFactory.create())((ds1, ds2) => DatasetLib.union(ds1, ds2))
