@@ -11,6 +11,7 @@ import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
+import org.apache.jena.query.{Dataset => JenaDataset}
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.{FmtUtils, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
@@ -319,7 +320,7 @@ package object io {
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
       case l if lang == Lang.TRIX => trix
-      case g if lang == Lang.NQUADS => nquads(allowBlankLines)
+      // case g if lang == Lang.NQUADS => nquads(allowBlankLines)
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
@@ -396,13 +397,13 @@ package object io {
      *
      * @return the [[RDD]] of datasets
      */
-    def trig: String => RDD[Dataset] = path => {
+    def trig: String => RDD[JenaDataset] = path => {
       val confHadoop = spark.sparkContext.hadoopConfiguration
 
       spark.sparkContext.newAPIHadoopFile(path,
         classOf[TrigFileInputFormat],
         classOf[LongWritable],
-        classOf[Dataset], confHadoop)
+        classOf[JenaDataset], confHadoop)
         .map { case (_, v) => v }
     }
 
