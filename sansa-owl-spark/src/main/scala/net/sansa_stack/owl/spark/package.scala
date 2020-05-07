@@ -1,7 +1,8 @@
 package net.sansa_stack.owl.spark
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.SparkSession
+import org.semanticweb.owlapi.model.{AxiomType, OWLAxiom}
 
 import net.sansa_stack.owl.spark.rdd._
 
@@ -26,7 +27,7 @@ package object owl {
 
     /**
      * Load RDF data into a [[org.apache.spark.rdd.RDD]][OWLAxiom]. Currently,
-      * only functional, manchester and OWL/XML syntax are supported
+     * only functional, manchester and OWL/XML syntax are supported
      * @param syntax of the OWL (functional, manchester or OWL/XML)
      * @return a [[net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD]]
      */
@@ -109,4 +110,9 @@ package object owl {
        OWLXMLSyntaxOWLExpressionsRDDBuilder.build(spark, path)._3
      }
   }
+}
+
+package object owlAxioms {
+  def extractAxioms(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] =
+    axiom.filter(a => a.getAxiomType.equals(T))
 }
