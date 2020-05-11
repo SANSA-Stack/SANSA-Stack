@@ -6,7 +6,7 @@
 	<artifactId>sansa-owl-parent_2.11</artifactId>
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-parent</artifactId>
+		<artifactId>sansa-parent_2.11</artifactId>
 		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 

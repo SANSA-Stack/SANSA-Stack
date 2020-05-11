@@ -1,0 +1,39 @@
+Prefix(:=<http://ex.com/default#>)
+Prefix(foo:=<http://ex.com/foo#>)
+Prefix(bar:=<http://ex.com/bar#>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+<http://ex.com/ont/release/123/sample1.owl>
+#Import(<http://www.example.com/my/2.0>)
+
+## declarations
+# datatype declarations
+Declaration(Datatype(bar:dtype1))
+Declaration(Datatype(bar:dtype2))
+
+# data property declarations
+Declaration(DataProperty(bar:dataProp1))
+Declaration(DataProperty(bar:dataProp2))
+Declaration(DataProperty(bar:dataProp3))
+Declaration(DataProperty(bar:dataProp4))
+
+# named individual declarations
+Declaration(NamedIndividual(foo:indivA))
+Declaration(NamedIndividual(foo:indivB))
+
+## assertions
+DataPropertyAssertion(bar:dataProp1 foo:indivA "20"^^xsd:integer)
+DataPropertyAssertion(bar:dataProp1 foo:indivA "2320"^^xsd:integer)
+DataPropertyAssertion(bar:dataProp1 foo:indivA "-400"^^xsd:integer)
+DataPropertyAssertion(bar:dataProp2 foo:indivA "70"^^xsd:integer)
+DataPropertyAssertion(bar:dataProp2 foo:indivA "-25"^^xsd:integer)
+DataPropertyAssertion(bar:dataProp2 foo:indivA "11"^^xsd:integer)
+
+DataPropertyAssertion(bar:dataProp3 foo:indivB "10.0"^^xsd:double)
+DataPropertyAssertion(bar:dataProp3 foo:indivB "123.0"^^xsd:double)
+DataPropertyAssertion(bar:dataProp3 foo:indivB "-895.0"^^xsd:double)
+DataPropertyAssertion(bar:dataProp4 foo:indivB "50.0"^^xsd:double)
+DataPropertyAssertion(bar:dataProp4 foo:indivB "-20.0"^^xsd:double)
+DataPropertyAssertion(bar:dataProp4 foo:indivB "100.0"^^xsd:double)
+)

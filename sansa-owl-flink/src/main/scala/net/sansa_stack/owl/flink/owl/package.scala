@@ -20,7 +20,7 @@ import net.sansa_stack.owl.flink.dataset.{
 package object owl {
 
   object Syntax extends Enumeration {
-    val FUNCTIONAL, MANCHESTER, OWLXML = Value
+    val FUNCTIONAL, MANCHESTER = Value
   }
 
   /**
