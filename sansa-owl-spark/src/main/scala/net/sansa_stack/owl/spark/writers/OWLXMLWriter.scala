@@ -5,7 +5,7 @@ import scala.collection.JavaConverters._
 
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{OWLAnnotationAssertionAxiom, OWLAnnotationPropertyDomainAxiom, OWLAnnotationPropertyRangeAxiom, OWLAsymmetricObjectPropertyAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLDatatypeDefinitionAxiom, OWLDeclarationAxiom, OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLDisjointUnionAxiom, OWLEquivalentClassesAxiom, OWLEquivalentDataPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLFunctionalDataPropertyAxiom, OWLFunctionalObjectPropertyAxiom, OWLHasKeyAxiom, OWLInverseFunctionalObjectPropertyAxiom, OWLInverseObjectPropertiesAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLNegativeDataPropertyAssertionAxiom, OWLNegativeObjectPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLOntologyWriterConfiguration, OWLReflexiveObjectPropertyAxiom, OWLSameIndividualAxiom, OWLSubAnnotationPropertyOfAxiom, OWLSubClassOfAxiom, OWLSubDataPropertyOfAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom}
-import org.semanticweb.owlapi.owlxml.renderer.{OWLXMLObjectRenderer, OWLXMLWriter}
+import org.semanticweb.owlapi.owlxml.renderer.{OWLXMLObjectRenderer, OWLXMLWriter => OWLAPIOWLXMLWriter}
 
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 
@@ -29,7 +29,7 @@ object OWLXMLWriter extends OWLWriterBase {
         val ont = man.createOntology(Seq(axiom).asJava)
         assert(ont.getOWLOntologyManager.getOntologyWriterConfiguration == config)
 
-        val renderer = new OWLXMLObjectRenderer(new OWLXMLWriter(buffPrintWriter, ont))
+        val renderer = new OWLXMLObjectRenderer(new OWLAPIOWLXMLWriter(buffPrintWriter, ont))
 
         axiom match {
           case a: OWLDatatypeDefinitionAxiom => renderer.visit(a)
