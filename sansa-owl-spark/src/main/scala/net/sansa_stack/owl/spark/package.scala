@@ -188,12 +188,7 @@ package object owl {
           case _: ManchesterSyntaxDocumentFormat => ManchesterOWLSyntaxWriter.save(path, axioms)
           case _: RDFXMLDocumentFormat => RDFXMLWriter.save(path, axioms)
           case _: TurtleDocumentFormat => TurtleWriter.save(path, axioms)
-          case format: BinaryRDFDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
-          case format: RioRDFXMLDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
-          case format: N3DocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case _: N3DocumentFormat => N3Writer.save(path, axioms)
           case format: TrixDocumentFormat =>
             throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case format: RioTurtleDocumentFormat =>
@@ -211,7 +206,8 @@ package object owl {
           case format: LatexDocumentFormat =>
             throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case _ =>
-            throw new UnknownOWLFormatException(s"OWL serialization format ${format.toString} unknown or not handled")
+            throw new UnknownOWLFormatException(
+              s"OWL serialization format ${format.toString} unknown or not supported")
         }
       }
     }
