@@ -191,10 +191,6 @@ package object owl {
           case _: N3DocumentFormat => N3Writer.save(path, axioms)
           case _: TrixDocumentFormat => TrixWriter.save(path, axioms)
           case _: OWLXMLDocumentFormat => OWLXMLWriter.save(path, axioms)
-          case format: LatexAxiomsListDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
-          case format: LatexDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case _ =>
             throw new UnknownOWLFormatException(
               s"OWL serialization format ${format.toString} unknown or not supported")
