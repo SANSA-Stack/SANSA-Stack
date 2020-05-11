@@ -187,8 +187,7 @@ package object owl {
           case _: NTriplesDocumentFormat => NTriplesWriter.save(path, axioms)
           case _: ManchesterSyntaxDocumentFormat => ManchesterOWLSyntaxWriter.save(path, axioms)
           case _: RDFXMLDocumentFormat => RDFXMLWriter.save(path, axioms)
-          case format: TurtleDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case _: TurtleDocumentFormat => TurtleWriter.save(path, axioms)
           case format: BinaryRDFDocumentFormat =>
             throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case format: RioRDFXMLDocumentFormat =>
