@@ -190,14 +190,7 @@ package object owl {
           case _: TurtleDocumentFormat => TurtleWriter.save(path, axioms)
           case _: N3DocumentFormat => N3Writer.save(path, axioms)
           case _: TrixDocumentFormat => TrixWriter.save(path, axioms)
-          case format: RioTurtleDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
-          case format: RDFaDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
-          case format: TrigDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
-          case format: OWLXMLDocumentFormat =>
-            throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
+          case _: OWLXMLDocumentFormat => OWLXMLWriter.save(path, axioms)
           case format: LatexAxiomsListDocumentFormat =>
             throw new NotImplementedError(s"Support for ${format.getClass.getName} not implemented, yet")
           case format: LatexDocumentFormat =>
