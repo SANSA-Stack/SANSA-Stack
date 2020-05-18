@@ -5,6 +5,9 @@ import org.apache.jena.graph
 import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.spark.SparkContext
+
 
 object Semantic_Similarity_Estimator {
 
@@ -25,19 +28,121 @@ object Semantic_Similarity_Estimator {
 
     // set up spark
     val spark = SparkSession.builder
-      .appName(s"Semantic Similarity Estimation example  $input") // TODO where is this displayed
+      .appName(s"Semantic Similarity Estimation example  $input") // TODO where is this displayed?
       .master("local[*]") // TODO why do we need to specify this?
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
 
     // read in file with function and print certain inforamtion by function
     // code taken from triple reader
-    val triples = read_in_nt_triples(input = input, spark = spark, lang = Lang.NTRIPLES)
+    val triples = read_in_nt_triples(
+      input = input,
+      spark = spark,
+      lang = Lang.NTRIPLES
+    )
+
+    val exampleUris = List(
+      "http://commons.dbpedia.org/resource/Template:Cc-by-1.0",
+      "http://commons.dbpedia.org/resource/Category:Events",
+      "http://commons.dbpedia.org/resource/Template:Cc-by-sa-1.0"
+    )
+
+    val resultMetaGraph: RDD[Triple] = semantic_similarity_estimation(
+      spark = spark,
+      uris_listA = exampleUris,
+      uris_listB = exampleUris,
+      triple_RDD = triples,
+      mode = "random"
+    )
+
+    resultMetaGraph.foreach(println(_))
 
     spark.stop
     println("Spark session is stopped!")
 
   }
+
+  def getAncestors(triples: RDD[Triple], uri: String): List[String] = {
+    return triples.filter(_.getObject() == uri).getSubjects().distinct
+  }
+
+  def getDescentants(triples: RDD[Triple], uri: String): List[String] = {
+    return triples.filter(_.getSubject() == uri).getObjects().distinct
+  }
+
+  def getNeighbors(triples: RDD[Triple], uri: String): List[String] = {
+    val anc = getAncestors(triples, uri)
+    val des = getDescentants(triples, uri)
+    return anc.union(des)
+  }
+
+  def getJaccardSimilarity(triples: RDD[Triple], uri1: String, uri2: String): Double = {
+    return intersection(getNeighbors(triples, uri1), getNeighbors(triples, uri2)) / union(getNeighbors(triples, uri1), getNeighbors(triples, uri2))
+  }
+
+  def getRandomSimilarity(triples: RDD[Triple], uri1: String, uri2: String): Double = {
+    val r = scala.util.Random
+    r.nextDouble()
+  }
+
+  def createMetaSimilarityResultGraph(spark: SparkSession, uri1: String, uri2: String, mode: String, similarity_value: Double): RDD[Triple] = {
+    // TODO agree on good fitting uris for all predicates and objects
+
+    val dt: String = "01.01.2020 - 14:15:33,232132" // TODO get real date time
+    val experiment_type = "SimilarityEsimation"
+    val similarityNodeName: String = uri1 + "_" + uri2 + "_" + mode + dt // TODO think of fitting hash
+
+    val metaGraph: Array[Triple] = Array(
+      Triple.create(
+        NodeFactory.createURI(uri1),
+        NodeFactory.createURI("used_in_experiment"),
+        NodeFactory.createURI(similarityNodeName)
+      ),Triple.create(
+        NodeFactory.createURI(uri2),
+        NodeFactory.createURI("used_in_experiment"),
+        NodeFactory.createURI(similarityNodeName)
+      ),Triple.create(
+        NodeFactory.createURI(similarityNodeName),
+        NodeFactory.createURI("performed"),
+        NodeFactory.createURI(dt)
+      ),Triple.create(
+        NodeFactory.createURI(similarityNodeName),
+        NodeFactory.createURI("experiment_type"),
+        NodeFactory.createURI(experiment_type)
+      ),Triple.create(
+        NodeFactory.createURI(similarityNodeName),
+        NodeFactory.createURI("mode"),
+        NodeFactory.createURI(mode)
+      )
+    )
+    return spark.sparkContext.parallelize(metaGraph)
+  }
+
+  def semantic_similarity_estimation(uris_listA: List[String], uris_listB: List[String], triple_RDD: RDD[graph.Triple], spark: SparkSession, mode: String = ""): RDD[Triple] = {
+    println("Run " + mode + " Semantic Similarity information for uris:" + uris_listA + " against " + uris_listB)
+
+    for (uriA <- uris_listA) {
+      for (uriB <- uris_listB) {
+        println("calculate " + mode + " similarity of" + uriA + " and " + uriB)
+        if (mode == "jaccard" || mode == "random") {
+          if (mode == "jaccard") {
+            val sv = getJaccardSimilarity(triple_RDD, uriA, uriB)
+            return createMetaSimilarityResultGraph(spark = spark, uri1 = uriA, uri2 = uriB, mode = mode, similarity_value = sv)
+          }
+          else if (mode == "random") {
+            val sv = getRandomSimilarity(triple_RDD, uriA, uriB)
+            return createMetaSimilarityResultGraph(spark = spark, uri1 = uriA, uri2 = uriB, mode = mode, similarity_value = sv)
+          }
+        }
+        else {
+          println("No fitting mode was set up: currently available are random and jaccard")
+          return spark.sparkContext.parallelize(List())
+        }
+      }
+    }
+  }
+
+  //def uri_in_triples(uri: String, triples: RDD[graph.Triple]): Boolean = {}
 
   def read_in_nt_triples(input: String, spark: SparkSession, lang: Lang): RDD[graph.Triple] = {
     println("Read in file from " + input)
@@ -57,6 +162,7 @@ object Semantic_Similarity_Estimator {
     triples
   }
 
+  //TODO what are the purposes for the following lines?
   case class Config(in: String = "")
 
   val parser = new scopt.OptionParser[Config]("Semantic Similarity Estimation example") {
