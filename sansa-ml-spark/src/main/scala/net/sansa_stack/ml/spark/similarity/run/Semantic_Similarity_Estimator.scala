@@ -49,8 +49,8 @@ object Semantic_Similarity_Estimator {
 
     val resultMetaGraph: RDD[Triple] = semantic_similarity_estimation(
       spark = spark,
-      uris_listA = exampleUris,
-      uris_listB = exampleUris,
+      uriA = exampleUris(0),
+      uriB = exampleUris(1),
       triple_RDD = triples,
       mode = "random"
     )
@@ -62,23 +62,23 @@ object Semantic_Similarity_Estimator {
 
   }
 
-  def getAncestors(triples: RDD[Triple], uri: String): List[String] = {
-    return triples.filter(_.getObject() == uri).getSubjects().distinct
+  /*def getAncestors(triples: RDD[Triple], uri: String): List[String] = {
+    triples.filter(_.getObject() == uri).getSubjects().distinct
   }
 
   def getDescentants(triples: RDD[Triple], uri: String): List[String] = {
-    return triples.filter(_.getSubject() == uri).getObjects().distinct
+    triples.filter(_.getSubject() == uri).getObjects().distinct
   }
 
   def getNeighbors(triples: RDD[Triple], uri: String): List[String] = {
     val anc = getAncestors(triples, uri)
     val des = getDescentants(triples, uri)
-    return anc.union(des)
+    anc.union(des)
   }
 
   def getJaccardSimilarity(triples: RDD[Triple], uri1: String, uri2: String): Double = {
-    return intersection(getNeighbors(triples, uri1), getNeighbors(triples, uri2)) / union(getNeighbors(triples, uri1), getNeighbors(triples, uri2))
-  }
+    intersection(getNeighbors(triples, uri1), getNeighbors(triples, uri2)) / union(getNeighbors(triples, uri1), getNeighbors(triples, uri2))
+  }*/
 
   def getRandomSimilarity(triples: RDD[Triple], uri1: String, uri2: String): Double = {
     val r = scala.util.Random
@@ -92,7 +92,7 @@ object Semantic_Similarity_Estimator {
     val experiment_type = "SimilarityEsimation"
     val similarityNodeName: String = uri1 + "_" + uri2 + "_" + mode + dt // TODO think of fitting hash
 
-    val metaGraph: Array[Triple] = Array(
+    val tmp_metaGraph: Array[Triple] = Array(
       Triple.create(
         NodeFactory.createURI(uri1),
         NodeFactory.createURI("used_in_experiment"),
@@ -114,31 +114,30 @@ object Semantic_Similarity_Estimator {
         NodeFactory.createURI("mode"),
         NodeFactory.createURI(mode)
       )
+      ,Triple.create(
+        NodeFactory.createURI(similarityNodeName),
+        NodeFactory.createURI("similarity"),
+        NodeFactory.createLiteral(similarity_value.toString())
+      )
     )
-    return spark.sparkContext.parallelize(metaGraph)
+    val metaGraph: RDD[Triple] = spark.sparkContext.parallelize(tmp_metaGraph)
+    metaGraph
   }
 
-  def semantic_similarity_estimation(uris_listA: List[String], uris_listB: List[String], triple_RDD: RDD[graph.Triple], spark: SparkSession, mode: String = ""): RDD[Triple] = {
-    println("Run " + mode + " Semantic Similarity information for uris:" + uris_listA + " against " + uris_listB)
+  def semantic_similarity_estimation(uriA: String, uriB: String, triple_RDD: RDD[graph.Triple], spark: SparkSession, mode: String = ""): RDD[Triple] = {
+    println("calculate " + mode + " similarity of" + uriA + " and " + uriB)
 
-    for (uriA <- uris_listA) {
-      for (uriB <- uris_listB) {
-        println("calculate " + mode + " similarity of" + uriA + " and " + uriB)
-        if (mode == "jaccard" || mode == "random") {
-          if (mode == "jaccard") {
-            val sv = getJaccardSimilarity(triple_RDD, uriA, uriB)
-            return createMetaSimilarityResultGraph(spark = spark, uri1 = uriA, uri2 = uriB, mode = mode, similarity_value = sv)
-          }
-          else if (mode == "random") {
-            val sv = getRandomSimilarity(triple_RDD, uriA, uriB)
-            return createMetaSimilarityResultGraph(spark = spark, uri1 = uriA, uri2 = uriB, mode = mode, similarity_value = sv)
-          }
-        }
-        else {
-          println("No fitting mode was set up: currently available are random and jaccard")
-          return spark.sparkContext.parallelize(List())
-        }
-      }
+    if (mode == "random") {
+      val sv = getRandomSimilarity(triple_RDD, uriA, uriB)
+      createMetaSimilarityResultGraph(spark = spark, uri1 = uriA, uri2 = uriB, mode = mode, similarity_value = sv)
+    }
+    /* else if (mode == "jaccard") {
+      val sv = getJaccardSimilarity(triple_RDD, uriA, uriB)
+      createMetaSimilarityResultGraph(spark = spark, uri1 = uriA, uri2 = uriB, mode = mode, similarity_value = sv)
+    } */
+    else {
+      println("No fitting mode was set up: currently available are random and jaccard")
+      spark.sparkContext.parallelize(List())
     }
   }
 
