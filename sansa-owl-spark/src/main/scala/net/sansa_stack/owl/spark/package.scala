@@ -202,6 +202,6 @@ package object owl {
 }
 
 package object owlAxioms {
-  def extractAxioms(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] =
-    axiom.filter(a => a.getAxiomType.equals(T))
+  def extractAxioms(axioms: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] =
+    axioms.filter(a => a.getAxiomType.equals(T))
 }
