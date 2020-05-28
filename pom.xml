@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent</artifactId>
-		<version>0.6.1-SNAPSHOT</version>
+		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 
 	<packaging>pom</packaging>
@@ -26,6 +26,7 @@
 
 
 	<properties>
+		<spark.deps.scope>compile</spark.deps.scope>
 <!--
 		<sansa.rdf.version>${project.version}</sansa.rdf.version>
 		<sansa.datalake.version>0.1.1-SNAPSHOT</sansa.datalake.version>
@@ -133,7 +134,9 @@
 					<value>true</value>
 				</property>
 			</activation>
-
+			<properties>
+				<spark.deps.scope>provided</spark.deps.scope>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>

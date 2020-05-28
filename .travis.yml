@@ -13,6 +13,6 @@ jdk:
 - openjdk8
 script:
 - mvn scalastyle:check
-- mvn test
+- mvn -U test
 after_success:
-- mvn clean test jacoco:report coveralls:report
+- mvn -U clean test jacoco:report coveralls:report
