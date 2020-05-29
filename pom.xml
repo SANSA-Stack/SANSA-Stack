@@ -8,7 +8,7 @@
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-parent</artifactId>
+		<artifactId>sansa-parent_2.11</artifactId>
 		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 
@@ -131,8 +131,8 @@
 			<!-- Amazon -->
 			<dependency>
 				<groupId>com.amazonaws</groupId>
-				<artifactId>aws-java-sdk</artifactId>
-				<version>1.11.696</version>
+				<artifactId>aws-java-sdk-s3</artifactId>
+				<version>1.11.791</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
