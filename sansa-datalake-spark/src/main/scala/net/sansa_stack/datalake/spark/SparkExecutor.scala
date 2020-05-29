@@ -103,7 +103,6 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
                 case "rdf" =>
                     val rdf = new NTtoDF()
                     df = rdf.options(options.asJava).read(sourcePath, spark).toDF()
-                
                 case _ =>
             }
 

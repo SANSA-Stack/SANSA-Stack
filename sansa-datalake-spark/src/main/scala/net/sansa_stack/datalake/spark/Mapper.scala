@@ -249,17 +249,17 @@ class Mapper (mappingsFile: String) {
               "?sm rr:objectMap ?fn ." +
               "}"
 
-                val query1 = QueryFactory.create(getAttributeOfPredicate)
-                val qe1 = QueryExecutionFactory.create(query1, model)
-                val results1 = qe1.execSelect()
-                
-                while (results1.hasNext) {
+            val query1 = QueryFactory.create(getAttributeOfPredicate)
+            val qe1 = QueryExecutionFactory.create(query1, model)
+            val results1 = qe1.execSelect()
+
+            while (results1.hasNext) {
                 val soln1 = results1.nextSolution()
                 val fnMap = soln1.getResource("fn")
 
                 var fn = ""
                 var attr = ""
-                var trans : ListBuffer[String] = ListBuffer()
+                var trans: ListBuffer[String] = ListBuffer()
 
                 if (fnMap != null) { // the case of FunctionMap
                     // Get function
