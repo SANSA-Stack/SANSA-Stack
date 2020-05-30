@@ -10,6 +10,8 @@ scala:
   - 2.11.11
 jdk:
   - openjdk8
+before_script:
+  - echo "MAVEN_OPTS='-Xmx2g -Xss2048K -XX:MaxPermSize=512m'" > ~/.mavenrc
 script:
   - mvn scalastyle:check
   - mvn test
