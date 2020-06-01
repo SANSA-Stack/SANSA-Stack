@@ -1,15 +1,15 @@
 package net.sansa_stack.owl.spark.stats
 
+import scala.collection.JavaConverters._
+import scala.compat.java8.StreamConverters._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.XSDVocabulary
-
-import scala.collection.JavaConverters._
-import scala.compat.java8.StreamConverters._
-
-import net.sansa_stack.owl.spark.owlAxioms
-import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
+import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, ManchesterSyntaxOWLAxiomsRDDBuilder, OWLXMLSyntaxOWLAxiomsRDDBuilder, RefineOWLAxioms}
+import net.sansa_stack.owl.spark.owl._
+import net.sansa_stack.owl.spark.owl.Syntax
+import net.sansa_stack.owl.spark.{owl, owlAxioms}
 
 
 
@@ -20,12 +20,16 @@ import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
   */
 class OWLStats(spark: SparkSession) extends Serializable {
 
+
+  val parallelism = 315
+
   def run (axioms: RDD[OWLAxiom]): RDD[String] = {
 
-    val stats = UsedClassesCount(axioms, spark).voidify()
+    val stats = UsedClasses(axioms, spark).voidify()
+      .union(UsedClassesCount(axioms, spark).voidify())
+      .union(DefinedClasses(axioms, spark).voidify())
       .union(UsedDataProperties(axioms, spark).voidify())
       .union(UsedObjectProperties(axioms, spark).voidify())
-      .union(UsedAnnotationProperties(axioms, spark).voidify())
 
     println("\n =========== OWL Statistics ===========\n")
     stats.collect().foreach(println(_))
@@ -33,64 +37,7 @@ class OWLStats(spark: SparkSession) extends Serializable {
     stats
   }
 
-  // New Criterion
-  def getClasses(axioms: RDD[OWLAxiom]): RDD[OWLClass] = {
-    axioms.flatMap {
-      case a: HasClassesInSignature => a.classesInSignature().iterator().asScala
-      case _ => null
-    }.filter(_ != null).distinct()
-  }
-
-  def getClassesCount(axioms: RDD[OWLAxiom]): Long = {
-    getClasses(axioms).count()
-  }
-
-  def getDataProperties(axioms: RDD[OWLAxiom]): RDD[OWLDataProperty] = {
-    val dataProperties: RDD[OWLDataProperty] = axioms.flatMap {
-      case a: HasDataPropertiesInSignature => a.dataPropertiesInSignature().iterator().asScala
-      case _ => null
-    }.filter(_ != null).distinct()
-
-    dataProperties
-  }
-
-  def getDataPropertiesCount(axioms: RDD[OWLAxiom]): Long = {
-    getDataProperties(axioms).count()
-  }
-
-  def getObjectProperties(axioms: RDD[OWLAxiom]): RDD[OWLObjectProperty] = {
-    val objectProperties: RDD[OWLObjectProperty] = axioms.flatMap {
-      case a: HasObjectPropertiesInSignature => a.objectPropertiesInSignature().iterator().asScala
-      case _ => null
-    }.filter(_ != null).distinct()
-
-    objectProperties
-  }
-
-  def getObjectPropertiesCount(axioms: RDD[OWLAxiom]): Long = {
-    getObjectProperties(axioms).count()
-  }
-
-  def getClassAssertionCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.CLASS_ASSERTION).count()
-
-  def getDataPropertyAssertionCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.DATA_PROPERTY_ASSERTION).count()
-
-  def getObjectPropertyAssertionCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.OBJECT_PROPERTY_ASSERTION).count()
-
-  def getAnnotationAssertionCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.ANNOTATION_ASSERTION).count()
-
-  def getSubClassAxiomCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.SUBCLASS_OF).count()
-
-  def getSubDataPropAxiomCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.SUB_DATA_PROPERTY).count()
-
-  def getSubObjectPropAxiomCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.SUB_OBJECT_PROPERTY).count()
-
-  def getSubAnnPropAxiomCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.SUB_ANNOTATION_PROPERTY_OF).count()
-
-  def getDiffIndividualsAxiomCount(axioms: RDD[OWLAxiom]): Long = owlAxioms.extractAxioms(axioms, AxiomType.DIFFERENT_INDIVIDUALS).count()
-
-
-  /**
+   /**
     *  Criterion 4. Class hierarchy depth
     *
     *  @param axioms RDD of OWLAxioms
@@ -98,12 +45,13 @@ class OWLStats(spark: SparkSession) extends Serializable {
     */
   def getClassHierarchyDepth(axioms: RDD[OWLAxiom]): RDD[(String, Int)] = {
 
-    val classes: Array[String] = getClasses(axioms).map(_.toString).collect()
+    val classes: Array[String] = getClasses(axioms).map(_.toString).cache().collect()
 
     val subClassOf: Array[(String, String)] = owlAxioms.extractAxioms(axioms, AxiomType.SUBCLASS_OF)
                               .asInstanceOf[RDD[OWLSubClassOfAxiom]]
                               .filter(a => a.getSubClass.isNamed && a.getSuperClass.isNamed)
                               .map(a => (a.getSubClass.toString, a.getSuperClass.toString))
+                              .cache()
                               .collect()
 
     var target = classes(0)
@@ -586,12 +534,13 @@ class OWLStats(spark: SparkSession) extends Serializable {
     */
   def getDataPropertyHierarchyDepth(axioms: RDD[OWLAxiom]): RDD[(String, Int)] = {
 
-    val dataProperties: Array[String] = getDataProperties(axioms).map(_.toString).collect()
+    val dataProperties: Array[String] = getDataProperties(axioms).map(_.toString).cache().collect()
 
     val subDataProp: Array[(String, String)] = owlAxioms.extractAxioms(axioms, AxiomType.SUB_DATA_PROPERTY)
                                .asInstanceOf[RDD[OWLSubDataPropertyOfAxiom]]
                                .filter(a => a.getSubProperty.isNamed && a.getSuperProperty.isNamed)
                                .map(a => (a.getSubProperty.toString, a.getSuperProperty.toString))
+                               .cache()
                                .collect()
 
     var target = dataProperties(0)
@@ -624,12 +573,13 @@ class OWLStats(spark: SparkSession) extends Serializable {
     */
   def getObjectPropertyHierarchyDepth(axioms: RDD[OWLAxiom]): RDD[(String, Int)] = {
 
-    val objProperties = getObjectProperties(axioms).map(_.toString).collect()
+    val objProperties = getObjectProperties(axioms).map(_.toString).cache().collect()
 
     val subObjectProp = owlAxioms.extractAxioms(axioms, AxiomType.SUB_OBJECT_PROPERTY)
                                .asInstanceOf[RDD[OWLSubObjectPropertyOfAxiom]]
                                .filter(a => a.getSubProperty.isNamed && a.getSuperProperty.isNamed)
                                .map(a => (a.getSubProperty.toString, a.getSuperProperty.toString))
+                               .cache()
                                .collect()
 
     var target = objProperties(0)
@@ -699,6 +649,7 @@ class OWLStats(spark: SparkSession) extends Serializable {
     val equivClasses = owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
       .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
       .filter(a => !a.getOperandsAsList.asScala.exists(_.isAnonymous))
+
       .asInstanceOf[RDD[OWLAxiom]]
 
     val disjointClasses = owlAxioms.extractAxioms(axioms, AxiomType.DISJOINT_CLASSES)
@@ -863,7 +814,7 @@ class OWLStats(spark: SparkSession) extends Serializable {
               funcObjProps, inverseFuncObjProps, reflexiveFuncObjProps, irreflexiveFuncObjProps,
               symmetricObjProps, asymmetricObjProps, transitiveObjProps, subAnnProp, annPropDomain,
               annPropRange, sameIndvAssr, diffIndvAssr, classAssr, objPropAssr, dataPropAssr)
-      .count()
+            .count()
 
     mentionedOWLEntities
   }
@@ -1096,7 +1047,7 @@ class OWLStats(spark: SparkSession) extends Serializable {
         funcObjProps, inverseFuncObjProps, reflexiveFuncObjProps, irreflexiveFuncObjProps,
         symmetricObjProps, asymmetricObjProps, transitiveObjProps, subAnnProp, annPropDomain,
         annPropRange, sameIndvAssr, diffIndvAssr, classAssr, objPropAssr, dataPropAssr)
-      .distinct()
+      .distinct(parallelism)
 
     distinctOWLEntities
   }
@@ -1275,7 +1226,8 @@ class OWLStats(spark: SparkSession) extends Serializable {
                          .union(declarations, classAssertions, funcDataProps, funcObjProps,
                                 inverseFuncObjProps, reflexiveFuncObjProps, irreflexiveFuncObjProps,
                                 symmetricObjProps, asymmetricObjProps, transitiveObjProps)
-                         .distinct()
+                         .cache()
+                         .distinct(parallelism)
 
     typedOWLObjects
   }
@@ -1344,7 +1296,8 @@ class OWLStats(spark: SparkSession) extends Serializable {
                                   .union(declarations, classAssertion, funcDataProps, funcObjProps,
                                     inverseFuncObjProps, reflexiveFuncObjProps, irreflexiveFuncObjProps,
                                     symmetricObjProps, asymmetricObjProps, transitiveObjProps)
-                                  .distinct()
+                                  .cache()
+                                  .distinct(parallelism)
 
     typedOWLEntities
   }
@@ -1808,10 +1761,10 @@ class OWLStats(spark: SparkSession) extends Serializable {
       .map(a => (a.getProperty.asOWLAnnotationProperty().getIRI.getNamespace, 1))
 
     val predicateVocabularies = spark.sparkContext.union(
-      objAssrAxiomPredicate, negObjectAssrAxiomPredicate, dataAssrAxiomPredicate,
-      negDataAssrAxiomPredicate, annAssrAxiomPredicate)
-      .reduceByKey(_ + _)
-      .map(a => (a._1, a._2))
+                                    objAssrAxiomPredicate, negObjectAssrAxiomPredicate, dataAssrAxiomPredicate,
+                                    negDataAssrAxiomPredicate, annAssrAxiomPredicate)
+                                  .reduceByKey(_ + _)
+                                  .map(a => (a._1, a._2))
 
     predicateVocabularies
   }
@@ -1974,10 +1927,289 @@ class OWLStats(spark: SparkSession) extends Serializable {
 
     objectVocabularies
   }
+
+  // ================ New Criterion ======================
+
+  def getSubClassAxiomCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.SUBCLASS_OF).count()
+
+  /**
+    *  Criterion 33. SubDataProperty Usage
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of used SubDataProperty
+    */
+
+  def getSubDataPropAxiomCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.SUB_DATA_PROPERTY).count()
+
+  /**
+    *  Criterion 34. SubObjectProperty Usage
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of used SubObjectProperty
+    */
+
+  def getSubObjectPropAxiomCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.SUB_OBJECT_PROPERTY).count()
+
+  /**
+    *  Criterion 35. SubAnnotationProperty Usage
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of used SubAnnotationProperty
+    */
+
+  def getSubAnnPropAxiomCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.SUB_ANNOTATION_PROPERTY_OF).count()
+
+  /**
+    *  Criterion 36a. Classes
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return RDD of existing OWLClasses
+    */
+
+  def getClasses(axioms: RDD[OWLAxiom]): RDD[OWLClass] = {
+    axioms.flatMap {
+      case a: HasClassesInSignature => a.classesInSignature().iterator().asScala
+      case _ => null
+    }.filter(_ != null).cache().distinct(parallelism)
+  }
+
+  /**
+    *  Criterion 36. Classes Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLClasses
+    */
+
+  def getClassesCount(axioms: RDD[OWLAxiom]): Long = {
+    getClasses(axioms).count()
+  }
+
+  /**
+    *  Criterion 37a. Data Properties
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return RDD of existing OWLDataProperties
+    */
+
+  def getDataProperties(axioms: RDD[OWLAxiom]): RDD[OWLDataProperty] = {
+    val dataProperties: RDD[OWLDataProperty] = axioms.flatMap {
+      case a: HasDataPropertiesInSignature => a.dataPropertiesInSignature().iterator().asScala
+      case _ => null
+    }.filter(_ != null).cache().distinct(parallelism)
+
+    dataProperties
+  }
+
+  /**
+    *  Criterion 37. Data Properties Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLDataProperties
+    */
+
+  def getDataPropertiesCount(axioms: RDD[OWLAxiom]): Long = {
+    getDataProperties(axioms).count()
+  }
+
+  /**
+    *  Criterion 38a. Object Properties
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return RDD of existing OWLObjectProperties
+    */
+
+  def getObjectProperties(axioms: RDD[OWLAxiom]): RDD[OWLObjectProperty] = {
+    val objectProperties: RDD[OWLObjectProperty] = axioms.flatMap {
+      case a: HasObjectPropertiesInSignature => a.objectPropertiesInSignature().iterator().asScala
+      case _ => null
+    }.filter(_ != null).cache().distinct(parallelism)
+
+    objectProperties
+  }
+
+  /**
+    *  Criterion 38. Object Properties Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLObjectProperties
+    */
+
+  def getObjectPropertiesCount(axioms: RDD[OWLAxiom]): Long = {
+    getObjectProperties(axioms).count()
+  }
+
+  /**
+    *  Criterion 39. Class Assertion Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLClassAssertions
+    */
+
+  def getClassAssertionCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.CLASS_ASSERTION).count()
+
+  /**
+    *  Criterion 40. Data Property Assertion Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLDataPropertyAssertions
+    */
+
+  def getDataPropertyAssertionCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.DATA_PROPERTY_ASSERTION).count()
+
+  /**
+    *  Criterion 41. Object Property Assertion Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLObjectPropertyAssertions
+    */
+
+  def getObjectPropertyAssertionCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.OBJECT_PROPERTY_ASSERTION).count()
+
+  /**
+    *  Criterion 42. Annotation Property Assertion Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLAnnotationPropertyAssertions
+    */
+
+  def getAnnotationAssertionCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.ANNOTATION_ASSERTION).count()
+
+  /**
+    *  Criterion 43. Different Individuals Count
+    *
+    *  @param axioms RDD of OWLAxioms
+    *  @return The number of existing OWLDifferentIndividuals
+    */
+
+  def getDiffIndividualsAxiomCount(axioms: RDD[OWLAxiom]): Long =
+    owlAxioms.extractAxioms(axioms, AxiomType.DIFFERENT_INDIVIDUALS).count()
+
+  /**
+    * Criterion 44. Object Intersection Of.
+    *
+    * @param axioms RDD of OWLAxioms
+    * @return List of ObjectIntersectionOf class expression.
+    */
+
+  def getObjectIntersectionOf(axioms: RDD[OWLAxiom]): RDD[OWLClassExpression] = {
+
+    owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
+        .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+        .filter(a => a.getOperandsAsList.get(1).getClassExpressionType
+                      .equals(ClassExpressionType.OBJECT_INTERSECTION_OF))
+        .map(a => a.getOperandsAsList.get(1))
+  }
+
+  /**
+    * Criterion 45. Object Union Of.
+    *
+    * @param axioms RDD of OWLAxioms
+    * @return List of ObjectIUnionOf class expression.
+    */
+
+  def getObjectUnionOf(axioms: RDD[OWLAxiom]): RDD[OWLClassExpression] = {
+
+    owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
+             .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+             .filter(a => a.getOperandsAsList.get(1).getClassExpressionType
+                           .equals(ClassExpressionType.OBJECT_UNION_OF))
+             .map(a => a.getOperandsAsList.get(1))
+  }
+
+  /**
+    * Criterion 46. Object Complement Of.
+    *
+    * @param axioms RDD of OWLAxioms
+    * @return List of ObjectComplementOf class expression.
+    */
+
+  def getObjectComplementOf(axioms: RDD[OWLAxiom]): RDD[OWLClassExpression] = {
+
+    owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
+      .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+      .filter(a => a.getOperandsAsList.get(1).getClassExpressionType
+        .equals(ClassExpressionType.OBJECT_COMPLEMENT_OF))
+      .map(a => a.getOperandsAsList.get(1))
+  }
+
+  /**
+    * Criterion 47. Data SomeValuesFrom
+    *
+    * @param axioms RDD of OWLAxioms
+    * @return List of DataSomeValuesFrom class expression.
+    */
+
+  def getDataSomeValuesFrom(axioms: RDD[OWLAxiom]): RDD[OWLClassExpression] = {
+
+    owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
+      .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+      .filter(a => a.getOperandsAsList.get(1).getClassExpressionType
+        .equals(ClassExpressionType.DATA_SOME_VALUES_FROM))
+      .map(a => a.getOperandsAsList.get(1))
+  }
+
+  /**
+    * Criterion 48. Data AllValuesFrom
+    *
+    * @param axioms RDD of OWLAxioms
+    * @return List of DataAllValuesFrom class expression.
+    */
+
+  def getDataAllValuesFrom(axioms: RDD[OWLAxiom]): RDD[OWLClassExpression] = {
+
+    owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
+      .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+      .filter(a => a.getOperandsAsList.get(1).getClassExpressionType
+        .equals(ClassExpressionType.DATA_ALL_VALUES_FROM))
+      .map(a => a.getOperandsAsList.get(1))
+  }
+
+  /**
+    * Criterion 49. Data Cardinality
+    *
+    * @param axioms RDD of OWLAxioms
+    * @return List of DataCardinality class expression.
+    */
+
+  def getDataCardinality(axioms: RDD[OWLAxiom]): RDD[OWLClassExpression] = {
+
+    owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
+      .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+      .filter(a => a.getOperandsAsList.get(1).getClassExpressionType.equals(ClassExpressionType.DATA_MIN_CARDINALITY)
+        || a.getOperandsAsList.get(1).getClassExpressionType.equals(ClassExpressionType.DATA_MAX_CARDINALITY)
+      )
+      .map(a => a.getOperandsAsList.get(1))
+  }
+
+  /**
+    * Criterion 50. Data HasValue
+    *
+    * @param axioms RDD of OWLAxioms
+    * @return List of DataHasValue class expression.
+    */
+
+  def getDataHasValue(axioms: RDD[OWLAxiom]): RDD[OWLClassExpression] = {
+
+    owlAxioms.extractAxioms(axioms, AxiomType.EQUIVALENT_CLASSES)
+      .asInstanceOf[RDD[OWLEquivalentClassesAxiom]]
+      .filter(a => a.getOperandsAsList.get(1).getClassExpressionType
+        .equals(ClassExpressionType.DATA_HAS_VALUE))
+      .map(a => a.getOperandsAsList.get(1))
+  }
+
 }
 
 // Criterion 1.
 class UsedClasses (axioms: RDD[OWLAxiom], spark: SparkSession) {
+  val parallelism = 315
 
   // ?p=rdf:type && isIRI(?o)
   // ClassAssertions (C, indv)
@@ -1985,7 +2217,8 @@ class UsedClasses (axioms: RDD[OWLAxiom], spark: SparkSession) {
                                                        .asInstanceOf[RDD[OWLClassAssertionAxiom]]
 
   // M[?o]++
-  def action(): RDD[OWLClassExpression] = filter().map(_.getClassExpression).distinct()
+  def action(): RDD[OWLClassExpression] = filter().map(_.getClassExpression)
+                                                  .distinct(parallelism)
 
   // top(M,100)
   def postProc(): Array[OWLClassExpression] = action().take(100)
@@ -2003,6 +2236,8 @@ object UsedClasses {
 
 // Criterion 2.
 class UsedClassesCount (axioms: RDD[OWLAxiom], spark: SparkSession) {
+
+  val parallelism = 315
 
   // ?p=rdf:type && isIRI(?o)
   // ClassAssertions (C, indv)
@@ -2029,7 +2264,7 @@ class UsedClassesCount (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vc = classes.map(t => "[ void:class " + "<" + t._1 + ">;   void:axioms " + t._2 + "; ], ")
 
     val c_action = new Array[String](1)
-    c_action(0) = "\nvoid:classes " + action().map(f => f._1).distinct().count + ";"
+    c_action(0) = "\nvoid:classes " + action().map(f => f._1).distinct(parallelism).count + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(c_action)
     if (classes.count() > 0) {
@@ -2073,12 +2308,15 @@ object DefinedClasses {
 
 // Criterion 5(a).
 class UsedDataProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
+
+  val parallelism = 315
+
   def filter(): RDD[OWLDataPropertyExpression] = {
 
     val dataPropertyAssertion = owlAxioms.extractAxioms(axioms, AxiomType.DATA_PROPERTY_ASSERTION)
                                          .asInstanceOf[RDD[OWLDataPropertyAssertionAxiom]]
 
-    val usedDataProperties = dataPropertyAssertion.map(_.getProperty).distinct()
+    val usedDataProperties = dataPropertyAssertion.map(_.getProperty).distinct(parallelism)
 
     usedDataProperties
   }
@@ -2097,7 +2335,7 @@ class UsedDataProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vdp = dataProperties.map(t => "[ void:dataProperty " + "<" + t._1 + ">;   void:axioms " + t._2 + "; ], ")
 
     val dp_action = new Array[String](1)
-    dp_action(0) = "\nvoid:dataProperties " + action().map(f => f._1).distinct().count + ";"
+    dp_action(0) = "\nvoid:dataProperties " + action().map(f => f._1).distinct(parallelism).count + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(dp_action)
     c.union(c_p).union(vdp)
@@ -2110,6 +2348,8 @@ object UsedDataProperties {
 
 // Criterion 5(b).
 class UsedObjectProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
+
+  val parallelism = 315
 
   def filter(): RDD[OWLObjectPropertyExpression] = {
     val objPropertyAssertion = owlAxioms.extractAxioms(axioms, AxiomType.OBJECT_PROPERTY_ASSERTION)
@@ -2134,7 +2374,7 @@ class UsedObjectProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vop = objProperties.map(t => "[ void:objectProperty " + t._1 + ";   void:axioms " + t._2 + "; ], ")
 
     val op_action = new Array[String](1)
-    op_action(0) = "\nvoid:objectProperties " + action().map(f => f._1).distinct().count + ";"
+    op_action(0) = "\nvoid:objectProperties " + action().map(f => f._1).distinct(parallelism).count + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(op_action)
     c.union(c_p).union(vop)
@@ -2148,9 +2388,12 @@ object UsedObjectProperties {
 // Criterion 5(c)
 class UsedAnnotationProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
 
+  val parallelism = 315
+
   def filter(): RDD[OWLAnnotationProperty] = {
 
-    val annAssertion = owlAxioms.extractAxioms(axioms, AxiomType.ANNOTATION_ASSERTION).asInstanceOf[RDD[OWLAnnotationAssertionAxiom]]
+    val annAssertion = owlAxioms.extractAxioms(axioms, AxiomType.ANNOTATION_ASSERTION)
+                                .asInstanceOf[RDD[OWLAnnotationAssertionAxiom]]
     val usedAnnProperties = annAssertion.map(_.getProperty)
 
     usedAnnProperties
@@ -2170,7 +2413,7 @@ class UsedAnnotationProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vap = annProperties.map(t => "[ void:annotationProperty " +  t._1 + ";   void:axioms " + t._2 + "; ], ")
 
     val ap_action = new Array[String](1)
-    ap_action(0) = "\nvoid:annotationProperty " + action().map(f => f._1).distinct().count + ";"
+    ap_action(0) = "\nvoid:annotationProperty " + action().map(f => f._1).distinct(parallelism).count + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(ap_action)
     c.union(c_p).union(vap)
@@ -2184,31 +2427,43 @@ object UsedAnnotationProperties {
 
 object OWLStats {
 
-  def main(args: Array[String]): Unit = {
-    println("================================")
-    println("|  Distributed OWL Statistics  |")
-    println("================================")
+    def main(args: Array[String]): Unit = {
 
-    /**
-      * Create a SparkSession, do so by first creating a SparkConf object to configure the application .
-      * 'Local' is a special value that runs Spark on one thread on the local machine, without connecting to a cluster.
-      * An application name used to identify the application on the cluster manager's UI.
-      */
-    @transient val spark = SparkSession.builder
-      .master("local[4]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .appName("Distributed OWL Statistics")
-      .getOrCreate()
+      println("================================")
+      println("|  Distributed OWL Statistics  |")
+      println("================================")
 
-    val input: String = getClass.getResource("/ont_functional.owl").getPath
+      /**
+        * Create a SparkSession, do so by first creating a SparkConf object to configure the application .
+        * 'Local' is a special value that runs Spark on one thread on the local machine, without connecting to a cluster.
+        * An application name used to identify the application on the cluster manager's UI.
+        */
+      @transient val spark = SparkSession.builder
+        .master("local[4]")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .appName("Distributed OWL Statistics")
+        .getOrCreate()
 
-    // Call the functional syntax OWLAxiom builder
-    val axioms = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input).distinct()
+      val input: String = getClass.getResource("/ont_functional.owl").getPath
 
-    val stats = new OWLStats(spark).run(axioms)
+      val syntax: owl.Syntax.Value = Syntax.FUNCTIONAL
+      var axioms: RDD[OWLAxiom] = null
 
-    spark.stop
+      if (syntax.equals(Syntax.FUNCTIONAL)) {
+          axioms = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input).distinct()
 
+      } else if (syntax.equals(Syntax.MANCHESTER)) {
+          axioms = ManchesterSyntaxOWLAxiomsRDDBuilder.build(spark, input).distinct()
+
+      } else if (syntax.equals(Syntax.OWLXML)) {
+          axioms = OWLXMLSyntaxOWLAxiomsRDDBuilder.build(spark, input).distinct()
+
+      } else {
+          println("Format is not supported")
+      }
+
+      val stats = new OWLStats(spark).run(axioms)
+
+      spark.stop
   }
-
 }
