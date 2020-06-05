@@ -172,6 +172,7 @@ object minHashTryOut {
     println("Proceeded Step 2")
 
     // 3. decide for mode
+    println("Start Step 3")
     val feature_creation_mode = "an"
 
     def triples_with_uri(node: Node, all_triples: RDD[Triple]): RDD[Triple] = {
@@ -180,6 +181,62 @@ object minHashTryOut {
       }
       triples.filter(containsUri(_, node))
     }
+
+    // tryout this step to get one node and to filter triples to a subset where only triples are mentioned that include this uri
+    val someUri: Node = triples.filter(_.getSubject.isURI()).take(10)(8).getSubject()
+    println("Selected Uri is:" + someUri)
+    val someSubsetOfSomeUri: RDD[Triple] = triples_with_uri(node = someUri, all_triples = triples)
+    println("Resulting Triples Subset is")
+    someSubsetOfSomeUri.foreach(println(_))
+
+    // now define a function that creates feature sequence from uri
+    // differntialte between different modes
+    def create_feature_sequence(uri: Node, triples_subset: RDD[Triple], mode: String = "an"): Map[Node, RDD[Seq[Node]]] = {
+      if (mode == "an") {
+        def an_feature(triple: Triple, uri: Node): Seq[Node] = {
+          if (uri == triple.getSubject) Seq(triple.getObject)
+          else if (uri == triple.getObject) Seq(triple.getSubject)
+          else throw new Exception("in mode an (all neighbors) the uri is whether subject nor object")
+        }
+        Map(Tuple2(uri: Node, triples_subset.map(an_feature(_, uri))))
+      }
+      else if (mode == "at") {
+        def an_feature(triple: Triple, uri: Node): Seq[Node] = {
+          if (uri == triple.getSubject) Seq(triple.getPredicate, triple.getObject)
+          else if (uri == triple.getObject) Seq(triple.getSubject, triple.getMatchPredicate)
+          else throw new Exception("in mode at (all triples) the uri is whether subject nor object")
+        }
+        Map(Tuple2(uri: Node, triples_subset.map(an_feature(_, uri))))
+      }
+      else throw new Exception("other modes are currently not supported, currently supported are: an or at")
+    }
+
+    // now test if this function call works out
+    // once again get an uri
+    println("Selected Uri is once again:" + someUri)
+    // reused subset of uris is
+    println("Resulting Triples Subset is")
+    someSubsetOfSomeUri.foreach(println(_))
+    // now call the function for one uri
+    val someFeaturesForSomeUri = create_feature_sequence(someUri, someSubsetOfSomeUri, mode = "at")
+    println("the resulting map looks like this:")
+    someFeaturesForSomeUri.foreach(println(_))
+    println("these are the features for some uris")
+    someFeaturesForSomeUri(someUri).foreach(println(_))
+    // now call the function for all uris
+    println("now call for all uris")
+    val someMapOfAllUrisToAllFeatures: Array[Map[Node, RDD[Seq[Node]]]] = all_uris.map(one_uri => create_feature_sequence(one_uri, triples_with_uri(node = one_uri, all_triples = triples), mode = "at"))
+    val someMergedMapOfAllUrisToAllFeatures: Map[Node, RDD[Seq[Node]]] = someMapOfAllUrisToAllFeatures.flatten.toMap
+    println("try out one uri from this map")
+    println(someMergedMapOfAllUrisToAllFeatures(someUri))
+    someMergedMapOfAllUrisToAllFeatures(someUri).foreach(println(_))
+
+    // now collect all features to later map to inexes which are needed for later later representation
+
+
+
+
+
 
     /* val all_features
 
