@@ -233,15 +233,22 @@ object minHashTryOut {
 
     // 4. now collect all features to later map to inexes which are needed for later later representation
     println("Start Step 4")
-    val allFeaturesSet: Set[Seq[Node]] = someMergedMapOfAllUrisToAllFeatures.map(_._2).reduce(_ union _).collect().toSet
+    val allFeaturesList: Array[Seq[Node]] = someMergedMapOfAllUrisToAllFeatures.map(_._2).reduce(_ union _).toSet.toList
 
     println("These are all our different features gained from all uris")
-    allFeaturesSet.foreach(println(_))
-    println("in total we have " + allFeaturesSet.size + " different features")
+    allFeaturesList.foreach(println(_))
+    println("in total we have " + allFeaturesList.size + " different features")
 
     println("Proceeded Step 4")
 
-    //
+    // start step 5
+    // in this step we create a map from the sequence of nodes to a integer
+    // the sequence represent a feature
+    println("Start step 5")
+    val featureMap: Map[Seq[Node], Int] = (allFeaturesList zip (0 to allFeaturesList.size)).toMap
+    println("the mapping looks like this:")
+    featureMap.foreach(println(_))
+    println("Proceeded Step 5")
 
 
     /* val all_features
