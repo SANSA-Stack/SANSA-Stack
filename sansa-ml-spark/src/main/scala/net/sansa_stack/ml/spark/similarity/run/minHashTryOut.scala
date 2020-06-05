@@ -250,6 +250,13 @@ object minHashTryOut {
     featureMap.foreach(println(_))
     println("Proceeded Step 5")
 
+    // 6. total number of features
+    println("Start Step 6")
+    val total_number_of_features: Int = featureMap.size
+    println("Total Number of Features is: " + total_number_of_features)
+    println("Proceeded Step 6")
+    // 7. for each uri collect triples for feature method
+    // 8. per uriIndexInt create sequence
 
     /* val all_features
 
