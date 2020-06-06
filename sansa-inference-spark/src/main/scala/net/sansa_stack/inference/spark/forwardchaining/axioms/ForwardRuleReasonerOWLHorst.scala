@@ -1,6 +1,7 @@
 package net.sansa_stack.inference.spark.forwardchaining.axioms
 
 import net.sansa_stack.inference.utils.CollectionUtils
+import net.sansa_stack.owl.spark.owlAxioms
 import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, OWLAxiomsRDD}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.{RDD, UnionRDD}
@@ -42,29 +43,29 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 30) exte
 //      case _ => null
 //    }.filter(_ != null).distinct()
 
-    var subClassof = extractAxiom(axiomsRDD, AxiomType.SUBCLASS_OF)
-    var subDataProperty = extractAxiom(axiomsRDD, AxiomType.SUB_DATA_PROPERTY)
-    var subObjProperty = extractAxiom(axiomsRDD, AxiomType.SUB_OBJECT_PROPERTY)
-    val subAnnProp = extractAxiom(axiomsRDD, AxiomType.SUB_ANNOTATION_PROPERTY_OF)
-    val objectProDomain = extractAxiom(axiomsRDD, AxiomType.OBJECT_PROPERTY_DOMAIN)
-    val objectProRange = extractAxiom(axiomsRDD, AxiomType.OBJECT_PROPERTY_RANGE)
-    val dataProDomain = extractAxiom(axiomsRDD, AxiomType.DATA_PROPERTY_DOMAIN)
-    val dataProRange = extractAxiom(axiomsRDD, AxiomType.DATA_PROPERTY_RANGE)
-    val annProDomain = extractAxiom(axiomsRDD, AxiomType.ANNOTATION_PROPERTY_DOMAIN)
-    val equClass = extractAxiom(axiomsRDD, AxiomType.EQUIVALENT_CLASSES)
-    val equDataProp = extractAxiom(axiomsRDD, AxiomType.EQUIVALENT_DATA_PROPERTIES)
-    val equObjProp = extractAxiom(axiomsRDD, AxiomType.EQUIVALENT_OBJECT_PROPERTIES)
+    var subClassof = owlAxioms.extractAxioms(axiomsRDD, AxiomType.SUBCLASS_OF)
+    var subDataProperty = owlAxioms.extractAxioms(axiomsRDD, AxiomType.SUB_DATA_PROPERTY)
+    var subObjProperty = owlAxioms.extractAxioms(axiomsRDD, AxiomType.SUB_OBJECT_PROPERTY)
+    val subAnnProp = owlAxioms.extractAxioms(axiomsRDD, AxiomType.SUB_ANNOTATION_PROPERTY_OF)
+    val objectProDomain = owlAxioms.extractAxioms(axiomsRDD, AxiomType.OBJECT_PROPERTY_DOMAIN)
+    val objectProRange = owlAxioms.extractAxioms(axiomsRDD, AxiomType.OBJECT_PROPERTY_RANGE)
+    val dataProDomain = owlAxioms.extractAxioms(axiomsRDD, AxiomType.DATA_PROPERTY_DOMAIN)
+    val dataProRange = owlAxioms.extractAxioms(axiomsRDD, AxiomType.DATA_PROPERTY_RANGE)
+    val annProDomain = owlAxioms.extractAxioms(axiomsRDD, AxiomType.ANNOTATION_PROPERTY_DOMAIN)
+    val equClass = owlAxioms.extractAxioms(axiomsRDD, AxiomType.EQUIVALENT_CLASSES)
+    val equDataProp = owlAxioms.extractAxioms(axiomsRDD, AxiomType.EQUIVALENT_DATA_PROPERTIES)
+    val equObjProp = owlAxioms.extractAxioms(axiomsRDD, AxiomType.EQUIVALENT_OBJECT_PROPERTIES)
 
     // --------- extract instance elements
-    var classAssertion = extractAxiom(axiomsRDD, AxiomType.CLASS_ASSERTION)
+    var classAssertion = owlAxioms.extractAxioms(axiomsRDD, AxiomType.CLASS_ASSERTION)
 
-    var dataPropAssertion = extractAxiom(axiomsRDD, AxiomType.DATA_PROPERTY_ASSERTION)
+    var dataPropAssertion = owlAxioms.extractAxioms(axiomsRDD, AxiomType.DATA_PROPERTY_ASSERTION)
       .asInstanceOf[RDD[OWLDataPropertyAssertionAxiom]]
 
-    var objPropAssertion = extractAxiom(axiomsRDD, AxiomType.OBJECT_PROPERTY_ASSERTION)
+    var objPropAssertion = owlAxioms.extractAxioms(axiomsRDD, AxiomType.OBJECT_PROPERTY_ASSERTION)
       .asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
 
-    var annAssertion = extractAxiom(axiomsRDD, AxiomType.ANNOTATION_ASSERTION)
+    var annAssertion = owlAxioms.extractAxioms(axiomsRDD, AxiomType.ANNOTATION_ASSERTION)
       .asInstanceOf[RDD[OWLAnnotationAssertionAxiom]]
 
     // ---------------- Schema Rules --------------------
@@ -211,31 +212,31 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 30) exte
 
     // Extract properties with certain OWL characteristic and broadcast
     val functionalObjPropBC = sc.broadcast(
-      extractAxiom(axiomsRDD, AxiomType.FUNCTIONAL_OBJECT_PROPERTY)
+      owlAxioms.extractAxioms(axiomsRDD, AxiomType.FUNCTIONAL_OBJECT_PROPERTY)
         .asInstanceOf[RDD[OWLFunctionalObjectPropertyAxiom]]
         .map(a => a.getProperty)
         .collect())
 
     val inversefunctionalObjPropBC = sc.broadcast(
-      extractAxiom(axiomsRDD, AxiomType.INVERSE_FUNCTIONAL_OBJECT_PROPERTY)
+      owlAxioms.extractAxioms(axiomsRDD, AxiomType.INVERSE_FUNCTIONAL_OBJECT_PROPERTY)
         .asInstanceOf[RDD[OWLInverseFunctionalObjectPropertyAxiom]]
         .map(a => a.getProperty)
         .collect())
 
     val symmetricObjPropBC = sc.broadcast(
-      extractAxiom(axiomsRDD, AxiomType.SYMMETRIC_OBJECT_PROPERTY)
+      owlAxioms.extractAxioms(axiomsRDD, AxiomType.SYMMETRIC_OBJECT_PROPERTY)
         .asInstanceOf[RDD[OWLSymmetricObjectPropertyAxiom]]
         .map(a => a.getProperty)
         .collect())
 
     val transtiveObjPropBC = sc.broadcast(
-      extractAxiom(axiomsRDD, AxiomType.TRANSITIVE_OBJECT_PROPERTY)
+      owlAxioms.extractAxioms(axiomsRDD, AxiomType.TRANSITIVE_OBJECT_PROPERTY)
         .asInstanceOf[RDD[OWLTransitiveObjectPropertyAxiom]]
         .map(a => a.getProperty)
         .collect())
 
     val inverseObjPropBC = sc.broadcast(
-      extractAxiom(axiomsRDD, AxiomType.INVERSE_OBJECT_PROPERTIES)
+      owlAxioms.extractAxioms(axiomsRDD, AxiomType.INVERSE_OBJECT_PROPERTIES)
         .asInstanceOf[RDD[OWLInverseObjectPropertiesAxiom]]
         .map(a => (a.getFirstProperty, a.getSecondProperty))
         .collect().toMap)
@@ -606,9 +607,6 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 30) exte
     inferredGraph
   }
 
-  def extractAxiom(axiom: RDD[OWLAxiom], T: AxiomType[_]): RDD[OWLAxiom] = {
-      axiom.filter(a => a.getAxiomType.equals(T))
-    }
 }
 
 //
@@ -634,7 +632,7 @@ class ForwardRuleReasonerOWLHorst (sc: SparkContext, parallelism: Int = 30) exte
     println("=====================================")
 
     // Call the functional syntax OWLAxiom builder
-    val owlAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
+    val owlAxiomsRDD: OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input).distinct()
 
     val ruleReasoner = new ForwardRuleReasonerOWLHorst(sc, 2)
     val res: RDD[OWLAxiom] = ruleReasoner(owlAxiomsRDD)
