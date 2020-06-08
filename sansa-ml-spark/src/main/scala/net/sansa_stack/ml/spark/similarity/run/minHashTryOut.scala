@@ -3,6 +3,7 @@ package net.sansa_stack.ml.spark.similarity.run
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import net.sansa_stack.ml.spark.similarity.run.Semantic_Similarity_Estimator.{Config, parser, read_in_nt_triples, run}
+import org.apache.hadoop.fs.DF
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.MinHashLSH
@@ -12,6 +13,8 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.graph.Triple
+import org.apache.spark.ml.linalg
+import org.apache.spark.sql
 import shapeless.PolyDefns.->
 
 
@@ -169,6 +172,8 @@ object minHashTryOut {
       tmp3
     }
     val uri_index_map: Map[Node, Int] = get_all_index_map(all_uris)
+    println("map from uri to index")
+    println(uri_index_map)
     println("Proceeded Step 2")
 
     // 3. decide for mode
@@ -233,7 +238,7 @@ object minHashTryOut {
 
     // 4. now collect all features to later map to inexes which are needed for later later representation
     println("Start Step 4")
-    val allFeaturesList: Array[Seq[Node]] = someMergedMapOfAllUrisToAllFeatures.map(_._2).reduce(_ union _).toSet.toList
+    val allFeaturesList: Array[Seq[Node]] = someMergedMapOfAllUrisToAllFeatures.map(_._2).reduce(_ union _).collect().toSet.toArray
 
     println("These are all our different features gained from all uris")
     allFeaturesList.foreach(println(_))
@@ -255,31 +260,46 @@ object minHashTryOut {
     val total_number_of_features: Int = featureMap.size
     println("Total Number of Features is: " + total_number_of_features)
     println("Proceeded Step 6")
-    // 7. for each uri collect triples for feature method
-    // 8. per uriIndexInt create sequence
 
-    /* val all_features
+    // Transform triples of uris to data with int
+    // this is the temporal dataset: someMergedMapOfAllUrisToAllFeatures
+    // { case (k, v) => k -> 2 * v }
+    println("Start Step 7")
+    someMergedMapOfAllUrisToAllFeatures.foreach(println(_))
 
-    // create features for each uri
-    def
-    println("All Subjects")
-    val subjectsUris = triples.filterObjects(_.isURI()).getSubjects.distinct.collect() // foreach(println(_))
-    val predicatesUris = triples.filterObjects(_.isURI()).getPredicates.distinct.collect()
-    // only objects which are uri
-    val objectsUris = triples.filterObjects(_.isURI()).getObjects.distinct.collect()
+    // val transformedFeaturesUris: Map[Int, Seq[Tuple2[Int, Double]]] = someMergedMapOfAllUrisToAllFeatures.map({case (k: Node, v: Seq[Seq[Node]]) => (uri_index_map(k), v.map(s => Tuple2(featureMap(s), 1.0)))})
+    val tmp: Map[Node, RDD[Seq[Node]]] = someMergedMapOfAllUrisToAllFeatures
+    def get_sparse_vector(f: RDD[Seq[Node]], m: Map[Seq[Node], Int]): linalg.Vector = {
+      val num_features: Int = m.keySet.size
+      val int_rdd: RDD[Int] = f.map(fe => m(fe))
+      val needed_seq: Seq[Tuple2[Int, Double]] = int_rdd.map(e => (e, 1.0)).collect().toSeq
+      val res: linalg.Vector = Vectors.sparse(num_features, needed_seq)
+      res
+    }
+    val tmp2: Map[Int, linalg.Vector] = tmp.map({case (n: Node, f: RDD[Seq[Node]]) => (uri_index_map(n), get_sparse_vector(f, featureMap): linalg.Vector)})
+    val tmp3: Seq[Tuple2[Int, linalg.Vector]] = tmp2.toSeq
+    // val tmpsome: linalg.Vector = Vectors.sparse(6, Seq((0, 1.0), (1, 1.0), (2, 1.0)))
 
-    val all_Uris: Set[Node] = subjectsUris.toSet.union(predicatesUris.toSet).union(objectsUris.toSet)
+    val neededDataForMinHashSpark = spark.createDataFrame(tmp3).toDF("id", "features")
 
-    println("all Uris")
-    all_Uris.foreach(println(_))
+    println("this is the needed data for min hash spark")
+    println(neededDataForMinHashSpark)
 
-    for ( node <- all_Uris.toList) {
+    neededDataForMinHashSpark.show()
+    println("and it should look like this:")
+    dfA.show()
 
-    } */
+    println("Proceeded Step 7")
 
-    /* import org.apache.spark.ml.feature._
+    // Here we start the example code pipeline of min Hash in apache spark for similarity estimation
+    println("Here we start the example code pipeline of min Hash in apache spark for similarity estimation")
+    import org.apache.spark.ml.feature._
     import org.apache.spark.ml.linalg._
     import org.apache.spark.sql.types._
+
+    // the here starting phase is for read in and vectorization
+    // this is done previously by own code
+    /*
     val df = spark.read.option("delimiter", "\t").csv("/user/hadoop/testdata.tsv")
     val dfUsed = df.select(col("_c1").as("title"), col("_c4").as("content")).filter(col("content") !== null)
     dfUsed.show()
@@ -294,17 +314,27 @@ object minHashTryOut {
     val isNoneZeroVector = udf({v: Vector => v.numNonzeros > 0}, DataTypes.BooleanType)
     val vectorizedDf = cvModel.transform(wordsDf).filter(isNoneZeroVector(col("features"))).select(col("title"), col("features"))
     vectorizedDf.show()
+    */
+
+    val vectorizedDf: sql.DataFrame = neededDataForMinHashSpark
 
     val mh = new MinHashLSH().setNumHashTables(3).setInputCol("features").setOutputCol("hashValues")
     val model = mh.fit(vectorizedDf)
 
     model.transform(vectorizedDf).show()
 
-    val key = Vectors.sparse(vocabSize, Seq((cvModel.vocabulary.indexOf("united"), 1.0), (cvModel.vocabulary.indexOf("states"), 1.0)))
-    val k = 40
-    model.approxNearestNeighbors(vectorizedDf, key, k).show()
+    // here lines are presented which work like recommendations
+    // we need  to transform the code so vectorizer are callable similar to the here presented code
+    //  TODO in future
+    // val key = Vectors.sparse(vocabSize, Seq((cvModel.vocabulary.indexOf("united"), 1.0), (cvModel.vocabulary.indexOf("states"), 1.0)))
+    // val k = 40
+    // model.approxNearestNeighbors(vectorizedDf, key, k).show()
 
-    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show() */
+    // no we have to guess a threshold
+    // currently I dont know how to set it up
+    val threshold = 0.6
+
+    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show()
 
 
 
