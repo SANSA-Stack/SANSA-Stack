@@ -42,21 +42,88 @@ import net.sansa_stack.rdf.common.partition.schema._
 import net.sansa_stack.rdf.spark.io.JenaKryoRegistrator
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 
-class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex]) extends Serializable {
+case class OntopQueryRewrite(sparqlQuery: String,
+                             sqlQuery: String,
+                             sqlSignature: ImmutableSortedSet[Variable],
+                             sqlTypeMap: ImmutableMap[Variable, DBTermType],
+                             constructionNode: ConstructionNode,
+                             answerAtom: DistinctVariableOnlyDataAtom,
+                             sparqlVar2Term: ImmutableSubstitution[ImmutableTerm],
+                             termFactory: TermFactory,
+                             typeFactory: TypeFactory,
+                             substitutionFactory: SubstitutionFactory
+                            ) {
 
-  case class OntopQueryRewrite(sparqlQuery: String,
-                               sqlQuery: String,
-                               sqlSignature: ImmutableSortedSet[Variable],
-                               sqlTypeMap: ImmutableMap[Variable, DBTermType],
-                               constructionNode: ConstructionNode,
-                               answerAtom: DistinctVariableOnlyDataAtom,
-                               sparqlVar2Term: ImmutableSubstitution[ImmutableTerm],
-                               termFactory: TermFactory,
-                               typeFactory: TypeFactory,
-                               substitutionFactory: SubstitutionFactory
-                              ) {
+}
 
+class RowMapper(queryRewrite: OntopQueryRewrite,
+                termFactory: TermFactory,
+                substitutionFactory: SubstitutionFactory)
+  extends (Row => Int)
+    with Serializable {
+
+  override def apply(row: Row): Int = {
+    val qs = new QuerySolutionMapSer()
+
+    val builder: ImmutableMap.Builder[Variable, Constant] = ImmutableMap.builder()
+    queryRewrite.sqlSignature.asScala
+      .foreach(v => builder.put(v,
+        convertToConstant(row.getAs[String](v.getName),
+          queryRewrite.sqlTypeMap.get(v))
+      ))
+
+    val sqlVar2Constant = substitutionFactory.getSubstitution(builder.build())
+
+    val composition = sqlVar2Constant.composeWith(queryRewrite.constructionNode.getSubstitution)
+
+    queryRewrite.answerAtom.getArguments.asScala.foreach(v => {
+      val rdfNode = evaluate(composition.apply(v))
+      if (rdfNode.isDefined) {
+        qs.add(v.getName, rdfNode.get)
+      }
+    })
+
+    qs
+
+    4
   }
+
+  /**
+   * Convert term to Apache Jena node object
+   */
+  private def evaluate(term: ImmutableTerm): Option[RDFNode] = {
+    val simplifiedTerm = term.simplify()
+    if (simplifiedTerm.isInstanceOf[Constant]) {
+      if (simplifiedTerm.isInstanceOf[RDFConstant]) {
+        simplifiedTerm match {
+          case iri: IRIConstant => Some(ResourceFactory.createResource(iri.getIRI.getIRIString))
+          case l: RDFLiteralConstant => // literals casted to its corresponding type, otherwise String
+            val lexicalValue = l.getValue
+            val lang = l.getType.getLanguageTag
+            val dt = TypeMapper.getInstance().getSafeTypeByName(l.getType.getIRI.getIRIString)
+            if (lang.isPresent) {
+              Some(ResourceFactory.createLangLiteral(lexicalValue, lang.get().getFullString))
+            } else {
+              Some(ResourceFactory.createTypedLiteral(lexicalValue, dt))
+            }
+          case _ => None
+        }
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+
+  private def convertToConstant(jdbcValue: String, termType: DBTermType): Constant = {
+    if (jdbcValue == null) return termFactory.getNullConstant
+    termFactory.getDBConstant(jdbcValue, termType)
+  }
+}
+
+class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
+  extends Serializable {
 
   // load Ontop properties
   val ontopProperties = new Properties()
@@ -351,6 +418,68 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex]) extends 
 
     tableName
   }
+
+  def mapRow(row: Row,
+                     signature: ImmutableList[Variable],
+                     sqlSignature: ImmutableSortedSet[Variable],
+                     sparqlVar2Term: ImmutableSubstitution[ImmutableTerm],
+                     sqlTypeMap: ImmutableMap[Variable, DBTermType]): QuerySolution = {
+
+    val qs = new QuerySolutionMapSer()
+
+    val builder: ImmutableMap.Builder[Variable, Constant] = ImmutableMap.builder()
+    sqlSignature.asScala
+      .foreach(v => builder.put(v,
+        convertToConstant(row.getAs[String](v.getName),
+          sqlTypeMap.get(v))
+      ))
+
+    val sqlVar2Constant = substitutionFactory.getSubstitution(builder.build())
+
+    val composition = sqlVar2Constant.composeWith(sparqlVar2Term)
+
+    signature.asScala.foreach(v => {
+      val rdfNode = evaluate(composition.apply(v))
+      if (rdfNode.isDefined) {
+        qs.add(v.getName, rdfNode.get)
+      }
+    })
+
+    qs
+  }
+
+  /**
+   * Convert term to Apache Jena node object
+   */
+  private def evaluate(term: ImmutableTerm): Option[RDFNode] = {
+    val simplifiedTerm = term.simplify()
+    if (simplifiedTerm.isInstanceOf[Constant]) {
+      if (simplifiedTerm.isInstanceOf[RDFConstant]) {
+        simplifiedTerm match {
+          case iri: IRIConstant => Some(ResourceFactory.createResource(iri.getIRI.getIRIString))
+          case l: RDFLiteralConstant => // literals casted to its corresponding type, otherwise String
+            val lexicalValue = l.getValue
+            val lang = l.getType.getLanguageTag
+            val dt = TypeMapper.getInstance().getSafeTypeByName(l.getType.getIRI.getIRIString)
+            if (lang.isPresent) {
+              Some(ResourceFactory.createLangLiteral(lexicalValue, lang.get().getFullString))
+            } else {
+              Some(ResourceFactory.createTypedLiteral(lexicalValue, dt))
+            }
+          case _ => None
+        }
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+
+  private def convertToConstant(jdbcValue: String, termType: DBTermType): Constant = {
+    if (jdbcValue == null) return termFactory.getNullConstant
+    termFactory.getDBConstant(jdbcValue, termType)
+  }
 }
 
 object OntopSPARQL2SQLRewriter {
@@ -359,8 +488,14 @@ object OntopSPARQL2SQLRewriter {
   }
 }
 
+
+
+//object RowMapper extends RowMapper(null) {}
+
+
 class OntopSPARQLEngine(val spark: SparkSession,
                         val partitions: Map[RdfPartitionComplex, RDD[Row]]) {
+
 
   val sparql2sql = OntopSPARQL2SQLRewriter(partitions.keySet.toSeq)
 
@@ -793,8 +928,11 @@ class OntopSPARQLEngine(val spark: SparkSession,
     connection.close()
   }
 
+  def genMapper(kryoWrapper: KryoSerializationWrapper[(Row => Int)]) (row: Row) : Int = {
+    kryoWrapper.value.apply(row)
+  }
 
-  def executeNative(query: String): RDD[QuerySolution] = {
+  def executeNative(query: String): RDD[Int] = {
     logger.info(s"SPARQL query:\n$query")
 
     // translate to SQL query
@@ -807,14 +945,24 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val result = spark.sql(sql)
 
     // map Spark row to Jena QuerySolution object
-    implicit val qsEncoder = org.apache.spark.sql.Encoders.kryo[QuerySolution]
-    result.map(row => mapRow(row,
-      queryRewrite.answerAtom.getArguments,
-      queryRewrite.sqlSignature,
-      queryRewrite.constructionNode.getSubstitution,
-      queryRewrite.sqlTypeMap))
-      .rdd
+//    implicit val qsEncoder = org.apache.spark.sql.Encoders.kryo[QuerySolution]
+//    result.map(row => mapRow(row,
+//      queryRewrite.answerAtom.getArguments,
+//      queryRewrite.sqlSignature,
+//      queryRewrite.constructionNode.getSubstitution,
+//      queryRewrite.sqlTypeMap))
+//      .rdd
 
+    val mappingsLocal = mappings
+    val props = ontopProperties
+
+    val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappingsLocal, props)
+
+    val mapper = genMapper(KryoSerializationWrapper(new RowMapper(queryRewrite, termFactory, substitutionFactory))) _
+//    implicit val qsEncoder = org.apache.spark.sql.Encoders.kryo[QuerySolution]
+    import spark.implicits._
+    result.map(KryoSerializationWrapper(new RowMapper(queryRewrite, termFactory, substitutionFactory)).value.apply)
+          .rdd
   }
 
   /**
@@ -989,6 +1137,7 @@ object OntopSPARQLEngine {
         result.printSchema()
 
         val resultRDD = sparqlEngine.executeNative(input)
+        resultRDD.count()
         resultRDD.take(10).foreach(println)
       } catch {
         case e: Exception => Console.err.println("failed to execute query")
