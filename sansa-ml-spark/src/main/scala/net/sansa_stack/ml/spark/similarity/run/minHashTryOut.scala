@@ -48,26 +48,58 @@ object minHashTryOut {
     val sometest: List[String] = List(example_triple.getObject().toString(), example_triple.getSubject().toString()) // List("A","B", "C")//example_triple.getObject, example_triple.getSubject)
     println(sometest)
     val somestring: String = example_triple.getObject().toString() + example_triple.getSubject().toString()
-    print(somestring)
+    println(somestring)
 
     val tmp_array: Array[Triple] = Array(
       Triple.create(
-        NodeFactory.createURI("exampleSubject1"),
+        NodeFactory.createURI("exampleUri1"),
         NodeFactory.createURI("examplePredicate1"),
-        NodeFactory.createURI("exampleObject1")
+        NodeFactory.createURI("exampleUri2")
       ), Triple.create(
-        NodeFactory.createURI("exampleSubject2"),
+        NodeFactory.createURI("exampleUri2"),
         NodeFactory.createURI("examplePredicate2"),
-        NodeFactory.createURI("exampleObject1")
+        NodeFactory.createURI("exampleUri3")
       ), Triple.create(
-        NodeFactory.createURI("exampleSubject1"),
+        NodeFactory.createURI("exampleUri3"),
         NodeFactory.createURI("examplePredicate1"),
-        NodeFactory.createURI("exampleObject2")
+        NodeFactory.createURI("exampleUri1")
+      ), Triple.create(
+        NodeFactory.createURI("exampleUri1"),
+        NodeFactory.createURI("examplePredicate1"),
+        NodeFactory.createLiteral("exampleLiteral1")
       )
     )
     val tmp_triples: RDD[Triple] = spark.sparkContext.parallelize(tmp_array)
+    println("this is the triples object wie work with")
 
     tmp_triples.foreach(println(_))
+
+    // try out dense form of transformation
+    println("triples for both directions")
+    val tmp1: RDD[(Node, Seq[Node])] = tmp_triples.flatMap(t => List((t.getSubject, Seq(t.getPredicate, t.getObject)), (t.getObject, Seq(t.getPredicate, t.getSubject))))
+    tmp1.foreach(println(_))
+    println("only uris")
+    val tmp2: RDD[(Node, Seq[Node])] = tmp1.filter(_._1.isURI)
+    tmp2.foreach(println(_))
+    // create map and merge over key node
+    println("merge over node as key and return map")
+    val tmp3: RDD[(Node, Iterable[Seq[Node]])] = tmp2.groupBy(_._1).mapValues(_.map(_._2))
+    tmp3.foreach(println(_))
+    println("collect RDD to perform actions")
+    val tmp4 = tmp3.collect()
+    tmp4.foreach(println(_))
+    println("transfer to dataframe")
+
+    // wwe need a node indexer beacuase we cannot have a dataframe with non primitive datatypes and it is desired to have it in int indexes which reduces also size
+
+
+    val tmp5 = spark.createDataFrame(tmp4).toDF("id", "vals")
+    // val tmp4 = tmp3.toDF("node", "features")
+    tmp5.show()
+    // do this is one call
+
+
+
 
     /* println("experiments start here")
 
@@ -276,11 +308,11 @@ object minHashTryOut {
       val res: linalg.Vector = Vectors.sparse(num_features, needed_seq)
       res
     }
-    val tmp2: Map[Int, linalg.Vector] = tmp.map({case (n: Node, f: RDD[Seq[Node]]) => (uri_index_map(n), get_sparse_vector(f, featureMap): linalg.Vector)})
-    val tmp3: Seq[Tuple2[Int, linalg.Vector]] = tmp2.toSeq
+    val map_of_node_index_to_vector: Map[Int, linalg.Vector] = tmp.map({case (n: Node, f: RDD[Seq[Node]]) => (uri_index_map(n), get_sparse_vector(f, featureMap): linalg.Vector)})
+    val map_transformed_to_seq_for_df: Seq[Tuple2[Int, linalg.Vector]] = map_of_node_index_to_vector.toSeq
     // val tmpsome: linalg.Vector = Vectors.sparse(6, Seq((0, 1.0), (1, 1.0), (2, 1.0)))
 
-    val neededDataForMinHashSpark = spark.createDataFrame(tmp3).toDF("id", "features")
+    val neededDataForMinHashSpark = spark.createDataFrame(map_transformed_to_seq_for_df).toDF("id", "features")
 
     println("this is the needed data for min hash spark")
     println(neededDataForMinHashSpark)
@@ -336,83 +368,6 @@ object minHashTryOut {
 
     model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show()
 
-
-
-
-    /* val tmpTest: Boolean = triples
-
-    def get_pseudo_text_by_uri(n: Node, t: RDD[Triple]): Unit = {
-      val tmp_text: String = ""
-      val object_unis = t.find(Some(n), None, None).getObjects()
-      val subject_uris = t.find(None, None, Some(n)).getSubjects()
-      val predicate_uris_in = t.find(None, None, Some(n)).getPredicates()
-      val predicate_uris_out = t.find(Some(n), None, None).getPredicates()
-
-      val triples_where_n_is_subject = t.find(Some(n), None, None)
-      val triples_where_n_is_predicate = t.find(None, Some(n), None)
-      val triples_where_n_is_object = t.find(None, None, Some(n))
-
-      //val pseudo_word_where_n_is_subject: String = triples_where_n_is_subject.map(_:Triple  => _.getPredicate().toString() _.getObject.toString())
-
-    }
-
-
-    def get_features_by_object(n: Node, t: RDD[Triple]): RDD[Node] = t.find(Some(n), None, None).getObjects()
-    def get_features_by_subject(n: Node, t: RDD[Triple]): RDD[Node] = t.find(None, None, Some(n)).getSubjects()
-
-
-
-    println("all_elements")
-    all_elements.foreach(println(_))
-
-
-    predicates.foreach(println(_))
-    println("All Subjects should be printed")
-
-    val dfA = spark.createDataFrame(Seq(
-      (0, Vectors.sparse(6, Seq((0, 1.0), (1, 1.0), (2, 1.0)))),
-      (1, Vectors.sparse(6, Seq((2, 1.0), (3, 1.0), (4, 1.0)))),
-      (2, Vectors.sparse(6, Seq((0, 1.0), (2, 1.0), (4, 1.0))))
-    )).toDF("id", "features")
-
-    val dfB = spark.createDataFrame(Seq(
-      (3, Vectors.sparse(6, Seq((1, 1.0), (3, 1.0), (5, 1.0)))),
-      (4, Vectors.sparse(6, Seq((2, 1.0), (3, 1.0), (5, 1.0)))),
-      (5, Vectors.sparse(6, Seq((1, 1.0), (2, 1.0), (4, 1.0))))
-    )).toDF("id", "features")
-
-    val key = Vectors.sparse(6, Seq((1, 1.0), (3, 1.0)))
-
-    val mh = new MinHashLSH()
-      .setNumHashTables(5)
-      .setInputCol("features")
-      .setOutputCol("hashes")
-
-    val model = mh.fit(dfA)
-
-    // Feature Transformation
-    println("The hashed dataset where hashed values are stored in the column 'hashes':")
-    model.transform(dfA).show()
-
-    // Compute the locality sensitive hashes for the input rows, then perform approximate
-    // similarity join.
-    // We could avoid computing hashes by passing in the already-transformed dataset, e.g.
-    // `model.approxSimilarityJoin(transformedA, transformedB, 0.6)`
-    println("Approximately joining dfA and dfB on Jaccard distance smaller than 0.6:")
-    model.approxSimilarityJoin(dfA, dfB, 0.6, "JaccardDistance")
-      .select(col("datasetA.id").alias("idA"),
-        col("datasetB.id").alias("idB"),
-        col("JaccardDistance")).show()
-
-    // Compute the locality sensitive hashes for the input rows, then perform approximate nearest
-    // neighbor search.
-    // We could avoid computing hashes by passing in the already-transformed dataset, e.g.
-    // `model.approxNearestNeighbors(transformedA, key, 2)`
-    // It may return less than 2 rows when not enough approximate near-neighbor candidates are
-    // found.
-    println("Approximately searching dfA for 2 nearest neighbors of the key:")
-    model.approxNearestNeighbors(dfA, key, 2).show()
-    */
     spark.stop()
   }
 
