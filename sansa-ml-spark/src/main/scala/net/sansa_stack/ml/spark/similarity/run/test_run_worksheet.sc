@@ -37,10 +37,6 @@ class NodeIndexer {
   def get_vocab_size(): Int = _vocab_size
 }
 
-class somePoint
-
-val p = new somePoint
-
 val nodeIndexer = new NodeIndexer()
 nodeIndexer.fit(someExampleTriples)
 nodeIndexer.get_vocab_size()
