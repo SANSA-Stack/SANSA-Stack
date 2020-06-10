@@ -3,17 +3,17 @@ package net.sansa_stack.query.spark.ontop
 import java.io.{File, StringReader}
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.sql.{Connection, DriverManager, SQLException}
+import java.sql.{Connection, DatabaseMetaData, DriverManager, ResultSet, SQLException}
 import java.util
 import java.util.Properties
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.typeOf
-
 import com.esotericsoftware.kryo
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.google.common.collect.{ImmutableList, ImmutableMap, ImmutableSortedSet, Sets}
+import it.unibz.inf.ontop.answering.reformulation.QueryReformulator
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException, OntopReformulationException}
 import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopReformulationSQLConfiguration}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
@@ -36,7 +36,6 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, OWLOntology}
-
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
 import net.sansa_stack.rdf.common.partition.schema._
 import net.sansa_stack.rdf.spark.io.JenaKryoRegistrator
@@ -146,6 +145,10 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
 
   createTempDB(partitions)
 
+  val md: DatabaseMetaData = connection.getMetaData
+  val rs: ResultSet = md.getTables(null, null, "%", null)
+  while (rs.next) println(rs.getString(3))
+
   // create OBDA mappings
   val mappings = createOBDAMappingsForPartitions(partitions)
 
@@ -169,7 +172,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   /*
    * DB connection (keeps it alive)
    */
-  private var connection: Connection = null
+  var connection: Connection = null
 
   private def createTempDB(partitions: Seq[RdfPartitionComplex]): Unit = {
 
@@ -248,7 +251,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     def createMapping(id: String, tableName: String, property: String): String = {
       s"""
          |mappingId     $id
-         |source        SELECT `s`, `o` FROM `${escapeTablename(tableName)}`
+         |source        SELECT "s", "o" FROM ${escapeTablename(tableName)}
          |target        <{s}> <$property> <{o}> .
          |""".stripMargin
     }
@@ -256,7 +259,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     def createMappingLit(id: String, tableName: String, property: String, datatypeURI: String): String = {
       s"""
          |mappingId     $id
-         |source        SELECT `s`, `o` FROM `${escapeTablename(tableName)}`
+         |source        SELECT "s", "o" FROM ${escapeTablename(tableName)}
          |target        <{s}> <$property> "{o}"^^<$datatypeURI> .
          |""".stripMargin
     }
@@ -264,7 +267,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     def createMappingLiteralWithType(id: String, tableName: String, property: String): String = {
       s"""
          |mappingId     $id
-         |source        SELECT `s`, `o`, `t` FROM `${escapeTablename(tableName)}`
+         |source        SELECT "s", "o", "t" FROM ${escapeTablename(tableName)}
          |target        <{s}> <$property> "{o}"^^<{t}> .
          |""".stripMargin
     }
@@ -272,7 +275,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     def createMappingLang(id: String, tableName: String, property: String): String = {
       s"""
          |mappingId     $id
-         |source        SELECT `s`, `o`, `l` FROM `${escapeTablename(tableName)}`
+         |source        SELECT "s", "o", "l" FROM ${escapeTablename(tableName)}
          |target        <{s}> <$property> "{o}@{l}" .
          |""".stripMargin
     }
@@ -364,7 +367,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
    * Instantiation of the query reformulator
    */
   @throws[OBDASpecificationException]
-  private def createReformulator(obdaMappings: String, properties: Properties) = {
+  def createReformulator(obdaMappings: String, properties: Properties): (QueryReformulator, TermFactory, TypeFactory, SubstitutionFactory) = {
     val obdaSpecification = loadOBDASpecification(obdaMappings, properties)
     val reformulationConfiguration = OntopReformulationSQLConfiguration.defaultBuilder
       .obdaSpecification(obdaSpecification)
@@ -395,11 +398,13 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   }
 
   private def escapeTablename(path: String): String =
+  "\"" +
     URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
       .toLowerCase
       .replace('%', 'P')
       .replace('.', 'C')
-      .replace("-", "dash")
+      .replace("-", "dash") +
+    "\""
 
 
   private def createTableName(p: RdfPartitionComplex): String = {
@@ -530,13 +535,8 @@ class OntopSPARQLEngine(val spark: SparkSession,
     typeOf[SchemaStringDate] -> "DATE"
   ) // .map(e => (typeOf[e._1.type], e._2))
 
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
-  private val JDBC_USER = "sa"
-  private val JDBC_PASSWORD = ""
 
   private def init(): Unit = {
-    // create DB used by Ontop to extract metadata
-    createTempDB(partitions)
 
     // create and register Spark tables
     partitions.foreach {
@@ -546,11 +546,9 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   init()
 
-  // create OBDA mappings
-  val mappings = createOBDAMappingsForPartitions(partitions.keySet)
 
-  val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties)
-  val inputQueryFactory = queryReformulator.getInputQueryFactory
+  val typeFactory = sparql2sql.typeFactory
+  val inputQueryFactory = sparql2sql.queryReformulator.getInputQueryFactory
   // mapping from RDF datatype to Spark SQL datatype
   import org.apache.spark.sql.types.DataTypes._
   val rdfDatatype2SQLCastName = Map(
@@ -566,63 +564,6 @@ class OntopSPARQLEngine(val spark: SparkSession,
     typeFactory.getDatatype(XSD.LONG) -> LongType
   )
 
-  private def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionComplex]): String = {
-
-    def createMapping(id: String, tableName: String, property: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT `s`, `o` FROM `${escapeTablename(tableName)}`
-         |target        <{s}> <$property> <{o}> .
-         |""".stripMargin
-    }
-
-    def createMappingLit(id: String, tableName: String, property: String, datatypeURI: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT `s`, `o` FROM `${escapeTablename(tableName)}`
-         |target        <{s}> <$property> "{o}"^^<$datatypeURI> .
-         |""".stripMargin
-    }
-
-    def createMappingLiteralWithType(id: String, tableName: String, property: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT `s`, `o`, `t` FROM `${escapeTablename(tableName)}`
-         |target        <{s}> <$property> "{o}"^^<{t}> .
-         |""".stripMargin
-    }
-
-    def createMappingLang(id: String, tableName: String, property: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT `s`, `o`, `l` FROM `${escapeTablename(tableName)}`
-         |target        <{s}> <$property> "{o}@{l}" .
-         |""".stripMargin
-    }
-
-    val triplesMapping =
-      s"""
-         |mappingId     triples
-         |source        SELECT `s`, `p`, `o` FROM `triples`
-         |target        <{s}> <http://sansa.net/ontology/triples> "{o}" .
-         |""".stripMargin
-
-    "[MappingDeclaration] @collection [[" +
-      partitions
-        .map {
-          case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
-            val tableName = createTableName(p)
-            val id = escapeTablename(tableName)
-            objectType match {
-              case 1 => createMapping(id, tableName, predicate)
-              case 2 => if (langTagPresent) createMappingLang(id, tableName, predicate)
-                        else createMappingLit(id, tableName, predicate, datatype)
-              case _ => println("TODO: bnode Ontop mapping")
-                        ""
-            }
-        }
-        .mkString("\n\n") + "]]"
-  }
 
 
   private def createTableName(p: RdfPartitionComplex): String = {
@@ -642,82 +583,6 @@ class OntopSPARQLEngine(val spark: SparkSession,
     tableName
   }
 
-  /*
-   * DB connection (keeps it alive)
-   */
-  private var connection: Connection = null
-
-  private def createTempDB(partitions: Map[RdfPartitionComplex, RDD[Row]]): Unit = {
-
-    try {
-      connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-
-      val stmt = connection.createStatement()
-
-      stmt.executeUpdate("DROP ALL OBJECTS")
-
-      partitions.foreach {
-        case (p, rdd) =>
-
-          val name = createTableName(p)
-
-          val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
-          println(p.predicate + "\t" + sparkSchema + "\t" + p.asInstanceOf[RdfPartitionComplex].layout.schema)
-
-          p match {
-            case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
-              objectType match {
-                case 1 => stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
-                  "s varchar(255) NOT NULL," +
-                  "o varchar(255) NOT NULL" +
-                  ")")
-                case 2 => if (langTagPresent) {
-                  stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
-                    "s varchar(255) NOT NULL," +
-                    "o varchar(255) NOT NULL," +
-                    "l varchar(10) NOT NULL" +
-                    ")")
-                  } else {
-                    println(s"datatype: $datatype")
-                    if (p.layout.schema == typeOf[SchemaStringStringType]) {
-                      stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
-                        "s varchar(255) NOT NULL," +
-                        "o varchar(255) NOT NULL," +
-                        "t varchar(255) NOT NULL" +
-                        ")")
-                    } else {
-                      val colType = partitionType2DatabaseType.get(p.layout.schema)
-
-                      if (colType.isDefined) {
-                        stmt.addBatch(
-                          s"""
-                             |CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (
-                             |s varchar(255) NOT NULL,
-                             |o ${colType.get} NOT NULL)
-                             |""".stripMargin)
-                      } else {
-                        println(s"couldn't create table for schema ${p.layout.schema}")
-                      }
-                    }
-                  }
-                case _ => println("TODO: bnode SQL table for Ontop mappings")
-              }
-            case _ => println("wrong partition type")
-          }
-      }
-      //            stmt.addBatch(s"CREATE TABLE IF NOT EXISTS triples (" +
-      //              "s varchar(255) NOT NULL," +
-      //              "p varchar(255) NOT NULL," +
-      //              "o varchar(255) NOT NULL" +
-      //              ")")
-      val numTables = stmt.executeBatch().length
-      println(s"created $numTables tables")
-    } catch {
-      case e: SQLException => e.printStackTrace()
-    }
-    connection.commit()
-    //    connection.close()
-  }
 
   val useHive: Boolean = false
   val useStatistics: Boolean = true
@@ -759,173 +624,23 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   }
 
-  @throws[OBDASpecificationException]
-  @throws[OntopReformulationException]
-  def createSQLQuery(sparqlQuery: String): OntopQueryRewrite = {
-    val query = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-    val executableQuery = queryReformulator.reformulateIntoNativeQuery(query)
-
-    val sqlQuery = extractSQLQuery(executableQuery)
-    val constructionNode = extractRootConstructionNode(executableQuery)
-    val nativeNode = extractNativeNode(executableQuery)
-    val signature = nativeNode.getVariables
-    val typeMap = nativeNode.getTypeMap
-
-    OntopQueryRewrite(sparqlQuery, sqlQuery, signature, typeMap, constructionNode,
-      executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory)
-  }
-
-  @throws[EmptyQueryException]
-  @throws[OntopInternalBugException]
-  private def extractSQLQuery(executableQuery: IQ): String = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    val queryString = Option(tree)
-      .filter((t: IQTree) => t.isInstanceOf[UnaryIQTree])
-      .map((t: IQTree) => t.asInstanceOf[UnaryIQTree].getChild.getRootNode)
-      .filter(n => n.isInstanceOf[NativeNode])
-      .map(n => n.asInstanceOf[NativeNode])
-      .map(_.getNativeQueryString)
-      .getOrElse(throw new MinorOntopInternalBugException("The query does not have the expected structure " +
-        "of an executable query\n" + executableQuery))
-    if (queryString == "") throw new EmptyQueryException
-    queryString
-  }
-
-  @throws[EmptyQueryException]
-  private def extractNativeNode(executableQuery: IQ): NativeNode = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    Option(tree)
-      .filter(t => t.isInstanceOf[UnaryIQTree])
-      .map(t => t.asInstanceOf[UnaryIQTree].getChild.getRootNode)
-      .filter(n => n.isInstanceOf[NativeNode])
-      .map(n => n.asInstanceOf[NativeNode])
-      .getOrElse(throw new MinorOntopInternalBugException("The query does not have the expected structure " +
-        "for an executable query\n" + executableQuery))
-  }
-
-  @throws[EmptyQueryException]
-  @throws[OntopInternalBugException]
-  private def extractRootConstructionNode(executableQuery: IQ): ConstructionNode = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    Option(tree.getRootNode)
-      .filter(n => n.isInstanceOf[ConstructionNode])
-      .map(n => n.asInstanceOf[ConstructionNode])
-      .getOrElse(throw new MinorOntopInternalBugException(
-        "The \"executable\" query is not starting with a construction node\n" + executableQuery))
-  }
-
-  /**
-   * Instantiation of the query reformulator
-   */
-  @throws[OBDASpecificationException]
-  private def createReformulator(obdaMappings: String, properties: Properties) = {
-    val obdaSpecification = loadOBDASpecification(obdaMappings, properties)
-    val reformulationConfiguration = OntopReformulationSQLConfiguration.defaultBuilder
-      .obdaSpecification(obdaSpecification)
-      .jdbcUrl(JDBC_URL)
-      .properties(properties)
-      .enableTestMode
-      .build
-
-    val termFactory = reformulationConfiguration.getTermFactory
-    val typeFactory = reformulationConfiguration.getTypeFactory
-    val queryReformulator = reformulationConfiguration.loadQueryReformulator
-    val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
-
-    (queryReformulator, termFactory, typeFactory, substitutionFactory)
-  }
-
-  @throws[OBDASpecificationException]
-  private def loadOBDASpecification(obdaMappings: String, properties: Properties) = {
-    val mappingConfiguration = OntopMappingSQLAllConfiguration.defaultBuilder
-      .nativeOntopMappingReader(new StringReader(obdaMappings))
-      .jdbcUrl(JDBC_URL)
-      .jdbcUser(JDBC_USER)
-      .jdbcPassword(JDBC_PASSWORD)
-//      .properties(properties)
-      .enableTestMode
-      .build
-    mappingConfiguration.loadSpecification
-  }
-
+  val QUOTATION_STRING = "\""
   private def escapeTablename(path: String): String =
+    QUOTATION_STRING +
     URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
       .toLowerCase
       .replace('%', 'P')
       .replace('.', 'C')
-      .replace("-", "dash")
+      .replace("-", "dash") +
+      QUOTATION_STRING
 
-  private def mapRow(row: Row,
-                     signature: ImmutableList[Variable],
-                     sqlSignature: ImmutableSortedSet[Variable],
-                     sparqlVar2Term: ImmutableSubstitution[ImmutableTerm],
-                     sqlTypeMap: ImmutableMap[Variable, DBTermType]): QuerySolution = {
-
-    val qs = new QuerySolutionMapSer()
-
-    val builder: ImmutableMap.Builder[Variable, Constant] = ImmutableMap.builder()
-    sqlSignature.asScala
-      .foreach(v => builder.put(v,
-                                convertToConstant(row.getAs[String](v.getName),
-                                                  sqlTypeMap.get(v))
-      ))
-
-    val sqlVar2Constant = sparql2sql.substitutionFactory.getSubstitution(builder.build())
-
-    val composition = sqlVar2Constant.composeWith(sparqlVar2Term)
-
-    signature.asScala.foreach(v => {
-      val rdfNode = evaluate(composition.apply(v))
-      if (rdfNode.isDefined) {
-        qs.add(v.getName, rdfNode.get)
-      }
-    })
-
-    qs
-  }
-
-  /**
-   * Convert term to Apache Jena node object
-   */
-  private def evaluate(term: ImmutableTerm): Option[RDFNode] = {
-    val simplifiedTerm = term.simplify()
-    if (simplifiedTerm.isInstanceOf[Constant]) {
-      if (simplifiedTerm.isInstanceOf[RDFConstant]) {
-        simplifiedTerm match {
-          case iri: IRIConstant => Some(ResourceFactory.createResource(iri.getIRI.getIRIString))
-          case l: RDFLiteralConstant => // literals casted to its corresponding type, otherwise String
-            val lexicalValue = l.getValue
-            val lang = l.getType.getLanguageTag
-            val dt = TypeMapper.getInstance().getSafeTypeByName(l.getType.getIRI.getIRIString)
-            if (lang.isPresent) {
-              Some(ResourceFactory.createLangLiteral(lexicalValue, lang.get().getFullString))
-            } else {
-              Some(ResourceFactory.createTypedLiteral(lexicalValue, dt))
-            }
-          case _ => None
-        }
-      } else {
-        None
-      }
-    } else {
-      None
-    }
-  }
-
-  private def convertToConstant(jdbcValue: String, termType: DBTermType): Constant = {
-    if (jdbcValue == null) return termFactory.getNullConstant
-    termFactory.getDBConstant(jdbcValue, termType)
-  }
 
   /**
    * Shutdown of the engine, i.e. all open resource will be closed.
    */
   def stop(): Unit = {
-    connection.close()
+    sparql2sql.connection.close()
   }
 
   def genMapper(kryoWrapper: KryoSerializationWrapper[(Row => Int)]) (row: Row) : Int = {
@@ -953,10 +668,10 @@ class OntopSPARQLEngine(val spark: SparkSession,
 //      queryRewrite.sqlTypeMap))
 //      .rdd
 
-    val mappingsLocal = mappings
+    val mappingsLocal = sparql2sql.mappings
     val props = ontopProperties
 
-    val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappingsLocal, props)
+    val (queryReformulator, termFactory, typeFactory, substitutionFactory) = sparql2sql.createReformulator(mappingsLocal, props)
 
     val mapper = genMapper(KryoSerializationWrapper(new RowMapper(queryRewrite, termFactory, substitutionFactory))) _
 //    implicit val qsEncoder = org.apache.spark.sql.Encoders.kryo[QuerySolution]
@@ -975,7 +690,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     logger.info(s"SPARQL query:\n$query")
 
     // translate to SQL query
-    val queryRewrite = createSQLQuery(query)
+    val queryRewrite = sparql2sql.createSQLQuery(query)
     val sql = queryRewrite.sqlQuery.replace("\"", "`")
                                   .replace("`PUBLIC`.", "")
     logger.info(s"SQL query:\n$sql")
