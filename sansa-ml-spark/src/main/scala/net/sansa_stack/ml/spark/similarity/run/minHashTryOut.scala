@@ -97,7 +97,12 @@ object minHashTryOut {
     val tmp4 = tmp3.collect()
     tmp4.foreach(println(_))
     // transform to int represenation in keys
-    val tmp5 = tmp4.map(kv => nodeIndexer.get_index(kv._1))
+    println("use indexer to transform key from node to int")
+    val tmp5 = tmp4.map(kv => (nodeIndexer.get_index(kv._1), kv._2))
+    tmp5.foreach(println(_))
+
+
+
 
     println("transfer to dataframe")
 
@@ -106,7 +111,7 @@ object minHashTryOut {
 
     val tmp7 = spark.createDataFrame(tmp4).toDF("id", "vals")
     // val tmp4 = tmp3.toDF("node", "features")
-    tmp5.show()
+    tmp7.show()
     // do this is one call
 
 
