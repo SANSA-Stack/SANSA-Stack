@@ -17,6 +17,8 @@ import org.apache.spark.ml.linalg
 import org.apache.spark.sql
 import shapeless.PolyDefns.->
 
+import net.sansa_stack.ml.spark.utils.NodeIndexer
+
 
 
 
@@ -74,6 +76,12 @@ object minHashTryOut {
 
     tmp_triples.foreach(println(_))
 
+    // instatiate node indexer to be able to swap between node and int representation
+    println("instatiate nodeindexer")
+    val nodeIndexer = new NodeIndexer
+    nodeIndexer.fit(tmp_triples)
+    println(nodeIndexer.get_vocab_size(), nodeIndexer.get_node(4))
+
     // try out dense form of transformation
     println("triples for both directions")
     val tmp1: RDD[(Node, Seq[Node])] = tmp_triples.flatMap(t => List((t.getSubject, Seq(t.getPredicate, t.getObject)), (t.getObject, Seq(t.getPredicate, t.getSubject))))
@@ -88,12 +96,15 @@ object minHashTryOut {
     println("collect RDD to perform actions")
     val tmp4 = tmp3.collect()
     tmp4.foreach(println(_))
+    // transform to int represenation in keys
+    val tmp5 = tmp4.map(kv => nodeIndexer.get_index(kv._1))
+
     println("transfer to dataframe")
 
     // wwe need a node indexer beacuase we cannot have a dataframe with non primitive datatypes and it is desired to have it in int indexes which reduces also size
 
 
-    val tmp5 = spark.createDataFrame(tmp4).toDF("id", "vals")
+    val tmp7 = spark.createDataFrame(tmp4).toDF("id", "vals")
     // val tmp4 = tmp3.toDF("node", "features")
     tmp5.show()
     // do this is one call
