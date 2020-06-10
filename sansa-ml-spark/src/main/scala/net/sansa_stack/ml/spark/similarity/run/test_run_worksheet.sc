@@ -14,6 +14,38 @@ val map_uri_to_feature_list = someExampleTriples
   .filter(_._1.substring(0, 1) != "l") // no literals, naive by naming
   .groupBy(_._1).mapValues(_.map(_._2)) // group by starting node. so from each node perspective features are collected as list, in this special case as list of feature
 
+// we need a node indexer in this easy example nodes are strings to map node to index and vice versa
+// this is needed for lateer creation of DF
+
+class NodeIndexer {
+  private var _node_to_index_map: Map[String, Int] = _
+  private var _index_to_node_map: Map[Int, String] = _
+  private var _vocab_size: Int = _
+
+  def fit(triples: Seq[Array[String]]): Unit = {
+    val set_of_nodes = triples
+      .flatMap(t => List(t(0), t(1), t(2))) // unfold triple
+      .filter(_.substring(0, 1) != "l")
+
+    _vocab_size = set_of_nodes.size
+    val enumeration: List[Int] = (1 to _vocab_size).toList
+    _node_to_index_map = (set_of_nodes zip enumeration).toMap
+    _index_to_node_map = (enumeration zip set_of_nodes).toMap
+  }
+  def get_index(node: String): Int = _node_to_index_map(node)
+  def get_node(index: Int): String = _index_to_node_map(index)
+  def get_vocab_size(): Int = _vocab_size
+}
+
+class somePoint
+
+val p = new somePoint
+
+val nodeIndexer = new NodeIndexer()
+nodeIndexer.fit(someExampleTriples)
+nodeIndexer.get_vocab_size()
+nodeIndexer.get_index("u2")
+nodeIndexer.get_node(3)
 
 
 val arrayList = Array(map1, map2)
