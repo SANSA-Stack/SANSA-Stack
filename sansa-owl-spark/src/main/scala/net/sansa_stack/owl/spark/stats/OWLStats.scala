@@ -2,14 +2,15 @@ package net.sansa_stack.owl.spark.stats
 
 import scala.collection.JavaConverters._
 import scala.compat.java8.StreamConverters._
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.XSDVocabulary
-import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, ManchesterSyntaxOWLAxiomsRDDBuilder, OWLXMLSyntaxOWLAxiomsRDDBuilder, RefineOWLAxioms}
-import net.sansa_stack.owl.spark.owl._
-import net.sansa_stack.owl.spark.owl.Syntax
+
 import net.sansa_stack.owl.spark.{owl, owlAxioms}
+import net.sansa_stack.owl.spark.owl.Syntax
+import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, ManchesterSyntaxOWLAxiomsRDDBuilder, OWLXMLSyntaxOWLAxiomsRDDBuilder}
 
 
 
