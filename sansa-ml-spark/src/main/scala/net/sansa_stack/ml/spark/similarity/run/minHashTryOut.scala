@@ -16,8 +16,7 @@ import org.apache.jena.graph.Triple
 import org.apache.spark.ml.linalg
 import org.apache.spark.sql
 import shapeless.PolyDefns.->
-
-import net.sansa_stack.ml.spark.utils.NodeIndexer
+import net.sansa_stack.ml.spark.utils.{NodeFeatureFactory, NodeIndexer}
 
 
 
@@ -52,6 +51,7 @@ object minHashTryOut {
     val somestring: String = example_triple.getObject().toString() + example_triple.getSubject().toString()
     println(somestring)
 
+    // These are the sample triple we work with in the first place
     val tmp_array: Array[Triple] = Array(
       Triple.create(
         NodeFactory.createURI("exampleUri1"),
@@ -73,8 +73,26 @@ object minHashTryOut {
     )
     val tmp_triples: RDD[Triple] = spark.sparkContext.parallelize(tmp_array)
     println("this is the triples object wie work with")
-
     tmp_triples.foreach(println(_))
+
+    // here we transform the triples into feature maps from uri to feature
+    // with mode different types of modes can be set
+    val nodeFeatureFactory = new NodeFeatureFactory
+    nodeFeatureFactory.set_mode("at")
+    println("node factory created")
+    nodeFeatureFactory.fit(tmp_triples)
+    println("node factory fitted")
+    val sampleFeatureMap: Map[Node, Iterable[Seq[Node]]] = nodeFeatureFactory.get_fitted_map
+    // TODO val sampleFeatureMap: Map[Node, Iterable[Seq[Node]]] = nodeFeatureFactory.transform(tmp_triples)
+    println("nodeFeatureFactory performed transform")
+
+    println(sampleFeatureMap)
+
+    println("now we transformed out triples to a feature map")
+    println()
+
+
+
 
     // instatiate node indexer to be able to swap between node and int representation
     println("instatiate nodeindexer")
