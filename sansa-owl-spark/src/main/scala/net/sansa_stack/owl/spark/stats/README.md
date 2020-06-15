@@ -23,11 +23,21 @@ The following Scala code shows how to read an OWL file in Functional Syntax (be 
 import net.sansa_stack.owl.spark.owl._
 import net.sansa_stack.owl.spark.stats
 
-val syntax = Syntax.FUNCTIONAL
-val input = "path/to/file.owl"
+[...]
 
-val axioms = FunctionalSyntaxOWLAxiomsRDDBuilder.build(spark, input)
+  val spark = SparkSession.builder
+        .appName(s"OWL Stats")
+        .master("local[*]")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .config("spark.kryo.registrator", "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
+        .getOrCreate()
+      
+  val syntax = Syntax.FUNCTIONAL
+  val input = "path/to/file.owl"
 
-val stats = new OWLStats(spark).run(axioms)
+  val axioms = spark.owl(syntax)(input)
+  val stats = new OWLStats(spark).run(axioms)
+
+[...]
 ```
 
