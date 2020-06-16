@@ -1,14 +1,16 @@
 package net.sansa_stack.ml.spark.similarity.run
 
+import net.sansa_stack.ml.spark.similarity.run.Semantic_Similarity_Estimator.read_in_nt_triples
 import org.apache.jena.graph.{NodeFactory, Triple}
+import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, Tokenizer}
-// import org.apache.spark.ml.linalg.{Vector, Vectors}
+import org.apache.spark.ml.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.functions.udf
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+// import org.apache.spark.mllib.linalg.{Vector, Vectors}
 
 object minHash_rdf_over_text_pipeline {
   def main(args: Array[String]): Unit = {
@@ -24,7 +26,15 @@ object minHash_rdf_over_text_pipeline {
       .getOrCreate()
     println("Spark Session started \n")
 
-    // val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
+    val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
+    // val input = "/Users/carstendraschner/Downloads/linkedmdb-18-05-2009-dump_short.nt"
+
+    val triples = read_in_nt_triples(
+      input = input,
+      spark = spark,
+      lang = Lang.NTRIPLES
+    )
+    triples.take(20).foreach(println(_))
 
     println("2. Create or load sample RDD Graph")
     val sample_rdd_graph: RDD[Triple] = spark.sparkContext.parallelize(
@@ -52,6 +62,7 @@ object minHash_rdf_over_text_pipeline {
     sample_rdd_graph.foreach(println(_))
     println("Sample RDD Graph created \n")
 
+    val tmp_triples: RDD[Triple] = triples
 
     println("3. Create or load sample RDD Sub Graph.\nThis is needed for a later recommendation test.")
     val sample_rdd_subgraph: RDD[Triple] = spark.sparkContext.parallelize(
@@ -87,7 +98,7 @@ object minHash_rdf_over_text_pipeline {
       "\t4.8 Create a Dataframe out of it to align with pipeline requirements")
 
     val pseudo_text_df = spark.createDataFrame(
-      sample_rdd_graph
+      tmp_triples
         .flatMap(t => Seq((t.getSubject, t.getPredicate.toString() + t.getObject.toString()), (t.getObject, t.getPredicate.toString() + t.getSubject.toString()))) // 4.1
         .filter(_._1.isURI) // 4.2
         .map({ case (k, v) => (k.toString(), v) }) // 4.3
@@ -99,8 +110,13 @@ object minHash_rdf_over_text_pipeline {
         .toSeq
     ).toDF(colNames = "title", "content") // 4.8
     println("This is the resulting DF")
-    pseudo_text_df.show()
+    pseudo_text_df.show(false)
     println("Transformation to pseudo text DF done.\n")
+
+    // Sure this part of creating artificial text after having some tokens
+    // already is not the most efficient way but it makes the comon pipeline
+    // usable and we don not need to take care of data types and generation
+    // of right Dataframe format
 
     println("From here onwoards we follow the ideas of this webpage:\n" +
       "https://databricks.com/de/blog/2017/05/09/detecting-abuse-scale-locality-sensitive-hashing-uber-engineering.html\n")
@@ -109,7 +125,7 @@ object minHash_rdf_over_text_pipeline {
     val tokenizer = new Tokenizer().setInputCol("content").setOutputCol("words")
     val wordsDf = tokenizer.transform(pseudo_text_df)
     println("this is how the resulting DF looks like")
-    wordsDf.show()
+    wordsDf.show(false)
     println("tokenization done!\n")
 
     println("6. We set up a count Vectorizer which operates on our Tokenized DF")
@@ -122,7 +138,7 @@ object minHash_rdf_over_text_pipeline {
     val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
     val vectorizedDf = cvModel.transform(wordsDf).select(col("title"), col("features")) // .filter(isNoneZeroVector(col("features")))
     println("This is how our resulting DF looks like which will be used by the min Hash algo")
-    vectorizedDf.show()
+    vectorizedDf.show(false)
     println("Count Vectorization done!\n")
 
 
@@ -131,25 +147,29 @@ object minHash_rdf_over_text_pipeline {
       "and we decribe the respective columns\n" +
       "then we fit the model to our vectorizedDf\n")
     val mh = new MinHashLSH()
-      .setNumHashTables(3)
+      .setNumHashTables(5)
       .setInputCol("features")
       .setOutputCol("hashValues")
     val model = mh.fit(vectorizedDf)
     println("minHash model fitted!")
 
     println("8. We have to transform our Dataframe what we want to operate on ")
-    model.transform(vectorizedDf).show()
-    println("Transformation done")
+    model.transform(vectorizedDf).show(false)
+    println("Transformation done\n")
 
-    /* val sample_key =
-    val key = Vectors.sparse(vocabSize, Seq((cvModel.vocabulary.indexOf("united"), 1.0), (cvModel.vocabulary.indexOf("states"), 1.0)))
+    println("9. Perform Similarity Estimations on key and DF by approxNearestNeighbors approx Similarity Join")
+    // val key = Vectors.sparse(vocabSize, Seq((cvModel.vocabulary.indexOf("united"), 1.0), (cvModel.vocabulary.indexOf("states"), 1.0)))
+    val key = Vectors.sparse(80, Seq((8, 1.0)))
     val k = 40
-    model.approxNearestNeighbors(vectorizedDf, key, k).show() */
+    print("ApproxNearestNeighbors")
+    model.approxNearestNeighbors(vectorizedDf, key, k).show(false)
 
     // Self Join
+    println("Approx Similarity Join")
     val threshold = 0.8
-    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show()
-    spark.stop()
+    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show(false)
+    println("minHash similarity Join has been Performed")
 
+    spark.stop()
   }
 }
