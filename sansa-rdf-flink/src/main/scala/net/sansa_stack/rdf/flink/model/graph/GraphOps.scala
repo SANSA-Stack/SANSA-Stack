@@ -23,27 +23,27 @@ object GraphOps {
     */
   def constructGraph(triples: DataSet[Triple]): Graph[Long, Node, Node] = {
 
-    val vertexIDs: DataSet[(Node, Long)] = (triples.map(f => NodeKey(f.getSubject)) union triples.map(f => NodeKey(f.getObject))).distinct(f => f.hashCode()).map(f => (NodeKey(f), NodeKey(f).node.getURI.toLong)) // indexing
+    val vertexIDs: DataSet[(Node, Long)] = (triples.map(f => NodeKey(f.getSubject)) union triples.map(f => NodeKey(f.getObject))).distinct(f => f.hashCode()).map(f => (f.node, f.node.getURI.toLong)) // indexing
 
-    val vertices: DataSet[(Long, Node)] = vertexIDs.map(x => (x._2, x._1))
+    val vertices: DataSet[(Long, Node)] = vertexIDs.map(x => (x._2, NodeKey(x._1).node))
 
-    val spo: DataSet[(Node, (Node, Node))] = triples.map(triple => (triple.getSubject, (triple.getPredicate, triple.getObject)))
+    val spo: DataSet[(Node, (Node, Node))] = triples.map(triple => (NodeKey(triple.getSubject).node, (NodeKey(triple.getPredicate).node, NodeKey(triple.getObject).node)))
 
     val tuples = spo.join(vertexIDs).where(0).equalTo(1).map {
       _ match {
-        case ((s, (p, o)), (sv, sid)) => (o, (sid, p))
+        case ((s, (p, o)), (sv, sid)) => (NodeKey(o).node, (sid, NodeKey(p).node))
       }
     }
 
     val edges = tuples.join(vertexIDs).where(0).equalTo(1).map {
       _ match {
-        case ((k, (si, p)), (sv, oi)) => new Edge(si, oi, p)
+        case ((k, (si, p)), (sv, oi)) => new Edge(si, oi, NodeKey(p).node)
       }
     }
 
-    val v = vertices.map(f => new Vertex(f._1, f._2))
+    val v = vertices.map(f => new Vertex(f._1, NodeKey(f._2).node))
 
-    Graph.fromDataSet(vertices.map(f => new Vertex(f._1, f._2)), edges, env)
+    Graph.fromDataSet(vertices.map(f => new Vertex(f._1, NodeKey(f._2).node)), edges, env)
   }
 
   /**

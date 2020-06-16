@@ -15,7 +15,7 @@ class FlinkGraphTripleOpsTests extends FunSuite {
 
     val triples = env.rdf(lang)(path)
 
-    val graph = triples.asGraph()
+    // val graph = triples.asGraph()
 
     // val size = graph.size()
 
