@@ -58,5 +58,6 @@ val rdd = spark.owl(syntax)(input)
 ```
 We also provide builder objects for the other described OWL formats and data structures. The same holds for the Flink implementations. An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#owl-processing). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 
+
 ## How to Contribute
 We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
