@@ -1,11 +1,9 @@
 package net.sansa_stack.rdf.flink
 
 import net.sansa_stack.rdf.flink.utils.Logging
-import org.antlr.runtime.misc.DoubleKeyMap
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.vocabulary.OWL
 
 package object stats {
 
