@@ -10,16 +10,16 @@ import net.sansa_stack.rdf.flink.io.nquads.NQuadsReader
 import net.sansa_stack.rdf.flink.io.ntriples.NTriplesReader
 import org.apache.flink.api.common.functions.RichMapPartitionFunction
 import org.apache.flink.api.java.operators.DataSink
-import org.apache.flink.api.scala.{ DataSet, ExecutionEnvironment }
+import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.core.fs.FileSystem
 import org.apache.flink.hadoopcompatibility.scala.HadoopInputs
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.util.Collector
-import org.apache.hadoop.io.{ LongWritable, Text }
+import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
-import org.apache.jena.graph.{ NodeFactory, Triple }
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.jena.graph.{NodeFactory, Triple}
+import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.core.Quad
 
 /**
@@ -28,7 +28,7 @@ import org.apache.jena.sparql.core.Quad
  */
 package object io {
 
-  object RDFLang extends Enumeration {
+  object Lang extends Enumeration {
     val NTRIPLES, NQUADS, TURTLE, RDFXML = Value
   }
 
@@ -216,12 +216,12 @@ package object io {
      * @param lang the RDF language (N-Triples, N-Quads, Turtle)
      * @return the [[DataSet]]
      */
-    def rdf(lang: Lang, allowBlankLines: Boolean = false): String => DataSet[Triple] = lang match {
+    def rdf(lang: Lang.Value, allowBlankLines: Boolean = false): String => DataSet[Triple] = lang match {
       case i if lang == Lang.NTRIPLES => ntriples(allowBlankLines)
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
       case g if lang == Lang.NQUADS => nquads(allowBlankLines)
-      case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
+      case _ => throw new IllegalArgumentException(s"${lang} syntax not supported yet!")
     }
 
     /**
@@ -315,7 +315,7 @@ package object io {
           // collect the parsed triples
           val is = ReadableByteChannelFromIterator.toInputStream(it)
           RDFDataMgr
-            .createIteratorTriples(is, Lang.TURTLE, null).asScala
+            .createIteratorTriples(is, org.apache.jena.riot.Lang.TURTLE, null).asScala
             .foreach(t => collector.collect(t))
         }
       })
