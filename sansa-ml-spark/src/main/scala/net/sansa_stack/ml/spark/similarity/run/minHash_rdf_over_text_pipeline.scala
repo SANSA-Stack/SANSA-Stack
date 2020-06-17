@@ -6,9 +6,9 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, Tokenizer}
 import org.apache.spark.ml.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.types.DataTypes
+import org.apache.spark.sql.types.{DataTypes, IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.functions.udf
 // import org.apache.spark.mllib.linalg.{Vector, Vectors}
 
@@ -26,7 +26,10 @@ object minHash_rdf_over_text_pipeline {
       .getOrCreate()
     println("Spark Session started \n")
 
-    val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
+    println("2. Create or load sample RDD Graph")
+
+    val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
+    // val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
     // val input = "/Users/carstendraschner/Downloads/linkedmdb-18-05-2009-dump_short.nt"
 
     val triples = read_in_nt_triples(
@@ -34,9 +37,9 @@ object minHash_rdf_over_text_pipeline {
       spark = spark,
       lang = Lang.NTRIPLES
     )
-    triples.take(20).foreach(println(_))
+    val tmp_triples: RDD[Triple] = triples
 
-    println("2. Create or load sample RDD Graph")
+    /* println("2. Create or load sample RDD Graph")
     val sample_rdd_graph: RDD[Triple] = spark.sparkContext.parallelize(
       Array(
         Triple.create(
@@ -59,7 +62,7 @@ object minHash_rdf_over_text_pipeline {
       )
     )
 
-    sample_rdd_graph.foreach(println(_))
+
     println("Sample RDD Graph created \n")
 
     val tmp_triples: RDD[Triple] = triples
@@ -83,7 +86,11 @@ object minHash_rdf_over_text_pipeline {
       )
     )
     sample_rdd_subgraph.foreach(println(_))
-    println("Sample Sub RDD Graph created \n")
+    println("Sample Sub RDD Graph created \n") */
+
+    println("3. Show RDF Data")
+    tmp_triples.foreach(println(_))
+    println()
 
     println("4. Here we produce a dense transformation into a pseudo tokenized format")
     println("\tin the current case we include relations and nodes connected, but different feature generation are also possible")
@@ -158,8 +165,52 @@ object minHash_rdf_over_text_pipeline {
     println("Transformation done\n")
 
     println("9. Perform Similarity Estimations on key and DF by approxNearestNeighbors approx Similarity Join")
-    // val key = Vectors.sparse(vocabSize, Seq((cvModel.vocabulary.indexOf("united"), 1.0), (cvModel.vocabulary.indexOf("states"), 1.0)))
-    val key = Vectors.sparse(80, Seq((8, 1.0)))
+    println("\t9.1 The created key is another sample movie which does not exist originally in the dataset")
+    println("\t\tWe have to set the vocab-size: " + cvModel.getVocabSize)
+    println("\t\tThen our movie has actor a1 with relation acted in ai:")
+    println("\t\tAnd is produced by producer p2 over relation pb")
+    println("\t\tFinally is published at 20-06-17\n")
+    println("\t\tThis is how the new movie key looks like in data frame format\n")
+
+    val key_movie = cvModel.transform(
+      tokenizer.transform(
+        spark.createDataFrame(
+          spark.sparkContext.parallelize(
+            Seq(
+              Row(
+                "m4",
+                "file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a1".toString + " " +
+                "file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2".toString + " " +
+                """file:///Users/carstendraschner/GitHub/SANSA-ML/pd"2020-06-17"""".toString
+              )
+            )
+          ),
+          StructType(
+            List(
+              StructField("title", StringType, true),
+              StructField("content", StringType, true)
+            )
+          )
+        )
+      )
+    )
+    key_movie.show()
+    // TODO get sparse vector out of cell features, some zip is also needed to in the end ket a desired key
+    val key = Vectors.sparse(80, Seq((4, 1.0), (12, 1.0)))
+
+    /* println(cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a1".toString))
+    println(cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a3".toString))
+    println(cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2".toString))
+
+
+    val not_working_key = Vectors.sparse(
+      cvModel.getVocabSize,
+      Seq(
+        (cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a1".toString), 1.0),
+        (cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a3".toString), 1.0),
+        (cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2".toString), 1.0)
+      )
+    ) */
     val k = 40
     print("ApproxNearestNeighbors")
     model.approxNearestNeighbors(vectorizedDf, key, k).show(false)
@@ -168,6 +219,7 @@ object minHash_rdf_over_text_pipeline {
     println("Approx Similarity Join")
     val threshold = 0.8
     model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show(false)
+    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show()
     println("minHash similarity Join has been Performed")
 
     spark.stop()
