@@ -14,6 +14,7 @@ import scala.language.implicitConversions
 
 import org.apache.jena.vocabulary.RDF
 
+import net.sansa_stack.rdf.spark.io.NTripleReader
 
 /**
   * A class that provides methods to load an RDF graph from disk.

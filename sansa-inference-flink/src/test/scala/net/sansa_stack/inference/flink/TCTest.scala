@@ -179,7 +179,7 @@ class TCTest(mode: TestExecutionMode) extends MultipleProgramsTestBase(mode) {
         val terminate = prevPaths
           .coGroup(nextPaths)
           .where(0).equalTo(0) {
-          (prev, next, out: Collector[(String, String)]) => {
+          (prev: Iterator[(String, String)], next: Iterator[(String, String)], out: Collector[(String, String)]) => {
             val prevPaths = prev.toSet
             for (n <- next)
               if (!prevPaths.contains(n)) out.collect(n)

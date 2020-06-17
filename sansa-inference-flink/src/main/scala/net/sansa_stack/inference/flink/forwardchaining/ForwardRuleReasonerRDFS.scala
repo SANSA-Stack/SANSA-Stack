@@ -318,7 +318,7 @@ class ForwardRuleReasonerRDFS(env: ExecutionEnvironment) extends ForwardRuleReas
 
       val additionalTripleRDDs = mutable.Seq(rdfs4, rdfs6, rdfs8_10, rdfs12)
 
-      allTriples = env.union(Seq(allTriples) ++ additionalTripleRDDs).distinct()
+      allTriples = env.union(Seq(allTriples) ++ additionalTripleRDDs).distinct(_.hashCode)
     }
 
     logger.info(

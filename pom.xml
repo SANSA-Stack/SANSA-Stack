@@ -5,8 +5,8 @@
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-parent</artifactId>
-		<version>0.6.1-SNAPSHOT</version>
+		<artifactId>sansa-parent_2.11</artifactId>
+		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sansa-inference-parent_2.11</artifactId>

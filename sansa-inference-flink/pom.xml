@@ -23,7 +23,7 @@ under the License.
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-inference-parent_2.11</artifactId>
-		<version>0.6.1-SNAPSHOT</version>
+		<version>0.7.2-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
