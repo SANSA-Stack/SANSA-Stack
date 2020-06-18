@@ -23,6 +23,7 @@ import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.model.vocabulary.XSD
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.apache.jena.graph.NodeFactory
+import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions._
@@ -58,13 +59,16 @@ case class OntopQueryRewrite(sparqlQuery: String,
 /**
  * A SPARQL to SQL rewriter based on Ontop.
  *
- * RDF partitions will be taken into account to generate Ontop mappings to a temporary H2 database
+ * RDF partitions will be taken into account to generate Ontop mappings to an in-memory H2 database.
  *
+ * @constructor create a new Ontop SPARQL to SQL rewriter based on RDF partitions.
  * @param partitions the RDF partitions
  */
 class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   extends SPARQL2SQLRewriter[OntopQueryRewrite]
     with Serializable {
+
+  private val logger = com.typesafe.scalalogging.Logger(classOf[OntopSPARQL2SQLRewriter])
 
   // load Ontop properties
   val ontopProperties = new Properties()
@@ -81,17 +85,19 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     typeOf[SchemaStringDate] -> "DATE"
   ) // .map(e => (typeOf[e._1.type], e._2))
 
+  // create the tmp DB needed for Ontop
   private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
   private val JDBC_USER = "sa"
   private val JDBC_PASSWORD = ""
-
   createTempDB(partitions)
 
   // create OBDA mappings
   val mappings = createOBDAMappingsForPartitions(partitions)
 
+  // the Ontop core
   val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties)
   val inputQueryFactory = queryReformulator.getInputQueryFactory
+
   // mapping from RDF datatype to Spark SQL datatype
   import org.apache.spark.sql.types.DataTypes._
   val rdfDatatype2SQLCastName = Map(
@@ -110,9 +116,10 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   /*
    * DB connection (keeps it alive)
    */
-  private var connection: Connection = null
+  private var connection: Connection = _
 
   private def createTempDB(partitions: Seq[RdfPartitionComplex]): Unit = {
+    logger.debug("creating in-memory H2 database ...")
 
     try {
       connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
@@ -126,7 +133,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
           val name = createTableName(p)
 
           val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
-          println(p.predicate + "\t" + sparkSchema + "\t" + p.asInstanceOf[RdfPartitionComplex].layout.schema)
+          logger.trace(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
 
           p match {
             case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
@@ -142,7 +149,6 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
                     "l varchar(10) NOT NULL" +
                     ")")
                 } else {
-                  println(s"datatype: $datatype")
                   if (p.layout.schema == typeOf[SchemaStringStringType]) {
                     stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
                       "s varchar(255) NOT NULL," +
@@ -160,13 +166,13 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
                            |o ${colType.get} NOT NULL)
                            |""".stripMargin)
                     } else {
-                      println(s"couldn't create table for schema ${p.layout.schema}")
+                      logger.error(s"Error: couldn't create Spark table for property $predicate with schema ${p.layout.schema}")
                     }
                   }
                 }
-                case _ => println("TODO: bnode SQL table for Ontop mappings")
+                case _ => logger.error("TODO: bnode Spark SQL table for Ontop mappings")
               }
-            case _ => println("wrong partition type")
+            case _ => logger.error("wrong partition type")
           }
       }
       //            stmt.addBatch(s"CREATE TABLE IF NOT EXISTS triples (" +
@@ -175,9 +181,9 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
       //              "o varchar(255) NOT NULL" +
       //              ")")
       val numTables = stmt.executeBatch().length
-      println(s"created $numTables tables")
+      logger.debug(s"created $numTables tables")
     } catch {
-      case e: SQLException =>
+      case e: SQLException => logger.error("Error occurred when creating in-memory H2 database", e)
     }
     connection.commit()
     //    connection.close()
@@ -233,9 +239,12 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
             objectType match {
               case 1 => createMapping(id, tableName, predicate)
               case 2 => if (langTagPresent) createMappingLang(id, tableName, predicate)
-              else createMappingLit(id, tableName, predicate, datatype)
-              case _ => println("TODO: bnode Ontop mapping")
-                ""
+                        else createMappingLit(id, tableName, predicate, datatype)
+              case _ =>
+                        logger.error("TODO: bnode Ontop mapping creation")
+                        ""
+
+
             }
         }
         .mkString("\n\n") + "]]"
@@ -246,7 +255,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   def createSQLQuery(sparqlQuery: String): OntopQueryRewrite = {
     val query = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-    val executableQuery = queryReformulator.reformulateIntoNativeQuery(query)
+    val executableQuery = queryReformulator.reformulateIntoNativeQuery(query, queryReformulator.getQueryLoggerFactory.create())
 
     val sqlQuery = extractSQLQuery(executableQuery)
     val constructionNode = extractRootConstructionNode(executableQuery)
@@ -328,7 +337,6 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
       .jdbcUrl(JDBC_URL)
       .jdbcUser(JDBC_USER)
       .jdbcPassword(JDBC_PASSWORD)
-      //      .properties(properties)
       .enableTestMode
       .build
     mappingConfiguration.loadSpecification
@@ -365,7 +373,19 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
 
 }
 
+/**
+ * A SPARQL to SQL rewriter based on Ontop.
+ *
+ * RDF partitions will be taken into account to generate Ontop mappings to an in-memory H2 database.
+ *
+ */
 object OntopSPARQL2SQLRewriter {
+  /**
+   * Creates a new SPARQL to SQL rewriter based on RDF partitions.
+   *
+   * @param partitions the RDF partitions
+   * @return a new SPARQL to SQL rewriter
+   */
   def apply(partitions: Seq[RdfPartitionComplex]): OntopSPARQL2SQLRewriter = {
     new OntopSPARQL2SQLRewriter(partitions)
   }
@@ -392,9 +412,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   val typeFactory = sparql2sql.typeFactory
   // mapping from RDF datatype to Spark SQL datatype
-
   import org.apache.spark.sql.types.DataTypes._
-
   val rdfDatatype2SQLCastName = Map(
     typeFactory.getXsdStringDatatype -> StringType,
     typeFactory.getXsdIntegerDatatype -> IntegerType,
@@ -490,74 +508,80 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * Executes the given SPARQL query on the provided dataset partitions.
    *
    * @param query the SPARQL query
-   * @return a DataFrame with the resulting bindings as columns
+   * @return a DataFrame with the resulting bindings as columns or `null` if the query execution fails
    */
   def execute(query: String): DataFrame = {
     logger.info(s"SPARQL query:\n$query")
 
-    // translate to SQL query
-    val queryRewrite = sparql2sql.createSQLQuery(query)
-    val sql = queryRewrite.sqlQuery.replace("\"", "`")
-      .replace("`PUBLIC`.", "")
-    logger.info(s"SQL query:\n$sql")
+    var result: DataFrame = null
+    try {
+      // translate to SQL query
+      val queryRewrite = sparql2sql.createSQLQuery(query)
+      val sql = queryRewrite.sqlQuery.replace("\"", "`")
+        .replace("`PUBLIC`.", "")
+      logger.info(s"SQL query:\n$sql")
 
-    // execute SQL query
-    var result = spark.sql(sql)
-    //    result.show(false)
-    //    result.printSchema()
+      // execute SQL query
+      result = spark.sql(sql)
+      //    result.show(false)
+      //    result.printSchema()
 
-    // all projected variables
-    val signature = queryRewrite.answerAtom.getArguments
+      // all projected variables
+      val signature = queryRewrite.answerAtom.getArguments
 
-    // mapping from SPARQL variable to term, i.e. to either SQL var or other SPARQL 1.1 bindings (BIND ...)
-    val sparqlVar2Term = queryRewrite.constructionNode.getSubstitution
+      // mapping from SPARQL variable to term, i.e. to either SQL var or other SPARQL 1.1 bindings (BIND ...)
+      val sparqlVar2Term = queryRewrite.constructionNode.getSubstitution
 
-    // we rename the columns of the SQL projected vars
-    val columnMappings = signature.asScala
-      .map(v => (v, sparqlVar2Term.get(v)))
-      .filterNot(_._2.isInstanceOf[RDFConstant]) // skip RDF constants which will be added later
-      .map { case (v, term) => (v, term.getVariableStream.findFirst().get()) }
-      .toMap
-    columnMappings.foreach {
-      case (sparqlVar, sqlVar) => result = result.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
-    }
-
-    // and we also add columns for literal bindings which are not already returned by the converted SQL query but
-    // are the result of static bindings, e.g. BIND(1 as ?z)
-    Sets.difference(new util.HashSet[Variable](signature), columnMappings.keySet.asJava).asScala.foreach(v => {
-      val simplifiedTerm = sparqlVar2Term.apply(v).simplify()
-      simplifiedTerm match {
-        case constant: Constant =>
-          if (simplifiedTerm.isInstanceOf[RDFConstant]) { // the only case we cover
-            simplifiedTerm match {
-              case iri: IRIConstant => // IRI will be String in Spark
-                result = result.withColumn(v.getName, lit(iri.getIRI.getIRIString))
-              case l: RDFLiteralConstant => // literals casted to its corresponding type, otherwise String
-                val lexicalValue = l.getValue
-                val castType = rdfDatatype2SQLCastName.getOrElse(l.getType, StringType)
-                result = result.withColumn(v.getName, lit(lexicalValue).cast(castType))
-              case _ =>
-            }
-          } else {
-            if (constant.isNull) {
-
-            }
-            if (constant.isInstanceOf[DBConstant]) {
-              //                throw new SQLOntopBindingSet.InvalidConstantTypeInResultException(constant + "is a DB constant. But a binding cannot have a DB constant as value")
-            }
-            //              throw new InvalidConstantTypeInResultException("Unexpected constant type for " + constant);
-          }
-        case _ =>
-        //            throw new SQLOntopBindingSet.InvalidTermAsResultException(simplifiedTerm)
+      // we rename the columns of the SQL projected vars
+      val columnMappings = signature.asScala
+        .map(v => (v, sparqlVar2Term.get(v)))
+        .filterNot(_._2.isInstanceOf[RDFConstant]) // skip RDF constants which will be added later
+        .map { case (v, term) => (v, term.getVariableStream.findFirst().get()) }
+        .toMap
+      columnMappings.foreach {
+        case (sparqlVar, sqlVar) => result = result.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
       }
-    })
 
-    // and finally, we also have to ensure the original order of the projection vars
-    result = result.select(signature.asScala.map(v => v.getName).map(col): _*)
+      // and we also add columns for literal bindings which are not already returned by the converted SQL query but
+      // are the result of static bindings, e.g. BIND(1 as ?z)
+      Sets.difference(new util.HashSet[Variable](signature), columnMappings.keySet.asJava).asScala.foreach(v => {
+        val simplifiedTerm = sparqlVar2Term.apply(v).simplify()
+        simplifiedTerm match {
+          case constant: Constant =>
+            if (simplifiedTerm.isInstanceOf[RDFConstant]) { // the only case we cover
+              simplifiedTerm match {
+                case iri: IRIConstant => // IRI will be String in Spark
+                  result = result.withColumn(v.getName, lit(iri.getIRI.getIRIString))
+                case l: RDFLiteralConstant => // literals casted to its corresponding type, otherwise String
+                  val lexicalValue = l.getValue
+                  val castType = rdfDatatype2SQLCastName.getOrElse(l.getType, StringType)
+                  result = result.withColumn(v.getName, lit(lexicalValue).cast(castType))
+                case _ =>
+              }
+            } else {
+              if (constant.isNull) {
+
+              }
+              if (constant.isInstanceOf[DBConstant]) {
+                //                throw new SQLOntopBindingSet.InvalidConstantTypeInResultException(constant + "is a DB constant. But a binding cannot have a DB constant as value")
+              }
+              //              throw new InvalidConstantTypeInResultException("Unexpected constant type for " + constant);
+            }
+          case _ =>
+          //            throw new SQLOntopBindingSet.InvalidTermAsResultException(simplifiedTerm)
+        }
+      })
+
+      // and finally, we also have to ensure the original order of the projection vars
+      result = result.select(signature.asScala.map(v => v.getName).map(col): _*)
+    } catch {
+      case e: EmptyQueryException => result = spark.emptyDataFrame
+      case e: org.apache.spark.sql.AnalysisException => logger.error(s"Spark failed to execute translated SQL query\n$query", e)
+      case e: Exception => throw e
+    }
 
     result
   }
-
 
 }
 
@@ -631,8 +655,10 @@ object OntopSPARQLEngine {
       try {
         val result = sparqlEngine.execute(query)
 
-        result.show(false)
-        result.printSchema()
+        if (result != null) {
+          result.show(false)
+          result.printSchema()
+        }
 
       } catch {
         case e: Exception => Console.err.println("failed to execute query")
