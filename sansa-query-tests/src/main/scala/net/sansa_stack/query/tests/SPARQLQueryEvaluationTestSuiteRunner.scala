@@ -9,7 +9,7 @@ import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.resultset.{ResultSetCompare, SPARQLResult}
 import org.scalatest.FunSuite
 
-import net.sansa_stack.query.tests.util.withResources
+import net.sansa_stack.query.tests.util._
 
 /**
  * SPARQL 1.1 test suite runner.
@@ -179,8 +179,6 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
     println(s"loading data from $datasetURL")
     import java.io.IOException
     import java.net.MalformedURLException
-
-    import util._
     try {
       val is = new URL(datasetURL).openStream()
 
