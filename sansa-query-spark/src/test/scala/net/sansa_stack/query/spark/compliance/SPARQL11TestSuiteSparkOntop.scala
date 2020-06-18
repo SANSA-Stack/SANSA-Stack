@@ -13,10 +13,13 @@ import org.apache.jena.sparql.engine.ResultSetStream
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.jena.sparql.expr.NodeValue
 import org.apache.jena.sparql.resultset.SPARQLResult
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 
-import net.sansa_stack.query.spark.ontop.Sparql2Sql
+import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 
 /**
  * SPARQL 1.1 test suite for Ontop-based SPARQL-to-SQL implementation.
@@ -82,32 +85,16 @@ class SPARQL11TestSuiteSparkOntop
     // distribute on Spark
     val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
 
+    // do partitioning here
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex)
+
+    // create the query engine
+    val queryEngine = new OntopSPARQLEngine(spark, partitions)
+
     // convert to SQL
-    val (sqlQuery, columnMapping) = Sparql2Sql.asSQL(spark, query.toString(), triplesRDD, ontopProperties)
+    val resultDF = queryEngine.execute(query.toString)
 
-    // we have to replace some parts of the SQL query // TODO not sure how to do it in Ontop properly
-    val sql = sqlQuery.replace("\"", "`")
-      .replace("`PUBLIC`.", "")
-    println(s"SQL query: $sql")
-
-    // run SQL query
-    var resultDF = spark.sql(sql)
-
-    // get the correct column names
-    resultDF = columnMapping.foldLeft(resultDF) {
-      case (df, (sparqlVar, sqlVar)) => df.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
-    }
-    // and for whatever reason, Ontop generates sometimes more columns as necessary
-    if (query.isSelectType) {
-      println("result DF before selection")
-      resultDF.show(false)
-      val vars = query.getProjectVars.asScala.map(_.getVarName).toList
-      resultDF = resultDF.select(vars.head, vars.tail: _*)
-    }
-    println("result DF")
-    resultDF.show(false)
-    resultDF.printSchema()
-
+    // produce result based on query type
     val result = if (query.isSelectType) {
       // convert to bindings
       val model = ModelFactory.createDefaultModel()
