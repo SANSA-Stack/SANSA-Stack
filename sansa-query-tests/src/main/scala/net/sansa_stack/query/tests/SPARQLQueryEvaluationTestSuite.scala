@@ -44,12 +44,9 @@ class SPARQLQueryEvaluationTestSuite
     val includesList = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#include")).next().as(classOf[RDFList])
 
     includesList.asJavaList().asScala.flatMap(subDir => loadTestCasesFromSubManifest(subDir.asResource().getURI)).toList
-
-
   }
 
   private def loadTestCasesFromSubManifest(path: String) = {
-    println(path)
     val model = RDFDataMgr.loadModel(path, Lang.TURTLE)
 
     val members = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#entries")).next().as(classOf[RDFList])
@@ -77,15 +74,16 @@ class SPARQLQueryEvaluationTestSuite
 
     val qe = QueryExecutionFactory.create(query, model)
     val rs = qe.execSelect()
+
     ResultSetFormatter.toList(rs).asScala.map(qs => {
-//      val desc = Option(qs.getLiteral("description")) map { _.getLexicalForm } getOrElse ""
       val desc = if (qs.get("description") != null) qs.getLiteral("description").getLexicalForm else ""
+
       SPARQLQueryEvaluationTest(
         qs.getLiteral("name").getLexicalForm,
         desc,
-      qs.getResource("queryFile").getURI,
-      qs.getResource("dataFile").getURI,
-      qs.getResource("resultsFile").getURI
+        qs.getResource("queryFile").getURI,
+        qs.getResource("dataFile").getURI,
+        qs.getResource("resultsFile").getURI
       )
     }
     ).toList
