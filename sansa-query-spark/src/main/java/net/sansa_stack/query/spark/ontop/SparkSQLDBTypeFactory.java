@@ -44,13 +44,18 @@ class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
         TermTypeAncestry rootAncestry = rootDBType.getAncestry();
 
         RDFDatatype xsdString = typeFactory.getXsdStringDatatype();
-        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, rootAncestry, xsdString));
+        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, xsdString));
 
         RDF factory = new SimpleRDF();
 
         RDFDatatype xsdNonNegInt = typeFactory.getDatatype(factory.createIRI(XSDDatatype.XSDnonNegativeInteger.getURI()));
-        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, rootAncestry, xsdString));
+//        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, xsdString));
         return map;
+    }
+
+    @Override
+    public DBTermType getDBStringType() {
+        return super.getDBStringType();
     }
 
     private static ImmutableMap<DefaultTypeCode, String> createSparkSQLCodeMap() {

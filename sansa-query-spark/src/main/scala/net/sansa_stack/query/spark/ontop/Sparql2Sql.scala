@@ -11,6 +11,7 @@ import it.unibz.inf.ontop.owlapi.OntopOWLFactory
 object Sparql2Sql {
 
   val baseDir = new File("/tmp/ontop-spark")
+  baseDir.mkdirs()
 
   def obtainSQL(sparqlFile: String, r2rmlFile: String, owlFile: String, propertyFile: String): String = {
     var factory = OntopOWLFactory.defaultFactory();

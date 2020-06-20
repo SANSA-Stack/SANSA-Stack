@@ -93,6 +93,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
 
   // create OBDA mappings
   val mappings = createOBDAMappingsForPartitions(partitions)
+  println(mappings)
 
   // the Ontop core
   val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties)
@@ -247,7 +248,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
 
             }
         }
-        .mkString("\n\n") + "]]"
+        .mkString("\n\n") + "\n]]"
   }
 
   @throws[OBDASpecificationException]
@@ -337,6 +338,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
       .jdbcUrl(JDBC_URL)
       .jdbcUser(JDBC_USER)
       .jdbcPassword(JDBC_PASSWORD)
+      .properties(properties)
       .enableTestMode
       .build
     mappingConfiguration.loadSpecification
@@ -504,13 +506,70 @@ class OntopSPARQLEngine(val spark: SparkSession,
     kryoWrapper.value.apply(row)
   }
 
+  private def postProcess(df: DataFrame, queryRewrite: OntopQueryRewrite): DataFrame = {
+    var result = df
+
+    // all projected variables
+    val signature = queryRewrite.answerAtom.getArguments
+
+    // mapping from SPARQL variable to term, i.e. to either SQL var or other SPARQL 1.1 bindings (BIND ...)
+    val sparqlVar2Term = queryRewrite.constructionNode.getSubstitution
+
+    // we rename the columns of the SQL projected vars
+    val columnMappings = signature.asScala
+      .map(v => (v, sparqlVar2Term.get(v)))
+      .filterNot(_._2.isInstanceOf[RDFConstant]) // skip RDF constants which will be added later
+      .map { case (v, term) => (v, term.getVariableStream.findFirst().get()) }
+      .toMap
+    columnMappings.foreach {
+      case (sparqlVar, sqlVar) => result = result.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
+    }
+
+    // and we also add columns for literal bindings which are not already returned by the converted SQL query but
+    // are the result of static bindings, e.g. BIND(1 as ?z)
+    Sets.difference(new util.HashSet[Variable](signature), columnMappings.keySet.asJava).asScala.foreach(v => {
+      val simplifiedTerm = sparqlVar2Term.apply(v).simplify()
+      simplifiedTerm match {
+        case constant: Constant =>
+          if (simplifiedTerm.isInstanceOf[RDFConstant]) { // the only case we cover
+            simplifiedTerm match {
+              case iri: IRIConstant => // IRI will be String in Spark
+                result = result.withColumn(v.getName, lit(iri.getIRI.getIRIString))
+              case l: RDFLiteralConstant => // literals casted to its corresponding type, otherwise String
+                val lexicalValue = l.getValue
+                val castType = rdfDatatype2SQLCastName.getOrElse(l.getType, StringType)
+                result = result.withColumn(v.getName, lit(lexicalValue).cast(castType))
+              case _ =>
+            }
+          } else {
+            if (constant.isNull) {
+
+            }
+            if (constant.isInstanceOf[DBConstant]) {
+              //                throw new SQLOntopBindingSet.InvalidConstantTypeInResultException(constant + "is a DB constant. But a binding cannot have a DB constant as value")
+            }
+            //              throw new InvalidConstantTypeInResultException("Unexpected constant type for " + constant);
+          }
+        case _ =>
+        //            throw new SQLOntopBindingSet.InvalidTermAsResultException(simplifiedTerm)
+      }
+    })
+
+    // and finally, we also have to ensure the original order of the projection vars
+    result = result.select(signature.asScala.map(v => v.getName).map(col): _*)
+
+    result
+  }
+
   /**
    * Executes the given SPARQL query on the provided dataset partitions.
    *
    * @param query the SPARQL query
-   * @return a DataFrame with the resulting bindings as columns or `null` if the query execution fails
+   * @return a DataFrame with the resulting bindings as columns and an optional query rewrite object for
+   *         debugging purpose (None if the SQL query was empty)
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
-  def execute(query: String): DataFrame = {
+  def executeDebug(query: String): (DataFrame, DataFrame, Option[OntopQueryRewrite]) = {
     logger.info(s"SPARQL query:\n$query")
 
     var result: DataFrame = null
@@ -522,67 +581,35 @@ class OntopSPARQLEngine(val spark: SparkSession,
       logger.info(s"SQL query:\n$sql")
 
       // execute SQL query
-      result = spark.sql(sql)
+      val resultRaw = spark.sql(sql)
       //    result.show(false)
       //    result.printSchema()
 
-      // all projected variables
-      val signature = queryRewrite.answerAtom.getArguments
+      // post process the raw DF, i.e. rename columns, add bindings, reorder columns, ...
+      result = postProcess(resultRaw, queryRewrite)
 
-      // mapping from SPARQL variable to term, i.e. to either SQL var or other SPARQL 1.1 bindings (BIND ...)
-      val sparqlVar2Term = queryRewrite.constructionNode.getSubstitution
+      (result, resultRaw, Some(queryRewrite))
 
-      // we rename the columns of the SQL projected vars
-      val columnMappings = signature.asScala
-        .map(v => (v, sparqlVar2Term.get(v)))
-        .filterNot(_._2.isInstanceOf[RDFConstant]) // skip RDF constants which will be added later
-        .map { case (v, term) => (v, term.getVariableStream.findFirst().get()) }
-        .toMap
-      columnMappings.foreach {
-        case (sparqlVar, sqlVar) => result = result.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
-      }
-
-      // and we also add columns for literal bindings which are not already returned by the converted SQL query but
-      // are the result of static bindings, e.g. BIND(1 as ?z)
-      Sets.difference(new util.HashSet[Variable](signature), columnMappings.keySet.asJava).asScala.foreach(v => {
-        val simplifiedTerm = sparqlVar2Term.apply(v).simplify()
-        simplifiedTerm match {
-          case constant: Constant =>
-            if (simplifiedTerm.isInstanceOf[RDFConstant]) { // the only case we cover
-              simplifiedTerm match {
-                case iri: IRIConstant => // IRI will be String in Spark
-                  result = result.withColumn(v.getName, lit(iri.getIRI.getIRIString))
-                case l: RDFLiteralConstant => // literals casted to its corresponding type, otherwise String
-                  val lexicalValue = l.getValue
-                  val castType = rdfDatatype2SQLCastName.getOrElse(l.getType, StringType)
-                  result = result.withColumn(v.getName, lit(lexicalValue).cast(castType))
-                case _ =>
-              }
-            } else {
-              if (constant.isNull) {
-
-              }
-              if (constant.isInstanceOf[DBConstant]) {
-                //                throw new SQLOntopBindingSet.InvalidConstantTypeInResultException(constant + "is a DB constant. But a binding cannot have a DB constant as value")
-              }
-              //              throw new InvalidConstantTypeInResultException("Unexpected constant type for " + constant);
-            }
-          case _ =>
-          //            throw new SQLOntopBindingSet.InvalidTermAsResultException(simplifiedTerm)
-        }
-      })
-
-      // and finally, we also have to ensure the original order of the projection vars
-      result = result.select(signature.asScala.map(v => v.getName).map(col): _*)
     } catch {
       case e: EmptyQueryException =>
         logger.warn(s"Empty SQL query generated by Ontop. Returning empty DataFrame for SPARQL query\n$query")
-        result = spark.emptyDataFrame
-      case e: org.apache.spark.sql.AnalysisException => logger.error(s"Spark failed to execute translated SQL query\n$query", e)
+        (spark.emptyDataFrame, spark.emptyDataFrame, None)
+      case e: org.apache.spark.sql.AnalysisException =>
+        logger.error(s"Spark failed to execute translated SQL query\n$query", e)
+        throw e
       case e: Exception => throw e
     }
+  }
 
-    result
+  /**
+   * Executes the given SPARQL query on the provided dataset partitions.
+   *
+   * @param query the SPARQL query
+   * @return a DataFrame with the resulting bindings as columns
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+   */
+  def execute(query: String): DataFrame = {
+    executeDebug(query)._1
   }
 
 }
