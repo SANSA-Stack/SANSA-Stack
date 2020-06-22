@@ -3,19 +3,22 @@ package net.sansa_stack.query.spark.compliance
 import java.util.Properties
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 import com.google.common.collect.ImmutableMap
+import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.model.term.impl.DBConstantImpl
 import org.apache.jena.datatypes.TypeMapper
-import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.ResultSetStream
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
+import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.jena.sparql.resultset.SPARQLResult
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
@@ -125,11 +128,62 @@ class SPARQL11TestSuiteRunnerSparkOntop
       // map DF entry to boolean
       val b = resultDFRaw.collect().head.getAs[Int](0) == 1
       new SPARQLResult(b)
-    } else { // CONSTRUCT and DESCRIBE
-      fail("unsupported query type")
+    } else if (query.isConstructType) { // CONSTRUCT
+      // convert to bindings
+      val bindings = if (queryRewrite.isDefined) {
+        resultDF.show(false)
+        toBindings(resultDFRaw, queryRewrite.get)
+      } else {
+        Array[Binding]()
+      }
+      // convert to triples
+      val triples = toTriples(bindings, queryRewrite.get)
+      // create the SPARQL result
+      val g = GraphFactory.createDefaultGraph()
+      triples.foreach(g.add)
+      val model = ModelFactory.createModelForGraph(g)
+      new SPARQLResult(model)
+
+    } else { // DESCRIBE todo
+      fail("unsupported query type: DESCRIBE")
       null
     }
     result
+  }
+
+  /**
+   * Convert an array of bindings to a set of triples.
+   */
+  private def toTriples(bindings: Array[Binding], queryRewrite: OntopQueryRewrite): Set[Triple] = {
+    val constructTemplate = queryRewrite.inputQuery.asInstanceOf[ConstructQuery].getConstructTemplate
+
+    bindings.flatMap (binding => toTriples(binding, constructTemplate)).toSet
+  }
+
+  /**
+   * Convert a single binding to a set of triples.
+   */
+  private def toTriples(binding: Binding, constructTemplate: ConstructTemplate): mutable.Buffer[Triple] = {
+    constructTemplate.getProjectionElemList.asScala.flatMap { peList =>
+      val size = peList.getElements.size()
+
+      var triples = scala.collection.mutable.Set[Triple]()
+
+      for (i <- 0 until (size/3)) {
+
+        val s = binding.get(Var.alloc(peList.getElements.get(i * 3).getSourceName))
+        val p = binding.get(Var.alloc(peList.getElements.get(i * 3 + 1).getSourceName))
+        val o = binding.get(Var.alloc(peList.getElements.get(i * 3 + 2).getSourceName))
+
+        // A triple can only be constructed when none of bindings is missing
+        if (s == null || p == null || o == null) {
+
+        } else {
+          triples += Triple.create(s, p, o)
+        }
+      }
+      triples
+    }
   }
 
   override def toBinding(row: Row, metadata: AnyRef): Binding = {

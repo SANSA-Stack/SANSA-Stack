@@ -12,6 +12,8 @@ import scala.reflect.runtime.universe.typeOf
 
 import com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
 import it.unibz.inf.ontop.answering.reformulation.QueryReformulator
+import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
+import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException, OntopReformulationException}
 import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopReformulationSQLConfiguration}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
@@ -45,6 +47,7 @@ abstract class QueryRewrite(sparqlQuery: String, sqlQuery: String)
  * Wraps the result of query rewriting of Ontop.
  */
 case class OntopQueryRewrite(sparqlQuery: String,
+                             inputQuery: SPARQLQuery[_ <: OBDAResultSet],
                              sqlQuery: String,
                              sqlSignature: ImmutableSortedSet[Variable],
                              sqlTypeMap: ImmutableMap[Variable, DBTermType],
@@ -254,9 +257,9 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   @throws[OBDASpecificationException]
   @throws[OntopReformulationException]
   def createSQLQuery(sparqlQuery: String): OntopQueryRewrite = {
-    val query = inputQueryFactory.createSPARQLQuery(sparqlQuery)
+    val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-    val executableQuery = queryReformulator.reformulateIntoNativeQuery(query, queryReformulator.getQueryLoggerFactory.create())
+    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
 
     val sqlQuery = extractSQLQuery(executableQuery)
     val constructionNode = extractRootConstructionNode(executableQuery)
@@ -264,7 +267,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     val signature = nativeNode.getVariables
     val typeMap = nativeNode.getTypeMap
 
-    OntopQueryRewrite(sparqlQuery, sqlQuery, signature, typeMap, constructionNode,
+    OntopQueryRewrite(sparqlQuery, inputQuery, sqlQuery, signature, typeMap, constructionNode,
       executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory)
   }
 
@@ -611,6 +614,39 @@ class OntopSPARQLEngine(val spark: SparkSession,
   def execute(query: String): DataFrame = {
     executeDebug(query)._1
   }
+
+  /**
+   * Executes a SELECT query on the provided dataset partitions and returns a DataFrame.
+   *
+   * @param query the SPARQL query
+   * @return a DataFrame with the resulting bindings as columns
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+   */
+  def execSelect(query: String): DataFrame = {
+    executeDebug(query)._1
+  }
+
+  /**
+   * Executes an ASK query on the provided dataset partitions.
+   *
+   * @param query the SPARQL query
+   * @return `true` or `false` depending on the result of the ASK query execution
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+   */
+  def execAsk(query: String): Boolean = {
+    executeDebug(query)._1.isEmpty
+  }
+
+//  /**
+//   * Executes a CONSTRUCT query on the provided dataset partitions.
+//   *
+//   * @param query the SPARQL query
+//   * @return an RDD of triples
+//   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+//   */
+//  def execConstruct(query: String): RDD[org.apache.jena.graph.Triple] = {
+//    null
+//  }
 
 }
 
