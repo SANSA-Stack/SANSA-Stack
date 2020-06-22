@@ -116,11 +116,12 @@
 				<version>2.1.0</version>
 			</dependency>
 
-			<dependency>
+			<!--Disable till a Scala 2.12 version is provided-->
+			<!--dependency>
 				<groupId>org.elasticsearch</groupId>
 				<artifactId>elasticsearch-spark-20_${scala.binary.version}</artifactId>
 				<version>6.2.4</version>
-			</dependency>
+			</dependency-->
 
 			<dependency>
 				<groupId>mysql</groupId>
