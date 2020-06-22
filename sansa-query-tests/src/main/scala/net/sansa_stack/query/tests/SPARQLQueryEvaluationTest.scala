@@ -2,7 +2,7 @@ package net.sansa_stack.query.tests
 
 /**
  * A single test case for SPARQL query evaluation.
- *
+ * @param uri the URI of the test case resource
  * @param name the name of the test case
  * @param description an (optional) description of the test case
  * @param queryFile the path to the file containing the query to evaluate
@@ -11,7 +11,8 @@ package net.sansa_stack.query.tests
  *
  * @author Lorenz Buehmann
  */
-case class SPARQLQueryEvaluationTest(name: String,
+case class SPARQLQueryEvaluationTest(uri: String,
+                                     name: String,
                                      description: String,
                                      queryFile: String,
                                      dataFile: String,

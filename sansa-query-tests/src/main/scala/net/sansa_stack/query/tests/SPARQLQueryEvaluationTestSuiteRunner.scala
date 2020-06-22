@@ -48,10 +48,10 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
   // the main loop over the test data starts here
   // a single ScalaTest is generated per query
   testData
-    .filter(data => !IGNORE.contains(data.name))
+    .filter(data => !IGNORE.contains(data.uri))
     .filter(IGNORE_FILTER)
-    .slice(0, 50)
-    .filter(data => data.name.startsWith("constructwhere01"))
+    //    .slice(0, 5)
+//    .filter(data => data.name.startsWith("construct"))
     .foreach { d =>
 
       // get the relevant data from the test case
@@ -123,8 +123,16 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
     else {
       try {
         if (!resultExpected.isGraph) fail("Expected results are not a graph: ")
-        val resultsExpected = resultExpected.getModel
-        if (!resultsExpected.isIsomorphicWith(resultActual.getModel)) {
+        if (!resultExpected.getModel.isIsomorphicWith(resultActual.getModel)) {
+          import java.io.PrintWriter
+          import org.apache.jena.util.FileUtils
+          val out = FileUtils.asPrintWriterUTF8(System.out)
+          out.println("=======================================")
+          out.println("expected:")
+          resultExpected.getModel.write(out, "TTL")
+          out.println("---------------------------------------")
+          out.println("got:")
+          resultActual.getModel.write(out, "TTL")
           fail("Results do not match: " + query)
         }
       } catch {
