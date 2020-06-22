@@ -2,7 +2,7 @@ package net.sansa_stack.test.conformance
 
 import net.sansa_stack.inference.data.{RDF, RDFOps}
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 
 /**
   * The class is to test the conformance of each materialization rule of OWL Horst entailment.
