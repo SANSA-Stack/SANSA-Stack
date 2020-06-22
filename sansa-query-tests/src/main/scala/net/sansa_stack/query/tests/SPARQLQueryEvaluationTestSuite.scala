@@ -79,6 +79,7 @@ class SPARQLQueryEvaluationTestSuite
       val desc = if (qs.get("description") != null) qs.getLiteral("description").getLexicalForm else ""
 
       SPARQLQueryEvaluationTest(
+        qs.getResource("test").getURI,
         qs.getLiteral("name").getLexicalForm,
         desc,
         qs.getResource("queryFile").getURI,
