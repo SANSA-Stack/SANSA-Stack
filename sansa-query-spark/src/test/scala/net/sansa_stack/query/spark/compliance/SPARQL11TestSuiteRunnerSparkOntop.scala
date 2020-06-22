@@ -11,6 +11,8 @@ import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.model.term.impl.DBConstantImpl
+import it.unibz.inf.ontop.model.vocabulary.XSD
+import it.unibz.inf.ontop.utils.ImmutableCollectors
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.query._
@@ -22,6 +24,8 @@ import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.jena.sparql.resultset.SPARQLResult
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
+import org.eclipse.rdf4j.model.{IRI, Literal}
+import org.eclipse.rdf4j.query.algebra.{Extension, ExtensionElem, ProjectionElem, ValueConstant, ValueExpr}
 
 import net.sansa_stack.query.spark.ontop.{OntopQueryRewrite, OntopSPARQLEngine}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
@@ -157,23 +161,30 @@ class SPARQL11TestSuiteRunnerSparkOntop
   private def toTriples(bindings: Array[Binding], queryRewrite: OntopQueryRewrite): Set[Triple] = {
     val constructTemplate = queryRewrite.inputQuery.asInstanceOf[ConstructQuery].getConstructTemplate
 
-    bindings.flatMap (binding => toTriples(binding, constructTemplate)).toSet
+    val ex = constructTemplate.getExtension
+    var extMap: Map[String, ValueExpr] = null
+    if (ex != null) {
+      extMap = ex.getElements.asScala.map(e => (e.getName, e.getExpr)).toMap
+    }
+
+    bindings.flatMap (binding => toTriples(binding, constructTemplate, extMap)).toSet
   }
 
   /**
    * Convert a single binding to a set of triples.
    */
-  private def toTriples(binding: Binding, constructTemplate: ConstructTemplate): mutable.Buffer[Triple] = {
-    constructTemplate.getProjectionElemList.asScala.flatMap { peList =>
+  private def toTriples(binding: Binding, constructTemplate: ConstructTemplate, extMap: Map[String, ValueExpr]): mutable.Buffer[Triple] = {
+    val l = constructTemplate.getProjectionElemList.asScala
+    l.flatMap { peList =>
       val size = peList.getElements.size()
 
       var triples = scala.collection.mutable.Set[Triple]()
 
       for (i <- 0 until (size/3)) {
 
-        val s = binding.get(Var.alloc(peList.getElements.get(i * 3).getSourceName))
-        val p = binding.get(Var.alloc(peList.getElements.get(i * 3 + 1).getSourceName))
-        val o = binding.get(Var.alloc(peList.getElements.get(i * 3 + 2).getSourceName))
+        val s = getConstant(peList.getElements.get(i * 3), binding, extMap)
+        val p = getConstant(peList.getElements.get(i * 3 + 1), binding, extMap)
+        val o = getConstant(peList.getElements.get(i * 3 + 2), binding, extMap)
 
         // A triple can only be constructed when none of bindings is missing
         if (s == null || p == null || o == null) {
@@ -184,6 +195,35 @@ class SPARQL11TestSuiteRunnerSparkOntop
       }
       triples
     }
+  }
+
+  /**
+   * Convert each node in a CONSTRUCT template to an RDF node.
+   */
+  private def getConstant(node: ProjectionElem, binding: Binding, extMap: Map[String, ValueExpr]): Node = {
+    var constant: Node = null
+
+    val node_name = node.getSourceName
+
+    val ve: Option[ValueExpr] = if (extMap != null) extMap.get(node_name) else None
+
+    // for constant terms in the template
+    if (ve.isDefined && ve.get.isInstanceOf[ValueConstant]) {
+      val vc = ve.get.asInstanceOf[ValueConstant]
+      if (vc.getValue.isInstanceOf[IRI]) {
+        constant = NodeFactory.createURI(vc.getValue.stringValue)
+      } else if (vc.getValue.isInstanceOf[Literal]) {
+        val lit = vc.getValue.asInstanceOf[Literal]
+        val dt = TypeMapper.getInstance().getTypeByName(lit.getDatatype.toString)
+        constant = NodeFactory.createLiteral(vc.getValue.stringValue, dt)
+      } else {
+        constant = NodeFactory.createBlankNode(vc.getValue.stringValue)
+      }
+    } else { // for variable bindings
+      constant = binding.get(Var.alloc(node_name))
+    }
+
+    constant
   }
 
   override def toBinding(row: Row, metadata: AnyRef): Binding = {
