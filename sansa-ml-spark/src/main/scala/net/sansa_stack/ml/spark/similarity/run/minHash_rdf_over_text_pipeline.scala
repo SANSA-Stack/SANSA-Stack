@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.similarity.run
 
-import net.sansa_stack.ml.spark.similarity.run.Semantic_Similarity_Estimator.read_in_nt_triples
+import net.sansa_stack.rdf.spark.io._
+
 import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, Tokenizer}
@@ -10,6 +11,8 @@ import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.{DataTypes, IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.functions.udf
+import java.util.{Calendar, Date}
+
 // import org.apache.spark.mllib.linalg.{Vector, Vectors}
 
 object minHash_rdf_over_text_pipeline {
@@ -32,11 +35,15 @@ object minHash_rdf_over_text_pipeline {
     // val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
     // val input = "/Users/carstendraschner/Downloads/linkedmdb-18-05-2009-dump_short.nt"
 
-    val triples = read_in_nt_triples(
+    /* val triples = read_in_nt_triples(
       input = input,
       spark = spark,
       lang = Lang.NTRIPLES
-    )
+    ) */
+
+    val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
+
     val tmp_triples: RDD[Triple] = triples
 
     /* println("2. Create or load sample RDD Graph")
@@ -106,7 +113,7 @@ object minHash_rdf_over_text_pipeline {
 
     val pseudo_text_df = spark.createDataFrame(
       tmp_triples
-        .flatMap(t => Seq((t.getSubject, t.getPredicate.toString() + t.getObject.toString()), (t.getObject, t.getPredicate.toString() + t.getSubject.toString()))) // 4.1
+        .flatMap(t => Seq((t.getSubject, t.getPredicate.toString() + t.getObject.toString()), (t.getObject, t.getSubject.toString() + t.getPredicate.toString()))) // 4.1
         .filter(_._1.isURI) // 4.2
         .map({ case (k, v) => (k.toString(), v) }) // 4.3
         .mapValues(_.replaceAll("\\s", "")) // 4.4
@@ -179,7 +186,7 @@ object minHash_rdf_over_text_pipeline {
             Seq(
               Row(
                 "m4",
-                "file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a1".toString + " " +
+                "file:///Users/carstendraschner/GitHub/SANSA-ML/a1file:///Users/carstendraschner/GitHub/SANSA-ML/ai".toString + " " +
                 "file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2".toString + " " +
                 """file:///Users/carstendraschner/GitHub/SANSA-ML/pd"2020-06-17"""".toString
               )
@@ -218,9 +225,178 @@ object minHash_rdf_over_text_pipeline {
     // Self Join
     println("Approx Similarity Join")
     val threshold = 0.8
-    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show(false)
-    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show()
+    val minhashed_df = model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold) // .filter("distCol != 0")
+    minhashed_df.show(false)
+    minhashed_df.show()
     println("minHash similarity Join has been Performed")
+
+    println("10 Experiment Graph Creation:\n" +
+      "\tin this part we create from our results an rdf graph which represents the gained information\n" +
+      "\tWith this approach we might be able to reuse the gained information in future approaches")
+
+    /*
+
+    val experiment_name = "Spark_Min_Hash"
+    val experiment_type = "Sematic Similarity Estimation"
+    val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
+    val measure_type = "distance"
+
+    // minhashed_df.withColumn("uriA", col("datasetA").getField("title")).show(false)
+
+    /* .collect()
+    .map(_.getAs[]).
+    foreach(println(_)) */
+
+    import spark.implicits._
+
+    def experiment_to_triples(
+        ea: String,
+        eb: String,
+        value: Double,
+        datetime: String,
+        exp_type: String,
+        exp_name: String,
+        measure_type: String
+      ): List[Triple] = {
+
+        val a: String = ea.split("/").last
+        val b: String = eb.split("/").last
+
+        // relations
+        val er = "element"
+        val vr = "value"
+        val extr = "experiment_type"
+        val exnr = "experiment_name"
+        val mtr = "experiment_measurement_type"
+        val dtr = "experiment_datetime"
+
+        // central node uri
+        val cnu: String = exp_type + " - " + exp_name + " - " + a + " - " + b + " - " + datetime
+
+        /* Array(
+          Array(a, er, cnu),
+          Array(b, er, cnu)
+        )
+        */
+        List(
+          Triple.create(
+            NodeFactory.createURI(a),
+            NodeFactory.createURI(er),
+            NodeFactory.createURI(cnu)
+          ), Triple.create(
+            NodeFactory.createURI(b),
+            NodeFactory.createURI(er),
+            NodeFactory.createURI(cnu)
+          ), Triple.create(
+            NodeFactory.createURI(cnu),
+            NodeFactory.createURI(vr),
+            NodeFactory.createLiteral(value.toString)
+          ), Triple.create(
+            NodeFactory.createURI(cnu),
+            NodeFactory.createURI(extr),
+            NodeFactory.createLiteral(experiment_type)
+          ), Triple.create(
+            NodeFactory.createURI(cnu),
+            NodeFactory.createURI(exnr),
+            NodeFactory.createLiteral(experiment_name)
+          ), Triple.create(
+            NodeFactory.createURI(cnu),
+            NodeFactory.createURI(dtr),
+            NodeFactory.createLiteral(evaluation_datetime)
+          )
+        )
+      }
+
+
+
+    import org.apache.spark.sql.functions.{col, lit}
+
+    val er = "element"
+    val vr = "value"
+    val extr = "experiment_type"
+    val exnr = "experiment_name"
+    val mtr = "experiment_measurement_type"
+    val dtr = "experiment_datetime"
+
+    val experiment_name = "Spark_Min_Hash"
+    val experiment_type = "Sematic Similarity Estimation"
+    val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
+    val measure_type = "distance" */
+
+
+    val experiment_results: RDD[Triple] = minhashed_df
+      .withColumn("ea", col("datasetA").getField("title")) // rdd
+      .withColumn("eb", col("datasetB").getField("title"))
+      .select("ea", "eb", "distCol")
+      .rdd
+      .flatMap(
+        row => {
+          // Strings for relation names
+          val er = "element"
+          val vr = "value"
+          val extr = "experiment_type"
+          val exnr = "experiment_name"
+          val mtr = "experiment_measurement_type"
+          val dtr = "experiment_datetime"
+
+          // Strings for uris adn literals
+          val experiment_name = "Spark_Min_Hash"
+          val experiment_type = "Sematic Similarity Estimation"
+          val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
+          val measure_type = "distance"
+
+          val a = row(0).toString().split("/").last
+          val b = row(1).toString().split("/").last
+          val value = row(2).toString
+          val cnu: String = experiment_type + " - " + experiment_name + " - " + a + " - " + b + " - " + evaluation_datetime
+
+          List(
+            Triple.create(
+              NodeFactory.createURI(a),
+              NodeFactory.createURI(er),
+              NodeFactory.createURI(cnu)
+            ), Triple.create(
+              NodeFactory.createURI(b),
+              NodeFactory.createURI(er),
+              NodeFactory.createURI(cnu)
+            ), Triple.create(
+              NodeFactory.createURI(cnu),
+              NodeFactory.createURI(vr),
+              NodeFactory.createLiteral(value.toString)
+            ), Triple.create(
+              NodeFactory.createURI(cnu),
+              NodeFactory.createURI(extr),
+              NodeFactory.createLiteral(experiment_type)
+            ), Triple.create(
+              NodeFactory.createURI(cnu),
+              NodeFactory.createURI(exnr),
+              NodeFactory.createLiteral(experiment_name)
+            ), Triple.create(
+              NodeFactory.createURI(cnu),
+              NodeFactory.createURI(dtr),
+              NodeFactory.createLiteral(evaluation_datetime)
+            )
+          )
+        }
+      )
+    experiment_results.foreach(println(_))
+
+    // TODO check whether this should be always public visible
+    val experiment_name = "Spark_Min_Hash"
+    val experiment_type = "Sematic Similarity Estimation"
+    val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
+    val measure_type = "distance"
+
+    val experiment_hash: String = experiment_type + " - " + experiment_name + " - " + evaluation_datetime
+
+
+    val output = "/Users/carstendraschner/Downloads/experiment_results_" + experiment_hash + ".nt"
+    // val output = "/Users/carstendraschner/Downloads/experiment_results"
+
+    experiment_results.saveAsNTriplesFile(output)
+
+    println("Triples are generated and stored in output path:")
+    println(output)
 
     spark.stop()
   }
