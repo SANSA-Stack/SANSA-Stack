@@ -95,6 +95,17 @@
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.scalatestplus</groupId>
+      <artifactId>scalatestplus-junit_${scala.binary.version}</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scalatestplus</groupId>
+      <artifactId>junit-4-12_${scala.binary.version}</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
