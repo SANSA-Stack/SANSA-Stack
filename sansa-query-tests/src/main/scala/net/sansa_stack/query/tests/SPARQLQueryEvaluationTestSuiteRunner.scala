@@ -4,9 +4,8 @@ import java.net.URL
 
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.resultset.rw.ResultsStAX
 import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.jena.sparql.resultset.{ResultSetCompare, SPARQLResult}
+import org.apache.jena.sparql.resultset.{ResultSetCompare, ResultsFormat, SPARQLResult}
 import org.scalatest.FunSuite
 
 import net.sansa_stack.query.tests.util._
@@ -52,7 +51,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
     .filter(data => !IGNORE.contains(data.name))
     .filter(IGNORE_FILTER)
     .slice(0, 50)
-//    .filter(data => data.name.startsWith("AVG with GROUP BY"))
+    .filter(data => data.name.startsWith("constructwhere01"))
     .foreach { d =>
 
       // get the relevant data from the test case
@@ -84,8 +83,9 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
           processSelect(query, expectedResult, actualResult)
         } else if (query.isAskType) {
           processAsk(query, expectedResult, actualResult)
-        } else {
-          fail(s"unsupported query type: ${query.getQueryType}")
+        } else if (query.isConstructType) {
+          processGraph(query, expectedResult, actualResult)
+          //          fail(s"unsupported query type: ${query.getQueryType}")
         }
       }
     }
@@ -102,6 +102,38 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
 
   private def processAsk(query: Query, resultExpected: SPARQLResult, resultActual: SPARQLResult) = {
     assert(resultActual.getBooleanResult == resultExpected.getBooleanResult, "Result of ASK query does not match")
+  }
+
+  private def processGraph(query: Query, resultExpected: SPARQLResult, resultActual: SPARQLResult) = {
+    if (query.isConstructQuad) {
+      import org.apache.jena.sparql.util.IsoMatcher
+      try {
+        if (!resultExpected.isDataset) fail("Expected results are not a graph: ")
+        val resultsExpected = resultExpected.getDataset
+        if (!IsoMatcher.isomorphic(resultsExpected.asDatasetGraph, resultActual.getDataset.asDatasetGraph())) {
+          fail("Results do not match: ")
+        }
+      } catch {
+        case ex: Exception =>
+          val typeName = if (query.isConstructType) "construct"
+          else "describe"
+          fail("Exception in result testing (" + typeName + "): " + ex)
+      }
+    }
+    else {
+      try {
+        if (!resultExpected.isGraph) fail("Expected results are not a graph: ")
+        val resultsExpected = resultExpected.getModel
+        if (!resultsExpected.isIsomorphicWith(resultActual.getModel)) {
+          fail("Results do not match: " + query)
+        }
+      } catch {
+        case ex: Exception =>
+          val typeName = if (query.isConstructType) "construct"
+          else "describe"
+          fail("Exception in result testing (" + typeName + "): " + ex)
+      }
+    }
   }
 
   private def processSelect(query: Query, results: SPARQLResult, resultsAct: SPARQLResult) = {
@@ -126,15 +158,15 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
       resultsActual.reset()
       println(
         s"""
-          |=================================
-          |Failure:
-          |Query:
-          |$query
-          |Got: ${resultsActual.size()} ---------------------
-          |${ResultSetFormatter.asText(resultsActual, query.getPrologue)}
-          |Expected: ${resultsExpected.size()} ------------------
-          |${ResultSetFormatter.asText(resultsExpected, query.getPrologue)}
-          |""".stripMargin
+           |=================================
+           |Failure:
+           |Query:
+           |$query
+           |Got: ${resultsActual.size()} ---------------------
+           |${ResultSetFormatter.asText(resultsActual, query.getPrologue)}
+           |Expected: ${resultsExpected.size()} ------------------
+           |${ResultSetFormatter.asText(resultsExpected, query.getPrologue)}
+           |""".stripMargin
       )
     }
     assert(b, "Results of SELECT query do not match")
@@ -169,10 +201,18 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
 
   private def readExpectedResult(resultFileURL: String): SPARQLResult = {
     println(s"loading expected result from $resultFileURL")
-    val is = new URL(resultFileURL).openStream
-    ResultsStAX.read(is, ModelFactory.createDefaultModel, null)
+    val fileURL = new URL(resultFileURL).toString
 
-    //    ResultSetFactory.load(is, ResultsFormat.FMT_RS_XML)
+    val format = ResultsFormat.guessSyntax(fileURL)
+
+    // CONSTRUCT or DESCRIBE
+    if (ResultsFormat.isRDFGraphSyntax(format)) {
+      val m = RDFDataMgr.loadModel(fileURL)
+      return new SPARQLResult(m)
+    }
+
+    // SELECT or ASK result
+    ResultSetFactory.result(fileURL)
   }
 
   private def loadData(datasetURL: String): Model = {
