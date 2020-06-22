@@ -70,10 +70,11 @@
 			<artifactId>spark-connector_${scala.binary.version}</artifactId>
 		</dependency>
 
-		<dependency>
+		<!--Disabled till a Scala 2.12 version is provided-->
+		<!--dependency> 
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch-spark-20_${scala.binary.version}</artifactId>
-		</dependency>
+		</dependency-->
 
 		<dependency>
 			<groupId>mysql</groupId>
