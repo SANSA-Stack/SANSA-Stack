@@ -89,8 +89,8 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
                 case "parquet" => df = spark.read.options(options).parquet(sourcePath)
                 case "cassandra" =>
                     df = spark.read.format("org.apache.spark.sql.cassandra").options(options).load
-                case "elasticsearch" =>
-                    df = spark.read.format("org.elasticsearch.spark.sql").options(options).load
+                // case "elasticsearch" => // Will be enabled again when a Scala 2.12 version is provided.
+                //    df = spark.read.format("org.elasticsearch.spark.sql").options(options).load
                 case "mongodb" =>
                     // spark.conf.set("spark.mongodb.input.uri", "mongodb://127.0.0.1/test.myCollection")
                     val values = options.values.toList
