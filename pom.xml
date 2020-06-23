@@ -92,6 +92,7 @@
 		<module>sansa-query-common</module>
 		<module>sansa-query-flink</module>
 		<module>sansa-query-spark</module>
+		<module>sansa-query-tests</module>
 	</modules>
 
 	<profiles>
@@ -186,6 +187,14 @@
 				<groupId>${project.groupId}</groupId>
 				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+				<scope>test</scope>
+<!--				<type>test-jar</type>-->
 			</dependency>
 
 		</dependencies>
