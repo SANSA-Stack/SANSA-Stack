@@ -83,9 +83,10 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
           processSelect(query, expectedResult, actualResult)
         } else if (query.isAskType) {
           processAsk(query, expectedResult, actualResult)
-        } else if (query.isConstructType) {
+        } else if (query.isConstructType || query.isDescribeType) {
           processGraph(query, expectedResult, actualResult)
-          //          fail(s"unsupported query type: ${query.getQueryType}")
+        } else {
+          fail(s"unsupported query type: ${query.getQueryType}")
         }
       }
     }
@@ -115,8 +116,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
         }
       } catch {
         case ex: Exception =>
-          val typeName = if (query.isConstructType) "construct"
-          else "describe"
+          val typeName = if (query.isConstructType) "construct" else "describe"
           fail("Exception in result testing (" + typeName + "): " + ex)
       }
     }
@@ -124,10 +124,11 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
       try {
         if (!resultExpected.isGraph) fail("Expected results are not a graph: ")
         if (!resultExpected.getModel.isIsomorphicWith(resultActual.getModel)) {
-          import java.io.PrintWriter
           import org.apache.jena.util.FileUtils
           val out = FileUtils.asPrintWriterUTF8(System.out)
           out.println("=======================================")
+          out.println("Failure:")
+          out.println(s"Query:\n$query")
           out.println("expected:")
           resultExpected.getModel.write(out, "TTL")
           out.println("---------------------------------------")
