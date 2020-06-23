@@ -3,7 +3,6 @@ package net.sansa_stack.rdf.flink.model
 import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{NodeFactory, Triple}
-import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
 class FlinkDataSetTripleOpsTests extends FunSuite {
@@ -12,7 +11,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("getting all the triples should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -24,7 +23,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("getting all the subjects should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -36,7 +35,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("getting all the predicates should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -48,7 +47,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("getting all the objects should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -60,7 +59,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("filtering subjects which are URI should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -72,7 +71,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("filtering predicates which are variable should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -84,7 +83,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("filtering objects which are literals should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -96,7 +95,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("union of two RDF graph should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -111,7 +110,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("finding a statement via S, P, O to the RDF graph should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val subject = NodeFactory.createURI("http://commons.dbpedia.org/resource/Category:Events")
     val predicate = NodeFactory.createURI("http://commons.dbpedia.org/property/en")
@@ -128,7 +127,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("finding a statement to the RDF graph should match") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triple = Triple.create(
       NodeFactory.createURI("http://commons.dbpedia.org/resource/Category:Events"),
@@ -146,7 +145,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("checking if the RDF graph contains any triples with a given subject and predicate should result true") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val subject = NodeFactory.createURI("http://commons.dbpedia.org/resource/Category:Events")
     val predicate = NodeFactory.createURI("http://commons.dbpedia.org/property/en")
@@ -160,7 +159,7 @@ class FlinkDataSetTripleOpsTests extends FunSuite {
 
   test("checks if a triple is present in the RDF graph should result true") {
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triple = Triple.create(
       NodeFactory.createURI("http://commons.dbpedia.org/resource/Category:Events"),
