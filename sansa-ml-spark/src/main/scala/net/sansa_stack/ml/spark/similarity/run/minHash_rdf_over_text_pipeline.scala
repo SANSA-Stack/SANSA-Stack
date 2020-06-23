@@ -111,9 +111,34 @@ object minHash_rdf_over_text_pipeline {
       "\t4.7 From a List of Tokens we create a text by concatinating all pseudo words (representing features)  with inbetween space\n" +
       "\t4.8 Create a Dataframe out of it to align with pipeline requirements")
 
+    // TODO this need to be put in a method or a class which handles different modes and further options in a concise way
+    // it hasn't been done for this script to have a working pipeline which includes everything to discuss how modularity should be factored
     val pseudo_text_df = spark.createDataFrame(
       tmp_triples
+        // mode at
         .flatMap(t => Seq((t.getSubject, t.getPredicate.toString() + t.getObject.toString()), (t.getObject, t.getSubject.toString() + t.getPredicate.toString()))) // 4.1
+        // mode it
+        // .flatMap(t => Seq((t.getObject, t.getSubject.toString() + t.getPredicate.toString()))) // 4.1
+        // mode ot
+        // .flatMap(t => Seq((t.getSubject, t.getPredicate.toString() + t.getObject.toString()))) // 4.1
+        // mode ar
+        // .flatMap(t => Seq((t.getSubject, t.getPredicate.toString()), (t.getObject, t.getPredicate.toString()))) // 4.1
+        // mode ir
+        // .flatMap(t => Seq((t.getObject, t.getPredicate.toString()))) // 4.1
+        // mode or
+        // .flatMap(t => Seq((t.getSubject, t.getPredicate.toString()))) // 4.1
+        // mode an
+        // .flatMap(t => Seq((t.getSubject, t.getObject.toString()), (t.getObject, t.getSubject.toString()))) // 4.1
+        // mode in
+        // .flatMap(t => Seq((t.getObject, t.getSubject.toString()))) // 4.1
+        // mode on
+        // .flatMap(t => Seq((t.getSubject, t.getObject.toString()))) // 4.1
+        // mode as
+        // .flatMap(t => Seq((t.getSubject, t.getObject.toString()), (t.getObject, t.getSubject.toString()), (t.getSubject, t.getPredicate.toString()), (t.getObject, t.getPredicate.toString()))) // 4.1
+        // mode is
+        // .flatMap(t => Seq((t.getObject, t.getSubject.toString()), (t.getObject, t.getPredicate.toString()))) // 4.1
+        // mode os
+        // .flatMap(t => Seq((t.getSubject, t.getObject.toString()), (t.getSubject, t.getPredicate.toString()))) // 4.1
         .filter(_._1.isURI) // 4.2
         .map({ case (k, v) => (k.toString(), v) }) // 4.3
         .mapValues(_.replaceAll("\\s", "")) // 4.4
@@ -234,96 +259,6 @@ object minHash_rdf_over_text_pipeline {
       "\tin this part we create from our results an rdf graph which represents the gained information\n" +
       "\tWith this approach we might be able to reuse the gained information in future approaches")
 
-    /*
-
-    val experiment_name = "Spark_Min_Hash"
-    val experiment_type = "Sematic Similarity Estimation"
-    val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
-    val measure_type = "distance"
-
-    // minhashed_df.withColumn("uriA", col("datasetA").getField("title")).show(false)
-
-    /* .collect()
-    .map(_.getAs[]).
-    foreach(println(_)) */
-
-    import spark.implicits._
-
-    def experiment_to_triples(
-        ea: String,
-        eb: String,
-        value: Double,
-        datetime: String,
-        exp_type: String,
-        exp_name: String,
-        measure_type: String
-      ): List[Triple] = {
-
-        val a: String = ea.split("/").last
-        val b: String = eb.split("/").last
-
-        // relations
-        val er = "element"
-        val vr = "value"
-        val extr = "experiment_type"
-        val exnr = "experiment_name"
-        val mtr = "experiment_measurement_type"
-        val dtr = "experiment_datetime"
-
-        // central node uri
-        val cnu: String = exp_type + " - " + exp_name + " - " + a + " - " + b + " - " + datetime
-
-        /* Array(
-          Array(a, er, cnu),
-          Array(b, er, cnu)
-        )
-        */
-        List(
-          Triple.create(
-            NodeFactory.createURI(a),
-            NodeFactory.createURI(er),
-            NodeFactory.createURI(cnu)
-          ), Triple.create(
-            NodeFactory.createURI(b),
-            NodeFactory.createURI(er),
-            NodeFactory.createURI(cnu)
-          ), Triple.create(
-            NodeFactory.createURI(cnu),
-            NodeFactory.createURI(vr),
-            NodeFactory.createLiteral(value.toString)
-          ), Triple.create(
-            NodeFactory.createURI(cnu),
-            NodeFactory.createURI(extr),
-            NodeFactory.createLiteral(experiment_type)
-          ), Triple.create(
-            NodeFactory.createURI(cnu),
-            NodeFactory.createURI(exnr),
-            NodeFactory.createLiteral(experiment_name)
-          ), Triple.create(
-            NodeFactory.createURI(cnu),
-            NodeFactory.createURI(dtr),
-            NodeFactory.createLiteral(evaluation_datetime)
-          )
-        )
-      }
-
-
-
-    import org.apache.spark.sql.functions.{col, lit}
-
-    val er = "element"
-    val vr = "value"
-    val extr = "experiment_type"
-    val exnr = "experiment_name"
-    val mtr = "experiment_measurement_type"
-    val dtr = "experiment_datetime"
-
-    val experiment_name = "Spark_Min_Hash"
-    val experiment_type = "Sematic Similarity Estimation"
-    val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
-    val measure_type = "distance" */
-
-
     val experiment_results: RDD[Triple] = minhashed_df
       .withColumn("ea", col("datasetA").getField("title")) // rdd
       .withColumn("eb", col("datasetB").getField("title"))
@@ -342,13 +277,16 @@ object minHash_rdf_over_text_pipeline {
           // Strings for uris adn literals
           val experiment_name = "Spark_Min_Hash"
           val experiment_type = "Sematic Similarity Estimation"
-          val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
+          val evaluation_datetime = Calendar.getInstance().getTime()
+            .toString // make string out of it, in future would be better to allow date nativly in rdf
+            .replaceAll("\\s", "") // remove spaces to reduce confusions with some foreign file readers
+            .replaceAll(":", "") // remove also double points for less confilcting chars. todo quick and dirty hack with tostring
           val measure_type = "distance"
 
-          val a = row(0).toString().split("/").last
-          val b = row(1).toString().split("/").last
+          val a = row(0).toString() // .split("/").last thiese appended split and last element were needed because the initial create of rdf data leads to a uri which includes also the filepath and not the simple string
+          val b = row(1).toString() // .split("/").last
           val value = row(2).toString
-          val cnu: String = experiment_type + " - " + experiment_name + " - " + a + " - " + b + " - " + evaluation_datetime
+          val cnu: String = (experiment_type).replaceAll("\\s", "")
 
           List(
             Triple.create(
@@ -387,13 +325,13 @@ object minHash_rdf_over_text_pipeline {
     val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
     val measure_type = "distance"
 
-    val experiment_hash: String = experiment_type + " - " + experiment_name + " - " + evaluation_datetime
+    val experiment_hash: String = (experiment_type + " - " + experiment_name + " - " + evaluation_datetime).replaceAll("\\s", "")
 
 
     val output = "/Users/carstendraschner/Downloads/experiment_results_" + experiment_hash + ".nt"
     // val output = "/Users/carstendraschner/Downloads/experiment_results"
 
-    experiment_results.saveAsNTriplesFile(output)
+    experiment_results.coalesce(1, shuffle = true).saveAsNTriplesFile(output)
 
     println("Triples are generated and stored in output path:")
     println(output)
