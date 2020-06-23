@@ -22,9 +22,13 @@ import it.unibz.inf.ontop.iq.{IQ, IQTree, UnaryIQTree}
 import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
+import it.unibz.inf.ontop.model.term.functionsymbol.{RDFTermFunctionSymbol, RDFTermTypeFunctionSymbol}
+import it.unibz.inf.ontop.model.term.impl.DBConstantImpl
 import it.unibz.inf.ontop.model.vocabulary.XSD
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.sparql.core.Var
+import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
@@ -95,7 +99,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   createTempDB(partitions)
 
   // create OBDA mappings
-  val mappings = createOBDAMappingsForPartitions(partitions)
+  val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions)
   println(mappings)
 
   // the Ontop core
@@ -134,27 +138,27 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
 
       partitions.foreach { p =>
 
-          val name = createTableName(p)
+          val name = SQLUtils.createTableName(p)
 
           val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
           logger.trace(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
 
           p match {
-            case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
+            case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
               objectType match {
-                case 1 => stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
+                case 1 => stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                   "s varchar(255) NOT NULL," +
                   "o varchar(255) NOT NULL" +
                   ")")
                 case 2 => if (langTagPresent) {
-                  stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
+                  stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                     "s varchar(255) NOT NULL," +
                     "o varchar(255) NOT NULL," +
                     "l varchar(10) NOT NULL" +
                     ")")
                 } else {
                   if (p.layout.schema == typeOf[SchemaStringStringType]) {
-                    stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
+                    stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                       "s varchar(255) NOT NULL," +
                       "o varchar(255) NOT NULL," +
                       "t varchar(255) NOT NULL" +
@@ -165,7 +169,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
                     if (colType.isDefined) {
                       stmt.addBatch(
                         s"""
-                           |CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (
+                           |CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (
                            |s varchar(255) NOT NULL,
                            |o ${colType.get} NOT NULL)
                            |""".stripMargin)
@@ -191,67 +195,6 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     }
     connection.commit()
     //    connection.close()
-  }
-
-  private def createOBDAMappingsForPartitions(partitions: Seq[RdfPartitionComplex]): String = {
-
-    def createMapping(id: String, tableName: String, property: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT "s", "o" FROM ${escapeTablename(tableName)}
-         |target        <{s}> <$property> <{o}> .
-         |""".stripMargin
-    }
-
-    def createMappingLit(id: String, tableName: String, property: String, datatypeURI: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT "s", "o" FROM ${escapeTablename(tableName)}
-         |target        <{s}> <$property> "{o}"^^<$datatypeURI> .
-         |""".stripMargin
-    }
-
-    def createMappingLiteralWithType(id: String, tableName: String, property: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT "s", "o", "t" FROM ${escapeTablename(tableName)}
-         |target        <{s}> <$property> "{o}"^^<{t}> .
-         |""".stripMargin
-    }
-
-    def createMappingLang(id: String, tableName: String, property: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT "s", "o", "l" FROM ${escapeTablename(tableName)}
-         |target        <{s}> <$property> "{o}@{l}" .
-         |""".stripMargin
-    }
-
-    val triplesMapping =
-      s"""
-         |mappingId     triples
-         |source        SELECT `s`, `p`, `o` FROM `triples`
-         |target        <{s}> <http://sansa.net/ontology/triples> "{o}" .
-         |""".stripMargin
-
-    "[MappingDeclaration] @collection [[" +
-      partitions
-        .map {
-          case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
-            val tableName = createTableName(p)
-            val id = escapeTablename(tableName)
-            objectType match {
-              case 1 => createMapping(id, tableName, predicate)
-              case 2 => if (langTagPresent) createMappingLang(id, tableName, predicate)
-                        else createMappingLit(id, tableName, predicate, datatype)
-              case _ =>
-                        logger.error("TODO: bnode Ontop mapping creation")
-                        ""
-
-
-            }
-        }
-        .mkString("\n\n") + "\n]]"
   }
 
   @throws[OBDASpecificationException]
@@ -347,32 +290,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     mappingConfiguration.loadSpecification
   }
 
-  private def escapeTablename(path: String): String =
-  "\"" +
-    URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
-      .toLowerCase
-      .replace('%', 'P')
-      .replace('.', 'C')
-      .replace("-", "dash") +
-    "\""
 
-
-  private def createTableName(p: RdfPartitionComplex): String = {
-    val pred = p.predicate
-
-    // For now let's just use the full predicate as the uri
-    // val predPart = pred.substring(pred.lastIndexOf("/") + 1)
-    val predPart = pred
-    val pn = NodeFactory.createURI(p.predicate)
-
-    val dt = p.datatype
-    val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
-    val langPart = if (p.langTagPresent) "_lang" else ""
-
-    val tableName = predPart + dtPart + langPart // .replace("#", "__").replace("-", "_")
-
-    tableName
-  }
 
   def close(): Unit = connection.close()
 
@@ -527,6 +445,23 @@ class OntopSPARQLEngine(val spark: SparkSession,
     columnMappings.foreach {
       case (sparqlVar, sqlVar) => result = result.withColumnRenamed(sqlVar.getName, sparqlVar.getName)
     }
+
+    // append the lang tags
+    // todo other post processing stuff?
+    signature.asScala
+      .map(v => (v, sparqlVar2Term.get(v)))
+      .foreach {case (v, term) =>
+        if (term.isInstanceOf[NonGroundFunctionalTerm]) {
+          if (term.asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.isInstanceOf[RDFTermFunctionSymbol]) {
+            val t = term.asInstanceOf[NonGroundFunctionalTerm]
+            if (t.getArity == 2 && t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.isInstanceOf[RDFTermTypeFunctionSymbol]) {
+              val map = t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.asInstanceOf[RDFTermTypeFunctionSymbol].getConversionMap
+//              map.get(new DBConstantImpl())
+            }
+          }
+        }
+      }
+
 
     // and we also add columns for literal bindings which are not already returned by the converted SQL query but
     // are the result of static bindings, e.g. BIND(1 as ?z)
@@ -704,7 +639,7 @@ object OntopSPARQLEngine {
     }
 
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex)
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
     println(s"num partitions: ${partitions.size}")
 
     // create the SPARQL engine

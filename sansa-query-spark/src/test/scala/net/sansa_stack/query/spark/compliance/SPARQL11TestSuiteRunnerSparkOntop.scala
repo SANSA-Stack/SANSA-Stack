@@ -105,7 +105,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
     val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
 
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex)
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
 
     // create the query engine
     val queryEngine = new OntopSPARQLEngine(spark, partitions)
