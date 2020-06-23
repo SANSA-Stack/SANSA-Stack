@@ -11,13 +11,15 @@ case class RdfPartitionComplex(subjectType: Byte,
                                predicate: String,
                                objectType: Byte,
                                datatype: String,
-                               langTagPresent: Boolean)
+                               langTagPresent: Boolean,
+                               lang: Option[String],
+                               partitioner: RdfPartitionerComplex)
   extends RdfPartition
     with Serializable {
-  def layout: TripleLayout = RdfPartitionerComplex.determineLayout(this)
+  def layout: TripleLayout = partitioner.determineLayout(this)
 
   def matches(t: Triple): Boolean = {
-    val p = RdfPartitionerComplex.fromTriple(t)
+    val p = partitioner.fromTriple(t)
     p == this
   }
 }
