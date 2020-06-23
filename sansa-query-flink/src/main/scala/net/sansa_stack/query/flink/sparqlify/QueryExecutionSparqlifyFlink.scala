@@ -10,6 +10,7 @@ import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, QueryExecutionFa
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
+import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}
 import org.apache.flink.table.api.scala.{BatchTableEnvironment, _}
@@ -79,6 +80,8 @@ object QueryExecutionSparqlifyFlink {
     println("byte size=" + bytes.length)
     println(util.Arrays.toString(bytes))
     dataset.printSchema()
+
+    implicit val typeInfo = TypeInformation.of(classOf[Row])
     val result = dataset.toDataSet[Row].map(row => {
       val kryo = new KryoSerializer[FlinkRowMapperSparqlify](classOf[FlinkRowMapperSparqlify], config).getKryo
 
