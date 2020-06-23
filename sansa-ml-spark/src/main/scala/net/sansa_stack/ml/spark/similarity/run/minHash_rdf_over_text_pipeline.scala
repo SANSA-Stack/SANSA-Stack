@@ -46,58 +46,26 @@ object minHash_rdf_over_text_pipeline {
 
     val tmp_triples: RDD[Triple] = triples
 
-    /* println("2. Create or load sample RDD Graph")
-    val sample_rdd_graph: RDD[Triple] = spark.sparkContext.parallelize(
-      Array(
-        Triple.create(
-          NodeFactory.createURI("exampleUri1"),
-          NodeFactory.createURI("examplePredicate1"),
-          NodeFactory.createURI("exampleUri2")
-        ), Triple.create(
-          NodeFactory.createURI("exampleUri2"),
-          NodeFactory.createURI("examplePredicate2"),
-          NodeFactory.createURI("exampleUri3")
-        ), Triple.create(
-          NodeFactory.createURI("exampleUri3"),
-          NodeFactory.createURI("examplePredicate1"),
-          NodeFactory.createURI("exampleUri1")
-        ), Triple.create(
-          NodeFactory.createURI("exampleUri1"),
-          NodeFactory.createURI("examplePredicate1"),
-          NodeFactory.createLiteral("example Literal1")
-        )
-      )
-    )
-
-
-    println("Sample RDD Graph created \n")
-
-    val tmp_triples: RDD[Triple] = triples
-
-    println("3. Create or load sample RDD Sub Graph.\nThis is needed for a later recommendation test.")
-    val sample_rdd_subgraph: RDD[Triple] = spark.sparkContext.parallelize(
-      Array(
-        Triple.create(
-          NodeFactory.createURI("exampleUri4"),
-          NodeFactory.createURI("examplePredicate1"),
-          NodeFactory.createURI("exampleUri2")
-        ), Triple.create(
-          NodeFactory.createURI("exampleUri2"),
-          NodeFactory.createURI("examplePredicate2"),
-          NodeFactory.createURI("exampleUri4")
-        ), Triple.create(
-          NodeFactory.createURI("exampleUri4"),
-          NodeFactory.createURI("examplePredicate1"),
-          NodeFactory.createLiteral("example Literal1")
-        )
-      )
-    )
-    sample_rdd_subgraph.foreach(println(_))
-    println("Sample Sub RDD Graph created \n") */
-
     println("3. Show RDF Data")
     tmp_triples.foreach(println(_))
     println()
+
+    /*
+    output:
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a1 @file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/m1
+    file:///Users/carstendraschner/GitHub/SANSA-ML/m1 @file:///Users/carstendraschner/GitHub/SANSA-ML/pd "1989-11-9"
+    file:///Users/carstendraschner/GitHub/SANSA-ML/m1 @file:///Users/carstendraschner/GitHub/SANSA-ML/pb file:///Users/carstendraschner/GitHub/SANSA-ML/p1
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a2 @file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/m1
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a2 @file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/m2
+    file:///Users/carstendraschner/GitHub/SANSA-ML/m2 @file:///Users/carstendraschner/GitHub/SANSA-ML/pb file:///Users/carstendraschner/GitHub/SANSA-ML/p2
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a3 @file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/m2
+    file:///Users/carstendraschner/GitHub/SANSA-ML/m2 @file:///Users/carstendraschner/GitHub/SANSA-ML/pd "1999-01-01"
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a4 @file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/m2
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a4 @file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/m3
+    file:///Users/carstendraschner/GitHub/SANSA-ML/m3 @file:///Users/carstendraschner/GitHub/SANSA-ML/pd "2004-12-24"
+    file:///Users/carstendraschner/GitHub/SANSA-ML/m3 @file:///Users/carstendraschner/GitHub/SANSA-ML/pb file:///Users/carstendraschner/GitHub/SANSA-ML/p2
+    */
+
 
     println("4. Here we produce a dense transformation into a pseudo tokenized format")
     println("\tin the current case we include relations and nodes connected, but different feature generation are also possible")
@@ -152,6 +120,23 @@ object minHash_rdf_over_text_pipeline {
     pseudo_text_df.show(false)
     println("Transformation to pseudo text DF done.\n")
 
+    /*
+    output:
+    +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    |title                                            |content                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+    +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/a1file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p1 file:///Users/carstendraschner/GitHub/SANSA-ML/pd"1989-11-9" file:///Users/carstendraschner/GitHub/SANSA-ML/a2file:///Users/carstendraschner/GitHub/SANSA-ML/ai                                                                                                    |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/a2file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2 file:///Users/carstendraschner/GitHub/SANSA-ML/pd"1999-01-01" file:///Users/carstendraschner/GitHub/SANSA-ML/a3file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/ai|
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a1|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m1                                                                                                                                                                                                                                                                                                                                                                       |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m3|file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/pd"2004-12-24" file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2                                                                                                                                                                                                      |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a2|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m1 file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m2                                                                                                                                                                                                                                                                    |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a3|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m2                                                                                                                                                                                                                                                                                                                                                                       |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a4|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m2 file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m3                                                                                                                                                                                                                                                                    |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p1|file:///Users/carstendraschner/GitHub/SANSA-ML/m1file:///Users/carstendraschner/GitHub/SANSA-ML/pb                                                                                                                                                                                                                                                                                                                                                                       |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p2|file:///Users/carstendraschner/GitHub/SANSA-ML/m2file:///Users/carstendraschner/GitHub/SANSA-ML/pb file:///Users/carstendraschner/GitHub/SANSA-ML/m3file:///Users/carstendraschner/GitHub/SANSA-ML/pb                                                                                                                                                                                                                                                                    |
+    +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+     */
+
     // Sure this part of creating artificial text after having some tokens
     // already is not the most efficient way but it makes the comon pipeline
     // usable and we don not need to take care of data types and generation
@@ -167,6 +152,23 @@ object minHash_rdf_over_text_pipeline {
     wordsDf.show(false)
     println("tokenization done!\n")
 
+    /*
+    output:
+    +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    |title                                            |content                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |words                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+    +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/a1file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p1 file:///Users/carstendraschner/GitHub/SANSA-ML/pd"1989-11-9" file:///Users/carstendraschner/GitHub/SANSA-ML/a2file:///Users/carstendraschner/GitHub/SANSA-ML/ai                                                                                                    |[file:///users/carstendraschner/github/sansa-ml/a1file:///users/carstendraschner/github/sansa-ml/ai, file:///users/carstendraschner/github/sansa-ml/pbfile:///users/carstendraschner/github/sansa-ml/p1, file:///users/carstendraschner/github/sansa-ml/pd"1989-11-9", file:///users/carstendraschner/github/sansa-ml/a2file:///users/carstendraschner/github/sansa-ml/ai]                                                                                                     |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/a2file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2 file:///Users/carstendraschner/GitHub/SANSA-ML/pd"1999-01-01" file:///Users/carstendraschner/GitHub/SANSA-ML/a3file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/ai|[file:///users/carstendraschner/github/sansa-ml/a2file:///users/carstendraschner/github/sansa-ml/ai, file:///users/carstendraschner/github/sansa-ml/pbfile:///users/carstendraschner/github/sansa-ml/p2, file:///users/carstendraschner/github/sansa-ml/pd"1999-01-01", file:///users/carstendraschner/github/sansa-ml/a3file:///users/carstendraschner/github/sansa-ml/ai, file:///users/carstendraschner/github/sansa-ml/a4file:///users/carstendraschner/github/sansa-ml/ai]|
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a1|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m1                                                                                                                                                                                                                                                                                                                                                                       |[file:///users/carstendraschner/github/sansa-ml/aifile:///users/carstendraschner/github/sansa-ml/m1]                                                                                                                                                                                                                                                                                                                                                                           |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m3|file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/ai file:///Users/carstendraschner/GitHub/SANSA-ML/pd"2004-12-24" file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2                                                                                                                                                                                                      |[file:///users/carstendraschner/github/sansa-ml/a4file:///users/carstendraschner/github/sansa-ml/ai, file:///users/carstendraschner/github/sansa-ml/pd"2004-12-24", file:///users/carstendraschner/github/sansa-ml/pbfile:///users/carstendraschner/github/sansa-ml/p2]                                                                                                                                                                                                        |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a2|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m1 file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m2                                                                                                                                                                                                                                                                    |[file:///users/carstendraschner/github/sansa-ml/aifile:///users/carstendraschner/github/sansa-ml/m1, file:///users/carstendraschner/github/sansa-ml/aifile:///users/carstendraschner/github/sansa-ml/m2]                                                                                                                                                                                                                                                                       |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a3|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m2                                                                                                                                                                                                                                                                                                                                                                       |[file:///users/carstendraschner/github/sansa-ml/aifile:///users/carstendraschner/github/sansa-ml/m2]                                                                                                                                                                                                                                                                                                                                                                           |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a4|file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m2 file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/m3                                                                                                                                                                                                                                                                    |[file:///users/carstendraschner/github/sansa-ml/aifile:///users/carstendraschner/github/sansa-ml/m2, file:///users/carstendraschner/github/sansa-ml/aifile:///users/carstendraschner/github/sansa-ml/m3]                                                                                                                                                                                                                                                                       |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p1|file:///Users/carstendraschner/GitHub/SANSA-ML/m1file:///Users/carstendraschner/GitHub/SANSA-ML/pb                                                                                                                                                                                                                                                                                                                                                                       |[file:///users/carstendraschner/github/sansa-ml/m1file:///users/carstendraschner/github/sansa-ml/pb]                                                                                                                                                                                                                                                                                                                                                                           |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p2|file:///Users/carstendraschner/GitHub/SANSA-ML/m2file:///Users/carstendraschner/GitHub/SANSA-ML/pb file:///Users/carstendraschner/GitHub/SANSA-ML/m3file:///Users/carstendraschner/GitHub/SANSA-ML/pb                                                                                                                                                                                                                                                                    |[file:///users/carstendraschner/github/sansa-ml/m2file:///users/carstendraschner/github/sansa-ml/pb, file:///users/carstendraschner/github/sansa-ml/m3file:///users/carstendraschner/github/sansa-ml/pb]                                                                                                                                                                                                                                                                       |
+    +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+     */
+
     println("6. We set up a count Vectorizer which operates on our Tokenized DF")
     val cvModel: CountVectorizerModel = new CountVectorizer()
       .setInputCol("words")
@@ -180,11 +182,28 @@ object minHash_rdf_over_text_pipeline {
     vectorizedDf.show(false)
     println("Count Vectorization done!\n")
 
+    /*
+    output:
+    +-------------------------------------------------+---------------------------------------+
+    |title                                            |features                               |
+    +-------------------------------------------------+---------------------------------------+
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|(15,[1,5,9,11],[1.0,1.0,1.0,1.0])      |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|(15,[1,3,4,6,13],[1.0,1.0,1.0,1.0,1.0])|
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a1|(15,[2],[1.0])                         |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m3|(15,[3,4,14],[1.0,1.0,1.0])            |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a2|(15,[0,2],[1.0,1.0])                   |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a3|(15,[0],[1.0])                         |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a4|(15,[0,12],[1.0,1.0])                  |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p1|(15,[8],[1.0])                         |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p2|(15,[7,10],[1.0,1.0])                  |
+    +-------------------------------------------------+---------------------------------------+
+    */
 
-    println("6. Here we finally start with our minhash model\n" +
-      "we set number of hash tables\n" +
-      "and we decribe the respective columns\n" +
-      "then we fit the model to our vectorizedDf\n")
+
+    println("7. Here we finally start with our minhash model\n" +
+      "\t- we set number of hash tables\n" +
+      "\t- and we decribe the respective columns\n" +
+      "\t- then we fit the model to our vectorizedDf\n")
     val mh = new MinHashLSH()
       .setNumHashTables(5)
       .setInputCol("features")
@@ -196,13 +215,30 @@ object minHash_rdf_over_text_pipeline {
     model.transform(vectorizedDf).show(false)
     println("Transformation done\n")
 
+    /*
+    output:
+    +-------------------------------------------------+---------------------------------------+-----------------------------------------------------------------------------------+
+    |title                                            |features                               |hashValues                                                                         |
+    +-------------------------------------------------+---------------------------------------+-----------------------------------------------------------------------------------+
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|(15,[1,5,9,11],[1.0,1.0,1.0,1.0])      |[[4.4610989E8], [2.82022781E8], [3.13658409E8], [3.37005419E8], [9.2446381E7]]     |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|(15,[1,3,4,6,13],[1.0,1.0,1.0,1.0,1.0])|[[3.54796773E8], [2.82022781E8], [4.76528358E8], [7.12958632E8], [1.64558731E8]]   |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a1|(15,[2],[1.0])                         |[[2.25592966E8], [4.98143035E8], [1.770683816E9], [1.247220523E9], [1.702128832E9]]|
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m3|(15,[3,4,14],[1.0,1.0,1.0])            |[[9.78456855E8], [7.14263289E8], [4.76528358E8], [1.623173736E9], [1.64558731E8]]  |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a2|(15,[0,2],[1.0,1.0])                   |[[2.25592966E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]    |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a3|(15,[0],[1.0])                         |[[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]    |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a4|(15,[0,12],[1.0,1.0])                  |[[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [5.92951023E8]]    |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p1|(15,[8],[1.0])                         |[[6.66626814E8], [1.794864559E9], [1.19975297E8], [1.464865058E9], [6.29007198E8]] |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/p2|(15,[7,10],[1.0,1.0])                  |[[1.34279849E8], [1.89030324E8], [1.414130755E9], [1.78696741E8], [1.28502556E8]]  |
+    +-------------------------------------------------+---------------------------------------+-----------------------------------------------------------------------------------+
+     */
+
     println("9. Perform Similarity Estimations on key and DF by approxNearestNeighbors approx Similarity Join")
     println("\t9.1 The created key is another sample movie which does not exist originally in the dataset")
     println("\t\tWe have to set the vocab-size: " + cvModel.getVocabSize)
     println("\t\tThen our movie has actor a1 with relation acted in ai:")
     println("\t\tAnd is produced by producer p2 over relation pb")
-    println("\t\tFinally is published at 20-06-17\n")
-    println("\t\tThis is how the new movie key looks like in data frame format\n")
+    println("\t\tFinally is published at 20-06-17")
+    println("This is how the new movie key looks like in data frame format\n")
 
     val key_movie = cvModel.transform(
       tokenizer.transform(
@@ -226,32 +262,27 @@ object minHash_rdf_over_text_pipeline {
         )
       )
     )
+    println("This is the dataframe represenation of the key we want for our approxNearestNeighbors")
     key_movie.show()
-    // TODO get sparse vector out of cell features, some zip is also needed to in the end ket a desired key
-    val key = Vectors.sparse(80, Seq((4, 1.0), (12, 1.0)))
+    println("Here we look for approxNearestNeighbors of our novel key")
+    val key_m4 = key_movie.select("features").collect()(0)(0).asInstanceOf[Vector].toSparse
+    model.approxNearestNeighbors(vectorizedDf, key_m4, k).show(false)
 
-    /* println(cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a1".toString))
-    println(cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a3".toString))
-    println(cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2".toString))
+    println("And now for one existing movie m2")
 
+    val key_m2 = vectorizedDf.select("features").collect()(1)(0).asInstanceOf[Vector].toSparse
 
-    val not_working_key = Vectors.sparse(
-      cvModel.getVocabSize,
-      Seq(
-        (cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a1".toString), 1.0),
-        (cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/aifile:///Users/carstendraschner/GitHub/SANSA-ML/a3".toString), 1.0),
-        (cvModel.vocabulary.indexOf("file:///Users/carstendraschner/GitHub/SANSA-ML/pbfile:///Users/carstendraschner/GitHub/SANSA-ML/p2".toString), 1.0)
-      )
-    ) */
     val k = 40
-    print("ApproxNearestNeighbors")
-    model.approxNearestNeighbors(vectorizedDf, key, k).show(false)
+    println("ApproxNearestNeighbors")
+    model.approxNearestNeighbors(vectorizedDf, key_m2, k).show(false)
 
     // Self Join
     println("Approx Similarity Join")
     val threshold = 0.8
     val minhashed_df = model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold) // .filter("distCol != 0")
+    println("Whole Dataframe after minHash")
     minhashed_df.show(false)
+    println("truncinate DataFrame after minHash")
     minhashed_df.show()
     println("minHash similarity Join has been Performed")
 
@@ -286,7 +317,7 @@ object minHash_rdf_over_text_pipeline {
           val a = row(0).toString() // .split("/").last thiese appended split and last element were needed because the initial create of rdf data leads to a uri which includes also the filepath and not the simple string
           val b = row(1).toString() // .split("/").last
           val value = row(2).toString
-          val cnu: String = (experiment_type).replaceAll("\\s", "")
+          val cnu: String = (experiment_type + " - " + experiment_name + " - " + a + b + evaluation_datetime).replaceAll("\\s", "")
 
           List(
             Triple.create(
@@ -317,7 +348,8 @@ object minHash_rdf_over_text_pipeline {
           )
         }
       )
-    experiment_results.foreach(println(_))
+    println("Resulting Triples to represent experiment look like this (5 lines given")
+    experiment_results.take(5)foreach(println(_))
 
     // TODO check whether this should be always public visible
     val experiment_name = "Spark_Min_Hash"
@@ -326,7 +358,6 @@ object minHash_rdf_over_text_pipeline {
     val measure_type = "distance"
 
     val experiment_hash: String = (experiment_type + " - " + experiment_name + " - " + evaluation_datetime).replaceAll("\\s", "")
-
 
     val output = "/Users/carstendraschner/Downloads/experiment_results_" + experiment_hash + ".nt"
     // val output = "/Users/carstendraschner/Downloads/experiment_results"
