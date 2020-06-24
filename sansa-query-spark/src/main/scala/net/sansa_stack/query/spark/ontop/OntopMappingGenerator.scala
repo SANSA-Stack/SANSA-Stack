@@ -64,7 +64,7 @@ object OntopMappingGenerator {
         .map {
           case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
             val tableName = SQLUtils.createTableName(p)
-            val id = SQLUtils.escapeTablename(tableName)
+            val id = SQLUtils.escapeTablename(tableName + lang.getOrElse(""))
             objectType match {
               case 1 => createMapping(id, tableName, predicate)
               case 2 => if (langTagPresent) createMappingLang(id, tableName, predicate, lang.get)
