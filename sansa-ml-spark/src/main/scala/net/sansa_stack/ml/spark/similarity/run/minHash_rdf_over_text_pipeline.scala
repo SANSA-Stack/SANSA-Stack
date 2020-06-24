@@ -461,6 +461,55 @@ object minHash_rdf_over_text_pipeline {
     println("Triples are generated and stored in output path:")
     println(output)
 
+
+    println("Here we start 7B")
+    println("We try out here alternative easy similarity estimations like jaccard on the basis of CountVectorized dataframes")
+
+    import spark.implicits._
+
+    println("7B.1 Jaccard")
+    val jaccard = udf( (a: Vector, b: Vector) => {
+      val feature_indices_a = a.toSparse.indices
+      val feature_indices_b = b.toSparse.indices
+      val f_set_a = feature_indices_a.toSet
+      val f_set_b = feature_indices_b.toSet
+      val jaccard = f_set_a.intersect(f_set_b).size.toDouble / f_set_a.union(f_set_b).size.toDouble
+      jaccard
+    })
+
+    println("Create all pairs")
+    val cross =
+      vectorizedDf
+        .withColumnRenamed("title", "titleA")
+        .withColumnRenamed("features", "featuresA")
+        .crossJoin(
+          vectorizedDf
+            .withColumnRenamed("title", "titleB")
+            .withColumnRenamed("features", "featuresB"))
+    cross.show(false)
+    cross.withColumn(
+      "jaccardSim",
+      jaccard($"featuresA", $"featuresB")
+    )
+      .select("titleA", "titleB", "jaccardSim")
+      .show(false)
+
+    /* println("Create all pairs")
+    val cross =
+      vectorizedDf
+        .withColumnRenamed("title", "titleA")
+        .withColumnRenamed("features", "featuresA")
+        .crossJoin(
+          vectorizedDf
+            .withColumnRenamed("title", "titleB")
+            .withColumnRenamed("features", "featuresB"))
+    cross.show(false)
+    cross.withColumn(
+      "jaccardSim",
+      jaccard(col("featuresA"), col("featuresB"))
+    ).show(false) */
+
+
     spark.stop()
   }
 }
