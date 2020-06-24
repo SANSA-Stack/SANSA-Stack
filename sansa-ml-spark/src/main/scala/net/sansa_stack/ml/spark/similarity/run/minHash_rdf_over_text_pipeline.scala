@@ -264,17 +264,48 @@ object minHash_rdf_over_text_pipeline {
     )
     println("This is the dataframe represenation of the key we want for our approxNearestNeighbors")
     key_movie.show()
+
+    /* output
+    +-----+--------------------+--------------------+--------------------+
+    |title|             content|               words|            features|
+    +-----+--------------------+--------------------+--------------------+
+    |   m4|file:///Users/car...|[file:///users/ca...|(15,[4,13],[1.0,1...|
+    +-----+--------------------+--------------------+--------------------+
+     */
+
+    // number of max suggestions for approxNearestNeighbors
+    val k = 40
+
     println("Here we look for approxNearestNeighbors of our novel key")
     val key_m4 = key_movie.select("features").collect()(0)(0).asInstanceOf[Vector].toSparse
     model.approxNearestNeighbors(vectorizedDf, key_m4, k).show(false)
+
+    /* output
+    +-------------------------------------------------+-----------------------------------+---------------------------------------------------------------------------------+-------+
+    |title                                            |features                           |hashValues                                                                       |distCol|
+    +-------------------------------------------------+-----------------------------------+---------------------------------------------------------------------------------+-------+
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m3|(15,[2,4,9],[1.0,1.0,1.0])         |[[2.25592966E8], [4.98143035E8], [8.63894582E8], [1.247220523E9], [6.65063373E8]]|0.75   |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|(15,[1,11,12,13],[1.0,1.0,1.0,1.0])|[[3.54796773E8], [2.82022781E8], [3.13658409E8], [5.54649954E8], [9.2446381E7]]  |0.8    |
+    +-------------------------------------------------+-----------------------------------+---------------------------------------------------------------------------------+-------+
+    */
 
     println("And now for one existing movie m2")
 
     val key_m2 = vectorizedDf.select("features").collect()(1)(0).asInstanceOf[Vector].toSparse
 
-    val k = 40
     println("ApproxNearestNeighbors")
     model.approxNearestNeighbors(vectorizedDf, key_m2, k).show(false)
+
+    /*
+    OUTPUT:
+    +-------------------------------------------------+---------------------------------------+---------------------------------------------------------------------------------+------------------+
+    |title                                            |features                               |hashValues                                                                       |distCol           |
+    +-------------------------------------------------+---------------------------------------+---------------------------------------------------------------------------------+------------------+
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|(15,[1,2,4,7,14],[1.0,1.0,1.0,1.0,1.0])|[[2.25592966E8], [2.82022781E8], [5.07341521E8], [8.7126731E8], [1.28502556E8]]  |0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m3|(15,[2,4,9],[1.0,1.0,1.0])             |[[2.25592966E8], [4.98143035E8], [8.63894582E8], [1.247220523E9], [6.65063373E8]]|0.6666666666666667|
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|(15,[1,11,12,13],[1.0,1.0,1.0,1.0])    |[[3.54796773E8], [2.82022781E8], [3.13658409E8], [5.54649954E8], [9.2446381E7]]  |0.875             |
+    +-------------------------------------------------+---------------------------------------+---------------------------------------------------------------------------------+------------------+
+     */
 
     // Self Join
     println("Approx Similarity Join")
@@ -282,9 +313,63 @@ object minHash_rdf_over_text_pipeline {
     val minhashed_df = model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold) // .filter("distCol != 0")
     println("Whole Dataframe after minHash")
     minhashed_df.show(false)
+
+    /* output
+    +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------+
+    |datasetA                                                                                                                                                                     |datasetB                                                                                                                                                                     |distCol           |
+    +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------+
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a4, (15,[0,6],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                   |[file:///Users/carstendraschner/GitHub/SANSA-ML/a3, (15,[0],[1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                         |0.5               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/m2, (15,[1,2,4,7,14],[1.0,1.0,1.0,1.0,1.0]), [[2.25592966E8], [2.82022781E8], [5.07341521E8], [8.7126731E8], [1.28502556E8]]]|[file:///Users/carstendraschner/GitHub/SANSA-ML/m3, (15,[2,4,9],[1.0,1.0,1.0]), [[2.25592966E8], [4.98143035E8], [8.63894582E8], [1.247220523E9], [6.65063373E8]]]           |0.6666666666666667|
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/m1, (15,[1,11,12,13],[1.0,1.0,1.0,1.0]), [[3.54796773E8], [2.82022781E8], [3.13658409E8], [5.54649954E8], [9.2446381E7]]]    |[file:///Users/carstendraschner/GitHub/SANSA-ML/m1, (15,[1,11,12,13],[1.0,1.0,1.0,1.0]), [[3.54796773E8], [2.82022781E8], [3.13658409E8], [5.54649954E8], [9.2446381E7]]]    |0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |[file:///Users/carstendraschner/GitHub/SANSA-ML/a4, (15,[0,6],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                   |0.6666666666666667|
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |[file:///Users/carstendraschner/GitHub/SANSA-ML/a1, (15,[3],[1.0]), [[9.78456855E8], [7.14263289E8], [4.76528358E8], [1.623173736E9], [1.64558731E8]]]                       |0.5               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/m3, (15,[2,4,9],[1.0,1.0,1.0]), [[2.25592966E8], [4.98143035E8], [8.63894582E8], [1.247220523E9], [6.65063373E8]]]           |[file:///Users/carstendraschner/GitHub/SANSA-ML/m3, (15,[2,4,9],[1.0,1.0,1.0]), [[2.25592966E8], [4.98143035E8], [8.63894582E8], [1.247220523E9], [6.65063373E8]]]           |0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/m2, (15,[1,2,4,7,14],[1.0,1.0,1.0,1.0,1.0]), [[2.25592966E8], [2.82022781E8], [5.07341521E8], [8.7126731E8], [1.28502556E8]]]|[file:///Users/carstendraschner/GitHub/SANSA-ML/m2, (15,[1,2,4,7,14],[1.0,1.0,1.0,1.0,1.0]), [[2.25592966E8], [2.82022781E8], [5.07341521E8], [8.7126731E8], [1.28502556E8]]]|0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a4, (15,[0,6],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                   |[file:///Users/carstendraschner/GitHub/SANSA-ML/a4, (15,[0,6],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                   |0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a4, (15,[0,6],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                   |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |0.6666666666666667|
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a3, (15,[0],[1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                         |[file:///Users/carstendraschner/GitHub/SANSA-ML/a4, (15,[0,6],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                   |0.5               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a1, (15,[3],[1.0]), [[9.78456855E8], [7.14263289E8], [4.76528358E8], [1.623173736E9], [1.64558731E8]]]                       |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |0.5               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/p2, (15,[8,10],[1.0,1.0]), [[1.34279849E8], [1.89030324E8], [1.19975297E8], [1.78696741E8], [6.29007198E8]]]                 |[file:///Users/carstendraschner/GitHub/SANSA-ML/p2, (15,[8,10],[1.0,1.0]), [[1.34279849E8], [1.89030324E8], [1.19975297E8], [1.78696741E8], [6.29007198E8]]]                 |0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/m3, (15,[2,4,9],[1.0,1.0,1.0]), [[2.25592966E8], [4.98143035E8], [8.63894582E8], [1.247220523E9], [6.65063373E8]]]           |[file:///Users/carstendraschner/GitHub/SANSA-ML/m2, (15,[1,2,4,7,14],[1.0,1.0,1.0,1.0,1.0]), [[2.25592966E8], [2.82022781E8], [5.07341521E8], [8.7126731E8], [1.28502556E8]]]|0.6666666666666667|
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a3, (15,[0],[1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                         |[file:///Users/carstendraschner/GitHub/SANSA-ML/a3, (15,[0],[1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                         |0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |[file:///Users/carstendraschner/GitHub/SANSA-ML/a3, (15,[0],[1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                         |0.5               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/p1, (15,[5],[1.0]), [[4.4610989E8], [1.146503797E9], [1.964366928E9], [3.37005419E8], [1.165568015E9]]]                      |[file:///Users/carstendraschner/GitHub/SANSA-ML/p1, (15,[5],[1.0]), [[4.4610989E8], [1.146503797E9], [1.964366928E9], [3.37005419E8], [1.165568015E9]]]                      |0.0               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a3, (15,[0],[1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [7.01119548E8]]]                         |[file:///Users/carstendraschner/GitHub/SANSA-ML/a2, (15,[0,3],[1.0,1.0]), [[7.57939931E8], [6.5902527E7], [2.82845246E8], [4.95314097E8], [1.64558731E8]]]                   |0.5               |
+    |[file:///Users/carstendraschner/GitHub/SANSA-ML/a1, (15,[3],[1.0]), [[9.78456855E8], [7.14263289E8], [4.76528358E8], [1.623173736E9], [1.64558731E8]]]                       |[file:///Users/carstendraschner/GitHub/SANSA-ML/a1, (15,[3],[1.0]), [[9.78456855E8], [7.14263289E8], [4.76528358E8], [1.623173736E9], [1.64558731E8]]]                       |0.0               |
+    +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------+
+     */
+
     println("truncinate DataFrame after minHash")
     minhashed_df.show()
     println("minHash similarity Join has been Performed")
+
+    /*
+    output:
+    +--------------------+--------------------+------------------+
+    |            datasetA|            datasetB|           distCol|
+    +--------------------+--------------------+------------------+
+    |[file:///Users/ca...|[file:///Users/ca...|               0.5|
+    |[file:///Users/ca...|[file:///Users/ca...|0.6666666666666667|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|0.6666666666666667|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.5|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|0.6666666666666667|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.5|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.5|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|0.6666666666666667|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.5|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.5|
+    |[file:///Users/ca...|[file:///Users/ca...|               0.0|
+    +--------------------+--------------------+------------------+
+     */
 
     println("10 Experiment Graph Creation:\n" +
       "\tin this part we create from our results an rdf graph which represents the gained information\n" +
@@ -350,6 +435,15 @@ object minHash_rdf_over_text_pipeline {
       )
     println("Resulting Triples to represent experiment look like this (5 lines given")
     experiment_results.take(5)foreach(println(_))
+
+    /*
+    output
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a4 @element SematicSimilarityEstimation-Spark_Min_Hash-file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/a3WedJun24140707CEST2020
+    file:///Users/carstendraschner/GitHub/SANSA-ML/a3 @element SematicSimilarityEstimation-Spark_Min_Hash-file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/a3WedJun24140707CEST2020
+    SematicSimilarityEstimation-Spark_Min_Hash-file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/a3WedJun24140707CEST2020 @value "0.5"^^http://www.w3.org/2001/XMLSchema#string
+    SematicSimilarityEstimation-Spark_Min_Hash-file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/a3WedJun24140707CEST2020 @experiment_type "Sematic Similarity Estimation"^^http://www.w3.org/2001/XMLSchema#string
+    SematicSimilarityEstimation-Spark_Min_Hash-file:///Users/carstendraschner/GitHub/SANSA-ML/a4file:///Users/carstendraschner/GitHub/SANSA-ML/a3WedJun24140707CEST2020 @experiment_name "Spark_Min_Hash"^^http://www.w3.org/2001/XMLSchema#string
+     */
 
     // TODO check whether this should be always public visible
     val experiment_name = "Spark_Min_Hash"
