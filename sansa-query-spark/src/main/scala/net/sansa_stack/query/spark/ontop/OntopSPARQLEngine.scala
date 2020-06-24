@@ -174,11 +174,11 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
                            |o ${colType.get} NOT NULL)
                            |""".stripMargin)
                     } else {
-                      logger.error(s"Error: couldn't create Spark table for property $predicate with schema ${p.layout.schema}")
+                      logger.error(s"Error: couldn't create H2 table for property $predicate with schema ${p.layout.schema}")
                     }
                   }
                 }
-                case _ => logger.error("TODO: bnode Spark SQL table for Ontop mappings")
+                case _ => logger.error("TODO: bnode H2 SQL table for Ontop mappings")
               }
             case _ => logger.error("wrong partition type")
           }
@@ -350,24 +350,6 @@ class OntopSPARQLEngine(val spark: SparkSession,
   )
 
 
-  private def createTableName(p: RdfPartitionComplex): String = {
-    val pred = p.predicate
-
-    // For now let's just use the full predicate as the uri
-    // val predPart = pred.substring(pred.lastIndexOf("/") + 1)
-    val predPart = pred
-    val pn = NodeFactory.createURI(p.predicate)
-
-    val dt = p.datatype
-    val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
-    val langPart = if (p.langTagPresent) "_lang" else ""
-
-    val tableName = predPart + dtPart + langPart // .replace("#", "__").replace("-", "_")
-
-    tableName
-  }
-
-
   val useHive: Boolean = false
   val useStatistics: Boolean = true
 
@@ -376,7 +358,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
    */
   private def createSparkTable(session: SparkSession, p: RdfPartitionComplex, rdd: RDD[Row]) = {
 
-    val name = createTableName(p)
+    val name = SQLUtils.createTableName(p)
     logger.debug(s"creating Spark table ${escapeTablename(name)}")
 
     val scalaSchema = p.layout.schema
@@ -429,6 +411,23 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   private def postProcess(df: DataFrame, queryRewrite: OntopQueryRewrite): DataFrame = {
     var result = df
+
+    import spark.implicits._
+    val sparqlQueryBC = spark.sparkContext.broadcast(queryRewrite.sparqlQuery)
+    val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
+    val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
+    val partitionsBC = spark.sparkContext.broadcast(partitions.keySet.toSeq)
+
+//    val sqlSignatureBC = spark.sparkContext.broadcast(queryRewrite.sqlSignature)
+//    val sqlTypeMapBC = spark.sparkContext.broadcast(queryRewrite.sqlTypeMap)
+//    val sparqlVar2TermBC = spark.sparkContext.broadcast(queryRewrite.sparqlVar2Term)
+//    val answerAtomBC = spark.sparkContext.broadcast(queryRewrite.answerAtom)
+
+    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
+    df.mapPartitions(iterator => {
+      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
+      iterator.map(mapper.map)
+    }).collect().foreach(println)
 
     // all projected variables
     val signature = queryRewrite.answerAtom.getArguments
