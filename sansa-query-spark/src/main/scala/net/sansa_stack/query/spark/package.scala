@@ -69,7 +69,7 @@ package object query {
       with Serializable {
 
     def this(triples: RDD[Triple]) {
-      this(RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex))
+      this(RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex()))
     }
 
     val spark = SparkSession.builder().getOrCreate()
