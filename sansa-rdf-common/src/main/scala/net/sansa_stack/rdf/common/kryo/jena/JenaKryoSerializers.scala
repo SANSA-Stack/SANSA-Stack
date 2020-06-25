@@ -18,13 +18,13 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node
     */
-  class NodeSerializer extends Serializer[JenaNode]
+  abstract class NodeSerializer extends Serializer[JenaNode]
   {
     override def write(kryo: Kryo, output: Output, obj: JenaNode) {
         output.writeString(FmtUtils.stringForNode(obj))
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
+    def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
       val s = input.readString()
         RiotLib.parse(s)
     }
@@ -33,7 +33,7 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Array[Node]
     */
-  class NodeArraySerializer extends Serializer[Array[JenaNode]]
+  abstract class NodeArraySerializer extends Serializer[Array[JenaNode]]
   {
     override def write(kryo: Kryo, output: Output, obj: Array[JenaNode]) {
       output.writeInt(obj.length, true)
@@ -42,7 +42,7 @@ object JenaKryoSerializers {
       }
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Array[JenaNode]]): Array[JenaNode] = {
+    def read(kryo: Kryo, input: Input, objClass: Class[Array[JenaNode]]): Array[JenaNode] = {
       val nodes = new Array[JenaNode](input.readInt(true))
       var i = 0
       while(i < nodes.length) {
@@ -69,12 +69,12 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node_ANY
     */
-  class ANYNodeSerializer extends Serializer[Node_ANY] {
+  abstract class ANYNodeSerializer extends Serializer[Node_ANY] {
     override def write(kryo: Kryo, output: Output, obj: Node_ANY) {
 
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Node_ANY]): Node_ANY = {
+    def read(kryo: Kryo, input: Input, objClass: Class[Node_ANY]): Node_ANY = {
       JenaNode.ANY.asInstanceOf[Node_ANY]
     }
   }
@@ -82,35 +82,35 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node_Variable
     */
-  class VariableNodeSerializer extends Serializer[Node_Variable] {
+  abstract class VariableNodeSerializer extends Serializer[Node_Variable] {
     override def write(kryo: Kryo, output: Output, obj: Node_Variable) {
       output.writeString(obj.toString)
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Variable]): Node_Variable = {
+    def read(kryo: Kryo, input: Input, objClass: Class[Node_Variable]): Node_Variable = {
       NodeFactory.createVariable(input.readString).asInstanceOf[Node_Variable]
     }
   }
 
-  class ExprSerializer extends Serializer[Expr] {
+  abstract class ExprSerializer extends Serializer[Expr] {
     override def write(kryo: Kryo, output: Output, obj: Expr) {
       val str = ExprUtils.fmtSPARQL(obj)
       output.writeString(str)
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Expr]): Expr = {
+    def read(kryo: Kryo, input: Input, objClass: Class[Expr]): Expr = {
       val str = input.readString()
       ExprUtils.parse(str)
     }
   }
 
 
-  class VarSerializer extends Serializer[Var] {
+   abstract class VarSerializer extends Serializer[Var] {
     override def write(kryo: Kryo, output: Output, obj: Var) {
       output.writeString(obj.getName)
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Var]): Var = {
+     def read(kryo: Kryo, input: Input, objClass: Class[Var]): Var = {
       Var.alloc(input.readString)
     }
   }
@@ -144,14 +144,14 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Triple
     */
-  class TripleSerializer extends Serializer[JenaTriple] {
+  abstract class TripleSerializer extends Serializer[JenaTriple] {
     override def write(kryo: Kryo, output: Output, obj: JenaTriple) {
       kryo.writeClassAndObject(output, obj.getSubject)
       kryo.writeClassAndObject(output, obj.getPredicate)
       kryo.writeClassAndObject(output, obj.getObject)
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[JenaTriple]): JenaTriple = {
+    def read(kryo: Kryo, input: Input, objClass: Class[JenaTriple]): JenaTriple = {
       val s = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val o = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
@@ -159,7 +159,7 @@ object JenaKryoSerializers {
     }
   }
 
-  class QuadSerializer extends Serializer[JenaQuad] {
+  abstract class QuadSerializer extends Serializer[JenaQuad] {
     override def write(kryo: Kryo, output: Output, obj: JenaQuad) {
       kryo.writeClassAndObject(output, obj.getGraph)
       kryo.writeClassAndObject(output, obj.getSubject)
@@ -167,7 +167,7 @@ object JenaKryoSerializers {
       kryo.writeClassAndObject(output, obj.getObject)
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[JenaQuad]): JenaQuad = {
+    def read(kryo: Kryo, input: Input, objClass: Class[JenaQuad]): JenaQuad = {
       val g = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val s = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
