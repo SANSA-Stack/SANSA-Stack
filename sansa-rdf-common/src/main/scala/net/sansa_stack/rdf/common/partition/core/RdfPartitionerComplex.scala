@@ -70,7 +70,9 @@ class RdfPartitionerComplex(distinguishStringLiterals: Boolean = true)
     } else {
       ""
     }
-    val langTagPresent = if (distinguishStringLiterals) o.getLiteralDatatypeURI == RDF.langString.getURI else isPlainLiteral(o)
+    val langTagPresent = o.isLiteral &&
+                        ((distinguishStringLiterals && o.getLiteralDatatypeURI == RDF.langString.getURI && o.getLiteralLanguage.trim().nonEmpty)
+                          || (!distinguishStringLiterals && isPlainLiteral(o)))
 
     val lang = if (langTagPresent) Some(o.getLiteralLanguage) else None
 
