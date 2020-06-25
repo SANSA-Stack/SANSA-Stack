@@ -35,15 +35,6 @@ object OntopMappingGenerator {
          |""".stripMargin
     }
 
-    // TODO Ontop fails to parse - support has been asked for correct syntax or if it doesn't work (anymore)
-    def createMappingLangVar(id: String, tableName: String, property: String): String = {
-      s"""
-         |mappingId     $id
-         |source        SELECT "s", "o", "l" FROM ${SQLUtils.escapeTablename(tableName)}
-         |target        <{s}> <$property> {o}@{l} .
-         |""".stripMargin
-    }
-
     def createMappingLang(id: String, tableName: String, property: String, lang: String): String = {
       s"""
          |mappingId     $id
@@ -68,7 +59,7 @@ object OntopMappingGenerator {
             objectType match {
               case 1 => createMapping(id, tableName, predicate)
               case 2 => if (langTagPresent) createMappingLang(id, tableName, predicate, lang.get)
-              else createMappingLit(id, tableName, predicate, datatype)
+                        else createMappingLit(id, tableName, predicate, datatype)
               case _ =>
                 logger.error("TODO: bnode Ontop mapping creation")
                 ""

@@ -35,7 +35,6 @@ class OntopRowMapper(obdaMappings: String,
 
   val mappingConfiguration = OntopMappingSQLAllConfiguration.defaultBuilder
     .nativeOntopMappingReader(new StringReader(obdaMappings))
-    .ppMapping()
     .properties(properties)
     .enableTestMode
     .build

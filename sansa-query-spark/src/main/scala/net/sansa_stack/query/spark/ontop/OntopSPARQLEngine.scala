@@ -81,22 +81,19 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
   val ontopProperties = new Properties()
   ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
 
-  // mapping from partition type to H2 database type
-  private val partitionType2DatabaseType = Map(
-    typeOf[SchemaStringLong] -> "LONG",
-    typeOf[SchemaStringDouble] -> "DOUBLE",
-    typeOf[SchemaStringFloat] -> "FLOAT",
-    typeOf[SchemaStringDecimal] -> "DECIMAL",
-    typeOf[SchemaStringBoolean] -> "BOOLEAN",
-    typeOf[SchemaStringString] -> "VARCHAR(255)",
-    typeOf[SchemaStringDate] -> "DATE"
-  ) // .map(e => (typeOf[e._1.type], e._2))
-
   // create the tmp DB needed for Ontop
   private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
   private val JDBC_USER = "sa"
   private val JDBC_PASSWORD = ""
-  createTempDB(partitions)
+
+  private lazy val connection: Connection = try {
+    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+  } catch {
+    case e: SQLException =>
+      logger.error("Error occurred when creating in-memory H2 database", e)
+      throw e
+  }
+  JDBCDatabaseGenerator.generateTables(connection, partitions)
 
   // create OBDA mappings
   val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions)
@@ -121,81 +118,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
     typeFactory.getDatatype(XSD.LONG) -> LongType
   )
 
-  /*
-   * DB connection (keeps it alive)
-   */
-  private var connection: Connection = _
 
-  private def createTempDB(partitions: Seq[RdfPartitionComplex]): Unit = {
-    logger.debug("creating in-memory H2 database ...")
-
-    try {
-      connection = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-
-      val stmt = connection.createStatement()
-
-      stmt.executeUpdate("DROP ALL OBJECTS")
-
-      partitions.foreach { p =>
-
-          val name = SQLUtils.createTableName(p)
-
-          val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
-          logger.trace(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
-
-          p match {
-            case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
-              objectType match {
-                case 1 => stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
-                  "s varchar(255) NOT NULL," +
-                  "o varchar(255) NOT NULL" +
-                  ")")
-                case 2 => if (langTagPresent) {
-                  stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
-                    "s varchar(255) NOT NULL," +
-                    "o varchar(255) NOT NULL," +
-                    "l varchar(10) NOT NULL" +
-                    ")")
-                } else {
-                  if (p.layout.schema == typeOf[SchemaStringStringType]) {
-                    stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
-                      "s varchar(255) NOT NULL," +
-                      "o varchar(255) NOT NULL," +
-                      "t varchar(255) NOT NULL" +
-                      ")")
-                  } else {
-                    val colType = partitionType2DatabaseType.get(p.layout.schema)
-
-                    if (colType.isDefined) {
-                      stmt.addBatch(
-                        s"""
-                           |CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (
-                           |s varchar(255) NOT NULL,
-                           |o ${colType.get} NOT NULL)
-                           |""".stripMargin)
-                    } else {
-                      logger.error(s"Error: couldn't create H2 table for property $predicate with schema ${p.layout.schema}")
-                    }
-                  }
-                }
-                case _ => logger.error("TODO: bnode H2 SQL table for Ontop mappings")
-              }
-            case _ => logger.error("wrong partition type")
-          }
-      }
-      //            stmt.addBatch(s"CREATE TABLE IF NOT EXISTS triples (" +
-      //              "s varchar(255) NOT NULL," +
-      //              "p varchar(255) NOT NULL," +
-      //              "o varchar(255) NOT NULL" +
-      //              ")")
-      val numTables = stmt.executeBatch().length
-      logger.debug(s"created $numTables tables")
-    } catch {
-      case e: SQLException => logger.error("Error occurred when creating in-memory H2 database", e)
-    }
-    connection.commit()
-    //    connection.close()
-  }
 
   @throws[OBDASpecificationException]
   @throws[OntopReformulationException]
@@ -418,10 +341,10 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
     val partitionsBC = spark.sparkContext.broadcast(partitions.keySet.toSeq)
 
-//    val sqlSignatureBC = spark.sparkContext.broadcast(queryRewrite.sqlSignature)
-//    val sqlTypeMapBC = spark.sparkContext.broadcast(queryRewrite.sqlTypeMap)
-//    val sparqlVar2TermBC = spark.sparkContext.broadcast(queryRewrite.sparqlVar2Term)
-//    val answerAtomBC = spark.sparkContext.broadcast(queryRewrite.answerAtom)
+    val sqlSignatureBC = spark.sparkContext.broadcast(queryRewrite.sqlSignature)
+    val sqlTypeMapBC = spark.sparkContext.broadcast(queryRewrite.sqlTypeMap)
+    val sparqlVar2TermBC = spark.sparkContext.broadcast(queryRewrite.sparqlVar2Term)
+    val answerAtomBC = spark.sparkContext.broadcast(queryRewrite.answerAtom)
 
     implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
     df.mapPartitions(iterator => {
@@ -598,7 +521,8 @@ object OntopSPARQLEngine {
       // .config("spark.kryo.registrationRequired", "true")
       // .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+                      "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
       .config("spark.default.parallelism", "4")
       .config("spark.sql.shuffle.partitions", "4")
       //      .config("spark.sql.warehouse.dir", warehouseLocation)
