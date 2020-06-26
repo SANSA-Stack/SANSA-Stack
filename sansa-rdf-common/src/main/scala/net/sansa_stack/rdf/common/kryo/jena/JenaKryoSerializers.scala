@@ -18,7 +18,7 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node
     */
-  abstract class NodeSerializer extends Serializer[JenaNode]
+  class NodeSerializer extends Serializer[JenaNode]
   {
     override def write(kryo: Kryo, output: Output, obj: JenaNode) {
         output.writeString(FmtUtils.stringForNode(obj))
@@ -69,7 +69,7 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node_ANY
     */
-  abstract class ANYNodeSerializer extends Serializer[Node_ANY] {
+  class ANYNodeSerializer extends Serializer[Node_ANY] {
     override def write(kryo: Kryo, output: Output, obj: Node_ANY) {
 
     }
@@ -82,7 +82,7 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node_Variable
     */
-  abstract class VariableNodeSerializer extends Serializer[Node_Variable] {
+  class VariableNodeSerializer extends Serializer[Node_Variable] {
     override def write(kryo: Kryo, output: Output, obj: Node_Variable) {
       output.writeString(obj.toString)
     }
@@ -92,7 +92,7 @@ object JenaKryoSerializers {
     }
   }
 
-  abstract class ExprSerializer extends Serializer[Expr] {
+  class ExprSerializer extends Serializer[Expr] {
     override def write(kryo: Kryo, output: Output, obj: Expr) {
       val str = ExprUtils.fmtSPARQL(obj)
       output.writeString(str)
@@ -105,7 +105,7 @@ object JenaKryoSerializers {
   }
 
 
-   abstract class VarSerializer extends Serializer[Var] {
+   class VarSerializer extends Serializer[Var] {
     override def write(kryo: Kryo, output: Output, obj: Var) {
       output.writeString(obj.getName)
     }
@@ -113,7 +113,7 @@ object JenaKryoSerializers {
      def read(kryo: Kryo, input: Input, objClass: Class[Var]): Var = {
       Var.alloc(input.readString)
     }
-  }
+   }
 
   /**
     * Kryo Serializer for Node_URI
@@ -144,7 +144,7 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Triple
     */
-  abstract class TripleSerializer extends Serializer[JenaTriple] {
+  class TripleSerializer extends Serializer[JenaTriple] {
     override def write(kryo: Kryo, output: Output, obj: JenaTriple) {
       kryo.writeClassAndObject(output, obj.getSubject)
       kryo.writeClassAndObject(output, obj.getPredicate)
