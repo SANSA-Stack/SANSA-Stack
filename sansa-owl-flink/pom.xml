@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>sansa-owl-parent_2.11</artifactId>
+        <artifactId>sansa-owl-parent_2.12</artifactId>
         <groupId>net.sansa-stack</groupId>
         <version>0.7.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-owl-flink_2.11</artifactId>
+    <artifactId>sansa-owl-flink_2.12</artifactId>
 
     <name>SANSA OWL layer - Flink</name>
     <description>A library to read OWL files into Flink.</description>
