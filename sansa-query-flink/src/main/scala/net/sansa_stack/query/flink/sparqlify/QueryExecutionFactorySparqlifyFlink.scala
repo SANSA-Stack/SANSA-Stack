@@ -12,7 +12,7 @@ import org.apache.jena.query.{Query, QueryExecution}
 class QueryExecutionFactorySparqlifyFlink(val flinkEnv: ExecutionEnvironment, val flinkTable: BatchTableEnvironment, val sparqlSqlRewriter: SparqlSqlStringRewriter ) extends QueryExecutionFactoryBackQuery {
   override def getId: String = "flink"
 
-  override def getState: String = flinkEnv.getIdString
+  override def getState: String = flinkEnv.getLastJobExecutionResult.getJobID.toString()
 
   override def createQueryExecution(query: Query): QueryExecution = new QueryExecutionSparqlifyFlink(query, this, sparqlSqlRewriter, flinkEnv, flinkTable)
 

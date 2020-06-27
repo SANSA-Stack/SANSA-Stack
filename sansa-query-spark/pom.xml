@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-spark_2.11</artifactId>
+	<artifactId>sansa-query-spark_2.12</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-query-parent_2.11</artifactId>
+		<artifactId>sansa-query-parent_2.12</artifactId>
 		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 
@@ -258,7 +258,7 @@
 
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_2.11</artifactId>
+            <artifactId>spark-hive_2.12</artifactId>
             <version>2.4.2</version>
             <scope>compile</scope>
 <!--            <scope>provided</scope>-->
@@ -266,7 +266,7 @@
 
         <dependency>
             <groupId>com.github.scopt</groupId>
-            <artifactId>scopt_2.11</artifactId>
+            <artifactId>scopt_2.12</artifactId>
             <version>4.0.0-RC2</version>
         </dependency>
 	</dependencies>
