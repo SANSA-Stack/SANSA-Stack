@@ -4,11 +4,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-datalake-parent_2.11</artifactId>
+	<artifactId>sansa-datalake-parent_2.12</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-parent_2.11</artifactId>
+		<artifactId>sansa-parent_2.12</artifactId>
 		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 
@@ -101,7 +101,7 @@
 			<dependency>
 				<groupId>com.datastax.spark</groupId>
 				<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-				<version>2.4.0</version>
+				<version>2.4.2</version>
 			</dependency>
 
 			<dependency>
@@ -113,7 +113,7 @@
 			<dependency>
 				<groupId>com.couchbase.client</groupId>
 				<artifactId>spark-connector_${scala.binary.version}</artifactId>
-				<version>2.1.0</version>
+				<version>2.4.0</version>
 			</dependency>
 
 			<!--Disable till a Scala 2.12 version is provided-->
