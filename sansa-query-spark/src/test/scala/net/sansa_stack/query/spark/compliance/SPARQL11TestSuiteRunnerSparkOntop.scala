@@ -227,7 +227,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
   }
 
   override def toBinding(row: Row, metadata: AnyRef): Binding = {
-    println(row)
+    println(s"converting row: $row")
     val binding = BindingFactory.create()
 
     val queryRewrite = metadata.asInstanceOf[OntopQueryRewrite]
@@ -252,6 +252,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
       case (v, Some(term)) => binding.add(Var.alloc(v.getName), toNode(term, queryRewrite.typeFactory))
       case _ =>
     }
+    println(s"got binding: $binding")
     binding
   }
 
@@ -261,8 +262,10 @@ class SPARQL11TestSuiteRunnerSparkOntop
       NodeFactory.createURI(constant.asInstanceOf[IRIConstant].getIRI.getIRIString)
     } else if (termType.isA(typeFactory.getAbstractRDFSLiteral)) {
       val lit = constant.asInstanceOf[RDFLiteralConstant]
-      val dt = TypeMapper.getInstance().getTypeByName(lit.getType.getIRI.getIRIString)
-      NodeFactory.createLiteral(lit.getValue, dt)
+      val litType = lit.getType
+      val dt = TypeMapper.getInstance().getTypeByName(litType.getIRI.getIRIString)
+      val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
+      NodeFactory.createLiteral(lit.getValue, lang, dt)
     } else {
       null.asInstanceOf[Node]
     }
