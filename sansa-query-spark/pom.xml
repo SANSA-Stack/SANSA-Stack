@@ -16,6 +16,7 @@
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <version.jsa>${jena.version}-${jsa.subversion}</version.jsa>
         <spark.deps.scope>compile</spark.deps.scope>
+        <version.owlapi.ontop>4.5.7</version.owlapi.ontop>
     </properties>
 
 	<dependencies>
@@ -237,22 +238,22 @@
 		<dependency>
 			<groupId>net.sourceforge.owlapi</groupId>
 			<artifactId>owlapi-api</artifactId>
-			<version>4.5.7</version>
+			<version>${version.owlapi.ontop}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.owlapi</groupId>
 			<artifactId>owlapi-apibinding</artifactId>
-			<version>4.5.7</version>
+			<version>${version.owlapi.ontop}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.owlapi</groupId>
 			<artifactId>owlapi-impl</artifactId>
-			<version>4.5.7</version>
+			<version>${version.owlapi.ontop}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.owlapi</groupId>
 			<artifactId>owlapi-parsers</artifactId>
-			<version>4.5.7</version>
+			<version>${version.owlapi.ontop}</version>
 		</dependency>
 
 		<dependency>
@@ -263,7 +264,7 @@
 
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_2.12</artifactId>
+            <artifactId>spark-hive_${scala.binary.version}</artifactId>
             <version>2.4.2</version>
             <scope>compile</scope>
 <!--            <scope>provided</scope>-->
@@ -271,7 +272,7 @@
 
         <dependency>
             <groupId>com.github.scopt</groupId>
-            <artifactId>scopt_2.12</artifactId>
+            <artifactId>scopt_${scala.binary.version}</artifactId>
             <version>4.0.0-RC2</version>
         </dependency>
 	</dependencies>
