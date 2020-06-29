@@ -3,8 +3,6 @@ package net.sansa_stack.ml.spark.similarity.run
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import net.sansa_stack.ml.spark.similarity.run.Semantic_Similarity_Estimator.{Config, parser, read_in_nt_triples, run}
-import org.apache.hadoop.fs.DF
-import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.MinHashLSH
 import org.apache.spark.ml.linalg.Vectors
@@ -15,9 +13,10 @@ import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.graph.Triple
 import org.apache.spark.ml.linalg
 import org.apache.spark.sql
-import shapeless.PolyDefns.->
-import net.sansa_stack.ml.spark.utils.{NodeFeatureFactory, NodeIndexer}
-
+import org.apache.spark.ml.feature._
+import org.apache.spark.ml.linalg._
+import org.apache.spark.sql.types._
+import net.sansa_stack.ml.spark.utils.{FeatureDataframeGenerator, NodeFeatureFactory, NodeIndexer}
 
 
 
@@ -35,6 +34,8 @@ object minHashTryOut {
       .master("local[*]") // TODO why do we need to specify this?
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
+
+    import spark.implicits._
 
     val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
 
@@ -68,13 +69,91 @@ object minHashTryOut {
       ), Triple.create(
         NodeFactory.createURI("exampleUri1"),
         NodeFactory.createURI("examplePredicate1"),
-        NodeFactory.createLiteral("exampleLiteral1")
+        NodeFactory.createLiteral("example Literal1")
       )
     )
     val tmp_triples: RDD[Triple] = spark.sparkContext.parallelize(tmp_array)
     println("this is the triples object wie work with")
     tmp_triples.foreach(println(_))
 
+    println("here we produce a dense transformation into a pseudo tokenized format")
+    val pseudoSeq = tmp_triples
+      .flatMap(t => Seq((t.getSubject, t.getPredicate.toString() + t.getObject.toString()), (t.getObject, t.getPredicate.toString() + t.getSubject.toString())))
+      .filter(_._1.isURI)
+      .map({case (k, v) => (k.toString(), v)})
+      .mapValues(_.replaceAll("\\s", ""))
+      .groupBy(_._1)
+      .mapValues(_.map(_._2))
+      .map({case (k, v) => (k, v.reduceLeft(_ + " " + _))})
+      .collect()
+      .toSeq
+
+    pseudoSeq.foreach(println(_))
+
+
+    val pseudo_text_df = spark.createDataFrame(pseudoSeq).toDF(colNames = "title", "content")
+
+    println("transformation done")
+
+    pseudo_text_df.show()
+
+    // Tokenize the wiki content
+    val tokenizer = new Tokenizer().setInputCol("content").setOutputCol("words")
+    val wordsDf = tokenizer.transform(pseudo_text_df)
+    wordsDf.show()
+
+    /*
+    // Word count to vector for each wiki content
+    val vocabSize = 1000000
+    val cvModel: CountVectorizerModel = new CountVectorizer().setInputCol("words").setOutputCol("features").setVocabSize(vocabSize).setMinDF(10).fit(wordsDf)
+    val isNoneZeroVector = udf({v: Vector => v.numNonzeros > 0}, DataTypes.BooleanType)
+    val vectorizedDf = cvModel
+      .transform(wordsDf)
+      .filter(isNoneZeroVector(col("features")))
+      .select(col("title"), col("features"))
+    vectorizedDf.show()
+    */
+
+
+
+
+
+
+
+
+
+
+
+    println("1")
+    val fdg = new FeatureDataframeGenerator
+    fdg.set_columns(List("index", "features"))
+    fdg.set_mode("at")
+    println("2")
+
+    fdg.fit(tmp_triples)
+    println("3")
+
+    val tmp_map = fdg.workaround_transform()
+    val tmp_df = spark.createDataFrame(tmp_map.toSeq).toDF(colNames = fdg.get_columns()(0), fdg.get_columns()(1))
+    println("4")
+
+    tmp_df.show()
+
+    val min_hash_model = new MinHashLSH()
+      .setNumHashTables(5)
+      .setInputCol("features")
+      .setOutputCol("hashes")
+
+    val ex_model = min_hash_model.fit(tmp_df)
+
+    ex_model.approxSimilarityJoin(tmp_df, tmp_df, 0.6, "JaccardDistance")
+      .select(col("datasetA.index").alias("idA"),
+        col("datasetB.index").alias("idB"),
+        col("JaccardDistance")).show()
+
+
+
+    /*
     // here we transform the triples into feature maps from uri to feature
     // with mode different types of modes can be set
     val nodeFeatureFactory = new NodeFeatureFactory
@@ -91,13 +170,16 @@ object minHashTryOut {
     println("now we transformed out triples to a feature map")
     println()
 
-
-
+    // next we need to create a feature DF where the entries are index:Int instead of URI:Node
 
     // instatiate node indexer to be able to swap between node and int representation
+
+
+
     println("instatiate nodeindexer")
     val nodeIndexer = new NodeIndexer
     nodeIndexer.fit(tmp_triples)
+
     println(nodeIndexer.get_vocab_size(), nodeIndexer.get_node(4))
 
     // try out dense form of transformation
@@ -132,6 +214,8 @@ object minHashTryOut {
     tmp7.show()
     // do this is one call
 
+    */
+
 
 
 
@@ -154,6 +238,12 @@ object minHashTryOut {
       spark = spark,
       lang = Lang.NTRIPLES
     )
+
+    println("here we transform to a DF")
+    triples.toDF().show()
+
+
+
 
     // triples.map(t:Triple => t.getObject()) //.foreach(println(_))
 
@@ -382,7 +472,7 @@ object minHashTryOut {
     vectorizedDf.show()
     */
 
-    val vectorizedDf: sql.DataFrame = neededDataForMinHashSpark
+    /* val vectorizedDf: sql.DataFrame = neededDataForMinHashSpark
 
     val mh = new MinHashLSH().setNumHashTables(3).setInputCol("features").setOutputCol("hashValues")
     val model = mh.fit(vectorizedDf)
@@ -400,7 +490,7 @@ object minHashTryOut {
     // currently I dont know how to set it up
     val threshold = 0.6
 
-    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show()
+    model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold).filter("distCol != 0").show() */
 
     spark.stop()
   }
