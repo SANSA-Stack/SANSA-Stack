@@ -29,6 +29,6 @@ class RDFFastGraphKernelTests extends FunSuite with DataFrameSuiteBase {
     val t2 = System.nanoTime
     RDFFastTreeGraphKernelUtil.printTime("Run Prediction", t1, t2)
 
-    assert(true)
+    assert(true) // TODO why do the SANSA team write such a line?
   }
 }
