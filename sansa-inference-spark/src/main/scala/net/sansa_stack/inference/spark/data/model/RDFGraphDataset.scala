@@ -2,7 +2,7 @@ package net.sansa_stack.inference.spark.data.model
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import net.sansa_stack.inference.data.{Jena, RDFTriple, SQLSchema, SQLSchemaDefault}
+import net.sansa_stack.inference.data.{Jena, SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import org.apache.jena.graph.{Node, Triple}
 

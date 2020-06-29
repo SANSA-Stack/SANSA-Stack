@@ -622,7 +622,7 @@ class ForwardRuleReasonerELTest extends FunSuite with SharedSparkContext {
 
   test("Overall reasoning should give expected results") {
     val parser = RDFParser.create().source(
-      new FileReader(new File("src/test/resources/el_ontology.nt"))).lang(Lang.NTRIPLES).build()
+      new FileReader(new File(getClass.getResource("/el_ontology.nt").getPath))).lang(Lang.NTRIPLES).build()
     val sink = new CollectorStreamTriples
     parser.parse(sink)
     val nttrpls = sc.parallelize(sink.getCollected.asScala.toSeq)

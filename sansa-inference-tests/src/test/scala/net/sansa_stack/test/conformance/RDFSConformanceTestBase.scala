@@ -4,6 +4,7 @@ import net.sansa_stack.inference.data.{RDF, RDFOps}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
+
 /**
   * The base class to test the conformance of each materialization rule of RDFS(simple) entailment.
   *

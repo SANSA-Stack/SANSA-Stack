@@ -1,19 +1,15 @@
 package net.sansa_stack.inference.spark.data.writer
 
-import java.io.ByteArrayInputStream
-import java.nio.charset.StandardCharsets
 
-import org.apache.jena.graph
 import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.graph.{GraphUtil, NodeFactory, Triple}
+import org.apache.jena.sparql.util.TripleComparator
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
 import org.slf4j.LoggerFactory
 
 import net.sansa_stack.inference.spark.data.model.RDFGraph
-import net.sansa_stack.inference.utils.{JenaTripleToNTripleString, RDFTripleOrdering, RDFTripleToNTripleString}
-import org.apache.jena.graph.{GraphUtil, Node, NodeFactory, Triple}
-import org.apache.jena.rdf.model.impl.StatementImpl
-import org.apache.jena.sparql.util.TripleComparator
+import net.sansa_stack.inference.utils.JenaTripleToNTripleString
 
 /**
   * A class that provides methods to write an RDF graph to disk.
@@ -54,7 +50,7 @@ object RDFGraphWriter {
 
     implicit val tripleOrdering = new Ordering[Triple] {
       val comparator: TripleComparator = new TripleComparator()
-      override def compare(t1: Triple, t2: Triple) = comparator.compare(t1, t2)
+      override def compare(t1: Triple, t2: Triple): Int = comparator.compare(t1, t2)
     }
 
     // sort triples if enabled

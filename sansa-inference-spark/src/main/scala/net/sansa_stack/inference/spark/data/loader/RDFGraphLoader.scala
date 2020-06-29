@@ -4,16 +4,17 @@ import java.net.URI
 
 import net.sansa_stack.inference.data.{SQLSchema, SQLSchemaDefault}
 import net.sansa_stack.inference.spark.data.model.{RDFGraph, RDFGraphDataFrame, RDFGraphDataset, RDFGraphNative}
+import net.sansa_stack.rdf.spark.io.NTripleReader
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
+import org.apache.jena.vocabulary.RDF
 import org.apache.spark.sql.{Dataset, Encoder, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.LoggerFactory
+
 import scala.language.implicitConversions
 
-import org.apache.jena.vocabulary.RDF
 
-import net.sansa_stack.rdf.spark.io.NTripleReader
 
 /**
   * A class that provides methods to load an RDF graph from disk.
