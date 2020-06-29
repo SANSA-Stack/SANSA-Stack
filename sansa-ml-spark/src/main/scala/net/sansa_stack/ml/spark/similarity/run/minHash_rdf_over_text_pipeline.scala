@@ -27,15 +27,26 @@ object minHash_rdf_over_text_pipeline {
       .master("local[*]") // TODO why do we need to specify this?
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
+
+    import spark.implicits._ // TODO does anyone know for which purposes we need
+
     println("Spark Session started \n")
 
     println("2. Create or load sample RDD Graph")
+
+    /*
+    param:
+    input:String this is the filepath from where we want to load our rdf data
+    lang:   currentlYy only nt is supported. usually this parameter is hard coded set for this rdf layer
+     */
 
     val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
     // val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
     // val input = "/Users/carstendraschner/Downloads/linkedmdb-18-05-2009-dump_short.nt"
 
-    /* val triples = read_in_nt_triples(
+    /*
+      // TODO why is this also an option and where is the difference to the second one
+      val triples = read_in_nt_triples(
       input = input,
       spark = spark,
       lang = Lang.NTRIPLES
@@ -45,6 +56,11 @@ object minHash_rdf_over_text_pipeline {
     val triples = spark.rdf(lang)(input)
 
     val tmp_triples: RDD[Triple] = triples
+
+    /*
+    output:
+    RDD[Triple] this is the output of this step. it is aligned with the sansa rdf layer procedure.
+     */
 
     println("3. Show RDF Data")
     tmp_triples.foreach(println(_))
@@ -78,6 +94,13 @@ object minHash_rdf_over_text_pipeline {
       "\t4.6 Reduce value information because key was also part of values\n" +
       "\t4.7 From a List of Tokens we create a text by concatinating all pseudo words (representing features)  with inbetween space\n" +
       "\t4.8 Create a Dataframe out of it to align with pipeline requirements")
+
+    /*
+    param input:
+    read in RDD[Triple]
+    mode:string a set of possible 12 modes for feature extraction is made available
+    column names: Strings. we should be able to set these in future
+     */
 
     // TODO this need to be put in a method or a class which handles different modes and further options in a concise way
     // it hasn't been done for this script to have a working pipeline which includes everything to discuss how modularity should be factored
@@ -122,6 +145,11 @@ object minHash_rdf_over_text_pipeline {
 
     /*
     output:
+    spark Dataframe with columns title and content, title is the uri as string after read in and content are a string of all extracted features concatinated
+     */
+
+    /*
+    output:
     +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
     |title                                            |content                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
     +-------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -146,11 +174,23 @@ object minHash_rdf_over_text_pipeline {
       "https://databricks.com/de/blog/2017/05/09/detecting-abuse-scale-locality-sensitive-hashing-uber-engineering.html\n")
 
     println("5. We use the Standart MLlib Tokenizer to create from our pseudotext of features from each node a tokenized DF which has the fitting Data format and types for further MLlib Pipline elements ")
+
+    /*
+    input dataframe with two columns, one for title one for content
+    title column name
+    content column name
+    name of words output column
+     */
+
     val tokenizer = new Tokenizer().setInputCol("content").setOutputCol("words")
     val wordsDf = tokenizer.transform(pseudo_text_df)
     println("this is how the resulting DF looks like")
     wordsDf.show(false)
     println("tokenization done!\n")
+
+    /*
+    dataframe with three columns title content words, words is a list of strings
+     */
 
     /*
     output:
@@ -170,6 +210,15 @@ object minHash_rdf_over_text_pipeline {
      */
 
     println("6. We set up a count Vectorizer which operates on our Tokenized DF")
+
+    /*
+    dataframe with title and words column
+    input column name
+    output column name
+    vocal size
+    minDF for minimum number occurences to be taken into account
+     */
+
     val cvModel: CountVectorizerModel = new CountVectorizer()
       .setInputCol("words")
       .setOutputCol("features")
@@ -181,6 +230,10 @@ object minHash_rdf_over_text_pipeline {
     println("This is how our resulting DF looks like which will be used by the min Hash algo")
     vectorizedDf.show(false)
     println("Count Vectorization done!\n")
+
+    /*
+    output dataframe with title and features where features are Vector
+     */
 
     /*
     output:
@@ -204,6 +257,13 @@ object minHash_rdf_over_text_pipeline {
       "\t- we set number of hash tables\n" +
       "\t- and we decribe the respective columns\n" +
       "\t- then we fit the model to our vectorizedDf\n")
+
+    /*
+    input col: String
+    output col: String
+    numHashTables: Int
+     */
+
     val mh = new MinHashLSH()
       .setNumHashTables(5)
       .setInputCol("features")
@@ -211,7 +271,16 @@ object minHash_rdf_over_text_pipeline {
     val model = mh.fit(vectorizedDf)
     println("minHash model fitted!")
 
+    /*
+    output
+    fitted model
+     */
+
     println("8. We have to transform our Dataframe what we want to operate on ")
+
+    /*
+    tranformed df which has now the hashed column
+     */
     model.transform(vectorizedDf).show(false)
     println("Transformation done\n")
 
@@ -239,6 +308,13 @@ object minHash_rdf_over_text_pipeline {
     println("\t\tAnd is produced by producer p2 over relation pb")
     println("\t\tFinally is published at 20-06-17")
     println("This is how the new movie key looks like in data frame format\n")
+
+    /*
+    input:
+    k: Int number of elements wanted as response for the approxNearestNeigbors answers
+    key: a vector representing what we are searching for
+    dataframe needed title and hashed column
+     */
 
     val key_movie = cvModel.transform(
       tokenizer.transform(
@@ -297,7 +373,11 @@ object minHash_rdf_over_text_pipeline {
     model.approxNearestNeighbors(vectorizedDf, key_m2, k).show(false)
 
     /*
-    OUTPUT:
+    dataframe with title and distCol which represents the results of approxNearestNeighbors
+     */
+
+    /*
+    output:
     +-------------------------------------------------+---------------------------------------+---------------------------------------------------------------------------------+------------------+
     |title                                            |features                               |hashValues                                                                       |distCol           |
     +-------------------------------------------------+---------------------------------------+---------------------------------------------------------------------------------+------------------+
@@ -309,10 +389,24 @@ object minHash_rdf_over_text_pipeline {
 
     // Self Join
     println("Approx Similarity Join")
+
+    /*
+    input:
+    dataframe title hashed column
+    threshold of max distance two elements are allowed to differ
+    names for column for datasets, default will be datasetA and datasetB
+    names for columns for titles: e.g. titleA, titleB
+     */
+
     val threshold = 0.8
     val minhashed_df = model.approxSimilarityJoin(vectorizedDf, vectorizedDf, threshold) // .filter("distCol != 0")
     println("Whole Dataframe after minHash")
     minhashed_df.show(false)
+
+    /*
+    output
+    dataframe with three columns two with the sources which are compared and third with distCol
+     */
 
     /* output
     +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------+
@@ -341,7 +435,12 @@ object minHash_rdf_over_text_pipeline {
      */
 
     println("truncinate DataFrame after minHash")
-    minhashed_df.show()
+    println("We now create two columns with clean columns for titles")
+    val minhashed_output_df = minhashed_df
+      .withColumn("titleA", col("datasetA").getField("title"))
+      .withColumn("titleB", col("datasetB").getField("title"))
+      .select("titleA", "titleB", "distCol")
+    minhashed_output_df.show(false)
     println("minHash similarity Join has been Performed")
 
     /*
@@ -375,29 +474,47 @@ object minHash_rdf_over_text_pipeline {
       "\tin this part we create from our results an rdf graph which represents the gained information\n" +
       "\tWith this approach we might be able to reuse the gained information in future approaches")
 
-    val experiment_results: RDD[Triple] = minhashed_df
-      .withColumn("ea", col("datasetA").getField("title")) // rdd
-      .withColumn("eb", col("datasetB").getField("title"))
-      .select("ea", "eb", "distCol")
+    /*
+    input
+    resulting dataframe with needed columns for two to compare columns and one for dist col
+    nameAcolumn: String e.g. titleA
+    nameBcolumn: String
+    Relation Names: Strings:
+      elementrelation: String
+      valuerelation: String
+      experiment_type relation: String
+      experiment_measurement_type relation: String
+      experiment_datetime relation: String
+
+    NodeName:
+      experiment_name: String
+      experiment_type: String
+     */
+
+    // Strings for relation names
+    val er = "element"
+    val vr = "value"
+    val extr = "experiment_type"
+    val exnr = "experiment_name"
+    val mtr = "experiment_measurement_type"
+    val dtr = "experiment_datetime"
+
+    // Strings for uris adn literals
+    val experiment_name = "Spark_Min_Hash"
+    val experiment_type = "Sematic Similarity Estimation"
+    val experiment_measurement_type = "distance"
+    val evaluation_datetime = Calendar.getInstance().getTime()
+      .toString // make string out of it, in future would be better to allow date nativly in rdf
+      .replaceAll("\\s", "") // remove spaces to reduce confusions with some foreign file readers
+      .replaceAll(":", "") // remove also double points for less confilcting chars. todo quick and dirty hack with tostring
+
+    val experiment_results: RDD[Triple] = minhashed_output_df
+      // .withColumn("ea", col("datasetA").getField("title")) // rdd
+      // .withColumn("eb", col("datasetB").getField("title"))
+      // .select("ea", "eb", "distCol")
       .rdd
       .flatMap(
         row => {
-          // Strings for relation names
-          val er = "element"
-          val vr = "value"
-          val extr = "experiment_type"
-          val exnr = "experiment_name"
-          val mtr = "experiment_measurement_type"
-          val dtr = "experiment_datetime"
-
-          // Strings for uris adn literals
-          val experiment_name = "Spark_Min_Hash"
-          val experiment_type = "Sematic Similarity Estimation"
-          val evaluation_datetime = Calendar.getInstance().getTime()
-            .toString // make string out of it, in future would be better to allow date nativly in rdf
-            .replaceAll("\\s", "") // remove spaces to reduce confusions with some foreign file readers
-            .replaceAll(":", "") // remove also double points for less confilcting chars. todo quick and dirty hack with tostring
-          val measure_type = "distance"
 
           val a = row(0).toString() // .split("/").last thiese appended split and last element were needed because the initial create of rdf data leads to a uri which includes also the filepath and not the simple string
           val b = row(1).toString() // .split("/").last
@@ -429,6 +546,10 @@ object minHash_rdf_over_text_pipeline {
               NodeFactory.createURI(cnu),
               NodeFactory.createURI(dtr),
               NodeFactory.createLiteral(evaluation_datetime)
+            ), Triple.create(
+              NodeFactory.createURI(cnu),
+              NodeFactory.createURI(mtr),
+              NodeFactory.createLiteral(experiment_measurement_type)
             )
           )
         }
@@ -446,11 +567,6 @@ object minHash_rdf_over_text_pipeline {
      */
 
     // TODO check whether this should be always public visible
-    val experiment_name = "Spark_Min_Hash"
-    val experiment_type = "Sematic Similarity Estimation"
-    val evaluation_datetime = Calendar.getInstance().getTime().toString // todo quick and dirty hack with tostring
-    val measure_type = "distance"
-
     val experiment_hash: String = (experiment_type + " - " + experiment_name + " - " + evaluation_datetime).replaceAll("\\s", "")
 
     val output = "/Users/carstendraschner/Downloads/experiment_results_" + experiment_hash + ".nt"
@@ -461,11 +577,9 @@ object minHash_rdf_over_text_pipeline {
     println("Triples are generated and stored in output path:")
     println(output)
 
-
     println("Here we start 7B")
     println("We try out here alternative easy similarity estimations like jaccard on the basis of CountVectorized dataframes")
-
-    import spark.implicits._
+    println("Those should produce a simple DataFrame with column for uriA column for uriB and a column for the similairy results")
 
     println("7B.1 Jaccard")
     val jaccard = udf( (a: Vector, b: Vector) => {
@@ -493,22 +607,6 @@ object minHash_rdf_over_text_pipeline {
     )
       .select("titleA", "titleB", "jaccardSim")
       .show(false)
-
-    /* println("Create all pairs")
-    val cross =
-      vectorizedDf
-        .withColumnRenamed("title", "titleA")
-        .withColumnRenamed("features", "featuresA")
-        .crossJoin(
-          vectorizedDf
-            .withColumnRenamed("title", "titleB")
-            .withColumnRenamed("features", "featuresB"))
-    cross.show(false)
-    cross.withColumn(
-      "jaccardSim",
-      jaccard(col("featuresA"), col("featuresB"))
-    ).show(false) */
-
 
     spark.stop()
   }
