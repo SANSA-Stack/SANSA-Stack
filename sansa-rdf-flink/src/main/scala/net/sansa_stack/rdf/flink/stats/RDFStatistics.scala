@@ -1,17 +1,13 @@
 package net.sansa_stack.rdf.flink.stats
 
-import java.io.File
 import java.io.StringWriter
 
-import scala.reflect.ClassTag
 import net.sansa_stack.rdf.flink.utils.{Logging, NodeKey}
-import org.apache.flink.api.common.typeinfo.TypeInformation
-import org.apache.flink.api.java.aggregation.Aggregations
 import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.core.fs.FileSystem
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
-import org.apache.jena.vocabulary.{OWL, RDF, RDFS, XSD}
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.vocabulary.{OWL, RDF, RDFS}
 
 /**
   * A Distributed implementation of RDF Statisctics using Apache Flink.

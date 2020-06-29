@@ -15,11 +15,12 @@ import org.apache.jena.vocabulary.{RDF, XSD}
  * A partitioner for RDF that returns the corresponding layout given an RDF triple.
  * Parsing of `xsd:date` literals can be configured via constructor.
  *
- * @param dateFormatter parsing of literals with datatype `xsd:date` can be handled here. Default is a very
- *                      relaxed pattern `y-M-d` which also allows single digits for year, month and day though
- *                      officially according to XSD it must be `yyyy-MM-dd`
+ * @param distinguishStringLiterals if to create separate partitions for strings with and without language tags
+// * @param dateFormatter parsing of literals with datatype `xsd:date` can be handled here. Default is a very
+// *                      relaxed pattern `y-M-d` which also allows single digits for year, month and day though
+// *                      officially according to XSD it must be `yyyy-MM-dd`
  */
-object RdfPartitionerComplex
+class RdfPartitionerComplex(distinguishStringLiterals: Boolean = true)
   extends RdfPartitioner[RdfPartitionComplex]
     with Serializable {
 
@@ -64,10 +65,18 @@ object RdfPartitionerComplex
 
     // In the case of plain literals, we replace the datatype langString with string
     // in order to group them all into the same partition
-    val datatype = if (o.isLiteral) (if (isPlainLiteral(o)) XSD.xstring.getURI else o.getLiteralDatatypeURI) else ""
-    val langTagPresent = isPlainLiteral(o)
+    val datatype = if (o.isLiteral) {
+      if (!distinguishStringLiterals && isPlainLiteral(o)) XSD.xstring.getURI else o.getLiteralDatatypeURI
+    } else {
+      ""
+    }
+    val langTagPresent = o.isLiteral &&
+                        ((distinguishStringLiterals && o.getLiteralDatatypeURI == RDF.langString.getURI && o.getLiteralLanguage.trim().nonEmpty)
+                          || (!distinguishStringLiterals && isPlainLiteral(o)))
 
-    RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent)
+    val lang = if (langTagPresent) Some(o.getLiteralLanguage) else None
+
+    RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, this)
   }
 
   /**
@@ -79,7 +88,21 @@ object RdfPartitionerComplex
 
     val layout = oType match {
       case 0 | 1 => TripleLayoutString // URI or bnode
-      case 2 => if (isPlainLiteralDatatype(t.datatype)) TripleLayoutStringLang else determineLayoutDatatype(t.datatype)
+      case 2 => if (distinguishStringLiterals) {
+        if (t.datatype == RDF.langString.getURI) {
+          TripleLayoutStringLang
+        } else if (t.datatype == XSD.xstring.getURI) {
+          TripleLayoutString
+        } else {
+          determineLayoutDatatype(t.datatype)
+        }
+      } else {
+        if (isPlainLiteralDatatype(t.datatype)) {
+          TripleLayoutStringLang
+        } else {
+          determineLayoutDatatype(t.datatype)
+        }
+      }
       case _ => throw new RuntimeException(s"Unsupported object type: $t")
     }
     layout
@@ -116,10 +139,8 @@ object RdfPartitionerComplex
   }
 }
 
-/*
 object RdfPartitionerComplex {
   def apply(): RdfPartitionerComplex = new RdfPartitionerComplex()
-  def apply(formatter: DateTimeFormatter): RdfPartitionerComplex = new RdfPartitionerComplex(formatter)
+  def apply(distinguishStringLiterals: Boolean): RdfPartitionerComplex = new RdfPartitionerComplex(distinguishStringLiterals)
 }
- */
 

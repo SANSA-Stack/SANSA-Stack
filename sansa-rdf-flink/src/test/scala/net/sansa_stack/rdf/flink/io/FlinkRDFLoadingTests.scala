@@ -1,7 +1,6 @@
 package net.sansa_stack.rdf.flink.io
 
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
 class FlinkRDFLoadingTests extends FunSuite {
@@ -11,7 +10,7 @@ class FlinkRDFLoadingTests extends FunSuite {
   test("loading N-Triples file into DataSet should match") {
 
     val path = getClass.getResource("/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
+    val lang = Lang.NTRIPLES
 
     val triples = env.rdf(lang)(path)
 
@@ -23,7 +22,7 @@ class FlinkRDFLoadingTests extends FunSuite {
   test("loading N-Quads file into DataSet should match") {
 
     val path = getClass.getResource("/data.nq").getPath
-    val lang: Lang = Lang.NQUADS
+    val lang = Lang.NQUADS
 
     val triples = env.rdf(lang)(path)
 
@@ -35,7 +34,7 @@ class FlinkRDFLoadingTests extends FunSuite {
   test("loading RDF/XML file into DataSet should match") {
     val path = getClass.getResource("/data.rdf").getPath
 
-    val lang: Lang = Lang.RDFXML
+    val lang = Lang.RDFXML
     val triples = env.rdf(lang)(path)
 
     val cnt = triples.count()

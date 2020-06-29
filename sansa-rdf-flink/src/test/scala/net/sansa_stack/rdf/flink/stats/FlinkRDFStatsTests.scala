@@ -1,14 +1,11 @@
 package net.sansa_stack.rdf.flink.stats
 
 import net.sansa_stack.rdf.flink.io._
-import org.apache.flink.api.scala._
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
 
 class FlinkRDFStatsTests extends FunSuite {
 
-  import net.sansa_stack.rdf.flink.stats._
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 

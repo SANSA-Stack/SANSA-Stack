@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.common.io.riot.lang;
 
 import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.iri.IRI;
@@ -30,8 +31,8 @@ class NoErrorProfile implements ParserProfile {
 	}
 
 	@Override
-	public void setIRIResolver(IRIResolver resolver) {
-		base.setIRIResolver(resolver);
+	public void setBaseIRI(String baseIRI) {
+		base.setBaseIRI(baseIRI);
 	}
 
 	@Override
@@ -72,6 +73,21 @@ class NoErrorProfile implements ParserProfile {
 	@Override
 	public Node createBlankNode(Node scope, long line, long col) {
 		return base.createBlankNode(scope, line, col);
+	}
+
+	@Override
+	public Node createTripleNode(Node subject, Node predicate, Node object, long line, long col) {
+		return base.createTripleNode(subject, predicate, object, line, col);
+	}
+
+	@Override
+	public Node createTripleNode(Triple triple, long line, long col) {
+		return base.createTripleNode(triple, line, col);
+	}
+
+	@Override
+	public Node createGraphNode(Graph graph, long line, long col) {
+		return base.createGraphNode(graph, line, col);
 	}
 
 	@Override
