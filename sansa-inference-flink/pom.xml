@@ -26,7 +26,7 @@ under the License.
 		<version>0.7.2-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+	<artifactId>sansa-inference-flink_2.12</artifactId>
 
 	<name>Inference API - Flink</name>
 	<description>Apache Flink based inference layer for RDF and OWL</description>
