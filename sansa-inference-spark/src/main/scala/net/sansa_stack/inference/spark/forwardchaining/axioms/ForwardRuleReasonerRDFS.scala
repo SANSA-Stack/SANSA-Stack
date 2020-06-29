@@ -2,7 +2,6 @@ package net.sansa_stack.inference.spark.forwardchaining.axioms
 
 import scala.collection.JavaConverters._
 
-import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.SparkContext
@@ -40,7 +39,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
 
     // ------------ extract the schema data -------------------
     // Schema classes
-    val classAsserAxiom = owlAxioms.extractAxioms(axiomsRDD, AxiomType.CLASS_ASSERTION) 
+    val classAsserAxiom = owlAxioms.extractAxioms(axiomsRDD, AxiomType.CLASS_ASSERTION)
                                    .asInstanceOf[RDD[OWLClassAssertionAxiom]].cache()
     
     val subClassOfAxiom = owlAxioms.extractAxioms(axiomsRDD, AxiomType.SUBCLASS_OF)
@@ -132,7 +131,7 @@ class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends Lo
     // split ontology Axioms based on type, sameAs, and the rest of axioms
 
     var typeAxioms = classAsserAxiom.asInstanceOf[RDD[OWLAxiom]]
-    var sameAsAxioms = owlAxioms.extractAxioms(axiomsRDD,AxiomType.SAME_INDIVIDUAL)
+    var sameAsAxioms = owlAxioms.extractAxioms(axiomsRDD, AxiomType.SAME_INDIVIDUAL)
     var SPOAxioms = allAxioms.subtract(typeAxioms).subtract(sameAsAxioms)
 
     /* rule 3 --> rule 3a for subdataproperty, 3b for subobjectproperty
