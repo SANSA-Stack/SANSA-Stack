@@ -49,30 +49,31 @@ object SparqlifyUtils3
           case _ => throw new RuntimeException("Table name required - instead got: " + vd)
         }
         val q = p.layout.schema
-//        q match {
-//          case q if q =:= typeOf[SchemaStringLong] =>
-//            var fn = (r: Product) => r.asInstanceOf[SchemaStringLong]
-//            flinkTable.registerDataSet(tableName, ds.map (fn))
-//          case q if q =:= typeOf[SchemaStringString] =>
-//            var fn = (r: Product) => r.asInstanceOf[SchemaStringString]
-//            flinkTable.registerDataSet(tableName, ds.map (fn))
-//          case q if q =:= typeOf[SchemaStringStringType] =>
-//            var fn = (r: Product) => r.asInstanceOf[SchemaStringStringType]
-//            flinkTable.registerDataSet(tableName, ds.map (fn))
-//          case q if q =:= typeOf[SchemaStringDouble] =>
-//            var fn = (r: Product) => r.asInstanceOf[SchemaStringDouble]
-//            flinkTable.registerDataSet(tableName, ds.map (fn))
-//          case q if q =:= typeOf[SchemaStringStringLang] =>
-//            var fn = (r: Product) => r.asInstanceOf[SchemaStringStringLang]
-//            flinkTable.registerDataSet(tableName, ds.map (fn))
-//          case q if q =:= typeOf[SchemaStringDate] =>
-//            var fn = (r: Product) => r.asInstanceOf[SchemaStringDate]
-//            flinkTable.registerDataSet(tableName, ds.map (fn))
-//          case _ =>
-//            throw new RuntimeException("Unhandled schema type: " + q)
-//        }
+        q match {
+          case q if q =:= typeOf[SchemaStringLong] =>
+            var fn = (r: Product) => r.asInstanceOf[SchemaStringLong]
+            flinkTable.registerDataSet(tableName, ds.map (fn))
+          case q if q =:= typeOf[SchemaStringString] =>
+            var fn = (r: Product) => r.asInstanceOf[SchemaStringString]
+            flinkTable.registerDataSet(tableName, ds.map (fn))
+          case q if q =:= typeOf[SchemaStringStringType] =>
+            var fn = (r: Product) => r.asInstanceOf[SchemaStringStringType]
+            flinkTable.registerDataSet(tableName, ds.map (fn))
+          case q if q =:= typeOf[SchemaStringDouble] =>
+            var fn = (r: Product) => r.asInstanceOf[SchemaStringDouble]
+            flinkTable.registerDataSet(tableName, ds.map (fn))
+          case q if q =:= typeOf[SchemaStringStringLang] =>
+            var fn = (r: Product) => r.asInstanceOf[SchemaStringStringLang]
+            flinkTable.registerDataSet(tableName, ds.map (fn))
+          case q if q =:= typeOf[SchemaStringDate] =>
+            var fn = (r: Product) => r.asInstanceOf[SchemaStringDate]
+            flinkTable.registerDataSet(tableName, ds.map (fn))
+          case _ =>
+            throw new RuntimeException("Unhandled schema type: " + q)
+        }
 
 
+/*
         val fn: Product => Product = q match {
           case q if q =:= typeOf[SchemaStringLong] =>
             (r: Product) => r.asInstanceOf[SchemaStringLong]
@@ -90,8 +91,10 @@ object SparqlifyUtils3
             throw new RuntimeException("Unhandled schema type: " + q)
         }
         import org.apache.flink.api.scala._
-//        implicit val typeInfo = TypeInformation.of(classOf[(Product, Product)])
+        // implicit val typeInfo = TypeInformation.of(classOf[(Product, Product)])
         flinkTable.registerDataSet(tableName, ds.map (fn))
+*/
+
 //        val newDS = classOf[DataSet[Product]].getMethod("map", classOf[MapFunction[Product, _ <: Product]]).invoke(ds, fn).asInstanceOf[DataSet[Product]]
 //        flinkTable.registerDataSet(tableName, newDS)
 
