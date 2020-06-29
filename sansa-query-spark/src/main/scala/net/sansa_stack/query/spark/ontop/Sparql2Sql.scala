@@ -116,7 +116,7 @@ object Sparql2Sql {
     "[MappingDeclaration] @collection [[" +
       partitions
         .map {
-          case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
+          case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
             val tableName = createTableName(p)
             val id = escapeTablename(tableName)
             objectType match {
@@ -178,7 +178,7 @@ object Sparql2Sql {
           println(p.predicate + "\t" + sparkSchema + "\t" + p.asInstanceOf[RdfPartitionComplex].layout.schema)
 
           p match {
-            case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent) =>
+            case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
               objectType match {
                 case 1 => statement.addBatch(s"CREATE TABLE IF NOT EXISTS ${escapeTablename(name)} (" +
                   "s varchar(255) NOT NULL," +
@@ -387,7 +387,7 @@ object Sparql2Sql {
 
   def asSQL(session: SparkSession, sparqlQuery: String, triples: RDD[Triple], properties: Properties): OntopQueryRewrite = {
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex)
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex())
     partitions.foreach {
       case (p, rdd) => createSparkTable(session, p, rdd)
     }
@@ -558,7 +558,7 @@ object Sparql2Sql {
     }
 
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex)
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
     partitions.foreach {
       case (p, rdd) => createSparkTable(spark, p, rdd)
     }

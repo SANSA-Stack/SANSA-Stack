@@ -109,7 +109,7 @@ object VerticalPartitioner {
     triplesRDD.cache()
 
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex)
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
     partitions.foreach {
       case (p, rdd) => createSparkTable(spark, p, rdd, config.computeStatistics)
     }
