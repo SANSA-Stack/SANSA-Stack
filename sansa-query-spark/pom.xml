@@ -12,7 +12,7 @@
 
 	<properties>
         <version.ontop>4.0.0-beta-2-SNAPSHOT</version.ontop>
-        <version.jena>3.13.1</version.jena>
+        <version.jena>3.15.0</version.jena>
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <version.jsa>${jena.version}-${jsa.subversion}</version.jsa>
         <spark.deps.scope>compile</spark.deps.scope>

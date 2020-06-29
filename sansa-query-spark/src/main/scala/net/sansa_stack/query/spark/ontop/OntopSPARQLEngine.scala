@@ -27,6 +27,7 @@ import it.unibz.inf.ontop.model.term.impl.DBConstantImpl
 import it.unibz.inf.ontop.model.vocabulary.XSD
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.apache.jena.graph.NodeFactory
+import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.SparkException
@@ -480,6 +481,9 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
   def execSelect(query: String): DataFrame = {
+    val q = QueryFactory.create(query)
+    if (!q.isAskType) throw new RuntimeException(s"Wrong query type. Expected SELECT query," +
+      s" got ${q.queryType().toString}")
     executeDebug(query)._1
   }
 
@@ -491,6 +495,9 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
   def execAsk(query: String): Boolean = {
+    val q = QueryFactory.create(query)
+    if (!q.isAskType) throw new RuntimeException(s"Wrong query type. Expected ASK query," +
+      s" got ${q.queryType().toString}")
     executeDebug(query)._1.isEmpty
   }
 
