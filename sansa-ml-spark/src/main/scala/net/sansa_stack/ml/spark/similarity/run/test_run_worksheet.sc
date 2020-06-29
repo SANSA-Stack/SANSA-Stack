@@ -90,3 +90,7 @@ val transformedFeatures: Seq[Tuple2[Int, Double]] = seq_to_features(in = example
 // val transformedFeaturesUris: Map[Int, Seq[Tuple2[Int, Double]]] = uriToFeaturesMap.map({case (k: String, v: Seq[Seq[String]]) => (uriIntMap(k), seq_to_features(v, someFeatureMap))})
 val transformedFeaturesUris: Map[Int, Seq[Tuple2[Int, Double]]] = uriToFeaturesMap.map({case (k: String, v: Seq[Seq[String]]) => (uriIntMap(k), v.map(s => Tuple2(someFeatureMap(s), 1.0)))})
 
+
+
+val someMapN: Map[Int, Iterable[Int]] = Map(1 -> List(2, 3), 4 -> List(7, 8))
+someMapN.toSeq.toDF("a", "b")
