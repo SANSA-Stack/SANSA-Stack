@@ -2,7 +2,6 @@ package net.sansa_stack.ml.spark.similarity.run
 
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
-import net.sansa_stack.ml.spark.similarity.run.Semantic_Similarity_Estimator.{Config, parser, read_in_nt_triples, run}
 import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.MinHashLSH
 import org.apache.spark.ml.linalg.Vectors
@@ -16,7 +15,7 @@ import org.apache.spark.sql
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.linalg._
 import org.apache.spark.sql.types._
-import net.sansa_stack.ml.spark.utils.{FeatureDataframeGenerator, NodeFeatureFactory, NodeIndexer}
+import net.sansa_stack.ml.spark.utils.{FeatureDataframeGenerator, NodeFeatureFactory}
 
 
 
