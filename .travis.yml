@@ -4,7 +4,7 @@ cache:
   directories:
   - $HOME/.m2
 scala:
-- 2.11.11
+- 2.12.11
 script:
 - mvn scalastyle:check
 - mvn test
