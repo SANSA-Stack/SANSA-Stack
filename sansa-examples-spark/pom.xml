@@ -102,12 +102,12 @@
 		</dependency>
 
 		<!-- BigDL Library -->
-		<dependency>
+		<!--<dependency>
 			<groupId>com.intel.analytics.bigdl</groupId>
 			<artifactId>bigdl-SPARK_2.2</artifactId>
-			<version>0.3.0</version>
+			<version>0.10.0</version>
 			<scope>provided</scope>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>com.github.haifengl</groupId>
 			<artifactId>smile-core</artifactId>
