@@ -89,11 +89,13 @@
             <scope>test</scope>
         </dependency>
 
+<!--
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-hive_${scala.binary.version}</artifactId>
 			<scope>${spark.deps.scope}</scope>
 		</dependency>
+-->
 
         <!-- JENA API -->
 
@@ -246,7 +248,7 @@
 											<exclude>org.scala-lang:scala-compiler</exclude>
 											<exclude>org.scala-lang:scala-reflect</exclude>
 											<exclude>commons-cli:commons-cli</exclude>
-											<exclude>commons-codec:commons-codec</exclude>
+<!--											<exclude>commons-codec:commons-codec</exclude> -->
 											<exclude>commons-collections:commons-collections</exclude>
 											<exclude>commons-configuration:commons-configuration</exclude>
 											<exclude>commons-digester:commons-digester</exclude>

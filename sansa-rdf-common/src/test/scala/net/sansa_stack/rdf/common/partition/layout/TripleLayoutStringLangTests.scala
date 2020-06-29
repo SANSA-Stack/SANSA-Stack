@@ -2,7 +2,6 @@ package net.sansa_stack.rdf.common.partition.layout
 
 import net.sansa_stack.rdf.common.partition.layout.TripleLayoutStringLang._
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringStringLang
-import org.apache.commons.codec.language.bm.Lang
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
 import org.scalatest.FunSuite
