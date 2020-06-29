@@ -7,7 +7,6 @@ import scala.collection.mutable
 import net.sansa_stack.rdf.flink.io._
 import net.sansa_stack.rdf.flink.stats._
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.jena.riot.Lang
 
 object RDFStats {
 

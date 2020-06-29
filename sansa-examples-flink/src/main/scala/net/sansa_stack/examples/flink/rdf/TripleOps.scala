@@ -1,13 +1,10 @@
 package net.sansa_stack.examples.flink.rdf
 
-import scala.collection.mutable
+import org.apache.flink.api.scala.{ExecutionEnvironment, _}
+import org.apache.jena.graph.NodeFactory
 
 import net.sansa_stack.rdf.flink.io._
 import net.sansa_stack.rdf.flink.model._
-import org.apache.flink.api.scala._
-import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.jena.graph.{Node, NodeFactory}
-import org.apache.jena.riot.Lang
 
 object TripleOps {
   def main(args: Array[String]) {

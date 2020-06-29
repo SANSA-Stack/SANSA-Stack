@@ -1,11 +1,8 @@
 package net.sansa_stack.examples.flink.rdf
 
-import scala.collection.mutable
-
 import net.sansa_stack.rdf.flink.io._
 import net.sansa_stack.rdf.flink.model._
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.jena.riot.Lang
 
 object TripleReader {
 
