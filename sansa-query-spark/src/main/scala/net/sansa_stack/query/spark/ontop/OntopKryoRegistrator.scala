@@ -8,6 +8,7 @@ import com.esotericsoftware.kryo.serializers.ClosureSerializer
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import it.unibz.inf.ontop.model.`type`.impl.RDFTermTypeImpl
 import it.unibz.inf.ontop.model.term.ImmutableTerm
+import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.{AbstractSQLDBFunctionSymbolFactory, DefaultSQLTimestampISONormFunctionSymbol}
 import it.unibz.inf.ontop.substitution.impl.ImmutableSubstitutionImpl
 import org.apache.spark.serializer.KryoRegistrator
 
@@ -26,6 +27,9 @@ class OntopKryoRegistrator extends KryoRegistrator {
 
     kryo.register(classOf[ImmutableTerm])
     kryo.register(classOf[it.unibz.inf.ontop.substitution.impl.ImmutableSubstitutionImpl[_]])
+    kryo.register(classOf[it.unibz.inf.ontop.utils.CoreUtilsFactory])
+    kryo.register(classOf[DefaultSQLTimestampISONormFunctionSymbol])
+    kryo.register(classOf[AbstractSQLDBFunctionSymbolFactory])
 //    kryo.register(classOf[java.lang.invoke.SerializedLambda]);
 //    kryo.register(classOf[ClosureSerializer.Closure], new ClosureSerializer() {
 //

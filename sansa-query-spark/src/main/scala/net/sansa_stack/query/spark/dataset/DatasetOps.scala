@@ -8,7 +8,7 @@ import scala.collection.JavaConverters._
 
 object DatasetOps {
 
-  @inline def flatMapQueryCore(dataset: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {
+  @inline def sparqlFlatMap(dataset: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
     dataset.flatMap(in => {
       // TODO I don't get why the Query object is not serializablbe even though
@@ -38,6 +38,6 @@ object DatasetOps {
 
    // implicit class DatasetOps[T <: Dataset](dataset: RDD[T]) {
    implicit class DatasetOpsImpl(dataset: RDD[Dataset]) {
-     @inline def sparqlFlatMap(query: Query): RDD[Dataset] = flatMapQueryCore(dataset, query.toString())
+     @inline def sparqlFlatMap(query: Query): RDD[Dataset] = DatasetOps.sparqlFlatMap(dataset, query.toString())
   }
 }

@@ -156,6 +156,16 @@
 			<groupId>org.apache.tinkerpop</groupId>
 			<artifactId>spark-gremlin</artifactId>
 			<version>3.3.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_2.11</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang.modules</groupId>
+                    <artifactId>scala-xml_2.11</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 
 		<dependency>

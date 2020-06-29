@@ -371,19 +371,19 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
     // append the lang tags
     // todo other post processing stuff?
-    signature.asScala
-      .map(v => (v, sparqlVar2Term.get(v)))
-      .foreach {case (v, term) =>
-        if (term.isInstanceOf[NonGroundFunctionalTerm]) {
-          if (term.asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.isInstanceOf[RDFTermFunctionSymbol]) {
-            val t = term.asInstanceOf[NonGroundFunctionalTerm]
-            if (t.getArity == 2 && t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.isInstanceOf[RDFTermTypeFunctionSymbol]) {
-              val map = t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.asInstanceOf[RDFTermTypeFunctionSymbol].getConversionMap
-//              map.get(new DBConstantImpl())
-            }
-          }
-        }
-      }
+//    signature.asScala
+//      .map(v => (v, sparqlVar2Term.get(v)))
+//      .foreach {case (v, term) =>
+//        if (term.isInstanceOf[NonGroundFunctionalTerm]) {
+//          if (term.asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.isInstanceOf[RDFTermFunctionSymbol]) {
+//            val t = term.asInstanceOf[NonGroundFunctionalTerm]
+//            if (t.getArity == 2 && t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.isInstanceOf[RDFTermTypeFunctionSymbol]) {
+//              val map = t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.asInstanceOf[RDFTermTypeFunctionSymbol].getConversionMap
+////              map.get(new DBConstantImpl())
+//            }
+//          }
+//        }
+//      }
 
 
     // and we also add columns for literal bindings which are not already returned by the converted SQL query but
