@@ -1,11 +1,14 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.io.StringReader
+import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 import com.google.common.collect.ImmutableMap
+import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OntopInternalBugException}
 import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopModelConfiguration, OntopReformulationSQLConfiguration}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
@@ -16,36 +19,64 @@ import it.unibz.inf.ontop.model.term.impl.DBConstantImpl
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
 import org.apache.jena.datatypes.TypeMapper
-import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.Row
+import org.eclipse.rdf4j.model.{IRI, Literal}
+import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
 
 /**
+ * Mapper of Spark DataFrame rows to other entities, e.g. binding, triple, ...
+ *
  * @author Lorenz Buehmann
  */
-class OntopRowMapper(obdaMappings: String,
+class OntopRowMapper(
+                     obdaMappings: String,
                      properties: Properties,
-                     partitions: Seq[RdfPartitionComplex],
-                     sparqlQuery: String) {
+                     partitions: Set[RdfPartitionComplex],
+                     sparqlQuery: String,
+                     id: String = "id") {
 
-  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
+//  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
-  val mappingConfiguration = OntopMappingSQLAllConfiguration.defaultBuilder
-    .nativeOntopMappingReader(new StringReader(obdaMappings))
-    .properties(properties)
-    .enableTestMode
-    .build
+  // create the tmp DB needed for Ontop
+  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE;DB_CLOSE_DELAY=-1"
+  private val JDBC_USER = "sa"
+  private val JDBC_PASSWORD = ""
 
-  val obdaSpecification = mappingConfiguration.loadSpecification
+  private val connection: Connection = try {
+    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+  } catch {
+    case e: SQLException =>
+      throw e
+  }
 
-  val reformulationConfiguration = OntopReformulationSQLConfiguration.defaultBuilder
-    .obdaSpecification(obdaSpecification)
-    .properties(properties)
-    .enableTestMode
-    .build
+  val reformulationConfiguration = {
+    JDBCDatabaseGenerator.generateTables(connection, partitions)
+
+    val mappingConfiguration = {
+      OntopMappingSQLAllConfiguration.defaultBuilder
+        .nativeOntopMappingReader(new StringReader(obdaMappings))
+        .properties(properties)
+        .jdbcUrl(JDBC_URL)
+        .jdbcUser(JDBC_USER)
+        .jdbcPassword(JDBC_PASSWORD)
+        .enableTestMode
+        .build
+    }
+
+    val obdaSpecification = mappingConfiguration.loadSpecification
+
+    OntopReformulationSQLConfiguration.defaultBuilder
+      .obdaSpecification(obdaSpecification)
+      .properties(properties)
+      .jdbcUrl(JDBC_URL)
+      .enableTestMode
+      .build
+  }
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
@@ -94,7 +125,7 @@ class OntopRowMapper(obdaMappings: String,
   }
 
   def toBinding(row: Row): Binding = {
-    println(row)
+    println(s"row: $row")
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]
@@ -120,14 +151,85 @@ class OntopRowMapper(obdaMappings: String,
     binding
   }
 
+  def toTriples(rows: Iterator[Row]): Iterator[Triple] = {
+    val constructTemplate = inputQuery.asInstanceOf[ConstructQuery].getConstructTemplate
+
+    val ex = constructTemplate.getExtension
+    var extMap: Map[String, ValueExpr] = null
+    if (ex != null) {
+      extMap = ex.getElements.asScala.map(e => (e.getName, e.getExpr)).toMap
+    }
+
+    val bindings = rows.map(toBinding)
+    bindings.flatMap (binding => toTriples(binding, constructTemplate, extMap))
+  }
+
+  /**
+   * Convert a single binding to a set of triples.
+   */
+  private def toTriples(binding: Binding, constructTemplate: ConstructTemplate, extMap: Map[String, ValueExpr]): mutable.Buffer[Triple] = {
+    val l = constructTemplate.getProjectionElemList.asScala
+    l.flatMap { peList =>
+      val size = peList.getElements.size()
+
+      var triples = scala.collection.mutable.Set[Triple]()
+
+      for (i <- 0 until (size/3)) {
+
+        val s = getConstant(peList.getElements.get(i * 3), binding, extMap)
+        val p = getConstant(peList.getElements.get(i * 3 + 1), binding, extMap)
+        val o = getConstant(peList.getElements.get(i * 3 + 2), binding, extMap)
+
+        // A triple can only be constructed when none of bindings is missing
+        if (s == null || p == null || o == null) {
+
+        } else {
+          triples += Triple.create(s, p, o)
+        }
+      }
+      triples
+    }
+  }
+
+  /**
+   * Convert each node in a CONSTRUCT template to an RDF node.
+   */
+  private def getConstant(node: ProjectionElem, binding: Binding, extMap: Map[String, ValueExpr]): Node = {
+    var constant: Node = null
+
+    val node_name = node.getSourceName
+
+    val ve: Option[ValueExpr] = if (extMap != null) extMap.get(node_name) else None
+
+    // for constant terms in the template
+    if (ve.isDefined && ve.get.isInstanceOf[ValueConstant]) {
+      val vc = ve.get.asInstanceOf[ValueConstant]
+      if (vc.getValue.isInstanceOf[IRI]) {
+        constant = NodeFactory.createURI(vc.getValue.stringValue)
+      } else if (vc.getValue.isInstanceOf[Literal]) {
+        val lit = vc.getValue.asInstanceOf[Literal]
+        val dt = TypeMapper.getInstance().getTypeByName(lit.getDatatype.toString)
+        constant = NodeFactory.createLiteral(vc.getValue.stringValue, dt)
+      } else {
+        constant = NodeFactory.createBlankNode(vc.getValue.stringValue)
+      }
+    } else { // for variable bindings
+      constant = binding.get(Var.alloc(node_name))
+    }
+
+    constant
+  }
+
   private def toNode(constant: RDFConstant, typeFactory: TypeFactory): Node = {
     val termType = constant.getType
     if (termType.isA(typeFactory.getIRITermType)) {
       NodeFactory.createURI(constant.asInstanceOf[IRIConstant].getIRI.getIRIString)
     } else if (termType.isA(typeFactory.getAbstractRDFSLiteral)) {
       val lit = constant.asInstanceOf[RDFLiteralConstant]
-      val dt = TypeMapper.getInstance().getTypeByName(lit.getType.getIRI.getIRIString)
-      NodeFactory.createLiteral(lit.getValue, dt)
+      val litType = lit.getType
+      val dt = TypeMapper.getInstance().getTypeByName(litType.getIRI.getIRIString)
+      val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
+      NodeFactory.createLiteral(lit.getValue, lang, dt)
     } else {
       null.asInstanceOf[Node]
     }
@@ -145,6 +247,14 @@ class OntopRowMapper(obdaMappings: String,
       case _ =>
     }
     throw new InvalidTermAsResultException(simplifiedTerm)
+  }
+
+  def close(): Unit = {
+    try {
+      connection.close()
+    } catch {
+      case e: SQLException => throw e
+    }
   }
 
   class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")

@@ -26,7 +26,13 @@ package object query {
     val Ontop, Sparqlify = Value
   }
 
-  class SPARQLExecutor(triples: RDD[Triple], engine: SPARQLEngine.Value = SPARQLEngine.Ontop)
+  /**
+   * A SPARQL executor backed by a SPARQL engine.
+   *
+   * @param triples the triples to work on
+   * @param engine the SPARQL query engine
+   */
+  class SPARQLExecutor(triples: RDD[Triple], engine: SPARQLEngine.Value = SPARQLEngine.Sparqlify)
     extends QueryExecutor
       with Serializable {
 
@@ -53,6 +59,13 @@ package object query {
     def sparql(sparqlQuery: String): DataFrame
   }
 
+  /**
+   * An Ontop backed SPARQL executor implicitly bound to an RDD[Triple].
+   *
+   * VP is used as partitioning strategy, i.e. one partition s,o per predicate p in the RDF dataset.
+   *
+   * @param triples the triples to work on
+   */
   implicit class OntopSPARQLExecutorAsDefault(triples: RDD[Triple])
     extends QueryExecutor
       with Serializable {
@@ -64,6 +77,11 @@ package object query {
     }
   }
 
+  /**
+   * An Ontop backed SPARQL executor working on the given RDF partitions.
+   *
+   * @param partitions the RDF partitions to work on
+   */
   class OntopSPARQLExecutor(partitions: Map[RdfPartitionComplex, RDD[Row]])
     extends QueryExecutor
       with Serializable {
@@ -86,12 +104,22 @@ package object query {
     }
   }
 
+  /**
+   * A Sparqlify backed SPARQL executor working on the given RDF partitions.
+   *
+   * @param partitions the RDF partitions to work on
+   */
   class SparqlifySPARQLExecutor(var partitions: Map[RdfPartitionDefault, RDD[Row]])
     extends QueryExecutor
       with Serializable {
 
-    import net.sansa_stack.rdf.spark.partition._
-
+    /**
+     * A Sparqlify backed SPARQL executor working on the given RDF triples.
+     *
+     * VP is used as partitioning strategy, i.e. one partition s,o per predicate p in the RDF dataset.
+     *
+     * @param triples the triples to work on
+     */
     def this(triples: RDD[Triple]) {
       this(RdfPartitionUtilsSpark.partitionGraph(triples))
     }

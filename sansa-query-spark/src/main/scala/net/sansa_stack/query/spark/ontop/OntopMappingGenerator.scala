@@ -9,7 +9,7 @@ object OntopMappingGenerator {
 
   val logger = com.typesafe.scalalogging.Logger(OntopMappingGenerator.getClass)
 
-  def createOBDAMappingsForPartitions(partitions: Seq[RdfPartitionComplex]): String = {
+  def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionComplex]): String = {
 
     def createMapping(id: String, tableName: String, property: String): String = {
       s"""

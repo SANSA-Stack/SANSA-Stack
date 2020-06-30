@@ -23,15 +23,25 @@ abstract class SPARQL11TestSuiteRunnerSpark
     with org.scalatest.BeforeAndAfterAll
     with SharedSparkContext { self: Suite =>
 
+  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+
   @transient private var _spark: SparkSession = _
 
 //  def spark: SparkSession = _spark
 
-  lazy val spark = SparkSession.builder.config(conf.set("spark.sql.crossJoin.enabled", "true")).getOrCreate()
+  lazy val spark = SparkSession.builder.config(
+    conf
+      .set("spark.sql.crossJoin.enabled", "true")
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  ).getOrCreate()
 
   override def beforeAll(): Unit = {
 //    super.beforeAll()
     conf.set("spark.sql.crossJoin.enabled", "true")
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
     _spark = SparkSession.builder.config(conf).getOrCreate()
   }
 

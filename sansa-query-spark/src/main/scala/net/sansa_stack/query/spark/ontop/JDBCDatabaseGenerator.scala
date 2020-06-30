@@ -10,6 +10,8 @@ import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaS
 import scala.reflect.runtime.universe.typeOf
 
 /**
+ * Setup the JDBC database needed for the Ontop metadata extraction.
+ *
  * @author Lorenz Buehmann
  */
 object JDBCDatabaseGenerator {
@@ -34,7 +36,7 @@ object JDBCDatabaseGenerator {
    * @param connection the database connection
    * @param partitions the partitions
    */
-  def generateTables(connection: Connection, partitions: Seq[RdfPartitionComplex]): Unit = {
+  def generateTables(connection: Connection, partitions: Set[RdfPartitionComplex]): Unit = {
     try {
       val stmt = connection.createStatement()
 
@@ -46,7 +48,7 @@ object JDBCDatabaseGenerator {
 
         val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
         logger.trace(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
-
+        println(s"creating table ${SQLUtils.escapeTablename(name)} for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
         p match {
           case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
             objectType match {

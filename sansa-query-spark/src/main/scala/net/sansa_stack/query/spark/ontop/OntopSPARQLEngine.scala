@@ -27,7 +27,7 @@ import it.unibz.inf.ontop.model.term.impl.DBConstantImpl
 import it.unibz.inf.ontop.model.vocabulary.XSD
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.apache.jena.graph.NodeFactory
-import org.apache.jena.query.QueryFactory
+import org.apache.jena.query.{Query, QueryFactory, QueryType}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.SparkException
@@ -72,7 +72,7 @@ case class OntopQueryRewrite(sparqlQuery: String,
  * @constructor create a new Ontop SPARQL to SQL rewriter based on RDF partitions.
  * @param partitions the RDF partitions
  */
-class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
+class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex])
   extends SPARQL2SQLRewriter[OntopQueryRewrite]
     with Serializable {
 
@@ -98,7 +98,6 @@ class OntopSPARQL2SQLRewriter(val partitions: Seq[RdfPartitionComplex])
 
   // create OBDA mappings
   val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions)
-  println(mappings)
 
   // the Ontop core
   val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties)
@@ -233,7 +232,7 @@ object OntopSPARQL2SQLRewriter {
    * @param partitions the RDF partitions
    * @return a new SPARQL to SQL rewriter
    */
-  def apply(partitions: Seq[RdfPartitionComplex]): OntopSPARQL2SQLRewriter = {
+  def apply(partitions: Set[RdfPartitionComplex]): OntopSPARQL2SQLRewriter = {
     new OntopSPARQL2SQLRewriter(partitions)
   }
 }
@@ -243,7 +242,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
                         val partitions: Map[RdfPartitionComplex, RDD[Row]]) {
 
 
-  private val sparql2sql = OntopSPARQL2SQLRewriter(partitions.keySet.toSeq)
+  private val sparql2sql = OntopSPARQL2SQLRewriter(partitions.keySet)
 
   private val logger = com.typesafe.scalalogging.Logger(OntopSPARQLEngine.getClass.getName)
 
@@ -329,29 +328,8 @@ class OntopSPARQLEngine(val spark: SparkSession,
     sparql2sql.close()
   }
 
-  def genMapper(kryoWrapper: KryoSerializationWrapper[(Row => Int)])(row: Row): Int = {
-    kryoWrapper.value.apply(row)
-  }
-
   private def postProcess(df: DataFrame, queryRewrite: OntopQueryRewrite): DataFrame = {
     var result = df
-
-    import spark.implicits._
-    val sparqlQueryBC = spark.sparkContext.broadcast(queryRewrite.sparqlQuery)
-    val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
-    val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
-    val partitionsBC = spark.sparkContext.broadcast(partitions.keySet.toSeq)
-
-    val sqlSignatureBC = spark.sparkContext.broadcast(queryRewrite.sqlSignature)
-    val sqlTypeMapBC = spark.sparkContext.broadcast(queryRewrite.sqlTypeMap)
-    val sparqlVar2TermBC = spark.sparkContext.broadcast(queryRewrite.sparqlVar2Term)
-    val answerAtomBC = spark.sparkContext.broadcast(queryRewrite.answerAtom)
-
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
-    df.mapPartitions(iterator => {
-      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
-      iterator.map(mapper.map)
-    }).collect().foreach(println)
 
     // all projected variables
     val signature = queryRewrite.answerAtom.getArguments
@@ -477,14 +455,28 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * Executes a SELECT query on the provided dataset partitions and returns a DataFrame.
    *
    * @param query the SPARQL query
-   * @return a DataFrame with the resulting bindings as columns
+   * @return an RDD of solution bindings
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
-  def execSelect(query: String): DataFrame = {
+  def execSelect(query: String): RDD[Binding] = {
     val q = QueryFactory.create(query)
-    if (!q.isAskType) throw new RuntimeException(s"Wrong query type. Expected SELECT query," +
+    if (!q.isSelectType) throw new RuntimeException(s"Wrong query type. Expected SELECT query," +
       s" got ${q.queryType().toString}")
-    executeDebug(query)._1
+    val df = executeDebug(query)._2
+
+    val sparqlQueryBC = spark.sparkContext.broadcast(query)
+    val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
+    val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
+    val partitionsBC = spark.sparkContext.broadcast(partitions.keySet)
+
+    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
+    df.mapPartitions(iterator => {
+      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
+      val it = iterator.map(mapper.map)
+//      mapper.close()
+      it
+    }).rdd
+
   }
 
   /**
@@ -498,19 +490,37 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val q = QueryFactory.create(query)
     if (!q.isAskType) throw new RuntimeException(s"Wrong query type. Expected ASK query," +
       s" got ${q.queryType().toString}")
-    executeDebug(query)._1.isEmpty
+    val df = executeDebug(query)._2
+    !df.isEmpty
   }
 
-//  /**
-//   * Executes a CONSTRUCT query on the provided dataset partitions.
-//   *
-//   * @param query the SPARQL query
-//   * @return an RDD of triples
-//   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
-//   */
-//  def execConstruct(query: String): RDD[org.apache.jena.graph.Triple] = {
-//    null
-//  }
+  /**
+   * Executes a CONSTRUCT query on the provided dataset partitions.
+   *
+   * @param query the SPARQL query
+   * @return an RDD of triples
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+   */
+  def execConstruct(query: String): RDD[org.apache.jena.graph.Triple] = {
+    val q = QueryFactory.create(query)
+    if (!q.isConstructType) throw new RuntimeException(s"Wrong query type. Expected CONSTRUCT query," +
+      s" got ${q.queryType().toString}")
+
+    val df = executeDebug(query)._2
+
+    val sparqlQueryBC = spark.sparkContext.broadcast(query)
+    val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
+    val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
+    val partitionsBC = spark.sparkContext.broadcast(partitions.keySet)
+
+    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[org.apache.jena.graph.Triple]
+    df.mapPartitions(iterator => {
+      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
+      val it = mapper.toTriples(iterator)
+      mapper.close()
+      it
+    }).rdd
+  }
 
 }
 
@@ -583,12 +593,26 @@ object OntopSPARQLEngine {
 
     def run(query: String) = {
       try {
-        val result = sparqlEngine.execute(query)
+//        val result = sparqlEngine.execute(query)
+//        if (result != null) {
+//          result.show(false)
+//          result.printSchema()
+//        }
 
-        if (result != null) {
-          result.show(false)
-          result.printSchema()
+        val q = QueryFactory.create(query)
+        q.queryType() match {
+          case QueryType.SELECT =>
+            val res = sparqlEngine.execSelect(query)
+            println(res.collect().mkString("\n"))
+          case QueryType.ASK =>
+            val res = sparqlEngine.execAsk(query)
+            println(res)
+          case QueryType.CONSTRUCT =>
+            val res = sparqlEngine.execConstruct(query)
+            println(res.collect().mkString("\n"))
         }
+
+
 
       } catch {
         case e: Exception => Console.err.println("failed to execute query")
