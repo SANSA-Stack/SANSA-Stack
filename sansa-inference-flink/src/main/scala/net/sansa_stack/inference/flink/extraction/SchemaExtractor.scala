@@ -15,7 +15,7 @@ abstract class SchemaExtractor
   (objects: Set[Node] = Set())
     extends Logging with Serializable{
 
-  val subjectsFilter: ((Triple) => Boolean) = t => subjects.contains(t.getSubject)
+  def subjectsFilter: ((Triple) => Boolean) = t => subjects.contains(t.getSubject)
   val predicatesFilter: ((Triple) => Boolean) = t => predicates.contains(t.getPredicate)
   val objectsFilter: ((Triple) => Boolean) = t => objects.contains(t.getObject)
 
