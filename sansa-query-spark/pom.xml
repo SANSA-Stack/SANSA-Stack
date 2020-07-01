@@ -290,11 +290,30 @@
     <profiles>
         <profile>
             <id>release</id>
+            <properties>
+                <spark.deps.scope>provided</spark.deps.scope>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactSet>
+                                        <excludes>
+                                            <exclude>org.apache.hadoop:*</exclude>
+                                            <exclude>org.apache.spark:*</exclude>
+                                        </excludes>
+                                    </artifactSet>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
