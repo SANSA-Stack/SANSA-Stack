@@ -25,7 +25,7 @@ import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
  *
  * @author Lorenz Buehmann
  */
-class SPARQL11TestSuiteRunnerSparkOntopNew
+class SPARQL11TestSuiteRunnerSparkOntop
   extends SPARQL11TestSuiteRunnerSpark {
 
   override lazy val IGNORE = Set(/* AGGREGATES */

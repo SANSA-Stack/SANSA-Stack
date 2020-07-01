@@ -611,9 +611,6 @@ object OntopSPARQLEngine {
             val res = sparqlEngine.execConstruct(query)
             println(res.collect().mkString("\n"))
         }
-
-
-
       } catch {
         case e: Exception => Console.err.println("failed to execute query")
           e.printStackTrace()

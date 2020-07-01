@@ -48,7 +48,7 @@ object JDBCDatabaseGenerator {
 
         val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
         logger.trace(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
-        println(s"creating table ${SQLUtils.escapeTablename(name)} for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
+//        println(s"creating table ${SQLUtils.escapeTablename(name)} for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
         p match {
           case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
             objectType match {

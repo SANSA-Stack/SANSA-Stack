@@ -42,41 +42,8 @@ class OntopRowMapper(
 
 //  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
-  // create the tmp DB needed for Ontop
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE;DB_CLOSE_DELAY=-1"
-  private val JDBC_USER = "sa"
-  private val JDBC_PASSWORD = ""
 
-  private val connection: Connection = try {
-    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-  } catch {
-    case e: SQLException =>
-      throw e
-  }
-
-  val reformulationConfiguration = {
-    JDBCDatabaseGenerator.generateTables(connection, partitions)
-
-    val mappingConfiguration = {
-      OntopMappingSQLAllConfiguration.defaultBuilder
-        .nativeOntopMappingReader(new StringReader(obdaMappings))
-        .properties(properties)
-        .jdbcUrl(JDBC_URL)
-        .jdbcUser(JDBC_USER)
-        .jdbcPassword(JDBC_PASSWORD)
-        .enableTestMode
-        .build
-    }
-
-    val obdaSpecification = mappingConfiguration.loadSpecification
-
-    OntopReformulationSQLConfiguration.defaultBuilder
-      .obdaSpecification(obdaSpecification)
-      .properties(properties)
-      .jdbcUrl(JDBC_URL)
-      .enableTestMode
-      .build
-  }
+  val reformulationConfiguration = OntopConnection(obdaMappings, properties, partitions)
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
@@ -250,11 +217,7 @@ class OntopRowMapper(
   }
 
   def close(): Unit = {
-    try {
-      connection.close()
-    } catch {
-      case e: SQLException => throw e
-    }
+
   }
 
   class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
