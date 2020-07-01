@@ -532,7 +532,6 @@ object OntopSPARQLEngine {
     import net.sansa_stack.rdf.spark.io._
 
     val spark = SparkSession.builder
-      .master("local")
       .appName("playground")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrationRequired", "true")
@@ -540,8 +539,8 @@ object OntopSPARQLEngine {
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
                       "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
-      .config("spark.default.parallelism", "4")
-      .config("spark.sql.shuffle.partitions", "4")
+//      .config("spark.default.parallelism", "4")
+//      .config("spark.sql.shuffle.partitions", "4")
       //      .config("spark.sql.warehouse.dir", warehouseLocation)
       .config("spark.sql.cbo.enabled", true)
       .config("spark.sql.statistics.histogram.enabled", true)
