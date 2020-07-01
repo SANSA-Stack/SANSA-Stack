@@ -52,7 +52,7 @@ object JDBCDatabaseGenerator {
         p match {
           case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
             objectType match {
-              case 1 => stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
+              case 0|1 => stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                 "s varchar(255) NOT NULL," +
                 "o varchar(255) NOT NULL" +
                 ")")

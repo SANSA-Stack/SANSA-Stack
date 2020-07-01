@@ -57,7 +57,7 @@ object OntopMappingGenerator {
             val tableName = SQLUtils.createTableName(p)
             val id = SQLUtils.escapeTablename(tableName + lang.getOrElse(""))
             objectType match {
-              case 1 => createMapping(id, tableName, predicate)
+              case 0 | 1 => createMapping(id, tableName, predicate)
               case 2 => if (langTagPresent) createMappingLang(id, tableName, predicate, lang.get)
                         else createMappingLit(id, tableName, predicate, datatype)
               case _ =>
