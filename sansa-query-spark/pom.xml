@@ -12,10 +12,6 @@
 
     <properties>
         <version.ontop>4.0.0-SNAPSHOT</version.ontop>
-        <version.jena>3.13.1</version.jena>
-        <jsa.subversion>1-SNAPSHOT</jsa.subversion>
-        <version.jsa>${jena.version}-${jsa.subversion}</version.jsa>
-        <spark.deps.scope>compile</spark.deps.scope>
         <version.owlapi.ontop>4.5.7</version.owlapi.ontop>
     </properties>
 
@@ -50,32 +46,27 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>${version.jena}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-core</artifactId>
-            <version>${version.jena}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-fuseki-server</artifactId>
-            <version>${version.jena}</version>
         </dependency>
 
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
-            <version>${version.jena}</version>
 		</dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
-            <version>${version.jena}</version>
         </dependency>
 
         <dependency>
@@ -87,37 +78,31 @@
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-core</artifactId>
-            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-mapper-annotations</artifactId>
-            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-virtuoso</artifactId>
-            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-server-standalone</artifactId>
-            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-algebra</artifactId>
-            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-views</artifactId>
-            <version>${version.jsa}</version>
         </dependency>
 
         <dependency>
@@ -130,43 +115,39 @@
             <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
         </dependency>
 
-		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-server-standalone</artifactId>
-		</dependency>
-
 		<!-- Spark dependencies -->
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-sql_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.tinkerpop</groupId>
-			<artifactId>spark-gremlin</artifactId>
-			<version>3.3.0</version>
-<exclusions>
-<exclusion>
-<groupId>org.apache.spark</groupId>
-<artifactId>spark-core_2.11</artifactId>
-</exclusion>
-<exclusion>
-<groupId>org.scala-lang.modules</groupId>
-<artifactId>scala-xml_2.11</artifactId>
-</exclusion>
-</exclusions>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>spark-gremlin</artifactId>
+            <version>3.3.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_2.11</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang.modules</groupId>
+                    <artifactId>scala-xml_2.11</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
 		<dependency>
 			<groupId>io.github.litmus-benchmark-suite</groupId>
@@ -266,14 +247,6 @@
 			<artifactId>netty-all</artifactId>
 			<version>4.1.42.Final</version>
 		</dependency>
-
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_${scala.binary.version}</artifactId>
-            <version>2.4.2</version>
-            <scope>compile</scope>
-<!--            <scope>provided</scope>-->
-        </dependency>
 
         <dependency>
             <groupId>com.github.scopt</groupId>
