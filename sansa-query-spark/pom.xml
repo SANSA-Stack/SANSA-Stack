@@ -15,7 +15,6 @@
         <version.jena>3.15.0</version.jena>
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <version.jsa>${jena.version}-${jsa.subversion}</version.jsa>
-        <spark.deps.scope>compile</spark.deps.scope>
         <version.owlapi.ontop>4.5.7</version.owlapi.ontop>
     </properties>
 
@@ -151,6 +150,11 @@
 			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
 			<scope>${spark.deps.scope}</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.binary.version}</artifactId>
+            <scope>${spark.deps.scope}</scope>
+        </dependency>
 
 		<dependency>
 			<groupId>org.apache.tinkerpop</groupId>
@@ -273,14 +277,6 @@
 		</dependency>
 
         <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_${scala.binary.version}</artifactId>
-            <version>2.4.2</version>
-            <scope>compile</scope>
-<!--            <scope>provided</scope>-->
-        </dependency>
-
-        <dependency>
             <groupId>com.github.scopt</groupId>
             <artifactId>scopt_${scala.binary.version}</artifactId>
             <version>4.0.0-RC2</version>
@@ -311,6 +307,13 @@
                                             <exclude>org.apache.spark:*</exclude>
                                         </excludes>
                                     </artifactSet>
+
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>com.google</pattern>
+                                            <shadedPattern>net.sansa_stack.ext.com.google</shadedPattern>
+                                        </relocation>
+                                    </relocations>
                                 </configuration>
                             </execution>
                         </executions>

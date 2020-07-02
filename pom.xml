@@ -24,15 +24,6 @@
 		<url>http://sda.tech</url>
 	</organization>
 
-
-	<properties>
-		<spark.deps.scope>compile</spark.deps.scope>
-<!--
-		<sansa.rdf.version>${project.version}</sansa.rdf.version>
-		<sansa.datalake.version>0.1.1-SNAPSHOT</sansa.datalake.version>
--->
-	</properties>
-
 	<scm>
 		<url>https://github.com/SANSA-Stack/SANSA-Query</url>
 		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-Query.git</connection>
