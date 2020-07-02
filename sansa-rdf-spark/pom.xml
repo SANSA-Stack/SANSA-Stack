@@ -10,10 +10,6 @@
         <version>0.7.2-SNAPSHOT</version>
     </parent>
 
-	<properties>
-		<spark.deps.scope>provided</spark.deps.scope>
-	</properties>
-
     <dependencies>
 
         <dependency>
@@ -25,37 +21,31 @@
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-sql_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-streaming_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
 		</dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_${scala.binary.version}</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -107,7 +97,6 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>${jena.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -191,6 +180,9 @@
 					<name>dist</name>
 				</property>
 			</activation>
+			<properties>
+				<spark.deps.scope>provided</spark.deps.scope>
+			</properties>
 			<build>
 				<plugins>
 					<!--<plugin>-->
@@ -360,19 +352,6 @@
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
-
-		<!-- Profile that disables inclusion of Spark dependencies. -->
-		<profile>
-			<id>spark-provided</id>
-			<activation>
-				<property>
-					<name>dist</name>
-				</property>
-			</activation>
-			<properties>
-				<spark.deps.scope>provided</spark.deps.scope>
-			</properties>
 		</profile>
 	</profiles>
 </project>
