@@ -13,6 +13,8 @@ import net.sansa_stack.inference.flink.utils.DataSetUtils.DataSetOps
   */
 case class RDFGraph(triples: DataSet[Triple]) {
 
+  val tripleKeyFct : Triple => Int = {t => t.hashCode()}
+
   /**
     * Returns a DataSet of triples that match with the given input.
     *
@@ -59,7 +61,7 @@ case class RDFGraph(triples: DataSet[Triple]) {
     * @return the difference of both graphs
     */
   def subtract(other: RDFGraph): RDFGraph = {
-    RDFGraph(triples.subtract(other.triples))
+    RDFGraph(triples.subtract(other.triples, tripleKeyFct, tripleKeyFct))
   }
 
   /**
