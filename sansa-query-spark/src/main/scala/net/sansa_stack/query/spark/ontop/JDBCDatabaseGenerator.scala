@@ -36,7 +36,8 @@ object JDBCDatabaseGenerator {
    * @param connection the database connection
    * @param partitions the partitions
    */
-  def generateTables(connection: Connection, partitions: Set[RdfPartitionComplex]): Unit = {
+  def generateTables(connection: Connection, partitions: Set[RdfPartitionComplex],
+                     blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table): Unit = {
     try {
       val stmt = connection.createStatement()
 
@@ -44,7 +45,7 @@ object JDBCDatabaseGenerator {
 
       partitions.foreach { p =>
 
-        val name = SQLUtils.createTableName(p)
+        val name = SQLUtils.createTableName(p, blankNodeStrategy)
 
         val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
         logger.trace(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")

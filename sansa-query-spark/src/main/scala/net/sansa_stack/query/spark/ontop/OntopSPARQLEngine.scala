@@ -72,7 +72,7 @@ case class OntopQueryRewrite(sparqlQuery: String,
  * @constructor create a new Ontop SPARQL to SQL rewriter based on RDF partitions.
  * @param partitions the RDF partitions
  */
-class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex])
+class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value)
   extends SPARQL2SQLRewriter[OntopQueryRewrite]
     with Serializable {
 
@@ -94,10 +94,11 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex])
       logger.error("Error occurred when creating in-memory H2 database", e)
       throw e
   }
-  JDBCDatabaseGenerator.generateTables(connection, partitions)
+  JDBCDatabaseGenerator.generateTables(connection, partitions, blankNodeStrategy)
 
   // create OBDA mappings
   val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions)
+  println(mappings)
 
   // the Ontop core
   val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties)
@@ -232,8 +233,8 @@ object OntopSPARQL2SQLRewriter {
    * @param partitions the RDF partitions
    * @return a new SPARQL to SQL rewriter
    */
-  def apply(partitions: Set[RdfPartitionComplex]): OntopSPARQL2SQLRewriter = {
-    new OntopSPARQL2SQLRewriter(partitions)
+  def apply(partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value): OntopSPARQL2SQLRewriter = {
+    new OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy)
   }
 }
 
@@ -241,8 +242,9 @@ object OntopSPARQL2SQLRewriter {
 class OntopSPARQLEngine(val spark: SparkSession,
                         val partitions: Map[RdfPartitionComplex, RDD[Row]]) {
 
+  val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
 
-  private val sparql2sql = OntopSPARQL2SQLRewriter(partitions.keySet)
+  private val sparql2sql = OntopSPARQL2SQLRewriter(partitions.keySet, blankNodeStrategy)
 
   private val logger = com.typesafe.scalalogging.Logger(OntopSPARQLEngine.getClass.getName)
 
@@ -276,18 +278,20 @@ class OntopSPARQLEngine(val spark: SparkSession,
   val useHive: Boolean = false
   val useStatistics: Boolean = true
 
+
+
   /**
    * creates a Spark table for each RDF partition
    */
   private def createSparkTable(session: SparkSession, p: RdfPartitionComplex, rdd: RDD[Row]) = {
 
-    val name = SQLUtils.createTableName(p)
+    val name = SQLUtils.createTableName(p, blankNodeStrategy)
     logger.debug(s"creating Spark table ${escapeTablename(name)}")
 
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = session.createDataFrame(rdd, sparkSchema).persist()
-    //    df.show(false)
+//    df.show(false)
 
     if (useHive) {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
@@ -310,7 +314,6 @@ class OntopSPARQLEngine(val spark: SparkSession,
       df.createOrReplaceTempView("`" + escapeTablename(name) + "`")
       //          df.write.partitionBy("s").format("parquet").saveAsTable(escapeTablename(name))
     }
-
   }
 
   private def escapeTablename(path: String): String =
@@ -418,6 +421,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
       val sql = queryRewrite.sqlQuery.replace("\"", "`")
         .replace("`PUBLIC`.", "")
       logger.info(s"SQL query:\n$sql")
+      println(sql)
 
       // execute SQL query
       val resultRaw = spark.sql(sql)
@@ -554,8 +558,8 @@ object OntopSPARQLEngine {
 
     // load optional schema file and filter properties used for VP
     var ont: OWLOntology = null
-    if (args.length == 2) {
-      val owlFile = args(1)
+    if (args.length == 3) {
+      val owlFile = args(2)
       val man = OWLManager.createOWLOntologyManager()
       ont = man.loadOntologyFromOntologyDocument(new File(owlFile))
       //    val cleanOnt = man.createOntology()
@@ -579,7 +583,7 @@ object OntopSPARQLEngine {
 
     // do partitioning here
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
-    println(s"num partitions: ${partitions.size}")
+    println(s"num partitions: ${partitions.keySet.size}")
 
     // create the SPARQL engine
     val sparqlEngine = new OntopSPARQLEngine(spark, partitions)
@@ -590,15 +594,14 @@ object OntopSPARQLEngine {
       "<http://sansa-stack.net/ontology/someDecimalProperty> ?o3} limit 10"
     input = "select * where {?s <http://dbpedia.org/ontology/birthPlace> ?o bind(\"s\" as ?z)} limit 10"
 
+    if (args.length == 2) {
+      input = args(1)
+    }
+
     def run(query: String) = {
       try {
-//        val result = sparqlEngine.execute(query)
-//        if (result != null) {
-//          result.show(false)
-//          result.printSchema()
-//        }
-
         val q = QueryFactory.create(query)
+
         q.queryType() match {
           case QueryType.SELECT =>
             val res = sparqlEngine.execSelect(query)

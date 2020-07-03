@@ -16,14 +16,15 @@ class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
   val logger = com.typesafe.scalalogging.Logger("MetadataProviderH2")
 
 
-  def generate(partitions: Seq[RdfPartitionComplex]): MetadataProvider = {
+  def generate(partitions: Seq[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value): MetadataProvider = {
     val builder = new OfflineMetadataProviderBuilder(defaultConfiguration.getTypeFactory)
-    partitions.foreach(p => generate(p, builder))
+    partitions.foreach(p => generate(p, blankNodeStrategy, builder))
     builder.build()
   }
 
-  private def generate(p: RdfPartitionComplex, builder: OfflineMetadataProviderBuilder): Unit = {
-    val name = SQLUtils.createTableName(p)
+  private def generate(p: RdfPartitionComplex, blankNodeStrategy: BlankNodeStrategy.Value,
+                       builder: OfflineMetadataProviderBuilder): Unit = {
+    val name = SQLUtils.createTableName(p, blankNodeStrategy)
     p match {
       case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
         objectType match {

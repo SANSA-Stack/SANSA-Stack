@@ -197,6 +197,8 @@ class OntopRowMapper(
       val dt = TypeMapper.getInstance().getTypeByName(litType.getIRI.getIRIString)
       val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
       NodeFactory.createLiteral(lit.getValue, lang, dt)
+    } else if (termType.isA(typeFactory.getBlankNodeType)) {
+      NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getName)
     } else {
       null.asInstanceOf[Node]
     }

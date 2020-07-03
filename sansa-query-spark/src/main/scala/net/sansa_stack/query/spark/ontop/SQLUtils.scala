@@ -21,7 +21,7 @@ object SQLUtils {
         .replace("-", "dash") +
       "\""
 
-  def createTableName(p: RdfPartitionComplex): String = {
+  def createTableName(p: RdfPartitionComplex, blankNodeStrategy: BlankNodeStrategy.Value): String = {
     val pred = p.predicate
 
     // For now let's just use the full predicate as the uri
@@ -32,8 +32,14 @@ object SQLUtils {
     val dt = p.datatype
     val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
     val langPart = if (p.langTagPresent) "_lang" else ""
+    val blankPart = if (blankNodeStrategy == BlankNodeStrategy.Table) {
+      var tmp = ""
+      if (p.subjectType == 0) tmp += "_s_blank"
+      if (p.objectType == 0) tmp += "_o_blank"
+      tmp
+    } else ""
 
-    val tableName = predPart + dtPart + langPart // .replace("#", "__").replace("-", "_")
+    val tableName = predPart + dtPart + langPart + blankPart// .replace("#", "__").replace("-", "_")
 
     tableName
   }
