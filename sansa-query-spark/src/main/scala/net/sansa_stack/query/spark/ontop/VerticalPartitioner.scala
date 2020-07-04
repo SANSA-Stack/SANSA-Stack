@@ -99,7 +99,7 @@ object VerticalPartitioner {
       .getOrCreate()
 
     // read triples as RDD[Triple]
-    var triplesRDD = spark.ntriples()(config.inputPath.getPath)
+    var triplesRDD = spark.ntriples()(config.inputPath.toString)
 
     // filter properties if schema ontology was given
     if(config.schemaPath != null) {
