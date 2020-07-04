@@ -1,10 +1,8 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.io.File
-import java.net.{URI, URL, URLEncoder}
-import java.nio.charset.StandardCharsets
+import java.net.URI
 
-import org.apache.jena.graph.NodeFactory
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
@@ -28,10 +26,14 @@ object VerticalPartitioner {
 
   val warehouseLocation = new File("spark-warehouse").getAbsolutePath
 
+  implicit val bNodeRead: scopt.Read[BlankNodeStrategy.Value] =
+    scopt.Read.reads(BlankNodeStrategy withName _)
+
   case class Config(
                      inputPath: URI = null,
                      outputPath: URI = null,
                      schemaPath: URI = null,
+                     blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table,
                      computeStatistics: Boolean = true)
 
   import scopt.OParser
@@ -53,6 +55,10 @@ object VerticalPartitioner {
         .optional()
         .action((x, c) => c.copy(schemaPath = x))
         .text("an optional file containing the OWL schema to process only object and data properties"),
+      opt[BlankNodeStrategy.Value]('b', "blanknode-strategy")
+        .optional()
+        .action((x, c) => c.copy(blankNodeStrategy = x))
+        .text("how blank nodes are handled during partitioning (TABLE, COLUMN)"),
       opt[Boolean]('s', "stats")
         .action((x, c) => c.copy(computeStatistics = x))
         .text("compute statistics")
@@ -72,8 +78,9 @@ object VerticalPartitioner {
 
   private def run(config: Config): Unit = {
 
-    import net.sansa_stack.rdf.spark.io._
     import scala.collection.JavaConverters._
+
+    import net.sansa_stack.rdf.spark.io._
 
     val spark = SparkSession.builder
 //      .master("local")
@@ -111,7 +118,7 @@ object VerticalPartitioner {
     // do partitioning here
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
     partitions.foreach {
-      case (p, rdd) => createSparkTable(spark, p, rdd, config.computeStatistics)
+      case (p, rdd) => createSparkTable(spark, p, rdd, config.blankNodeStrategy, config.computeStatistics)
     }
     println(s"num partitions: ${partitions.size}")
   }
@@ -126,8 +133,12 @@ object VerticalPartitioner {
   val estimatePartitions: Boolean = true
   val threshold = 1000
 
-  private def createSparkTable(session: SparkSession, p: RdfPartitionComplex, rdd: RDD[Row], computeStatistics: Boolean) = {
-    val tableName = escapeTablename(createTableName(p))
+  private def createSparkTable(session: SparkSession,
+                               p: RdfPartitionComplex,
+                               rdd: RDD[Row],
+                               blankNodeStrategy: BlankNodeStrategy.Value,
+                               computeStatistics: Boolean): Unit = {
+    val tableName = SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy))
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = session.createDataFrame(rdd, sparkSchema)
@@ -164,30 +175,5 @@ object VerticalPartitioner {
       }
     }
   }
-
-  private def createTableName(p: RdfPartitionComplex): String = {
-    // println("Counting the dataset: " + ds.count())
-    val pred = p.predicate
-
-    // For now let's just use the full predicate as the uri
-    // val predPart = pred.substring(pred.lastIndexOf("/") + 1)
-    val predPart = pred
-    val pn = NodeFactory.createURI(p.predicate)
-
-    val dt = p.datatype
-    val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
-    val langPart = if (p.langTagPresent) "_lang" else ""
-
-    val tableName = predPart + dtPart + langPart // .replace("#", "__").replace("-", "_")
-
-    tableName
-  }
-
-  private def escapeTablename(path: String): String =
-    URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
-      .toLowerCase
-      .replace('%', 'P')
-      .replace('.', 'C')
-      .replace("-", "dash")
 
 }

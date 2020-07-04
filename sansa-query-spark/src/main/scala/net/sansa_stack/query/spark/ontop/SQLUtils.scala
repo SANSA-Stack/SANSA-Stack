@@ -13,13 +13,13 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 object SQLUtils {
 
   def escapeTablename(path: String): String =
-    "\"" +
+    "" +
       URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
         .toLowerCase
         .replace('%', 'P')
         .replace('.', 'C')
         .replace("-", "dash") +
-      "\""
+      ""
 
   def createTableName(p: RdfPartitionComplex, blankNodeStrategy: BlankNodeStrategy.Value): String = {
     val pred = p.predicate
