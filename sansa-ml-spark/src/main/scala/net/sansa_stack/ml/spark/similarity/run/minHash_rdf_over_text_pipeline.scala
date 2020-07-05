@@ -12,6 +12,7 @@ import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.{DataTypes, IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.functions.udf
 import java.util.{Calendar, Date}
+import org.apache.spark.sql.functions._
 
 // import org.apache.spark.mllib.linalg.{Vector, Vectors}
 
@@ -434,6 +435,10 @@ object minHash_rdf_over_text_pipeline {
     +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------+
      */
 
+    /*
+    name of title column and dataset column also title for new column names
+     */
+
     println("truncinate DataFrame after minHash")
     println("We now create two columns with clean columns for titles")
     val minhashed_output_df = minhashed_df
@@ -569,6 +574,12 @@ object minHash_rdf_over_text_pipeline {
     // TODO check whether this should be always public visible
     val experiment_hash: String = (experiment_type + " - " + experiment_name + " - " + evaluation_datetime).replaceAll("\\s", "")
 
+    /*
+    input:
+    output path:String
+
+     */
+
     val output = "/Users/carstendraschner/Downloads/experiment_results_" + experiment_hash + ".nt"
     // val output = "/Users/carstendraschner/Downloads/experiment_results"
 
@@ -578,10 +589,73 @@ object minHash_rdf_over_text_pipeline {
     println(output)
 
     println("Here we start 7B")
+
+
+
+    /*
+    these are the already imp,lemented similarity estimations
+    def selectSimilarity(a: Array[VertexId], b: Array[VertexId], c: Int): Double = {
+        var s = 0.0
+        if (c == 0) {
+
+          /**
+           * Jaccard similarity measure
+           */
+
+          val sim = intersection(a, b) / union(a, b).toDouble
+          if (sim == 0.0) { s = (1 / vertex) }
+          else { s = sim }
+
+        }
+
+        if (c == 1) {
+
+          /**
+           * Rodríguez and Egenhofer similarity measure
+           */
+
+          var g = 0.8
+
+          val sim = (intersection(a, b) / ((g * difference(a, b)) + ((1 - g) * difference(b, a)) + intersection(a, b))).toDouble.abs
+          if (sim == 0.0) { s = (1 / vertex) } // why this reassignment
+          else { s = sim }
+
+        }
+        if (c == 2) {
+          /**
+           * The Ratio model similarity
+           */
+          var alph = 0.5
+          var beth = 0.5
+
+          val sim = ((intersection(a, b)) / ((alph * difference(a, b)) + (beth * difference(b, a)) + intersection(a, b))).toDouble.abs
+          if (sim == 0.0) { s = (1 / vertex) }
+          else { s = sim }
+
+        }
+
+        if (c == 3) {
+          /**
+           * Batet similarity measure
+           */
+
+          val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
+          val sim = log2(cal.toDouble)
+          if (sim == 0.0) { s = (1 / vertex) }
+          else { s = sim }
+        }
+        s
+      }
+     */
     println("We try out here alternative easy similarity estimations like jaccard on the basis of CountVectorized dataframes")
     println("Those should produce a simple DataFrame with column for uriA column for uriB and a column for the similairy results")
 
     println("7B.1 Jaccard")
+
+    /*
+    old title name, new tilte name a and b, column name for resulting distance column,
+     */
+
     val jaccard = udf( (a: Vector, b: Vector) => {
       val feature_indices_a = a.toSparse.indices
       val feature_indices_b = b.toSparse.indices
@@ -592,7 +666,7 @@ object minHash_rdf_over_text_pipeline {
     })
 
     println("Create all pairs")
-    val cross =
+    val cross_for_jaccard =
       vectorizedDf
         .withColumnRenamed("title", "titleA")
         .withColumnRenamed("features", "featuresA")
@@ -600,12 +674,166 @@ object minHash_rdf_over_text_pipeline {
           vectorizedDf
             .withColumnRenamed("title", "titleB")
             .withColumnRenamed("features", "featuresB"))
-    cross.show(false)
-    cross.withColumn(
+    cross_for_jaccard.show(false)
+    cross_for_jaccard.withColumn(
       "jaccardSim",
       jaccard($"featuresA", $"featuresB")
     )
       .select("titleA", "titleB", "jaccardSim")
+      .show(false)
+
+    /*
+    output:
+    +-------------------------------------------------+-------------------------------------------------+------------------+
+    |titleA                                           |titleB                                           |jaccardSim        |
+    +-------------------------------------------------+-------------------------------------------------+------------------+
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/m1|1.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/m2|0.125             |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/a1|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/m3|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/a2|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/a3|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/a4|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/p1|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m1|file:///Users/carstendraschner/GitHub/SANSA-ML/p2|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/m1|0.125             |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/m2|1.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/a1|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/m3|0.3333333333333333|
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/a2|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/a3|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/a4|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/p1|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/m2|file:///Users/carstendraschner/GitHub/SANSA-ML/p2|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a1|file:///Users/carstendraschner/GitHub/SANSA-ML/m1|0.0               |
+    |file:///Users/carstendraschner/GitHub/SANSA-ML/a1|file:///Users/carstendraschner/GitHub/SANSA-ML/m2|0.0               |
+    +-------------------------------------------------+-------------------------------------------------+------------------+
+     */
+
+    println("7C Rodríguez and Egenhofer")
+
+    /*
+    old title name, new title name a and b, column name for resulting distance column,
+    also g
+    this approach is completely reused by quick and dirty already implemented solution
+     */
+
+    val alpha: Double = 0.8
+    val name_of_resulting_value_column: String = "rodriguez_egenhofer_similarity"
+    val column_name_of_title: String = "title"
+    val column_name_of_features: String = "features"
+
+
+    val rodriguez_egenhofer = udf( (a: Vector, b: Vector, alpha: Double) => {
+      val feature_indices_a = a.toSparse.indices
+      val feature_indices_b = b.toSparse.indices
+      val f_set_a = feature_indices_a.toSet
+      val f_set_b = feature_indices_b.toSet
+      val rodriguez_egenhofer = (f_set_a.intersect(f_set_b).size.toDouble) /
+        ((f_set_a.intersect(f_set_b).size.toDouble) + (alpha * f_set_a.diff(f_set_b).size.toDouble) + ((1 - alpha) * f_set_b.diff(f_set_a).size.toDouble))
+      rodriguez_egenhofer
+    })
+
+    println("Create all pairs")
+    val cross_rodriguez_egenhofer =
+      vectorizedDf
+        .withColumnRenamed(column_name_of_title, "titleA")
+        .withColumnRenamed(column_name_of_features, "featuresA")
+        .crossJoin(
+          vectorizedDf
+            .withColumnRenamed(column_name_of_title, "titleB")
+            .withColumnRenamed(column_name_of_features, "featuresB"))
+    cross_rodriguez_egenhofer.show(false)
+    cross_rodriguez_egenhofer.withColumn(
+      name_of_resulting_value_column,
+      rodriguez_egenhofer($"featuresA", $"featuresB", lit(alpha))
+    )
+      .select("titleA", "titleB", name_of_resulting_value_column)
+      .show(false)
+
+    println("7D Tversky")
+
+    /*
+    old title name, new title name a and b, column name for resulting distance column,
+    also alpha and betha
+    this approach is completely reused by quick and dirty already implemented solution
+     */
+
+    // val alpha: Double = 0.5
+    val betha: Double = 0.5
+    // val name_of_resulting_value_column: String = "tversky_similarity"
+    // val column_name_of_title: String = "title"
+    // val column_name_of_features: String = "features"
+
+
+    val tversky = udf( (a: Vector, b: Vector, alpha: Double, betha: Double) => {
+      val feature_indices_a = a.toSparse.indices
+      val feature_indices_b = b.toSparse.indices
+      val f_set_a = feature_indices_a.toSet
+      val f_set_b = feature_indices_b.toSet
+      val tversky = (f_set_a.intersect(f_set_b).size.toDouble) /
+        ((f_set_a.intersect(f_set_b).size.toDouble) + (alpha * f_set_a.diff(f_set_b).size.toDouble) + (betha * f_set_b.diff(f_set_a).size.toDouble))
+      tversky
+    })
+
+    println("Create all pairs")
+    val cross_tversky =
+      vectorizedDf
+        .withColumnRenamed(column_name_of_title, "titleA")
+        .withColumnRenamed(column_name_of_features, "featuresA")
+        .crossJoin(
+          vectorizedDf
+            .withColumnRenamed(column_name_of_title, "titleB")
+            .withColumnRenamed(column_name_of_features, "featuresB"))
+    cross_tversky.show(false)
+    cross_tversky.withColumn(
+      name_of_resulting_value_column,
+      tversky($"featuresA", $"featuresB", lit(alpha), lit(betha))
+    )
+      .select("titleA", "titleB", name_of_resulting_value_column)
+      .show(false)
+
+    //    val cal = 1 + ((difference(a, b) + difference(b, a)) / (difference(a, b) + difference(b, a) + intersection(a, b))).abs
+    //          val sim = log2(cal.toDouble)
+
+    println("7D Batet")
+
+    /*
+    old title name, new title name a and b, column name for resulting distance column,
+    this approach is completely reused by quick and dirty already implemented solution
+     */
+
+    // val name_of_resulting_value_column: String = "tversky_similarity"
+    // val column_name_of_title: String = "title"
+    // val column_name_of_features: String = "features"
+
+
+    val batet = udf( (a: Vector, b: Vector) => {
+      val feature_indices_a = a.toSparse.indices
+      val feature_indices_b = b.toSparse.indices
+      val f_set_a = feature_indices_a.toSet
+      val f_set_b = feature_indices_b.toSet
+      // var log2 = (x: Double) => log10(x)/log10(2.0) TODO clear how to get log inside this udf
+      // TODO clear if subsumer is allowed to be this union instead of summing up diff diff and intersect
+      val tmp: Double = (1.0 + ((f_set_a.diff(f_set_b).size.toDouble + f_set_b.diff(f_set_a).size.toDouble) / f_set_a.union(f_set_b).size.toDouble))
+      tmp
+    })
+
+    println("Create all pairs")
+    val cross_batet =
+      vectorizedDf
+        .withColumnRenamed(column_name_of_title, "titleA")
+        .withColumnRenamed(column_name_of_features, "featuresA")
+        .crossJoin(
+          vectorizedDf
+            .withColumnRenamed(column_name_of_title, "titleB")
+            .withColumnRenamed(column_name_of_features, "featuresB"))
+    cross_batet.show(false)
+    cross_batet.withColumn( // maybe this intermediate step will not be needed if we can merge log inside udf
+      "tmp",
+      batet($"featuresA", $"featuresB")
+    ).withColumn(name_of_resulting_value_column, log2($"tmp"))
+      .select("titleA", "titleB", name_of_resulting_value_column)
       .show(false)
 
     spark.stop()
