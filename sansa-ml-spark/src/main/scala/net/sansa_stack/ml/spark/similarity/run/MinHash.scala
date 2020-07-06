@@ -50,6 +50,9 @@ object MinHash {
     val metagraph_experiment_type = "Sematic Similarity Estimation"
     val metagraph_experiment_measurement_type = "distance"
 
+    // metagraph store parameters
+    val output = "/Users/carstendraschner/Downloads/experiment_results"
+
 
 
     // start spark session
@@ -111,7 +114,8 @@ object MinHash {
       metagraph_experiment_measurement_type_relation,
       metagraph_experiment_datetime_relation)
 
-    experiment_metagraph.foreach(println(_))
+    // Store metagraph over sansa rdf layer
+    experiment_metagraph.coalesce(1, shuffle = true).saveAsNTriplesFile(output)
 
     spark.stop()
   }
