@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.similarity.run
 
-import net.sansa_stack.ml.spark.utils.RDF_Feature_Extractor
+import net.sansa_stack.ml.spark.utils.{RDF_Feature_Extractor, Similarity_Experiment_Meta_Graph_Factory}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
@@ -36,6 +36,21 @@ object MinHash {
     val minhash_hash_column_name = "hashValues"
     val minhash_threshold_max_distance = 0.8
     val minhash_distance_column_name = "distance"
+
+    // metagraph creator
+    // Strings for relation names, maybe this can be later defined in an onthology and only be imported here
+    val metagraph_element_relation = "element"
+    val metagraph_value_relation = "value"
+    val metagraph_experiment_type_relation = "experiment_type"
+    val metagraph_experiment_name_relation = "experiment_name"
+    val metagraph_experiment_measurement_type_relation = "experiment_measurement_type"
+    val metagraph_experiment_datetime_relation = "experiment_datetime"
+    // Strings for uris and literals
+    val metagraph_experiment_name = "Spark_Min_Hash"
+    val metagraph_experiment_type = "Sematic Similarity Estimation"
+    val metagraph_experiment_measurement_type = "distance"
+
+
 
     // start spark session
     val spark = SparkSession.builder
@@ -78,7 +93,25 @@ object MinHash {
       .withColumn(element_column_name_A, col("datasetA").getField(feature_extractor_uri_column_name))
       .withColumn(element_column_name_B, col("datasetB").getField(feature_extractor_uri_column_name))
       .select(element_column_name_A, element_column_name_B, minhash_distance_column_name)
-      .show(false)
+    // cross_minhash_similarity_df.show(false)
+
+    // Metagraph creation
+    val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
+    val experiment_metagraph = similarity_metagraph_creator.transform(
+      cross_minhash_similarity_df
+    )(
+      metagraph_experiment_name,
+      metagraph_experiment_type,
+      metagraph_experiment_measurement_type
+    )(
+      metagraph_element_relation,
+      metagraph_value_relation,
+      metagraph_experiment_type_relation,
+      metagraph_experiment_name_relation,
+      metagraph_experiment_measurement_type_relation,
+      metagraph_experiment_datetime_relation)
+
+    experiment_metagraph.foreach(println(_))
 
     spark.stop()
   }
