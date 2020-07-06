@@ -52,8 +52,44 @@ class Similarity_Experiment_Meta_Graph_Factory {
         NodeFactory.createLiteral(metagraph_experiment_measurement_type)
       )
     )
-    // TODO now for each line also the other triples to be created
-    spark.sqlContext.sparkContext.parallelize(central_node_triples)
+
+    val central_node_rdd: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(central_node_triples)
+
+    // now for the small triples:
+    val metagraph = df
+      .rdd
+      .flatMap(
+        row => {
+          val a: String = row(0).toString
+          val b: String = row(1).toString
+          val value: Double = row(2).toString.toDouble
+
+          val sim_estimation_node: String = metagraph_experiment_hash + a + b
+
+          List(
+            Triple.create(
+              NodeFactory.createURI(metagraph_experiment_hash),
+              NodeFactory.createURI(metagraph_element_relation),
+              NodeFactory.createURI(sim_estimation_node)
+            ), Triple.create(
+              NodeFactory.createURI(sim_estimation_node),
+              NodeFactory.createURI(metagraph_element_relation),
+              NodeFactory.createURI(a)
+            ), Triple.create(
+              NodeFactory.createURI(sim_estimation_node),
+              NodeFactory.createURI(metagraph_element_relation),
+              NodeFactory.createURI(b)
+            ), Triple.create(
+              NodeFactory.createURI(sim_estimation_node),
+              NodeFactory.createURI(metagraph_element_relation),
+              NodeFactory.createLiteral(value.toString) // TODO this should be double
+            )
+          )
+        }
+      )
+      .union(central_node_rdd)
+
+    metagraph
   }
 
 }
