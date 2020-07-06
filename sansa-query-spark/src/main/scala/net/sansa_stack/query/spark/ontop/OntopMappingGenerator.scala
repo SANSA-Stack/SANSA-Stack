@@ -15,6 +15,7 @@ object OntopMappingGenerator {
 
   def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionComplex]): String = {
 
+    // object is URI or bnode
     def createMapping(id: String, tableName: String, partition: RdfPartitionComplex): String = {
 
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
@@ -40,6 +41,20 @@ object OntopMappingGenerator {
       }
     }
 
+    // object is string literal
+    def createMappingStringLit(id: String, tableName: String, partition: RdfPartitionComplex): String = {
+      val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
+      val targetObject = if (partition.langTagPresent) s"{o}@${partition.lang.get}" else "{o}"
+      val whereConditionLang = if (partition.langTagPresent) s"'$partition.lang'" else "NULL"
+
+      s"""
+         |mappingId     $id
+         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "l" = ${whereConditionLang}
+         target        $targetSubject <${partition.predicate}> $targetObject .
+         |""".stripMargin
+    }
+
+    // object is other literal
     def createMappingLit(id: String, tableName: String, property: String, datatypeURI: String): String = {
       s"""
          |mappingId     $id
