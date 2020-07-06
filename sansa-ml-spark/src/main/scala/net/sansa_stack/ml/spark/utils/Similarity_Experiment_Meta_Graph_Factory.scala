@@ -69,7 +69,7 @@ class Similarity_Experiment_Meta_Graph_Factory {
           List(
             Triple.create(
               NodeFactory.createURI(metagraph_experiment_hash),
-              NodeFactory.createURI(metagraph_element_relation),
+              NodeFactory.createURI(metagraph_element_relation), //This relation might to be changed in future
               NodeFactory.createURI(sim_estimation_node)
             ), Triple.create(
               NodeFactory.createURI(sim_estimation_node),
