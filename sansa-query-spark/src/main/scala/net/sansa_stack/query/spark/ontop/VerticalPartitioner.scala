@@ -92,7 +92,7 @@ object VerticalPartitioner {
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
 //      .config("spark.default.parallelism", "4")
 //      .config("spark.sql.shuffle.partitions", "4")
-      .config("spark.sql.warehouse.dir", config.outputPath.getPath)
+//      .config("spark.sql.warehouse.dir", config.outputPath.)
       .config("spark.sql.cbo.enabled", true)
       .config("spark.sql.statistics.histogram.enabled", true)
       .enableHiveSupport()
@@ -118,7 +118,7 @@ object VerticalPartitioner {
     // do partitioning here
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
     partitions.foreach {
-      case (p, rdd) => createSparkTable(spark, p, rdd, config.blankNodeStrategy, config.computeStatistics)
+      case (p, rdd) => createSparkTable(spark, p, rdd, config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString)
     }
     println(s"num partitions: ${partitions.size}")
   }
@@ -137,15 +137,16 @@ object VerticalPartitioner {
                                p: RdfPartitionComplex,
                                rdd: RDD[Row],
                                blankNodeStrategy: BlankNodeStrategy.Value,
-                               computeStatistics: Boolean): Unit = {
-    val tableName = SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy))
+                               computeStatistics: Boolean,
+                               path: String): Unit = {
+    val tableName = SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy), quoted = false)
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = session.createDataFrame(rdd, sparkSchema)
 
     if (!session.catalog.tableExists(tableName)) {
       println(s"creating Spark table $tableName")
-      var writer = df.write.format("parquet")
+      var writer = df.write.format("parquet").option("path", path)
 
       if (estimatePartitions) {
         val (sCnt, oCnt) = estimatePartioningColumns(df)

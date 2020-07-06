@@ -100,9 +100,10 @@ class OntopRowMapper(
     val it = sqlSignature.iterator()
     for (i <- 0 until sqlSignature.size()) {
       val variable = it.next()
-      val value: String = if (row.get(i) != null) row.get(i).toString else null
+      val value = row.get(i)
       val sqlType = sqlTypeMap.get(variable)
-      builder.put(variable, new DBConstantImpl(value, sqlType))
+      val constant = if (value == null) termFactory.getNullConstant else termFactory.getDBConstant(value.toString, sqlType)
+      builder.put(variable, constant)
     }
     val sub = substitutionFactory.getSubstitution(builder.build)
 
@@ -213,9 +214,9 @@ class OntopRowMapper(
         if (constant.isInstanceOf[DBConstant]) throw new InvalidConstantTypeInResultException(constant +
           "is a DB constant. But a binding cannot have a DB constant as value")
         throw new InvalidConstantTypeInResultException("Unexpected constant type for " + constant)
-      case _ =>
+      case _ => None
     }
-    throw new InvalidTermAsResultException(simplifiedTerm)
+//    throw new InvalidTermAsResultException(simplifiedTerm)
   }
 
   def close(): Unit = {

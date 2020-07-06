@@ -51,7 +51,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
     .filter(data => !IGNORE.contains(data.uri))
     .filter(IGNORE_FILTER)
     //    .slice(0, 5)
-    .filter(data => data.name.startsWith("CONTAINS"))
+//    .filter(data => data.name.startsWith("CONTAINS"))
     .foreach { d =>
 
       // get the relevant data from the test case

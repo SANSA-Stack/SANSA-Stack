@@ -32,6 +32,7 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalog.Table
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -250,10 +251,9 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
 
   private def init(): Unit = {
+
     // create and register Spark tables
-    partitions.foreach {
-      case (p, rdd) => createSparkTable(spark, p, rdd)
-    }
+    registerSparkTables(partitions)
   }
 
   init()
@@ -279,25 +279,53 @@ class OntopSPARQLEngine(val spark: SparkSession,
   val useStatistics: Boolean = true
 
 
+  implicit val o: Ordering[RdfPartitionComplex] = Ordering.by(e => (e.predicate, e.subjectType, e.objectType, e.langTagPresent, e.lang, e.datatype))
+
+  private def registerSparkTables(partitions: Map[RdfPartitionComplex, RDD[Row]]) = {
+
+//    val partitions = Map(partitionsMap.toArray: _*) // scala.collection.immutable.TreeMap(partitionsMap.toArray: _*)
+
+    // register the lang tagged RDDs as a single table:
+    // we have to merge the RDDs of all languages per property first, otherwise we would always replace it by another
+    // language
+    partitions
+      .filter(_._1.lang.nonEmpty)
+      .map { case (p, rdd) => (p.predicate, p, rdd) }
+      .groupBy(_._1)
+      .map { case (k, v) =>
+        val rdd = spark.sparkContext.union(v.map(_._3).toSeq)
+        val p = v.head._2
+        (p, rdd)
+      }
+      .foreach {case (p, rdd) => createSparkTable(p, rdd)}
+
+    // register the non-lang tagged RDDs as table
+    partitions
+      .filter(_._1.lang.isEmpty)
+      .foreach {
+        case (p, rdd) => createSparkTable(p, rdd)
+      }
+  }
 
   /**
    * creates a Spark table for each RDF partition
    */
-  private def createSparkTable(session: SparkSession, p: RdfPartitionComplex, rdd: RDD[Row]) = {
+  private def createSparkTable(p: RdfPartitionComplex, rdd: RDD[Row]) = {
 
     val name = SQLUtils.createTableName(p, blankNodeStrategy)
     logger.debug(s"creating Spark table ${escapeTablename(name)}")
+    println(s"creating Spark table ${escapeTablename(name)}")
 
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
-    val df = session.createDataFrame(rdd, sparkSchema).persist()
-//    df.show(false)
+    val df = spark.createDataFrame(rdd, sparkSchema).persist()
+    df.show(false)
 
     if (useHive) {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
 
-      val schemaDDL = session.createDataFrame(rdd, sparkSchema).schema.toDDL
-      session.sql(s"DROP TABLE IF EXISTS `${escapeTablename(name)}`")
+      val schemaDDL = spark.createDataFrame(rdd, sparkSchema).schema.toDDL
+      spark.sql(s"DROP TABLE IF EXISTS `${escapeTablename(name)}`")
       val query =
         s"""
            |CREATE TABLE IF NOT EXISTS `${escapeTablename(name)}`
@@ -306,9 +334,9 @@ class OntopSPARQLEngine(val spark: SparkSession,
            |PARTITIONED BY (`s`)
            |AS SELECT * FROM `${escapeTablename(name)}_tmp`
            |""".stripMargin
-      session.sql(query)
+      spark.sql(query)
       if (useStatistics) {
-        session.sql(s"ANALYZE TABLE `${escapeTablename(name)}` COMPUTE STATISTICS FOR COLUMNS s, o")
+        spark.sql(s"ANALYZE TABLE `${escapeTablename(name)}` COMPUTE STATISTICS FOR COLUMNS s, o")
       }
     } else {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "`")
@@ -329,6 +357,14 @@ class OntopSPARQLEngine(val spark: SparkSession,
    */
   def stop(): Unit = {
     sparql2sql.close()
+  }
+
+  /**
+   * Free resources, e.g. unregister Spark tables.
+   */
+  def clear(): Unit = {
+    spark.catalog.clearCache()
+//    spark.catalog.listTables().foreach { case (table: Table) => spark.catalog.dropTempView(table.name)}
   }
 
   private def postProcess(df: DataFrame, queryRewrite: OntopQueryRewrite): DataFrame = {
@@ -407,14 +443,14 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * Executes the given SPARQL query on the provided dataset partitions.
    *
    * @param query the SPARQL query
-   * @return a DataFrame with the resulting bindings as columns and an optional query rewrite object for
-   *         debugging purpose (None if the SQL query was empty)
+   * @return a DataFrame with the raw result of the SQL query execution and the query rewrite object for
+   *         processing the intermediate SQL rows
+   *         (None if the SQL query was empty)
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
-  def executeDebug(query: String): (DataFrame, DataFrame, Option[OntopQueryRewrite]) = {
+  def executeDebug(query: String): (DataFrame, Option[OntopQueryRewrite]) = {
     logger.info(s"SPARQL query:\n$query")
 
-    var result: DataFrame = null
     try {
       // translate to SQL query
       val queryRewrite = sparql2sql.createSQLQuery(query)
@@ -428,15 +464,11 @@ class OntopSPARQLEngine(val spark: SparkSession,
       //    result.show(false)
       //    result.printSchema()
 
-      // post process the raw DF, i.e. rename columns, add bindings, reorder columns, ...
-      result = postProcess(resultRaw, queryRewrite)
-
-      (result, resultRaw, Some(queryRewrite))
-
+      (resultRaw, Some(queryRewrite))
     } catch {
       case e: EmptyQueryException =>
         logger.warn(s"Empty SQL query generated by Ontop. Returning empty DataFrame for SPARQL query\n$query")
-        (spark.emptyDataFrame, spark.emptyDataFrame, None)
+        (spark.emptyDataFrame, None)
       case e: org.apache.spark.sql.AnalysisException =>
         logger.error(s"Spark failed to execute translated SQL query\n$query", e)
         throw e
@@ -452,7 +484,14 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
   def execute(query: String): DataFrame = {
-    executeDebug(query)._1
+    val (resultRaw, queryRewrite) = executeDebug(query)
+    var result = resultRaw
+
+    if (queryRewrite.nonEmpty) {
+      result = postProcess(resultRaw, queryRewrite.get)
+    }
+
+    result
   }
 
   /**
@@ -466,7 +505,22 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val q = QueryFactory.create(query)
     if (!q.isSelectType) throw new RuntimeException(s"Wrong query type. Expected SELECT query," +
       s" got ${q.queryType().toString}")
-    val df = executeDebug(query)._2
+    val df = executeDebug(query)._1
+    df.show(false)
+    println(df.count())
+
+//    var input = ""
+//    while (input != "q") {
+//      println("enter SQL query (press 'q' to quit): ")
+//      input = scala.io.StdIn.readLine()
+//      try {
+//        spark.sql(input).show(false)
+//      } catch {
+//        case e: Exception => e.printStackTrace()
+//      }
+//
+//    }
+
 
     val sparqlQueryBC = spark.sparkContext.broadcast(query)
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
@@ -494,7 +548,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val q = QueryFactory.create(query)
     if (!q.isAskType) throw new RuntimeException(s"Wrong query type. Expected ASK query," +
       s" got ${q.queryType().toString}")
-    val df = executeDebug(query)._2
+    val df = executeDebug(query)._1
     !df.isEmpty
   }
 
@@ -510,7 +564,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     if (!q.isConstructType) throw new RuntimeException(s"Wrong query type. Expected CONSTRUCT query," +
       s" got ${q.queryType().toString}")
 
-    val df = executeDebug(query)._2
+    val df = executeDebug(query)._1
 
     val sparqlQueryBC = spark.sparkContext.broadcast(query)
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)

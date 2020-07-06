@@ -79,6 +79,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
     subqueryManifest + "subquery12", subqueryManifest + "subquery13", // missing results (TODO: fix)
     subqueryManifest + "subquery14")
 
+  override lazy val IGNORE_FILTER = t => t.name startsWith "CONCAT"
 
   var ontopProperties: Properties = _
 
@@ -106,7 +107,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
       // create the SPARQL result
       val model = ModelFactory.createDefaultModel()
-      val vars = bindings.flatMap(_.vars().asScala).map(_.getVarName).toList.asJava
+      val vars = bindings.flatMap(_.vars().asScala).distinct.map(_.getVarName).toList.asJava
       val resultsActual = new ResultSetStream(vars, model, bindings.toList.asJava.iterator())
       new SPARQLResult(resultsActual)
     } else if (query.isAskType) { // ASK
@@ -125,6 +126,9 @@ class SPARQL11TestSuiteRunnerSparkOntop
       fail("unsupported query type: DESCRIBE")
       null
     }
+    // clean up
+    queryEngine.clear()
+
     result
   }
 
