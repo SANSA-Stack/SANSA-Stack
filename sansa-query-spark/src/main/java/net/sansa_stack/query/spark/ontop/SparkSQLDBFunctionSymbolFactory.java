@@ -167,12 +167,45 @@ public class SparkSQLDBFunctionSymbolFactory extends AbstractSQLDBFunctionSymbol
 
     @Override
     public DBBooleanFunctionSymbol getDBRegexpMatches2() {
-        return new DBBooleanFunctionSymbolWithSerializerImpl("REGEXP_MATCHES_2",
+        return new DBBooleanFunctionSymbolWithSerializerImpl(REGEXP_LIKE_STR + "2",
                 ImmutableList.of(abstractRootDBType, abstractRootDBType), dbBooleanType, false,
                 (terms, termConverter, termFactory) -> String.format(
                         "(%s RLIKE %s)",
                         termConverter.apply(terms.get(0)),
                         termConverter.apply(terms.get(1))));
+    }
+
+    /*
+     * Spark has no regex with extra argument for flags, i.e. we have to inline the processing flags in the pattern
+     */
+    @Override
+    public DBBooleanFunctionSymbol getDBRegexpMatches3() {
+        return new DBBooleanFunctionSymbolWithSerializerImpl(REGEXP_LIKE_STR + "3",
+                ImmutableList.of(abstractRootDBType, abstractRootDBType, abstractRootType), dbBooleanType, false,
+                /*
+                 * TODO: is it safe to assume the flags are not empty?
+                 */
+                ((terms, termConverter, termFactory) -> {
+                    /*
+                     * Normalizes the flag
+                     *   - DOT_ALL: s -> n
+                     */
+                    ImmutableTerm flagTerm = termFactory.getDBReplace(terms.get(2),
+                            termFactory.getDBStringConstant("s"),
+                            termFactory.getDBStringConstant("n"));
+
+                    ImmutableTerm extendedPatternTerm = termFactory.getNullRejectingDBConcatFunctionalTerm(ImmutableList.of(
+                            termFactory.getDBStringConstant("(?"),
+                            flagTerm,
+                            termFactory.getDBStringConstant(")"),
+                            terms.get(1)))
+                            .simplify();
+
+
+                    return String.format("%s RLIKE %s",
+                            termConverter.apply(terms.get(0)),
+                            termConverter.apply(extendedPatternTerm));
+                }));
     }
 
 }
