@@ -836,6 +836,11 @@ object minHash_rdf_over_text_pipeline {
       .select("titleA", "titleB", name_of_resulting_value_column)
       .show(false)
 
+    // easy reachable would be
+    // dice, ochiai, clanquett, simpson,... all seam to be ther same lika jaqqard with slight different subsumer
+
+
+
     spark.stop()
   }
 }
