@@ -4,7 +4,7 @@ import net.sansa_stack.ml.spark.utils.RDF_Feature_Extractor
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, udf}
@@ -32,7 +32,10 @@ object MinHash {
     val count_vectorizer_features_column_name = "cv_features"
     val cv_vocab_size = 1000000
     val cv_min_document_frequency = 1
-
+    // minhash parameters
+    val minhash_hash_column_name = "hashValues"
+    val minhash_threshold_max_distance = 0.8
+    val minhash_distance_column_name = "distance"
 
     // start spark session
     val spark = SparkSession.builder
@@ -57,11 +60,25 @@ object MinHash {
       .setInputCol(feature_extractor_features_column_name)
       .setOutputCol(count_vectorizer_features_column_name)
       .setVocabSize(cv_vocab_size)
-      .setMinDF(cv_min_document_frequency) // TODO maybe later higher
+      .setMinDF(cv_min_document_frequency)
       .fit(fe_features)
     // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType) this line is not needed because all uris have features by feature extraction algo
     val cv_features = cvModel.transform(fe_features).select(col(feature_extractor_uri_column_name), col(count_vectorizer_features_column_name)) // .filter(isNoneZeroVector(col(count_vectorizer_features_column_name)))
 
+    // MinHash
+    val mh = new MinHashLSH()
+      .setNumHashTables(5)
+      .setInputCol(count_vectorizer_features_column_name)
+      .setOutputCol(minhash_hash_column_name)
+    val model = mh.fit(cv_features)
+    // min Hash crosstable for all semantc similarities
+    val element_column_name_A = feature_extractor_uri_column_name + "_A"
+    val element_column_name_B = feature_extractor_uri_column_name + "_B"
+    val cross_minhash_similarity_df = model.approxSimilarityJoin(cv_features, cv_features, minhash_threshold_max_distance, minhash_distance_column_name)
+      .withColumn(element_column_name_A, col("datasetA").getField(feature_extractor_uri_column_name))
+      .withColumn(element_column_name_B, col("datasetB").getField(feature_extractor_uri_column_name))
+      .select(element_column_name_A, element_column_name_B, minhash_distance_column_name)
+      .show(false)
 
     spark.stop()
   }
