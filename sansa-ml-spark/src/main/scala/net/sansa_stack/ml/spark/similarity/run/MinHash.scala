@@ -1,5 +1,7 @@
 package net.sansa_stack.ml.spark.similarity.run
 
+import java.util.Calendar
+
 import net.sansa_stack.ml.spark.utils.{RDF_Feature_Extractor, Similarity_Experiment_Meta_Graph_Factory}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Triple
@@ -115,7 +117,12 @@ object MinHash {
       metagraph_experiment_datetime_relation)
 
     // Store metagraph over sansa rdf layer
-    experiment_metagraph.coalesce(1, shuffle = true).saveAsNTriplesFile(output)
+    // dt to enforce different outputstrings so no conflicts occur
+    val dt = Calendar.getInstance().getTime()
+      .toString // make string out of it, in future would be better to allow date nativly in rdf
+      .replaceAll("\\s", "") // remove spaces to reduce confusions with some foreign file readers
+      .replaceAll(":", "")
+    experiment_metagraph.coalesce(1, shuffle = true).saveAsNTriplesFile(output + dt)
 
     spark.stop()
   }
