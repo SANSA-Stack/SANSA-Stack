@@ -52,7 +52,7 @@ class RodriguezEgenhoferModel extends GenericSimilarityEstimator {
     val nn_setup_df = createNnDF(df_A, key, key_uri)
 
     val nn_df = nn_setup_df
-      .withColumn(_similarity_estimation_column_name, similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA), lit(_alpha), lit(_betha)))
+      .withColumn(_similarity_estimation_column_name, similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA), lit(_alpha)))
 
     reduce_nn_df(nn_df, k, keep_key_uri_column)
   }
