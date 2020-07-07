@@ -7,18 +7,18 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class GenericSimilarityEstimator {
 
-  var _uri_column_name_dfA: String = _
-  var _features_column_name_dfA: String = _
-  var _uri_column_name_dfB: String = _
-  var _features_column_name_dfB: String = _
+  protected var _uri_column_name_dfA: String = _
+  protected var _features_column_name_dfA: String = _
+  protected var _uri_column_name_dfB: String = _
+  protected var _features_column_name_dfB: String = _
 
   // values that have to be overwritten
-  var _similarity_estimation_column_name = "genericColumnName"
+  protected var _similarity_estimation_column_name = "genericColumnName"
 
   val estimator_name: String = "GenericSimilarityEstimator"
   val estimator_measure_type: String = "distance, related or similarity"
 
-  val similarityEstimation = udf( (a: Vector, b: Vector) => {
+  protected val similarityEstimation = udf( (a: Vector, b: Vector) => {
     throw new Exception("this function should not be called")
   })
 
@@ -38,7 +38,7 @@ class GenericSimilarityEstimator {
     _features_column_name_dfB = features_column_name
   }
 
-  def createCrossJoinDF(df_A: DataFrame, df_B: DataFrame): DataFrame = {
+  protected def createCrossJoinDF(df_A: DataFrame, df_B: DataFrame): DataFrame = {
 
     var new_uri_column_A: String = _uri_column_name_dfA
     var new_uri_column_B: String = _uri_column_name_dfB
@@ -69,7 +69,7 @@ class GenericSimilarityEstimator {
     cross_join_df
   }
 
-  def createNnDF(df: DataFrame, key: Vector, key_uri: String): DataFrame = {
+  protected def createNnDF(df: DataFrame, key: Vector, key_uri: String): DataFrame = {
     var uri = key_uri
     if (key_uri == "generic_key_uri") uri = uri + key.toString
 
@@ -82,27 +82,27 @@ class GenericSimilarityEstimator {
       .select(_uri_column_name_dfB, _uri_column_name_dfA, _features_column_name_dfB, _features_column_name_dfA)
   }
 
-  def set_similarity_estimation_column_name(value_column_name: String): Unit = {
+  protected def set_similarity_estimation_column_name(value_column_name: String): Unit = {
     _similarity_estimation_column_name = value_column_name
   }
 
-  def reduce_join_df(sim_df: DataFrame, threshold: Double): DataFrame = {
+  protected def reduce_join_df(sim_df: DataFrame, threshold: Double): DataFrame = {
     val tmp_df = sim_df.select(_uri_column_name_dfA, _uri_column_name_dfB, _similarity_estimation_column_name)
 
     if (threshold == -1.0) {
-      // no filtering
+      tmp_df
     }
     else {
-      // TODO threshold filtering needed
+      val filtered_df = if (estimator_measure_type == "distance") tmp_df.filter(col(_similarity_estimation_column_name) <= threshold) else tmp_df.filter(col(_similarity_estimation_column_name) >= threshold)
+      filtered_df
     }
-    tmp_df
   }
 
-  def reduce_nn_df(sim_df: DataFrame, k: Int): DataFrame = {
-    val tmp_df = sim_df.select(_uri_column_name_dfA, _similarity_estimation_column_name)
-
-    // todo take only first k elements
-    tmp_df
+  protected def reduce_nn_df(sim_df: DataFrame, k: Int, keep_key_uri_column: Boolean): DataFrame = {
+    val tmp_df = if (keep_key_uri_column) sim_df.select(_uri_column_name_dfB, _uri_column_name_dfA, _similarity_estimation_column_name) else sim_df.select(_uri_column_name_dfA, _similarity_estimation_column_name)
+    val ordered_df = if (estimator_measure_type == "distance") tmp_df.orderBy(col(_similarity_estimation_column_name).asc) else tmp_df.orderBy(col(_similarity_estimation_column_name).desc)
+    val clipped_df: DataFrame = ordered_df.limit(k)
+    clipped_df
   }
 
   def similarityJoin(df_A: DataFrame, df_B: DataFrame, threshold: Double = -1.0, value_column: String = "generic_similarity"): DataFrame = {
@@ -118,7 +118,7 @@ class GenericSimilarityEstimator {
     reduce_join_df(join_df, threshold)
   }
 
-  def nearestNeighbors(df_A: DataFrame, key: Vector, k: Int, key_uri: String = "generic_key_uri", value_column: String = "generic_similarity"): DataFrame = {
+  def nearestNeighbors(df_A: DataFrame, key: Vector, k: Int, key_uri: String = "generic_key_uri", value_column: String = "generic_similarity", keep_key_uri_column: Boolean = false): DataFrame = {
 
     set_similarity_estimation_column_name(value_column)
 
@@ -126,6 +126,6 @@ class GenericSimilarityEstimator {
     val nn_df = nn_setup_df
       .withColumn(_similarity_estimation_column_name, similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA)))
 
-    reduce_nn_df(nn_df, k)
+    reduce_nn_df(nn_df, k, keep_key_uri_column)
   }
 }
