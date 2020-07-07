@@ -22,32 +22,32 @@ object Jaccard {
     // spark session parameter
 
     // rdf readin parameters
-    val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
+    val input: String = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
     val lang = Lang.NTRIPLES
     // feature extraction parameter
-    val mode = "at"
-    val feature_extractor_uri_column_name = "uri"
-    val feature_extractor_features_column_name = "fe_features"
+    val mode: String = "at"
+    val feature_extractor_uri_column_name: String = "uri"
+    val feature_extractor_features_column_name: String = "fe_features"
     // countvectorizer parameters
-    val count_vectorizer_features_column_name = "cv_features"
-    val cv_vocab_size = 1000000
-    val cv_min_document_frequency = 1
+    val count_vectorizer_features_column_name: String = "cv_features"
+    val cv_vocab_size: Int = 1000000
+    val cv_min_document_frequency: Int = 1
 
     // Jaccard parameter
-    val threshold_min_similarity = 0.01
+    val threshold_min_similarity: Double = 0.01
 
     // metagraph creator
     // Strings for relation names, maybe this can be later defined in an onthology and only be imported here
-    val metagraph_element_relation = "element"
-    val metagraph_value_relation = "value"
-    val metagraph_experiment_type_relation = "experiment_type"
-    val metagraph_experiment_name_relation = "experiment_name"
-    val metagraph_experiment_measurement_type_relation = "experiment_measurement_type"
-    val metagraph_experiment_datetime_relation = "experiment_datetime"
+    val metagraph_element_relation: String = "element"
+    val metagraph_value_relation: String = "value"
+    val metagraph_experiment_type_relation: String = "experiment_type"
+    val metagraph_experiment_name_relation: String = "experiment_name"
+    val metagraph_experiment_measurement_type_relation: String = "experiment_measurement_type"
+    val metagraph_experiment_datetime_relation: String = "experiment_datetime"
     // Strings for uris and literals
-    val metagraph_experiment_name = "Jaccard" // TODO this will be got from the model itself because iformation is stored is there
-    val metagraph_experiment_type = "Sematic Similarity Estimation"
-    val metagraph_experiment_measurement_type = "distance" // TODO this will be got from the model itself because iformation is stored is there
+    val metagraph_experiment_name: String = "Jaccard" // TODO this will be got from the model itself because iformation is stored is there
+    val metagraph_experiment_type: String = "Sematic Similarity Estimation"
+    val metagraph_experiment_measurement_type: String = "distance" // TODO this will be got from the model itself because iformation is stored is there
 
     // metagraph store parameters
     val output = "/Users/carstendraschner/Downloads/experiment_results"
