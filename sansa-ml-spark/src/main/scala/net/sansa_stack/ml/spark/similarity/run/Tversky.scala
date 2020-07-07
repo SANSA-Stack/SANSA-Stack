@@ -88,11 +88,9 @@ object Tversky {
     similarityModel.set_uri_column_name_dfB(feature_extractor_uri_column_name)
     similarityModel.set_features_column_name_dfA(count_vectorizer_features_column_name)
     similarityModel.set_features_column_name_dfB(count_vectorizer_features_column_name)
-    similarityModel.set_alpha(alpha)
-    similarityModel.set_betha(betha)
     // model evaluations
     // all pair
-    val all_pair_similarity_df = similarityModel.similarityJoin(cv_features, cv_features, threshold_min_similarity, estimation_column_name)
+    val all_pair_similarity_df = similarityModel.similarityJoin(cv_features, cv_features, threshold_min_similarity)
     all_pair_similarity_df.show(false)
     // nearest neighbor
     similarityModel.set_uri_column_name_dfA(feature_extractor_uri_column_name)
@@ -100,9 +98,9 @@ object Tversky {
     similarityModel.set_features_column_name_dfA(count_vectorizer_features_column_name)
     similarityModel.set_features_column_name_dfB(count_vectorizer_features_column_name)
     val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
-    val nn_similarity_df = similarityModel.nearestNeighbors(cv_features, key, 10, "theFirstUri")
+    val nn_similarity_df = similarityModel.nearestNeighbors(cv_features, key, 10, "theFirstUri", keep_key_uri_column = true)
     nn_similarity_df.show(false)
-/*
+
     // Metagraph creation
     val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
     val experiment_metagraph = similarity_metagraph_creator.transform(
@@ -126,7 +124,7 @@ object Tversky {
       .replaceAll("\\s", "") // remove spaces to reduce confusions with some foreign file readers
       .replaceAll(":", "")
     experiment_metagraph.coalesce(1, shuffle = true).saveAsNTriplesFile(output + dt)
-*/
+
     spark.stop()
   }
 }
