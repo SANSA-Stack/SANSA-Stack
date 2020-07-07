@@ -6,7 +6,7 @@ import net.sansa_stack.ml.spark.similarity.similarity_measures.JaccardModel
 import net.sansa_stack.ml.spark.utils.{RDF_Feature_Extractor, Similarity_Experiment_Meta_Graph_Factory}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -46,9 +46,9 @@ object Jaccard {
     val metagraph_experiment_measurement_type_relation = "experiment_measurement_type"
     val metagraph_experiment_datetime_relation = "experiment_datetime"
     // Strings for uris and literals
-    val metagraph_experiment_name = "Jaccard" // HIGHLIGHT This is Changed
+    val metagraph_experiment_name = "Jaccard" // TODO this will be got from the model itself because iformation is stored is there
     val metagraph_experiment_type = "Sematic Similarity Estimation"
-    val metagraph_experiment_measurement_type = "distance"
+    val metagraph_experiment_measurement_type = "distance" // TODO this will be got from the model itself because iformation is stored is there
 
     // metagraph store parameters
     val output = "/Users/carstendraschner/Downloads/experiment_results"
@@ -88,9 +88,9 @@ object Jaccard {
     jaccardmodel.set_features_column_name_dfB(count_vectorizer_features_column_name)
     // modelevaluations
     val all_pair_similarity_df = jaccardmodel.similarityJoin(cv_features, cv_features, jaccard_threshold_min_similarity, jaccard_distance_column_name)
-    // all_pair_similarity_df.show(false)
-    // val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
-    // jaccardmodel.nearestNeighbors(cv_features, key, 10, "theFirstUri").show(false)
+    all_pair_similarity_df.show(false)
+    val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
+    jaccardmodel.nearestNeighbors(cv_features, key, 10, "theFirstUri").show(false)
 
     // Metagraph creation
     val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
