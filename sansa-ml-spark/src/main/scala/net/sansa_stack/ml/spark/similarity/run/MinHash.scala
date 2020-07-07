@@ -35,6 +35,7 @@ object MinHash {
     val cv_vocab_size = 1000000
     val cv_min_document_frequency = 1
     // minhash parameters
+    val minhash_number_hash_tables = 1
     val minhash_hash_column_name = "hashValues"
     val minhash_threshold_max_distance = 0.8
     val minhash_distance_column_name = "distance"
@@ -55,11 +56,9 @@ object MinHash {
     // metagraph store parameters
     val output = "/Users/carstendraschner/Downloads/experiment_results"
 
-
-
     // start spark session
     val spark = SparkSession.builder
-      .appName(s"MinHash  tryout") // TODO where is this displayed?
+      .appName(s"MinHash") // TODO where is this displayed?
       .master("local[*]") // TODO why do we need to specify this?
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
@@ -87,23 +86,23 @@ object MinHash {
 
     // MinHash
     val mh = new MinHashLSH()
-      .setNumHashTables(5)
+      .setNumHashTables(minhash_number_hash_tables)
       .setInputCol(count_vectorizer_features_column_name)
       .setOutputCol(minhash_hash_column_name)
     val model = mh.fit(cv_features)
     // min Hash crosstable for all semantc similarities
     val element_column_name_A = feature_extractor_uri_column_name + "_A"
     val element_column_name_B = feature_extractor_uri_column_name + "_B"
-    val cross_minhash_similarity_df = model.approxSimilarityJoin(cv_features, cv_features, minhash_threshold_max_distance, minhash_distance_column_name)
+    val all_pair_similarity_df = model.approxSimilarityJoin(cv_features, cv_features, minhash_threshold_max_distance, minhash_distance_column_name)
       .withColumn(element_column_name_A, col("datasetA").getField(feature_extractor_uri_column_name))
       .withColumn(element_column_name_B, col("datasetB").getField(feature_extractor_uri_column_name))
       .select(element_column_name_A, element_column_name_B, minhash_distance_column_name)
-    // cross_minhash_similarity_df.show(false)
+    // all_pair_similarity_df.show(false)
 
     // Metagraph creation
     val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
     val experiment_metagraph = similarity_metagraph_creator.transform(
-      cross_minhash_similarity_df
+      all_pair_similarity_df
     )(
       metagraph_experiment_name,
       metagraph_experiment_type,
