@@ -6,7 +6,7 @@ import org.apache.spark.sql.functions.{col, lit, typedLit, udf}
 
 class TverskyModel extends GenericSimilarityEstimator {
 
-  val tversky = udf((a: Vector, b: Vector, alpha: Double, betha: Double) => {
+  protected val tversky = udf((a: Vector, b: Vector, alpha: Double, betha: Double) => {
     val feature_indices_a = a.toSparse.indices
     val feature_indices_b = b.toSparse.indices
     val f_set_a = feature_indices_a.toSet
@@ -55,7 +55,7 @@ class TverskyModel extends GenericSimilarityEstimator {
     reduce_join_df(join_df, threshold)
   }
 
-  override def nearestNeighbors(df_A: DataFrame, key: Vector, k: Int, key_uri: String = "unknown", value_column: String = "tversky_similarity"): DataFrame = {
+  override def nearestNeighbors(df_A: DataFrame, key: Vector, k: Int, key_uri: String = "unknown", value_column: String = "tversky_similarity", keep_key_uri_column: Boolean = false): DataFrame = {
 
     set_similarity_estimation_column_name(value_column)
 
@@ -64,6 +64,6 @@ class TverskyModel extends GenericSimilarityEstimator {
     val nn_df = nn_setup_df
       .withColumn(_similarity_estimation_column_name, similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA), lit(_alpha), lit(_betha)))
 
-    reduce_nn_df(nn_df, k)
+    reduce_nn_df(nn_df, k, keep_key_uri_column)
   }
 }
