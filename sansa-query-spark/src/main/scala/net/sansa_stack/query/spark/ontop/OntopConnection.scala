@@ -21,7 +21,10 @@ object OntopConnection {
   private val JDBC_PASSWORD = ""
 
   lazy val connection: Connection = try {
-    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+    println("creating DB connection ")
+    val conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+    println("created DB connection")
+    conn
   } catch {
     case e: SQLException =>
       throw e
@@ -61,6 +64,7 @@ object OntopConnection {
 
       configs += partitions -> reformulationConfiguration
 
+      println("done")
       reformulationConfiguration
     })
     conf

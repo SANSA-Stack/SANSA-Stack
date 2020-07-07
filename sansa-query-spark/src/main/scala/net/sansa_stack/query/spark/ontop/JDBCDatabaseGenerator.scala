@@ -61,7 +61,7 @@ object JDBCDatabaseGenerator {
                 stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                   "s varchar(255) NOT NULL," +
                   "o varchar(255) NOT NULL," +
-                  "l varchar(10) NOT NULL" +
+                  "l varchar(10)" +
                   ")")
               } else {
                 if (p.layout.schema == typeOf[SchemaStringStringType]) {

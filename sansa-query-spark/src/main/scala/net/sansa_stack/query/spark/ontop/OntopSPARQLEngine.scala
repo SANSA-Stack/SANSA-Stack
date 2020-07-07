@@ -319,7 +319,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = spark.createDataFrame(rdd, sparkSchema).persist()
-    df.show(false)
+//    df.show(false)
 
     if (useHive) {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
@@ -506,8 +506,8 @@ class OntopSPARQLEngine(val spark: SparkSession,
     if (!q.isSelectType) throw new RuntimeException(s"Wrong query type. Expected SELECT query," +
       s" got ${q.queryType().toString}")
     val df = executeDebug(query)._1
-    df.show(false)
-    println(df.count())
+//    df.show(false)
+//    println(df.count())
 
 //    var input = ""
 //    while (input != "q") {
@@ -528,7 +528,8 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val partitionsBC = spark.sparkContext.broadcast(partitions.keySet)
 
     implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
-    df.mapPartitions(iterator => {
+    df.repartition(20).mapPartitions(iterator => {
+      println("mapping partition")
       val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
       val it = iterator.map(mapper.map)
 //      mapper.close()
@@ -602,13 +603,14 @@ object OntopSPARQLEngine {
       //      .config("spark.sql.warehouse.dir", warehouseLocation)
       .config("spark.sql.cbo.enabled", true)
       .config("spark.sql.statistics.histogram.enabled", true)
+      .config("spark.sql.crossJoin.enabled", "true")
       .enableHiveSupport()
       .getOrCreate()
 
     val data = args(0)
 
     // read triples as RDD[Triple]
-    var triplesRDD = spark.ntriples()(data)
+    var triplesRDD = spark.ntriples()(data).cache()
 
     // load optional schema file and filter properties used for VP
     var ont: OWLOntology = null
@@ -636,7 +638,7 @@ object OntopSPARQLEngine {
     }
 
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex(false))
     println(s"num partitions: ${partitions.keySet.size}")
 
     // create the SPARQL engine

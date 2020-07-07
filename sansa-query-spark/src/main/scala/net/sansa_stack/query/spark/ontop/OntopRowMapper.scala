@@ -92,7 +92,6 @@ class OntopRowMapper(
   }
 
   def toBinding(row: Row): Binding = {
-    println(s"row: $row")
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]
@@ -116,6 +115,7 @@ class OntopRowMapper(
       case (v, Some(term)) => binding.add(Var.alloc(v.getName), toNode(term, typeFactory))
       case _ =>
     }
+    println(s"row: $row --- binding: $binding")
     binding
   }
 
