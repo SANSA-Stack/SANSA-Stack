@@ -9,7 +9,7 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.{col, udf, lit}
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -24,37 +24,38 @@ object MinHash {
     // spark session parameter
 
     // rdf readin parameters
-    val input = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
+    val input: String = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
     val lang = Lang.NTRIPLES
     // feature extraction parameter
-    val mode = "at"
-    val feature_extractor_uri_column_name = "uri"
-    val feature_extractor_features_column_name = "fe_features"
+    val mode: String = "at"
+    val feature_extractor_uri_column_name: String = "uri"
+    val feature_extractor_features_column_name: String = "fe_features"
     // countvectorizer parameters
-    val count_vectorizer_features_column_name = "cv_features"
-    val cv_vocab_size = 1000000
-    val cv_min_document_frequency = 1
+    val count_vectorizer_features_column_name: String = "cv_features"
+    val cv_vocab_size: Int = 1000000
+    val cv_min_document_frequency: Int = 1
     // minhash parameters
-    val minhash_number_hash_tables = 1
-    val minhash_hash_column_name = "hashValues"
-    val minhash_threshold_max_distance = 0.8
-    val minhash_distance_column_name = "distance"
+    val minhash_number_hash_tables: Int = 1
+    val minhash_hash_column_name: String = "hashValues"
+    val minhash_threshold_max_distance: Double = 0.8
+    val minhash_distance_column_name: String = "distance"
+    val minhash_nn_k: Int = 20
 
     // metagraph creator
     // Strings for relation names, maybe this can be later defined in an onthology and only be imported here
-    val metagraph_element_relation = "element"
-    val metagraph_value_relation = "value"
-    val metagraph_experiment_type_relation = "experiment_type"
-    val metagraph_experiment_name_relation = "experiment_name"
-    val metagraph_experiment_measurement_type_relation = "experiment_measurement_type"
-    val metagraph_experiment_datetime_relation = "experiment_datetime"
+    val metagraph_element_relation: String = "element"
+    val metagraph_value_relation: String = "value"
+    val metagraph_experiment_type_relation: String = "experiment_type"
+    val metagraph_experiment_name_relation: String = "experiment_name"
+    val metagraph_experiment_measurement_type_relation: String = "experiment_measurement_type"
+    val metagraph_experiment_datetime_relation: String = "experiment_datetime"
     // Strings for uris and literals
-    val metagraph_experiment_name = "Spark_Min_Hash"
-    val metagraph_experiment_type = "Sematic Similarity Estimation"
-    val metagraph_experiment_measurement_type = "distance"
+    val metagraph_experiment_name: String = "Spark_Min_Hash"
+    val metagraph_experiment_type: String = "Sematic Similarity Estimation"
+    val metagraph_experiment_measurement_type: String = "distance"
 
     // metagraph store parameters
-    val output = "/Users/carstendraschner/Downloads/experiment_results"
+    val output: String = "/Users/carstendraschner/Downloads/experiment_results"
 
     // start spark session
     val spark = SparkSession.builder
@@ -97,12 +98,19 @@ object MinHash {
       .withColumn(element_column_name_A, col("datasetA").getField(feature_extractor_uri_column_name))
       .withColumn(element_column_name_B, col("datasetB").getField(feature_extractor_uri_column_name))
       .select(element_column_name_A, element_column_name_B, minhash_distance_column_name)
+    all_pair_similarity_df.show(false)
     // all_pair_similarity_df.show(false)
+    val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
+    val nn_df = model
+      .approxNearestNeighbors(cv_features, key, minhash_nn_k, minhash_distance_column_name)
+      .withColumn("key_column", lit("key_uri")).select("key_column", feature_extractor_uri_column_name, minhash_distance_column_name)
+    nn_df.show(false)
 
     // Metagraph creation
+    val result_df_to_store = nn_df // all_pair_similarity_df
     val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
     val experiment_metagraph = similarity_metagraph_creator.transform(
-      all_pair_similarity_df
+      result_df_to_store
     )(
       metagraph_experiment_name,
       metagraph_experiment_type,
