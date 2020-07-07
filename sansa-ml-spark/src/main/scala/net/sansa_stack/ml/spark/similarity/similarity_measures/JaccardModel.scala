@@ -2,7 +2,7 @@ package net.sansa_stack.ml.spark.similarity.similarity_measures
 
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.{col, udf, lit}
+import org.apache.spark.sql.functions.{col, udf, lit, typedLit}
 
 
 class JaccardModel {
@@ -55,12 +55,12 @@ class JaccardModel {
           df_B
             .withColumnRenamed(_uri_column_name_dfB, new_uri_column_B)
             .withColumnRenamed(_features_column_name_dfB, new_features_column_B))
-    cross_for_jaccard.withColumn(
+    val jaccard_eval_df: DataFrame = cross_for_jaccard.withColumn(
       value_column,
       jaccard(col(new_features_column_A), col(new_features_column_B))
     )
       .select(new_uri_column_A, new_uri_column_B, value_column)
-    cross_for_jaccard
+    jaccard_eval_df
   }
 
   def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, key_uri: String = "generic_key_uri", value_column: String = "jaccard_similarity"): DataFrame = {
@@ -72,12 +72,10 @@ class JaccardModel {
 
     val tmp_df = dfA
       .withColumn(key_uri_column_name, lit(key_uri))
-      .withColumn(key_feature_vector_column_name, lit(key))
+      .withColumn(key_feature_vector_column_name, typedLit(key))
     val nn_df = tmp_df
       .withColumn(value_column, jaccard(col(key_feature_vector_column_name), col(_features_column_name_dfA)))
       .select(_uri_column_name_dfA, value_column)
     nn_df
   }
-
-
 }
