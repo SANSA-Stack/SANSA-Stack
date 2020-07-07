@@ -4,7 +4,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, udf}
 
-class OchiaiModel extends GenericSimilarityEstimator {
+class OchiaiModel extends GenericSimilarityEstimatorModel {
 
   protected val ochiai = udf( (a: Vector, b: Vector) => {
     val feature_indices_a = a.toSparse.indices

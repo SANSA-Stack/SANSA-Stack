@@ -4,7 +4,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, lit, typedLit, udf}
 
-class TverskyModel extends GenericSimilarityEstimator {
+class TverskyModel extends GenericSimilarityEstimatorModel {
 
   protected val tversky = udf((a: Vector, b: Vector, alpha: Double, betha: Double) => {
     val feature_indices_a = a.toSparse.indices

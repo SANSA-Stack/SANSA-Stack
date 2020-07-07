@@ -4,7 +4,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, udf}
 
-class BatetModel extends GenericSimilarityEstimator {
+class BatetModel extends GenericSimilarityEstimatorModel {
 
   protected val batet = udf( (a: Vector, b: Vector) => {
     val feature_indices_a = a.toSparse.indices

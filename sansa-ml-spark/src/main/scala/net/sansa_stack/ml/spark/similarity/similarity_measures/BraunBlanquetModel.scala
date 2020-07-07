@@ -4,7 +4,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, udf}
 
-class BraunBlanquetModel extends GenericSimilarityEstimator {
+class BraunBlanquetModel extends GenericSimilarityEstimatorModel {
 
   protected val braun_blanquet = udf( (a: Vector, b: Vector) => {
     val feature_indices_a = a.toSparse.indices

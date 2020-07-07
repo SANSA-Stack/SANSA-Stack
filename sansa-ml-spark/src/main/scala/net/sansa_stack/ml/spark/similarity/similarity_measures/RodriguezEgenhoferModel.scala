@@ -4,7 +4,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, lit, udf}
 
-class RodriguezEgenhoferModel extends GenericSimilarityEstimator {
+class RodriguezEgenhoferModel extends GenericSimilarityEstimatorModel {
 
   protected val rodriguez_egenhofer = udf( (a: Vector, b: Vector, alpha: Double) => {
     val feature_indices_a = a.toSparse.indices

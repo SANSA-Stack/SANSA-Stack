@@ -4,7 +4,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, udf}
 
-class SimpsonModel extends GenericSimilarityEstimator {
+class SimpsonModel extends GenericSimilarityEstimatorModel {
 
   protected val simpson = udf( (a: Vector, b: Vector) => {
     val feature_indices_a = a.toSparse.indices

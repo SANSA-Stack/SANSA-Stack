@@ -5,7 +5,7 @@ import org.apache.spark.sql.functions.{col, udf, lit, typedLit}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 
-class GenericSimilarityEstimator {
+class GenericSimilarityEstimatorModel {
 
   protected var _uri_column_name_dfA: String = _
   protected var _features_column_name_dfA: String = _
