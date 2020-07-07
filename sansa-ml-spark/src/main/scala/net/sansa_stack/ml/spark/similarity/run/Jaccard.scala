@@ -53,8 +53,6 @@ object Jaccard {
     // metagraph store parameters
     val output = "/Users/carstendraschner/Downloads/experiment_results"
 
-
-
     // start spark session
     val spark = SparkSession.builder
       .appName(s"JaccardSimilarityEvaluation") // TODO where is this displayed?
@@ -82,22 +80,6 @@ object Jaccard {
     // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType) this line is not needed because all uris have features by feature extraction algo
     val cv_features = cvModel.transform(fe_features).select(col(feature_extractor_uri_column_name), col(count_vectorizer_features_column_name)) // .filter(isNoneZeroVector(col(count_vectorizer_features_column_name)))
 
-    /*
-    // MinHash
-    val mh = new MinHashLSH()
-      .setNumHashTables(5)
-      .setInputCol(count_vectorizer_features_column_name)
-      .setOutputCol(minhash_hash_column_name)
-    val model = mh.fit(cv_features)
-    // min Hash crosstable for all semantc similarities
-    val element_column_name_A = feature_extractor_uri_column_name + "_A"
-    val element_column_name_B = feature_extractor_uri_column_name + "_B"
-    val cross_minhash_similarity_df = model.approxSimilarityJoin(cv_features, cv_features, minhash_threshold_max_distance, minhash_distance_column_name)
-      .withColumn(element_column_name_A, col("datasetA").getField(feature_extractor_uri_column_name))
-      .withColumn(element_column_name_B, col("datasetB").getField(feature_extractor_uri_column_name))
-      .select(element_column_name_A, element_column_name_B, minhash_distance_column_name)
-    // cross_minhash_similarity_df.show(false)
-    */
     // Jaccard
     val jaccardmodel = new JaccardModel
     jaccardmodel.set_uri_column_name_dfA(feature_extractor_uri_column_name)
@@ -109,7 +91,6 @@ object Jaccard {
     // all_pair_similarity_df.show(false)
     // val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
     // jaccardmodel.nearestNeighbors(cv_features, key, 10, "theFirstUri").show(false)
-
 
     // Metagraph creation
     val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
