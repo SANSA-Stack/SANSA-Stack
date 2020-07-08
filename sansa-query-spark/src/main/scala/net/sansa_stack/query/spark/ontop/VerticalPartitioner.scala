@@ -34,7 +34,11 @@ object VerticalPartitioner {
                      outputPath: URI = null,
                      schemaPath: URI = null,
                      blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table,
-                     computeStatistics: Boolean = true)
+                     computeStatistics: Boolean = true,
+                     databaseName: String = "Default",
+                     usePartitioning: Boolean = false,
+                     partitioningThreshold: Int = 100,
+                     mode: String = "partitioner")
 
   import scopt.OParser
   val builder = OParser.builder[Config]
@@ -61,19 +65,68 @@ object VerticalPartitioner {
         .text("how blank nodes are handled during partitioning (TABLE, COLUMN)"),
       opt[Boolean]('s', "stats")
         .action((x, c) => c.copy(computeStatistics = x))
-        .text("compute statistics")
+        .text("compute statistics for the Parquet tables"),
+      opt[String]("database")
+        .optional()
+        .abbr("db")
+        .action((x, c) => c.copy(databaseName = x))
+        .text("the database name registered in Spark metadata. Default: 'Default'"),
+      opt[Boolean]("partitioning")
+        .optional()
+        .action((x, c) => c.copy(usePartitioning = x))
+        .text("if partitioning of subject/object columns should be computed"),
+      opt[Int]("partitioning-threshold")
+        .optional()
+        .action((x, c) => c.copy(partitioningThreshold = x))
+        .text("the max. number of values of subject/object values for which partitioning of the table is considered"),
+      cmd("show")
+        .action((_, c) => c.copy(mode = "show-tables"))
+        .text("update is a command.")
     )
   }
 
   def main(args: Array[String]): Unit = {
-
     OParser.parse(parser, args, Config()) match {
       case Some(config) =>
-        run(config)
+        if (config.mode == "partitioner") {
+          run(config)
+        } else if (config.mode == "show-tables") {
+          showTables(config.databaseName)
+        } else {
+        }
+
       case _ =>
       // arguments are bad, error message will have been displayed
     }
 
+  }
+
+  private def showTables(databaseName: String): Unit = {
+    val spark = SparkSession.builder
+      //      .master("local")
+      .appName("vpartitioner")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      // .config("spark.kryo.registrationRequired", "true")
+      // .config("spark.eventLog.enabled", "true")
+      .config("spark.kryo.registrator", String.join(", ",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
+      //      .config("spark.default.parallelism", "4")
+      //      .config("spark.sql.shuffle.partitions", "4")
+      //      .config("spark.sql.warehouse.dir", config.outputPath.)
+      .config("spark.sql.cbo.enabled", true)
+      .config("spark.sql.statistics.histogram.enabled", true)
+      .enableHiveSupport()
+      .getOrCreate()
+
+    spark.sql(s"use $databaseName")
+    spark.sql("show tables").show(1000, false)
+    spark.sql("show tables").select("tableName").collect().foreach(
+      row => {
+        print(row.getString(0))
+        spark.sql(s"select * from ${row.getString(0)}").show(false)
+      })
+
+    spark.stop()
   }
 
   private def run(config: Config): Unit = {
@@ -116,11 +169,26 @@ object VerticalPartitioner {
     triplesRDD.cache()
 
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex())
+    println("computing partitions ...")
+    val partitions: Map[RdfPartitionComplex, RDD[Row]] = time(RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex()))
+    println(s"#partitions: ${partitions.size}")
+
+    // create database in Spark
+    spark.sql(s"create database ${config.databaseName}")
+
+    // set database as current
+    spark.sql(s"use ${config.databaseName}")
+
+    println("creating Spark tables ...")
     partitions.foreach {
-      case (p, rdd) => createSparkTable(spark, p, rdd, config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString)
+      case (p, rdd) => createSparkTable(spark, p, rdd,
+                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
+                                        config.usePartitioning, config.partitioningThreshold)
     }
-    println(s"num partitions: ${partitions.size}")
+
+
+    spark.stop()
+
   }
 
   private def estimatePartioningColumns(df: DataFrame): (Long, Long) = {
@@ -130,15 +198,14 @@ object VerticalPartitioner {
     (sCnt, oCnt)
   }
 
-  val estimatePartitions: Boolean = true
-  val threshold = 1000
-
   private def createSparkTable(session: SparkSession,
                                p: RdfPartitionComplex,
                                rdd: RDD[Row],
                                blankNodeStrategy: BlankNodeStrategy.Value,
                                computeStatistics: Boolean,
-                               path: String): Unit = {
+                               path: String,
+                               usePartitioning: Boolean,
+                               partitioningThreshold: Int): Unit = {
     val tableName = SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy), quoted = false)
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
@@ -146,17 +213,20 @@ object VerticalPartitioner {
 
     if (!session.catalog.tableExists(tableName)) {
       println(s"creating Spark table $tableName")
-      var writer = df.write.format("parquet").option("path", path)
+      time {
+        var writer = df.write.format("parquet")// .option("path", path)
 
-      if (estimatePartitions) {
-        val (sCnt, oCnt) = estimatePartioningColumns(df)
-        val ratio = oCnt / sCnt.doubleValue()
-        println(s"partition estimates: |s|=$sCnt |o|=$oCnt ratio o/s=$ratio")
+        if (usePartitioning) {
+          val (sCnt, oCnt) = estimatePartioningColumns(df)
+          val ratio = oCnt / sCnt.doubleValue()
+          println(s"partition estimates: |s|=$sCnt |o|=$oCnt ratio o/s=$ratio")
 
-        if(sCnt <= threshold) writer = writer.partitionBy("s")
-        else if (oCnt <= threshold && ratio < 0.01) writer = writer.partitionBy("o")
+          if (sCnt <= partitioningThreshold) writer = writer.partitionBy("s")
+          else if (oCnt <= partitioningThreshold && ratio < 0.01) writer = writer.partitionBy("o")
+        }
+
+        writer.saveAsTable(tableName)
       }
-      writer.saveAsTable(tableName)
 
       //    df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
       //
@@ -176,5 +246,14 @@ object VerticalPartitioner {
       }
     }
   }
+
+  def time[R](block: => R): R = {
+    val t0 = System.currentTimeMillis()
+    val result = block    // call-by-name
+    val t1 = System.currentTimeMillis()
+    println("Elapsed time: " + (t1 - t0) + "ms")
+    result
+  }
+
 
 }
