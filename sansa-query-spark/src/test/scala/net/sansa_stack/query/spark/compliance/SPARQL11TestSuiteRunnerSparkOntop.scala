@@ -4,6 +4,7 @@ import java.util.Properties
 
 import scala.collection.JavaConverters._
 
+import com.google.common.collect.Sets
 import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.term._
 import org.apache.jena.query._
@@ -14,6 +15,7 @@ import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.jena.sparql.resultset.SPARQLResult
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
+import org.scalatest.ConfigMap
 
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
@@ -79,12 +81,13 @@ class SPARQL11TestSuiteRunnerSparkOntop
     subqueryManifest + "subquery12", subqueryManifest + "subquery13", // missing results (TODO: fix)
     subqueryManifest + "subquery14")
 
-  override lazy val IGNORE_FILTER = t => t.name startsWith "CONCAT"
+//  override lazy val IGNORE_FILTER = t => testNamesToIgnore.exists(t.name.startsWith)
+//      t.name startsWith "Expression is equality"
 
   var ontopProperties: Properties = _
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
+  override def beforeAll(configMap: ConfigMap): Unit = {
+    super.beforeAll(configMap)
     ontopProperties = new Properties()
     ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
   }
@@ -106,9 +109,17 @@ class SPARQL11TestSuiteRunnerSparkOntop
       implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
       val bindings = queryEngine.execSelect(query.toString()).collect()
 
+      // we have to get the vars from the initial query as bindings are just hashmaps without preserving order
+      val vars = query.getResultVars
+      val bindingVars = bindings.flatMap(_.vars().asScala).distinct.map(_.getVarName).toList.asJava
+      // sanity check if there is a difference in the projected vars
+      if (!Sets.symmetricDifference(Sets.newHashSet(vars), Sets.newHashSet(bindingVars)).isEmpty) {
+        println(s"projected vars do not match\nexpected: $vars\ngot:$bindingVars")
+      }
+
       // create the SPARQL result
       val model = ModelFactory.createDefaultModel()
-      val vars = bindings.flatMap(_.vars().asScala).distinct.map(_.getVarName).toList.asJava
+
       val resultsActual = new ResultSetStream(vars, model, bindings.toList.asJava.iterator())
       new SPARQLResult(resultsActual)
     } else if (query.isAskType) { // ASK

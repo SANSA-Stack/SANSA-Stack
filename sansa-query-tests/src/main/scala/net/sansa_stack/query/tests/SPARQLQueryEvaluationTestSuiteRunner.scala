@@ -2,6 +2,8 @@ package net.sansa_stack.query.tests
 
 import java.net.URL
 
+import scala.collection.mutable
+
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
@@ -40,6 +42,9 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
   lazy val IGNORE: Set[String] = Set.empty[String]
 
   // an optional filter function to ignore test cases
+  val IGNORE_NAMES: mutable.Set[String] = mutable.Set[String]()
+
+  // an optional filter function to ignore test cases
   lazy val IGNORE_FILTER: SPARQLQueryEvaluationTest => Boolean = _ => {true}
 
   // holds the test data
@@ -49,6 +54,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
   // a single ScalaTest is generated per query
   testData
     .filter(data => !IGNORE.contains(data.uri))
+    .filter(t => IGNORE_NAMES.isEmpty || IGNORE_NAMES.exists(t.name.startsWith))
     .filter(IGNORE_FILTER)
     //    .slice(0, 5)
 //    .filter(data => data.name.startsWith("CONTAINS"))

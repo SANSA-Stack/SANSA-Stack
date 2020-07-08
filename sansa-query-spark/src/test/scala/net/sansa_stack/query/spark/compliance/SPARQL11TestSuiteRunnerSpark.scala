@@ -1,13 +1,15 @@
 package net.sansa_stack.query.spark.compliance
 
-import com.holdenkarau.spark.testing.{DataFrameSuiteBase, SharedSparkContext}
+import scala.collection.mutable
+
+import com.holdenkarau.spark.testing.{SharedSparkContext}
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.jena.sparql.expr.NodeValue
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.scalatest.Suite
+import org.scalatest.{ConfigMap, Suite}
 
 import net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuiteRunner
 
@@ -20,7 +22,7 @@ import net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuiteRunner
 abstract class SPARQL11TestSuiteRunnerSpark
   extends SPARQLQueryEvaluationTestSuiteRunner
 //
-    with org.scalatest.BeforeAndAfterAll
+    with org.scalatest.BeforeAndAfterAllConfigMap
     with SharedSparkContext { self: Suite =>
 
   System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -37,15 +39,29 @@ abstract class SPARQL11TestSuiteRunnerSpark
       .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
   ).getOrCreate()
 
-  override def beforeAll(): Unit = {
-//    super.beforeAll()
+//  override def beforeAll(): Unit = {
+////    super.beforeAll()
+//    conf.set("spark.sql.crossJoin.enabled", "true")
+//      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+//      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+//    _spark = SparkSession.builder.config(conf).master("local[1]").getOrCreate()
+//  }
+
+  override val invokeBeforeAllAndAfterAllEvenIfNoTestsAreExpected: Boolean = false
+
+  override def beforeAll(configMap: ConfigMap): Unit = {
     conf.set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
-    _spark = SparkSession.builder.config(conf).getOrCreate()
+    _spark = SparkSession.builder.config(conf).master("local[1]").getOrCreate()
+
+    val toIgnore = configMap.get("ignore")
+    if (toIgnore.nonEmpty) {
+      toIgnore.get.asInstanceOf[String].split(",").map(_.trim).foreach(name => IGNORE_NAMES.add(name))
+    }
   }
 
-  override def afterAll(): Unit = {
+  override def afterAll(configMap: ConfigMap): Unit = {
     super.afterAll()
     spark.stop()
     _spark = null

@@ -281,7 +281,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   implicit val o: Ordering[RdfPartitionComplex] = Ordering.by(e => (e.predicate, e.subjectType, e.objectType, e.langTagPresent, e.lang, e.datatype))
 
-  private def registerSparkTables(partitions: Map[RdfPartitionComplex, RDD[Row]]) = {
+  private def registerSparkTables(partitions: Map[RdfPartitionComplex, RDD[Row]]): Unit = {
 
 //    val partitions = Map(partitionsMap.toArray: _*) // scala.collection.immutable.TreeMap(partitionsMap.toArray: _*)
 
@@ -319,7 +319,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = spark.createDataFrame(rdd, sparkSchema).persist()
-//    df.show(false)
+    df.show(false)
 
     if (useHive) {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
@@ -528,7 +528,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val partitionsBC = spark.sparkContext.broadcast(partitions.keySet)
 
     implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
-    df.repartition(20).mapPartitions(iterator => {
+    df.coalesce(20).mapPartitions(iterator => {
       println("mapping partition")
       val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
       val it = iterator.map(mapper.map)
