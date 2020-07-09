@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.ontop
 
 import java.io.File
 import java.net.URI
+import java.nio.file.{Path, Paths}
 
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
@@ -71,9 +72,8 @@ object VerticalPartitioner {
         .abbr("db")
         .action((x, c) => c.copy(databaseName = x))
         .text("the database name registered in Spark metadata. Default: 'Default'"),
-      opt[Boolean]("partitioning")
-        .optional()
-        .action((x, c) => c.copy(usePartitioning = x))
+      opt[Unit]("partitioning")
+        .action((_, c) => c.copy(usePartitioning = true))
         .text("if partitioning of subject/object columns should be computed"),
       opt[Int]("partitioning-threshold")
         .optional()
@@ -179,6 +179,7 @@ object VerticalPartitioner {
     // set database as current
     spark.sql(s"use ${config.databaseName}")
 
+    // create the Spark tables
     println("creating Spark tables ...")
     partitions.foreach {
       case (p, rdd) => createSparkTable(spark, p, rdd,
@@ -186,10 +187,17 @@ object VerticalPartitioner {
                                         config.usePartitioning, config.partitioningThreshold)
     }
 
+    // write the partition metadata to disk
+    val path = Paths.get(s"/tmp/${config.databaseName}.ser")
+    println(s"writing partitioning metadata to $path")
+    PartitionSerDe.serializeTo(partitions.keySet, path)
 
     spark.stop()
-
   }
+
+//  def getOrCreate(databaseName: String): Set[RdfPartitionComplex]: Unit {
+//
+//  }
 
   private def estimatePartioningColumns(df: DataFrame): (Long, Long) = {
     val sCnt = df.select("s").distinct().count()
