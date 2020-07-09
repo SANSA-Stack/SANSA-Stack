@@ -15,21 +15,24 @@ class RDF_Feature_Extractor {
   private var _uri_key_column_name: String = "uri"
   private var _features_column_name: String = "features"
 
-  def set_mode(mode: String): Unit = {
+  def set_mode(mode: String): this.type = {
     if (_available_modes.contains(mode)) {
       _mode = mode
+      this
     }
     else {
       throw new Exception("The specified mode: " + mode + "is not supported. Currently available are: " + _available_modes)
     }
   }
 
-  def set_uri_key_column_name(uri_key_column_name: String): Unit = {
+  def set_uri_key_column_name(uri_key_column_name: String): this.type = {
     _uri_key_column_name = uri_key_column_name
+    this
   }
 
-  def set_features_column_name(features_column_name: String): Unit = {
+  def set_features_column_name(features_column_name: String): this.type = {
     _features_column_name = features_column_name
+    this
   }
 
   def transform(triples: RDD[Triple]): DataFrame = {
