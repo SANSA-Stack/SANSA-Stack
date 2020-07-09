@@ -83,20 +83,21 @@ object Tversky {
     val cv_features = cvModel.transform(fe_features).select(col(feature_extractor_uri_column_name), col(count_vectorizer_features_column_name)) // .filter(isNoneZeroVector(col(count_vectorizer_features_column_name)))
 
     // Similarity Estimation
-    val similarityModel = new TverskyModel
-    similarityModel.set_uri_column_name_dfA(feature_extractor_uri_column_name)
-    similarityModel.set_uri_column_name_dfB(feature_extractor_uri_column_name)
-    similarityModel.set_features_column_name_dfA(count_vectorizer_features_column_name)
-    similarityModel.set_features_column_name_dfB(count_vectorizer_features_column_name)
+    val similarityModel = new TverskyModel()
+      .set_uri_column_name_dfA(feature_extractor_uri_column_name)
+      .set_uri_column_name_dfB(feature_extractor_uri_column_name)
+      .set_features_column_name_dfA(count_vectorizer_features_column_name)
+      .set_features_column_name_dfB(count_vectorizer_features_column_name)
     // model evaluations
     // all pair
     val all_pair_similarity_df = similarityModel.similarityJoin(cv_features, cv_features, threshold_min_similarity)
     all_pair_similarity_df.show(false)
     // nearest neighbor
-    similarityModel.set_uri_column_name_dfA(feature_extractor_uri_column_name)
-    similarityModel.set_uri_column_name_dfB(feature_extractor_uri_column_name)
-    similarityModel.set_features_column_name_dfA(count_vectorizer_features_column_name)
-    similarityModel.set_features_column_name_dfB(count_vectorizer_features_column_name)
+    similarityModel
+      .set_uri_column_name_dfA(feature_extractor_uri_column_name)
+      .set_uri_column_name_dfB(feature_extractor_uri_column_name)
+      .set_features_column_name_dfA(count_vectorizer_features_column_name)
+      .set_features_column_name_dfB(count_vectorizer_features_column_name)
     val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
     val nn_similarity_df = similarityModel.nearestNeighbors(cv_features, key, 10, "theFirstUri", keep_key_uri_column = true)
     nn_similarity_df.show(false)
