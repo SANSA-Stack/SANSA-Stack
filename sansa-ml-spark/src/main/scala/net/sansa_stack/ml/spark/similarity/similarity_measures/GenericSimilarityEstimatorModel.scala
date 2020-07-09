@@ -22,20 +22,24 @@ class GenericSimilarityEstimatorModel {
     throw new Exception("this function should not be called")
   })
 
-  def set_uri_column_name_dfA(uri_column_name: String): Unit = {
+  def set_uri_column_name_dfA(uri_column_name: String): this.type = {
     _uri_column_name_dfA = uri_column_name
+    this
   }
 
-  def set_uri_column_name_dfB(uri_column_name: String): Unit = {
+  def set_uri_column_name_dfB(uri_column_name: String): this.type = {
     _uri_column_name_dfB = uri_column_name
+    this
   }
 
-  def set_features_column_name_dfA(features_column_name: String): Unit = {
+  def set_features_column_name_dfA(features_column_name: String): this.type = {
     _features_column_name_dfA = features_column_name
+    this
   }
 
-  def set_features_column_name_dfB(features_column_name: String): Unit = {
+  def set_features_column_name_dfB(features_column_name: String): this.type = {
     _features_column_name_dfB = features_column_name
+    this
   }
 
   protected def createCrossJoinDF(df_A: DataFrame, df_B: DataFrame): DataFrame = {
