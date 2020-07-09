@@ -19,6 +19,7 @@ object TripleLayoutDecimal
       o.getLiteralValue match {
         case value: Integer => java.math.BigDecimal.valueOf(value.longValue()) // Jena parses e.g. 1.0 to Integer
         case value: java.lang.Long => java.math.BigDecimal.valueOf(value.longValue())
+        case value: java.math.BigInteger => new java.math.BigDecimal(value)
         case _ => o.getLiteralValue.asInstanceOf[java.math.BigDecimal]
       }
     } else throw new RuntimeException(s"Layout only for BigDecimal values: $t")
