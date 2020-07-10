@@ -35,8 +35,6 @@ class SPARQL11TestSuiteRunnerSparkOntop
   extends SPARQL11TestSuiteRunnerSpark {
 
   override lazy val IGNORE = Set(/* AGGREGATES */
-    // TODO: support GROUP_CONCAT
-    aggregatesManifest + "agg-groupconcat-01", aggregatesManifest + "agg-groupconcat-02", aggregatesManifest + "agg-groupconcat-03", // TODO: support IF
     aggregatesManifest + "agg-err-02", /* BINDINGS
 			 */
     // TODO: fix it (UNDEF involves the notion of COMPATIBILITY when joining)
@@ -88,8 +86,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
   )
 
-//  override lazy val IGNORE_FILTER = t => testNamesToIgnore.exists(t.name.startsWith)
-//      t.name startsWith "Expression is equality"
+//  override lazy val IGNORE_FILTER = t => t.name.startsWith("GROUP_CONCAT")
 
   var ontopProperties: Properties = _
 

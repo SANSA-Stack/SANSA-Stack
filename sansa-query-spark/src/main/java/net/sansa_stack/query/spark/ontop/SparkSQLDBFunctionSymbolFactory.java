@@ -208,4 +208,14 @@ public class SparkSQLDBFunctionSymbolFactory extends AbstractSQLDBFunctionSymbol
                 }));
     }
 
+    @Override
+    protected DBFunctionSymbol createDBGroupConcat(DBTermType dbStringType, boolean isDistinct) {
+        return new SparkNullIgnoringDBGroupConcatFunctionSymbol(dbStringType, isDistinct,
+                (terms, termConverter, termFactory) -> String.format(
+                        "concat_ws(%s, %s(%s))",
+                        termConverter.apply(terms.get(1)),
+                        isDistinct ? "collect_set" : "collect_list",
+                        termConverter.apply(terms.get(0))
+                ));
+    }
 }
