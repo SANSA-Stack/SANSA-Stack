@@ -70,7 +70,7 @@ package object query {
     extends QueryExecutor
       with Serializable {
 
-    val queryExecutor = new SPARQLExecutor(triples, engine = SPARQLEngine.Ontop)
+    val queryExecutor = new SPARQLExecutor(triples, engine = SPARQLEngine.Sparqlify)
 
     override def sparql(sparqlQuery: String): DataFrame = {
       queryExecutor.sparql(sparqlQuery)

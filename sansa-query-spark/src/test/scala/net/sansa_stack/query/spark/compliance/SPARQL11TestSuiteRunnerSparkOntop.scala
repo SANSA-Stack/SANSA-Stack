@@ -15,11 +15,13 @@ import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.jena.sparql.resultset.SPARQLResult
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
-import org.scalatest.ConfigMap
+import org.scalatest.tags.Slow
+import org.scalatest.{ConfigMap, DoNotDiscover, Ignore}
 
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+
 
 /**
  * SPARQL 1.1 test suite runner for Ontop-based SPARQL-to-SQL implementation on Apache Spark.
@@ -27,6 +29,8 @@ import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
  *
  * @author Lorenz Buehmann
  */
+@DoNotDiscover
+@Slow
 class SPARQL11TestSuiteRunnerSparkOntop
   extends SPARQL11TestSuiteRunnerSpark {
 
@@ -79,7 +83,10 @@ class SPARQL11TestSuiteRunnerSparkOntop
     subqueryManifest + "subquery10", // ORDER BY IRI (for supported by the SI)
     subqueryManifest + "subquery11", // unbound variable: Var TODO: fix it
     subqueryManifest + "subquery12", subqueryManifest + "subquery13", // missing results (TODO: fix)
-    subqueryManifest + "subquery14")
+    subqueryManifest + "subquery14",
+
+
+  )
 
 //  override lazy val IGNORE_FILTER = t => testNamesToIgnore.exists(t.name.startsWith)
 //      t.name startsWith "Expression is equality"
@@ -148,3 +155,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
   class InvalidConstantTypeInResultException(message: String) extends OntopInternalBugException(message)
 
 }
+
+import org.scalatest.Tag
+
+object ExperimentalTest extends Tag("net.sansa_stack.tests.ExperimentalTest")

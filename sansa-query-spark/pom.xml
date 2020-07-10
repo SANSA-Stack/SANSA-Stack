@@ -11,7 +11,8 @@
 	</parent>
 
 	<properties>
-        <version.ontop>4.0.0-beta-2-SNAPSHOT</version.ontop>
+        <version.ontop>4.0.0-rc-1</version.ontop>
+<!--        <version.ontop>4.0.0-beta-2-SNAPSHOT</version.ontop>-->
         <version.owlapi.ontop>4.5.7</version.owlapi.ontop>
     </properties>
 
@@ -158,6 +159,12 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 
 		<!-- Override transitive tdb version via litmus -->
@@ -218,13 +225,13 @@
 			<artifactId>ontop-rdb</artifactId>
 			<version>${version.ontop}</version>
 		</dependency>
-		<dependency>
-			<groupId>it.unibz.inf.ontop</groupId>
-			<artifactId>ontop-sparql-compliance</artifactId>
-			<version>${version.ontop}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
+<!--        <dependency>-->
+<!--            <groupId>it.unibz.inf.ontop</groupId>-->
+<!--            <artifactId>ontop-sparql-compliance</artifactId>-->
+<!--            <version>${version.ontop}</version>-->
+<!--            <type>test-jar</type>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 		<!-- need to overwrite OWL API 5 with v4 used by Ontop -->
 		<dependency>
 			<groupId>net.sourceforge.owlapi</groupId>
@@ -246,6 +253,12 @@
 			<artifactId>owlapi-parsers</artifactId>
 			<version>${version.owlapi.ontop}</version>
 		</dependency>
+
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>chill_${scala.binary.version}</artifactId>
+            <version>0.9.3</version>
+        </dependency>
 
 		<dependency>
 			<groupId>io.netty</groupId>
