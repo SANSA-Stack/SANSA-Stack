@@ -142,10 +142,11 @@ object RDFByModularityClustering {
     val ((bestList1, bestList2), bestQ: Double): ((List[String], List[String]), Double) = {
 
       val s = deltaQDataSet.groupBy(0).sortGroup(1, Order.ASCENDING).reduceGroup {
-        (in, out: Collector[((List[String], List[String]), Double)]) =>
-          var prev: (String, String) = null
+        (in: Iterator[((List[String], List[String]), Double)], out: Collector[((List[String], List[String]), Double)]) =>
+          var prev: ((List[String], List[String]), Double) = null
           for (t <- in) {
             if (prev == null || prev != t) {
+              prev = t
               out.collect(t)
             }
           }
@@ -199,8 +200,9 @@ object RDFByModularityClustering {
   }
 
   def WriteToFile[T](dataset: DataSet[T], file: String, parallelism: (Boolean, Int) = (false, 0)): DataSink[T] =
-    parallelism._1 match {
-      case true => dataset.writeAsText(file, writeMode = FileSystem.WriteMode.OVERWRITE).setParallelism(parallelism._2)
-      case false => dataset.writeAsText(file, writeMode = FileSystem.WriteMode.OVERWRITE)
+    if (parallelism._1) {
+      dataset.writeAsText(file, writeMode = FileSystem.WriteMode.OVERWRITE).setParallelism(parallelism._2)
+    } else {
+      dataset.writeAsText(file, writeMode = FileSystem.WriteMode.OVERWRITE)
     }
 }
