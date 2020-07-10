@@ -24,6 +24,10 @@ public class QueryExecutionUtilsSpark {
 		// FIXME HACK to get rid of incorrect double precision types in CASTs; needs fix in sparqlify
 		sqlQueryStr = sqlQueryStr.replaceAll("AS double precision\\)", "AS double)");
 
+		// FIXME HACK to get rid of '... ON (true)' join conditions
+		sqlQueryStr = sqlQueryStr.replaceAll("ON \\(TRUE\\)", "");
+
+
 		Dataset<Row> dataset = sparkSession.sql(sqlQueryStr);
 
 //		System.out.println("SqlQueryStr: " + sqlQueryStr);

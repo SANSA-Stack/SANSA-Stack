@@ -6,8 +6,10 @@ import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import benchmark.testdriver.{LocalSPARQLParameterPool, SPARQLConnection2, TestDriver}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
 import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
+import org.apache.jena.query.{Query, QueryFactory}
 import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 import org.apache.spark.sql.{Row, SparkSession}
@@ -63,8 +65,14 @@ object MainSansaBSBM {
 
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
 
-    val conn = new SparqlQueryConnectionJsa(
-      new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
+    // Spark SQL does not support OFFSET - so for testing just remove it from the query
+    val conn = new SparqlQueryConnectionJsa(FluentQueryExecutionFactory
+        .from(new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
+        .config()
+          .withQueryTransform(q => { q.setOffset(Query.NOLIMIT); q })
+          .withParser(q => QueryFactory.create(q))
+        .end()
+        .create())
 
     val testDriver = new TestDriver()
     testDriver.processProgramParameters(Array("http://example.org/foobar/sparql", "-w", "1", "-runs", "1"))
