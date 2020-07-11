@@ -32,7 +32,6 @@ object Sparklify {
 
     val spark = SparkSession.builder
       .appName(s"Sparklify example ( $input )")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
         ", ",
