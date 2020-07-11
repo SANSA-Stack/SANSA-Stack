@@ -2,13 +2,13 @@ package net.sansa_stack.query.spark.ontop
 
 import java.io.File
 import java.net.URI
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SaveMode => TableSaveMode, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
 
@@ -28,7 +28,7 @@ object VerticalPartitioner {
   val warehouseLocation = new File("spark-warehouse").getAbsolutePath
 
   implicit val bNodeRead: scopt.Read[BlankNodeStrategy.Value] =
-    scopt.Read.reads(BlankNodeStrategy withName _)
+    scopt.Read.reads(BlankNodeStrategy withName)
 
   case class Config(
                      inputPath: URI = null,
@@ -37,6 +37,10 @@ object VerticalPartitioner {
                      blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table,
                      computeStatistics: Boolean = true,
                      databaseName: String = "Default",
+                     dropDatabase: Boolean = false,
+                     saveIgnore: Boolean = false,
+                     saveOverwrite: Boolean = false,
+                     saveAppend: Boolean = false,
                      usePartitioning: Boolean = false,
                      partitioningThreshold: Int = 100,
                      mode: String = "partitioner")
@@ -72,6 +76,18 @@ object VerticalPartitioner {
         .abbr("db")
         .action((x, c) => c.copy(databaseName = x))
         .text("the database name registered in Spark metadata. Default: 'Default'"),
+      opt[Unit]("drop-db")
+        .action((_, c) => c.copy(dropDatabase = true))
+        .text("if to drop an existing database"),
+      opt[Unit]("save-ignore")
+        .action((_, c) => c.copy(saveIgnore = true))
+        .text("if data/table already exists, the save operation is expected to not save the contents of the DataFrame and to not change the existing data"),
+      opt[Unit]("save-overwrite")
+        .action((_, c) => c.copy(saveOverwrite = true))
+        .text("if data/table already exists, existing data is expected to be overwritten"),
+      opt[Unit]("save-append")
+        .action((_, c) => c.copy(saveAppend = true))
+        .text("if data/table already exists, contents of the DataFrame are expected to be appended to existing data"),
       opt[Unit]("partitioning")
         .action((_, c) => c.copy(usePartitioning = true))
         .text("if partitioning of subject/object columns should be computed"),
@@ -151,6 +167,15 @@ object VerticalPartitioner {
       .enableHiveSupport()
       .getOrCreate()
 
+    // sanity check for existing database
+    val dbExists = spark.catalog.databaseExists(config.databaseName)
+
+    // we do terminate here if a database exist but neither overwrite or drop first was forced
+    if (dbExists && !(config.saveAppend || config.saveOverwrite || config.saveAppend || config.dropDatabase)) {
+        System.err.println("Error: database already exists. Please use CLI flags --drop-db or --overwrite-db to continue")
+        return
+    }
+
     // read triples as RDD[Triple]
     var triplesRDD = spark.ntriples()(config.inputPath.toString)
 
@@ -173,16 +198,30 @@ object VerticalPartitioner {
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = time(RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex()))
     println(s"#partitions: ${partitions.size}")
 
+    // we drop the database if forced
+    if (config.dropDatabase) spark.sql(s"DROP DATABASE IF EXISTS ${config.databaseName}")
+
     // create database in Spark
-    spark.sql(s"create database ${config.databaseName}")
+    spark.sql(s"create database if not exists ${config.databaseName}")
 
     // set database as current
     spark.sql(s"use ${config.databaseName}")
 
+    val saveMode: TableSaveMode =
+      if (config.saveIgnore) {
+        TableSaveMode.Ignore
+      } else if (config.saveAppend) {
+        TableSaveMode.Append
+      } else if (config.saveOverwrite) {
+        TableSaveMode.Overwrite
+      } else {
+        TableSaveMode.ErrorIfExists
+      }
+
     // create the Spark tables
     println("creating Spark tables ...")
     partitions.foreach {
-      case (p, rdd) => createSparkTable(spark, p, rdd,
+      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
                                         config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
                                         config.usePartitioning, config.partitioningThreshold)
     }
@@ -199,7 +238,7 @@ object VerticalPartitioner {
 //
 //  }
 
-  private def estimatePartioningColumns(df: DataFrame): (Long, Long) = {
+  private def estimatePartitioningColumns(df: DataFrame): (Long, Long) = {
     val sCnt = df.select("s").distinct().count()
     val oCnt = df.select("o").distinct().count()
 
@@ -209,6 +248,7 @@ object VerticalPartitioner {
   private def createSparkTable(session: SparkSession,
                                p: RdfPartitionComplex,
                                rdd: RDD[Row],
+                               saveMode: TableSaveMode,
                                blankNodeStrategy: BlankNodeStrategy.Value,
                                computeStatistics: Boolean,
                                path: String,
@@ -219,13 +259,15 @@ object VerticalPartitioner {
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = session.createDataFrame(rdd, sparkSchema)
 
-    if (!session.catalog.tableExists(tableName)) {
+    if (session.catalog.tableExists(tableName) && saveMode == TableSaveMode.ErrorIfExists) {
+      throw new RuntimeException(s"ERROR: table $tableName already exists. Please enable a save mode to handle this case.")
+    } else if (!(session.catalog.tableExists(tableName) && saveMode == TableSaveMode.Ignore)) {
       println(s"creating Spark table $tableName")
       time {
-        var writer = df.write.format("parquet")// .option("path", path)
+        var writer = df.write.mode(saveMode).format("parquet")// .option("path", path)
 
         if (usePartitioning) {
-          val (sCnt, oCnt) = estimatePartioningColumns(df)
+          val (sCnt, oCnt) = estimatePartitioningColumns(df)
           val ratio = oCnt / sCnt.doubleValue()
           println(s"partition estimates: |s|=$sCnt |o|=$oCnt ratio o/s=$ratio")
 

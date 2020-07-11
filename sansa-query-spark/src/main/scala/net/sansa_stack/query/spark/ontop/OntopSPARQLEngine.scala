@@ -321,7 +321,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = spark.createDataFrame(rdd, sparkSchema).persist()
-    df.show(false)
+//    df.show(false)
 
     if (useHive) {
       df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
@@ -509,8 +509,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
       s" got ${q.queryType().toString}")
     val df = executeDebug(query)._1
 //    df.show(false)
-//    println(df.count())
-
+//
 //    var input = ""
 //    while (input != "q") {
 //      println("enter SQL query (press 'q' to quit): ")
