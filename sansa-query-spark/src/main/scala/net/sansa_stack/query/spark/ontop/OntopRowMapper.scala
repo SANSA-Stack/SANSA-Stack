@@ -115,7 +115,7 @@ class OntopRowMapper(
       case (v, Some(term)) => binding.add(Var.alloc(v.getName), toNode(term, typeFactory))
       case _ =>
     }
-    println(s"row: $row --- binding: $binding")
+//    println(s"row: $row --- binding: $binding")
     binding
   }
 
