@@ -87,50 +87,29 @@ package object ops {
       })
     }
 
- /*
-    @inline def sparqlSortBy(rddOfDatasets: RDD[_ <: Dataset], queryStr: String, descending: Boolean): RDD[_ <: Dataset] = {
-      // def flatMapQuery(query: Query): RDD[Dataset] =
-      rddOfDatasets.filter(in => {
-        // TODO Make deserialization of query work
-        val rawQuery = QueryFactory.create(queryStr, Syntax.syntaxARQ)
-        val query = RddOfRdfOpUtils.enforceQueryAskType(rawQuery)
+    /*
+   @inline def sparqlSortBy(rddOfDatasets: RDD[_ <: Dataset], queryStr: String, descending: Boolean): RDD[_ <: Dataset] = {
+     // def flatMapQuery(query: Query): RDD[Dataset] =
+     rddOfDatasets.filter(in => {
+       // TODO Make deserialization of query work
+       val rawQuery = QueryFactory.create(queryStr, Syntax.syntaxARQ)
+       val query = RddOfRdfOpUtils.enforceQueryAskType(rawQuery)
 
-        val qe = QueryExecutionFactory.create(query, in)
-        var r = false
-        try {
-          r = qe.execAsk()
-          // Invert the result if drop is true
-          r = if (drop) !r else r
+       val qe = QueryExecutionFactory.create(query, in)
+       var r = false
+       try {
+         r = qe.execAsk()
+         // Invert the result if drop is true
+         r = if (drop) !r else r
 
-        } finally {
-          qe.close()
-        }
+       } finally {
+         qe.close()
+       }
 
-        r
-      })
-    }
-  */
-
-    // implicit class DatasetOps[T <: Dataset](dataset: RDD[T]) {
-    implicit class RdfOfDatasetOpsImpl(dataset: RDD[Dataset]) {
-
-      /**
-       * Execute an <b>extended</b> CONSTRUCT SPARQL query on an RDD of Datasets and
-       * yield every constructed named graph or default graph as a separate item
-       * Extended means that the use of GRAPH is allowed in the template,
-       * such as in CONSTRUCT { GRAPH ?g { ... } } WHERE { }
-       *
-       * @param query
-       * @return
-       */
-      @inline def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetsOps.sparqlFlatMap(dataset, query.toString())
-
-      @inline def sparqlFilterKeep(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, false)
-      @inline def sparqlFilterDrop(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, true)
-      @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetsOps.sparqlFilter(dataset, query.toString(), drop)
-
-      @inline def sparqlSortBy(query: Query, descending: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetsOps.sparqlFilter(dataset, query.toString(), drop)
-    }
+       r
+     })
+   }
+ */
 
   }
 
