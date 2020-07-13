@@ -164,7 +164,7 @@ package object ops {
     }
 
     // implicit class DatasetOps[T <: Dataset](dataset: RDD[T]) {
-    implicit class RdfOfModelsOpsImpl(rddOfModels: RDD[Dataset]) {
+    implicit class RdfOfModelsOpsImpl(rddOfModels: RDD[Model]) {
 
       /**
        * Execute an <b>extended</b> CONSTRUCT SPARQL query on an RDD of Datasets and
