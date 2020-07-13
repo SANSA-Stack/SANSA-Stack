@@ -4,7 +4,10 @@ import net.sansa_stack.inference.rules.ReasoningProfile
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.spark.forwardchaining.axioms.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
 import net.sansa_stack.owl.spark.owl._
+
 import org.apache.spark.sql.SparkSession
+
+import scopt.OptionParser
 
 object RDFGraphInference {
 
@@ -56,7 +59,7 @@ object RDFGraphInference {
     scopt.Read.reads(ReasoningProfile forName _.toLowerCase())
 
   // the CLI parser
-  val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
+  val parser: OptionParser[Config] = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
 
     head("RDFGraphMaterializer (axioms)", "0.5.0")
 
