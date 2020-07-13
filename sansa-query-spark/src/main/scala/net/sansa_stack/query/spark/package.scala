@@ -1,16 +1,21 @@
 package net.sansa_stack.query.spark
 
+import com.google.common.cache.{CacheBuilder, CacheLoader}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
+import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.api.java.function.Function
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
 import net.sansa_stack.query.spark.semantic.QuerySystem
-import net.sansa_stack.query.spark.sparqlify.{QueryExecutionSpark, SparqlifyUtils3}
+import net.sansa_stack.query.spark.sparqlify.{QueryExecutionSpark, SparkRowMapperSparqlify, SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionDefault, RdfPartitionerComplex}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.rdf.spark.utils.kryo.io.JavaKryoSerializationWrapper
 
 /**
  * Wrap up implicit classes/methods to query RDF data from N-Triples files into either [[Sparqlify]] or
@@ -46,6 +51,8 @@ package object query {
     override def sparql(sparqlQuery: String): DataFrame = {
       queryExecutor.sparql(sparqlQuery)
     }
+
+    override def sparqlRDD(sparqlQuery: String): RDD[Binding] = queryExecutor.sparqlRDD(sparqlQuery)
   }
 
   trait QueryExecutor {
@@ -57,16 +64,40 @@ package object query {
      * @param sparqlQuery a SPARQL query
      */
     def sparql(sparqlQuery: String): DataFrame
+
+
+    /**
+     * Execute a SPARQL query and return an RDD of bindings.
+     *
+     * Default partitioning scheme used is VP.
+     *
+     * @param sparqlQuery a SPARQL query
+     */
+    def sparqlRDD(sparqlQuery: String): RDD[Binding]
+  }
+
+  trait PartitionCache {
+    val underlyingGuavaCache = CacheBuilder.newBuilder()
+      .maximumSize(10L)
+      .build (
+        new CacheLoader[RDD[Triple], Map[RdfPartitionComplex, RDD[Row]]] {
+          def load(triples: RDD[Triple]): Map[RdfPartitionComplex, RDD[Row]] =
+            RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex(false))
+        }
+      )
+
+    def getOrCreate(triples: RDD[Triple]): Map[RdfPartitionComplex, RDD[Row]] = underlyingGuavaCache.get(triples)
+
   }
 
   /**
-   * An Ontop backed SPARQL executor implicitly bound to an RDD[Triple].
+   * An Sparqlify backed SPARQL executor implicitly bound to an RDD[Triple].
    *
    * VP is used as partitioning strategy, i.e. one partition s,o per predicate p in the RDF dataset.
    *
    * @param triples the triples to work on
    */
-  implicit class OntopSPARQLExecutorAsDefault(triples: RDD[Triple])
+  implicit class SparqlifySPARQLExecutorAsDefault(triples: RDD[Triple])
     extends QueryExecutor
       with Serializable {
 
@@ -75,6 +106,8 @@ package object query {
     override def sparql(sparqlQuery: String): DataFrame = {
       queryExecutor.sparql(sparqlQuery)
     }
+
+    override def sparqlRDD(sparqlQuery: String): RDD[Binding] = queryExecutor.sparqlRDD(sparqlQuery)
   }
 
   /**
@@ -87,7 +120,7 @@ package object query {
       with Serializable {
 
     def this(triples: RDD[Triple]) {
-      this(RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex()))
+      this(RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex(false)))
     }
 
     val spark = SparkSession.builder().getOrCreate()
@@ -102,6 +135,8 @@ package object query {
     override def sparql(sparqlQuery: String): DataFrame = {
       sparqlEngine.execute(sparqlQuery)
     }
+
+    override def sparqlRDD(sparqlQuery: String): RDD[Binding] = sparqlEngine.execSelect(sparqlQuery)
   }
 
   /**
@@ -133,14 +168,23 @@ package object query {
       val rewrite = rewriter.rewrite(query)
       val df = QueryExecutionSpark.createQueryExecution(spark, rewrite, query)
 
-      /**
-       * val it = rdd.toLocalIterator.asJava
-       * val resultVars = rewrite.getProjectionOrder()
-       *
-       * val tmp = ResultSetUtils.create2(resultVars, it)
-       * new ResultSetCloseable(tmp)
-       */
       df
+    }
+
+    override def sparqlRDD(sparqlQuery: String): RDD[Binding] = {
+      val query = QueryFactory.create(sparqlQuery)
+      val rewrite = rewriter.rewrite(query)
+      val df = QueryExecutionSpark.createQueryExecution(spark, rewrite, query)
+
+      val varDef = rewrite.getVarDefinition.getMap
+
+      val rowMapper: Function[Row, Binding] = new SparkRowMapperSparqlify(varDef)
+      val z: Function[Row, Binding] = JavaKryoSerializationWrapper.wrap(rowMapper)
+
+      implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
+      val result: JavaRDD[Binding] = df.javaRDD.map(z)
+
+      result.rdd
     }
 
   }

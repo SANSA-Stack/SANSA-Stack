@@ -1,9 +1,6 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.io.{File, StringReader}
-import java.net.{URI, URLEncoder}
-import java.nio.charset.StandardCharsets
-import java.nio.file.Paths
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util
 import java.util.Properties
@@ -24,20 +21,14 @@ import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.model.vocabulary.XSD
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
-import org.apache.jena.query.{QueryFactory, QueryType}
+import org.apache.jena.graph.Triple
+import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, OWLOntology}
-import scopt.OParser
+import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 
-import net.sansa_stack.query.spark.ontop.VerticalPartitioner.{Config, parser, run, showTables}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -94,7 +85,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex], blankNod
 
   // create OBDA mappings
   val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions)
-  println(mappings)
+  logger.debug(s"Ontop mappings:\n$mappings")
 
   // the Ontop core
   val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties)
@@ -210,10 +201,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex], blankNod
     mappingConfiguration.loadSpecification
   }
 
-
-
   def close(): Unit = connection.close()
-
 }
 
 /**
@@ -248,7 +236,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     this(spark, null, partitions.keySet)
 
     // create and register Spark tables
-    registerSparkTables(partitions)
+    SparkTableGenerator(spark).createAndRegisterSparkTables(partitions)
   }
 
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
@@ -280,78 +268,6 @@ class OntopSPARQLEngine(val spark: SparkSession,
   if (databaseName != null && databaseName.trim.nonEmpty) {
     spark.sql(s"USE $databaseName")
   }
-
-  implicit val o: Ordering[RdfPartitionComplex] = Ordering.by(e => (e.predicate, e.subjectType, e.objectType, e.langTagPresent, e.lang, e.datatype))
-
-  private def registerSparkTables(partitions: Map[RdfPartitionComplex, RDD[Row]]): Unit = {
-
-//    val partitions = Map(partitionsMap.toArray: _*) // scala.collection.immutable.TreeMap(partitionsMap.toArray: _*)
-
-    // register the lang tagged RDDs as a single table:
-    // we have to merge the RDDs of all languages per property first, otherwise we would always replace it by another
-    // language
-    partitions
-      .filter(_._1.lang.nonEmpty)
-      .map { case (p, rdd) => (p.predicate, p, rdd) }
-      .groupBy(_._1)
-      .map { case (k, v) =>
-        val rdd = spark.sparkContext.union(v.map(_._3).toSeq)
-        val p = v.head._2
-        (p, rdd)
-      }
-      .foreach {case (p, rdd) => createSparkTable(p, rdd)}
-
-    // register the non-lang tagged RDDs as table
-    partitions
-      .filter(_._1.lang.isEmpty)
-      .foreach {
-        case (p, rdd) => createSparkTable(p, rdd)
-      }
-  }
-
-  /**
-   * creates a Spark table for each RDF partition
-   */
-  private def createSparkTable(p: RdfPartitionComplex, rdd: RDD[Row]) = {
-
-    val name = SQLUtils.createTableName(p, blankNodeStrategy)
-    logger.debug(s"creating Spark table ${escapeTablename(name)}")
-    println(s"creating Spark table ${escapeTablename(name)}")
-
-    val scalaSchema = p.layout.schema
-    val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
-    val df = spark.createDataFrame(rdd, sparkSchema).persist()
-//    df.show(false)
-
-    if (useHive) {
-      df.createOrReplaceTempView("`" + escapeTablename(name) + "_tmp`")
-
-      val schemaDDL = spark.createDataFrame(rdd, sparkSchema).schema.toDDL
-      spark.sql(s"DROP TABLE IF EXISTS `${escapeTablename(name)}`")
-      val query =
-        s"""
-           |CREATE TABLE IF NOT EXISTS `${escapeTablename(name)}`
-           |
-           |USING PARQUET
-           |PARTITIONED BY (`s`)
-           |AS SELECT * FROM `${escapeTablename(name)}_tmp`
-           |""".stripMargin
-      spark.sql(query)
-      if (useStatistics) {
-        spark.sql(s"ANALYZE TABLE `${escapeTablename(name)}` COMPUTE STATISTICS FOR COLUMNS s, o")
-      }
-    } else {
-      df.createOrReplaceTempView("`" + escapeTablename(name) + "`")
-      //          df.write.partitionBy("s").format("parquet").saveAsTable(escapeTablename(name))
-    }
-  }
-
-  private def escapeTablename(path: String): String =
-    URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
-      .toLowerCase
-      .replace('%', 'P')
-      .replace('.', 'C')
-      .replace("-", "dash")
 
 
   /**
@@ -459,7 +375,6 @@ class OntopSPARQLEngine(val spark: SparkSession,
       val sql = queryRewrite.sqlQuery.replace("\"", "`")
         .replace("`PUBLIC`.", "")
       logger.info(s"SQL query:\n$sql")
-      println(sql)
 
       // execute SQL query
       val resultRaw = spark.sql(sql)
@@ -507,6 +422,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val q = QueryFactory.create(query)
     if (!q.isSelectType) throw new RuntimeException(s"Wrong query type. Expected SELECT query," +
       s" got ${q.queryType().toString}")
+
     val df = executeDebug(query)._1
 //    df.show(false)
 //
@@ -528,9 +444,9 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
     val partitionsBC = spark.sparkContext.broadcast(partitions)
 
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
+    implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
     df.coalesce(20).mapPartitions(iterator => {
-      println("mapping partition")
+//      println("mapping partition")
       val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
       val it = iterator.map(mapper.map)
 //      mapper.close()
@@ -573,7 +489,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
     val partitionsBC = spark.sparkContext.broadcast(partitions)
 
-    implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[org.apache.jena.graph.Triple]
+    implicit val tripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
     df.mapPartitions(iterator => {
       val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
       val it = mapper.toTriples(iterator)
@@ -589,157 +505,7 @@ object OntopSPARQLEngine {
   val warehouseLocation = new File("spark-warehouse").getAbsolutePath
 
   def main(args: Array[String]): Unit = {
-    OParser.parse(parser, args, Config()) match {
-      case Some(config) =>
-        run(config)
-      case _ =>
-      // arguments are bad, error message will have been displayed
-    }
+    new OntopCLI().run(args)
   }
-
-  private def run(config: Config): Unit = {
-    import net.sansa_stack.rdf.spark.io._
-
-    val spark = SparkSession.builder
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      // .config("spark.kryo.registrationRequired", "true")
-      // .config("spark.eventLog.enabled", "true")
-      .config("spark.kryo.registrator", String.join(", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
-      //      .config("spark.default.parallelism", "4")
-      //      .config("spark.sql.shuffle.partitions", "4")
-      //      .config("spark.sql.warehouse.dir", warehouseLocation)
-      .config("spark.sql.cbo.enabled", true)
-      .config("spark.sql.statistics.histogram.enabled", true)
-      .config("spark.sql.crossJoin.enabled", "true")
-      .enableHiveSupport()
-      .getOrCreate()
-
-    val sparqlEngine =
-      if (config.inputPath != null) {
-        // read triples as RDD[Triple]
-        var triplesRDD = spark.ntriples()(config.inputPath.toString).cache()
-
-        // load optional schema file and filter properties used for VP
-        var ont: OWLOntology = null
-
-        if (config.schemaPath != null) {
-          val owlFile = new File(config.schemaPath)
-          val man = OWLManager.createOWLOntologyManager()
-          ont = man.loadOntologyFromOntologyDocument(owlFile)
-          //    val cleanOnt = man.createOntology()
-          //    man.addAxioms(cleanOnt, ont.asInstanceOf[HasLogicalAxioms].getLogicalAxioms)
-          //
-          //    owlFile = "/tmp/clean-dbo.nt"
-          //    man.saveOntology(cleanOnt, new FileOutputStream(owlFile))
-
-          // get all object properties in schema file
-          val objectProperties = ont.asInstanceOf[HasObjectPropertiesInSignature].getObjectPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
-
-          // get all object properties in schema file
-          val dataProperties = ont.asInstanceOf[HasDataPropertiesInSignature].getDataPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
-
-          var schemaProperties = objectProperties ++ dataProperties
-          schemaProperties = Set("http://dbpedia.org/ontology/birthPlace", "http://dbpedia.org/ontology/birthDate")
-
-          // filter triples RDD
-          triplesRDD = triplesRDD.filter(t => schemaProperties.contains(t.getPredicate.getURI))
-        }
-
-        // do partitioning here
-        val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex(false))
-        println(s"num partitions: ${partitions.keySet.size}")
-
-        // create the SPARQL engine
-        new OntopSPARQLEngine(spark, partitions)
-      } else {
-        // load partitioning metadata
-        val partitions = PartitionSerDe.deserializeFrom(Paths.get(config.metaDataPath))
-        // create the SPARQL engine
-        new OntopSPARQLEngine(spark, config.databaseName, partitions)
-      }
-
-    var input = config.initialQuery
-
-    def runQuery(query: String) = {
-      try {
-        val q = QueryFactory.create(query)
-
-        q.queryType() match {
-          case QueryType.SELECT =>
-            val res = sparqlEngine.execSelect(query)
-            println(res.collect().mkString("\n"))
-          case QueryType.ASK =>
-            val res = sparqlEngine.execAsk(query)
-            println(res)
-          case QueryType.CONSTRUCT =>
-            val res = sparqlEngine.execConstruct(query)
-            println(res.collect().mkString("\n"))
-        }
-      } catch {
-        case e: Exception => Console.err.println("failed to execute query")
-          e.printStackTrace()
-      }
-    }
-
-    if (input != null) {
-      runQuery(input)
-    }
-
-    while (input != "q") {
-      println("enter SPARQL query (press 'q' to quit): ")
-      input = scala.io.StdIn.readLine()
-
-      runQuery(input)
-    }
-
-    sparqlEngine.stop()
-
-    spark.stop()
-  }
-
-  case class Config(
-                     inputPath: URI = null,
-                     metaDataPath: URI = null,
-                     schemaPath: URI = null,
-                     databaseName: String = null,
-                     initialQuery: String = null)
-
-  import scopt.OParser
-  val builder = OParser.builder[Config]
-  val parser = {
-    import builder._
-    OParser.sequence(
-      programName("Ontop SPARQL Engine"),
-      head("Ontop SPARQL Engine", "0.1.0"),
-      opt[URI]('i', "input")
-        .action((x, c) => c.copy(inputPath = x))
-        .text("path to input data"),
-      opt[URI]('m', "metadata")
-        .action((x, c) => c.copy(metaDataPath = x))
-        .text("path to partitioning metadata"),
-      opt[String]("database")
-        .abbr("db")
-        .action((x, c) => c.copy(databaseName = x))
-        .text("the name of the Spark databases used as KB"),
-      opt[URI]('s', "schema")
-        .optional()
-        .action((x, c) => c.copy(schemaPath = x))
-        .text("an optional file containing the OWL schema to process only object and data properties"),
-      opt[String]('q', "query")
-        .optional()
-        .action((x, c) => c.copy(initialQuery = x))
-        .text("an initial SPARQL query that will be executed"),
-      checkConfig( c =>
-        if (c.databaseName != null && c.inputPath != null) failure("either specify path to data or an already created database")
-        else success ),
-        checkConfig( c =>
-        if (c.databaseName != null && c.metaDataPath == null) failure("If database is used the path to the partitioning " +
-          "metadata has to be provided as well")
-        else success )
-    )
-  }
-
 
 }

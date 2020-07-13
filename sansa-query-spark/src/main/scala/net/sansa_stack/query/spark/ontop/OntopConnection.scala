@@ -16,14 +16,14 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 object OntopConnection {
 
   // create the tmp DB needed for Ontop
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE;DB_CLOSE_DELAY=-1"
+  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
   private val JDBC_USER = "sa"
   private val JDBC_PASSWORD = ""
 
   lazy val connection: Connection = try {
-    println("creating DB connection ")
+//    println("creating DB connection ")
     val conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-    println("created DB connection")
+//    println("created DB connection")
     conn
   } catch {
     case e: SQLException =>
@@ -37,7 +37,7 @@ object OntopConnection {
 
   def apply(obdaMappings: String, properties: Properties, partitions: Set[RdfPartitionComplex]): OntopReformulationSQLConfiguration = {
     val conf = configs.getOrElse(partitions, {
-      println("creating reformulation config")
+//      println("creating reformulation config")
       val reformulationConfiguration = {
         JDBCDatabaseGenerator.generateTables(connection, partitions)
 
@@ -64,7 +64,7 @@ object OntopConnection {
 
       configs += partitions -> reformulationConfiguration
 
-      println("done")
+//      println("done")
       reformulationConfiguration
     })
     conf
