@@ -12,7 +12,6 @@ import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReaso
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.spark.sql.SparkSession
 import scopt.{OptionParser, Read}
-import scopt.Read._
 
 object RDFGraphInference {
 
@@ -78,13 +77,9 @@ object RDFGraphInference {
     scopt.Read.reads(ReasoningProfile forName _.toLowerCase())
 
   // read node enum
-     implicit val nodeRead: Read[Node] = scopt.Read.reads(NodeFactory.createURI(_))
-  import Read._
+  implicit val nodeRead: Read[Node] = scopt.Read.reads(NodeFactory.createURI(_))
 
-//  implicit val nodeRead: Read[Seq[Node]] = seqRead(Read.reads(NodeFactory.createURI(_)))
-//
-//  implicit val inputRead: Read[Seq[URI]] = seqRead(Read.uriRead)
-
+  // the CLI parser
   val parser: OptionParser[Config] = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
 
     head("RDFGraphMaterializer", "0.1.0")
@@ -122,56 +117,4 @@ object RDFGraphInference {
       if (c.profile == TRANSITIVE && c.properties.isEmpty) failure("Option --properties must not be empty if profile 'transitive' is set")
       else success)
   }
-
-  // the CLI parser
-//
-//  val builder: OParserBuilder[Config] = OParser.builder[Config]
-//
-//  val parser: OParser[Unit, Config] = {
-//    import builder._
-//
-//    OParser.sequence(
-//
-//      programName("RDFGraphMaterializer"),
-//
-//      head("RDFGraphMaterializer", "0.1.0"),
-//
-//        opt[Seq[URI]]('i', "input").required().valueName("<path1>,<path2>,...").
-//          action((x, c) => c.copy(in = x)).
-//          text("path to file or directory that contains the input files (in N-Triples format)"),
-//
-//        opt[URI]('o', "out").required().valueName("<directory>").
-//          action((x, c) => c.copy(out = x)).
-//          text("the output directory"),
-//
-//        opt[Seq[Node]]("properties").optional().valueName("<property1>,<property2>,...").
-//          action((x, c) => {
-//            c.copy(properties = x)
-//          }).
-//          text("list of properties for which the transitive closure will be computed (used only for profile 'transitive')"),
-//
-//        opt[ReasoningProfile]('p', "profile").required().valueName("{rdfs | rdfs-simple | owl-horst | transitive}").
-//          action((x, c) => c.copy(profile = x)).
-//          text("the reasoning profile"),
-//
-//        opt[Unit]("single-file").optional().action((_, c) =>
-//          c.copy(writeToSingleFile = true)).text("write the output to a single file in the output directory"),
-//
-//        opt[Unit]("sorted").optional().action((_, c) =>
-//          c.copy(sortedOutput = true)).text("sorted output of the triples (per file)"),
-//
-//        opt[Int]("parallelism").optional().action((x, c) =>
-//          c.copy(parallelism = x))
-//          .text("the degree of parallelism, i.e. the number of Spark partitions used in the Spark operations"),
-//
-//        help("help").text("prints this usage text"),
-//
-//        checkConfig(c =>
-//          if (c.profile == TRANSITIVE && c.properties.isEmpty) failure("Option --properties must not be empty if profile 'transitive' is set")
-//          else success)
-//    )
-//
-//  }
-
-
 }
