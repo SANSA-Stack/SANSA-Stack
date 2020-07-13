@@ -3,11 +3,8 @@ package net.sansa_stack.query.spark.graph.jena.serialization
 import com.esotericsoftware.kryo.Kryo
 import net.sansa_stack.query.spark.graph.jena._
 import net.sansa_stack.query.spark.graph.jena.expression.Expression
-import net.sansa_stack.query.spark.graph.jena.serialization.JenaKryoSerializers.{DatasetSerializer, QuerySerializer}
 import net.sansa_stack.query.spark.graph.jena.util._
 import org.apache.jena.graph.Node
-import org.apache.jena.query.Query
-import org.apache.jena.sparql.core.DatasetImpl
 import org.apache.spark.serializer.KryoRegistrator
 
 /**
