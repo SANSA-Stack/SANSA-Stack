@@ -3,6 +3,9 @@ package net.sansa_stack.rdf.spark.io
 import com.esotericsoftware.kryo.Kryo
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
+import org.apache.jena.query.Query
+import org.apache.jena.rdf.model.impl.ModelCom
+import org.apache.jena.sparql.core.DatasetImpl
 import org.apache.spark.serializer.KryoRegistrator
 
 /**
@@ -29,5 +32,12 @@ class JenaKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[org.apache.jena.graph.Triple], new TripleSerializer)
     kryo.register(classOf[Array[org.apache.jena.graph.Triple]])
     kryo.register(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
+
+    // Jena's Query class
+    kryo.register(classOf[Query], new QuerySerializer)
+
+
+    kryo.register(classOf[ModelCom], new ModelSerializer)
+    kryo.register(classOf[DatasetImpl], new DatasetSerializer)
   }
 }

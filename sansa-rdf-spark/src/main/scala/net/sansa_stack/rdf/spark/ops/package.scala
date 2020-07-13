@@ -1,5 +1,6 @@
 package net.sansa_stack.rdf.spark
 
+import net.sansa_stack.rdf.spark.ops.RddOfModelsOps
 import org.apache.jena.graph.Graph
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.Model
@@ -114,25 +115,43 @@ package object ops {
   }
 
 
-  /**
+  implicit class RddOfDatasetsOpsImpl(rddOfDatasets: RDD[Dataset]) {
+
+    /**
+     * Execute an <b>extended</b> CONSTRUCT SPARQL query on an RDD of Datasets and
+     * yield every constructed named graph or default graph as a separate item
+     * Extended means that the use of GRAPH is allowed in the template,
+     * such as in CONSTRUCT { GRAPH ?g { ... } } WHERE { }
+     *
+     * @param query
+     * @return
+     */
+    @inline def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetsOps.sparqlFlatMap(rddOfDatasets, query.toString())
+
+    @inline def sparqlFilterKeep(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, false)
+    @inline def sparqlFilterDrop(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, true)
+    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetsOps.sparqlFilter(rddOfDatasets, query.toString(), drop)
+
+  }
+
+
+
+/**
    * Operations for RDD[Model]
    */
   object RddOfModelsOps {
 
-    @inline def sparqlFlatMap(rddOfModels: RDD[_ <: Model], queryStr: String, emitEmptyModels: Boolean = false): RDD[Model] = {
+    @inline def sparqlMap(rddOfModels: RDD[_ <: Model], queryStr: String): RDD[Model] = {
       // def flatMapQuery(query: Query): RDD[Dataset] =
-      rddOfModels.flatMap(in => {
+      rddOfModels.map(in => {
         // TODO I don't get why the Query object is not serializablbe even though
         // the registrator for it is loaded ... investigae...
         val query = QueryFactory.create(queryStr, Syntax.syntaxARQ);
 
         val qe = QueryExecutionFactory.create(query, in)
-        var r: Seq[Model] = null
+        var r: Model = null
         try {
-          val tmp = qe.execConstruct()
-
-          r = if (!emitEmptyModels && tmp.isEmpty) Seq() else Seq(tmp)
-
+          r = qe.execConstruct()
         } finally {
           qe.close()
         }
@@ -163,25 +182,27 @@ package object ops {
       })
     }
 
-    // implicit class DatasetOps[T <: Dataset](dataset: RDD[T]) {
-    implicit class RdfOfModelsOpsImpl(rddOfModels: RDD[Model]) {
+  }
 
-      /**
-       * Execute an <b>extended</b> CONSTRUCT SPARQL query on an RDD of Datasets and
-       * yield every constructed named graph or default graph as a separate item
-       * Extended means that the use of GRAPH is allowed in the template,
-       * such as in CONSTRUCT { GRAPH ?g { ... } } WHERE { }
-       *
-       * @param query
-       * @return
-       */
-      @inline def sparqlFlatMap(query: Query): RDD[Model] = RddOfModelsOps.sparqlFlatMap(rddOfModels, query.toString())
 
-      @inline def sparqlFilterKeep(query: Query): RDD[_ <: Model] = sparqlFilter(query, false)
-      @inline def sparqlFilterDrop(query: Query): RDD[_ <: Model] = sparqlFilter(query, true)
-      @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Model] = RddOfModelsOps.sparqlFilter(rddOfModels, query.toString(), drop)
+  // implicit class DatasetOps[T <: Dataset](dataset: RDD[T]) {
+  implicit class RddOfModelsOpsImpl(rddOfModels: RDD[Model]) {
 
-    }
+    /**
+     * Execute an <b>extended</b> CONSTRUCT SPARQL query on an RDD of Datasets and
+     * yield every constructed named graph or default graph as a separate item
+     * Extended means that the use of GRAPH is allowed in the template,
+     * such as in CONSTRUCT { GRAPH ?g { ... } } WHERE { }
+     *
+     * @param query
+     * @return
+     */
+    @inline def sparqlMap(query: Query): RDD[Model] = RddOfModelsOps.sparqlMap(rddOfModels, query.toString())
+
+    @inline def sparqlFilterKeep(query: Query): RDD[_ <: Model] = sparqlFilter(query, false)
+    @inline def sparqlFilterDrop(query: Query): RDD[_ <: Model] = sparqlFilter(query, true)
+    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Model] = RddOfModelsOps.sparqlFilter(rddOfModels, query.toString(), drop)
 
   }
+
 }

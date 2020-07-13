@@ -1,8 +1,14 @@
 package net.sansa_stack.rdf.common.kryo.jena
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.nio.charset.StandardCharsets
+
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
+import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryFactory, Syntax}
+import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import org.apache.jena.riot.system.RiotLib
 import org.apache.jena.sparql.core.{Quad => JenaQuad}
 import org.apache.jena.sparql.core.Var
@@ -173,6 +179,65 @@ object JenaKryoSerializers {
       val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val o = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       new JenaQuad(g, s, p, o)
+    }
+  }
+
+
+  class QuerySerializer extends Serializer[Query] {
+    override def write(kryo: Kryo, output: Output, obj: Query) {
+      // Do we need to write the String class?
+      // kryo.writeClassAndObject(output, obj.toString)
+      output.writeString(obj.toString)
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[Query]): Query = {
+      val queryStr = input.readString() // kryo.readClass(input).asInstanceOf[String]
+
+      // We use syntaxARQ as for all practical purposes it is a superset of
+      // standard SPARQL
+      val result = QueryFactory.create(queryStr, Syntax.syntaxARQ)
+      result
+    }
+  }
+
+  /**
+   * TODO This is just a preliminary serializer implementation:
+   * Main tasks: use a more compact format than NQUADS and ensure that bnodes are preserved
+   *
+   */
+  class DatasetSerializer extends Serializer[Dataset] {
+    override def write(kryo: Kryo, output: Output, obj: Dataset) {
+      val tmp = new ByteArrayOutputStream()
+      RDFDataMgr.write(tmp, obj, RDFFormat.NQUADS)
+
+      output.writeString(tmp.toString)
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[Dataset]): Dataset = {
+      val str = input.readString()
+      val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
+      val result = DatasetFactory.create
+      RDFDataMgr.read(result, tmp, Lang.NQUADS)
+
+      result
+    }
+  }
+
+  class ModelSerializer extends Serializer[Model] {
+    override def write(kryo: Kryo, output: Output, obj: Model) {
+      val tmp = new ByteArrayOutputStream()
+      RDFDataMgr.write(tmp, obj, RDFFormat.NTRIPLES)
+
+      output.writeString(tmp.toString)
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[Model]): Model = {
+      val str = input.readString()
+      val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
+      val result = ModelFactory.createDefaultModel
+      RDFDataMgr.read(result, tmp, Lang.NTRIPLES)
+
+      result
     }
   }
 }
