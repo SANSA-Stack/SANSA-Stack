@@ -14,43 +14,7 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
  */
 object JenaKryoSerializers {
 
-  class QuerySerializer extends Serializer[Query] {
-    override def write(kryo: Kryo, output: Output, obj: Query) {
-      // Do we need to write the String class?
-      // kryo.writeClassAndObject(output, obj.toString)
-      output.writeString(obj.toString)
-    }
+  // No common query layer specific serializers so far
+  // This is the place to add them in when the need arises
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Query]): Query = {
-      val queryStr = input.readString() // kryo.readClass(input).asInstanceOf[String]
-
-      // We use syntaxARQ as for all practical purposes it is a superset of
-      // standard SPARQL
-      val result = QueryFactory.create(queryStr, Syntax.syntaxARQ)
-      result
-    }
-  }
-
-  /**
-   * TODO This is just a preliminary serializer implementation:
-   * Main tasks: use a more compact format than NQUADS and ensure that bnodes are preserved
-   *
-   */
-  class DatasetSerializer extends Serializer[Dataset] {
-    override def write(kryo: Kryo, output: Output, obj: Dataset) {
-      val tmp = new ByteArrayOutputStream()
-      RDFDataMgr.write(tmp, obj, RDFFormat.NQUADS)
-
-      output.writeString(tmp.toString)
-    }
-
-    override def read(kryo: Kryo, input: Input, objClass: Class[Dataset]): Dataset = {
-      val str = input.readString()
-      val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
-      val result = DatasetFactory.create
-      RDFDataMgr.read(result, tmp, Lang.NQUADS)
-
-      result
-    }
-  }
 }

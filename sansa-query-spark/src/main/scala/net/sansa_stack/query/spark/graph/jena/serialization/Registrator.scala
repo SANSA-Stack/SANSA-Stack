@@ -17,11 +17,6 @@ class Registrator extends KryoRegistrator {
 
   override def registerClasses(kryo: Kryo): Unit = {
 
-    // Jena's Query class
-    kryo.register(classOf[Query], new QuerySerializer)
-    kryo.register(classOf[DatasetImpl], new DatasetSerializer)
-
-
     // Triple pattern
     kryo.register(classOf[TriplePattern])
     kryo.register(classOf[BasicGraphPattern])
