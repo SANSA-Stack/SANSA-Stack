@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head>
+    <variable name="X"/>
+  </head>
+  <results>
+    <result>
+      <binding name="X">
+        <uri>http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType7</uri>
+      </binding>
+    </result>
+    <result>
+      <binding name="X">
+        <uri>http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType8</uri>
+      </binding>
+    </result>
+    <result>
+      <binding name="X">
+        <uri>http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType6</uri>
+      </binding>
+    </result>
+    <result>
+      <binding name="X">
+        <uri>http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType9</uri>
+      </binding>
+    </result>
+  </results>
+</sparql>

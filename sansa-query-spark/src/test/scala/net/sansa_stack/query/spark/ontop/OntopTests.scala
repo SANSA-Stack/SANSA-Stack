@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.sparql2sql
+package net.sansa_stack.query.spark.ontop
 
 import java.io.{File, FileInputStream}
 
@@ -44,21 +44,22 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
     conf
   }
 
-  test("Test Ontop with BSBM Q1") {
-    val queryString = Source.fromFile(getClass.getResource("/sparklify/queries/bsbm/Q1.sparql").getPath).getLines.mkString("\n")
-    val query = QueryFactory.create(queryString)
+  val queries = List("Q1", "Q2") // List("Q1", "Q2", "Q3")
 
-    val result = sparqlExecutor.sparqlRDD(queryString).collect()
+  queries.foreach(q => {
+    test(s"Test Ontop with BSBM $q") {
+      val queryString = Source.fromFile(getClass.getResource(s"/sparklify/queries/bsbm/$q.sparql").getPath).getLines.mkString("\n")
+      val query = QueryFactory.create(queryString)
 
-    val rs = resultSetFromBindings(query, result)
+      val result = sparqlExecutor.sparqlRDD(queryString).collect()
 
-//    val file = new File(getClass.getResource("/sparklify/queries/bsbm/").getPath, "Q1.srx")
-//    ResultsWriter.create().lang(ResultSetLang.SPARQLResultSetXML).write(new FileOutputStream(file), rs)
+      val rs = resultSetFromBindings(query, result)
 
-    val rsTarget = ResultSetFactory.fromXML(new FileInputStream(new File(getClass.getResource("/sparklify/queries/bsbm/Q1.srx").getPath)))
+      val rsTarget = ResultSetFactory.fromXML(new FileInputStream(new File(getClass.getResource(s"/sparklify/queries/bsbm/$q.srx").getPath)))
 
-    assert(resultSetEquivalent(query, rs, rsTarget))
-  }
+      assert(resultSetEquivalent(query, rs, rsTarget))
+    }
+  })
 
   private def resultSetFromBindings(query: Query, bindings: Array[Binding]): ResultSet = {
     val model = ModelFactory.createDefaultModel()
