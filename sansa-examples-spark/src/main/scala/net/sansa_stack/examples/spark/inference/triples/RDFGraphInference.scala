@@ -4,13 +4,14 @@ import java.net.URI
 
 import scala.collection.Seq
 
-import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }
+import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
 import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
 import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
-import org.apache.jena.graph.{ Node, NodeFactory }
+import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.spark.sql.SparkSession
+import scopt.{OptionParser, Read}
 
 object RDFGraphInference {
 
@@ -75,12 +76,11 @@ object RDFGraphInference {
   implicit val profilesRead: scopt.Read[ReasoningProfile.Value] =
     scopt.Read.reads(ReasoningProfile forName _.toLowerCase())
 
-  // read ReasoningProfile enum
-  implicit val nodeRead: scopt.Read[Node] =
-    scopt.Read.reads(NodeFactory.createURI(_))
+  // read node enum
+  implicit val nodeRead: Read[Node] = scopt.Read.reads(NodeFactory.createURI(_))
 
   // the CLI parser
-  val parser = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
+  val parser: OptionParser[Config] = new scopt.OptionParser[Config]("RDFGraphMaterializer") {
 
     head("RDFGraphMaterializer", "0.1.0")
 
