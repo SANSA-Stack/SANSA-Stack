@@ -4,6 +4,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 import org.apache.jena.graph.NodeFactory
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
@@ -43,6 +44,27 @@ object SQLUtils {
     val tableName = predPart + dtPart + langPart + blankPart// .replace("#", "__").replace("-", "_")
 
     tableName
+  }
+
+  /**
+   * perform some SQL query processing taking queries from a CLI
+   * @param spark
+   * @param df
+   * @param stopKeyword
+   */
+  def sqlQueryHook(spark: SparkSession, df: DataFrame, stopKeyword: String = "q"): Unit = {
+    df.show(false)
+
+    var input = ""
+    while (input != stopKeyword) {
+      println("enter SQL query (press 'q' to quit): ")
+      input = scala.io.StdIn.readLine()
+      try {
+        spark.sql(input).show(false)
+      } catch {
+        case e: Exception => e.printStackTrace()
+      }
+    }
   }
 
 }

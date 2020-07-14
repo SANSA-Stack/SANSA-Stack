@@ -4,7 +4,8 @@ import java.io.StringReader
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
 
-import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopReformulationSQLConfiguration}
+import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopMappingSQLAllOWLAPIConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
+import org.semanticweb.owlapi.model.OWLOntology
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
@@ -35,28 +36,37 @@ object OntopConnection {
 
   var configs = Map[Set[RdfPartitionComplex], OntopReformulationSQLConfiguration]()
 
-  def apply(obdaMappings: String, properties: Properties, partitions: Set[RdfPartitionComplex]): OntopReformulationSQLConfiguration = {
+  def apply(obdaMappings: String, properties: Properties, partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
     val conf = configs.getOrElse(partitions, {
 //      println("creating reformulation config")
       val reformulationConfiguration = {
         JDBCDatabaseGenerator.generateTables(connection, partitions)
 
         val mappingConfiguration = {
-          OntopMappingSQLAllConfiguration.defaultBuilder
+          val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder
+            .ontology(ontology.get)
+          else OntopMappingSQLAllConfiguration.defaultBuilder
+
+          builder
             .nativeOntopMappingReader(new StringReader(obdaMappings))
-            .properties(properties)
             .jdbcUrl(JDBC_URL)
             .jdbcUser(JDBC_USER)
             .jdbcPassword(JDBC_PASSWORD)
+            .properties(properties)
             .enableTestMode
             .build
         }
 
         val obdaSpecification = mappingConfiguration.loadSpecification
 
-        OntopReformulationSQLConfiguration.defaultBuilder
+        val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
+          .ontology(ontology.get)
+          .jdbcUser(JDBC_USER)
+          .jdbcPassword(JDBC_PASSWORD)
+        else OntopReformulationSQLConfiguration.defaultBuilder
+
+        builder
           .obdaSpecification(obdaSpecification)
-          .properties(properties)
           .jdbcUrl(JDBC_URL)
           .enableTestMode
           .build

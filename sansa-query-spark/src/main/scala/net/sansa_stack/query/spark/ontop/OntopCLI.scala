@@ -21,6 +21,8 @@ import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
  */
 class OntopCLI {
 
+  val logger = com.typesafe.scalalogging.Logger(classOf[OntopCLI])
+
   def run(args: Array[String]): Unit = {
     OParser.parse(parser, args, Config()) match {
       case Some(config) =>
@@ -78,21 +80,22 @@ class OntopCLI {
         }
 
         // do partitioning here
+        logger.info("computing partitions ...")
         val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex(false))
-        println(s"num partitions: ${partitions.keySet.size}")
+        logger.info(s"got ${partitions.keySet.size} partitions ...")
 
         // create the SPARQL engine
-        new OntopSPARQLEngine(spark, partitions)
+        new OntopSPARQLEngine(spark, partitions, Some(ont))
       } else {
         // load partitioning metadata
         val partitions = PartitionSerDe.deserializeFrom(Paths.get(config.metaDataPath))
         // create the SPARQL engine
-        new OntopSPARQLEngine(spark, config.databaseName, partitions)
+        new OntopSPARQLEngine(spark, config.databaseName, partitions, None)
       }
 
     var input = config.initialQuery
 
-    def runQuery(query: String) = {
+    def runQuery(query: String): Unit = {
       try {
         val q = QueryFactory.create(query)
 
@@ -106,6 +109,7 @@ class OntopCLI {
           case QueryType.CONSTRUCT =>
             val res = sparqlEngine.execConstruct(query)
             println(res.collect().mkString("\n"))
+          case _ => throw new RuntimeException(s"unsupported query type: ${q.queryType()}")
         }
       } catch {
         case e: Exception => Console.err.println("failed to execute query")

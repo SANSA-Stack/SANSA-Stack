@@ -41,7 +41,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
     bindingsManifest + "values8", bindingsManifest + "values5", /* FUNCTIONS */
     // bnode not supported in SPARQL transformation
     functionsManifest + "bnode01", functionsManifest + "bnode02", // the SI does not preserve the original timezone
-    functionsManifest + "hours", functionsManifest + "day", // not supported in SPARQL transformation
+//    functionsManifest + "hours", functionsManifest + "day", // not supported in SPARQL transformation
     functionsManifest + "if01", functionsManifest + "if02",
     functionsManifest + "in01", functionsManifest + "in02",
     functionsManifest + "iri01", // not supported in H2 transformation
@@ -51,8 +51,9 @@ class SPARQL11TestSuiteRunnerSparkOntop
     functionsManifest + "sha512-01", functionsManifest + "sha512-02",
     functionsManifest + "strdt01", functionsManifest + "strdt02", functionsManifest + "strdt03",
     functionsManifest + "strlang01", functionsManifest + "strlang02", functionsManifest + "strlang03",
-    functionsManifest + "timezone", // TZ is not supported in H2
-    functionsManifest + "tz", /* CONSTRUCT not supported yet */
+//    functionsManifest + "timezone", // TZ is not supported in H2
+//    functionsManifest + "tz",
+    /* CONSTRUCT not supported yet */
     // Projection cannot be cast to Reduced in rdf4j
     constructManifest + "constructwhere01", constructManifest + "constructwhere02", constructManifest + "constructwhere03", // problem importing dataset
     constructManifest + "constructwhere04", /* CSV */
@@ -86,7 +87,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
   )
 
-//  override lazy val IGNORE_FILTER = t => t.name.startsWith("GROUP_CONCAT")
+  override lazy val IGNORE_FILTER = t => t.name.startsWith("HOUR")
 
   var ontopProperties: Properties = _
 
@@ -105,7 +106,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
       RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex(distinguishStringLiterals = false))
 
     // create the query engine
-    val queryEngine = new OntopSPARQLEngine(spark, partitions)
+    val queryEngine = new OntopSPARQLEngine(spark, partitions, ontology = None)
 
     // produce result based on query type
     val result = if (query.isSelectType) { // SELECT

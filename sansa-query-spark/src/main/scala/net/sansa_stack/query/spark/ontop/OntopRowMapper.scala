@@ -25,6 +25,7 @@ import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.Row
 import org.eclipse.rdf4j.model.{IRI, Literal}
 import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
+import org.semanticweb.owlapi.model.OWLOntology
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
 
@@ -38,12 +39,13 @@ class OntopRowMapper(
                      properties: Properties,
                      partitions: Set[RdfPartitionComplex],
                      sparqlQuery: String,
+                     ontology: Option[OWLOntology],
                      id: String = "id") {
 
 //  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
 
-  val reformulationConfiguration = OntopConnection(obdaMappings, properties, partitions)
+  val reformulationConfiguration = OntopConnection(obdaMappings, properties, partitions, ontology)
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory

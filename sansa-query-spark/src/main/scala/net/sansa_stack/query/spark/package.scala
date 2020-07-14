@@ -8,6 +8,7 @@ import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.java.function.Function
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
+import org.semanticweb.owlapi.model.OWLOntology
 
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
@@ -114,8 +115,10 @@ package object query {
    * An Ontop backed SPARQL executor working on the given RDF partitions.
    *
    * @param partitions the RDF partitions to work on
+   * @param ontology an optional ontology containing schema information like classes, class hierarchy, etc. which
+   *                 can be used for query optimization as well as OWL QL inference based query rewriting
    */
-  class OntopSPARQLExecutor(partitions: Map[RdfPartitionComplex, RDD[Row]])
+  class OntopSPARQLExecutor(partitions: Map[RdfPartitionComplex, RDD[Row]], ontology: Option[OWLOntology] = None)
     extends QueryExecutor
       with Serializable {
 
@@ -125,7 +128,7 @@ package object query {
 
     val spark = SparkSession.builder().getOrCreate()
 
-    val sparqlEngine = new OntopSPARQLEngine(spark, partitions)
+    val sparqlEngine = new OntopSPARQLEngine(spark, partitions, ontology = None)
 
     /**
      * Default partition - using VP.

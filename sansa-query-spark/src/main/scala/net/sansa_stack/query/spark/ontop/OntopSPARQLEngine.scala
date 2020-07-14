@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.{File, StringReader}
+import java.io.StringReader
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util
 import java.util.Properties
@@ -12,21 +12,22 @@ import it.unibz.inf.ontop.answering.reformulation.QueryReformulator
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException, OntopReformulationException}
-import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopReformulationSQLConfiguration}
+import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopMappingSQLAllOWLAPIConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
 import it.unibz.inf.ontop.iq.{IQ, IQTree, UnaryIQTree}
 import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
-import it.unibz.inf.ontop.model.vocabulary.XSD
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
+import org.semanticweb.owlapi.model.OWLOntology
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
@@ -59,7 +60,9 @@ case class OntopQueryRewrite(sparqlQuery: String,
  * @constructor create a new Ontop SPARQL to SQL rewriter based on RDF partitions.
  * @param partitions the RDF partitions
  */
-class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value)
+class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
+                              blankNodeStrategy: BlankNodeStrategy.Value,
+                              ontology: Option[OWLOntology] = None)
   extends SPARQL2SQLRewriter[OntopQueryRewrite]
     with Serializable {
 
@@ -88,24 +91,8 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex], blankNod
   logger.debug(s"Ontop mappings:\n$mappings")
 
   // the Ontop core
-  val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties)
+  val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties, ontology)
   val inputQueryFactory = queryReformulator.getInputQueryFactory
-
-  // mapping from RDF datatype to Spark SQL datatype
-  import org.apache.spark.sql.types.DataTypes._
-  val rdfDatatype2SQLCastName = Map(
-    typeFactory.getXsdStringDatatype -> StringType,
-    typeFactory.getXsdIntegerDatatype -> IntegerType,
-    typeFactory.getXsdDecimalDatatype -> createDecimalType(),
-    typeFactory.getXsdDoubleDatatype -> DoubleType,
-    typeFactory.getXsdBooleanDatatype -> BooleanType,
-    typeFactory.getXsdFloatDatatype -> FloatType,
-    typeFactory.getDatatype(XSD.SHORT) -> ShortType,
-    typeFactory.getDatatype(XSD.DATE) -> DateType,
-    typeFactory.getDatatype(XSD.BYTE) -> ByteType,
-    typeFactory.getDatatype(XSD.LONG) -> LongType
-  )
-
 
 
   @throws[OBDASpecificationException]
@@ -190,7 +177,11 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex], blankNod
 
   @throws[OBDASpecificationException]
   private def loadOBDASpecification(obdaMappings: String, properties: Properties) = {
-    val mappingConfiguration = OntopMappingSQLAllConfiguration.defaultBuilder
+    val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder
+                    .ontology(ontology.get)
+                  else OntopMappingSQLAllConfiguration.defaultBuilder
+
+    val mappingConfiguration = builder
       .nativeOntopMappingReader(new StringReader(obdaMappings))
       .jdbcUrl(JDBC_URL)
       .jdbcUser(JDBC_USER)
@@ -200,6 +191,33 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex], blankNod
       .build
     mappingConfiguration.loadSpecification
   }
+
+  @throws[OBDASpecificationException]
+  def createReformulator(obdaMappings: String, properties: Properties, ontology: Option[OWLOntology] = None):
+  (QueryReformulator, TermFactory, TypeFactory, SubstitutionFactory) = {
+    val obdaSpecification = loadOBDASpecification(obdaMappings, properties)
+
+    val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
+                                          .ontology(ontology.get)
+                                          .jdbcUser(JDBC_USER)
+                                          .jdbcPassword(JDBC_PASSWORD)
+                  else OntopReformulationSQLConfiguration.defaultBuilder
+
+    val reformulationConfiguration = builder
+      .obdaSpecification(obdaSpecification)
+      .jdbcUrl(JDBC_URL)
+      .enableTestMode
+      .build
+
+    val termFactory = reformulationConfiguration.getTermFactory
+    val typeFactory = reformulationConfiguration.getTypeFactory
+    val queryReformulator = reformulationConfiguration.loadQueryReformulator
+    val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
+
+    (queryReformulator, termFactory, typeFactory, substitutionFactory)
+  }
+
+
 
   def close(): Unit = connection.close()
 }
@@ -217,23 +235,27 @@ object OntopSPARQL2SQLRewriter {
    * @param partitions the RDF partitions
    * @return a new SPARQL to SQL rewriter
    */
-  def apply(partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value): OntopSPARQL2SQLRewriter = {
-    new OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy)
-  }
+  def apply(partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value, ontology: Option[OWLOntology])
+  : OntopSPARQL2SQLRewriter = new OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy, ontology)
+
+  def apply(partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value)
+  : OntopSPARQL2SQLRewriter = new OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy)
+
 }
 
 
 class OntopSPARQLEngine(val spark: SparkSession,
                         databaseName: String,
-                        partitions: Set[RdfPartitionComplex]) {
+                        partitions: Set[RdfPartitionComplex],
+                        ontology: Option[OWLOntology]) {
 
   /**
    * Partition RDDs will be registered as Spark tables.
    * @param spark
    * @param partitions
    */
-  def this(spark: SparkSession, partitions: Map[RdfPartitionComplex, RDD[Row]]) {
-    this(spark, null, partitions.keySet)
+  def this(spark: SparkSession, partitions: Map[RdfPartitionComplex, RDD[Row]], ontology: Option[OWLOntology]) {
+    this(spark, null, partitions.keySet, ontology)
 
     // create and register Spark tables
     SparkTableGenerator(spark).createAndRegisterSparkTables(partitions)
@@ -241,26 +263,14 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
 
-  private val sparql2sql = OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy)
+  private val sparql2sql = OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy, ontology)
 
   private val logger = com.typesafe.scalalogging.Logger(OntopSPARQLEngine.getClass.getName)
 
   val typeFactory = sparql2sql.typeFactory
-  // mapping from RDF datatype to Spark SQL datatype
-  import org.apache.spark.sql.types.DataTypes._
-  val rdfDatatype2SQLCastName = Map(
-    typeFactory.getXsdStringDatatype -> StringType,
-    typeFactory.getXsdIntegerDatatype -> IntegerType,
-    typeFactory.getXsdDecimalDatatype -> createDecimalType(),
-    typeFactory.getXsdDoubleDatatype -> DoubleType,
-    typeFactory.getXsdBooleanDatatype -> BooleanType,
-    typeFactory.getXsdFloatDatatype -> FloatType,
-    typeFactory.getDatatype(XSD.SHORT) -> ShortType,
-    typeFactory.getDatatype(XSD.DATE) -> DateType,
-    typeFactory.getDatatype(XSD.BYTE) -> ByteType,
-    typeFactory.getDatatype(XSD.LONG) -> LongType
-  )
 
+  // mapping from RDF datatype to Spark SQL datatype
+  val rdfDatatype2SQLCastName = DatatypeMappings(typeFactory)
 
   val useHive: Boolean = false
   val useStatistics: Boolean = true
@@ -424,30 +434,17 @@ class OntopSPARQLEngine(val spark: SparkSession,
       s" got ${q.queryType().toString}")
 
     val df = executeDebug(query)._1
-//    df.show(false)
-//
-//    var input = ""
-//    while (input != "q") {
-//      println("enter SQL query (press 'q' to quit): ")
-//      input = scala.io.StdIn.readLine()
-//      try {
-//        spark.sql(input).show(false)
-//      } catch {
-//        case e: Exception => e.printStackTrace()
-//      }
-//
-//    }
-
 
     val sparqlQueryBC = spark.sparkContext.broadcast(query)
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
     val partitionsBC = spark.sparkContext.broadcast(partitions)
+    val ontologyBC = spark.sparkContext.broadcast(ontology)
 
     implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
     df.coalesce(20).mapPartitions(iterator => {
 //      println("mapping partition")
-      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
+      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value, ontologyBC.value)
       val it = iterator.map(mapper.map)
 //      mapper.close()
       it
@@ -488,10 +485,11 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
     val partitionsBC = spark.sparkContext.broadcast(partitions)
+    val ontologyBC = spark.sparkContext.broadcast(ontology)
 
     implicit val tripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
     df.mapPartitions(iterator => {
-      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value)
+      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value, ontologyBC.value)
       val it = mapper.toTriples(iterator)
       mapper.close()
       it
@@ -501,8 +499,6 @@ class OntopSPARQLEngine(val spark: SparkSession,
 }
 
 object OntopSPARQLEngine {
-
-  val warehouseLocation = new File("spark-warehouse").getAbsolutePath
 
   def main(args: Array[String]): Unit = {
     new OntopCLI().run(args)
