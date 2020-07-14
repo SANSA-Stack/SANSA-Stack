@@ -113,12 +113,13 @@
             </exclusions>
         </dependency>
 
+<!--
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-elephas-io</artifactId>
 			<version>${jena.version}</version>
 		</dependency>
-
+-->
         <dependency>
             <groupId>org.aksw.sparqlify</groupId>
             <artifactId>sparqlify-core</artifactId>
@@ -153,6 +154,12 @@
 		<dependency>
 			<groupId>com.github.scopt</groupId>
 			<artifactId>scopt_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ibm.sparktc</groupId>
+			<artifactId>spark-bench_2.11</artifactId>
+			<version>2.4.5_0.4.0-RELEASE</version>
 		</dependency>
 
     </dependencies>
@@ -244,7 +251,7 @@
 											<exclude>commons-collections:commons-collections</exclude>
 											<exclude>commons-configuration:commons-configuration</exclude>
 											<exclude>commons-digester:commons-digester</exclude>
-											<exclude>commons-httpclient:commons-httpclient</exclude>
+											<!-- <exclude>commons-httpclient:commons-httpclient</exclude> -->
 											<exclude>commons-io:commons-io</exclude>
 											<exclude>commons-lang:commons-lang</exclude>
 											<exclude>commons-logging:commons-logging</exclude>

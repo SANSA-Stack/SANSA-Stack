@@ -11,6 +11,7 @@ import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.riot.RIOT
 import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
+import org.apache.jena.riot.{RIOT, SysRIOT}
 import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession

@@ -11,11 +11,13 @@ import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
+import org.apache.jena.query.{Dataset => JenaDataset}
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.{FmtUtils, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, _}
 
+import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.Logging
@@ -318,6 +320,7 @@ package object io {
       case j if lang == Lang.TURTLE => turtle
       case k if lang == Lang.RDFXML => rdfxml
       case l if lang == Lang.TRIX => trix
+      // case g if lang == Lang.NQUADS => nquads(allowBlankLines)
       case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
     }
 
@@ -335,7 +338,7 @@ package object io {
      * Load RDF data in N-Quads syntax into an [[RDD]][Triple], i.e. the graph will be omitted.
      *
      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing
-     * @return the [[RDD]] of triples
+     * @return the [[RDD]] of quads
      */
     def nquads(allowBlankLines: Boolean = false): String => RDD[Quad] = path => {
       NQuadReader.load(spark, path)
@@ -386,6 +389,21 @@ package object io {
 
       spark.sparkContext.newAPIHadoopFile(
         path, classOf[RiotFileInputFormat], classOf[LongWritable], classOf[Triple], confHadoop)
+        .map { case (_, v) => v }
+    }
+
+    /**
+     * Load RDF data in Trig syntax into an [[RDD]][Dataset]
+     *
+     * @return the [[RDD]] of datasets
+     */
+    def trig: String => RDD[JenaDataset] = path => {
+      val confHadoop = spark.sparkContext.hadoopConfiguration
+
+      spark.sparkContext.newAPIHadoopFile(path,
+        classOf[TrigFileInputFormat],
+        classOf[LongWritable],
+        classOf[JenaDataset], confHadoop)
         .map { case (_, v) => v }
     }
 
