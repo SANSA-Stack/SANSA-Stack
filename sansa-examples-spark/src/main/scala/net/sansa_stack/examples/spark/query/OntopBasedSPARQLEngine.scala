@@ -51,7 +51,7 @@ object OntopBasedSPARQLEngine {
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner = RdfPartitionerComplex(false))
 
     // create the SPARQL engine
-    val ontopEngine = new OntopSPARQLEngine(spark, partitions, ontology = None)
+    val ontopEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI
     run match {
