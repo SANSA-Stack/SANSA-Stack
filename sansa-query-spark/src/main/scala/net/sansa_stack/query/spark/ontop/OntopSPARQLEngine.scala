@@ -90,7 +90,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
   JDBCDatabaseGenerator.generateTables(connection, partitions, blankNodeStrategy)
 
   // create OBDA mappings
-  val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions)
+  val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions, ontology)
   logger.debug(s"Ontop mappings:\n$mappings")
 
   // the Ontop core

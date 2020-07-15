@@ -44,7 +44,7 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
     conf
   }
 
-  val queries = List("Q1", "Q2") // List("Q1", "Q2", "Q3")
+  val queries = List("Q1", "Q2", "Q3")
 
   queries.foreach(q => {
     test(s"Test Ontop with BSBM $q") {

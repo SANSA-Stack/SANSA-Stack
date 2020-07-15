@@ -1,11 +1,13 @@
 package net.sansa_stack.query.spark.ontop
 
-import scala.reflect.macros.whitebox
-
 import org.apache.commons.lang3.StringUtils
-import org.apache.jena.vocabulary.XSD
+import org.apache.jena.vocabulary.{RDF, XSD}
+import org.semanticweb.owlapi.model.{OWLOntology, OWLSignature}
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
+import scala.collection.JavaConverters._
+
+import org.semanticweb.owlapi.model.parameters.Imports
 
 /**
  * @author Lorenz Buehmann
@@ -17,7 +19,7 @@ object OntopMappingGenerator {
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
   val distinguishStringLiterals: Boolean = false
 
-  def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionComplex]): String = {
+  def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology] = None): String = {
 
     // object is URI or bnode
     def createMapping(id: String, tableName: String, partition: RdfPartitionComplex): String = {
@@ -69,6 +71,16 @@ object OntopMappingGenerator {
          |""".stripMargin
     }
 
+    // class assertion mapping
+    def createClassMapping(id: String, tableName: String, partition: RdfPartitionComplex, cls: String): String = {
+      val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
+      s"""
+         |mappingId     $id
+         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "o" = '$cls'
+         |target        $targetSubject <${RDF.`type`.getURI}> <$cls> .
+         |""".stripMargin
+    }
+
     def createMappingLiteralWithType(id: String, tableName: String, property: String): String = {
       s"""
          |mappingId     $id
@@ -90,18 +102,21 @@ object OntopMappingGenerator {
           case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
             val tableName = SQLUtils.createTableName(p, blankNodeStrategy)
             val id = SQLUtils.escapeTablename(tableName + lang.getOrElse(""))
-            objectType match {
-              case 0 | 1 => createMapping(id, tableName, p) // o is URI or bnode
-              case 2 => if (distinguishStringLiterals) {
-                if (langTagPresent) createMappingStringLit(id, tableName, p) else createMappingLit(id, tableName, p)
-              } else {
-                if (langTagPresent || datatype == XSD.xstring.getURI) createMappingStringLit(id, tableName, p) else createMappingLit(id, tableName, p)
+
+            if (predicate == RDF.`type`.getURI) { // rdf:type mapping expansion here
+              if (ontology.nonEmpty) ontology.get.getClassesInSignature(Imports.EXCLUDED).asScala.map(cls => createClassMapping(id, tableName, p, cls.toStringID)).mkString("\n") else ""
+            } else {
+              objectType match {
+                case 0 | 1 => createMapping(id, tableName, p) // o is URI or bnode
+                case 2 => if (distinguishStringLiterals) {
+                  if (langTagPresent) createMappingStringLit(id, tableName, p) else createMappingLit(id, tableName, p)
+                } else {
+                  if (langTagPresent || datatype == XSD.xstring.getURI) createMappingStringLit(id, tableName, p) else createMappingLit(id, tableName, p)
+                }
+                case _ =>
+                  logger.error("TODO: bnode Ontop mapping creation")
+                  ""
               }
-              case _ =>
-                logger.error("TODO: bnode Ontop mapping creation")
-                ""
-
-
             }
         }
         .mkString("\n\n") + "\n]]"
