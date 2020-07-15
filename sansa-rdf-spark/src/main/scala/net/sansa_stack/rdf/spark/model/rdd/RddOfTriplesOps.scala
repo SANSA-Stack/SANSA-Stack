@@ -11,7 +11,7 @@ import org.apache.spark.sql.types.{ StringType, StructField, StructType }
  *
  * @author Gezim Sejdiu
  */
-object TripleOps {
+object RddOfTriplesOps {
 
   /**
    * Convert a [[RDD[Triple]]] into a DataFrame.
@@ -45,15 +45,6 @@ object TripleOps {
     implicit val encoder = Encoders.kryo[Triple]
     spark.createDataset[Triple](triples)
   }
-
-  /**
-   * Get triples.
-   *
-   * @param triples RDD of triples.
-   * @return [[RDD[Triple]]] which contains list of the triples.
-   */
-  def getTriples(triples: RDD[Triple]): RDD[Triple] =
-    triples
 
   /**
    * Get subjects.
@@ -104,6 +95,12 @@ object TripleOps {
   def filterPredicates(triples: RDD[Triple], func: Node => Boolean): RDD[Triple] =
     triples.filter(f => func(f.getPredicate))
 
+  // def filterPredicates(triples: RDD[Triple], predicateIris: String*): RDD[Triple] =
+  //  filterPredicates(triples, predicateIris.toSet)
+
+  def filterPredicates(triples: RDD[Triple], predicateIris: Set[String]): RDD[Triple] =
+    triples.filter(f => predicateIris.contains(f.getPredicate.getURI))
+
   /**
    * Filter out the objects from a given RDD[Triple],
    * based on a specific function @func .
@@ -147,25 +144,6 @@ object TripleOps {
   }
 
   /**
-   * Return the number of triples.
-   *
-   * @param triples RDD of triples
-   * @return the number of triples
-   */
-  def size(triples: RDD[Triple]): Long =
-    triples.count()
-
-  /**
-   * Return the union of this RDF graph and another one.
-   *
-   * @param triples RDD of RDF graph
-   * @param other the other RDF graph
-   * @return graph (union of both)
-   */
-  def union(triples: RDD[Triple], other: RDD[Triple]): RDD[Triple] =
-    triples.union(other)
-
-  /**
    * Return the union all of RDF graphs.
    *
    * @param triples RDD of RDF graph
@@ -176,28 +154,6 @@ object TripleOps {
     val first = others.head
     first.sparkContext.union(triples)
   }
-
-  /**
-   * Returns a new RDF graph that contains the intersection
-   * of the current RDF graph with the given RDF graph.
-   *
-   * @param triples RDD of RDF graph
-   * @param other the other RDF graph
-   * @return the intersection of both RDF graphs
-   */
-  def intersection(triples: RDD[Triple], other: RDD[Triple]): RDD[Triple] =
-    triples.intersection(other)
-
-  /**
-   * Returns a new RDF graph that contains the difference
-   * between the current RDF graph and the given RDF graph.
-   *
-   * @param triples RDD of RDF graph
-   * @param other the other RDF graph
-   * @return the difference of both RDF graphs
-   */
-  def difference(triples: RDD[Triple], other: RDD[Triple]): RDD[Triple] =
-    triples.subtract(other)
 
   /**
    * Determine whether this RDF graph contains any triples
@@ -234,7 +190,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAny(triples: RDD[Triple], other: RDD[Triple]): Boolean = {
-    difference(triples, other).count() > 0
+    triples.subtract(other).count() > 0
   }
 
   /**
@@ -246,7 +202,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAll(triples: RDD[Triple], other: RDD[Triple]): Boolean = {
-    difference(triples, other).count() == 0
+    triples.subtract(other).count() == 0
   }
 
   @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
@@ -260,7 +216,7 @@ object TripleOps {
    */
   def add(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
     val statement = spark.sparkContext.parallelize(Seq(triple))
-    union(triples, statement)
+    triples.union(statement)
   }
 
   /**
@@ -272,7 +228,7 @@ object TripleOps {
    */
   def addAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
     val statements = spark.sparkContext.parallelize(triple)
-    union(triples, statements)
+    triples.union(statements)
   }
 
   /**
@@ -286,7 +242,7 @@ object TripleOps {
    */
   def remove(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
     val statement = spark.sparkContext.parallelize(Seq(triple))
-    difference(triples, statement)
+    triples.subtract(statement)
   }
 
   /**
@@ -300,7 +256,7 @@ object TripleOps {
    */
   def removeAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
     val statements = spark.sparkContext.parallelize(triple)
-    difference(triples, statements)
+    triples.subtract(statements)
   }
 
   /**

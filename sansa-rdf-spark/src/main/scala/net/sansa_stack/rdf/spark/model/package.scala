@@ -19,60 +19,52 @@ package object model {
     */
   implicit class TripleOperations(triples: RDD[Triple]) extends Logging {
 
-    import net.sansa_stack.rdf.spark.model.rdd.TripleOps
+    import net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps
 
     /**
       * Convert a [[RDD[Triple]]] into a DataFrame.
       *
       * @return a DataFrame of triples.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.toDF]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.toDF]]
       */
     def toDF(): DataFrame =
-      TripleOps.toDF(triples)
+      RddOfTriplesOps.toDF(triples)
 
     /**
       * Convert an RDD of Triple into a Dataset of Triple.
       *
       * @return a Dataset of triples.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.toDS]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.toDS]]
       */
     def toDS(): Dataset[Triple] =
-      TripleOps.toDS(triples)
-
-    /**
-      * Get triples.
-      *
-      * @return [[RDD[Triple]]] which contains list of the triples.
-      */
-    def getTriples(): RDD[Triple] =
-      TripleOps.getTriples(triples)
+      RddOfTriplesOps.toDS(triples)
 
     /**
       * Get subjects.
       *
       * @return [[RDD[Node]]] which contains list of the subjects.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.getSubjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.getSubjects]]
       */
     def getSubjects(): RDD[Node] =
-      TripleOps.getSubjects(triples)
+      RddOfTriplesOps.getSubjects(triples)
 
     /**
       * Get predicates.
       *
       * @return [[RDD[Node]]] which contains list of the predicates.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.getPredicates]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.getPredicates]]
       */
     def getPredicates(): RDD[Node] =
-      TripleOps.getPredicates(triples)
+      RddOfTriplesOps.getPredicates(triples)
 
     /**
       * Get objects.
       *
       * @return [[RDD[Node]]] which contains list of the objects.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.getObjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.getObjects]]
       */
     def getObjects(): RDD[Node] =
-      TripleOps.getObjects(triples)
+      RddOfTriplesOps.getObjects(triples)
 
     /**
       * Filter out the subject from a given RDD[Triple],
@@ -80,10 +72,10 @@ package object model {
       *
       * @param func a partial funtion.
       * @return [[RDD[Triple]]] a subset of the given RDD.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.filterSubjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.filterSubjects]]
       */
     def filterSubjects(func: Node => Boolean): RDD[Triple] =
-      TripleOps.filterSubjects(triples, func)
+      RddOfTriplesOps.filterSubjects(triples, func)
 
     /**
       * Filter out the predicates from a given RDD[Triple],
@@ -91,10 +83,10 @@ package object model {
       *
       * @param func a partial funtion.
       * @return [[RDD[Triple]]] a subset of the given RDD.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.filterPredicates]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.filterPredicates]]
       */
     def filterPredicates(func: Node => Boolean): RDD[Triple] =
-      TripleOps.filterPredicates(triples, func)
+      RddOfTriplesOps.filterPredicates(triples, func)
 
     /**
       * Filter out the objects from a given RDD[Triple],
@@ -102,10 +94,10 @@ package object model {
       *
       * @param func a partial funtion.
       * @return [[RDD[Triple]]] a subset of the given RDD.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.filterObjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.filterObjects]]
       */
     def filterObjects(func: Node => Boolean): RDD[Triple] =
-      TripleOps.filterObjects(triples, func)
+      RddOfTriplesOps.filterObjects(triples, func)
 
     /**
       * Returns an RDD of triples that match with the given input.
@@ -114,20 +106,20 @@ package object model {
       * @param predicate the predicate
       * @param object    the object
       * @return RDD of triples
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.find]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.find]]
       */
     def find(subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): RDD[Triple] =
-      TripleOps.find(triples, subject, predicate, `object`)
+      RddOfTriplesOps.find(triples, subject, predicate, `object`)
 
     /**
       * Returns an RDD of triples that match with the given input.
       *
       * @param triple the triple to be checked
       * @return RDD of triples that match the given input
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.find]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.find]]
       */
     def find(triple: Triple): RDD[Triple] =
-      TripleOps.find(triples, triple)
+      RddOfTriplesOps.find(triples, triple)
 
     /**
       * Determine whether this RDF graph contains any triples
@@ -139,7 +131,7 @@ package object model {
       *         a triple with subject and predicate, false otherwise
       */
     def contains(subject: Some[Node], predicate: Some[Node]): Boolean =
-      TripleOps.contains(triples, subject, predicate, None)
+      RddOfTriplesOps.contains(triples, subject, predicate, None)
 
     /**
       * Determine whether this RDF graph contains any triples
@@ -152,7 +144,7 @@ package object model {
       *         a triple with (S, P, O) pattern, false otherwise
       */
     def contains(subject: Some[Node], predicate: Some[Node], `object`: Some[Node]): Boolean =
-      TripleOps.contains(triples, subject, predicate, `object`)
+      RddOfTriplesOps.contains(triples, subject, predicate, `object`)
 
     /**
       * Determine if a triple is present in this RDF graph.
@@ -161,7 +153,7 @@ package object model {
       * @return true if the statement s is in this RDF graph, false otherwise
       */
     def contains(triple: Triple): Boolean =
-      TripleOps.contains(triples, triple)
+      RddOfTriplesOps.contains(triples, triple)
 
     /**
       * Determine if any of the triples in an RDF graph are also contained in this RDF graph.
@@ -171,7 +163,7 @@ package object model {
       *         in this RDF graph and false otherwise.
       */
     def containsAny(other: RDD[Triple]): Boolean =
-      TripleOps.containsAny(triples, other)
+      RddOfTriplesOps.containsAny(triples, other)
 
     /**
       * Determine if all of the statements in an RDF graph are also contained in this RDF graph.
@@ -181,75 +173,36 @@ package object model {
       *         in this RDF graph and false otherwise.
       */
     def containsAll(other: RDD[Triple]): Boolean =
-      TripleOps.containsAll(triples, other)
-
-    /**
-      * Return the number of triples.
-      *
-      * @return the number of triples
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.size]]
-      */
-    def size(): Long =
-      TripleOps.size(triples)
-
-    /**
-      * Return the union of this RDF graph and another one.
-      *
-      * @param other of the other RDF graph
-      * @return graph (union of both)
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.union]]
-      */
-    def union(other: RDD[Triple]): RDD[Triple] =
-      TripleOps.union(triples, other)
+      RddOfTriplesOps.containsAll(triples, other)
 
     /**
       * Return the union all of RDF graphs.
       *
       * @return graph (union of all)
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.unionAll]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.unionAll]]
       */
     def unionAll(others: Seq[RDD[Triple]]): RDD[Triple] =
-      TripleOps.unionAll(triples, others)
-
-    /**
-      * Returns a new RDF graph that contains the intersection of the current RDF graph with the given RDF graph.
-      *
-      * @param other of the other RDF graph
-      * @return the intersection of both RDF graphs
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.intersection]]
-      */
-    def intersection(other: RDD[Triple]): RDD[Triple] =
-      TripleOps.intersection(triples, other)
-
-    /**
-      * Returns a new RDF graph that contains the difference between the current RDF graph and the given RDF graph.
-      *
-      * @param other of the other RDF graph
-      * @return the difference of both RDF graphs
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.difference]]
-      */
-    def difference(other: RDD[Triple]): RDD[Triple] =
-      TripleOps.difference(triples, other)
+      RddOfTriplesOps.unionAll(triples, others)
 
     /**
       * Add a statement to the current RDF graph.
       *
       * @param triple the triple to be added.
       * @return new RDD of triples containing this statement.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.add]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.add]]
       */
     def add(triple: Triple): RDD[Triple] =
-      TripleOps.add(triples, triple)
+      RddOfTriplesOps.add(triples, triple)
 
     /**
       * Add a list of statements to the current RDF graph.
       *
       * @param triple the list of triples to be added.
       * @return new RDD of triples containing this list of statements.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.addAll]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.addAll]]
       */
     def addAll(triple: Seq[Triple]): RDD[Triple] =
-      TripleOps.addAll(triples, triple)
+      RddOfTriplesOps.addAll(triples, triple)
 
     /**
       * Removes a statement from the current RDF graph.
@@ -257,10 +210,10 @@ package object model {
       *
       * @param triple the statement to be removed.
       * @return new RDD of triples without this statement.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.remove]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.remove]]
       */
     def remove(triple: Triple): RDD[Triple] =
-      TripleOps.remove(triples, triple)
+      RddOfTriplesOps.remove(triples, triple)
 
     /**
       * Removes all the statements from the current RDF graph.
@@ -268,19 +221,19 @@ package object model {
       *
       * @param triple the list of statements to be removed.
       * @return new RDD of triples without these statements.
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.removeAll]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.removeAll]]
       */
     def removeAll(triple: Seq[Triple]): RDD[Triple] =
-      TripleOps.removeAll(triples, triple)
+      RddOfTriplesOps.removeAll(triples, triple)
 
     /**
       * Write N-Triples from a given RDD of triples
       *
       * @param path path to the file containing N-Triples
-      * @see [[net.sansa_stack.rdf.spark.model.rdd.TripleOps.saveAsNTriplesFile]]
+      * @see [[net.sansa_stack.rdf.spark.model.rdd.RddOfTriplesOps.saveAsNTriplesFile]]
       */
     def saveAsNTriplesFile(path: String): Unit =
-      TripleOps.saveAsNTriplesFile(triples, path)
+      RddOfTriplesOps.saveAsNTriplesFile(triples, path)
 
   }
 
@@ -448,24 +401,6 @@ package object model {
       TripleOps.find(triples, triple)
 
     /**
-      * Return the number of triples.
-      *
-      * @return the number of triples
-      */
-    def size(): Long =
-      TripleOps.size(triples)
-
-    /**
-      * Return the union of this RDF graph and another one.
-      *
-      * @param triples DataFrame of RDF graph
-      * @param other   the other RDF graph
-      * @return graph (union of both)
-      */
-    def union(other: DataFrame): DataFrame =
-      TripleOps.union(triples, other)
-
-    /**
       * Return the union all of RDF graphs.
       *
       * @param others sequence of DataFrames of other RDF graph
@@ -473,26 +408,6 @@ package object model {
       */
     def unionAll(others: Seq[DataFrame]): DataFrame =
       TripleOps.unionAll(triples, others)
-
-    /**
-      * Returns a new RDF graph that contains the intersection
-      * of the current RDF graph with the given RDF graph.
-      *
-      * @param other the other RDF graph
-      * @return the intersection of both RDF graphs
-      */
-    def intersection(other: DataFrame): DataFrame =
-      TripleOps.intersection(triples, other)
-
-    /**
-      * Returns a new RDF graph that contains the difference
-      * between the current RDF graph and the given RDF graph.
-      *
-      * @param other the other RDF graph
-      * @return the difference of both RDF graphs
-      */
-    def difference(other: DataFrame): DataFrame =
-      TripleOps.difference(triples, other)
 
     /**
       * Determine whether this RDF graph contains any triples
@@ -579,7 +494,6 @@ package object model {
     /**
       * Write N-Triples from a given DataFrame of triples
       *
-      * @param triples DataFrame of RDF graph
       * @param path    path to the file containing N-Triples
       */
     def saveAsNTriplesFile(path: String): Unit =
@@ -636,24 +550,6 @@ package object model {
       */
     def find(triple: Triple): Dataset[Triple] =
       TripleOps.find(triples, triple)
-
-    /**
-      * Return the number of triples.
-      *
-      * @return the number of triples
-      */
-    def size(): Long =
-      TripleOps.size(triples)
-
-    /**
-      * Return the union of this RDF graph and another one.
-      *
-      * @param triples Dataset of RDF graph
-      * @param other   the other RDF graph
-      * @return graph (union of both)
-      */
-    def union(other: Dataset[Triple]): Dataset[Triple] =
-      TripleOps.union(triples, other)
 
     /**
       * Return the union all of RDF graphs.
@@ -769,7 +665,6 @@ package object model {
     /**
       * Write N-Triples from a given Dataset of triples
       *
-      * @param triples Dataset of RDF graph
       * @param path    path to the file containing N-Triples
       */
     def saveAsNTriplesFile(path: String): Unit =
@@ -787,7 +682,7 @@ package object model {
       * Constructs GraphX graph from RDD of triples
       *
       * @return object of GraphX which contains the constructed  ''graph''.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.constructGraph]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.constructGraph]]
       */
     def asGraph(): Graph[Node, Node] =
       GraphOps.constructGraph(triples)
@@ -796,7 +691,7 @@ package object model {
       * Constructs Hashed GraphX graph from RDD of triples
       *
       * @return object of GraphX which contains the constructed hashed ''graph''.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.constructHashedGraph]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.constructHashedGraph]]
       */
     def asHashedGraph(): Graph[Node, Node] =
       GraphOps.constructHashedGraph(triples)
@@ -805,7 +700,7 @@ package object model {
       * Constructs String GraphX graph from RDD of triples
       *
       * @return object of GraphX which contains the constructed string ''graph''.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.constructStringGraph]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.constructStringGraph]]
       */
     def asStringGraph(): Graph[String, String] =
       GraphOps.constructStringGraph(triples)
@@ -822,7 +717,7 @@ package object model {
       * Convert a graph into a RDD of Triple.
       *
       * @return a RDD of triples.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.toRDD]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.toRDD]]
       */
     def toRDD(): RDD[Triple] =
       GraphOps.toRDD(graph)
@@ -831,7 +726,7 @@ package object model {
       * Convert a graph into a DataFrame.
       *
       * @return a DataFrame of triples.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.toDF]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.toDF]]
       */
     def toDF(): DataFrame =
       GraphOps.toDF(graph)
@@ -840,7 +735,7 @@ package object model {
       * Convert a graph into a Dataset of Triple.
       *
       * @return a Dataset of triples.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.toDS]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.toDS]]
       */
     def toDS(): Dataset[Triple] =
       GraphOps.toDS(graph)
@@ -852,7 +747,7 @@ package object model {
       * @param predicate
       * @param object
       * @return graph which contains subset of the reduced graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.find]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.find]]
       */
     def find(subject: Node, predicate: Node, `object`: Node): Graph[Node, Node] =
       GraphOps.find(graph, subject, predicate, `object`)
@@ -861,7 +756,7 @@ package object model {
       * Gets triples of a given graph.
       *
       * @return [[[RDD[Triple]]] from the given graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getTriples]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.getTriples]]
       */
     def getTriples(): RDD[Triple] =
       GraphOps.getTriples(graph)
@@ -870,7 +765,7 @@ package object model {
       * Gets subjects of a given graph.
       *
       * @return [[[RDD[Node]]] from the given graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getSubjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.getSubjects]]
       */
     def getSubjects(): RDD[Node] =
       GraphOps.getSubjects(graph)
@@ -879,7 +774,7 @@ package object model {
       * Gets predicates of a given graph.
       *
       * @return [[[RDD[Node]]] from the given graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getPredicates]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.getPredicates]]
       */
     def getPredicates(): RDD[Node] =
       GraphOps.getPredicates(graph)
@@ -888,7 +783,7 @@ package object model {
       * Gets objects of a given graph.
       *
       * @return [[[RDD[Node]]] from the given graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.getObjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.getObjects]]
       */
     def getObjects(): RDD[Node] =
       GraphOps.getObjects(graph)
@@ -899,7 +794,7 @@ package object model {
       *
       * @param func a partial funtion.
       * @return [[Graph[Node, Node]]] a subset of the given graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterSubjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.filterSubjects]]
       */
     def filterSubjects(func: Node => Boolean): Graph[Node, Node] =
       GraphOps.filterSubjects(graph, func)
@@ -910,7 +805,7 @@ package object model {
       *
       * @param func a partial funtion.
       * @return [[Graph[Node, Node]]] a subset of the given graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterPredicates]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.filterPredicates]]
       */
     def filterPredicates(func: Node => Boolean): Graph[Node, Node] =
       GraphOps.filterPredicates(graph, func)
@@ -921,7 +816,7 @@ package object model {
       *
       * @param func a partial funtion.
       * @return [[Graph[Node, Node]]] a subset of the given graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.filterObjects]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.filterObjects]]
       */
     def filterObjects(func: Node => Boolean): Graph[Node, Node] =
       GraphOps.filterObjects(graph, func)
@@ -930,7 +825,7 @@ package object model {
       * Compute the size of the graph
       *
       * @return the number of edges in the graph.
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.size]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.size]]
       */
     def size(): Long =
       GraphOps.size(graph)
@@ -940,7 +835,7 @@ package object model {
       *
       * @param other of the other graph
       * @return graph (union of all)
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.union]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.union]]
       */
     def union(other: Graph[Node, Node]): Graph[Node, Node] =
       GraphOps.union(graph, other)
@@ -950,7 +845,7 @@ package object model {
       *
       * @param other the other RDF graph
       * @return the intersection of both RDF graphs
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.difference]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.difference]]
       */
     def difference(other: Graph[Node, Node]): Graph[Node, Node] =
       GraphOps.difference(graph, other)
@@ -960,7 +855,7 @@ package object model {
       *
       * @param other the other RDF graph
       * @return the difference of both RDF graphs
-      * @see [[net.sansa_stack.rdf.spark.graph.GraphOps.intersection]]
+      * @see [[net.sansa_stack.rdf.spark.model.graph.GraphOps.intersection]]
       */
     def intersection(other: Graph[Node, Node]): Graph[Node, Node] =
       GraphOps.intersection(graph, other)

@@ -85,15 +85,6 @@ object TripleOps {
   }
 
   /**
-   * Return the number of triples.
-   *
-   * @param triples Dataset of triples
-   * @return the number of triples
-   */
-  def size(triples: Dataset[Triple]): Long =
-    triples.count()
-
-  /**
    * Return the union of this RDF graph and another one.
    *
    * @param triples Dataset of RDF graph

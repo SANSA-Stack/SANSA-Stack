@@ -17,7 +17,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val triples = spark.rdf(lang)(path)
 
     val graph = triples.toDF()
-    val size = graph.size()
+    val size = graph.count()
 
     assert(size == 10)
   }
@@ -129,7 +129,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val other = spark.rdf(lang)(path)
 
-    val graph = triples.difference(other)
+    val graph = triples.subtract(other)
 
     val size = graph.count()
 

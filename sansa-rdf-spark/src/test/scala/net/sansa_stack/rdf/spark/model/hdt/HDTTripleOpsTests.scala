@@ -17,7 +17,7 @@ class HDTTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val hdt = triples.asHDT()
 
-    val size = hdt.size()
+    val size = hdt.count()
 
     assert(size == 7)
   }

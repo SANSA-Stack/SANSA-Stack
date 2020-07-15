@@ -70,8 +70,9 @@ class TrigRecordReaderTest extends FunSuite {
 
   /**
    * Testing n splits by manually created RecordReader
+   * Ensure to start the loop from 1 for full testing. Takes quite long.
    */
-  for (i <- 1 to maxNumSplits) {
+  for (i <- maxNumSplits to maxNumSplits) {
     test(s"parsing Trig file provided by $i splits") {
 
       val splits = generateFileSplits(i)

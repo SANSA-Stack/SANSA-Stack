@@ -139,24 +139,6 @@ object TripleOps {
       })
   }
 
-  /**
-   * Return the number of triples.
-   *
-   * @param triples DataFrame of triples
-   * @return the number of triples
-   */
-  def size(triples: DataFrame): Long =
-    triples.count()
-
-  /**
-   * Return the union of this RDF graph and another one.
-   *
-   * @param triples DataFrame of RDF graph
-   * @param other the other RDF graph
-   * @return graph (union of both)
-   */
-  def union(triples: DataFrame, other: DataFrame): DataFrame =
-    triples.union(other)
 
   /**
    * Return the union all of RDF graphs.
@@ -179,28 +161,6 @@ object TripleOps {
     }
     df.get
   }
-
-  /**
-   * Returns a new RDF graph that contains the intersection
-   * of the current RDF graph with the given RDF graph.
-   *
-   * @param triples DataFrame of RDF graph
-   * @param other the other RDF graph
-   * @return the intersection of both RDF graphs
-   */
-  def intersection(triples: DataFrame, other: DataFrame): DataFrame =
-    triples.intersect(other)
-
-  /**
-   * Returns a new RDF graph that contains the difference
-   * between the current RDF graph and the given RDF graph.
-   *
-   * @param triples DataFrame of RDF graph
-   * @param other the other RDF graph
-   * @return the difference of both RDF graphs
-   */
-  def difference(triples: DataFrame, other: DataFrame): DataFrame =
-    triples.except(other)
 
   /**
    * Determine whether this RDF graph contains any triples
@@ -237,7 +197,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAny(triples: DataFrame, other: DataFrame): Boolean = {
-    difference(triples, other).count() > 0
+    triples.except(other).count() > 0 // .exceptAll()?
   }
 
   /**
@@ -249,7 +209,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAll(triples: DataFrame, other: DataFrame): Boolean = {
-    difference(triples, other).count() == 0
+    triples.except(other).count() == 0 // .exceptAll()?
   }
 
   /**
@@ -262,7 +222,7 @@ object TripleOps {
   def add(triples: DataFrame, triple: Triple): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
     val statement = triples.sparkSession.sparkContext.parallelize(Seq(triple))
-    union(triples, statement.toDF())
+    triples.union(statement.toDF())
   }
 
   /**
@@ -275,7 +235,7 @@ object TripleOps {
   def addAll(triples: DataFrame, triple: Seq[Triple]): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
     val statements = triples.sparkSession.sparkContext.parallelize(triple)
-    union(triples, statements.toDF())
+    triples.union(statements.toDF())
   }
 
   /**
@@ -290,7 +250,7 @@ object TripleOps {
   def remove(triples: DataFrame, triple: Triple): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
     val statement = triples.sparkSession.sparkContext.parallelize(Seq(triple))
-    difference(triples, statement.toDF())
+    triples.except(statement.toDF())
   }
 
   /**
@@ -305,7 +265,7 @@ object TripleOps {
   def removeAll(triples: DataFrame, triple: Seq[Triple]): DataFrame = {
     import net.sansa_stack.rdf.spark.model._
     val statements = triples.sparkSession.sparkContext.parallelize(triple)
-    difference(triples, statements.toDF())
+    triples.except(statements.toDF())
   }
 
   /**
