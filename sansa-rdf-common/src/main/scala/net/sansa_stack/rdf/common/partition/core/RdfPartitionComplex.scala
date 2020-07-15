@@ -22,4 +22,10 @@ case class RdfPartitionComplex(subjectType: Byte,
     val p = partitioner.fromTriple(t)
     p == this
   }
+
+  override def equals(o: Any): Boolean = o match {
+    case RdfPartitionComplex(`subjectType`, `predicate`, `objectType`, `datatype`, `langTagPresent`, `lang`, _) => true
+    case _ => false
+  }
+  override def hashCode: Int = (subjectType, predicate, objectType, datatype, langTagPresent, lang).##
 }
