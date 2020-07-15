@@ -11,7 +11,7 @@ import org.scalatest.FunSuite
 /**
  * @author Lorenz Buehmann
  */
-class SPARQLQueryEvaluationTestSuite
+class SPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VERSION.Value)
   extends FunSuite {
 
   protected val aggregatesManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#"
@@ -32,7 +32,7 @@ class SPARQLQueryEvaluationTestSuite
   lazy val IGNORE: Set[String] = Set.empty[String]
 
   val baseDir = "/sparql11"
-  val testDirSPARQL11: String = baseDir + "/data-sparql11/"
+  val testDirSPARQL11: String = baseDir + (if (sparqlVersion == SPARQL_VERSION.SPARQL_11) "/data-sparql11/" else "/data-r2/")
 
   private def loadTestCasesFromManifest(): List[SPARQLQueryEvaluationTest] = {
     val baseURL = classOf[SPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11)
@@ -101,6 +101,6 @@ class SPARQLQueryEvaluationTestSuite
 
 object SPARQLQueryEvaluationTestSuite {
   def main(args: Array[String]): Unit = {
-    new SPARQLQueryEvaluationTestSuite().tests.foreach(println(_))
+    new SPARQLQueryEvaluationTestSuite(SPARQL_VERSION.SPARQL_11).tests.foreach(println(_))
   }
 }

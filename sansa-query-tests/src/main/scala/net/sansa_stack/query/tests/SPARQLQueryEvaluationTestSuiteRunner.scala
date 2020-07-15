@@ -12,18 +12,40 @@ import org.scalatest.FunSuite
 
 import net.sansa_stack.query.tests.util._
 
+
+
 /**
- * SPARQL 1.1 test suite runner.
+ * SPARQL test suite runner.
  *
  * Inheriting classes have to implement the method
  * [[net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuiteRunner#runQuery(org.apache.jena.query.Query, org.apache.jena.rdf.model.Model)]] method.
  *
+ * @param sparqlVersion the SPARQL version of the test suite, i.e. either SPARQL 1.0 or 1.1
  * @author Lorenz Buehmann
  */
-abstract class SPARQLQueryEvaluationTestSuiteRunner
+abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VERSION.Value = SPARQL_VERSION.SPARQL_11)
   extends FunSuite {
 
   // below vars hold the namespaces for different types of test cases
+  // SPARQL 1.0
+  protected val algebraManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/algebra/manifest#"
+  protected val basicManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/basic/manifest#"
+  protected val booleanManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/boolean-effective-value/manifest#"
+  protected val castManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/cast/manifest#"
+  protected val constructManifest10: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/construct/manifest#"
+  protected val datasetManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/dataset/manifest#"
+  protected val distinctManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/distinct/manifest#"
+  protected val exprBuiltInManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/expr-builtin/manifest#"
+  protected val exprEqualsManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/expr-equals/manifest#"
+  protected val graphManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/graph/manifest#"
+  protected val openWorldManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/open-world/manifest#"
+  protected val regexManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/regex/manifest#"
+  protected val solutionSeqManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/solution-seq/manifest#"
+  protected val sortManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/sort/manifest#"
+  protected val typePromotionManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/type-promotion/manifest#"
+  protected val optionalManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/optional/manifest#"
+
+  // SPARQL 1.1
   protected val aggregatesManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#"
   protected val bindManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bind/manifest#"
   protected val bindingsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bindings/manifest#"
@@ -48,7 +70,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner
   lazy val IGNORE_FILTER: SPARQLQueryEvaluationTest => Boolean = _ => {true}
 
   // holds the test data
-  val testData: List[SPARQLQueryEvaluationTest] = new SPARQLQueryEvaluationTestSuite().tests
+  val testData: List[SPARQLQueryEvaluationTest] = new SPARQLQueryEvaluationTestSuite(sparqlVersion).tests
 
   // the main loop over the test data starts here
   // a single ScalaTest is generated per query
