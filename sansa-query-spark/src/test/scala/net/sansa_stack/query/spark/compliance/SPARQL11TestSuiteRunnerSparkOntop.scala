@@ -106,7 +106,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
       RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex(distinguishStringLiterals = false))
 
     // create the query engine
-    val queryEngine = new OntopSPARQLEngine(spark, partitions, ontology = None)
+    val queryEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
 
     // produce result based on query type
     val result = if (query.isSelectType) { // SELECT

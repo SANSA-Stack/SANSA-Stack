@@ -23,11 +23,13 @@ import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFacto
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
-import org.semanticweb.owlapi.model.OWLOntology
+import org.semanticweb.owlapi.apibinding.OWLManager
+import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
@@ -78,6 +80,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
   private val JDBC_PASSWORD = ""
 
   private lazy val connection: Connection = try {
+    Class.forName("org.h2.Driver")
     DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
   } catch {
     case e: SQLException =>
@@ -243,40 +246,62 @@ object OntopSPARQL2SQLRewriter {
 
 }
 
-
+/**
+ * A SPARQL engine based on Ontop as SPARQL-to-SQL rewriter.
+ *
+ * @param spark the Spark session
+ * @param databaseName an existing Spark database that contains the tables for the RDF partitions
+ * @param partitions the RDF partitions
+ * @param ontology an (optional) ontology that will be used for query optimization and rewriting
+ */
 class OntopSPARQLEngine(val spark: SparkSession,
                         databaseName: String,
                         partitions: Set[RdfPartitionComplex],
-                        ontology: Option[OWLOntology]) {
+                        var ontology: Option[OWLOntology]) {
 
-  /**
-   * Partition RDDs will be registered as Spark tables.
-   * @param spark
-   * @param partitions
-   */
-  def this(spark: SparkSession, partitions: Map[RdfPartitionComplex, RDD[Row]], ontology: Option[OWLOntology]) {
-    this(spark, null, partitions.keySet, ontology)
+  private val logger = com.typesafe.scalalogging.Logger[OntopSPARQLEngine]
 
-    // create and register Spark tables
-    SparkTableGenerator(spark).createAndRegisterSparkTables(partitions)
+  // if no ontology has been provided, we try to extract it from the dataset
+  if (ontology.isEmpty) {
+    ontology = createOntology()
   }
 
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
 
   private val sparql2sql = OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy, ontology)
 
-  private val logger = com.typesafe.scalalogging.Logger(OntopSPARQLEngine.getClass.getName)
-
   val typeFactory = sparql2sql.typeFactory
 
   // mapping from RDF datatype to Spark SQL datatype
   val rdfDatatype2SQLCastName = DatatypeMappings(typeFactory)
 
-  val useHive: Boolean = false
-  val useStatistics: Boolean = true
-
   if (databaseName != null && databaseName.trim.nonEmpty) {
     spark.sql(s"USE $databaseName")
+  }
+
+  private def createOntology(): Option[OWLOntology] = {
+    logger.debug("extracting ontology from dataset")
+    // get the partitions that contains the rdf:type triples
+    val typePartitions = partitions.filter(_.predicate == RDF.`type`.getURI)
+
+    if (typePartitions.nonEmpty) {
+      val names = typePartitions.map(p => SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy), quotChar = '`'))
+
+      val sql = names.map(name => s"SELECT DISTINCT o FROM $name").mkString(" UNION ")
+
+      val df = spark.sql(sql)
+
+      val classes = df.collect().map(_.getString(0))
+
+      val dataFactory = OWLManager.getOWLDataFactory
+      val axioms: Set[OWLAxiom] = classes.map(cls =>
+            dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(cls)), dataFactory.getOWLNamedIndividual(IRI.create("http://foo.bar/i")))).toSet
+      val ontology = OWLManager.createOWLOntologyManager().createOntology(axioms.asJava)
+
+      Some(ontology)
+    } else {
+      None
+    }
   }
 
 
@@ -502,6 +527,16 @@ object OntopSPARQLEngine {
 
   def main(args: Array[String]): Unit = {
     new OntopCLI().run(args)
+  }
+
+  def apply(spark: SparkSession, databaseName: String, partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology]): OntopSPARQLEngine
+  = new OntopSPARQLEngine(spark, databaseName, partitions, ontology)
+
+  def apply(spark: SparkSession, partitions: Map[RdfPartitionComplex, RDD[Row]], ontology: Option[OWLOntology]): OntopSPARQLEngine = {
+    // create and register Spark tables
+    SparkTableGenerator(spark).createAndRegisterSparkTables(partitions)
+
+    new OntopSPARQLEngine(spark, null, partitions.keySet, ontology)
   }
 
 }

@@ -66,17 +66,17 @@ class OntopCLI {
           //    owlFile = "/tmp/clean-dbo.nt"
           //    man.saveOntology(cleanOnt, new FileOutputStream(owlFile))
 
-          // get all object properties in schema file
-          val objectProperties = ont.asInstanceOf[HasObjectPropertiesInSignature].getObjectPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
-
-          // get all object properties in schema file
-          val dataProperties = ont.asInstanceOf[HasDataPropertiesInSignature].getDataPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
-
-          var schemaProperties = objectProperties ++ dataProperties
-          schemaProperties = Set("http://dbpedia.org/ontology/birthPlace", "http://dbpedia.org/ontology/birthDate")
-
-          // filter triples RDD
-          triplesRDD = triplesRDD.filter(t => schemaProperties.contains(t.getPredicate.getURI))
+//          // get all object properties in schema file
+//          val objectProperties = ont.asInstanceOf[HasObjectPropertiesInSignature].getObjectPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
+//
+//          // get all object properties in schema file
+//          val dataProperties = ont.asInstanceOf[HasDataPropertiesInSignature].getDataPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
+//
+//          var schemaProperties = objectProperties ++ dataProperties
+//          schemaProperties = Set("http://dbpedia.org/ontology/birthPlace", "http://dbpedia.org/ontology/birthDate")
+//
+//          // filter triples RDD
+//          triplesRDD = triplesRDD.filter(t => schemaProperties.contains(t.getPredicate.getURI))
         }
 
         // do partitioning here
@@ -85,12 +85,12 @@ class OntopCLI {
         logger.info(s"got ${partitions.keySet.size} partitions ...")
 
         // create the SPARQL engine
-        new OntopSPARQLEngine(spark, partitions, Some(ont))
+        OntopSPARQLEngine(spark, partitions, Option(ont))
       } else {
         // load partitioning metadata
         val partitions = PartitionSerDe.deserializeFrom(Paths.get(config.metaDataPath))
         // create the SPARQL engine
-        new OntopSPARQLEngine(spark, config.databaseName, partitions, None)
+        OntopSPARQLEngine(spark, config.databaseName, partitions, None)
       }
 
     var input = config.initialQuery
@@ -120,12 +120,12 @@ class OntopCLI {
     if (input != null) {
       runQuery(input)
     }
-
+    println("enter SPARQL query (press 'q' to quit): ")
+    input = scala.io.StdIn.readLine()
     while (input != "q") {
+      runQuery(input)
       println("enter SPARQL query (press 'q' to quit): ")
       input = scala.io.StdIn.readLine()
-
-      runQuery(input)
     }
 
     sparqlEngine.stop()

@@ -128,7 +128,7 @@ package object query {
 
     val spark = SparkSession.builder().getOrCreate()
 
-    val sparqlEngine = new OntopSPARQLEngine(spark, partitions, ontology = None)
+    val sparqlEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
 
     /**
      * Default partition - using VP.

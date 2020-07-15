@@ -13,13 +13,13 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
  */
 object SQLUtils {
 
-  def escapeTablename(path: String, quoted: Boolean = true): String = {
+  def escapeTablename(path: String, quoted: Boolean = true, quotChar: Char = '"'): String = {
     val s = URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
       .toLowerCase
       .replace('%', 'P')
       .replace('.', 'C')
       .replace("-", "dash")
-    if (quoted) s""""$s"""" else s
+    if (quoted) s"""$quotChar$s$quotChar""" else s
   }
 
 

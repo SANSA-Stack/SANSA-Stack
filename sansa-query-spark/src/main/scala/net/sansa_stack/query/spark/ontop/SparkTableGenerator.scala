@@ -46,11 +46,23 @@ class SparkTableGenerator(spark: SparkSession,
         val p = v.head._2
         (p, rdd)
       }
+
+      .map { case (p, rdd) => (SQLUtils.createTableName(p, blankNodeStrategy), p, rdd) }
+      .groupBy(_._1)
+      .map(map => map._2.head)
+      .map(e => (e._2, e._3))
+
       .foreach { case (p, rdd) => createSparkTable(p, rdd) }
 
     // register the non-lang tagged RDDs as table
     partitions
       .filter(_._1.lang.isEmpty)
+
+      .map { case (p, rdd) => (SQLUtils.createTableName(p, blankNodeStrategy), p, rdd) }
+      .groupBy(_._1)
+      .map(map => map._2.head)
+      .map(e => (e._2, e._3))
+
       .foreach {
         case (p, rdd) => createSparkTable(p, rdd)
       }
