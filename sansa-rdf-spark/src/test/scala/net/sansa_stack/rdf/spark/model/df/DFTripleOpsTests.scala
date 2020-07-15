@@ -114,7 +114,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val other = spark.read.rdf(lang)(path)
       .add(triple)
 
-    val graph = triples.except(other)
+    val graph = triples.intersect(other)
 
     val size = graph.count()
 
