@@ -295,7 +295,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
       val dataFactory = OWLManager.getOWLDataFactory
       val axioms: Set[OWLAxiom] = classes.map(cls =>
-            dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(cls)), dataFactory.getOWLNamedIndividual(IRI.create("http://foo.bar/i")))).toSet
+            dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(IRI.create(cls)))).toSet
       val ontology = OWLManager.createOWLOntologyManager().createOntology(axioms.asJava)
 
       Some(ontology)
