@@ -54,11 +54,6 @@
             <artifactId>jena-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-fuseki-server</artifactId>
-        </dependency>
-
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-tdb</artifactId>
@@ -225,6 +220,11 @@
 			<artifactId>ontop-rdb</artifactId>
 			<version>${version.ontop}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.200</version>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>it.unibz.inf.ontop</groupId>-->
 <!--            <artifactId>ontop-sparql-compliance</artifactId>-->
