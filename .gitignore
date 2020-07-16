@@ -54,3 +54,5 @@ stat*.txt
 
 scalastyle-output.xml
 
+# Spark
+metastore_db
