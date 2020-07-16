@@ -37,7 +37,7 @@ class KryoSerializationWrapper[T: ClassTag] extends Serializable {
   private var valueSerialized: Array[Byte] = _
 
   // The getter and setter for valueSerialized is used for XML serialization.
-  def getValueSerialized(): Array[Byte] = {
+  def getValueSerialized: Array[Byte] = {
     valueSerialized = KryoSerializer.serialize(value)
     valueSerialized
   }
@@ -49,7 +49,7 @@ class KryoSerializationWrapper[T: ClassTag] extends Serializable {
 
   // Used for Java serialization.
   private def writeObject(out: java.io.ObjectOutputStream) {
-    getValueSerialized()
+    getValueSerialized
     out.defaultWriteObject()
   }
 

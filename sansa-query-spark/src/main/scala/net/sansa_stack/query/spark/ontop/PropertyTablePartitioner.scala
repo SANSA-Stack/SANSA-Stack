@@ -2,22 +2,20 @@ package net.sansa_stack.query.spark.ontop
 
 import java.net.URI
 
-import org.apache.spark.sql.{Row, SparkSession}
-
 import net.sansa_stack.rdf.spark.io._
-import scala.collection.JavaConverters._
-import scala.collection.mutable
-import scala.collection.mutable.Set
-
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.shared.impl.PrefixMappingImpl
 import org.apache.jena.sparql.serializer.SerializationContext
-import org.apache.jena.sparql.util.{FmtUtils, PrefixMapping2}
+import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{ArrayType, StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
+
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 
 
@@ -172,11 +170,11 @@ object PropertyTablePartitioner {
 
       // TODO create column names
       val prop2ColumnName = properties.map(p => (p.getLocalName, p)).groupBy(_._1).flatMap(e =>
-        (if (e._2.size > 1) {
+        if (e._2.size > 1) {
           e._2.map(el => (el._2, FmtUtils.stringForNode(el._2)))
         } else {
           e._2
-        })
+        }
       )
 
       val pm = new PrefixMappingImpl()

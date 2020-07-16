@@ -9,12 +9,14 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
 /**
+ * Some utilities for working with SQL objects.
+ *
  * @author Lorenz Buehmann
  */
 object SQLUtils {
 
-  def escapeTablename(path: String, quoted: Boolean = true, quotChar: Char = '"'): String = {
-    val s = URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
+  def escapeTablename(name: String, quoted: Boolean = true, quotChar: Char = '"'): String = {
+    val s = URLEncoder.encode(name, StandardCharsets.UTF_8.toString)
       .toLowerCase
       .replace('%', 'P')
       .replace('.', 'C')

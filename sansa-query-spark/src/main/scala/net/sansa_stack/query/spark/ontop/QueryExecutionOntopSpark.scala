@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.ontop;
+package net.sansa_stack.query.spark.ontop
 
 import scala.collection.JavaConverters._
 
@@ -17,8 +17,8 @@ class QueryExecutionOntopSpark(query: Query, subFactory: QueryExecutionFactory, 
 
 		val tmp = ResultSetUtils.create2(query.getProjectVars, bindings.asJava)
 
-		new ResultSetCloseable(tmp);
-	}
+		new ResultSetCloseable(tmp)
+  }
 
 	override def execAsk(): Boolean = ontop.execAsk(query.toString())
 

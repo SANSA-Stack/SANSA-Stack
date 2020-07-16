@@ -14,14 +14,14 @@ object Sparql2Sql {
   baseDir.mkdirs()
 
   def obtainSQL(sparqlFile: String, r2rmlFile: String, owlFile: String, propertyFile: String): String = {
-    var factory = OntopOWLFactory.defaultFactory();
+    var factory = OntopOWLFactory.defaultFactory()
 
     var config = OntopSQLOWLAPIConfiguration.defaultBuilder()
       .r2rmlMappingFile(r2rmlFile)
       .ontologyFile(owlFile)
       .propertyFile(propertyFile)
       .enableTestMode()
-      .build();
+      .build()
 
     var reasoner = factory.createReasoner(config)
 

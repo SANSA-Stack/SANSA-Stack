@@ -56,7 +56,7 @@ object OntopMappingGenerator {
 
       s"""
          |mappingId     $id
-         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE ${whereConditionLang}
+         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE $whereConditionLang
          |target        $targetSubject <${partition.predicate}> $targetObject .
          |""".stripMargin
     }

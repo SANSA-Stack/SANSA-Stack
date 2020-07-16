@@ -20,7 +20,7 @@ import org.apache.spark.serializer.KryoRegistrator
 class OntopKryoRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
 
-    HashMultimapSerializer.registerSerializers(kryo);
+    HashMultimapSerializer.registerSerializers(kryo)
 
     // Partitioning
     kryo.register(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex])
