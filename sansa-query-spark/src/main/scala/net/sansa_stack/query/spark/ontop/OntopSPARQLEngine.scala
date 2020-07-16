@@ -1,25 +1,20 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.StringReader
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util
 import java.util.Properties
 
-import scala.collection.JavaConverters._
-
 import com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
-import it.unibz.inf.ontop.answering.reformulation.QueryReformulator
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
-import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException, OntopReformulationException}
-import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopMappingSQLAllOWLAPIConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
+import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
-import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
-import it.unibz.inf.ontop.iq.{IQ, IQTree, UnaryIQTree}
+import it.unibz.inf.ontop.iq.node.ConstructionNode
 import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.engine.binding.Binding
@@ -31,7 +26,7 @@ import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
+import scala.collection.JavaConverters._
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -94,7 +89,11 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
   logger.debug(s"Ontop mappings:\n$mappings")
 
   // the Ontop core
-  val (queryReformulator, termFactory, typeFactory, substitutionFactory) = createReformulator(mappings, ontopProperties, ontology)
+  val reformulationConfiguration = OntopUtils.createReformulationConfig(mappings, ontopProperties, ontology)
+  val termFactory = reformulationConfiguration.getTermFactory
+  val typeFactory = reformulationConfiguration.getTypeFactory
+  val queryReformulator = reformulationConfiguration.loadQueryReformulator
+  val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
   val inputQueryFactory = queryReformulator.getInputQueryFactory
 
 
@@ -105,122 +104,15 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
 
     val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
 
-    val sqlQuery = extractSQLQuery(executableQuery)
-    val constructionNode = extractRootConstructionNode(executableQuery)
-    val nativeNode = extractNativeNode(executableQuery)
+    val sqlQuery = OntopUtils.extractSQLQuery(executableQuery)
+    val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)
+    val nativeNode = OntopUtils.extractNativeNode(executableQuery)
     val signature = nativeNode.getVariables
     val typeMap = nativeNode.getTypeMap
 
     OntopQueryRewrite(sparqlQuery, inputQuery, sqlQuery, signature, typeMap, constructionNode,
       executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory)
   }
-
-  @throws[EmptyQueryException]
-  @throws[OntopInternalBugException]
-  private def extractSQLQuery(executableQuery: IQ): String = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    val queryString = Option(tree)
-      .filter((t: IQTree) => t.isInstanceOf[UnaryIQTree])
-      .map((t: IQTree) => t.asInstanceOf[UnaryIQTree].getChild.getRootNode)
-      .filter(n => n.isInstanceOf[NativeNode])
-      .map(n => n.asInstanceOf[NativeNode])
-      .map(_.getNativeQueryString)
-      .getOrElse(throw new MinorOntopInternalBugException("The query does not have the expected structure " +
-        "of an executable query\n" + executableQuery))
-    if (queryString == "") throw new EmptyQueryException
-    queryString
-  }
-
-  @throws[EmptyQueryException]
-  private def extractNativeNode(executableQuery: IQ): NativeNode = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    Option(tree)
-      .filter(t => t.isInstanceOf[UnaryIQTree])
-      .map(t => t.asInstanceOf[UnaryIQTree].getChild.getRootNode)
-      .filter(n => n.isInstanceOf[NativeNode])
-      .map(n => n.asInstanceOf[NativeNode])
-      .getOrElse(throw new MinorOntopInternalBugException("The query does not have the expected structure " +
-        "for an executable query\n" + executableQuery))
-  }
-
-  @throws[EmptyQueryException]
-  @throws[OntopInternalBugException]
-  private def extractRootConstructionNode(executableQuery: IQ): ConstructionNode = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    Option(tree.getRootNode)
-      .filter(n => n.isInstanceOf[ConstructionNode])
-      .map(n => n.asInstanceOf[ConstructionNode])
-      .getOrElse(throw new MinorOntopInternalBugException(
-        "The \"executable\" query is not starting with a construction node\n" + executableQuery))
-  }
-
-  /**
-   * Instantiation of the query reformulator
-   */
-  @throws[OBDASpecificationException]
-  def createReformulator(obdaMappings: String, properties: Properties): (QueryReformulator, TermFactory, TypeFactory, SubstitutionFactory) = {
-    val obdaSpecification = loadOBDASpecification(obdaMappings, properties)
-    val reformulationConfiguration = OntopReformulationSQLConfiguration.defaultBuilder
-      .obdaSpecification(obdaSpecification)
-      .jdbcUrl(JDBC_URL)
-      .properties(properties)
-      .enableTestMode
-      .build
-
-    val termFactory = reformulationConfiguration.getTermFactory
-    val typeFactory = reformulationConfiguration.getTypeFactory
-    val queryReformulator = reformulationConfiguration.loadQueryReformulator
-    val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
-
-    (queryReformulator, termFactory, typeFactory, substitutionFactory)
-  }
-
-  @throws[OBDASpecificationException]
-  private def loadOBDASpecification(obdaMappings: String, properties: Properties) = {
-    val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder
-                    .ontology(ontology.get)
-                  else OntopMappingSQLAllConfiguration.defaultBuilder
-
-    val mappingConfiguration = builder
-      .nativeOntopMappingReader(new StringReader(obdaMappings))
-      .jdbcUrl(JDBC_URL)
-      .jdbcUser(JDBC_USER)
-      .jdbcPassword(JDBC_PASSWORD)
-      .properties(properties)
-      .enableTestMode
-      .build
-    mappingConfiguration.loadSpecification
-  }
-
-  @throws[OBDASpecificationException]
-  def createReformulator(obdaMappings: String, properties: Properties, ontology: Option[OWLOntology] = None):
-  (QueryReformulator, TermFactory, TypeFactory, SubstitutionFactory) = {
-    val obdaSpecification = loadOBDASpecification(obdaMappings, properties)
-
-    val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
-                                          .ontology(ontology.get)
-                                          .jdbcUser(JDBC_USER)
-                                          .jdbcPassword(JDBC_PASSWORD)
-                  else OntopReformulationSQLConfiguration.defaultBuilder
-
-    val reformulationConfiguration = builder
-      .obdaSpecification(obdaSpecification)
-      .jdbcUrl(JDBC_URL)
-      .enableTestMode
-      .build
-
-    val termFactory = reformulationConfiguration.getTermFactory
-    val typeFactory = reformulationConfiguration.getTypeFactory
-    val queryReformulator = reformulationConfiguration.loadQueryReformulator
-    val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
-
-    (queryReformulator, termFactory, typeFactory, substitutionFactory)
-  }
-
-
 
   def close(): Unit = connection.close()
 }
@@ -349,7 +241,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
 //            val t = term.asInstanceOf[NonGroundFunctionalTerm]
 //            if (t.getArity == 2 && t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.isInstanceOf[RDFTermTypeFunctionSymbol]) {
 //              val map = t.getTerm(2).asInstanceOf[NonGroundFunctionalTerm].getFunctionSymbol.asInstanceOf[RDFTermTypeFunctionSymbol].getConversionMap
-////              map.get(new DBConstantImpl())
+// //              map.get(new DBConstantImpl())
 //            }
 //          }
 //        }

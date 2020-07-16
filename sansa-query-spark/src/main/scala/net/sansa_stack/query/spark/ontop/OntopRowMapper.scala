@@ -1,23 +1,17 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.StringReader
-import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
-
-import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 import com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OntopInternalBugException}
-import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopModelConfiguration, OntopReformulationSQLConfiguration}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
 import it.unibz.inf.ontop.iq.{IQ, UnaryIQTree}
 import it.unibz.inf.ontop.model.`type`.TypeFactory
-import it.unibz.inf.ontop.model.term.impl.DBConstantImpl
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.sparql.core.Var
@@ -27,7 +21,8 @@ import org.eclipse.rdf4j.model.{IRI, Literal}
 import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
 import org.semanticweb.owlapi.model.OWLOntology
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 /**
  * Mapper of Spark DataFrame rows to other entities, e.g. binding, triple, ...
@@ -57,37 +52,14 @@ class OntopRowMapper(
 
   val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
 
-  val constructionNode = extractRootConstructionNode(executableQuery)
-  val nativeNode = extractNativeNode(executableQuery)
+  val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)
+  val nativeNode = OntopUtils.extractNativeNode(executableQuery)
   val sqlSignature = nativeNode.getVariables
   val sqlTypeMap = nativeNode.getTypeMap
   val sparqlVar2Term = constructionNode.getSubstitution
   val answerAtom = executableQuery.getProjectionAtom
 
-  @throws[EmptyQueryException]
-  private def extractNativeNode(executableQuery: IQ): NativeNode = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    Option(tree)
-      .filter(t => t.isInstanceOf[UnaryIQTree])
-      .map(t => t.asInstanceOf[UnaryIQTree].getChild.getRootNode)
-      .filter(n => n.isInstanceOf[NativeNode])
-      .map(n => n.asInstanceOf[NativeNode])
-      .getOrElse(throw new MinorOntopInternalBugException("The query does not have the expected structure " +
-        "for an executable query\n" + executableQuery))
-  }
 
-  @throws[EmptyQueryException]
-  @throws[OntopInternalBugException]
-  private def extractRootConstructionNode(executableQuery: IQ): ConstructionNode = {
-    val tree = executableQuery.getTree
-    if (tree.isDeclaredAsEmpty) throw new EmptyQueryException
-    Option(tree.getRootNode)
-      .filter(n => n.isInstanceOf[ConstructionNode])
-      .map(n => n.asInstanceOf[ConstructionNode])
-      .getOrElse(throw new MinorOntopInternalBugException(
-        "The \"executable\" query is not starting with a construction node\n" + executableQuery))
-  }
 
   def map(row: Row): Binding = {
     toBinding(row)
@@ -110,7 +82,7 @@ class OntopRowMapper(
 
     val composition = sub.composeWith(sparqlVar2Term)
     val ontopBindings = answerAtom.getArguments.asScala.map(v => {
-      (v, evaluate(composition.apply(v)))
+      (v, OntopUtils.evaluate(composition.apply(v)))
     })
 
     ontopBindings.foreach {
@@ -174,14 +146,14 @@ class OntopRowMapper(
     // for constant terms in the template
     if (ve.isDefined && ve.get.isInstanceOf[ValueConstant]) {
       val vc = ve.get.asInstanceOf[ValueConstant]
-      if (vc.getValue.isInstanceOf[IRI]) {
-        constant = NodeFactory.createURI(vc.getValue.stringValue)
-      } else if (vc.getValue.isInstanceOf[Literal]) {
-        val lit = vc.getValue.asInstanceOf[Literal]
-        val dt = TypeMapper.getInstance().getTypeByName(lit.getDatatype.toString)
-        constant = NodeFactory.createLiteral(vc.getValue.stringValue, dt)
-      } else {
-        constant = NodeFactory.createBlankNode(vc.getValue.stringValue)
+      vc.getValue match {
+        case _: IRI =>
+          constant = NodeFactory.createURI(vc.getValue.stringValue)
+        case lit: Literal =>
+          val dt = TypeMapper.getInstance().getTypeByName(lit.getDatatype.toString)
+          constant = NodeFactory.createLiteral(vc.getValue.stringValue, dt)
+        case _ =>
+          constant = NodeFactory.createBlankNode(vc.getValue.stringValue)
       }
     } else { // for variable bindings
       constant = binding.get(Var.alloc(node_name))
@@ -205,20 +177,6 @@ class OntopRowMapper(
     } else {
       null.asInstanceOf[Node]
     }
-  }
-
-  private def evaluate(term: ImmutableTerm): Option[RDFConstant] = {
-    val simplifiedTerm = term.simplify
-    simplifiedTerm match {
-      case constant: Constant =>
-        if (constant.isInstanceOf[RDFConstant]) return Some(constant.asInstanceOf[RDFConstant])
-        if (constant.isNull) return None
-        if (constant.isInstanceOf[DBConstant]) throw new InvalidConstantTypeInResultException(constant +
-          "is a DB constant. But a binding cannot have a DB constant as value")
-        throw new InvalidConstantTypeInResultException("Unexpected constant type for " + constant)
-      case _ => None
-    }
-//    throw new InvalidTermAsResultException(simplifiedTerm)
   }
 
   def close(): Unit = {

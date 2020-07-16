@@ -38,38 +38,11 @@ object OntopConnection {
 
   def apply(obdaMappings: String, properties: Properties, partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
     val conf = configs.getOrElse(partitions, {
-//      println("creating reformulation config")
+      println("creating reformulation config")
       val reformulationConfiguration = {
         JDBCDatabaseGenerator.generateTables(connection, partitions)
 
-        val mappingConfiguration = {
-          val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder
-            .ontology(ontology.get)
-          else OntopMappingSQLAllConfiguration.defaultBuilder
-
-          builder
-            .nativeOntopMappingReader(new StringReader(obdaMappings))
-            .jdbcUrl(JDBC_URL)
-            .jdbcUser(JDBC_USER)
-            .jdbcPassword(JDBC_PASSWORD)
-            .properties(properties)
-            .enableTestMode
-            .build
-        }
-
-        val obdaSpecification = mappingConfiguration.loadSpecification
-
-        val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
-          .ontology(ontology.get)
-          .jdbcUser(JDBC_USER)
-          .jdbcPassword(JDBC_PASSWORD)
-        else OntopReformulationSQLConfiguration.defaultBuilder
-
-        builder
-          .obdaSpecification(obdaSpecification)
-          .jdbcUrl(JDBC_URL)
-          .enableTestMode
-          .build
+        OntopUtils.createReformulationConfig(obdaMappings, properties, ontology)
       }
 
       configs += partitions -> reformulationConfiguration
