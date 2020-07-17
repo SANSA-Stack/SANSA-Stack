@@ -14,7 +14,7 @@ class AnnotationMapperTests extends FunSuite with DataFrameSuiteBase {
   test("extracting first names of people from natural trig resources should work") {
     JenaPluginUtils.scan(classOf[Person])
 
-    val path = getClass.getResource("/people.trig").getPath
+    val path = getClass.getClassLoader.getResource("people.trig").getPath
 
     val names = spark
       .datasets(Lang.TRIG)(path)
@@ -26,5 +26,23 @@ class AnnotationMapperTests extends FunSuite with DataFrameSuiteBase {
     assert(names(0) == "Ana")
     assert(names(1) == "Bob")
   }
+
+  /*
+  test("extracting first names of people from natural trig resources should work") {
+    JenaPluginUtils.scan(classOf[Person])
+
+    val path = getClass.getClassLoader.getResource("people.trig").getPath
+
+    val names = spark
+      .datasets(Lang.TRIG)(path)
+      .mapToNaturalResources()
+      .mapAs(classOf[Person])
+      .map(_.getFirstName)
+      .collect()
+
+    assert(names(0) == "Ana")
+    assert(names(1) == "Bob")
+  }
+  */
 
 }
