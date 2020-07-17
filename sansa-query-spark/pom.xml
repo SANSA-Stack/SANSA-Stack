@@ -154,6 +154,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+			<version>${project.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
