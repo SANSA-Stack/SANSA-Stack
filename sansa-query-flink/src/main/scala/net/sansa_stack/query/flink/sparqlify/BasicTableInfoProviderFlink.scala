@@ -3,10 +3,10 @@ package net.sansa_stack.query.flink.sparqlify
 import java.util.Collections
 
 import org.aksw.commons.util.strings.StringUtils
-
 import collection.JavaConverters._
+
 import org.aksw.sparqlify.config.v0_2.bridge.{BasicTableInfo, BasicTableInfoProvider}
-import org.apache.flink.table.api.scala.BatchTableEnvironment
+import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment
 
 /**
  * Created by Simon Bin on 12/06/17.

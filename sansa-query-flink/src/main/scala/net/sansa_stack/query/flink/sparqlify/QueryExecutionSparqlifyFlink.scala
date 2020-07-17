@@ -13,7 +13,7 @@ import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}
-import org.apache.flink.table.api.scala.{BatchTableEnvironment, _}
+import org.apache.flink.table.api.bridge.scala.{BatchTableEnvironment, _}
 import org.apache.flink.types.Row
 import org.apache.jena.query.{Query, QueryExecution}
 import org.apache.jena.sparql.engine.binding.Binding
@@ -26,7 +26,8 @@ class QueryExecutionSparqlifyFlink(
                                     subFactory: QueryExecutionFactory,
                                     val sparqlSqlRewriter: SparqlSqlStringRewriter,
                                     val flinkEnv: ExecutionEnvironment,
-                                    val flinkTable: BatchTableEnvironment) extends QueryExecutionBaseSelect(query, subFactory) {
+                                    val flinkTable: BatchTableEnvironment)
+  extends QueryExecutionBaseSelect(query, subFactory) {
 
   override def executeCoreSelectX(query: Query): QueryExecution = throw new UnsupportedOperationException
 

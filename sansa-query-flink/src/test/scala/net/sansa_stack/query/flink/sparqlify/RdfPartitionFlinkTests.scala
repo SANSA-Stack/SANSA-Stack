@@ -16,7 +16,7 @@ import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
 import org.aksw.jena_sparql_api.views.RestrictedExpr
 import org.aksw.sparqlify.util.SparqlifyCoreInit
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
-import org.apache.flink.table.api.scala.BatchTableEnvironment
+import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.query.{Query, ResultSetFormatter}
 import org.scalatest._

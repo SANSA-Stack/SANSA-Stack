@@ -3,23 +3,19 @@ package net.sansa_stack.query.flink.sparqlify
 import scala.reflect.runtime.universe.typeOf
 
 import com.typesafe.scalalogging.StrictLogging
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
-import net.sansa_stack.rdf.common.partition.schema._
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
-import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperBase, SqlEscaperDoubleQuote}
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
 import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
 import org.aksw.sparqlify.validation.LoggerCount
-import org.apache.flink.api.common.functions.MapFunction
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
-import org.apache.flink.table.api.scala.BatchTableEnvironment
-import scala.collection.JavaConverters._
+import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment
 
-import org.apache.flink.api.common.typeinfo.TypeInformation
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
+import net.sansa_stack.rdf.common.partition.schema._
 
 object SparqlifyUtils3
   extends StrictLogging {
@@ -52,22 +48,22 @@ object SparqlifyUtils3
         q match {
           case q if q =:= typeOf[SchemaStringLong] =>
             var fn = (r: Product) => r.asInstanceOf[SchemaStringLong]
-            flinkTable.registerDataSet(tableName, ds.map (fn))
+            flinkTable.createTemporaryView(tableName, ds.map (fn))
           case q if q =:= typeOf[SchemaStringString] =>
             var fn = (r: Product) => r.asInstanceOf[SchemaStringString]
-            flinkTable.registerDataSet(tableName, ds.map (fn))
+            flinkTable.createTemporaryView(tableName, ds.map (fn))
           case q if q =:= typeOf[SchemaStringStringType] =>
             var fn = (r: Product) => r.asInstanceOf[SchemaStringStringType]
-            flinkTable.registerDataSet(tableName, ds.map (fn))
+            flinkTable.createTemporaryView(tableName, ds.map (fn))
           case q if q =:= typeOf[SchemaStringDouble] =>
             var fn = (r: Product) => r.asInstanceOf[SchemaStringDouble]
-            flinkTable.registerDataSet(tableName, ds.map (fn))
+            flinkTable.createTemporaryView(tableName, ds.map (fn))
           case q if q =:= typeOf[SchemaStringStringLang] =>
             var fn = (r: Product) => r.asInstanceOf[SchemaStringStringLang]
-            flinkTable.registerDataSet(tableName, ds.map (fn))
+            flinkTable.createTemporaryView(tableName, ds.map (fn))
           case q if q =:= typeOf[SchemaStringDate] =>
             var fn = (r: Product) => r.asInstanceOf[SchemaStringDate]
-            flinkTable.registerDataSet(tableName, ds.map (fn))
+            flinkTable.createTemporaryView(tableName, ds.map (fn))
           case _ =>
             throw new RuntimeException("Unhandled schema type: " + q)
         }
