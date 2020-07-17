@@ -15,3 +15,9 @@ eg:Bob {
     .
 }
 
+eg:Bna {
+  eg:Bna
+    foaf:firstName "Bna" ;
+    foaf:givenName "Anb" ;
+    .
+}

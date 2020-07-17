@@ -15,6 +15,6 @@ public interface ClusterEntry
     ClusterEntry setItem(Resource res);
 
     @IriNs("eg")
-    BigDecimal getValue();
-    ClusterEntry setValue(BigDecimal value);
+    Integer getValue();
+    ClusterEntry setValue(Integer value);
 }
