@@ -1,11 +1,12 @@
 package net.sansa_stack.rdf.spark
 
-import net.sansa_stack.rdf.spark.model.rdd.{RddOfDatasetsOps, RddOfModelsOps, RddOfTriplesOps}
-
+import net.sansa_stack.rdf.spark.model.rdd.{RddOfDatasetsOps, RddOfModelsOps, RddOfResourcesOps, RddOfTriplesOps}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query._
-import org.apache.jena.rdf.model.Model
+import org.apache.jena.rdf.model.{Model, RDFNode, Resource}
 import org.apache.spark.rdd.RDD
+
+import scala.reflect.ClassTag
 
 package object ops {
   implicit class RddOfTriplesOpsImpl(rddOfTriples: RDD[Triple]) {
@@ -33,6 +34,11 @@ package object ops {
     @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Model] = RddOfModelsOps.sparqlFilter(rddOfModels, query.toString(), drop)
   }
 
+  implicit class RddOfResourcesOpsImpl(rddOfResources: RDD[_ <: Resource]) {
+    @inline def mapAs[T <: RDFNode](clazz: Class[T]): RDD[T] = RddOfResourcesOps.mapAs(ClassTag(clazz), rddOfResources, clazz)
+    @inline def models(): RDD[Model] = RddOfResourcesOps.mapToModels(rddOfResources)
+  }
+
   implicit class RddOfDatasetsOpsImpl(rddOfDatasets: RDD[Dataset]) {
     /**
      * Execute an <b>extended</b> CONSTRUCT SPARQL query on an RDD of Datasets and
@@ -49,6 +55,7 @@ package object ops {
     @inline def sparqlFilterDrop(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, true)
     @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetsOps.sparqlFilter(rddOfDatasets, query.toString(), drop)
 
+    @inline def mapToNaturalResources(): RDD[Resource] = RddOfDatasetsOps.naturalResources(rddOfDatasets)
   }
 
 }

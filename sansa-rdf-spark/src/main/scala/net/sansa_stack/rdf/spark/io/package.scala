@@ -325,6 +325,24 @@ package object io {
     }
 
     /**
+     * Loader for datasets from quad-based formats.
+     *
+     * @param lang
+     * @return
+     */
+    def datasets(lang: Lang): String => RDD[JenaDataset] = {
+      if (!RDFLanguages.isQuads(lang)) {
+        throw new RuntimeException("Language " + lang + " not a quad-based language according to jena's registry")
+      }
+
+      if(!RDFLanguages.TRIG.equals(lang)) {
+        throw new RuntimeException("Only trig format supported yet")
+      }
+
+      trig
+    }
+
+    /**
      * Load RDF data in N-Triples syntax into an [[RDD]][Triple].
      *
      * @param allowBlankLines whether blank lines will be allowed and skipped during parsing

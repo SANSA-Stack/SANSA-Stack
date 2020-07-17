@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
 import org.apache.jena.query.{Dataset, DatasetFactory, QueryExecutionFactory, QueryFactory, Syntax}
+import org.apache.jena.rdf.model.Resource
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
@@ -9,6 +10,10 @@ import scala.collection.JavaConverters._
  * Operations for RDD[Dataset]
  */
 object RddOfDatasetsOps {
+
+  @inline def naturalResources(rddOfDatasets: RDD[_ <: Dataset]): RDD[Resource] = {
+    rddOfDatasets.flatMap(JenaDatasetOps.naturalResources)
+  }
 
   @inline def sparqlFlatMap(rddOfDatasets: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
