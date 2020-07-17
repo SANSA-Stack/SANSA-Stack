@@ -16,16 +16,19 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
