@@ -20,7 +20,7 @@ import org.apache.jena.vocabulary.{RDF, XSD}
 // *                      relaxed pattern `y-M-d` which also allows single digits for year, month and day though
 // *                      officially according to XSD it must be `yyyy-MM-dd`
  */
-class RdfPartitionerComplex(distinguishStringLiterals: Boolean = true)
+class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false)
   extends RdfPartitioner[RdfPartitionComplex]
     with Serializable {
 
