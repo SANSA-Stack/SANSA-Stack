@@ -1,13 +1,12 @@
 package net.sansa_stack.rdf.flink.utils
 
-import java.lang.Iterable
+import java.lang.{Iterable => JIterable}
 
 import scala.reflect.ClassTag
 
 import org.apache.flink.api.common.functions.CoGroupFunction
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.DataSet
-import org.apache.flink.table.runtime.IntersectCoGroupFunction
 import org.apache.flink.util.Collector
 
 /**
@@ -42,7 +41,7 @@ object DataSetUtils {
 }
 
 class MinusCoGroupFunction[T: ClassTag: TypeInformation](all: Boolean) extends CoGroupFunction[T, T, T] {
-  override def coGroup(first: Iterable[T], second: Iterable[T], out: Collector[T]): Unit = {
+  override def coGroup(first: JIterable[T], second: JIterable[T], out: Collector[T]): Unit = {
     if (first == null || second == null) return
     val leftIter = first.iterator
     val rightIter = second.iterator
@@ -59,6 +58,24 @@ class MinusCoGroupFunction[T: ClassTag: TypeInformation](all: Boolean) extends C
     } else {
       if (!rightIter.hasNext && leftIter.hasNext) {
         out.collect(leftIter.next())
+      }
+    }
+  }
+}
+
+class IntersectCoGroupFunction[T](all: Boolean) extends CoGroupFunction[T, T, T]{
+  override def coGroup(first: JIterable[T], second: JIterable[T], out: Collector[T]): Unit = {
+    if (first == null || second == null) return
+    val leftIter = first.iterator()
+    val rightIter = second.iterator()
+    if (all) {
+      while (leftIter.hasNext && rightIter.hasNext) {
+        out.collect(leftIter.next)
+        rightIter.next
+      }
+    } else {
+      if (leftIter.hasNext && rightIter.hasNext) {
+        out.collect(leftIter.next)
       }
     }
   }
