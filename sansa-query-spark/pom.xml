@@ -220,6 +220,14 @@
 			<groupId>it.unibz.inf.ontop</groupId>
 			<artifactId>ontop-rdb</artifactId>
 			<version>${version.ontop}</version>
+<!--
+            <exclusions>
+                <exclusion>
+                    <groupId>org.javabits.jgrapht</groupId>
+                    <artifactId>jgrapht-core</artifactId>
+                </exclusion>
+            </exclusions>
+-->
 		</dependency>
         <dependency>
             <groupId>com.h2database</groupId>
