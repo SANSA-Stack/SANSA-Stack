@@ -7,7 +7,12 @@
 ## Description
 SANSA Query is a library to perform SPARQL queries over RDF data using big data engines [Spark](https://spark.apache.org) and [Flink](https://flink.apache.org). It allows to query RDF data that resides both in HDFS and in a local file system. Queries are executed distributed and in parallel across Spark RDDs/DataFrames or Flink DataSets. Further, SANSA-Query can query non-RDF data stored in databases e.g., MongoDB, Cassandra, MySQL or file format Parquet, using Spark.
 
-For RDF data, SANSA uses vertical partitioning (VP) approach and is designed to support extensible partitioning of RDF data. Instead of dealing with a single triple table (s, p, o), data is partitioned into multiple tables based on the used RDF predicates, RDF term types and literal datatypes. The first column of these tables is always a string representing the subject. The second column always represents the literal value as a Scala/Java datatype. Tables for storing literals with language tags have an additional third string column for the language tag. Its uses [Sparqlify](https://github.com/AKSW/Sparqlify) as a scalable SPARQL-SQL rewriter.
+For RDF data, SANSA uses vertical partitioning (VP) approach and is designed to support extensible partitioning of RDF data.
+Instead of dealing with a single triple table (s, p, o), data is partitioned into multiple tables based on the used RDF predicates, RDF term types and literal datatypes.
+The first column of these tables is always a string representing the subject.
+The second column always represents the literal value as a Scala/Java datatype.
+Tables for storing literals with language tags have an additional third string column for the language tag.
+It supports [Sparqlify](https://github.com/AKSW/Sparqlify) or [Ontop](https://ontop-vkg.org/) as scalable SPARQL-to-SQL rewriters.
 
 For heterogeneous data sources (data lake), SANSA uses virtual property tables (PT) partitioning, whereby data relevant to a query is loaded _on the fly_ into Spark DataFrames composed of attributes corresponding to the properties of the query. 
 
@@ -34,7 +39,7 @@ SANSA Query Spark for heterogeneous data sources (data data) is composed of thre
 
 ## Usage
 
-The following Scala code shows how to query an RDF file SPARQL syntax (be it a local file or a file residing in HDFS):
+The following Scala code shows how to query an RDF file with SPARQL (be it a local file or a file residing in HDFS):
 ### Running SPARQL queries via Sparqlify engine
 
 ```scala
