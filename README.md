@@ -35,13 +35,13 @@ SANSA Query Spark for heterogeneous data sources (data data) is composed of thre
 ## Usage
 
 The following Scala code shows how to query an RDF file SPARQL syntax (be it a local file or a file residing in HDFS):
+### Running SPARQL queries via Sparqlify engine
+
 ```scala
 
 val spark: SparkSession = ...
 
-val lang = Lang.NTRIPLES
-val triples = spark.rdf(lang)("path/to/rdf.nt")
-
+val triples = spark.rdf(Lang.NTRIPLES)("path/to/rdf.nt")
 
 val partitions = RdfPartitionUtilsSpark.partitionGraph(triples)
 val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
@@ -52,6 +52,38 @@ val port = 7531
 val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
 server.join()
 
+```
+
+### Running SPARQL queries via Ontop engine
+``` scala
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
+import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionUtilsSpark, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.riot.Lang
+
+// SparkSession is needed
+val spark = ...
+
+// load an RDD of triples (from an N-Triples file here)
+val data = spark.rdf(Lang.NTRIPLES)("path/to/rdf.nt")
+
+// apply vertical partitioning which is necessary for the current Ontop integration
+val partitions = RdfPartitionUtilsSpark.partitionGraph(data, partitioner = RdfPartitionerComplex(false))
+
+// create the SPARQL engine
+val ontopEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
+
+// run a SPARQL
+// a) SELECT query and return an RDD of bindings
+val result: RDD[Binding] = ontopEngine.execSelect("SELECT ... WHERE { ... }")
+
+// b) ASK query and return a boolean value
+val result: Boolean = ontopEngine.execAsk("ASK WHERE { ... }")
+
+// c) CONSTRUCT query and return an RDD of triples
+val result: RDD[Triple] = ontopEngine.execConstruct("CONSTRUCT { ... } WHERE { ... }")
 ```
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 
