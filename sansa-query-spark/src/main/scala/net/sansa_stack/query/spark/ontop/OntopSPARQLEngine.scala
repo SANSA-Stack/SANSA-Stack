@@ -16,7 +16,7 @@ import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 import org.apache.jena.graph.Triple
-import org.apache.jena.query.QueryFactory
+import org.apache.jena.query.{QueryFactory, QueryType}
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
@@ -147,8 +147,8 @@ object OntopSPARQL2SQLRewriter {
  * @param ontology an (optional) ontology that will be used for query optimization and rewriting
  */
 class OntopSPARQLEngine(val spark: SparkSession,
-                        databaseName: String,
-                        partitions: Set[RdfPartitionComplex],
+                        val databaseName: String,
+                        val partitions: Set[RdfPartitionComplex],
                         var ontology: Option[OWLOntology]) {
 
   private val logger = com.typesafe.scalalogging.Logger[OntopSPARQLEngine]
@@ -346,9 +346,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
   def execSelect(query: String): RDD[Binding] = {
-    val q = QueryFactory.create(query)
-    if (!q.isSelectType) throw new RuntimeException(s"Wrong query type. Expected SELECT query," +
-      s" got ${q.queryType().toString}")
+    checkQueryType(query, QueryType.SELECT)
 
     val df = executeDebug(query)._1
 
@@ -377,9 +375,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
   def execAsk(query: String): Boolean = {
-    val q = QueryFactory.create(query)
-    if (!q.isAskType) throw new RuntimeException(s"Wrong query type. Expected ASK query," +
-      s" got ${q.queryType().toString}")
+    checkQueryType(query, QueryType.ASK)
     val df = executeDebug(query)._1
     !df.isEmpty
   }
@@ -392,9 +388,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
   def execConstruct(query: String): RDD[org.apache.jena.graph.Triple] = {
-    val q = QueryFactory.create(query)
-    if (!q.isConstructType) throw new RuntimeException(s"Wrong query type. Expected CONSTRUCT query," +
-      s" got ${q.queryType().toString}")
+    checkQueryType(query, QueryType.CONSTRUCT)
 
     val df = executeDebug(query)._1
 
@@ -412,6 +406,13 @@ class OntopSPARQLEngine(val spark: SparkSession,
       it
     }).rdd
   }
+
+  private def checkQueryType(query: String, queryType: QueryType) = {
+    val q = QueryFactory.create(query)
+    if (q.queryType() != queryType) throw new RuntimeException(s"Wrong query type. Expected ${queryType.toString} query," +
+      s" got ${q.queryType().toString}")
+  }
+
 
 }
 
