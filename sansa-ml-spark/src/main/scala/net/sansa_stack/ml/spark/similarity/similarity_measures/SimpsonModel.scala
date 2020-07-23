@@ -22,6 +22,8 @@ class SimpsonModel extends GenericSimilarityEstimatorModel {
 
   override def similarityJoin(df_A: DataFrame, df_B: DataFrame, threshold: Double = -1.0, value_column: String = "simpson_similarity"): DataFrame = {
 
+    checkColumnNames(df_A, df_B)
+
     val cross_join_df = createCrossJoinDF(df_A: DataFrame, df_B: DataFrame)
 
     set_similarity_estimation_column_name(value_column)
