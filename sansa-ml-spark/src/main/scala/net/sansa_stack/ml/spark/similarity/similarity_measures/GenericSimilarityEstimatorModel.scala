@@ -7,10 +7,10 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class GenericSimilarityEstimatorModel {
 
-  protected var _uri_column_name_dfA: String = _
-  protected var _features_column_name_dfA: String = _
-  protected var _uri_column_name_dfB: String = _
-  protected var _features_column_name_dfB: String = _
+  protected var _uri_column_name_dfA: String = "uri"
+  protected var _features_column_name_dfA: String = "uri"
+  protected var _uri_column_name_dfB: String = "features"
+  protected var _features_column_name_dfB: String = "features"
 
   // values that have to be overwritten
   protected var _similarity_estimation_column_name = "genericColumnName"
@@ -40,6 +40,15 @@ class GenericSimilarityEstimatorModel {
   def set_features_column_name_dfB(features_column_name: String): this.type = {
     _features_column_name_dfB = features_column_name
     this
+  }
+
+  protected def checkColumnNames(df_A: DataFrame, df_B: DataFrame): Unit = {
+    // check if column names are set right or if setter method are used right way
+    if (df_A.columns.contains(_uri_column_name_dfA) == false) throw new Exception("current set uri column name: " + _uri_column_name_dfA + "does not align with the column names of given DataFrameA. please set column name with set_uri_column_name_dfA()!")
+    if (df_A.columns.contains(_uri_column_name_dfB) == false) throw new Exception("current set uri column name: " + _uri_column_name_dfB + "does not align with the column names of given DataFrameB. please set column name with set_uri_column_name_dfB()!")
+    if (df_A.columns.contains(_features_column_name_dfA) == false) throw new Exception("current set features column name: " + _features_column_name_dfA + "does not align with the column names of given DataFrameA. please set column name with set_features_column_name_dfA()!")
+    if (df_A.columns.contains(_features_column_name_dfA) == false) throw new Exception("current set features column name: " + _features_column_name_dfA + "does not align with the column names of given DataFrameA. please set column name with set_features_column_name_dfB()!")
+
   }
 
   protected def createCrossJoinDF(df_A: DataFrame, df_B: DataFrame): DataFrame = {
