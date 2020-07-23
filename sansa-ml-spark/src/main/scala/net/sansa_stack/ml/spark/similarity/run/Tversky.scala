@@ -65,12 +65,16 @@ object Tversky {
     // read in data of sansa rdf
     val triples = spark.rdf(lang)(input)
 
+    triples.take(5).foreach(println(_))
+
     // create dataframe from rdf rdd by rdffeature extractor in sansa ml layer
     val feature_extractor = new RDF_Feature_Extractor()
     feature_extractor.set_mode(mode)
     feature_extractor.set_uri_key_column_name(feature_extractor_uri_column_name)
     feature_extractor.set_features_column_name(feature_extractor_features_column_name)
     val fe_features: DataFrame = feature_extractor.transform(triples)
+
+    fe_features.show(false)
 
     // Count Vectorizer from MLlib
     val cvModel: CountVectorizerModel = new CountVectorizer()
@@ -82,12 +86,16 @@ object Tversky {
     // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType) this line is not needed because all uris have features by feature extraction algo
     val cv_features = cvModel.transform(fe_features).select(col(feature_extractor_uri_column_name), col(count_vectorizer_features_column_name)) // .filter(isNoneZeroVector(col(count_vectorizer_features_column_name)))
 
+    cv_features.show(false)
+
     // Similarity Estimation
     val similarityModel = new TverskyModel()
       .set_uri_column_name_dfA(feature_extractor_uri_column_name)
       .set_uri_column_name_dfB(feature_extractor_uri_column_name)
       .set_features_column_name_dfA(count_vectorizer_features_column_name)
       .set_features_column_name_dfB(count_vectorizer_features_column_name)
+      .set_alpha(alpha)
+      .set_betha(betha)
     // model evaluations
     // all pair
     val all_pair_similarity_df = similarityModel.similarityJoin(cv_features, cv_features, threshold_min_similarity)
@@ -117,6 +125,8 @@ object Tversky {
       metagraph_experiment_name_relation,
       metagraph_experiment_measurement_type_relation,
       metagraph_experiment_datetime_relation)
+
+    experiment_metagraph.take(5).foreach(println(_))
 
     // Store metagraph over sansa rdf layer
     // dt to enforce different outputstrings so no conflicts occur
