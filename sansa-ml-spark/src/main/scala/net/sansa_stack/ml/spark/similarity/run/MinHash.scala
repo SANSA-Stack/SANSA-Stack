@@ -6,10 +6,10 @@ import net.sansa_stack.ml.spark.utils.{RDF_Feature_Extractor, Similarity_Experim
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{col, udf, lit}
+import org.apache.spark.sql.functions.{col, lit, udf}
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -25,17 +25,20 @@ object MinHash {
 
     // rdf readin parameters
     val input: String = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
-    val lang = Lang.NTRIPLES
+    val lang: Lang = Lang.NTRIPLES
+
     // feature extraction parameter
     val mode: String = "at"
     val feature_extractor_uri_column_name: String = "uri"
     val feature_extractor_features_column_name: String = "fe_features"
+
     // countvectorizer parameters
     val count_vectorizer_features_column_name: String = "cv_features"
     val cv_vocab_size: Int = 1000000
     val cv_min_document_frequency: Int = 1
+
     // minhash parameters
-    val minhash_number_hash_tables: Int = 1
+    val minhash_number_hash_tables: Int = 5
     val minhash_hash_column_name: String = "hashValues"
     val minhash_threshold_max_distance: Double = 0.8
     val minhash_distance_column_name: String = "distance"
@@ -66,12 +69,12 @@ object MinHash {
     import spark.implicits._ // TODO does anyone know for which purposes we need
 
     // read in data of sansa rdf
-    val triples = spark.rdf(lang)(input)
+    val triples: RDD[Triple] = spark.rdf(lang)(input)
 
     triples.take(5).foreach(println(_))
 
     // create dataframe from rdf rdd by rdffeature extractor in sansa ml layer
-    val feature_extractor = new RDF_Feature_Extractor()
+    val feature_extractor: RDF_Feature_Extractor = new RDF_Feature_Extractor()
       .set_mode(mode)
       .set_uri_key_column_name(feature_extractor_uri_column_name)
       .set_features_column_name(feature_extractor_features_column_name)
@@ -86,28 +89,29 @@ object MinHash {
       .setVocabSize(cv_vocab_size)
       .setMinDF(cv_min_document_frequency)
       .fit(fe_features)
-    // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType) this line is not needed because all uris have features by feature extraction algo
-    val cv_features = cvModel.transform(fe_features).select(col(feature_extractor_uri_column_name), col(count_vectorizer_features_column_name)) // .filter(isNoneZeroVector(col(count_vectorizer_features_column_name)))
+    val cv_features: DataFrame = cvModel.transform(fe_features).select(col(feature_extractor_uri_column_name), col(count_vectorizer_features_column_name)) // .filter(isNoneZeroVector(col(count_vectorizer_features_column_name)))
 
     cv_features.show(false)
 
     // MinHash
-    val mh = new MinHashLSH()
+    val mh: MinHashLSH = new MinHashLSH()
       .setNumHashTables(minhash_number_hash_tables)
       .setInputCol(count_vectorizer_features_column_name)
       .setOutputCol(minhash_hash_column_name)
-    val model = mh.fit(cv_features)
+    val model: MinHashLSHModel = mh.fit(cv_features)
+
+    model.transform(cv_features).show(false)
     // min Hash crosstable for all semantc similarities
     val element_column_name_A = feature_extractor_uri_column_name + "_A"
     val element_column_name_B = feature_extractor_uri_column_name + "_B"
-    val all_pair_similarity_df = model.approxSimilarityJoin(cv_features, cv_features, minhash_threshold_max_distance, minhash_distance_column_name)
+    val all_pair_similarity_df: DataFrame = model.approxSimilarityJoin(cv_features, cv_features, minhash_threshold_max_distance, minhash_distance_column_name)
       .withColumn(element_column_name_A, col("datasetA").getField(feature_extractor_uri_column_name))
       .withColumn(element_column_name_B, col("datasetB").getField(feature_extractor_uri_column_name))
       .select(element_column_name_A, element_column_name_B, minhash_distance_column_name)
     all_pair_similarity_df.show(false)
     // all_pair_similarity_df.show(false)
     val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
-    val nn_df = model
+    val nn_df: DataFrame = model
       .approxNearestNeighbors(cv_features, key, minhash_nn_k, minhash_distance_column_name)
       .withColumn("key_column", lit("key_uri")).select("key_column", feature_extractor_uri_column_name, minhash_distance_column_name)
     nn_df.show(false)
