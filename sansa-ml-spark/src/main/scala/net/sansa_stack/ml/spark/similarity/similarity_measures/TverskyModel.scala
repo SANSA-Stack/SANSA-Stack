@@ -11,13 +11,30 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
     val feature_indices_b = b.toSparse.indices
     val f_set_a = feature_indices_a.toSet
     val f_set_b = feature_indices_b.toSet
-    val tversky = (f_set_a.intersect(f_set_b).size.toDouble) /
-      ((f_set_a.intersect(f_set_b).size.toDouble) + (alpha * f_set_a.diff(f_set_b).size.toDouble) + (betha * f_set_b.diff(f_set_a).size.toDouble))
+    /* println(f_set_a)
+    println(f_set_b)
+    val c: Double = (f_set_a.intersect(f_set_b).size.toDouble)
+    val e1: Double = (f_set_a.intersect(f_set_b).size.toDouble)
+    val e2: Double = (alpha * f_set_a.diff(f_set_b).size.toDouble)
+    val e3: Double = (betha * f_set_b.diff(f_set_a).size.toDouble)
+    val e: Double = e1 + e2 + e3
+    println(alpha, betha, c, e1, e2, e3, e)
+    assert(e > 0)
+    val tversky = c/e */
+    val tversky: Double = (
+      (f_set_a.intersect(f_set_b).size.toDouble)/
+        (
+          (f_set_a.intersect(f_set_b).size.toDouble)
+          +  (alpha * f_set_a.diff(f_set_b).size.toDouble)
+          + (betha * f_set_b.diff(f_set_a).size.toDouble)
+        )
+    )
+
     tversky
   })
 
-  private var _alpha: Double = _
-  private var _betha: Double = _
+  private var _alpha: Double = 1.0
+  private var _betha: Double = 1.0
 
   def set_alpha(a: Double): this.type = {
     if (a < 0 || a > 1) {
@@ -45,6 +62,8 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
   override val similarityEstimation = tversky
 
   override def similarityJoin(df_A: DataFrame, df_B: DataFrame, threshold: Double = -1.0, value_column: String = "tversky_similarity"): DataFrame = {
+
+    checkColumnNames(df_A, df_B)
 
     val cross_join_df = createCrossJoinDF(df_A: DataFrame, df_B: DataFrame)
 
