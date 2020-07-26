@@ -6,7 +6,7 @@ import org.apache.spark.ml.feature.Tokenizer
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
-class FeatureExtractor {
+class FeatureExtractorModel {
   val spark = SparkSession.builder.getOrCreate()
   private val _availableModes = Array("an", "in", "on", "ar", "ir", "or", "at", "ir", "ot", "as", "is", "os")
   private var _mode: String = "at"
