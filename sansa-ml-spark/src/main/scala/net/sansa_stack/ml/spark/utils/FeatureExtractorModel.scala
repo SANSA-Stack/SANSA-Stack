@@ -1,10 +1,10 @@
 package net.sansa_stack.ml.spark.utils
 
-import org.apache.jena.graph.{Node, Triple}
-import org.apache.spark
-import org.apache.spark.ml.feature.Tokenizer
+import org.apache.spark.ml.Transformer
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.types.{ArrayType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+
 
 class FeatureExtractorModel {
   val spark = SparkSession.builder.getOrCreate()
@@ -29,9 +29,37 @@ class FeatureExtractorModel {
 
   def transform(df: DataFrame): DataFrame = {
 
-    val dfAsArray: Array[Row] = df.collect()
+    val dfAsRdd: RDD[Row] = df.rdd
 
-    assert(dfAsArray(0).toSeq.length == 3)
+    val unfoldedFeatures: RDD[Tuple2[String, String]] = _mode match {
+      case "at" => dfAsRdd.flatMap(r => Seq((r.getString(0), ("-" + r.getString(1) + "->" + r.getString(2))), (r.getString(2), ("<-" + r.getString(1) + "-" + r.getString(0)))))
+      case "it" => dfAsRdd.flatMap(r => Seq((r.getString(2), ("-" + r.getString(1) + "->" + r.getString(0)))))
+      case "ot" => dfAsRdd.flatMap(r => Seq((r.getString(0), ("<-" + r.getString(1) + "-" + r.getString(2)))))
+      case "an" => dfAsRdd.flatMap(r => Seq((r.getString(0), (r.getString(2))), (r.getString(2), (r.getString(0)))))
+      case "in" => dfAsRdd.flatMap(r => Seq((r.getString(2), (r.getString(0)))))
+      case "on" => dfAsRdd.flatMap(r => Seq((r.getString(0), (r.getString(2)))))
+      case "ar" => dfAsRdd.flatMap(r => Seq((r.getString(0), ("-" + r.getString(1) + "->")), (r.getString(2), ("<-" + r.getString(1) + "-"))))
+      case "ir" => dfAsRdd.flatMap(r => Seq((r.getString(2), ("<-" + r.getString(1) + "-"))))
+      case "or" => dfAsRdd.flatMap(r => Seq((r.getString(0), ("-" + r.getString(1) + "->"))))
+      case "as" => dfAsRdd.flatMap(r => Seq((r.getString(0), (r.getString(2))), (r.getString(2), (r.getString(0))), (r.getString(0), ("-" + r.getString(1) + "->")), (r.getString(2), ("<-" + r.getString(1) + "-"))))
+      case "is" => dfAsRdd.flatMap(r => Seq((r.getString(2), (r.getString(0))), (r.getString(2), ("<-" + r.getString(1) + "-"))))
+      case "os" => dfAsRdd.flatMap(r => Seq((r.getString(0), (r.getString(2))), (r.getString(0), ("-" + r.getString(1) + "->"))))
+      case _ => throw new Exception("This mode is currently not supported .\n You selected mode " + _mode + " .\n Currently available modes are: " + _availableModes)
+    }
+    val tmpRdd: RDD[Row] = unfoldedFeatures
+      .filter(t => !(t._1.contains("\"")))
+      .groupBy(_._1)
+      .mapValues(_.map(_._2))
+      .map(tuple => Row(tuple._1, tuple._2.toArray))
+    val tmpDf = spark.createDataFrame(
+      tmpRdd,
+      new StructType()
+        .add(StructField("uri", StringType, true))
+        .add(StructField(_outputCol, ArrayType(StringType, true), true))
+    )
+    tmpDf
+
+    /* val dfAsArray: Array[Row] = df.collect()
 
     val unfoldedFeatures: Array[Tuple2[String, String]] = _mode match {
       case "at" => dfAsArray.flatMap(r => Seq((r.getString(0), ("-" + r.getString(1) + "->" + r.getString(2))), (r.getString(2), ("<-" + r.getString(1) + "-" + r.getString(0)))))
@@ -51,6 +79,6 @@ class FeatureExtractorModel {
     val colappsedSeq: Seq[Tuple2[String, Array[String]]] = unfoldedFeatures.groupBy(_._1).mapValues(_.map(_._2)).toSeq
     // workaround to filter for URIs ... improvements for sure possible!
     val onlyUri: Seq[Tuple2[String, Array[String]]] = colappsedSeq.filter(t => !(t._1.contains("\"")))
-    spark.createDataFrame(onlyUri).toDF("uri", _outputCol)
+    spark.createDataFrame(onlyUri).toDF("uri", _outputCol) */
   }
 }
