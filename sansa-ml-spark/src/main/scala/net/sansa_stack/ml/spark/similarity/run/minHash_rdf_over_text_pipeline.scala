@@ -1,36 +1,170 @@
 package net.sansa_stack.ml.spark.similarity.run
 
 import net.sansa_stack.rdf.spark.io._
-
-import org.apache.jena.graph.{NodeFactory, Triple}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, Tokenizer}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel, StringIndexer, Tokenizer, VectorAssembler}
 import org.apache.spark.ml.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.{DataTypes, IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.functions.udf
 import java.util.{Calendar, Date}
+
+import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 
 // import org.apache.spark.mllib.linalg.{Vector, Vectors}
 
 object minHash_rdf_over_text_pipeline {
   def main(args: Array[String]): Unit = {
-    run()
-  }
-
-  def run(): Unit = {
-    println("1. We start Spark session")
+    val input: String = args(0)
     val spark = SparkSession.builder
       .appName(s"MinHash  tryout") // TODO where is this displayed?
       .master("local[*]") // TODO why do we need to specify this?
+      // .master("spark://172.18.160.16:3090") // to run on server
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
 
-    import spark.implicits._ // TODO does anyone know for which purposes we need
+    run(input, spark)
+  }
 
+  def run(input: String, spark: SparkSession): Unit = {
+    /* println("1. We start Spark session")
+    val spark = SparkSession.builder
+      .appName(s"MinHash  tryout") // TODO where is this displayed?
+      // .master("local[*]") // TODO why do we need to specify this?
+      .master("spark://172.18.160.16:3090") // to run on server
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
+      .getOrCreate() */
+
+    // val input: String = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
+    // val input: String = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/rdf.nt"
+    val lang: Lang = Lang.NTRIPLES
+    val triples_df: DataFrame = spark.read.rdf(lang)(input)
+    triples_df.show(false)
+
+    // dataframe based feature extractor
+    val fe = new FeatureExtractorModel()
+      .setMode("as")
+      .setOutputCol("features")
+    val fe_features = fe.transform(triples_df)
+    fe_features.show(false)
+
+
+    // Count Vectorizer from MLlib
+    val cvModel: CountVectorizerModel = new CountVectorizer()
+      .setInputCol("features")
+      .setOutputCol("cv_features")
+      .setVocabSize(1000000)
+      .setMinDF(1)
+      .fit(fe_features)
+    val cv_features: DataFrame = cvModel.transform(fe_features) // .select(col(feature_extractor_uri_column_name), col(count_vectorizer_features_column_name)) // .filter(isNoneZeroVector(col(count_vectorizer_features_column_name)))
+    cv_features.show(false)
+
+    // MinHash
+    val mh: MinHashLSH = new MinHashLSH()
+      .setNumHashTables(5)
+      .setInputCol("cv_features")
+      .setOutputCol("hashed_features")
+    val model: MinHashLSHModel = mh.fit(cv_features)
+
+    model
+    model.approxSimilarityJoin(cv_features, cv_features, 0.8, "distance")
+      .show()
+
+    spark.stop()
+    /*
+
+
+    val allUris: Set[String] = triples_df.select("s").collect().map(r => (r.getString(0))).toSet.union(
+      triples_df.select("o").collect().map(r => (r.getString(0))).toSet
+    )
+    println(allUris)
+
+
+    val triples: RDD[Triple] = spark.rdf(lang)(input)
+    val allNodes: RDD[Node] = triples.flatMap(t => Seq(t.getSubject, t.getPredicate, t.getObject)).distinct()
+    val vocabulary: RDD[Tuple2[Node, Int]] = allNodes.map(n => Tuple2(n, n.toString().hashCode))
+    val nodeToHash: Map[Node, Int] = vocabulary.collect().toMap
+    val hashToNode: Map[Int, Node] = vocabulary.map(tuple => Tuple2(tuple._2, tuple._1)).collect().toMap
+
+    println("this is a hash to node map")
+
+    def getHash(node: Node): Int = {
+      try { nodeToHash(node) }
+      catch { case _ => node.toString().hashCode() }
+    }
+
+    def getNode(hash: Int): Node = {
+      try { hashToNode(hash) }
+      catch { case _ => NodeFactory.createURI(hash.toString()) }
+    }
+
+    val hashed_triples: RDD[Seq[Int]] = triples.map(t => Seq(getHash(t.getSubject()), getHash(t.getPredicate()), getHash(t.getObject())))
+    hashed_triples.foreach(println(_))
+
+    hashed_triples.flatMap(t => Seq((t(0), Seq(t(1), t(2)).hashCode()), (t(2), Seq(t(1), t(0)).hashCode())))
+      .groupBy(_._1)
+      .mapValues(_.map(_._2))
+      .foreach(println(_))
+
+
+    val subjectColumnName = "s"
+    val predicateColumnName = "p"
+    val objectColumnName = "o"
+
+    val schema = new StructType()
+      .add(StructField(subjectColumnName, IntegerType, true))
+      .add(StructField(predicateColumnName, IntegerType, true))
+      .add(StructField(objectColumnName, IntegerType, true))
+
+    val df: DataFrame = spark.createDataFrame(
+      triples.map(t => Row(getHash(t.getSubject()), getHash(t.getPredicate()), getHash(t.getObject()))),
+      schema
+    )
+
+    df.show(false)
+
+    val tmpHash: Int = df.take(1)(0).getInt(0)
+
+    println(tmpHash)
+
+    println(getNode(tmpHash))
+
+
+
+
+
+      /* withColumn(
+      "concat strings",
+      udf = Seq(col(subjectColumnName), predicateColumnName, objectColumnName)
+    )
+
+
+    val all_spo = triples_df.select(concat(col(subjectColumnName),lit(','),
+      col("mname"),lit(','),col("lname")).as("FullName"))
+      .show(false)
+
+
+
+    val assembler = new VectorAssembler()
+      .setInputCols(Array(subjectColumnName, predicateColumnName, objectColumnName))
+      .setOutputCol("features")
+
+    val va_df = assembler.transform(triples_df).select("features")
+
+    va_df.show(false)
+
+
+
+
+
+    import spark.implicits._ // TODO does anyone know for which purposes we need */
+
+    /*
     println("Spark Session started \n")
 
     println("2. Create or load sample RDD Graph")
@@ -841,6 +975,6 @@ object minHash_rdf_over_text_pipeline {
 
 
 
-    spark.stop()
+    spark.stop() */ */
   }
 }
