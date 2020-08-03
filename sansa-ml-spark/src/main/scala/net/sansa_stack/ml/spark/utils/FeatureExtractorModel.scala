@@ -10,7 +10,7 @@ class FeatureExtractorModel {
   val spark = SparkSession.builder.getOrCreate()
   private val _availableModes = Array("an", "in", "on", "ar", "ir", "or", "at", "ir", "ot", "as", "is", "os")
   private var _mode: String = "at"
-  private var _outputCol: String = "features"
+  private var _outputCol: String = "extractedFeatures"
 
   def setMode(mode: String): this.type = {
     if (_availableModes.contains(mode)) {
