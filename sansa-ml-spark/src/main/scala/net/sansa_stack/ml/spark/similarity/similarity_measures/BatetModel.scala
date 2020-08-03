@@ -17,21 +17,21 @@ class BatetModel extends GenericSimilarityEstimatorModel {
     tmp
   })
 
-  override val estimator_name: String = "BatetSimilarityEstimator"
-  override val estimator_measure_type: String = "distance"
+  override val estimatorName: String = "BatetSimilarityEstimator"
+  override val estimatorMeasureType: String = "distance"
 
   override val similarityEstimation = batet
 
-  override def similarityJoin(df_A: DataFrame, df_B: DataFrame, threshold: Double = -1.0, value_column: String = "batet_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "batet_similarity"): DataFrame = {
 
-    val cross_join_df = createCrossJoinDF(df_A: DataFrame, df_B: DataFrame)
+    val cross_join_df = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
 
-    set_similarity_estimation_column_name(value_column)
+    setSimilarityEstimationColumnName(valueColumn)
 
     val join_df: DataFrame = cross_join_df
       .withColumn(
-        _similarity_estimation_column_name,
-        similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA)))
+        _similarityEstimationColumnName,
+        similarityEstimation(col(_featuresColumnNameDfB), col(_featuresColumnNameDfA)))
 
     /* .withColumn(
     "tmp",
@@ -40,19 +40,19 @@ class BatetModel extends GenericSimilarityEstimatorModel {
       _similarity_estimation_column_name,
       log2(col("tmp"))
     ) */
-    reduce_join_df(join_df, threshold)
+    reduceJoinDf(join_df, threshold)
   }
 
-  override def nearestNeighbors(df_A: DataFrame, key: Vector, k: Int, key_uri: String = "unknown", value_column: String = "batet_distance", keep_key_uri_column: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "batet_distance", keepKeyUriColumn: Boolean = false): DataFrame = {
 
-    set_similarity_estimation_column_name(value_column)
+    setSimilarityEstimationColumnName(valueColumn)
 
-    val nn_setup_df = createNnDF(df_A, key, key_uri)
+    val nn_setup_df = createNnDF(dfA, key, keyUri)
 
     val nn_df = nn_setup_df
       .withColumn(
-        _similarity_estimation_column_name,
-        similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA)))
+        _similarityEstimationColumnName,
+        similarityEstimation(col(_featuresColumnNameDfB), col(_featuresColumnNameDfA)))
 
       /* .withColumn(
       "tmp",
@@ -62,6 +62,6 @@ class BatetModel extends GenericSimilarityEstimatorModel {
         log2(col("tmp"))
       ) */
 
-    reduce_nn_df(nn_df, k, keep_key_uri_column)
+    reduceNnDf(nn_df, k, keepKeyUriColumn)
   }
 }

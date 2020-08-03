@@ -15,35 +15,35 @@ class DiceModel extends GenericSimilarityEstimatorModel {
     dice
   })
 
-  override val estimator_name: String = "DiceSimilarityEstimator"
-  override val estimator_measure_type: String = "similarity"
+  override val estimatorName: String = "DiceSimilarityEstimator"
+  override val estimatorMeasureType: String = "similarity"
 
   override val similarityEstimation = dice
 
-  override def similarityJoin(df_A: DataFrame, df_B: DataFrame, threshold: Double = -1.0, value_column: String = "dice_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "dice_similarity"): DataFrame = {
 
-    val cross_join_df = createCrossJoinDF(df_A: DataFrame, df_B: DataFrame)
+    val cross_join_df = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
 
-    set_similarity_estimation_column_name(value_column)
+    setSimilarityEstimationColumnName(valueColumn)
 
     val join_df: DataFrame = cross_join_df.withColumn(
-      _similarity_estimation_column_name,
-      similarityEstimation(col(_features_column_name_dfA), col(_features_column_name_dfB))
+      _similarityEstimationColumnName,
+      similarityEstimation(col(_featuresColumnNameDfA), col(_featuresColumnNameDfB))
     )
-    reduce_join_df(join_df, threshold)
+    reduceJoinDf(join_df, threshold)
   }
 
-  override def nearestNeighbors(df_A: DataFrame, key: Vector, k: Int, key_uri: String = "unknown", value_column: String = "dice_similarity", keep_key_uri_column: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "dice_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
-    set_similarity_estimation_column_name(value_column)
+    setSimilarityEstimationColumnName(valueColumn)
 
-    val nn_setup_df = createNnDF(df_A, key, key_uri)
+    val nn_setup_df = createNnDF(dfA, key, keyUri)
 
     val nn_df = nn_setup_df
       .withColumn(
-        _similarity_estimation_column_name,
-        similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA)))
+        _similarityEstimationColumnName,
+        similarityEstimation(col(_featuresColumnNameDfB), col(_featuresColumnNameDfA)))
 
-    reduce_nn_df(nn_df, k, keep_key_uri_column)
+    reduceNnDf(nn_df, k, keepKeyUriColumn)
   }
 }
