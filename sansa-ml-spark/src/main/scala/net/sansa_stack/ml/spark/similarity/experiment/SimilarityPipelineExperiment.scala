@@ -12,11 +12,24 @@ import org.apache.spark.sql.functions.{col, lit, udf}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DataTypes, DoubleType, IntegerType, LongType, StringType, StructField, StructType}
+import java.io.File
+
+import com.typesafe.config.ConfigFactory
+import collection.JavaConversions._
+import collection.JavaConverters._
+
+
+import org.spark_project.dmg.pmml.False
 
 import scala.collection.mutable.ListBuffer
 
 object SimilarityPipelineExperiment {
   def main(args: Array[String]): Unit = {
+
+    val configFilePath = args(0) // "/Users/carstendraschner/Desktop/parameterConfig.conf"
+
+    // val baseConfig = ConfigFactory.load()
+    val config = ConfigFactory.parseFile(new File(configFilePath)) // .withFallback(baseConfig)
 
     val spark = SparkSession.builder
       .appName(s"MinHash  tryout") // TODO where is this displayed?
@@ -25,22 +38,30 @@ object SimilarityPipelineExperiment {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
 
+    // we read in our sample data by providing a path where all the files are
+    def getListOfFiles(dir: String): List[String] = {
+      val file = new File(dir)
+      file.listFiles.filter(_.isFile)
+        .filter(_.getName.endsWith(".nt"))
+        .map(_.getPath).toList
+    }
+    val pathToFolder: String = config.getString("pathToFolder") // args(0)
+    println("For evaluation data we search in path: " +  pathToFolder)
+    val inputAll: Seq[String] = getListOfFiles(pathToFolder).toSeq
+    println("we found in provided path " + inputAll.size)
+    println("files are:")
+    inputAll.foreach(println(_))
+
     // Here we specify the hyperparameter grid
-    val inputAll: Seq[String] = Seq(
-      "/Users/carstendraschner/GitHub/py_rdf_sim/notebooks/sampleMovieRDF10.nt",
-      "/Users/carstendraschner/GitHub/py_rdf_sim/notebooks/sampleMovieRDF10.nt",
-      "/Users/carstendraschner/GitHub/py_rdf_sim/notebooks/sampleMovieRDF100.nt",
-      "/Users/carstendraschner/GitHub/py_rdf_sim/notebooks/sampleMovieRDF1000.nt"
-    )
-    val similarityEstimationModeAll: Seq[String] = Seq("MinHash", "Jaccard")
-    val parametersFeatureExtractorModeAll: Seq[String] = Seq("at", "as")
-    val parameterCountVectorizerMinDfAll: Seq[Int] = Seq(1)
-    val parameterCountVectorizerMaxVocabSizeAll: Seq[Int] = Seq(1000000)
-    val parameterSimilarityAlphaAll: Seq[Double] = Seq(0.5)
-    val parameterSimilarityBetaAll: Seq[Double] = Seq(0.5)
-    val parameterNumHashTablesAll: Seq[Int] = Seq(1, 5)
-    val parameterSimilarityAllPairThresholdAll: Seq[Double] = Seq(0.2, 0.8)
-    val parameterSimilarityNearestNeighborsKAll: Seq[Int] = Seq(5, 20)
+    val similarityEstimationModeAll: List[String] = config.getStringList("similarityEstimationModeAll").toList // Seq("MinHash", "Jaccard")
+    val parametersFeatureExtractorModeAll: List[String] = config.getStringList("parametersFeatureExtractorModeAll").toList // Seq("at") // , "as")
+    val parameterCountVectorizerMinDfAll: List[Int] = config.getIntList("parameterCountVectorizerMinDfAll").toList.map(_.toInt)
+    val parameterCountVectorizerMaxVocabSizeAll: List[Int] = config.getIntList("parameterCountVectorizerMaxVocabSizeAll").toList.map(_.toInt)// Seq(100000)
+    val parameterSimilarityAlphaAll: List[Double] = config.getDoubleList("parameterSimilarityAlphaAll").toList.map(_.toDouble) // Seq(0.5)
+    val parameterSimilarityBetaAll: List[Double] = config.getDoubleList("parameterSimilarityBetaAll").toList.map(_.toDouble)// Seq(0.5)
+    val parameterNumHashTablesAll: List[Int] = config.getIntList("parameterNumHashTablesAll").toList.map(_.toInt) // Seq(1, 5)
+    val parameterSimilarityAllPairThresholdAll: List[Double] = config.getDoubleList("parameterSimilarityAllPairThresholdAll").toList.map(_.toDouble) // Seq(0.8)
+    val parameterSimilarityNearestNeighborsKAll: List[Int] = config.getIntList("parameterSimilarityNearestNeighborsKAll").toList.map(_.toInt) // Seq(20)
 
     // this is the path to output and we add the current datetime information
     val evaluation_datetime = Calendar.getInstance().getTime().toString
@@ -228,10 +249,10 @@ object SimilarityPipelineExperiment {
       // Similarity Estimation
       startTime = System.nanoTime
       val similarityModel = new JaccardModel()
-        .set_uri_column_name_dfA("uri")
-        .set_uri_column_name_dfB("uri")
-        .set_features_column_name_dfA("vectorizedFeatures")
-        .set_features_column_name_dfB("vectorizedFeatures")
+        .setUriColumnNameDfA("uri")
+        .setUriColumnNameDfB("uri")
+        .setFeaturesColumnNameDfA("vectorizedFeatures")
+        .setFeaturesColumnNameDfB("vectorizedFeatures")
       processingTimeSimilarityEstimatorSetup = ((System.nanoTime - startTime) / 1e9d)
 
       // model evaluations
@@ -239,13 +260,13 @@ object SimilarityPipelineExperiment {
       // nearest neighbor
       println("4.1 Calculate nearestneigbors for one key")
       similarityModel
-        .set_uri_column_name_dfA("uri")
-        .set_uri_column_name_dfB("uri")
-        .set_features_column_name_dfA("vectorizedFeatures")
-        .set_features_column_name_dfB("vectorizedFeatures")
+        .setUriColumnNameDfA("uri")
+        .setUriColumnNameDfB("uri")
+        .setFeaturesColumnNameDfA("vectorizedFeatures")
+        .setFeaturesColumnNameDfB("vectorizedFeatures")
       val key: Vector = cv_features.select("vectorizedFeatures").collect()(0)(0).asInstanceOf[Vector]
       startTime = System.nanoTime
-      val nn_similarity_df = similarityModel.nearestNeighbors(cv_features, key, parameterSimilarityNearestNeighborsK, "theFirstUri", keep_key_uri_column = false)
+      val nn_similarity_df = similarityModel.nearestNeighbors(cv_features, key, parameterSimilarityNearestNeighborsK, "theFirstUri", keepKeyUriColumn = false)
       nn_similarity_df.count()
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
@@ -253,10 +274,10 @@ object SimilarityPipelineExperiment {
       // all pair
       println("4.2 Calculate app pair similarity")
       similarityModel
-        .set_uri_column_name_dfA("uri")
-        .set_uri_column_name_dfB("uri")
-        .set_features_column_name_dfA("vectorizedFeatures")
-        .set_features_column_name_dfB("vectorizedFeatures")
+        .setUriColumnNameDfA("uri")
+        .setUriColumnNameDfB("uri")
+        .setFeaturesColumnNameDfA("vectorizedFeatures")
+        .setFeaturesColumnNameDfB("vectorizedFeatures")
       startTime = System.nanoTime
       val all_pair_similarity_df: DataFrame = similarityModel.similarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold)
       all_pair_similarity_df.count()
