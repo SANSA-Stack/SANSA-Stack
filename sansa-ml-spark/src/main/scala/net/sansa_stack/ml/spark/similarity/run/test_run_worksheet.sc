@@ -1,3 +1,28 @@
+val i: Integer = 1
+i.toInt
+
+
+// res0: Int = 937112115
+
+/*
+val spark = SparkSession.builder
+  .appName(s"MinHash") // TODO where is this displayed?
+  .master("local[*]") // TODO why do we need to specify this?
+  .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
+  .getOrCreate()
+import org.apache.jena.graph.Triple
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import spark.implicits._ // TODO does anyone know for which purposes we need
+
+// read in data of sansa rdf
+val triples: RDD[Triple] = spark.rdf(lang)(input)
+val tdf: DataFrame = spark.read.rdf(lang)(input)
+
+tdf.show(false)
+
+
+
 
 val a = Array(2, 25, 32)
 a.size
@@ -93,4 +118,4 @@ val transformedFeaturesUris: Map[Int, Seq[Tuple2[Int, Double]]] = uriToFeaturesM
 
 
 val someMapN: Map[Int, Iterable[Int]] = Map(1 -> List(2, 3), 4 -> List(7, 8))
-someMapN.toSeq.toDF("a", "b")
+someMapN.toSeq.toDF("a", "b") */
