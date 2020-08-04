@@ -23,7 +23,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
   })
 
   private var _alpha: Double = 1.0
-  private var _betha: Double = 1.0
+  private var _beta: Double = 1.0
 
   def setAlpha(a: Double): this.type = {
     if (a < 0 || a > 1) {
@@ -40,7 +40,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
       throw new Error("PROBLEM: alpha has to be between 0 and 1")
     }
     else {
-      _betha = b
+      _beta = b
       this
     }
   }
@@ -58,7 +58,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
 
     val join_df: DataFrame = crossJoinDf.withColumn(
       _similarityEstimationColumnName,
-      similarityEstimation(col("featuresA"), col("featuresB"), lit(_alpha), lit(_betha))
+      similarityEstimation(col("featuresA"), col("featuresB"), lit(_alpha), lit(_beta))
     )
     reduceJoinDf(join_df, threshold)
   }
@@ -70,7 +70,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
     val nnSetupDf = createNnDF(dfA, key, keyUri)
 
     val nnDf = nnSetupDf
-      .withColumn(_similarityEstimationColumnName, similarityEstimation(col("featuresA"), col("featuresB"), lit(_alpha), lit(_betha)))
+      .withColumn(_similarityEstimationColumnName, similarityEstimation(col("featuresA"), col("featuresB"), lit(_alpha), lit(_beta)))
 
     reduceNnDf(nnDf, k, keepKeyUriColumn)
   }
