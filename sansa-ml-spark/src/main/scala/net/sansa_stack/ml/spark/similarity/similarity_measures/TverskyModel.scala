@@ -25,7 +25,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
   private var _alpha: Double = 1.0
   private var _betha: Double = 1.0
 
-  def set_alpha(a: Double): this.type = {
+  def setAlpha(a: Double): this.type = {
     if (a < 0 || a > 1) {
       throw new Error("PROBLEM: alpha has to be between 0 and 1")
     }
@@ -35,7 +35,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
     }
   }
 
-  def set_betha(b: Double): this.type = {
+  def setBeta(b: Double): this.type = {
     if (b < 0 || b > 1) {
       throw new Error("PROBLEM: alpha has to be between 0 and 1")
     }
