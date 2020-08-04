@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.similarity.examples
 
-import net.sansa_stack.ml.spark.similarity.similarity_measures.JaccardModel
+import net.sansa_stack.ml.spark.similarity.similarity_measures.{BatetModel, BraunBlanquetModel, DiceModel, JaccardModel, OchiaiModel, SimpsonModel, TverskyModel}
 import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -49,19 +49,54 @@ object minimalCalls {
     val sample_key: Vector = countVectorizedFeaturesDataFrame.take(1)(0).getAs[Vector]("vectorizedFeatures")
 
     // minHash similarity estimation
-    val mh: MinHashLSH = new MinHashLSH()
-      // .setNumHashTables(parameterNumHashTables)
+    val minHashModel: MinHashLSHModel = new MinHashLSH()
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
-    val minHashModel: MinHashLSHModel = mh.fit(countVectorizedFeaturesDataFrame)
+      .fit(countVectorizedFeaturesDataFrame)
     minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
     minHashModel.approxSimilarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").show()
 
     // Jaccard similarity
     val jaccardModel: JaccardModel = new JaccardModel()
       .setInputCol("vectorizedFeatures")
-    // .sJ(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8).show()
     jaccardModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
     jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.1).show()
+
+    // Batet Distance
+    val batetModel: BatetModel = new BatetModel()
+      .setInputCol("vectorizedFeatures")
+    batetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    batetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+
+    // Braun Blanquet Similarity
+    val braunBlanquetModel: BraunBlanquetModel = new BraunBlanquetModel()
+      .setInputCol("vectorizedFeatures")
+    braunBlanquetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    braunBlanquetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+
+    // Dice Similarity
+    val diceModel: DiceModel = new DiceModel()
+      .setInputCol("vectorizedFeatures")
+    diceModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    diceModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+
+    // Ochiai Similarity
+    val ochiaiModel: OchiaiModel = new OchiaiModel()
+      .setInputCol("vectorizedFeatures")
+    ochiaiModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    ochiaiModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+
+    // Simpson Similarity
+    val simpsonModel: SimpsonModel = new SimpsonModel()
+      .setInputCol("vectorizedFeatures")
+    simpsonModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    simpsonModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+
+    // Tversky Similarity
+    val tverskyModel: TverskyModel = new TverskyModel()
+      .setInputCol("vectorizedFeatures")
+    tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+
   }
 }
