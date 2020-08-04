@@ -95,6 +95,8 @@ object minimalCalls {
     // Tversky Similarity
     val tverskyModel: TverskyModel = new TverskyModel()
       .setInputCol("vectorizedFeatures")
+      .setAlpha(1.0)
+      .setBeta(1.0)
     tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
     tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
