@@ -7,29 +7,18 @@ import org.apache.spark.sql.functions.{col, lit, typedLit, udf}
 class TverskyModel extends GenericSimilarityEstimatorModel {
 
   protected val tversky = udf((a: Vector, b: Vector, alpha: Double, betha: Double) => {
-    val feature_indices_a = a.toSparse.indices
-    val feature_indices_b = b.toSparse.indices
-    val f_set_a = feature_indices_a.toSet
-    val f_set_b = feature_indices_b.toSet
-    /* println(f_set_a)
-    println(f_set_b)
-    val c: Double = (f_set_a.intersect(f_set_b).size.toDouble)
-    val e1: Double = (f_set_a.intersect(f_set_b).size.toDouble)
-    val e2: Double = (alpha * f_set_a.diff(f_set_b).size.toDouble)
-    val e3: Double = (betha * f_set_b.diff(f_set_a).size.toDouble)
-    val e: Double = e1 + e2 + e3
-    println(alpha, betha, c, e1, e2, e3, e)
-    assert(e > 0)
-    val tversky = c/e */
+    val featureIndicesA = a.toSparse.indices
+    val featureIndicesB = b.toSparse.indices
+    val fSetA = featureIndicesA.toSet
+    val fSetB = featureIndicesB.toSet
     val tversky: Double = (
-      (f_set_a.intersect(f_set_b).size.toDouble)/
+      (fSetA.intersect(fSetB).size.toDouble)/
         (
-          (f_set_a.intersect(f_set_b).size.toDouble)
-          +  (alpha * f_set_a.diff(f_set_b).size.toDouble)
-          + (betha * f_set_b.diff(f_set_a).size.toDouble)
+          (fSetA.intersect(fSetB).size.toDouble)
+          +  (alpha * fSetA.diff(fSetB).size.toDouble)
+          + (betha * fSetB.diff(fSetA).size.toDouble)
         )
     )
-
     tversky
   })
 
@@ -63,15 +52,13 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
 
   override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "tversky_similarity"): DataFrame = {
 
-    checkColumnNames(dfA, dfB)
-
-    val cross_join_df = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
-
     setSimilarityEstimationColumnName(valueColumn)
 
-    val join_df: DataFrame = cross_join_df.withColumn(
+    val crossJoinDf = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
+
+    val join_df: DataFrame = crossJoinDf.withColumn(
       _similarityEstimationColumnName,
-      similarityEstimation(col(_featuresColumnNameDfA), col(_featuresColumnNameDfB), lit(_alpha), lit(_betha))
+      similarityEstimation(col("featuresA"), col("featuresB"), lit(_alpha), lit(_betha))
     )
     reduceJoinDf(join_df, threshold)
   }
@@ -80,11 +67,11 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
 
     setSimilarityEstimationColumnName(valueColumn)
 
-    val nn_setup_df = createNnDF(dfA, key, keyUri)
+    val nnSetupDf = createNnDF(dfA, key, keyUri)
 
-    val nn_df = nn_setup_df
-      .withColumn(_similarityEstimationColumnName, similarityEstimation(col(_featuresColumnNameDfB), col(_featuresColumnNameDfA), lit(_alpha), lit(_betha)))
+    val nnDf = nnSetupDf
+      .withColumn(_similarityEstimationColumnName, similarityEstimation(col("featuresA"), col("featuresB"), lit(_alpha), lit(_betha)))
 
-    reduceNnDf(nn_df, k, keepKeyUriColumn)
+    reduceNnDf(nnDf, k, keepKeyUriColumn)
   }
 }

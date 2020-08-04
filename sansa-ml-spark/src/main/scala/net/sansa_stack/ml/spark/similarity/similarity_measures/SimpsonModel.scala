@@ -7,11 +7,11 @@ import org.apache.spark.sql.functions.{col, udf}
 class SimpsonModel extends GenericSimilarityEstimatorModel {
 
   protected val simpson = udf( (a: Vector, b: Vector) => {
-    val feature_indices_a = a.toSparse.indices
-    val feature_indices_b = b.toSparse.indices
-    val f_set_a = feature_indices_a.toSet
-    val f_set_b = feature_indices_b.toSet
-    val simpson = (f_set_a.intersect(f_set_b).size.toDouble) / Seq(f_set_a.size.toDouble, f_set_b.size.toDouble).min
+    val featureIndicesA = a.toSparse.indices
+    val featureIndicesB = b.toSparse.indices
+    val fSetA = featureIndicesA.toSet
+    val fSetB = featureIndicesB.toSet
+    val simpson = (fSetA.intersect(fSetB).size.toDouble) / Seq(fSetA.size.toDouble, fSetB.size.toDouble).min
     simpson
   })
 
@@ -22,30 +22,28 @@ class SimpsonModel extends GenericSimilarityEstimatorModel {
 
   override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "simpson_similarity"): DataFrame = {
 
-    checkColumnNames(dfA, dfB)
-
-    val cross_join_df = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
-
     setSimilarityEstimationColumnName(valueColumn)
 
-    val join_df: DataFrame = cross_join_df.withColumn(
-      _similarityEstimationColumnName,
-      similarityEstimation(col(_featuresColumnNameDfA), col(_featuresColumnNameDfB))
+    val crossJoinDf = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
+
+    val joinDf: DataFrame = crossJoinDf.withColumn(
+      valueColumn,
+      similarityEstimation(col("featuresA"), col("featuresB"))
     )
-    reduceJoinDf(join_df, threshold)
+    reduceJoinDf(joinDf, threshold)
   }
 
   override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "simpson_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
-    val nn_setup_df = createNnDF(dfA, key, keyUri)
+    val nnSetupDf = createNnDF(dfA, key, keyUri)
 
-    val nn_df = nn_setup_df
+    val nnDf = nnSetupDf
       .withColumn(
-        _similarityEstimationColumnName,
-        similarityEstimation(col(_featuresColumnNameDfB), col(_featuresColumnNameDfA)))
+        valueColumn,
+        similarityEstimation(col("featuresA"), col("featuresB")))
 
-    reduceNnDf(nn_df, k, keepKeyUriColumn)
+    reduceNnDf(nnDf, k, keepKeyUriColumn)
   }
 }

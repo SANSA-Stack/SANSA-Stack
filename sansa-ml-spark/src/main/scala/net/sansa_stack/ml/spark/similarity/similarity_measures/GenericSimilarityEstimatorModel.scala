@@ -97,10 +97,16 @@ class GenericSimilarityEstimatorModel {
     val tmpDf = simDf.select("uriA", "uriB", _similarityEstimationColumnName)
 
     if (threshold == -1.0) {
+      // -1 as inicator for no filtering
       tmpDf
     }
     else {
-      val filtered_df = if (estimatorMeasureType == "distance") tmpDf.filter(col(_similarityEstimationColumnName) <= threshold) else tmpDf.filter(col(_similarityEstimationColumnName) >= threshold)
+      val filtered_df = if (estimatorMeasureType == "distance") {
+        tmpDf.filter(col(_similarityEstimationColumnName) <= threshold)
+      }
+      else {
+        tmpDf.filter(col(_similarityEstimationColumnName) >= threshold)
+      }
       filtered_df
     }
   }
@@ -114,27 +120,27 @@ class GenericSimilarityEstimatorModel {
 
   def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String): DataFrame = {
 
-    val crossJoinDf = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
-
     setSimilarityEstimationColumnName(valueColumn)
 
-    val join_df: DataFrame = crossJoinDf.withColumn(
-      _similarityEstimationColumnName,
-      // similarityEstimation(col(_featuresColumnNameDfA), col(_featuresColumnNameDfB))
+    val crossJoinDf = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
+
+    val joinDf: DataFrame = crossJoinDf.withColumn(
+      valueColumn,
       similarityEstimation(col("featuresA"), col("featuresB"))
     )
-    reduceJoinDf(join_df, threshold)
+    reduceJoinDf(joinDf, threshold)
   }
 
   def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String, valueColumn: String, keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
-    val nnSetupDf: DataFrame = createNnDF(dfA, key, keyUri)
-
+    val nnSetupDf = createNnDF(dfA, key, keyUri)
 
     val nnDf = nnSetupDf
-      .withColumn(_similarityEstimationColumnName, similarityEstimation(col("featuresA"), col("featuresB")))
+      .withColumn(
+        valueColumn,
+        similarityEstimation(col("featuresA"), col("featuresB")))
 
     reduceNnDf(nnDf, k, keepKeyUriColumn)
   }

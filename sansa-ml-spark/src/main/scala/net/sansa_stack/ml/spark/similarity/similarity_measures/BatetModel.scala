@@ -22,46 +22,30 @@ class BatetModel extends GenericSimilarityEstimatorModel {
 
   override val similarityEstimation = batet
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "batet_similarity"): DataFrame = {
-
-    val cross_join_df = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "batetDistance"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
-    val join_df: DataFrame = cross_join_df
-      .withColumn(
-        _similarityEstimationColumnName,
-        similarityEstimation(col(_featuresColumnNameDfB), col(_featuresColumnNameDfA)))
+    val crossJoinDf = createCrossJoinDF(dfA: DataFrame, dfB: DataFrame)
 
-    /* .withColumn(
-    "tmp",
-      similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA)))
-    .withColumn(
-      _similarity_estimation_column_name,
-      log2(col("tmp"))
-    ) */
-    reduceJoinDf(join_df, threshold)
+    val joinDf: DataFrame = crossJoinDf.withColumn(
+      valueColumn,
+      similarityEstimation(col("featuresA"), col("featuresB"))
+    )
+    reduceJoinDf(joinDf, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "batet_distance", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "batetDistance", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
-    val nn_setup_df = createNnDF(dfA, key, keyUri)
+    val nnSetupDf = createNnDF(dfA, key, keyUri)
 
-    val nn_df = nn_setup_df
+    val nnDf = nnSetupDf
       .withColumn(
-        _similarityEstimationColumnName,
-        similarityEstimation(col(_featuresColumnNameDfB), col(_featuresColumnNameDfA)))
+        valueColumn,
+        similarityEstimation(col("featuresA"), col("featuresB")))
 
-      /* .withColumn(
-      "tmp",
-        similarityEstimation(col(_features_column_name_dfB), col(_features_column_name_dfA)))
-      .withColumn(
-        _similarity_estimation_column_name,
-        log2(col("tmp"))
-      ) */
-
-    reduceNnDf(nn_df, k, keepKeyUriColumn)
+    reduceNnDf(nnDf, k, keepKeyUriColumn)
   }
 }
