@@ -7,18 +7,20 @@ import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel, StringIndexer, Tokenizer, VectorAssembler}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
+import net.sansa_stack.ml.spark.utils.{ConfigResolver, FeatureExtractorModel}
 import org.apache.spark.sql.functions.{col, lit, udf}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DataTypes, DoubleType, IntegerType, LongType, StringType, StructField, StructType}
 import java.io.File
+import java.net.URI
 
 import com.typesafe.config.ConfigFactory
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+
 import collection.JavaConversions._
 import collection.JavaConverters._
-
-
 import org.spark_project.dmg.pmml.False
 
 import scala.collection.mutable.ListBuffer
@@ -28,23 +30,56 @@ object SimilarityPipelineExperiment {
 
     val configFilePath = args(0) // "/Users/carstendraschner/Desktop/parameterConfig.conf"
 
+    val config = new ConfigResolver(configFilePath).getConfig()
+
+    // we read in our sample data by providing a path where all the files are
+    def getListOfFiles(dir: String): List[String] = {
+      val config = new ConfigResolver("")
+      val tmpHdfsPart: String = config.getHdfsPart(dir)
+      val tmpPathPart: String = config.getPathPart(dir)
+
+      println(tmpHdfsPart)
+      println(tmpPathPart)
+
+      /* val file = new File(dir)
+      file.listFiles.filter(_.isFile)
+        .filter(_.getName.endsWith(".nt"))
+        .map(_.getPath).toList
+      val fs = FileSystem.get(new Configuration())
+      val status: Array[FileStatus] = fs.listStatus(new Path(dir))
+      val tmp = status.map(x => x.getPath.toString).toList
+      tmp  */
+
+      val uri = new URI(tmpHdfsPart)
+      val fs = FileSystem.get(uri,new Configuration())
+      val filePath = new Path(tmpPathPart)
+      val status = fs.listStatus(filePath)
+      val tmp = status.map(sts => sts.getPath.toString).toList // .foreach(println)
+      tmp
+    }
+
+    println(config)
+    getListOfFiles("hdfs://172.18.160.17:54310/CarstenDraschner/SimilarityExperimentData/SansaServerExperiments/sampleDataSets/smallSampleData")
+    assert(false)
+
     // val baseConfig = ConfigFactory.load()
-    val config = ConfigFactory.parseFile(new File(configFilePath)) // .withFallback(baseConfig)
+    // val config = ConfigFactory.parseFile(new File(configFilePath)) // .withFallback(baseConfig)
 
     val spark = SparkSession.builder
-      .appName(s"MinHash  tryout") // TODO where is this displayed?
-      .master("local[*]") // TODO why do we need to specify this?
+      .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
+      // .master("local[*]") // TODO why do we need to specify this?
       // .master("spark://172.18.160.16:3090") // to run on server
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
 
-    // we read in our sample data by providing a path where all the files are
-    def getListOfFiles(dir: String): List[String] = {
-      val file = new File(dir)
-      file.listFiles.filter(_.isFile)
-        .filter(_.getName.endsWith(".nt"))
-        .map(_.getPath).toList
-    }
+
+
+
+    /* val fs = FileSystem.get(new Configuration())
+    val status = fs.listStatus(new Path(pathToFolder))
+    status.foreach(x=> println(x.getPath)) */
+
+
     val pathToFolder: String = config.getString("pathToFolder") // args(0)
     println("For evaluation data we search in path: " +  pathToFolder)
     val inputAll: Seq[String] = getListOfFiles(pathToFolder).toSeq
@@ -65,7 +100,7 @@ object SimilarityPipelineExperiment {
 
     // this is the path to output and we add the current datetime information
     val evaluation_datetime = Calendar.getInstance().getTime().toString
-    val outputFilepath = "/Users/carstendraschner/Downloads/experimentResults" + evaluation_datetime + ".csv"
+    val outputFilePath: String = config.getString("outputFilePath") // "/Users/carstendraschner/Downloads/experimentResults" + evaluation_datetime + ".csv"
 
     // definition of resulting dataframe schema
     val schema = StructType(List(
@@ -130,7 +165,10 @@ object SimilarityPipelineExperiment {
     // show the resulting dataframe
     df.show()
     // store the data as csv
-    df.repartition(1).write.option("header", "true").format("csv").save(outputFilepath)
+    val storageFilePath: String = outputFilePath + evaluation_datetime + ".csv"
+
+    println("we store our file here: " + storageFilePath)
+    df.repartition(1).write.option("header", "true").format("csv").save(storageFilePath)
     // stop spark session
     spark.stop()
   }
