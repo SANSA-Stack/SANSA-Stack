@@ -216,7 +216,8 @@
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>net.sansa_stack.ml.spark.similarity.run.minHash_rdf_over_text_pipeline</mainClass>
+									<!--Here we specify "hardcoded" main class. somehow package name plus class name without scala-->
+									<mainClass>net.sansa_stack.ml.spark.similarity.experiment.SimilarityPipelineExperiment</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>
