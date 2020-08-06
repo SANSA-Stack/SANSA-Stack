@@ -7,7 +7,7 @@ import org.apache.jena.riot.Lang
 import net.sansa_stack.rdf.spark.io._
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel, StringIndexer, Tokenizer, VectorAssembler}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import net.sansa_stack.ml.spark.utils.{ConfigResolver, FeatureExtractorModel}
+import net.sansa_stack.ml.spark.utils.{ConfigResolver, FeatureExtractorModel, FileLister}
 import org.apache.spark.sql.functions.{col, lit, udf}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
@@ -18,6 +18,7 @@ import java.net.URI
 import com.typesafe.config.ConfigFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import org.apache.log4j.{Level, Logger}
 
 import collection.JavaConversions._
 import collection.JavaConverters._
@@ -28,11 +29,10 @@ import scala.collection.mutable.ListBuffer
 object SimilarityPipelineExperiment {
   def main(args: Array[String]): Unit = {
 
-    val configFilePath = args(0) // "/Users/carstendraschner/Desktop/parameterConfig.conf"
+    Logger.getLogger("org").setLevel(Level.ERROR)
 
-    val config = new ConfigResolver(configFilePath).getConfig()
 
-    // we read in our sample data by providing a path where all the files are
+    /* // we read in our sample data by providing a path where all the files are
     def getListOfFiles(dir: String): List[String] = {
       val config = new ConfigResolver("")
       val tmpHdfsPart: String = config.getHdfsPart(dir)
@@ -56,11 +56,9 @@ object SimilarityPipelineExperiment {
       val status = fs.listStatus(filePath)
       val tmp = status.map(sts => sts.getPath.toString).toList // .foreach(println)
       tmp
-    }
+    } */
 
-    println(config)
-    getListOfFiles("hdfs://172.18.160.17:54310/CarstenDraschner/SimilarityExperimentData/SansaServerExperiments/sampleDataSets/smallSampleData")
-    assert(false)
+
 
     // val baseConfig = ConfigFactory.load()
     // val config = ConfigFactory.parseFile(new File(configFilePath)) // .withFallback(baseConfig)
@@ -79,13 +77,20 @@ object SimilarityPipelineExperiment {
     val status = fs.listStatus(new Path(pathToFolder))
     status.foreach(x=> println(x.getPath)) */
 
+    val configFilePath = args(0) // "/Users/carstendraschner/Desktop/parameterConfig.conf"
 
+    val config = new ConfigResolver(configFilePath).getConfig()
+
+    println()
     val pathToFolder: String = config.getString("pathToFolder") // args(0)
     println("For evaluation data we search in path: " +  pathToFolder)
-    val inputAll: Seq[String] = getListOfFiles(pathToFolder).toSeq
+
+    val inputAll = FileLister.getListOfFiles(pathToFolder).filter(_.endsWith(".nt")) // getListOfFiles(pathToFolder).toSeq
     println("we found in provided path " + inputAll.size)
     println("files are:")
     inputAll.foreach(println(_))
+    println()
+
 
     // Here we specify the hyperparameter grid
     val similarityEstimationModeAll: List[String] = config.getStringList("similarityEstimationModeAll").toList // Seq("MinHash", "Jaccard")
@@ -100,6 +105,7 @@ object SimilarityPipelineExperiment {
 
     // this is the path to output and we add the current datetime information
     val evaluation_datetime = Calendar.getInstance().getTime().toString
+    println()
     val outputFilePath: String = config.getString("outputFilePath") // "/Users/carstendraschner/Downloads/experimentResults" + evaluation_datetime + ".csv"
 
     // definition of resulting dataframe schema
@@ -152,7 +158,9 @@ object SimilarityPipelineExperiment {
         parameterSimilarityAllPairThreshold,
         parameterSimilarityNearestNeighborsK
       )
+      println("Resulting row for DataFrame:")
       println(tmpRow)
+      println()
       ex_results += tmpRow
   }
 
@@ -165,7 +173,7 @@ object SimilarityPipelineExperiment {
     // show the resulting dataframe
     df.show()
     // store the data as csv
-    val storageFilePath: String = outputFilePath + evaluation_datetime + ".csv"
+    val storageFilePath: String = outputFilePath + evaluation_datetime.replace(":", "").replace(" ", "") + ".csv"
 
     println("we store our file here: " + storageFilePath)
     df.repartition(1).write.option("header", "true").format("csv").save(storageFilePath)
@@ -188,6 +196,7 @@ object SimilarityPipelineExperiment {
     parameterSimilarityNearestNeighborsK: Int
   ): Row = {
     // these are the parameters
+    println("These are the parameters:")
     println(inputPath,
       similarityEstimationMode,
       parametersFeatureExtractorMode,
@@ -198,6 +207,8 @@ object SimilarityPipelineExperiment {
       parameterNumHashTables,
       parameterSimilarityAllPairThreshold,
       parameterSimilarityNearestNeighborsK)
+    println()
+
     // experiment Information
     val inputFileName: String = inputPath.split("/").last
 
