@@ -108,12 +108,12 @@ object Tversky {
       .setFeaturesColumnNameDfB(count_vectorizer_features_column_name)
     val key: Vector = cv_features.select(count_vectorizer_features_column_name).collect()(0)(0).asInstanceOf[Vector]
     val nnSimilarity_df = similarityModel.nearestNeighbors(cv_features, key, 10, "theFirstUri", keepKeyUriColumn = true)
-    nn_similarity_df.show(false)
+    nnSimilarity_df.show(false)
 
     // Metagraph creation
     val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
     val experiment_metagraph = similarity_metagraph_creator.transform(
-      all_pair_similarity_df
+      allPairSimilarityDf
     )(
       metagraph_experiment_name,
       metagraph_experiment_type,
