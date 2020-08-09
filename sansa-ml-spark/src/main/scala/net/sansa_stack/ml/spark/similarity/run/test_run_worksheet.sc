@@ -1,7 +1,13 @@
-val i: Integer = 1
-i.toInt
-
-
+var a: Int <- (1 to 3)
+/*
+var l: List[String] = List()
+l = l :+ "s"
+val t = l
+l
+t
+println(l)
+println(t)
+*/
 // res0: Int = 937112115
 
 /*
