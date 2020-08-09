@@ -91,6 +91,8 @@ object SimilarityPipelineExperiment {
     inputAll.foreach(println(_))
     println()
 
+    // we can specify the number of run throughs for averagging the measurements:
+    val numberRuns: Int = config.getInt("numberRuns")
 
     // Here we specify the hyperparameter grid
     val similarityEstimationModeAll: List[String] = config.getStringList("similarityEstimationModeAll").toList // Seq("MinHash", "Jaccard")
@@ -110,6 +112,7 @@ object SimilarityPipelineExperiment {
 
     // definition of resulting dataframe schema
     val schema = StructType(List(
+      StructField("run", IntegerType, true),
       StructField("inputPath", StringType, true),
       StructField("inputFileName", StringType, true),
       StructField("inputFileSizeNumberTriples", LongType, true),
@@ -134,6 +137,7 @@ object SimilarityPipelineExperiment {
     val ex_results: scala.collection.mutable.ListBuffer[Row] = ListBuffer()
     for {
       // here we iterate over our hyperparameter room
+      run <- 1 to numberRuns
       input <- inputAll
       similarityEstimationMode <- similarityEstimationModeAll
       parametersFeatureExtractorMode <- parametersFeatureExtractorModeAll
@@ -147,6 +151,7 @@ object SimilarityPipelineExperiment {
     } {
       val tmpRow: Row = run_experiment(
         spark,
+        run,
         input,
         similarityEstimationMode,
         parametersFeatureExtractorMode,
@@ -184,6 +189,7 @@ object SimilarityPipelineExperiment {
   //noinspection ScalaStyle
   def run_experiment(
     spark: SparkSession,
+    run: Int,
     inputPath: String,
     similarityEstimationMode: String,
     parametersFeatureExtractorMode: String,
@@ -197,7 +203,9 @@ object SimilarityPipelineExperiment {
   ): Row = {
     // these are the parameters
     println("These are the parameters:")
-    println(inputPath,
+    println(
+      run,
+      inputPath,
       similarityEstimationMode,
       parametersFeatureExtractorMode,
       parameterCountVectorizerMinDf,
@@ -345,6 +353,7 @@ object SimilarityPipelineExperiment {
 
     // allInformation
     return Row(
+      run,
       inputPath,
       inputFileName,
       inputFileSizeNumberTriples,
