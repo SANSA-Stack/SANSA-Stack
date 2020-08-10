@@ -11,15 +11,20 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
     val featureIndicesB = b.toSparse.indices
     val fSetA = featureIndicesA.toSet
     val fSetB = featureIndicesB.toSet
-    val tversky: Double = (
-      (fSetA.intersect(fSetB).size.toDouble)/
-        (
-          (fSetA.intersect(fSetB).size.toDouble)
-          +  (alpha * fSetA.diff(fSetB).size.toDouble)
-          + (betha * fSetB.diff(fSetA).size.toDouble)
+    if (fSetA.union(fSetB) == 0) {
+      0.0
+    }
+    else {
+      val tversky: Double = (
+        (fSetA.intersect(fSetB).size.toDouble)/
+          (
+            (fSetA.intersect(fSetB).size.toDouble)
+              +  (alpha * fSetA.diff(fSetB).size.toDouble)
+              + (betha * fSetB.diff(fSetA).size.toDouble)
+            )
         )
-    )
-    tversky
+      tversky
+    }
   })
 
   private var _alpha: Double = 1.0
