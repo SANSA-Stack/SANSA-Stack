@@ -33,7 +33,7 @@ object SimilarityPipelineExperiment {
 
     val spark = SparkSession.builder
       .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
-      // .master("local[*]") // TODO why do we need to specify this?
+      .master("local[*]") // TODO why do we need to specify this?
       // .master("spark://172.18.160.16:3090") // to run on server
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
@@ -230,6 +230,13 @@ object SimilarityPipelineExperiment {
     var processingTimeSimilarityEstimatorNearestNeighbors: Double = -1.0
     var processingTimeSimilarityEstimatorAllPairSimilarity: Double = -1.0
 
+    val tmpK: Row = featuresDf.take(1)(0)
+    val key: Vector = tmpK.getAs[Vector]("vectorizedFeatures")
+    val keyUri: String = tmpK.getAs[String]("uri")
+    println()
+    println(keyUri, key)
+
+
     if (similarityEstimationMode == "MinHash") {
       println("4. Similarity Estimation Process MinHash")
       println("\tthe number of hash tables is: " + parameterNumHashTables)
@@ -245,14 +252,11 @@ object SimilarityPipelineExperiment {
 
       println("4.1 Calculate nearestneigbors for one key")
       startTime = System.nanoTime
-      val tmpK: Row = featuresDf.take(1)(0)
-      val key: Vector = tmpK.getAs[Vector]("vectorizedFeatures")
-      val keyUri: String = tmpK.getAs[String]("uri") // featuresDf.select("cv_features").collect()(0)(0).asInstanceOf[Vector]
-      println(keyUri, key)
       val nnSimilarityDf: DataFrame = similarityModel
         .approxNearestNeighbors(featuresDf, key, parameterSimilarityNearestNeighborsK, "distance")
         .withColumn("key_column", lit(keyUri)).select("key_column", "uri", "distance")
-      nnSimilarityDf.count()
+      val numberOfNn: Long = nnSimilarityDf.count()
+      println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
       nnSimilarityDf.show(false)
@@ -260,7 +264,8 @@ object SimilarityPipelineExperiment {
       println("4.2 Calculate app pair similarity")
       startTime = System.nanoTime
       val allPairSimilarityDf = similarityModel.approxSimilarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold, "distance") // .select("datasetA", "datasetB", "distance")
-      allPairSimilarityDf.count()
+      val lenJoinDf: Long = allPairSimilarityDf.count()
+      println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
       allPairSimilarityDf.show(false)
@@ -277,11 +282,10 @@ object SimilarityPipelineExperiment {
 
       // nearest neighbor
       println("4.1 Calculate nearestneigbors for one key")
-      val tmpK: Row = featuresDf.take(1)(0)
-      val key: Vector = tmpK.getAs[Vector]("vectorizedFeatures")
       startTime = System.nanoTime
-      val nnSimilarityDf = similarityModel.nearestNeighbors(cvFeatures, key, parameterSimilarityNearestNeighborsK, "theFirstUri", keepKeyUriColumn = false)
-      nnSimilarityDf.count()
+      val nnSimilarityDf: DataFrame = similarityModel.nearestNeighbors(cvFeatures, key, parameterSimilarityNearestNeighborsK, "theFirstUri", keepKeyUriColumn = false)
+      val numberOfNn: Long = nnSimilarityDf.count()
+      println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
       nnSimilarityDf.show(false)
@@ -290,7 +294,8 @@ object SimilarityPipelineExperiment {
       println("4.2 Calculate app pair similarity")
       startTime = System.nanoTime
       val allPairSimilarityDf: DataFrame = similarityModel.similarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold)
-      allPairSimilarityDf.count()
+      val lenJoinDf: Long = allPairSimilarityDf.count()
+      println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
       allPairSimilarityDf.show(false)
@@ -309,11 +314,10 @@ object SimilarityPipelineExperiment {
 
       // nearest neighbor
       println("4.1 Calculate nearestneigbors for one key")
-      val tmpK: Row = featuresDf.take(1)(0)
-      val key: Vector = tmpK.getAs[Vector]("vectorizedFeatures")
       startTime = System.nanoTime
       val nnSimilarityDf = similarityModel.nearestNeighbors(cvFeatures, key, parameterSimilarityNearestNeighborsK, "theFirstUri", keepKeyUriColumn = false)
-      nnSimilarityDf.count()
+      val numberOfNn: Long = nnSimilarityDf.count()
+      println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
       nnSimilarityDf.show(false)
@@ -322,7 +326,8 @@ object SimilarityPipelineExperiment {
       println("4.2 Calculate app pair similarity")
       startTime = System.nanoTime
       val allPairSimilarityDf: DataFrame = similarityModel.similarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold)
-      allPairSimilarityDf.count()
+      val lenJoinDf: Long = allPairSimilarityDf.count()
+      println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
       allPairSimilarityDf.show(false)
