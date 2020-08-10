@@ -43,8 +43,9 @@ object minimalCalls {
     val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures")
     countVectorizedFeaturesDataFrame.show()
+    countVectorizedFeaturesDataFrame.filter(col("uri").startsWith("m")).show()
 
-    // similarity estimations
+    // similarity Estimations Overview
     // for nearestNeighbors we need one key which is a Vector to search for NN
     val sample_key: Vector = countVectorizedFeaturesDataFrame.take(1)(0).getAs[Vector]("vectorizedFeatures")
 
@@ -58,9 +59,9 @@ object minimalCalls {
 
     // Jaccard similarity
     val jaccardModel: JaccardModel = new JaccardModel()
-      .setInputCol("vectorizedFeatures")
+     .setInputCol("vectorizedFeatures")
     jaccardModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.1).show()
+    jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
     // Batet Distance
     val batetModel: BatetModel = new BatetModel()
@@ -100,5 +101,28 @@ object minimalCalls {
     tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
     tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
+    // Similarity Estimation on Subset (e.g. Movie)
+    // but maybe for sure we might only search for movie similaritties. so we would reduce dataframe as input
+    // first we take only all movie uris
+    val tmpDf = countVectorizedFeaturesDataFrame.filter(col("uri").startsWith("m"))
+    // then we select one key of type movie
+    val tmpK = tmpDf.take(1)(0).getAs[Vector]("vectorizedFeatures")
+    minHashModel.approxNearestNeighbors(tmpDf, tmpK, 10, "minHashDistance").show()
+    minHashModel.approxSimilarityJoin(tmpDf, tmpDf, 0.8, "distance").show()
+
+    // Stacking of Approaches (MinHash + Jaccard)
+    // this is interesting if we want to have precise resulting similarities but a more scalable approach.
+    // for this purpose we first calculate similarity over the scalable minhash
+    // and then we use the calculated candidates as filter for the initial dataset to reduce once again the dataframe.
+    // then we calculate by common jaccard approach or others
+    val minHashedSimilarities = minHashModel
+      .approxSimilarityJoin(tmpDf, tmpDf, 0.8, "distance")
+      .withColumn("uriA", col("datasetA").getField("uri"))
+      .withColumn("uriB", col("datasetB").getField("uri"))
+      .select("uriA", "uriB", "distance")
+    val uriCandidates = (minHashedSimilarities.select("uriA").rdd.map(r => r(0)).collect().toSet.union(minHashedSimilarities.select("uriB").rdd.map(r => r(0)).collect().toSet)).toList
+    val dfGoodCandidatesDf = tmpDf.filter(col("uri").isInCollection(uriCandidates))
+    // println(countVectorizedFeaturesDataFrame.count(), dfGoodCandidatesDf.count())
+    jaccardModel.similarityJoin(dfGoodCandidatesDf, dfGoodCandidatesDf, threshold = 0.5).show()
   }
 }
