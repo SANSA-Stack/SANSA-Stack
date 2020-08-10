@@ -10,12 +10,20 @@ import org.apache.spark.sql.types.{ArrayType, StringType, StructField, StructTyp
 class JaccardModel extends GenericSimilarityEstimatorModel {
 
   protected val jaccard = udf( (a: Vector, b: Vector) => {
-    val featureIndicesA = a.toSparse.indices
-    val featureIndicesB = b.toSparse.indices
-    val fSetA = featureIndicesA.toSet
-    val fSetB = featureIndicesB.toSet
-    val jaccard = fSetA.intersect(fSetB).size.toDouble / fSetA.union(fSetB).size.toDouble
-    jaccard
+    // val featureIndicesA = a.toSparse.indices
+    // val featureIndicesB = b.toSparseindices
+    val fSetA = a.toSparse.indices.toSet
+    val fSetB = b.toSparse.indices.toSet
+    val intersection = fSetA.intersect(fSetB).size.toDouble
+    val union = fSetA.union(fSetB).size.toDouble
+    if (union == 0.0) {
+      0
+    }
+    else {
+      val jaccard = intersection / union
+      jaccard
+    }
+
   })
 
   override val estimatorName: String = "JaccardSimilarityEstimator"
