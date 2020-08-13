@@ -11,7 +11,7 @@ import net.sansa_stack.ml.spark.utils.{ConfigResolver, FeatureExtractorModel, Fi
 import org.apache.spark.sql.functions.{col, lit, udf}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{DataTypes, DoubleType, IntegerType, LongType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{BooleanType, DataTypes, DoubleType, IntegerType, LongType, StringType, StructField, StructType}
 import java.io.File
 import java.net.URI
 
@@ -65,6 +65,8 @@ object SimilarityPipelineExperiment {
     val parameterNumHashTablesAll: List[Int] = config.getIntList("parameterNumHashTablesAll").toList.map(_.toInt) // Seq(1, 5)
     val parameterSimilarityAllPairThresholdAll: List[Double] = config.getDoubleList("parameterSimilarityAllPairThresholdAll").toList.map(_.toDouble) // Seq(0.8)
     val parameterSimilarityNearestNeighborsKAll: List[Int] = config.getIntList("parameterSimilarityNearestNeighborsKAll").toList.map(_.toInt) // Seq(20)
+    val parameterOnlyMovieSimilarity: Boolean = config.getBoolean("parameterOnlyMovieSimilarity")
+    val pipelineComponents: List[String] = config.getStringList("pipelineComponents").toList
 
     // this is the path to output and we add the current datetime information
     val evaluation_datetime = Calendar.getInstance().getTime().toString
@@ -73,6 +75,7 @@ object SimilarityPipelineExperiment {
 
     // definition of resulting dataframe schema
     val schema = StructType(List(
+      StructField("pipelineComponents", StringType, true),
       StructField("run", IntegerType, true),
       StructField("inputPath", StringType, true),
       StructField("inputFileName", StringType, true),
@@ -92,10 +95,12 @@ object SimilarityPipelineExperiment {
       StructField("processingTimeSimilarityEstimatorSetup", DoubleType, true),
       StructField("processingTimeSimilarityEstimatorNearestNeighbors", DoubleType, true),
       StructField("processingTimeSimilarityEstimatorAllPairSimilarity", DoubleType, true),
-      StructField("processingTimeTotal", DoubleType, true)
+      StructField("processingTimeTotal", DoubleType, true),
+      StructField("onlyMovieSimilarity", BooleanType, true)
     ))
 
     val ex_results: scala.collection.mutable.ListBuffer[Row] = ListBuffer()
+
     for {
       // here we iterate over our hyperparameter room
       run <- 1 to numberRuns
@@ -112,6 +117,7 @@ object SimilarityPipelineExperiment {
     } {
       val tmpRow: Row = run_experiment(
         spark,
+        pipelineComponents,
         run,
         input,
         similarityEstimationMode,
@@ -122,7 +128,8 @@ object SimilarityPipelineExperiment {
         parameterSimilarityBeta,
         parameterNumHashTables,
         parameterSimilarityAllPairThreshold,
-        parameterSimilarityNearestNeighborsK
+        parameterSimilarityNearestNeighborsK,
+        parameterOnlyMovieSimilarity
       )
       println("Resulting row for DataFrame:")
       println(tmpRow)
@@ -150,6 +157,7 @@ object SimilarityPipelineExperiment {
   //noinspection ScalaStyle
   def run_experiment(
     spark: SparkSession,
+    pipelineComponents: List[String],
     run: Int,
     inputPath: String,
     similarityEstimationMode: String,
@@ -160,11 +168,13 @@ object SimilarityPipelineExperiment {
     parameterSimilarityBeta: Double,
     parameterNumHashTables: Int,
     parameterSimilarityAllPairThreshold: Double,
-    parameterSimilarityNearestNeighborsK: Int
+    parameterSimilarityNearestNeighborsK: Int,
+    parameterOnlyMovieSimilarity: Boolean
   ): Row = {
     // these are the parameters
     println("These are the parameters:")
     println(
+      pipelineComponents,
       run,
       inputPath,
       similarityEstimationMode,
@@ -175,15 +185,45 @@ object SimilarityPipelineExperiment {
       parameterSimilarityBeta,
       parameterNumHashTables,
       parameterSimilarityAllPairThreshold,
-      parameterSimilarityNearestNeighborsK)
+      parameterSimilarityNearestNeighborsK,
+      parameterOnlyMovieSimilarity
+    )
     println()
-
-    // experiment Information
-    val inputFileName: String = inputPath.split("/").last
 
     // now run experiment and keep track on processing times
     val experimentTime: Long = System.nanoTime
     var startTime: Long = System.nanoTime
+
+    if (!pipelineComponents.contains("ri")) {
+      return Row(
+        pipelineComponents.toString(),
+        run,
+        inputPath,
+        "no file",
+        0,
+        similarityEstimationMode,
+        parametersFeatureExtractorMode,
+        parameterCountVectorizerMinDf,
+        parameterCountVectorizerMaxVocabSize,
+        parameterSimilarityAlpha,
+        parameterSimilarityBeta,
+        parameterNumHashTables,
+        parameterSimilarityAllPairThreshold,
+        parameterSimilarityNearestNeighborsK,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        ((System.nanoTime - experimentTime) / 1e9d),
+        parameterOnlyMovieSimilarity
+      )
+    }
+    // experiment Information
+    val inputFileName: String = inputPath.split("/").last
+
+
 
     // Input Specification
     println("1: Read in data as Dataframe")
@@ -195,18 +235,74 @@ object SimilarityPipelineExperiment {
     println("\tthe file has " + inputFileSizeNumberTriples + " triples")
     val processingTimeReadIn: Double = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe read in needed " + processingTimeReadIn + "seconds")
+    triples_df.show()
+
+    if (!pipelineComponents.contains("fe")) {
+      return Row(
+        pipelineComponents.toString(),
+        run,
+        inputPath,
+        inputFileName,
+        inputFileSizeNumberTriples,
+        similarityEstimationMode,
+        parametersFeatureExtractorMode,
+        parameterCountVectorizerMinDf,
+        parameterCountVectorizerMaxVocabSize,
+        parameterSimilarityAlpha,
+        parameterSimilarityBeta,
+        parameterNumHashTables,
+        parameterSimilarityAllPairThreshold,
+        parameterSimilarityNearestNeighborsK,
+        processingTimeReadIn,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        parameterOnlyMovieSimilarity
+      )
+    }
 
     println("2: Dataframe based feature extractor")
+    if (parameterOnlyMovieSimilarity) println("\tFeature Dataframe consits only Movies")
     println("\tfeature extraction mode is: " + parametersFeatureExtractorMode)
     startTime = System.nanoTime
     val fe = new FeatureExtractorModel()
       .setMode(parametersFeatureExtractorMode)
       .setOutputCol("extractedFeatures")
-    val feFeatures = fe.transform(triples_df)
-    feFeatures.count()
+    val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triples_df).filter(t => t.getAs[String]("uri").split("/").last.startsWith("m")) else fe.transform(triples_df)
+    println("\tour extracted dataframe contains of: " + feFeatures.count() + " different uris")
     val processingTimeFeatureExtraction = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe feature extraction needed " + processingTimeFeatureExtraction + "seconds")
-    feFeatures.show(false)
+    feFeatures.show()
+
+    if (!pipelineComponents.contains("cv")) {
+      return Row(
+        pipelineComponents.toString(),
+        run,
+        inputPath,
+        inputFileName,
+        inputFileSizeNumberTriples,
+        similarityEstimationMode,
+        parametersFeatureExtractorMode,
+        parameterCountVectorizerMinDf,
+        parameterCountVectorizerMaxVocabSize,
+        parameterSimilarityAlpha,
+        parameterSimilarityBeta,
+        parameterNumHashTables,
+        parameterSimilarityAllPairThreshold,
+        parameterSimilarityNearestNeighborsK,
+        processingTimeReadIn,
+        processingTimeFeatureExtraction,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        ((System.nanoTime - experimentTime) / 1e9d),
+        parameterOnlyMovieSimilarity
+      )
+    }
 
     println("3: Count Vectorizer from MLlib")
     println("\tmax vocabsize is: " + parameterCountVectorizerMaxVocabSize)
@@ -236,6 +332,32 @@ object SimilarityPipelineExperiment {
     println()
     println(keyUri, key)
 
+    if (!pipelineComponents.contains("nn")) {
+      return Row(
+        pipelineComponents.toString(),
+        run,
+        inputPath,
+        inputFileName,
+        inputFileSizeNumberTriples,
+        similarityEstimationMode,
+        parametersFeatureExtractorMode,
+        parameterCountVectorizerMinDf,
+        parameterCountVectorizerMaxVocabSize,
+        parameterSimilarityAlpha,
+        parameterSimilarityBeta,
+        parameterNumHashTables,
+        parameterSimilarityAllPairThreshold,
+        parameterSimilarityNearestNeighborsK,
+        processingTimeReadIn,
+        processingTimeFeatureExtraction,
+        processingTimeCountVectorizer,
+        0.0,
+        0.0,
+        0.0,
+        ((System.nanoTime - experimentTime) / 1e9d),
+        parameterOnlyMovieSimilarity
+      )
+    }
 
     if (similarityEstimationMode == "MinHash") {
       println("4. Similarity Estimation Process MinHash")
@@ -259,16 +381,43 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      nnSimilarityDf.show(false)
+      nnSimilarityDf.show()
+
+      if (!pipelineComponents.contains("ap")) {
+        return Row(
+          pipelineComponents.toString(),
+          run,
+          inputPath,
+          inputFileName,
+          inputFileSizeNumberTriples,
+          similarityEstimationMode,
+          parametersFeatureExtractorMode,
+          parameterCountVectorizerMinDf,
+          parameterCountVectorizerMaxVocabSize,
+          parameterSimilarityAlpha,
+          parameterSimilarityBeta,
+          parameterNumHashTables,
+          parameterSimilarityAllPairThreshold,
+          parameterSimilarityNearestNeighborsK,
+          processingTimeReadIn,
+          processingTimeFeatureExtraction,
+          processingTimeCountVectorizer,
+          processingTimeSimilarityEstimatorSetup,
+          processingTimeSimilarityEstimatorNearestNeighbors,
+          0.0,
+          ((System.nanoTime - experimentTime) / 1e9d),
+          parameterOnlyMovieSimilarity
+        )
+      }
 
       println("4.2 Calculate app pair similarity")
       startTime = System.nanoTime
-      val allPairSimilarityDf = similarityModel.approxSimilarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold, "distance") // .select("datasetA", "datasetB", "distance")
+      val allPairSimilarityDf = similarityModel.approxSimilarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold, "distance")
       val lenJoinDf: Long = allPairSimilarityDf.count()
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.show(false)
+      allPairSimilarityDf.show()
     }
     else if (similarityEstimationMode == "Jaccard") {
       println("4. Similarity Estimation Process Jaccard")
@@ -290,6 +439,33 @@ object SimilarityPipelineExperiment {
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
       nnSimilarityDf.show(false)
 
+      if (!pipelineComponents.contains("ap")) {
+        return Row(
+          pipelineComponents.toString(),
+          run,
+          inputPath,
+          inputFileName,
+          inputFileSizeNumberTriples,
+          similarityEstimationMode,
+          parametersFeatureExtractorMode,
+          parameterCountVectorizerMinDf,
+          parameterCountVectorizerMaxVocabSize,
+          parameterSimilarityAlpha,
+          parameterSimilarityBeta,
+          parameterNumHashTables,
+          parameterSimilarityAllPairThreshold,
+          parameterSimilarityNearestNeighborsK,
+          processingTimeReadIn,
+          processingTimeFeatureExtraction,
+          processingTimeCountVectorizer,
+          processingTimeSimilarityEstimatorSetup,
+          processingTimeSimilarityEstimatorNearestNeighbors,
+          0.0,
+          ((System.nanoTime - experimentTime) / 1e9d),
+          parameterOnlyMovieSimilarity
+        )
+      }
+
       // all pair
       println("4.2 Calculate app pair similarity")
       startTime = System.nanoTime
@@ -298,7 +474,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.show(false)
+      allPairSimilarityDf.show()
     }
     else if (similarityEstimationMode == "Tversky") {
       println("4. Similarity Estimation Process Tversky")
@@ -320,7 +496,34 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      nnSimilarityDf.show(false)
+      nnSimilarityDf.show()
+
+      if (!pipelineComponents.contains("ap")) {
+        return Row(
+          pipelineComponents.toString(),
+          run,
+          inputPath,
+          inputFileName,
+          inputFileSizeNumberTriples,
+          similarityEstimationMode,
+          parametersFeatureExtractorMode,
+          parameterCountVectorizerMinDf,
+          parameterCountVectorizerMaxVocabSize,
+          parameterSimilarityAlpha,
+          parameterSimilarityBeta,
+          parameterNumHashTables,
+          parameterSimilarityAllPairThreshold,
+          parameterSimilarityNearestNeighborsK,
+          processingTimeReadIn,
+          processingTimeFeatureExtraction,
+          processingTimeCountVectorizer,
+          processingTimeSimilarityEstimatorSetup,
+          processingTimeSimilarityEstimatorNearestNeighbors,
+          0.0,
+          ((System.nanoTime - experimentTime) / 1e9d),
+          parameterOnlyMovieSimilarity
+        )
+      }
 
       // all pair
       println("4.2 Calculate app pair similarity")
@@ -330,8 +533,86 @@ object SimilarityPipelineExperiment {
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.show(false)
+      allPairSimilarityDf.show()
 
+    }
+    else if (similarityEstimationMode == "MinHashJaccardStacked") {
+      println("4. Similarity Estimation Process MinHashJaccardStacked")
+      println("\tthe number of hash tables is: " + parameterNumHashTables)
+      startTime = System.nanoTime
+      val similarityModelMinHash: MinHashLSHModel = new MinHashLSH()
+        .setNumHashTables(parameterNumHashTables)
+        .setInputCol("vectorizedFeatures")
+        .setOutputCol("hashedFeatures")
+        .fit(featuresDf)
+      val similarityModelJaccard = new JaccardModel()
+        .setInputCol("vectorizedFeatures")
+      processingTimeSimilarityEstimatorSetup = ((System.nanoTime - startTime) / 1e9d)
+      println("\tthe MinHash Setup needed " + processingTimeSimilarityEstimatorSetup + "seconds")
+
+
+
+      println("4.1 Calculate nearestneigbors for one key")
+      startTime = System.nanoTime
+      val nnSimilarityDf = similarityModelMinHash
+        .approxNearestNeighbors(featuresDf, key, parameterSimilarityNearestNeighborsK, "distance")
+        // .withColumn("key_column", lit(keyUri)).select("key_column", "uri", "distance")
+      // val shortendedDf = featuresDf.join(nnSimilarityDf, Seq("uri"), "leftsemi")
+
+      val shortendedNnDf = nnSimilarityDf // similarityModelJaccard.nearestNeighbors(shortendedDf, key, parameterSimilarityNearestNeighborsK)
+
+      val numberOfNn: Long = shortendedNnDf.count()
+      println("\tWe have number NN: " + numberOfNn)
+      processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
+      println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
+      shortendedNnDf.show()
+
+      if (!pipelineComponents.contains("ap")) {
+        return Row(
+          pipelineComponents.toString(),
+          run,
+          inputPath,
+          inputFileName,
+          inputFileSizeNumberTriples,
+          similarityEstimationMode,
+          parametersFeatureExtractorMode,
+          parameterCountVectorizerMinDf,
+          parameterCountVectorizerMaxVocabSize,
+          parameterSimilarityAlpha,
+          parameterSimilarityBeta,
+          parameterNumHashTables,
+          parameterSimilarityAllPairThreshold,
+          parameterSimilarityNearestNeighborsK,
+          processingTimeReadIn,
+          processingTimeFeatureExtraction,
+          processingTimeCountVectorizer,
+          processingTimeSimilarityEstimatorSetup,
+          processingTimeSimilarityEstimatorNearestNeighbors,
+          0.0,
+          ((System.nanoTime - experimentTime) / 1e9d),
+          parameterOnlyMovieSimilarity
+        )
+      }
+
+      println("4.2 Calculate app pair similarity")
+      startTime = System.nanoTime
+      val allPairSimilarityDf = similarityModelMinHash.approxSimilarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold, "distance")
+      val lenJoinDf: Long = allPairSimilarityDf.count()
+      println("\tWe have number Join: " + lenJoinDf)
+      // allPairSimilarityDf.show(false)
+
+      val minHashedSimilarities = allPairSimilarityDf
+        .withColumn("uriA", col("datasetA").getField("uri"))
+        .withColumn("uriB", col("datasetB").getField("uri"))
+        .select("uriA", "uriB", "distance")
+      minHashedSimilarities.show(false)
+      /* val dfGoodCandidatesDf = featuresDf.join(minHashedSimilarities, Seq("uriA", "uriB"), "left") // .withColumn("pair", (col("uriA"), col("uriB"))).filter(col("pair")) // r => (r(0), r(1)).isInCollection(uriCandidates))// col("uri").isInCollection(uriCandidates))
+      featuresDf.show(false)
+      dfGoodCandidatesDf.show(false)
+      println("We reduced dataframe size from: " + featuresDf.count() + " to " + dfGoodCandidatesDf.count())
+      similarityModelJaccard.similarityJoin(dfGoodCandidatesDf, dfGoodCandidatesDf, threshold = 0.5).show() */
+      processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
+      println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
     }
     else {
       throw new Error("you haven't specified a working Similarity Estimation")
@@ -342,6 +623,7 @@ object SimilarityPipelineExperiment {
 
     // allInformation
     return Row(
+      pipelineComponents.toString(),
       run,
       inputPath,
       inputFileName,
@@ -361,7 +643,8 @@ object SimilarityPipelineExperiment {
       processingTimeSimilarityEstimatorSetup,
       processingTimeSimilarityEstimatorNearestNeighbors,
       processingTimeSimilarityEstimatorAllPairSimilarity,
-      processingTimeTotal
+      processingTimeTotal,
+      parameterOnlyMovieSimilarity
     )
   }
 }
