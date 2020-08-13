@@ -31,7 +31,10 @@ object minimalCalls {
 
     // feature extraction
     val featureExtractorModel = new FeatureExtractorModel()
-    val extractedFeaturesDataFrame = featureExtractorModel.transform(triplesDf)
+      .setMode("an")
+    val extractedFeaturesDataFrame = featureExtractorModel
+      .transform(triplesDf)
+      .filter(t => t.getAs[String]("uri").startsWith("m"))
     extractedFeaturesDataFrame.show()
 
     // count Vectorization
@@ -122,7 +125,7 @@ object minimalCalls {
       .select("uriA", "uriB", "distance")
     val uriCandidates = (minHashedSimilarities.select("uriA").rdd.map(r => r(0)).collect().toSet.union(minHashedSimilarities.select("uriB").rdd.map(r => r(0)).collect().toSet)).toList
     val dfGoodCandidatesDf = tmpDf.filter(col("uri").isInCollection(uriCandidates))
-    // println(countVectorizedFeaturesDataFrame.count(), dfGoodCandidatesDf.count())
+    println(countVectorizedFeaturesDataFrame.count(), dfGoodCandidatesDf.count())
     jaccardModel.similarityJoin(dfGoodCandidatesDf, dfGoodCandidatesDf, threshold = 0.5).show()
   }
 }
