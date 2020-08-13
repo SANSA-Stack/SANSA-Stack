@@ -81,24 +81,6 @@ object Jaccard {
      parameterThresholdMinSimilarity: Double
          ): Unit = {
 
-    /*
-    // parameters
-    // spark session parameter
-
-    // rdf readin parameters
-    // val input: String = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
-    val lang = Lang.NTRIPLES
-    // feature extraction parameter
-    // val mode: String = "at"
-    val feature_extractor_uri_column_name: String = "uri"
-    val feature_extractor_features_column_name: String = "fe_features"
-    // countvectorizer parameters
-    val count_vectorizer_features_column_name: String = "cv_features"
-    val cv_vocab_size: Int = 1000000
-    val cv_min_document_frequency: Int = 1
-
-    // Jaccard parameter
-    val threshold_min_similarity: Double = 0.01 */
 
     // metagraph creator
     // Strings for relation names, maybe this can be later defined in an onthology and only be imported here
