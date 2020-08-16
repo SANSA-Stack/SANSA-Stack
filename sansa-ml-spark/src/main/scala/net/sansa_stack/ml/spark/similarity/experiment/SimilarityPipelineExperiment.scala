@@ -3,27 +3,17 @@ package net.sansa_stack.ml.spark.similarity.experiment
 import java.util.Calendar
 
 import net.sansa_stack.ml.spark.similarity.similarity_measures.{JaccardModel, TverskyModel}
-import org.apache.jena.riot.Lang
-import net.sansa_stack.rdf.spark.io._
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel, StringIndexer, Tokenizer, VectorAssembler}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import net.sansa_stack.ml.spark.utils.{ConfigResolver, FeatureExtractorModel, FileLister}
-import org.apache.spark.sql.functions.{col, lit, udf}
-import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{BooleanType, DataTypes, DoubleType, IntegerType, LongType, StringType, StructField, StructType}
-import java.io.File
-import java.net.URI
-
-import com.typesafe.config.ConfigFactory
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.riot.Lang
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
+import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.sql.functions.{col, lit, udf}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
-import collection.JavaConversions._
-import collection.JavaConverters._
-import org.spark_project.dmg.pmml.False
-
+import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
 object SimilarityPipelineExperiment {
@@ -33,7 +23,7 @@ object SimilarityPipelineExperiment {
 
     val spark = SparkSession.builder
       .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
-      .master("local[*]") // TODO why do we need to specify this?
+      // .master("local[*]") // TODO why do we need to specify this?
       // .master("spark://172.18.160.16:3090") // to run on server
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
@@ -144,7 +134,7 @@ object SimilarityPipelineExperiment {
       schema
     )
     // show the resulting dataframe
-    df.show()
+    df.limit(10).show()
     // store the data as csv
     val storageFilePath: String = outputFilePath + evaluation_datetime.replace(":", "").replace(" ", "") + ".csv"
 
@@ -235,7 +225,7 @@ object SimilarityPipelineExperiment {
     println("\tthe file has " + inputFileSizeNumberTriples + " triples")
     val processingTimeReadIn: Double = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe read in needed " + processingTimeReadIn + "seconds")
-    triples_df.show()
+    triples_df.limit(10).show()
 
     if (!pipelineComponents.contains("fe")) {
       return Row(
@@ -275,7 +265,7 @@ object SimilarityPipelineExperiment {
     println("\tour extracted dataframe contains of: " + feFeatures.count() + " different uris")
     val processingTimeFeatureExtraction = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe feature extraction needed " + processingTimeFeatureExtraction + "seconds")
-    feFeatures.show()
+    feFeatures.limit(10).show()
 
     if (!pipelineComponents.contains("cv")) {
       return Row(
@@ -320,7 +310,7 @@ object SimilarityPipelineExperiment {
     featuresDf.count()
     val processingTimeCountVectorizer: Double = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe Count Vectorization needed " + processingTimeCountVectorizer + "seconds")
-    featuresDf.show(false)
+    featuresDf.limit(10).show(false)
 
     var processingTimeSimilarityEstimatorSetup: Double = -1.0
     var processingTimeSimilarityEstimatorNearestNeighbors: Double = -1.0
@@ -381,7 +371,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      nnSimilarityDf.show()
+      nnSimilarityDf.limit(10).show()
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -417,7 +407,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.show()
+      allPairSimilarityDf.limit(10).show()
     }
     else if (similarityEstimationMode == "Jaccard") {
       println("4. Similarity Estimation Process Jaccard")
@@ -437,7 +427,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      nnSimilarityDf.show(false)
+      nnSimilarityDf.limit(10).show(false)
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -474,7 +464,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.show()
+      allPairSimilarityDf.limit(10).show()
     }
     else if (similarityEstimationMode == "Tversky") {
       println("4. Similarity Estimation Process Tversky")
@@ -496,7 +486,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      nnSimilarityDf.show()
+      nnSimilarityDf.limit(10).show()
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -533,7 +523,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.show()
+      allPairSimilarityDf.limit(10).show()
 
     }
     else if (similarityEstimationMode == "MinHashJaccardStacked") {
@@ -565,7 +555,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      shortendedNnDf.show()
+      shortendedNnDf.limit(10).show()
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -599,18 +589,18 @@ object SimilarityPipelineExperiment {
       val allPairSimilarityDf = similarityModelMinHash.approxSimilarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold, "distance")
       val lenJoinDf: Long = allPairSimilarityDf.count()
       println("\tWe have number Join: " + lenJoinDf)
-      // allPairSimilarityDf.show(false)
+      // allPairSimilarityDf.limit(10).show(false)
 
       val minHashedSimilarities = allPairSimilarityDf
         .withColumn("uriA", col("datasetA").getField("uri"))
         .withColumn("uriB", col("datasetB").getField("uri"))
         .select("uriA", "uriB", "distance")
-      minHashedSimilarities.show(false)
+      minHashedSimilarities.limit(10).show(false)
       /* val dfGoodCandidatesDf = featuresDf.join(minHashedSimilarities, Seq("uriA", "uriB"), "left") // .withColumn("pair", (col("uriA"), col("uriB"))).filter(col("pair")) // r => (r(0), r(1)).isInCollection(uriCandidates))// col("uri").isInCollection(uriCandidates))
-      featuresDf.show(false)
-      dfGoodCandidatesDf.show(false)
+      featuresDf.limit(10).show(false)
+      dfGoodCandidatesDf.limit(10).show(false)
       println("We reduced dataframe size from: " + featuresDf.count() + " to " + dfGoodCandidatesDf.count())
-      similarityModelJaccard.similarityJoin(dfGoodCandidatesDf, dfGoodCandidatesDf, threshold = 0.5).show() */
+      similarityModelJaccard.similarityJoin(dfGoodCandidatesDf, dfGoodCandidatesDf, threshold = 0.5).limit(10).show() */
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
     }
