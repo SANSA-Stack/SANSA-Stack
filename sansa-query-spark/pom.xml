@@ -11,7 +11,7 @@
 	</parent>
 
 	<properties>
-        <version.ontop>4.0.0-rc-1</version.ontop>
+        <version.ontop>4.0.0</version.ontop>
 <!--        <version.ontop>4.0.0-beta-2-SNAPSHOT</version.ontop>-->
         <version.owlapi.ontop>4.5.7</version.owlapi.ontop>
     </properties>
