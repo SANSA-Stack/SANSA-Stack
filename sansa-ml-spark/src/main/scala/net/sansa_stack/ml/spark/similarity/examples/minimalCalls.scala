@@ -11,6 +11,16 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.DataTypes
 
+/**
+ * This class object presents the minimal option to call available similarity functions
+ * we read in our data over SANSA RDF
+ * We extract the Features over FeatureExtractorModel
+ * The extracted String based features are transformed to a index represenatation by Spark MLlib Count Vectorizer
+ * then we perform the differen similarity or distance models
+ * always one for nearest neighbors
+ * one for all pair similarity
+ * all intermediate steps are printed in cmd line
+ */
 object minimalCalls {
   def main(args: Array[String]): Unit = {
 
