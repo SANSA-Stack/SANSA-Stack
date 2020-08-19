@@ -17,35 +17,59 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
 object SimilarityPipelineExperiment {
+  /**
+   * main method reading in the parameter space, creating the spark, starting all combinations of parameters for experiments and storing the resulting processing times in a dataframe
+   *
+   * @param args args(0) has to be the conf file specifiying all needed (hyper)parameters
+   */
   def main(args: Array[String]): Unit = {
 
     Logger.getLogger("org").setLevel(Level.ERROR)
 
+    /**
+     * start spark session
+     * .master("local[*]") needed if you run in local system and not on spark servers
+     */
     val spark = SparkSession.builder
       .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
-      .master("local[*]") // TODO why do we need to specify this?
+      // .master("local[*]") // TODO why do we need to specify this?
       // .master("spark://172.18.160.16:3090") // to run on server
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
 
-    val configFilePath = args(0) // "/Users/carstendraschner/Desktop/parameterConfig.conf"
-
+    /**
+     * read in config file from args
+     */
+    val configFilePath = args(0)
     val config = new ConfigResolver(configFilePath).getConfig()
 
+    /**
+     * get the files from specified folder on which we run the experiments
+     */
     println()
     val pathToFolder: String = config.getString("pathToFolder") // args(0)
     println("For evaluation data we search in path: " +  pathToFolder)
-
     val inputAll = FileLister.getListOfFiles(pathToFolder).filter(_.endsWith(".nt")) // getListOfFiles(pathToFolder).toSeq
     println("we found in provided path " + inputAll.size)
     println("files are:")
     inputAll.foreach(println(_))
     println()
 
-    // we can specify the number of run throughs for averagging the measurements:
+    /**
+     * specify if we want to see intermediate daframes in command line output
+     * if they are printed, runtime is higher
+     */
+    val showDataFrames: Boolean = config.getBoolean("showDataFrames")
+
+    /**
+     * we can specify the number of run throughs for reducing outlier influence of the measurements:
+     * later we can do median over dataframe for completly similar experiment setups
+     */
     val numberRuns: Int = config.getInt("numberRuns")
 
-    // Here we specify the hyperparameter grid
+    /**
+     * Here we read in the specified the hyperparameter grid
+     */
     val similarityEstimationModeAll: List[String] = config.getStringList("similarityEstimationModeAll").toList // Seq("MinHash", "Jaccard")
     val parametersFeatureExtractorModeAll: List[String] = config.getStringList("parametersFeatureExtractorModeAll").toList // Seq("at") // , "as")
     val parameterCountVectorizerMinDfAll: List[Int] = config.getIntList("parameterCountVectorizerMinDfAll").toList.map(_.toInt)
@@ -58,12 +82,18 @@ object SimilarityPipelineExperiment {
     val parameterOnlyMovieSimilarity: Boolean = config.getBoolean("parameterOnlyMovieSimilarity")
     val pipelineComponents: List[String] = config.getStringList("pipelineComponents").toList
 
-    // this is the path to output and we add the current datetime information
+    /**
+     * for documentation of timestamps
+     * this is used for the path to output and we add the current datetime information
+     */
     val evaluation_datetime = Calendar.getInstance().getTime().toString
     println()
-    val outputFilePath: String = config.getString("outputFilePath") // "/Users/carstendraschner/Downloads/experimentResults" + evaluation_datetime + ".csv"
+    val outputFilePath: String = config.getString("outputFilePath")
 
-    // definition of resulting dataframe schema
+    /**
+     * definition of resulting dataframe schema
+     * in this dataframe we track all (hyper)parameters and processing times
+     */
     val schema = StructType(List(
       StructField("pipelineComponents", StringType, true),
       StructField("run", IntegerType, true),
@@ -91,6 +121,10 @@ object SimilarityPipelineExperiment {
 
     val ex_results: scala.collection.mutable.ListBuffer[Row] = ListBuffer()
 
+    /**
+     * here we call the the complete space of hyper paramters one by one and hand
+     * over the to run function to get a row of processing time etc
+     */
     for {
       // here we iterate over our hyperparameter room
       run <- 1 to numberRuns
@@ -105,7 +139,7 @@ object SimilarityPipelineExperiment {
       parameterSimilarityAllPairThreshold <- parameterSimilarityAllPairThresholdAll
       parameterSimilarityNearestNeighborsK <- parameterSimilarityNearestNeighborsKAll
     } {
-      val tmpRow: Row = run_experiment(
+      val tmpRow: Row = runExperiment(
         spark,
         pipelineComponents,
         run,
@@ -119,7 +153,8 @@ object SimilarityPipelineExperiment {
         parameterNumHashTables,
         parameterSimilarityAllPairThreshold,
         parameterSimilarityNearestNeighborsK,
-        parameterOnlyMovieSimilarity
+        parameterOnlyMovieSimilarity,
+        showDataFrames
       )
       println("Resulting row for DataFrame:")
       println(tmpRow)
@@ -127,25 +162,44 @@ object SimilarityPipelineExperiment {
       ex_results += tmpRow
   }
 
-    val df: DataFrame = spark.createDataFrame(
-      spark.sparkContext.parallelize(
-        ex_results
-      ),
-      schema
-    )
-    // show the resulting dataframe
-    df.show()
-    // store the data as csv
-    val storageFilePath: String = outputFilePath + evaluation_datetime.replace(":", "").replace(" ", "") + ".csv"
+    /**
+     * here we create the resulting experiment tracking dataframe
+     */
+    val df: DataFrame = spark.createDataFrame(spark.sparkContext.parallelize(ex_results), schema)
 
+    /**
+     * show the resulting dataframe of our overall experiment and store it
+     */
+    df.show()
+    val storageFilePath: String = outputFilePath + evaluation_datetime.replace(":", "").replace(" ", "") + ".csv"
     println("we store our file here: " + storageFilePath)
     df.repartition(1).write.option("header", "true").format("csv").save(storageFilePath)
     // stop spark session
     spark.stop()
   }
 
+  /**
+   * we create call one explicit defined pipeline to aquire processing times
+   *
+   * @param spark spark session
+   * @param pipelineComponents which part of the pipeline are called
+   * @param run number of runs of the same experiment
+   * @param inputPath path to the file we evaluate on
+   * @param similarityEstimationMode which similarity estimation we take
+   * @param parametersFeatureExtractorMode mode how we get gain features for uris throur FeatureExtractorModel
+   * @param parameterCountVectorizerMinDf minDf value for count Vectorizer from MLlib
+   * @param parameterCountVectorizerMaxVocabSize maxVocabSize value for count Vectorizer from MLlib
+   * @param parameterSimilarityAlpha alpha value for tversky and others
+   * @param parameterSimilarityBeta beta value for tversky and others
+   * @param parameterNumHashTables num hash tables minhash creates
+   * @param parameterSimilarityAllPairThreshold threshold for min or max similarity/distance
+   * @param parameterSimilarityNearestNeighborsK number of proposed nearestneighbors
+   * @param parameterOnlyMovieSimilarity if in comparison only movies from datasets should be taken into account
+   * @param showDataFrames whether intermediate resulting dataframes should be proposed
+   * @return provides a Row with all entries of hyperparameters and measured processing times
+   */
   //noinspection ScalaStyle
-  def run_experiment(
+  def runExperiment(
     spark: SparkSession,
     pipelineComponents: List[String],
     run: Int,
@@ -159,7 +213,8 @@ object SimilarityPipelineExperiment {
     parameterNumHashTables: Int,
     parameterSimilarityAllPairThreshold: Double,
     parameterSimilarityNearestNeighborsK: Int,
-    parameterOnlyMovieSimilarity: Boolean
+    parameterOnlyMovieSimilarity: Boolean,
+    showDataFrames: Boolean = false
   ): Row = {
     // these are the parameters
     println("These are the parameters:")
@@ -225,7 +280,8 @@ object SimilarityPipelineExperiment {
     println("\tthe file has " + inputFileSizeNumberTriples + " triples")
     val processingTimeReadIn: Double = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe read in needed " + processingTimeReadIn + "seconds")
-    triples_df.limit(10).show()
+
+    if (showDataFrames) triples_df.limit(10).show()
 
     if (!pipelineComponents.contains("fe")) {
       return Row(
@@ -265,7 +321,7 @@ object SimilarityPipelineExperiment {
     println("\tour extracted dataframe contains of: " + feFeatures.count() + " different uris")
     val processingTimeFeatureExtraction = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe feature extraction needed " + processingTimeFeatureExtraction + "seconds")
-    feFeatures.limit(10).show()
+    if (showDataFrames) feFeatures.limit(10).show()
 
     if (!pipelineComponents.contains("cv")) {
       return Row(
@@ -310,7 +366,7 @@ object SimilarityPipelineExperiment {
     featuresDf.count()
     val processingTimeCountVectorizer: Double = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe Count Vectorization needed " + processingTimeCountVectorizer + "seconds")
-    featuresDf.limit(10).show(false)
+    if (showDataFrames) featuresDf.limit(10).show()
 
     var processingTimeSimilarityEstimatorSetup: Double = -1.0
     var processingTimeSimilarityEstimatorNearestNeighbors: Double = -1.0
@@ -372,7 +428,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      nnSimilarityDf.limit(10).show()
+      if (showDataFrames) nnSimilarityDf.limit(10).show()
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -408,7 +464,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.limit(10).show()
+      if (showDataFrames) allPairSimilarityDf.limit(10).show()
     }
     else if (similarityEstimationMode == "Jaccard") {
       println("4. Similarity Estimation Process Jaccard")
@@ -424,12 +480,12 @@ object SimilarityPipelineExperiment {
       println("4.1 Calculate nearestneigbors for one key")
       startTime = System.nanoTime
       val nnSimilarityDf: DataFrame = similarityModel.nearestNeighbors(cvFeatures, key, parameterSimilarityNearestNeighborsK, "theFirstUri", keepKeyUriColumn = false)
-      nnSimilarityDf.limit(10).show()
+      if (showDataFrames) nnSimilarityDf.limit(10).show()
       val numberOfNn: Long = nnSimilarityDf.count()
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + " seconds")
-      nnSimilarityDf.limit(10).show(false)
+      if (showDataFrames) nnSimilarityDf.limit(10).show(false)
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -461,12 +517,12 @@ object SimilarityPipelineExperiment {
       // all pair
       println("4.2 Calculate all pair similarity")
       startTime = System.nanoTime
-      val allPairSimilarityDf: DataFrame = similarityModel.similarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold)
+      val allPairSimilarityDf: DataFrame = similarityModel.similarityJoin(featuresDf, featuresDf, 1 - parameterSimilarityAllPairThreshold)
       val lenJoinDf: Long = allPairSimilarityDf.count()
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.limit(10).show()
+      if (showDataFrames) allPairSimilarityDf.limit(10).show()
     }
     else if (similarityEstimationMode == "Tversky") {
       println("4. Similarity Estimation Process Tversky")
@@ -488,7 +544,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      nnSimilarityDf.limit(10).show()
+      if (showDataFrames) nnSimilarityDf.limit(10).show()
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -520,12 +576,12 @@ object SimilarityPipelineExperiment {
       // all pair
       println("4.2 Calculate all pair similarity")
       startTime = System.nanoTime
-      val allPairSimilarityDf: DataFrame = similarityModel.similarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold)
+      val allPairSimilarityDf: DataFrame = similarityModel.similarityJoin(featuresDf, featuresDf, 1 - parameterSimilarityAllPairThreshold)
       val lenJoinDf: Long = allPairSimilarityDf.count()
       println("\tWe have number Join: " + lenJoinDf)
       processingTimeSimilarityEstimatorAllPairSimilarity = ((System.nanoTime - startTime) / 1e9d)
       println("\tAllPairSimilarity needed " + processingTimeSimilarityEstimatorAllPairSimilarity + "seconds")
-      allPairSimilarityDf.limit(10).show()
+      if (showDataFrames) allPairSimilarityDf.limit(10).show()
 
     }
     else if (similarityEstimationMode == "MinHashJaccardStacked") {
@@ -557,7 +613,7 @@ object SimilarityPipelineExperiment {
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + "seconds")
-      shortendedNnDf.limit(10).show()
+      if (showDataFrames) shortendedNnDf.limit(10).show()
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
@@ -588,7 +644,7 @@ object SimilarityPipelineExperiment {
 
       println("4.2 Calculate all pair similarity")
       startTime = System.nanoTime
-      val allPairSimilarityDf = similarityModelMinHash.approxSimilarityJoin(featuresDf, featuresDf, parameterSimilarityAllPairThreshold, "distance")
+      val allPairSimilarityDf = similarityModelMinHash.approxSimilarityJoin(featuresDf, featuresDf, 1 - parameterSimilarityAllPairThreshold, "distance")
       val lenJoinDf: Long = allPairSimilarityDf.count()
       println("\tWe have number Join: " + lenJoinDf)
       // allPairSimilarityDf.limit(10).show(false)
@@ -597,7 +653,7 @@ object SimilarityPipelineExperiment {
         .withColumn("uriA", col("datasetA").getField("uri"))
         .withColumn("uriB", col("datasetB").getField("uri"))
         .select("uriA", "uriB", "distance")
-      minHashedSimilarities.limit(10).show(false)
+      if (showDataFrames) minHashedSimilarities.limit(10).show(false)
       /* val dfGoodCandidatesDf = featuresDf.join(minHashedSimilarities, Seq("uriA", "uriB"), "left") // .withColumn("pair", (col("uriA"), col("uriB"))).filter(col("pair")) // r => (r(0), r(1)).isInCollection(uriCandidates))// col("uri").isInCollection(uriCandidates))
       featuresDf.limit(10).show(false)
       dfGoodCandidatesDf.limit(10).show(false)
