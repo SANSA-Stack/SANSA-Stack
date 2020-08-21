@@ -11,6 +11,7 @@ class SimilarityExperimentMetaGraphFactory {
 
   val spark = SparkSession.builder.getOrCreate()
 
+  //noinspection ScalaStyle
   def transform(
                df: DataFrame
              )(
@@ -19,6 +20,7 @@ class SimilarityExperimentMetaGraphFactory {
               metagraphExperimentMeasurementType: String
              )(
               metagraphElementRelation: String = "element",
+              metagraphEvaluatedRelation: String = "evaluated",
               metagraphValueRelation: String = "value",
               metagraphExperimentTypeRelation: String = "experimentType",
               metagraphExperimentNameRelation: String = "experimentName",
@@ -69,7 +71,7 @@ class SimilarityExperimentMetaGraphFactory {
           List(
             Triple.create(
               NodeFactory.createURI(metagraphExperimentHash),
-              NodeFactory.createURI(metagraphElementRelation), //This relation might to be changed in future
+              NodeFactory.createURI(metagraphEvaluatedRelation), //This relation might to be changed in future
               NodeFactory.createURI(simEstimationNode)
             ), Triple.create(
               NodeFactory.createURI(simEstimationNode),
