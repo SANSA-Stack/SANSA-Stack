@@ -121,7 +121,7 @@ class FeatureExtractorModel extends Transformer {
       case "as" => triples.flatMap(t => Seq((t.getSubject, t.getObject.toString()), (t.getObject, t.getSubject.toString()), (t.getSubject, t.getPredicate.toString()), (t.getObject, t.getPredicate.toString())))
       case "is" => triples.flatMap(t => Seq((t.getObject, t.getSubject.toString()), (t.getObject, t.getPredicate.toString())))
       case "os" => triples.flatMap(t => Seq((t.getSubject, t.getObject.toString()), (t.getSubject, t.getPredicate.toString())))
-      case _ => throw new Exception("This mode is currently not supported .\n You selected mode " + _mode + " .\n Currently available modes are: " + _available_modes)
+      case _ => throw new Exception("This mode is currently not supported .\n You selected mode " + _mode + " .\n Currently available modes are: " + _availableModes)
     }
     val tmp_df = spark.createDataFrame(unfoldedFeatures
       .filter(_._1.isURI) //
