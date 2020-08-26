@@ -5,7 +5,7 @@ import java.util.Calendar
 
 import com.typesafe.config.ConfigFactory
 import net.sansa_stack.ml.spark.similarity.similarity_measures.JaccardModel
-import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, RDF_Feature_Extractor, Similarity_Experiment_Meta_Graph_Factory}
+import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
@@ -170,9 +170,11 @@ object Jaccard {
       .setInputCol("vectorizedFeatures")
     val allPairSimilarity: DataFrame = jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.1)
 
+    allPairSimilarity.show()
+
 
     // Metagraph creation
-    val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
+    val similarity_metagraph_creator = new SimilarityExperimentMetaGraphFactory()
     val experiment_metagraph = similarity_metagraph_creator.transform(
       allPairSimilarity
     )(
