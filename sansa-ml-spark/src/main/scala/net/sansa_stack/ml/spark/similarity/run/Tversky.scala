@@ -2,8 +2,8 @@ package net.sansa_stack.ml.spark.similarity.run
 
 import java.util.Calendar
 
-import net.sansa_stack.ml.spark.similarity.similarity_measures.{TverskyModel}
-import net.sansa_stack.ml.spark.utils.{RDF_Feature_Extractor, Similarity_Experiment_Meta_Graph_Factory}
+import net.sansa_stack.ml.spark.similarity.similarity_measures.TverskyModel
+import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
@@ -68,10 +68,10 @@ object Tversky {
     triples.take(5).foreach(println(_))
 
     // create dataframe from rdf rdd by rdffeature extractor in sansa ml layer
-    val feature_extractor = new RDF_Feature_Extractor()
-    feature_extractor.set_mode(mode)
-    feature_extractor.set_uri_key_column_name(feature_extractor_uri_column_name)
-    feature_extractor.set_features_column_name(feature_extractor_features_column_name)
+    val feature_extractor = new FeatureExtractorModel()
+    feature_extractor.setMode(mode)
+    // feature_extractor.set_uri_key_column_name(feature_extractor_uri_column_name)
+    //f eature_extractor.set_features_column_name(feature_extractor_features_column_name)
     val fe_features: DataFrame = feature_extractor.transform(triples)
 
     fe_features.show(false)
@@ -111,7 +111,7 @@ object Tversky {
     nnSimilarity_df.show(false)
 
     // Metagraph creation
-    val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
+    val similarity_metagraph_creator = new SimilarityExperimentMetaGraphFactory()
     val experiment_metagraph = similarity_metagraph_creator.transform(
       allPairSimilarityDf
     )(
