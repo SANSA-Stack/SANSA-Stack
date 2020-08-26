@@ -31,7 +31,7 @@ class JaccardModel extends GenericSimilarityEstimatorModel {
 
   override val similarityEstimation = jaccard
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "jaccard_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "jaccardSimilarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
