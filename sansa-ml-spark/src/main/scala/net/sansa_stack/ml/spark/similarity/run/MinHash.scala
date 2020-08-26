@@ -2,7 +2,7 @@ package net.sansa_stack.ml.spark.similarity.run
 
 import java.util.Calendar
 
-import net.sansa_stack.ml.spark.utils.{RDF_Feature_Extractor, Similarity_Experiment_Meta_Graph_Factory}
+import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
@@ -69,15 +69,15 @@ object MinHash {
     import spark.implicits._ // TODO does anyone know for which purposes we need
 
     // read in data of sansa rdf
-    val triples: RDD[Triple] = spark.rdf(lang)(input)
+    val triples: DataFrame = spark.read.rdf(lang)(input)
 
-    triples.take(5).foreach(println(_))
+    // triples.take(5).foreach(println(_))
 
     // create dataframe from rdf rdd by rdffeature extractor in sansa ml layer
-    val feature_extractor: RDF_Feature_Extractor = new RDF_Feature_Extractor()
-      .set_mode(mode)
-      .set_uri_key_column_name(feature_extractor_uri_column_name)
-      .set_features_column_name(feature_extractor_features_column_name)
+    val feature_extractor: FeatureExtractorModel = new FeatureExtractorModel()
+      .setMode(mode)
+      // .set_uri_key_column_name(feature_extractor_uri_column_name)
+      // .set_features_column_name(feature_extractor_features_column_name)
     val fe_features: DataFrame = feature_extractor.transform(triples)
 
     fe_features.show(false)
@@ -118,7 +118,7 @@ object MinHash {
 
     // Metagraph creation
     val result_df_to_store = nn_df // all_pair_similarity_df
-    val similarity_metagraph_creator = new Similarity_Experiment_Meta_Graph_Factory()
+    val similarity_metagraph_creator = new SimilarityExperimentMetaGraphFactory()
     val experiment_metagraph = similarity_metagraph_creator.transform(
       result_df_to_store
     )(
