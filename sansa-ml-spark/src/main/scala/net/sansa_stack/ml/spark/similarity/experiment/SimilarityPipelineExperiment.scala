@@ -17,12 +17,21 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
 object SimilarityPipelineExperiment {
+
+  private val Log: Logger = Logger.getLogger(SimilarityPipelineExperiment.getClass.getCanonicalName)
+
   /**
    * main method reading in the parameter space, creating the spark, starting all combinations of parameters for experiments and storing the resulting processing times in a dataframe
    *
    * @param args args(0) has to be the conf file specifiying all needed (hyper)parameters
    */
   def main(args: Array[String]): Unit = {
+
+    /**
+     * read in config file from args
+     */
+    val configFilePath = args(0)
+    val config = new ConfigResolver(configFilePath).getConfig()
 
     Logger.getLogger("org").setLevel(Level.ERROR)
 
@@ -32,16 +41,12 @@ object SimilarityPipelineExperiment {
      */
     val spark = SparkSession.builder
       .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
-      // .master("local[*]") // TODO why do we need to specify this?
+      .master(config.getString("master")) // TODO why do we need to specify this?
       // .master("spark://172.18.160.16:3090") // to run on server
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
 
-    /**
-     * read in config file from args
-     */
-    val configFilePath = args(0)
-    val config = new ConfigResolver(configFilePath).getConfig()
+
 
     /**
      * get the files from specified folder on which we run the experiments
@@ -275,13 +280,13 @@ object SimilarityPipelineExperiment {
     println("\tthe used input string is: " + inputPath)
     val lang: Lang = Lang.NTRIPLES
     startTime = System.nanoTime
-    val triples_df: DataFrame = spark.read.rdf(lang)(inputPath)
-    val inputFileSizeNumberTriples: Long = triples_df.count()
+    val triplesDf: DataFrame = spark.read.rdf(lang)(inputPath)
+    val inputFileSizeNumberTriples: Long = triplesDf.count()
     println("\tthe file has " + inputFileSizeNumberTriples + " triples")
     val processingTimeReadIn: Double = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe read in needed " + processingTimeReadIn + "seconds")
 
-    if (showDataFrames) triples_df.limit(10).show()
+    if (showDataFrames) triplesDf.limit(10).show()
 
     if (!pipelineComponents.contains("fe")) {
       return Row(
@@ -317,7 +322,13 @@ object SimilarityPipelineExperiment {
     val fe = new FeatureExtractorModel()
       .setMode(parametersFeatureExtractorMode)
       .setOutputCol("extractedFeatures")
-    val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triples_df).filter(t => t.getAs[String]("uri").split("/").last.startsWith("m")) else fe.transform(triples_df)
+
+    /**
+     * Quick and dirty part for filtering, in future we do it over query API
+     */
+    // val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triples_df).filter(t => t.getAs[String]("uri").split("/").last.startsWith("m")) else fe.transform(triples_df)
+    val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").contains("/film/")) else fe.transform(triplesDf)
+
     println("\tour extracted dataframe contains of: " + feFeatures.count() + " different uris")
     val processingTimeFeatureExtraction = ((System.nanoTime - startTime) / 1e9d)
     println("\tthe feature extraction needed " + processingTimeFeatureExtraction + "seconds")
@@ -480,12 +491,13 @@ object SimilarityPipelineExperiment {
       println("4.1 Calculate nearestneigbors for one key")
       startTime = System.nanoTime
       val nnSimilarityDf: DataFrame = similarityModel.nearestNeighbors(cvFeatures, key, parameterSimilarityNearestNeighborsK, "theFirstUri", keepKeyUriColumn = false)
-      if (showDataFrames) nnSimilarityDf.limit(10).show()
       val numberOfNn: Long = nnSimilarityDf.count()
       println("\tWe have number NN: " + numberOfNn)
       processingTimeSimilarityEstimatorNearestNeighbors = ((System.nanoTime - startTime) / 1e9d)
       println("\tNearestNeighbors needed " + processingTimeSimilarityEstimatorNearestNeighbors + " seconds")
-      if (showDataFrames) nnSimilarityDf.limit(10).show(false)
+      if (showDataFrames) nnSimilarityDf.limit(10).show()
+
+      // triplesDf.filter(col("p").contains("/title")).join(nnSimilarityDf, col("s") === col("uriA")).filter(col("p").contains("/title")).show(false)
 
       if (!pipelineComponents.contains("ap")) {
         return Row(
