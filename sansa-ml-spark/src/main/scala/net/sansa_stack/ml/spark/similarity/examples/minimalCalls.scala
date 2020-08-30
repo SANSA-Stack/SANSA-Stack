@@ -32,7 +32,7 @@ object minimalCalls {
       .getOrCreate()
 
     // define inputpath if it is not parameter
-    val inputPath = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
+    val inputPath = "/Users/Carsten/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
 
     // read in data as Data`Frame
     val triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath)
@@ -47,12 +47,16 @@ object minimalCalls {
       .filter(t => t.getAs[String]("uri").startsWith("m"))
     extractedFeaturesDataFrame.show()
 
+    // filter for relevant URIs e.g. only movies
+    val filteredFeaturesDataFrame = extractedFeaturesDataFrame.filter(t => t.getAs[String]("uri").startsWith("m"))
+    filteredFeaturesDataFrame.show()
+
     // count Vectorization
     val cvModel: CountVectorizerModel = new CountVectorizer()
       .setInputCol("extractedFeatures")
       .setOutputCol("vectorizedFeatures")
-      .fit(extractedFeaturesDataFrame)
-    val tmpCvDf: DataFrame = cvModel.transform(extractedFeaturesDataFrame)
+      .fit(filteredFeaturesDataFrame)
+    val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
     val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures")
     countVectorizedFeaturesDataFrame.show()
