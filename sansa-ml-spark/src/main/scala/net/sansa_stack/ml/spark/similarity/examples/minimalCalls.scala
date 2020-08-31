@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.similarity.examples
 
-import net.sansa_stack.ml.spark.similarity.similarity_measures.{BatetModel, BraunBlanquetModel, DiceModel, JaccardModel, OchiaiModel, SimpsonModel, TverskyModel}
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{BatetModel, BraunBlanquetModel, DiceModel, JaccardModel, OchiaiModel, SimpsonModel, TverskyModel}
 import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}

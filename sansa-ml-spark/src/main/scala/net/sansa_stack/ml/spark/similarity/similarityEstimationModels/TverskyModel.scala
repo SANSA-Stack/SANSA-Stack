@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.similarity.similarity_measures
+package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame

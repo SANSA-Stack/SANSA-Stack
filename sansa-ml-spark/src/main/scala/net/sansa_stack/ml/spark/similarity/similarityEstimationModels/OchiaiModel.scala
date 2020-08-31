@@ -1,26 +1,26 @@
-package net.sansa_stack.ml.spark.similarity.similarity_measures
+package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{col, lit, typedLit, udf}
+import org.apache.spark.sql.functions.{col, udf}
 
-class DiceModel extends GenericSimilarityEstimatorModel {
+class OchiaiModel extends GenericSimilarityEstimatorModel {
 
-  protected val dice = udf( (a: Vector, b: Vector) => {
+  protected val ochiai = udf( (a: Vector, b: Vector) => {
     val featureIndicesA = a.toSparse.indices
     val featureIndicesB = b.toSparse.indices
     val fSetA = featureIndicesA.toSet
     val fSetB = featureIndicesB.toSet
-    val dice = (2 * fSetA.intersect(fSetB).size.toDouble) / (fSetA.size.toDouble + fSetB.size.toDouble)
-    dice
+    val ochiai = (fSetA.intersect(fSetB).size.toDouble) / scala.math.sqrt(fSetA.size.toDouble * fSetB.size.toDouble)
+    ochiai
   })
 
-  override val estimatorName: String = "DiceSimilarityEstimator"
+  override val estimatorName: String = "OchiaiSimilarityEstimator"
   override val estimatorMeasureType: String = "similarity"
 
-  override val similarityEstimation = dice
+  override val similarityEstimation = ochiai
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "dice_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "ochiai_similarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
@@ -33,7 +33,7 @@ class DiceModel extends GenericSimilarityEstimatorModel {
     reduceJoinDf(joinDf, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "dice_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "ochiai_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 

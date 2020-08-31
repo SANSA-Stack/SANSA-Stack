@@ -2,7 +2,7 @@ package net.sansa_stack.ml.spark.similarity.experiment
 
 import java.util.Calendar
 
-import net.sansa_stack.ml.spark.similarity.similarity_measures.{JaccardModel, TverskyModel}
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{JaccardModel, TverskyModel}
 import net.sansa_stack.ml.spark.utils.{ConfigResolver, FeatureExtractorModel, FileLister}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang

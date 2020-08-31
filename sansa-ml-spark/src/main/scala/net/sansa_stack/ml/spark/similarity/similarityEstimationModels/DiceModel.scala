@@ -1,26 +1,26 @@
-package net.sansa_stack.ml.spark.similarity.similarity_measures
+package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.functions.{col, lit, typedLit, udf}
 
-class BraunBlanquetModel extends GenericSimilarityEstimatorModel {
+class DiceModel extends GenericSimilarityEstimatorModel {
 
-  protected val braunBlanquet = udf((a: Vector, b: Vector) => {
+  protected val dice = udf( (a: Vector, b: Vector) => {
     val featureIndicesA = a.toSparse.indices
     val featureIndicesB = b.toSparse.indices
     val fSetA = featureIndicesA.toSet
     val fSetB = featureIndicesB.toSet
-    val braunBlanquet = (fSetA.intersect(fSetB).size.toDouble) / Seq(fSetA.size.toDouble, fSetB.size.toDouble).max
-    braunBlanquet
+    val dice = (2 * fSetA.intersect(fSetB).size.toDouble) / (fSetA.size.toDouble + fSetB.size.toDouble)
+    dice
   })
 
-  override val estimatorName: String = "BraunBlanquetSimilarityEstimator"
+  override val estimatorName: String = "DiceSimilarityEstimator"
   override val estimatorMeasureType: String = "similarity"
 
-  override val similarityEstimation = braunBlanquet
+  override val similarityEstimation = dice
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "braun_blanquet_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "dice_similarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
@@ -33,7 +33,7 @@ class BraunBlanquetModel extends GenericSimilarityEstimatorModel {
     reduceJoinDf(joinDf, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "braun_blanquet_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "dice_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
