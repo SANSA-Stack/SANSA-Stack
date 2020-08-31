@@ -60,7 +60,6 @@ object minimalCalls {
     val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures")
     countVectorizedFeaturesDataFrame.show()
-    countVectorizedFeaturesDataFrame.filter(col("uri").startsWith("m")).show()
 
     // similarity Estimations Overview
     // for nearestNeighbors we need one key which is a Vector to search for NN
