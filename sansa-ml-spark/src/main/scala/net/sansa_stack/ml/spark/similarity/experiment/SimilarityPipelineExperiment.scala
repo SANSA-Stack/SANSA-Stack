@@ -35,18 +35,7 @@ object SimilarityPipelineExperiment {
 
     Logger.getLogger("org").setLevel(Level.ERROR)
 
-    /**
-     * start spark session
-     * .master("local[*]") needed if you run in local system and not on spark servers
-     */
-    val spark = SparkSession.builder
-      .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
-      .master(config.getString("master")) // TODO why do we need to specify this?
-      // .master("spark://172.18.160.16:3090") // to run on server
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
-      .getOrCreate()
-
-
+    val sparkMaster = config.getString("master")
 
     /**
      * get the files from specified folder on which we run the experiments
@@ -145,7 +134,7 @@ object SimilarityPipelineExperiment {
       parameterSimilarityNearestNeighborsK <- parameterSimilarityNearestNeighborsKAll
     } {
       val tmpRow: Row = runExperiment(
-        spark,
+        sparkMaster,
         pipelineComponents,
         run,
         input,
@@ -166,6 +155,16 @@ object SimilarityPipelineExperiment {
       println()
       ex_results += tmpRow
   }
+    /**
+     * start spark session
+     * .master("local[*]") needed if you run in local system and not on spark servers
+     */
+    val spark = SparkSession.builder
+      .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
+      .master(sparkMaster) // TODO why do we need to specify this?
+      // .master("spark://172.18.160.16:3090") // to run on server
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
+      .getOrCreate()
 
     /**
      * here we create the resulting experiment tracking dataframe
@@ -186,7 +185,7 @@ object SimilarityPipelineExperiment {
   /**
    * we create call one explicit defined pipeline to aquire processing times
    *
-   * @param spark spark session
+   * @param sparkMaster spark session
    * @param pipelineComponents which part of the pipeline are called
    * @param run number of runs of the same experiment
    * @param inputPath path to the file we evaluate on
@@ -205,7 +204,7 @@ object SimilarityPipelineExperiment {
    */
   //noinspection ScalaStyle
   def runExperiment(
-    spark: SparkSession,
+    sparkMaster: String,
     pipelineComponents: List[String],
     run: Int,
     inputPath: String,
@@ -239,6 +238,17 @@ object SimilarityPipelineExperiment {
       parameterOnlyMovieSimilarity
     )
     println()
+
+    /**
+     * start spark session
+     * .master("local[*]") needed if you run in local system and not on spark servers
+     */
+    val spark = SparkSession.builder
+      .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
+      .master(sparkMaster) // TODO why do we need to specify this?
+      // .master("spark://172.18.160.16:3090") // to run on server
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
+      .getOrCreate()
 
     // now run experiment and keep track on processing times
     val experimentTime: Long = System.nanoTime
@@ -326,8 +336,8 @@ object SimilarityPipelineExperiment {
     /**
      * Quick and dirty part for filtering, in future we do it over query API
      */
-    // val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triples_df).filter(t => t.getAs[String]("uri").split("/").last.startsWith("m")) else fe.transform(triples_df)
-    val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").contains("/film/")) else fe.transform(triplesDf)
+    val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").split("/").last.startsWith("m")) else fe.transform(triplesDf)
+    // val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").contains("/film/")) else fe.transform(triplesDf)
 
     println("\tour extracted dataframe contains of: " + feFeatures.count() + " different uris")
     val processingTimeFeatureExtraction = ((System.nanoTime - startTime) / 1e9d)
@@ -680,6 +690,8 @@ object SimilarityPipelineExperiment {
 
     val processingTimeTotal: Double = ((System.nanoTime - experimentTime) / 1e9d)
     println("the complete experiment took " + processingTimeTotal + " seconds")
+
+    spark.stop()
 
     // allInformation
     return Row(
