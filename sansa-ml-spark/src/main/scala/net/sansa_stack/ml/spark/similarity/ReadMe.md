@@ -81,8 +81,8 @@ val minHashModel: MinHashLSHModel = new MinHashLSH()
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
       .fit(countVectorizedFeaturesDataFrame)
-    minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
-    minHashModel.approxSimilarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").show()
+minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
+minHashModel.approxSimilarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").show()
 ```
 
 **Usage of Jaccard**
