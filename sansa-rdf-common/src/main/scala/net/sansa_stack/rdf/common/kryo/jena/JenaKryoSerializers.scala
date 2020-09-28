@@ -39,7 +39,7 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Array[Node]
     */
-  abstract class NodeArraySerializer extends Serializer[Array[JenaNode]]
+  class NodeArraySerializer extends Serializer[Array[JenaNode]]
   {
     override def write(kryo: Kryo, output: Output, obj: Array[JenaNode]) {
       output.writeInt(obj.length, true)

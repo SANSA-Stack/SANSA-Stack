@@ -22,7 +22,7 @@ class JenaKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault]])
 
     kryo.register(classOf[org.apache.jena.graph.Node], new NodeSerializer)
-    kryo.register(classOf[Array[org.apache.jena.graph.Node]], new NodeSerializer)
+    kryo.register(classOf[Array[org.apache.jena.graph.Node]], new NodeArraySerializer)
     kryo.register(classOf[org.apache.jena.sparql.core.Var], new VarSerializer)
     kryo.register(classOf[org.apache.jena.sparql.expr.Expr], new ExprSerializer)
     kryo.register(classOf[org.apache.jena.graph.Node_Variable], new VariableNodeSerializer)
