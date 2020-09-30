@@ -23,6 +23,7 @@ class GenericSimilarityEstimatorModel {
 
   val estimatorName: String = "GenericSimilarityEstimator"
   val estimatorMeasureType: String = "distance, related or similarity"
+  val modelType: String = "SimilarityEstimator"
 
   protected val similarityEstimation = udf( (a: Vector, b: Vector) => {
     throw new Exception("this function should not be called")
