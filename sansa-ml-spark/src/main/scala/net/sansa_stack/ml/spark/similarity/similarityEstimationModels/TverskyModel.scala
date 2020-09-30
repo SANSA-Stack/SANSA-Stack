@@ -55,7 +55,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
 
   override val similarityEstimation = tversky
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "tversky_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "tverskySimilarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
@@ -68,7 +68,7 @@ class TverskyModel extends GenericSimilarityEstimatorModel {
     reduceJoinDf(join_df, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "tversky_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "tverskySimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 

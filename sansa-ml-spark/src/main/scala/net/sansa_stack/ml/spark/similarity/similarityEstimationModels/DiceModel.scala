@@ -20,7 +20,7 @@ class DiceModel extends GenericSimilarityEstimatorModel {
 
   override val similarityEstimation = dice
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "dice_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "diceSimilarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
@@ -33,7 +33,7 @@ class DiceModel extends GenericSimilarityEstimatorModel {
     reduceJoinDf(joinDf, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "dice_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "diceSimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 

@@ -20,7 +20,7 @@ class BraunBlanquetModel extends GenericSimilarityEstimatorModel {
 
   override val similarityEstimation = braunBlanquet
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "braun_blanquet_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "braunBlanquetSimilarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
@@ -33,7 +33,7 @@ class BraunBlanquetModel extends GenericSimilarityEstimatorModel {
     reduceJoinDf(joinDf, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "braun_blanquet_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "braunBlanquetSimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 

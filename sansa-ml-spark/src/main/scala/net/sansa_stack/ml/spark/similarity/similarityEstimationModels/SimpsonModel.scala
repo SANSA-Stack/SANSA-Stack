@@ -20,7 +20,7 @@ class SimpsonModel extends GenericSimilarityEstimatorModel {
 
   override val similarityEstimation = simpson
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "simpson_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "simpsonSimilarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
@@ -33,7 +33,7 @@ class SimpsonModel extends GenericSimilarityEstimatorModel {
     reduceJoinDf(joinDf, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "simpson_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "simpsonSimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 

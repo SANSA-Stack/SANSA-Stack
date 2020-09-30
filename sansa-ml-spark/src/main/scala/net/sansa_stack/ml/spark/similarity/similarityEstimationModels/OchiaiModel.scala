@@ -20,7 +20,7 @@ class OchiaiModel extends GenericSimilarityEstimatorModel {
 
   override val similarityEstimation = ochiai
 
-  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "ochiai_similarity"): DataFrame = {
+  override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "ochiaiSimilarity"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
@@ -33,7 +33,7 @@ class OchiaiModel extends GenericSimilarityEstimatorModel {
     reduceJoinDf(joinDf, threshold)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "ochiai_similarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "ochiaiSimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
