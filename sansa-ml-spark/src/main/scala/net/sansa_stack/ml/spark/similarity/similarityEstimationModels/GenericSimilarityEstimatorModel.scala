@@ -160,7 +160,7 @@ class GenericSimilarityEstimatorModel {
    * @param valueColumn column name of the resulting similarity/distance column name
    * @return dataframe with the columns for uris and the assigned similarity column
    */
-  def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String): DataFrame = {
+  def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "distCol"): DataFrame = {
 
     setSimilarityEstimationColumnName(valueColumn)
 
