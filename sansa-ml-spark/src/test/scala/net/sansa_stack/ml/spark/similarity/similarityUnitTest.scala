@@ -24,7 +24,7 @@ class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
 
     // read in data as Data`Frame
     val triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath)
-    triplesDf.show()
+    triplesDf.count()
 
     val modesToTest = List("an", "at", "as", "or")
 
@@ -35,7 +35,7 @@ class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
       val extractedFeaturesDataFrame = featureExtractorModel
         .transform(triplesDf)
         .filter(t => t.getAs[String]("uri").startsWith("m"))
-      extractedFeaturesDataFrame.show()
+      extractedFeaturesDataFrame.count()
     }
   }
 
@@ -75,8 +75,8 @@ class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
       .fit(countVectorizedFeaturesDataFrame)
-    minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
-    minHashModel.approxSimilarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").show()
+    minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").count()
+    minHashModel.approxSimilarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").count()
 
     // Jaccard similarity
     val jaccardModel: JaccardModel = new JaccardModel()
