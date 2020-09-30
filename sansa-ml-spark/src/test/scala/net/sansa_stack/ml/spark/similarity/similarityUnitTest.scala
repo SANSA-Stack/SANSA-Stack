@@ -81,46 +81,46 @@ class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
     // Jaccard similarity
     val jaccardModel: JaccardModel = new JaccardModel()
       .setInputCol("vectorizedFeatures")
-    jaccardModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+    jaccardModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).count()
+    jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).count()
 
     // Batet Distance
     val batetModel: BatetModel = new BatetModel()
       .setInputCol("vectorizedFeatures")
-    batetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    batetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+    batetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).count()
+    batetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).count()
 
     // Braun Blanquet Similarity
     val braunBlanquetModel: BraunBlanquetModel = new BraunBlanquetModel()
       .setInputCol("vectorizedFeatures")
-    braunBlanquetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    braunBlanquetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+    braunBlanquetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).count()
+    braunBlanquetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).count()
 
     // Dice Similarity
     val diceModel: DiceModel = new DiceModel()
       .setInputCol("vectorizedFeatures")
-    diceModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    diceModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+    diceModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).count()
+    diceModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).count()
 
     // Ochiai Similarity
     val ochiaiModel: OchiaiModel = new OchiaiModel()
       .setInputCol("vectorizedFeatures")
-    ochiaiModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    ochiaiModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+    ochiaiModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).count()
+    ochiaiModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).count()
 
     // Simpson Similarity
     val simpsonModel: SimpsonModel = new SimpsonModel()
       .setInputCol("vectorizedFeatures")
-    simpsonModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    simpsonModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+    simpsonModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).count()
+    simpsonModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).count()
 
     // Tversky Similarity
     val tverskyModel: TverskyModel = new TverskyModel()
       .setInputCol("vectorizedFeatures")
       .setAlpha(1.0)
       .setBeta(1.0)
-    tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
-    tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
+    tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).count()
+    tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).count()
 
   }
 }
