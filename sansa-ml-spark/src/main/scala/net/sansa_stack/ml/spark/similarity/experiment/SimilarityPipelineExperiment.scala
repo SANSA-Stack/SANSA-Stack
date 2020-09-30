@@ -283,8 +283,6 @@ object SimilarityPipelineExperiment {
     // experiment Information
     val inputFileName: String = inputPath.split("/").last
 
-
-
     // Input Specification
     println("1: Read in data as Dataframe")
     println("\tthe used input string is: " + inputPath)
@@ -336,8 +334,8 @@ object SimilarityPipelineExperiment {
     /**
      * Quick and dirty part for filtering, in future we do it over query API
      */
-    val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").split("/").last.startsWith("m")) else fe.transform(triplesDf)
-    // val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").contains("/film/")) else fe.transform(triplesDf)
+    // val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").split("/").last.startsWith("m")) else fe.transform(triplesDf)
+    val feFeatures = if (parameterOnlyMovieSimilarity) fe.transform(triplesDf).filter(t => t.getAs[String]("uri").contains("/film/")) else fe.transform(triplesDf)
 
     println("\tour extracted dataframe contains of: " + feFeatures.count() + " different uris")
     val processingTimeFeatureExtraction = ((System.nanoTime - startTime) / 1e9d)
