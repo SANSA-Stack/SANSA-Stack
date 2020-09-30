@@ -1,10 +1,11 @@
 package net.sansa_stack.ml.spark.similarity.examples
 
-import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{BatetModel, BraunBlanquetModel, DiceModel, JaccardModel, OchiaiModel, SimpsonModel, TverskyModel}
-import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{BatetModel, BraunBlanquetModel, DiceModel, JaccardModel, MinHashModel, OchiaiModel, SimpsonModel, TverskyModel}
+import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
 import org.apache.jena.riot.Lang
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.graph
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
@@ -32,7 +33,7 @@ object minimalCalls {
       .getOrCreate()
 
     // define inputpath if it is not parameter
-    val inputPath = "/Users/Carsten/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
+    val inputPath = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
 
     // read in data as Data`Frame
     val triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath)
@@ -66,12 +67,13 @@ object minimalCalls {
     val sample_key: Vector = countVectorizedFeaturesDataFrame.take(1)(0).getAs[Vector]("vectorizedFeatures")
 
     // minHash similarity estimation
-    val minHashModel: MinHashLSHModel = new MinHashLSH()
+    val minHashModel: MinHashModel = new MinHashModel()
+      .setInputCol("vectorizedFeatures") /* new MinHashLSH()
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
-      .fit(countVectorizedFeaturesDataFrame)
-    minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
-    minHashModel.approxSimilarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").show()
+      .fit(countVectorizedFeaturesDataFrame) */
+    minHashModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
+    minHashModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").show()
 
     // Jaccard similarity
     val jaccardModel: JaccardModel = new JaccardModel()
@@ -117,6 +119,21 @@ object minimalCalls {
     tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
     tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
+
+    // create Metagraph information for e.g. MinHash
+    val model = new MinHashModel()  // : JaccardModel = new JaccardModel()
+      .setInputCol("vectorizedFeatures")
+    val outputDf1: Dataset[_] = model
+      .nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10) // .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5)
+
+    val metaGraphFactory = new SimilarityExperimentMetaGraphFactory()
+    val metagraph: RDD[graph.Triple] = metaGraphFactory.createRdfOutput(
+      outputDataset = outputDf1)(
+      modelInformationEstimatorName = model.estimatorName, modelInformationEstimatorType = model.modelType, modelInformationMeasurementType = model.estimatorMeasureType)(
+      inputDatasetNumbertOfTriples = triplesDf.count(), dataSetInformationFilePath = inputPath)
+    metagraph.foreach(println(_))
+
+    /*
     // Similarity Estimation on Subset (e.g. Movie)
     // but maybe for sure we might only search for movie similaritties. so we would reduce dataframe as input
     // first we take only all movie uris
@@ -140,5 +157,6 @@ object minimalCalls {
     val dfGoodCandidatesDf = tmpDf.filter(col("uri").isInCollection(uriCandidates))
     println(countVectorizedFeaturesDataFrame.count(), dfGoodCandidatesDf.count())
     jaccardModel.similarityJoin(dfGoodCandidatesDf, dfGoodCandidatesDf, threshold = 0.5).show()
+    */
   }
 }
