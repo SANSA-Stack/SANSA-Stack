@@ -1,18 +1,120 @@
 package net.sansa_stack.ml.spark.utils
 
-import java.util.Calendar
+import java.util.{Calendar, Date}
 
+import org.apache.jena.datatypes.RDFDatatype
+import org.apache.jena.datatypes.xsd.{XSDDatatype, XSDDateTime}
+import org.apache.jena.datatypes.xsd.impl.{XSDDateTimeType, XSDDouble}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.jena.graph.{NodeFactory, Triple}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 
 
 class SimilarityExperimentMetaGraphFactory {
 
   val spark = SparkSession.builder.getOrCreate()
 
+  def createRdfOutput(outputDataset: Dataset[_])
+                     (modelInformationEstimatorName: String, modelInformationEstimatorType: String, modelInformationMeasurementType: String)
+                     (inputDatasetNumbertOfTriples: Long, dataSetInformationFilePath: String)
+  : RDD[Triple] = {
+
+    val metagraphDatetime: Date = Calendar.getInstance().getTime()
+    val experimentID: String = "" +
+      metagraphDatetime.toString.replaceAll("\\s", "").replaceAll(":", "") +
+      modelInformationEstimatorName
+
+    // create Literals
+    val dateTimeLiteral: Node = NodeFactory.createLiteralByValue(metagraphDatetime.toString, XSDDatatype.XSDdateTime)// .createLiteralByValue(metagraphDatetime, XSDDateTimeType)
+    val numberInputTriplesLiteral: Node = NodeFactory.createLiteralByValue(inputDatasetNumbertOfTriples.toString, XSDDatatype.XSDlong)
+    val numberInputFilePathLiteral: Node = NodeFactory.createLiteral(dataSetInformationFilePath)
+    val estimatorNameLiteral: Node = NodeFactory.createLiteral(modelInformationEstimatorName)
+    val estimatorTypeLiteral: Node = NodeFactory.createLiteral(modelInformationEstimatorType)
+    val measurementTypeLiteral: Node = NodeFactory.createLiteral(modelInformationMeasurementType)
+
+    // create Properties
+    // for central nodes
+    val propertyCreatedDateTime: Node = NodeFactory.createURI("sansa-stack/sansaVocab/experimentDateTime")
+    val propertyEstimatorName: Node = NodeFactory.createURI("sansa-stack/sansaVocab/estimatorName")
+    val propertyEstimatorType: Node = NodeFactory.createURI("sansa-stack/sansaVocab/estimatorType")
+    val propertyMeasurementType: Node = NodeFactory.createURI("sansa-stack/sansaVocab/measurementType")
+    // for the similarity values
+    val propertyEvaluated: Node = NodeFactory.createURI("sansa-stack/sansaVocab/evaluated")
+    val propertyValue: Node = NodeFactory.createURI("sansa-stack/sansaVocab/evaluated")
+    val propertyElement: Node = NodeFactory.createURI("sansa-stack/sansaVocab/element")
+
+    // create central node for experiment
+    val experimentIdNode: Node = NodeFactory.createBlankNode(experimentID)
+
+    // Create all inforamtion for this central node
+    val centralNodeTriples = List(
+      Triple.create(
+        experimentIdNode,
+        propertyCreatedDateTime,
+        dateTimeLiteral
+      ), Triple.create(
+        experimentIdNode,
+        propertyEstimatorName,
+        estimatorNameLiteral
+      ), Triple.create(
+        experimentIdNode,
+        propertyEstimatorType,
+        estimatorTypeLiteral
+      ), Triple.create(
+        experimentIdNode,
+        propertyMeasurementType,
+        measurementTypeLiteral
+      )
+    )
+
+    val centralNodeRdd: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(centralNodeTriples)
+
+    // now for the small triples:
+    val metagraph = outputDataset
+      .rdd
+      .flatMap(
+        row => {
+          val a: String = row.asInstanceOf[Row](0).toString
+          val b: String = row.asInstanceOf[Row](1).toString
+          val value: Double = row.asInstanceOf[Row](2).toString.toDouble
+
+          val simEstimationNode: String = experimentID + a + b
+
+          val nodeSimEst: Node = NodeFactory.createURI(simEstimationNode)
+          val nodeA: Node = NodeFactory.createURI(a)
+          val nodeB: Node = NodeFactory.createURI(b)
+
+          val literalValue: Node = NodeFactory.createLiteralByValue(value.toString, XSDDatatype.XSDdouble)
+
+          List(
+            Triple.create(
+              experimentIdNode,
+              propertyEvaluated,
+              nodeSimEst
+            ), Triple.create(
+              nodeSimEst,
+              propertyElement,
+              nodeA
+            ), Triple.create(
+              nodeSimEst,
+              propertyElement,
+              nodeB
+            ), Triple.create(
+              nodeSimEst,
+              propertyValue,
+              literalValue
+            )
+          )
+        }
+      )
+      .union(centralNodeRdd)
+
+    metagraph
+
+  }
+
   //noinspection ScalaStyle
-  def transform(
+  /* def transform(
                df: DataFrame
              )(
               metagraphExperimentName: String,
@@ -84,7 +186,7 @@ class SimilarityExperimentMetaGraphFactory {
             ), Triple.create(
               NodeFactory.createURI(simEstimationNode),
               NodeFactory.createURI(metagraphElementRelation),
-              NodeFactory.createLiteral(value.toString) // TODO this should be double
+              NodeFactory.createLiteral(value.toString)
             )
           )
         }
@@ -92,6 +194,6 @@ class SimilarityExperimentMetaGraphFactory {
       .union(centralNodeRdd)
 
     metagraph
-  }
+  } */
 
 }
