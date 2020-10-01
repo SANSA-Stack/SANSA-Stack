@@ -80,26 +80,41 @@ package object io {
 
   /**
    * Converts a Spark SQL [[Row]] to a Triple.
-   * @param row the row with columns s,p,o
+   *
+   * @note It assumes a row containing exactly 3 columns and the
+   * order being `s,p,o`.
+   * Moreover, we assume the following serialization of the RDF entities in the columns which also matches how we read
+   * N-Triples into a DataFrame:
+   *
+   *  - URI: `http://foo.bar`
+   *  - bnode: `_:123`
+   *  - Literal: `"123"^^<http://some.datatype.uri>`
+   *
+   *
+   * @param row the row with columns `s,p,o`
    * @return the parsed triple
    */
   def fromRow(row: Row): org.apache.jena.graph.Triple = {
     val sStr = row.getString(0)
-    val s = if (sStr.startsWith("_:")) NodeFactory.createBlankNode(sStr) else NodeFactoryExtra.parseNode(s"<$sStr>")
+    val s = if (sStr.startsWith("_:")) NodeFactory.createBlankNode(sStr)
+            else NodeFactoryExtra.parseNode(s"<$sStr>")
+
+    // as common in RDF, we assume URIs only for predicate
     val p = NodeFactoryExtra.parseNode("<" + row.getString(1) + ">")
+
     val oStr = row.getString(2)
-    val o = if (oStr.startsWith("_:")) {
+    val o = if (oStr.startsWith("_:")) { // bnode
       NodeFactory.createBlankNode(oStr)
-    } else if (oStr.startsWith("http") && !oStr.contains("^^")) {
+    } else if (oStr.startsWith("http") && !oStr.contains("^^")) { // URI
       NodeFactory.createURI(oStr)
-    } else {
+    } else { // literal
       var lit = oStr
-      val idx = oStr.indexOf("^^")
-      if (idx > 0) {
-        val first = oStr.substring(0, idx)
-        val second = "<" + oStr.substring(idx + 2).trim + ">"
-        lit = first + "^^" + second
-      }
+//      val idx = oStr.indexOf("^^")
+//      if (idx > 0) {
+//        val first = oStr.substring(0, idx)
+//        val second = "<" + oStr.substring(idx + 2).trim + ">"
+//        lit = first + "^^" + second
+//      }
       NodeFactoryExtra.parseNode(lit)
     }
 
