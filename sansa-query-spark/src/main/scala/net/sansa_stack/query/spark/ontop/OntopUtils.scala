@@ -116,6 +116,7 @@ object OntopUtils extends Serializable {
 
     val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
                                               .ontology(ontology.get)
+                                              .properties(properties)
                                               .jdbcUser(JDBC_USER)
                                               .jdbcPassword(JDBC_PASSWORD)
                   else OntopReformulationSQLConfiguration.defaultBuilder
