@@ -76,6 +76,19 @@ object SimilarityPipelineExperiment {
     val parameterOnlyMovieSimilarity: Boolean = config.getBoolean("parameterOnlyMovieSimilarity")
     val pipelineComponents: List[String] = config.getStringList("pipelineComponents").toList
 
+    val totalNumberExperiments = (
+      numberRuns *
+      similarityEstimationModeAll.length *
+        parametersFeatureExtractorModeAll.length *
+        parameterCountVectorizerMinDfAll.length *
+        parameterCountVectorizerMaxVocabSizeAll.length *
+        parameterSimilarityAlphaAll.length *
+        parameterSimilarityBetaAll.length *
+        parameterNumHashTablesAll.length *
+        parameterSimilarityAllPairThresholdAll.length *
+        parameterSimilarityNearestNeighborsKAll.length
+    )
+
     /**
      * for documentation of timestamps
      * this is used for the path to output and we add the current datetime information
@@ -119,6 +132,8 @@ object SimilarityPipelineExperiment {
      * here we call the the complete space of hyper paramters one by one and hand
      * over the to run function to get a row of processing time etc
      */
+    var counterCurrentRun: Int = 0
+
     for {
       // here we iterate over our hyperparameter room
       run <- 1 to numberRuns
@@ -133,6 +148,9 @@ object SimilarityPipelineExperiment {
       parameterSimilarityAllPairThreshold <- parameterSimilarityAllPairThresholdAll
       parameterSimilarityNearestNeighborsK <- parameterSimilarityNearestNeighborsKAll
     } {
+      counterCurrentRun +=1
+      println("Experiment (" + counterCurrentRun + "/" + totalNumberExperiments + ")")
+
       val tmpRow: Row = runExperiment(
         sparkMaster,
         pipelineComponents,
