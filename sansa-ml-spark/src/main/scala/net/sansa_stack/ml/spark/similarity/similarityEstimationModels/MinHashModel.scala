@@ -10,6 +10,12 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
   override val estimatorName: String = "MinHashLSHSimilarityEstimator"
   override val estimatorMeasureType: String = "distance"
 
+  private var numberHashTables: Int = 1
+
+  def setNumHashTables(n: Int): this.type = {
+    numberHashTables = n
+    this
+  }
 
   override def similarityJoin(dfA: DataFrame, dfB: DataFrame, threshold: Double = -1.0, valueColumn: String = "distCol"): DataFrame = {
 
@@ -28,6 +34,7 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
   override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "jaccardSimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     val minHashModel: MinHashLSHModel = new MinHashLSH()
+      .setNumHashTables(numberHashTables)
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
       .fit(dfA)
