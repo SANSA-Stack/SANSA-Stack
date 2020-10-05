@@ -6,16 +6,20 @@ import java.nio.file.{Files, Path}
 import java.util.zip.ZipInputStream
 
 import scala.collection.JavaConverters._
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-
+import org.apache.jena.graph.GraphUtil
 import org.apache.jena.rdf.model.{ModelFactory, ResourceFactory}
-import org.apache.jena.riot.Lang
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.shared.impl.PrefixMappingImpl
+import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.jena.sparql.serializer.SerializationContext
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.RDF
 import org.scalatest.FunSuite
+
+
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.model._
 
 /**
   * Tests for loading triples from either N-Triples are Turtle files into a DataFrame.
@@ -28,8 +32,6 @@ class RDFLoadingTests
 
   val logger = com.typesafe.scalalogging.Logger(classOf[RDFLoadingTests].getName)
 
-  import net.sansa_stack.rdf.spark.io._
-
   test("loading N-Triples file into DataFrame with REGEX parsing mode should result in 10 triples") {
 
     val path = getClass.getResource("/loader/data.nt").getPath
@@ -39,6 +41,46 @@ class RDFLoadingTests
 
     val cnt = triples.count()
     assert(cnt == 10)
+  }
+
+  test("round trip: N-Triples -> DataFrame -> N-Triples") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val graph1 = GraphFactory.createGraphMem()
+    RDFDataMgr.read(graph1, path)
+
+    val triplesDF = spark.read.rdf(lang)(path)
+    val triples = triplesDF.rdd.map(fromRow).collect()
+
+    val graph2 = GraphFactory.createGraphMem()
+    GraphUtil.add(graph2, triples)
+
+    val isomorph = graph1.isIsomorphicWith(graph2)
+
+    assert(isomorph)
+  }
+
+  test("round trip: N-Triples -> DataFrame -> Dataset -> N-Triples") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val lang: Lang = Lang.NTRIPLES
+
+    val graph1 = GraphFactory.createGraphMem()
+    RDFDataMgr.read(graph1, path)
+    graph1.find().asScala.foreach(println)
+
+    val triplesDF = spark.read.rdf(lang)(path)
+    val triplesDS = triplesDF.toDS()
+    triplesDS.show()
+    val triples = triplesDS.collect()
+    triples.foreach(println)
+
+    val graph2 = GraphFactory.createGraphMem()
+    GraphUtil.add(graph2, triples)
+
+    val isomorph = graph1.isIsomorphicWith(graph2)
+
+    assert(isomorph)
   }
 
   test("loading Turtle file into DataFrame should result in 12 triples") {
