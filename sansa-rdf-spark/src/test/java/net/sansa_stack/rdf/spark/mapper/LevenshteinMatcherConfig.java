@@ -17,3 +17,16 @@ public interface LevenshteinMatcherConfig
     Integer getThreshold();
     LevenshteinMatcherConfig setThreshold(Integer value);
 }
+
+
+@ResourceView
+@RdfTypeNs("eg")
+interface Labeled
+        extends Resource
+{
+    @IriNs("eg")
+    @IriType
+    String getLabel();
+    Labeled setLabel(String iri);
+
+}

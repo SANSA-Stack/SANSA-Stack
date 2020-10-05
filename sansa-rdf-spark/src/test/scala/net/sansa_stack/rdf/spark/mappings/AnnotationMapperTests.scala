@@ -1,16 +1,14 @@
 package net.sansa_stack.rdf.spark.mappings
 
-import java.util
 import java.util.Objects
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.rdf.spark.mapper.{Cluster, ClusterEntry, LevenshteinMatcherConfig, Person}
+import net.sansa_stack.rdf.spark.mapper.{Cluster, ClusterEntry, Labeled, LevenshteinMatcherConfig, Person}
 import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils
-import org.aksw.jena_sparql_api.rx.RDFDataMgrEx
 import org.apache.jena.rdf.model.{ModelFactory, Property, Resource, ResourceFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import org.apache.jena.sparql.vocabulary.FOAF
-import org.apache.jena.vocabulary.RDF
+import org.apache.jena.vocabulary.RDFS
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
@@ -123,6 +121,7 @@ class AnnotationMapperTests extends FunSuite with DataFrameSuiteBase {
       .as(classOf[LevenshteinMatcherConfig])
       .setOnProperty(FOAF.firstName.getURI)
       .setThreshold(10)
+
 
     val transformer: RDD[Resource] => RDD[Resource] = createLevenshteinMatcher(config)
 
