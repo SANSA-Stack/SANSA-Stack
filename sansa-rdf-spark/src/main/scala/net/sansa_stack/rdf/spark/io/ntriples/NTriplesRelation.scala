@@ -170,21 +170,21 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Parse
         //              println(i + ":" + matcher.group(i))
 
         // parse the subject
-        val subject = if (matcher.group(2) == null) { // this means it's a blank node captured in group 1 (or 3)
+        val subject = (if (matcher.group(2) == null) { // this means it's a blank node captured in group 1 (or 3)
           matcher.group(1)
         } else { // it is a URI
           matcher.group(2)
-        }
+        }).trim
 
         // parse the predicate
         val predicate = matcher.group(4)
 
         // parse the object
-        val obj = if (matcher.group(6) == null) { // this means it is a literal
-          matcher.group(7).trim
+        val obj = (if (matcher.group(6) == null) { // this means it is a literal
+          matcher.group(7)
         } else { // it is a URI
           matcher.group(6)
-        }
+        }).trim
 
         Some((subject, predicate, obj))
       } else {
