@@ -1,8 +1,10 @@
 package net.sansa_stack.rdf.spark.model.df
 
-import org.apache.jena.graph.{ NodeFactory, Triple }
+import org.apache.jena.graph.{NodeFactory, Triple}
+import org.apache.jena.sparql.util.NodeFactoryExtra
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+import net.sansa_stack.rdf.spark.io.fromRow
 
 /**
  * Spark/DataFrame based implementation of DataFrame of triples.
@@ -20,13 +22,7 @@ object TripleOps {
    * @return a RDD of triples.
    */
   def toRDD(triples: DataFrame): RDD[Triple] = {
-    triples.rdd.map(row =>
-      Triple.create(
-        NodeFactory.createURI(row.getString(0)),
-        NodeFactory.createURI(row.getString(1)),
-        if (row.getString(2).startsWith("http:")) {
-          NodeFactory.createURI(row.getString(2))
-        } else NodeFactory.createLiteral(row.getString(2))))
+    triples.rdd.map(fromRow)
   }
 
   /**

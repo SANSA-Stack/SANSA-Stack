@@ -2,9 +2,11 @@ package net.sansa_stack.rdf.spark.model.ds
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.datatypes.xsd.impl.XSDDouble
+import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.scalatest.FunSuite
+
 
 class DSTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
@@ -76,7 +78,11 @@ class DSTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val size = graph.count()
 
-    assert(size == 10)
+    // PW: Expected size was 10 before but the count here and now is 9 since a
+    // duplicate triple was removed. Having the duplicate trile removed is IMO
+    // in line with the RDF 1.1 standard which is talking about RDF datasets
+    // being sets of triples
+    assert(size == 9)
   }
 
   test("add a statement to the RDF graph should match") {
@@ -132,16 +138,16 @@ class DSTripleOpsTests extends FunSuite with DataFrameSuiteBase {
     val lang: Lang = Lang.NTRIPLES
 
     val triple = Triple.create(
-      NodeFactory.createURI("http://example.org/show/218"),
-      NodeFactory.createURI("http://www.w3.org/2000/01/rdf-schema#label"),
-      NodeFactory.createLiteral("That Seventies Show", "en"))
+      NodeFactory.createURI("http://en.wikipedia.org/wiki/Helium"),
+      NodeFactory.createURI("http://example.org/elements/specificGravity"),
+      NodeFactory.createLiteral("1.663E-4", new XSDDouble("double")))
 
     val triples = spark.read.rdf(lang)(path).toDS()
     val graph = triples.remove(triple)
 
     val size = graph.count()
 
-    assert(size == 10)
+    assert(size == 8)
   }
 
 }
