@@ -1,0 +1,10 @@
+# This document contains a default graph and two named graphs.
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+# default graph
+    {
+      <http://example.org/bob> dc:publisher "Bob" .
+      <http://example.org/

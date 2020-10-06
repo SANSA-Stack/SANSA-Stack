@@ -1,0 +1,76 @@
+{
+	"sources": [
+	{
+		"type": "csv",
+		"options": {
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
+		},
+		"source": "hdfs://namenode:8020/data/datalake/data/person.csv",
+		"entity": "Person"
+	}
+	,	{
+		"type": "csv",
+		"options": {
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
+		},
+		"source": "hdfs://namenode:8020/data/datalake/data/review.csv",
+		"entity": "Review"
+	}
+	,	{
+		"type": "csv",
+		"options": {
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
+		},
+		"source": "hdfs://namenode:8020/data/datalake/data/offer.csv",
+		"entity": "Offer"
+	}
+	,	{
+		"type": "csv",
+		"options": {
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
+		},
+		"source": "hdfs://namenode:8020/data/datalake/data/product.csv",
+		"entity": "Product"
+	}
+	,	{
+		"type": "csv",
+		"options": {
+			"header": "true",
+			"delimiter": ",",
+			"mode": "DROPMALFORMED"
+		},
+		"source": "hdfs://namenode:8020/data/datalake/data/producer.csv",
+		"entity": "Producer"
+	}
+	],
+    "weights": [
+        {
+            "datasource": "cassandra",
+            "weight": 1
+        },
+        {
+            "datasource": "mongodb",
+            "weight": 1
+        },
+        {
+            "datasource": "parquet",
+            "weight": 1
+        },
+        {
+            "datasource": "csv",
+            "weight": 1
+        },
+        {
+            "datasource": "jdbc",
+            "weight": 1
+        }
+    ]
+}
