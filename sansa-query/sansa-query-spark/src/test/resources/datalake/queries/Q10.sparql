@@ -1,0 +1,32 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/spec/>
+PREFIX schema: <http://schema.org/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX gr: <http://purl.org/goodrelations/v1#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+
+SELECT DISTINCT ?price ?deliveryDays ?date ?c
+WHERE {
+    ?offer bsbm:product ?product .
+    ?offer bsbm:vendor ?vendor .
+    ?offer dc:publisher ?publisher .
+    ?offer bsbm:deliveryDays ?deliveryDays .
+    ?offer bsbm:price ?price .
+    ?offer bsbm:validTo ?date .
+    ?offer bsbm:producer ?producer .
+    ?product rdfs:label  ?label .
+    ?product bsbm:productPropertyTextual5 ?pt .
+    ?producer edm:country ?c .
+    ?producer foaf:homepage ?h .
+    FILTER (?product > 9)
+    FILTER (?deliveryDays <= 7)
+    FILTER (?c = "DE" )
+    #FILTER (?date > "2008-07-02 00:00:00" )
+}
+ORDER BY ?price
+LIMIT 10

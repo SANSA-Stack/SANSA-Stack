@@ -1,0 +1,17 @@
+<http://example.org/a1> <http://example.org/ip1> "10"^^<http://www.w3.org/2001/XMLSchema#int> .
+<http://example.org/a1> <http://example.org/ip1> "-30"^^<http://www.w3.org/2001/XMLSchema#int> .
+<http://example.org/a1> <http://example.org/ip1> "123"^^<http://www.w3.org/2001/XMLSchema#int> .
+<http://example.org/a1> <http://example.org/ip2> "1111"^^<http://www.w3.org/2001/XMLSchema#int> .
+<http://example.org/a1> <http://example.org/ip2> "-90"^^<http://www.w3.org/2001/XMLSchema#int> .
+<http://example.org/a1> <http://example.org/ip2> "2"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<http://example.org/a1> <http://example.org/dp1> "10.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.org/a1> <http://example.org/dp1> "-30.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.org/a1> <http://example.org/dp1> "123.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.org/a1> <http://example.org/dp2> "1111.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.org/a1> <http://example.org/dp2> "-90.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.org/a1> <http://example.org/dp2> "2.0"^^<http://www.w3.org/2001/XMLSchema#double> .
+
+<http://example.org/a1> <http://example.org/dtp> "2004-04-12T13:20:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.org/a1> <http://example.org/dtp> "2001-04-12T13:20:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+<http://example.org/a1> <http://example.org/dtp> "2004-04-12T16:20:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> .

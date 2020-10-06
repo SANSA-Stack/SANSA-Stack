@@ -1,0 +1,23 @@
+@prefix eg: <http://www.example.org/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+eg:Ana {
+  eg:Ana
+    foaf:firstName "Ana" ;
+    foaf:givenName  "Nan" ;
+    .
+}
+
+eg:Bob {
+  eg:Bob
+    foaf:firstName "Bob" ;
+    foaf:givenName "Obo" ;
+    .
+}
+
+eg:Bna {
+  eg:Bna
+    foaf:firstName "Bna" ;
+    foaf:givenName "Anb" ;
+    .
+}
