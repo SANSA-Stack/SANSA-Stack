@@ -1,0 +1,5 @@
+SELECT ?X ?Y
+WHERE {
+    ?X :type <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType3> .
+    ?X <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature> ?Y .
+}

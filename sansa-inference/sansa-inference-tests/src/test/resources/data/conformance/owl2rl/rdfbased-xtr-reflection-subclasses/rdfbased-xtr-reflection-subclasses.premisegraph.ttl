@@ -1,0 +1,30 @@
+@prefix :        <http://www.example.org#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex:      <http://www.example.org#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+ex:PersonGroupsWithAtMostOneAdult
+      owl:maxQualifiedCardinality
+              "1"^^xsd:nonNegativeInteger ;
+      owl:onClass ex:AdultPerson ;
+      owl:onProperty
+              [ owl:inverseOf rdf:type
+              ] .
+
+ex:bob
+      rdf:type ex:grp , ex:AdultPerson .
+
+ex:robert
+      rdf:type ex:grp , ex:AdultPerson .
+
+ex:grp
+      rdf:type ex:MalePersonGroupsWithAtMostOneAdult .
+
+ex:MalePersonGroups
+      owl:hasValue ex:MalePerson ;
+      owl:onProperty rdfs:subClassOf .
+
+ex:MalePersonGroupsWithAtMostOneAdult
+      owl:intersectionOf (ex:MalePersonGroups ex:PersonGroupsWithAtMostOneAdult) .

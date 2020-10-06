@@ -1,0 +1,17 @@
+Prefix(:=<http://ex.com/default#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+  <http://ex.com/ont/release/123/sample1.owl>
+
+  Declaration(DataProperty(:dataProp01))
+  Declaration(DataProperty(:dataProp02))
+  Declaration(DataProperty(:dataProp03))
+
+  Declaration(DataProperty(:dataProp04))
+  Declaration(DataProperty(:dataProp05))
+
+  Declaration(DataProperty(:dataProp06))
+
+  EquivalentDataProperties(:dataProp01 :dataProp02 :dataProp03)
+  EquivalentDataProperties(:dataProp04 :dataProp05)
+)

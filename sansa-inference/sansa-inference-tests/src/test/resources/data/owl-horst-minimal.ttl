@@ -1,0 +1,77 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix : <http://ex.org/> .
+
+:a a :A .
+:a :p :b1 .
+
+:p rdfs:subPropertyOf :p1 .
+
+:A rdfs:subClassOf :B .
+
+:A rdfs:subClassOf [ rdf:type owl:Restriction ; owl:onProperty :p2 ; owl:hasValue :value ] .
+
+# rdfp15
+# (?R owl:someValuesFrom ?D), (?R owl:onProperty ?P), (?X ?P ?A), (?A rdf:type ?D ) -> (?X rdf:type ?R )
+# -> :a15 a _:r15_1; a _:r15_2 .
+:A15 rdfs:subClassOf _:r15_1 .
+_:r15_1 rdf:type owl:Restriction ; owl:onProperty :p ; owl:someValuesFrom :B15_1 .
+:a15 :p :b15_1 .
+:b15_1 a :B15_1 .
+
+:A15 rdfs:subClassOf _:r15_2 .
+_:r15_2 rdf:type owl:Restriction ; owl:onProperty :p ; owl:someValuesFrom :B15_2 .
+:a15 :p :b15_2 .
+:b15_2 a :B15_2 .
+
+# rdfp16
+# (?R owl:allValuesFrom ?D), (?R owl:onProperty ?P), (?X ?P ?Y), (?X rdf:type ?R ) -> (?Y rdf:type ?D )
+# -> :b16 a :B16_1, :B16_2 .
+:A16 rdfs:subClassOf _:r16_1 .
+_:r16_1 rdf:type owl:Restriction ; owl:onProperty :p ; owl:allValuesFrom :B16_1 .
+:a15 :p :b16 .
+:a15 a _:r16_1 .
+
+:A16 rdfs:subClassOf _:r16_2 .
+_:r16_2 rdf:type owl:Restriction ; owl:onProperty :p ; owl:allValuesFrom :B16_2 .
+:a15 :p :b16 .
+:a15 a _:r16_2 .
+
+# rdfp4
+# (?P rdf:type owl:TransitiveProperty), (?X ?P ?Y), (?Y ?P ?Z) -> (?X ?P ?Z)
+# -> TC has 6 triples: :a4_1 :p :a4_2, :a4_3 :a4_4 . :a4_2 :p :a4_3, :a4_4 . :a4_3 :p :a4_4 .
+
+:p4 a owl:TransitiveProperty .
+:a4_1 :p4 :a4_2 .
+:a4_2 :p4 :a4_3 .
+:a4_3 :p4 :a4_4 .
+
+# rdfp1
+# (?P rdf:type owl:FunctionalProperty), (?A ?P ?B), notLiteral(?B), (?A ?P ?C), notLiteral(?C), notEqual(?B ?C) -> (?B owl:sameAs ?C)
+# -> :b1_1 owl:sameAs :b1_2
+
+:p1 a owl:FunctionalProperty .
+:a1 :p1 :b1_1 .
+:a1 :p1 :b1_2 .
+
+# rdfp2
+# (?P rdf:type owl:InverseFunctionalProperty), (?A ?P ?B), (?C ?P ?B), notEqual(?A ?C) -> (?A owl:sameAs ?C)
+# -> :a1_1 owl:sameAs :a1_2
+
+:p1 a owl:InverseFunctionalProperty .
+:a1_1 :p1 :b1 .
+:a1_2 :p1 :b1 .
+
+
+
+# owl:sameAs closure
+#
+#
+:a1 owl:sameAs :a2 .
+
+
+
+
+
+

@@ -1,0 +1,23 @@
+@prefix :        <http://www.example.org#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex:      <http://www.example.org#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+rdfs:isDefinedBy
+      rdfs:domain rdfs:Resource ;
+      rdfs:range rdfs:Resource ;
+      rdfs:subPropertyOf rdfs:seeAlso .
+
+rdfs:seeAlso
+      rdfs:domain rdfs:Resource ;
+      rdfs:range rdfs:Resource .
+
+rdfs:comment
+      rdfs:domain rdfs:Resource ;
+      rdfs:range rdfs:Literal .
+
+rdfs:label
+      rdfs:domain rdfs:Resource ;
+      rdfs:range rdfs:Literal .

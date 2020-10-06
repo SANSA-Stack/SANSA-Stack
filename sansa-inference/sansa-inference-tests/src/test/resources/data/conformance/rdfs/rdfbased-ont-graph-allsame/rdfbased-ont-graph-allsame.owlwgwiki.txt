@@ -1,0 +1,28 @@
+{{PositiveEntailmentTestCase
+|id=rdfbased-ont-graph-allsame
+|description=The component graphs of an entailment check may contain a triple with the same subject, predicate and object.
+|author=Michael Schneider, Kai Mainzer
+|syntax=RDF/XML
+|semantics=Test applies only to RDF-based semantics
+|rlrulescomplete=Yes
+|consistent-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#sameAs">
+    <owl:sameAs rdf:resource="http://www.w3.org/2002/07/owl#sameAs"/>
+  </rdf:Description>
+</rdf:RDF>
+|conclusion-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#sameAs">
+    <owl:sameAs rdf:resource="http://www.w3.org/2002/07/owl#sameAs"/>
+  </rdf:Description>
+</rdf:RDF>
+}}

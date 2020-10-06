@@ -1,0 +1,12 @@
+@prefix :        <http://www.example.org#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex:      <http://www.example.org#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+ex:w1
+      owl:sameAs "01"^^xsd:hexBinary .
+
+ex:w2
+      owl:sameAs "Fb0Ad934e7AF09"^^xsd:hexBinary .
