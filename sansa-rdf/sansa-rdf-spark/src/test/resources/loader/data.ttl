@@ -1,0 +1,15 @@
+@prefix ericFoaf: <http://www.w3.org/People/Eric/ericP-foaf.rdf#> .
+@prefix : <http://xmlns.com/foaf/0.1/> .
+ericFoaf:ericP :givenName "Eric" ;
+              :knows <http://norman.walsh.name/knows/who/dan-brickley> ,
+                      [ :mbox <mailto:timbl@w3.org> ] ,
+                      <http://getopenid.com/amyvdh> .
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+    _:b0  rdf:first  1 ;
+          rdf:rest   _:b1 .
+    _:b1  rdf:first  2.0 ;
+          rdf:rest   _:b2 .
+    _:b2  rdf:first  3E1 ;
+          rdf:rest   rdf:nil .
+    _:b0  :p         "w" .
