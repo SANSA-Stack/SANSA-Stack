@@ -1,0 +1,30 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/spec/>
+PREFIX schema: <http://schema.org/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX gr: <http://purl.org/goodrelations/v1#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+
+SELECT DISTINCT ?label ?c ?propertyTextual ?p1
+WHERE {
+    ?product rdfs:label ?label .
+    ?product bsbm:producer ?pcr .
+    ?pcr edm:country ?c .
+    ?pcr foaf:homepage ?h .
+    ?offer gr:validFrom ?vf .
+    ?offer bsbm:product ?product .
+    ?review bsbm:reviewFor ?product .
+    ?review rev:reviewer ?pers .
+    ?pers foaf:name ?fn .
+    ?pers edm:country ?cn .
+    ?product bsbm:productPropertyTextual1 ?propertyTextual .
+    ?product bsbm:productPropertyNumeric1 ?p1 .
+    FILTER (?p1 > 630)
+}
+ORDER BY ?label
+LIMIT 10

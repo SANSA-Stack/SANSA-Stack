@@ -1,0 +1,7 @@
+v0 v1 v6 v8
+http://db.uwaterloo.ca/~galuc/wsdbm/Product242 "Elephas dermatophyte galyac Theseus stramineous" http://db.uwaterloo.ca/~galuc/wsdbm/User135 http://db.uwaterloo.ca/~galuc/wsdbm/Language1
+http://db.uwaterloo.ca/~galuc/wsdbm/Product242 "Elephas dermatophyte galyac Theseus stramineous" http://db.uwaterloo.ca/~galuc/wsdbm/User135 http://db.uwaterloo.ca/~galuc/wsdbm/Language1
+http://db.uwaterloo.ca/~galuc/wsdbm/Product242 "Elephas dermatophyte galyac Theseus stramineous" http://db.uwaterloo.ca/~galuc/wsdbm/User135 http://db.uwaterloo.ca/~galuc/wsdbm/Language3
+http://db.uwaterloo.ca/~galuc/wsdbm/Product242 "Elephas dermatophyte galyac Theseus stramineous" http://db.uwaterloo.ca/~galuc/wsdbm/User135 http://db.uwaterloo.ca/~galuc/wsdbm/Language3
+http://db.uwaterloo.ca/~galuc/wsdbm/Product242 "Elephas dermatophyte galyac Theseus stramineous" http://db.uwaterloo.ca/~galuc/wsdbm/User135 http://db.uwaterloo.ca/~galuc/wsdbm/Language3
+http://db.uwaterloo.ca/~galuc/wsdbm/Product242 "Elephas dermatophyte galyac Theseus stramineous" http://db.uwaterloo.ca/~galuc/wsdbm/User135 http://db.uwaterloo.ca/~galuc/wsdbm/Language3

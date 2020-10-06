@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>sansa-query-parent_2.12</artifactId>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent_2.12</artifactId>
+		<version>0.7.2-SNAPSHOT</version>
+	</parent>
+
+	<packaging>pom</packaging>
+
+	<name>SANSA Stack - Query Layer - Parent</name>
+	<description>SANSA Query Library</description>
+	<url>https://github.com/SANSA-Stack/SANSA-Query</url>
+	<inceptionYear>2015</inceptionYear>
+
+	<organization>
+		<name>Smart Data Analytics (SDA) research group</name>
+		<url>http://sda.tech</url>
+	</organization>
+
+	<scm>
+		<url>https://github.com/SANSA-Stack/SANSA-Query</url>
+		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-Query.git</connection>
+		<developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-Query.git</developerConnection>
+	</scm>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/SANSA-Stack/SANSA-Query/issues</url>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>Aklakan</id>
+			<name>Claus Stadler</name>
+			<email>cstadler@informatik.uni-leipzig.de</email>
+			<organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+			<organizationUrl>http://aksw.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
+		<developer>
+			<id>sbin</id>
+			<name>Simon Bin</name>
+			<email>sbin@informatik.uni-leipzig.de</email>
+			<organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+			<organizationUrl>http://aksw.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
+		<developer>
+			<id>GezimSejdiu</id>
+			<name>Gezim Sejdiu</name>
+			<url>https://gezimsejdiu.github.io/</url>
+			<organization>SDA</organization>
+			<organizationUrl>http://sda.tech</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
+	</developers>
+
+	<modules>
+		<module>sansa-query-common</module>
+		<module>sansa-query-flink</module>
+		<module>sansa-query-spark</module>
+		<module>sansa-query-tests</module>
+	</modules>
+
+	<profiles>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+						<configuration>
+							<doclint>none</doclint>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+
+		<profile>
+			<id>release</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<properties>
+				<spark.deps.scope>provided</spark.deps.scope>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!-- profile necessary for Scalastyle plugin to find the conf file -->
+		<profile>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+
+	</profiles>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
+				<version>${project.version}</version>
+				<scope>test</scope>
+<!--				<type>test-jar</type>-->
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<repositories>
+		<repository>
+			<id>oss-sonatype</id>
+			<name>oss-sonatype</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>oss-sonatype-releases</id>
+			<name>oss-sonatype</name>
+			<url>https://oss.sonatype.org/content/repositories/releases/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>apache-snapshot</id>
+			<name>Apache repository (snapshots)</name>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>maven.aksw.snapshots</id>
+			<name>AKSW Snapshot Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>maven.aksw.internal</id>
+			<name>AKSW Release Repository</name>
+			<url>http://maven.aksw.org/archiva/repository/internal</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
+</project>
