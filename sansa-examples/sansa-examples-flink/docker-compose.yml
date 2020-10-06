@@ -1,0 +1,131 @@
+version: '2' 
+services:
+ namenode:
+    image: bde2020/hadoop-namenode:1.0.0
+    hostname: namenode
+    container_name: namenode
+    domainname: hadoop
+    networks:
+      - hadoop
+    volumes:
+      - ./data/namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+      - VIRTUAL_HOST=hdfs.demo.sansa-stack.local
+    env_file:
+      - ./config/hadoop/hadoop.env
+    ports:
+      - "50070:50070"
+      - "8020:8020"
+ datanode1:
+    image: bde2020/hadoop-datanode:1.0.0
+    hostname: datanode1
+    container_name: datanode1
+    domainname: hadoop
+    networks:
+      - hadoop
+    volumes:
+      - ./data/datanode1:/hadoop/dfs/data
+    env_file:
+      - ./config/hadoop/hadoop.env
+
+ datanode2:
+    image: bde2020/hadoop-datanode:1.0.0
+    hostname: datanode2
+    container_name: datanode2
+    domainname: hadoop
+    networks: 
+      - hadoop
+    volumes:
+      - ./data/datanode2:/hadoop/dfs/data
+    env_file:
+      - ./config/hadoop/hadoop.env
+
+ filebrowser:
+    image: bde2020/hdfs-filebrowser:3.9
+    hostname: filebrowser
+    container_name: filebrowser
+    domainname: hadoop
+    networks:
+      - hadoop
+    environment:
+      - NAMENODE_HOST=namenode
+      - VIRTUAL_HOST=hue.demo.sansa-stack.local
+      - VIRTUAL_PORT=8088
+#    ports:
+#      - "8088:8088"
+
+ flink-master:
+   image: bde2020/flink-master:1.1.3-hadoop2.7
+   hostname: flink-master
+   container_name: flink-master
+   domainname: hadoop
+   networks:
+     - hadoop
+   environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+      - VIRTUAL_HOST=flink-master.demo.sansa-stack.local
+      - VIRTUAL_PORT=8080
+   env_file:
+      - ./config/hadoop/hadoop.env
+   ports:
+     - "8080:8080"
+     - "8081:8081"
+
+ flink-worker:
+   image: bde2020/flink-worker:1.1.3-hadoop2.7
+   hostname: flink-worker
+   container_name: flink-worker
+   domainname: hadoop
+   networks: 
+     - hadoop
+   environment:
+     - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+     - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+     - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master 
+     - VIRTUAL_HOST=flink-worker.demo.sansa-stack.local
+     - VIRTUAL_PORT=8081 
+   env_file:
+     - ./config/hadoop/hadoop.env
+   links:
+      - "flink-master"
+
+ integratorui:
+   image: bde2020/integrator-ui:latest
+   hostname: integratorui
+   container_name: integratorui
+   domainname: hadoop
+   networks:
+     - hadoop
+   volumes:
+      - ./config/integrator:/app/config
+   environment:
+      - VIRTUAL_HOST=demo.sansa-stack.local
+
+ csswrapper:
+#    image: gezim/flink-starter-integrator-css-wrapper
+    build: ./config/csswrapper/
+    hostname: csswrapper
+    container_name: csswrapper
+    domainname: hadoop
+    networks:
+      - hadoop
+    ports:
+      - 80:80
+    links:
+      - namenode:namenode
+      - filebrowser:filebrowser
+      - flink-master:flink-master
+      - flink-worker:flink-worker
+      - integratorui:integratorui
+    depends_on:
+      - namenode
+      - filebrowser
+      - flink-master
+      - flink-worker
+      - integratorui
+
+networks:
+  hadoop:
+    external: true

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about="http://example.org/show/218">
+    <ns0:label xmlns:ns0="http://www.w3.org/2000/01/rdf-schema#" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">That Seventies Show</ns0:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://example.org/show/218">
+    <ns0:label xmlns:ns0="http://www.w3.org/2000/01/rdf-schema#">That Seventies Show</ns0:label>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://example.org/show/218">
+    <ns0:localName xmlns:ns0="http://example.org/show/" xml:lang="en">That Seventies Show</ns0:localName>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://example.org/show/218">
+    <ns0:localName xmlns:ns0="http://example.org/show/" xml:lang="fr-be">Cette Série des Années Septante</ns0:localName>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://example.org/#spiderman">
+    <ns0:text xmlns:ns0="http://example.org/">This is a multi-line
+literal with many quotes (""""")
+and two apostrophes ('').</ns0:text>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://en.wikipedia.org/wiki/Helium">
+    <ns0:atomicNumber xmlns:ns0="http://example.org/elements/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</ns0:atomicNumber>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://en.wikipedia.org/wiki/Helium">
+    <ns0:specificGravity xmlns:ns0="http://example.org/elements/" rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1.663E-4</ns0:specificGravity>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="alice">
+    <ns0:knows xmlns:ns0="http://xmlns.com/foaf/0.1/" rdf:nodeID="bob"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="bob">
+    <ns0:knows xmlns:ns0="http://xmlns.com/foaf/0.1/" rdf:nodeID="alice"/>
+  </rdf:Description>
+</rdf:RDF>

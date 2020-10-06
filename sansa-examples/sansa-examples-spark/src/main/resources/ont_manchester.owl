@@ -1,0 +1,346 @@
+Prefix: : <http://ex.com/default#>
+Prefix: bar: <http://ex.com/bar#>
+Prefix: foo: <http://ex.com/foo#>
+Prefix: owl: <http://www.w3.org/2002/07/owl#>
+Prefix: rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+Prefix: rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+Prefix: xml: <http://www.w3.org/XML/1998/namespace>
+Prefix: xsd: <http://www.w3.org/2001/XMLSchema#>
+
+
+
+Ontology: <http://ex.com/ont/sample1.owl>
+<http://ex.com/ont/release/123/sample1.owl>
+
+Annotations: 
+    bar:hasTitle "Title",
+    description "A longer
+description running over
+several lines",
+    foo:hasName "Name"
+
+AnnotationProperty: bar:annProp1
+
+    SubPropertyOf: 
+        bar:annProp2
+    
+    Domain: 
+        <http://ex.com/bar#Cls1>
+    
+    Range: 
+        <http://ex.com/bar#Cls2>
+    
+    
+AnnotationProperty: bar:annProp2
+
+    
+AnnotationProperty: bar:hasTitle
+
+    
+AnnotationProperty: bar:label
+
+    
+AnnotationProperty: description
+
+    
+AnnotationProperty: foo:ann
+
+    
+AnnotationProperty: foo:hasName
+
+    
+Datatype: bar:dtype1
+
+    
+Datatype: bar:dtype2
+
+    
+Datatype: rdf:PlainLiteral
+
+    
+Datatype: rdfs:Literal
+
+    
+Datatype: xsd:int
+
+    
+Datatype: xsd:integer
+
+    
+Datatype: xsd:string
+
+    
+ObjectProperty: bar:Prop2
+
+    
+ObjectProperty: bar:asymmObjProp
+
+    Characteristics: 
+        Asymmetric
+    
+    
+ObjectProperty: bar:invObjProp1
+
+    EquivalentTo: 
+         inverse (bar:objProp1)
+    
+    Characteristics: 
+        InverseFunctional
+    
+    InverseOf: 
+        bar:objProp1
+    
+    
+ObjectProperty: bar:objProp1
+
+    EquivalentTo: 
+        bar:sameAsObjProp1
+    
+    DisjointWith: 
+        bar:objProp2
+    
+    Characteristics: 
+        Transitive,
+        Reflexive
+    
+    Domain: 
+        bar:Cls1
+    
+    Range: 
+        bar:AllIndividualsCls
+    
+    InverseOf: 
+        bar:invObjProp1
+    
+    
+ObjectProperty: bar:objProp2
+
+    DisjointWith: 
+        bar:objProp1
+    
+    Characteristics: 
+        Functional,
+        Symmetric,
+        Irreflexive
+    
+    
+ObjectProperty: bar:sameAsObjProp1
+
+    EquivalentTo: 
+        bar:objProp1
+    
+    
+ObjectProperty: bar:subObjProp1
+
+    SubPropertyOf: 
+        bar:objProp1
+    
+    
+DataProperty: bar:dataProp1
+
+    Characteristics: 
+        Functional
+    
+    Domain: 
+        bar:Cls1
+    
+    Range: 
+        xsd:string
+    
+    EquivalentTo: 
+        bar:sameAsDataProp1
+    
+    DisjointWith: 
+        bar:dataProp2
+    
+    
+DataProperty: bar:dataProp2
+
+    Domain: 
+        bar:Cls1
+    
+    Range: 
+        xsd:int
+    
+    DisjointWith: 
+        bar:dataProp1
+    
+    
+DataProperty: bar:sameAsDataProp1
+
+    EquivalentTo: 
+        bar:dataProp1
+    
+    
+DataProperty: bar:subDataProp1
+
+    SubPropertyOf: 
+        bar:dataProp1
+    
+    
+Class: bar:AllIndividualsCls
+
+    EquivalentTo: 
+        {foo:indivA , foo:indivB}
+    
+    
+Class: bar:AllProp1Cls1
+
+    EquivalentTo: 
+        bar:objProp1 only bar:Cls1
+    
+    
+Class: bar:Cl1OrNegate
+
+    DisjointUnionOf: 
+        bar:Cls1, bar:ComplementCls1
+    
+    
+Class: bar:Cls1
+
+    Annotations: 
+        bar:label "Class 1"
+    
+    SubClassOf: 
+        bar:UnionCls
+    
+    HasKey: 
+        bar:dataProp1
+    
+    
+Class: bar:Cls2
+
+    
+Class: bar:ComplementCls
+
+    EquivalentTo: 
+        not (bar:Cls1)
+    
+    
+Class: bar:ComplementCls1
+
+    
+Class: bar:DataAllIntGT10
+
+    EquivalentTo: 
+        bar:dataProp2 only xsd:integer[>= 10]
+    
+    
+Class: bar:DataExact5Prop1
+
+    EquivalentTo: 
+        bar:dataProp1 exactly 5 rdfs:Literal
+    
+    
+Class: bar:DataHasVal5
+
+    EquivalentTo: 
+        bar:dataProp2 value 5
+    
+    
+Class: bar:DataMax2Prop1
+
+    EquivalentTo: 
+        bar:dataProp1 max 2 rdfs:Literal
+    
+    DisjointWith: 
+        bar:DataMin3Prop1
+    
+    
+Class: bar:DataMin3Prop1
+
+    EquivalentTo: 
+        bar:dataProp1 min 3 rdfs:Literal
+    
+    DisjointWith: 
+        bar:DataMax2Prop1
+    
+    
+Class: bar:DataSomeIntLT20
+
+    EquivalentTo: 
+        bar:dataProp2 some xsd:integer[< 20]
+    
+    
+Class: bar:Exact5Prop1Cls1
+
+    EquivalentTo: 
+        bar:objProp1 exactly 5 bar:Cls1
+    
+    
+Class: bar:HasSelfProp1
+
+    EquivalentTo: 
+        bar:objProp1 some  Self 
+    
+    
+Class: bar:HasValProp1IndivB
+
+    EquivalentTo: 
+        bar:objProp1 value foo:indivB
+    
+    
+Class: bar:IntersectionCls
+
+    EquivalentTo: 
+        bar:Cls1
+         and bar:Cls2
+    
+    
+Class: bar:Max3Prop1Cls1
+
+    EquivalentTo: 
+        bar:objProp1 max 3 bar:Cls1
+    
+    
+Class: bar:Min2Prop1Cls1
+
+    EquivalentTo: 
+        bar:objProp1 min 2 bar:Cls1
+    
+    
+Class: bar:SomeProp1Cls1
+
+    EquivalentTo: 
+        bar:objProp1 some bar:Cls1
+    
+    
+Class: bar:UnionCls
+
+    EquivalentTo: 
+        bar:Cls1 or bar:Cls2
+    
+    
+Individual: foo:indivA
+
+    Types: 
+        bar:Cls1
+    
+    Facts:  
+     bar:objProp1  foo:indivB,
+     bar:dataProp1  "ABCD",
+      not  bar:dataProp2  23
+    
+    SameAs: 
+        foo:sameAsIndivA
+    
+    DifferentFrom: 
+        foo:indivB
+    
+    
+Individual: foo:indivB
+
+    Facts:  
+      not  bar:Prop2  foo:indivA,
+     bar:dataProp1  "BCDE"
+    
+    DifferentFrom: 
+        foo:indivA
+    
+    
+Individual: foo:sameAsIndivA
+
+    SameAs: 
+        foo:indivA
+    
+    

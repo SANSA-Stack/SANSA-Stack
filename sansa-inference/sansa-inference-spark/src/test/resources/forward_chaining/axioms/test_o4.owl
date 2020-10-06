@@ -1,0 +1,24 @@
+Prefix(:=<http://ex.com/default#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+  <http://ex.com/ont/release/123/sample1.owl>
+
+  Declaration(ObjectProperty(:objProp01))
+  Declaration(ObjectProperty(:objProp02))
+
+  TransitiveObjectProperty(:objProp01)
+
+  Declaration(NamedIndividual(:indivA))
+  Declaration(NamedIndividual(:indivB))
+  Declaration(NamedIndividual(:indivC))
+  Declaration(NamedIndividual(:indivD))
+  Declaration(NamedIndividual(:indivE))
+  Declaration(NamedIndividual(:indivF))
+
+  ObjectPropertyAssertion(:objProp01 :indivA :indivB)
+  ObjectPropertyAssertion(:objProp01 :indivB :indivC)
+  ObjectPropertyAssertion(:objProp01 :indivC :indivD)
+
+  ObjectPropertyAssertion(:objProp02 :indivB :indivE)
+  ObjectPropertyAssertion(:objProp01 :indivE :indivF)
+)

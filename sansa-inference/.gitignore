@@ -1,0 +1,39 @@
+*.class
+*.log
+*.swp
+
+# sbt specific
+.cache
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+*.iml
+.idea
+
+scalastyle-output.xml
+
+# eclipse conf file
+.settings
+.classpath
+.project
+.manager
+.scala_dependencies
+.cashe
+.cache-main
+.cache-tests
+.classpath
+#.coveralls.yml
+deptree.txt
+
+
+# Protege files
+catalog-v001.xml

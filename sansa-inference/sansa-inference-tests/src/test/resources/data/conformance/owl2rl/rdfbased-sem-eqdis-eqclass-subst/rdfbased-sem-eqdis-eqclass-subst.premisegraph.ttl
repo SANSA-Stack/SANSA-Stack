@@ -1,0 +1,13 @@
+@prefix :        <http://www.example.org#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex:      <http://www.example.org#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+ex:c2
+      owl:equivalentClass ex:d2 .
+
+ex:c1
+      rdfs:subClassOf ex:c2 ;
+      owl:equivalentClass ex:d1 .

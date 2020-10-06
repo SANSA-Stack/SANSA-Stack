@@ -1,0 +1,27 @@
+{{InconsistencyTestCase
+|id=rdfbased-sem-restrict-maxqcr-inst-obj-zero
+|description=If an individual w is an instance of the max-0-QCR on property p to class c, then there cannot be any triple w p x with x in c.
+|author=Michael Schneider, Kai Mainzer
+|syntax=RDF/XML
+|semantics=Test applies only to RDF-based semantics
+|rlrulescomplete=Yes
+|inconsistent-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#z">
+    <owl:onClass rdf:resource="http://www.example.org#c"/>
+    <owl:onProperty rdf:resource="http://www.example.org#p"/>
+    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">0</owl:maxQualifiedCardinality>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#x">
+    <rdf:type rdf:resource="http://www.example.org#c"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#w">
+    <rdf:type rdf:resource="http://www.example.org#z"/>
+    <ex:p rdf:resource="http://www.example.org#x"/>
+  </rdf:Description>
+</rdf:RDF>
+}}

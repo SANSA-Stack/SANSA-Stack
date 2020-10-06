@@ -1,0 +1,19 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix : <http://ex.org/> .
+
+:a a :A .
+
+:A rdfs:subClassOf :B , :F .
+
+:B rdfs:subClassOf :B1, :B2 .
+
+
+:s :p1 :o .
+
+:p1 rdfs:subPropertyOf :p2, :p3 .
+
+:p2 rdfs:subPropertyOf :p2_1, :p2_2 .
+
+

@@ -1,0 +1,15 @@
+@prefix :        <http://www.example.org#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex:      <http://www.example.org#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+ex:w3
+      owl:sameAs "2.0E-45"^^xsd:float .
+
+ex:w1
+      owl:sameAs "0.3141E+1"^^xsd:float .
+
+ex:w2
+      owl:sameAs "1.0E+38"^^xsd:float .
