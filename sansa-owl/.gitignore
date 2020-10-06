@@ -37,4 +37,4 @@ project/plugins/project/
 
 
 # Scala style checker
-*/scalastyle-output.xml
+scalastyle-output.xml
