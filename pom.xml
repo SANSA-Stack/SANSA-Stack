@@ -86,6 +86,16 @@
 		<spark.deps.scope>compile</spark.deps.scope>
 		<flink.deps.scope>compile</flink.deps.scope>
 	</properties>
+	
+	<modules>
+		<module>sansa-rdf</module>
+		<module>sansa-datalake</module>
+		<module>sansa-query</module>
+		<module>sansa-owl</module>
+		<module>sansa-inference</module>
+		<module>sansa-ml</module>
+		<module>sansa-examples</module>
+	</modules>
 
 
 	<dependencies>
