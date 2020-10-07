@@ -1,0 +1,28 @@
+{ "data": [
+  {
+    "id": 1,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Apache Flink Dashboard",
+      "base-url": "http://flink-master.demo.sansa-stack.local"
+    }
+  },
+  {
+    "id": 2,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "HDFS",
+      "base-url": "http://hdfs.demo.sansa-stack.local"
+    }
+  },
+  {
+    "id": 3,
+    "type": "user-interfaces",
+    "attributes": {
+      "label": "Hue",
+      "base-url": "http://hue.demo.sansa-stack.local",
+      "append-path": "/home"
+    }
+  }
+]
+}

@@ -1,0 +1,40 @@
+{{PositiveEntailmentTestCase
+|id=rdfbased-sem-simple-bnode-literal
+|description=Graphs entail other graphs with literals being substituted by blank nodes (Instance Lemma).
+|author=Michael Schneider, Kai Mainzer
+|syntax=RDF/XML
+|semantics=Test applies only to RDF-based semantics
+
+|consistent-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#s2">
+    <ex:p2 xml:lang="en">lang</ex:p2>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#s1">
+    <ex:p1>plain</ex:p1>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#s3">
+    <ex:p3 rdf:datatype="http://www.example.org#dt">typed</ex:p3>
+  </rdf:Description>
+</rdf:RDF>
+|conclusion-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#s2">
+    <ex:p2 rdf:nodeID="A0"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#s1">
+    <ex:p1 rdf:nodeID="A1"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#s3">
+    <ex:p3 rdf:nodeID="A2"/>
+  </rdf:Description>
+</rdf:RDF>
+}}

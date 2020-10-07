@@ -1,0 +1,62 @@
+{{PositiveEntailmentTestCase
+|id=rdfbased-xtr-constraint-complexrole-order
+|description=The RDF-Based Semantics does not restrict the set of complex properties in an ontology to adhere to a strict partial order. For example, one can characterize the notions of an uncle and a cousin mutually in terms of each other by means of two sub property chain axioms.
+|author=Michael Schneider, Kai Mainzer
+|syntax=RDF/XML
+|semantics=Test applies only to RDF-based semantics
+|rlrulescomplete=Yes
+|consistent-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#bob">
+    <ex:hasFather rdf:resource="http://www.example.org#charly"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A0">
+    <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+    <rdf:first rdf:resource="http://www.example.org#hasChild"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A1">
+    <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+    <rdf:first rdf:resource="http://www.example.org#hasFather"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#hasUncle">
+    <owl:propertyChainAxiom rdf:nodeID="A2"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A3">
+    <rdf:rest rdf:nodeID="A0"/>
+    <rdf:first rdf:resource="http://www.example.org#hasUncle"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#alice">
+    <ex:hasCousin rdf:resource="http://www.example.org#bob"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A2">
+    <rdf:rest rdf:nodeID="A1"/>
+    <rdf:first rdf:resource="http://www.example.org#hasCousin"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#ralph">
+    <ex:hasChild rdf:resource="http://www.example.org#susan"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#hasCousin">
+    <owl:propertyChainAxiom rdf:nodeID="A3"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#peter">
+    <ex:hasUncle rdf:resource="http://www.example.org#ralph"/>
+  </rdf:Description>
+</rdf:RDF>
+|conclusion-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#alice">
+    <ex:hasUncle rdf:resource="http://www.example.org#charly"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.example.org#peter">
+    <ex:hasCousin rdf:resource="http://www.example.org#susan"/>
+  </rdf:Description>
+</rdf:RDF>
+}}

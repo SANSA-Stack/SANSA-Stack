@@ -1,0 +1,38 @@
+Prefix(:=<http://ex.com/default#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+  <http://ex.com/ont/release/123/sample1.owl>
+
+  Declaration(ObjectProperty(:objProp01))
+  Declaration(ObjectProperty(:objProp02))
+  Declaration(ObjectProperty(:objProp03))
+  Declaration(ObjectProperty(:objProp04))
+  Declaration(ObjectProperty(:objProp05))
+
+  Declaration(DataProperty(:dataProp01))
+  Declaration(DataProperty(:dataProp02))
+  Declaration(DataProperty(:dataProp03))
+  Declaration(DataProperty(:dataProp04))
+  Declaration(DataProperty(:dataProp05))
+
+  Declaration(AnnotationProperty(:annProp01))
+  Declaration(AnnotationProperty(:annProp02))
+  Declaration(AnnotationProperty(:annProp03))
+  Declaration(AnnotationProperty(:annProp04))
+  Declaration(AnnotationProperty(:annProp05))
+
+  SubObjectPropertyOf(:objProp02 :objProp01)
+  SubObjectPropertyOf(:objProp03 :objProp02)
+  SubObjectPropertyOf(:objProp04 :objProp03)
+  SubObjectPropertyOf(:objProp05 :objProp01)
+
+  SubDataPropertyOf(:dataProp02 :dataProp01)
+  SubDataPropertyOf(:dataProp03 :dataProp02)
+  SubDataPropertyOf(:dataProp04 :dataProp03)
+  SubDataPropertyOf(:dataProp05 :dataProp01)
+
+  SubAnnotationPropertyOf(:annProp02 :annProp01)
+  SubAnnotationPropertyOf(:annProp03 :annProp02)
+  SubAnnotationPropertyOf(:annProp04 :annProp03)
+  SubAnnotationPropertyOf(:annProp05 :annProp01)
+)
