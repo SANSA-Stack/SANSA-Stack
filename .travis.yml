@@ -14,6 +14,6 @@ before_script:
   - echo "MAVEN_OPTS='-Xmx2g -Xss256M -XX:MaxPermSize=512m'" > ~/.mavenrc
 script:
   - mvn scalastyle:check
-  - mvn test
+  - MAVEN_SKIP_RC=true MAVEN_OPTS="-Xss4M -Xms512M -Xmx2048M" mvn test
 after_success:
-  - mvn clean test jacoco:report coveralls:report
+  - MAVEN_SKIP_RC=true MAVEN_OPTS="-Xss256M -Xms512M -Xmx2048M" mvn clean test jacoco:report coveralls:report
