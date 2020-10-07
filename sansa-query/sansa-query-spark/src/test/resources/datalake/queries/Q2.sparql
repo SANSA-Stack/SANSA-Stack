@@ -1,0 +1,32 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX foaf: <http://xmlns.com/foaf/spec/>
+PREFIX schema: <http://schema.org/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX gr: <http://purl.org/goodrelations/v1#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+
+SELECT ?label ?comment ?producer ?price
+    ?propertyTextual1 ?propertyTextual2 ?propertyTextual3
+    ?propertyNumeric1 ?propertyNumeric2 ?propertyTextual4
+    ?propertyTextual5 ?propertyNumeric4
+WHERE {
+    ?p rdfs:label ?label .
+    ?p rdfs:comment ?comment .
+    ?p bsbm:producer ?producer .
+    ?p dc:publisher ?ps .
+    ?offer bsbm:product ?p .
+    ?offer bsbm:price ?price .
+    ?p bsbm:productPropertyTextual1 ?propertyTextual1 .
+    ?p bsbm:productPropertyTextual2 ?propertyTextual2 .
+    ?p bsbm:productPropertyTextual3 ?propertyTextual3 .
+    ?p bsbm:productPropertyNumeric1 ?propertyNumeric1 .
+    ?p bsbm:productPropertyNumeric2 ?propertyNumeric2 .
+    ?p bsbm:productPropertyTextual4 ?propertyTextual4 .
+    ?p bsbm:productPropertyTextual5 ?propertyTextual5 .
+    ?p bsbm:productPropertyNumeric4 ?propertyNumeric4 .
+}

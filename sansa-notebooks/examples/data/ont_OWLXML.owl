@@ -1,0 +1,507 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://ex.com/default#"
+         xml:base="http://ex.com/default"
+         xmlns:bar="http://ex.com/bar#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+         xmlns:foo="http://ex.com/foo#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+
+    <owl:Ontology rdf:about="http://ex.com/ont/sample1.owl">
+        <owl:versionIRI rdf:resource="http://ex.com/ont/release/123/sample1.owl"/>
+        <foo:hasName>Name</foo:hasName>
+        <description>A longer
+            description running over
+            several lines</description>
+        <bar:hasTitle>Title</bar:hasTitle>
+    </owl:Ontology>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+    <!-- http://ex.com/bar#annProp1 -->
+
+    <owl:AnnotationProperty rdf:about="http://ex.com/bar#annProp1">
+        <rdfs:subPropertyOf rdf:resource="http://ex.com/bar#annProp2"/>
+        <rdfs:range rdf:resource="http://ex.com/bar#Cls2"/>
+        <rdfs:domain rdf:resource="http://ex.com/bar#Cls1"/>
+    </owl:AnnotationProperty>
+
+    <!-- http://ex.com/bar#annProp2 -->
+
+    <owl:AnnotationProperty rdf:about="http://ex.com/bar#annProp2"/>
+
+    <!-- http://ex.com/bar#label -->
+
+    <owl:AnnotationProperty rdf:about="http://ex.com/bar#label"/>
+
+    <!-- http://ex.com/foo#ann -->
+
+    <owl:AnnotationProperty rdf:about="http://ex.com/foo#ann"/>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <!-- http://ex.com/bar#dtype1 -->
+
+    <rdfs:Datatype rdf:about="http://ex.com/bar#dtype1"/>
+
+    <!-- http://ex.com/bar#dtype2 -->
+
+    <rdfs:Datatype rdf:about="http://ex.com/bar#dtype2"/>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <!-- http://ex.com/bar#Prop2 -->
+
+    <owl:ObjectProperty rdf:about="http://ex.com/bar#Prop2"/>
+
+    <!-- http://ex.com/bar#asymmObjProp -->
+
+    <owl:ObjectProperty rdf:about="http://ex.com/bar#asymmObjProp">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
+    </owl:ObjectProperty>
+
+    <!-- http://ex.com/bar#invObjProp1 -->
+
+    <owl:ObjectProperty rdf:about="http://ex.com/bar#invObjProp1">
+        <owl:equivalentProperty>
+            <rdf:Description>
+                <owl:inverseOf rdf:resource="http://ex.com/bar#objProp1"/>
+            </rdf:Description>
+        </owl:equivalentProperty>
+        <owl:inverseOf rdf:resource="http://ex.com/bar#objProp1"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    </owl:ObjectProperty>
+
+    <!-- http://ex.com/bar#objProp1 -->
+
+    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1">
+        <owl:equivalentProperty>
+            <owl:ObjectProperty rdf:about="http://ex.com/bar#sameAsObjProp1"/>
+        </owl:equivalentProperty>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ReflexiveProperty"/>
+        <rdfs:domain rdf:resource="http://ex.com/bar#Cls1"/>
+        <rdfs:range rdf:resource="http://ex.com/bar#AllIndividualsCls"/>
+        <owl:propertyDisjointWith>
+            <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp2"/>
+        </owl:propertyDisjointWith>
+    </owl:ObjectProperty>
+
+    <!-- http://ex.com/bar#objProp2 -->
+
+    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp2">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#IrreflexiveProperty"/>
+    </owl:ObjectProperty>
+
+    <!-- http://ex.com/bar#sameAsObjProp1 -->
+
+    <owl:ObjectProperty rdf:about="http://ex.com/bar#sameAsObjProp1"/>
+
+    <!-- http://ex.com/bar#subObjProp1 -->
+
+    <owl:ObjectProperty rdf:about="http://ex.com/bar#subObjProp1">
+        <rdfs:subPropertyOf rdf:resource="http://ex.com/bar#objProp1"/>
+    </owl:ObjectProperty>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <!-- http://ex.com/bar#dataProp1 -->
+
+    <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp1">
+        <owl:equivalentProperty>
+            <owl:DatatypeProperty rdf:about="http://ex.com/bar#sameAsDataProp1"/>
+        </owl:equivalentProperty>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://ex.com/bar#Cls1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <owl:propertyDisjointWith>
+            <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp2"/>
+        </owl:propertyDisjointWith>
+    </owl:DatatypeProperty>
+
+  <!-- http://ex.com/bar#dataProp2 -->
+
+    <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp2">
+        <rdfs:domain rdf:resource="http://ex.com/bar#Cls1"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    </owl:DatatypeProperty>
+
+    <!-- http://ex.com/bar#sameAsDataProp1 -->
+
+    <owl:DatatypeProperty rdf:about="http://ex.com/bar#sameAsDataProp1"/>
+
+    <!-- http://ex.com/bar#subDataProp1 -->
+
+    <owl:DatatypeProperty rdf:about="http://ex.com/bar#subDataProp1">
+        <rdfs:subPropertyOf rdf:resource="http://ex.com/bar#dataProp1"/>
+    </owl:DatatypeProperty>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <!-- http://ex.com/bar#AllIndividualsCls -->
+    <owl:Class rdf:about="http://ex.com/bar#AllIndividualsCls">
+        <owl:equivalentClass>
+            <owl:ObjectProperty>
+                <owl:oneOf rdf:parseType="Collection">
+                    <owl:NamedIndividual rdf:about="http://ex.com/foo#indivA"/>
+                    <owl:NamedIndividual rdf:about="http://ex.com/foo#indivB"/>
+                </owl:oneOf>
+            </owl:ObjectProperty>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#AllProp1Cls1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#AllProp1Cls1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://ex.com/bar#objProp1"/>
+                <owl:allValuesFrom rdf:resource="http://ex.com/bar#Cls1"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#Cl1OrNegate -->
+
+    <owl:Class rdf:about="http://ex.com/bar#Cl1OrNegate">
+        <owl:disjointUnionOf rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://ex.com/bar#Cls1"/>
+            <rdf:Description rdf:about="http://ex.com/bar#ComplementCls1"/>
+        </owl:disjointUnionOf>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#Cls1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#Cls1">
+        <rdfs:subClassOf rdf:resource="http://ex.com/bar#UnionCls"/>
+        <owl:hasKey rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://ex.com/bar#dataProp1"/>
+        </owl:hasKey>
+        <bar:label>Class 1</bar:label>
+        <owl:annotatedSource rdf:resource="http://ex.com/bar#Cls1"/>
+        <owl:annotatedProperty rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"/>
+        <owl:annotatedTarget rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+        <foo:ann>some annotation</foo:ann>
+    </owl:Class>
+
+    <!--<owl:Axiom>-->
+    <!--<owl:annotatedSource rdf:resource="http://ex.com/bar#Cls1"/>-->
+    <!--<owl:annotatedProperty rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"/>-->
+    <!--<owl:annotatedTarget rdf:resource="http://www.w3.org/2002/07/owl#Class"/>-->
+    <!--<foo:ann>some annotation</foo:ann>-->
+    <!--</owl:Axiom>-->
+
+    <!-- http://ex.com/bar#Cls2 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#Cls2"/>
+
+    <!-- http://ex.com/bar#ComplementCls -->
+
+    <owl:Class rdf:about="http://ex.com/bar#ComplementCls">
+        <owl:equivalentClass>
+            <owl:ObjectProperty>
+                <owl:complementOf>
+                    <owl:Class rdf:about="http://ex.com/bar#Cls1"/>
+                </owl:complementOf>
+            </owl:ObjectProperty>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#ComplementCls1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#ComplementCls1"/>
+
+    <!-- http://ex.com/bar#DataAllIntGT10 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#DataAllIntGT10">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://ex.com/bar#dataProp2"/>
+                <owl:allValuesFrom>
+                    <rdfs:Datatype>
+                        <owl:onDatatype rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+                        <owl:withRestrictions rdf:parseType="Collection">
+                            <rdfs:Datatype>
+                                <xsd:minInclusive rdf:about="http://www.w3.org/2001/XMLSchema#integer">10</xsd:minInclusive>
+                            </rdfs:Datatype>
+                        </owl:withRestrictions>
+                    </rdfs:Datatype>
+                </owl:allValuesFrom>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#DataExact5Prop1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#DataExact5Prop1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp1"/>
+                </owl:onProperty>
+                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">5</owl:cardinality>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+
+    <!-- http://ex.com/bar#DataHasVal5 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#DataHasVal5">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp2"/>
+                </owl:onProperty>
+                <owl:hasValue rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5</owl:hasValue>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#HasValProp1IndivB -->
+
+    <owl:Class rdf:about="http://ex.com/bar#HasValProp1IndivB">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1"/>
+                </owl:onProperty>
+                <owl:hasValue rdf:resource="http://ex.com/foo#indivB"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#DataMax2Prop1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#DataMax2Prop1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp1"/>
+                </owl:onProperty>
+                <owl:maxCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">2</owl:maxCardinality>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <owl:disjointWith rdf:resource="http://ex.com/bar#DataMin3Prop1"/>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#DataMin3Prop1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#DataMin3Prop1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp1"/>
+                </owl:onProperty>
+                <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">3</owl:minCardinality>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#DataSomeIntLT20 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#DataSomeIntLT20">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:DatatypeProperty rdf:about="http://ex.com/bar#dataProp2"/>
+                </owl:onProperty>
+                <owl:someValuesFrom>
+                    <rdfs:Datatype>
+                        <owl:onDatatype rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+                        <owl:withRestrictions rdf:parseType="Collection">
+                            <rdfs:Datatype>
+                                <xsd:maxExclusive rdf:about="http://www.w3.org/2001/XMLSchema#integer">20</xsd:maxExclusive>
+                            </rdfs:Datatype>
+                        </owl:withRestrictions>
+                    </rdfs:Datatype>
+                </owl:someValuesFrom>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#Exact5Prop1Cls1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#Exact5Prop1Cls1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1"/>
+                </owl:onProperty>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">5</owl:qualifiedCardinality>
+                <owl:onClass>
+                    <owl:Class rdf:about="http://ex.com/bar#Cls1"/>
+                </owl:onClass>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+
+    <!-- http://ex.com/bar#HasSelfProp1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#HasSelfProp1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1"/>
+                </owl:onProperty>
+                <owl:hasSelf rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:hasSelf>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#IntersectionCls -->
+
+    <owl:Class rdf:about="http://ex.com/bar#IntersectionCls">
+        <owl:equivalentClass>
+            <owl:ObjectProperty>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Class rdf:about="http://ex.com/bar#Cls1"/>
+                    <owl:Class rdf:about="http://ex.com/bar#Cls2"/>
+                </owl:intersectionOf>
+            </owl:ObjectProperty>
+        </owl:equivalentClass>
+    </owl:Class>
+
+
+
+    <!-- http://ex.com/bar#Max3Prop1Cls1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#Max3Prop1Cls1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1"/>
+                </owl:onProperty>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">3</owl:maxQualifiedCardinality>
+                <owl:onClass>
+                    <owl:Class rdf:about="http://ex.com/bar#Cls1"/>
+                </owl:onClass>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+
+
+    <!-- http://ex.com/bar#Min2Prop1Cls1 -->
+    <!--<owl:Class rdf:about="http://ex.com/bar#Min2Prop1Cls1"/>-->
+    <owl:Class rdf:about="http://ex.com/bar#Min2Prop1Cls1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1"/>
+                </owl:onProperty>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">2</owl:minQualifiedCardinality>
+                <owl:onClass>
+                    <owl:Class rdf:about="http://ex.com/bar#Cls1"/>
+                </owl:onClass>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+
+
+    <!-- http://ex.com/bar#SomeProp1Cls1 -->
+
+    <owl:Class rdf:about="http://ex.com/bar#SomeProp1Cls1">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty>
+                    <owl:ObjectProperty rdf:about="http://ex.com/bar#objProp1"/>
+                </owl:onProperty>
+                <owl:someValuesFrom rdf:resource="http://ex.com/bar#Cls1"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- http://ex.com/bar#UnionCls -->
+
+    <owl:Class rdf:about="http://ex.com/bar#UnionCls">
+        <owl:equivalentClass>
+            <owl:ObjectProperty>
+                <owl:unionOf rdf:parseType="Collection">
+                    <owl:Class rdf:about="http://ex.com/bar#Cls1"/>
+                    <owl:Class rdf:about="http://ex.com/bar#Cls2"/>
+                </owl:unionOf>
+            </owl:ObjectProperty>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+    <!-- http://ex.com/foo#indivA -->
+    <owl:NamedIndividual rdf:about="http://ex.com/foo#indivA">
+        <rdf:type rdf:resource="http://ex.com/bar#Cls1"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDifferent"/>
+        <owl:distinctMembers rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://ex.com/foo#indivA"/>
+            <rdf:Description rdf:about="http://ex.com/foo#indivB"/>
+        </owl:distinctMembers>
+        <owl:sameAs rdf:resource="http://ex.com/foo#sameAsIndivA"/>
+        <bar:objProp1 rdf:about="http://ex.com/foo#indivB"/>
+        <bar:dataProp1>ABCD</bar:dataProp1>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="http://ex.com/foo#indivA">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NegativePropertyAssertion"/>
+        <owl:sourceIndividual rdf:resource="http://ex.com/foo#indivA"/>
+        <owl:assertionProperty rdf:resource="http://ex.com/bar#dataProp2"/>
+        <owl:targetValue rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">23</owl:targetValue>
+    </owl:NamedIndividual>
+
+    <!-- http://ex.com/foo#indivB -->
+
+    <owl:NamedIndividual rdf:about="http://ex.com/foo#indivB">
+        <bar:dataProp1>BCDE</bar:dataProp1>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NegativePropertyAssertion"/>
+        <owl:sourceIndividual rdf:resource="http://ex.com/foo#indivB"/>
+        <owl:assertionProperty rdf:resource="http://ex.com/bar#Prop2"/>
+        <owl:targetIndividual rdf:resource="http://ex.com/foo#indivA"/>
+    </owl:NamedIndividual>
+
+</rdf:RDF>
+
+        <!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->

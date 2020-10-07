@@ -1,0 +1,394 @@
+
+#------------------------------------------------------------------------------------------
+# This file contains the set of the template rules that are currenlty supported by DLEJena.
+# The set covers the rules that have been designed for the OWL2 RL Profile so far, apart from the
+# - AllDisjointClasses,
+# - hasKey
+# - and some basic datatype rules.
+#
+# These rules will be implememented, as soon as the OWL 2 RL Profile final specification comes to an end
+# and the underlying tools that DLEJena is based on provide fully support of them.
+# The current set of rules was retrieved from http://www.w3.org/2007/OWL/wiki/Profiles
+# on the 19th of November 2008.
+#
+# The file contains also some other templates beyond the OWL 2 RL Profile, such as templates that handle
+# existential restrictions and produce anonymous instances (minCardinality restrictions).
+# Due to the convenient syntax of the templates that follow the Jena rule syntax,
+# such rules can be easily included.
+#
+# Note that DLEJena, apart from an OWL2 RL forward-chaining rule reasoner, is also a
+# convenient framework for defining custom entailments, combining the Pellet DL
+# reasoner and the Jena's forward-chaining rule engine.
+
+
+# NOTE THAT ALL THE RULES BELOW ARE TREATED AS FORWARD-CHAINING RULES, IN CONTRAST TO
+# THE HYBRID RULE ENGINE OF JENA THAT GENERATES ONLY BACKWARD-CHAINING RULES FROM
+# PRODUCTION RULES.
+
+
+#-------------------------------------------
+# Inferencing Template Rules
+#-------------------------------------------
+[prp-dom:
+	(?P rdfs:domain ?C)
+	-> [D_prp-dom: (?X ?P ?Y) -> (?X rdf:type ?C )]]
+
+[prp-rng:
+	(?P rdfs:range ?C)
+	-> [D_prp-rng: (?X ?P ?Y) -> (?Y rdf:type ?C )]]
+
+[prp-fp:
+	(?P rdf:type owl:FunctionalProperty)
+	-> [D_prp-fp: (?A ?P ?B), notLiteral(?B), (?A ?P ?C), notLiteral(?C), notEqual(?B ?C) -> (?B owl:sameAs ?C)]]
+
+[prp-ifp:
+	(?P rdf:type owl:InverseFunctionalProperty)
+	-> [D_prp-ifp: (?A ?P ?B), (?C ?P ?B), notEqual(?A ?C) -> (?A owl:sameAs ?C)]]
+
+[prp-symp:
+	(?P rdf:type owl:SymmetricProperty)
+	-> [D_prp-symp: (?X ?P ?Y) -> (?Y ?P ?X)]]
+
+[prp-trp:
+	(?P rdf:type owl:TransitiveProperty)
+	-> [D_prp-trp: (?X ?P ?Y), (?Y ?P ?Z) -> (?X ?P ?Z)]]
+
+[prp-spo1:
+	(?P rdfs:subPropertyOf ?Q),
+	notEqual(?P ?Q)
+	-> [D_spo1: (?X ?P ?Y) -> (?X ?Q ?Y)]]
+
+
+#Role chains (owl:propertyChainAxiom) are handled procedurally by dynamically generating rules
+
+
+# The Property equivalence is handled by prp-spo1 since the equivalent properties are transformed into
+# subproperty relationships in the PelletInfGraph
+#[prp-eqp1:
+#	(?P owl:equivalentProperty ?Q),
+#	notEqual(?P ?Q)
+#	-> [D_rdfs7x: (?X ?P ?Y) -> (?X ?Q ?Y)]]
+
+
+#It is handled procedurally with multiple dynamic rules
+#[cls-int1:
+#	(?C owl:intersectionOf ?L)
+#	(?y rdf:type ?l1)...(?y rdf:type ?ln) -> (?y rdf:type ?C)
+
+
+#It is handled by the cax-sco and scm-int1 rules
+#The scm-int1 rule (if version of intersection - see the OWL 2 RL Profile) is defined internally
+#[cls-int2:
+#	(?C owl:intersectionOf ?L)
+#	(?y rdf:type ?C)-> (?y rdf:type ?l1)...(?y rdf:type ?ln)
+
+
+#It is handled by the cax-sco and scm-uni rules in a similar manner to cls-int2
+#The scm-uni rule (if version of union - see the OWL 2 RL Profile) is defined internally.
+#[cls-uni:
+#	(?C owl:union ?L) ....
+
+
+[prp-inv1:
+	(?P owl:inverseOf ?Q)
+	-> [D_prp-inv1: (?X ?P ?Y) -> (?Y ?Q ?X)]]
+
+[cls-svf1a:
+	(?R owl:onProperty ?P),
+	(?R owl:someValuesFrom ?D),
+	(?P rdf:type owl:ObjectProperty)
+	-> [cls-svf1a: (?X ?P ?A), (?A rdf:type ?D ) -> (?X rdf:type ?R )]]
+
+[cls-svf1b:
+	(?R owl:onProperty ?P),
+	(?R owl:someValuesFrom ?D),
+	(?P rdf:type owl:DatatypeProperty)
+	-> [cls-svf1b: (?X ?P ?A), isDType(?A ?D ) -> (?X rdf:type ?R )]]
+
+[cls-svf2:
+	(?R owl:onProperty ?P),
+	(?R owl:someValuesFrom owl:Thing)
+	-> [cls-svf2: (?X ?P ?A) -> (?X rdf:type ?R )]]
+
+[cls-avf:
+	(?R owl:onProperty ?P),
+	(?R owl:allValuesFrom ?D)
+	-> [D_cls-avf: (?X ?P ?Y), (?X rdf:type ?R ) -> (?Y rdf:type ?D )]]
+
+[cls-hv1:
+	(?R owl:onProperty ?P),
+	(?R owl:hasValue ?V)
+	-> [D_cls-hv1: (?X rdf:type ?R ) -> (?X ?P ?V )]]
+
+[cls-hv2:
+	(?R owl:onProperty ?P),
+	(?R owl:hasValue ?V)
+	-> [D_cls-hv2: (?X ?P ?V ) -> (?X rdf:type ?R )]]
+
+[cls-maxc2:
+	(?R owl:onProperty ?P),
+	(?R owl:maxCardinality 1)
+	-> [D_cls-maxc2: (?X rdf:type ?R ), (?X ?P ?Y1), (?X ?P ?Y2), notEqual(?Y1, ?Y2) -> (?Y1 owl:sameAs ?Y2)]]
+
+[cax-sco:
+	(?C rdfs:subClassOf ?D),
+	notEqual(?C ?D)
+	-> [D_cax-sco: (?X rdf:type ?C ) -> (?X rdf:type ?D )]]
+
+[cax-eqc1:
+	(?C owl:equivalentClass ?D),
+	notEqual(?C ?D)
+	-> [D_cax-eqc1: (?X rdf:type ?C ) -> (?X rdf:type ?D )]]
+
+[cax-eqc2:
+	(?C owl:equivalentClass ?D),
+	notEqual(?C ?D)
+	-> [D_cax-eqc2: (?X rdf:type ?D ) -> (?X rdf:type ?C )]]
+
+[cls-maxqc3:
+	(?R owl:maxQualifiedCardinality 1),
+	(?R owl:onProperty ?P),
+	(?R owl:onClass ?C)
+	-> [D_cls-maxqc3: (?X rdf:type ?R ), (?X ?P ?Y1), (?Y1 rdf:type ?C ), (?X ?P ?Y2), (?Y2 rdf:type ?C ), notEqual(?Y1 ?Y2) -> (?Y1 owl:sameAs ?Y2)]]
+
+[cls-maxqc4:
+	(?R owl:maxQualifiedCardinality 1),
+	(?R owl:onProperty ?P),
+	(?R owl:onClass owl:Thing)
+	-> [D_cls-maxqc4: (?X rdf:type ?R ), (?X ?P ?Y1), (?X ?P ?Y2), notEqual(?Y1 ?Y2) -> (?Y1 owl:sameAs ?Y2)]]
+
+
+#------------------------------------------------------------
+# More Inferencing Template Rules (NOT COMPLETELY TESTED)
+#------------------------------------------------------------
+#[min:
+#	(?R owl:minCardinality 1),
+#	(?R owl:onProperty ?P)
+#	-> [D_min:(?X rdf:type ?R ), noValue(?X ?P ), makeTemp(?T) -> (?X ?P ?T)]]
+#
+#[minRec:
+#	(?R owl:minCardinality 1),
+#	(?R owl:onProperty ?P)
+#	-> [D_minRec: (?X ?P ?Y) -> (?X rdf:type ?R )]]
+#
+#[maxRec:
+#	(?R owl:maxCardinality 1),
+#	(?R owl:onProperty ?P),
+#	(?P rdf:type owl:FunctionalProperty)
+#	-> [D_maxRec: (?X rdf:type owl:Thing ) -> (?X rdf:type ?R )]]
+#
+#[cardRec3:
+#	(?R1 owl:cardinality 0),
+#	(?R1 owl:onProperty ?P),
+#	(?R2 owl:onProperty ?P),
+#	(?R2 owl:maxCardinality 0)
+#	-> [D_cardRec3:	(?X rdf:type ?R2 )  -> (?X rdf:type ?R1 )]]
+#
+#[cardRec2:
+#	(?R1 owl:cardinality 1),
+#	(?R1 owl:onProperty ?P),
+#	(?R2 owl:onProperty ?P),
+#	(?R2 owl:minCardinality 1),
+#	(?R3 owl:onProperty ?P),
+#	(?R3 owl:maxCardinality 1)
+#	-> [D_cardRec2: (?X rdf:type ?R2 ), (?X rdf:type ?R3 ) -> (?X rdf:type ?R1 )]]
+#
+# be aware of the recursions... it should be checked
+#[some1b_1b2:
+#	(?R owl:someValuesFrom ?D),
+#	(?R owl:onProperty ?P),
+#	-> [D_some1b_1b2: (?X rdf:type ?R ), notBNode(?X), noValue(?X ?P ), makeTemp(?T) -> (?T rdf:type ?D ), (?X ?P ?T)]]
+#
+#[someRec2:
+#	(?R owl:someValuesFrom ?D),
+#	(?R owl:onProperty ?P),
+#	(?P rdf:type owl:ObjectProperty)
+#	-> [D_someRec: (?X ?P ?A),(?A rdf:type ?D ) -> (?X rdf:type ?R )]]
+#
+#[someRec2b:
+#	(?R owl:someValuesFrom ?D),
+#	(?R owl:onProperty ?P),
+#	(?P rdf:type owl:DatatypeProperty)
+#	-> [someRec2b: (?X ?P ?A), isDType(?A ?D ) -> (?X rdf:type ?R )]]
+#
+#[all1:
+#	(?R owl:allValuesFrom ?D),
+#	(?R owl:onProperty ?P),
+#	-> [D_all1: (?X ?P ?Y), (?X rdf:type ?R ) -> (?Y rdf:type ?D )]]
+#
+#[allRec3:
+#	(?R owl:allValuesFrom ?D),
+#	(?R owl:onProperty ?P),
+#	(?P rdfs:range ?D)
+#	-> [D_allRec3: (?X rdf:type owl:Thing) -> (?X rdf:type ?R )]]
+#
+#[allRec4:
+#	(?P rdf:type owl:FunctionalProperty),
+#	(?R owl:allValuesFrom ?D),
+#	(?R owl:onProperty ?P)
+#	-> [D_allRec4: (?X ?P ?Y), (?Y rdf:type ?D ) -> (?X rdf:type ?R )]]
+#
+#[allRec5:
+#	(?R1 owl:onProperty ?P),
+#	(?R1 owl:maxCardinality 1),
+#	(?R2 owl:allValuesFrom ?D),
+#	(?R2 owl:onProperty ?P)
+#	-> [D_allRec5: (?X ?P ?Y), (?Y rdf:type ?D ) -> (?X rdf:type ?R1 )]]
+
+
+
+#---------------------------------------------------
+# Validation Template Rules
+#---------------------------------------------------
+[prp-irp:
+	(?P rdf:type owl:IrreflexiveProperty)
+	-> [D_prp-irp: (?v rb:validation on()), (?X ?P ?Y), equal(?X, ?Y) -> (?X rb:violation error('irreflexive violation', 'The property is irreflexive', ?X ?P ))]]
+
+[prp-asyp:
+	(?P rdf:type owl:AssymetricProperty)
+	-> [D_prp-asyp: (?v rb:validation on()), (?X ?P ?Y), (?Y ?P ?X), notEqual(?X ?Y) -> (?X rb:violation error('assymetry violation', 'The property is assymetric', ?X ?P ))]]
+
+[prp-pdw:
+	(?P1 owl:propertyDisjointWith ?P2)
+	-> [D_pdw: (?v rb:validation on()), (?X ?P1 ?Y), (?Y ?P2 ?X) -> (?X rb:violation error('disjoint property violation', 'The properties are disjoint', ?X ?P1 ?P2 ))]]
+
+[cls-maxc1:
+	(?R owl:onProperty ?P),
+	(?R owl:maxCardinality 0)
+	-> [D_cls-maxc1: (?v rb:validation on()), (?X rdf:type ?R ), (?X ?P ?Y)	-> (?X rb:violation error('too many values', 'Value for max-0 property (prop, class)', ?X ?P ))]]
+
+[cls-maxqc1:
+	(?R owl:maxQualifiedCardinality 0),
+	(?R owl:onProperty ?P),
+	(?R owl:onClass ?C)
+	-> [D_cls-maxqc1: (?v rb:validation on()), (?X rdf:type ?R ), (?X ?P ?Y), (?Y rdf:type ?C ) -> (?X rb:violation error('max qualified violation', 'Max qualified violation on the class on the property (class, prop)', ?C ?P ))]]
+
+[cls-maxqc2:
+	(?R owl:maxQualifiedCardinality 0),
+	(?R owl:onProperty ?P),
+	(?R owl:onClass owl:Thing)
+	-> [D_cls-maxqc2: (?v rb:validation on()), (?X rdf:type ?R ), (?X ?P ?Y) -> (?X rb:violation error('max qualified violation', 'Max qualified violation on the owl:Thing class on the property', ?P ))]]
+
+[cax-dw:
+	(?X owl:disjointWith ?Y)
+	-> [D_cax-dw: (?v rb:validation on()), (?I rdf:type ?X ), (?I rdf:type ?Y ) -> (?I rb:violation error('conflict', 'Individual a member of disjoint classes', ?X ?Y ))]]
+
+[prp-adp:
+        (?DIS rdf:type owl:AllDisjointProperties)
+        (?DIS owl:members ?L)
+        -> [D_prp-adp: (?v rb:validation on()), (?X ?P1 ?Y), listContains(?L, ?P1), (?X ?P2 Y), notEqual(?P1 ?P2), listContains(?L, ?P2) -> (?X rb:violation error('inconsistency', 'Disjoint properties', ?P1 ?P2 ))]]
+
+[cls-com:
+        (?C1 owl:complementOf ?C2)
+        -> [D_cls-com: (?v rb:validation on()), (?X rdf:type ?C1), (?X rdf:type ?C2) -> (?X rb:violation error('inconsistency', 'Complement classes', ?C1 ?C2 ))]]
+
+#---------------------------------------------------------
+# More Validation Template Rules (NOT COMPLETELY TESTED)
+#---------------------------------------------------------
+#[validationMaxN:
+#	(?C rdfs:subClassOf ?R),
+#	(?R owl:onProperty ?P),
+#	(?R owl:maxCardinality ?N),
+#	greaterThan(?N, 1),
+#	(?P rdf:type owl:DatatypeProperty)
+#	-> [D_validationMaxN: (?v rb:validation on()), (?X rdf:type ?C ), countLiteralValues(?X ?P ?M),	lessThan( ?N ?M) -> (?X rb:violation error('too many values', 'Too many values on max-N property (prop, class)', ?P ?C ))]]
+#
+#[validationMax1:
+#	(?C rdfs:subClassOf ?R),
+#	(?R owl:onProperty ?P),
+#	(?R owl:maxCardinality 1),
+#	(?P rdf:type owl:DatatypeProperty)
+#	-> [D_validationMax1: (?v rb:validation on()), (?X rdf:type ?C ), (?X ?P ?V), (?X ?P ?U), isLiteral(?V), isLiteral(?U), notEqual(?V, ?U) -> (?X rb:violation error('too many values', 'Clashing literal values for card1 property', ?P ?V ?U))]]
+#
+#[validationFP:
+#	(?P rdf:type owl:FunctionalProperty),
+#	(?P rdf:type owl:DatatypeProperty)
+#	-> [D_validationFP: (?v rb:validation on()), (?X ?P ?V), (?X ?P ?U), isLiteral(?V), isLiteral(?U), notEqual(?V, ?U) -> (?X rb:violation error('too many values', 'Clashing literal values for functional property', ?P ?V ?U))]]
+#
+#[validationMax1I:
+#	(?C rdfs:subClassOf ?R),
+#	(?R owl:onProperty ?P),
+#	(?R owl:maxCardinality 1),
+#	(?P rdf:type owl:ObjectProperty)
+#	-> [D_validationMax1I: (?v rb:validation on()), (?X rdf:type ?C ), (?X ?P ?V), (?X ?P ?U), notEqual(?V, ?U), (?U owl:differentFrom ?V) -> (?X rb:violation error('too many values', 'Clashing individual values for card1 property', ?P ?V ?U))]]
+#
+#[validationFPI:
+#	(?P rdf:type owl:FunctionalProperty),
+#	(?P rdf:type owl:ObjectProperty)
+#	-> [D_validationFPI: (?v rb:validation on()), (?X ?P ?V), (?X ?P ?U), notEqual(?V, ?U), (?U owl:differentFrom ?V) -> (?X rb:violation error('too many values', 'Clashing individual values for functional property', ?P ?V ?U))]]
+#
+#[validationDTP:
+#	(?P rdf:type owl:DatatypeProperty)
+#	-> [D_validationDTP: (?v rb:validation on()), (?X ?P ?V), notLiteral(?V), notBNode(?V) -> (?X rb:violation error('range check', 'Object value for datatype property (prop, value)', ?P ?V))]]
+#
+#[validationOP:
+#	(?P rdf:type owl:ObjectProperty)
+#	-> [D_validationOP: (?v rb:validation on()), (?X ?P ?V), isLiteral(?V) -> (?X rb:violation warn('range check', 'Literal value for object property (prop, value)', ?P ?V))]]
+#
+#[validationDTRange:
+#	(?P rdfs:range rdfs:Literal)
+#	-> [D_validationDTRange: (?v rb:validation on()), (?X ?P ?V), notLiteral(?V), notBNode(?V) -> (?X rb:violation error('range check', 'Incorrectly typed literal due to range rdsf:Literal (prop, value)', ?P ?V))]]
+#
+#[validationAllFrom:
+#		(?C owl:equivalentClass ?R),
+#		(?R owl:onProperty ?P),
+#		(?R owl:allValuesFrom rdfs:Literal)
+#		-> [D_validationAllFrom: (?v rb:validation on()), (?X ?P ?V), (?X rdf:type ?C ), notDType(?V, rdfs:Literal) -> (?X rb:violation error('range check', 'Incorrectly typed literal due to allValuesFrom rdfs:Literal (prop, value)', ?P ?V))]]
+#
+
+
+#---------------------------------------------------------------------
+# These are the exceptional entailments: the rules
+# for ABox reasoning that do not depend on TBox information
+# on their condition.
+
+#----------------------------------------
+# Inferencing Exceptional Rules
+#----------------------------------------
+[eq-sym: ->
+	[eq-sym: (?A owl:sameAs ?B) -> (?B owl:sameAs ?A)]]
+
+[eq-trans: ->
+	[eq-trans: (?A owl:sameAs ?B), (?B owl:sameAs ?C) -> (?A owl:sameAs ?C)]]
+
+[eq-rep-s: ->
+	[eq-rep-s: (?X owl:sameAs ?Y), notEqual(?X,?Y), (?X ?P ?V) -> (?Y ?P ?V)]]
+
+[eq-rep-o: ->
+	[eq-rep-o: (?X owl:sameAs ?Y), notEqual(?X,?Y), (?V ?P ?X) -> (?V ?P ?Y)]]
+
+[eq-all: ->
+	[eq-all: (?X rdf:type owl:Thing) -> (?X owl:sameAs ?X)]]
+
+[cls-oo: ->
+	[cls-oo: (?C owl:oneOf ?l) -> listMapAsSubject(?l, rdf:type, ?C)]]
+
+[distinct: ->
+	[distinct: (?w owl:distinctMembers ?L) -> assertDisjointPairs(?L)]]
+
+#----------------------------------------
+# Validation Exceptional Rules
+#----------------------------------------
+[eq-diff1: ->
+	[eq-diff1: (?v rb:validation on()),	(?X owl:differentFrom ?Y), (?X owl:sameAs ?Y)
+        -> (?X rb:violation error('conflict', 'Two individuals both same and different, may be due to disjoint classes or functional properties', ?Y))]]
+
+[validationIndiv3: ->
+	[validationIndiv3: (?v rb:validation on()),	(?I rdf:type owl:Nothing) -> (?I rb:violation error('conflict', 'Individual a member of Nothing', ?I))]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

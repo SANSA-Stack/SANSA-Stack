@@ -1,0 +1,6 @@
+<http://test.com/blaSt1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <http://test.com/blaO> .
+<http://test.com/blaSt1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <http://test.com/blaP> .
+<http://test.com/blaSt1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <http://test.com/blaS> .
+_:genid1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> <http://test.com/blaO> .
+_:genid1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> <http://test.com/blaP> .
+_:genid1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> <http://test.com/blaS> .

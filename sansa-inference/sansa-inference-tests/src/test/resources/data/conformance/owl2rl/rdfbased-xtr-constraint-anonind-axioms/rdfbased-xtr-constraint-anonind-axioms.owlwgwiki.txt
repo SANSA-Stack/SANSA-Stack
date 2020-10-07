@@ -1,0 +1,42 @@
+{{PositiveEntailmentTestCase
+|id=rdfbased-xtr-constraint-anonind-axioms
+|description=The RDF-Based Semantics does not restrict the kinds of assertion axioms that may contain anonymous individuals. For example, it is possible to identify two different blank node rooted descriptions of the same person by means of an owl:sameAs axiom having the blank nodes as its operands.
+|author=Michael Schneider, Kai Mainzer
+|syntax=RDF/XML
+|semantics=Test applies only to RDF-based semantics
+|rlrulescomplete=Yes
+|consistent-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:nodeID="A0">
+    <owl:sameAs rdf:nodeID="A1"/>
+    <ex:home>Boston</ex:home>
+    <ex:name>John Doe</ex:name>
+    <rdf:type rdf:resource="http://www.example.org#Person"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="A1">
+    <ex:born rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1969-08-12</ex:born>
+    <ex:surname>Doe</ex:surname>
+    <ex:forename>John</ex:forename>
+    <rdf:type rdf:resource="http://www.example.org#Person"/>
+  </rdf:Description>
+</rdf:RDF>
+|conclusion-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:nodeID="A0">
+    <ex:born rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1969-08-12</ex:born>
+    <ex:home>Boston</ex:home>
+    <ex:surname>Doe</ex:surname>
+    <ex:forename>John</ex:forename>
+    <ex:name>John Doe</ex:name>
+    <rdf:type rdf:resource="http://www.example.org#Person"/>
+  </rdf:Description>
+</rdf:RDF>
+}}

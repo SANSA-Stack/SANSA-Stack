@@ -1,0 +1,17 @@
+Prefix(:=<http://ex.com/default#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+  <http://ex.com/ont/release/123/sample1.owl>
+
+  Declaration(Class(:Cls01))
+  Declaration(Class(:Cls02))
+  Declaration(Class(:Cls03))
+
+  Declaration(Class(:Cls04))
+  Declaration(Class(:Cls05))
+
+  Declaration(Class(:Cls06))
+
+  EquivalentClasses(:Cls01 :Cls02 :Cls03)
+  EquivalentClasses(:Cls04 :Cls05)
+)
