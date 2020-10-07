@@ -4,11 +4,11 @@ This project comprises the whole Semantic Analytics Stack (SANSA). For a detaile
 ## Layers
 The SANSA project is structured in the following five layers developed in their respective repositories:
 
-* RDF: https://github.com/SANSA-Stack/SANSA-RDF
-* OWL: https://github.com/SANSA-Stack/SANSA-OWL
-* Query: https://github.com/SANSA-Stack/SANSA-Query
-* Inference: https://github.com/SANSA-Stack/SANSA-Inference
-* ML: https://github.com/SANSA-Stack/SANSA-ML
+* [RDF](sansa-rdf)
+* [OWL](sansa-owl)
+* [Query](sansa-query)
+* [Inference](sansa-inference)
+* [ML](sansa-ml)
 
 ## Release Cycle
 A SANSA stack release is done every six months and consists of the latest stable versions of each layer at this point. This repository is used for organising those joint releases.
