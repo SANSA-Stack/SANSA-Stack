@@ -136,7 +136,8 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   }
   */
 
-  // FIXME The result set of 43 has incorrect bnode labels
+  // TODO Verify that below has been fixed:
+  // The result set of 43 has incorrect bnode labels
   // The issue may be a bug in Sparqlify, but it may as well be
   // simply an artifact of line-based ntriples processing
   test("result of running issue43 should match") {
@@ -167,7 +168,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
     val size = result.count()
 
-    assert(size == 1)
+    assert(size == 2)
   }
 
 }
