@@ -182,27 +182,26 @@ object RddOfTriplesOps {
   }
 
   /**
-   * Determine if any of the triples in an RDF graph are also contained in this RDF graph.
+   * Determine if any of the triples in RDF graph `g2` are contained in RDF graph `g1`.
    *
-   * @param triples RDD of triples
-   * @param other the other RDF graph containing the statements to be tested
-   * @return true if any of the statements in RDF graph are also contained
-   * in this RDF graph and false otherwise.
+   * @param g1 RDD of triples
+   * @param g2 the other RDF graph containing the statements to be tested
+   * @return `true` if any of the triples in RDF graph `g2` are contained in RDF graph `g1`, otherwise `false`
    */
-  def containsAny(triples: RDD[Triple], other: RDD[Triple]): Boolean = {
-    triples.subtract(other).count() > 0
+  def containsAny(g1: RDD[Triple], g2: RDD[Triple]): Boolean = {
+    g1.intersection(g2).count() > 0
   }
 
   /**
-   * Determine if all of the statements in an RDF graph are also contained in this RDF graph.
+   * Determine if all of the statements in RDF graph `g2` are contained in RDF graph `g1`.
    *
-   * @param triples RDD of triples
-   * @param other the other RDF graph containing the statements to be tested
-   * @return true if all of the statements in RDF graph are also contained
-   * in this RDF graph and false otherwise.
+   * @param g1 RDD of triples
+   * @param g2 the other RDF graph containing the statements to be tested
+   * @return `true`` if all of the statements in RDF graph `g2` are contained in RDF graph `g1`, otherwise `false`
    */
-  def containsAll(triples: RDD[Triple], other: RDD[Triple]): Boolean = {
-    triples.subtract(other).count() == 0
+  def containsAll(g1: RDD[Triple], g2: RDD[Triple]): Boolean = {
+    g2.subtract(g1).isEmpty()
+    // alternative but probably slower: triples.intersection(other).count() == other.count()
   }
 
   @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
