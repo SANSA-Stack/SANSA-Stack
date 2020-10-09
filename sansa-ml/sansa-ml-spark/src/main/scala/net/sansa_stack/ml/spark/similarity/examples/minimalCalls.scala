@@ -33,7 +33,7 @@ object minimalCalls {
       .getOrCreate()
 
     // define inputpath if it is not parameter
-    val inputPath = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movie.nt"
+    val inputPath = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movieData/movie.nt"
 
     // read in data as Data`Frame
     val triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath)
