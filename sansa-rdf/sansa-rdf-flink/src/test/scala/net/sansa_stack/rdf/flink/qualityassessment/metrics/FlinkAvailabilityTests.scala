@@ -8,7 +8,7 @@ class FlinkAvailabilityTests extends FunSuite {
 
   import net.sansa_stack.rdf.flink.qualityassessment._
 
-  val env = ExecutionEnvironment.getExecutionEnvironment
+  val env = ExecutionEnvironment.createLocalEnvironment(4)
 
   test("getting the Dereferenceable URIs should match") {
 
