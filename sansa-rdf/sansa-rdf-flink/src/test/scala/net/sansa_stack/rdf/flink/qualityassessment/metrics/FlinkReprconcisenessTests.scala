@@ -8,7 +8,7 @@ class FlinkReprconcisenessTests extends FunSuite {
 
   import net.sansa_stack.rdf.flink.qualityassessment._
 
-  val env = ExecutionEnvironment.getExecutionEnvironment
+  val env = ExecutionEnvironment.createLocalEnvironment(4)
 
   test("assessing the query param free URIs should match") {
 
