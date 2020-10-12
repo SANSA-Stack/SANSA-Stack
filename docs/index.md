@@ -10,7 +10,8 @@ the respective similarity estimation models are in this [github directory](https
 * [Minmial Examples](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.similarity.examples.package)
 * [Evaluation of Experiment Class](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.similarity.experiment.SimilarityPipelineExperiment$)
 * [Metagraph Creation](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.utils.SimilarityExperimentMetaGraphFactory)
-#### Code to Modules
+
+#### Code to Modules:
 * [Feature Extractor](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractorModel.scala)
 * [Similarity Estiamtion Modules](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/similarityEstimationModels)
 * [Minmial Examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/minimalCalls.scala)
