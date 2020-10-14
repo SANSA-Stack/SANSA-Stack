@@ -5,7 +5,7 @@ import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{BatetMode
 import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
 import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, Dataset, SparkSession}
 import org.scalatest.FunSuite
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph
@@ -35,9 +35,18 @@ class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
     for (mode <- modesToTest) {
       val featureExtractorModel = new FeatureExtractorModel()
         .setMode(mode)
+        .setOutputCol("extractedFeatures")
       val extractedFeaturesDataFrame = featureExtractorModel
         .transform(triplesDf)
         .filter(t => t.getAs[String]("uri").startsWith("m"))
+
+      println("Test Feature Extraction mode: " + mode)
+
+      val features = extractedFeaturesDataFrame.select("extractedFeatures").rdd.map(r => r(0)).collect()
+      for (feature <- features) {
+        println(feature)
+      }
+
       extractedFeaturesDataFrame.count()
     }
 
@@ -78,7 +87,13 @@ class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
     val batetModel = new BatetModel()
       .setInputCol("vectorizedFeatures")
     batetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    batetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).collect()
+    batetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5, "distCol").collect()
+
+    val simValues = extractedFeaturesDataFrame.select("distCol").rdd.map(r => r(0)).collect()
+    for (value: Double <- simValues) {
+      // check if similarity values are in between 0 and 1
+      assert((value  <= 1 ) && (value  >= 0 ))
+    }
 
     // Braun Blanquet Similarity
     println("Test Braun Blanquet Similarity")
