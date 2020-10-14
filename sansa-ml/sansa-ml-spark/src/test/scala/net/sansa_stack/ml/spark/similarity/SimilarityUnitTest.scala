@@ -1,18 +1,18 @@
 package net.sansa_stack.ml.spark.similarity
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{BatetModel, BraunBlanquetModel, DiceModel, JaccardModel, MinHashModel, OchiaiModel, SimpsonModel, TverskyModel}
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels._
 import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
-import org.apache.jena.riot.Lang
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Column, DataFrame, Dataset, SparkSession}
-import org.scalatest.FunSuite
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
+import org.apache.jena.riot.Lang
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.DataTypes
+import org.apache.spark.sql.{DataFrame, Dataset}
+import org.scalatest.FunSuite
 
 class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
 
@@ -40,11 +40,11 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
         .transform(triplesDf)
         .filter(t => t.getAs[String]("uri").startsWith("m"))
 
-      println("Test Feature Extraction mode: " + mode)
+      println("  Test Feature Extraction mode: " + mode)
 
       val features = extractedFeaturesDataFrame.select("extractedFeatures").rdd.map(r => r(0)).collect()
       for (feature <- features) {
-        println(feature)
+        // println(feature)
       }
 
       extractedFeaturesDataFrame.count()
@@ -77,91 +77,79 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
     // similarity Estimations Overview
     // for nearestNeighbors we need one key which is a Vector to search for NN
     println("Evaluate Similarity Estimations")
-    println("For nearestNeighbors we need one key which is a Vector to search for NN")
+    println("  For nearestNeighbors we need one key which is a Vector to search for NN")
+    val sampleUri: String = countVectorizedFeaturesDataFrame
+      .take(1)(0)
+      .getAs[String]("uri")
     val sample_key: Vector = countVectorizedFeaturesDataFrame
       .take(1)(0)
       .getAs[Vector]("vectorizedFeatures")
+    // println(sampleUri)
+    // println(sample_key)
+    println("  The element is: " + sampleUri + " and the corresponding Dense Vector Representation is: " + sample_key)
 
-    // Batet Similarity
-    println("Test Batet Similarity")
-    val batetModel = new BatetModel()
-      .setInputCol("vectorizedFeatures")
-    batetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    batetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5, "distCol").collect()
+    val modelNames = List("BatetModel", "BraunBlanquetModel", "DiceModel", "JaccardModel", "MinHashModel", "OchiaiModel", "SimpsonModel", "TverskyModel")
 
-    val simValues = extractedFeaturesDataFrame.select("distCol").rdd.map(r => r(0)).collect()
-    for (value: Double <- simValues) {
-      // check if similarity values are in between 0 and 1
-      assert((value  <= 1 ) && (value  >= 0 ))
+    // evaluate all models
+    for (modelName <- modelNames) {
+      println("Test model: " + modelName)
+
+      // model setup
+      val model = modelName match {
+        case "BatetModel" => new BatetModel()
+          .setInputCol("vectorizedFeatures")
+        case "BraunBlanquetModel" => new BraunBlanquetModel()
+          .setInputCol("vectorizedFeatures")
+        case "DiceModel" => new DiceModel()
+          .setInputCol("vectorizedFeatures")
+        case "JaccardModel" => new JaccardModel()
+          .setInputCol("vectorizedFeatures")
+        case "MinHashModel" => new MinHashModel()
+          .setInputCol("vectorizedFeatures")
+          .setNumHashTables(1)
+        case "OchiaiModel" => new OchiaiModel()
+          .setInputCol("vectorizedFeatures")
+        case "SimpsonModel" => new SimpsonModel()
+          .setInputCol("vectorizedFeatures")
+        case "TverskyModel" => new TverskyModel()
+          .setInputCol("vectorizedFeatures")
+          .setAlpha(1.0)
+          .setBeta(1.0)
+      }
+
+      // nearestNeighbor Evalaution
+      println("  nearest neighbor evaluation")
+      val nndf = model.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "m1", "distCol", false)
+      val simValues = nndf.select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect()
+      for (value <- simValues) {
+        // check if similarity values are in between 0 and 1
+        assert((value  <= 1.0 ) && (value  >= 0.0 ))
+      }
+      assert((nndf.rdd.map(r => r(1)).collect().length >= 0) && (nndf.rdd.map(r => r(1)).collect().length <= 3))
+
+      // allPairSimilarity Evalaution
+      println("  all pair similarity evaluation")
+      val apsdf = model.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5, valueColumn = "distCol")
+      val simValuesAp = apsdf.select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect()
+      for (value <- simValuesAp) {
+        // check if similarity values are in between 0 and 1
+        assert((value  <= 1.0 ) && (value  >= 0.0 ))
+      }
+      assert((nndf.rdd.map(r => r(1)).collect().length >= 0) && (nndf.rdd.map(r => r(1)).collect().length <= 3))
+
+      // Metagraphcreation
+      println("  Metagraph Creation")
+      val outputDf1: Dataset[_] = apsdf
+
+      val metaGraphFactory = new SimilarityExperimentMetaGraphFactory()
+      val metagraph: RDD[graph.Triple] = metaGraphFactory.createRdfOutput(
+        outputDataset = outputDf1)(
+        modelInformationEstimatorName = model.estimatorName, modelInformationEstimatorType = model.modelType, modelInformationMeasurementType = model.estimatorMeasureType)(
+        inputDatasetNumbertOfTriples = triplesDf.count(), dataSetInformationFilePath = inputPath)
+
+      // metagraph.sparql("aefafaef")
+
+      metagraph.collect() // .foreach(println(_))
     }
-
-    // Braun Blanquet Similarity
-    println("Test Braun Blanquet Similarity")
-    val braunBlanquetModel: BraunBlanquetModel = new BraunBlanquetModel()
-      .setInputCol("vectorizedFeatures")
-    braunBlanquetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    braunBlanquetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).collect()
-
-    // Dice Similarity
-    println("Test Dice Similarity")
-    val diceModel: DiceModel = new DiceModel()
-      .setInputCol("vectorizedFeatures")
-    diceModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    diceModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).collect()
-
-    // Jaccard similarity
-    println("Test Jaccard similarity")
-    val jaccardModel: JaccardModel = new JaccardModel()
-      .setInputCol("vectorizedFeatures")
-    jaccardModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).collect()
-
-    // minHash similarity estimation
-    println("Test MinHash similarity estimation")
-    val minHashModel: MinHashModel = new MinHashModel()
-      .setInputCol("vectorizedFeatures")
-      .setNumHashTables(1)
-    minHashModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").collect()
-    minHashModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").collect()
-
-    // Ochiai Similarity
-    println("Test Ochiai Similarity")
-    val ochiaiModel: OchiaiModel = new OchiaiModel()
-      .setInputCol("vectorizedFeatures")
-    ochiaiModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    ochiaiModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).collect()
-
-    // Simpson Similarity
-    println("Test Simpson Similarity")
-    val simpsonModel: SimpsonModel = new SimpsonModel()
-      .setInputCol("vectorizedFeatures")
-    simpsonModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    simpsonModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).collect()
-
-    // Tversky Similarity
-    println("Test Tversky Similarity")
-    val tverskyModel: TverskyModel = new TverskyModel()
-      .setInputCol("vectorizedFeatures")
-      .setAlpha(1.0)
-      .setBeta(1.0)
-    tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).collect()
-    tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).collect()
-
-    // Metagraphcreation
-    println("Test Metagraph Creation")
-    val model = tverskyModel // minHashModel
-
-    val outputDf1: Dataset[_] = model
-      .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).cache()
-
-    // outputDf1.show(false)
-
-    val metaGraphFactory = new SimilarityExperimentMetaGraphFactory()
-    val metagraph: RDD[graph.Triple] = metaGraphFactory.createRdfOutput(
-      outputDataset = outputDf1)(
-      modelInformationEstimatorName = model.estimatorName, modelInformationEstimatorType = model.modelType, modelInformationMeasurementType = model.estimatorMeasureType)(
-      inputDatasetNumbertOfTriples = triplesDf.count(), dataSetInformationFilePath = inputPath)
-    metagraph.collect() // foreach(println(_))
-
   }
 }
