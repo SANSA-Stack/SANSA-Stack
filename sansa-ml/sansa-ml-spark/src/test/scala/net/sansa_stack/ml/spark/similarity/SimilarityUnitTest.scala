@@ -14,7 +14,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.DataTypes
 
-class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
+class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
 
   // define inputpath if it is not parameter
   val inputPath = "src/test/resources/similarity/movie.nt"
@@ -147,6 +147,5 @@ class similarityUnitTest extends FunSuite with DataFrameSuiteBase {
       modelInformationEstimatorName = model.estimatorName, modelInformationEstimatorType = model.modelType, modelInformationMeasurementType = model.estimatorMeasureType)(
       inputDatasetNumbertOfTriples = triplesDf.count(), dataSetInformationFilePath = inputPath)
     metagraph.collect() // foreach(println(_))
-
   }
 }
