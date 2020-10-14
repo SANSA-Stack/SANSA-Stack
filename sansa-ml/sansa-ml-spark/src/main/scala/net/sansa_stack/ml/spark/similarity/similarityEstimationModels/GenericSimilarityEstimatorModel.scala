@@ -148,7 +148,8 @@ class GenericSimilarityEstimatorModel {
   protected def reduceNnDf(simDf: DataFrame, k: Int, keepKeyUriColumn: Boolean): DataFrame = {
     val tmpDf = if (keepKeyUriColumn) simDf.select("uriA", "uriB", _similarityEstimationColumnName) else simDf.select("uriA", _similarityEstimationColumnName)
     val orderedDf = if (estimatorMeasureType == "distance") tmpDf.orderBy(col(_similarityEstimationColumnName).asc) else tmpDf.orderBy(col(_similarityEstimationColumnName).desc)
-    val clippedDf: DataFrame = orderedDf.limit(k)
+    val filtered_df = if (estimatorMeasureType == "distance") orderedDf.filter(col(_similarityEstimationColumnName) < 1.0) else orderedDf.filter(col(_similarityEstimationColumnName) > 0.0)
+    val clippedDf: DataFrame = filtered_df.limit(k)
     clippedDf
   }
 
