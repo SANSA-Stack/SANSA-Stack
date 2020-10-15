@@ -50,7 +50,6 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
       for (feature <- features) {
         // println(feature)
       }
-
       extractedFeaturesDataFrame.count()
     }
 

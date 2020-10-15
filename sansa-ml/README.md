@@ -7,14 +7,14 @@
 
 SANSA-ML is the Machine Learning (ML) library in the SANSA stack (see http://sansa-stack.net). Algorithms in this repository perform various machine learning tasks directly on [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework)/[OWL](https://en.wikipedia.org/wiki/Web_Ontology_Language) input data. While most machine learning algorithms are based on processing simple features, the machine learning algorithms in SANSA-ML exploit the graph structure and semantics of the background knowledge specified using the RDF and OWL standards. In many cases, this allows to obtain either more accurate or more human-understandable results. In contrast to most other algorithms supporting background knowledge, they scale horizontally using [Apache Spark](https://spark.apache.org) and [Apache Flink](https://flink.apache.org).
 
-The ML layer currently supports the following algorithms:
+The ML layer currently supports the following algorithms (currently und Refactoring):
 * RDF graph clustering (Power Iteration, Border Flow, Link based clustering, Modularity based clustering, Silvia Link Clustering)
 * Rule mining in RDF graphs based on [AMIE+](https://www.mpi-inf.mpg.de/departments/databases-and-information-systems/research/yago-naga/amie/)
-* Semantic similarity measures (Jaccard similarity,Rodríguez and Egenhofer similarity, Tversky Ratio Model, Batet Similarity)
+* Semantic similarity measures (Batet, Braun-Blanquet, Dice, Jaccard, MinHashLSH, Ochiai, Simpson, Tversky)
 * Knowledge graph embedding approaches: 
   * TransE (beta status)
   * DistMult (beta status)
-* Terminological Decision Trees for the classification of concepts(beta status)
+* Terminological Decision Trees for the classification of concepts(alpha status)
 * Anomaly detection (beta status)
 * RDF graph kernel based on [A Fast and Simple Graph Kernel for RDF](http://ceur-ws.org/Vol-1082/paper2.pdf)
 
