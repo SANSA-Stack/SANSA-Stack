@@ -13,6 +13,7 @@ import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.scalatest.FunSuite
+import org.scalactic.TolerantNumerics
 
 class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
 
@@ -20,7 +21,10 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
   val inputPath = "src/test/resources/similarity/movie.nt"
   // var triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath).cache()
 
-  // println(inputPath)
+  // for value comparison we want to allow some minor differences in number comparison
+  val epsilon = 1e-4f
+
+  implicit val doubleEq = TolerantNumerics.tolerantDoubleEquality(epsilon)
 
   test("Test DistSim Modules") {
 
@@ -78,10 +82,9 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
     // for nearestNeighbors we need one key which is a Vector to search for NN
     println("Evaluate Similarity Estimations")
     println("  For nearestNeighbors we need one key which is a Vector to search for NN")
-    val sampleUri: String = countVectorizedFeaturesDataFrame
-      .take(1)(0)
-      .getAs[String]("uri")
+    val sampleUri: String = "m2"
     val sample_key: Vector = countVectorizedFeaturesDataFrame
+      .filter(countVectorizedFeaturesDataFrame("uri") === sampleUri)
       .take(1)(0)
       .getAs[Vector]("vectorizedFeatures")
     // println(sampleUri)
@@ -117,9 +120,11 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
           .setBeta(1.0)
       }
 
+      val k = 10
+
       // nearestNeighbor Evalaution
       println("  nearest neighbor evaluation")
-      val nndf = model.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "m1", "distCol", false)
+      val nndf = model.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, k, "m1", "distCol", false).cache()
       val simValues = nndf.select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect()
       for (value <- simValues) {
         // check if similarity values are in between 0 and 1
@@ -127,15 +132,22 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
       }
       assert((nndf.rdd.map(r => r(1)).collect().length >= 0) && (nndf.rdd.map(r => r(1)).collect().length <= 3))
 
+      // check if only k elements are provided
+      assert(nndf.collect().length <= k)
+
+      // nndf.show(false)
+
       // allPairSimilarity Evalaution
       println("  all pair similarity evaluation")
-      val apsdf = model.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5, valueColumn = "distCol")
+      val apsdf = model.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.95, valueColumn = "distCol").cache()
       val simValuesAp = apsdf.select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect()
       for (value <- simValuesAp) {
         // check if similarity values are in between 0 and 1
         assert((value  <= 1.0 ) && (value  >= 0.0 ))
       }
       assert((nndf.rdd.map(r => r(1)).collect().length >= 0) && (nndf.rdd.map(r => r(1)).collect().length <= 3))
+
+      // apsdf.show(false)
 
       // Metagraphcreation
       println("  Metagraph Creation")
@@ -147,9 +159,66 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
         modelInformationEstimatorName = model.estimatorName, modelInformationEstimatorType = model.modelType, modelInformationMeasurementType = model.estimatorMeasureType)(
         inputDatasetNumbertOfTriples = triplesDf.count(), dataSetInformationFilePath = inputPath)
 
-      // metagraph.sparql("aefafaef")
+      metagraph.collect() //
+      // metagraph.foreach(println(_))
 
-      metagraph.collect() // .foreach(println(_))
+      if (List("MinHashModel", "BatetModel").contains(modelName)) {
+        // similar values have to have distance 0.0
+        nndf.filter(nndf("uriA") === sampleUri).select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect().foreach(x => assert(x == 0.0))
+        apsdf.filter(apsdf("uriA") === apsdf("uriB")).select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect().foreach(x => assert(x == 0.0))
+      }
+      else {
+        // similar values have to have similarity 1.0
+        nndf.filter(nndf("uriA") === sampleUri).select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect().foreach(x => assert(x == 1.0))
+        apsdf.filter(apsdf("uriA") === apsdf("uriB")).select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect().foreach(x => assert(x == 1.0))
+      }
+      // apsdf.show(false)
+      // apsdf.filter((apsdf("uriA") === "m3") && (apsdf("uriB") === "m2")).show(false)
+
+      val valueM1M2NN: Double = nndf.filter(nndf("uriA") === "m3").select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect().take(1)(0)
+      val valueM1M2AP: Double = apsdf.filter((apsdf("uriA") === "m3") && (apsdf("uriB") === "m2")).select("distCol").rdd.map(r => r.getAs[Double]("distCol")).collect().take(1)(0)
+      // println(valueM1M2NN, valueM1M2AP)
+
+      if (modelName == "BatetModel") {
+        val desiredValue = 0.7369655941662061
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
+      else if (modelName == "BraunBlanquetModel") {
+        val desiredValue = 0.4
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
+      else if (modelName == "DiceModel") {
+        val desiredValue = 0.5
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
+      else if (modelName == "JaccardModel") {
+        val desiredValue = 0.3333333333333
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
+      else if (modelName == "MinHashModel") {
+        val desiredValue = 0.666666
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
+      else if (modelName == "OchiaiModel") {
+        val desiredValue = 0.51639777
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
+      else if (modelName == "SimpsonModel") {
+        val desiredValue = 0.66666666666
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
+      else if (modelName == "TverskyModel") {
+        val desiredValue = 0.33333333
+        assert(valueM1M2NN === desiredValue)
+        assert(valueM1M2AP === desiredValue)
+      }
     }
   }
 }
