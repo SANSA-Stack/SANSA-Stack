@@ -26,9 +26,9 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
     // minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
     minHashModel
       .approxSimilarityJoin(dfA, dfB, threshold, valueColumn)
-      .withColumn("uri_A", col("datasetA").getField("uri"))
-      .withColumn("uri_B", col("datasetB").getField("uri"))
-      .select("uri_A", "uri_B", valueColumn)
+      .withColumn("uriA", col("datasetA").getField("uri"))
+      .withColumn("uriB", col("datasetB").getField("uri"))
+      .select("uriA", "uriB", valueColumn)
   }
 
   override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "jaccardSimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
@@ -42,6 +42,7 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
     minHashModel
       .approxNearestNeighbors(dfA, key, k, valueColumn)
       .withColumn("key_column", lit("key_uri"))
-      .select("key_column", "uri", valueColumn)
+      .withColumnRenamed("uri", "uriA")
+      .select("key_column", "uriA", valueColumn)
   }
 }
