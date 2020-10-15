@@ -132,7 +132,7 @@ class GenericSimilarityEstimatorModel {
         tmpDf.filter(col(_similarityEstimationColumnName) <= threshold)
       }
       else {
-        tmpDf.filter(col(_similarityEstimationColumnName) >= threshold)
+        tmpDf.filter(col(_similarityEstimationColumnName) >= 1-threshold)
       }
       filtered_df
     }
