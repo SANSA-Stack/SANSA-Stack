@@ -29,6 +29,18 @@
 		</license>
 	</licenses>
 
+	<scm>
+		<url>https://github.com/SANSA-Stack/SANSA-RDF</url>
+		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-Stack.git</connection>
+		<developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-Stack.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<issueManagement>
+		<url>https://github.com/SANSA-Stack/SANSA-Stack/issues</url>
+		<system>GitHub</system>
+	</issueManagement>
+
 	<prerequisites>
 		<maven>3.1</maven>
 	</prerequisites>
@@ -806,7 +818,7 @@
 			<dependency>
 				<groupId>net.sourceforge.owlapi</groupId>
 				<artifactId>org.semanticweb.hermit</artifactId>
-				<version>1.4.5.456</version>
+				<version>1.4.5.519</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.codehaus.woodstox</groupId>
@@ -972,6 +984,10 @@
 		<plugins>
 
 			<plugin>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+			</plugin>
+
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>cobertura-maven-plugin</artifactId>
 			</plugin>
@@ -1056,7 +1072,7 @@
 				<plugin>
 					<groupId>net.alchim31.maven</groupId>
 					<artifactId>scala-maven-plugin</artifactId>
-					<version>4.3.1</version>
+					<version>4.4.0</version>
 					<executions>
 						<execution>
 							<goals>
@@ -1387,10 +1403,6 @@
 					<version>3.6</version>
 					<configuration>
 						<reportPlugins>
-							<plugin>
-								<artifactId>maven-project-info-reports-plugin</artifactId>
-								<version>2.9</version>
-							</plugin>
 							<plugin>
 								<groupId>net.alchim31.maven</groupId>
 								<artifactId>scala-maven-plugin</artifactId>
@@ -1780,6 +1792,78 @@
 		<!-- Should be used to create standalone distributions that can be deployed to Spark or Flink cluster -->
 		<profile>
 			<id>dist</id>
+		</profile>
+
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<failOnError>false</failOnError>
+								</configuration>
+							</execution>
+						</executions>
+						<configuration>
+							<doclint>none</doclint>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>osx-x86_64-cpu</id>
+			<activation>
+				<os>
+					<family>mac</family>
+					<arch>x86_64</arch>
+				</os>
+			</activation>
+			<properties>
+				<platform>osx-x86_64-cpu</platform>
+			</properties>
+		</profile>
+		<profile>
+			<id>linux-x86_64-cpu</id>
+			<activation>
+				<os>
+					<family>linux</family>
+				</os>
+			</activation>
+			<properties>
+				<platform>linux-x86_64-cpu</platform>
+			</properties>
+		</profile>
+		<profile>
+			<id>linux-x86_64-gpu</id>
+			<properties>
+				<platform>linux-x86_64-gpu</platform>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>root-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
 		</profile>
 
 	</profiles>
