@@ -1,22 +1,21 @@
 package net.sansa_stack.rdf.spark.io.nquads
 
 import java.net.URI
+import java.util.UUID
 
 import scala.reflect.ClassTag
-
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.riot.RIOT
-import org.apache.jena.riot.lang.RiotParsers
+import org.apache.jena.riot.lang.{LabelToNode, RiotParsers}
 import org.apache.jena.riot.system._
 import org.apache.jena.riot.{RIOT, SysRIOT}
 import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
-
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
 import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
@@ -134,7 +133,13 @@ object NQuadReader {
           }
         }
 
-      new ParserProfileStd(RiotLib.factoryRDF, errorHandler, IRIResolver.create, PrefixMapFactory.createForInput, RIOT.getContext.copy, checkRDFTerms || strict, strict)
+      val seed = new UUID(path.hashCode, 0)
+      new ParserProfileStd(RiotLib.factoryRDF(LabelToNode.createScopeByDocumentHash(seed)),
+        errorHandler,
+        IRIResolver.create,
+        PrefixMapFactory.createForInput,
+        RIOT.getContext.copy,
+        checkRDFTerms || strict, strict)
     }
     import scala.collection.JavaConverters._
 

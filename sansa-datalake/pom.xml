@@ -17,33 +17,6 @@
 
 	<name>SANSA Stack - DataLake Layer - Parent</name>
 	<description>A library to query heterogeneous data sources uniformly using SPARQL</description>
-	<url>https://github.com/SANSA-Stack/SANSA-DataLake</url>
-	<inceptionYear>2015</inceptionYear>
-
-	<organization>
-		<name>Smart Data Analytics (SDA) research group</name>
-		<url>http://sda.tech</url>
-	</organization>
-
-	<scm>
-		<url>https://github.com/SANSA-Stack/SANSA-DataLake</url>
-		<connection>scm:git:git://github.com/SANSA-Stack/SANSA-DataLake.git</connection>
-		<developerConnection>scm:git:git@github.com:SANSA-Stack/SANSA-DataLake.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
-
-	<issueManagement>
-		<url>https://github.com/SANSA-Stack/SANSA-DataLake/issues</url>
-		<system>GitHub</system>
-	</issueManagement>
-
-	<licenses>
-		<license>
-			<name>Apache License 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
 
 	<developers>
 		<developer>
@@ -57,18 +30,9 @@
 		</developer>
 	</developers>
 
-	<reporting>
-		<plugins>
-			<plugin>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.9</version>
-			</plugin>
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</reporting>
+	<modules>
+		<module>sansa-datalake-spark</module>
+	</modules>
 
 	<dependencyManagement>
 		<dependencies>
@@ -202,131 +166,4 @@
 		</plugins>
 	</build>
 
-
-	<distributionManagement>
-		<repository>
-			<id>maven.aksw.internal</id>
-			<name>AKSW Release Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>maven.aksw.snapshots</id>
-			<name>AKSW Snapshot Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<profiles>
-		<profile>
-			<id>root-dir</id>
-			<activation>
-				<file>
-					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
-				</file>
-			</activation>
-			<properties>
-				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
-			</properties>
-		</profile>
-		<profile>
-			<id>doclint-java8-disable</id>
-			<activation>
-				<jdk>[1.8,)</jdk>
-			</activation>
-
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<failOnError>false</failOnError>
-								</configuration>
-							</execution>
-						</executions>
-						<configuration>
-							<doclint>none</doclint>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>release</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-
-			<build>
-				<plugins>
-
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-					</plugin>
-
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-					</plugin>
-
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
-	<repositories>
-		<repository>
-			<id>oss-sonatype</id>
-			<name>oss-sonatype</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>apache-snapshot</id>
-			<name>Apache repository (snapshots)</name>
-			<url>https://repository.apache.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.aksw.internal</id>
-			<name>AKSW Release Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/internal</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.aksw.snapshots</id>
-			<name>AKSW Snapshot Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-	<modules>
-		<module>sansa-datalake-spark</module>
-	</modules>
 </project>

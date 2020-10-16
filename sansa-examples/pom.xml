@@ -14,23 +14,6 @@
 	<name>SANSA-Examples - Parent</name>
 	<description>SANSA examples</description>
 
-	<organization>
-		<name>Smart Data Analytics (SDA) Research Group</name>
-		<url>http://sda.tech/</url>
-	</organization>
-
-	<inceptionYear>2017</inceptionYear>
-
-	<url>http://sansa-stack.net/</url>
-
-	<licenses>
-		<license>
-			<name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
-			<url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
 	<developers>
 		<developer>
 			<id>jlehmann</id>
@@ -45,16 +28,10 @@
 		</developer>
 	</developers>
 
-	<issueManagement>
-		<system>GitHub</system>
-		<url>https://github.com/SANSA-Stack/SANSA-Examples</url>
-	</issueManagement>
 
 	<modules>
-
 		<module>sansa-examples-flink</module>
 		<module>sansa-examples-spark</module>
-
 	</modules>
 
 	<dependencyManagement>
@@ -117,61 +94,4 @@
 
 		</dependencies>
 	</dependencyManagement>
-
-
-	<profiles>
-		<profile>
-			<id>root-dir</id>
-			<activation>
-				<file>
-					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
-				</file>
-			</activation>
-			<properties>
-				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
-			</properties>
-		</profile>
-	</profiles>
-
-	<repositories>
-		<repository>
-			<id>oss-sonatype</id>
-			<name>oss-sonatype</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>apache-snapshot</id>
-			<name>Apache repository (snapshots)</name>
-			<url>https://repository.apache.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.aksw.internal</id>
-			<name>AKSW Release Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/internal</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.aksw.snapshots</id>
-			<name>AKSW Snapshot Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
 </project>
