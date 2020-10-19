@@ -354,55 +354,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
-                <executions>
-                    <!-- Run shade goal on package phase -->
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>net.sansa_stack.inference.spark.forwardchaining.axioms.ForwardRuleReasonerOWLHorst</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>${project.build.directory}/lib</classpathPrefix>
-                            <mainClass>net.sansa_stack.inference.spark.forwardchaining.axioms.ForwardRuleReasonerOWLHorst</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
 
         </plugins>
         <!--New resource locations-->
@@ -430,6 +381,19 @@
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>${project.build.directory}/lib</classpathPrefix>
+                                    <mainClass>net.sansa_stack.inference.spark.forwardchaining.axioms.ForwardRuleReasonerOWLHorst</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </plugin>
                     <!--<plugin>-->
                         <!--<groupId>org.apache.maven.plugins</groupId>-->
                         <!--<artifactId>maven-assembly-plugin</artifactId>-->
