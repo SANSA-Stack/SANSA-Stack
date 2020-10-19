@@ -59,7 +59,7 @@
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
 		<flink.version>1.11.2</flink.version>
-		<spark.version>2.4.6</spark.version>
+		<spark.version>3.0.1</spark.version>
 
 		<!--<hadoop.version>3.2.1</hadoop.version>-->
 		<hadoop.version>2.8.5</hadoop.version>
@@ -82,7 +82,7 @@
 
 
 		<owlapi.version>5.1.17</owlapi.version>
-		
+
     <ontop.version>4.0.3-owlapi5-guava-shaded</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
@@ -1870,7 +1870,7 @@
 				</plugins>
 			</build>
 		</profile>
-		
+
 		<profile>
 			<id>spark-3</id>
 			<properties>
