@@ -9,11 +9,7 @@ class FlinkReprconcisenessTests extends FunSuite {
 
   import net.sansa_stack.rdf.flink.qualityassessment._
 
-  val conf = new Configuration()
-  conf.setDouble("taskmanager.network.memory.fraction", 0.4)
-  conf.setString("taskmanager.network.memory.max", "2GB")
-  val env = ExecutionEnvironment.createLocalEnvironment(conf)
-  env.setParallelism(4)
+  val env = ExecutionEnvironment.createLocalEnvironment(4)
 
   test("assessing the query param free URIs should match") {
 
