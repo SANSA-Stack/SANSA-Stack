@@ -41,11 +41,17 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
       .setOutputCol("hashedFeatures")
       .fit(dfA)
     // minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
-    minHashModel
+    val nns = minHashModel
       .approxNearestNeighbors(dfA, key, k, valueColumn)
+
+    // nns.show(false)
+
+    val res = nns
       .withColumn("key_column", lit("key_uri"))
       .withColumnRenamed("uri", "uriA")
-      .withColumn("datasetA", col("datasetA").getField("vectorizedFeatures"))
+      // .withColumn("datasetA", col("datasetA").getField("vectorizedFeatures"))
       .select("key_column", "uriA", valueColumn)
+
+    res
   }
 }
