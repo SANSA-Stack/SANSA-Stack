@@ -32,7 +32,7 @@ See the [available layouts](https://github.com/SANSA-Stack/SANSA-RDF/tree/develo
 ### SANSA Query SPARK - Heterogeneous Data Sources
 SANSA Query Spark for heterogeneous data sources (data data) is composed of three main components:
 
-* [Anlyser](https://github.com/SANSA-Stack/SANSA-DataLake/tree/develop/sansa-datalake-spark/src/main/scala/net/sansa_stack/datalake/spark): it extracts SPARQL triple patters and groups them by subject, it also extracts any operation on subjects like filters, group by, order by, distinct, limit.
+* [Analyser](https://github.com/SANSA-Stack/SANSA-DataLake/tree/develop/sansa-datalake-spark/src/main/scala/net/sansa_stack/datalake/spark): it extracts SPARQL triple patters and groups them by subject, it also extracts any operation on subjects like filters, group by, order by, distinct, limit.
 * ِ[Planner](https://github.com/SANSA-Stack/SANSA-DataLake/blob/develop/sansa-datalake-spark/src/main/scala/net/sansa_stack/datalake/spark/Planner.scala): it extracts joins between subject-based triple patter groups and generates join plan accordingly. The join order followed is left-deep. 
 * [Mapper](https://github.com/SANSA-Stack/SANSA-DataLake/blob/develop/sansa-datalake-spark/src/main/scala/net/sansa_stack/datalake/spark/Mapper.scala): it access (RML) mappings and matches properties of a subject-based triples patter group against the attributes of individual data sources. If a match exists of every property of the triple pattern, the respective data source is declared _relavant_ and loaded into Spark DataFrame. The loading into DataFrame is performed using [Spark Connectors](https://spark-packages.org/).
 * [Executor](https://github.com/SANSA-Stack/SANSA-DataLake/blob/develop/sansa-datalake-spark/src/main/scala/net/sansa_stack/datalake/spark/SparkExecutor.scala): it analyses SPARQL query and generates equivalent Spark SQL functions over DataFrames, for SELECT, WHERE, GROUP-BY, ORDER-BY, LIMIT. Connection between subject-based triple pattern groups are translated into JOINs between relevant Spark DataFrames. 
@@ -92,7 +92,7 @@ val result: RDD[Triple] = ontopEngine.execConstruct("CONSTRUCT { ... } WHERE { .
 ```
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 
-For querying heterogeneous data sources, refer to the documentation of the dedicated [SANSA-DatLake](https://github.com/SANSA-Stack/SANSA-DataLake) component.
+For querying heterogeneous data sources, refer to the documentation of the dedicated [SANSA-DataLake](https://github.com/SANSA-Stack/SANSA-DataLake) component.
 
 ## How to Contribute
 We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.

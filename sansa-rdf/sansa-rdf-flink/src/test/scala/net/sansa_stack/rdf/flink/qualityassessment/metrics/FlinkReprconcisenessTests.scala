@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.flink.qualityassessment.metrics
 
 import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.flink.configuration.Configuration
 import org.scalatest.FunSuite
 
 class FlinkReprconcisenessTests extends FunSuite {

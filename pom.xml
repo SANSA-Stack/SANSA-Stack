@@ -122,6 +122,71 @@
 	<dependencyManagement>
 		<dependencies>
 
+			<!-- SANSA layers -->
+			<!-- RDF Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- OWL Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Query Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Inference Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- ML Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 
 			<!-- Kryo -->
 			<dependency>
