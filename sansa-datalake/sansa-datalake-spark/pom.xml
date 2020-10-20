@@ -65,10 +65,11 @@
 			<artifactId>mongo-spark-connector_${scala.binary.version}</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.couchbase.client</groupId>
-			<artifactId>spark-connector_${scala.binary.version}</artifactId>
-		</dependency>
+		<!-- No couchbase Connector for Spark 3.0 yet, a PR is available but unmerged: https://github.com/couchbase/couchbase-spark-connector/pull/17 -->
+<!--		<dependency>-->
+<!--			<groupId>com.couchbase.client</groupId>-->
+<!--			<artifactId>spark-connector_${scala.binary.version}</artifactId>-->
+<!--		</dependency>-->
 
 		<!--Disabled till a Scala 2.12 version is provided-->
 		<!--dependency> 

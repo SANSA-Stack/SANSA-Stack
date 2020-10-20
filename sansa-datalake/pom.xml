@@ -40,7 +40,6 @@
 			<dependency>
 				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-hive_${scala.binary.version}</artifactId>
-				<version>${spark.version}</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -52,33 +51,33 @@
 			<dependency>
 				<groupId>io.gatling</groupId>
 				<artifactId>jsonpath_${scala.binary.version}</artifactId>
-				<version>0.6.10</version>
+				<version>0.7.0</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.typesafe.play</groupId>
 				<artifactId>play_${scala.binary.version}</artifactId>
-				<version>2.6.2</version>
 			</dependency>
 
 			<!-- Connectors -->
 			<dependency>
 				<groupId>com.datastax.spark</groupId>
 				<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-				<version>2.4.2</version>
+				<version>3.0.0</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.mongodb.spark</groupId>
 				<artifactId>mongo-spark-connector_${scala.binary.version}</artifactId>
-				<version>2.4.0</version>
+				<version>3.0.0</version>
 			</dependency>
 
-			<dependency>
-				<groupId>com.couchbase.client</groupId>
-				<artifactId>spark-connector_${scala.binary.version}</artifactId>
-				<version>2.4.0</version>
-			</dependency>
+			<!-- No couchbase Connector for Spark 3.0 yet, a PR is available but unmerged: https://github.com/couchbase/couchbase-spark-connector/pull/17 -->
+<!--			<dependency>-->
+<!--				<groupId>com.couchbase.client</groupId>-->
+<!--				<artifactId>spark-connector_${scala.binary.version}</artifactId>-->
+<!--				<version>2.4.0</version>-->
+<!--			</dependency>-->
 
 			<!--Disable till a Scala 2.12 version is provided-->
 			<!--dependency>
@@ -90,14 +89,12 @@
 			<dependency>
 				<groupId>mysql</groupId>
 				<artifactId>mysql-connector-java</artifactId>
-				<version>8.0.16</version>
 			</dependency>
 			
 			<!-- Amazon -->
 			<dependency>
 				<groupId>com.amazonaws</groupId>
 				<artifactId>aws-java-sdk-s3</artifactId>
-				<version>1.11.791</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
