@@ -52,23 +52,6 @@ object SimilarityStacking {
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures").cache()
     countVectorizedFeaturesDataFrame.show(false)
 
-
-    /* val sampleUri: String = "m2"
-    val sample_key: Vector = countVectorizedFeaturesDataFrame
-      .filter(countVectorizedFeaturesDataFrame("uri") === sampleUri)
-      .take(1)(0)
-      .getAs[Vector]("vectorizedFeatures")
-
-    // minHash similarity estimation
-    val m = new MinHashLSH()
-      .setInputCol("vectorizedFeatures")
-      .setOutputCol("hashedFeatures")
-      .fit(countVectorizedFeaturesDataFrame)
-    m.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show(false)
-
-    assert(false)
-     */
-
     // minHash similarity estimation
     val minHashModel: MinHashModel = new MinHashModel()
       .setInputCol("vectorizedFeatures")
