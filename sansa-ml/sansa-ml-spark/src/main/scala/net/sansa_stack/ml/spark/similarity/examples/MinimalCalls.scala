@@ -22,7 +22,7 @@ import org.apache.spark.sql.types.DataTypes
  * one for all pair similarity
  * all intermediate steps are printed in cmd line
  */
-object minimalCalls {
+object MinimalCalls {
   def main(args: Array[String]): Unit = {
 
     // setup spark session
