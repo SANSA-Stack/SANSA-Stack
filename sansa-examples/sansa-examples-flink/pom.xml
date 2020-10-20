@@ -136,7 +136,7 @@
 									<exclude>com.esotericsoftware.kryo:kryo</exclude>
 									<exclude>com.esotericsoftware.minlog:minlog</exclude>
 									<exclude>com.fasterxml.jackson.core:jackson*</exclude>
-									<exclude>com.github.scopt:scopt_2.11</exclude>
+									<exclude>com.github.scopt:*</exclude>
 									<exclude>com.google.code.findbugs:jsr305</exclude>
 									<exclude>com.google.protobuf:protobuf-java</exclude>
 									<exclude>com.jamesmurty.utils:java-xmlbuilder</exclude>
