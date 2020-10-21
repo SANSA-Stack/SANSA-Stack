@@ -201,6 +201,12 @@
                                                 <include>**</include>
                                             </includes>
                                         </filter>
+                                        <filter>
+                                            <artifact>org.aksw.jena-sparql-api:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle</exclude>
+                                            </excludes>
+                                        </filter>
                                     </filters>
 <!--                                    <finalName>${project.artifactId}.jar</finalName>-->
                                     <transformers>
