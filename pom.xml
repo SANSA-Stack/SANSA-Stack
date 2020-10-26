@@ -572,7 +572,7 @@
 				<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
 				<!-- TODO: sync again with Spark version as soon as com.holdenkarau:spark-testing-base_2.11:2.4.4_0.12.0 is out -->
 				<!--version>${spark.version}_0.12.0</version-->
-				<version>2.4.5_0.14.0</version>
+				<version>2.4.5_1.0.0</version>
 
 				<!-- Experimental exclusions ~ Claus, 5.1 -->
 				<exclusions>

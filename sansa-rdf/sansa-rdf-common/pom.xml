@@ -25,7 +25,6 @@
 		<dependency>
 			<groupId>org.scala-lang.modules</groupId>
 			<artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
-			<version>0.9.1</version>
 		</dependency>
 
 		<dependency>
@@ -91,11 +90,10 @@
 			<artifactId>config</artifactId>
 		</dependency>
 
-<dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-</dependency>
-
+		<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+		</dependency>
 
 	</dependencies>
 

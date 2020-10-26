@@ -81,6 +81,12 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.github.scopt</groupId>
+					<artifactId>scopt_2.11</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Logging -->
