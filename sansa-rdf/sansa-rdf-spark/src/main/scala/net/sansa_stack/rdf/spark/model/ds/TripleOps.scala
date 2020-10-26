@@ -1,10 +1,14 @@
 package net.sansa_stack.rdf.spark.model.ds
 
+import java.io.ByteArrayOutputStream
+import java.util.Collections
+
 import net.sansa_stack.rdf.spark.utils._
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.riot.RDFDataMgr
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 
 /**
@@ -62,11 +66,10 @@ object TripleOps {
    * @param object the object
    * @return Dataset of triples
    */
-  def find(triples: Dataset[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): Dataset[Triple] = {
-    triples.filter(t =>
-      (subject == None || t.getSubject.matches(subject.get)) &&
-        (predicate == None || t.getPredicate.matches(predicate.get)) &&
-        (`object` == None || t.getObject.matches(`object`.get)))
+  def find(triples: Dataset[Triple],
+           subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None)
+  : Dataset[Triple] = {
+    find(triples, Triple.create(subject.getOrElse(Node.ANY), predicate.getOrElse(Node.ANY), `object`.getOrElse(Node.ANY)))
   }
 
   /**
@@ -77,11 +80,7 @@ object TripleOps {
    * @return Dataset of triples that match the given input
    */
   def find(triples: Dataset[Triple], triple: Triple): Dataset[Triple] = {
-    find(
-      triples,
-      if (triple.getSubject.isVariable) None else Option(triple.getSubject),
-      if (triple.getPredicate.isVariable) None else Option(triple.getPredicate),
-      if (triple.getObject.isVariable) None else Option(triple.getObject))
+    triples.filter(triple.matches(_))
   }
 
   /**
@@ -138,7 +137,7 @@ object TripleOps {
    * a triple with (S, P, O) pattern, false otherwise
    */
   def contains(triples: Dataset[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): Boolean = {
-    find(triples, subject, predicate, `object`).count() > 0
+    contains(triples, Triple.create(subject.getOrElse(Node.ANY), predicate.getOrElse(Node.ANY), `object`.getOrElse(Node.ANY)))
   }
 
   /**
@@ -146,10 +145,14 @@ object TripleOps {
    *
    * @param triples Dataset of triples
    * @param triple the triple to be checked
-   * @return true if the statement s is in this RDF graph, false otherwise
+   * @return true if the triple is in this RDF graph, false otherwise
    */
   def contains(triples: Dataset[Triple], triple: Triple): Boolean = {
-    find(triples, triple).count() > 0
+//    find(triples, triple).count() > 0
+    import triples.sparkSession.implicits._
+    !triples.mapPartitions(p => {
+      if (p.exists(triple.matches)) Iterator(1) else Iterator()
+    }).isEmpty
   }
 
   /**
@@ -161,7 +164,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAny(triples: Dataset[Triple], other: Dataset[Triple]): Boolean = {
-    difference(triples, other).count() > 0
+    !difference(triples, other).isEmpty
   }
 
   /**
@@ -173,7 +176,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAll(triples: Dataset[Triple], other: Dataset[Triple]): Boolean = {
-    difference(triples, other).count() == 0
+    difference(triples, other).isEmpty
   }
 
   @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
@@ -241,9 +244,18 @@ object TripleOps {
    * @param path path to the file containing N-Triples
    */
   def saveAsNTriplesFile(triples: Dataset[Triple], path: String): Unit = {
-    import net.sansa_stack.rdf.common.io.ntriples.JenaTripleToNTripleString
-    triples.rdd
-      .map(new JenaTripleToNTripleString()) // map to N-Triples string
-      .saveAsTextFile(path)
+    import scala.collection.JavaConverters._
+    import triples.sparkSession.implicits._
+    triples.mapPartitions(p => {
+      // check if partition is empty
+      if (p.hasNext) {
+        val os = new ByteArrayOutputStream()
+        RDFDataMgr.writeTriples(os, p.asJava)
+        Collections.singleton(os.toString("UTF-8").trim).iterator().asScala
+      } else {
+        Iterator()
+      }
+    })
+      .write.format("text").save(path)
   }
 }

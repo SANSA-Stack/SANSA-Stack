@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.spark.model.df
 
-import org.apache.jena.graph.{NodeFactory, Triple}
-import org.apache.jena.sparql.util.NodeFactoryExtra
+import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
+
 import net.sansa_stack.rdf.spark.io.fromRow
 
 /**
@@ -33,7 +33,7 @@ object TripleOps {
    */
   def toDS(triples: DataFrame): Dataset[Triple] = {
     val spark: SparkSession = SparkSession.builder().getOrCreate()
-    implicit val encoder = Encoders.kryo[Triple]
+    implicit val encoder: Encoder[Triple] = Encoders.kryo[Triple]
     // triples.as[Triple]
     spark.createDataset[Triple](toRDD(triples))
   }
@@ -129,7 +129,7 @@ object TripleOps {
       if (triple.getSubject.isVariable) None else Option(triple.getSubject.getURI),
       if (triple.getPredicate.isVariable) None else Option(triple.getPredicate.getURI),
       if (triple.getObject.isVariable) None else {
-        Option(if (triple.getObject.isLiteral()) {
+        Option(if (triple.getObject.isLiteral) {
           triple.getObject.getLiteralLexicalForm
         } else triple.getObject.getURI)
       })
@@ -170,7 +170,7 @@ object TripleOps {
    * a triple with (S, P, O) pattern, false otherwise
    */
   def contains(triples: DataFrame, subject: Option[String] = None, predicate: Option[String] = None, `object`: Option[String] = None): Boolean = {
-    find(triples, subject, predicate, `object`).count() > 0
+    !find(triples, subject, predicate, `object`).isEmpty
   }
 
   /**
@@ -181,7 +181,7 @@ object TripleOps {
    * @return true if the statement s is in this RDF graph, false otherwise
    */
   def contains(triples: DataFrame, triple: Triple): Boolean = {
-    find(triples, triple).count() > 0
+    !find(triples, triple).isEmpty
   }
 
   /**
@@ -193,7 +193,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAny(triples: DataFrame, other: DataFrame): Boolean = {
-    triples.except(other).count() > 0 // .exceptAll()?
+    !triples.except(other).isEmpty // .exceptAll()?
   }
 
   /**
@@ -205,7 +205,7 @@ object TripleOps {
    * in this RDF graph and false otherwise.
    */
   def containsAll(triples: DataFrame, other: DataFrame): Boolean = {
-    triples.except(other).count() == 0 // .exceptAll()?
+    triples.except(other).isEmpty // .exceptAll()?
   }
 
   /**
@@ -271,9 +271,6 @@ object TripleOps {
    * @param path path to the file containing N-Triples
    */
   def saveAsNTriplesFile(triples: DataFrame, path: String): Unit = {
-    import net.sansa_stack.rdf.common.io.ntriples.JenaTripleToNTripleString
-    toRDD(triples)
-      .map(new JenaTripleToNTripleString()) // map to N-Triples string
-      .saveAsTextFile(path)
+    net.sansa_stack.rdf.spark.model.ds.TripleOps.saveAsNTriplesFile(toDS(triples), path)
   }
 }

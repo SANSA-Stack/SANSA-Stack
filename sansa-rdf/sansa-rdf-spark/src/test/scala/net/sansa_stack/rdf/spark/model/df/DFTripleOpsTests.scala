@@ -1,21 +1,28 @@
 package net.sansa_stack.rdf.spark.model.df
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
+import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.riot.Lang
+import org.apache.spark.sql.DataFrame
 import org.scalatest.FunSuite
+
+import net.sansa_stack.rdf.spark.io._
 
 class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.model._
 
+  val lang: Lang = Lang.NTRIPLES
+  var path: String = _
+  var triples: DataFrame = _
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    path = getClass.getResource("/loader/data.nt").getPath
+    triples = spark.read.rdf(lang)(path).cache()
+  }
+
   test("converting DataFrame of triples into RDD of Triples should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
     val graph = triples.toRDD()
     val size = graph.count()
 
@@ -23,11 +30,6 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("converting DataFrame of triples into DataSet should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
     val graph = triples.toDS()
     val size = graph.count()
 
@@ -35,11 +37,6 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("getting all the subjects should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
     val graph = triples.getSubjects()
     val size = graph.count()
 
@@ -47,11 +44,6 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("getting all the predicates should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
     val graph = triples.getPredicates()
     val size = graph.count()
 
@@ -59,11 +51,6 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("getting all the objects should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
     val graph = triples.getObjects()
     val size = graph.count()
 
@@ -71,12 +58,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("union of two RDF graph should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
-    val other = spark.read.rdf(lang)(path)
+    val other = triples
 
     val graph = triples.union(other)
 
@@ -86,12 +68,7 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("difference of two RDF graph should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
-    val other = spark.read.rdf(lang)(path)
+    val other = triples
 
     val graph = triples.except(other)
 
@@ -101,17 +78,12 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("intersection of two RDF graph should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
-    val triples = spark.read.rdf(lang)(path)
-
     val triple = Triple.create(
       NodeFactory.createURI("http://dbpedia.org/resource/Guy_de_Maupassant"),
       NodeFactory.createURI("http://xmlns.com/foaf/0.1/givenName"),
       NodeFactory.createLiteral("Guy De"))
 
-    val other = spark.read.rdf(lang)(path)
+    val other = triples
       .add(triple)
 
     val graph = triples.intersect(other)
@@ -122,15 +94,10 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("add a statement to the RDF graph should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
     val triple = Triple.create(
       NodeFactory.createURI("http://dbpedia.org/resource/Guy_de_Maupassant"),
       NodeFactory.createURI("http://xmlns.com/foaf/0.1/givenName"),
       NodeFactory.createLiteral("Guy De"))
-
-    val triples = spark.read.rdf(lang)(path)
 
     val graph = triples.add(triple)
 
@@ -140,9 +107,6 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("add a list of statements to the RDF graph should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
     val triple1 = Triple.create(
       NodeFactory.createURI("http://dbpedia.org/resource/Guy_de_Maupassant"),
       NodeFactory.createURI("http://xmlns.com/foaf/0.1/givenName"),
@@ -160,8 +124,6 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val statements = Seq(triple1, triple2, triple3)
 
-    val triples = spark.read.rdf(lang)(path)
-
     val graph = triples.addAll(statements)
 
     val size = graph.count()
@@ -170,15 +132,11 @@ class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("remove a statement from the RDF graph should match") {
-    val path = getClass.getResource("/loader/data.nt").getPath
-    val lang: Lang = Lang.NTRIPLES
-
     val triple = Triple.create(
       NodeFactory.createURI("http://example.org/show/218"),
       NodeFactory.createURI("http://www.w3.org/2000/01/rdf-schema#label"),
       NodeFactory.createLiteral("That Seventies Show", "en"))
 
-    val triples = spark.read.rdf(lang)(path)
     val graph = triples.remove(triple)
 
     val size = graph.count()
