@@ -35,8 +35,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
   extends SPARQL11TestSuiteRunnerSpark {
 
   override lazy val IGNORE = Set(/* AGGREGATES */
-    aggregatesManifest + "agg-err-02", /* BINDINGS
-			 */
+    aggregatesManifest + "agg-err-02", /* BINDINGS */
     // TODO: fix it (UNDEF involves the notion of COMPATIBILITY when joining)
     bindingsManifest + "values8", bindingsManifest + "values5", /* FUNCTIONS */
     // bnode not supported in SPARQL transformation
@@ -82,10 +81,9 @@ class SPARQL11TestSuiteRunnerSparkOntop
     subqueryManifest + "subquery10", // ORDER BY IRI (for supported by the SI)
     subqueryManifest + "subquery11", // unbound variable: Var TODO: fix it
     subqueryManifest + "subquery12", subqueryManifest + "subquery13", // missing results (TODO: fix)
-    subqueryManifest + "subquery14",
-
-
+    subqueryManifest + "subquery14"
   )
+
 
   override lazy val IGNORE_FILTER = t => t.name.startsWith("HOUR")
 

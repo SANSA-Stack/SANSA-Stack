@@ -82,7 +82,7 @@
 		<ontop.version>4.0.2</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
-		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+<!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
 
 		<CodeCacheSize>1g</CodeCacheSize>
 
@@ -1926,11 +1926,31 @@
 			<id>root-dir</id>
 			<activation>
 				<file>
-					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+					<exists>${project.basedir}/scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+		<profile>
+			<id>child-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../lib</exists>
 				</file>
 			</activation>
 			<properties>
 				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+		<profile>
+			<id>child-child-dir</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../../scalastyle-config.xml</scalastyle.config.path>
 			</properties>
 		</profile>
 
