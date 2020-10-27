@@ -46,13 +46,13 @@ object Sparql2SQL {
     * @return a complete FILTER expression.
     */
   def createFilterString(cond: Expr): String = {
-    var fName = cond.getFunction.getFunctionName(null)
+    val fName = cond.getFunction.getFunctionName(null)
     val argsList = cond.getFunction.getArgs
 
     if (fName.trim.equals("strstarts")) {
       getColumnName(argsList.get(0).toString) + s" like '${argsList.get(1).toString.replace("\"", "")}%'"
     } else if (fName.toUpperCase.trim.equals("STRLEN")) {
-      s"length(${getColumnName(argsList.get(0).toString())})"
+      s"length(${getColumnName(argsList.get(0).toString)})"
 
     } else if (fName.toUpperCase.trim.equals("SUBSTR")) {
 
@@ -109,7 +109,7 @@ object Sparql2SQL {
     } else if (fName.trim.toLowerCase().equals("OR")) {
       createFilterString(argsList.get(0)) + " or " + createFilterString(argsList.get(1))
     } else {
-      throw new UnsupportedOperationException(s"Function not implemented ${fName}")
+      throw new UnsupportedOperationException(s"Function not implemented $fName")
       ""
     }
 
@@ -120,9 +120,9 @@ object Sparql2SQL {
     *
     * @return true if present, false otherwise.
     */
-  def isCountEnabled(): Boolean = {
+  def isCountEnabled: Boolean = {
     var found = false
-    for (i <- 0 to SparqlOpVisitor.aggregatorList.size() - 1) {
+    for (i <- 0 until SparqlOpVisitor.aggregatorList.size()) {
       if (SparqlOpVisitor.aggregatorList.get(i).getAggregator.getName.equalsIgnoreCase("COUNT")) {
         found = true
       }
@@ -137,13 +137,13 @@ object Sparql2SQL {
     *
     * @return a projection fields.
     */
-  def getProjectionFields(): String = {
+  def getProjectionFields: String = {
     var result = ""
 
     if (isCountEnabled) {
       result = " count(*) "
     } else {
-      for (i <- 0 to SparqlOpVisitor.varList.size() - 1) {
+      for (i <- 0 until SparqlOpVisitor.varList.size()) {
         val name = SparqlOpVisitor.varList.get(i).getVarName
 
         if (name.equalsIgnoreCase("S")) {
@@ -164,9 +164,9 @@ object Sparql2SQL {
     *
     * @return a SQL WHERE clause using HDT schema.
     */
-  def getWhereCondition(): String = {
+  def getWhereCondition: String = {
     var tempStr = ""
-    for (i <- 0 to SparqlOpVisitor.whereCondition.size() - 1) {
+    for (i <- 0 until SparqlOpVisitor.whereCondition.size()) {
       if (!SparqlOpVisitor.optional.get(i)) {
         if (!SparqlOpVisitor.subjects.get(i).toString().toLowerCase().contains("?s")) {
           tempStr += s" subjects_hdt.name='${SparqlOpVisitor.subjects.get(i)}' and"
@@ -182,7 +182,7 @@ object Sparql2SQL {
     tempStr = tempStr.reverse.replaceFirst("dna", "").reverse
 
     if (SparqlOpVisitor.optional.contains(true)) {
-      for (i <- 0 to SparqlOpVisitor.whereCondition.size() - 1) {
+      for (i <- 0 until SparqlOpVisitor.whereCondition.size()) {
         if (SparqlOpVisitor.optional.get(i)) {
           tempStr += " or ( "
           if (!SparqlOpVisitor.subjects.get(i).toString().toLowerCase().contains("?s")) {
@@ -201,7 +201,7 @@ object Sparql2SQL {
     }
 
     if (tempStr.length > 5) {
-      s" where (${tempStr})"
+      s" where ($tempStr)"
     }
     else {
       " where 1=1 "
@@ -215,11 +215,11 @@ object Sparql2SQL {
     *
     * @return a DISTINCT clause mapped to HDT schema.
     */
-  def getDistinct(): String = {
+  def getDistinct: String = {
     if (SparqlOpVisitor.isDistinctEnabled) {
 
       var groupBy = ""
-      for (i <- 0 to SparqlOpVisitor.varList.size() - 1) {
+      for (i <- 0 until SparqlOpVisitor.varList.size()) {
         if (SparqlOpVisitor.subjects.contains(SparqlOpVisitor.varList.get(i))) {
           groupBy += s"subjects_hdt.name, "
         } else if (SparqlOpVisitor.objects.contains(SparqlOpVisitor.varList.get(i))) {
@@ -240,11 +240,11 @@ object Sparql2SQL {
     *
     * @return a FILTER condition
     */
-  def getFilterCondition(): String = {
+  def getFilterCondition: String = {
     var strCondition = ""
     var logicalOp = ""
 
-    for (i <- 0 to SparqlOpVisitor.filters.size() - 1) {
+    for (i <- 0 until SparqlOpVisitor.filters.size()) {
       val cond = filterHDT(SparqlOpVisitor.filters.get(i))
       if (cond.length > 2) {
         strCondition += cond + " and "
@@ -252,7 +252,7 @@ object Sparql2SQL {
 
     }
     strCondition = strCondition.reverse.replaceFirst("dna", "").reverse
-    if (strCondition.length > 5) s" ${strCondition}" else " 1=1"
+    if (strCondition.length > 5) s" $strCondition" else " 1=1"
   }
 
 
@@ -270,10 +270,10 @@ object Sparql2SQL {
     val op = Algebra.compile(query)
     OpWalker.walk(op, SparqlOpVisitor)
 
-    val sql = s"select ${getProjectionFields()}from hdt inner join subjects_hdt on hdt.s=subjects_hdt.index" +
+    val sql = s"select ${getProjectionFields}from hdt inner join subjects_hdt on hdt.s=subjects_hdt.index" +
       s" inner join objects_hdt on hdt.o=objects_hdt.index" +
       s" inner join predicates_hdt on hdt.p=predicates_hdt.index" +
-      s" ${getWhereCondition()} and ${getFilterCondition()} ${getDistinct()}"
+      s" ${getWhereCondition} and ${getFilterCondition} ${getDistinct}"
 
     sql
   }

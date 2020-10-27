@@ -56,14 +56,14 @@
 		<scala.classifier>${scala.binary.version}</scala.classifier>
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<flink.version>1.11.0</flink.version>
+		<flink.version>1.11.2</flink.version>
 		<spark.version>2.4.6</spark.version>
 
 		<!--<hadoop.version>3.2.1</hadoop.version>-->
 		<hadoop.version>2.8.5</hadoop.version>
 		<hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
-		<jena.version>3.15.0</jena.version>
+		<jena.version>3.16.0</jena.version>
 		<jsa.subversion>1</jsa.subversion>
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
@@ -79,10 +79,9 @@
 
 
 		<owlapi.version>5.1.14</owlapi.version>
-		<ontop.version>4.0.0-rc-1</ontop.version>
+		<ontop.version>4.0.2</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
-		<!-- <sansa.datalake.version>0.1.2</sansa.datalake.version> -->
 		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
 
 		<CodeCacheSize>1g</CodeCacheSize>
@@ -189,22 +188,24 @@
 
 
 			<!-- Kryo -->
+			<!-- Note: don't use versions above 0.43 for now, for whatever reason they depend on Kryo 5.0.0 RC1 which is
+			binary incompatible and not used by Spark -->
 			<dependency>
 				<groupId>de.javakaffee</groupId>
 				<artifactId>kryo-serializers</artifactId>
-				<version>0.42</version>
+				<version>0.43</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.twitter</groupId>
 				<artifactId>chill_${scala.binary.version}</artifactId>
-				<version>0.9.3</version>
+				<version>0.9.5</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.twitter</groupId>
 				<artifactId>chill-java</artifactId>
-				<version>0.9.3</version>
+				<version>0.9.5</version>
 			</dependency>
 
 			<!-- Scala -->
@@ -229,14 +230,20 @@
 			<dependency>
 				<groupId>org.scala-lang.modules</groupId>
 				<artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
-				<version>0.9.0</version>
+				<version>0.9.1</version>
 			</dependency>
 
-                        <dependency>
-                                <groupId>org.scala-lang.modules</groupId>
-                                <artifactId>scala-xml_${scala.binary.version}</artifactId>
-                                <version>1.0.5</version>
-                        </dependency>
+			<dependency>
+				<groupId>org.scala-lang.modules</groupId>
+				<artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
+				<version>1.1.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.scala-lang.modules</groupId>
+				<artifactId>scala-xml_${scala.binary.version}</artifactId>
+				<version>1.0.5</version>
+			</dependency>
 
 			<!-- Miscellaneous -->
 
@@ -690,7 +697,7 @@
 			<dependency>
 				<groupId>org.specs</groupId>
 				<artifactId>specs</artifactId>
-				<version>1.2.5</version>
+				<version>1.4.3</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.scalatest</groupId>
@@ -860,11 +867,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.scala-lang.modules</groupId>
-				<artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
-				<version>1.0.6</version>
-			</dependency>
-			<dependency>
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<version>4.0</version>
@@ -938,13 +940,13 @@
 			<dependency>
 				<groupId>org.specs2</groupId>
 				<artifactId>specs2-core_${scala.binary.version}</artifactId>
-				<version>4.0.3</version>
+				<version>4.10.5</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.specs2</groupId>
 				<artifactId>specs2-junit_${scala.binary.version}</artifactId>
-				<version>4.0.3</version>
+				<version>4.10.5</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -973,7 +975,7 @@
 			<dependency>
 				<groupId>com.typesafe</groupId>
 				<artifactId>config</artifactId>
-				<version>1.3.3</version>
+				<version>1.4.1</version>
 			</dependency>
 
 
@@ -1047,6 +1049,11 @@
 
 	<reporting>
 		<plugins>
+
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
 
 			<plugin>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
@@ -1468,12 +1475,7 @@
 					<artifactId>maven-site-plugin</artifactId>
 					<version>3.6</version>
 					<configuration>
-						<reportPlugins>
-							<plugin>
-								<groupId>net.alchim31.maven</groupId>
-								<artifactId>scala-maven-plugin</artifactId>
-							</plugin>
-						</reportPlugins>
+						<skipDeploy>true</skipDeploy>
 					</configuration>
 				</plugin>
 
@@ -1495,7 +1497,7 @@
 					<artifactId>maven-pmd-plugin</artifactId>
 					<version>3.13.0</version>
 					<configuration>
-						<linkXref>true</linkXref>
+						<linkXRef>true</linkXRef>
 						<sourceEncoding>utf-8</sourceEncoding>
 						<minimumTokens>100</minimumTokens>
 						<targetJdk>1.8</targetJdk>
