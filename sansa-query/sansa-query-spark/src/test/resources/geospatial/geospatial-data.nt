@@ -1,0 +1,43 @@
+<http://example.org/ApplicationSchema#PlaceOfInterest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Class> .
+<http://example.org/ApplicationSchema#PlaceOfInterest> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.opengis.net/ont/geosparql#Feature> .
+<http://example.org/ApplicationSchema#hasExactGeometry> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://example.org/ApplicationSchema#hasExactGeometry> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> <http://www.opengis.net/ont/geosparql#hasGeometry> .
+<http://example.org/ApplicationSchema#hasExactGeometry> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> <http://www.opengis.net/ont/geosparql#hasDefaultGeometry> .
+<http://example.org/ApplicationSchema#hasPointGeometry> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> .
+<http://example.org/ApplicationSchema#hasPointGeometry> <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> <http://www.opengis.net/ont/geosparql#hasGeometry> .
+<http://example.org/ApplicationSchema#A> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ApplicationSchema#PlaceOfInterest> .
+<http://example.org/ApplicationSchema#A> <http://example.org/ApplicationSchema#hasExactGeometry> <http://example.org/ApplicationSchema#AExactGeom> .
+<http://example.org/ApplicationSchema#A> <http://example.org/ApplicationSchema#hasPointGeometry> <http://example.org/ApplicationSchema#APointGeom> .
+<http://example.org/ApplicationSchema#AExactGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Polygon> .
+<http://example.org/ApplicationSchema#AExactGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84>\n\t\t\t\tPolygon((-83.6 34.1, -83.2 34.1, -83.2 34.5, -83.6 34.5, -83.6 34.1))\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#APointGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Point> .
+<http://example.org/ApplicationSchema#APointGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.4 34.3)\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#B> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ApplicationSchema#PlaceOfInterest> .
+<http://example.org/ApplicationSchema#B> <http://example.org/ApplicationSchema#hasExactGeometry> <http://example.org/ApplicationSchema#BExactGeom> .
+<http://example.org/ApplicationSchema#B> <http://example.org/ApplicationSchema#hasPointGeometry> <http://example.org/ApplicationSchema#BPointGeom> .
+<http://example.org/ApplicationSchema#BExactGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Polygon> .
+<http://example.org/ApplicationSchema#BExactGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84>\n\t\t\t\tPolygon((-83.6 34.1, -83.4 34.1, -83.4 34.3, -83.6 34.3, -83.6 34.1))\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#BPointGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Point> .
+<http://example.org/ApplicationSchema#BPointGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.5 34.2)\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#C> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ApplicationSchema#PlaceOfInterest> .
+<http://example.org/ApplicationSchema#C> <http://example.org/ApplicationSchema#hasExactGeometry> <http://example.org/ApplicationSchema#CExactGeom> .
+<http://example.org/ApplicationSchema#C> <http://example.org/ApplicationSchema#hasPointGeometry> <http://example.org/ApplicationSchema#CPointGeom> .
+<http://example.org/ApplicationSchema#CExactGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Polygon> .
+<http://example.org/ApplicationSchema#CExactGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84>\n\t\t\t\tPolygon((-83.2 34.3, -83.0 34.3, -83.0 34.5, -83.2 34.5, -83.2 34.3))\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#CPointGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Point> .
+<http://example.org/ApplicationSchema#CPointGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.1 34.4)\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#D> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ApplicationSchema#PlaceOfInterest> .
+<http://example.org/ApplicationSchema#D> <http://example.org/ApplicationSchema#hasExactGeometry> <http://example.org/ApplicationSchema#DExactGeom> .
+<http://example.org/ApplicationSchema#D> <http://example.org/ApplicationSchema#hasPointGeometry> <http://example.org/ApplicationSchema#DPointGeom> .
+<http://example.org/ApplicationSchema#DExactGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Polygon> .
+<http://example.org/ApplicationSchema#DExactGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84>\n\t\t\t\tPolygon((-83.3 34.0, -83.1 34.0, -83.1 34.2, -83.3 34.2, -83.3 34.0))\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#DPointGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Point> .
+<http://example.org/ApplicationSchema#DPointGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.2 34.1)\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#E> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ApplicationSchema#PlaceOfInterest> .
+<http://example.org/ApplicationSchema#E> <http://example.org/ApplicationSchema#hasExactGeometry> <http://example.org/ApplicationSchema#EExactGeom> .
+<http://example.org/ApplicationSchema#EExactGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#LineString> .
+<http://example.org/ApplicationSchema#EExactGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84> LineString(-83.4 34.0, -83.3 34.3)\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://example.org/ApplicationSchema#F> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ApplicationSchema#PlaceOfInterest> .
+<http://example.org/ApplicationSchema#F> <http://example.org/ApplicationSchema#hasExactGeometry> <http://example.org/ApplicationSchema#FExactGeom> .
+<http://example.org/ApplicationSchema#FExactGeom> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.opengis.net/ont/sf#Point> .
+<http://example.org/ApplicationSchema#FExactGeom> <http://www.opengis.net/ont/geosparql#asWKT> "\n\t\t\t\n\t\t\t\t<http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.4 34.4)\n\t\t\t\n\t\t"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
