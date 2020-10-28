@@ -127,6 +127,16 @@
             <artifactId>spark-hive_${scala.binary.version}</artifactId>
         </dependency>
 
+        <!-- GeoSpark -->
+        <dependency>
+            <groupId>org.datasyslab</groupId>
+            <artifactId>geospark</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.datasyslab</groupId>
+            <artifactId>geospark-sql_3.0</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>spark-gremlin</artifactId>

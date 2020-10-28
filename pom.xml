@@ -579,7 +579,20 @@
 				<version>1.14</version>
 			</dependency>
 
+			<!-- GeoSpark -->
+			<dependency>
+				<groupId>org.datasyslab</groupId>
+				<artifactId>geospark</artifactId>
+				<version>1.3.2-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>org.datasyslab</groupId>
+				<artifactId>geospark-sql_3.0</artifactId>
+				<version>1.3.2-SNAPSHOT</version>
+			</dependency>
 
+
+			<!-- Spark Testing -->
 			<dependency>
 				<groupId>com.holdenkarau</groupId>
 				<artifactId>spark-testing-base_${scala.binary.version}</artifactId>

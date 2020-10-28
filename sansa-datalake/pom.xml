@@ -52,12 +52,6 @@
 				<groupId>io.gatling</groupId>
 				<artifactId>jsonpath_${scala.binary.version}</artifactId>
 				<version>0.7.0</version>
-				<version>0.7.0</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.typesafe.play</groupId>
-				<artifactId>play_${scala.binary.version}</artifactId>
 			</dependency>
 
 			<!-- Connectors -->
