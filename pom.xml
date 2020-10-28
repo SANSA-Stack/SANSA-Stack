@@ -56,7 +56,7 @@
 		<scala.classifier>${scala.binary.version}</scala.classifier>
 		<scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
-		<flink.version>1.11.0</flink.version>
+		<flink.version>1.11.2</flink.version>
 		<spark.version>3.0.1</spark.version>
 		<!-- Spark Testing isn't always in sync, so we have to check for latest version and adapt here -->
 		<spark.testing.version>3.0.1_1.0.0</spark.testing.version>
@@ -65,7 +65,7 @@
 		<hadoop.version>2.8.5</hadoop.version>
 		<hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
-		<jena.version>3.15.0</jena.version>
+		<jena.version>3.16.0</jena.version>
 		<jsa.subversion>1</jsa.subversion>
 		<jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
@@ -81,11 +81,10 @@
 
 
 		<owlapi.version>5.1.14</owlapi.version>
-		<ontop.version>4.0.0-rc-1</ontop.version>
+		<ontop.version>4.0.2</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
-		<!-- <sansa.datalake.version>0.1.2</sansa.datalake.version> -->
-		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+<!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
 
 		<CodeCacheSize>1g</CodeCacheSize>
 
@@ -124,24 +123,91 @@
 	<dependencyManagement>
 		<dependencies>
 
+			<!-- SANSA layers -->
+			<!-- RDF Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- OWL Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Query Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Inference Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- ML Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 
 			<!-- Kryo -->
+			<!-- Note: don't use versions above 0.43 for now, for whatever reason they depend on Kryo 5.0.0 RC1 which is
+			binary incompatible and not used by Spark -->
 			<dependency>
 				<groupId>de.javakaffee</groupId>
 				<artifactId>kryo-serializers</artifactId>
-				<version>0.42</version>
+				<version>0.43</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.twitter</groupId>
 				<artifactId>chill_${scala.binary.version}</artifactId>
-				<version>0.9.3</version>
+				<version>0.9.5</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.twitter</groupId>
 				<artifactId>chill-java</artifactId>
-				<version>0.9.3</version>
+				<version>0.9.5</version>
 			</dependency>
 
 			<!-- Scala -->
@@ -166,14 +232,20 @@
 			<dependency>
 				<groupId>org.scala-lang.modules</groupId>
 				<artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
-				<version>0.9.0</version>
+				<version>0.9.1</version>
 			</dependency>
 
-                        <dependency>
-                                <groupId>org.scala-lang.modules</groupId>
-                                <artifactId>scala-xml_${scala.binary.version}</artifactId>
-                                <version>1.0.5</version>
-                        </dependency>
+			<dependency>
+				<groupId>org.scala-lang.modules</groupId>
+				<artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
+				<version>1.1.2</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.scala-lang.modules</groupId>
+				<artifactId>scala-xml_${scala.binary.version}</artifactId>
+				<version>1.0.5</version>
+			</dependency>
 
 			<!-- Miscellaneous -->
 
@@ -625,7 +697,7 @@
 			<dependency>
 				<groupId>org.specs</groupId>
 				<artifactId>specs</artifactId>
-				<version>1.2.5</version>
+				<version>1.4.3</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.scalatest</groupId>
@@ -795,11 +867,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.scala-lang.modules</groupId>
-				<artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
-				<version>1.0.6</version>
-			</dependency>
-			<dependency>
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<version>4.0</version>
@@ -853,7 +920,7 @@
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>4.13</version>
+				<version>4.13.1</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -873,13 +940,13 @@
 			<dependency>
 				<groupId>org.specs2</groupId>
 				<artifactId>specs2-core_${scala.binary.version}</artifactId>
-				<version>4.0.3</version>
+				<version>4.10.5</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.specs2</groupId>
 				<artifactId>specs2-junit_${scala.binary.version}</artifactId>
-				<version>4.0.3</version>
+				<version>4.10.5</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -908,7 +975,7 @@
 			<dependency>
 				<groupId>com.typesafe</groupId>
 				<artifactId>config</artifactId>
-				<version>1.3.3</version>
+				<version>1.4.1</version>
 			</dependency>
 
 			<!-- Play -->
@@ -1004,6 +1071,11 @@
 		<plugins>
 
 			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 			</plugin>
 
@@ -1021,11 +1093,6 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jdepend-maven-plugin</artifactId>
 				<version>2.0</version>
-			</plugin>
-
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
 			</plugin>
 
 		</plugins>
@@ -1161,18 +1228,19 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<!-- <version>2.18.1</version> -->
 					<version>2.20.1</version>
 
 					<configuration>
 						<useFile>false</useFile>
 						<disableXmlReport>true</disableXmlReport>
+						<threadCountSuites>4</threadCountSuites>
 						<!-- If you have classpath issue like NoDefClassError,... -->
 						<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
 						<includes>
 							<include>**/*Test.*</include>
 							<include>**/*Suite.*</include>
 						</includes>
+						<skipTests>true</skipTests>
 					</configuration>
 				</plugin>
 
@@ -1201,7 +1269,7 @@
 						<tagsToExclude>net.sansa_stack.test.conformance.IntegrationTestSuite</tagsToExclude>
 						<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
 						<junitxml>.</junitxml>
-						<filereports>SANSA-RDF-Tests.txt</filereports>
+						<filereports>SANSA-${project.artifactId}-Tests.txt</filereports>
 					</configuration>
 					<executions>
 						<execution>
@@ -1426,14 +1494,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
 					<version>3.6</version>
-<!--					<configuration>-->
-<!--						<reportPlugins>-->
-<!--							<plugin>-->
-<!--								<groupId>net.alchim31.maven</groupId>-->
-<!--								<artifactId>scala-maven-plugin</artifactId>-->
-<!--							</plugin>-->
-<!--						</reportPlugins>-->
-<!--					</configuration>-->
+					<configuration>
+						<skipDeploy>true</skipDeploy>
+					</configuration>
 				</plugin>
 
 				<plugin>
@@ -1454,7 +1517,7 @@
 					<artifactId>maven-pmd-plugin</artifactId>
 					<version>3.13.0</version>
 					<configuration>
-						<linkXref>true</linkXref>
+						<linkXRef>true</linkXRef>
 						<sourceEncoding>utf-8</sourceEncoding>
 						<minimumTokens>100</minimumTokens>
 						<targetJdk>1.8</targetJdk>
@@ -1883,11 +1946,31 @@
 			<id>root-dir</id>
 			<activation>
 				<file>
-					<exists>${project.basedir}/../../scalastyle-config.xml</exists>
+					<exists>${project.basedir}/scalastyle-config.xml</exists>
+				</file>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+		<profile>
+			<id>child-dir</id>
+			<activation>
+				<file>
+					<exists>${project.basedir}/../lib</exists>
 				</file>
 			</activation>
 			<properties>
 				<scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+			</properties>
+		</profile>
+		<profile>
+			<id>child-child-dir</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<scalastyle.config.path>${project.basedir}/../../scalastyle-config.xml</scalastyle.config.path>
 			</properties>
 		</profile>
 

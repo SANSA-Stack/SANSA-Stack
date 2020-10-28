@@ -8,7 +8,7 @@ import org.apache.spark.sql.functions.{col, lit, udf}
 class MinHashModel extends GenericSimilarityEstimatorModel {
 
   override val estimatorName: String = "MinHashLSHSimilarityEstimator"
-  override val estimatorMeasureType: String = "distance"
+  override val estimatorMeasureType: String = "minHashLSH"
 
   private var numberHashTables: Int = 1
 
@@ -28,6 +28,8 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
       .approxSimilarityJoin(dfA, dfB, threshold, valueColumn)
       .withColumn("uriA", col("datasetA").getField("uri"))
       .withColumn("uriB", col("datasetB").getField("uri"))
+      .withColumn("datasetA", col("datasetA").getField("vectorizedFeatures"))
+      .withColumn("datasetB", col("datasetB").getField("vectorizedFeatures"))
       .select("uriA", "uriB", valueColumn)
   }
 
@@ -39,10 +41,17 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
       .setOutputCol("hashedFeatures")
       .fit(dfA)
     // minHashModel.approxNearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
-    minHashModel
+    val nns = minHashModel
       .approxNearestNeighbors(dfA, key, k, valueColumn)
+
+    // nns.show(false)
+
+    val res = nns
       .withColumn("key_column", lit("key_uri"))
       .withColumnRenamed("uri", "uriA")
+      // .withColumn("datasetA", col("datasetA").getField("vectorizedFeatures"))
       .select("key_column", "uriA", valueColumn)
+
+    res
   }
 }

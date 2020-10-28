@@ -101,5 +101,16 @@ aws_secret_access_key=...
 ## Usage
 The usage of the Semantic Data Lake is documented under the respective SANSA-Query [datalake component](https://github.com/SANSA-Stack/SANSA-Query/tree/develop/sansa-query-spark/src/main/scala/net/sansa_stack/query/spark/datalake).
 
+## Connectors
+
+
+|   Name    | Connector |        Storage Version        | Spark |   Scala    |                          Link                          |
+|-----------|-----------|-----------------------|-------|------------|--------------------------------------------------------|
+| Cassandra | 2.5       | 2.1.5*, 2.2, 3.x, 4.0 | 2.5   | 2.11, 2.12 | https://github.com/datastax/spark-cassandra-connector  |
+| Cassandra |           |                       |       |            |                                                        |
+| MongoDB   | 2.4.2     | 2.6 or later          | 2.4.0 |       2.11 | https://www.mongodb.com/products/spark-connector       |
+| MongoDB   | 3.0.0     | 2.6 or later          | 3.0.x |       2.12 | https://www.mongodb.com/products/spark-connector       |
+| Couchbase | 2.4.x     | 5.x - 6.x             | 2.4   |       2.11 | https://github.com/couchbase/couchbase-spark-connector |
+
 ## How to Contribute
 We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.

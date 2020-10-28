@@ -22,7 +22,7 @@ import org.apache.spark.sql.types.DataTypes
  * one for all pair similarity
  * all intermediate steps are printed in cmd line
  */
-object minimalCalls {
+object MinimalCalls {
   def main(args: Array[String]): Unit = {
 
     // setup spark session
@@ -33,12 +33,12 @@ object minimalCalls {
       .getOrCreate()
 
     // define inputpath if it is not parameter
-    val inputPath = "/Users/carstendraschner/GitHub/SANSA-ML/sansa-ml-spark/src/main/resources/movieData/movie.nt"
+    val inputPath = "./sansa-ml/sansa-ml-spark/src/main/resources/movieData/movie.nt"
 
     // read in data as Data`Frame
-    val triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath)
+    val triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath).cache()
 
-    triplesDf.show()
+    triplesDf.show(false)
 
     // feature extraction
     val featureExtractorModel = new FeatureExtractorModel()
@@ -46,11 +46,12 @@ object minimalCalls {
     val extractedFeaturesDataFrame = featureExtractorModel
       .transform(triplesDf)
       .filter(t => t.getAs[String]("uri").startsWith("m"))
-    extractedFeaturesDataFrame.show()
+      .cache()
+    extractedFeaturesDataFrame.show(false)
 
     // filter for relevant URIs e.g. only movies
-    val filteredFeaturesDataFrame = extractedFeaturesDataFrame.filter(t => t.getAs[String]("uri").startsWith("m"))
-    filteredFeaturesDataFrame.show()
+    val filteredFeaturesDataFrame = extractedFeaturesDataFrame.filter(t => t.getAs[String]("uri").startsWith("m")).cache()
+    filteredFeaturesDataFrame.show(false)
 
     // count Vectorization
     val cvModel: CountVectorizerModel = new CountVectorizer()
@@ -59,12 +60,18 @@ object minimalCalls {
       .fit(filteredFeaturesDataFrame)
     val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
     val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
-    val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures")
-    countVectorizedFeaturesDataFrame.show()
+    val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures").cache()
+    countVectorizedFeaturesDataFrame.show(false)
 
     // similarity Estimations Overview
     // for nearestNeighbors we need one key which is a Vector to search for NN
-    val sample_key: Vector = countVectorizedFeaturesDataFrame.take(1)(0).getAs[Vector]("vectorizedFeatures")
+    // val sample_key: Vector = countVectorizedFeaturesDataFrame.take(1)(0).getAs[Vector]("vectorizedFeatures")
+    val sampleUri: String = "m2"
+    val sample_key: Vector = countVectorizedFeaturesDataFrame
+      .filter(countVectorizedFeaturesDataFrame("uri") === sampleUri)
+      .take(1)(0)
+      .getAs[Vector]("vectorizedFeatures")
+
 
     // minHash similarity estimation
     val minHashModel: MinHashModel = new MinHashModel()
@@ -72,43 +79,44 @@ object minimalCalls {
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
       .fit(countVectorizedFeaturesDataFrame) */
-    minHashModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, "minHashDistance").show()
+    minHashModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     minHashModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance").show()
 
     // Jaccard similarity
     val jaccardModel: JaccardModel = new JaccardModel()
      .setInputCol("vectorizedFeatures")
-    jaccardModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    jaccardModel
+      .nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     jaccardModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
     // Batet Distance
     val batetModel: BatetModel = new BatetModel()
       .setInputCol("vectorizedFeatures")
-    batetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    batetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     batetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
     // Braun Blanquet Similarity
     val braunBlanquetModel: BraunBlanquetModel = new BraunBlanquetModel()
       .setInputCol("vectorizedFeatures")
-    braunBlanquetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    braunBlanquetModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     braunBlanquetModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
     // Dice Similarity
     val diceModel: DiceModel = new DiceModel()
       .setInputCol("vectorizedFeatures")
-    diceModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    diceModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     diceModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
     // Ochiai Similarity
     val ochiaiModel: OchiaiModel = new OchiaiModel()
       .setInputCol("vectorizedFeatures")
-    ochiaiModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    ochiaiModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     ochiaiModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
     // Simpson Similarity
     val simpsonModel: SimpsonModel = new SimpsonModel()
       .setInputCol("vectorizedFeatures")
-    simpsonModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    simpsonModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     simpsonModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
     // Tversky Similarity
@@ -116,7 +124,7 @@ object minimalCalls {
       .setInputCol("vectorizedFeatures")
       .setAlpha(1.0)
       .setBeta(1.0)
-    tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
+    tverskyModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri).show()
     tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5).show()
 
 
@@ -124,7 +132,7 @@ object minimalCalls {
     val model = new MinHashModel()  // : JaccardModel = new JaccardModel()
       .setInputCol("vectorizedFeatures")
     val outputDf1: Dataset[_] = model
-      .nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10) // .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, threshold = 0.5)
+      .nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10, keyUri = sampleUri)
 
     val metaGraphFactory = new SimilarityExperimentMetaGraphFactory()
     val metagraph: RDD[graph.Triple] = metaGraphFactory.createRdfOutput(

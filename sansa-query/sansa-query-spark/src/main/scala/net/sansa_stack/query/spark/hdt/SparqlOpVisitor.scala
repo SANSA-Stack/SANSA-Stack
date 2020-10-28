@@ -15,17 +15,17 @@ object SparqlOpVisitor extends OpVisitor {
 
   val whereCondition = new util.ArrayList[Triple]()
   val triples = new util.ArrayList[Quad]()
-  var subjects = new util.ArrayList[Node]()
-  var predicates = new util.ArrayList[Node]()
-  var objects = new util.ArrayList[Node]()
+  val subjects = new util.ArrayList[Node]()
+  val predicates = new util.ArrayList[Node]()
+  val objects = new util.ArrayList[Node]()
   val varList = new util.ArrayList[Var]()
   val filters = new util.ArrayList[org.apache.jena.sparql.expr.Expr]()
   val aggregatorList = new util.ArrayList[ExprAggregator]()
-  var isDistinctEnabled = false;
-  var optional = new util.ArrayList[Boolean]()
-  var indexOptional = 0;
+  var isDistinctEnabled = false
+  val optional = new util.ArrayList[Boolean]()
+  var indexOptional = 0
 
-  def reset: Unit = {
+  def reset(): Unit = {
     whereCondition.clear()
     triples.clear()
     subjects.clear()
@@ -38,8 +38,8 @@ object SparqlOpVisitor extends OpVisitor {
 
   override def visit(opBGP: OpBGP): Unit = {
     whereCondition.addAll(opBGP.getPattern.getList)
-    indexOptional += 1;
-    for (i <- 0 to whereCondition.size() - 1) {
+    indexOptional += 1
+    for (i <- 0 until whereCondition.size()) {
       subjects.add(i, whereCondition.get(i).getSubject)
       objects.add(i, whereCondition.get(i).getObject)
       predicates.add(i, whereCondition.get(i).getPredicate)
@@ -153,5 +153,8 @@ object SparqlOpVisitor extends OpVisitor {
   }
 
   override def visit(opTopN: OpTopN): Unit = {
+  }
+
+  override def visit(opFind: OpFind): Unit = {
   }
 }

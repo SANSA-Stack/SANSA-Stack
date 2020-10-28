@@ -39,7 +39,9 @@ import org.apache.jena.riot.lang.PipedTriplesStream;
 import org.apache.jena.riot.lang.RiotParsers;
 import org.apache.jena.riot.system.ParserProfile;
 import org.apache.jena.riot.system.RiotLib;
+import org.apache.jena.riot.tokens.Tokenizer;
 import org.apache.jena.riot.tokens.TokenizerFactory;
+import org.apache.jena.riot.tokens.TokenizerText;
 import org.apache.jena.shared.SyntaxError;
 
 import com.google.common.base.Stopwatch;
@@ -226,6 +228,8 @@ public class SansaBenchRdfIo {
 	public static Stream<Triple> parseLineRiot2(File file) throws IOException {
 		
 	    return Files.lines(file.toPath())
-                .map(line -> RiotParsers.createParserNTriples(TokenizerFactory.makeTokenizerASCII(line), null, parserProfile).next());
+                .map(line ->
+						RiotParsers.createParserNTriples(TokenizerText.create().source(new ByteArrayInputStream(line.getBytes())).asciiOnly(true).build(),
+								null, parserProfile).next());
     }
 }
