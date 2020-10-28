@@ -79,7 +79,7 @@
 
 
 		<owlapi.version>5.1.14</owlapi.version>
-		<ontop.version>4.0.2</ontop.version>
+		<ontop.version>4.0.3-owlapi5</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
 <!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
@@ -711,11 +711,34 @@
 				<groupId>it.unibz.inf.ontop</groupId>
 				<artifactId>ontop-owlapi</artifactId>
 				<version>${ontop.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-classic</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>it.unibz.inf.ontop</groupId>
 				<artifactId>ontop-system-sql-owlapi</artifactId>
 				<version>${ontop.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-classic</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>it.unibz.inf.ontop</groupId>
+				<artifactId>ontop-rdb</artifactId>
+				<version>${ontop.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-classic</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<!-- Sparqlify -->
@@ -978,6 +1001,12 @@
 				<version>1.4.1</version>
 			</dependency>
 
+			<!-- Play -->
+			<dependency>
+				<groupId>com.typesafe.play</groupId>
+				<artifactId>play_${scala.binary.version}</artifactId>
+				<version>2.8.2</version>
+			</dependency>
 
 			<!-- JSON -->
 			<dependency>
@@ -1042,6 +1071,20 @@
 				<groupId>org.eclipse.rdf4j</groupId>
 				<artifactId>rdf4j-queryparser-api</artifactId>
 				<version>${rdf4j.version}</version>
+			</dependency>
+
+			<!-- Amazon AWS S3 -->
+			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk-s3</artifactId>
+				<version>1.11.882</version>
+			</dependency>
+
+			<!-- MySQL JDBC connector -->
+			<dependency>
+				<groupId>mysql</groupId>
+				<artifactId>mysql-connector-java</artifactId>
+				<version>8.0.22</version>
 			</dependency>
 
 		</dependencies>
