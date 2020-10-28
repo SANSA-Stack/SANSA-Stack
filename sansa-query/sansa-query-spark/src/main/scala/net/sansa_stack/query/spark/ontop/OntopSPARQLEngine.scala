@@ -4,7 +4,7 @@ import java.sql.{Connection, DriverManager, SQLException}
 import java.util
 import java.util.Properties
 
-import com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
+import com.google.common.collect.{ImmutableMap, ImmutableMultimap, ImmutableSortedSet, Sets}
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
@@ -14,6 +14,7 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{QueryFactory, QueryType}
@@ -25,7 +26,6 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
-
 import scala.collection.JavaConverters._
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
@@ -102,7 +102,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
   def createSQLQuery(sparqlQuery: String): OntopQueryRewrite = {
     val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
+    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create(ImmutableMultimap.of()))
 
     val sqlQuery = OntopUtils.extractSQLQuery(executableQuery)
     val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)

@@ -160,6 +160,16 @@
 			<version>2.4.5_0.4.0-RELEASE</version>
 		</dependency>
 
+		<!-- GeoSpark -->
+		<dependency>
+			<groupId>org.datasyslab</groupId>
+			<artifactId>geospark</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.datasyslab</groupId>
+			<artifactId>geospark-sql_3.0</artifactId>
+		</dependency>
+
     </dependencies>
 
     <build>

@@ -79,6 +79,9 @@ class SparkTableGenerator(spark: SparkSession,
     val scalaSchema = p.layout.schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = spark.createDataFrame(rdd, sparkSchema).persist()
+    println(p)
+    df.printSchema()
+    df.show()
     //    df.show(false)
 
     if (useHive) {

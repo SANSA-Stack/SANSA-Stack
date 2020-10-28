@@ -95,6 +95,12 @@
 				<artifactId>commons-codec</artifactId>
 		</dependency>
 
+		<!-- GeoSpark -->
+		<dependency>
+			<groupId>org.datasyslab</groupId>
+			<artifactId>geospark</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

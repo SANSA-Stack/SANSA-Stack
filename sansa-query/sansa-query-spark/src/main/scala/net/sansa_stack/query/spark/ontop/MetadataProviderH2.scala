@@ -7,7 +7,7 @@ import it.unibz.inf.ontop.dbschema.impl.OfflineMetadataProviderBuilder
 import it.unibz.inf.ontop.injection.OntopModelConfiguration
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
-import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaStringDate, SchemaStringDouble, SchemaStringFloat, SchemaStringStringType}
+import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaStringDate, SchemaStringDouble, SchemaStringFloat, SchemaStringGeometry, SchemaStringStringType}
 /**
  * @author Lorenz Buehmann
  */
@@ -54,6 +54,9 @@ class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
                 case t if t =:= typeOf[SchemaStringDate] => builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
                   "s", builder.getDBTypeFactory.getDBStringType, false,
                   "o", builder.getDBTypeFactory.getDBDateType, false)
+                case t if t =:= typeOf[SchemaStringGeometry] => builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
+                  "s", builder.getDBTypeFactory.getDBStringType, false,
+                  "o", builder.getDBTypeFactory.getDBStringType, false)
                 case _ => logger.error(s"Error: couldn't create Spark table for property $predicate with schema ${p.layout.schema}")
               }
             }

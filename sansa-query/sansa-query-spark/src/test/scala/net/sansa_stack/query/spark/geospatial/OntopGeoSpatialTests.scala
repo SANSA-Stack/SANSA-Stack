@@ -15,6 +15,7 @@ import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
+import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator
 import org.scalatest.FunSuite
 
 import net.sansa_stack.query.spark.query._
@@ -28,10 +29,13 @@ class OntopGeoSpatialTests extends FunSuite with DataFrameSuiteBase {
   override def beforeAll(): Unit = {
     super.beforeAll()
     val input = getClass.getResource("/geospatial/geospatial-data.nt").getPath
+    GeoSparkSQLRegistrator.registerAll(spark)
 
     triples = spark.rdf(Lang.NTRIPLES)(input)
 
     sparqlExecutor = new OntopSPARQLExecutor(triples)
+
+
   }
 
   override def conf(): SparkConf = {
@@ -40,7 +44,7 @@ class OntopGeoSpatialTests extends FunSuite with DataFrameSuiteBase {
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator,org.datasyslab.geospark.serde.GeoSparkKryoRegistrator")
     conf
   }
 

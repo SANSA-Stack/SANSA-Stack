@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.common.partition.core
 
 import java.time.format.DateTimeFormatter
 
-import net.sansa_stack.rdf.common.partition.layout.{TripleLayout, TripleLayoutBoolean, TripleLayoutDecimal, TripleLayoutDouble, TripleLayoutFloat, TripleLayoutLong, TripleLayoutString, TripleLayoutStringDate, TripleLayoutStringLang}
+import net.sansa_stack.rdf.common.partition.layout.{TripleLayout, TripleLayoutBoolean, TripleLayoutDecimal, TripleLayoutDouble, TripleLayoutFloat, TripleLayoutLong, TripleLayoutString, TripleLayoutStringDate, TripleLayoutStringGeometry, TripleLayoutStringLang}
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, Triple}
@@ -131,6 +131,7 @@ class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false)
       case w if w == classOf[java.math.BigInteger] => TripleLayoutLong // xsd:integer
       case w if dtypeIri == XSD.date.getURI => TripleLayoutStringDate // v will be null for xsd:date, thus, we have to compare the datatype URI
       // case w if(w == classOf[String]) => TripleLayoutString
+      case w if dtypeIri == "http://www.opengis.net/ont/geosparql#wktLiteral" => TripleLayoutStringGeometry
       case w => TripleLayoutString
       // case _ => TripleLayoutStringDatatype
 

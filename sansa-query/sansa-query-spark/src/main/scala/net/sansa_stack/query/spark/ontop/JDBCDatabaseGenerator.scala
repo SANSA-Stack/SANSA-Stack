@@ -6,7 +6,7 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
-import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaStringDate, SchemaStringDecimal, SchemaStringDouble, SchemaStringFloat, SchemaStringLong, SchemaStringString, SchemaStringStringLang, SchemaStringStringType}
+import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaStringDate, SchemaStringDecimal, SchemaStringDouble, SchemaStringFloat, SchemaStringGeometry, SchemaStringLong, SchemaStringString, SchemaStringStringLang, SchemaStringStringType}
 import scala.reflect.runtime.universe.typeOf
 
 /**
@@ -27,7 +27,8 @@ object JDBCDatabaseGenerator {
     typeOf[SchemaStringDecimal] -> "DECIMAL",
     typeOf[SchemaStringBoolean] -> "BOOLEAN",
     typeOf[SchemaStringString] -> "VARCHAR(255)",
-    typeOf[SchemaStringDate] -> "DATE"
+    typeOf[SchemaStringDate] -> "DATE",
+    typeOf[SchemaStringGeometry] -> "GEOMETRY"
   ) // .map(e => (typeOf[e._1.type], e._2))
 
   /**
