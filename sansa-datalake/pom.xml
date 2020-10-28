@@ -38,20 +38,9 @@
 		<dependencies>
 
 			<dependency>
-				<groupId>org.apache.spark</groupId>
-				<artifactId>spark-hive_${scala.binary.version}</artifactId>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
 				<groupId>io.gatling</groupId>
 				<artifactId>jsonpath_${scala.binary.version}</artifactId>
 				<version>0.7.0</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.typesafe.play</groupId>
-				<artifactId>play_${scala.binary.version}</artifactId>
 			</dependency>
 
 			<!-- Connectors -->
@@ -81,16 +70,6 @@
 				<version>6.2.4</version>
 			</dependency-->
 
-			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
-			</dependency>
-			
-			<!-- Amazon -->
-			<dependency>
-				<groupId>com.amazonaws</groupId>
-				<artifactId>aws-java-sdk-s3</artifactId>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
