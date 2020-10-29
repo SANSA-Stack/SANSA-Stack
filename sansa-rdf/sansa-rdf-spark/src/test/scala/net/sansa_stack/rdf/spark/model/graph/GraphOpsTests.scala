@@ -7,6 +7,7 @@ import org.apache.jena.graph.{Node, Triple}
 
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
+import org.apache.spark.SparkConf
 import org.apache.spark.graphx.Graph
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
@@ -18,6 +19,16 @@ class GraphOpsTests extends FunSuite with DataFrameSuiteBase {
   var triples: RDD[Triple] = _
   var graph: Graph[Node, Node] = _
   val numTriples = 10 // technically it should be 9 but Jena compares datatypes by object identity and serialization creates different objects
+
+  override def conf(): SparkConf = {
+    val conf = super.conf
+    conf
+      .set("spark.master", "local[1]")
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.sql.crossJoin.enabled", "true")
+      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+    conf
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
