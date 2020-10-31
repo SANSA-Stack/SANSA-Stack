@@ -1256,7 +1256,7 @@
 					<configuration>
 						<useFile>false</useFile>
 						<disableXmlReport>true</disableXmlReport>
-						<threadCountSuites>4</threadCountSuites>
+<!--						<threadCountSuites>4</threadCountSuites>-->
 						<!-- If you have classpath issue like NoDefClassError,... -->
 						<!-- useManifestOnlyJar>false</useManifestOnlyJar -->
 						<includes>
@@ -1463,7 +1463,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
-					<version>3.1.1</version>
+					<version>3.2.4</version>
 					<executions>
 						<!-- Run shade goal on package phase -->
 						<execution>
