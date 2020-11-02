@@ -5,6 +5,7 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
+import org.apache.spark.SparkConf
 import org.apache.spark.graphx.Graph
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
@@ -19,6 +20,14 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
   // technically it should be 9 triples but Jena compares datatypes by object identity and serialization creates different objects
   // also, the RDD is not a set of triples but just contains all parsed triples, i.e. duplicates have to be removed explicitly
   val numTriples = 10
+
+  override def conf(): SparkConf = {
+    val conf = super.conf
+    conf
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+    conf
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
