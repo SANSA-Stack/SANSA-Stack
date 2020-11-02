@@ -21,8 +21,9 @@ object TripleLayoutStringGeometry
     val s = t.getSubject
     val o = t.getObject
     val v = if (o.isLiteral) {
+      val wktReader = new WKTReader()
       wktReader.read(o.getLiteralLexicalForm)
-    } else throw new RuntimeException(s"Layout only for date literals: $t")
+    } else throw new RuntimeException(s"Layout only for WKT geometry literals: $t")
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 

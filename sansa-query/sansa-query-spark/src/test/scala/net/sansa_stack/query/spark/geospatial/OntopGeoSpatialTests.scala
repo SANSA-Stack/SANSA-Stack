@@ -28,7 +28,7 @@ class OntopGeoSpatialTests extends FunSuite with DataFrameSuiteBase {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val input = getClass.getResource("/geospatial/geospatial-data.nt").getPath
+    val input = getClass.getResource("/geospatial/geospatial-data2.nt").getPath
     GeoSparkSQLRegistrator.registerAll(spark)
 
     triples = spark.rdf(Lang.NTRIPLES)(input)
