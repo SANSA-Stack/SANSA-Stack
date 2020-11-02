@@ -2,18 +2,25 @@ package net.sansa_stack.rdf.common.kryo.jena
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
+import org.apache.jena.atlas.io.IndentedLineBuffer
 import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
 import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryFactory, Syntax}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
-import org.apache.jena.riot.system.RiotLib
+import org.apache.jena.riot.lang.LabelToNode
+import org.apache.jena.riot.lang.LabelToNode.createScopeByDocumentHash
+import org.apache.jena.riot.out.{NodeFmtLib, NodeFormatterTTL, NodeToLabel}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RIOT}
+import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfile, ParserProfileStd, PrefixMapExtended, RiotLib}
+import org.apache.jena.riot.tokens.{TokenizerFactory, TokenizerText}
+import org.apache.jena.sparql.ARQConstants
 import org.apache.jena.sparql.core.{Quad => JenaQuad}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.Expr
-import org.apache.jena.sparql.util.{ExprUtils, FmtUtils}
+import org.apache.jena.sparql.util.{ExprUtils, FmtUtils, NodeFactoryExtra}
 
 /**
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
@@ -26,13 +33,56 @@ object JenaKryoSerializers {
     */
   class NodeSerializer extends Serializer[JenaNode]
   {
+
+    import org.apache.jena.riot.system.PrefixMap
+    import org.apache.jena.riot.system.PrefixMapFactory
+    import org.apache.jena.sparql.ARQConstants
+
+    private val profile = setupInternalParserProfile
+
+    val pmap: PrefixMap = PrefixMapFactory.createForInput
+    pmap.add("rdf", ARQConstants.rdfPrefix)
+    pmap.add("rdfs", ARQConstants.rdfsPrefix)
+    pmap.add("xsd", ARQConstants.xsdPrefix)
+    pmap.add("owl", ARQConstants.owlPrefix)
+
+    val nodeFormatter = new NodeFormatterTTL(null, pmap, NodeToLabel.createBNodeByLabelEncoded())
+    val writer = new IndentedLineBuffer()
+
     override def write(kryo: Kryo, output: Output, obj: JenaNode) {
-        output.writeString(FmtUtils.stringForNode(obj))
+//      println(s"serializing node $obj   => ${FmtUtils.stringForNode(obj)}")
+      nodeFormatter.format(writer, obj)
+      output.writeString(writer.toString)
+      writer.clear()
     }
 
     def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
       val s = input.readString()
-        RiotLib.parse(s)
+      val n = parse(s)
+//      println(s"deserializing string $s   => $n")
+      n
+    }
+
+    def parse(string: String): JenaNode = {
+      val tokenizer = TokenizerText.create().fromString(string).build()
+      val n: JenaNode = if (!tokenizer.hasNext) {
+        null
+      } else {
+        val t = tokenizer.next()
+        profile.create(null, t)
+      }
+      n
+    }
+
+    private def setupInternalParserProfile = {
+      val pmap = PrefixMapFactory.createForInput
+      pmap.add("rdf", ARQConstants.rdfPrefix)
+      pmap.add("rdfs", ARQConstants.rdfsPrefix)
+      pmap.add("xsd", ARQConstants.xsdPrefix)
+      pmap.add("owl", ARQConstants.owlPrefix)
+      val labelToNode = LabelToNode.createUseLabelEncoded()
+      val factoryRDF = RiotLib.factoryRDF(labelToNode)
+      new ParserProfileStd(factoryRDF, ErrorHandlerFactory.errorHandlerStd, IRIResolver.create, pmap, RIOT.getContext.copy, true, false)
     }
   }
 

@@ -30,7 +30,6 @@ object GraphOps {
     val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
 
     val vertices: RDD[(VertexId, Node)] = indexedMap.map(x => (x._2, x._1))
-    val _nodeToId: RDD[(Node, VertexId)] = indexedMap.map(x => (x._1, x._2))
 
     val tuples = rs.keyBy(_._1).join(indexedMap).map({
       case (k, ((s, p, o), si)) => (o, (si, p))
