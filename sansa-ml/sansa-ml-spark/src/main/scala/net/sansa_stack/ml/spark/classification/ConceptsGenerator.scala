@@ -2,17 +2,16 @@ package net.sansa_stack.ml.spark.classification
 
 import java.util.HashSet
 
+import net.sansa_stack.ml.spark.classification.KB.KB
+import openllet.owlapi.PelletReasoner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.semanticweb.HermiT.Reasoner
-import org.semanticweb.owlapi.model.{ OWLClassExpression, OWLDataFactory, OWLIndividual, OWLNamedIndividual }
-
-import net.sansa_stack.ml.spark.classification.KB.KB
+import org.semanticweb.owlapi.model.{OWLClassExpression, OWLDataFactory, OWLIndividual, OWLNamedIndividual}
 
 object ConceptsGenerator {
   class ConceptsGenerator(protected var kb: KB) {
 
-    protected var reasoner: Reasoner = kb.getReasoner
+    protected var reasoner: PelletReasoner = kb.getReasoner
     protected var dataFactory: OWLDataFactory = kb.getDataFactory
     protected var allExamples: RDD[OWLIndividual] = kb.getIndividuals
 

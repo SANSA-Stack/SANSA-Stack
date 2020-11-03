@@ -1,24 +1,20 @@
 package net.sansa_stack.ml.spark.classification
 
 import java.io.PrintStream
-import java.util.{ ArrayList, Arrays, HashSet, List }
+import java.util.ArrayList
 
-import scala.collection
+import scala.collection.JavaConverters._
 
-import collection.JavaConverters._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-import org.semanticweb.HermiT.Reasoner
-import org.semanticweb.owlapi.model.{ OWLClassExpression, OWLIndividual, OWLNamedIndividual }
-
-import net.sansa_stack.ml.spark.classification._
 import net.sansa_stack.ml.spark.classification.KB.KB
 import net.sansa_stack.ml.spark.classification.TDTClassifiers.TDTClassifiers
+import openllet.owlapi.PelletReasoner
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
+import org.semanticweb.owlapi.model.{OWLClassExpression, OWLIndividual}
 
 /*
  * Class for the induction of Terminological Decision Tree
  */
-
 object TDTInducer {
   var stream: PrintStream = _
 
@@ -37,7 +33,7 @@ object TDTInducer {
                  negTestConcepts: Array[OWLClassExpression]): Unit = {
 
       val op: RefinementOperator = new RefinementOperator(kb)
-      val reasoner: Reasoner = kb.getReasoner
+      val reasoner: PelletReasoner = kb.getReasoner
       val allExamples: RDD[OWLIndividual] = kb.getIndividuals
 
       // val trainingExsSet: HashSet[Integer] = new HashSet[Integer](Arrays.asList(trainingExs: _*))

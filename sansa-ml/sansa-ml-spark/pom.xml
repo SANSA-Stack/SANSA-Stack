@@ -75,9 +75,13 @@
 			<version>1.3.0</version>
 		</dependency>
 		<!-- HermiT reasoner -->
+<!--		<dependency>-->
+<!--			<groupId>net.sourceforge.owlapi</groupId>-->
+<!--			<artifactId>org.semanticweb.hermit</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
-			<artifactId>org.semanticweb.hermit</artifactId>
+			<groupId>com.github.galigator.openllet</groupId>
+			<artifactId>openllet-owlapi</artifactId>
 		</dependency>
 
 		<!-- Hadoop dependencies (mainly used for InputFormat definitions) -->

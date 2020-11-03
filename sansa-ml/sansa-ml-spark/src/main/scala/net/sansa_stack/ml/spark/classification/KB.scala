@@ -1,25 +1,18 @@
 package net.sansa_stack.ml.spark.classification
 
 import java.io.File
-import java.net.URI
-import java.util.{ ArrayList, List, Random }
-import java.util.stream.{ Collectors, IntStream, Stream }
+import java.util.Random
+import java.util.stream.Collectors
 
-import scala.collection.{ Iterator, Map }
 import scala.collection.JavaConverters._
-import scala.collection.immutable.{ HashMap, Set }
-
-import collection.JavaConverters._
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import openllet.owlapi.PelletReasoner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.semanticweb.HermiT.{ Configuration, Reasoner, ReasonerFactory }
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
-import org.semanticweb.owlapi.reasoner.{ OWLReasoner, OWLReasonerFactory }
-import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory
+import org.semanticweb.owlapi.reasoner.{BufferingMode, OWLReasoner, OWLReasonerConfiguration, SimpleConfiguration}
 import org.semanticweb.owlapi.util.SimpleIRIMapper
-
 
 object KB {
   val d: Double = 0.3
@@ -33,7 +26,7 @@ object KB {
 
     var ontology: OWLOntology = initKB()
     var reasoner: OWLReasoner = _
-    var hermit: Reasoner = _
+    var pellet: PelletReasoner = _
     var manager: OWLOntologyManager = _
     var Concepts: RDD[OWLClass] = _
     var Roles: RDD[OWLObjectProperty] = _
@@ -71,12 +64,7 @@ object KB {
       // The data factory provides a point for creating OWL API objects such as classes, properties and individuals.
       dataFactory = manager.getOWLDataFactory
 
-      // Reasoner configuration
-      var con: Configuration = new Configuration()
-      var reasonerFactory: OWLReasonerFactory = new StructuralReasonerFactory()
-      reasoner = reasonerFactory.createReasoner(ontology)
-
-      hermit = new Reasoner(con, ontology)
+      pellet = new PelletReasoner(ontology, BufferingMode.BUFFERING)
 
       // --------- Concepts Extraction -----------------
 
@@ -146,7 +134,7 @@ object KB {
       var flag: Boolean = false
       classifications = Array.ofDim[Int](testConcepts.size, examples.count.toInt)
       println("Processed concepts (" + testConcepts.size + "): \n")
-      val r: Reasoner = getReasoner
+      val r: PelletReasoner = getReasoner
 
       for (c <- 0 until testConcepts.size) {
         var p: Int = 0
@@ -231,7 +219,7 @@ object KB {
 
     def getOntology(): OWLOntology = ontology
 
-    def getReasoner(): Reasoner = hermit
+    def getReasoner(): PelletReasoner = pellet
 
     // def getURL(): String = urlOwlFile
 
