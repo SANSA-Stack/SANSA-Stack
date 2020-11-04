@@ -284,6 +284,10 @@ class OntopSPARQLEngine(val spark: SparkSession,
     result
   }
 
+  import java.util.regex.Pattern
+  val stBooleanFunctions = Array("CONTAINS", "INTERSECTS", "TOUCHES", "WITHIN", "OVERLAPS", "CROSSES", "EQUALS", "DISJOINT")
+  val stBooleanFunctionsPattern = stBooleanFunctions.mkString("|")
+  val booleanGeoFunctionTypeCastReplacementPattern: Pattern = Pattern.compile(s"ST_($stBooleanFunctionsPattern)\\(CAST\\((.*) AS string\\),CAST\\((.*) AS string\\)\\)")
   /**
    * Executes the given SPARQL query on the provided dataset partitions.
    *
@@ -293,14 +297,16 @@ class OntopSPARQLEngine(val spark: SparkSession,
    *         (None if the SQL query was empty)
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
+
   def executeDebug(query: String): (DataFrame, Option[OntopQueryRewrite]) = {
     logger.info(s"SPARQL query:\n$query")
 
     try {
       // translate to SQL query
       val queryRewrite = sparql2sql.createSQLQuery(query)
-      val sql = queryRewrite.sqlQuery.replace("\"", "`")
+      var sql = queryRewrite.sqlQuery.replace("\"", "`")
         .replace("`PUBLIC`.", "")
+      sql = booleanGeoFunctionTypeCastReplacementPattern.matcher(sql).replaceAll("ST_$1($2, $3)")
       logger.info(s"SQL query:\n$sql")
 
       // execute SQL query
