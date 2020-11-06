@@ -33,7 +33,7 @@ class MinHashModel extends GenericSimilarityEstimatorModel {
       .select("uriA", "uriB", valueColumn)
   }
 
-  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "jaccardSimilarity", keepKeyUriColumn: Boolean = false): DataFrame = {
+  override def nearestNeighbors(dfA: DataFrame, key: Vector, k: Int, keyUri: String = "unknown", valueColumn: String = "distCol", keepKeyUriColumn: Boolean = false): DataFrame = {
 
     val minHashModel: MinHashLSHModel = new MinHashLSH()
       .setNumHashTables(numberHashTables)
