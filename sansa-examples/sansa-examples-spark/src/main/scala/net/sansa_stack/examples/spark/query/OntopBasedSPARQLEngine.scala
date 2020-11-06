@@ -58,7 +58,7 @@ object OntopBasedSPARQLEngine {
       case "cli" =>
         // only SELECT queries will be considered here
         val result = ontopEngine.execSelect(sparqlQuery)
-        // show bindings on comannd line
+        // show bindings on command line
         result.foreach(println)
       case "endpoint" =>
         val qef = new QueryExecutionFactoryOntopSpark(spark, ontopEngine)

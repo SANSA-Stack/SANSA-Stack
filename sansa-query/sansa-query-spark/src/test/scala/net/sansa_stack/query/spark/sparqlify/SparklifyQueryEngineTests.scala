@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.sparqlify
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
@@ -10,12 +11,22 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.scalatest.FunSuite
-
 import scala.io.Source
+
+import org.apache.jena.graph.Triple
 
 class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.query.spark.query._
+
+  var triples: RDD[Triple] = _
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+
+    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
+    triples = spark.rdf(Lang.NTRIPLES)(input).cache()
+  }
 
   override def conf(): SparkConf = {
     val conf = super.conf
@@ -29,11 +40,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("result of running BSBM Q1 should match") {
-
-    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
     val query = Source.fromFile(getClass.getResource("/sparklify/queries/bsbm/Q1.sparql").getPath).getLines.mkString
-
-    val triples = spark.rdf(Lang.NTRIPLES)(input)
 
     val result = triples.sparql(query)
 
@@ -43,11 +50,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("result of running BSBM Q2 should match") {
-
-    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
     val query = Source.fromFile(getClass.getResource("/sparklify/queries/bsbm/Q2.sparql").getPath).getLines.mkString
-
-    val triples = spark.rdf(Lang.NTRIPLES)(input)
 
     val result = triples.sparql(query)
 
@@ -57,11 +60,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("result of running BSBM Q3 should match") {
-
-    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
     val query = Source.fromFile(getClass.getResource("/sparklify/queries/bsbm/Q3.sparql").getPath).getLines.mkString
-
-    val triples = spark.rdf(Lang.NTRIPLES)(input)
 
     val result = triples.sparql(query)
 
