@@ -5,14 +5,15 @@ import java.util.Comparator
 
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.riot.Lang
-import org.apache.jena.sparql.util.NodeComparator
+import org.apache.jena.sparql.util.{FmtUtils, NodeComparator}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.collect_set
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import scala.math.Ordering.comparatorToOrdering
 
+import scala.math.Ordering.comparatorToOrdering
 import com.google.common.base.Charsets
 import com.google.common.hash.Hashing
+import org.apache.jena.sparql.serializer.SerializationContext
 
 
 case class CharacteristicSet(properties: Set[Node]) {}
@@ -91,11 +92,17 @@ object CharacteristicSets {
     }
 
     def asRow(subj: Node, predObjPairs: Iterable[(Node, Node)]): Row = {
-      val values = Seq()
-      subj match {
-        case n if n.isURI => n.getURI
-        case n if n.isLiteral => n.getLiteral.getValue
+      val values = Seq(FmtUtils.stringForNode(subj, null.asInstanceOf[SerializationContext]))
+
+      predObjPairs.groupBy(_._1).mapValues(_.map(_._2)).foreach {
+        case (prop, objects) =>
+          if (objects.size == 1) {
+
+          } else {
+
+          }
       }
+
       Row.fromSeq(values)
     }
 
