@@ -28,7 +28,7 @@ class TestSparkSqlJoin extends FlatSpec {
 
     val data = List(("s1", "p1", "o1"))
     val dataRDD = spark.sparkContext.parallelize(data).map(attributes => Row(attributes._1, attributes._2, attributes._3))
-    val df = spark.createDataFrame(dataRDD, schema).as("TRIPLES")
+    val df = spark.createDataFrame(dataRDD, schema).as("TRIPLES").cache()
     df.createOrReplaceTempView("TRIPLES")
 
     println("First Query")
