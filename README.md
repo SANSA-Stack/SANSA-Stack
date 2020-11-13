@@ -2,7 +2,7 @@
 This project comprises the whole Semantic Analytics Stack (SANSA). For a detailed description of SANSA, please visit http://sansa-stack.net. 
 
 ## Layers
-The SANSA project is structured in the following five layers developed in their respective repositories:
+The SANSA project is structured in the following five layers developed in their respective sub-folders:
 
 * [RDF](sansa-rdf)
 * [OWL](sansa-owl)
