@@ -92,6 +92,15 @@ object CharacteristicSets {
       .reduceByKey((nodes1, nodes2) => nodes1 ++ nodes2)
   }
 
+  def computeCharacteristicSetsWithEntitiesAndSize(triples: RDD[Triple]): RDD[(CharacteristicSet, Set[Node], Int)] = {
+    triples
+      .map(t => (t.getSubject, CharacteristicSet(Set(t.getPredicate))))
+      .reduceByKey((c1, c2) => CharacteristicSet(c1.properties ++ c2.properties))
+      .map(e => (e._2, Set(e._1)))
+      .reduceByKey((nodes1, nodes2) => nodes1 ++ nodes2)
+      .map{ case (cs, entities) => (cs, entities, entities.size)}
+  }
+
   import scala.reflect.runtime.{universe => ru}
 
   private def getType[T](clazz: Class[T])(implicit runtimeMirror: ru.Mirror) = runtimeMirror.classSymbol(clazz).toType
@@ -155,13 +164,27 @@ object CharacteristicSets {
       throw new RuntimeException("Missing file path as argument")
     }
 
+    // warehouseLocation points to the default location for managed databases and tables
+    val warehouseLocation = new File("/tmp/spark-warehouse").getAbsolutePath
+
     val spark = SparkSession.builder
       .appName("Characteristic Sets computation")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .config("spark.sql.warehouse.dir", warehouseLocation)
+      .enableHiveSupport()
       .getOrCreate()
 
     import net.sansa_stack.rdf.spark.io._
     val path = args(0)
+
+    val tl = new TablesLoader(spark)
+//    spark.sql(s"DROP DATABASE IF EXISTS ${tl.DATABASE_NAME} CASCADE")
+//    tl.loadTriplesTable("/tmp/triples")
+//    tl.loadVPTables()
+    tl.loadWPTable()
+
+    spark.table("wpt").show(10)
+
     val triples = spark.rdf(Lang.NTRIPLES)(path)
 
     val css = computeCharacteristicSets(triples).collect().toSet
@@ -202,12 +225,12 @@ object CharacteristicSets {
 
     }
 
-    val db = spark.catalog.currentDatabase
-    val tables = spark.catalog.listTables()
-    tables.foreach {t =>
-      val ddl = spark.sql(s"SHOW CREATE TABLE ${t.name}")
-      println(ddl)
-    }
+//    val db = spark.catalog.currentDatabase
+//    val tables = spark.catalog.listTables()
+//    tables.foreach {t =>
+//      val ddl = spark.sql(s"SHOW CREATE TABLE ${t.name}")
+//      println(ddl)
+//    }
 
 
     spark.stop()
