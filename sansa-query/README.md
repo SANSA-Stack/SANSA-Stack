@@ -69,7 +69,15 @@ import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 
 // SparkSession is needed
-val spark = ...
+val spark = SparkSession.builder
+      .appName(s"Ontop SPARQL example")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
+      .config("spark.kryo.registrator", String.join(
+        ", ",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+      .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
+      .getOrCreate()
 
 // load an RDD of triples (from an N-Triples file here)
 val data = spark.rdf(Lang.NTRIPLES)("path/to/rdf.nt")
