@@ -13,6 +13,7 @@ import org.apache.jena.util.SplitIRI
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions.{col, collect_set, lit, when}
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.jgrapht.alg.TransitiveReduction
@@ -166,7 +167,7 @@ object CharacteristicSets {
     }
 
     // warehouseLocation points to the default location for managed databases and tables
-    val warehouseLocation = new File("/tmp/spark-warehouse").getAbsolutePath
+    val warehouseLocation = new File(args.lift(1).getOrElse("/tmp/spark-warehouse")).getAbsolutePath
 
     val spark = SparkSession.builder
       .appName("Characteristic Sets computation")
@@ -179,10 +180,12 @@ object CharacteristicSets {
     import net.sansa_stack.rdf.spark.io._
     val path = args(0)
 
-    val tl = new TablesLoader(spark)
-//    spark.sql(s"DROP DATABASE IF EXISTS ${tl.DATABASE_NAME} CASCADE")
-//    tl.loadTriplesTable("/tmp/triples")
-//    tl.loadVPTables()
+    val databaseName = args.lift(2).getOrElse("sansa")
+
+    spark.sql(s"DROP DATABASE IF EXISTS $databaseName CASCADE")
+    val tl = new TablesLoader(spark, databaseName)
+    tl.loadTriplesTable("/tmp/triples")
+    tl.loadVPTables()
     tl.loadWPTable()
     tl.loadIWPTable()
 
