@@ -183,36 +183,6 @@ object SPARQLQuery {
       case _ => throw new NotImplementedError()
     }
   }
-
-  def main(args: Array[String]): Unit = {
-    import net.sansa_stack.rdf.spark.io._
-    import net.sansa_stack.rdf.spark.model._
-
-    val spark = SparkSession.builder()
-      .appName("foo")
-      .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
-      .getOrCreate()
-
-    val inputFilePath = args(0)
-    val dataset: Dataset[Triple] = spark.read.rdf(Lang.NTRIPLES)(inputFilePath).toDS()
-    implicit val encoder = Encoders.kryo(classOf[Triple])
-
-    val triplesDS: Dataset[Triple] = dataset.as[Triple]
-
-    val queryString = "SELECT ?p WHERE {?s ?p ?o }"
-    val query: SPARQLQuery = SPARQLQuery(queryString)
-
-    val res: DataFrame = query.transform(dataset)
-//    res.take(10).foreach(r => println(r.get(0)))
-
-    implicit val nodeEncoder = Encoders.kryo(classOf[Node])
-
-    val res2: Dataset[Node] = res.as[Node]
-    res2.take(20).foreach(println)
-    val a = 23
-  }
 }
 
 
