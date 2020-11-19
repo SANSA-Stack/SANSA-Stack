@@ -46,9 +46,9 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Parse
     else {
       StructType(
         Seq(
-          StructField("s", StringType, nullable = true),
-          StructField("p", StringType, nullable = true),
-          StructField("o", StringType, nullable = true)
+          StructField("s", StringType, nullable = false),
+          StructField("p", StringType, nullable = false),
+          StructField("o", StringType, nullable = false)
         ))
     }
   }
