@@ -12,8 +12,8 @@ import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.util.SplitIRI
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.functions.collect_set
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.functions.{col, collect_set, lit, when}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.jgrapht.alg.TransitiveReduction
 import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge}
@@ -48,9 +48,10 @@ object CharacteristicSetGraphBuilder {
   }
 
   def saveAsImage(g: DefaultDirectedGraph[CharacteristicSet, DefaultEdge]): Unit = {
-    import javax.imageio.ImageIO
     import java.awt.Color
+
     import com.mxgraph.layout.mxFastOrganicLayout
+    import javax.imageio.ImageIO
     val graphAdapter = new org.jgrapht.ext.JGraphXAdapter(g)
     val layout = new mxFastOrganicLayout(graphAdapter)
     layout.execute(graphAdapter.getDefaultParent)
@@ -171,6 +172,7 @@ object CharacteristicSets {
       .appName("Characteristic Sets computation")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.sql.warehouse.dir", warehouseLocation)
+      .config("parquet.enable.dictionary", true)
       .enableHiveSupport()
       .getOrCreate()
 
@@ -182,8 +184,14 @@ object CharacteristicSets {
 //    tl.loadTriplesTable("/tmp/triples")
 //    tl.loadVPTables()
     tl.loadWPTable()
+    tl.loadIWPTable()
 
-    spark.table("wpt").show(10)
+    spark.table("wpt").show(50)
+    spark.table("iwpt").show(50)
+
+    val nonNullColsExpr = spark.table("wpt").columns.map(c => when(col(c).isNotNull, lit(c)))
+    val df = spark.sql("select * from wpt where s = '<http://dbpedia.org/resource/Alan_Shearer>'").cache()
+    df.show()
 
     val triples = spark.rdf(Lang.NTRIPLES)(path)
 

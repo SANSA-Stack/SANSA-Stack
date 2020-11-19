@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.partition.characteristc_sets
 
-import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 /**
  * @author Lorenz Buehmann
@@ -79,40 +79,57 @@ class TablesLoader(spark: SparkSession,
     spark.sql(s"SELECT DISTINCT $COL_PREDICATE FROM $TRIPLETABLE_NAME").collect().map(_.getString(0))
   }
 
-  def loadWPTable(): Unit = {
+  def getPropertiesWithComplexity(keyColumn: String): Seq[(String, Boolean)] = {
+    val mvProperties = spark.sql(
+      s"""
+         |SELECT DISTINCT $COL_PREDICATE FROM
+         |(SELECT $COL_PREDICATE, count(*) as cnt FROM $TRIPLETABLE_NAME GROUP BY $COL_PREDICATE, $keyColumn HAVING cnt > 1)
+         |
+         |""".stripMargin).collect().map(_.getString(0))
+
+    val svProperties = getProperties().diff(mvProperties)
+
+    mvProperties.map(p => (p, true)) ++ svProperties.map(p => (p, false))
+  }
+
+  private def loadPTable(keyColumn: String, valueColumn: String): DataFrame = {
     val mergeMapUDF = (data: Seq[Map[String, Array[String]]]) => data.reduce(_ ++ _)
     spark.udf.register("mergeMaps", mergeMapUDF)
 
     val df = spark.sql(
-    s"""
-        |SELECT s,
-        |       mergeMaps(collect_list(po)) AS pos
-        |FROM
-        |    (SELECT s,
-        |            map(p, collect_list(o)) AS po
-        |     FROM $TRIPLETABLE_NAME
-        |        -- (SELECT *
-        |        --  FROM triples
-        |        --  WHERE s = '<http://dbpedia.org/resource/Alan_Shearer>')
-        |     GROUP BY s,
-        |              p
-        |     ORDER BY s ASC
-        |     LIMIT 30)
-        |GROUP BY s
-        |LIMIT 10
-        |
-        |""".stripMargin)
+      s"""
+         |SELECT $keyColumn,
+         |       mergeMaps(collect_list(po)) AS pos
+         |FROM
+         |    (SELECT $keyColumn,
+         |            map(p, collect_list($valueColumn)) AS po
+         |     FROM $TRIPLETABLE_NAME
+         |     GROUP BY $keyColumn,
+         |              p
+         |     )
+         |GROUP BY $keyColumn
+         |
+         |""".stripMargin)
 
     // get all properties
-    val properties = getProperties()
+    val properties = getPropertiesWithComplexity(keyColumn)
 
     // create a column for each property by looking up the property in the aggregated map
-    val selectCols = Seq(COL_SUBJECT) ++ properties.map(p => s"element_at(pos, '$p') as ${escapeSQLName(p)}").sorted
+    val selectCols = Seq(keyColumn) ++ properties.map {case (p, mv) => (if (mv) s"element_at(pos, '$p')" else s"if(isnull(element_at(pos, '$p')), NULL, element_at(element_at(pos, '$p'), 1))") + s" as ${escapeSQLName(p)}"}.sorted
 
-    val wpt = df.selectExpr(selectCols: _*)
+    val pt = df.selectExpr(selectCols: _*)
 
+    pt
+  }
+
+  def loadWPTable(): Unit = {
+    val wpt = loadPTable(COL_SUBJECT, COL_OBJECT)
     wpt.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("wpt")
+  }
 
+  def loadIWPTable(): Unit = {
+    val iwpt = loadPTable(COL_OBJECT, COL_SUBJECT)
+    iwpt.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("iwpt")
   }
 
   def escapeSQLName(columnName: String): String = columnName.replaceAll("[<>]", "").trim.replaceAll("[[^\\w]+]", "_")
