@@ -12,6 +12,7 @@ import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
 import org.apache.jena.query.{Dataset => JenaDataset}
+import org.apache.jena.shared.PrefixMapping
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.{FmtUtils, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
@@ -65,17 +66,24 @@ package object io {
     toRow(Seq(triple.getSubject, triple.getPredicate, triple.getObject))
   }
 
+  private val pm = PrefixMapping.Factory.create
+
   /**
-   * Converts a list Jena [[Node]] objects to a Spark SQL [[Row]].
+   * Converts a list of Jena [[Node]] objects to a Spark SQL [[Row]].
+   * The output is always a row of string values with each RDF node type being serialized as follows:
+   *
+   *  - URI: `http://foo.bar`
+   *  - bnode: `_:123`
+   *  - Literal: `"123"^^<http://some.datatype.uri>`
+   *
    * @param nodes the nodes
    * @return the row
    */
   def toRow(nodes: Seq[Node]): Row = {
-    // we use the Jena rendering
-    Row.fromSeq(nodes.map(n => {
-      if (n.isBlank) FmtUtils.stringForNode(n) else n.toString()
-
-    }))
+    // we use the Jena rendering, for URIs we omit the wrapping angle brackets, i.e. we return
+    // http://foo.bar instead of <http://foo.bar> but for datatype URIs in literals we keep it
+    // TODO this is basically done because of querying, but for simplicity it would be easier to return <http://foo.bar>
+    Row.fromSeq(nodes.map(n => if (n.isURI) n.toString else FmtUtils.stringForNode(n, pm)))
   }
 
   /**
@@ -138,16 +146,15 @@ package object io {
   implicit class RDFDataFrameReader(reader: DataFrameReader) extends Logging {
     @transient lazy val conf: Config = ConfigFactory.load("rdf_loader")
     /**
-     * Load RDF data into a `DataFrame`. Currently, only N-Triples and Turtle syntax are supported
-     * @param lang the RDF language (Turtle or N-Triples)
+     * Load RDF data into a `DataFrame`.
+     * @param lang the RDF language
      * @return a [[DataFrame]][(String, String, String)]
      */
     def rdf(lang: Lang): String => DataFrame = lang match {
       case i if lang == Lang.NTRIPLES => ntriples
-      case j if lang == Lang.TURTLE => turtle
-      case k if lang == Lang.RDFXML => rdfxml
-      case _ => throw new IllegalArgumentException(s"${lang.getLabel} syntax not supported yet!")
+      case _ => reader.format("rdf").option("lang", lang.getLabel).load
     }
+
     /**
      * Load RDF data in N-Triples syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
      * @return a [[DataFrame]][(String, String, String)]
@@ -160,13 +167,13 @@ package object io {
      * Load RDF data in Turtle syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
      * @return a [[DataFrame]][(String, String, String)]
      */
-    def turtle: String => DataFrame = reader.format("turtle").load
+    def turtle: String => DataFrame = reader.format("rdf").option("lang", Lang.TURTLE.getLabel).load
 
     /**
      * Load RDF data in RDF/XML syntax into a [[DataFrame]] with columns `s`, `p`, and `o`.
      * @return a [[DataFrame]][(String, String, String)]
      */
-    def rdfxml(path: String): DataFrame = reader.format("rdfxml").load(path)
+    def rdfxml: String => DataFrame = reader.format("rdf").option("lang", Lang.RDFXML.getLabel).load
   }
 
   // the RDD methods
