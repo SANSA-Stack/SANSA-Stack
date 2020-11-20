@@ -167,7 +167,7 @@ object CharacteristicSets {
     }
 
     // warehouseLocation points to the default location for managed databases and tables
-    val warehouseLocation = new File(args.lift(1).getOrElse("/tmp/spark-warehouse")).getAbsolutePath
+    val warehouseLocation = args.lift(1).getOrElse("/tmp/spark-warehouse")
 
     val spark = SparkSession.builder
       .appName("Characteristic Sets computation")
@@ -184,7 +184,7 @@ object CharacteristicSets {
 
     spark.sql(s"DROP DATABASE IF EXISTS $databaseName CASCADE")
     val tl = new TablesLoader(spark, databaseName)
-    tl.loadTriplesTable("/tmp/triples")
+    tl.loadTriplesTable(path)
     tl.loadVPTables()
     tl.loadWPTable()
     tl.loadIWPTable()

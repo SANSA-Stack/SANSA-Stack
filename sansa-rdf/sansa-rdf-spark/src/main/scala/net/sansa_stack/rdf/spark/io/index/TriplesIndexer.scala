@@ -26,7 +26,8 @@ class TriplesIndexer {
   }
 
   def prepare(triples: DataFrame): TripleIndexModel = {
-    val counts = triples.rdd.treeAggregate(new Aggregator)(_.add(_), _.merge(_)).distinctArray
+    val agg = new Aggregator()
+    val counts = triples.rdd.treeAggregate(agg)(_.add(_), _.merge(_)).distinctArray
 
     val labels = counts.map(_.toSeq.sortBy(-_._2).map(_._1).toArray)
 
@@ -63,6 +64,9 @@ private[index] class Aggregator extends Serializable {
   }
 
   def merge(other: Aggregator): Aggregator = {
+    if (!initialized) {
+      init(other.k)
+    }
     (0 until k).foreach { x =>
       other.distinctArray(x).foreach {
         case (key, value) =>

@@ -1,8 +1,21 @@
 package net.sansa_stack.rdf.spark.partition.characteristc_sets
 
+import java.net.URI
+
+import scala.util.{Failure, Success, Try}
+
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
+import net.sansa_stack.rdf.spark.io.index.TriplesIndexer
+
 /**
+ * Create tables and load RDF data into different logical partitioning schemes:
+ *
+ *  - TT: triples table, i.e. a single table with columns for subject, predicate and object
+ *  - VP: vertical partitioning, i.e. one table per property
+ *  - WPT: wide property table, i.e. one column for the subject, one column per property with objects being the value
+ *  - IWPT: inverse wide property table, i.e. one column for the object, one column per property with subjects being the value
+ *
  * @author Lorenz Buehmann
  */
 class TablesLoader(spark: SparkSession,
@@ -134,4 +147,95 @@ class TablesLoader(spark: SparkSession,
 
   def escapeSQLName(columnName: String): String = columnName.replaceAll("[<>]", "").trim.replaceAll("[[^\\w]+]", "_")
 
+
+}
+
+object TablesLoader {
+  case class Config(path: String = "",
+                    out: String = "",
+                    dropDatabase: Boolean = false,
+                    databaseName: String = "sansa",
+                    schemas: Seq[String] = Seq(),
+                    indexed: Boolean = false)
+
+  def main(args: Array[String]): Unit = {
+    val parser = new scopt.OptionParser[Config]("spark-rdf") {
+      head("Spark RDF tables loader", "3.x")
+
+      opt[String]('i', "input").required().valueName("<path>").
+        action((x, c) =>
+          c.copy(path = x)).text("path to RDF data")
+        .validate(x =>
+          Try(URI.create(x)) match {
+            case Success(uri) => success
+            case Failure(s) => failure(s"not a valid input path. Reason: $s")
+          })
+
+      opt[String]('o', "out").required().valueName("<path>").
+        action((x, c) => c.copy(out = x)).
+        text("path to database location")
+        .validate(x =>
+          Try(URI.create(x)) match {
+            case Success(uri) => success
+            case Failure(s) => failure(s"not a valid database location. Reason: $s")
+          })
+
+      opt[String]( "db").optional().valueName("<dbname>").
+        action((x, c) => c.copy(databaseName = x)).
+        text("name of database")
+
+      opt[Seq[String]]('s', "schemas").required().valueName("<schema1>,<schema2>,...").action((x, c) =>
+        c.copy(schemas = x)).text("schema of partitioning (tt, vp, wpt, iwpt)")
+
+      opt[Unit]("drop-database").action((_, c) =>
+        c.copy(dropDatabase = true)).text("drop the database")
+
+      opt[Unit]("indexed").action((_, c) =>
+        c.copy(indexed = true)).text("if the values should be indexed")
+
+      help("help").text("prints this usage text")
+
+    }
+
+    // parser.parse returns Option[C]
+    parser.parse(args, Config()) match {
+      case Some(config) =>
+
+        val spark = SparkSession.builder
+          .appName("Spark RDF tables generator")
+          .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+          .config("spark.sql.warehouse.dir", config.out)
+          .config("parquet.enable.dictionary", true)
+          .enableHiveSupport()
+          .getOrCreate()
+
+        if (config.dropDatabase) spark.sql(s"DROP DATABASE IF EXISTS ${config.databaseName} CASCADE")
+
+        val tl = new TablesLoader(spark, config.databaseName)
+
+        if (config.schemas.contains("tt")) tl.loadTriplesTable(config.path)
+        if (config.schemas.contains("vp")) tl.loadVPTables()
+        if (config.schemas.contains("wpt")) tl.loadWPTable()
+        if (config.schemas.contains("iwpt")) tl.loadIWPTable()
+
+        if (config.indexed) {
+          val table = spark.table(tl.TRIPLETABLE_NAME)
+          val indexer = new TriplesIndexer()
+          val indexedTable = indexer.index(table)
+          indexedTable.show()
+          indexedTable.write
+            .format("parquet")
+            .mode(SaveMode.Overwrite)
+            .save(config.out + "/indexed")
+          println(indexedTable.count())
+
+        }
+
+      case None =>
+      // arguments are bad, error message will have been displayed
+    }
+
+
+
+  }
 }
