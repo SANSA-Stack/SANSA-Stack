@@ -183,14 +183,6 @@ object CharacteristicSets {
     val databaseName = args.lift(2).getOrElse("sansa")
 
     spark.sql(s"DROP DATABASE IF EXISTS $databaseName CASCADE")
-    val tl = new TablesLoader(spark, databaseName)
-    tl.loadTriplesTable(path)
-    tl.loadVPTables()
-    tl.loadWPTable()
-    tl.loadIWPTable()
-
-    spark.table("wpt").show(50)
-    spark.table("iwpt").show(50)
 
     val nonNullColsExpr = spark.table("wpt").columns.map(c => when(col(c).isNotNull, lit(c)))
     val df = spark.sql("select * from wpt where s = '<http://dbpedia.org/resource/Alan_Shearer>'").cache()

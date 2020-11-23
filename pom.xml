@@ -1866,6 +1866,23 @@
 		</profile>
 
 		<profile>
+			<id>spark-2</id>
+			<properties>
+				<spark.version>2.4.7</spark.version>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>spark-3</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<spark.version>3.0.1</spark.version>
+			</properties>
+		</profile>
+
+		<profile>
 			<id>hadoop-3.2</id>
 			<properties>
 				<hadoop.version>3.2.1</hadoop.version>

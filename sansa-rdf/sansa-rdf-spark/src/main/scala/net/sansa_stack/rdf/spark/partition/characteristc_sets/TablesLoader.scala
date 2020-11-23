@@ -4,6 +4,7 @@ import java.net.URI
 
 import scala.util.{Failure, Success, Try}
 
+import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 import net.sansa_stack.rdf.spark.io.index.TriplesIndexer
@@ -46,7 +47,8 @@ class TablesLoader(spark: SparkSession,
 
     query =
       s"""
-        |CREATE TABLE  IF NOT EXISTS  $TRIPLETABLE_NAME($COL_SUBJECT STRING, $COL_PREDICATE STRING, $COL_OBJECT STRING) STORED AS PARQUET
+        |CREATE TABLE  IF NOT EXISTS  $TRIPLETABLE_NAME($COL_SUBJECT STRING, $COL_PREDICATE STRING, $COL_OBJECT STRING)
+        |STORED AS PARQUET
         |""".stripMargin
     spark.sql(query)
 
@@ -58,40 +60,48 @@ class TablesLoader(spark: SparkSession,
          |WHERE $COL_SUBJECT is not null AND $COL_PREDICATE is not null AND $COL_OBJECT is not null
          |""".stripMargin
     spark.sql(query)
-
-    query = s"SELECT * FROM $TRIPLETABLE_NAME"
-    val triplesCnt = spark.sql(query).count()
-    println(triplesCnt)
   }
 
-  def loadVPTables(): Unit = {
+  def loadVPTables(tableNameFn: String => String = uri => "vp_" + escapeSQLName(uri)): Unit = {
+    // get all properties from the triples table
     val properties = getProperties()
 
+    // for each property p, create a table with s and o columns
     properties.foreach(p => {
-      spark.sql(s"DROP TABLE IF EXISTS vp_${escapeSQLName(p)}")
+      val tableName = tableNameFn(p)
+
+      spark.sql(s"DROP TABLE IF EXISTS $tableName")
 
       spark.sql(
         s"""
-           |CREATE TABLE IF NOT EXISTS vp_${escapeSQLName(p)}($COL_SUBJECT STRING, $COL_OBJECT STRING) STORED
-           |AS PARQUET
+           |CREATE TABLE IF NOT EXISTS $tableName($COL_SUBJECT STRING, $COL_OBJECT STRING)
+           |STORED AS PARQUET
            |""".stripMargin)
 
       spark.sql(
         s"""
-           |INSERT OVERWRITE TABLE vp_${escapeSQLName(p)} SELECT $COL_SUBJECT, $COL_OBJECT
+           |INSERT OVERWRITE TABLE $tableName SELECT $COL_SUBJECT, $COL_OBJECT
            |FROM $TRIPLETABLE_NAME
            |WHERE $COL_PREDICATE = '$p'
            |""".stripMargin)
-
-      val triplesCnt = spark.sql(s"SELECT * FROM vp_${escapeSQLName(p)}").count()
-      println(p + ":" + triplesCnt)
     })
   }
 
+  /**
+   * Gets all properties from the triples table.
+   *
+   * @return the properties
+   */
   def getProperties(): Array[String] = {
-    spark.sql(s"SELECT DISTINCT $COL_PREDICATE FROM $TRIPLETABLE_NAME").collect().map(_.getString(0))
+    spark.sql(s"SELECT DISTINCT $COL_PREDICATE FROM $TRIPLETABLE_NAME").collect().map(_.getString(0)).sorted
   }
 
+  /**
+   * Gets all properties from the triples table and for each property also returns whether it has multiple values for
+   * a single subject in the current dataset loaded in the triples table.
+   *
+   * @return the properties and an indicator if it is a multivalue property or just functional
+   */
   def getPropertiesWithComplexity(keyColumn: String): Seq[(String, Boolean)] = {
     val mvProperties = spark.sql(
       s"""
@@ -102,7 +112,7 @@ class TablesLoader(spark: SparkSession,
 
     val svProperties = getProperties().diff(mvProperties)
 
-    mvProperties.map(p => (p, true)) ++ svProperties.map(p => (p, false))
+    (mvProperties.map(p => (p, true)) ++ svProperties.map(p => (p, false))).sortBy(_._1)
   }
 
   private def loadPTable(keyColumn: String, valueColumn: String): DataFrame = {
@@ -135,14 +145,14 @@ class TablesLoader(spark: SparkSession,
     pt
   }
 
-  def loadWPTable(): Unit = {
+  def loadWPTable(tableName: String = "wpt"): Unit = {
     val wpt = loadPTable(COL_SUBJECT, COL_OBJECT)
-    wpt.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("wpt")
+    wpt.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable(tableName)
   }
 
-  def loadIWPTable(): Unit = {
+  def loadIWPTable(tableName: String = "iwpt"): Unit = {
     val iwpt = loadPTable(COL_OBJECT, COL_SUBJECT)
-    iwpt.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("iwpt")
+    iwpt.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable(tableName)
   }
 
   def escapeSQLName(columnName: String): String = columnName.replaceAll("[<>]", "").trim.replaceAll("[[^\\w]+]", "_")
@@ -160,7 +170,7 @@ object TablesLoader {
 
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[Config]("spark-rdf") {
-      head("Spark RDF tables loader", "3.x")
+      head("Spark RDF tables loader", "0.7")
 
       opt[String]('i', "input").required().valueName("<path>").
         action((x, c) =>
@@ -197,7 +207,6 @@ object TablesLoader {
 
     }
 
-    // parser.parse returns Option[C]
     parser.parse(args, Config()) match {
       case Some(config) =>
 
@@ -220,14 +229,27 @@ object TablesLoader {
 
         if (config.indexed) {
           val table = spark.table(tl.TRIPLETABLE_NAME)
-          val indexer = new TriplesIndexer()
-          val indexedTable = indexer.index(table)
-          indexedTable.show()
-          indexedTable.write
+
+          val idx = new StringIndexer()
+          val cols = Array("s", "p", "o")
+          idx.setInputCols(Array("s", "p", "o"))
+          idx.setOutputCols(cols.map(col => s"${col}_idx"))
+          val model = idx.fit(table)
+          model.save("/tmp/stringindex.model")
+
+          val idxTable = model.transform(table)
+          idxTable.write
             .format("parquet")
             .mode(SaveMode.Overwrite)
-            .save(config.out + "/indexed")
-          println(indexedTable.count())
+            .save(config.out + "/idx")
+//
+//          val indexer = new TriplesIndexer()
+//          val indexedTable = indexer.index(table)
+//          indexedTable.show()
+//          indexedTable.write
+//            .format("parquet")
+//            .mode(SaveMode.Overwrite)
+//            .save(config.out + "/indexed")
 
         }
 
