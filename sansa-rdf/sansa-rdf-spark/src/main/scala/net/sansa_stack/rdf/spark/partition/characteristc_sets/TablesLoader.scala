@@ -235,7 +235,7 @@ object TablesLoader {
           idx.setInputCols(Array("s", "p", "o"))
           idx.setOutputCols(cols.map(col => s"${col}_idx"))
           val model = idx.fit(table)
-          model.save("/tmp/stringindex.model")
+          model.write.overwrite().save("/tmp/stringindex.model")
 
           val idxTable = model.transform(table)
           idxTable.write
