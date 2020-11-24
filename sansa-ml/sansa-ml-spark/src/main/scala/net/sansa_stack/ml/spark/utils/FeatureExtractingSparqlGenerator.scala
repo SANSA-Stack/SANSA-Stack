@@ -54,7 +54,7 @@ object FeatureExtractingSparqlGenerator {
     var currentPaths = paths
 
     breakable {
-      for (iteration <- 0  to iteration_limit) {
+      for (iteration <- 0  to (iteration_limit-1)) {
         // set iterators
         val column_name = f"n_$iteration"
         val iterationPlusOne: Int = iteration + 1
@@ -67,6 +67,7 @@ object FeatureExtractingSparqlGenerator {
         // this joines the next hop
         // println(s"joinedPaths dataframe: $iteration")
         val joinedPaths = left.join(right, column_name)
+        // joinedPaths.show(false)
         // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
         // they end with not literal.
         // see ! excamation mark in where statement
@@ -88,7 +89,7 @@ object FeatureExtractingSparqlGenerator {
         val nNamedColumns = currentPaths.columns.filter(_.startsWith("n_")).toList
         // println(nNamedColumns)
         // currentPaths.where(!noCycle(struct(nNamedColumns.map(col): _*))).show(false)
-        currentPaths = currentPaths.where(noCycle(struct(currentPaths.columns.map(col): _*)))
+        currentPaths = currentPaths.where(noCycle(struct(nNamedColumns.map(col): _*)))
 
         // println(s"$iteration filtered current paths")
 
@@ -105,8 +106,15 @@ object FeatureExtractingSparqlGenerator {
           dataframeWithLiteralEnd = dataframeWithLiteralEnd.union(finalPaths)
         }
 
+        /* println(iteration)
+        println()
+        currentPaths.show(false)
+        println()
+        finalPaths.show(false)
+
+         */
         if (currentPaths.count() == 0) {
-          // println(f"no remaining paths are available so: $traverse_direction is done")
+          println(f"no remaining paths are available so: $traverse_direction is done")
           break
         }
 
@@ -169,18 +177,18 @@ object FeatureExtractingSparqlGenerator {
     val (up: DataFrame, down: DataFrame) = create_dataframes_to_traverse(df)
 
     // seeds in dataframe asstarting paths
-    var paths: DataFrame = usedSeeds.map(_.toString).toDF("n_0") // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
+    var paths: DataFrame = usedSeeds.map(_.toString).toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
     println("we start initially with following seeds:")
     paths.show(false)
 
     // traverse up
-    println("traverse up")
-    paths = traverse(paths, up, iteration_limit = max_up, traverse_direction = "up")
-    paths.show(false)
+    // println("traverse up")
+    paths = traverse(paths, up, iteration_limit = max_up, traverse_direction = "up").cache()
+    // paths.show(false)
 
     // traverse down
     println("traverse down")
-    paths = traverse(paths, down, iteration_limit = max_down, traverse_direction = "down")
+    paths = traverse(paths, down, iteration_limit = max_down, traverse_direction = "down").cache()
 
     // all gathered paths
     println("gathered paths")
@@ -193,8 +201,8 @@ object FeatureExtractingSparqlGenerator {
       .dropRight(1)
       .flatMap(i => (f"n_$i p_$i dir_$i n_${i + 1}").split(" "))
       .distinct
-    println(newColumnsOrder)
-    paths = paths.select(newColumnsOrder.map(col(_)): _*)
+    // println(newColumnsOrder)
+    paths = paths.select(newColumnsOrder.map(col(_)): _*).cache()
     paths.show(false)
 
     val results = paths.rdd.map(row => {
@@ -236,7 +244,7 @@ object FeatureExtractingSparqlGenerator {
       queryStr = queryStr + "\t}"
 
       (queryStr, projection_var)
-    })
+    }).cache()
 
     val queryLines: List[String] = results.map(_._1.toString).collect().toList.distinct.sortBy(_.size)
     val projectionVars: List[String] = results.map(_._2.toString).collect().toList.distinct.sortBy(_.size)
@@ -258,6 +266,7 @@ object FeatureExtractingSparqlGenerator {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
+    spark.sparkContext.setLogLevel("ERROR")
 
     import spark.sqlContext.implicits._
 
@@ -274,8 +283,11 @@ object FeatureExtractingSparqlGenerator {
     val seed_var_name = "?seed"
     val where_clause_for_seed = "?seed a <http://dig.isi.edu/Person>"
 
-    val max_up: Int = 1
+    val max_up: Int = 5
     val max_down: Int = 5
+
+    val seedNumber: Int = 0
+    val seedNumberAsRatio: Double = 1.0
 
     val (total_sparql_query: String, var_names: List[String]) = auto_prepo(df, seed_var_name, seed_where_claus = where_clause_for_seed, max_up = max_up, max_down = max_down)
 
