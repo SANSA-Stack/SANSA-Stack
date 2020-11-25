@@ -257,10 +257,12 @@ object FeatureExtractingSparqlGenerator {
     val seedNumber: Int = config.getInt("seedNumber") // 0
     val seedNumberAsRatio: Double = config.getDouble("seedNumberAsRatio") // 1.0
 
+    val master = config.getString("master")
+
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"tryout sparql query transformer")
-      .master("local[*]")
+      .master(master)
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
@@ -272,7 +274,6 @@ object FeatureExtractingSparqlGenerator {
 
     // first mini file:
     val df = spark.read.rdf(Lang.TURTLE)(personFilePath) // TODO dynamic change of language
-
 
     val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(df, seedVarName, seedWhereClause = whereClauseForSeed, maxUp = maxUp, maxDown = maxDown)
 
