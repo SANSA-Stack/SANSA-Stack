@@ -6,6 +6,7 @@ pipeline {
     }
     environment {
         BRANCH_NAME = 'develop'
+        MAVEN_OPTS = '-Xmx1G -Xss256m'
     }
     stages {
         stage ('Initialize') {
@@ -19,7 +20,7 @@ pipeline {
 
         stage ('Build and Push to Archiva') {
             steps {
-                sh 'mvn -DskipTests clean deploy' 
+                sh 'mvn --batch-mode -V -U -e -DskipTests clean deploy -pl :sansa-query-spark_2.12 -am' 
             }
         }
     }
