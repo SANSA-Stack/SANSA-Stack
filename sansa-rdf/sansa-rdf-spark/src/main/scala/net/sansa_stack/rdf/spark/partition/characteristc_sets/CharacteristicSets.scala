@@ -2,12 +2,14 @@ package net.sansa_stack.rdf.spark.partition.characteristc_sets
 
 import java.io.File
 import java.util
+import java.util.stream.Collectors
 
 import scala.util.matching.Regex
-
 import com.google.common.base.Charsets
+import com.google.common.collect.Sets
 import com.google.common.hash.Hashing
 import com.mxgraph.util.mxCellRenderer
+import org.apache.commons.collections.SetUtils
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.serializer.SerializationContext
@@ -18,13 +20,14 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions.{col, collect_set, count, lit, max, udf, when}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.jgrapht.Graphs
 import org.jgrapht.alg.{TransitiveClosure, TransitiveReduction}
 import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge, DirectedAcyclicGraph}
 import org.jgrapht.io.{Attribute, DefaultAttribute, GraphMLExporter}
 import org.jgrapht.io.AttributeType
 import org.jgrapht.io.GraphMLExporter.AttributeCategory
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector
 
 abstract class CharacteristicSetBase(val properties: Set[Node]) {
@@ -64,8 +67,27 @@ class ExtendedCharacteristicSetGraph extends DirectedAcyclicGraph[ExtendedCharac
     }
   }
 
-  def ancestralSubgraphsOf(node: ExtendedCharacteristicSet): Unit = {
+  /**
+   * Returns all ancestral subgraph auf the given `baseNode`.
+   * An ancestral subgraph is defined as follows:
+   * Given an inferred hierarchy
+   * Lc = (V, E), a CS cbase and set of CSs c1, . . . , ck, then a = (V0, E0) is an
+   * ancestral sub-graph with cbase as the lowermost child when ∀i ∈ [1..k], it holds
+   * that ci subsumes cbase, and (ci, cbase)∈ E0 .
+   *
+   * @note given that all subgraphs a basically he power set, i.e. `2^n` with `n` being the number of nodes connected to
+   *       the base node, this can be very expensive
+   * @param baseNode
+   */
+  def ancestralSubgraphsOf(baseNode: ExtendedCharacteristicSet): Set[ExtendedCharacteristicSetGraph] = {
+    computeClosure()
 
+    val edges = outgoingEdgesOf(baseNode)
+    Sets.powerSet(edges).stream().map(edgeset => {
+      val g = new ExtendedCharacteristicSetGraph()
+      Graphs.addAllEdges(g, this, edgeset)
+      g
+    }).collect(Collectors.toSet).asScala.toSet
   }
 
 }
@@ -332,15 +354,30 @@ object CharacteristicSets {
     // create the inferred graph
     g.computeClosure()
 
+
+
+  }
+
+  def mergeOptimal(g: ExtendedCharacteristicSetGraph): Unit = {
     // compute the connected components
     val ccInspector = new KosarajuStrongConnectivityInspector[ExtendedCharacteristicSet, DefaultEdge](g)
     val ccs = ccInspector.getStronglyConnectedComponents.asScala
 
     // for each CC we generate all possible subgraphs
     ccs.foreach(cc => {
+      var min = Double.MaxValue
+      var bestSubGraph = null
+
+      // iterate all possible subgraphs
+      cc.vertexSet().stream().forEach(v => {
+        v
+      })
 
     })
 
+  }
+
+  def mergeGreedy(): Unit = {
 
   }
 
