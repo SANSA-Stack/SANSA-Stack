@@ -26,7 +26,7 @@ object FeatureExtractingSparqlGenerator {
 
   def createDataframesToTraverse(df: DataFrame): (DataFrame, DataFrame) = {
     df.toDF(Seq("s", "p", "o"): _*)
-    // df.printSchema()
+    // df.printSchema() TODO be aware that we are operatingsometimes on string sometimes on apache jena node level
 
     // down
     val down: DataFrame = df.withColumn("dir", typedLit("down"))
@@ -67,7 +67,6 @@ object FeatureExtractingSparqlGenerator {
         // this joines the next hop
         // println(s"joinedPaths dataframe: $iteration")
         val joinedPaths = left.join(right, columnName)
-        // joinedPaths.show(false)
         // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
         // they end with not literal.
         // see ! excamation mark in where statement
@@ -119,7 +118,6 @@ object FeatureExtractingSparqlGenerator {
             val currentChars: String = c.split("_")(0)
             val newNumber = (currentNumber - iterationPlusOne).toString
             val newColumnName = currentChars + "_" + newNumber
-            // println(c, newColumnName)
             newColumnName
           })
           val recentColumns: Seq[String] = dataFramesWithOpenEnd.columns.toSeq
@@ -142,11 +140,9 @@ object FeatureExtractingSparqlGenerator {
   def rowToQuery(row: Row, seedVarName: String): (String, String) = {
 
     val nonNullRow: List[String] = row.toSeq.toList.filter(_!=None).filter(_!=null).asInstanceOf[List[String]]
-    // println(nonNullRow)
 
-    // val indices = newColumnsOrder.map(_.split("_").last.toInt).distinct.sorted
     val lenRow: Int = nonNullRow.size
-    val numberQueryLines: Int = (lenRow-1)/3.toInt
+    val numberQueryLines: Int = (lenRow-1)/3
 
     var varNames = ListBuffer(seedVarName)
 
@@ -154,9 +150,7 @@ object FeatureExtractingSparqlGenerator {
 
     var queryStr = "\tOPTIONAL {\n"
 
-    // println(nonNullRow)
     for (queryLineNumber <- 0 to (numberQueryLines-1)) {
-      // println(queryLineNumber, numberQueryLines)
       val leftN = nonNullRow(queryLineNumber * 3)
       val p = nonNullRow((queryLineNumber * 3) + 1)
       val direction = nonNullRow((queryLineNumber * 3) + 2)
@@ -171,7 +165,6 @@ object FeatureExtractingSparqlGenerator {
       }
       queryStr = queryStr + f"\t\t$query_line\n"
       projectionVar = secondVarName
-      // println(query_line)
     }
     queryStr = queryStr + "\t}"
 
@@ -195,7 +188,7 @@ object FeatureExtractingSparqlGenerator {
     val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
     val seedsDf: DataFrame = querytransformer1.transform(ds).cache()
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
-    println(f"the fetched seeds are: $seeds")
+    println(f"the fetched seeds are:\n$seeds\n")
     val numberSeeds: Int = seeds.length
 
     // calculate cutoff
@@ -209,13 +202,11 @@ object FeatureExtractingSparqlGenerator {
 
     // seeds in dataframe asstarting paths
     var paths: DataFrame = usedSeeds.map(_.toString).toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
-    println("we start initially with following seeds:")
-    paths.show(false)
+    println(s"we start initially with following seeds:\n${usedSeeds.mkString("\n")}")
 
     // traverse up
     // println("traverse up")
     paths = traverse(paths, up, iterationLimit = maxUp, traverseDirection = "up").cache()
-    // paths.show(false)
 
     // traverse down
     // println("traverse down")
@@ -224,7 +215,7 @@ object FeatureExtractingSparqlGenerator {
     // all gathered paths
     // println("gathered paths")
     val columns = paths.columns.toList
-    // println(columns)
+
     val newColumnsOrder: Seq[String] = columns
       .map(_.split("_").last.toInt)
       .distinct
@@ -232,9 +223,8 @@ object FeatureExtractingSparqlGenerator {
       .dropRight(1)
       .flatMap(i => (f"n_$i p_$i dir_$i n_${i + 1}").split(" "))
       .distinct
-    // println(newColumnsOrder)
+
     paths = paths.select(newColumnsOrder.map(col(_)): _*).cache()
-    // paths.show(false)
 
     val results = paths.rdd.map(rowToQuery(_, seedVarName)).cache()
 
@@ -242,9 +232,8 @@ object FeatureExtractingSparqlGenerator {
     val projectionVars: List[String] = results.map(_._2.toString).collect().toList.distinct.sortBy(_.size)
 
     val projection_vars_string = projectionVars.mkString(" ")
-    // print(f"number projection vars: ${projectionVars.size}")
     val all_optional_query_blocks_str = queryLines.mkString("\n")
-    val total_query = f"SELECT $seedVarName $projection_vars_string\n\nWHERE {\n\t${seedWhereClause}\n\n${all_optional_query_blocks_str} \n}}"
+    val total_query = f"SELECT $seedVarName $projection_vars_string\n\nWHERE {\n\t${seedWhereClause}\n\n${all_optional_query_blocks_str}}}"
 
     (total_query, projectionVars)
   }
@@ -268,9 +257,6 @@ object FeatureExtractingSparqlGenerator {
     val person_file_path = "/Users/carstendraschner/Downloads/test.ttl"
     val df = spark.read.rdf(Lang.TURTLE)(person_file_path)
 
-    // df.printSchema()
-
-    // df.show(false)
 
     val seedVarName = "?seed"
     val whereClauseForSeed = "?seed a <http://dig.isi.edu/Person>"
@@ -283,11 +269,13 @@ object FeatureExtractingSparqlGenerator {
 
     val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(df, seedVarName, seedWhereClause = whereClauseForSeed, maxUp = maxUp, maxDown = maxDown)
 
-    println(f"The automatic created feature extracting sparql fetched: ${var_names.size} projection variables representing literals")
-    println(f"the projection variables are:")
-    var_names.map(vn => f"\t$vn").foreach(println(_))
-    println()
-    println(f"The resulting sparql query is: ")
-    println(totalSparqlQuery)
+    println(
+      f"""
+         |The automatic created feature extracting sparql fetched ${var_names.size} projection variables representing literals.
+         |the projection variables are:
+         |${var_names.map(vn => f"\t$vn").mkString("\n")}
+         |\n
+         |""".stripMargin)
+    println(f"The resulting sparql query is: \n$totalSparqlQuery")
   }
 }
