@@ -26,7 +26,7 @@ object FeatureExtractingSparqlGenerator {
 
   def create_dataframes_to_traverse(df: DataFrame): (DataFrame, DataFrame) = {
     df.toDF(Seq("s", "p", "o"): _*)
-    df.printSchema()
+    // df.printSchema()
 
     // down
     val down: DataFrame = df.withColumn("dir", typedLit("down"))
@@ -114,7 +114,7 @@ object FeatureExtractingSparqlGenerator {
 
          */
         if (currentPaths.count() == 0) {
-          println(f"no remaining paths are available so: $traverse_direction is done")
+          // println(f"no remaining paths are available so: $traverse_direction is done")
           break
         }
 
@@ -145,6 +145,45 @@ object FeatureExtractingSparqlGenerator {
       case "down" => dataframeWithLiteralEnd
     }
     returnDataframe
+  }
+
+  def rowToQuery(row: Row, seedVarName: String): (String, String) = {
+
+    val nonNullRow: List[String] = row.toSeq.toList.filter(_!=None).filter(_!=null).asInstanceOf[List[String]]
+    // println(nonNullRow)
+
+    // val indices = newColumnsOrder.map(_.split("_").last.toInt).distinct.sorted
+    val lenRow: Int = nonNullRow.size
+    val numberQueryLines: Int = (lenRow-1)/3.toInt
+
+    var var_names = ListBuffer(seedVarName)
+
+    var projection_var: String = ""
+
+    var queryStr = "\tOPTIONAL {\n"
+
+    // println(nonNullRow)
+    for (queryLineNumber <- 0 to (numberQueryLines-1)) {
+      // println(queryLineNumber, numberQueryLines)
+      val leftN = nonNullRow(queryLineNumber * 3)
+      val p = nonNullRow((queryLineNumber * 3) + 1)
+      val direction = nonNullRow((queryLineNumber * 3) + 2)
+      val rightN = nonNullRow((queryLineNumber * 3) + 3)
+
+      var first_var_name = var_names.last
+      var second_var_name = first_var_name + f"__$direction" + "_" + p.toString.split("/").last.replace("#", "_")
+      var_names.append(second_var_name)
+      val query_line: String = direction match {
+        case "down" => f"$first_var_name <$p> $second_var_name ."
+        case "up" => f"$second_var_name <$p> $first_var_name ."
+      }
+      queryStr = queryStr + f"\t\t$query_line\n"
+      projection_var = second_var_name
+      // println(query_line)
+    }
+    queryStr = queryStr + "\t}"
+
+    (queryStr, projection_var)
   }
 
   def auto_prepo(df: DataFrame, seed_var_name: String, seed_where_claus: String, max_up: Int, max_down: Int, number_seeds: Int = 0, ratio_number_seeds: Double = 1.0): (String, List[String]) = {
@@ -187,13 +226,13 @@ object FeatureExtractingSparqlGenerator {
     // paths.show(false)
 
     // traverse down
-    println("traverse down")
+    // println("traverse down")
     paths = traverse(paths, down, iteration_limit = max_down, traverse_direction = "down").cache()
 
     // all gathered paths
-    println("gathered paths")
+    // println("gathered paths")
     val columns = paths.columns.toList
-    println(columns)
+    // println(columns)
     val newColumnsOrder: Seq[String] = columns
       .map(_.split("_").last.toInt)
       .distinct
@@ -203,54 +242,15 @@ object FeatureExtractingSparqlGenerator {
       .distinct
     // println(newColumnsOrder)
     paths = paths.select(newColumnsOrder.map(col(_)): _*).cache()
-    paths.show(false)
+    // paths.show(false)
 
-    val results = paths.rdd.map(row => {
-      // println(row)
-      // val rowLength = row.size
-      // (rowLength)
-      val nonNullRow: List[String] = row.toSeq.toList.filter(_!=None).filter(_!=null).asInstanceOf[List[String]]
-      // println(nonNullRow)
-
-      // val indices = newColumnsOrder.map(_.split("_").last.toInt).distinct.sorted
-      val lenRow: Int = nonNullRow.size
-      val numberQueryLines: Int = (lenRow-1)/3.toInt
-
-      var var_names = ListBuffer(seed_var_name)
-
-      var projection_var: String = ""
-
-      var queryStr = "\tOPTIONAL {\n"
-
-      // println(nonNullRow)
-      for (queryLineNumber <- 0 to (numberQueryLines-1)) {
-        // println(queryLineNumber, numberQueryLines)
-        val leftN = nonNullRow(queryLineNumber * 3)
-        val p = nonNullRow((queryLineNumber * 3) + 1)
-        val direction = nonNullRow((queryLineNumber * 3) + 2)
-        val rightN = nonNullRow((queryLineNumber * 3) + 3)
-
-        var first_var_name = var_names.last
-        var second_var_name = first_var_name + f"__$direction" + "_" + p.toString.split("/").last.replace("#", "_")
-        var_names.append(second_var_name)
-        val query_line: String = direction match {
-          case "down" => f"$first_var_name <$p> $second_var_name ."
-          case "up" => f"$second_var_name <$p> $first_var_name ."
-        }
-        queryStr = queryStr + f"\t\t$query_line\n"
-        projection_var = second_var_name
-        // println(query_line)
-      }
-      queryStr = queryStr + "\t}"
-
-      (queryStr, projection_var)
-    }).cache()
+    val results = paths.rdd.map(rowToQuery(_, seed_var_name)).cache()
 
     val queryLines: List[String] = results.map(_._1.toString).collect().toList.distinct.sortBy(_.size)
     val projectionVars: List[String] = results.map(_._2.toString).collect().toList.distinct.sortBy(_.size)
 
     val projection_vars_string = projectionVars.mkString(" ")
-    print(f"number projection vars: ${projectionVars.size}")
+    // print(f"number projection vars: ${projectionVars.size}")
     val all_optional_query_blocks_str = queryLines.mkString("\n")
     val total_query = f"SELECT $seed_var_name $projection_vars_string\n\nWHERE {\n\t${seed_where_claus}\n\n${all_optional_query_blocks_str} \n}}"
 
@@ -276,9 +276,9 @@ object FeatureExtractingSparqlGenerator {
     val person_file_path = "/Users/carstendraschner/Downloads/test.ttl"
     val df = spark.read.rdf(Lang.TURTLE)(person_file_path)
 
-    df.printSchema()
+    // df.printSchema()
 
-    df.show(false)
+    // df.show(false)
 
     val seed_var_name = "?seed"
     val where_clause_for_seed = "?seed a <http://dig.isi.edu/Person>"
