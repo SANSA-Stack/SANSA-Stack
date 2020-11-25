@@ -18,11 +18,14 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions.{col, collect_set, count, lit, max, udf, when}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.jgrapht.alg.TransitiveReduction
-import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge}
+import org.jgrapht.alg.{TransitiveClosure, TransitiveReduction}
+import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge, DirectedAcyclicGraph}
 import org.jgrapht.io.{Attribute, DefaultAttribute, GraphMLExporter}
 import org.jgrapht.io.AttributeType
 import org.jgrapht.io.GraphMLExporter.AttributeCategory
+import scala.collection.JavaConverters._
+
+import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector
 
 abstract class CharacteristicSetBase(val properties: Set[Node]) {
   /**
@@ -37,9 +40,33 @@ abstract class CharacteristicSetBase(val properties: Set[Node]) {
 
 case class CharacteristicSet(override val properties: Set[Node]) extends CharacteristicSetBase(properties) {}
 
-case class ExtendedCharacteristicSet(override val properties: Set[Node], size: Long) extends CharacteristicSetBase(properties) {}
+case class ExtendedCharacteristicSet(override val properties: Set[Node], size: Long, isDense: Option[Boolean] = None) extends CharacteristicSetBase(properties) {}
 
-class ExtendedCharacteristicSetGraph extends DefaultDirectedGraph[ExtendedCharacteristicSet, DefaultEdge](classOf[DefaultEdge]) {
+class ExtendedCharacteristicSetGraph extends DirectedAcyclicGraph[ExtendedCharacteristicSet, DefaultEdge](classOf[DefaultEdge]) {
+
+  lazy val denseNodes: Set[ExtendedCharacteristicSet] = vertexSet().asScala.filter(_.isDense.getOrElse(false)).toSet
+
+  private[this] var value: Option[Boolean] = None
+  def isInferred: Boolean = value.getOrElse(false)
+
+  /**
+   * cutting off descendants from dense nodes
+   */
+  def cutDescendantsOfDenseNodes(): Unit = {
+    // remove all outgoing edges of the dense nodes
+    denseNodes.flatMap(v => outgoingEdgesOf(v).asScala).foreach(removeEdge)
+  }
+
+  def computeClosure(): Unit = {
+    if (!isInferred) {
+      TransitiveClosure.INSTANCE.closeDirectedAcyclicGraph(this)
+      value = Some(true)
+    }
+  }
+
+  def ancestralSubgraphsOf(node: ExtendedCharacteristicSet): Unit = {
+
+  }
 
 }
 
@@ -66,8 +93,8 @@ object CharacteristicSetGraphBuilder {
     g
   }
 
-  def create(css: Set[CharacteristicSet]) : DefaultDirectedGraph[CharacteristicSet, DefaultEdge] = {
-    val g = new DefaultDirectedGraph[CharacteristicSet, DefaultEdge](classOf[DefaultEdge])
+  def create(css: Set[CharacteristicSet]) : DirectedAcyclicGraph[CharacteristicSet, DefaultEdge] = {
+    val g = new DirectedAcyclicGraph[CharacteristicSet, DefaultEdge](classOf[DefaultEdge])
 
     for {cs1 <- css
          cs2 <- css
@@ -87,7 +114,7 @@ object CharacteristicSetGraphBuilder {
     g
   }
 
-  def saveAsImage[T <: CharacteristicSetBase](g: DefaultDirectedGraph[T, DefaultEdge]): Unit = {
+  def saveAsImage[T <: CharacteristicSetBase](g: DirectedAcyclicGraph[T, DefaultEdge]): Unit = {
     import java.awt.Color
 
     import com.mxgraph.layout.mxFastOrganicLayout
@@ -101,7 +128,7 @@ object CharacteristicSetGraphBuilder {
     ImageIO.write(image, "PNG", imgFile)
   }
 
-  def exportGraphML[T <: CharacteristicSetBase](g: DefaultDirectedGraph[T, DefaultEdge]): Unit = {
+  def exportGraphML[T <: CharacteristicSetBase](g: DirectedAcyclicGraph[T, DefaultEdge]): Unit = {
     val exporter = new GraphMLExporter[T, DefaultEdge]()
 
     exporter.setVertexLabelProvider(v => v.properties.map(n => SplitIRI.localname(n.getURI)).mkString(","))
@@ -257,9 +284,30 @@ object CharacteristicSets {
     (cs_j.properties.diff(cs_i.properties).size * cs_i.size) / (cs_i.size + cs_j.size)
   }
 
+  /**
+   * r_null_g represents the ratio of null values to the cardinality of the merged table
+   *
+   * r_null_(g)|c_d = sum_i_|g| (|Pd \ Pi| x |ri|) / ( |rd| + sum_i_|g|(|ri|) )
+   *
+   * @param g graph
+   * @param root the dense root of sub-graph g
+   * @return
+   */
+  def r_null_g(g: ExtendedCharacteristicSetGraph, root: ExtendedCharacteristicSet): Double = {
+    val nodes = g.vertexSet().asScala
+    val nullValues = nodes.map(cs => root.properties.diff(cs.properties).size * cs.size).sum
+    val cardinality = nodes.map(_.size).sum + root.size
+    nullValues.doubleValue() / cardinality.doubleValue()
+  }
+
+  def cost(g: ExtendedCharacteristicSetGraph): Double = {
+    g.denseNodes.map(v => r_null_g(g, v)).sum
+  }
+
   private def isDense(density: Double) = udf((cnt: Long) => cnt > density)
 
   def compute(triples: DataFrame, densityFactor: Double): Unit = {
+    // compute the CSs
     var df = computeCharacteristicSetsWithSizeAndEntities(triples)
 
     val densityVal = density(df, densityFactor)
@@ -272,10 +320,28 @@ object CharacteristicSets {
       val size = row.getAs[Long]("size")
       val isDense = row.getAs[Boolean]("dense")
 
-      ExtendedCharacteristicSet(cs.toSet, size)
+      ExtendedCharacteristicSet(cs.toSet, size, Some(isDense))
     }).toSet
 
+    // build the CS hierarchy graph
     val g = CharacteristicSetGraphBuilder.create(ecss)
+
+    // remove descendant edges from the dense nodes
+    g.cutDescendantsOfDenseNodes()
+
+    // create the inferred graph
+    g.computeClosure()
+
+    // compute the connected components
+    val ccInspector = new KosarajuStrongConnectivityInspector[ExtendedCharacteristicSet, DefaultEdge](g)
+    val ccs = ccInspector.getStronglyConnectedComponents.asScala
+
+    // for each CC we generate all possible subgraphs
+    ccs.foreach(cc => {
+
+    })
+
+
   }
 
 
