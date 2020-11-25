@@ -41,6 +41,8 @@ SANSA Query Spark for heterogeneous data sources (data data) is composed of thre
 
 ### Requirements
 
+We currently require a Spark 2.4.x with Scala 2.12 setup.
+
 #### Release Version
 Add the following Maven dependency to your project POM file:
 ```xml
