@@ -240,6 +240,23 @@ object FeatureExtractingSparqlGenerator {
 
   def main(args: Array[String]): Unit = {
 
+    val configFilePath = args(0)
+    val config = new ConfigResolver(configFilePath).getConfig()
+
+    println(config)
+
+    val personFilePath: String = config.getString("personFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
+    val rdfFormat: String = config.getString("rdfFormat") // "turtle"
+
+    val seedVarName = config.getString("seedVarName") // "?seed"
+    val whereClauseForSeed = config.getString("whereClauseForSeed") // "?seed a <http://dig.isi.edu/Person>"
+
+    val maxUp: Int = config.getInt("maxUp") // 5
+    val maxDown: Int = config.getInt("maxDown") // 5
+
+    val seedNumber: Int = config.getInt("seedNumber") // 0
+    val seedNumberAsRatio: Double = config.getDouble("seedNumberAsRatio") // 1.0
+
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"tryout sparql query transformer")
@@ -254,18 +271,8 @@ object FeatureExtractingSparqlGenerator {
     implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
     // first mini file:
-    val person_file_path = "/Users/carstendraschner/Downloads/test.ttl"
-    val df = spark.read.rdf(Lang.TURTLE)(person_file_path)
+    val df = spark.read.rdf(Lang.TURTLE)(personFilePath) // TODO dynamic change of language
 
-
-    val seedVarName = "?seed"
-    val whereClauseForSeed = "?seed a <http://dig.isi.edu/Person>"
-
-    val maxUp: Int = 5
-    val maxDown: Int = 5
-
-    val seedNumber: Int = 0
-    val seedNumberAsRatio: Double = 1.0
 
     val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(df, seedVarName, seedWhereClause = whereClauseForSeed, maxUp = maxUp, maxDown = maxDown)
 
