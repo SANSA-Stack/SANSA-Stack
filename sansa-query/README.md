@@ -59,7 +59,7 @@ While the release versions are available on Maven Central, latest SNAPSHOT versi
 ```bash
 git clone https://github.com/SANSA-Stack/SANSA-Stack.git
 cd SANSA-Stack
-mvn -am -DskipTests -pl :sansa-rdf-spark_2.12 clean install 
+mvn -am -DskipTests -pl :sansa-query-spark_2.12 clean install 
 ```
 Alternatively, you can use the following Maven repository and addd it to your project POM file `repositories` section:
 ```xml
