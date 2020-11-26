@@ -10,6 +10,9 @@ import org.apache.jena.graph
 import org.apache.jena.graph.Node
 import org.apache.spark.sql.expressions.UserDefinedFunction
 
+import java.nio.file.{Paths, Files}
+import java.nio.charset.StandardCharsets
+
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 
@@ -245,7 +248,9 @@ object FeatureExtractingSparqlGenerator {
 
     println(config)
 
-    val personFilePath: String = config.getString("personFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
+    val inputFilePath: String = config.getString("inputFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
+    val outputFilePath: String = config.getString("outputFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
+
     val rdfFormat: String = config.getString("rdfFormat") // "turtle"
 
     val seedVarName = config.getString("seedVarName") // "?seed"
@@ -268,14 +273,20 @@ object FeatureExtractingSparqlGenerator {
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
-    import spark.sqlContext.implicits._
-
     implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
     // first mini file:
-    val df = spark.read.rdf(Lang.TURTLE)(personFilePath) // TODO dynamic change of language
+    val df = spark.read.rdf(Lang.TURTLE)(inputFilePath) // TODO dynamic change of language
 
-    val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(df, seedVarName, seedWhereClause = whereClauseForSeed, maxUp = maxUp, maxDown = maxDown)
+  val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
+    df = df,
+    seedVarName = seedVarName,
+    seedWhereClause = whereClauseForSeed,
+    maxUp = maxUp,
+    maxDown = maxDown,
+    numberSeeds = seedNumber,
+    ratioNumberSeeds = seedNumberAsRatio
+  )
 
     println(
       f"""
@@ -285,5 +296,8 @@ object FeatureExtractingSparqlGenerator {
          |\n
          |""".stripMargin)
     println(f"The resulting sparql query is: \n$totalSparqlQuery")
+
+    Files.write(Paths.get("/Users/carstendraschner/Downloads/auto.sparql"), totalSparqlQuery.getBytes(StandardCharsets.UTF_8))
+    println(f"generated sparql has been stored to: $outputFilePath")
   }
 }
