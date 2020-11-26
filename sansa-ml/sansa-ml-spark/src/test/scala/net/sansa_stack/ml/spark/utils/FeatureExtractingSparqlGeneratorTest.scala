@@ -11,9 +11,9 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 
 class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteBase{
 
-  println(this.getClass.getClassLoader.getResource("utils/test.ttl").getPath)
-  println(this.getClass.getClassLoader.getResource("utils/test_data.nt").getPath)
-
+  /**
+   * tests small creation of sparwl query and tests for created projection variables
+   */
   test("Test auto SPARQL generation based on sample file") {
 
     val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
