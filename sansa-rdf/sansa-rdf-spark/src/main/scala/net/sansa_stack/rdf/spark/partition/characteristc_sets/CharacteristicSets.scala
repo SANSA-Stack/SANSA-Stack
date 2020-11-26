@@ -1,34 +1,37 @@
 package net.sansa_stack.rdf.spark.partition.characteristc_sets
 
+import java.awt.Color
 import java.io.File
 import java.util
 import java.util.stream.Collectors
 
+import scala.collection.JavaConverters._
 import scala.util.matching.Regex
+
 import com.google.common.base.Charsets
 import com.google.common.collect.Sets
 import com.google.common.hash.Hashing
+import com.mxgraph.layout.mxFastOrganicLayout
 import com.mxgraph.util.mxCellRenderer
-import org.apache.commons.collections.SetUtils
+import javax.imageio.ImageIO
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.serializer.SerializationContext
-import org.apache.jena.sparql.util.FmtUtils
+import org.apache.jena.sparql.util.{FmtUtils, NodeComparator}
 import org.apache.jena.util.SplitIRI
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.functions.{col, collect_set, count, lit, max, udf, when}
+import org.apache.spark.sql.catalyst.expressions.CreateMap
+import org.apache.spark.sql.functions.{col, collect_set, concat_ws, count, element_at, lit, map, max, sort_array, udf}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.jgrapht.Graphs
-import org.jgrapht.alg.{TransitiveClosure, TransitiveReduction}
-import org.jgrapht.graph.{DefaultDirectedGraph, DefaultEdge, DirectedAcyclicGraph}
-import org.jgrapht.io.{Attribute, DefaultAttribute, GraphMLExporter}
-import org.jgrapht.io.AttributeType
-import org.jgrapht.io.GraphMLExporter.AttributeCategory
-
-import scala.collection.JavaConverters._
+import org.apache.spark.sql.{DataFrame, Row, SparkSession, functions}
+import org.jgrapht.{Graph, Graphs}
 import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector
+import org.jgrapht.alg.{TransitiveClosure, TransitiveReduction}
+import org.jgrapht.graph.{DefaultEdge, DirectedAcyclicGraph}
+import org.jgrapht.io.GraphMLExporter.AttributeCategory
+import org.jgrapht.io.{Attribute, AttributeType, DefaultAttribute, GraphMLExporter}
 
 abstract class CharacteristicSetBase(val properties: Set[Node]) {
   /**
@@ -68,7 +71,7 @@ class ExtendedCharacteristicSetGraph extends DirectedAcyclicGraph[ExtendedCharac
   }
 
   /**
-   * Returns all ancestral subgraph auf the given `baseNode`.
+   * Returns all ancestral subgraphs of the given `baseNode`.
    * An ancestral subgraph is defined as follows:
    * Given an inferred hierarchy
    * Lc = (V, E), a CS cbase and set of CSs c1, . . . , ck, then a = (V0, E0) is an
@@ -83,16 +86,16 @@ class ExtendedCharacteristicSetGraph extends DirectedAcyclicGraph[ExtendedCharac
     computeClosure()
 
     val edges = outgoingEdgesOf(baseNode)
-    Sets.powerSet(edges).stream().map(edgeset => {
+    Sets.powerSet(edges).iterator().asScala.map(edgeset => {
       val g = new ExtendedCharacteristicSetGraph()
       Graphs.addAllEdges(g, this, edgeset)
       g
-    }).collect(Collectors.toSet).asScala.toSet
+    }).toSet
   }
 
 }
 
-object CharacteristicSetGraphBuilder {
+object CharacteristicSetGraphUtils {
 
   def create(css: Set[ExtendedCharacteristicSet]) : ExtendedCharacteristicSetGraph = {
     val g = new ExtendedCharacteristicSetGraph()
@@ -103,14 +106,13 @@ object CharacteristicSetGraphBuilder {
       if (cs1.subsumes(cs2)) {
         g.addVertex(cs1)
         g.addVertex(cs2)
+//        println(cs1 == cs2)
+//        println(s"${cs1.properties.map(FmtUtils.stringForNode).mkString(", ")}, ${cs1.size}, ${cs1.isDense} ---> ${cs2.properties.map(FmtUtils.stringForNode).mkString(", ")}, ${cs2.size}, ${cs2.isDense}")
         g.addEdge(cs1, cs2)
       }
     }
 
-    TransitiveReduction.INSTANCE.reduce(g)
-
-    saveAsImage(g)
-    exportGraphML(g)
+//    TransitiveReduction.INSTANCE.reduce(g)
 
     g
   }
@@ -128,47 +130,61 @@ object CharacteristicSetGraphBuilder {
       }
     }
 
-    TransitiveReduction.INSTANCE.reduce(g)
-
-    saveAsImage(g)
-    exportGraphML(g)
+//    TransitiveReduction.INSTANCE.reduce(g)
 
     g
   }
 
-  def saveAsImage[T <: CharacteristicSetBase](g: DirectedAcyclicGraph[T, DefaultEdge]): Unit = {
-    import java.awt.Color
-
-    import com.mxgraph.layout.mxFastOrganicLayout
-    import javax.imageio.ImageIO
+  def saveAsImage[T <: CharacteristicSetBase](g: DirectedAcyclicGraph[T, DefaultEdge], path: String = "/tmp/graph.png"): Unit = {
     val graphAdapter = new org.jgrapht.ext.JGraphXAdapter(g)
     val layout = new mxFastOrganicLayout(graphAdapter)
     layout.execute(graphAdapter.getDefaultParent)
 
     val image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, Color.WHITE, true, null)
-    val imgFile = new File("/tmp/graph.png")
+    val imgFile = new File(path)
     ImageIO.write(image, "PNG", imgFile)
   }
 
-  def exportGraphML[T <: CharacteristicSetBase](g: DirectedAcyclicGraph[T, DefaultEdge]): Unit = {
+  def exportGraphML[T <: CharacteristicSetBase](g: DirectedAcyclicGraph[T, DefaultEdge],
+                                                path: String = "/tmp/graph.graphml",
+                                                encoded: Boolean = false): Unit = {
     val exporter = new GraphMLExporter[T, DefaultEdge]()
 
-    exporter.setVertexLabelProvider(v => v.properties.map(n => SplitIRI.localname(n.getURI)).mkString(","))
+    if (encoded) {
+      val properties = g.vertexSet().asScala.flatMap(_.properties).map(_.getURI).toSeq.sorted
+      val dict = properties.zipWithIndex.toMap
+      exporter.setVertexLabelProvider(v => v.properties.map(_.getURI).flatMap(dict.get).mkString(","))
+    } else {
+      exporter.setVertexLabelProvider(v => v.properties.map(_.getURI).map(SplitIRI.localname).mkString(","))
+    }
+
+
 
     exporter.registerAttribute("size", AttributeCategory.NODE, AttributeType.LONG)
     exporter.registerAttribute("name", AttributeCategory.ALL, AttributeType.STRING)
 
     exporter.setVertexAttributeProvider(v => {
       val m = new util.HashMap[String, Attribute]()
-      if (v.isInstanceOf[ExtendedCharacteristicSet]) {
-        m.put("size", new DefaultAttribute(v.asInstanceOf[ExtendedCharacteristicSet].size, AttributeType.LONG))
+      v match {
+        case ecsSet: ExtendedCharacteristicSet =>
+          m.put("size", new DefaultAttribute(ecsSet.size, AttributeType.LONG))
+        case _ =>
       }
-      m.put("name", DefaultAttribute.createAttribute(v.properties.map(n => SplitIRI.localname(n.getURI)).mkString(",")))
+      val attr = if (encoded) {
+        val properties = g.vertexSet().asScala.flatMap(_.properties).map(_.getURI).toSeq.sorted
+        val dict = properties.zipWithIndex.toMap
+        DefaultAttribute.createAttribute(v.properties.map(_.getURI).flatMap(dict.get).mkString(","))
+      } else {
+        DefaultAttribute.createAttribute(v.properties.map(_.getURI).map(SplitIRI.localname).mkString(","))
+      }
+      m.put("name", attr)
+
       m
     })
 
-    exporter.exportGraph(g, new File("/tmp/graph.graphml"))
+    exporter.exportGraph(g, new File(path))
   }
+
 }
 
 /**
@@ -255,8 +271,49 @@ object CharacteristicSets {
   }
 
   def computeCharacteristicSetsWithSize(triples: DataFrame): DataFrame = {
+    val separator = ","
     triples
       .select("s", "p")
+      //      .groupBy("s").agg(collect_set("p") as "cs")
+      //      .groupBy("cs").agg(count("s") as "size")
+      .groupBy("s").agg(concat_ws(separator, sort_array(collect_set("p"))) as "cs")
+      .groupBy("cs").agg(count("s") as "size")
+      .select(functions.split(col("cs"), separator) as "cs", col("size"))
+
+
+  }
+
+  private def dictEncode(uri2IdxBC: Broadcast[Map[String, Int]]) = udf((p: String) => uri2IdxBC.value.get(p))
+  private def dictDecode(idx2UriBC: Broadcast[Map[Int, String]]) = udf((idx: Int) => idx2UriBC.value.get(idx))
+
+  /**
+   * Computes the characteristic sets and it's size, i.e. the number of subjects
+   *
+   * The result is a Dataframe of shape
+   * {{{
+   * |cs|size|
+   * }}}
+   *
+   * with `cs` being a collection of property IDs of type Int and `size` being a Long value
+   *
+   * @param triples the triples Dataframe with columns `s|p|o`
+   * @return a Dataframe with columns `cs` and `size`
+   */
+  def computeCharacteristicSetsWithSizeIndexed(triples: DataFrame): DataFrame = {
+    // get all properties
+    val properties = triples.select("p").distinct().collect().map(_.getString(0)).sorted
+
+    // create dictionary
+    val prop2Idx = properties.zipWithIndex.toMap
+
+    val prop2IdxBC = triples.sparkSession.sparkContext.broadcast(prop2Idx)
+
+//    val literals = prop2Idx.flatMap{case (k, v) => Seq(lit(k), lit(v))}.toSeq
+//    val mappingExpr = map(literals: _*)
+
+    triples.withColumn("p", dictEncode(prop2IdxBC)(triples("p")))
+//    triples.withColumn("p", element_at(mappingExpr, col("p")))
+      .select("s", "p" )
       .groupBy("s").agg(collect_set("p") as "cs")
       .groupBy("cs").agg(count("s") as "size")
   }
@@ -330,15 +387,19 @@ object CharacteristicSets {
 
   def compute(triples: DataFrame, densityFactor: Double): Unit = {
     // compute the CSs
-    var df = computeCharacteristicSetsWithSizeAndEntities(triples)
+    var df = computeCharacteristicSetsWithSize(triples).cache()
+//    df.select("cs", "size").explain()
+//    df.select("cs", "size").show(400, false)
 
     val densityVal = density(df, densityFactor)
 
     df = df.withColumn("dense", isDense(densityVal)(df("size")))
+    import scala.math.Ordering.comparatorToOrdering
+    val comp = new NodeComparator()
 
     val r: Regex = "[<>]".r
     val ecss = df.select("cs", "size", "dense").collect().map(row => {
-      val cs = row.getAs[Seq[String]]("cs").map(p => NodeFactory.createURI(r.replaceAllIn(p, "")))
+      val cs = row.getAs[Seq[String]]("cs").map(p => NodeFactory.createURI(r.replaceAllIn(p, ""))).sorted(comparatorToOrdering(comp))
       val size = row.getAs[Long]("size")
       val isDense = row.getAs[Boolean]("dense")
 
@@ -346,34 +407,59 @@ object CharacteristicSets {
     }).toSet
 
     // build the CS hierarchy graph
-    val g = CharacteristicSetGraphBuilder.create(ecss)
+    val g = CharacteristicSetGraphUtils.create(ecss)
+    CharacteristicSetGraphUtils.exportGraphML(g, "/tmp/graph-raw.graphml", true)
 
     // remove descendant edges from the dense nodes
     g.cutDescendantsOfDenseNodes()
+    CharacteristicSetGraphUtils.exportGraphML(g, "/tmp/graph-cut.graphml")
+
+    CharacteristicSetGraphUtils.exportGraphML(g)
+    CharacteristicSetGraphUtils.exportGraphML(g, "/tmp/graph-ínferred.graphml")
 
     // create the inferred graph
     g.computeClosure()
 
-
+    mergeOptimal(g)
 
   }
 
   def mergeOptimal(g: ExtendedCharacteristicSetGraph): Unit = {
     // compute the connected components
     val ccInspector = new KosarajuStrongConnectivityInspector[ExtendedCharacteristicSet, DefaultEdge](g)
-    val ccs = ccInspector.getStronglyConnectedComponents.asScala
+    val ccs = ccInspector.getStronglyConnectedComponents.iterator().asScala.map(ccGraph => {
+      val ccEcsGraph = new ExtendedCharacteristicSetGraph()
+      Graphs.addAllEdges(ccEcsGraph, g, ccGraph.edgeSet())
+      ccEcsGraph
+    })
+
 
     // for each CC we generate all possible subgraphs
+    var bestSubGraphs: List[ExtendedCharacteristicSetGraph] = List()
     ccs.foreach(cc => {
-      var min = Double.MaxValue
-      var bestSubGraph = null
+      var bestSubGraph: ExtendedCharacteristicSetGraph = null
 
-      // iterate all possible subgraphs
-      cc.vertexSet().stream().forEach(v => {
-        v
-      })
+      if (cc.vertexSet().size() == 1) { // single node CC
+        bestSubGraph = cc
+      } else { // else check the ancestral subgraphs of all dense nodes in the CC
+        var min = Double.MaxValue
+
+        // iterate all possible subgraphs
+        cc.denseNodes.foreach(v => {
+          val subGraphs = cc.ancestralSubgraphsOf(v)
+          val (minCost, minSub) = subGraphs.map(sub => (cost(sub), sub)).minBy(_._1)
+          if (minCost < min) {
+            min = minCost
+            bestSubGraph = minSub
+          }
+        })
+      }
+
+      bestSubGraphs :+= bestSubGraph
 
     })
+
+    println(bestSubGraphs.mkString("\n"))
 
   }
 
@@ -403,10 +489,11 @@ object CharacteristicSets {
 
     val databaseName = args.lift(2).getOrElse("sansa")
 
-    spark.sql(s"DROP DATABASE IF EXISTS $databaseName CASCADE")
-
-    val tablesLoader = new TablesLoader(spark, database = databaseName)
-    tablesLoader.loadTriplesTable(path)
+//    spark.sql(s"DROP DATABASE IF EXISTS $databaseName CASCADE")
+//
+//    val tablesLoader = new TablesLoader(spark, database = databaseName)
+//    tablesLoader.loadTriplesTable(path)
+    spark.sql(s"USE $databaseName")
 
     compute(spark.table("triples"), 0.5)
 
@@ -419,7 +506,7 @@ object CharacteristicSets {
     println(s"found ${css.size} CSs")
     css.foreach(println)
 
-    CharacteristicSetGraphBuilder.create(css)
+    CharacteristicSetGraphUtils.create(css)
 
 
     // process each CS and get subjects having all properties in a CS, then get the p-o pairs
