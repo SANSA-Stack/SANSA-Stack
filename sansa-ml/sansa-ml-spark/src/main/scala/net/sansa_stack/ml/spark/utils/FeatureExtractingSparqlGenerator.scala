@@ -18,6 +18,14 @@ import scala.util.control.Breaks._
 
 object FeatureExtractingSparqlGenerator {
 
+  /**
+   * create on string level the seed fetching query
+   *
+   * @param seedVarName projection var name for seed element
+   * @param seedWhereClause where clause how seed can be fetched
+   * @param sortedByLinks boolean value if seeds should be ordered by outgoing links in desc order or fifo seeds
+   * @return string representing the seed fetching sparql query
+   */
   def createSeedFetchingSparql(seedVarName: String, seedWhereClause: String, sortedByLinks: Boolean): String = {
     val seedFetchingSparql = sortedByLinks match {
       case true => f"SELECT DISTINCT $seedVarName \nWHERE { $seedWhereClause \n\tOptional { $seedVarName ?p ?o. } } \ngroup by $seedVarName ORDER BY DESC ( count(?p) ) "
@@ -27,6 +35,12 @@ object FeatureExtractingSparqlGenerator {
     seedFetchingSparql
   }
 
+  /**
+   * creates dataframe for traversing over join
+   *
+   * @param df dataframe representing entire graph
+   * @return dataframes for traversing up (which is same as df and down which is up flipped and added the traverse direction column)
+   */
   def createDataframesToTraverse(df: DataFrame): (DataFrame, DataFrame) = {
     df.toDF(Seq("s", "p", "o"): _*)
     // df.printSchema() TODO be aware that we are operatingsometimes on string sometimes on apache jena node level
@@ -47,6 +61,14 @@ object FeatureExtractingSparqlGenerator {
     (up, down)
   }
 
+  /**
+   * traverses a tree by joining dataframes of current paths and traversabel hops
+   * @param paths current paths initially started at seeds
+   * @param traverseDf the dataframe giving traversal opportunities
+   * @param iterationLimit how deep to traverse or how often join showld be performed max
+   * @param traverseDirection direction whether up or down
+   * @return the traversed dataframe with current paths after traverse up, and paths ending with literals after traverse down
+   */
   def traverse(paths: DataFrame, traverseDf: DataFrame, iterationLimit: Int, traverseDirection: String): DataFrame = {
 
     val spark: SparkSession = SparkSession.builder()
@@ -140,6 +162,13 @@ object FeatureExtractingSparqlGenerator {
     returnDataframe
   }
 
+  /**
+   * creates a string corresponding to an OPTIONAL block for where part in resulting sparql
+   *
+   * @param row row from dataframe created by traversing all paths
+   * @param seedVarName name of seed projection var
+   * @return string representing OPTIONAL block
+   */
   def rowToQuery(row: Row, seedVarName: String): (String, String) = {
 
     val nonNullRow: List[String] = row.toSeq.toList.filter(_!=None).filter(_!=null).asInstanceOf[List[String]]
@@ -174,6 +203,26 @@ object FeatureExtractingSparqlGenerator {
     (queryStr, projectionVar)
   }
 
+  /**
+   * this function creates the sparql and a list of corresponding porjection variables
+   *
+   * the function operates on dataframe level and first fetches the seeds
+   * then seeds are cutof to the desired number or ration to be considered
+   * from seeds we traverse up in the graph
+   * traverse down
+   * create for each traversed path a query line
+   * take unique query lines
+   * create sparql query
+   *
+   * @param df dataframe of true columns of type string representing triples  s p o
+   * @param seedVarName how the seeds should be named and with beginnig questionmark as needed for projection variable
+   * @param seedWhereClause a string representing the where part of a sparql query specifying how to reach seeds
+   * @param maxUp integer for limiting number of traversal up steps
+   * @param maxDown integer for limiting traverse down steps
+   * @param numberSeeds number of seeds to consider
+   * @param ratioNumberSeeds number of seeds specified by ratio
+   * @return string of resulting sparql and list of string for each projection variable which later can be used for dataframe column naming
+   */
   def autoPrepo(df: DataFrame, seedVarName: String, seedWhereClause: String, maxUp: Int, maxDown: Int, numberSeeds: Int = 0, ratioNumberSeeds: Double = 1.0): (String, List[String]) = {
 
     val spark = SparkSession.builder
@@ -241,6 +290,13 @@ object FeatureExtractingSparqlGenerator {
     (total_query, projectionVars)
   }
 
+  /**
+   * the main function call the entire process
+   *
+   * all configuration have to be done in a config file. this allows easier interaction as soon as a standalone jar has been created.
+   *
+   * @param args path to the typesafe conf file
+   */
   def main(args: Array[String]): Unit = {
 
     val configFilePath = args(0)
