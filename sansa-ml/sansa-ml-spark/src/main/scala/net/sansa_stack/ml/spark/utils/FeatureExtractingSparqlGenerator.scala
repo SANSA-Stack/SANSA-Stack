@@ -69,7 +69,7 @@ object FeatureExtractingSparqlGenerator {
    * @param traverseDirection direction whether up or down
    * @return the traversed dataframe with current paths after traverse up, and paths ending with literals after traverse down
    */
-  def traverse(paths: DataFrame, traverseDf: DataFrame, iterationLimit: Int, traverseDirection: String): DataFrame = {
+  def traverse(paths: DataFrame, traverseDf: DataFrame, iterationLimit: Int, traverseDirection: String, numberRandomWalks: Int = 0): DataFrame = {
 
     val spark: SparkSession = SparkSession.builder()
       .getOrCreate()
@@ -87,11 +87,16 @@ object FeatureExtractingSparqlGenerator {
 
         // paths to merge
         val left: DataFrame = currentPaths
-        val right: DataFrame = traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*)
+        // here we partially similate random walt behavior
+        val right: DataFrame = numberRandomWalks match {
+            case 0 => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*)
+            case _ => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*).sample(true, 2D*numberRandomWalks/traverseDf.count()).limit(numberRandomWalks)
+        }
 
         // this joines the next hop
         // println(s"joinedPaths dataframe: $iteration")
         val joinedPaths = left.join(right, columnName)
+
         // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
         // they end with not literal.
         // see ! excamation mark in where statement
@@ -155,9 +160,14 @@ object FeatureExtractingSparqlGenerator {
         }
       }
     }
+    val dfLit = numberRandomWalks match {
+      case 0 => dataframeWithLiteralEnd
+      case _ => dataframeWithLiteralEnd.sample(true, 2D*numberRandomWalks/dataframeWithLiteralEnd.count()).limit(numberRandomWalks)
+    }
+
     val returnDataframe = traverseDirection match {
       case "up" => dataFramesWithOpenEnd
-      case "down" => dataframeWithLiteralEnd
+      case "down" => dfLit
     }
     returnDataframe
   }
@@ -223,7 +233,7 @@ object FeatureExtractingSparqlGenerator {
    * @param ratioNumberSeeds number of seeds specified by ratio
    * @return string of resulting sparql and list of string for each projection variable which later can be used for dataframe column naming
    */
-  def autoPrepo(df: DataFrame, seedVarName: String, seedWhereClause: String, maxUp: Int, maxDown: Int, numberSeeds: Int = 0, ratioNumberSeeds: Double = 1.0): (String, List[String]) = {
+  def autoPrepo(df: DataFrame, seedVarName: String, seedWhereClause: String, maxUp: Int, maxDown: Int, numberSeeds: Int = 0, ratioNumberSeeds: Double = 1.0, numberRandomWalks: Int = 0): (String, List[String]) = {
 
     val spark = SparkSession.builder
       .getOrCreate()
@@ -255,15 +265,12 @@ object FeatureExtractingSparqlGenerator {
     // seeds in dataframe asstarting paths
     var paths: DataFrame = usedSeeds.map(_.toString).toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
     println(s"we start initially with following seeds:\n${usedSeeds.mkString("\n")}")
-
     // traverse up
     // println("traverse up")
-    paths = traverse(paths, up, iterationLimit = maxUp, traverseDirection = "up").cache()
-
+    paths = traverse(paths, up, iterationLimit = maxUp, traverseDirection = "up", numberRandomWalks = numberRandomWalks).cache()
     // traverse down
     // println("traverse down")
-    paths = traverse(paths, down, iterationLimit = maxDown, traverseDirection = "down").cache()
-
+    paths = traverse(paths, down, iterationLimit = maxDown, traverseDirection = "down", numberRandomWalks = numberRandomWalks).cache()
     // all gathered paths
     // println("gathered paths")
     val columns = paths.columns.toList
@@ -318,6 +325,8 @@ object FeatureExtractingSparqlGenerator {
     val seedNumber: Int = config.getInt("seedNumber") // 0
     val seedNumberAsRatio: Double = config.getDouble("seedNumberAsRatio") // 1.0
 
+    val numberRandomWalks: Int = config.getInt("numberRandomWalks")
+
     val master = config.getString("master")
 
     // setup spark session
@@ -341,7 +350,8 @@ object FeatureExtractingSparqlGenerator {
     maxUp = maxUp,
     maxDown = maxDown,
     numberSeeds = seedNumber,
-    ratioNumberSeeds = seedNumberAsRatio
+    ratioNumberSeeds = seedNumberAsRatio,
+    numberRandomWalks = numberRandomWalks,
   )
 
     println(
