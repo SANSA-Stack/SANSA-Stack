@@ -339,7 +339,8 @@ object FeatureExtractingSparqlGenerator {
     implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
     // first mini file:
-    val df: DataFrame = inputFilePath.split(".").last match {
+    val fileEnding = inputFilePath.split("\\.").last
+    val df: DataFrame = fileEnding match {
       case "ttl" => spark.read.rdf(Lang.TURTLE)(inputFilePath)
       case "nt" => spark.read.rdf(Lang.NTRIPLES)(inputFilePath)
       case _ => throw new Exception(f"The given file $inputFilePath has now clear extension like .ttl or .nt")
