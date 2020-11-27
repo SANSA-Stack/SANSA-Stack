@@ -314,8 +314,6 @@ object FeatureExtractingSparqlGenerator {
     val inputFilePath: String = config.getString("inputFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
     val outputFilePath: String = config.getString("outputFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
 
-    val rdfFormat: String = config.getString("rdfFormat") // "turtle"
-
     val seedVarName = config.getString("seedVarName") // "?seed"
     val whereClauseForSeed = config.getString("whereClauseForSeed") // "?seed a <http://dig.isi.edu/Person>"
 
@@ -341,7 +339,11 @@ object FeatureExtractingSparqlGenerator {
     implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
     // first mini file:
-    val df = spark.read.rdf(Lang.TURTLE)(inputFilePath) // TODO dynamic change of language
+    val df: DataFrame = inputFilePath.split(".").last match {
+      case "ttl" => spark.read.rdf(Lang.TURTLE)(inputFilePath)
+      case "nt" => spark.read.rdf(Lang.NTRIPLES)(inputFilePath)
+      case _ => throw new Exception(f"The given file $inputFilePath has now clear extension like .ttl or .nt")
+    }
 
   val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
     df = df,
