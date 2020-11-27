@@ -158,18 +158,22 @@ object CharacteristicSetGraphUtils {
       exporter.setVertexLabelProvider(v => v.properties.map(_.getURI).map(SplitIRI.localname).mkString(","))
     }
 
-
-
     exporter.registerAttribute("size", AttributeCategory.NODE, AttributeType.LONG)
     exporter.registerAttribute("name", AttributeCategory.ALL, AttributeType.STRING)
+    exporter.registerAttribute("dense", AttributeCategory.NODE, AttributeType.BOOLEAN)
 
     exporter.setVertexAttributeProvider(v => {
       val m = new util.HashMap[String, Attribute]()
+
+      // size and dense
       v match {
-        case ecsSet: ExtendedCharacteristicSet =>
-          m.put("size", new DefaultAttribute(ecsSet.size, AttributeType.LONG))
+        case ecs: ExtendedCharacteristicSet =>
+          m.put("size", new DefaultAttribute(ecs.size, AttributeType.LONG))
+          if (ecs.isDense.isDefined) m.put("dense", new DefaultAttribute(ecs.isDense.get, AttributeType.BOOLEAN))
         case _ =>
       }
+
+      // name
       val attr = if (encoded) {
         val properties = g.vertexSet().asScala.flatMap(_.properties).map(_.getURI).toSeq.sorted
         val dict = properties.zipWithIndex.toMap
