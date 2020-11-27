@@ -222,6 +222,12 @@
 												<exclude>META-INF/*.RSA</exclude>
 											</excludes>
 										</filter>
+										<filter>
+											<artifact>org.aksw.jena-sparql-api:*</artifact>
+											<excludes>
+												<exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle</exclude>
+											</excludes>
+										</filter>
 									</filters>
 									<transformers>
 										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
