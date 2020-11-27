@@ -1877,13 +1877,6 @@
 		</profile>
 
 		<profile>
-			<id>hadoop-3.2</id>
-			<properties>
-				<hadoop.version>3.2.1</hadoop.version>
-			</properties>
-		</profile>
-
-		<profile>
 			<id>hadoop-2.8</id>
 			<!-- Default hadoop profile. Uses global properties. -->
 		</profile>
