@@ -329,7 +329,7 @@ object FeatureExtractingSparqlGenerator {
 
     // setup spark session
     val spark = SparkSession.builder
-      .appName(s"tryout sparql query transformer")
+      .appName(s"rdf2feature")
       .master(master)
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.sql.crossJoin.enabled", true)
