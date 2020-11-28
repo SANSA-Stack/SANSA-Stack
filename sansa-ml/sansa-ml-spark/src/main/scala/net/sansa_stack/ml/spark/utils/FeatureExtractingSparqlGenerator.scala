@@ -259,14 +259,15 @@ object FeatureExtractingSparqlGenerator {
     cutoff = if (numberSeeds >= 0) numberSeeds else cutoff
     cutoff = math.rint(numberSeeds * ratioNumberSeeds).toInt
     val usedSeeds: List[Node] = seeds.take(cutoff)
+    val usedSeedsAsString = usedSeeds.map(_.toString)
 
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
 
     // seeds in dataframe asstarting paths
-    println(s"we start initially with following seeds:\n${usedSeeds.mkString("\n")}")
+    println(s"we start initially with following seeds:\n${usedSeedsAsString.mkString("\n")}")
     println("initial paths, so seeds are:")
-    var paths: DataFrame = usedSeeds.map(_.toString).toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
+    var paths: DataFrame = usedSeedsAsString.toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
     paths.show(false)
     // traverse up
     println("traverse up")
