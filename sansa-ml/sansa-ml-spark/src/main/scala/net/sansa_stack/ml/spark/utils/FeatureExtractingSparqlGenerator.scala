@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
 import net.sansa_stack.ml.spark.utils.SPARQLQuery
+import net.sansa_stack.ml.spark.utils.ConfigResolver
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession, functions}
 import org.apache.spark.sql.functions._
@@ -341,8 +342,8 @@ object FeatureExtractingSparqlGenerator {
     // first mini file:
     val fileEnding = inputFilePath.split("\\.").last
     val df: DataFrame = fileEnding match {
-      case "ttl" => spark.read.rdf(Lang.TURTLE)(inputFilePath)
-      case "nt" => spark.read.rdf(Lang.NTRIPLES)(inputFilePath)
+      case "ttl" => spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
+      case "nt" => spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
       case _ => throw new Exception(f"The given file $inputFilePath has now clear extension like .ttl or .nt")
     }
 
