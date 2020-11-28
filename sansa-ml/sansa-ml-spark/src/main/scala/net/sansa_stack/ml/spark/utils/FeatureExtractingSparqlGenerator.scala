@@ -264,16 +264,20 @@ object FeatureExtractingSparqlGenerator {
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
 
     // seeds in dataframe asstarting paths
-    var paths: DataFrame = usedSeeds.map(_.toString).toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
     println(s"we start initially with following seeds:\n${usedSeeds.mkString("\n")}")
+    println("initial paths, so seeds are:")
+    var paths: DataFrame = usedSeeds.map(_.toString).toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
+    paths.show(false)
     // traverse up
-    // println("traverse up")
+    println("traverse up")
     paths = traverse(paths, up, iterationLimit = maxUp, traverseDirection = "up", numberRandomWalks = numberRandomWalks).cache()
+    paths.show(false)
     // traverse down
-    // println("traverse down")
+    println("traverse down")
     paths = traverse(paths, down, iterationLimit = maxDown, traverseDirection = "down", numberRandomWalks = numberRandomWalks).cache()
+    paths.show(false)
     // all gathered paths
-    // println("gathered paths")
+    println("gathered paths")
     val columns = paths.columns.toList
 
     val newColumnsOrder: Seq[String] = columns
@@ -346,6 +350,9 @@ object FeatureExtractingSparqlGenerator {
       case "nt" => spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
       case _ => throw new Exception(f"The given file $inputFilePath has now clear extension like .ttl or .nt")
     }
+
+    println("The dataframe looks like this:")
+    df.show(false)
 
     val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
       df = df,
