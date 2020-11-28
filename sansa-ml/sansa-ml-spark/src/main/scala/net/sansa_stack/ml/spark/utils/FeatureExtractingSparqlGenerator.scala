@@ -347,16 +347,16 @@ object FeatureExtractingSparqlGenerator {
       case _ => throw new Exception(f"The given file $inputFilePath has now clear extension like .ttl or .nt")
     }
 
-  val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
-    df = df,
-    seedVarName = seedVarName,
-    seedWhereClause = whereClauseForSeed,
-    maxUp = maxUp,
-    maxDown = maxDown,
-    numberSeeds = seedNumber,
-    ratioNumberSeeds = seedNumberAsRatio,
-    numberRandomWalks = numberRandomWalks,
-  )
+    val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
+      df = df,
+      seedVarName = seedVarName,
+      seedWhereClause = whereClauseForSeed,
+      maxUp = maxUp,
+      maxDown = maxDown,
+      numberSeeds = seedNumber,
+      ratioNumberSeeds = seedNumberAsRatio,
+      numberRandomWalks = numberRandomWalks,
+    )
 
     println(
       f"""
