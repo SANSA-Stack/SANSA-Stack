@@ -248,7 +248,7 @@ object FeatureExtractingSparqlGenerator {
     val seedFetchingSparql: String = createSeedFetchingSparql(seedVarName, seedWhereClause, sortedByLinks = true)
 
     // query for seeds and list those
-    val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
+    /* val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
     val seedsDf: DataFrame = querytransformer1.transform(ds).cache()
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
     println(f"the fetched seeds are:\n$seeds\n")
@@ -259,7 +259,9 @@ object FeatureExtractingSparqlGenerator {
     cutoff = if (numberSeeds >= 0) numberSeeds else cutoff
     cutoff = math.rint(numberSeeds * ratioNumberSeeds).toInt
     val usedSeeds: List[Node] = seeds.take(cutoff)
-    val usedSeedsAsString = usedSeeds.map(_.toString)
+
+     */
+    val usedSeedsAsString = List("http://dig.isi.edu/John_jr", "http://dig.isi.edu/Mary", "http://dig.isi.edu/John") // usedSeeds.map(_.toString)
 
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
