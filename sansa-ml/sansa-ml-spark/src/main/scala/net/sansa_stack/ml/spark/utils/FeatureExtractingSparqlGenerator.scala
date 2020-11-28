@@ -366,7 +366,7 @@ object FeatureExtractingSparqlGenerator {
          |""".stripMargin)
     println(f"The resulting sparql query is: \n$totalSparqlQuery")
 
-    Files.write(Paths.get("/Users/carstendraschner/Downloads/auto.sparql"), totalSparqlQuery.getBytes(StandardCharsets.UTF_8))
+    Files.write(Paths.get(outputFilePath), totalSparqlQuery.getBytes(StandardCharsets.UTF_8))
     println(f"generated sparql has been stored to: $outputFilePath")
   }
 }
