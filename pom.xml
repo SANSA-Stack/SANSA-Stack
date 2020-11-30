@@ -1861,6 +1861,13 @@
 				</plugins>
 			</build>
 		</profile>
+		
+		<profile>
+			<id>spark-3</id>
+			<properties>
+				<spark.version>3.0.1</spark.version>
+			</properties>
+		</profile>
 
 		<profile>
 			<id>spark-3</id>

@@ -17,6 +17,6 @@ class TensorRush(spark: SparkSession, models: TensorModels) {
   def addTensor(path: String, id: Int): TensorModels = {
     val reader = new Reader(this.spark, path)
     val model = RDDTensor(spark, reader)
-    models += (id -> model);
+    models += (id -> model)
   }
 }

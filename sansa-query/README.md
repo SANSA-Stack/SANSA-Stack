@@ -39,8 +39,54 @@ SANSA Query Spark for heterogeneous data sources (data data) is composed of thre
 
 ## Usage
 
+### Requirements
+
+We currently require a Spark 2.4.x with Scala 2.12 setup.
+
+#### Release Version
+Add the following Maven dependency to your project POM file:
+```xml
+<!-- SANSA Querying -->
+<dependency>
+   <groupId>net.sansa-stack</groupId>
+   <artifactId>sansa-query-spark_2.12</artifactId>
+   <version>$LATEST_RELEASE_VERSION$</version>
+</dependency>
+```
+
+#### SNAPSHOT Version
+While the release versions are available on Maven Central, latest SNAPSHOT versions have to be installed from source code:
+```bash
+git clone https://github.com/SANSA-Stack/SANSA-Stack.git
+cd SANSA-Stack
+mvn -am -DskipTests -pl :sansa-query-spark_2.12 clean install 
+```
+Alternatively, you can use the following Maven repository and addd it to your project POM file `repositories` section:
+```xml
+<repository>
+   <id>maven.aksw.snapshots</id>
+   <name>AKSW Snapshot Repository</name>
+   <url>http://maven.aksw.org/archiva/repository/snapshots</url>
+   <releases>
+      <enabled>false</enabled>
+   </releases>
+   <snapshots>
+      <enabled>true</enabled>
+   </snapshots>
+</repository>
+```
+Then do the same as for the release version and add the dependency:
+```xml
+<!-- SANSA Querying -->
+<dependency>
+   <groupId>net.sansa-stack</groupId>
+   <artifactId>sansa-query-spark_2.12</artifactId>
+   <version>$LATEST_SNAPSHOT_VERSION$</version>
+</dependency>
+```
+### Running from code
 The following Scala code shows how to query an RDF file with SPARQL (be it a local file or a file residing in HDFS):
-### Running SPARQL queries via Sparqlify engine
+#### Running SPARQL queries via Sparqlify engine
 
 ```scala
 
@@ -59,7 +105,7 @@ server.join()
 
 ```
 
-### Running SPARQL queries via Ontop engine
+#### Running SPARQL queries via Ontop engine
 ``` scala
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession

@@ -13,7 +13,7 @@ object Pattern {
 
     val triples: Iterator[TriplePath] = el.patternElts
 
-    while (triples.hasNext()) {
+    while (triples.hasNext) {
       val t = triples.next()
       val triple = t.asTriple()
       dofs = (Dof.dof(triple) -> triple) :: dofs

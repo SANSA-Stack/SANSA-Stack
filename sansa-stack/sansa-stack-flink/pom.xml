@@ -8,7 +8,7 @@
 		<version>0.7.2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sansa-stack-flink</artifactId>
+	<artifactId>sansa-stack-flink_2.12</artifactId>
 	<packaging>pom</packaging>
 	<name>SANSA-Stack Flink</name>
 
