@@ -10,7 +10,7 @@ object QueryWalker {
   def walk[R, N: ClassTag, T, A](query: Query, model: Tensor[R, N, T, A]):
   Result[A] = {
     val visitor = new RecursiveElementVisitor(model)
-    ElementWalker.walk(query.getQueryPattern(), visitor)
+    ElementWalker.walk(query.getQueryPattern, visitor)
     visitor.result
   }
 }

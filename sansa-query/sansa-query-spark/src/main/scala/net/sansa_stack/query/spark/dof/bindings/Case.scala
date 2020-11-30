@@ -15,7 +15,7 @@ object Case{
     : Case[R, N, T, A] = {
     val dof = dofTriple._1
     dof match {
-      case -3 | -1 | 1 | 3 => return new Case(bindings, dofTriple)
+      case -3 | -1 | 1 | 3 => new Case(bindings, dofTriple)
       case _ => throw new Exception("Illegal value for dof=" + dof)
     }
   }

@@ -29,7 +29,7 @@ object QueryExecutionFactory {
 
   def create[R, N: ClassTag, T, A](queryStr: String, tensor: Tensor[R, N, T, A]): Result[A] = {
     checkArg(queryStr)
-    create(makeQuery(queryStr), tensor);
+    create(makeQuery(queryStr), tensor)
   }
 
   private def make[R, N: ClassTag, T, A](query: Query, model: Tensor[R, N, T, A]) = QueryExecution[R, N, T, A](query, model)

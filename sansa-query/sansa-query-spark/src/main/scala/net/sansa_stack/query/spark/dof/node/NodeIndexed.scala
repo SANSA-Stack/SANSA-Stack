@@ -13,7 +13,7 @@ class NodeIndexed[N: ClassTag](data: RDD[N]) extends java.io.Serializable {
   private val _reverse = rdd1.map(ni => (ni._2, ni._1))
   def reverserdd1: RDD[(Long, N)] = _reverse
 
-  private val _rddStr = data.map(ni => ni.toString()).distinct().zipWithIndex()
+  private val _rddStr = data.map(ni => ni.toString).distinct().zipWithIndex()
   def rddStr: RDD[(String, Long)] = _rddStr
   private val _reverseStr = rddStr.map(ni => (ni._2, ni._1))
   def reverserddStr: RDD[(Long, String)] = _reverseStr

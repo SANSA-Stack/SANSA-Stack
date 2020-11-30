@@ -12,7 +12,7 @@ object Dof {
   def dof(node: Node): Int = if (node.isVariable) 1 else -1
 
   def dof(triple: Triple): Int = {
-    var result = 0;
+    var result = 0
     Helper.getNodes(triple).foreach(result += dof(_))
     result
   }

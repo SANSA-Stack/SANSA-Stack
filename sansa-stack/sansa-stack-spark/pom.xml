@@ -8,7 +8,7 @@
         <version>0.7.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-stack-spark</artifactId>
+    <artifactId>sansa-stack-spark_2.12</artifactId>
 
     <packaging>pom</packaging>
     <name>SANSA-Stack Spark</name>
@@ -39,17 +39,17 @@
             <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
         </dependency>
 
-<!--        &lt;!&ndash; ML Layer &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>${project.groupId}</groupId>-->
-<!--            <artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>com.github.scopt</groupId>-->
-<!--                    <artifactId>scopt_2.11</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
+        <!-- ML Layer -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.scopt</groupId>
+                    <artifactId>scopt_2.11</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
     </dependencies>
 
