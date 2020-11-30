@@ -41,6 +41,7 @@ object OntopBasedSPARQLEngine {
         ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+      .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
 
     // load the data into an RDD

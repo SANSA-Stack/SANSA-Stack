@@ -6,6 +6,7 @@ import java.nio.file.{Files, Path}
 import java.util.zip.ZipInputStream
 
 import scala.collection.JavaConverters._
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.graph.GraphUtil
 import org.apache.jena.rdf.model.{ModelFactory, ResourceFactory}
@@ -16,10 +17,10 @@ import org.apache.jena.sparql.serializer.SerializationContext
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.RDF
 import org.scalatest.FunSuite
+import org.scalatest.tags._
 
-
-import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
+import net.sansa_stack.rdf.spark.utils.tags.ConformanceTestSuite
 
 /**
   * Tests for loading triples from either N-Triples are Turtle files into a DataFrame.
@@ -70,6 +71,7 @@ class RDFLoadingTests
     graph1.find().asScala.foreach(println)
 
     val triplesDF = spark.read.rdf(lang)(path)
+    triplesDF.show(30, false)
     val triplesDS = triplesDF.toDS()
     triplesDS.show()
     val triples = triplesDS.collect()
@@ -124,8 +126,8 @@ class RDFLoadingTests
       }
     }
   }
-
-  test("RDF 1.1 Turtle test suites must be parsed correctly") {
+  import org.scalatest.tagobjects.Slow
+  test("RDF 1.1 Turtle test suites must be parsed correctly", ConformanceTestSuite, Slow) {
 
     // load test suite from URL
     val url = new URL("https://www.w3.org/2013/TurtleTests/TESTS.zip")
