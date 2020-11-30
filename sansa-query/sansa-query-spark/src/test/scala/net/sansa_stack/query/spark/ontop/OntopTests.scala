@@ -29,7 +29,7 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
     super.beforeAll()
     val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
 
-    triples = spark.rdf(Lang.NTRIPLES)(input)
+    triples = spark.rdf(Lang.NTRIPLES)(input).cache()
 
     sparqlExecutor = new OntopSPARQLExecutor(triples)
   }

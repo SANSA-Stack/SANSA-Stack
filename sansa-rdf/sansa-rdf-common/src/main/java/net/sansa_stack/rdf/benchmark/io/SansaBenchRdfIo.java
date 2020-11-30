@@ -225,11 +225,11 @@ public class SansaBenchRdfIo {
     }
 
 
-	public static Stream<Triple> parseLineRiot2(File file) throws IOException {
-		
-	    return Files.lines(file.toPath())
-                .map(line ->
-						RiotParsers.createParserNTriples(TokenizerText.create().source(new ByteArrayInputStream(line.getBytes())).asciiOnly(true).build(),
-								null, parserProfile).next());
-    }
+//	public static Stream<Triple> parseLineRiot2(File file) throws IOException {
+//
+//	    return Files.lines(file.toPath())
+//                .map(line ->
+//						RiotParsers.createParserNTriples(TokenizerText.create().source(new ByteArrayInputStream(line.getBytes())).asciiOnly(true).build(),
+//								null, parserProfile).next());
+//    }
 }
