@@ -338,7 +338,6 @@ object FeatureExtractingSparqlGenerator {
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"rdf2feature")
-      .master(master)
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
         ", ",
