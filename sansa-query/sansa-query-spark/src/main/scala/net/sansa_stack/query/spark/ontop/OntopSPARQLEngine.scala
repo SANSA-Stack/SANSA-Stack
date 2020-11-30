@@ -4,7 +4,7 @@ import java.sql.{Connection, DriverManager, SQLException}
 import java.util
 import java.util.Properties
 
-import com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
+import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
