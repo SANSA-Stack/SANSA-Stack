@@ -3,16 +3,15 @@ package net.sansa_stack.query.spark.dof.tensor
 import net.sansa_stack.query.spark.dof.bindings._
 import net.sansa_stack.query.spark.dof.node._
 import net.sansa_stack.query.spark.dof.triple.Reader
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.core.Var
-import org.apache.spark.AccumulatorParam
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-object NSetAccumulatorParam extends AccumulatorParam[Set[Node]] {
-  def zero(initialValue: Set[Node]): Set[Node] = Set[Node]()
+import net.sansa_stack.query.spark.utils.SetAccumulator
 
-  def addInPlace(s1: Set[Node], s2: Set[Node]): Set[Node] = s1 ++ s2
+object NSetAccumulator
+  extends SetAccumulator[Node] {
 }
 
 object RDDTensor {

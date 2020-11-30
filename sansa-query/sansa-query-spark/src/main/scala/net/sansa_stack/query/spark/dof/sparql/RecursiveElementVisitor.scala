@@ -74,92 +74,92 @@ class RecursiveElementVisitor[R, N: ClassTag, T, A](model: Tensor[R, N, T, A]) e
 
       result = model.unionResult(result, current)
 
-      startElement(el);
-      endElement(el);
+      startElement(el)
+      endElement(el)
     }
 
   override def visit(el: ElementTriplesBlock): Unit =
     {
-      startElement(el);
-      endElement(el);
+      startElement(el)
+      endElement(el)
     }
 
   override def visit(el: ElementDataset): Unit =
     {
-      startElement(el);
-      endElement(el);
+      startElement(el)
+      endElement(el)
     }
 
   override def visit(el: ElementFilter): Unit =
     {
-      startElement(el);
-      endElement(el);
+      startElement(el)
+      endElement(el)
     }
 
   override def visit(el: ElementAssign): Unit =
     {
-      startElement(el);
-      endElement(el);
+      startElement(el)
+      endElement(el)
     }
 
   override def visit(el: ElementUnion): Unit =
     {
-      startElement(el);
+      startElement(el)
 
       for (subElement <- el.getElements.asScala) {
-        startSubElement(el, subElement);
-        subElement.visit(this);
-        endSubElement(el, subElement);
+        startSubElement(el, subElement)
+        subElement.visit(this)
+        endSubElement(el, subElement)
       }
 
-      endElement(el);
+      endElement(el)
     }
 
   override def visit(el: ElementOptional): Unit =
     {
-      startElement(el);
-      el.getOptionalElement().visit(this);
-      endElement(el);
+      startElement(el)
+      el.getOptionalElement.visit(this)
+      endElement(el)
     }
 
   override def visit(el: ElementNamedGraph): Unit =
     {
-      startElement(el);
-      el.getElement().visit(this);
-      endElement(el);
+      startElement(el)
+      el.getElement.visit(this)
+      endElement(el)
     }
 
   override def visit(el: ElementService): Unit =
     {
-      startElement(el);
-      el.getElement().visit(this);
-      endElement(el);
+      startElement(el)
+      el.getElement.visit(this)
+      endElement(el)
     }
 
   override def visit(el: ElementExists): Unit =
     {
-      startElement(el);
-      el.getElement().visit(this);
-      endElement(el);
+      startElement(el)
+      el.getElement.visit(this)
+      endElement(el)
     }
 
   override def visit(el: ElementNotExists): Unit =
     {
-      startElement(el);
-      el.getElement().visit(this);
-      endElement(el);
+      startElement(el)
+      el.getElement.visit(this)
+      endElement(el)
     }
 
   override def visit(el: ElementMinus): Unit =
     {
-      startElement(el);
-      el.getMinusElement().visit(this);
-      endElement(el);
+      startElement(el)
+      el.getMinusElement.visit(this)
+      endElement(el)
     }
 
   override def visit(el: ElementSubQuery): Unit =
     {
-      startElement(el);
-      endElement(el);
+      startElement(el)
+      endElement(el)
     }
 }

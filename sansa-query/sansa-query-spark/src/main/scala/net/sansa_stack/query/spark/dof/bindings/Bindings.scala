@@ -28,7 +28,7 @@ class Bindings[R, N: ClassTag, T, A](model: Tensor[R, N, T, A], constraints: Con
    */
   def recalcDof(triples: DofTripleList): List[(Int, Triple)] = {
     def calcDof(triple: Triple) = {
-      var (k, v) = (0, 0);
+      var (k, v) = (0, 0)
 
       Helper.getNodes(triple).foreach(node => {
         if (mapV.isUnbounded(node)) {
