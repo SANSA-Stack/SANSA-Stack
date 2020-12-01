@@ -14,6 +14,7 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{QueryFactory, QueryType}
@@ -25,8 +26,9 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
-
 import scala.collection.JavaConverters._
+
+import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -171,29 +173,48 @@ class OntopSPARQLEngine(val spark: SparkSession,
     spark.sql(s"USE $databaseName")
   }
 
+  /**
+   * creates an ontology from the given partitions.
+   * This is necessary for rdf:type information which is handled not in forms of SQL tables by Ontop
+   * but by a given set of entities contained in the ontology.
+   * TODO we we just use class declaration axioms for now
+   *      but it could be extended to extract more sophisticated schema axioms that can be used for inference
+   */
   private def createOntology(): Option[OWLOntology] = {
     logger.debug("extracting ontology from dataset")
-    // get the partitions that contains the rdf:type triples
+    // get the partitions that contain the rdf:type triples
     val typePartitions = partitions.filter(_.predicate == RDF.`type`.getURI)
 
     if (typePartitions.nonEmpty) {
+      // generate the table names for those rdf:type partitions
+      // there can be more than one because the partitioner creates a separate partition for each subject and object type
       val names = typePartitions.map(p => SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy), quotChar = '`'))
 
+      // create the SQL query as UNION of
       val sql = names.map(name => s"SELECT DISTINCT o FROM $name").mkString(" UNION ")
 
       val df = spark.sql(sql)
 
       val classes = df.collect().map(_.getString(0))
 
+      // we just use declaration axioms for now
       val dataFactory = OWLManager.getOWLDataFactory
       val axioms: Set[OWLAxiom] = classes.map(cls =>
             dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(IRI.create(cls)))).toSet
-      val ontology = OWLManager.createOWLOntologyManager().createOntology(axioms.asJava)
+      val ontology = createOntology(axioms)
 
       Some(ontology)
     } else {
       None
     }
+  }
+
+  /**
+   * creates a non-concurrent aware ontology - used to avoid overhead during serialization.
+   */
+  private def createOntology(axioms: Set[OWLAxiom]): OWLOntology = {
+    val man = new OWLAPIImplProfile().createManager(false)
+    man.createOntology(axioms.asJava)
   }
 
 
