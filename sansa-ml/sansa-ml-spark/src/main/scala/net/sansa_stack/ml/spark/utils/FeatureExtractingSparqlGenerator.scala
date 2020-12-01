@@ -2,16 +2,16 @@ package net.sansa_stack.ml.spark.utils
 
 import net.sansa_stack.ml.spark.utils.SPARQLQuery
 import net.sansa_stack.ml.spark.utils.ConfigResolver
-import org.apache.jena.riot.Lang
+import org.apache.jena.riot.{Lang, RDFLanguages}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession, functions}
 import org.apache.spark.sql.functions._
+
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.graph
 import org.apache.jena.graph.Node
 import org.apache.spark.sql.expressions.UserDefinedFunction
-
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 
 import scala.collection.mutable.ListBuffer
@@ -333,8 +333,6 @@ object FeatureExtractingSparqlGenerator {
 
     val numberRandomWalks: Int = config.getInt("numberRandomWalks")
 
-    val master = config.getString("master")
-
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"rdf2feature")
@@ -349,13 +347,11 @@ object FeatureExtractingSparqlGenerator {
 
     implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
-    // first mini file:
-    val fileEnding = inputFilePath.split("\\.").last
-    val df: DataFrame = fileEnding match {
-      case "ttl" => spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
-      case "nt" => spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
-      case _ => throw new Exception(f"The given file $inputFilePath has now clear extension like .ttl or .nt")
-    }
+    // get lang from filename
+    val lang = RDFLanguages.filenameToLang(inputFilePath)
+
+    // load RDF to Dataframe
+    val df: DataFrame = spark.read.rdf(lang)(inputFilePath).cache()
 
     println("The dataframe looks like this:")
     df.show(false)
