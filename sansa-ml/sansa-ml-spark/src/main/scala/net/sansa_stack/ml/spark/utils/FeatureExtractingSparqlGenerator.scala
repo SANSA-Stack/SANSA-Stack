@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 
+import scala.collection.JavaConverters._
+
 object FeatureExtractingSparqlGenerator {
 
   /**
@@ -234,7 +236,17 @@ object FeatureExtractingSparqlGenerator {
    * @param ratioNumberSeeds number of seeds specified by ratio
    * @return string of resulting sparql and list of string for each projection variable which later can be used for dataframe column naming
    */
-  def autoPrepo(df: DataFrame, seedVarName: String, seedWhereClause: String, maxUp: Int, maxDown: Int, numberSeeds: Int = 0, ratioNumberSeeds: Double = 1.0, numberRandomWalks: Int = 0): (String, List[String]) = {
+  def autoPrepo(
+     df: DataFrame,
+     seedVarName: String,
+     seedWhereClause: String,
+     maxUp: Int,
+     maxDown: Int,
+     numberSeeds: Int = 0,
+     ratioNumberSeeds: Double = 1.0,
+     numberRandomWalks: Int = 0,
+     hardCodedSeeds: List[String] = List.empty
+               ): (String, List[String]) = {
 
     val spark = SparkSession.builder
       .getOrCreate()
@@ -250,7 +262,10 @@ object FeatureExtractingSparqlGenerator {
     // query for seeds and list those
     val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
     val seedsDf: DataFrame = querytransformer1.transform(ds).cache()
+    seedsDf.show(false)
+    seedsDf.as[Node].map(_.toString()).toDF().show(false)
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
+    seeds.foreach(println(_))
     println(f"the fetched seeds are:\n$seeds\n")
     val numberSeeds: Int = seeds.length
 
@@ -261,7 +276,7 @@ object FeatureExtractingSparqlGenerator {
     val usedSeeds: List[Node] = seeds.take(cutoff)
     val usedSeedsAsString = usedSeeds.map(_.toString)
 
-    // val usedSeedsAsString = List("http://dig.isi.edu/John_jr", "http://dig.isi.edu/Mary", "http://dig.isi.edu/John") // usedSeeds.map(_.toString)
+    // val usedSeedsAsString: List[String] = hardCodedSeeds // List("http://dig.isi.edu/John_jr", "http://dig.isi.edu/Mary", "http://dig.isi.edu/John") // usedSeeds.map(_.toString)
 
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
@@ -333,6 +348,8 @@ object FeatureExtractingSparqlGenerator {
 
     val numberRandomWalks: Int = config.getInt("numberRandomWalks")
 
+    val hardCodedSeeds: List[String] = config.getStringList("hardCodedSeeds").asScala.toList
+
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"rdf2feature")
@@ -365,6 +382,7 @@ object FeatureExtractingSparqlGenerator {
       numberSeeds = seedNumber,
       ratioNumberSeeds = seedNumberAsRatio,
       numberRandomWalks = numberRandomWalks,
+      hardCodedSeeds = hardCodedSeeds,
     )
 
     println(
