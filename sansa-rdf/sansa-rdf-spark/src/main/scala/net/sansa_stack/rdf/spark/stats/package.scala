@@ -1,7 +1,8 @@
 package net.sansa_stack.rdf.spark
 
+import net.sansa_stack.rdf.spark.stats.RDFStatistics.SubclassUsage
 import net.sansa_stack.rdf.spark.utils.Logging
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -284,6 +285,25 @@ package object stats {
     def statsPropertiesDefined(): RDD[Node] =
       PropertiesDefined(triples, spark).Action()
 
+    /**
+     * <b>Subclass Usage Count </b> <br>
+     * Count the usage of rdfs:subClass properties within triples.
+     * @return number of rdfs:subClass predicates used in the dataset.
+     */
+    def statsSubclassUsage(): Long =
+      SubclassUsage(triples)
+
+    /**
+     * <b>Triples Count </b> <br>
+     * Count the number of triples.
+     * @return number of triples in the dataset.
+     */
+    def statsNumberOfTriples(): Long =
+      RDFStatistics.Triples(triples)
+
+    def statusEntitiesMentioned(): Long = {
+      RDFStatistics.EntitiesMentioned(triples)
+    }
   }
 
   implicit class StatsCriteriaVoidify(stats: RDD[String]) extends Logging {
