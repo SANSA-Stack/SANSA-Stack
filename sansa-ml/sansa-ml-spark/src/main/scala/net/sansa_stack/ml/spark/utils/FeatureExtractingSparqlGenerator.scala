@@ -262,17 +262,13 @@ object FeatureExtractingSparqlGenerator {
     // query for seeds and list those
     val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
     val seedsDf: DataFrame = querytransformer1.transform(ds).cache()
-    seedsDf.show(false)
-    seedsDf.as[Node].map(_.toString()).toDF().show(false)
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
-    seeds.foreach(println(_))
-    println(f"the fetched seeds are:\n$seeds\n")
+    println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
     val numberSeeds: Int = seeds.length
 
     // calculate cutoff
     var cutoff: Int = numberSeeds
-    cutoff = if (numberSeeds >= 0) numberSeeds else cutoff
-    cutoff = math.rint(numberSeeds * ratioNumberSeeds).toInt
+    cutoff = if (numberSeeds >= 0) numberSeeds else math.rint(numberSeeds * ratioNumberSeeds).toInt
     val usedSeeds: List[Node] = seeds.take(cutoff)
     val usedSeedsAsString = usedSeeds.map(_.toString)
 
@@ -282,20 +278,20 @@ object FeatureExtractingSparqlGenerator {
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
 
     // seeds in dataframe asstarting paths
-    println(s"we start initially with following seeds:\n${usedSeedsAsString.mkString("\n")}")
-    println("initial paths, so seeds are:")
+    println(s"we start initially with following seeds (after cutoff):\n${usedSeedsAsString.mkString("\n")}")
+    // println("initial paths, so seeds are:")
     var paths: DataFrame = usedSeedsAsString.toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
-    paths.show(false)
+    // paths.show(10, false)
     // traverse up
-    println("traverse up")
+    // println("traverse up")
     paths = traverse(paths, up, iterationLimit = maxUp, traverseDirection = "up", numberRandomWalks = numberRandomWalks).cache()
-    paths.show(false)
+    // paths.show(10, false)
     // traverse down
-    println("traverse down")
+    // println("traverse down")
     paths = traverse(paths, down, iterationLimit = maxDown, traverseDirection = "down", numberRandomWalks = numberRandomWalks).cache()
-    paths.show(false)
+    // paths.show(10, false)
     // all gathered paths
-    println("gathered paths")
+    // println("gathered paths")
     val columns = paths.columns.toList
 
     val newColumnsOrder: Seq[String] = columns
@@ -348,7 +344,7 @@ object FeatureExtractingSparqlGenerator {
 
     val numberRandomWalks: Int = config.getInt("numberRandomWalks")
 
-    val hardCodedSeeds: List[String] = config.getStringList("hardCodedSeeds").asScala.toList
+    // val hardCodedSeeds: List[String] = config.getStringList("hardCodedSeeds").asScala.toList
 
     // setup spark session
     val spark = SparkSession.builder
@@ -370,8 +366,8 @@ object FeatureExtractingSparqlGenerator {
     // load RDF to Dataframe
     val df: DataFrame = spark.read.rdf(lang)(inputFilePath).cache()
 
-    println("The dataframe looks like this:")
-    df.show(false)
+    // println("The dataframe looks like this:")
+    // df.show(false)
 
     val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
       df = df,
@@ -382,7 +378,7 @@ object FeatureExtractingSparqlGenerator {
       numberSeeds = seedNumber,
       ratioNumberSeeds = seedNumberAsRatio,
       numberRandomWalks = numberRandomWalks,
-      hardCodedSeeds = hardCodedSeeds,
+      // hardCodedSeeds = hardCodedSeeds,
     )
 
     println(
