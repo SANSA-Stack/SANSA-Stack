@@ -339,10 +339,10 @@ object FeatureExtractingSparqlGenerator {
     val spark = SparkSession.builder
       .appName(s"rdf2feature")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", String.join(
-        ", ",
+      .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+                      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+                      "net.sansa_stack.query.spark.ontop.KryoRegistratorOntop"))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
