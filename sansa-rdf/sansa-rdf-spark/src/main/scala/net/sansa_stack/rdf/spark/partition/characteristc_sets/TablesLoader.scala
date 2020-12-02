@@ -5,9 +5,11 @@ import java.net.URI
 import scala.util.{Failure, Success, Try}
 
 import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 import net.sansa_stack.rdf.spark.io.index.TriplesIndexer
+import org.apache.spark.sql.functions.{col, udf}
 
 /**
  * Create tables and load RDF data into different logical partitioning schemes:
@@ -25,14 +27,39 @@ class TablesLoader(spark: SparkSession,
   val COL_SUBJECT = "s"
   val COL_PREDICATE = "p"
   val COL_OBJECT = "o"
+  val COL_DATATYPE = "dt"
 
   val TRIPLETABLE_NAME = "triples"
+  val TRIPLETABLE_EXT_NAME = s"${TRIPLETABLE_NAME}_extended"
 
   val DATABASE_NAME = "sansa"
 
   spark.sql(s"CREATE DATABASE IF NOT EXISTS $database")
   spark.sql(s"USE $database")
 
+  val extractNodeTypeUDF = udf((s: String) => s.charAt(0) match {
+    case '<' => 0
+    case '_' => 1
+    case '"' => 2
+  })
+  val extractDatatypeUDF = udf((o: String) => o.charAt(0) match {
+    case '"' =>
+      val idx = o.lastIndexOf("^^")
+      if (idx > 0) {
+        o.substring(idx + 2)
+      } else {
+        null
+      }
+    case _ => null
+  })
+  spark.udf.register("extractNodeType", extractNodeTypeUDF.asNonNullable())
+  spark.udf.register("extractDatatype", extractDatatypeUDF)
+
+  /**
+   * Loads RDF data into a single table with columns for subject, predicate and object.
+   *
+   * @param path the path to the RDF data
+   */
   def loadTriplesTable(path: String): Unit = {
     val regex = """(\\S+)\\s+(\\S+)\\s+(.+)\\s*\\.\\s*$""".r
 
@@ -60,6 +87,43 @@ class TablesLoader(spark: SparkSession,
          |WHERE $COL_SUBJECT is not null AND $COL_PREDICATE is not null AND $COL_OBJECT is not null
          |""".stripMargin
     spark.sql(query)
+  }
+
+  /**
+   * Loads RDF data into a single table with columns for subject, predicate and object. Moreover, columns
+   * for optional datatype and language tag will be generated.
+   *
+   * @param path the path to the RDF data
+   */
+  def loadTriplesTableExtended(path: String): Unit = {
+    val regex = """(\\S+)\\s+(\\S+)\\s+(.+)\\s*\\.\\s*$""".r
+
+    var query =
+      s"""
+         |CREATE EXTERNAL TABLE IF NOT EXISTS ${TRIPLETABLE_EXT_NAME}_ext($COL_SUBJECT STRING, $COL_PREDICATE STRING, $COL_OBJECT STRING)
+         |ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
+         |WITH SERDEPROPERTIES	('input.regex' = '$regex')
+         |LOCATION '$path'
+         |""".stripMargin
+    spark.sql(query)
+
+    query =
+      s"""
+         |CREATE TABLE IF NOT EXISTS  $TRIPLETABLE_EXT_NAME($COL_SUBJECT STRING, $COL_PREDICATE STRING, $COL_OBJECT STRING, $COL_DATATYPE STRING)
+         |STORED AS PARQUET
+         |""".stripMargin
+    spark.sql(query)
+
+    query =
+      s"""
+         |INSERT OVERWRITE TABLE $TRIPLETABLE_EXT_NAME
+         |SELECT DISTINCT $COL_SUBJECT, $COL_PREDICATE, trim($COL_OBJECT), extractDatatype(trim($COL_OBJECT))
+         |FROM ${TRIPLETABLE_EXT_NAME}_ext
+         |WHERE $COL_SUBJECT is not null AND $COL_PREDICATE is not null AND $COL_OBJECT is not null
+         |""".stripMargin
+    spark.sql(query)
+
+    spark.table(TRIPLETABLE_EXT_NAME).filter(col("dt").isNotNull).show(20, false)
   }
 
   def loadVPTables(tableNameFn: String => String = uri => "vp_" + escapeSQLName(uri)): Unit = {
@@ -195,7 +259,7 @@ object TablesLoader {
         text("name of database")
 
       opt[Seq[String]]('s', "schemas").required().valueName("<schema1>,<schema2>,...").action((x, c) =>
-        c.copy(schemas = x)).text("schema of partitioning (tt, vp, wpt, iwpt)")
+        c.copy(schemas = x)).text("schema of partitioning (tt, tt-ext, vp, wpt, iwpt)")
 
       opt[Unit]("drop-database").action((_, c) =>
         c.copy(dropDatabase = true)).text("drop the database")
@@ -223,6 +287,7 @@ object TablesLoader {
         val tl = new TablesLoader(spark, config.databaseName)
 
         if (config.schemas.contains("tt")) tl.loadTriplesTable(config.path)
+        if (config.schemas.contains("tt-ext")) tl.loadTriplesTableExtended(config.path)
         if (config.schemas.contains("vp")) tl.loadVPTables()
         if (config.schemas.contains("wpt")) tl.loadWPTable()
         if (config.schemas.contains("iwpt")) tl.loadIWPTable()
