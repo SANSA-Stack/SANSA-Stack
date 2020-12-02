@@ -4,7 +4,7 @@ import java.lang.invoke.{MethodType, SerializedLambda}
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.serializers.ClosureSerializer
+import com.esotericsoftware.kryo.serializers.{ClosureSerializer, JavaSerializer}
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import it.unibz.inf.ontop.model.`type`.impl.RDFTermTypeImpl
 import it.unibz.inf.ontop.model.term.ImmutableTerm
@@ -12,6 +12,8 @@ import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.{AbstractSQLDBFuncti
 import it.unibz.inf.ontop.substitution.impl.ImmutableSubstitutionImpl
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 import org.apache.spark.serializer.KryoRegistrator
+import uk.ac.manchester.cs.owl.owlapi.OWLOntologyImpl
+import uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl
 
 
 /**
@@ -34,6 +36,10 @@ class OntopKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[it.unibz.inf.ontop.utils.CoreUtilsFactory])
     kryo.register(classOf[DefaultSQLTimestampISONormFunctionSymbol])
     kryo.register(classOf[AbstractSQLDBFunctionSymbolFactory])
+
+    // OWLOntology
+    kryo.register(classOf[OWLOntologyImpl], new JavaSerializer())
+    kryo.register(classOf[ConcurrentOWLOntologyImpl], new JavaSerializer())
   }
 
 }

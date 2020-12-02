@@ -259,6 +259,12 @@
 		</dependency>
 
         <dependency>
+            <groupId>com.github.owlcs</groupId>
+            <artifactId>ontapi</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>chill_${scala.binary.version}</artifactId>
             <version>0.9.3</version>

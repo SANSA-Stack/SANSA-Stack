@@ -2,7 +2,7 @@ package net.sansa_stack.query.spark.ontop
 
 import java.util.Properties
 
-import com.google.common.collect.ImmutableMap
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OntopInternalBugException}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
