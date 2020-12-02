@@ -1,10 +1,9 @@
 package net.sansa_stack.owl.common.parsing
 
 import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
-
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{IRI, OWLAnnotation, OWLAxiom, OWLClassExpression, OWLDataRange, OWLDocumentFormatImpl, OWLFacetRestriction, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression}
+import org.semanticweb.owlapi.model.{IRI, OWLAnnotation, OWLAxiom, OWLClassExpression, OWLDataIntersectionOf, OWLDataPropertyExpression, OWLDataPropertyRangeAxiom, OWLDataRange, OWLDataUnionOf, OWLDatatypeDefinitionAxiom, OWLDocumentFormatImpl, OWLFacetRestriction, OWLIndividual, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLObjectUnionOf}
 import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet, XSDVocabulary}
 import uk.ac.manchester.cs.owl.owlapi._
 
@@ -1019,7 +1018,8 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     val ranges = List(df.getStringOWLDatatype, df.getIntegerOWLDatatype)
-    val dataRange = df.getOWLDataUnionOf(ranges.asJavaCollection)
+    val dataRange = df.getOWLDataUnionOf(ranges.asJava)
+
     expectedAxiom = new OWLDatatypeDefinitionAxiomImpl(
       df.getOWLDatatype(prefix + "test1"),
       dataRange,
@@ -1034,7 +1034,14 @@ class ManchesterParsingTest extends FunSuite {
         )
       ).asJavaCollection
     )
-    assert(parsed.contains(expectedAxiom))
+
+    assert(parsed.count(ax =>
+      ax.annotationsAsList() == expectedAxiom.annotationsAsList()
+        && ax
+        .asInstanceOf[OWLDatatypeDefinitionAxiom]
+        .getDataRange
+        .asInstanceOf[OWLDataUnionOf]
+        .getDatatypesInSignature == dataRange.getDatatypesInSignature) == 1)
 
     clearParserPrefixes
   }
@@ -1112,11 +1119,17 @@ class ManchesterParsingTest extends FunSuite {
     val ranges: List[OWLDataRange] =
       List(df.getIntegerOWLDatatype, df.getStringOWLDatatype)
 
-    dataRange = new OWLDataUnionOfImpl(ranges.asJavaCollection)
-    assert(p.checkParsed(p.dataAtomic, atomicDataStr) == dataRange)
+    dataRange = new OWLDataUnionOfImpl(ranges.asJava)
+    var parsed = p.checkParsed(p.dataAtomic, atomicDataStr)
+    assert(parsed.getDataRangeType == dataRange.getDataRangeType)
+    assert(parsed.asInstanceOf[OWLDataUnionOf].getOperands ==
+      dataRange.asInstanceOf[OWLDataUnionOf].getOperands)
 
     atomicDataStr = "( integer or string )"
-    assert(p.checkParsed(p.dataAtomic, atomicDataStr) == dataRange)
+    parsed = p.checkParsed(p.dataAtomic, atomicDataStr)
+    assert(parsed.getDataRangeType == dataRange.getDataRangeType)
+    assert(parsed.asInstanceOf[OWLDataUnionOf].getOperands ==
+      dataRange.asInstanceOf[OWLDataUnionOf].getOperands)
   }
 
   test("The primary data parser should work correctly") {
@@ -1141,13 +1154,19 @@ class ManchesterParsingTest extends FunSuite {
         df.getOWLDatatype(OWL2Datatype.XSD_DECIMAL)
       )
 
-    dataRange = new OWLDataIntersectionOfImpl(ranges.asJavaCollection)
-    assert(p.checkParsed(p.dataConjunction, dataConjunctionStr) == dataRange)
+    dataRange = new OWLDataIntersectionOfImpl(ranges.asJava)
+    var parsed = p.checkParsed(p.dataConjunction, dataConjunctionStr)
+    assert(parsed.getDataRangeType == dataRange.getDataRangeType)
+    assert(parsed.asInstanceOf[OWLDataIntersectionOf].getOperands ==
+      dataRange.asInstanceOf[OWLDataIntersectionOf].getOperands)
 
     dataConjunctionStr = "integer and decimal and float"
     ranges = df.getFloatOWLDatatype :: ranges
-    dataRange = new OWLDataIntersectionOfImpl(ranges.asJavaCollection)
-    assert(p.checkParsed(p.dataConjunction, dataConjunctionStr) == dataRange)
+    dataRange = new OWLDataIntersectionOfImpl(ranges.asJava)
+    parsed = p.checkParsed(p.dataConjunction, dataConjunctionStr)
+    assert(parsed.getDataRangeType == dataRange.getDataRangeType)
+    assert(parsed.asInstanceOf[OWLDataIntersectionOf].getOperands ==
+      dataRange.asInstanceOf[OWLDataIntersectionOf].getOperands)
   }
 
   test("The inverse object property parser should work correctly") {
@@ -1594,12 +1613,18 @@ class ManchesterParsingTest extends FunSuite {
     descrString = "Cls1 or Cls2"
     val ce2 = df.getOWLClass("http://ex.com/default#Cls2")
     descr = df.getOWLObjectUnionOf(List(ce1, ce2).asJavaCollection.stream())
-    assert(p.checkParsed(p.description, descrString) == descr)
+    var parsed = p.checkParsed(p.description, descrString)
+    assert(parsed.getClassExpressionType == descr.getClassExpressionType)
+    assert(parsed.asInstanceOf[OWLObjectUnionOf].getOperands ==
+      descr.asInstanceOf[OWLObjectUnionOf].getOperands)
 
     descrString = "Cls1 or Cls2 or Cls3"
     val ce3 = df.getOWLClass("http://ex.com/default#Cls3")
     descr = df.getOWLObjectUnionOf(List(ce1, ce2, ce3).asJavaCollection.stream())
-    assert(p.checkParsed(p.description, descrString) == descr)
+    parsed = p.checkParsed(p.description, descrString)
+    assert(parsed.getClassExpressionType == descr.getClassExpressionType)
+    assert(parsed.asInstanceOf[OWLObjectUnionOf].getOperands ==
+      descr.asInstanceOf[OWLObjectUnionOf].getOperands)
 
     clearParserPrefixes
   }
@@ -1835,32 +1860,34 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(subClassOfAxiom))
 
     var equivClsAxiom = new OWLEquivalentClassesAxiomImpl(
-      List(
+      List[OWLClassExpression](
         cls,
-        df.getOWLClass(prefix + "SomeOtherClass")).asJavaCollection,
+        df.getOWLClass(prefix + "SomeOtherClass")
+      ).asJava,
       noAnnotations.asJavaCollection)
     assert(parsed.contains(equivClsAxiom))
 
     equivClsAxiom = new OWLEquivalentClassesAxiomImpl(
-      List(
+      List[OWLClassExpression](
         cls,
-        df.getOWLClass(prefix + "YetAnotherClass")).asJavaCollection,
+        df.getOWLClass(prefix + "YetAnotherClass")
+      ).asJava,
       noAnnotations.asJavaCollection)
     assert(parsed.contains(equivClsAxiom))
 
     var disjointWithAxiom = new OWLDisjointClassesAxiomImpl(
-      List(
+      List[OWLClassExpression](
         cls,
         df.getOWLClass(prefix + "ADifferentClass")
-      ).asJavaCollection,
+      ).asJava,
       noAnnotations.asJavaCollection)
     assert(parsed.contains(disjointWithAxiom))
 
     disjointWithAxiom = new OWLDisjointClassesAxiomImpl(
-      List(
+      List[OWLClassExpression](
         cls,
         df.getOWLClass(prefix + "AnotherDifferentClass")
-      ).asJavaCollection,
+      ).asJava,
       noAnnotations.asJavaCollection)
     assert(parsed.contains(disjointWithAxiom))
 
@@ -1870,12 +1897,13 @@ class ManchesterParsingTest extends FunSuite {
         df.getOWLLiteral("A union of small, medium and large"),
         noAnnotations.asJavaCollection.stream())
     )
-    var disjUnionAxiom = new OWLDisjointUnionAxiomImpl(
+    val disjUnionAxiom = new OWLDisjointUnionAxiomImpl(
       cls,
       List[OWLClassExpression](
-        df.getOWLClass(prefix + "Small"), df.getOWLClass(prefix + "Medium"),
+        df.getOWLClass(prefix + "Small"),
+        df.getOWLClass(prefix + "Medium"),
         df.getOWLClass(prefix + "Large")
-      ).asJavaCollection.stream(),
+      ).asJava,
       annotations.asJavaCollection
     )
     assert(parsed.contains(disjUnionAxiom))
@@ -2139,21 +2167,21 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLEquivalentObjectPropertiesAxiomImpl(
-      List(
+      List[OWLObjectPropertyExpression](
         objProp,
         df.getOWLObjectProperty(prefix + "andYetAnotherProp")
-      ).asJavaCollection,
+      ).asJava,
       noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLEquivalentObjectPropertiesAxiomImpl(
-      List(
+      List[OWLObjectPropertyExpression](
         objProp,
         df.getOWLObjectInverseOf(
           df.getOWLObjectProperty(prefix + "yetAnotherProp")
         )
-      ).asJavaCollection,
+      ).asJava,
       List(df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "comment"),
         df.getOWLLiteral("Some comment again")
@@ -2162,21 +2190,21 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLDisjointObjectPropertiesAxiomImpl(
-      List(
+      List[OWLObjectPropertyExpression](
         objProp,
         df.getOWLObjectProperty(prefix + "aDisjointProp")
-      ).asJavaCollection,
+      ).asJava,
       noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLDisjointObjectPropertiesAxiomImpl(
-      List(
+      List[OWLObjectPropertyExpression](
         objProp,
         df.getOWLObjectInverseOf(
           df.getOWLObjectProperty(prefix + "anotherDisjointProp")
         )
-      ).asJavaCollection,
+      ).asJava,
       List(df.getOWLAnnotation(
         df.getOWLAnnotationProperty(prefix + "comment"),
         df.getOWLLiteral("Comment my ass!")
@@ -2707,10 +2735,8 @@ class ManchesterParsingTest extends FunSuite {
     expectedAxiom = new OWLDataPropertyRangeAxiomImpl(
       dataProp,
       df.getOWLDataUnionOf(
-        List(
-          df.getOWLDatatype(XSDVocabulary.DECIMAL),
-          df.getOWLDatatype(XSDVocabulary.STRING)
-        ).asJavaCollection
+        df.getOWLDatatype(XSDVocabulary.DECIMAL),
+        df.getOWLDatatype(XSDVocabulary.STRING)
       ),
       List(
         df.getOWLAnnotation(
@@ -2723,7 +2749,19 @@ class ManchesterParsingTest extends FunSuite {
         )
       ).asJavaCollection
     )
-    assert(parsed.contains(expectedAxiom))
+
+    def getRangeOperands(ax: OWLAxiom): java.util.Set[OWLDataRange] =
+      ax.asInstanceOf[OWLDataPropertyRangeAxiom]
+        .getRange.asInstanceOf[OWLDataUnionOf].getOperands
+
+    /* It seemingly has to be that complicated since a simple .contains( )
+     * doesn't work anymore as the order of the operands of the owl:DataUnionOf
+     * will be shuffled by the OWL API
+     */
+    assert(
+      parsed.count(ax =>
+        ax.getAnnotations == expectedAxiom.getAnnotations
+          && getRangeOperands(ax) == getRangeOperands(expectedAxiom)) == 1)
 
     expectedAxiom = new OWLFunctionalDataPropertyAxiomImpl(
       dataProp,
@@ -2751,13 +2789,19 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLEquivalentDataPropertiesAxiomImpl(
-      List(dataProp, df.getOWLDataProperty(prefix + "equivProp1")).asJavaCollection,
+      List[OWLDataPropertyExpression](
+        dataProp,
+        df.getOWLDataProperty(prefix + "equivProp1")
+      ).asJava,
       noAnnotations
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLEquivalentDataPropertiesAxiomImpl(
-      List(dataProp, df.getOWLDataProperty(prefix + "equivProp2")).asJavaCollection,
+      List[OWLDataPropertyExpression](
+        dataProp,
+        df.getOWLDataProperty(prefix + "equivProp2")
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -2768,13 +2812,18 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLDisjointDataPropertiesAxiomImpl(
-      List(dataProp, df.getOWLDataProperty(prefix + "disjProp1")).asJavaCollection,
+      List[OWLDataPropertyExpression](
+        dataProp,
+        df.getOWLDataProperty(prefix + "disjProp1")
+      ).asJava,
       noAnnotations
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLDisjointDataPropertiesAxiomImpl(
-      List(dataProp, df.getOWLDataProperty(prefix + "disjProp2")).asJavaCollection,
+      List[OWLDataPropertyExpression](
+        dataProp, df.getOWLDataProperty(prefix + "disjProp2")
+      ).asJava,
       noAnnotations
     )
     assert(parsed.contains(expectedAxiom))
@@ -3064,10 +3113,10 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLSameIndividualAxiomImpl(
-      List(
+      List[OWLIndividual](
         indiv,
         df.getOWLNamedIndividual(prefix + "sameIndiv")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3078,19 +3127,19 @@ class ManchesterParsingTest extends FunSuite {
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLSameIndividualAxiomImpl(
-      List(
+      List[OWLIndividual](
         indiv,
         df.getOWLNamedIndividual(prefix + "sameAgainIndiv")
-      ).asJavaCollection,
+      ).asJava,
       noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
 
     expectedAxiom = new OWLDifferentIndividualsAxiomImpl(
-      List(
+      List[OWLIndividual](
         indiv,
         df.getOWLNamedIndividual(prefix + "aDifferentIndiv")
-      ).asJavaCollection,
+      ).asJava,
       noAnnotations.asJavaCollection
     )
     assert(parsed.contains(expectedAxiom))
@@ -3130,13 +3179,13 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.disjointClasses, disjointClassesStr)
     val expectedAxiom = new OWLDisjointClassesAxiomImpl(
-      List(
+      List[OWLClassExpression](
         df.getOWLObjectMinCardinality(
           2,
           df.getOWLObjectProperty(prefix + "prop")
         ),
         df.getOWLClass(prefix + "Class2")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3161,13 +3210,13 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.equivalentClasses, equivClassesStr)
     val expectedAxiom = new OWLEquivalentClassesAxiomImpl(
-      List(
+      List[OWLClassExpression](
         df.getOWLObjectMinCardinality(
           2,
           df.getOWLObjectProperty(prefix + "prop")
         ),
         df.getOWLClass(prefix + "Class2")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3192,11 +3241,11 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.equivalentObjectProperties, equivPropertiesStr)
     val expectedAxiom = new OWLEquivalentObjectPropertiesAxiomImpl(
-      List(
+      List[OWLObjectPropertyExpression](
         df.getOWLObjectProperty(prefix + "prop1"),
         df.getOWLObjectProperty(prefix + "prop2"),
         df.getOWLObjectProperty(prefix + "prop3")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3221,11 +3270,11 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.disjointObjectProperties, disjPropertiesStr)
     val expectedAxiom = new OWLDisjointObjectPropertiesAxiomImpl(
-      List(
+      List[OWLObjectPropertyExpression](
         df.getOWLObjectProperty(prefix + "prop1"),
         df.getOWLObjectProperty(prefix + "prop2"),
         df.getOWLObjectProperty(prefix + "prop3")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3250,11 +3299,11 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.equivalentDataProperties, equivPropertiesStr)
     val expectedAxiom = new OWLEquivalentDataPropertiesAxiomImpl(
-      List(
+      List[OWLDataPropertyExpression](
         df.getOWLDataProperty(prefix + "prop1"),
         df.getOWLDataProperty(prefix + "prop2"),
         df.getOWLDataProperty(prefix + "prop3")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3279,11 +3328,11 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.disjointDataProperties, disjPropertiesStr)
     val expectedAxiom = new OWLDisjointDataPropertiesAxiomImpl(
-      List(
+      List[OWLDataPropertyExpression](
         df.getOWLDataProperty(prefix + "prop1"),
         df.getOWLDataProperty(prefix + "prop2"),
         df.getOWLDataProperty(prefix + "prop3")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3308,11 +3357,11 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.sameIndividual, sameIndivStr)
     val expectedAxiom = new OWLSameIndividualAxiomImpl(
-      List(
+      List[OWLIndividual](
         df.getOWLNamedIndividual(prefix + "indiv1"),
         df.getOWLNamedIndividual(prefix + "indiv2"),
         df.getOWLNamedIndividual(prefix + "indiv3")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),
@@ -3337,11 +3386,11 @@ class ManchesterParsingTest extends FunSuite {
       """.stripMargin
     val parsed = p.checkParsed(p.differentIndividuals, differentIndivsStr)
     val expectedAxiom = new OWLDifferentIndividualsAxiomImpl(
-      List(
+      List[OWLIndividual](
         df.getOWLNamedIndividual(prefix + "indiv1"),
         df.getOWLNamedIndividual(prefix + "indiv2"),
         df.getOWLNamedIndividual(prefix + "indiv3")
-      ).asJavaCollection,
+      ).asJava,
       List(
         df.getOWLAnnotation(
           df.getOWLAnnotationProperty(prefix + "comment"),

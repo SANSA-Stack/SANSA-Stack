@@ -557,7 +557,7 @@ class ManchesterParsing extends IRIParsing {
     dataPrimary ~ whiteSpace ~ "and" ~ whiteSpace ~ dataPrimary ~
       { whiteSpace ~ "and" ~ whiteSpace ~ dataPrimary }.* ^^ { raw =>
         new OWLDataIntersectionOfImpl(unravelWithFixedWhiteSpace[OWLDataRange](
-          List(raw._1._1._1._1._1, raw._1._2), raw._2).asJavaCollection)
+          List(raw._1._1._1._1._1, raw._1._2), raw._2).asJava)
     } |
     dataPrimary
 
@@ -565,7 +565,7 @@ class ManchesterParsing extends IRIParsing {
     dataConjunction ~ whiteSpace ~ "or" ~ whiteSpace ~ dataConjunction ~
       { whiteSpace ~ "or" ~ whiteSpace ~ dataConjunction }.* ^^ {
       raw => new OWLDataUnionOfImpl(unravelWithFixedWhiteSpace(
-        List(raw._1._1._1._1._1, raw._1._2), raw._2).asJavaCollection)
+        List(raw._1._1._1._1._1, raw._1._2), raw._2).reverse.asJava)
     } |
     dataConjunction
 
@@ -787,7 +787,7 @@ class ManchesterParsing extends IRIParsing {
         val restrictions = unravelConjunctionWithOptional(List(firstRestriction), raw._2)
 
         new OWLObjectIntersectionOfImpl(
-          { classIRI :: restrictions }.asJavaCollection.stream())
+          { classIRI :: restrictions.reverse }.asJava)
     } |
     primary ~ whiteSpace ~ "and" ~ whiteSpace ~ primary ~
       { whiteSpace ~ "and" ~ whiteSpace ~ primary }.* ^^ { raw =>
@@ -798,7 +798,7 @@ class ManchesterParsing extends IRIParsing {
         val ces: List[OWLClassExpression] =
           unravelWithFixedWhiteSpace(List(firstCE, secondCE), remainingParseResults)
 
-        new OWLObjectIntersectionOfImpl(ces.asJavaCollection.stream())
+        new OWLObjectIntersectionOfImpl(ces.reverse.asJava)
     } |
     primary
 
@@ -808,7 +808,7 @@ class ManchesterParsing extends IRIParsing {
         val ces: List[OWLClassExpression] =
           unravelWithFixedWhiteSpace(List(raw._1._1._1._1._1, raw._1._2), raw._2)
 
-      new OWLObjectUnionOfImpl(ces.asJavaCollection.stream())
+      new OWLObjectUnionOfImpl(ces.reverse.asJava)
     } |
     conjunction
 
@@ -850,19 +850,19 @@ class ManchesterParsing extends IRIParsing {
         val annotations: List[OWLAnnotation] = exprWAnns._2
 
         new OWLEquivalentClassesAxiomImpl(
-          List(cls, ce).asJavaCollection, annotations.asJavaCollection)
+          List(cls, ce).asJava, annotations.asJavaCollection)
       })
       case ClassDisjointWithDetails(exprsWAnns) => exprsWAnns.map(exprWAnns => {
         val ce: OWLClassExpression = exprWAnns._1
         val annotations: List[OWLAnnotation] = exprWAnns._2
 
         new OWLDisjointClassesAxiomImpl(
-          List[OWLClassExpression](cls, ce).asJavaCollection,
+          List[OWLClassExpression](cls, ce).asJava,
           annotations.asJavaCollection)
       })
       case ClassDisjointUnionOfDetails(annsAndCEs) =>
         List(new OWLDisjointUnionAxiomImpl(
-          cls, annsAndCEs._2.asJavaCollection.stream(), annsAndCEs._1.asJavaCollection))
+          cls, annsAndCEs._2.asJava, annsAndCEs._1.asJavaCollection))
     }
 
   def subClassOf: Parser[List[(OWLClassExpression, List[OWLAnnotation])]] =
@@ -1065,7 +1065,7 @@ class ManchesterParsing extends IRIParsing {
               List(
                 objProperty,
                 d._1
-              ).asJavaCollection,
+              ).asJava,
               d._2.asJavaCollection
             ))
           case ObjectPropertyDisjointWithDetails(details) =>
@@ -1073,7 +1073,7 @@ class ManchesterParsing extends IRIParsing {
               List(
                 objProperty,
                 d._1
-              ).asJavaCollection,
+              ).asJava,
               d._2.asJavaCollection
             ))
           case ObjectPropertyInverseOfDetails(details) =>
@@ -1183,14 +1183,14 @@ class ManchesterParsing extends IRIParsing {
           case DataPropertyEquivalentToDetails(details) =>
             details.map(d =>
               new OWLEquivalentDataPropertiesAxiomImpl(
-                List(dataProperty, d._1).asJavaCollection,
+                List(dataProperty, d._1).asJava,
                 d._2.asJavaCollection
               )
             )
           case DataPropertyDisjointWithDetails(details) =>
             details.map(d =>
               new OWLDisjointDataPropertiesAxiomImpl(
-                List(dataProperty, d._1).asJavaCollection,
+                List(dataProperty, d._1).asJava,
                 d._2.asJavaCollection
               )
             )
@@ -1422,13 +1422,13 @@ class ManchesterParsing extends IRIParsing {
         })
         case IndividualSameAsDetails(details) => details.map(d =>
           new OWLSameIndividualAxiomImpl(
-            List(indiv, d._1).asJavaCollection,
+            List(indiv, d._1).asJava,
             d._2.asJavaCollection
           )
         )
         case IndividualDifferentFromDetails(details) => details.map(d =>
           new OWLDifferentIndividualsAxiomImpl(
-            List(indiv, d._1).asJavaCollection,
+            List(indiv, d._1).asJava,
             d._2.asJavaCollection
           )
         )
@@ -1443,7 +1443,7 @@ class ManchesterParsing extends IRIParsing {
       val descriptions: List[OWLClassExpression] = raw._2._1 :: raw._2._2
       List(
         new OWLEquivalentClassesAxiomImpl(
-          descriptions.asJavaCollection, annotations.asJavaCollection)
+          descriptions.asJava, annotations.asJavaCollection)
       )
     }
 
@@ -1454,7 +1454,7 @@ class ManchesterParsing extends IRIParsing {
 
       List(
         new OWLDisjointClassesAxiomImpl(
-          descriptions.asJavaCollection, annotations.asJavaCollection)
+          descriptions.asJava, annotations.asJavaCollection)
       )
     }
 
@@ -1473,7 +1473,7 @@ class ManchesterParsing extends IRIParsing {
       objectPropertyExpression2List ^^ { raw =>
       List(
         new OWLEquivalentObjectPropertiesAxiomImpl(
-          raw._2.asJavaCollection,
+          raw._2.asJava,
           raw._1._1._2.asJavaCollection
         )
       )
@@ -1484,7 +1484,7 @@ class ManchesterParsing extends IRIParsing {
       objectPropertyExpression2List ^^ { raw =>
       List(
         new OWLDisjointObjectPropertiesAxiomImpl(
-          raw._2.asJavaCollection,
+          raw._2.asJava,
           raw._1._1._2.asJavaCollection
         )
       )
@@ -1505,7 +1505,7 @@ class ManchesterParsing extends IRIParsing {
       dataProperty2List ^^ { raw =>
       List(
         new OWLEquivalentDataPropertiesAxiomImpl(
-          raw._2.asJavaCollection,
+          raw._2.asJava,
           raw._1._1._2.asJavaCollection
         )
       )
@@ -1516,7 +1516,7 @@ class ManchesterParsing extends IRIParsing {
       dataProperty2List ^^ { raw =>
       List(
         new OWLDisjointDataPropertiesAxiomImpl(
-          raw._2.asJavaCollection,
+          raw._2.asJava,
           raw._1._1._2.asJavaCollection
         )
       )
@@ -1532,7 +1532,7 @@ class ManchesterParsing extends IRIParsing {
       individual2List ^^ { raw =>
       List(
         new OWLSameIndividualAxiomImpl(
-          raw._2.asJavaCollection,
+          raw._2.asJava,
           raw._1._1._2.asJavaCollection
         )
       )
@@ -1543,7 +1543,7 @@ class ManchesterParsing extends IRIParsing {
       individual2List ^^ { raw =>
       List(
         new OWLDifferentIndividualsAxiomImpl(
-          raw._2.asJavaCollection,
+          raw._2.asJava,
           raw._1._1._2.asJavaCollection
         )
       )
