@@ -32,7 +32,7 @@ object FeatureExtractingSparqlGenerator {
   def createSeedFetchingSparql(seedVarName: String, seedWhereClause: String, sortedByLinks: Boolean): String = {
     val seedFetchingSparql = sortedByLinks match {
       case true => f"SELECT DISTINCT $seedVarName \nWHERE { $seedWhereClause \n\tOptional { $seedVarName ?p ?o. } } \ngroup by $seedVarName ORDER BY DESC ( count(?p) ) "
-      case false => f"SELECT DISTINCT $seedVarName \n WHERE { $seedWhereClause} }"
+      case false => f"SELECT DISTINCT $seedVarName \n WHERE { $seedWhereClause} "
     }
     println(f"the generated seed fetching sparql is:\n$seedFetchingSparql")
     seedFetchingSparql
