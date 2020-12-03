@@ -59,12 +59,12 @@ class OWLStats(spark: SparkSession) extends Serializable {
     var depth = 0
     val result: Array[(String, Int)] = Array.ofDim[(String, Int)](classes.length)
 
-    for (i <- 0 until classes.size) {
+    for (i <- classes.indices) {
       depth = 0
       target = classes(i)
 
-      for (j <- 0 until subClassOf.size) {
-        for (l <- 0 until subClassOf.size) {
+      for (j <- subClassOf.indices) {
+        for (l <- subClassOf.indices) {
           if (subClassOf.apply(l)._1 == target) {
             depth = depth + 1
             target = subClassOf.apply(l)._2
@@ -548,12 +548,12 @@ class OWLStats(spark: SparkSession) extends Serializable {
     var depth = 0
     val result: Array[(String, Int)] = Array.ofDim[(String, Int)](dataProperties.length)
 
-    for (i <- 0 until dataProperties.size) {
+    for (i <- dataProperties.indices) {
       depth = 0
       target = dataProperties(i)
 
-      for (j <- 0 until subDataProp.size) {
-        for (l <- 0 until subDataProp.size) {
+      for (j <- subDataProp.indices) {
+        for (l <- subDataProp.indices) {
           if (subDataProp.apply(l)._1 == target) {
             depth = depth + 1
             target = subDataProp.apply(l)._2
@@ -587,12 +587,12 @@ class OWLStats(spark: SparkSession) extends Serializable {
     var depth = 0
     val result: Array[(String, Int)] = Array.ofDim[(String, Int)](objProperties.length)
 
-    for (i <- 0 until objProperties.size) {
+    for (i <- objProperties.indices) {
       depth = 0
       target = objProperties(i)
 
-      for (j <- 0 until subObjectProp.size) {
-        for (l <- 0 until subObjectProp.size) {
+      for (j <- subObjectProp.indices) {
+        for (l <- subObjectProp.indices) {
           if (subObjectProp.apply(l)._1 == target) {
             depth = depth + 1
             target = subObjectProp.apply(l)._2
@@ -1112,11 +1112,11 @@ class OWLStats(spark: SparkSession) extends Serializable {
     val negativeDataPropAssertion = owlAxioms.extractAxioms(axioms, AxiomType.NEGATIVE_DATA_PROPERTY_ASSERTION)
                                              .asInstanceOf[RDD[OWLNegativeDataPropertyAssertionAxiom]]
 
-    val l1 = dataPropAssertion.filter(!_.getObject.getLang.isEmpty)
+    val l1 = dataPropAssertion.filter(_.getObject.getLang.nonEmpty)
                               .map(a => (a.getObject.getLang, 1))
                               .reduceByKey(_ + _)
 
-    val l2 = negativeDataPropAssertion.filter(!_.getObject.getLang.isEmpty)
+    val l2 = negativeDataPropAssertion.filter(_.getObject.getLang.nonEmpty)
                                       .map(a => (a.getObject.getLang, 1))
                                       .reduceByKey(_ + _)
     l1.union(l2)
@@ -1164,11 +1164,11 @@ class OWLStats(spark: SparkSession) extends Serializable {
                                              .asInstanceOf[RDD[OWLNegativeDataPropertyAssertionAxiom]]
 
     val t1 = dataPropAssertion
-                  .filter(!_.getObject.getLang.isEmpty)
+                  .filter(_.getObject.getLang.nonEmpty)
                   .map(_.getObject.getLiteral.length)
 
     val t2 = negativeDataPropAssertion
-                  .filter(!_.getObject.getLang.isEmpty)
+                  .filter(_.getObject.getLang.nonEmpty)
                   .map(_.getObject.getLiteral.length)
 
     t1.union(t2).mean()

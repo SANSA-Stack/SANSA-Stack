@@ -21,7 +21,7 @@ The following Scala code shows how to read an OWL file in Functional Syntax (be 
 
 ```scala
 import net.sansa_stack.owl.spark.owl._
-import net.sansa_stack.owl.spark.stats
+import net.sansa_stack.owl.spark.stats.OWLStats
 
 [...]
 

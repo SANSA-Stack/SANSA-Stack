@@ -66,7 +66,7 @@ class OWLXMLSyntaxExpressionBuilder(spark: SparkSession, filePath: String) exten
       classOf[org.apache.hadoop.io.Text], // class for the key
       classOf[org.apache.hadoop.io.Text]) // class for the value
 
-    val recordRDD: OWLExpressionsRDD = rawRDD.map { (x) => (x._1.toString) }
+    val recordRDD: OWLExpressionsRDD = rawRDD.map { x => x._1.toString }
 
     recordRDD
   }
@@ -81,7 +81,7 @@ class OWLXMLSyntaxExpressionBuilder(spark: SparkSession, filePath: String) exten
 
     val unionOwlExpressionsRDD = for {
       (pattern, tags) <- owlRecordPatterns
-    } yield (getRecord(tags))
+    } yield getRecord(tags)
 
     val owlExpressionsRDD = unionOwlExpressionsRDD.reduce(_ union _)
 

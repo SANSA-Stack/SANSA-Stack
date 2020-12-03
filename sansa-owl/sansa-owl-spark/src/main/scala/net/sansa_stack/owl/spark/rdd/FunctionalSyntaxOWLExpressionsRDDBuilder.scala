@@ -16,11 +16,11 @@ object FunctionalSyntaxOWLExpressionsRDDBuilder extends Serializable with Functi
     val rawRDD = hadoopRDD.map(entry => entry._2.toString)
 
     val tmp: Array[(String, String)] =
-          rawRDD.filter(isPrefixDeclaration(_)).map(parsePrefix).collect()
+          rawRDD.filter(isPrefixDeclaration).map(parsePrefix).collect()
     val prefixes: Map[String, String] = tmp.toMap
 
     val builder = new FunctionalSyntaxExpressionBuilder(prefixes)
 
-    rawRDD.map(builder.clean(_)).filter(_ != null)
+    rawRDD.map(builder.clean).filter(_ != null)
   }
 }
