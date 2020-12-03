@@ -153,7 +153,7 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
         val p = prefix + ":"
 
         if (trimmedExpr.contains(p)) {
-          val v: String = "<" + prefixes.get(prefix).get
+          val v: String = "<" + prefixes(prefix)
           // TODO: refine regex
           val pattern = (p + "([a-zA-Z][0-9a-zA-Z_-]*)\\b").r
 
@@ -167,7 +167,7 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
       // handle default prefix e.g. :Bar --> http://foo.com/defaultPath#Bar
       // TODO: refine regex
       val pattern = ":[^/][a-zA-Z][0-9a-zA-Z_-]*".r
-      val v: String = "<" + prefixes.get(FunctionalSyntaxParsing._empty).get
+      val v: String = "<" + prefixes(FunctionalSyntaxParsing._empty)
 
       if (prefixes.contains(FunctionalSyntaxParsing._empty)) {
         pattern.findAllIn(trimmedExpr).foreach(hit => {

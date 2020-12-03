@@ -343,31 +343,31 @@ class ManchesterParsing extends IRIParsing {
   def positiveInteger: Parser[Int] = phrase(nonZero ~ digit.*) ^^ { toString(_).toInt }
   def nonNegativeInteger: Parser[Int] = phrase(zero | positiveInteger)
 
-  def classIRI: Parser[OWLClass] = notAnXSDDatatypeURI ^^ { dataFactory.getOWLClass(_) }
+  def classIRI: Parser[OWLClass] = notAnXSDDatatypeURI ^^ { dataFactory.getOWLClass }
 
   def datatype: Parser[OWLDatatype] =
     "integer" ^^ { _ => dataFactory.getOWLDatatype(OWL2Datatype.XSD_INTEGER) } |
     "decimal" ^^ { _ => dataFactory.getOWLDatatype(OWL2Datatype.XSD_DECIMAL) } |
     "float" ^^ { _ => dataFactory.getOWLDatatype(OWL2Datatype.XSD_FLOAT) } |
     "string" ^^ { _ => dataFactory.getOWLDatatype(OWL2Datatype.XSD_STRING) } |
-    iri ^^ { dataFactory.getOWLDatatype(_) }
+    iri ^^ { dataFactory.getOWLDatatype }
 
   def nodeID: Parser[String] = "_:" ~ pn_local ^^ { toString(_) }
 
   def individualIRI: Parser[OWLNamedIndividual] =
-    notAnXSDDatatypeURI ^^ { dataFactory.getOWLNamedIndividual(_) }
+    notAnXSDDatatypeURI ^^ { dataFactory.getOWLNamedIndividual }
 
   def objectPropertyIRI: Parser[OWLObjectProperty] =
-    notAnXSDDatatypeURI ^^ { dataFactory.getOWLObjectProperty(_) }
+    notAnXSDDatatypeURI ^^ { dataFactory.getOWLObjectProperty }
 
   def dataPropertyIRI: Parser[OWLDataProperty] =
-    notAnXSDDatatypeURI ^^ { dataFactory.getOWLDataProperty(_)}
+    notAnXSDDatatypeURI ^^ { dataFactory.getOWLDataProperty}
 
   def annotationPropertyIRI: Parser[OWLAnnotationProperty] =
-    notAnXSDDatatypeURI ^^ { dataFactory.getOWLAnnotationProperty(_) }
+    notAnXSDDatatypeURI ^^ { dataFactory.getOWLAnnotationProperty }
 
   def individual: Parser[OWLIndividual] =
-    individualIRI | nodeID ^^ { dataFactory.getOWLAnonymousIndividual(_) }
+    individualIRI | nodeID ^^ { dataFactory.getOWLAnonymousIndividual }
 
   /** a finite sequence of characters in which " (U+22) and \ (U+5C) occur only
     * in pairs of the form \" (U+5C, U+22) and \\ (U+5C, U+5C), enclosed in a
@@ -396,7 +396,7 @@ class ManchesterParsing extends IRIParsing {
       dataFactory.getOWLLiteral(raw._1._1._1, raw._2) }
 
   def stringLiteralNoLanguage: Parser[OWLLiteral] =
-    quotedString ^^ { dataFactory.getOWLLiteral(_) }
+    quotedString ^^ { dataFactory.getOWLLiteral }
 
   def stringLiteralWithLanguage: Parser[OWLLiteral] =
     quotedString ~ languageTag ^^ { raw => dataFactory.getOWLLiteral(raw._1, raw._2) }
@@ -456,7 +456,7 @@ class ManchesterParsing extends IRIParsing {
     dataPropertyDecl | annotationPropertyDecl | namedIndividualDecl
 
   def annotationTarget: Parser[OWLAnnotationValue] =
-    nodeID ^^ { dataFactory.getOWLAnonymousIndividual(_) } | iri | literal
+    nodeID ^^ { dataFactory.getOWLAnonymousIndividual } | iri | literal
 
   def annotation: Parser[(OWLAnnotationProperty, OWLAnnotationValue)] =
     annotationPropertyIRI ~ whiteSpace ~ annotationTarget ^^ { raw => (raw._1._1, raw._2) }
@@ -889,13 +889,13 @@ class ManchesterParsing extends IRIParsing {
 
   def classFrame: Parser[List[OWLAxiom]] =
     "Class:" ~ whiteSpace ~ classIRI ~ {
-        { whiteSpace ~ { hasKey ^^ { HasKeyDetails(_) } } } |
+        { whiteSpace ~ { hasKey ^^ { HasKeyDetails } } } |
         {
-          { whiteSpace ~ { annotations ^^ { ClassAnnotationDetails(_) } } } |
-          { whiteSpace ~ { subClassOf ^^ { ClassSubClassOfDetails(_) } } } |
-          { whiteSpace ~ { equivalentTo ^^ { ClassEquivalentToDetails(_) } } } |
-          { whiteSpace ~ { disjointWith ^^ { ClassDisjointWithDetails(_) } } } |
-          { whiteSpace ~ { disjointUnionOf ^^ { ClassDisjointUnionOfDetails(_) } } }
+          { whiteSpace ~ { annotations ^^ { ClassAnnotationDetails } } } |
+          { whiteSpace ~ { subClassOf ^^ { ClassSubClassOfDetails } } } |
+          { whiteSpace ~ { equivalentTo ^^ { ClassEquivalentToDetails } } } |
+          { whiteSpace ~ { disjointWith ^^ { ClassDisjointWithDetails } } } |
+          { whiteSpace ~ { disjointUnionOf ^^ { ClassDisjointUnionOfDetails } } }
         }.*
       } ^^ { raw =>
         val cls = raw._1._2
@@ -975,15 +975,15 @@ class ManchesterParsing extends IRIParsing {
 
   def objectPropertyFrame: Parser[List[OWLAxiom]] =
     "ObjectProperty:" ~ whiteSpace ~ objectPropertyIRI ~ {
-      { whiteSpace ~ { annotations ^^ { ObjectPropertyAnnotationDetails(_) } } } |
-      { whiteSpace ~ { domain ^^ { ObjectPropertyDomainDetails(_) } } } |
-      { whiteSpace ~ { range ^^ { ObjectPropertyRangeDetails(_) } } } |
-      { whiteSpace ~ { characteristics ^^ { ObjectPropertyCharacteristicsDetails(_) } } } |
-      { whiteSpace ~ { subPropertyOf ^^ { ObjectPropertySubPropertyOfDetails(_) } } } |
-      { whiteSpace ~ { objectPropertyEquivalentTo ^^ { ObjectPropertyEquivalentToDetails(_) } } } |
-      { whiteSpace ~ { objectPropertyDisjointWith ^^ { ObjectPropertyDisjointWithDetails(_) } } } |
-      { whiteSpace ~ { inverseOf ^^ { ObjectPropertyInverseOfDetails(_) } } } |
-      { whiteSpace ~ { subPropertyChain ^^ { ObjectPropertySubPropertyChainDetails(_) } } }
+      { whiteSpace ~ { annotations ^^ { ObjectPropertyAnnotationDetails } } } |
+      { whiteSpace ~ { domain ^^ { ObjectPropertyDomainDetails } } } |
+      { whiteSpace ~ { range ^^ { ObjectPropertyRangeDetails } } } |
+      { whiteSpace ~ { characteristics ^^ { ObjectPropertyCharacteristicsDetails } } } |
+      { whiteSpace ~ { subPropertyOf ^^ { ObjectPropertySubPropertyOfDetails } } } |
+      { whiteSpace ~ { objectPropertyEquivalentTo ^^ { ObjectPropertyEquivalentToDetails } } } |
+      { whiteSpace ~ { objectPropertyDisjointWith ^^ { ObjectPropertyDisjointWithDetails } } } |
+      { whiteSpace ~ { inverseOf ^^ { ObjectPropertyInverseOfDetails } } } |
+      { whiteSpace ~ { subPropertyChain ^^ { ObjectPropertySubPropertyChainDetails } } }
     }.* ^^ { raw =>
       val objProperty: OWLObjectProperty = raw._1._2
       val objPropDetails: List[ObjectPropertyDetails] = raw._2.map(_._2)
@@ -1128,13 +1128,13 @@ class ManchesterParsing extends IRIParsing {
 
   def dataPropertyFrame: Parser[List[OWLAxiom]] =
     "DataProperty:" ~ whiteSpace ~ dataPropertyIRI ~ {
-      { whiteSpace ~ { annotations ^^ { DataPropertyAnnotationDetails(_) } } } |
-      { whiteSpace ~ { dataPropertyDomain ^^ { DataPropertyDomainDetails(_) } } } |
-      { whiteSpace ~ { dataPropertyRange ^^ { DataPropertyRangeDetails(_) } } } |
-      { whiteSpace ~ { dataPropertyCharacteristics ^^ { DataPropertyCharacteristicsDetails(_) } } } |
-      { whiteSpace ~ { dataPropertySubPropertyOf ^^ { DataPropertySubPropertyOfDetails(_) } } } |
-      { whiteSpace ~ { dataPropertyEquivalentTo ^^ { DataPropertyEquivalentToDetails(_) } } } |
-      { whiteSpace ~ { dataPropertyDisjointWith ^^ { DataPropertyDisjointWithDetails(_) } } }
+      { whiteSpace ~ { annotations ^^ { DataPropertyAnnotationDetails } } } |
+      { whiteSpace ~ { dataPropertyDomain ^^ { DataPropertyDomainDetails } } } |
+      { whiteSpace ~ { dataPropertyRange ^^ { DataPropertyRangeDetails } } } |
+      { whiteSpace ~ { dataPropertyCharacteristics ^^ { DataPropertyCharacteristicsDetails } } } |
+      { whiteSpace ~ { dataPropertySubPropertyOf ^^ { DataPropertySubPropertyOfDetails } } } |
+      { whiteSpace ~ { dataPropertyEquivalentTo ^^ { DataPropertyEquivalentToDetails } } } |
+      { whiteSpace ~ { dataPropertyDisjointWith ^^ { DataPropertyDisjointWithDetails } } }
     }.* ^^ { raw =>
       val dataProperty: OWLDataProperty = raw._1._2
       val dataPropDetails: List[DataPropertyDetails] = raw._2.map(_._2)
@@ -1253,10 +1253,10 @@ class ManchesterParsing extends IRIParsing {
     */
   def annotationPropertyFrame: Parser[List[OWLAxiom]] =
     "AnnotationProperty:" ~ whiteSpace ~ annotationPropertyIRI ~ {
-      { whiteSpace ~ { annotations ^^ { AnnotationPropertyAnnotationDetails(_) } } } |
-      { whiteSpace ~ { annotationPropertyDomain ^^ { AnnotationPropertyDomainDetails(_) } } } |
-      { whiteSpace ~ { annotationPropertyRange ^^ { AnnotationPropertyRangeDetails(_) } } } |
-      { whiteSpace ~ { annotationPropertySubPropertyOf ^^ { AnnotationPropertySubPropertyOfDetails(_) } } }
+      { whiteSpace ~ { annotations ^^ { AnnotationPropertyAnnotationDetails } } } |
+      { whiteSpace ~ { annotationPropertyDomain ^^ { AnnotationPropertyDomainDetails } } } |
+      { whiteSpace ~ { annotationPropertyRange ^^ { AnnotationPropertyRangeDetails } } } |
+      { whiteSpace ~ { annotationPropertySubPropertyOf ^^ { AnnotationPropertySubPropertyOfDetails } } }
     }.* ^^ { raw =>
       val annotationProperty: OWLAnnotationProperty = raw._1._2
       val annotationPropDetails: List[AnnotationPropertyDetails] = raw._2.map(_._2)
@@ -1350,11 +1350,11 @@ class ManchesterParsing extends IRIParsing {
 
   def individualFrame: Parser[List[OWLAxiom]] =
     "Individual:" ~ whiteSpace ~ individualIRI ~ {
-      { whiteSpace ~ { individualAnnotations ^^ { IndividualAnnotationDetails(_) } } } |
-      { whiteSpace ~ { individualTypes ^^ { IndividualTypesDetails(_) } } } |
-      { whiteSpace ~ { individualFacts ^^ { IndividualFactsDetails(_) } } } |
-      { whiteSpace ~ { individualSameAs ^^ { IndividualSameAsDetails(_) } } } |
-      { whiteSpace ~ { individualDifferentFrom ^^ { IndividualDifferentFromDetails(_) } } }
+      { whiteSpace ~ { individualAnnotations ^^ { IndividualAnnotationDetails } } } |
+      { whiteSpace ~ { individualTypes ^^ { IndividualTypesDetails } } } |
+      { whiteSpace ~ { individualFacts ^^ { IndividualFactsDetails } } } |
+      { whiteSpace ~ { individualSameAs ^^ { IndividualSameAsDetails } } } |
+      { whiteSpace ~ { individualDifferentFrom ^^ { IndividualDifferentFromDetails } } }
     }.* ^^ { raw =>
       val indiv: OWLNamedIndividual = raw._1._2
       val indivDetails: List[IndividualDetails] = raw._2.map(_._2)

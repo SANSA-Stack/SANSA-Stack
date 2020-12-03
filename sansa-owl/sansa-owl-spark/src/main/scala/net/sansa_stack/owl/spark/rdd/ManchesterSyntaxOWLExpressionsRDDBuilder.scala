@@ -20,10 +20,10 @@ object ManchesterSyntaxOWLExpressionsRDDBuilder extends ManchesterSyntaxPrefixPa
       spark.sparkContext.defaultMinPartitions).map(_._2.toString)
 
     val tmp: Array[(String, String)] =
-      rawRDD.filter(isPrefixDeclaration(_)).map(parsePrefix).collect()
+      rawRDD.filter(isPrefixDeclaration).map(parsePrefix).collect()
     val prefixes: Map[String, String] = tmp.toMap
 
     val builder = new ManchesterSyntaxExpressionBuilder(prefixes)
-    (rawRDD.map(builder.clean(_)).filter(_ != null), prefixes)
+    (rawRDD.map(builder.clean).filter(_ != null), prefixes)
   }
 }
