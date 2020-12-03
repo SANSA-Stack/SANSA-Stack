@@ -245,7 +245,7 @@ object FeatureExtractingSparqlGenerator {
      numberSeeds: Int = 0,
      ratioNumberSeeds: Double = 1.0,
      numberRandomWalks: Int = 0,
-     hardCodedSeeds: List[String] = List.empty
+     sortedByLinks: Boolean = false,
                ): (String, List[String]) = {
 
     val spark = SparkSession.builder
@@ -257,18 +257,17 @@ object FeatureExtractingSparqlGenerator {
     val ds = df.toDS().cache()
 
     // create the sparql to reach seeds and maybe sort them by ths sparql as well
-    val seedFetchingSparql: String = createSeedFetchingSparql(seedVarName, seedWhereClause, sortedByLinks = true)
+    val seedFetchingSparql: String = createSeedFetchingSparql(seedVarName, seedWhereClause, sortedByLinks)
 
     // query for seeds and list those
     val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
     val seedsDf: DataFrame = querytransformer1.transform(ds).cache()
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
     println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
-    val numberSeeds: Int = seeds.length
+    val numberOfSeeds: Int = seeds.length
 
     // calculate cutoff
-    var cutoff: Int = numberSeeds
-    cutoff = if (numberSeeds >= 0) numberSeeds else math.rint(numberSeeds * ratioNumberSeeds).toInt
+    val cutoff = if (numberSeeds > 0) numberSeeds else math.rint(numberOfSeeds * ratioNumberSeeds).toInt
     val usedSeeds: List[Node] = seeds.take(cutoff)
     val usedSeedsAsString = usedSeeds.map(_.toString)
 
@@ -344,6 +343,8 @@ object FeatureExtractingSparqlGenerator {
 
     val numberRandomWalks: Int = config.getInt("numberRandomWalks")
 
+    val sortedByLinks = config.getBoolean("sortedByLinks")
+
     // val hardCodedSeeds: List[String] = config.getStringList("hardCodedSeeds").asScala.toList
 
     // setup spark session
@@ -378,6 +379,7 @@ object FeatureExtractingSparqlGenerator {
       numberSeeds = seedNumber,
       ratioNumberSeeds = seedNumberAsRatio,
       numberRandomWalks = numberRandomWalks,
+      sortedByLinks = sortedByLinks,
       // hardCodedSeeds = hardCodedSeeds,
     )
 
