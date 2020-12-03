@@ -4,7 +4,7 @@ import java.sql.{Connection, DriverManager, SQLException}
 import java.util
 import java.util.Properties
 
-import com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
+import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
@@ -14,6 +14,7 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{QueryFactory, QueryType}
@@ -25,8 +26,9 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
-
 import scala.collection.JavaConverters._
+
+import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -188,12 +190,17 @@ class OntopSPARQLEngine(val spark: SparkSession,
       val dataFactory = OWLManager.getOWLDataFactory
       val axioms: Set[OWLAxiom] = classes.map(cls =>
             dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(IRI.create(cls)))).toSet
-      val ontology = OWLManager.createOWLOntologyManager().createOntology(axioms.asJava)
+      val ontology = createOntology(axioms)
 
       Some(ontology)
     } else {
       None
     }
+  }
+
+  def createOntology(axioms: Set[OWLAxiom]): OWLOntology = {
+    val man = new OWLAPIImplProfile().createManager(false)
+    man.createOntology(axioms.asJava)
   }
 
 

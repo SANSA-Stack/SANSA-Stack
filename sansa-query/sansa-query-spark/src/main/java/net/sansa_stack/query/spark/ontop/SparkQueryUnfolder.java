@@ -3,8 +3,8 @@ package net.sansa_stack.query.spark.ontop;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;

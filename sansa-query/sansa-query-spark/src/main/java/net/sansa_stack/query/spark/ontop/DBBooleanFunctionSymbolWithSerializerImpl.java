@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.ontop;
 
-import com.google.common.collect.ImmutableList;
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
 import it.unibz.inf.ontop.model.term.ImmutableExpression;
 import it.unibz.inf.ontop.model.term.ImmutableTerm;
 import it.unibz.inf.ontop.model.term.TermFactory;

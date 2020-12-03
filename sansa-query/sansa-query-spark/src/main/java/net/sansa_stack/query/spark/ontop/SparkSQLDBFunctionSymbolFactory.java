@@ -2,10 +2,10 @@ package net.sansa_stack.query.spark.ontop;
 
 import java.util.function.Function;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Table;
+import it.unibz.inf.ontop.com.google.common.collect.HashBasedTable;
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableTable;
+import it.unibz.inf.ontop.com.google.common.collect.Table;
 import com.google.inject.Inject;
 import it.unibz.inf.ontop.model.term.ImmutableTerm;
 import it.unibz.inf.ontop.model.term.TermFactory;
@@ -218,4 +218,5 @@ public class SparkSQLDBFunctionSymbolFactory extends AbstractSQLDBFunctionSymbol
                         termConverter.apply(terms.get(0))
                 ));
     }
+
 }

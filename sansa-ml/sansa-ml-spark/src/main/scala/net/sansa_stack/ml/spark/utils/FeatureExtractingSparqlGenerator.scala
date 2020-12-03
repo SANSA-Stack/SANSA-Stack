@@ -2,16 +2,16 @@ package net.sansa_stack.ml.spark.utils
 
 import net.sansa_stack.ml.spark.utils.SPARQLQuery
 import net.sansa_stack.ml.spark.utils.ConfigResolver
-import org.apache.jena.riot.Lang
+import org.apache.jena.riot.{Lang, RDFLanguages}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession, functions}
 import org.apache.spark.sql.functions._
+
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.graph
 import org.apache.jena.graph.Node
 import org.apache.spark.sql.expressions.UserDefinedFunction
-
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 
 import scala.collection.mutable.ListBuffer
@@ -245,7 +245,7 @@ object FeatureExtractingSparqlGenerator {
      numberSeeds: Int = 0,
      ratioNumberSeeds: Double = 1.0,
      numberRandomWalks: Int = 0,
-     hardCodedSeeds: List[String] = List.empty
+     sortedByLinks: Boolean = false,
                ): (String, List[String]) = {
 
     val spark = SparkSession.builder
@@ -257,22 +257,17 @@ object FeatureExtractingSparqlGenerator {
     val ds = df.toDS().cache()
 
     // create the sparql to reach seeds and maybe sort them by ths sparql as well
-    val seedFetchingSparql: String = createSeedFetchingSparql(seedVarName, seedWhereClause, sortedByLinks = true)
+    val seedFetchingSparql: String = createSeedFetchingSparql(seedVarName, seedWhereClause, sortedByLinks)
 
     // query for seeds and list those
     val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
     val seedsDf: DataFrame = querytransformer1.transform(ds).cache()
-    seedsDf.show(false)
-    seedsDf.as[Node].map(_.toString()).toDF().show(false)
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
-    seeds.foreach(println(_))
-    println(f"the fetched seeds are:\n$seeds\n")
-    val numberSeeds: Int = seeds.length
+    println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
+    val numberOfSeeds: Int = seeds.length
 
     // calculate cutoff
-    var cutoff: Int = numberSeeds
-    cutoff = if (numberSeeds >= 0) numberSeeds else cutoff
-    cutoff = math.rint(numberSeeds * ratioNumberSeeds).toInt
+    val cutoff = if (numberSeeds > 0) numberSeeds else math.rint(numberOfSeeds * ratioNumberSeeds).toInt
     val usedSeeds: List[Node] = seeds.take(cutoff)
     val usedSeedsAsString = usedSeeds.map(_.toString)
 
@@ -282,20 +277,20 @@ object FeatureExtractingSparqlGenerator {
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
 
     // seeds in dataframe asstarting paths
-    println(s"we start initially with following seeds:\n${usedSeedsAsString.mkString("\n")}")
-    println("initial paths, so seeds are:")
+    println(s"we start initially with following seeds (after cutoff):\n${usedSeedsAsString.mkString("\n")}")
+    // println("initial paths, so seeds are:")
     var paths: DataFrame = usedSeedsAsString.toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
-    paths.show(false)
+    // paths.show(10, false)
     // traverse up
-    println("traverse up")
+    // println("traverse up")
     paths = traverse(paths, up, iterationLimit = maxUp, traverseDirection = "up", numberRandomWalks = numberRandomWalks).cache()
-    paths.show(false)
+    // paths.show(10, false)
     // traverse down
-    println("traverse down")
+    // println("traverse down")
     paths = traverse(paths, down, iterationLimit = maxDown, traverseDirection = "down", numberRandomWalks = numberRandomWalks).cache()
-    paths.show(false)
+    // paths.show(10, false)
     // all gathered paths
-    println("gathered paths")
+    // println("gathered paths")
     val columns = paths.columns.toList
 
     val newColumnsOrder: Seq[String] = columns
@@ -348,35 +343,32 @@ object FeatureExtractingSparqlGenerator {
 
     val numberRandomWalks: Int = config.getInt("numberRandomWalks")
 
-    val hardCodedSeeds: List[String] = config.getStringList("hardCodedSeeds").asScala.toList
+    val sortedByLinks = config.getBoolean("sortedByLinks")
 
-    val master = config.getString("master")
+    // val hardCodedSeeds: List[String] = config.getStringList("hardCodedSeeds").asScala.toList
 
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"rdf2feature")
-      .master(master)
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", String.join(
-        ", ",
+      .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+                      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+                      "net.sansa_stack.query.spark.ontop.KryoRegistratorOntop"))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
     implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
-    // first mini file:
-    val fileEnding = inputFilePath.split("\\.").last
-    val df: DataFrame = fileEnding match {
-      case "ttl" => spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
-      case "nt" => spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
-      case _ => throw new Exception(f"The given file $inputFilePath has now clear extension like .ttl or .nt")
-    }
+    // get lang from filename
+    val lang = RDFLanguages.filenameToLang(inputFilePath)
 
-    println("The dataframe looks like this:")
-    df.show(false)
+    // load RDF to Dataframe
+    val df: DataFrame = spark.read.rdf(lang)(inputFilePath).cache()
+
+    // println("The dataframe looks like this:")
+    // df.show(false)
 
     val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
       df = df,
@@ -387,7 +379,8 @@ object FeatureExtractingSparqlGenerator {
       numberSeeds = seedNumber,
       ratioNumberSeeds = seedNumberAsRatio,
       numberRandomWalks = numberRandomWalks,
-      hardCodedSeeds = hardCodedSeeds,
+      sortedByLinks = sortedByLinks,
+      // hardCodedSeeds = hardCodedSeeds,
     )
 
     println(
