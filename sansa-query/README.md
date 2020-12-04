@@ -89,16 +89,34 @@ The following Scala code shows how to query an RDF file with SPARQL (be it a loc
 #### Running SPARQL queries via Sparqlify engine
 
 ```scala
+import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.apache.jena.riot.Lang
+import org.apache.spark.sql.SparkSession
 
-val spark: SparkSession = ...
+// SparkSession is needed
+val spark = SparkSession.builder
+        .appName(s"Ontop SPARQL example")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
+        .config("spark.kryo.registrator", String.join(
+          ", ",
+          "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+          "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+        .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
+        .getOrCreate()
 
+// load the data into an RDD
 val triples = spark.rdf(Lang.NTRIPLES)("path/to/rdf.nt")
 
+// compute the necessary partitions
 val partitions = RdfPartitionUtilsSpark.partitionGraph(triples)
 val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
 
 val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
 
+// setup an HTTP server
 val port = 7531
 val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
 server.join()
@@ -137,6 +155,17 @@ val ontopEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
 // run a SPARQL
 // a) SELECT query and return an RDD of bindings
 val result: RDD[Binding] = ontopEngine.execSelect("SELECT ... WHERE { ... }")
+// each binding is basically a mapping from variable to value, thus, we could easily post-process the result
+result.foreach (b => {
+  // get value of a specific var
+  val sVar = Var.alloc("s")
+  val sNode = b.get(sVar)
+  ...
+  
+  // or get all variables of the binding and then proceed with those
+  val vars = b.vars()
+  ...
+})
 
 // b) ASK query and return a boolean value
 val result: Boolean = ontopEngine.execAsk("ASK WHERE { ... }")
@@ -144,6 +173,10 @@ val result: Boolean = ontopEngine.execAsk("ASK WHERE { ... }")
 // c) CONSTRUCT query and return an RDD of triples
 val result: RDD[Triple] = ontopEngine.execConstruct("CONSTRUCT { ... } WHERE { ... }")
 ```
+Note, for `SELECT` queries we do return the result as a [Binding](https://jena.apache.org/documentation/javadoc/arq/org/apache/jena/sparql/engine/binding/Binding.html) object from the Apache Jena API. It does provide
+a mapping from a projection variable to a value which is represented by a Jena [Node](https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/graph/Node.html?is-external=true) object. 
+
+
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 
 For querying heterogeneous data sources, refer to the documentation of the dedicated [SANSA-DataLake](https://github.com/SANSA-Stack/SANSA-DataLake) component.
