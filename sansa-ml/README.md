@@ -15,7 +15,7 @@ The current stack provides:
 
 ### Sparql Transformer
 The Sparql Transformer is implemented as a Spark Transformer. It takes read in RDF data as a DataSet and Produces a DataFrame of Type Apache Jena Node. Currently supported are up to 5 projection variables. A sample usage could be:
-```Scala
+```
 val spark = SparkSession.builder()
     .appName(sc.appName)
     .master(sc.master)
@@ -43,7 +43,7 @@ this sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA
 
 ### AutoSparql Generation for Feature Extraction
 This modules creates a SPARQL query traversing the tree to gain Literals which can be used as features for common feature based Machine Learning Approaches. It needs only knowledge the RDF structure to specify the WHERE clause, how to read the entities, for which we want to have the structure to fetch connected features. As sample usage would be:
-```Scala
+```
 val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
 val seedVarName = "?seed"
 val whereClauseForSeed = "?seed a <http://dig.isi.edu/Person>"
@@ -98,7 +98,7 @@ DistSim is the Scalable distributed in-Memory Semantic Similarity Estimation for
 #### Usage of Modules
 **Feature Extraction**
 How to use Semantic Similarity Pipeline Modules:
-```Scala
+```
 val featureExtractorModel = new FeatureExtractorModel()
        .setMode("an")
 val extractedFeaturesDataFrame = featureExtractorModel
@@ -107,7 +107,7 @@ val extractedFeaturesDataFrame = featureExtractorModel
 extractedFeaturesDataFrame.show()
 ```
 Transform features to indexed feature representation:
-```Scala
+```
 val cvModel: CountVectorizerModel = new CountVectorizer()
         .setInputCol("extractedFeatures")
         .setOutputCol("vectorizedFeatures")
@@ -117,7 +117,7 @@ val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
 
 (optional but recommended) filter out feature vectors which does not contain any feature
 
-```Scala
+```
 val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
        val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures")
        countVectorizedFeaturesDataFrame.show()
