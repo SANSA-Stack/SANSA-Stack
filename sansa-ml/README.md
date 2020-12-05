@@ -43,7 +43,7 @@ val resultNodes: Array[Node] = res.as[Node].collect()
 this sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
 
 ### AutoSparql Generation for Feature Extraction
-[AutoSparql Generation for Feature Extraction (code)](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator.scala): 
+[AutoSparql Generation for Feature Extraction (code)](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator.scala):
 This modules creates a SPARQL query traversing the tree to gain Literals which can be used as features for common feature based Machine Learning Approaches. It needs only knowledge the RDF structure to specify the WHERE clause, how to read the entities, for which we want to have the structure to fetch connected features. As sample usage would be:
 ```
 val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
@@ -80,8 +80,8 @@ println(totalSparqlQuery)
 ```
 This sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGeneratorTest.scala)
 
-### DistSim - Feature Based Semantic Similarity Estimations
-[DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity): 
+### Feature Based Semantic Similarity Estimations
+[DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
 DistSim is the Scalable distributed in-Memory Semantic Similarity Estimation for RDF Knowledge Graph Frameworks which has been integrated into the SANSA stack in the SANSA Machine Learning package. The documentation in scaladocs are available [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#package) the respective similarity estimation models are in this [github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils are [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
 
 #### ScalaDocs:
