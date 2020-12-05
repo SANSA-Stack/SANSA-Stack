@@ -9,11 +9,11 @@ The functionalities are covered by scala unit tests and are documented within sc
 
 ## Current Modules
 The current stack provides:
-- [Sparql Transformer](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SPARQLQuery.scala)
-- [AutoSparql Generation for Feature Extraction](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator.scala)
-- [Feature Based Semantic Similarity Estimations](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
+- [Sparql Transformer](###sparql-transformer)
+- [AutoSparql Generation for Feature Extraction](###autoSparql-generation-for-feature-extraction)
+- [Feature Based Semantic Similarity Estimations](###feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 
-### Sparql Transformer
+### [Sparql Transformer](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SPARQLQuery.scala)
 The Sparql Transformer is implemented as a Spark Transformer. It takes read in RDF data as a DataSet and Produces a DataFrame of Type Apache Jena Node. Currently supported are up to 5 projection variables. A sample usage could be:
 ```
 val spark = SparkSession.builder()
@@ -41,7 +41,7 @@ val resultNodes: Array[Node] = res.as[Node].collect()
 ```
 this sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
 
-### AutoSparql Generation for Feature Extraction
+### [AutoSparql Generation for Feature Extraction](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator.scala)
 This modules creates a SPARQL query traversing the tree to gain Literals which can be used as features for common feature based Machine Learning Approaches. It needs only knowledge the RDF structure to specify the WHERE clause, how to read the entities, for which we want to have the structure to fetch connected features. As sample usage would be:
 ```
 val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
@@ -78,7 +78,7 @@ println(totalSparqlQuery)
 ```
 This sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGeneratorTest.scala)
 
-### DistSim - Feature Based Semantic Similairty Estimations
+### [DistSim - Feature Based Semantic Similarity Estimations](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity)
 DistSim is the Scalable distributed in-Memory Semantic Similarity Estimation for RDF Knowledge Graph Frameworks which has been integrated into the SANSA stack in the SANSA Machine Learning package. The documentation in scaladocs are available [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#package) the respective similarity estimation models are in this [github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils are [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
 
 #### ScalaDocs:
