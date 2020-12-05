@@ -182,7 +182,7 @@ class ManchesterSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
         val p = prefix + ":"
 
         if (trimmedFrame.contains(p)) {
-          val v: String = "<" + prefixes.get(prefix).get
+          val v: String = "<" + prefixes(prefix)
           val pattern = (p + "([a-zA-Z][0-9a-zA-Z_-]*)").r
 
           pattern.findAllIn(trimmedFrame) foreach (hit => {

@@ -85,7 +85,7 @@ object OWLXMLSyntaxOWLAxiomsRDDBuilder extends Serializable {
 
     val instanceRecords: Map[String, Map[String, String]] = assertionSyntaxParsing(owlAxiomsRDD)
 
-    var rdd = if (instanceRecords.size == 0) {
+    var rdd = if (instanceRecords.isEmpty) {
                   val refinedRDD = owlAxiomsRDD.map(axiom => RefineOWLAxioms.refineOWLAxiom(axiom, dataBC, objBC, annBC))
                                                .filter(_ != null)
 

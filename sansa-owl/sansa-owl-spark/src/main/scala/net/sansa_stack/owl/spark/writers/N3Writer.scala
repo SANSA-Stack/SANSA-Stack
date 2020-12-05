@@ -1,13 +1,15 @@
 package net.sansa_stack.owl.spark.writers
+
 import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter, PrintWriter}
 
-import scala.collection.JavaConverters._
+import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.eclipse.rdf4j.rio.n3.{N3Writer => RioN3Writer}
-import org.eclipse.rdf4j.rio.RDFHandlerException
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.N3DocumentFormat
-import org.semanticweb.owlapi.model.{OWLAnnotationProperty, OWLAxiom, OWLClass, OWLDataProperty, OWLDatatype, OWLNamedIndividual, OWLObjectProperty, OWLOntologyWriterConfiguration, OWLRuntimeException}
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import org.semanticweb.owlapi.model._
+
+import scala.collection.JavaConverters._
+
 
 object N3Writer extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit = {
