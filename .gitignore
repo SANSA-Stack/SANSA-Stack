@@ -24,6 +24,7 @@ deptree.txt
 .idea
 /bin
 *.log*
+*.DS_Store
 
 # filename i use to store output of mvn dependency:tree ~Claus
 deptree.txt
