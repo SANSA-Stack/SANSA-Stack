@@ -1,23 +1,17 @@
 package net.sansa_stack.ml.spark.utils
 
-import net.sansa_stack.ml.spark.utils.SPARQLQuery
-import net.sansa_stack.ml.spark.utils.ConfigResolver
-import org.apache.jena.riot.{Lang, RDFLanguages}
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession, functions}
-import org.apache.spark.sql.functions._
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths, StandardOpenOption}
 
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
-import org.apache.jena.graph
 import org.apache.jena.graph.Node
-import org.apache.spark.sql.expressions.UserDefinedFunction
-import java.nio.file.{Files, Paths}
-import java.nio.charset.StandardCharsets
+import org.apache.jena.riot.RDFLanguages
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
-
-import scala.collection.JavaConverters._
 
 object FeatureExtractingSparqlGenerator {
 
@@ -46,7 +40,7 @@ object FeatureExtractingSparqlGenerator {
    */
   def createDataframesToTraverse(df: DataFrame): (DataFrame, DataFrame) = {
     df.toDF(Seq("s", "p", "o"): _*)
-    // df.printSchema() TODO be aware that we are operatingsometimes on string sometimes on apache jena node level
+    // df.printSchema() TODO be aware that we are operating sometimes on string sometimes on apache jena node level
 
     // down
     val down: DataFrame = df.withColumn("dir", typedLit("down"))
@@ -65,10 +59,10 @@ object FeatureExtractingSparqlGenerator {
   }
 
   /**
-   * traverses a tree by joining dataframes of current paths and traversabel hops
+   * traverses a tree by joining dataframes of current paths and traversable hops
    * @param paths current paths initially started at seeds
    * @param traverseDf the dataframe giving traversal opportunities
-   * @param iterationLimit how deep to traverse or how often join showld be performed max
+   * @param iterationLimit how deep to traverse or how often join should be performed max
    * @param traverseDirection direction whether up or down
    * @return the traversed dataframe with current paths after traverse up, and paths ending with literals after traverse down
    */
@@ -90,19 +84,19 @@ object FeatureExtractingSparqlGenerator {
 
         // paths to merge
         val left: DataFrame = currentPaths
-        // here we partially similate random walt behavior
+        // here we partially simulate random walt behavior
         val right: DataFrame = numberRandomWalks match {
             case 0 => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*)
             case _ => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*).sample(true, 2D*numberRandomWalks/traverseDf.count()).limit(numberRandomWalks)
         }
 
-        // this joines the next hop
+        // this joins the next hop
         // println(s"joinedPaths dataframe: $iteration")
         val joinedPaths = left.join(right, columnName)
 
         // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
         // they end with not literal.
-        // see ! excamation mark in where statement
+        // see ! exclamation mark in where statement
         // println(s"current paths dataframe: $iteration")
         currentPaths = joinedPaths.where(!col(columnNamePlusOne).startsWith("\""))
         // final paths are paths which end with literal
@@ -124,7 +118,7 @@ object FeatureExtractingSparqlGenerator {
 
         // println(s"$iteration filtered current paths")
 
-        // append the paths we finally travered until literal is reached
+        // append the paths we finally traversed until literal is reached
         // in up this will not happen
         if (finalPaths.count() > 0) {
           val recentColumns: Seq[String] = dataframeWithLiteralEnd.columns.toSeq
@@ -142,7 +136,7 @@ object FeatureExtractingSparqlGenerator {
           break
         }
 
-        // if we traverse up we change column names s.t. last elment added is alway in column n0 s.t. join in traverse down is easier
+        // if we traverse up we change column names s.t. last element added is always in column n0 s.t. join in traverse down is easier
         if (traverseDirection == "up") {
           val tmpPaths: DataFrame = currentPaths
           val tmpColumns = tmpPaths.columns.toSeq
@@ -220,7 +214,7 @@ object FeatureExtractingSparqlGenerator {
    * this function creates the sparql and a list of corresponding porjection variables
    *
    * the function operates on dataframe level and first fetches the seeds
-   * then seeds are cutof to the desired number or ration to be considered
+   * then seeds are cutoff to the desired number or ration to be considered
    * from seeds we traverse up in the graph
    * traverse down
    * create for each traversed path a query line
@@ -228,7 +222,7 @@ object FeatureExtractingSparqlGenerator {
    * create sparql query
    *
    * @param df dataframe of true columns of type string representing triples  s p o
-   * @param seedVarName how the seeds should be named and with beginnig questionmark as needed for projection variable
+   * @param seedVarName how the seeds should be named and with beginning question mark as needed for projection variable
    * @param seedWhereClause a string representing the where part of a sparql query specifying how to reach seeds
    * @param maxUp integer for limiting number of traversal up steps
    * @param maxDown integer for limiting traverse down steps
@@ -260,8 +254,8 @@ object FeatureExtractingSparqlGenerator {
     val seedFetchingSparql: String = createSeedFetchingSparql(seedVarName, seedWhereClause, sortedByLinks)
 
     // query for seeds and list those
-    val querytransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
-    val seedsDf: DataFrame = querytransformer1.transform(ds).cache()
+    val queryTransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
+    val seedsDf: DataFrame = queryTransformer1.transform(ds).cache()
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
     println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
     val numberOfSeeds: Int = seeds.length
@@ -276,7 +270,7 @@ object FeatureExtractingSparqlGenerator {
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
 
-    // seeds in dataframe asstarting paths
+    // seeds in dataframe as starting paths
     println(s"we start initially with following seeds (after cutoff):\n${usedSeedsAsString.mkString("\n")}")
     // println("initial paths, so seeds are:")
     var paths: DataFrame = usedSeedsAsString.toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
@@ -329,17 +323,17 @@ object FeatureExtractingSparqlGenerator {
 
     println(config)
 
-    val inputFilePath: String = config.getString("inputFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
-    val outputFilePath: String = config.getString("outputFilePath") // "/Users/carstendraschner/Downloads/test.ttl"
+    val inputFilePath: String = config.getString("inputFilePath")
+    val outputFilePath: String = config.getString("outputFilePath")
 
-    val seedVarName = config.getString("seedVarName") // "?seed"
-    val whereClauseForSeed = config.getString("whereClauseForSeed") // "?seed a <http://dig.isi.edu/Person>"
+    val seedVarName = config.getString("seedVarName")
+    val whereClauseForSeed = config.getString("whereClauseForSeed")
 
-    val maxUp: Int = config.getInt("maxUp") // 5
-    val maxDown: Int = config.getInt("maxDown") // 5
+    val maxUp: Int = config.getInt("maxUp")
+    val maxDown: Int = config.getInt("maxDown")
 
-    val seedNumber: Int = config.getInt("seedNumber") // 0
-    val seedNumberAsRatio: Double = config.getDouble("seedNumberAsRatio") // 1.0
+    val seedNumber: Int = config.getInt("seedNumber")
+    val seedNumberAsRatio: Double = config.getDouble("seedNumberAsRatio")
 
     val numberRandomWalks: Int = config.getInt("numberRandomWalks")
 
@@ -379,8 +373,7 @@ object FeatureExtractingSparqlGenerator {
       numberSeeds = seedNumber,
       ratioNumberSeeds = seedNumberAsRatio,
       numberRandomWalks = numberRandomWalks,
-      sortedByLinks = sortedByLinks,
-      // hardCodedSeeds = hardCodedSeeds,
+      sortedByLinks = sortedByLinks
     )
 
     println(
