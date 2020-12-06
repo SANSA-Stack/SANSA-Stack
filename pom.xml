@@ -78,8 +78,10 @@
 		<httpcomponents.version>4.5.12</httpcomponents.version>
 
 
+
 		<owlapi.version>5.1.17</owlapi.version>
-		<ontop.version>4.0.3-owlapi5-guava-shaded</ontop.version>
+		
+    <ontop.version>4.0.3-owlapi5-guava-shaded</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
 <!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
