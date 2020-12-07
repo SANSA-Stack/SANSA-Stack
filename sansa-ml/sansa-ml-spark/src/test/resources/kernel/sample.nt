@@ -1,6 +1,0 @@
-<http://dbpedia.org/resource/P100>	<http://xmlns.com/foaf/0.1/givenName>	"Jane Doe" .
-<http://dbpedia.org/resource/P100>	<http://xmlns.com/foaf/0.1/hasTopic>	<http://dbpedia.org/resource/T110> .
-<http://dbpedia.org/resource/P100>	<http://xmlns.com/foaf/0.1/hasFamily>	<http://dbpedia.org/resource/P200> .
-<http://dbpedia.org/resource/T110>  <http://commons.dbpedia.org/property/description>  "Machine Learning" .
-<http://dbpedia.org/resource/P200>	<http://xmlns.com/foaf/0.1/givenName>	"John Doe" .
-<http://dbpedia.org/resource/P200>	<http://xmlns.com/foaf/0.1/hasTopic>	<http://dbpedia.org/resource/T110> .

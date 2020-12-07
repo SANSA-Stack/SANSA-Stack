@@ -23,6 +23,7 @@ deptree.txt
 *.iml
 .idea
 /bin
+*.log*
 
 # filename i use to store output of mvn dependency:tree ~Claus
 deptree.txt
