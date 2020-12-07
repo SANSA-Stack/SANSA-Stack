@@ -1,5 +1,5 @@
 # SANSA ML Readme
-The SANSA ML stack is currently under major Refactoring.
+The SANSA ML stack is currently under major refactoring.
 It steers to a support of Scala 2.12 and Spark 3.
 The functionalities are covered by Scala unit tests and are documented within Scaladoc. The Readme provides
 * Code snippets as usage description of currently available modules
@@ -15,7 +15,7 @@ The current stack provides:
 
 ### Sparql Transformer
 [Sparql Transformer (code)](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SPARQLQuery.scala):
-The Sparql Transformer is implemented as a [Spark MLlib Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers). It reads RDF data as a DataSet and produces a DataFrame of type Apache Jena Node. Currently supported are up to 5 projection variables. A sample usage could be:
+The SPARQL Transformer is implemented as a [Spark MLlib Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers). It reads RDF data as a `DataSet` and produces a `DataFrame` of type Apache Jena `Node`. Currently supported are up to 5 projection variables. A sample usage could be:
 ```
 val spark = SparkSession.builder()
     .appName(sc.appName)
