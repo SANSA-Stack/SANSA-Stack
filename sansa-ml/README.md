@@ -2,10 +2,10 @@
 The SANSA ML stack is currently under major refactoring.
 It steers to a support of Scala 2.12 and Spark 3.
 The functionalities are covered by Scala unit tests and are documented within Scaladoc. The Readme provides
-* Code snippets as usage description of currently available modules
-* Roadmap
-* Recent Experimental Research Implementations
-* How to Contribute
+* [Code snippets as usage description of currently available modules](#current-modules)
+* [Roadmap](#module-roadmap)
+* [Recent Experimental Research Implementations](#research-and-experimental-projects)
+* [How to Contribute](#how-to-contribute)
 
 ## Current Modules
 The current stack provides:
@@ -180,7 +180,7 @@ tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFea
 
 Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
 
-## Research & Experimental Projects from Release 0.7.1
+## Research and Experimental Projects
 In recent research projects further experimental approaches have been implemented.
 Due to the ongoing refactoring and re-design of Data Analytics Functionality, these methods are available in the [Release 0.7.1](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark) [Machine Learning Layer](https://github.com/SANSA-Stack/Archived-SANSA-ML).
 They are currently not maintained but can be used as inspiration for further developments.
