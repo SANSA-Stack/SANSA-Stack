@@ -167,6 +167,13 @@
 				<version>${project.version}</version>
 			</dependency>
 
+			<!-- Datalake Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-datalake-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- Inference Layer -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
