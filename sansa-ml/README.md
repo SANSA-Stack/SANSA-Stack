@@ -14,7 +14,7 @@ The current stack provides:
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 
 ### Sparql Transformer
-[Sparql Transformer (code)](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SPARQLQuery.scala):
+[Sparql Transformer](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SPARQLQuery.html):
 The SPARQL Transformer is implemented as a [Spark MLlib Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers). It reads RDF data as a `DataSet` and produces a `DataFrame` of type Apache Jena `Node`. Currently supported are up to 5 projection variables. A sample usage could be:
 ```
 val spark = SparkSession.builder()
@@ -43,7 +43,7 @@ val resultNodes: Array[Node] = res.as[Node].collect()
 this sample is taken from a [Scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
 
 ### AutoSparql Generation for Feature Extraction
-[AutoSparql Generation for Feature Extraction (code)](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator.scala):
+[AutoSparql Generation for Feature Extraction](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html):
 This modules creates a SPARQL query traversing the tree to gain literals which can be used as features for common feature based Machine Learning Approaches. The user needs only to specify the WHERE clause, how to reach the entities, which should be considered as seeds/roots for graph traversal. This traversal will then provide a SPARQL Query to fetch connected features from Literals. As sample usage would be:
 ```
 val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
@@ -85,18 +85,10 @@ This sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA
 DistSim is the scalable distributed in-memory Semantic Similarity Estimation for RDF Knowledge Graph Frameworks which has been integrated into the SANSA stack in the SANSA Machine Learning package. The Scaladoc is available [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#package), the respective similarity estimation models are in this [Github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils can be found [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
 
 #### ScalaDocs:
-* [Feature Extractor](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.utils.FeatureExtractorModel)
-* [Similarity Estiamtion Modules](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.similarity.similarityEstimationModels.package)
-* [Minmial Examples](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.similarity.examples.package)
-* [Evaluation of Experiment Class](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.similarity.experiment.SimilarityPipelineExperiment$)
-* [Metagraph Creation](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.utils.SimilarityExperimentMetaGraphFactory)
-
-#### Code to Modules:
-* [Feature Extractor](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractorModel.scala)
-* [Similarity Estiamtion Modules](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/similarityEstimationModels)
-* [Minmial Examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/minimalCalls.scala)
-* [Evaluation of Experiment Class](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/experiment/SimilarityPipelineExperiment.scala)
-* [Metagraph Creation](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SimilarityExperimentMetaGraphFactory.scala)
+* [Feature Extractor](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractorModel.html)
+* [Similarity Estiamtion Modules](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/similarity/similarityEstimationModels/index.html)
+* [Evaluation of Experiment Class](hhttps://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/similarity/experiment/SimilarityPipelineExperiment$.html)
+* [Metagraph Creation](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SimilarityExperimentMetaGraphFactory.html)
 
 #### Usage of Modules
 **Feature Extraction**
