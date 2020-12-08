@@ -173,15 +173,4 @@
 			</build>
 		</profile>
 	</profiles>
-
-
-
-	<repositories>
-		<repository>
-			<id>dbscan-on-spark-repo</id>
-			<name>Repo for DBSCAN on Spark</name>
-			<url>https://dl.bintray.com/irvingc/maven</url>
-		</repository>
-	</repositories>
-
 </project>
