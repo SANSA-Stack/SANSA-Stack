@@ -51,7 +51,7 @@ object BuildCommons {
 
   val tools = ProjectRef(buildLocation, "tools")
   // Root project.
-  val spark = ProjectRef(buildLocation, "SANSA-Stack")
+  val sansa = ProjectRef(buildLocation, "SANSA-Stack")
   val sparkHome = buildLocation
 
   val testTempDir = s"$sparkHome/target/tmp"
@@ -296,7 +296,7 @@ object SparkBuild extends PomBuild {
         "org.apache.spark.deploy",
         "org.apache.spark.util.collection"
       ).mkString(":"),
-      "-doc-title", "Spark " + version.value.replaceAll("-SNAPSHOT", "") + " ScalaDoc"
+      "-doc-title", "SANSA-Stack " + version.value.replaceAll("-SNAPSHOT", "") + " ScalaDoc"
     ) ++ {
       // Do not attempt to scaladoc javadoc comments under 2.12 since it can't handle inner classes
       if (scalaBinaryVersion.value == "2.12") Seq("-no-java-comments") else Seq.empty
@@ -318,7 +318,7 @@ object SparkBuild extends PomBuild {
 
   // Note ordering of these settings matter.
   /* Enable shared settings on all projects */
-  (allProjects ++ Seq(spark, tools))
+  (allProjects ++ Seq(sansa, tools))
     .foreach(enable(sharedSettings ++ DependencyOverrides.settings ++
       ExcludedDependencies.settings ++ Checkstyle.settings))
 
@@ -331,27 +331,11 @@ object SparkBuild extends PomBuild {
 
 
   /* Enable unidoc only for the root spark project */
-  enable(Unidoc.settings)(spark)
+  enable(Unidoc.settings)(sansa)
 
 
   // SPARK-14738 - Remove docker tests from main Spark build
   // enable(DockerIntegrationTests.settings)(dockerIntegrationTests)
-
-
-  /**
-   * Adds the ability to run the spark shell directly from SBT without building an assembly
-   * jar.
-   *
-   * Usage: `build/sbt sparkShell`
-   */
-  val sparkShell = taskKey[Unit]("start a spark-shell.")
-  val sparkPackage = inputKey[Unit](
-    s"""
-       |Download and run a spark package.
-       |Usage `builds/sbt "sparkPackage <group:artifact:version> <MainClass> [args]
-     """.stripMargin)
-  val sparkSql = taskKey[Unit]("starts the spark sql CLI.")
-
 
   // TODO: move this to its upstream project.
   override def projectDefinitions(baseDirectory: File): Seq[Project] = {
@@ -361,108 +345,6 @@ object SparkBuild extends PomBuild {
     }
   }
 
-  if (!sys.env.contains("SERIAL_SBT_TESTS")) {
-    allProjects.foreach(enable(SparkParallelTestGrouping.settings))
-  }
-}
-
-object SparkParallelTestGrouping {
-  // Settings for parallelizing tests. The basic strategy here is to run the slowest suites (or
-  // collections of suites) in their own forked JVMs, allowing us to gain parallelism within a
-  // SBT project. Here, we take an opt-in approach where the default behavior is to run all
-  // tests sequentially in a single JVM, requiring us to manually opt-in to the extra parallelism.
-  //
-  // There are a reasons why such an opt-in approach is good:
-  //
-  //    1. Launching one JVM per suite adds significant overhead for short-running suites. In
-  //       addition to JVM startup time and JIT warmup, it appears that initialization of Derby
-  //       metastores can be very slow so creating a fresh warehouse per suite is inefficient.
-  //
-  //    2. When parallelizing within a project we need to give each forked JVM a different tmpdir
-  //       so that the metastore warehouses do not collide. Unfortunately, it seems that there are
-  //       some tests which have an overly tight dependency on the default tmpdir, so those fragile
-  //       tests need to continue re-running in the default configuration (or need to be rewritten).
-  //       Fixing that problem would be a huge amount of work for limited payoff in most cases
-  //       because most test suites are short-running.
-  //
-
-  private val testsWhichShouldRunInTheirOwnDedicatedJvm = Set(
-    "org.apache.spark.DistributedSuite",
-    "org.apache.spark.sql.catalyst.expressions.DateExpressionsSuite",
-    "org.apache.spark.sql.catalyst.expressions.HashExpressionsSuite",
-    "org.apache.spark.sql.catalyst.expressions.CastSuite",
-    "org.apache.spark.sql.catalyst.expressions.MathExpressionsSuite",
-    "org.apache.spark.sql.hive.HiveExternalCatalogSuite",
-    "org.apache.spark.sql.hive.StatisticsSuite",
-    "org.apache.spark.sql.hive.client.VersionsSuite",
-    "org.apache.spark.sql.hive.client.HiveClientVersions",
-    "org.apache.spark.sql.hive.HiveExternalCatalogVersionsSuite",
-    "org.apache.spark.ml.classification.LogisticRegressionSuite",
-    "org.apache.spark.ml.classification.LinearSVCSuite",
-    "org.apache.spark.sql.SQLQueryTestSuite",
-    "org.apache.spark.sql.hive.client.HadoopVersionInfoSuite",
-    "org.apache.spark.sql.hive.thriftserver.SparkExecuteStatementOperationSuite",
-    "org.apache.spark.sql.hive.thriftserver.ThriftServerQueryTestSuite",
-    "org.apache.spark.sql.hive.thriftserver.SparkSQLEnvSuite",
-    "org.apache.spark.sql.hive.thriftserver.ui.ThriftServerPageSuite",
-    "org.apache.spark.sql.hive.thriftserver.ui.HiveThriftServer2ListenerSuite",
-    "org.apache.spark.sql.kafka010.KafkaDelegationTokenSuite"
-  )
-
-  private val DEFAULT_TEST_GROUP = "default_test_group"
-  private val HIVE_EXECUTION_TEST_GROUP = "hive_execution_test_group"
-
-  private def testNameToTestGroup(name: String): String = name match {
-    case _ if testsWhichShouldRunInTheirOwnDedicatedJvm.contains(name) => name
-    // Different with the cases in testsWhichShouldRunInTheirOwnDedicatedJvm, here we are grouping
-    // all suites of `org.apache.spark.sql.hive.execution.*` into a single group, instead of
-    // launching one JVM per suite.
-    case _ if name.contains("org.apache.spark.sql.hive.execution") => HIVE_EXECUTION_TEST_GROUP
-    case _ => DEFAULT_TEST_GROUP
-  }
-
-  lazy val settings = Seq(
-    testGrouping in Test := {
-      val tests: Seq[TestDefinition] = (definedTests in Test).value
-      val defaultForkOptions = ForkOptions(
-        javaHome = javaHome.value,
-        outputStrategy = outputStrategy.value,
-        bootJars = Vector.empty[java.io.File],
-        workingDirectory = Some(baseDirectory.value),
-        runJVMOptions = (javaOptions in Test).value.toVector,
-        connectInput = connectInput.value,
-        envVars = (envVars in Test).value
-      )
-      tests.groupBy(test => testNameToTestGroup(test.name)).map { case (groupName, groupTests) =>
-        val forkOptions = {
-          if (groupName == DEFAULT_TEST_GROUP) {
-            defaultForkOptions
-          } else {
-            defaultForkOptions.withRunJVMOptions(defaultForkOptions.runJVMOptions ++
-              Seq(s"-Djava.io.tmpdir=${baseDirectory.value}/target/tmp/$groupName"))
-          }
-        }
-        new Tests.Group(
-          name = groupName,
-          tests = groupTests,
-          runPolicy = Tests.SubProcess(forkOptions))
-      }
-    }.toSeq
-  )
-}
-
-object Core {
-  import scala.sys.process.Process
-  lazy val settings = Seq(
-    resourceGenerators in Compile += Def.task {
-      val buildScript = baseDirectory.value + "/../build/spark-build-info"
-      val targetDir = baseDirectory.value + "/target/extra-resources/"
-      val command = Seq("bash", buildScript, targetDir, version.value)
-      Process(command).!!
-      val propsFile = baseDirectory.value / "target" / "extra-resources" / "spark-version-info.properties"
-      Seq(propsFile)
-    }.taskValue
-  )
 }
 
 object Unsafe {
@@ -493,51 +375,6 @@ object DependencyOverrides {
 object ExcludedDependencies {
   lazy val settings = Seq(
     libraryDependencies ~= { libs => libs.filterNot(_.name == "groovy-all") }
-  )
-}
-
-/**
- * Project to pull previous artifacts of Spark for generating Mima excludes.
- */
-object OldDeps {
-
-
-}
-
-
-object Assembly {
-  import sbtassembly.AssemblyUtils._
-  import sbtassembly.AssemblyPlugin.autoImport._
-
-  val hadoopVersion = taskKey[String]("The version of hadoop that spark is compiled against.")
-
-  lazy val settings = baseAssemblySettings ++ Seq(
-    test in assembly := {},
-    hadoopVersion := {
-      sys.props.get("hadoop.version")
-        .getOrElse(SbtPomKeys.effectivePom.value.getProperties.get("hadoop.version").asInstanceOf[String])
-    },
-    assemblyJarName in assembly := {
-      lazy val hadoopVersionValue = hadoopVersion.value
-      if (moduleName.value.contains("streaming-kafka-0-10-assembly")
-        || moduleName.value.contains("streaming-kinesis-asl-assembly")) {
-        s"${moduleName.value}-${version.value}.jar"
-      } else {
-        s"${moduleName.value}-${version.value}-hadoop${hadoopVersionValue}.jar"
-      }
-    },
-    assemblyJarName in (Test, assembly) := s"${moduleName.value}-test-${version.value}.jar",
-    assemblyMergeStrategy in assembly := {
-      case m if m.toLowerCase(Locale.ROOT).endsWith("manifest.mf")
-                                                               => MergeStrategy.discard
-      case m if m.toLowerCase(Locale.ROOT).matches("meta-inf.*\\.sf$")
-                                                               => MergeStrategy.discard
-      case "log4j.properties"                                  => MergeStrategy.discard
-      case m if m.toLowerCase(Locale.ROOT).startsWith("meta-inf/services/")
-                                                               => MergeStrategy.filterDistinctLines
-      case "reference.conf"                                    => MergeStrategy.concat
-      case _                                                   => MergeStrategy.first
-    }
   )
 }
 
@@ -624,7 +461,7 @@ object Unidoc {
     },
 
     javacOptions in (JavaUnidoc, unidoc) := Seq(
-      "-windowtitle", "Spark " + version.value.replaceAll("-SNAPSHOT", "") + " JavaDoc",
+      "-windowtitle", "SANSA Stack " + version.value.replaceAll("-SNAPSHOT", "") + " JavaDoc",
       "-public",
       "-noqualifier", "java.lang",
       "-tag", """example:a:Example\:""",
@@ -637,7 +474,7 @@ object Unidoc {
     ),
 
     // Use GitHub repository for Scaladoc source links
-    unidocSourceBase := s"https://github.com/apache/spark/tree/v${version.value}",
+    unidocSourceBase := s"https://github.com/SANSA-Stack/SANSA-Stack/tree/v${version.value}",
 
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
       "-groups", // Group similar methods together based on the @group annotation.
@@ -663,34 +500,6 @@ object Checkstyle {
     checkstyleOutputFile := baseDirectory.value / "target/checkstyle-output.xml",
     checkstyleOutputFile in Test := baseDirectory.value / "target/checkstyle-output.xml"
   )
-}
-
-object CopyDependencies {
-
-  val copyDeps = TaskKey[Unit]("copyDeps", "Copies needed dependencies to the build directory.")
-  val destPath = (crossTarget in Compile) { _ / "jars"}
-
-  lazy val settings = Seq(
-    copyDeps := {
-      val dest = destPath.value
-      if (!dest.isDirectory() && !dest.mkdirs()) {
-        throw new IOException("Failed to create jars directory.")
-      }
-
-      (dependencyClasspath in Compile).value.map(_.data)
-        .filter { jar => jar.isFile() }
-        .foreach { jar =>
-          val destJar = new File(dest, jar.getName())
-          if (destJar.isFile()) {
-            destJar.delete()
-          }
-          Files.copy(jar.toPath(), destJar.toPath())
-        }
-    },
-    crossTarget in (Compile, packageBin) := destPath.value,
-    packageBin in Compile := (packageBin in Compile).dependsOn(copyDeps).value
-  )
-
 }
 
 object TestSettings {
