@@ -24,7 +24,7 @@ A SANSA stack release is done every six months and consists of the latest stable
 
 #### Requirements
 
-We currently require a Spark 2.4.x with Scala 2.12 setup.
+We currently require a Spark 3.x.x with Scala 2.12 setup. A Spark 2.x version can be built from source based on the [spark2](https://github.com/SANSA-Stack/SANSA-Stack/tree/spark2) branch.
 
 #### Release Version
 If you want to import the full SANSA Stack, please add the following Maven dependency to your project POM file:
