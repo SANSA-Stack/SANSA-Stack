@@ -18,7 +18,8 @@ import org.scalactic.TolerantNumerics
 class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
 
   // define inputpath if it is not parameter
-  val inputPath = "src/test/resources/similarity/movie.nt"
+  private val inputPath = this.getClass.getClassLoader.getResource("similarity/movie.nt").getPath
+
   // var triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath).cache()
 
   // for value comparison we want to allow some minor differences in number comparison

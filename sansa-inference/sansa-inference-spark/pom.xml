@@ -157,11 +157,11 @@
             <artifactId>jgrapht-ext</artifactId>
         </dependency>
         <!-- only used for debugging/visualization of rule graphs, thus, scope is 'provided' to be omitted in Maven shade execution -->
-        <dependency>
-            <groupId>org.gephi</groupId>
-            <artifactId>gephi-toolkit</artifactId>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.gephi</groupId>-->
+<!--            <artifactId>gephi-toolkit</artifactId>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
         <!-- Test -->
         <dependency>

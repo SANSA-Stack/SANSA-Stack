@@ -3,28 +3,16 @@ package net.sansa_stack.inference.utils
 import java.io.{ByteArrayOutputStream, File, FileOutputStream, FileWriter}
 import java.util
 
-import com.itextpdf.text.PageSize
 import org.apache.jena.graph.Node
 import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.apache.jena.shared.PrefixMapping
 import org.apache.jena.sparql.util.FmtUtils
-import org.gephi.graph.api.GraphController
-import org.gephi.io.exporter.api.ExportController
-import org.gephi.io.exporter.preview.PDFExporter
-import org.gephi.io.importer.api.{EdgeDirectionDefault, ImportController}
-import org.gephi.io.processor.plugin.DefaultProcessor
-import org.gephi.layout.plugin.force.StepDisplacement
-import org.gephi.layout.plugin.force.yifanHu.YifanHuLayout
-import org.gephi.preview.api.{Item, PreviewController, PreviewProperty}
-import org.gephi.preview.types.EdgeColor
-import org.gephi.project.api.ProjectController
 import org.jgrapht.Graph
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector
 import org.jgrapht.graph.{DefaultDirectedGraph, DirectedPseudograph}
 import org.jgrapht.io.GraphMLExporter.AttributeCategory
 import org.jgrapht.io._
-import org.openide.util.Lookup
 import scalax.collection.edge.LDiEdge
 
 import net.sansa_stack.inference.utils.graph.{EdgeEquivalenceComparator, LabeledEdge, NodeEquivalenceComparator}
@@ -184,72 +172,6 @@ object GraphUtils {
       exporter.exportGraph(g, fw)
     }
 
-        def exportAsPDF(filename: String): Unit = {
-
-          // Gephi
-          // Init a project - and therefore a workspace
-          val pc = Lookup.getDefault.lookup(classOf[ProjectController])
-          pc.newProject()
-          val workspace = pc.getCurrentWorkspace
-
-          // Get controllers and models
-          val importController = Lookup.getDefault.lookup(classOf[ImportController])
-
-          // export as GraphML
-          val tmpFilename = "/tmp/temp-graph.graphml"
-          export(tmpFilename)
-
-          // Import file
-          val file = new File(tmpFilename)
-          val container = importController.importFile(file)
-          container.getLoader.setEdgeDefault(EdgeDirectionDefault.DIRECTED)   // Force DIRECTED
-          container.getLoader.setAllowAutoNode(false)  // Don't create missing nodes
-
-          // Append imported data to GraphAPI
-          importController.process(container, new DefaultProcessor(), workspace)
-
-          // List node columns
-
-
-
-          // See if graph is well imported
-          val graphModel = Lookup.getDefault.lookup(classOf[GraphController]).getGraphModel
-          val g = graphModel.getDirectedGraph()
-
-          // Run YifanHuLayout for 100 passes - The layout always takes the current visible view
-          val layout = new YifanHuLayout(null, new StepDisplacement(1f))
-          layout.setGraphModel(graphModel)
-          layout.resetPropertiesValues()
-          layout.setOptimalDistance(200f)
-
-          layout.initAlgo()
-          for (i <- 0 to 100 if layout.canAlgo) {
-            layout.goAlgo()
-          }
-          layout.endAlgo()
-
-          val model = Lookup.getDefault.lookup(classOf[PreviewController]).getModel()
-          model.getProperties.putValue(PreviewProperty.SHOW_NODE_LABELS, true)
-          model.getProperties.putValue(PreviewProperty.SHOW_EDGE_LABELS, true)
-          model.getProperties.putValue(PreviewProperty.EDGE_CURVED, false)
-          model.getProperties.putValue(PreviewProperty.EDGE_COLOR, new EdgeColor(java.awt.Color.GRAY))
-          model.getProperties.putValue(PreviewProperty.EDGE_THICKNESS, 0.1f)
-          model.getProperties.putValue(PreviewProperty.NODE_LABEL_FONT, model.getProperties.getFontValue(PreviewProperty.NODE_LABEL_FONT).deriveFont(8))
-                model.getProperties.putValue(Item.NODE_LABEL, "Vertex Label")
-
-
-          // Export full graph
-          val ec = Lookup.getDefault.lookup(classOf[ExportController])
-          //      ec.exportFile(new File("io_gexf.gexf"));
-
-          // PDF Exporter config and export to Byte array
-          val pdfExporter = ec.getExporter("pdf").asInstanceOf[PDFExporter]
-          pdfExporter.setPageSize(PageSize.A0)
-          pdfExporter.setWorkspace(workspace)
-          val baos = new ByteArrayOutputStream()
-          ec.exportStream(baos, pdfExporter)
-          new FileOutputStream(filename + ".pdf").write(baos.toByteArray)
-        }
   }
 
   implicit class ClassRuleTriplePatternGraphExporter(val graph: scalax.collection.mutable.Graph[Node, LDiEdge]) {

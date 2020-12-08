@@ -10,6 +10,8 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartition, RdfPartitioner, 
 
 object RdfPartitionUtilsSpark extends Serializable {
 
+  val logger = com.typesafe.scalalogging.Logger(RdfPartitionUtilsSpark.getClass)
+
   implicit def partitionGraph[P <: RdfPartition : ClassTag](graphRdd: RDD[Triple],
                                                             partitioner: RdfPartitioner[P] = RdfPartitionerDefault): Map[P, RDD[Row]] = {
     Map(partitionGraphArray(graphRdd, partitioner): _*)
@@ -17,6 +19,7 @@ object RdfPartitionUtilsSpark extends Serializable {
 
   implicit def partitionGraphArray[P <: RdfPartition : ClassTag](graphRdd: RDD[Triple],
                                                                  partitioner: RdfPartitioner[P] = RdfPartitionerDefault): Array[(P, RDD[Row])] = {
+    logger.info("started vertical partitioning of the data ...")
     val partitions = graphRdd.map(partitioner.fromTriple).distinct.collect
 
     val array = partitions map { p =>
@@ -28,6 +31,7 @@ object RdfPartitionUtilsSpark extends Serializable {
 //          .map(t => Row(p.layout.fromTriple(t).productIterator.toList: _*))
           .persist())
     }
+    logger.info("... finished vertical partitioning of the data.")
 
     array
   }
