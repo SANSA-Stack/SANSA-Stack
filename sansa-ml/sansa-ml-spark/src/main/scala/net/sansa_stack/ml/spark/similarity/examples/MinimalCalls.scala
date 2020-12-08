@@ -16,8 +16,8 @@ import org.apache.spark.sql.types.DataTypes
  * This class object presents the minimal option to call available similarity functions
  * we read in our data over SANSA RDF
  * We extract the Features over FeatureExtractorModel
- * The extracted String based features are transformed to a index represenatation by Spark MLlib Count Vectorizer
- * then we perform the differen similarity or distance models
+ * The extracted String based features are transformed to a index representation by Spark MLlib Count Vectorizer
+ * then we perform the different similarity or distance models
  * always one for nearest neighbors
  * one for all pair similarity
  * all intermediate steps are printed in cmd line
