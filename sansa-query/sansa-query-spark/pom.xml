@@ -11,7 +11,7 @@
 	</parent>
 
 	<properties>
-        <version.owlapi.ontop>5.1.14</version.owlapi.ontop>
+        <version.owlapi.ontop>5.1.17</version.owlapi.ontop>
     </properties>
 
 	<dependencies>
@@ -148,6 +148,16 @@
 			<artifactId>gremlinator</artifactId>
 			<version>1.0</version>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-groovy</artifactId>
+            <version>3.4.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-core</artifactId>
+            <version>3.4.8</version>
+        </dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>

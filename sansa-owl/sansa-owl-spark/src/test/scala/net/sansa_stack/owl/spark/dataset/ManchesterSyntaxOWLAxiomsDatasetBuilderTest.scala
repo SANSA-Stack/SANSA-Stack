@@ -593,14 +593,14 @@ class ManchesterSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSp
     assert(filteredDataset.count() == expectedNumberOfAxioms)
 
     assert(
-      filteredDataset.filter(
-        _.classExpressions().collect(Collectors.toSet()) == expectedClasses.asJava).count() ==
-        expectedNumberOfAxioms)
+      filteredDataset
+        .filter(_.getClassExpressions == expectedClasses.asJava)
+        .count() == expectedNumberOfAxioms)
   }
 
   def equivClasses(ce1: OWLClassExpression, ce2: OWLClassExpression): OWLEquivalentClassesAxiom =
     new OWLEquivalentClassesAxiomImpl(
-      List(ce1, ce2).asJavaCollection,
+      List(ce1, ce2).asJava,
       List.empty[OWLAnnotation].asJavaCollection
     )
 

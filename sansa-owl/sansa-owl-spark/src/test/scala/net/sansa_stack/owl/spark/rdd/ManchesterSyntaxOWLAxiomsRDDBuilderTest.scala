@@ -593,7 +593,7 @@ class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkC
 
   def equivClasses(ce1: OWLClassExpression, ce2: OWLClassExpression): OWLEquivalentClassesAxiom =
     new OWLEquivalentClassesAxiomImpl(
-      List(ce1, ce2).asJavaCollection,
+      List[OWLClassExpression](ce1, ce2).asJava,
       List.empty[OWLAnnotation].asJavaCollection)
 
   /** FIXME */

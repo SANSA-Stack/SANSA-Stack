@@ -30,6 +30,7 @@ triples.take(5).foreach(println(_))
 ```
 
 ### Load as DataFrame
+```
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 

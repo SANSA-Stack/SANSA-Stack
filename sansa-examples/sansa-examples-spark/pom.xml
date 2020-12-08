@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.4.18.v20190429</version>
+			<version>9.4.35.v20201120</version>
 		</dependency>
 
 		<!-- SANSA RDF -->
@@ -183,7 +183,7 @@
 		<repository>
 			<id>maven.aksw.snapshots</id>
 			<name>AKSW Snapshot Repository</name>
-			<url>http://maven.aksw.org/archiva/repository/snapshots</url>
+			<url>https://maven.aksw.org/archiva/repository/snapshots</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>

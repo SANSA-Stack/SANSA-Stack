@@ -595,7 +595,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
 
   def equivClasses(ce1: OWLClassExpression, ce2: OWLClassExpression): OWLEquivalentClassesAxiom =
     new OWLEquivalentClassesAxiomImpl(
-      List(ce1, ce2).asJavaCollection,
+      List(ce1, ce2).asJava,
       List.empty[OWLAnnotation].asJavaCollection)
 
   test("Equivalent classes axioms should be created correctly") {

@@ -1,13 +1,13 @@
 package net.sansa_stack.query.spark.dof.tensor
 
-import net.sansa_stack.query.spark.dof.bindings._
-import net.sansa_stack.query.spark.dof.node._
-import net.sansa_stack.query.spark.dof.triple.Reader
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.core.Var
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
+import net.sansa_stack.query.spark.dof.bindings._
+import net.sansa_stack.query.spark.dof.node._
+import net.sansa_stack.query.spark.dof.triple.Reader
 import net.sansa_stack.query.spark.utils.SetAccumulator
 
 object NSetAccumulator
@@ -141,7 +141,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
     result: Result[ResultRDD[String]],
     current: ResultRDD[String]): Result[ResultRDD[String]] = {
     val currentKeys = Case.getEmptyRowVarMap(triple).keys.toList
-    return saveResult(result, new Result(current, currentKeys))
+    saveResult(result, new Result(current, currentKeys))
   }
 
   def saveResult(
@@ -152,7 +152,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
     val keysIntersection = result.keys.intersect(current.keys)
     val resultItems = mapWithKeys(result, keysIntersection)
     val currentItems = mapWithKeys(current, keysIntersection)
-    return new Result(
+    new Result(
       resultItems.join(currentItems).map(item => item._2._1 ++ item._2._2),
       result.keys.toSet.union(current.keys.toSet).toList)
   }
@@ -165,7 +165,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
     RDD[(List[String], List[String])] = result.rdd.map(row => {
       // values that exist for keys intersection
       val valuesI = keysI.flatMap(key => {
-        if (row.keySet.exists(_ == key)) {
+        if (row.keySet.contains(key)) {
           Some(row(key))
         } else {
           None
@@ -189,7 +189,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
       .collect // collect only if test failed since it is a slow operation, the same as take, first, reduce
       .map(map => {
         resultVars.flatMap((v: Var) => {
-          if (map.keySet.exists(_ == v)) {
+          if (map.keySet.contains(v)) {
             Some(map(v))
           } else {
             None
@@ -204,7 +204,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
                     resultVars: List[Var]): Boolean = {
     val rddString = result.rdd.map(row => {
       val resultRow = resultVars.flatMap((v: Var) => {
-        if (row.keySet.exists(_ == v)) {
+        if (row.keySet.contains(v)) {
           Some(row(v))
         } else {
           None

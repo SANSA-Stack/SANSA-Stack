@@ -18,7 +18,8 @@ import org.scalactic.TolerantNumerics
 class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
 
   // define inputpath if it is not parameter
-  val inputPath = "src/test/resources/similarity/movie.nt"
+  private val inputPath = this.getClass.getClassLoader.getResource("similarity/movie.nt").getPath
+
   // var triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath).cache()
 
   // for value comparison we want to allow some minor differences in number comparison
@@ -71,7 +72,7 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
       .setOutputCol("vectorizedFeatures")
       .fit(filteredFeaturesDataFrame)
     val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
-    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
+    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 })
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf
       .filter(isNoneZeroVector(col("vectorizedFeatures")))
       .select("uri", "vectorizedFeatures")
