@@ -59,7 +59,8 @@ object MinimalCalls {
       .setOutputCol("vectorizedFeatures")
       .fit(filteredFeaturesDataFrame)
     val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
-    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
+    // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
+    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 })
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures").cache()
     countVectorizedFeaturesDataFrame.show(false)
 
