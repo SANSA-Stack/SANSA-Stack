@@ -83,7 +83,7 @@
 
 		<owlapi.version>5.1.17</owlapi.version>
 		
-    <ontop.version>4.0.3-owlapi5-guava-shaded</ontop.version>
+		<ontop.version>4.0.3-owlapi5.17-guava-shaded</ontop.version>
 
 		<sansa.version>${project.version}</sansa.version>
 <!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
@@ -918,6 +918,10 @@
 						<groupId>org.codehaus.woodstox</groupId>
 						<artifactId>woodstox-core-asl</artifactId>
 					</exclusion>
+					<exclusion>
+						<groupId>net.sourceforge.owlapi</groupId>
+						<artifactId>owlapi-distribution</artifactId>
+					</exclusion>
 				</exclusions>
 			</dependency>
 
@@ -1192,6 +1196,10 @@
 					<groupId>net.alchim31.maven</groupId>
 					<artifactId>scala-maven-plugin</artifactId>
 					<version>4.4.0</version>
+					<configuration>
+						<forceAggregate>true</forceAggregate>
+						<aggregateDirectOnly>false</aggregateDirectOnly>
+					</configuration>
 					<executions>
 						<execution>
 							<goals>
