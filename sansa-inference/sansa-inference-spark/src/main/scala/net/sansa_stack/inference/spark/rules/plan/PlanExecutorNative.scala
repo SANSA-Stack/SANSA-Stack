@@ -2,31 +2,35 @@ package net.sansa_stack.inference.spark.rules.plan
 
 import java.util
 
-import net.sansa_stack.inference.data.Jena
-
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.catalyst.AliasIdentifier
 import org.apache.spark.sql.catalyst.expressions.{Alias, And, AttributeReference, EqualTo, Expression, IsNotNull, NamedExpression}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, SubqueryAlias}
-import org.apache.spark.sql.catalyst.AliasIdentifier
 import org.apache.spark.sql.catalyst.plans.{Inner, logical}
+
+import net.sansa_stack.inference.data.Jena
 import net.sansa_stack.inference.spark.data.model.{EmptyRDFGraphDataFrame, RDFGraphNative}
 import net.sansa_stack.inference.utils.{Logging, Tuple0}
-import org.apache.spark.sql.catalyst.AliasIdentifier
 
 /**
   * An executor that works on the the native Scala data structures and uses Spark joins, filters etc.
   *
   * @author Lorenz Buehmann
   */
-class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple], Node, Triple, RDFGraphNative] with Logging{
+class PlanExecutorNative(sc: SparkContext)
+  extends PlanExecutor[Jena, RDD[Triple], Node, Triple, RDFGraphNative]
+    with Logging{
 
-  val sqlContext = SparkSession.builder().getOrCreate().sqlContext
-  val emptyGraph = EmptyRDFGraphDataFrame.get(sqlContext)
+  private val sqlContext = SparkSession.builder().getOrCreate().sqlContext
+  private val emptyGraph = EmptyRDFGraphDataFrame.get(sqlContext)
+
+  private val maxFields = Integer.MAX_VALUE
 
   def execute(plan: Plan, graph: RDFGraphNative): RDFGraphNative = {
     // generate logical execution plan
@@ -61,7 +65,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
     trace("EXPR R:" + rightExpressions)
 
     // get expressions used in join conditions
-    val joinExpressions = expressionsFor(joinCondition, true)
+    val joinExpressions = expressionsFor(joinCondition, isJoin = true)
     trace("JOIN EXPR:" + joinExpressions)
 
     // get left and right join expressions
@@ -111,7 +115,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
 
     // in case of Join, we rewrite the projection list
     var projectListNew = projectList.map(expr => {
-      if (joinConditions.filter(cond => cond.right.simpleString == expr.simpleString).nonEmpty) joinConditions.head
+      if (joinConditions.exists(cond => cond.right.simpleString(maxFields) == expr.simpleString(maxFields))) joinConditions.head
       else expr
     }
     )
@@ -132,7 +136,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
       aliases.nonEmpty) {
 
       // get the positions for projection
-      val positions = projectList.map(expr => availableExpressionsReal.indexOf(expr.simpleString))
+      val positions = projectList.map(expr => availableExpressionsReal.indexOf(expr))
       trace("EXTR POSITIONS:" + positions)
 
       result = rdd map genMapper(tuple => extract(tuple, positions, aliases))
@@ -143,7 +147,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
 
   def performProjection(rdd: RDD[Product], projectList: Seq[NamedExpression], child: LogicalPlan): RDD[Product] = {
     debug("PROJECTION")
-    trace(projectList.map(expr => expr.simpleString).mkString(","))
+    trace(projectList.map(expr => expr.simpleString(maxFields)).mkString(","))
 
     var resultRDD = rdd
 
@@ -154,17 +158,17 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
     // get the available child expressions
     val childExpressions = (child match {
       case logical.Filter(condition, filterChild) => expressionsFor(filterChild)
-      case logical.Join(left, right, Inner, Some(condition)) =>
+      case logical.Join(left, right, Inner, Some(condition), joinHint) =>
         var list = new mutable.ListBuffer[Expression]()
         list ++= expressionsFor(left) ++ expressionsFor(right)
-        val eCond = expressionsFor(condition, true).map(expr => expr.simpleString)
+        val eCond = expressionsFor(condition, isJoin = true).map(expr => expr.simpleString(maxFields))
         val eRight = expressionsFor(right)
         val joins = joinConditionsFor(condition)
         var list2 = new mutable.ListBuffer[Expression]()
         list.foreach{expr =>
           var replace: Option[Expression] = None
           joins.foreach{j =>
-            if (j.right.simpleString == expr.simpleString) {
+            if (j.right.simpleString(maxFields) == expr.simpleString(maxFields)) {
               replace = Some(j.left)
             }
           }
@@ -175,7 +179,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
           }
         }
         for(e <- eRight) {
-          if (eCond.contains(e.simpleString)) {
+          if (eCond.contains(e.simpleString(maxFields))) {
             list -= e
           }
         }
@@ -185,7 +189,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
         projectList.foreach{expr =>
           var replace: Option[Expression] = None
           joins.foreach{j =>
-            if (j.right.simpleString == expr.simpleString) {
+            if (j.right.simpleString(maxFields) == expr.simpleString(maxFields)) {
               replace = Some(j.left)
             }
           }
@@ -195,7 +199,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
             projectList2 += expr
           }
         }
-        projectionVars = projectList2.toSeq
+        projectionVars = projectList2
 
         list2.toList
         joinConditions = joinConditionsFor(condition)
@@ -203,7 +207,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
         list
       case _ => expressionsFor(child)
     })
-      .map(expr => expr.asInstanceOf[AttributeReference].simpleString)
+      .map(expr => expr.asInstanceOf[AttributeReference].simpleString(maxFields))
 
     trace("CHILD EXPR:" + childExpressions)
     trace("PROJECTION VARS:" + projectionVars)
@@ -218,11 +222,12 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
     trace("ALIASE:" + availableExpressionsReal)
 
     // if size of projection or ordering is different, or there is an alias var
+    val projectionVarsStr = projectionVars.map(_.simpleString(maxFields))
     if(projectionVars.size != childExpressions.size ||
-      !projectionVars.equals(childExpressions) ||
+      !projectionVarsStr.equals(childExpressions) ||
       aliases.nonEmpty) {
 
-      val positions = projectionVars.map(expr => availableExpressionsReal.indexOf(expr.simpleString))
+      val positions = projectionVars.map(expr => availableExpressionsReal.indexOf(expr.simpleString(maxFields)))
 
       trace("EXTR POSITIONS:" + positions)
 
@@ -234,7 +239,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
 
   def executePlan[T >: Product, U <: Product](logicalPlan: LogicalPlan, triples: RDD[Product]): RDD[Product] = {
     logicalPlan match {
-      case logical.Join(left, right, Inner, Some(condition)) =>
+      case logical.Join(left, right, Inner, Some(condition), joinHint) =>
         // process left child
         val leftRDD = executePlan(left, triples)
 
@@ -259,7 +264,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
         val childExpressions = expressionsFor(child)
         applyFilter(condition, childExpressions, childRDD)
       case default =>
-        trace(default.simpleString)
+        trace(default.simpleString(maxFields))
         triples
     }
   }
@@ -293,7 +298,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
     val key = keyPositions.map(pos => tuple.productElement(pos)).toTuple
     val value = for (i <- 0 until tuple.productArity; if !keyPositions.contains(i)) yield tuple.productElement(i)
 
-    (key -> value.toTuple)
+    key -> value.toTuple
   }
 
   def toPairRDD[T >: Product](tuples: RDD[Product], joinPositions: Seq[Int]): RDD[(Product, Product)] = {
@@ -331,7 +336,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
       case And(left: Expression, right: Expression) =>
         applyFilter(right, childExpressions, applyFilter(left, childExpressions, rdd))
       case EqualTo(left: Expression, right: Expression) =>
-        debug("FILTER " + condition.simpleString)
+        debug("FILTER " + condition.simpleString(maxFields))
         val value = right.toString()
 
         val index = childExpressions.map(e => e.toString()).indexOf(left.toString())
@@ -345,7 +350,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
 
   def expressionsFor(logicalPlan: LogicalPlan): List[Expression] = {
     logicalPlan match {
-      case logical.Join(left, right, Inner, Some(condition)) =>
+      case logical.Join(left, right, Inner, Some(condition), joinHint) =>
         expressionsFor(left) ++ expressionsFor(right)
       case logical.Project(projectList, child) =>
         projectList.toList
@@ -385,7 +390,7 @@ class PlanExecutorNative(sc: SparkContext) extends PlanExecutor[Jena, RDD[Triple
       case 9 => toTuple9
       case 10 => toTuple10
     }
-    def toTuple1: Product = elements match {case Seq(a) => new Tuple1(a) }
+    def toTuple1: Product = elements match {case Seq(a) => Tuple1(a) }
     def toTuple2: Product = elements match {case Seq(a, b) => (a, b) }
     def toTuple3: Product = elements match {case Seq(a, b, c) => (a, b, c) }
     def toTuple4: Product = elements match {case Seq(a, b, c, d) => (a, b, c, d) }
