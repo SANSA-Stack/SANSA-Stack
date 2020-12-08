@@ -1,21 +1,22 @@
 # SANSA ML Readme
-The SANSA ML stack is currently under major Refactoring.
+The SANSA ML stack is currently under major refactoring.
 It steers to a support of Scala 2.12 and Spark 3.
-The functionalities are covered by scala unit tests and are documented within scala docstrings. The Readme provides
-* Code snippets as usage description of currently available Modules
-* Roadmap
-* Recent Experimental Research Implementations
-* Description How to contribute
+The functionalities are covered by Scala unit tests and are documented within Scaladoc. The Readme provides
+* [Code snippets as usage description of currently available modules](#current-modules)
+* [Roadmap](#module-roadmap)
+* [Recent Experimental Research Implementations](#research-and-experimental-projects)
+* [How to Contribute](#how-to-contribute)
 
 ## Current Modules
 The current stack provides:
-- [Sparql Transformer](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SPARQLQuery.scala)
-- [AutoSparql Generation for Feature Extraction](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator.scala)
-- [Feature Based Semantic Similarity Estimations](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
+- [Sparql Transformer](#sparql-transformer)
+- [AutoSparql Generation for Feature Extraction](#autoSparql-generation-for-feature-extraction)
+- [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 
 ### Sparql Transformer
-The Sparql Transformer is implemented as a Spark Transformer. It takes read in RDF data as a DataSet and Produces a DataFrame of Type Apache Jena Node. Currently supported are up to 5 projection variables. A sample usage could be:
-```Scala
+[Sparql Transformer (code)](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SPARQLQuery.scala):
+The SPARQL Transformer is implemented as a [Spark MLlib Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers). It reads RDF data as a `DataSet` and produces a `DataFrame` of type Apache Jena `Node`. Currently supported are up to 5 projection variables. A sample usage could be:
+```
 val spark = SparkSession.builder()
     .appName(sc.appName)
     .master(sc.master)
@@ -39,11 +40,12 @@ val sparqlQuery: SPARQLQuery = SPARQLQuery(sparqlQueryString)
 val res: DataFrame = sparqlQuery.transform(data)
 val resultNodes: Array[Node] = res.as[Node].collect()
 ```
-this sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
+this sample is taken from a [Scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
 
 ### AutoSparql Generation for Feature Extraction
-This modules creates a SPARQL query traversing the tree to gain Literals which can be used as features for common feature based Machine Learning Approaches. It needs only knowledge the RDF structure to specify the WHERE clause, how to read the entities, for which we want to have the structure to fetch connected features. As sample usage would be:
-```Scala
+[AutoSparql Generation for Feature Extraction (code)](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator.scala):
+This modules creates a SPARQL query traversing the tree to gain literals which can be used as features for common feature based Machine Learning Approaches. The user needs only to specify the WHERE clause, how to reach the entities, which should be considered as seeds/roots for graph traversal. This traversal will then provide a SPARQL Query to fetch connected features from Literals. As sample usage would be:
+```
 val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
 val seedVarName = "?seed"
 val whereClauseForSeed = "?seed a <http://dig.isi.edu/Person>"
@@ -78,8 +80,9 @@ println(totalSparqlQuery)
 ```
 This sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGeneratorTest.scala)
 
-### DistSim - Feature Based Semantic Similarity Estimations
-DistSim is the Scalable distributed in-Memory Semantic Similarity Estimation for RDF Knowledge Graph Frameworks which has been integrated into the SANSA stack in the SANSA Machine Learning package. The documentation in scaladocs are available [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#package) the respective similarity estimation models are in this [github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils are [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
+### Feature Based Semantic Similarity Estimations
+[DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
+DistSim is the scalable distributed in-memory Semantic Similarity Estimation for RDF Knowledge Graph Frameworks which has been integrated into the SANSA stack in the SANSA Machine Learning package. The Scaladoc is available [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#package), the respective similarity estimation models are in this [Github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils can be found [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
 
 #### ScalaDocs:
 * [Feature Extractor](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#net.sansa_stack.ml.spark.utils.FeatureExtractorModel)
@@ -98,7 +101,7 @@ DistSim is the Scalable distributed in-Memory Semantic Similarity Estimation for
 #### Usage of Modules
 **Feature Extraction**
 How to use Semantic Similarity Pipeline Modules:
-```Scala
+```
 val featureExtractorModel = new FeatureExtractorModel()
        .setMode("an")
 val extractedFeaturesDataFrame = featureExtractorModel
@@ -107,7 +110,7 @@ val extractedFeaturesDataFrame = featureExtractorModel
 extractedFeaturesDataFrame.show()
 ```
 Transform features to indexed feature representation:
-```Scala
+```
 val cvModel: CountVectorizerModel = new CountVectorizer()
         .setInputCol("extractedFeatures")
         .setOutputCol("vectorizedFeatures")
@@ -117,7 +120,7 @@ val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
 
 (optional but recommended) filter out feature vectors which does not contain any feature
 
-```Scala
+```
 val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
        val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures")
        countVectorizedFeaturesDataFrame.show()
@@ -133,7 +136,7 @@ We have always two options.
 * Option 2:
   * similarityJoin calculates for two DataFrames of feature vectors all pairs of similarity. This DataFrame the is limited by a minimal threshold.
 
-Currently we provide these similarity estimation models:
+Currently, we provide these similarity estimation models:
 * Batet
 * Braun-Blanquet
 * Dice
@@ -177,26 +180,25 @@ tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFea
 
 Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
 
-## Research & Experimental Projects from Release 0.7.1
+## Research and Experimental Projects
 In recent research projects further experimental approaches have been implemented.
-Due to the ongoing refactoring and re-design of Data Analytics Functionality, these methods are  available in the [Release 0.7.1](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark) [Machine Learning Layer](https://github.com/SANSA-Stack/Archived-SANSA-ML).
+Due to the ongoing refactoring and re-design of Data Analytics Functionality, these methods are available in the [Release 0.7.1](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark) [Machine Learning Layer](https://github.com/SANSA-Stack/Archived-SANSA-ML).
 They are currently not maintained but can be used as inspiration for further developments.
 The developed approaches cover:
 - [Classification (Spark)](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/classification) [(Flink)](https://github.com/SANSA-Stack/Archived-SANSA-ML/blob/master/sansa-ml-flink/src/main/scala/net/sansa_stack/ml/flink/clustering/RDFByModularityClustering.scala)
 - [Clustering](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/clustering)
-  - Masterthesis, Distributed RDF Clustering Framework, Tina Boroukhian
-  - Masterthesis, Scalable RDF Clustering, Pratik Kumar Agarwal
   - [Paper](http://jens-lehmann.org/files/2019/eswc_pd_poi_clustering.pdf) Clustering Pipelines of large RDF POI Data by Rajjat Dadwal1, Damien Graux, Gezim Sejdiu, Hajira Jabeen, and Jens Lehmann
+  - Masterthesis, Distributed RDF Clustering Framework, Tina Boroukhian
 - [Kernel](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/kernel)
 - [Kge/Linkprediction](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/kge/linkprediction)
 - [Mining/AmieSpark](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/mining/amieSpark)
-  - Bachelorthesis, Association Rule Mining of Linked Data Using Apache Spark by Nathan, Theresa
+  - Bachelorthesis, Association Rule Mining of Linked Data Using Apache Spark by Theresa Nathan
 - [Outliers/Anomaly Detection](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/outliers)
   - [Paper](http://jens-lehmann.org/files/2018/ekaw_conod.pdf), Divided we stand out! Forging Cohorts fOr Numeric Outlier Detection in large scale knowledge graphs (CONOD) by Hajira Jabeen 1, Rajjat Dadwal, Gezim Sejdiu, and Jens Lehmann
   - Masterthesis, Scalable Numerical Outlier Detection in Knowledge Graphs, Rajjat Dadwal
 - [WordNetDistance](https://github.com/SANSA-Stack/Archived-SANSA-ML/tree/master/sansa-ml-common/src/main/scala/net/sansa_stack/ml/common/nlp/wordnet)
 
-Some further usage examples of these modules are available in the [archived SANSA_Examples Repository](https://github.com/SANSA-Stack/Archived-SANSA-Examples/tree/master/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml)
+Some further Usage examples of these modules are available in the [archived SANSA_Examples Repository](https://github.com/SANSA-Stack/Archived-SANSA-Examples/tree/master/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml)
 
 ## How to Contribute
 We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.

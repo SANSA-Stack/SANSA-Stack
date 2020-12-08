@@ -87,19 +87,6 @@
 			<artifactId>jena-core</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-		</dependency>
-
-
-		<dependency>
-			<groupId>org.json4s</groupId>
-			<artifactId>json4s-native_${scala.binary.version}</artifactId>
-			<version>3.5.3</version>
-		</dependency>
-
-
 		<!-- Test -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -186,15 +173,4 @@
 			</build>
 		</profile>
 	</profiles>
-
-
-
-	<repositories>
-		<repository>
-			<id>dbscan-on-spark-repo</id>
-			<name>Repo for DBSCAN on Spark</name>
-			<url>https://dl.bintray.com/irvingc/maven</url>
-		</repository>
-	</repositories>
-
 </project>
