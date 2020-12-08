@@ -297,6 +297,35 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 1)
   }
 
+  test("compute the number of SubClass usage should result in 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val triples = spark.rdf(Lang.NTRIPLES)(path)
+    val numberOfSubclassUsage = triples.statsSubclassUsage()
+    assert(numberOfSubclassUsage == 0)
+  }
+
+  test("compute the number of triples should result in 10") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val triples = spark.rdf(Lang.NTRIPLES)(path)
+    val numberOfTriples = triples.statsNumberOfTriples()
+    assert(numberOfTriples == 10)
+  }
+
+  test("compute the property depth should result in 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val triples = spark.rdf(Lang.NTRIPLES)(path)
+    val propertyDepth = triples.statsPropertyHierarchyDepth()
+    val cnt = propertyDepth.count()
+    assert(cnt == 0)
+  }
+
+  test("compute the entities mentioned should result in 0") {
+    val path = getClass.getResource("/loader/data.nt").getPath
+    val triples = spark.rdf(Lang.NTRIPLES)(path)
+    val cnt = triples.statusEntitiesMentioned()
+    assert(cnt == 1)
+  }
+
   test("4 - computing Class Hierarchy Depth should match") {
     val path = getClass.getResource("/stats/4_class_hierarchy.nt").getPath
 
