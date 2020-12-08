@@ -364,6 +364,41 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>${project.build.directory}/lib</classpathPrefix>
+                                    <mainClass>net.sansa_stack.inference.spark.forwardchaining.axioms.ForwardRuleReasonerOWLHorst</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </plugin>
+                    <!--<plugin>-->
+                        <!--<groupId>org.apache.maven.plugins</groupId>-->
+                        <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                        <!--<version>3.0.0</version>-->
+                        <!--<executions>-->
+                            <!--<execution>-->
+                                <!--<id>dist</id>-->
+                                <!--<phase>package</phase>-->
+                                <!--<goals>-->
+                                    <!--<goal>single</goal>-->
+                                <!--</goals>-->
+                                <!--<configuration>-->
+                                    <!--&lt;!&ndash;<descriptorRefs>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</descriptorRefs>&ndash;&gt;-->
+                                    <!--<descriptors>-->
+                                        <!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
+                                    <!--</descriptors>-->
+                                <!--</configuration>-->
+                            <!--</execution>-->
+                        <!--</executions>-->
+                    <!--</plugin>-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
                         <executions>
                             <execution>
