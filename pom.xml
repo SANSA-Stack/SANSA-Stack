@@ -1111,6 +1111,12 @@
 				<version>8.0.22</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.ibm.sparktc</groupId>
+				<artifactId>spark-bench_2.12</artifactId>
+				<version>3.0.1_0.4.0-RELEASE</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
