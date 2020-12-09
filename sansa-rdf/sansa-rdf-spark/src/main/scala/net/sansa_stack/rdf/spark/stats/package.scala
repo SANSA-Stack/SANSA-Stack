@@ -301,6 +301,12 @@ package object stats {
     def statsNumberOfTriples(): Long =
       RDFStatistics.Triples(triples)
 
+    /**
+     * <b>15. Distinct entities Count </b> <br>
+     * * Count the number of distinct entities.
+     *
+     * @return the number of distinct entities
+     */
     def statusEntitiesMentioned(): Long = {
       RDFStatistics.EntitiesMentioned(triples)
     }
