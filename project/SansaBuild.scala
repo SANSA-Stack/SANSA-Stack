@@ -52,14 +52,14 @@ object BuildCommons {
   val tools = ProjectRef(buildLocation, "tools")
   // Root project.
   val sansa = ProjectRef(buildLocation, "SANSA-Stack")
-  val sparkHome = buildLocation
+  val sansaHome = buildLocation
 
-  val testTempDir = s"$sparkHome/target/tmp"
+  val testTempDir = s"$sansaHome/target/tmp"
 
   val javaVersion = settingKey[String]("source and target JVM version for javac and scalac")
 }
 
-object SparkBuild extends PomBuild {
+object SANSABuild extends PomBuild {
 
   import BuildCommons._
   import sbtunidoc.GenJavadocPlugin
@@ -290,12 +290,7 @@ object SparkBuild extends PomBuild {
     // Remove certain packages from Scaladoc
     scalacOptions in (Compile, doc) := Seq(
       "-groups",
-      "-skip-packages", Seq(
-        "org.apache.spark.api.python",
-        "org.apache.spark.network",
-        "org.apache.spark.deploy",
-        "org.apache.spark.util.collection"
-      ).mkString(":"),
+      "-skip-packages", Seq().mkString(":"),
       "-doc-title", "SANSA-Stack " + version.value.replaceAll("-SNAPSHOT", "") + " ScalaDoc"
     ) ++ {
       // Do not attempt to scaladoc javadoc comments under 2.12 since it can't handle inner classes
@@ -393,38 +388,10 @@ object Unidoc {
   private def ignoreUndocumentedPackages(packages: Seq[Seq[File]]): Seq[Seq[File]] = {
     packages
       .map(_.filterNot(_.getName.contains("$")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/deploy")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/examples")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/internal")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/memory")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/network")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/rpc")))
-      .map(_.filterNot(f =>
-        f.getCanonicalPath.contains("org/apache/spark/shuffle") &&
-        !f.getCanonicalPath.contains("org/apache/spark/shuffle/api")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/executor")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/ExecutorAllocationClient")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/scheduler/cluster/CoarseGrainedSchedulerBackend")))
-      .map(_.filterNot(f =>
-        f.getCanonicalPath.contains("org/apache/spark/unsafe") &&
-        !f.getCanonicalPath.contains("org/apache/spark/unsafe/types/CalendarInterval")))
-      .map(_.filterNot(_.getCanonicalPath.contains("python")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/util/collection")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/util/kvstore")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/sql/catalyst")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/sql/execution")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/sql/internal")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/sql/hive/test")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/sql/catalog/v2/utils")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/hive")))
-      .map(_.filterNot(_.getCanonicalPath.contains("org/apache/spark/sql/v2/avro")))
-      .map(_.filterNot(_.getCanonicalPath.contains("SSLOptions")))
   }
 
   private def ignoreClasspaths(classpaths: Seq[Classpath]): Seq[Classpath] = {
     classpaths
-      .map(_.filterNot(_.data.getCanonicalPath.matches(""".*kafka-clients-0\.10.*""")))
-      .map(_.filterNot(_.data.getCanonicalPath.matches(""".*kafka_2\..*-0\.10.*""")))
   }
 
   val unidocSourceBase = settingKey[String]("Base URL of source links in Scaladoc.")
@@ -520,14 +487,6 @@ object TestSettings {
       "SPARK_TESTING" -> "1",
       "JAVA_HOME" -> sys.env.get("JAVA_HOME").getOrElse(sys.props("java.home"))),
     javaOptions in Test += s"-Djava.io.tmpdir=$testTempDir",
-    javaOptions in Test += "-Dspark.test.home=" + sparkHome,
-    javaOptions in Test += "-Dspark.testing=1",
-    javaOptions in Test += "-Dspark.port.maxRetries=100",
-    javaOptions in Test += "-Dspark.master.rest.enabled=false",
-    javaOptions in Test += "-Dspark.memory.debugFill=true",
-    javaOptions in Test += "-Dspark.ui.enabled=false",
-    javaOptions in Test += "-Dspark.ui.showConsoleProgress=false",
-    javaOptions in Test += "-Dspark.unsafe.exceptionOnMemoryLeak=true",
     javaOptions in Test += "-Dsun.io.serialization.extendedDebugInfo=false",
     javaOptions in Test += "-Dderby.system.durability=test",
     javaOptions in Test += "-Dio.netty.tryReflectionSetAccessible=true",
