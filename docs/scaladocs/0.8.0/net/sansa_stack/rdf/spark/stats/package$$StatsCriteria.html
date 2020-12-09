@@ -1106,6 +1106,24 @@ Count distinct subject within triples.
       <p class="shortcomment cmt">28.Maximum per property {int,float,time} criterion
 </p><div class="fullcomment"><div class="comment cmt"><p>28.Maximum per property {int,float,time} criterion
 </p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>entities with their maximum values on the graph</p></dd></dl></div>
+    </li><li name="net.sansa_stack.rdf.spark.stats.StatsCriteria#statsNumberOfTriples" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="statsNumberOfTriples():Long"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/rdf/spark/stats/package$$StatsCriteria.html#statsNumberOfTriples():Long" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">statsNumberOfTriples</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      
+      <p class="shortcomment cmt"><b>Triples Count </b> <br>
+Count the number of triples.</p><div class="fullcomment"><div class="comment cmt"><p><b>Triples Count </b> <br>
+Count the number of triples.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>number of triples in the dataset.</p></dd></dl></div>
     </li><li name="net.sansa_stack.rdf.spark.stats.StatsCriteria#statsObjectVocabularies" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="statsObjectVocabularies():org.apache.spark.rdd.RDD[(String,Int)]"></a><a id="statsObjectVocabularies():RDD[(String,Int)]"></a>
       <span class="permalink">
@@ -1264,6 +1282,24 @@ Count the usage of properties within triples based on subjects.
       
       <p class="shortcomment cmt">25.</p><div class="fullcomment"><div class="comment cmt"><p>25. SameAs criterion.
 </p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>list of triples with owl#sameAs as predicate</p></dd></dl></div>
+    </li><li name="net.sansa_stack.rdf.spark.stats.StatsCriteria#statsSubclassUsage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="statsSubclassUsage():Long"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/rdf/spark/stats/package$$StatsCriteria.html#statsSubclassUsage():Long" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">statsSubclassUsage</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      
+      <p class="shortcomment cmt"><b>Subclass Usage Count </b> <br>
+Count the usage of rdfs:subClass properties within triples.</p><div class="fullcomment"><div class="comment cmt"><p><b>Subclass Usage Count </b> <br>
+Count the usage of rdfs:subClass properties within triples.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>number of rdfs:subClass predicates used in the dataset.</p></dd></dl></div>
     </li><li name="net.sansa_stack.rdf.spark.stats.StatsCriteria#statsSubjectVocabularies" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="statsSubjectVocabularies():org.apache.spark.rdd.RDD[(String,Int)]"></a><a id="statsSubjectVocabularies():RDD[(String,Int)]"></a>
       <span class="permalink">
@@ -1323,6 +1359,22 @@ As an example of such a triple that will be accepted by
 the filter is <code>sda:Gezim rdf:type distLODStats:Developer</code>.
 <b>Filter rule</b> : <code>?p=rdf:type &amp;&amp; isIRI(?o)</code>
 <b>Action</b> : <code>S += ?o</code></p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>RDD of classes/instances</p></dd></dl></div>
+    </li><li name="net.sansa_stack.rdf.spark.stats.StatsCriteria#statusEntitiesMentioned" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="statusEntitiesMentioned():Long"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/rdf/spark/stats/package$$StatsCriteria.html#statusEntitiesMentioned():Long" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">statusEntitiesMentioned</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
