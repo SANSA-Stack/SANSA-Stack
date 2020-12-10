@@ -195,14 +195,13 @@ object RDFStatistics extends Serializable {
     triples.count
 
   /**
-   * 15.Entities mentioned criterion
+   * 15. Entities mentioned criterion
    *
    * @param triples RDD of triples
-   * @return  number of entities (resources / IRIs) that are mentioned within a RDF graph.
+   * @return number of distinct entities (resources / IRIs) that are mentioned within a RDF graph.
    */
   def EntitiesMentioned(triples: RDD[Triple]): Long = {
-    triples.filter(triple => (triple.getSubject.isURI && triple.getPredicate.isURI && triple.getObject.isURI))
-      .count
+    triples.flatMap(t => Seq(t.getSubject(), t.getPredicate(), t.getObject())).filter(_.isURI()).distinct().count()
   }
 
   /**

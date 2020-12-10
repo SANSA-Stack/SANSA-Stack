@@ -319,11 +319,11 @@ class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
     assert(cnt == 0)
   }
 
-  test("compute the entities mentioned should result in 0") {
+  test("compute the distinct entities mentioned should result in 12") {
     val path = getClass.getResource("/loader/data.nt").getPath
     val triples = spark.rdf(Lang.NTRIPLES)(path)
     val cnt = triples.statusEntitiesMentioned()
-    assert(cnt == 1)
+    assert(cnt == 12)
   }
 
   test("4 - computing Class Hierarchy Depth should match") {
