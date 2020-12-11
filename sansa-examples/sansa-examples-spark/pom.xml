@@ -108,26 +108,6 @@
 			<version>0.10.0</version>
 			<scope>provided</scope>
 		</dependency>-->
-		<dependency>
-			<groupId>com.github.haifengl</groupId>
-			<artifactId>smile-core</artifactId>
-			<version>1.5.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.github.haifengl</groupId>
-			<artifactId>smile-netlib</artifactId>
-			<version>1.5.0</version>
-			<scope>provided</scope>
-		</dependency>
-
-
-		<dependency>
-			<groupId>com.spotify</groupId>
-			<artifactId>docker-client</artifactId>
-			<scope>test</scope>
-			<classifier>shaded</classifier>
-		</dependency>
 
 	</dependencies>
 
