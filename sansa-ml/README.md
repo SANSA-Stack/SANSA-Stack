@@ -10,8 +10,8 @@ The functionalities are covered by Scala unit tests and are documented within Sc
 ## Current Modules
 The current stack provides:
 - [Sparql Transformer](#sparql-transformer)
-- [AutoSparql Generation for Feature Extraction](#autoSparql-generation-for-feature-extraction)
-- [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
+- [AutoSparql Generation for Feature Extraction](#autosparql-generation-for-feature-extraction)
+- [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 
 ### Sparql Transformer
 [Sparql Transformer](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SPARQLQuery.html):
@@ -40,7 +40,7 @@ val sparqlQuery: SPARQLQuery = SPARQLQuery(sparqlQueryString)
 val res: DataFrame = sparqlQuery.transform(data)
 val resultNodes: Array[Node] = res.as[Node].collect()
 ```
-this sample is taken from a [Scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
+this sample is taken from a [Scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
 
 ### AutoSparql Generation for Feature Extraction
 [AutoSparql Generation for Feature Extraction](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html):
@@ -78,10 +78,10 @@ val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
 )
 println(totalSparqlQuery)
 ```
-This sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGeneratorTest.scala)
+This sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGeneratorTest.scala)
 
 ### Feature Based Semantic Similarity Estimations
-[DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/rdf2feature/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
+[DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
 DistSim is the scalable distributed in-memory Semantic Similarity Estimation for RDF Knowledge Graph Frameworks which has been integrated into the SANSA stack in the SANSA Machine Learning package. The Scaladoc is available [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#package), the respective similarity estimation models are in this [Github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils can be found [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
 
 #### ScalaDocs:
