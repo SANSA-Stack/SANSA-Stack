@@ -1,26 +1,25 @@
-package net.sansa_stack.ml.spark.utils
+package net.sansa_stack.ml.spark.featureExtraction
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths, StandardOpenOption}
+import java.nio.file.{Files, Paths}
 
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model._
+import net.sansa_stack.ml.spark.utils.{ConfigResolver, SPARQLQuery}
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.RDFLanguages
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
 
 import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks._
+import scala.util.control.Breaks.{break, breakable}
 
 object FeatureExtractingSparqlGenerator {
 
   /**
    * create on string level the seed fetching query
    *
-   * @param seedVarName projection var name for seed element
+   * @param seedVarName     projection var name for seed element
    * @param seedWhereClause where clause how seed can be fetched
-   * @param sortedByLinks boolean value if seeds should be ordered by outgoing links in desc order or fifo seeds
+   * @param sortedByLinks   boolean value if seeds should be ordered by outgoing links in desc order or fifo seeds
    * @return string representing the seed fetching sparql query
    */
   def createSeedFetchingSparql(seedVarName: String, seedWhereClause: String, sortedByLinks: Boolean): String = {
@@ -60,9 +59,10 @@ object FeatureExtractingSparqlGenerator {
 
   /**
    * traverses a tree by joining dataframes of current paths and traversable hops
-   * @param paths current paths initially started at seeds
-   * @param traverseDf the dataframe giving traversal opportunities
-   * @param iterationLimit how deep to traverse or how often join should be performed max
+   *
+   * @param paths             current paths initially started at seeds
+   * @param traverseDf        the dataframe giving traversal opportunities
+   * @param iterationLimit    how deep to traverse or how often join should be performed max
    * @param traverseDirection direction whether up or down
    * @return the traversed dataframe with current paths after traverse up, and paths ending with literals after traverse down
    */
@@ -76,7 +76,7 @@ object FeatureExtractingSparqlGenerator {
     var currentPaths = paths
 
     breakable {
-      for (iteration <- 0  to (iterationLimit-1)) {
+      for (iteration <- 0 to (iterationLimit - 1)) {
         // set iterators
         val columnName = f"n_$iteration"
         val iterationPlusOne: Int = iteration + 1
@@ -86,8 +86,8 @@ object FeatureExtractingSparqlGenerator {
         val left: DataFrame = currentPaths
         // here we partially simulate random walt behavior
         val right: DataFrame = numberRandomWalks match {
-            case 0 => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*)
-            case _ => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*).sample(true, 2D*numberRandomWalks/traverseDf.count()).limit(numberRandomWalks)
+          case 0 => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*)
+          case _ => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*).sample(true, 2D * numberRandomWalks / traverseDf.count()).limit(numberRandomWalks)
         }
 
         // this joins the next hop
@@ -107,7 +107,7 @@ object FeatureExtractingSparqlGenerator {
         // see ! exclamation mark in where statement
         // println(s"current paths dataframe: $iteration")
         // currentPaths = joinedPaths.where(! col(columnNamePlusOne).startsWith("\""))
-        currentPaths = joinedPaths.where(! isLiteral(col(columnNamePlusOne)))
+        currentPaths = joinedPaths.where(!isLiteral(col(columnNamePlusOne)))
         // final paths are paths which end with literal
         // this can only happen when traversing down
         val finalPaths = joinedPaths.where(isLiteral(col(columnNamePlusOne)))
@@ -115,8 +115,8 @@ object FeatureExtractingSparqlGenerator {
         // filter out cyclic paths from currentPaths
         val noCycle = udf((row: Row) => {
           val l = row.toSeq.toList
-            .filter(_!=None)
-            .filter(_!=null)
+            .filter(_ != None)
+            .filter(_ != null)
           val lFromSet = l.toSet
           l.length == lFromSet.size
         })
@@ -134,7 +134,7 @@ object FeatureExtractingSparqlGenerator {
           val noneColumnsToAdd: Seq[String] = finalPaths.columns.toSeq.toSet.diff(recentColumns.toSet).toSeq
           var df1 = dataframeWithLiteralEnd
           for (c <- noneColumnsToAdd) df1 = df1.withColumn(c, lit(null: String))
-          val  df2 = finalPaths
+          val df2 = finalPaths
           val df3 = df2.union(df1.select(df2.columns.map(col(_)): _*))
           dataframeWithLiteralEnd = df3
           dataframeWithLiteralEnd = dataframeWithLiteralEnd.union(finalPaths)
@@ -160,7 +160,7 @@ object FeatureExtractingSparqlGenerator {
           val noneColumnsToAdd = newTmpColumns.toSet.diff(recentColumns.toSet).toSeq
           var df1 = dataFramesWithOpenEnd
           for (c <- noneColumnsToAdd) df1 = df1.withColumn(c, lit(null: String))
-          val  df2 = tmpPaths.toDF(newTmpColumns: _*)
+          val df2 = tmpPaths.toDF(newTmpColumns: _*)
           val df3 = df2.union(df1.select(df2.columns.map(col(_)): _*))
           dataFramesWithOpenEnd = df3
         }
@@ -168,7 +168,7 @@ object FeatureExtractingSparqlGenerator {
     }
     val dfLit = numberRandomWalks match {
       case 0 => dataframeWithLiteralEnd
-      case _ => dataframeWithLiteralEnd.sample(true, 2D*numberRandomWalks/dataframeWithLiteralEnd.count()).limit(numberRandomWalks)
+      case _ => dataframeWithLiteralEnd.sample(true, 2D * numberRandomWalks / dataframeWithLiteralEnd.count()).limit(numberRandomWalks)
     }
 
     val returnDataframe = traverseDirection match {
@@ -181,16 +181,16 @@ object FeatureExtractingSparqlGenerator {
   /**
    * creates a string corresponding to an OPTIONAL block for where part in resulting sparql
    *
-   * @param row row from dataframe created by traversing all paths
+   * @param row         row from dataframe created by traversing all paths
    * @param seedVarName name of seed projection var
    * @return string representing OPTIONAL block
    */
   def rowToQuery(row: Row, seedVarName: String): (String, String) = {
 
-    val nonNullRow: List[String] = row.toSeq.toList.filter(_!=None).filter(_!=null).asInstanceOf[List[String]]
+    val nonNullRow: List[String] = row.toSeq.toList.filter(_ != None).filter(_ != null).asInstanceOf[List[String]]
 
     val lenRow: Int = nonNullRow.size
-    val numberQueryLines: Int = (lenRow-1)/3
+    val numberQueryLines: Int = (lenRow - 1) / 3
 
     var varNames = ListBuffer(seedVarName)
 
@@ -198,7 +198,7 @@ object FeatureExtractingSparqlGenerator {
 
     var queryStr = "\tOPTIONAL {\n"
 
-    for (queryLineNumber <- 0 to (numberQueryLines-1)) {
+    for (queryLineNumber <- 0 to (numberQueryLines - 1)) {
       val leftN = nonNullRow(queryLineNumber * 3)
       val p = nonNullRow((queryLineNumber * 3) + 1)
       val direction = nonNullRow((queryLineNumber * 3) + 2)
@@ -230,25 +230,25 @@ object FeatureExtractingSparqlGenerator {
    * take unique query lines
    * create sparql query
    *
-   * @param df dataframe of true columns of type string representing triples  s p o
-   * @param seedVarName how the seeds should be named and with beginning question mark as needed for projection variable
-   * @param seedWhereClause a string representing the where part of a sparql query specifying how to reach seeds
-   * @param maxUp integer for limiting number of traversal up steps
-   * @param maxDown integer for limiting traverse down steps
-   * @param numberSeeds number of seeds to consider
+   * @param df               dataframe of true columns of type string representing triples  s p o
+   * @param seedVarName      how the seeds should be named and with beginning question mark as needed for projection variable
+   * @param seedWhereClause  a string representing the where part of a sparql query specifying how to reach seeds
+   * @param maxUp            integer for limiting number of traversal up steps
+   * @param maxDown          integer for limiting traverse down steps
+   * @param numberSeeds      number of seeds to consider
    * @param ratioNumberSeeds number of seeds specified by ratio
    * @return string of resulting sparql and list of string for each projection variable which later can be used for dataframe column naming
    */
   def autoPrepo(
-     df: DataFrame,
-     seedVarName: String,
-     seedWhereClause: String,
-     maxUp: Int,
-     maxDown: Int,
-     numberSeeds: Int = 0,
-     ratioNumberSeeds: Double = 1.0,
-     numberRandomWalks: Int = 0,
-     sortedByLinks: Boolean = false,
+                 df: DataFrame,
+                 seedVarName: String,
+                 seedWhereClause: String,
+                 maxUp: Int,
+                 maxDown: Int,
+                 numberSeeds: Int = 0,
+                 ratioNumberSeeds: Double = 1.0,
+                 numberRandomWalks: Int = 0,
+                 sortedByLinks: Boolean = false,
                ): (String, List[String]) = {
 
     val spark = SparkSession.builder
@@ -356,8 +356,8 @@ object FeatureExtractingSparqlGenerator {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-                      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
-                      "net.sansa_stack.query.spark.ontop.KryoRegistratorOntop"))
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+        "net.sansa_stack.query.spark.ontop.KryoRegistratorOntop"))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")

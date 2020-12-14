@@ -1,6 +1,5 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
-import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.rdf.spark.io._
