@@ -8,6 +8,8 @@ import org.apache.jena.graph.Node
 import org.apache.jena.riot.RDFLanguages
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.model._
 
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks.{break, breakable}
@@ -255,7 +257,6 @@ object FeatureExtractingSparqlGenerator {
       .getOrCreate()
     import spark.implicits._
     implicit val nodeEncoder = Encoders.kryo(classOf[Node])
-    implicit val nodeTupleEncoder = Encoders.tuple[Node, Node, Node](nodeEncoder, nodeEncoder, nodeEncoder)
 
     val ds = df.toDS().cache()
 
