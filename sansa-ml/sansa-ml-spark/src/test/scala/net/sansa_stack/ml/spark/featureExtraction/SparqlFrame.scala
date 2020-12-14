@@ -78,7 +78,7 @@ class SparqlFrame extends Transformer{
     var columnTypes = ListBuffer.empty[org.apache.spark.sql.types.DataType]
     val firstRow = types.take(1).toSeq
     val numberColumns = firstRow(0).toSeq.size
-    println(f"We have $numberColumns columns")
+    // println(f"We have $numberColumns columns")
     for (i <- 0 to numberColumns - 1) {
       val allTypesOfColumn = types.map(_ (i))
       if (allTypesOfColumn.distinct.collect().toSeq.size == 1) {
@@ -87,12 +87,14 @@ class SparqlFrame extends Transformer{
         columnTypes.append(element)
       }
       else {
-        println("the column type is not clear because different types occured")
-        println("the type distribution is:")
-        // allTypesOfColumn.foreach(println(_))
-        val typeDistribution = allTypesOfColumn.groupBy(identity).mapValues(_.size)
-        typeDistribution.foreach(println(_))
-        println("this is why we fallback to StringType")
+        val typeDistribution = allTypesOfColumn.groupBy(identity).mapValues(_.size).collect().toSeq
+        println(
+          f"""
+            |[WARNING] the column type is not clear because different types occured.
+            |\t type distribution is:
+            |\t ${typeDistribution.mkString(" ")}
+            |\t this is why we fallback to StringType
+            |\t """.stripMargin)
         val element = StringType.asInstanceOf[org.apache.spark.sql.types.DataType] // .toString
         columnTypes.append(element)
       }
