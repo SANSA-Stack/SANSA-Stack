@@ -34,7 +34,7 @@ object SampleFeatureExtractionPipeline {
     we use the auto rdf2feature
      */
     // OPTION 1
-    val queryString = """
+    val manualSparqlString = """
                         |SELECT ?seed ?seed__down_age ?seed__down_name
                         |WHERE {
                         |?seed a <http://dig.isi.edu/Person> .
@@ -45,8 +45,9 @@ object SampleFeatureExtractionPipeline {
                         | ?seed <http://dig.isi.edu/name> ?seed__down_name .
                         |}}""".stripMargin
     // OPTION 2
-    val (totalSparqlQuery: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.autoPrepo(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 0, 2, 3)
-    // println(totalSparqlQuery)
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.autoPrepo(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 0, 2, 3)
+
+    val queryString = manualSparqlString
 
     /*
     FEATURE EXTRACTION OVER SPARQL
