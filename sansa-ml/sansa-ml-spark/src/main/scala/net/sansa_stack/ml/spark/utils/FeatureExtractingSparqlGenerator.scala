@@ -28,7 +28,7 @@ object FeatureExtractingSparqlGenerator {
       case true => f"SELECT DISTINCT $seedVarName \nWHERE { $seedWhereClause \n\tOptional { $seedVarName ?p ?o. } } \ngroup by $seedVarName ORDER BY DESC ( count(?p) ) "
       case false => f"SELECT DISTINCT $seedVarName \n WHERE { $seedWhereClause} "
     }
-    println(f"the generated seed fetching sparql is:\n$seedFetchingSparql")
+    // TODO make log println(f"the generated seed fetching sparql is:\n$seedFetchingSparql")
     seedFetchingSparql
   }
 
@@ -257,7 +257,7 @@ object FeatureExtractingSparqlGenerator {
     val queryTransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
     val seedsDf: DataFrame = queryTransformer1.transform(ds).cache()
     val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
-    println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
+    // TODO make log println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
     val numberOfSeeds: Int = seeds.length
 
     // calculate cutoff
@@ -271,7 +271,7 @@ object FeatureExtractingSparqlGenerator {
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
 
     // seeds in dataframe as starting paths
-    println(s"we start initially with following seeds (after cutoff):\n${usedSeedsAsString.mkString("\n")}")
+    // TODO make log println(s"we start initially with following seeds (after cutoff):\n${usedSeedsAsString.mkString("\n")}")
     // println("initial paths, so seeds are:")
     var paths: DataFrame = usedSeedsAsString.toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
     // paths.show(10, false)
@@ -304,7 +304,7 @@ object FeatureExtractingSparqlGenerator {
 
     val projection_vars_string = projectionVars.mkString(" ")
     val all_optional_query_blocks_str = queryLines.mkString("\n")
-    val total_query = f"SELECT $seedVarName $projection_vars_string\n\nWHERE {\n\t${seedWhereClause}\n\n${all_optional_query_blocks_str}}}"
+    val total_query = f"SELECT $seedVarName $projection_vars_string\n\nWHERE {\n\t${seedWhereClause}\n\n$all_optional_query_blocks_str \n}"
 
     (total_query, projectionVars)
   }
