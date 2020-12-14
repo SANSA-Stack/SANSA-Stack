@@ -95,13 +95,22 @@ object FeatureExtractingSparqlGenerator {
         val joinedPaths = left.join(right, columnName)
 
         // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
+        val isLiteral = udf((cellElement: String) => {
+          if (cellElement.startsWith("\"")) true
+          else if (cellElement.isInstanceOf[Int]) true
+          else if (cellElement.isInstanceOf[Boolean]) true
+          else if (cellElement.isInstanceOf[Float]) true
+          else if (cellElement.isInstanceOf[Double]) true
+          else false
+        })
         // they end with not literal.
         // see ! exclamation mark in where statement
         // println(s"current paths dataframe: $iteration")
-        currentPaths = joinedPaths.where(!col(columnNamePlusOne).startsWith("\""))
+        // currentPaths = joinedPaths.where(! col(columnNamePlusOne).startsWith("\""))
+        currentPaths = joinedPaths.where(! isLiteral(col(columnNamePlusOne)))
         // final paths are paths which end with literal
         // this can only happen when traversing down
-        val finalPaths = joinedPaths.where(col(columnNamePlusOne).startsWith("\""))
+        val finalPaths = joinedPaths.where(isLiteral(col(columnNamePlusOne)))
 
         // filter out cyclic paths from currentPaths
         val noCycle = udf((row: Row) => {
