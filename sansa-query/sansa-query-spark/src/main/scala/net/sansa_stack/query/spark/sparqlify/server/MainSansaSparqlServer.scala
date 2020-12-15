@@ -30,8 +30,8 @@ object MainSansaSparqlServer {
 
     // File.createTempFile("spark-events")
 
-    val sparkSession = SparkSession.builder
-      .master("local")
+    val builder = SparkSession.builder
+      // .master("local")
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
@@ -41,7 +41,11 @@ object MainSansaSparqlServer {
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
       .config("spark.default.parallelism", "4")
       .config("spark.sql.shuffle.partitions", "4")
-      .getOrCreate()
+
+      // TODO Auto configure master
+
+      val sparkSession = builder
+        .getOrCreate()
 
     sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
 

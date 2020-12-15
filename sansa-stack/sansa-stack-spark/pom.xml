@@ -11,7 +11,7 @@
     <artifactId>sansa-stack-spark_2.12</artifactId>
 
     <packaging>pom</packaging>
-    <name>SANSA-Stack Spark</name>
+    <name>SANSA Stack - Spark</name>
 
     <dependencies>
 
