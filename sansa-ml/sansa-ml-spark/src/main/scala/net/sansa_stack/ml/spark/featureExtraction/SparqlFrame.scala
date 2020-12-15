@@ -60,6 +60,15 @@ class SparqlFrame extends Transformer{
 
     val columns: Seq[String] = projectionVars.map(_.toString().replace("?", ""))
 
+    if (features.count() == 0) {
+      println(f"[WARNING] the resulting DataFrame is empty!")
+      val emptyDf = spark.createDataFrame(
+        spark.sparkContext.emptyRDD[Row],
+        StructType(columns.map(colName => StructField(colName, StringType, nullable = true)))
+      )
+      return emptyDf
+    }
+
     val types = features.map(seq => {
       seq.map(node => {
         if (node.isLiteral) {
