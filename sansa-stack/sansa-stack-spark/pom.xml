@@ -90,7 +90,6 @@
                                             <exclude>org.eclipse.jetty:jetty-security</exclude>
                                             <exclude>org.eclipse.jetty:jetty-servlet</exclude>
                                             <exclude>org.eclipse.jetty:*</exclude>
-                                            <exclude>org.eclipse.*:*</exclude>
                                             <exclude>org.glassfish.*:*</exclude>
                                             <exclude>org.netbeans.api:*</exclude>
                                             <exclude>org.netbeans:*</exclude>
