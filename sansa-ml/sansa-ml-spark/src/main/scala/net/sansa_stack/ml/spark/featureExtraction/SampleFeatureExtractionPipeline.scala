@@ -34,19 +34,24 @@ object SampleFeatureExtractionPipeline {
      */
     // OPTION 1
     val manualSparqlString = """
-                        |SELECT ?seed ?seed__down_age ?seed__down_name
-                        |WHERE {
-                        |?seed a <http://dig.isi.edu/Person> .
-                        |OPTIONAL {
-                        | ?seed <http://dig.isi.edu/age> ?seed__down_age .
-                        |}
-                        |OPTIONAL {
-                        | ?seed <http://dig.isi.edu/name> ?seed__down_name .
-                        |}}""".stripMargin
+                               |SELECT ?seed ?seed__down_age ?seed__down_name
+                               |
+                               |WHERE {
+                               |	?seed a <http://dig.isi.edu/Person> .
+                               |
+                               |	OPTIONAL {
+                               |		?seed <http://dig.isi.edu/age> ?seed__down_age .
+                               |	}
+                               |	OPTIONAL {
+                               |		?seed <http://dig.isi.edu/name> ?seed__down_name .
+                               |	}
+                               |}""".stripMargin
     // OPTION 2
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.autoPrepo(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 0, 2, 3)
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.autoPrepo(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 0, 1, 3, featuresInOptionalBlocks = true)
 
-    val queryString = manualSparqlString
+    // select the query you want to use or adjust the automatic created one
+    val queryString = autoSparqlString
+    println(queryString)
 
     /*
     FEATURE EXTRACTION OVER SPARQL
