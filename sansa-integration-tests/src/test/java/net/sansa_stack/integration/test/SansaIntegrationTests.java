@@ -56,12 +56,15 @@ public class SansaIntegrationTests {
     @Test
     public void testSparkSubmit() throws Exception {
         String url = "spark://localhost:7077";
-        String jar = "../sansa-examples/sansa-examples-spark/target/sansa-examples-spark_2.12-0.7.2-SNAPSHOT-jar-with-dependencies.jar";
+
+        String jar = "../sansa-stack/sansa-stack-spark/target/sansa-stack-spark_2.12-0.7.2-SNAPSHOT-jar-with-dependencies.jar";
+//        String jar = "../sansa-examples/sansa-examples-spark/target/sansa-examples-spark_2.12-0.7.2-SNAPSHOT-jar-with-dependencies.jar";
 
         // TODO mkdir /tmp/spark-events
 
         String[] args = new String[] {
-                "--class", "net.sansa_stack.examples.spark.query.Sparklify",
+                //"--class", "net.sansa_stack.examples.spark.query.Sparklify",
+                "--class", "net.sansa_stack.query.spark.sparqlify.server.MainSansaSparqlServer",
                 "--master", url,
                 "--num-executors", "2",
                 "--executor-memory", "1G",
