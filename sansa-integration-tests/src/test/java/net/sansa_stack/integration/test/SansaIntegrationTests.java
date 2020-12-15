@@ -26,7 +26,9 @@ public class SansaIntegrationTests {
     public void before() {
         environment =
                 new DockerComposeContainer(new File("src/test/resources/docker-compose.yml"))
-                        .withExposedService("spark-master", 8080);
+                        .withExposedService("spark-master", 8080)
+                        // .withExposedService("spark-master", 7531)
+                        .withExposedService("spark-master", 7077);
 //                        .withExposedService("elasticsearch_1", ELASTICSEARCH_PORT);
 
         environment.start();
@@ -37,7 +39,7 @@ public class SansaIntegrationTests {
         environment.stop();
     }
 
-    @Test
+    // @Test
     public void test() throws Exception {
 
         System.out.println("Started");
@@ -50,4 +52,29 @@ public class SansaIntegrationTests {
 
         System.out.println("READ: " + bs.asCharSource(StandardCharsets.UTF_8).read());
     }
+
+    @Test
+    public void testSparkSubmit() throws Exception {
+        String url = "spark://localhost:7077";
+        String jar = "../sansa-examples/sansa-examples-spark/target/sansa-examples-spark_2.12-0.7.2-SNAPSHOT-jar-with-dependencies.jar";
+
+        // TODO mkdir /tmp/spark-events
+
+        String[] args = new String[] {
+                "--class", "net.sansa_stack.examples.spark.query.Sparklify",
+                "--master", url,
+                "--num-executors", "2",
+                "--executor-memory", "1G",
+                "--executor-cores", "2",
+                "--conf", "spark.eventLog.enabled=true",
+//                "--conf", "spark.eventLog.dir=hdfs://qrowd3:8020/shared/spark-logs"
+                jar,
+                "-i", "rdf.nt"
+        };
+
+        System.out.println("Submitting");
+        SparkSubmit.main(args);
+        System.out.println("Done");
+    }
+
 }

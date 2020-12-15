@@ -7,6 +7,7 @@ services:
     ports:
       - "8080:8080"
       - "7077:7077"
+      - "7531:7531"
     environment:
       - INIT_DAEMON_STEP=setup_spark
       - "constraint:node==master"
