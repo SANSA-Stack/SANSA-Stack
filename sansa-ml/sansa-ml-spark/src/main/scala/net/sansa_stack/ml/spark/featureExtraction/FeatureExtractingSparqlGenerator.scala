@@ -187,7 +187,7 @@ object FeatureExtractingSparqlGenerator {
    * @param seedVarName name of seed projection var
    * @return string representing OPTIONAL block
    */
-  def rowToQuery(row: Row, seedVarName: String): (String, String) = {
+  def rowToQuery(row: Row, seedVarName: String, featuresInOptionalBlocks: Boolean): (String, String) = {
 
     val nonNullRow: List[String] = row.toSeq.toList.filter(_ != None).filter(_ != null).asInstanceOf[List[String]]
 
@@ -198,7 +198,7 @@ object FeatureExtractingSparqlGenerator {
 
     var projectionVar: String = ""
 
-    var queryStr = "\tOPTIONAL {\n"
+    var queryStr = if (featuresInOptionalBlocks) "\tOPTIONAL {\n" else ""
 
     for (queryLineNumber <- 0 to (numberQueryLines - 1)) {
       val leftN = nonNullRow(queryLineNumber * 3)
@@ -213,10 +213,10 @@ object FeatureExtractingSparqlGenerator {
         case "down" => f"$firstVarName <$p> $secondVarName ."
         case "up" => f"$secondVarName <$p> $firstVarName ."
       }
-      queryStr = queryStr + f"\t\t$query_line\n"
+      queryStr = if (featuresInOptionalBlocks) queryStr + f"\t\t$query_line\n" else queryStr + f"\t$query_line\n"
       projectionVar = secondVarName
     }
-    queryStr = queryStr + "\t}"
+    queryStr = if (featuresInOptionalBlocks) queryStr + "\t}" else queryStr
 
     (queryStr, projectionVar)
   }
@@ -251,6 +251,7 @@ object FeatureExtractingSparqlGenerator {
                  ratioNumberSeeds: Double = 1.0,
                  numberRandomWalks: Int = 0,
                  sortedByLinks: Boolean = false,
+                 featuresInOptionalBlocks: Boolean = true,
                ): (String, List[String]) = {
 
     val spark = SparkSession.builder
@@ -307,7 +308,7 @@ object FeatureExtractingSparqlGenerator {
 
     paths = paths.select(newColumnsOrder.map(col(_)): _*).cache()
 
-    val results = paths.rdd.map(rowToQuery(_, seedVarName)).cache()
+    val results = paths.rdd.map(rowToQuery(_, seedVarName, featuresInOptionalBlocks)).cache()
 
     val queryLines: List[String] = results.map(_._1.toString).collect().toList.distinct.sortBy(_.size)
     val projectionVars: List[String] = results.map(_._2.toString).collect().toList.distinct.sortBy(_.size)
