@@ -33,3 +33,5 @@ deptree.txt
 tmp
 
 scalastyle-output.xml
+
+metastore_db

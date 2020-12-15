@@ -110,9 +110,11 @@ server.join()
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionUtilsSpark, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerComplex
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
+import org.apache.jena.sparql.engine.binding.Binding
 
 // SparkSession is needed
 val spark = SparkSession.builder

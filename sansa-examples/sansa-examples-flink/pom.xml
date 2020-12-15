@@ -101,109 +101,6 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<sourceDirectory>src/main/scala</sourceDirectory>
-		<testSourceDirectory>src/test/scala</testSourceDirectory>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<artifactSet>
-								<excludes>
-									<exclude>com.esotericsoftware.kryo:kryo</exclude>
-									<exclude>com.esotericsoftware.minlog:minlog</exclude>
-									<exclude>com.fasterxml.jackson.core:jackson*</exclude>
-									<exclude>com.github.scopt:*</exclude>
-									<exclude>com.google.code.findbugs:jsr305</exclude>
-									<exclude>com.google.protobuf:protobuf-java</exclude>
-									<exclude>com.jamesmurty.utils:java-xmlbuilder</exclude>
-									<exclude>com.jcraft:jsch</exclude>
-									<exclude>com.sun.jersey:jersey-core</exclude>
-									<exclude>com.thoughtworks.paranamer:paranamer</exclude>
-									<exclude>com.typesafe:config</exclude>
-									<exclude>com.typesafe.akka:*</exclude>
-									<exclude>com.twitter:chill_2.11</exclude>
-									<exclude>commons-beanutils:commons-beanutils-bean-collections</exclude>
-									<exclude>commons-cli:commons-cli</exclude>
-									<exclude>commons-codec:commons-codec</exclude>
-									<exclude>commons-configuration:commons-configuration</exclude>
-									<exclude>commons-daemon:commons-daemon</exclude>
-									<exclude>commons-digester:commons-digester</exclude>
-									<exclude>commons-el:commons-el</exclude>
-									<exclude>commons-lang:commons-lang</exclude>
-									<exclude>commons-logging:commons-logging</exclude>
-									<exclude>commons-net:commons-net</exclude>
-									<exclude>commons-collections:commons-collections</exclude>
-									<exclude>io.netty:netty*</exclude>
-									<exclude>io.dropwizard.metrics:metrics*</exclude>
-									<exclude>javax.activation:activation</exclude>
-									<exclude>javax.servlet:servlet-api</exclude>
-									<exclude>javax.xml.bind:jaxb-api</exclude>
-									<exclude>javax.xml.stream:stax-api</exclude>
-									<exclude>jline:jline</exclude>
-									<exclude>junit:junit</exclude>
-									<exclude>org.apache.avro:avro</exclude>
-									<exclude>org.apache.commons:commons-compress</exclude>
-									<exclude>org.apache.commons:commons-lang3</exclude>
-									<exclude>org.apache.commons:commons-math3</exclude>
-									<exclude>org.apache.flink:*</exclude>
-									<exclude>org.apache.zookeeper:zookeeper</exclude>
-									<exclude>org.clapper:grizzled-slf4j_2.11</exclude>
-									<exclude>org.codehaus.jackson:jackson-*</exclude>
-									<exclude>org.javassist:javassist</exclude>
-									<exclude>org.mortbay.jetty:jetty-util</exclude>
-									<exclude>org.objenesis:objenesis</exclude>
-									<exclude>org.scala-lang:*</exclude>
-									<exclude>org.uncommons.maths:uncommons-maths</exclude>
-									<exclude>org.xerial.snappy:snappy-java</exclude>
-									<exclude>xmlenc:xmlenc</exclude>
-								</excludes>
-							</artifactSet>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<createDependencyReducedPom>false</createDependencyReducedPom>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.scalastyle</groupId>
-				<artifactId>scalastyle-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
 	<profiles>
 		<profile>
 			<!-- A profile that does everything correctly: We set the Flink dependencies 
@@ -231,18 +128,5 @@
 			</dependencies>
 		</profile>
 	</profiles>
-	<repositories>
-		<repository>
-			<id>maven.aksw.snapshots</id>
-			<name>AKSW Snapshot Repository</name>
-			<url>https://maven.aksw.org/archiva/repository/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 </project>
