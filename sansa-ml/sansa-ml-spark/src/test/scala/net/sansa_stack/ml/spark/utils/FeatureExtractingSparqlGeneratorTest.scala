@@ -7,11 +7,18 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{Encoders, SparkSession}
 import org.scalatest.FunSuite
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 
 class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteBase{
 
-  /**
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+
+    JenaSystem.init();
+  }
+
+    /**
    * tests small creation of sparwl query and tests for created projection variables
    */
   test("Test auto SPARQL generation based on sample file") {
