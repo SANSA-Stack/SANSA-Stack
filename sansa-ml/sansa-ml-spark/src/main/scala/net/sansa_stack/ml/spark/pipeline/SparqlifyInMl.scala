@@ -22,16 +22,33 @@ object SparqlifyInMl {
 
       val queryString =
         """
-          |SELECT ?seed ?seed__down_age ?seed__down_name
+          |SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasSpouse__down_age ?seed__down_hasParent__down_age ?seed__down_hasSpouse__down_name ?seed__down_hasParent__down_name
           |
           |WHERE {
-          |?seed a <http://dig.isi.edu/Person>
-          |OPTIONAL {
-          | ?seed <http://dig.isi.edu/age> ?seed__down_age .
-          |}
-          |OPTIONAL {
-          | ?seed <http://dig.isi.edu/name> ?seed__down_name .
-          |}
+          |	?seed a <http://dig.isi.edu/Person> .
+          |
+          |	OPTIONAL {
+          |		?seed <http://dig.isi.edu/age> ?seed__down_age .
+          |	}
+          |	OPTIONAL {
+          |		?seed <http://dig.isi.edu/name> ?seed__down_name .
+          |	}
+          |	OPTIONAL {
+          |		?seed <http://dig.isi.edu/hasSpouse> ?seed__down_hasSpouse .
+          |		?seed__down_hasSpouse <http://dig.isi.edu/age> ?seed__down_hasSpouse__down_age .
+          |	}
+          |	OPTIONAL {
+          |		?seed <http://dig.isi.edu/hasParent> ?seed__down_hasParent .
+          |		?seed__down_hasParent <http://dig.isi.edu/age> ?seed__down_hasParent__down_age .
+          |	}
+          |	OPTIONAL {
+          |		?seed <http://dig.isi.edu/hasSpouse> ?seed__down_hasSpouse .
+          |		?seed__down_hasSpouse <http://dig.isi.edu/name> ?seed__down_hasSpouse__down_name .
+          |	}
+          |	OPTIONAL {
+          |		?seed <http://dig.isi.edu/hasParent> ?seed__down_hasParent .
+          |		?seed__down_hasParent <http://dig.isi.edu/name> ?seed__down_hasParent__down_name .
+          |	}
           |}""".stripMargin
 
       val triples = spark.rdf(Lang.TURTLE)(inputFilePath).cache()
