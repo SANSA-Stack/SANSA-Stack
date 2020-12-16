@@ -109,15 +109,15 @@ public class SansaIntegrationTests {
 
         Delayer delayer = DelayerDefault.createFromNow(1000);
         long resultSetSize = -1;
-        for (int i = 0; i < 120; ++i) {
-            //SparqlQueryConnectionWithReconnect.create(() -> RDFConnectionFactory.connect(sparklfyUrl));
-            System.out.println("Testing");
+        // NOTE May need more than 3 minutes on older systems?
+        for (int i = 0; i < 180; ++i) {
+            // SparqlQueryConnectionWithReconnect.create(() -> RDFConnectionFactory.connect(sparklfyUrl));
+            // System.out.println("Testing");
             try (RDFConnection conn = RDFConnectionFactory.connect(sparklifyUrl)) {
                 resultSetSize = ResultSetFormatter.consume(conn.query("SELECT * { ?s ?p ?o }").execSelect());
                 // System.out.println("Count: " + resultSetSize);
                 break;
             } catch(Exception e) {
-                System.out.println(ExceptionUtils.getRootCauseMessage(e));
                 ExceptionUtilsAksw.rethrowUnless(e,
                         ExceptionUtilsAksw::isConnectionRefusedException,
                         ExceptionUtilsAksw::isBrokenPipeException);
