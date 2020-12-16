@@ -102,40 +102,6 @@ public class SansaIntegrationTests {
         System.out.println("READ: " + bs.asCharSource(StandardCharsets.UTF_8).read());
     }
 
-    /** Keep trying to execute a SPARQL SELECT query at the given sparql endpoint url and return the number of obtained bindings */
-    public static long countResultBindings(String sparqlEndpointUrl, String queryString, Supplier<Boolean> continationCondition) {
-        Delayer delayer = DelayerDefault.createFromNow(1000);
-        long resultSetSize = -1;
-        // NOTE May need more than 3 minutes on older systems?
-        for (int i = 0; i < 180; ++i) {
-
-            boolean doContinue = Boolean.valueOf(true).equals(continationCondition.get());
-            if (!doContinue) {
-                break;
-            }
-
-            // SparqlQueryConnectionWithReconnect.create(() -> RDFConnectionFactory.connect(sparklfyUrl));
-            // System.out.println("Testing");
-            try (RDFConnection conn = RDFConnectionFactory.connect(sparqlEndpointUrl)) {
-                resultSetSize = ResultSetFormatter.consume(conn.query(queryString).execSelect());
-                // System.out.println("Count: " + resultSetSize);
-                break;
-            } catch(Exception e) {
-                ExceptionUtilsAksw.rethrowUnless(e,
-                        ExceptionUtilsAksw::isConnectionRefusedException,
-                        ExceptionUtilsAksw::isBrokenPipeException);
-            }
-
-            try {
-                delayer.doDelay();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return resultSetSize;
-    }
-
     @Test
     public void testSparqlifySubmit() throws Exception {
         String jarBundlePath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().normalize().toString();
@@ -154,18 +120,16 @@ public class SansaIntegrationTests {
                 "-i", "rdf.nt",
                 "-r", "endpoint",
                 "-p", Integer.toString(sparkTestPort)
-
         };
 
-        Thread submitThread = new Thread(() -> {
-            // System.out.println("Submitting");
-            SparkSubmit.main(args);
-            // System.out.println("Done");
-        });
+        Thread submitThread = new Thread(() -> { SparkSubmit.main(args); });
         submitThread.start();
 
-        long resultSetSize = countResultBindings(sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitThread::isAlive);
-        Assert.assertEquals(10, resultSetSize);
+        long resultSetSize = AwaitUtils.countResultBindings(
+                sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitThread::isAlive);
+
+        // TODO Asserting the number of triples of a file called rdf.nt in the root of the classpath is fragile
+        Assert.assertEquals(106, resultSetSize);
     }
 
     @Test
@@ -188,15 +152,14 @@ public class SansaIntegrationTests {
 
         };
 
-        Thread submitThread = new Thread(() -> {
-            // System.out.println("Submitting");
-            SparkSubmit.main(args);
-            // System.out.println("Done");
-        });
+        Thread submitThread = new Thread(() -> { SparkSubmit.main(args); });
         submitThread.start();
 
-        long resultSetSize = countResultBindings(sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitThread::isAlive);
-        Assert.assertEquals(10, resultSetSize);
+        long resultSetSize = AwaitUtils.countResultBindings(
+                sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitThread::isAlive);
+
+        // TODO Asserting the number of triples of a file called rdf.nt in the root of the classpath is fragile
+        Assert.assertEquals(106, resultSetSize);
     }
 
 }

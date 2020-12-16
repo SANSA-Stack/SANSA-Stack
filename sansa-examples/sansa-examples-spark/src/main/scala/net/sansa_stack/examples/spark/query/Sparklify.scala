@@ -15,23 +15,29 @@ import org.apache.spark.sql.SparkSession
   */
 object Sparklify {
 
+  case class Config(
+                     dataFilenameOrUri: String = "",
+                     queryString: String = "SELECT * WHERE {?s ?p ?o} LIMIT 10",
+                     run: String = "cli",
+                     port: Int = 7531)
+
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.sparql, config.run, config.port)
+        run(config)
       case None =>
         println(parser.usage)
     }
   }
 
-  def run(input: String, sparqlQuery: String = "", run: String = "cli", port: String = "7531"): Unit = {
+  def run(config : Config): Unit = {
 
     println("======================================")
     println("|   Sparklify example                |")
     println("======================================")
 
     val spark = SparkSession.builder
-      .appName(s"Sparklify example ( $input )")
+      .appName(s"Sparklify example ( ${config.dataFilenameOrUri} )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
         ", ",
@@ -40,24 +46,22 @@ object Sparklify {
       .getOrCreate()
 
     val lang = Lang.NTRIPLES
-    val graphRdd = spark.rdf(lang)(input)
+    val graphRdd = spark.rdf(lang)(config.dataFilenameOrUri)
 
-    run match {
+    config.run match {
       case "cli" =>
         import net.sansa_stack.query.spark.query._
         // val sparqlQuery = "SELECT * WHERE {?s ?p ?o} LIMIT 10"
-        val result = graphRdd.sparql(sparqlQuery)
+        val result = graphRdd.sparql(config.queryString)
         result.rdd.foreach(println)
       case _ =>
         val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
         val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
 
-        val port = 7531
-
         val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
-        val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
+        val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(config.port).create()
         if (Desktop.isDesktopSupported) {
-          Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
+          Desktop.getDesktop.browse(URI.create("http://localhost:" + config.port + "/sparql"))
         }
         server.join()
     }
@@ -66,30 +70,28 @@ object Sparklify {
 
   }
 
-  case class Config(in: String = "", sparql: String = "SELECT * WHERE {?s ?p ?o} LIMIT 10", run: String = "cli", port: String = "7531")
-
   val parser = new scopt.OptionParser[Config]("Sparklify example") {
 
     head(" Sparqlify example")
 
     opt[String]('i', "input").required().valueName("<path>").
-      action((x, c) => c.copy(in = x)).
+      action((x, c) => c.copy(dataFilenameOrUri = x)).
       text("path to file that contains the data (in N-Triples format)")
 
     opt[String]('q', "sparql").optional().valueName("<query>").
-      action((x, c) => c.copy(sparql = x)).
+      action((x, c) => c.copy(queryString = x)).
       text("a SPARQL query")
 
     opt[String]('r', "run").optional().valueName("Runner").
       action((x, c) => c.copy(run = x)).
       text("Runner method, default:'cli'")
 
-    opt[String]('p', "port").optional().valueName("port").
+    opt[Int]('p', "port").optional().valueName("port").
       action((x, c) => c.copy(port = x)).
       text("port that SPARQL endpoint will be exposed, default:'7531'")
 
     checkConfig(c =>
-      if (c.run == "cli" && c.sparql.isEmpty) failure("Option --sparql must not be empty if cli is enabled")
+      if (c.run == "cli" && c.queryString.isEmpty) failure("Option --sparql must not be empty if cli is enabled")
       else success)
 
     help("help").text("prints this usage text")
