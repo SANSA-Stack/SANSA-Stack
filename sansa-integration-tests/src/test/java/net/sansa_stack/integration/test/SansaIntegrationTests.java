@@ -1,29 +1,58 @@
 package net.sansa_stack.integration.test;
 
 import com.google.common.io.ByteSource;
+import org.aksw.commons.util.exception.ExceptionUtilsAksw;
+import org.aksw.jena_sparql_api.delay.extra.Delayer;
+import org.aksw.jena_sparql_api.delay.extra.DelayerDefault;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdfconnection.RDFConnection;
+import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.spark.deploy.SparkSubmit;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.testcontainers.containers.DockerComposeContainer;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 public class SansaIntegrationTests {
 
-    public static void sparkSubmit(String args[]) {
-        SparkSubmit.main(args);
-    }
+    protected Map<String, String> env;
 
+    protected Path bundleFolder;
     protected DockerComposeContainer environment;
+
+    protected Path stackJarBundleFolder;
+    protected Path exampleJarBundleFolder;
+
+    protected String sparkMasterUrl;
+
+
+    /**
+     * The name of an environment variable that points to the folder where to look for the jar bundle
+     */
+    public String STACK_JAR_BUNDLE_FOLDER_KEY = "stackJarBundleFolder";
+    public String EXAMPLE_JAR_BUNDLE_FOLDER_KEY = "exampleJarBundleFolder";
+
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+        // Files.createDirectories(Paths.get(StandardSystemProperty.JAVA_IO_TMPDIR.value()).resolve("spark-events"));
+    }
 
     @Before
     public void before() {
+        env = System.getenv();
+        stackJarBundleFolder = Paths.get(env.getOrDefault(STACK_JAR_BUNDLE_FOLDER_KEY, "../sansa-stack/sansa-stack-spark/target/"));
+        exampleJarBundleFolder = Paths.get(env.getOrDefault(EXAMPLE_JAR_BUNDLE_FOLDER_KEY, "../sansa-stack/sansa-stack-spark/target/"));
+
+        sparkMasterUrl = "spark://localhost:7077";
+
         environment =
                 new DockerComposeContainer(new File("src/test/resources/docker-compose.yml"))
                         .withExposedService("spark-master", 8080)
@@ -33,6 +62,7 @@ public class SansaIntegrationTests {
 
         environment.start();
     }
+
 
     @After
     public void after() {
@@ -54,18 +84,14 @@ public class SansaIntegrationTests {
     }
 
     @Test
-    public void testSparkSubmit() throws Exception {
-        String url = "spark://localhost:7077";
-
-        String jar = "../sansa-stack/sansa-stack-spark/target/sansa-stack-spark_2.12-0.7.2-SNAPSHOT-jar-with-dependencies.jar";
-//        String jar = "../sansa-examples/sansa-examples-spark/target/sansa-examples-spark_2.12-0.7.2-SNAPSHOT-jar-with-dependencies.jar";
-
-        // TODO mkdir /tmp/spark-events
+    public void testSparqlifySubmit() throws Exception {
+        String jar = IOUtils.findLatestFile(stackJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().toString();
+        String sparklifyUrl = "http://localhost:7531/sparql";
 
         String[] args = new String[] {
-                //"--class", "net.sansa_stack.examples.spark.query.Sparklify",
+                // "--class", "net.sansa_stack.examples.spark.query.Sparklify",
                 "--class", "net.sansa_stack.query.spark.sparqlify.server.MainSansaSparqlServer",
-                "--master", url,
+                "--master", sparkMasterUrl,
                 "--num-executors", "2",
                 "--executor-memory", "1G",
                 "--executor-cores", "2",
@@ -75,9 +101,36 @@ public class SansaIntegrationTests {
                 "-i", "rdf.nt"
         };
 
-        System.out.println("Submitting");
-        SparkSubmit.main(args);
-        System.out.println("Done");
+        new Thread(() -> {
+            // System.out.println("Submitting");
+            SparkSubmit.main(args);
+            // System.out.println("Done");
+        }).start();
+
+        Delayer delayer = DelayerDefault.createFromNow(1000);
+        long resultSetSize = -1;
+        for (int i = 0; i < 120; ++i) {
+            //SparqlQueryConnectionWithReconnect.create(() -> RDFConnectionFactory.connect(sparklfyUrl));
+            System.out.println("Testing");
+            try (RDFConnection conn = RDFConnectionFactory.connect(sparklifyUrl)) {
+                resultSetSize = ResultSetFormatter.consume(conn.query("SELECT * { ?s ?p ?o }").execSelect());
+                // System.out.println("Count: " + resultSetSize);
+                break;
+            } catch(Exception e) {
+                System.out.println(ExceptionUtils.getRootCauseMessage(e));
+                ExceptionUtilsAksw.rethrowUnless(e,
+                        ExceptionUtilsAksw::isConnectionRefusedException,
+                        ExceptionUtilsAksw::isBrokenPipeException);
+            }
+
+            try {
+                delayer.doDelay();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Assert.assertEquals(10, resultSetSize);
     }
 
 }
