@@ -4,6 +4,8 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
+import org.apache.spark.ml.clustering.KMeans
+import org.apache.spark.ml.evaluation.ClusteringEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 
 object SampleFeatureExtractionPipeline {
@@ -90,6 +92,28 @@ object SampleFeatureExtractionPipeline {
       .setInputCols(Array("seed__down_age", "seed__down_name_Index"))
       .setOutputCol("features")
     val output = assembler.transform(indexed)
-    output.select("seed", "features").show()
+    val assembledDf = output.select("seed", "features")
+    assembledDf.show()
+
+    /*
+    APPLY Common SPARK MLlib Example Algorithm
+     */
+    // Trains a k-means model.
+    val kmeans = new KMeans().setK(2).setSeed(1L)
+    val model = kmeans.fit(assembledDf)
+
+    // Make predictions
+    val predictions = model.transform(assembledDf)
+    predictions.show()
+
+    // Evaluate clustering by computing Silhouette score
+    val evaluator = new ClusteringEvaluator()
+
+    val silhouette = evaluator.evaluate(predictions)
+    println(s"Silhouette with squared euclidean distance = $silhouette")
+
+    // Shows the result.
+    println("Cluster Centers: ")
+    model.clusterCenters.foreach(println)
   }
 }
