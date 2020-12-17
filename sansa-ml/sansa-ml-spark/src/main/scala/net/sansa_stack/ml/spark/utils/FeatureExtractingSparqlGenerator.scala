@@ -348,7 +348,7 @@ object FeatureExtractingSparqlGenerator {
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
                       "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
-                      "net.sansa_stack.query.spark.ontop.KryoRegistratorOntop"))
+                      "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
