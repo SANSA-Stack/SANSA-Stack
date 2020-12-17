@@ -9,7 +9,9 @@ import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.riot.system.stream.StreamManager;
+import org.apache.spark.SparkContext;
 import org.apache.spark.deploy.SparkSubmit;
+import org.apache.spark.sql.SparkSession;
 import org.junit.*;
 import org.testcontainers.containers.DockerComposeContainer;
 
@@ -23,7 +25,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class SansaIntegrationTests {
+public class SansaIT {
 
     protected Map<String, String> env;
 
@@ -61,6 +63,7 @@ public class SansaIntegrationTests {
 
     @Before
     public void before() {
+
         env = System.getenv();
         stackJarBundleFolder = Paths.get(env.getOrDefault(STACK_JAR_BUNDLE_FOLDER_KEY, "../sansa-stack/sansa-stack-spark/target/"));
         exampleJarBundleFolder = Paths.get(env.getOrDefault(EXAMPLE_JAR_BUNDLE_FOLDER_KEY, "../sansa-examples/sansa-examples-spark/target/"));
@@ -86,6 +89,14 @@ public class SansaIntegrationTests {
     @After
     public void after() {
         environment.stop();
+        SparkSession sc = SparkSession.getActiveSession().getOrElse(null);
+        if (sc != null) {
+            sc.stop();
+        }
+        sc = SparkSession.getDefaultSession().getOrElse(null);
+        if (sc != null) {
+            sc.stop();
+        }
     }
 
     // @Test
