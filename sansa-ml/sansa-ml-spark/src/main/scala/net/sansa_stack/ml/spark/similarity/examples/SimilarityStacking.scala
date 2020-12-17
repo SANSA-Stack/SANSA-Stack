@@ -6,6 +6,7 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
@@ -22,6 +23,9 @@ object SimilarityStacking {
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
+
+    // cause of jena issue hint by clause to do it that way
+    JenaSystem.init()
 
     // define inputpath if it is not parameter
     val inputPath = "./sansa-ml/sansa-ml-spark/src/main/resources/movieData/movie.nt"

@@ -6,6 +6,7 @@ import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperime
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
@@ -27,11 +28,19 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
 
   implicit val doubleEq = TolerantNumerics.tolerantDoubleEquality(epsilon)
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+
+    JenaSystem.init()
+  }
+
   test("Test DistSim Modules") {
 
     // read in data as DataFrame
     println("Read in RDF Data as DataFrame")
     val triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath).cache()
+
+    triplesDf.show(false)
 
     // test feature extractor
     println("Test Feature Extractor")
@@ -46,6 +55,8 @@ class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
         .filter(t => t.getAs[String]("uri").startsWith("m"))
 
       println("  Test Feature Extraction mode: " + mode)
+
+      extractedFeaturesDataFrame.show(false)
 
       val features = extractedFeaturesDataFrame.select("extractedFeatures").rdd.map(r => r(0)).collect()
       for (feature <- features) {
