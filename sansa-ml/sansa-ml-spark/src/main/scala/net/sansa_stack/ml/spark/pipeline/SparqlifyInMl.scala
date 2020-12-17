@@ -17,6 +17,7 @@ object SparqlifyInMl {
           "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
           "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
         .getOrCreate()
+      spark.sparkContext.setLogLevel("ERROR")
 
       val inputFilePath = "/Users/carstendraschner/GitHub/SANSA-Stack/sansa-ml/sansa-ml-spark/src/main/resources/test.ttl"
 
