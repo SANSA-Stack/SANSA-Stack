@@ -78,7 +78,8 @@ object OntopBasedSPARQLEngine {
   case class Config(in: String = "",
                     sparql: String = "SELECT * WHERE {?s ?p ?o} LIMIT 10",
                     run: String = "cli",
-                    port: Int = 7531)
+                    port: Int = 7531,
+                    browser: Boolean = true)
 
   val parser = new scopt.OptionParser[Config]("Ontop SPARQL example") {
 

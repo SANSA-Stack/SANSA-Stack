@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.benchmark.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -103,10 +104,13 @@ public class ReadableByteChannelFromIterator
             int newOff = off + toRead;
 
             ByteBuffer tmp = currentBuffer.duplicate();
-            tmp.limit(newOff);
+
+            // Explicit casts from ByteBuffer to Buffer
+            // due to Java 9+ compatibility issue; see https://github.com/eclipse/jetty.project/issues/3244
+            ((Buffer)tmp).limit(newOff);
             dst.put(tmp);
 
-            currentBuffer.position(newOff);
+            ((Buffer)currentBuffer).position(newOff);
 
             result += toRead;
             remaining -= toRead;
