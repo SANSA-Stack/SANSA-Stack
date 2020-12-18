@@ -87,14 +87,14 @@ object FeatureExtractingSparqlGenerator {
         // paths to merge
         val left: DataFrame = currentPaths
         // here we partially simulate random walt behavior
-        val right: DataFrame = numberRandomWalks match {
-          case 0 => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*)
-          case _ => traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*).sample(true, 2D * numberRandomWalks / traverseDf.count()).limit(numberRandomWalks)
-        }
+        val right: DataFrame = traverseDf.toDF(Seq(f"n_$iteration", f"p_$iteration", f"n_$iterationPlusOne", f"dir_$iteration"): _*)
 
         // this joins the next hop
-        // println(s"joinedPaths dataframe: $iteration")
-        val joinedPaths = left.join(right, columnName)
+        // here we partially simulate random walt behavior
+        val joinedPaths: DataFrame = numberRandomWalks match {
+          case 0 => left.join(right, columnName)
+          case _ => left.join(right, columnName).sample(true, 2D * numberRandomWalks / traverseDf.count()).limit(numberRandomWalks)
+        }
 
         // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
         val isLiteral = udf((cellElement: String) => {
@@ -140,7 +140,7 @@ object FeatureExtractingSparqlGenerator {
           val df2 = finalPaths
           val df3 = df2.union(df1.select(df2.columns.map(col(_)): _*))
           dataframeWithLiteralEnd = df3
-          dataframeWithLiteralEnd = dataframeWithLiteralEnd.union(finalPaths)
+          // dataframeWithLiteralEnd = dataframeWithLiteralEnd.union(finalPaths)
         }
 
         if (currentPaths.count() == 0) {
