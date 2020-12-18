@@ -34,7 +34,7 @@ object SQLUtils {
     val pn = NodeFactory.createURI(p.predicate)
 
     val dt = p.datatype
-    val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
+    val dtPart = if (dt != null && dt.nonEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
     val langPart = if (p.langTagPresent) "_lang" else ""
     val blankPart = if (blankNodeStrategy == BlankNodeStrategy.Table) {
       var tmp = ""

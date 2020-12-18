@@ -77,7 +77,9 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
   private val JDBC_PASSWORD = ""
 
   private lazy val connection: Connection = try {
+    // scalastyle:off classforname
     Class.forName("org.h2.Driver")
+    // scalastyle:on classforname
     DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
   } catch {
     case e: SQLException =>

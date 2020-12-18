@@ -123,6 +123,7 @@ object OntopUtils extends Serializable {
 
     builder
       .obdaSpecification(obdaSpecification)
+      .properties(properties)
       .jdbcUrl(JDBC_URL)
       .enableTestMode
       .build
