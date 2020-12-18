@@ -75,7 +75,8 @@ object FeatureExtractingSparqlGenerator {
 
     var dataFramesWithOpenEnd: DataFrame = paths
     var dataframeWithLiteralEnd: DataFrame = spark.emptyDataFrame
-    var currentPaths = paths
+    var currentPaths = paths.cache()
+    traverseDf.cache()
 
     breakable {
       for (iteration <- 0 to (iterationLimit - 1)) {
@@ -281,6 +282,8 @@ object FeatureExtractingSparqlGenerator {
 
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
+    up.cache()
+    down.cache()
 
     // seeds in dataframe as starting paths
     // TODO make log println(s"we start initially with following seeds (after cutoff):\n${usedSeedsAsString.mkString("\n")}")
