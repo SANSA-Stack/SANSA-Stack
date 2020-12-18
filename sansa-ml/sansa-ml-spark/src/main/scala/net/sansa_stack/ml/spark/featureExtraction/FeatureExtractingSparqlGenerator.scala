@@ -243,7 +243,7 @@ object FeatureExtractingSparqlGenerator {
    * @param ratioNumberSeeds number of seeds specified by ratio
    * @return string of resulting sparql and list of string for each projection variable which later can be used for dataframe column naming
    */
-  def autoPrepo(
+  def createSparql(
                  df: DataFrame,
                  seedVarName: String,
                  seedWhereClause: String,
@@ -380,7 +380,7 @@ object FeatureExtractingSparqlGenerator {
     // println("The dataframe looks like this:")
     // df.show(false)
 
-    val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
+    val (totalSparqlQuery: String, var_names: List[String]) = createSparql(
       df = df,
       seedVarName = seedVarName,
       seedWhereClause = whereClauseForSeed,

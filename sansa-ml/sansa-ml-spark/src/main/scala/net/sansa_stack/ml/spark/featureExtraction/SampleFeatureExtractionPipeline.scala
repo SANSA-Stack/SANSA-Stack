@@ -19,7 +19,7 @@ object SampleFeatureExtractionPipeline {
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
-        "net.sansa_stack.query.spark.ontop.KryoRegistratorOntop"))
+        ))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
@@ -53,7 +53,7 @@ object SampleFeatureExtractionPipeline {
                                |	}
                                |}""".stripMargin
     // OPTION 2
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.autoPrepo(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 0, 1, 3, featuresInOptionalBlocks = true)
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 0, 1, 3, featuresInOptionalBlocks = true)
 
     // select the query you want to use or adjust the automatic created one
     val queryString = autoSparqlString

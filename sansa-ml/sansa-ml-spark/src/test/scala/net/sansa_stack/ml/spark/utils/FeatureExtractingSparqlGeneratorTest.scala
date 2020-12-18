@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.autoPrepo
+import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.createSparql
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{Encoders, SparkSession}
@@ -46,7 +46,7 @@ class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteB
     // first mini file:
     val df = spark.read.rdf(Lang.TURTLE)(inputFilePath)
 
-    val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
+    val (totalSparqlQuery: String, var_names: List[String]) = createSparql(
       df = df,
       seedVarName = seedVarName,
       seedWhereClause = whereClauseForSeed,
