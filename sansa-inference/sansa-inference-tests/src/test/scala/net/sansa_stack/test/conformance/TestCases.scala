@@ -85,9 +85,10 @@ object TestCases {
 
     listFiles(directory).filter(f => ids.isEmpty || ids.contains(f.getFileName.toString.replace("/", ""))).map { p =>
 
+//      println(p.toUri)
       // the files in the directory
       val files = listFiles(
-        if (p.toUri.getScheme == "jar") p.toString.substring(1) else p.toString, true)
+        if (p.toUri.getScheme == "jar") p.toString.substring(0) else p.toString, true)
 
       // get the metadata file
       val metadataFile = files.filter(_.toString.endsWith(".metadata.properties")).head
@@ -138,7 +139,7 @@ object TestCases {
     val uri = if (path.startsWith("/")) new File(path).toURI else classOf[TestCase].getClassLoader.getResource(path).toURI
 //    println(s"uri: $uri")
     var myPath: Path = null
-    if (uri.getScheme == "jar" && !subDir) {
+    if (uri.getScheme == "jar") {
       fs = FileSystems.newFileSystem(uri, Collections.emptyMap[String, Any])
       myPath = fs.getPath(path)
     }
@@ -152,6 +153,8 @@ object TestCases {
         files :+= subPath
       }
     }
+
+    if( fs != null) fs.close()
 
     files
   }
