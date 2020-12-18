@@ -14,13 +14,13 @@ object SampleFeatureExtractionPipeline {
   def main(args: Array[String]): Unit = {
     // setup spark session
     val spark = SparkSession.builder
-      .appName(s"rdf2feature")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.kryo.registrator", String.join(", ",
+      .appName(s"SampleFeatureExtractionPipeline")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
+      .config("spark.kryo.registrator", String.join(
+        ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
-        ))
-      .config("spark.sql.crossJoin.enabled", true)
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+      // .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
