@@ -3,6 +3,7 @@ package net.sansa_stack.ml.spark.utils
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 import org.scalatest.FunSuite
@@ -25,6 +26,11 @@ class SPARQLQueryTest extends FunSuite with SharedSparkContext {
   }
 
   private val ns = "http://sansa-stack.net/test_ont#"
+
+  override def beforeAll() {
+    super.beforeAll()
+    JenaSystem.init()
+  }
 
   test("Results of a SPARQL query with one projection variable should be correct") {
     implicit val nodeEncoder = Encoders.kryo(classOf[Node])

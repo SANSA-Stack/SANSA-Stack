@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.featureExtraction
+package net.sansa_stack.ml.spark.utils
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
@@ -260,6 +260,7 @@ object FeatureExtractingSparqlGenerator {
       .getOrCreate()
     import spark.implicits._
     implicit val nodeEncoder = Encoders.kryo(classOf[Node])
+    implicit val nodeTupleEncoder = Encoders.tuple[Node, Node, Node](nodeEncoder, nodeEncoder, nodeEncoder)
 
     val ds = df.toDS().cache()
 
@@ -362,8 +363,8 @@ object FeatureExtractingSparqlGenerator {
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
-        "net.sansa_stack.query.spark.ontop.KryoRegistratorOntop"))
+                      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+                      "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")

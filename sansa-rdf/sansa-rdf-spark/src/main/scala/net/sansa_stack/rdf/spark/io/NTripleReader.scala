@@ -1,25 +1,31 @@
 package net.sansa_stack.rdf.spark.io
 
+import java.io.{BufferedReader, InputStreamReader}
 import java.net.URI
+import java.nio.file.{Files, Paths}
 import java.util.UUID
+import java.util.stream.Collectors
 
-import scala.reflect.ClassTag
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
+import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.common.io.riot.lang.LangNTriplesSkipBad
 import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
+import org.apache.commons.io.IOUtils
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.graph.Triple
-import org.apache.jena.riot.{RIOT, SysRIOT}
-import org.apache.jena.riot.SysRIOT.fmtMessage
+import org.apache.jena.rdf.model.impl.NTripleReader
+import org.apache.jena.riot.RIOT
 import org.apache.jena.riot.lang.{LabelToNode, RiotParsers}
 import org.apache.jena.riot.system._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
-import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseMode, WarningParseMode}
+
+import scala.io.Source
+import scala.reflect.ClassTag
 
 /**
  * An N-Triples reader. One triple per line is assumed.
@@ -51,6 +57,44 @@ object NTripleReader {
    */
   def load(session: SparkSession, paths: Seq[URI]): RDD[Triple] = {
     load(session, paths.mkString(","))
+  }
+
+  /**
+   * Create an RDD of lines based on the given filename-or-URI which may also refer to a classpath resource.
+   * Files take precedence over class path resources.
+   * Class path resources are loaded via sparkContext.parallelize otherwise sparkContext.textFile is used.
+   *
+   * TODO This method is not NTripleReader-specific and should thus go into a generic SparkIoUtils class
+   *
+   * @param session The spark session
+   * @param filenameOrURI The file name, URI or classpath resource
+   * @return An RDD of lines from the resource's content (if that resource exists)
+   */
+  def loadLinesIntoRdd(session: SparkSession, filenameOrURI: String): RDD[String] = {
+    import scala.collection.JavaConverters._
+
+    val classLoader = classOf[NTripleReader].getClassLoader
+    val classPathResource = classLoader.getResource(filenameOrURI)
+    val nioPath = Paths.get(filenameOrURI);
+    val rdd =
+      if (classPathResource != null && !Files.exists(nioPath)) {
+        val inputStream = classLoader.getResourceAsStream(filenameOrURI)
+        try {
+          // Load into memory to avoid any potential issues with spark reading items in parallel
+          // while this thread closes the underyling inputStream
+          val lines = Source.fromInputStream(inputStream).getLines().toList.seq
+          // Load from class path if such resource exists and the path does not map to a file
+          session.sparkContext.parallelize(lines)
+        } finally {
+          IOUtils.closeQuietly(inputStream)
+        }
+      } else {
+        // parse the text file first
+        session.sparkContext
+          .textFile(filenameOrURI, minPartitions = 20)
+      }
+
+    rdd
   }
 
   /**
@@ -109,9 +153,9 @@ object NTripleReader {
            checkRDFTerms: Boolean = false,
            errorLog: Logger = ErrorHandlerFactory.stdLogger): RDD[Triple] = {
 
-    // parse the text file first
-    val rdd = session.sparkContext
-      .textFile(path, minPartitions = 20)
+    import scala.collection.JavaConverters._
+
+    val rdd = loadLinesIntoRdd(session, path)
 
     val strict = stopOnBadTerm == ErrorParseMode.STOP && stopOnWarnings == WarningParseMode.STOP
 
@@ -141,7 +185,6 @@ object NTripleReader {
         RIOT.getContext.copy,
         checkRDFTerms || strict, strict)
     }
-    import scala.collection.JavaConverters._
 
     // parse each partition
     rdd.mapPartitions(p => {

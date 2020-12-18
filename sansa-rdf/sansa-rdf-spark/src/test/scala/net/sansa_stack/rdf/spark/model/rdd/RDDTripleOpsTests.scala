@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.SparkConf
 import org.apache.spark.graphx.Graph
 import org.apache.spark.rdd.RDD
@@ -31,6 +31,8 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+
+    JenaSystem.init()
     path = getClass.getResource("/loader/data.nt").getPath
 
     triples = spark.rdf(lang)(path).cache()

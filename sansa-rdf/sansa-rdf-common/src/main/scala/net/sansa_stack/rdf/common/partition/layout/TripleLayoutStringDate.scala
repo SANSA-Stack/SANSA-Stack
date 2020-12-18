@@ -3,12 +3,12 @@ package net.sansa_stack.rdf.common.partition.layout
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import scala.reflect.runtime.universe.Type
-import scala.reflect.runtime.universe.typeOf
+import scala.reflect.runtime.universe.{Type, typeOf}
+
+import org.apache.jena.graph.Triple
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringDate
-import org.apache.jena.graph.Triple
 
 
 
@@ -22,7 +22,7 @@ object TripleLayoutStringDate
   override def schema: Type = typeOf[SchemaStringDate]
 
   // this is a more error tolerant date parser also allowing 1999-5-5 etc.
-  private val formatter = DateTimeFormatter.ofPattern("y-M-d")
+  private val formatter = DateTimeFormatter.ofPattern("u-M-d")
 
   override def fromTriple(t: Triple): SchemaStringDate = {
     val s = t.getSubject

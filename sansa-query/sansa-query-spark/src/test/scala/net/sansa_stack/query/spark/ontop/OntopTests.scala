@@ -4,7 +4,6 @@ import java.io.{File, FileInputStream}
 
 import scala.collection.JavaConverters._
 import scala.io.Source
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{Query, QueryFactory, ResultSet, ResultSetFactory}
@@ -16,9 +15,9 @@ import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
-
 import net.sansa_stack.query.spark.query._
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.sys.JenaSystem
 
 class OntopTests extends FunSuite with DataFrameSuiteBase {
 
@@ -27,6 +26,9 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+
+    JenaSystem.init();
+
     val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
 
     triples = spark.rdf(Lang.NTRIPLES)(input).cache()

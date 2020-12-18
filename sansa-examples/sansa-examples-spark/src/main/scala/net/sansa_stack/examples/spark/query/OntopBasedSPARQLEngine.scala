@@ -40,7 +40,7 @@ object OntopBasedSPARQLEngine {
       .config("spark.kryo.registrator", String.join(
         ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
 
@@ -78,7 +78,8 @@ object OntopBasedSPARQLEngine {
   case class Config(in: String = "",
                     sparql: String = "SELECT * WHERE {?s ?p ?o} LIMIT 10",
                     run: String = "cli",
-                    port: Int = 7531)
+                    port: Int = 7531,
+                    browser: Boolean = true)
 
   val parser = new scopt.OptionParser[Config]("Ontop SPARQL example") {
 

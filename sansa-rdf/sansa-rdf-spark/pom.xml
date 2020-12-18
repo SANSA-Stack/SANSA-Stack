@@ -48,10 +48,16 @@
             <artifactId>spark-mllib_${scala.binary.version}</artifactId>
         </dependency>
 
-        <dependency>
+		<!--
+		<dependency>
+			<groupId>com.thoughtworks.paranamer</groupId>
+			<artifactId>paranamer</artifactId>
+		</dependency>
+		-->
+
+		<dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
-            <version>8.1.0</version>
         </dependency>
 
         <!-- Test -->
