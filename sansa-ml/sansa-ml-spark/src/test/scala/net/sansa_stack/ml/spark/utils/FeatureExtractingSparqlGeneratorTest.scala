@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.ml.spark.featureExtraction.FeatureExtractingSparqlGenerator.autoPrepo
+import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.autoPrepo
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{Encoders, SparkSession}

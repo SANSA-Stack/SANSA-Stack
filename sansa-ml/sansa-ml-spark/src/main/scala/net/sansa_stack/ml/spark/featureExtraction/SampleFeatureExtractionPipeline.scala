@@ -1,9 +1,11 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
+import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
@@ -21,6 +23,8 @@ object SampleFeatureExtractionPipeline {
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
+
+    JenaSystem.init()
 
     /*
     READ IN DATA
