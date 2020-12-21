@@ -3,10 +3,12 @@ package net.sansa_stack.integration.test;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.aksw.jena_sparql_api.delay.extra.Delayer;
 import org.aksw.jena_sparql_api.delay.extra.DelayerDefault;
+import org.apache.http.NoHttpResponseException;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 
+import java.net.SocketException;
 import java.util.function.Supplier;
 
 /**
@@ -19,23 +21,28 @@ public class AwaitUtils {
         Delayer delayer = DelayerDefault.createFromNow(1000);
         long resultSetSize = -1;
         // NOTE May need more than 3 minutes on older systems?
-        for (int i = 0; i < 180; ++i) {
+
+        int n = 180;
+        for (int i = 0; i < n; ++i) {
 
             boolean doContinue = Boolean.valueOf(true).equals(continationCondition.get());
             if (!doContinue) {
-                break;
+                throw new RuntimeException("Retry aborted because condition no longer satisfied");
             }
 
             // SparqlQueryConnectionWithReconnect.create(() -> RDFConnectionFactory.connect(sparklfyUrl));
             // System.out.println("Testing");
             try (RDFConnection conn = RDFConnectionFactory.connect(sparqlEndpointUrl)) {
                 resultSetSize = ResultSetFormatter.consume(conn.query(queryString).execSelect());
+
+                return resultSetSize;
                 // System.out.println("Count: " + resultSetSize);
-                break;
             } catch(Exception e) {
                 ExceptionUtilsAksw.rethrowUnless(e,
                         ExceptionUtilsAksw::isConnectionRefusedException,
-                        ExceptionUtilsAksw::isBrokenPipeException);
+                        ExceptionUtilsAksw::isBrokenPipeException,
+                        ExceptionUtilsAksw.isRootCauseInstanceOf(NoHttpResponseException.class),
+                        ExceptionUtilsAksw.isRootCauseInstanceOf(SocketException.class));
             }
 
             try {
@@ -45,6 +52,6 @@ public class AwaitUtils {
             }
         }
 
-        return resultSetSize;
+        throw new RuntimeException("Retry aborted after " + n + " unsuccessful attempts");
     }
 }

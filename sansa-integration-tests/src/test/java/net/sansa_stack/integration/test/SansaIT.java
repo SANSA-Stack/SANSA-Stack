@@ -1,10 +1,13 @@
 package net.sansa_stack.integration.test;
 
+import com.github.dockerjava.api.model.ContainerNetwork;
 import com.google.common.io.ByteSource;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.aksw.jena_sparql_api.delay.extra.Delayer;
 import org.aksw.jena_sparql_api.delay.extra.DelayerDefault;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.jena.atlas.test.Gen;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
@@ -13,7 +16,21 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.deploy.SparkSubmit;
 import org.apache.spark.sql.SparkSession;
 import org.junit.*;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.Testcontainers;
+import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,24 +39,34 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class SansaIT {
+    private static final Logger logger = LoggerFactory.getLogger(SansaIT.class);
 
     protected Map<String, String> env;
 
     protected Path bundleFolder;
     protected DockerComposeContainer environment;
+    // protected ContainerNetwork network;
+
+    /* The network ID of the docker-composed-based spark setup */
+    protected String networkId;
 
     protected Path stackJarBundleFolder;
     protected Path exampleJarBundleFolder;
 
-    protected String sparkMasterUrl;
+    //protected String sparkMasterUrl;
+
+    protected String sparkMasterHost;
 
     protected int sparkMasterPort;
     protected int sparkMasterWebUiPort;
     protected int sparkTestPort; // sansaTestPort?
+
+    protected String sparkMasterUrl;
 
     /**
      * The name of an environment variable that points to the folder where to look for the jar bundle
@@ -53,6 +80,31 @@ public class SansaIT {
     /** Some deployed spark apps open a port where they provide their service
      * (at present we expect only 1 additional port to be opened) */
     public String SPARK_TEST_PORT_KEY = "SPARK_TEST_PORT";
+
+
+    public GenericContainer sparkSubmit(Path jarBundlePath, String[] cmdArgs) {
+        String basePath = "/spark/bin/";
+        String[] cmd = ArrayUtils.insert(0, cmdArgs, basePath + "spark-submit");
+
+        ImageFromDockerfile sparkSubmitImage = new ImageFromDockerfile()
+            .withDockerfileFromBuilder(builder -> builder
+                .from("bde2020/spark-base:3.0.1-hadoop3.2")
+                .expose(sparkTestPort)
+                .build());
+
+        // DockerImageName.parse("bde2020/spark-master:3.0.1-hadoop3.2")
+
+        System.out.println("Cmd: " + Arrays.toString(cmd));
+        GenericContainer result = new GenericContainer(sparkSubmitImage)
+                .withCopyFileToContainer(MountableFile.forHostPath(jarBundlePath), "/spark/bin/" + jarBundlePath.getFileName())
+                //.withNetworkAliases(network.getAliases().toArray(new String[0]))
+                .withNetwork(newNetwork(networkId))
+                .withLogConsumer(new Slf4jLogConsumer(logger))
+                .withCommand(cmd);
+
+        return result;
+    }
+
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -73,30 +125,44 @@ public class SansaIT {
         sparkMasterPort = Integer.parseInt(env.getOrDefault(SPARK_MASTER_PORT_KEY, "7542"));
         sparkTestPort = Integer.parseInt(env.getOrDefault(SPARK_TEST_PORT_KEY, "7549"));
 
-        sparkMasterUrl = "spark://localhost:" + sparkMasterPort;
+        // Testcontainers.exposeHostPorts(sparkMasterPort);
+        // Testcontainers.exposeHostPorts(sparkTestPort);
+
+        // sparkMasterUrl = "spark://host.testcontainers.internal:" + sparkMasterPort;
+
+        sparkMasterUrl = "spark://spark-master:7077";
+        // sparkMasterUrl = "spark://spark-master:" + sparkTestPort;
+        //sparkMasterHost = "localhost";
+        //sparkMasterUrl = "spark://" + sparkMasterHost + ":" + "7077";//sparkMasterPort;
+
 
         environment =
                 new DockerComposeContainer(new File("src/test/resources/docker-compose.yml"))
-                        .withExposedService("spark-master", 8080)
-                        .withExposedService("spark-master", 7077);
+                        .withExposedService("spark-master", 7077)
+                        .withExposedService("spark-master", 8080);
 //                        .withExposedService("spark-master", sparkMasterWebUiPort)
 //                        .withExposedService("spark-master", sparkMasterPort);
 
         environment.start();
+
+        ContainerState state = (ContainerState)environment.getContainerByServiceName("spark-master_1").orElse(null);
+//        System.out.println("CONTAINER: " + state);
+        networkId = state.getContainerInfo().getNetworkSettings().getNetworks().entrySet().iterator().next().getValue().getNetworkID();
+//        System.out.println("NETWORK: " + network);
     }
 
 
     @After
     public void after() {
         environment.stop();
-        SparkSession sc = SparkSession.getActiveSession().getOrElse(null);
-        if (sc != null) {
-            sc.stop();
-        }
-        sc = SparkSession.getDefaultSession().getOrElse(null);
-        if (sc != null) {
-            sc.stop();
-        }
+//        SparkSession sc = SparkSession.getActiveSession().getOrElse(null);
+//        if (sc != null) {
+//            sc.stop();
+//        }
+//        sc = SparkSession.getDefaultSession().getOrElse(null);
+//        if (sc != null) {
+//            sc.stop();
+//        }
     }
 
     // @Test
@@ -115,35 +181,63 @@ public class SansaIT {
 
     @Test
     public void testSparqlifySubmit() throws Exception {
-        String jarBundlePath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().normalize().toString();
+        Path jarBundleHostPath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().normalize(); //.toString();
         String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
-        // System.out.println("Jarbundle: " + jarBundlePath);
+        Path jarBundleContainerPath = jarBundleHostPath.getFileName();
 
         String[] args = new String[] {
                  "--class", "net.sansa_stack.examples.spark.query.Sparklify",
-                //"--class", "net.sansa_stack.examples.spark.query.OntopBasedSPARQLEngine",
                 "--master", sparkMasterUrl,
                 "--num-executors", "2",
                 "--executor-memory", "1G",
                 "--executor-cores", "2",
-                "--conf", "spark.eventLog.enabled=true",
-                jarBundlePath,
+                "--conf", "spark.eventLog.enabled=false",
+                "/spark/bin/" + jarBundleContainerPath.toString(),
                 "-i", "rdf.nt",
                 "-r", "endpoint",
                 "-p", Integer.toString(sparkTestPort)
         };
 
-        Thread submitThread = new Thread(() -> { SparkSubmit.main(args); });
-        submitThread.start();
+        long resultSetSize = -1;
+        try (GenericContainer submitContainer = sparkSubmit(jarBundleHostPath, args)
+                .withExposedPorts(sparkTestPort)
+                .waitingFor(Wait.forLogMessage(".*", 1))) {
 
-        long resultSetSize = AwaitUtils.countResultBindings(
-                sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitThread::isAlive);
+            //submitContainer.setPortBindings();
+            submitContainer.setPortBindings(Arrays.asList("" + sparkTestPort + ":" + sparkTestPort));
 
-        // TODO Asserting the number of triples of a file called rdf.nt in the root of the classpath is fragile
+            // submitContainer.withExposedPorts(sparkTestPort);
+            // submitContainer.withExposedPorts(sparkTestPort);
+            // System.out.println("PORT BINDINGS: " + submitContainer.getPortBindings());
+
+            submitContainer.start();
+            // String host = submitContainer.getHost();
+            // System.out.println("Host = " + host);
+//            Thread submitThread = new Thread(() -> {
+//                submitContainer.start();
+//            });
+//            submitThread.start();
+
+            resultSetSize = AwaitUtils.countResultBindings(
+                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", () -> true);
+            // submitThread::isAlive
+        }
+/*
+        try (GenericContainer submitContainer = sparkSubmit(jarBundleHostPath, args)) {
+//            long resultSetSize = AwaitUtils.countResultBindings(
+//                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitContainer::isRunning);
+
+            long resultSetSize = AwaitUtils.countResultBindings(
+                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", () -> true);
+
+            // TODO Asserting the number of triples of a file called rdf.nt in the root of the classpath is fragile
+            Assert.assertEquals(106, resultSetSize);
+        }
+*/
         Assert.assertEquals(106, resultSetSize);
     }
 
-    @Test
+    // @Test
     public void testOntopSubmit() throws Exception {
         String jarBundlePath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().toString();
         String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
@@ -173,4 +267,22 @@ public class SansaIT {
         Assert.assertEquals(106, resultSetSize);
     }
 
+    // Workaround based on https://github.com/testcontainers/testcontainers-java/issues/856
+    public static Network newNetwork(String id) {
+        return new Network() {
+            @Override
+            public String getId() {
+                return id;
+            }
+
+            @Override
+            public void close() {
+            }
+
+            @Override
+            public Statement apply(Statement base, Description description) {
+                return null;
+            }
+        };
+    }
 }
