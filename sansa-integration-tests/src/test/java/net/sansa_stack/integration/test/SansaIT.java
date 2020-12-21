@@ -219,7 +219,7 @@ public class SansaIT {
 //            submitThread.start();
 
             resultSetSize = AwaitUtils.countResultBindings(
-                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", () -> true);
+                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitContainer::isRunning);
             // submitThread::isAlive
         }
 /*
