@@ -5,8 +5,7 @@ import net.sansa_stack.inference.spark.data.model.TripleUtils._
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Dataset
-
+import org.apache.spark.sql.{Dataset, SparkSession}
 import scala.reflect.ClassTag
 
 /**
@@ -23,6 +22,10 @@ class TransitiveReasoner(sc: SparkContext, val properties: Seq[Node], val parall
 
   def this(sc: SparkContext, parallelism: Int) {
     this(sc, Seq(), parallelism)
+  }
+
+  def this(spark: SparkSession, properties: Seq[Node], parallelism: Int) {
+    this(spark.sparkContext, properties, parallelism)
   }
 
   /**
