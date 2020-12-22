@@ -236,10 +236,11 @@ public class SansaIT {
         Assert.assertEquals(106, resultSetSize);
     }
 
-    // @Test
+    @Test
     public void testOntopSubmit() throws Exception {
-        String jarBundlePath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().toString();
+        Path jarBundleHostPath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().normalize(); //.toString();
         String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
+        Path jarBundleContainerPath = jarBundleHostPath.getFileName();
 
         String[] args = new String[] {
                 // "--class", "net.sansa_stack.examples.spark.query.Sparklify",
@@ -248,22 +249,27 @@ public class SansaIT {
                 "--num-executors", "2",
                 "--executor-memory", "1G",
                 "--executor-cores", "2",
-                jarBundlePath,
+                "/spark/bin/" + jarBundleContainerPath.toString(),
                 "-i", "rdf.nt",
                 "-r", "endpoint",
                 "-p", Integer.toString(sparkTestPort)
 
         };
 
-        Thread submitThread = new Thread(() -> { SparkSubmit.main(args); });
-        submitThread.start();
+        long resultSetSize = -1;
+        try (GenericContainer submitContainer = sparkSubmit(jarBundleHostPath, args)
+                .withExposedPorts(sparkTestPort)
+                .waitingFor(Wait.forLogMessage(".*", 1))) {
 
-        long resultSetSize = AwaitUtils.countResultBindings(
-                sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitThread::isAlive);
+            submitContainer.setPortBindings(Arrays.asList("" + sparkTestPort + ":" + sparkTestPort));
 
-        // TODO Asserting the number of triples of a file called rdf.nt in the root of the classpath is fragile
-        Assert.assertEquals(106, resultSetSize);
+            submitContainer.start();
+
+            resultSetSize = AwaitUtils.countResultBindings(
+                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitContainer::isRunning);
+        }
     }
+
 
     // Workaround based on https://github.com/testcontainers/testcontainers-java/issues/856
     public static Network newNetwork(String id) {
