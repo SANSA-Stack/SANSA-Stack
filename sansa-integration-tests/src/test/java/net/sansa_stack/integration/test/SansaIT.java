@@ -149,6 +149,11 @@ public class SansaIT {
 //        System.out.println("CONTAINER: " + state);
         networkId = state.getContainerInfo().getNetworkSettings().getNetworks().entrySet().iterator().next().getValue().getNetworkID();
 //        System.out.println("NETWORK: " + network);
+
+        System.out.println("NETWORKS:");
+        state.getContainerInfo().getNetworkSettings().getNetworks().entrySet().forEach(e -> System.out.println("NETWORK: " + e));
+
+        throw new RuntimeException("Intensionally Aborted");
     }
 
 
