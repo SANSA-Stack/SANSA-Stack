@@ -25,7 +25,6 @@ object OWLStats {
 
     val spark = SparkSession.builder
       .appName(s"OWL Dataset Statistics example $owl_stats_file")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 

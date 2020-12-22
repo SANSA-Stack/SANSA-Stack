@@ -4,14 +4,15 @@ import java.net.URI
 
 import scala.collection.Seq
 
-import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
-import net.sansa_stack.inference.rules.ReasoningProfile._
-import net.sansa_stack.inference.spark.data.loader.RDFGraphLoader
-import net.sansa_stack.inference.spark.data.writer.RDFGraphWriter
-import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
 import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession
 import scopt.{OptionParser, Read}
+
+import net.sansa_stack.inference.rules.ReasoningProfile._
+import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
+import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
+import net.sansa_stack.rdf.spark.io._
 
 object RDFGraphInference {
 
@@ -24,13 +25,12 @@ object RDFGraphInference {
     }
   }
 
-  def run(input: Seq[URI], output: URI, profile: ReasoningProfile, properties: Seq[Node] = Seq(),
+  def run(inputURIs: Seq[URI], output: URI, profile: ReasoningProfile, properties: Seq[Node] = Seq(),
           writeToSingleFile: Boolean, sortedOutput: Boolean, parallelism: Int): Unit = {
 
     // the SPARK config
     val spark = SparkSession.builder
       .appName(s"SPARK $profile Reasoning")
-      .master("local[*]")
       .config("spark.hadoop.validateOutputSpecs", "false") // override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.default.parallelism", parallelism)
@@ -38,11 +38,12 @@ object RDFGraphInference {
       .config("spark.sql.shuffle.partitions", parallelism)
       .getOrCreate()
 
+    val input = inputURIs.mkString(",")
     // load triples from disk
-    val graph = RDFGraphLoader.loadFromDisk(spark, input, parallelism)
-    println(s"|G| = ${graph.size()}")
+    val triples = spark.rdf(Lang.NTRIPLES)(input)
+    println(s"|G| = ${triples.count()}")
 
-    // create reasoner
+    // create reasoner based on the given profile
     val reasoner = profile match {
       case TRANSITIVE => new TransitiveReasoner(spark.sparkContext, properties, parallelism)
       case RDFS => new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)
@@ -53,12 +54,12 @@ object RDFGraphInference {
       case OWL_HORST => new ForwardRuleReasonerOWLHorst(spark.sparkContext)
     }
 
-    // compute inferred graph
-    val inferredGraph = reasoner.apply(graph)
-    println(s"|G_inf| = ${inferredGraph.size()}")
+    // compute inferred triples
+    val inferredTriples = reasoner.apply(triples)
+    println(s"|G_inf| = ${inferredTriples.count()}")
 
-    // write triples to disk
-    RDFGraphWriter.writeToDisk(inferredGraph, output.toString, writeToSingleFile, sortedOutput)
+    // write triples to disk in N-Triples format
+    inferredTriples.saveAsNTriplesFile(output.toString)
 
     spark.stop()
   }

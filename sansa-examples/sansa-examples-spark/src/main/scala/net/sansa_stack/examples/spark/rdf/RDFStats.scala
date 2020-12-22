@@ -27,7 +27,6 @@ object RDFStats {
 
     val spark = SparkSession.builder
       .appName(s"RDF Dataset Statistics example $rdf_stats_file")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 

@@ -25,7 +25,6 @@ object RDFGraphInference {
     // the SPARK config
     val spark = SparkSession.builder
       .appName(s"SPARK $profile Reasoning")
-      .master("local[*]")
       .config("spark.hadoop.validateOutputSpecs", "false") // override output files
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.default.parallelism", parallelism)
