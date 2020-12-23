@@ -8,12 +8,18 @@ import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.SparkSession
 
 /**
-  * Run SPARQL queries over Spark using Sparqlify approach.
+  * Run SPARQL queries over Spark using Sparqlify engine.
+  * 
+  * Note: To run this class outside of spark-submit (e.g. from an IDE) you can specify a
+  * spark master using a JVM argument: -Dspark.master=local[*]
   */
 object Sparklify {
+
+  JenaSystem.init
 
   case class Config(
                      dataFilenameOrUri: String = "",

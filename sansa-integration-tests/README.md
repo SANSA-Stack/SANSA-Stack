@@ -19,7 +19,7 @@ The IT requires the sansa-examples-spark jar bundle to have been built:
 # All commands are expected to be run from the  root folder of the SANSA git repository
 
 # Build the whole project once if this hasn't been done yt
-mvn clean install -DskipTests
+mvn clean install -DskipTests -Dskip=true -Dmaven.javadoc.skip=true
 
 # Create the jar bundle for the sansa-examples-spark only (building all bundles takes very long)
 mvn -pl sansa-examples/sansa-examples-spark -Pdist package
