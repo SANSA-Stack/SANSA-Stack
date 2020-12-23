@@ -70,9 +70,10 @@ import net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReason
 import net.sansa_stack.rdf.spark.io._import org.apache.spark.
 ...
 
-val spark: SparkSession = // SparkSession here
+val spark: SparkSession = ... // SparkSession here
 
-val input: String = // path to input
+val input: String = ... // path to input
+val output: String = ... // path to output
 
 // load triples from disk
 val triples: RDD[Triple] = spark.rdf(Lang.NTRIPLES)(input)
@@ -85,7 +86,7 @@ val reasoner = new ForwardRuleReasonerRDFS(spark)
 val inferredTriples: RDD[Triple] = reasoner.apply(triples)
 
 // write triples to disk in N-Triples format
-inferredTriples.saveAsNTriplesFile(output.toString)
+inferredTriples.saveAsNTriplesFile(output)
 ```
 
 
