@@ -4,11 +4,12 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Paths
 
+import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SaveMode => TableSaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession, SaveMode => TableSaveMode}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
 
@@ -69,6 +70,7 @@ object VerticalPartitioner {
         .action((x, c) => c.copy(blankNodeStrategy = x))
         .text("how blank nodes are handled during partitioning (TABLE, COLUMN)"),
       opt[Boolean]('s', "stats")
+        .optional()
         .action((x, c) => c.copy(computeStatistics = x))
         .text("compute statistics for the Parquet tables"),
       opt[String]("database")
@@ -77,18 +79,23 @@ object VerticalPartitioner {
         .action((x, c) => c.copy(databaseName = x))
         .text("the database name registered in Spark metadata. Default: 'Default'"),
       opt[Unit]("drop-db")
+        .optional()
         .action((_, c) => c.copy(dropDatabase = true))
         .text("if to drop an existing database"),
       opt[Unit]("save-ignore")
+        .optional()
         .action((_, c) => c.copy(saveIgnore = true))
         .text("if data/table already exists, the save operation is expected to not save the contents of the DataFrame and to not change the existing data"),
       opt[Unit]("save-overwrite")
+        .optional()
         .action((_, c) => c.copy(saveOverwrite = true))
         .text("if data/table already exists, existing data is expected to be overwritten"),
       opt[Unit]("save-append")
+        .optional()
         .action((_, c) => c.copy(saveAppend = true))
         .text("if data/table already exists, contents of the DataFrame are expected to be appended to existing data"),
       opt[Unit]("partitioning")
+        .optional()
         .action((_, c) => c.copy(usePartitioning = true))
         .text("if partitioning of subject/object columns should be computed"),
       opt[Int]("partitioning-threshold")
@@ -102,6 +109,8 @@ object VerticalPartitioner {
   }
 
   def main(args: Array[String]): Unit = {
+    JenaSystem.init()
+
     OParser.parse(parser, args, Config()) match {
       case Some(config) =>
         if (config.mode == "partitioner") {
@@ -197,9 +206,10 @@ object VerticalPartitioner {
     println("computing partitions ...")
     val partitions: Map[RdfPartitionComplex, RDD[Row]] = time(RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex()))
     println(s"#partitions: ${partitions.size}")
+    println(partitions.mkString("\n"))
 
     // we drop the database if forced
-    if (config.dropDatabase) spark.sql(s"DROP DATABASE IF EXISTS ${config.databaseName}")
+    if (config.dropDatabase) spark.sql(s"DROP DATABASE IF EXISTS ${config.databaseName} CASCADE")
 
     // create database in Spark
     spark.sql(s"create database if not exists ${config.databaseName}")
@@ -220,11 +230,17 @@ object VerticalPartitioner {
 
     // create the Spark tables
     println("creating Spark tables ...")
-    partitions.foreach {
-      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
-                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
-                                        config.usePartitioning, config.partitioningThreshold)
-    }
+    SparkTableGenerator(spark,
+                        blankNodeStrategy = config.blankNodeStrategy,
+                        useHive = false,
+                        computeStatistics = config.computeStatistics)
+      .createAndRegisterSparkTables(partitions)
+    spark.catalog.listTables(config.databaseName).collect().foreach(t => spark.table(t.name).write.mode(saveMode).format("parquet"))
+//    partitions.foreach {
+//      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
+//                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
+//                                        config.usePartitioning, config.partitioningThreshold)
+//    }
 
     // write the partition metadata to disk
     val path = Paths.get(s"/tmp/${config.databaseName}.ser")
