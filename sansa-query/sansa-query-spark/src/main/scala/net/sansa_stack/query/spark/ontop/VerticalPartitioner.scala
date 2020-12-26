@@ -170,7 +170,7 @@ object VerticalPartitioner {
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
 //      .config("spark.default.parallelism", "4")
 //      .config("spark.sql.shuffle.partitions", "4")
-//      .config("spark.sql.warehouse.dir", config.outputPath.)
+      .config("spark.sql.warehouse.dir", config.outputPath.getPath)
       .config("spark.sql.cbo.enabled", true)
       .config("spark.sql.statistics.histogram.enabled", true)
       .enableHiveSupport()
@@ -235,7 +235,8 @@ object VerticalPartitioner {
                         useHive = false,
                         computeStatistics = config.computeStatistics)
       .createAndRegisterSparkTables(partitions)
-    spark.catalog.listTables(config.databaseName).collect().foreach(t => spark.table(t.name).write.mode(saveMode).format("parquet"))
+    spark.catalog.listTables(config.databaseName).collect().foreach(t =>
+      spark.table(t.name).write.mode(saveMode).format("parquet").saveAsTable(t.name))
 //    partitions.foreach {
 //      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
 //                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
