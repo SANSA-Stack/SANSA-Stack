@@ -170,7 +170,7 @@ object VerticalPartitioner {
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
 //      .config("spark.default.parallelism", "4")
 //      .config("spark.sql.shuffle.partitions", "4")
-      .config("spark.sql.warehouse.dir", config.outputPath.getPath)
+      .config("spark.sql.warehouse.dir", config.outputPath.toString)
       .config("spark.sql.cbo.enabled", true)
       .config("spark.sql.statistics.histogram.enabled", true)
       .enableHiveSupport()
