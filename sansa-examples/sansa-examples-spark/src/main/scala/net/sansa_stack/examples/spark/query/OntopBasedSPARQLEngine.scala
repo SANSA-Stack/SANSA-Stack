@@ -29,8 +29,8 @@ object OntopBasedSPARQLEngine {
   }
 
   def run(input: String,
-          database: String = "",
-          partitioningMetadataPath: URI = null,
+          database: String,
+          partitioningMetadataPath: URI,
           sparqlQuery: String = "",
           run: String = "cli",
           port: Int = 7531): Unit = {
@@ -88,8 +88,8 @@ object OntopBasedSPARQLEngine {
 
   }
 
-  case class Config(in: String = "",
-                    database: String = "",
+  case class Config(in: String = null,
+                    database: String = null,
                     partitioningMetadataPath: URI = null,
                     sparql: String = "SELECT * WHERE {?s ?p ?o} LIMIT 10",
                     runMode: String = "cli",
@@ -100,7 +100,8 @@ object OntopBasedSPARQLEngine {
 
     head("Ontop SPARQL example")
 
-    opt[String]('i', "input").required().valueName("<path>").
+    opt[String]('i', "input")
+      .valueName("<path>").
       action((x, c) => c.copy(in = x)).
       text("path to file that contains the data (in N-Triples format)")
 
