@@ -6,7 +6,7 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
-import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaStringDate, SchemaStringDecimal, SchemaStringDouble, SchemaStringFloat, SchemaStringLong, SchemaStringString, SchemaStringStringLang, SchemaStringStringType}
+import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaStringDate, SchemaStringDecimal, SchemaStringDouble, SchemaStringFloat, SchemaStringLong, SchemaStringString, SchemaStringStringLang, SchemaStringStringType, SchemaStringTimestamp}
 import scala.reflect.runtime.universe.typeOf
 
 /**
@@ -27,7 +27,8 @@ object JDBCDatabaseGenerator {
     typeOf[SchemaStringDecimal] -> "DECIMAL",
     typeOf[SchemaStringBoolean] -> "BOOLEAN",
     typeOf[SchemaStringString] -> "VARCHAR(255)",
-    typeOf[SchemaStringDate] -> "DATE"
+    typeOf[SchemaStringDate] -> "DATE",
+    typeOf[SchemaStringTimestamp] -> "TIMESTAMP"
   ) // .map(e => (typeOf[e._1.type], e._2))
 
   /**
@@ -48,46 +49,49 @@ object JDBCDatabaseGenerator {
         val name = SQLUtils.createTableName(p, blankNodeStrategy)
 
         val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
-        logger.trace(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
+        logger.debug(s"creating table for property ${p.predicate} with Spark schema $sparkSchema and layout ${p.layout.schema}")
 
         p match {
           case RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
-            objectType match {
-              case 0|1 => stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
+            val s = objectType match {
+              case 0|1 => s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                 "s varchar(255) NOT NULL," +
                 "o varchar(255) NOT NULL" +
-                ")")
+                ")"
               case 2 => if (p.layout.schema == typeOf[SchemaStringStringLang]) {
-                stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
+                s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                   "s varchar(255) NOT NULL," +
                   "o varchar(255) NOT NULL," +
                   "l varchar(10)" +
-                  ")")
+                  ")"
               } else {
                 if (p.layout.schema == typeOf[SchemaStringStringType]) {
-                  stmt.addBatch(s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
+                  s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
                     "s varchar(255) NOT NULL," +
                     "o varchar(255) NOT NULL," +
                     "t varchar(255) NOT NULL" +
-                    ")")
+                    ")"
                 } else {
                   val colType = partitionType2DatabaseType.get(p.layout.schema)
 
                   if (colType.isDefined) {
-                    stmt.addBatch(
-                      s"""
-                         |CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (
-                         |s varchar(255) NOT NULL,
-                         |o ${colType.get} NOT NULL)
-                         |""".stripMargin)
+                    s"""
+                       |CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (
+                       |s varchar(255) NOT NULL,
+                       |o ${colType.get} NOT NULL)
+                       |""".stripMargin
                   } else {
                     logger.error(s"Error: couldn't create H2 table for property $predicate with schema ${p.layout.schema}")
+                    ""
                   }
                 }
               }
               case _ => logger.error("TODO: bnode H2 SQL table for Ontop mappings")
+                ""
             }
-          case _ => logger.error("wrong partition type")
+            logger.trace(s)
+            stmt.addBatch(s)
+          case _ => logger.error(s"wrong partition type: ${p}")
         }
       }
       //            stmt.addBatch(s"CREATE TABLE IF NOT EXISTS triples (" +
