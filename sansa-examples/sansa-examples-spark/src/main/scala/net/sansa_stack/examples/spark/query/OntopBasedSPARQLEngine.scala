@@ -2,17 +2,20 @@ package net.sansa_stack.examples.spark.query
 
 import java.awt.Desktop
 import java.net.URI
+
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
+
 import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, PartitionSerDe, QueryExecutionFactoryOntopSpark}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-
 import java.nio.file.Paths
+
+import org.apache.jena.sys.JenaSystem
 
 /**
   * Run SPARQL queries over Spark using Ontop as SPARQL-to-SQL rewriter.
@@ -47,7 +50,10 @@ object OntopBasedSPARQLEngine {
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
       .config("spark.sql.crossJoin.enabled", true)
+      .enableHiveSupport()
       .getOrCreate()
+
+    JenaSystem.init()
 
     val ontopEngine = if (input != null) {
       // load the data into an RDD
