@@ -24,9 +24,9 @@ object OntopConnection {
   private val JDBC_PASSWORD = ""
 
   lazy val connection: Connection = try {
-//    println("creating DB connection ")
+    logger.debug("creating DB connection ...")
     val conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-//    println("created DB connection")
+    logger.debug(" ... done")
     conn
   } catch {
     case e: SQLException =>
@@ -40,7 +40,8 @@ object OntopConnection {
 
   def apply(obdaMappings: String, properties: Properties, partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
     val conf = configs.getOrElse(partitions, {
-      logger.debug("creating reformulation config")
+      logger.debug("creating reformulation config ...")
+      println("creating reformulation config ...")
       val reformulationConfiguration = {
         JDBCDatabaseGenerator.generateTables(connection, partitions)
 
@@ -49,7 +50,7 @@ object OntopConnection {
 
       configs += partitions -> reformulationConfiguration
 
-//      println("done")
+      logger.debug("...done")
       reformulationConfiguration
     })
     conf
