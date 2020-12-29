@@ -3,6 +3,7 @@ package net.sansa_stack.ml.spark.pipeline
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.io._
+import org.apache.jena.sys.JenaSystem
 
 
 object SparqlifyInMl {
@@ -18,6 +19,8 @@ object SparqlifyInMl {
           "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
         .getOrCreate()
       spark.sparkContext.setLogLevel("ERROR")
+
+      JenaSystem.init()
 
       val inputFilePath = "/Users/carstendraschner/GitHub/SANSA-Stack/sansa-ml/sansa-ml-spark/src/main/resources/test.ttl"
 
