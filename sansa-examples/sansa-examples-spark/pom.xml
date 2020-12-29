@@ -40,15 +40,18 @@
 			<artifactId>jena-arq</artifactId>
 		</dependency>
 
+<!--
 		<dependency>
 			<groupId>org.aksw.jena-sparql-api</groupId>
 			<artifactId>jena-sparql-api-server-standalone</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
 			<version>9.4.35.v20201120</version>
 		</dependency>
+-->
 
 		<!-- SANSA RDF -->
 		<dependency>
@@ -141,22 +144,22 @@
 											<exclude>org.apache.spark:spark-sql_${scala.binary.version}</exclude>
 											<exclude>org.apache.spark:spark-graphx_${scala.binary.version}</exclude>
 											<exclude>org.apache.spark:*</exclude>
-											<exclude>org.eclipse.jetty:jetty-server</exclude>
-											<exclude>org.eclipse.jetty:jetty-continuation</exclude>
-											<exclude>org.eclipse.jetty:jetty-http</exclude>
-											<exclude>org.eclipse.jetty:jetty-io</exclude>
-											<exclude>org.eclipse.jetty:jetty-util</exclude>
-											<exclude>org.eclipse.jetty:jetty-security</exclude>
-											<exclude>org.eclipse.jetty:jetty-servlet</exclude>
-											<exclude>org.eclipse.jetty:*</exclude>
-											<exclude>org.glassfish.*:*</exclude>
+											<!-- <exclude>org.eclipse.jetty:jetty-server</exclude> -->
+											<!-- <exclude>org.eclipse.jetty:jetty-continuation</exclude> -->
+											<!-- <exclude>org.eclipse.jetty:jetty-http</exclude> -->
+											<!-- <exclude>org.eclipse.jetty:jetty-io</exclude> -->
+											<!-- <exclude>org.eclipse.jetty:jetty-util</exclude> -->
+											<!-- <exclude>org.eclipse.jetty:jetty-security</exclude> -->
+											<!-- <exclude>org.eclipse.jetty:jetty-servlet</exclude> -->
+											<!-- <exclude>org.eclipse.jetty:*</exclude> -->
+											<!-- <exclude>org.glassfish.*:*</exclude> -->
 											<exclude>org.netbeans.api:*</exclude>
 											<exclude>org.netbeans:*</exclude>
 											<exclude>org.scala-lang:scala-library</exclude>
 											<exclude>org.scala-lang:scala-compiler</exclude>
 											<exclude>org.scala-lang:scala-reflect</exclude>
 											<exclude>commons-cli:commons-cli</exclude>
-											<exclude>commons-codec:commons-codec</exclude>
+<!--											<exclude>commons-codec:commons-codec</exclude>-->
 											<exclude>commons-collections:commons-collections</exclude>
 											<exclude>commons-configuration:commons-configuration</exclude>
 											<exclude>commons-digester:commons-digester</exclude>
@@ -167,6 +170,7 @@
 											<exclude>commons-net:commons-net</exclude>
 											<exclude>io.dropwizard.metrics:metrics*</exclude>
 											<exclude>io.netty:netty*</exclude>
+<!--
 											<exclude>javax.activation:activation</exclude>
 											<exclude>javax.annotation:javax.annotation-api</exclude>
 											<exclude>javax.servlet:javax.servlet-api</exclude>
@@ -176,6 +180,7 @@
 											<exclude>javax.ws.rs:javax.ws.rs-api</exclude>
 											<exclude>javax.xml.bind:jaxb-api</exclude>
 											<exclude>javax.xml.stream:stax-api</exclude>
+-->
 											<exclude>jdk.tools:jdk.tools</exclude>
 											<exclude>net.java.dev.jets3t:jets3t</exclude>
 											<exclude>net.jpountz.lz4:lz4</exclude>
@@ -201,11 +206,11 @@
 											<exclude>org.codehaus.janino:*</exclude>
 											<exclude>org.codehaus.jettison:jettison</exclude>
 											<exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
-											<exclude>org.glassfish.hk2*</exclude>
-											<exclude>org.glassfish.jersey*</exclude>
+											<!-- <exclude>org.glassfish.hk2*</exclude> -->
+											<!-- <exclude>org.glassfish.jersey*</exclude> -->
 											<exclude>org.javassist:javassist</exclude>
 											<exclude>org.json4s:json4s*</exclude>
-											<exclude>org.mortbay.jetty:jetty*</exclude>
+											<!-- <exclude>org.mortbay.jetty:jetty*</exclude> no longer used-->
 											<exclude>org.objenesis:objenesis</exclude>
 											<exclude>org.roaringbitmap:RoaringBitmap</exclude>
 											<exclude>org.scala-lang:*</exclude>

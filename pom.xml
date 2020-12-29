@@ -76,7 +76,7 @@
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
         <!-- <jetty.version>9.4.9.4.18.v20190429</jetty.version> -->
-        <mortbay.jetty.version>6.1.26</mortbay.jetty.version>
+        <!-- <mortbay.jetty.version>6.1.26</mortbay.jetty.version> -->
 
         <!-- origin: sansa-query -->
         <httpcomponents.version>4.5.12</httpcomponents.version>
@@ -378,19 +378,21 @@
 
 
             <!-- Servlet engines -->
+<!--
             <dependency>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty</artifactId>
-                <!-- <scope>provided</scope> -->
+                < !- - <scope>provided</scope> - - >
                 <version>${mortbay.jetty.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-util</artifactId>
-                <!-- <scope>provided</scope> -->
+                < !- - <scope>provided</scope> - - >
                 <version>${mortbay.jetty.version}</version>
             </dependency>
+-->
 
             <!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-util</artifactId>
                 <version>${jetty.version}</version> </dependency> -->

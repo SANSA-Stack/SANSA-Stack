@@ -1,8 +1,6 @@
 
 
 # SANSA Inference Layer
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-inference-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-inference-parent_2.11)
-[![Build Status](https://travis-ci.com/SANSA-Stack/SANSA-Inference.svg?branch=develop)](https://travis-ci.com/SANSA-Stack/SANSA-Inference)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
@@ -15,11 +13,9 @@
 		- [sansa-inference-flink](#sansa-inference-flink)
 		- [sansa-inference-tests](#sansa-inference-tests)
 	- [Setup](#setup)
-		- [Prerequisites](#prerequisites)
-		- [From source](#from-source)
-		- [Using Maven pre-build artifacts](#using-maven-pre-build-artifacts)
-		- [Using SBT](#using-SBT)
 	- [Usage](#usage)
+		- [From Code](#from-code)
+		- [From CLI](#from-cli)
 		- [Example](#example)
 	- [Supported Reasoning Profiles](#supported-reasoning-profiles)
 		- [RDFS](#rdfs)
@@ -44,83 +40,60 @@ Contains common test classes and data.
 
 
 ## Setup
-### Prerequisites
-* Maven 3.x
-* Java 8
-* Scala 2.11 (support for Scala 2.12 once Spark moved to Scala 2.12 as well)
-* Apache Spark 2.x
-* Apache Flink 1.x
 
-### From source
+See how to use latest release or snapshot version of the Inference Layer [here](https://github.com/SANSA-Stack/SANSA-Stack).
 
-To install the SANSA Inference API, you need to download it via Git and install it via Maven.
-```shell
-git clone https://github.com/SANSA-Stack/SANSA-Inference.git
-cd SANSA-Inference
-mvn clean install
-```
-Afterwards, you have to add the dependency to your `pom.xml`
-
-For Apache Spark
+Long story short, just add the Maven dependency for either release or snapshot version (note, for the snapshot version either build from source or add the AKSW Maven repository)
 ```xml
 <dependency>
-  <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-spark_2.11</artifactId>
-  <version>VERSION</version>
+   <groupId>net.sansa-stack</groupId>
+   <artifactId>sansa-inference-spark_2.12</artifactId>
+   <version>$VERSION$</version>
 </dependency>
 ```
-and for Apache Flink
-```xml
-<dependency>
-  <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-flink_2.11</artifactId>
-  <version>VERSION</version>
-</dependency>
-```
-with `VERSION` beeing the released version you want to use.
-
-### Using Maven pre-build artifacts
-
-The latest release is available in Maven Central, thus, you only have to add the following dependency to your `pom.xml`:
-
-For Apache Spark
-```xml
-<dependency>
-  <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-spark_2.11</artifactId>
-  <version>0.6.0</version>
-</dependency>
-```
-and for Apache Flink
-```xml
-<dependency>
-  <groupId>net.sansa-stack</groupId>
-  <artifactId>sansa-inference-flink_2.11</artifactId>
-  <version>0.6.0</version>
-</dependency>
-```
-
-### Using SBT
-
-Add the following lines to your SBT file:
-
-For Apache Spark add
-```scala
-libraryDependencies += "net.sansa-stack" % "sansa-inference-spark_2.11" % "0.6.0"
-```
-
-and for Apache Flink add
-```scala
-libraryDependencies += "net.sansa-stack" % "sansa-inference-flink_2.11" % "0.6.0"
-```
-### Using Snapshots
-
-Snapshot version are only avalibale via our custom Maven repository located at http://maven.aksw.org/archiva/repository/snapshots .
 
 ## Usage
-Besides using the Inference API in your application code, we also provide a command line interface with various options that allow for a convenient way to use the core reasoning algorithms:
+
+### From code
+
+
+```scala
+...
+// some of the used imports here
+import org.apache.jena.riot.Lang
+import org.apache.jena.graph.Triple
+
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.rdd.RDD
+
+import net.sansa_stack.inference.spark.forwardchaining.triples.ForwardRuleReasonerRDFS
+import net.sansa_stack.rdf.spark.io._import org.apache.spark.
+...
+
+val spark: SparkSession = ... // SparkSession here
+
+val input: String = ... // path to input
+val output: String = ... // path to output
+
+// load triples from disk
+val triples: RDD[Triple] = spark.rdf(Lang.NTRIPLES)(input)
+
+// create RDFS reasoner
+val reasoner = new ForwardRuleReasonerRDFS(spark)
+    
+// compute inferred triples
+// Note: they do also contain the asserted triples, if you need just the inferred triples you have to compute the diff)
+val inferredTriples: RDD[Triple] = reasoner.apply(triples)
+
+// write triples to disk in N-Triples format
+inferredTriples.saveAsNTriplesFile(output)
 ```
-RDFGraphMaterializer 0.6.0
+
+
+### From CLI
+Besides using the Inference API in your application code, we provide a single application with various options that allow for a convenient way to use the core reasoning algorithms:
+```
+RDFGraphMaterializer 0.7.1
 Usage: RDFGraphMaterializer [options]
 
   -i, --input <path1>,<path2>,...

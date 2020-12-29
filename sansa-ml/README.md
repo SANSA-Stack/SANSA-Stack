@@ -10,7 +10,7 @@ The functionalities are covered by Scala unit tests and are documented within Sc
 ## Current Modules
 The current stack provides:
 - [Sparql Transformer](#sparql-transformer)
-- [AutoSparql Generation for Feature Extraction](#autosparql-generation-for-feature-extraction)
+- [RDF2Feature - AutoSparql Generation for Feature Extraction](#rdf2feature-autosparql-generation-for-feature-extraction)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 
 ### Sparql Transformer
@@ -42,9 +42,9 @@ val resultNodes: Array[Node] = res.as[Node].collect()
 ```
 this sample is taken from a [Scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
 
-### AutoSparql Generation for Feature Extraction
+### RDF2Feature AutoSparql Generation for Feature Extraction
 [AutoSparql Generation for Feature Extraction](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html):
-This modules creates a SPARQL query traversing the tree to gain literals which can be used as features for common feature based Machine Learning Approaches. The user needs only to specify the WHERE clause, how to reach the entities, which should be considered as seeds/roots for graph traversal. This traversal will then provide a SPARQL Query to fetch connected features from Literals. As sample usage would be:
+This module [(scaladocs)](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html) creates a SPARQL query traversing the tree to gain literals which can be used as features for common feature based Machine Learning Approaches. The user needs only to specify the WHERE clause, how to reach the entities, which should be considered as seeds/roots for graph traversal. This traversal will then provide a SPARQL Query to fetch connected features from Literals. As sample usage would be:
 ```
 val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
 val seedVarName = "?seed"

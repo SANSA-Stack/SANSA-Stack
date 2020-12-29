@@ -11,9 +11,10 @@ import org.apache.jena.vocabulary.{RDF, RDFS}
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.slf4j.LoggerFactory
-
 import scala.collection.mutable
+
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 /**
   * A forward chaining implementation of the RDFS entailment regime.
@@ -23,7 +24,12 @@ import org.apache.spark.rdd.RDD
   * @param parallelism the level of parallelism
   * @author Lorenz Buehmann
   */
-class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2) extends TransitiveReasoner(sc, parallelism) {
+class ForwardRuleReasonerRDFS(sc: SparkContext, parallelism: Int = 2)
+  extends TransitiveReasoner(sc, parallelism) {
+
+  def this(spark: SparkSession) = {
+    this(spark.sparkContext)
+  }
 
   private val logger = com.typesafe.scalalogging.Logger(LoggerFactory.getLogger(this.getClass.getName))
 

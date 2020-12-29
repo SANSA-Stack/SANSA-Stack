@@ -23,7 +23,6 @@ object OWLReaderRDD {
 
     val spark = SparkSession.builder
       .appName(s"OWL reader example ( $input + )($syntax)")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")
       .getOrCreate()

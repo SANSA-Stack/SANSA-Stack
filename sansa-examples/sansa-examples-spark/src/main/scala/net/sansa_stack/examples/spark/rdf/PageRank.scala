@@ -29,7 +29,6 @@ object PageRank {
 
     val spark = SparkSession.builder
       .appName(s"PageRank of resources example ( $input )")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
       .getOrCreate()

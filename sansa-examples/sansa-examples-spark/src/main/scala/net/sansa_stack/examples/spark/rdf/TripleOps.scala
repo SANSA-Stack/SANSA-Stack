@@ -23,7 +23,6 @@ object TripleOps {
 
     val spark = SparkSession.builder
       .appName(s"Triple Ops example  $input")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 
