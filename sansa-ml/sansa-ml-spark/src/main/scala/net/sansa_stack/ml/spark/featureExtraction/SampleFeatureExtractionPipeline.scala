@@ -53,10 +53,11 @@ object SampleFeatureExtractionPipeline {
                                |	}
                                |}""".stripMargin
     // OPTION 2
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 0, 1, 3, featuresInOptionalBlocks = true)
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 1, 2, 3, featuresInOptionalBlocks = true)
 
     // select the query you want to use or adjust the automatic created one
     val queryString = autoSparqlString
+    println()
     println(queryString)
 
     /*
@@ -66,6 +67,7 @@ object SampleFeatureExtractionPipeline {
      */
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
+      .setQueryExcecutionEngine("sparqlify")
     val res = sparqlFrame.transform(dataset)
     res.show()
 
@@ -97,14 +99,14 @@ object SampleFeatureExtractionPipeline {
       .setOutputCol("features")
     val output = assembler.transform(indexed)
     val assembledDf = output.select("seed", "features")
-    assembledDf.show()
+    assembledDf.show(false)
 
     /*
     APPLY Common SPARK MLlib Example Algorithm
      */
     // Trains a k-means model.
-    val kmeans = new KMeans().setK(2).setSeed(1L)
-    val model = kmeans.fit(assembledDf)
+    val kmeans = new KMeans().setK(2) // .setSeed(1L)
+    val model = kmeans.fit(assembledDf.distinct())
 
     // Make predictions
     val predictions = model.transform(assembledDf)
