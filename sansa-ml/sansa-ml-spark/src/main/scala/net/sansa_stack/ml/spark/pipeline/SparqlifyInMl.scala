@@ -4,7 +4,14 @@ import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.sys.JenaSystem
-
+import net.sansa_stack.query.spark.query._
+import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, QueryExecutionSparqlifySpark, SparqlifyUtils3}
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import org.apache.jena.query.{Query, QueryFactory}
+import org.apache.jena.sparql.core.Var
+import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.rdd.RDD
 
 object SparqlifyInMl {
     def main(args: Array[String]): Unit = {
@@ -59,10 +66,27 @@ object SparqlifyInMl {
 
       // triples.foreach(println(_))
 
-      import net.sansa_stack.query.spark.query._
 
       val resDf = triples.sparql(queryString)
       resDf.show(false)
+
+      // new sparqlify with rdd of bindings
+
+      val graphRdd = triples
+      val query: Query = QueryFactory.create("SELECT * { ?s ?p ?o }")
+
+      val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
+      val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
+      val qef: QueryExecutionFactorySparqlifySpark = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
+      val qe: QueryExecutionSparqlifySpark = qef.createQueryExecution(query)
+
+      val sparkResultSet = qe.execSelectSpark() // SparkResultSet is a pair of result vars + rdd
+
+      val resultVars : java.util.List[Var] = sparkResultSet.getResultVars
+      val javaRdd: JavaRDD[Binding] = sparkResultSet.getRdd
+      val scalaRdd : RDD[Binding] = javaRdd.rdd
+
+      scalaRdd.foreach(println(_))
 
     }
 }
