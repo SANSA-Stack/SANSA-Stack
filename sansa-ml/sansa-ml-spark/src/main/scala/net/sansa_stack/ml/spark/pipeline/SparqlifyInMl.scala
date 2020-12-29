@@ -73,7 +73,7 @@ object SparqlifyInMl {
       // new sparqlify with rdd of bindings
 
       val graphRdd = triples
-      val query: Query = QueryFactory.create("SELECT * { ?s ?p ?o }")
+      val query: Query = QueryFactory.create("SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasSpouse__down_age ?seed__down_hasParent__down_age ?seed__down_hasSpouse__down_name ?seed__down_hasParent__down_name\n\nWHERE {\n\t?seed a <http://dig.isi.edu/Person> .\n\n\tOPTIONAL {\n\t\t?seed <http://dig.isi.edu/age> ?seed__down_age .\n\t}\n\tOPTIONAL {\n\t\t?seed <http://dig.isi.edu/name> ?seed__down_name .\n\t}\n\tOPTIONAL {\n\t\t?seed <http://dig.isi.edu/hasSpouse> ?seed__down_hasSpouse .\n\t\t?seed__down_hasSpouse <http://dig.isi.edu/age> ?seed__down_hasSpouse__down_age .\n\t}\n\tOPTIONAL {\n\t\t?seed <http://dig.isi.edu/hasParent> ?seed__down_hasParent .\n\t\t?seed__down_hasParent <http://dig.isi.edu/age> ?seed__down_hasParent__down_age .\n\t}\n\tOPTIONAL {\n\t\t?seed <http://dig.isi.edu/hasSpouse> ?seed__down_hasSpouse .\n\t\t?seed__down_hasSpouse <http://dig.isi.edu/name> ?seed__down_hasSpouse__down_name .\n\t}\n\tOPTIONAL {\n\t\t?seed <http://dig.isi.edu/hasParent> ?seed__down_hasParent .\n\t\t?seed__down_hasParent <http://dig.isi.edu/name> ?seed__down_hasParent__down_name .\n\t} \n}")
 
       val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
       val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
