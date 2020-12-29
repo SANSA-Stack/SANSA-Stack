@@ -30,15 +30,22 @@ public class QueryExecutionSparqlifySpark extends QueryExecutionBaseSelect {
 	protected SparkSession sparkSession;
 	protected SparqlSqlStringRewriter sparqlSqlRewriter;
 
-	@Override
-	protected ResultSetCloseable executeCoreSelect(Query query) {
+	public ResultSetSpark execSelectSpark() {
 		SparqlSqlStringRewrite rewrite = sparqlSqlRewriter.rewrite(query);
 		List<Var> resultVars = rewrite.getProjectionOrder();
 
 		JavaRDD<Binding> rdd = QueryExecutionUtilsSpark.createQueryExecution(sparkSession, rewrite, query);
-		Iterator<Binding> it = rdd.collect().iterator();//.toLocalIterator();
 
-		ResultSet tmp = ResultSetUtils.create2(resultVars, it);
+		ResultSetSpark result = new ResultSetSparkImpl(resultVars, rdd);
+		return result;
+	}
+
+	@Override
+	protected ResultSetCloseable executeCoreSelect(Query query) {
+		ResultSetSpark rs = execSelectSpark();
+		Iterator<Binding> it = rs.getRdd().collect().iterator();//.toLocalIterator();
+
+		ResultSet tmp = ResultSetUtils.create2(rs.getResultVars(), it);
 		ResultSetCloseable result = new ResultSetCloseable(tmp);
 		return result;
 	}

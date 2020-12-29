@@ -24,8 +24,12 @@ mvn clean install -DskipTests -Dskip=true -Dmaven.javadoc.skip=true
 # Create the jar bundle for the sansa-examples-spark only (building all bundles takes very long)
 mvn -pl sansa-examples/sansa-examples-spark -Pdist package
 
+# Make sure that the most recent test cases have been compiled
+mvn -pl sansa-integration-tests test-compile
+
 # Run the integration test
 mvn -pl sansa-integration-tests failsafe:integration-test
+
 
 ```
 
