@@ -1,14 +1,11 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import scala.collection.JavaConverters._
-
-import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
-import net.sansa_stack.query.spark.graph.jena.util.Result
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpExtend
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
+
+import scala.collection.JavaConverters._
 
 
 class ResultExtend(op: OpExtend) extends ResultOp {

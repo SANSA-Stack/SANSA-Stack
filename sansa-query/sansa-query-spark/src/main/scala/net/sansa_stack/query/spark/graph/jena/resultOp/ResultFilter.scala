@@ -1,13 +1,13 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import scala.collection.JavaConverters._
-
 import net.sansa_stack.query.spark.graph.jena.ExprParser
 import net.sansa_stack.query.spark.graph.jena.expression.Expression
 import net.sansa_stack.query.spark.graph.jena.model._
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpFilter
 import org.apache.jena.sparql.expr.ExprList
+
+import scala.collection.JavaConverters._
 
 
 /**

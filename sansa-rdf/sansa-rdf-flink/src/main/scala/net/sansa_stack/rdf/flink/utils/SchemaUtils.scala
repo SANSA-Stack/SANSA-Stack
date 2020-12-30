@@ -1,10 +1,10 @@
 package net.sansa_stack.rdf.flink.utils
 
-import scala.collection.JavaConverters._
-import scala.collection.mutable.LinkedHashMap
-
 import org.apache.calcite.avatica.ColumnMetaData.StructType
 import org.apache.calcite.rex.RexInputRef
+
+import scala.collection.JavaConverters._
+import scala.collection.mutable.LinkedHashMap
 
 object SchemaUtils {
 

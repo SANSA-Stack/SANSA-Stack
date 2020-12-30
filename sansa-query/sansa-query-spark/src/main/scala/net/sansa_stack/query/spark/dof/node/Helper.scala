@@ -1,9 +1,6 @@
 package net.sansa_stack.query.spark.dof.node
 
-import java.io.{ File, PrintWriter }
-
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.spark.rdd.RDD
+import org.apache.jena.graph.{Node, Triple}
 
 object Helper {
   val nodeMethods = Array("getPredicate", "getSubject", "getObject")

@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
 import org.apache.jena.rdf.model.impl.{LiteralImpl, ModelCom, ResourceImpl}
-import org.apache.jena.rdf.model.{Model, RDFNode, Resource}
+import org.apache.jena.rdf.model.{Model, RDFNode}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

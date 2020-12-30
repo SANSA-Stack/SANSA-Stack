@@ -8,7 +8,6 @@ import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 
 /**
@@ -244,8 +243,9 @@ object TripleOps {
    * @param path path to the file containing N-Triples
    */
   def saveAsNTriplesFile(triples: Dataset[Triple], path: String): Unit = {
-    import scala.collection.JavaConverters._
     import triples.sparkSession.implicits._
+
+    import scala.collection.JavaConverters._
     triples.mapPartitions(p => {
       // check if partition is empty
       if (p.hasNext) {

@@ -1,8 +1,9 @@
 package net.sansa_stack.query.flink.sparqlify
 
-import scala.reflect.runtime.universe.typeOf
-
 import com.typesafe.scalalogging.StrictLogging
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
+import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
+import net.sansa_stack.rdf.common.partition.schema._
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}
@@ -13,15 +14,14 @@ import org.aksw.sparqlify.validation.LoggerCount
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
-import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
-import net.sansa_stack.rdf.common.partition.schema._
+import scala.reflect.runtime.universe.typeOf
 
 object SparqlifyUtils3
   extends StrictLogging {
 
   def createSparqlSqlRewriter(flinkEnv: ExecutionEnvironment, flinkTable: BatchTableEnvironment,
-                              partitions: Map[RdfPartitionDefault, DataSet[_ <: Product]]): SparqlSqlStringRewriter = {
+                              partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                              partitions: Map[RdfPartitionStateDefault, DataSet[_ <: Product]]): SparqlSqlStringRewriter = {
     val config = new Config()
     val loggerCount = new LoggerCount(logger.underlying)
 
@@ -38,13 +38,14 @@ object SparqlifyUtils3
     partitions.map {
       case (p, ds: DataSet[Product]) =>
         logger.debug("Processing RdfPartition: " + p)
-        val vd = SparqlifyUtils2.createViewDefinition(p)
+        val vd = SparqlifyUtils2.createViewDefinition(partitioner, p)
         logger.debug("Created view definition: " + vd)
         val tableName = vd.getLogicalTable match {
           case o: LogicalTableTableName => o.getTableName
           case _ => throw new RuntimeException("Table name required - instead got: " + vd)
         }
-        val q = p.layout.schema
+        // val q = p.layout.schema
+        val q = partitioner.determineLayout(p).schema
         q match {
           case q if q =:= typeOf[SchemaStringLong] =>
             var fn = (r: Product) => r.asInstanceOf[SchemaStringLong]

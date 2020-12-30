@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.spark.partition.graph.algo
 
-import scala.reflect.ClassTag
-
-import org.apache.spark.graphx.{ Graph, PartitionID }
+import org.apache.spark.graphx.{Graph, PartitionID}
 import org.apache.spark.sql.SparkSession
+
+import scala.reflect.ClassTag
 
 abstract class PartitionAlgo[VD: ClassTag, ED: ClassTag](
   val graph: Graph[VD, ED],

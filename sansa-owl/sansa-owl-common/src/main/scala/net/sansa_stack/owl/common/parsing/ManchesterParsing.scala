@@ -3,11 +3,11 @@ package net.sansa_stack.owl.common.parsing
 import java.io
 import java.util.stream.Collectors
 
-import scala.collection.JavaConverters._
-
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet}
 import uk.ac.manchester.cs.owl.owlapi._
+
+import scala.collection.JavaConverters._
 
 
 /** Enum to match property characteristics */

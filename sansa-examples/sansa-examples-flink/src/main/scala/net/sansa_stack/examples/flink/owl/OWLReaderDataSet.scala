@@ -1,8 +1,6 @@
 package net.sansa_stack.examples.flink.owl
 
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
-
-import scala.collection.mutable
 import net.sansa_stack.owl.flink.owl._
 import org.apache.flink.api.scala.ExecutionEnvironment
 

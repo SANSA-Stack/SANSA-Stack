@@ -1,20 +1,16 @@
 package net.sansa_stack.examples.flink.inference
 
-import java.io.{File, FileInputStream}
+import java.io.File
 import java.net.URI
-import java.util.Properties
 
-import scala.io.Source
 import com.typesafe.config.ConfigFactory
-import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
-import net.sansa_stack.inference.flink.data.{RDFGraphLoader, RDFGraphWriter}
+import net.sansa_stack.inference.flink.data.RDFGraphLoader
 import net.sansa_stack.inference.flink.forwardchaining.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
-import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import net.sansa_stack.inference.rules.ReasoningProfile._
+import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.configuration.Configuration
-import org.apache.flink.runtime.webmonitor.WebMonitorUtils
 
 object RDFGraphInference {
 

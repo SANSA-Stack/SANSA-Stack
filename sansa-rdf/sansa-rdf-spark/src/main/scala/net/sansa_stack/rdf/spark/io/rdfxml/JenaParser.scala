@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.spark.io.rdfxml
 
-import org.apache.jena.riot.{RDFParser, RDFParserBuilder, RiotException}
 import org.apache.jena.riot.lang.CollectorStreamRDF
+import org.apache.jena.riot.{RDFParser, RDFParserBuilder, RiotException}
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.GenericInternalRow
 import org.apache.spark.sql.catalyst.util.BadRecordException

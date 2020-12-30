@@ -1,21 +1,21 @@
 package net.sansa_stack.query.spark.ontop;
 
-import java.util.function.Function;
-
+import com.google.inject.Inject;
 import it.unibz.inf.ontop.com.google.common.collect.HashBasedTable;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableTable;
 import it.unibz.inf.ontop.com.google.common.collect.Table;
-import com.google.inject.Inject;
 import it.unibz.inf.ontop.model.term.ImmutableTerm;
 import it.unibz.inf.ontop.model.term.TermFactory;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBBooleanFunctionSymbol;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBConcatFunctionSymbol;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbol;
-import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.*;
+import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.AbstractSQLDBFunctionSymbolFactory;
 import it.unibz.inf.ontop.model.type.DBTermType;
 import it.unibz.inf.ontop.model.type.DBTypeFactory;
 import it.unibz.inf.ontop.model.type.TypeFactory;
+
+import java.util.function.Function;
 
 /**
  * @author Lorenz Buehmann

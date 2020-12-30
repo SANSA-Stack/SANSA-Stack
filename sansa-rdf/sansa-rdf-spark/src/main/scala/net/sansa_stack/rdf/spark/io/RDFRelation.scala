@@ -2,9 +2,9 @@ package net.sansa_stack.rdf.spark.io
 
 import org.apache.jena.riot.Lang
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
 
 /**
  * @author Lorenz Buehmann

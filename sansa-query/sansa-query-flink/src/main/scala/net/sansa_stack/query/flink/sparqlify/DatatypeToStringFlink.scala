@@ -1,13 +1,12 @@
 package net.sansa_stack.query.flink.sparqlify
 
-import java.util
 import java.util.function.UnaryOperator
-
-import scala.collection.immutable.HashMap
 
 import org.aksw.sparqlify.core.TypeToken
 import org.aksw.sparqlify.core.algorithms.DatatypeToString
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.LoggerFactory
+
+import scala.collection.immutable.HashMap
 
 object DatatypeToStringFlink {
   private val logger = LoggerFactory.getLogger(classOf[DatatypeToStringFlink])

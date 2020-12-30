@@ -3,7 +3,6 @@ package net.sansa_stack.query.spark.sparqlify;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactoryBackQuery;
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
 import org.apache.spark.sql.SparkSession;
 
 public class QueryExecutionFactorySparqlifySpark

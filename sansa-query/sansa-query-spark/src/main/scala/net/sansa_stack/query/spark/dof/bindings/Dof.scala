@@ -1,8 +1,7 @@
 package net.sansa_stack.query.spark.dof.bindings
 
-import net.sansa_stack.query.spark.dof.node.{ DofTriple, Helper }
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.query.Query
+import net.sansa_stack.query.spark.dof.node.{DofTriple, Helper}
+import org.apache.jena.graph.{Node, Triple}
 
 object Dof {
 

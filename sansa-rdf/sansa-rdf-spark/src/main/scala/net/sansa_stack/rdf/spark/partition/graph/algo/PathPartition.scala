@@ -4,6 +4,7 @@ import net.sansa_stack.rdf.spark.partition.graph.utils.{Paths, VerticesPlacement
 import org.apache.spark.HashPartitioner
 import org.apache.spark.graphx.{Graph, PartitionID}
 import org.apache.spark.sql.SparkSession
+
 import scala.reflect.ClassTag
 /**
   * Path Partition Strategy expand the partitions by assign path groups of all start vertices

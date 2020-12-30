@@ -2,10 +2,7 @@ package net.sansa_stack.rdf.spark.io.rdfxml
 
 import java.io.InputStream
 
-import scala.reflect.ClassTag
-
 import com.google.common.io.ByteStreams
-
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, Path}
@@ -21,6 +18,8 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.execution.datasources.{CodecStreams, HadoopFileLinesReader, PartitionedFile}
 import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.util.TaskCompletionListener
+
+import scala.reflect.ClassTag
 
 
 

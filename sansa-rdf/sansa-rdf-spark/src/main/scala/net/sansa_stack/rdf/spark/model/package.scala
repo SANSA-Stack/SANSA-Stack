@@ -4,7 +4,7 @@ import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 /**
   * Wrap up implicit classes/methods for RDF data into [[RDD]].

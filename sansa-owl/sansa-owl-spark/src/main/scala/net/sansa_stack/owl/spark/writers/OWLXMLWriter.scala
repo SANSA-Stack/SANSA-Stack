@@ -1,13 +1,12 @@
 package net.sansa_stack.owl.spark.writers
 import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter, PrintWriter}
 
-import scala.collection.JavaConverters._
-
+import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{OWLAnnotationAssertionAxiom, OWLAnnotationPropertyDomainAxiom, OWLAnnotationPropertyRangeAxiom, OWLAsymmetricObjectPropertyAxiom, OWLClassAssertionAxiom, OWLDataPropertyAssertionAxiom, OWLDataPropertyDomainAxiom, OWLDataPropertyRangeAxiom, OWLDatatypeDefinitionAxiom, OWLDeclarationAxiom, OWLDifferentIndividualsAxiom, OWLDisjointClassesAxiom, OWLDisjointDataPropertiesAxiom, OWLDisjointObjectPropertiesAxiom, OWLDisjointUnionAxiom, OWLEquivalentClassesAxiom, OWLEquivalentDataPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLFunctionalDataPropertyAxiom, OWLFunctionalObjectPropertyAxiom, OWLHasKeyAxiom, OWLInverseFunctionalObjectPropertyAxiom, OWLInverseObjectPropertiesAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLNegativeDataPropertyAssertionAxiom, OWLNegativeObjectPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLOntologyWriterConfiguration, OWLReflexiveObjectPropertyAxiom, OWLSameIndividualAxiom, OWLSubAnnotationPropertyOfAxiom, OWLSubClassOfAxiom, OWLSubDataPropertyOfAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom}
+import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.owlxml.renderer.{OWLXMLObjectRenderer, OWLXMLWriter => OWLAPIOWLXMLWriter}
 
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import scala.collection.JavaConverters._
 
 object OWLXMLWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =

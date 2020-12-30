@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.spark.partition.graph.utils
 
 import org.apache.spark.graphx._
 import org.apache.spark.sql.SparkSession
+
 import scala.reflect.ClassTag
 /**
   * Construct triple groups for input vertices

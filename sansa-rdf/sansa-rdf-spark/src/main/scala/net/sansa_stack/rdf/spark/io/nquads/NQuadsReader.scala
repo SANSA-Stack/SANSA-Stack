@@ -3,23 +3,23 @@ package net.sansa_stack.rdf.spark.io.nquads
 import java.net.URI
 import java.util.UUID
 
-import scala.reflect.ClassTag
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
+import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
+import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseMode, WarningParseMode}
+import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
+import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.riot.RIOT
 import org.apache.jena.riot.lang.{LabelToNode, RiotParsers}
 import org.apache.jena.riot.system._
-import org.apache.jena.riot.{RIOT, SysRIOT}
 import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
-import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
-import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseMode, WarningParseMode}
-import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
-import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
+
+import scala.reflect.ClassTag
 
 /**
  * An N-Quads reader. One quad per line is assumed.

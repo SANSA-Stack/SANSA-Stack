@@ -1,8 +1,7 @@
 package net.sansa_stack.owl.spark.rdd
 
-import scala.collection.JavaConverters._
-
 import com.typesafe.scalalogging.{Logger => ScalaLogger}
+import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -11,7 +10,7 @@ import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model._
 
-import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
+import scala.collection.JavaConverters._
 
 /**
   * An implementation for building RDD[OWLAxioms] out from OWL/XML syntax format

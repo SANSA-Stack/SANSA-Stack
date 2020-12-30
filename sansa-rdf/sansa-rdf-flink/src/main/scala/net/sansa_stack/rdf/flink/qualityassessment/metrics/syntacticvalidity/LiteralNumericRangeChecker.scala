@@ -2,8 +2,7 @@ package net.sansa_stack.rdf.flink.qualityassessment.metrics.syntacticvalidity
 
 import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
 import org.apache.flink.api.scala._
-import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.vocabulary.RDF
 
 /**

@@ -1,8 +1,7 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
 import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
-import org.apache.flink.api.scala._
-import org.apache.flink.api.scala.DataSet
+import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.vocabulary.RDF
 

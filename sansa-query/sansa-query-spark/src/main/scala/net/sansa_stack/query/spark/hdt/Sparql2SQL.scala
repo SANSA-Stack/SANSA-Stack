@@ -1,8 +1,7 @@
 package net.sansa_stack.query.spark.hdt
 
 import org.apache.jena.query.QueryFactory
-import org.apache.jena.sparql.algebra.Algebra
-import org.apache.jena.sparql.algebra.OpWalker
+import org.apache.jena.sparql.algebra.{Algebra, OpWalker}
 import org.apache.jena.sparql.expr.Expr
 
 /**

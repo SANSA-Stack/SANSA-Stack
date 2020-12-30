@@ -1,18 +1,17 @@
 package net.sansa_stack.query.spark.semantic
 
-import java.io._
-import java.io.File
-import java.util.{ Scanner, StringTokenizer }
+import java.io.{File, _}
+import java.util.{Scanner, StringTokenizer}
 
 // import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
-import scala.collection.mutable.ArrayBuffer
-import scala.util.Try
-
 import com.google.common.collect.ArrayListMultimap
 import net.sansa_stack.query.spark.semantic.utils.Helpers._
 import net.sansa_stack.rdf.common.partition.utils.Symbols
 import org.apache.spark.rdd._
+
+import scala.collection.JavaConverters._
+import scala.collection.mutable.ArrayBuffer
+import scala.util.Try
 
 /*
  * QuerySystem - query on semantic partition data

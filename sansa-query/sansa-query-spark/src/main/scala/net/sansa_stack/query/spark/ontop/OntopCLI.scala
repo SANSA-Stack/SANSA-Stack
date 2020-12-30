@@ -4,17 +4,14 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Paths
 
-import scala.collection.JavaConverters._
-
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.apache.jena.query.{QueryFactory, QueryType}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, OWLOntology}
+import org.semanticweb.owlapi.model.OWLOntology
 import scopt.OParser
-
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 
 /**
  * @author Lorenz Buehmann
@@ -47,6 +44,8 @@ class OntopCLI {
       .config("spark.sql.crossJoin.enabled", "true")
       .enableHiveSupport()
       .getOrCreate()
+
+    val partitioner = RdfPartitionerComplex(false)
 
     val sparqlEngine =
       if (config.inputPath != null) {
@@ -81,16 +80,16 @@ class OntopCLI {
 
         // do partitioning here
         logger.info("computing partitions ...")
-        val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex(false))
+        val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner)
         logger.info(s"got ${partitions.keySet.size} partitions ...")
 
         // create the SPARQL engine
-        OntopSPARQLEngine(spark, partitions, Option(ont))
+        OntopSPARQLEngine(spark, partitioner, partitions, Option(ont))
       } else {
         // load partitioning metadata
         val partitions = PartitionSerDe.deserializeFrom(Paths.get(config.metaDataPath))
         // create the SPARQL engine
-        OntopSPARQLEngine(spark, config.databaseName, partitions, None)
+        OntopSPARQLEngine(spark, config.databaseName, partitioner, partitions, None)
       }
 
     var input = config.initialQuery

@@ -1,16 +1,13 @@
 package net.sansa_stack.query.spark.graph.jena
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
-
 import net.sansa_stack.query.spark.graph.jena.patternOp._
 import net.sansa_stack.query.spark.graph.jena.resultOp._
-import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
-import org.apache.jena.sparql.algebra.{ Algebra, Op, OpVisitorBase, OpWalker }
 import org.apache.jena.sparql.algebra.op._
-import org.apache.jena.sparql.expr.{ E_Exists, E_NotExists }
+import org.apache.jena.sparql.algebra.{Algebra, Op, OpVisitorBase, OpWalker}
+
+import scala.collection.mutable
+import scala.io.Source
 
 /**
  * Read sparql query from a file and convert to Op expressions.

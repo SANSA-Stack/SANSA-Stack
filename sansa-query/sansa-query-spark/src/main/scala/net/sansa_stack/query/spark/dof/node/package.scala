@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.dof
 
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.core.Var
 import org.apache.spark.rdd.RDD
 

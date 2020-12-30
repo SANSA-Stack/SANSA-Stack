@@ -1,11 +1,12 @@
 package net.sansa_stack.owl.common.parsing
 
-import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
 import org.scalatest.FunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{IRI, OWLAnnotation, OWLAxiom, OWLClassExpression, OWLDataIntersectionOf, OWLDataPropertyExpression, OWLDataPropertyRangeAxiom, OWLDataRange, OWLDataUnionOf, OWLDatatypeDefinitionAxiom, OWLDocumentFormatImpl, OWLFacetRestriction, OWLIndividual, OWLObjectInverseOf, OWLObjectProperty, OWLObjectPropertyExpression, OWLObjectUnionOf}
+import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet, XSDVocabulary}
 import uk.ac.manchester.cs.owl.owlapi._
+
+import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
 
 class ManchesterParsingTest extends FunSuite {
   // scalastyle:off

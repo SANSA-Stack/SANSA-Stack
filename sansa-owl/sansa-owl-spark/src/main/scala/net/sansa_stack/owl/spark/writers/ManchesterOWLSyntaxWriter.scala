@@ -3,14 +3,13 @@ package net.sansa_stack.owl.spark.writers
 import java.io.{ByteArrayOutputStream, OutputStreamWriter}
 import java.util.Collections
 
-import scala.collection.JavaConverters._
-
+import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.ManchesterSyntaxDocumentFormat
 import org.semanticweb.owlapi.manchestersyntax.renderer.{ManchesterOWLSyntaxFrameRenderer, ManchesterOWLSyntaxPrefixNameShortFormProvider}
 import org.semanticweb.owlapi.model.OWLOntology
 
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import scala.collection.JavaConverters._
 
 protected class SANSAManchesterOWLSyntaxFrameRenderer(
                                                        ont: OWLOntology,

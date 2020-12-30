@@ -4,10 +4,9 @@ import java.util
 
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe._
-
 import collection.JavaConverters._
 import com.google.common.collect.ImmutableMap
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.aksw.jena_sparql_api.utils.Vars
 import org.aksw.jena_sparql_api.views.E_RdfTerm
 import org.aksw.obda.domain.api.Constraint
@@ -26,13 +25,14 @@ object SparqlifyUtils2 {
     attrName
   }
 
-  def createViewDefinition(p: RdfPartitionDefault): ViewDefinition = {
+  def createViewDefinition(partitioner: RdfPartitioner[RdfPartitionStateDefault], p: RdfPartitionStateDefault): ViewDefinition = {
     // val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
     // println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
 
     // items.foreach(x => println("Item: " + x))
 
-    val t = p.layout.schema
+    val t = partitioner.determineLayout(p).schema
+    // val t = p.layout.schema
     val attrNames = t.members.sorted.collect({ case m: MethodSymbol if m.isCaseAccessor => m.name.toString })
 
     // println("Counting the dataset: " + ds.count())

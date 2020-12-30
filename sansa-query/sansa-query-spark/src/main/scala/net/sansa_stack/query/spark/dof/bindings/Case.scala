@@ -1,9 +1,8 @@
 package net.sansa_stack.query.spark.dof.bindings
 
+import net.sansa_stack.query.spark.dof.node.{DofTriple, Helper}
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.core.Var
-
-import net.sansa_stack.query.spark.dof.node.{DofTriple, Helper}
 
 object Case{
   def apply[R, N, T, A]

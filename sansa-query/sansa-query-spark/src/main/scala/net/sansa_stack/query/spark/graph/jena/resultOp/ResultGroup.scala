@@ -1,13 +1,13 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import scala.collection.JavaConverters._
-
-import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
-import net.sansa_stack.query.spark.graph.jena.util.{ Result, ResultFactory }
-import org.apache.jena.graph.{ Node, NodeFactory }
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
+import net.sansa_stack.query.spark.graph.jena.util.{Result, ResultFactory}
+import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpGroup
 import org.apache.jena.sparql.expr.ExprAggregator
+
+import scala.collection.JavaConverters._
 
 /**
  * Class that execute SPARQL GROUP BY operation.

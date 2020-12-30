@@ -2,11 +2,12 @@ package net.sansa_stack.query.spark.compliance
 
 import java.util.Properties
 
-import scala.collection.JavaConverters._
-
 import com.google.common.collect.Sets
 import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.term._
+import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.sparql.engine.ResultSetStream
@@ -16,11 +17,9 @@ import org.apache.jena.sparql.resultset.SPARQLResult
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.scalatest.tags.Slow
-import org.scalatest.{ConfigMap, DoNotDiscover, Ignore}
+import org.scalatest.{ConfigMap, DoNotDiscover}
 
-import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import scala.collection.JavaConverters._
 
 
 /**
@@ -99,12 +98,14 @@ class SPARQL11TestSuiteRunnerSparkOntop
     // distribute on Spark
     val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
 
+    val partitioner = new RdfPartitionerComplex(distinguishStringLiterals = false)
+
     // do partitioning here
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] =
-      RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex(distinguishStringLiterals = false))
+    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] =
+      RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner)
 
     // create the query engine
-    val queryEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
+    val queryEngine = OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
 
     // produce result based on query type
     val result = if (query.isSelectType) { // SELECT

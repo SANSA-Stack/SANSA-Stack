@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.io
 
-import org.apache.jena.riot.{Lang, RDFLanguages}
+import org.apache.jena.riot.RDFLanguages
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType

@@ -2,16 +2,13 @@ package net.sansa_stack.query.spark.ontop
 
 import java.util.Properties
 
-import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
-import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OntopInternalBugException}
-import it.unibz.inf.ontop.iq.exception.EmptyQueryException
-import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
-import it.unibz.inf.ontop.iq.{IQ, UnaryIQTree}
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
+import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.sparql.core.Var
@@ -30,17 +27,18 @@ import scala.collection.mutable
  * @author Lorenz Buehmann
  */
 class OntopRowMapper(
-                     obdaMappings: String,
-                     properties: Properties,
-                     partitions: Set[RdfPartitionComplex],
-                     sparqlQuery: String,
-                     ontology: Option[OWLOntology],
-                     id: String = "id") {
+                      obdaMappings: String,
+                      properties: Properties,
+                      partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                      partitions: Set[RdfPartitionStateDefault],
+                      sparqlQuery: String,
+                      ontology: Option[OWLOntology],
+                      id: String = "id") {
 
 //  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
 
-  val reformulationConfiguration = OntopConnection(obdaMappings, properties, partitions, ontology)
+  val reformulationConfiguration = OntopConnection(obdaMappings, properties, partitioner, partitions, ontology)
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory

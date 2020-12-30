@@ -3,21 +3,23 @@ package net.sansa_stack.examples.spark.query
 import java.awt.Desktop
 import java.net.URI
 
+import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, QueryExecutionFactoryOntopSpark}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
-
-import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, QueryExecutionFactoryOntopSpark}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 
 /**
   * Run SPARQL queries over Spark using Ontop as SPARQL-to-SQL rewriter.
   */
 object OntopBasedSPARQLEngine {
+
+  JenaSystem.init
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
@@ -49,10 +51,11 @@ object OntopBasedSPARQLEngine {
     val data = spark.rdf(lang)(input)
 
     // apply vertical partitioning which is necessary for the current Ontop integration
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner = RdfPartitionerComplex(false))
+    val partitioner = RdfPartitionerComplex(false)
+    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner)
 
     // create the SPARQL engine
-    val ontopEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
+    val ontopEngine = OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI
     run match {

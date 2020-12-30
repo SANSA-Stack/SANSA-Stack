@@ -1,10 +1,8 @@
 package net.sansa_stack.rdf.spark.io
 
-import java.io.{BufferedReader, InputStreamReader}
 import java.net.URI
 import java.nio.file.{Files, Paths}
 import java.util.UUID
-import java.util.stream.Collectors
 
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
@@ -71,7 +69,6 @@ object NTripleReader {
    * @return An RDD of lines from the resource's content (if that resource exists)
    */
   def loadLinesIntoRdd(session: SparkSession, filenameOrURI: String): RDD[String] = {
-    import scala.collection.JavaConverters._
 
     val classLoader = classOf[NTripleReader].getClassLoader
     val classPathResource = classLoader.getResource(filenameOrURI)

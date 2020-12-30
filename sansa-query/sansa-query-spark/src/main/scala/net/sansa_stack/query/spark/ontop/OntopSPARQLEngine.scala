@@ -4,9 +4,10 @@ import java.sql.{Connection, DriverManager, SQLException}
 import java.util
 import java.util.Properties
 
-import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
+import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
+import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.ConstructionNode
@@ -14,8 +15,7 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{QueryFactory, QueryType}
 import org.apache.jena.sparql.engine.binding.Binding
@@ -26,9 +26,8 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
-import scala.collection.JavaConverters._
 
-import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
+import scala.collection.JavaConverters._
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -59,7 +58,7 @@ case class OntopQueryRewrite(sparqlQuery: String,
  * @constructor create a new Ontop SPARQL to SQL rewriter based on RDF partitions.
  * @param partitions the RDF partitions
  */
-class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
+class OntopSPARQL2SQLRewriter(val partitioner: RdfPartitioner[RdfPartitionStateDefault], val partitions: Set[RdfPartitionStateDefault],
                               blankNodeStrategy: BlankNodeStrategy.Value,
                               ontology: Option[OWLOntology] = None)
   extends SPARQL2SQLRewriter[OntopQueryRewrite]
@@ -86,7 +85,7 @@ class OntopSPARQL2SQLRewriter(val partitions: Set[RdfPartitionComplex],
       logger.error("Error occurred when creating in-memory H2 database", e)
       throw e
   }
-  JDBCDatabaseGenerator.generateTables(connection, partitions, blankNodeStrategy)
+  JDBCDatabaseGenerator.generateTables(connection, partitioner, partitions, blankNodeStrategy)
 
   // create OBDA mappings
   val mappings = OntopMappingGenerator.createOBDAMappingsForPartitions(partitions, ontology)
@@ -134,11 +133,11 @@ object OntopSPARQL2SQLRewriter {
    * @param partitions the RDF partitions
    * @return a new SPARQL to SQL rewriter
    */
-  def apply(partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value, ontology: Option[OWLOntology])
-  : OntopSPARQL2SQLRewriter = new OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy, ontology)
+  def apply(partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Set[RdfPartitionStateDefault], blankNodeStrategy: BlankNodeStrategy.Value, ontology: Option[OWLOntology])
+  : OntopSPARQL2SQLRewriter = new OntopSPARQL2SQLRewriter(partitioner, partitions, blankNodeStrategy, ontology)
 
-  def apply(partitions: Set[RdfPartitionComplex], blankNodeStrategy: BlankNodeStrategy.Value)
-  : OntopSPARQL2SQLRewriter = new OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy)
+  def apply(partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Set[RdfPartitionStateDefault], blankNodeStrategy: BlankNodeStrategy.Value)
+  : OntopSPARQL2SQLRewriter = new OntopSPARQL2SQLRewriter(partitioner, partitions, blankNodeStrategy)
 
 }
 
@@ -152,7 +151,8 @@ object OntopSPARQL2SQLRewriter {
  */
 class OntopSPARQLEngine(val spark: SparkSession,
                         val databaseName: String,
-                        val partitions: Set[RdfPartitionComplex],
+                        val partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                        val partitions: Set[RdfPartitionStateDefault],
                         var ontology: Option[OWLOntology]) {
 
   private val logger = com.typesafe.scalalogging.Logger[OntopSPARQLEngine]
@@ -164,7 +164,7 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
 
-  private val sparql2sql = OntopSPARQL2SQLRewriter(partitions, blankNodeStrategy, ontology)
+  private val sparql2sql = OntopSPARQL2SQLRewriter(partitioner, partitions, blankNodeStrategy, ontology)
 
   val typeFactory = sparql2sql.typeFactory
 
@@ -376,13 +376,14 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val sparqlQueryBC = spark.sparkContext.broadcast(query)
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
+    val partitionerBC = spark.sparkContext.broadcast(partitioner)
     val partitionsBC = spark.sparkContext.broadcast(partitions)
     val ontologyBC = spark.sparkContext.broadcast(ontology)
 
     implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
     df.coalesce(20).mapPartitions(iterator => {
 //      println("mapping partition")
-      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value, ontologyBC.value)
+      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionerBC.value, partitionsBC.value, sparqlQueryBC.value, ontologyBC.value)
       val it = iterator.map(mapper.map)
 //      mapper.close()
       it
@@ -418,12 +419,13 @@ class OntopSPARQLEngine(val spark: SparkSession,
     val sparqlQueryBC = spark.sparkContext.broadcast(query)
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappings)
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
+    val partitionerBC = spark.sparkContext.broadcast(partitioner)
     val partitionsBC = spark.sparkContext.broadcast(partitions)
     val ontologyBC = spark.sparkContext.broadcast(ontology)
 
     implicit val tripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
     df.mapPartitions(iterator => {
-      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionsBC.value, sparqlQueryBC.value, ontologyBC.value)
+      val mapper = new OntopRowMapper(mappingsBC.value, propertiesBC.value, partitionerBC.value, partitionsBC.value, sparqlQueryBC.value, ontologyBC.value)
       val it = mapper.toTriples(iterator)
       mapper.close()
       it
@@ -445,14 +447,14 @@ object OntopSPARQLEngine {
     new OntopCLI().run(args)
   }
 
-  def apply(spark: SparkSession, databaseName: String, partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology]): OntopSPARQLEngine
-  = new OntopSPARQLEngine(spark, databaseName, partitions, ontology)
+  def apply(spark: SparkSession, databaseName: String, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Set[RdfPartitionStateDefault], ontology: Option[OWLOntology]): OntopSPARQLEngine
+  = new OntopSPARQLEngine(spark, databaseName, partitioner, partitions, ontology)
 
-  def apply(spark: SparkSession, partitions: Map[RdfPartitionComplex, RDD[Row]], ontology: Option[OWLOntology]): OntopSPARQLEngine = {
+  def apply(spark: SparkSession, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]], ontology: Option[OWLOntology]): OntopSPARQLEngine = {
     // create and register Spark tables
-    SparkTableGenerator(spark).createAndRegisterSparkTables(partitions)
+    SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner, partitions)
 
-    new OntopSPARQLEngine(spark, null, partitions.keySet, ontology)
+    new OntopSPARQLEngine(spark, null, partitioner, partitions.keySet, ontology)
   }
 
 }

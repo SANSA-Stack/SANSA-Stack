@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.utils
 
-import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.graph.Node
 import org.apache.spark.sql.DataFrame
 
 abstract class NodeIndexer {

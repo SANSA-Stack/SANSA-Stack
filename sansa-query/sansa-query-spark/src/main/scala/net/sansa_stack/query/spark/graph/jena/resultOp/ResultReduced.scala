@@ -1,10 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpReduced
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 
 /**
  * Class that execute REDUCED modifier. Support syntax as SELECT REDUCED ?user WHERE ...

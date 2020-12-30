@@ -2,18 +2,17 @@ package net.sansa_stack.datalake.spark
 
 import java.util
 
+import com.google.common.collect.ArrayListMultimap
+import com.typesafe.scalalogging.Logger
+import net.sansa_stack.datalake.spark.utils.Helpers
+import net.sansa_stack.datalake.spark.utils.Helpers._
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Json, Reads, __}
+
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-
-import com.google.common.collect.ArrayListMultimap
-import com.typesafe.scalalogging.Logger
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, Reads, __}
-
-import net.sansa_stack.datalake.spark.utils.Helpers
-import net.sansa_stack.datalake.spark.utils.Helpers._
 
 
 class Planner(stars: mutable.HashMap[String, mutable.Set[(String, String)]] with mutable.MultiMap[String, (String, String)]) {

@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.partition.semantic.SemanticRdfPartitionUtilsSpark
 import org.apache.jena.graph.Triple
@@ -25,8 +25,8 @@ package object partition {
     /**
      * Default partition - using VP.
      */
-    def partitionGraph(): Map[RdfPartitionDefault, RDD[Row]] = {
-      RdfPartitionUtilsSpark.partitionGraph(triples)
+    def partitionGraph(): Map[RdfPartitionStateDefault, RDD[Row]] = {
+      RdfPartitionUtilsSpark.partitionGraph(triples, RdfPartitionerDefault)
     }
 
     /**

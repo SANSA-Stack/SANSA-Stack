@@ -1,15 +1,7 @@
 package net.sansa_stack.owl.flink
 
-import org.apache.flink.api.scala.{ DataSet, ExecutionEnvironment }
-
-import net.sansa_stack.owl.flink.dataset.{
-  FunctionalSyntaxOWLAxiomsDataSetBuilder,
-  FunctionalSyntaxOWLExpressionsDataSetBuilder,
-  ManchesterSyntaxOWLAxiomsDataSetBuilder,
-  ManchesterSyntaxOWLExpressionsDataSetBuilder,
-  OWLAxiomsDataSet,
-  OWLExpressionsDataSet
-}
+import net.sansa_stack.owl.flink.dataset._
+import org.apache.flink.api.scala.ExecutionEnvironment
 
 /**
  * Wrap up implicit classes/methods to read OWL data into a

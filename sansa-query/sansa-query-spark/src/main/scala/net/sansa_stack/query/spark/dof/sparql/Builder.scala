@@ -1,8 +1,9 @@
 package net.sansa_stack.query.spark.dof.sparql
 
-import net.sansa_stack.query.spark.dof.bindings.{ Bindings, Dof, Result }
-import net.sansa_stack.query.spark.dof.node.{ Constraints, Helper }
+import net.sansa_stack.query.spark.dof.bindings.{Bindings, Dof, Result}
+import net.sansa_stack.query.spark.dof.node.Constraints
 import net.sansa_stack.query.spark.dof.tensor.Tensor
+
 import scala.reflect.ClassTag
 
 class Builder[R, N: ClassTag, T, A](model: Tensor[R, N, T, A], constraints: Constraints) {

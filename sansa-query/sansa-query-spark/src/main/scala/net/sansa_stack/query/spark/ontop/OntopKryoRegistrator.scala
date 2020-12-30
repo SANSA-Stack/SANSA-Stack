@@ -23,8 +23,8 @@ class OntopKryoRegistrator extends KryoRegistrator {
     // kryo.register(classOf[HashMap[_, _]])
 
     // Partitioning
-    kryo.register(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex])
-    kryo.register(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex]])
+    kryo.register(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault])
+    kryo.register(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault]])
 
     kryo.register(classOf[Array[Binding]])
 

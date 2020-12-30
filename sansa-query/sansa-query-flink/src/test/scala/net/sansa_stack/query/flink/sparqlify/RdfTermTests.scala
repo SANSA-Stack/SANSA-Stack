@@ -2,7 +2,7 @@ package net.sansa_stack.query.flink.sparqlify
 
 import org.aksw.jena_sparql_api.views.E_RdfTerm
 import org.aksw.sparqlify.util.SparqlifyCoreInit
-import org.apache.jena.query.{ Query, Syntax }
+import org.apache.jena.query.{Query, Syntax}
 import org.apache.jena.sparql.ARQConstants
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.ExprVar

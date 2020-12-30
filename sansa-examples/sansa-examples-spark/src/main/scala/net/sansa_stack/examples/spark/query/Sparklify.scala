@@ -4,6 +4,7 @@ import java.awt.Desktop
 import java.net.URI
 
 import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
@@ -13,7 +14,7 @@ import org.apache.spark.sql.SparkSession
 
 /**
   * Run SPARQL queries over Spark using Sparqlify engine.
-  * 
+  *
   * Note: To run this class outside of spark-submit (e.g. from an IDE) you can specify a
   * spark master using a JVM argument: -Dspark.master=local[*]
   */
@@ -61,8 +62,9 @@ object Sparklify {
         val result = graphRdd.sparql(config.queryString)
         result.rdd.foreach(println)
       case _ =>
-        val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
-        val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
+        val partitioner = RdfPartitionerDefault
+        val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
+        val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitioner, partitions)
 
         val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(config.port).create()

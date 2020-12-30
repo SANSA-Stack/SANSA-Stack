@@ -1,14 +1,13 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import scala.collection.JavaConverters._
-import scala.reflect._
-
-import net.sansa_stack.query.spark.graph.jena.ExprParser
 import net.sansa_stack.query.spark.graph.jena.model.IntermediateResult
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpOrder
 import org.apache.spark.rdd.RDD
+
+import scala.collection.JavaConverters._
+import scala.reflect._
 
 /**
  * Class that execute SPARQL ORDER BY operation.
