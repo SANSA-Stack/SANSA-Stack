@@ -77,15 +77,15 @@ object OntopBasedSPARQLEngine {
     run match {
       case "cli" =>
         // only SELECT queries will be considered here
-        val result = ontopEngine.execSelect(sparqlQuery)
+        val result = ontopEngine.execSelect(sparqlQuery).collect()
         // show bindings on command line
         result.foreach(println)
       case "endpoint" =>
         val qef = new QueryExecutionFactoryOntopSpark(spark, ontopEngine)
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
-        if (Desktop.isDesktopSupported) {
-          Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
-        }
+//        if (Desktop.isDesktopSupported) {
+//          Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
+//        }
         server.join()
       case _ => // should never happen
     }
@@ -120,7 +120,7 @@ object OntopBasedSPARQLEngine {
       .action((x, c) => c.copy(database = x))
       .text("the name of the Spark database used as KB")
 
-    opt[String]('q', "sparql").optional().valueName("<query>").
+    opt[String]('q', "query").optional().valueName("<query>").
       action((x, c) => c.copy(sparql = x)).
       validate(x => try {
         QueryFactory.create(x)

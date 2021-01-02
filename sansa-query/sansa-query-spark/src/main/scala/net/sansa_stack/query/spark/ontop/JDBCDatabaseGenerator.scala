@@ -89,7 +89,7 @@ object JDBCDatabaseGenerator {
               case _ => logger.error("TODO: bnode H2 SQL table for Ontop mappings")
                 ""
             }
-            logger.trace(s)
+            logger.debug(s)
             stmt.addBatch(s)
           case _ => logger.error(s"wrong partition type: ${p}")
         }
