@@ -3,15 +3,19 @@ package net.sansa_stack.integration.test;
 import com.github.dockerjava.api.model.ContainerNetwork;
 import com.google.common.io.ByteSource;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
+import org.aksw.commons.util.healthcheck.HealthcheckRunner;
+import org.aksw.jena_sparql_api.core.utils.QueryExecutionUtils;
 import org.aksw.jena_sparql_api.delay.extra.Delayer;
 import org.aksw.jena_sparql_api.delay.extra.DelayerDefault;
+import org.aksw.jena_sparql_api.rx.SparqlRx;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jena.atlas.test.Gen;
-import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.query.*;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionFactory;
 import org.apache.jena.riot.system.stream.StreamManager;
+import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import org.apache.spark.SparkContext;
 import org.apache.spark.deploy.SparkSubmit;
 import org.apache.spark.sql.SparkSession;
@@ -40,7 +44,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class SansaIT {
@@ -82,6 +88,9 @@ public class SansaIT {
     public String SPARK_TEST_PORT_KEY = "SPARK_TEST_PORT";
 
 
+    public static final Query spoQuery = QueryFactory.create("SELECT * { ?s ?p ?o }");
+
+
     public GenericContainer sparkSubmit(Path jarBundlePath, String[] cmdArgs) {
         String basePath = "/spark/bin/";
         String[] cmd = ArrayUtils.insert(0, cmdArgs, basePath + "spark-submit");
@@ -97,10 +106,15 @@ public class SansaIT {
         System.out.println("Cmd: " + Arrays.toString(cmd));
         GenericContainer result = new GenericContainer(sparkSubmitImage)
                 .withCopyFileToContainer(MountableFile.forHostPath(jarBundlePath), "/spark/bin/" + jarBundlePath.getFileName())
-                //.withNetworkAliases(network.getAliases().toArray(new String[0]))
                 .withNetwork(newNetwork(networkId))
-                .withLogConsumer(new Slf4jLogConsumer(logger))
                 .withCommand(cmd);
+
+        boolean debug = false;
+
+        if (debug) {
+            // Log output from the containers
+            result.withLogConsumer(new Slf4jLogConsumer(logger));
+        }
 
         return result;
     }
@@ -182,11 +196,42 @@ public class SansaIT {
         System.out.println("READ: " + bs.asCharSource(StandardCharsets.UTF_8).read());
     }
 
+    public void sparkSubmitAndValidateBindingCounts(
+            Path jarBundleHostPath,
+            String[] args,
+            String sparqlEndpointUrl,
+            Map<Query, Long> queryAndBindingCount) {
+
+        try (GenericContainer submitContainer = sparkSubmit(jarBundleHostPath, args)
+                .withExposedPorts(sparkTestPort)
+                .waitingFor(Wait.forLogMessage(".*", 1))) {
+
+            submitContainer.setPortBindings(Arrays.asList("" + sparkTestPort + ":" + sparkTestPort));
+            submitContainer.start();
+
+            for (Map.Entry<Query, Long> e : queryAndBindingCount.entrySet()) {
+                Query query = e.getKey();
+                long expectedBindingCount = e.getValue();
+
+                long resultSetSize = HealthcheckRunner.builder()
+                        .setRetryCount(100)
+                        .setInterval(1, TimeUnit.SECONDS)
+                        .setAction(() -> SparqlRx.fetchBindingCount(sparqlEndpointUrl, query).blockingGet())
+                        .addContinuationCondition(submitContainer::isRunning)
+                        .build()
+                        .call();
+
+                Assert.assertEquals(expectedBindingCount, resultSetSize);
+            }
+        }
+
+    }
+
     @Test
     public void testSparqlifySubmit() throws Exception {
         Path jarBundleHostPath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().normalize(); //.toString();
-        String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
         Path jarBundleContainerPath = jarBundleHostPath.getFileName();
+        String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
 
         String[] args = new String[] {
                  "--class", "net.sansa_stack.examples.spark.query.Sparklify",
@@ -200,50 +245,16 @@ public class SansaIT {
                 "-p", Integer.toString(sparkTestPort)
         };
 
-        long resultSetSize = -1;
-        try (GenericContainer submitContainer = sparkSubmit(jarBundleHostPath, args)
-                .withExposedPorts(sparkTestPort)
-                .waitingFor(Wait.forLogMessage(".*", 1))) {
-
-            //submitContainer.setPortBindings();
-            submitContainer.setPortBindings(Arrays.asList("" + sparkTestPort + ":" + sparkTestPort));
-
-            // submitContainer.withExposedPorts(sparkTestPort);
-            // submitContainer.withExposedPorts(sparkTestPort);
-            // System.out.println("PORT BINDINGS: " + submitContainer.getPortBindings());
-
-            submitContainer.start();
-            // String host = submitContainer.getHost();
-            // System.out.println("Host = " + host);
-//            Thread submitThread = new Thread(() -> {
-//                submitContainer.start();
-//            });
-//            submitThread.start();
-
-            resultSetSize = AwaitUtils.countResultBindings(
-                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitContainer::isRunning);
-            // submitThread::isAlive
-        }
-/*
-        try (GenericContainer submitContainer = sparkSubmit(jarBundleHostPath, args)) {
-//            long resultSetSize = AwaitUtils.countResultBindings(
-//                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitContainer::isRunning);
-
-            long resultSetSize = AwaitUtils.countResultBindings(
-                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", () -> true);
-
-            // TODO Asserting the number of triples of a file called rdf.nt in the root of the classpath is fragile
-            Assert.assertEquals(106, resultSetSize);
-        }
-*/
-        Assert.assertEquals(106, resultSetSize);
+        sparkSubmitAndValidateBindingCounts(
+                jarBundleHostPath, args, sparqlEndpointUrl,
+                Collections.singletonMap(spoQuery, 106l));
     }
 
     @Test
     public void testOntopSubmit() throws Exception {
         Path jarBundleHostPath = IOUtils.findLatestFile(exampleJarBundleFolder, "*jar-with-dependencies*").toAbsolutePath().normalize(); //.toString();
-        String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
         Path jarBundleContainerPath = jarBundleHostPath.getFileName();
+        String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
 
         String[] args = new String[] {
                 // "--class", "net.sansa_stack.examples.spark.query.Sparklify",
@@ -256,21 +267,11 @@ public class SansaIT {
                 "-i", "rdf.nt",
                 "-r", "endpoint",
                 "-p", Integer.toString(sparkTestPort)
-
         };
 
-        long resultSetSize = -1;
-        try (GenericContainer submitContainer = sparkSubmit(jarBundleHostPath, args)
-                .withExposedPorts(sparkTestPort)
-                .waitingFor(Wait.forLogMessage(".*", 1))) {
-
-            submitContainer.setPortBindings(Arrays.asList("" + sparkTestPort + ":" + sparkTestPort));
-
-            submitContainer.start();
-
-            resultSetSize = AwaitUtils.countResultBindings(
-                    sparqlEndpointUrl, "SELECT * { ?s ?p ?o }", submitContainer::isRunning);
-        }
+        sparkSubmitAndValidateBindingCounts(
+                jarBundleHostPath, args, sparqlEndpointUrl,
+                Collections.singletonMap(spoQuery, 106l));
     }
 
 
