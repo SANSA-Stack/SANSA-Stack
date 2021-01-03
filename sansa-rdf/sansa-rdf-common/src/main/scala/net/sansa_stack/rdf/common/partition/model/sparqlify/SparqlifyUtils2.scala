@@ -44,7 +44,7 @@ object SparqlifyUtils2 {
     val pn = NodeFactory.createURI(p.predicate)
 
     val dt = p.datatype
-    val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
+    val dtPart = if (dt != null && dt.nonEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
     val langPart = if (p.langTagPresent) "_lang" else ""
 
     val sTermTypePart = if (p.subjectType == 0) "sbn" else ""

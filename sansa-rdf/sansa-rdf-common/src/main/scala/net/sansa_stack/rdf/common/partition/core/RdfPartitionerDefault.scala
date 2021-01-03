@@ -4,8 +4,14 @@ import net.sansa_stack.rdf.common.partition.layout._
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.vocabulary.XSD
 
+/**
+ * The default partition.
+ * Puts all literals with any floating point number into `Double` type partition and all integer literals into
+ * a `Long` type partition.
+ */
 object RdfPartitionerDefault
-  extends RdfPartitionerBase with Serializable {
+  extends RdfPartitionerBase
+    with Serializable {
 
   def determineLayoutDatatype(dtypeIri: String): TripleLayout = {
     val dti = if (dtypeIri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString") {
@@ -19,8 +25,8 @@ object RdfPartitionerDefault
 
     // val v = node.getLiteralValue
     v match {
-      case w if (w == classOf[java.lang.Byte] || w == classOf[java.lang.Short] || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long]) => TripleLayoutLong
-      case w if (w == classOf[java.lang.Float] || w == classOf[java.lang.Double]) => TripleLayoutDouble
+      case w if w == classOf[java.lang.Byte] || w == classOf[java.lang.Short] || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long] => TripleLayoutLong
+      case w if w == classOf[java.lang.Float] || w == classOf[java.lang.Double] => TripleLayoutDouble
       case w if dtypeIri == XSD.date.getURI => TripleLayoutStringDate
       // case w if(w == classOf[String]) => TripleLayoutString
       case w => TripleLayoutString

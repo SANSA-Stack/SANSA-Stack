@@ -10,11 +10,11 @@ import org.apache.jena.graph.Triple
  *   <li>Testing for whether a given triple would fit into the partition denoted
  *       by an instance of "S"</li>
  *   <li>Mapping of partition objects to TripleLayouts.
- *       TripleLayouts correspond to a table with a certain scala-based schma
+ *       TripleLayouts correspond to a table with a certain scala-based schema
  *       and they can map triples to tuples suitable for serving as rows w.r.t. the schema</li>
  * </ul>
  *
- * @tparam S
+ * @tparam S the partition type handled by the partitioner
  */
 trait RdfPartitioner[S] {
   /** Create a partition state from the given triple */
