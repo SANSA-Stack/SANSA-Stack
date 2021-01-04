@@ -2,13 +2,13 @@ package net.sansa_stack.rdf.spark.streaming
 
 import java.io.ByteArrayInputStream
 
-import scala.collection.mutable.ArrayBuffer
-
 import org.apache.jena.graph.Triple
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.{ Duration, StreamingContext, Time }
-import org.apache.spark.streaming.dstream.{ DStream, InputDStream }
+import org.apache.spark.streaming.dstream.{DStream, InputDStream}
+import org.apache.spark.streaming.{Duration, StreamingContext, Time}
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * @author Gezim Sejdiu

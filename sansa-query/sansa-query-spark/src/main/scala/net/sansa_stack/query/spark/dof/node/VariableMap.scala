@@ -4,6 +4,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.sparql.core.Var
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
 import scala.reflect.ClassTag
 
 class VariableMap[N: ClassTag](spark: SparkSession, constraints: Constraints)

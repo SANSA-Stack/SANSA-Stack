@@ -1,6 +1,13 @@
 package net.sansa_stack.query.spark
 
 import com.google.common.cache.{CacheBuilder, CacheLoader}
+import net.sansa_stack.query.spark.datalake.DataLakeEngine
+import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
+import net.sansa_stack.query.spark.semantic.QuerySystem
+import net.sansa_stack.query.spark.sparqlify.{QueryExecutionSpark, SparkRowMapperSparqlify, SparqlifyUtils3}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, RdfPartitionerDefault}
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.rdf.spark.utils.kryo.io.JavaKryoSerializationWrapper
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.engine.binding.Binding
@@ -9,14 +16,6 @@ import org.apache.spark.api.java.function.Function
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.model.OWLOntology
-
-import net.sansa_stack.query.spark.datalake.DataLakeEngine
-import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.query.spark.semantic.QuerySystem
-import net.sansa_stack.query.spark.sparqlify.{QueryExecutionSpark, SparkRowMapperSparqlify, SparqlifyUtils3}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionDefault, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.rdf.spark.utils.kryo.io.JavaKryoSerializationWrapper
 
 /**
  * Wrap up implicit classes/methods to query RDF data from N-Triples files into either [[Sparqlify]] or
@@ -44,7 +43,8 @@ package object query {
 
     private val queryExecutor = {
       engine match {
-        case SPARQLEngine.Ontop => new OntopSPARQLExecutor(triples)
+        case SPARQLEngine.Ontop => new OntopSPARQLExecutor(
+          new RdfPartitionerComplex(false), triples)
         case SPARQLEngine.Sparqlify => new SparqlifySPARQLExecutor(triples)
       }
     }
@@ -81,13 +81,13 @@ package object query {
     val underlyingGuavaCache = CacheBuilder.newBuilder()
       .maximumSize(10L)
       .build (
-        new CacheLoader[RDD[Triple], Map[RdfPartitionComplex, RDD[Row]]] {
-          def load(triples: RDD[Triple]): Map[RdfPartitionComplex, RDD[Row]] =
+        new CacheLoader[RDD[Triple], Map[RdfPartitionStateDefault, RDD[Row]]] {
+          def load(triples: RDD[Triple]): Map[RdfPartitionStateDefault, RDD[Row]] =
             RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex(false))
         }
       )
 
-    def getOrCreate(triples: RDD[Triple]): Map[RdfPartitionComplex, RDD[Row]] = underlyingGuavaCache.get(triples)
+    def getOrCreate(triples: RDD[Triple]): Map[RdfPartitionStateDefault, RDD[Row]] = underlyingGuavaCache.get(triples)
 
   }
 
@@ -118,17 +118,21 @@ package object query {
    * @param ontology an optional ontology containing schema information like classes, class hierarchy, etc. which
    *                 can be used for query optimization as well as OWL QL inference based query rewriting
    */
-  class OntopSPARQLExecutor(partitions: Map[RdfPartitionComplex, RDD[Row]], ontology: Option[OWLOntology] = None)
+  class OntopSPARQLExecutor(partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]], ontology: Option[OWLOntology] = None)
     extends QueryExecutor
       with Serializable {
 
+    def this(partitioner: RdfPartitioner[RdfPartitionStateDefault], triples: RDD[Triple]) {
+      this(partitioner, RdfPartitionUtilsSpark.partitionGraph(triples, partitioner))
+    }
+
     def this(triples: RDD[Triple]) {
-      this(RdfPartitionUtilsSpark.partitionGraph(triples, partitioner = RdfPartitionerComplex(false)))
+      this(new RdfPartitionerComplex(), triples)
     }
 
     val spark = SparkSession.builder().getOrCreate()
 
-    val sparqlEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
+    val sparqlEngine = OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
 
     /**
      * Default partition - using VP.
@@ -147,7 +151,7 @@ package object query {
    *
    * @param partitions the RDF partitions to work on
    */
-  class SparqlifySPARQLExecutor(var partitions: Map[RdfPartitionDefault, RDD[Row]])
+  class SparqlifySPARQLExecutor(var partitions: Map[RdfPartitionStateDefault, RDD[Row]])
     extends QueryExecutor
       with Serializable {
 
@@ -159,12 +163,12 @@ package object query {
      * @param triples the triples to work on
      */
     def this(triples: RDD[Triple]) {
-      this(RdfPartitionUtilsSpark.partitionGraph(triples))
+      this(RdfPartitionUtilsSpark.partitionGraph(triples, RdfPartitionerDefault))
     }
 
     val spark = SparkSession.builder().getOrCreate()
 
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, RdfPartitionerDefault, partitions)
 
     override def sparql(sparqlQuery: String): DataFrame = {
       val query = QueryFactory.create(sparqlQuery)

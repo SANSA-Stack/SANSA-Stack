@@ -1,8 +1,7 @@
 package net.sansa_stack.owl.spark.rdd
 
-import scala.collection.JavaConverters._
-
 import com.typesafe.scalalogging.{Logger => ScalaLogger}
+import net.sansa_stack.owl.common.parsing.{RDFXMLSyntaxParsing, RDFXMLSyntaxPrefixParsing}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.JobConf
 import org.apache.log4j.{Level, Logger => Log4JLogger}
@@ -10,7 +9,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.model.OWLAxiom
 
-import net.sansa_stack.owl.common.parsing.{RDFXMLSyntaxParsing, RDFXMLSyntaxPrefixParsing}
+import scala.collection.JavaConverters._
 
 
 class RDFXMLSyntaxOWLExpressionsRDDBuilder extends Serializable with RDFXMLSyntaxPrefixParsing with RDFXMLSyntaxParsing {

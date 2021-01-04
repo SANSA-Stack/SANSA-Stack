@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.dof.node
 
 import org.apache.spark.rdd.RDD
+
 import scala.reflect.ClassTag
 
 class SPO[N: ClassTag](spo: Seq[RDD[N]]) extends java.io.Serializable {

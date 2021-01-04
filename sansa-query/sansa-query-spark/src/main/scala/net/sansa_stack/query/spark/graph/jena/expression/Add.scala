@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.expression
 
 import net.sansa_stack.query.spark.graph.jena.util.Result
-import org.apache.jena.graph.{ Node, NodeFactory }
+import org.apache.jena.graph.{Node, NodeFactory}
 
 class Add(left: Expression, right: Expression) extends FunctionTwo(left, right) {
 

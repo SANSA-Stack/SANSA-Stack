@@ -5,9 +5,8 @@ import java.util.Properties
 
 import it.unibz.inf.ontop.answering.connection.OntopConnection
 import it.unibz.inf.ontop.injection.OntopReformulationSQLConfiguration
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.semanticweb.owlapi.model.OWLOntology
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
 /**
  * Used to keep expensive resource per executor alive.
@@ -36,13 +35,13 @@ object OntopConnection {
     connection.close()
   }
 
-  var configs = Map[Set[RdfPartitionComplex], OntopReformulationSQLConfiguration]()
+  var configs = Map[Set[RdfPartitionStateDefault], OntopReformulationSQLConfiguration]()
 
-  def apply(obdaMappings: String, properties: Properties, partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
+  def apply(obdaMappings: String, properties: Properties, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Set[RdfPartitionStateDefault], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
     val conf = configs.getOrElse(partitions, {
       logger.debug("creating reformulation config")
       val reformulationConfiguration = {
-        JDBCDatabaseGenerator.generateTables(connection, partitions)
+        JDBCDatabaseGenerator.generateTables(connection, partitioner, partitions)
 
         OntopUtils.createReformulationConfig(obdaMappings, properties, ontology)
       }

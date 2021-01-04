@@ -1,10 +1,5 @@
 package net.sansa_stack.examples.spark.rdf
 
-import java.io.File
-import java.net.URI
-
-import scala.collection.mutable
-
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession

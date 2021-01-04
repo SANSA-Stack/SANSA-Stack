@@ -2,8 +2,6 @@ package net.sansa_stack.query.spark.graph.jena.expression
 
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
-import org.apache.jena.sparql.expr.{ E_Lang, E_LangMatches, Expr, NodeValue }
-import org.apache.jena.sparql.expr.nodevalue.NodeFunctions
 
 class LangMatches(left: Expression, right: Expression) extends FilterTwo(left, right) {
 

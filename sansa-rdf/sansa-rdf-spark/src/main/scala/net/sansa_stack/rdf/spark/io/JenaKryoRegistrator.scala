@@ -18,8 +18,8 @@ class JenaKryoRegistrator extends KryoRegistrator {
     HashMultimapSerializer.registerSerializers(kryo);
 
     // Partitioning
-    kryo.register(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault])
-    kryo.register(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault]])
+    kryo.register(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault])
+    kryo.register(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault]])
 
     kryo.register(classOf[org.apache.jena.graph.Node], new NodeSerializer)
     kryo.register(classOf[Array[org.apache.jena.graph.Node]], new NodeArraySerializer)

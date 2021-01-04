@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.playground
 
-import org.apache.spark.sql.{ Row, SparkSession }
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SparkSession}
 import org.scalatest._
 
 class TestSparkSqlJoin extends FlatSpec {
@@ -13,8 +13,6 @@ class TestSparkSqlJoin extends FlatSpec {
       .master("local[2]")
       .appName("Spark SQL parser bug")
       .getOrCreate()
-
-    import spark.implicits._
 
     spark.conf.set("spark.sql.crossJoin.enabled", "true")
 

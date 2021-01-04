@@ -10,7 +10,7 @@ package net.sansa_stack.rdf.spark.kge.convertor
  * Created by Hamed Shariat Yazdi
  */
 
-import net.sansa_stack.rdf.spark.kge.triples.{ IntegerTriples, StringTriples }
+import net.sansa_stack.rdf.spark.kge.triples.{IntegerTriples, StringTriples}
 import org.apache.spark.sql._
 
 class ByIndex(data: Dataset[StringTriples], sk: SparkSession)

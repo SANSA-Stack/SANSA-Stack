@@ -1,6 +1,6 @@
 package net.sansa_stack.examples.spark.owl
 
-import net.sansa_stack.owl.spark.dataset.{ FunctionalSyntaxOWLAxiomsDatasetBuilder, ManchesterSyntaxOWLAxiomsDatasetBuilder }
+import net.sansa_stack.owl.spark.dataset.{FunctionalSyntaxOWLAxiomsDatasetBuilder, ManchesterSyntaxOWLAxiomsDatasetBuilder}
 import org.apache.spark.sql.SparkSession
 
 object OWLReaderDataset {

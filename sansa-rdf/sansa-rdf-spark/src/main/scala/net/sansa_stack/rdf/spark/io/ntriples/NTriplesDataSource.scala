@@ -2,9 +2,9 @@ package net.sansa_stack.rdf.spark.io.ntriples
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.{DataFrame, SaveMode, SQLContext}
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 /**
   * The data source for handling N-Triples, i.e. reading from and writing to disk.

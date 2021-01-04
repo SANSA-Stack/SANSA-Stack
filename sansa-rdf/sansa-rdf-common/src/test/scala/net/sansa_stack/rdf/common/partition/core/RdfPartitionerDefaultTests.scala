@@ -34,8 +34,8 @@ class RdfPartitionerDefaultTests extends FunSuite {
   }
 
   test("getting partitioning layout from [[Triple]] should match") {
-    val expectedPartition = new RdfPartitionDefault(1, "http://xmlns.com/foaf/0.1/givenName",
-      2, "http://www.w3.org/2001/XMLSchema#string", true)
+    val expectedPartition = new RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
+      2, "http://www.w3.org/2001/XMLSchema#string", true, Option.empty)
     assert(fromTriple(triple).equals(expectedPartition))
   }
 

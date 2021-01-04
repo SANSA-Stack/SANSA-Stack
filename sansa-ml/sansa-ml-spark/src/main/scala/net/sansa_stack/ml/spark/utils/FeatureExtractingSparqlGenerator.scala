@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths, StandardOpenOption}
+import java.nio.file.{Files, Paths}
 
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._

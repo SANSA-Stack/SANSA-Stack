@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.dof.bindings
 
 import org.apache.jena.sparql.core.Var
-import scala.reflect.ClassTag
 
 /*
  * Resulting class for bindings

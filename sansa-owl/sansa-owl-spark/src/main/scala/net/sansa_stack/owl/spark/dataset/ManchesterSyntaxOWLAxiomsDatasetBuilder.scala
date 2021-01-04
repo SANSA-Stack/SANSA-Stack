@@ -1,11 +1,10 @@
 package net.sansa_stack.owl.spark.dataset
 
 import com.typesafe.scalalogging.Logger
+import net.sansa_stack.owl.common.parsing.ManchesterSyntaxParsing
 import org.apache.spark.sql.{Encoders, SparkSession}
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model.{OWLAxiom, OWLRuntimeException}
-
-import net.sansa_stack.owl.common.parsing.ManchesterSyntaxParsing
 
 object ManchesterSyntaxOWLAxiomsDatasetBuilder extends ManchesterSyntaxParsing {
   private val logger = Logger(this.getClass)

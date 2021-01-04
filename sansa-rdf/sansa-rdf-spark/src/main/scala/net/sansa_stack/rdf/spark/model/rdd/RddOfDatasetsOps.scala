@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
-import org.apache.jena.query.{Dataset, DatasetFactory, QueryExecutionFactory, QueryFactory, Syntax}
+import org.apache.jena.query._
 import org.apache.jena.rdf.model.Resource
 import org.apache.spark.rdd.RDD
 

@@ -1,10 +1,8 @@
 package net.sansa_stack.rdf.spark.model.tensor
 
 import net.sansa_stack.rdf.spark.model._
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.riot.Lang
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
 
 /**
  * Created by nilesh

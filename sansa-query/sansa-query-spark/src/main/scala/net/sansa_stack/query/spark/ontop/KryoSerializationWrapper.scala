@@ -3,10 +3,10 @@ package net.sansa_stack.query.spark.ontop
 
 import java.nio.ByteBuffer
 
-import scala.reflect.ClassTag
-
 import org.apache.spark.serializer.{KryoSerializer => SparkKryoSerializer}
 import org.apache.spark.{SparkConf, SparkEnv}
+
+import scala.reflect.ClassTag
 
 object KryoSerializer {
 

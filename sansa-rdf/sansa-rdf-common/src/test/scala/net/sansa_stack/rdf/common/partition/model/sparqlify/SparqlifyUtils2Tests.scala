@@ -17,10 +17,10 @@ class SparqlifyUtils2Tests extends FunSuite {
     NodeFactory.createLiteral("82175700"))
 
   test("creating view definition should pass") {
-    val partitioner = RdfPartitionerDefault.fromTriple(triple)
-    val viewDefinition = createViewDefinition(partitioner)
+    val partition = RdfPartitionerDefault.fromTriple(triple)
+    val viewDefinition = createViewDefinition(RdfPartitionerDefault, partition)
     val expectedViewDefinition = new ViewDefinition(viewDefinition.getName, viewDefinition.getConstructTemplate, viewDefinition.getVarDefinition, viewDefinition.getConstraints, viewDefinition.getLogicalTable)
-    assert(createViewDefinition(partitioner).equals(expectedViewDefinition))
+    assert(createViewDefinition(RdfPartitionerDefault, partition).equals(expectedViewDefinition))
   }
 
 }

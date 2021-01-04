@@ -1,13 +1,13 @@
 package net.sansa_stack.rdf.flink.partition.semantic
 
-import scala.reflect.ClassTag
-
 import net.sansa_stack.rdf.common.partition.utils.Symbols
 import org.apache.flink.api.common.operators.Order
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.streaming.api.scala._
 import org.apache.jena.graph.Triple
+
+import scala.reflect.ClassTag
 
 /**
   * Semantic partition of and RDF graph

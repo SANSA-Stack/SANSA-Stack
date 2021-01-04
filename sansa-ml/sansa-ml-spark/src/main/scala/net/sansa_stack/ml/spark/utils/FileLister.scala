@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
 import java.io.File
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, RemoteIterator}
 

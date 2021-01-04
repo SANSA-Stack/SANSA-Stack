@@ -3,7 +3,6 @@ package net.sansa_stack.rdf.spark
 import net.sansa_stack.rdf.spark.stats.RDFStatistics.SubclassUsage
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.jena.graph.{Node, Triple}
-import org.apache.spark.graphx.VertexRDD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 

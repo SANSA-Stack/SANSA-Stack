@@ -1,11 +1,8 @@
 package net.sansa_stack.query.spark.graph.jena.resultOp
 
-import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
-import net.sansa_stack.query.spark.graph.jena.util.Result
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpSlice
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 
 /**
  * Class that execute SPARQL LIMIT and OFFSET operations

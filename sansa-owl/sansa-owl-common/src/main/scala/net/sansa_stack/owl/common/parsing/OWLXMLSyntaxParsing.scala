@@ -1,12 +1,12 @@
 package net.sansa_stack.owl.common.parsing
 
-import scala.compat.java8.StreamConverters._
-
 import com.typesafe.scalalogging.Logger
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.OWLXMLDocumentFormat
 import org.semanticweb.owlapi.io.StringDocumentSource
 import org.semanticweb.owlapi.model._
+
+import scala.compat.java8.StreamConverters._
 
   /**
     * Singleton instance of type OWLXMLSyntaxParsing

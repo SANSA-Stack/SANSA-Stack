@@ -3,10 +3,9 @@ package net.sansa_stack.query.spark.ontop
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 import org.apache.jena.graph.NodeFactory
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
 /**
  * Some utilities for working with SQL objects.
@@ -25,7 +24,7 @@ object SQLUtils {
   }
 
 
-  def createTableName(p: RdfPartitionComplex, blankNodeStrategy: BlankNodeStrategy.Value): String = {
+  def createTableName(p: RdfPartitionStateDefault, blankNodeStrategy: BlankNodeStrategy.Value): String = {
     val pred = p.predicate
 
     // For now let's just use the full predicate as the uri

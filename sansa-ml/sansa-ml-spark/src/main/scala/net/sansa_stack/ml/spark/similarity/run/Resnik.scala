@@ -1,14 +1,13 @@
 package net.sansa_stack.ml.spark.similarity.run
 
 import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
-import net.sansa_stack.owl.spark.dataset
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, IDF}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.DataTypes
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object Resnik {
   def main(args: Array[String]): Unit = {

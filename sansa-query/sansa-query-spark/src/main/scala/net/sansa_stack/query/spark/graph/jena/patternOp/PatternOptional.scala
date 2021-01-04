@@ -1,15 +1,15 @@
 package net.sansa_stack.query.spark.graph.jena.patternOp
 
-import scala.collection.JavaConverters._
-
 import net.sansa_stack.query.spark.graph.jena.ExprParser
 import net.sansa_stack.query.spark.graph.jena.expression.Filter
-import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
 import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpLeftJoin
 import org.apache.spark.graphx.Graph
 import org.apache.spark.sql.SparkSession
+
+import scala.collection.JavaConverters._
 
 
 /**

@@ -1,14 +1,11 @@
 package net.sansa_stack.rdf.spark.io.index
 
-import scala.collection.mutable
-
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap
-import org.apache.spark.SparkException
 import org.apache.spark.ml.attribute.NominalAttribute
-import org.apache.spark.ml.feature.StringIndexer
-import org.apache.spark.sql.{ DataFrame, Row }
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row}
+
+import scala.collection.mutable
 
 /**
  * @author Lorenz Buehmann

@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.flink
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
 import net.sansa_stack.rdf.flink.partition.semantic.SemanticRdfPartitionUtilsFlink
-import org.apache.flink.api.scala.{ DataSet, _ }
+import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.jena.graph.Triple
 
 /**
@@ -19,8 +19,8 @@ package object partition {
     /**
      * Default partition - using VP.
      */
-    def partitionGraph(): Map[RdfPartitionDefault, DataSet[Product]] = {
-      RdfPartitionUtilsFlink.partitionGraph(triples)
+    def partitionGraph(): Map[RdfPartitionStateDefault, DataSet[Product]] = {
+      RdfPartitionUtilsFlink.partitionGraph(triples, RdfPartitionerDefault)
     }
 
     /**

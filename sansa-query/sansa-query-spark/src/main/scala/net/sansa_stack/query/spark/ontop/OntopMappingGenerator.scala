@@ -1,13 +1,12 @@
 package net.sansa_stack.query.spark.ontop
 
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 import org.apache.commons.lang3.StringUtils
 import org.apache.jena.vocabulary.{RDF, XSD}
-import org.semanticweb.owlapi.model.{OWLOntology, OWLSignature}
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
-import scala.collection.JavaConverters._
-
+import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
+
+import scala.collection.JavaConverters._
 
 /**
  * @author Lorenz Buehmann
@@ -19,10 +18,10 @@ object OntopMappingGenerator {
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
   val distinguishStringLiterals: Boolean = false
 
-  def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology] = None): String = {
+  def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionStateDefault], ontology: Option[OWLOntology] = None): String = {
 
     // object is URI or bnode
-    def createMapping(id: String, tableName: String, partition: RdfPartitionComplex): String = {
+    def createMapping(id: String, tableName: String, partition: RdfPartitionStateDefault): String = {
 
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       val targetObject = if (partition.objectType == 0) "_:{o}" else "<{o}>"
@@ -48,7 +47,7 @@ object OntopMappingGenerator {
     }
 
     // object is string literal
-    def createMappingStringLit(id: String, tableName: String, partition: RdfPartitionComplex): String = {
+    def createMappingStringLit(id: String, tableName: String, partition: RdfPartitionStateDefault): String = {
       val lang = Option(StringUtils.trimToNull(partition.lang.getOrElse("")))
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       val targetObject = if (lang.nonEmpty) s""" "{o}"@${lang.get} """ else "\"{o}\""
@@ -62,7 +61,7 @@ object OntopMappingGenerator {
     }
 
     // object is other literal
-    def createMappingLit(id: String, tableName: String, partition: RdfPartitionComplex): String = {
+    def createMappingLit(id: String, tableName: String, partition: RdfPartitionStateDefault): String = {
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       s"""
          |mappingId     $id
@@ -72,7 +71,7 @@ object OntopMappingGenerator {
     }
 
     // class assertion mapping
-    def createClassMapping(id: String, tableName: String, partition: RdfPartitionComplex, cls: String): String = {
+    def createClassMapping(id: String, tableName: String, partition: RdfPartitionStateDefault, cls: String): String = {
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       s"""
          |mappingId     $id
@@ -99,7 +98,7 @@ object OntopMappingGenerator {
     "[MappingDeclaration] @collection [[" +
       partitions
         .map {
-          case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
+          case p@RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>
             val tableName = SQLUtils.createTableName(p, blankNodeStrategy)
             val id = SQLUtils.escapeTablename(tableName + lang.getOrElse(""))
 

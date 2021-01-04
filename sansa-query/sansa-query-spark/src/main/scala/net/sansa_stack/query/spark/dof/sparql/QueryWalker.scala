@@ -4,6 +4,7 @@ import net.sansa_stack.query.spark.dof.bindings.Result
 import net.sansa_stack.query.spark.dof.tensor.Tensor
 import org.apache.jena.query.Query
 import org.apache.jena.sparql.syntax.ElementWalker
+
 import scala.reflect.ClassTag
 
 object QueryWalker {

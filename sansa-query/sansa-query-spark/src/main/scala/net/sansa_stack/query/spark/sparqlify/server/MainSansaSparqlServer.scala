@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.sparqlify.server
 import java.io.File
 
 import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
@@ -67,9 +67,10 @@ object MainSansaSparqlServer {
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
     // val map = graphRdd.partitionGraphByPredicates
-    val partitions: Map[RdfPartitionDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
+    val partitioner = RdfPartitionerDefault
 
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
+    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
 
     val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 

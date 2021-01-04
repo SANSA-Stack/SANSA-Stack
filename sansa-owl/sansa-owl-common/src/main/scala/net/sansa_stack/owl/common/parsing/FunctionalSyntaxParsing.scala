@@ -1,7 +1,5 @@
 package net.sansa_stack.owl.common.parsing
 
-import scala.util.matching.Regex.Match
-
 import com.typesafe.scalalogging.Logger
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.functional.parser.OWLFunctionalSyntaxOWLParserFactory

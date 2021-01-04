@@ -1,11 +1,10 @@
 package net.sansa_stack.query.spark.dof.sparql
 
-import java.util.Iterator
-
 import net.sansa_stack.query.spark.dof.bindings.Result
-import net.sansa_stack.query.spark.dof.node.{ Helper, Pattern }
+import net.sansa_stack.query.spark.dof.node.Pattern
 import net.sansa_stack.query.spark.dof.tensor.Tensor
 import org.apache.jena.sparql.syntax._
+
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 

@@ -1,10 +1,9 @@
 package net.sansa_stack.owl.spark.rdd
 
 import com.typesafe.scalalogging.Logger
+import net.sansa_stack.owl.common.parsing.FunctionalSyntaxParsing
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.io.OWLParserException
-
-import net.sansa_stack.owl.common.parsing.FunctionalSyntaxParsing
 
 
 object FunctionalSyntaxOWLAxiomsRDDBuilder extends FunctionalSyntaxParsing {

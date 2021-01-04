@@ -1,16 +1,8 @@
 package net.sansa_stack.rdf.spark.mappings
 
-import java.io.{ File, StringWriter }
-import java.net.URI
-
-import scala.collection.mutable
-
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model._
 import net.sansa_stack.rdf.spark.partition._
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.riot.Lang
+import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
@@ -84,7 +76,8 @@ object R2RMLMappings extends Serializable {
     val partitions = triples.partitionGraph()
     val r2rmlMappings = partitions.map {
       case (p, rdd) =>
-        p.layout.schema.toString match {
+        // p.layout.schema.toString match {
+        RdfPartitionerDefault.determineLayout(p).schema.toString match {
           case _ =>
             var mapping = "<TriplesMap" + mappingNumber.toString + "> a rr:TriplesMapClass ; "
             mapping += "rr:logicalTable [rr:SQLQuery \"\"\"SELECT s , o , l FROM " + p.predicate.replaceAll("[^A-Za-z0-9]", "_") + " \"\"\"] ; "

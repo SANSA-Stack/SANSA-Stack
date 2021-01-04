@@ -19,7 +19,7 @@ object RdfTerm {
       case 1 => NodeFactory.createURI(lexicalForm)
       case 2 =>
         val dt = term.dt
-        if (term.dt != null && !term.dt.isEmpty()) {
+        if (term.dt != null && term.dt.nonEmpty) {
 
         }
         // {
@@ -43,34 +43,34 @@ object RdfTerm {
     var lang: String = null
     var dt: String = null
 
-    if (node.isBlank()) {
-      t = 0;
-      v = node.getBlankNodeId().getLabelString();
-    } else if (node.isURI()) {
-      t = 1;
-      v = node.getURI();
-    } else if (node.isLiteral()) {
+    if (node.isBlank) {
+      t = 0
+      v = node.getBlankNodeId.getLabelString
+    } else if (node.isURI) {
+      t = 1
+      v = node.getURI
+    } else if (node.isLiteral) {
 
-      v = node.getLiteral().getValue();
+      v = node.getLiteral.getValue
 
       // lex = node.getLiteralLexicalForm();
 
-      dt = node.getLiteralDatatypeURI();
-      if (dt == null || dt.isEmpty()) {
+      dt = node.getLiteralDatatypeURI
+      if (dt == null || dt.isEmpty) {
         // System.err.println("Treating plain literals as typed ones");
         // logger.warn("Treating plain literals as typed ones");
-        t = 2;
-        lang = node.getLiteralLanguage();
+        t = 2
+        lang = node.getLiteralLanguage
       } else {
-        t = 3;
-        dt = node.getLiteralDatatypeURI();
+        t = 3
+        dt = node.getLiteralDatatypeURI
       }
     } else {
-      throw new RuntimeException("Should not happen");
+      throw new RuntimeException("Should not happen")
     }
 
-    var dtStr = if (dt == null) "" else dt;
-    var langStr = if (lang == null) "" else lang;
+    var dtStr = if (dt == null) "" else dt
+    var langStr = if (lang == null) "" else lang
 
     RdfTerm(t, "" + v, lang, dt)
   }

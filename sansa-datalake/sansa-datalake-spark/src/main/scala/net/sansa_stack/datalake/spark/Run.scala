@@ -2,14 +2,13 @@ package net.sansa_stack.datalake.spark
 
 import java.io.FileNotFoundException
 
-import scala.collection.JavaConverters._
-import scala.collection.mutable
-
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.sql.DataFrame
-
 import net.sansa_stack.datalake.spark.utils.Helpers
 import net.sansa_stack.datalake.spark.utils.Helpers._
+import org.apache.spark.sql.DataFrame
+
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 
 class Run[A](executor: QueryExecutor[A]) {

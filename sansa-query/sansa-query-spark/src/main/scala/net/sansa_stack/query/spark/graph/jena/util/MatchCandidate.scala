@@ -2,7 +2,7 @@ package net.sansa_stack.query.spark.graph.jena.util
 
 import net.sansa_stack.query.spark.graph.jena.util.NodeType.NodeType
 import org.apache.jena.graph._
-import org.apache.spark.graphx.{ EdgeTriplet, VertexId }
+import org.apache.spark.graphx.{EdgeTriplet, VertexId}
 
 class MatchCandidate(
   val target: EdgeTriplet[Node, Node],

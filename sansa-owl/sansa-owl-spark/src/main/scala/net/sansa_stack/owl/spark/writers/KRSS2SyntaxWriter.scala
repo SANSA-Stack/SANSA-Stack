@@ -3,12 +3,11 @@ package net.sansa_stack.owl.spark.writers
 import java.io.{ByteArrayOutputStream, OutputStreamWriter}
 import java.util.Collections
 
-import scala.collection.JavaConverters._
-
+import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.krss2.renderer.KRSS2OWLObjectRenderer
 
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import scala.collection.JavaConverters._
 
 object KRSS2SyntaxWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =

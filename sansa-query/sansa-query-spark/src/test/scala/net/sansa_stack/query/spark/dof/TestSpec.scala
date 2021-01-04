@@ -1,12 +1,12 @@
 package net.sansa_stack.query.spark.dof
 
-import collection.JavaConverters._
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.query.spark.dof.node.Helper
-import net.sansa_stack.query.spark.dof.sparql.{ QueryExecutionFactory, Sparql }
-import net.sansa_stack.query.spark.dof.tensor.{ TensorRush, TensorStore }
+import net.sansa_stack.query.spark.dof.sparql.{QueryExecutionFactory, Sparql}
+import net.sansa_stack.query.spark.dof.tensor.{TensorRush, TensorStore}
 import net.sansa_stack.query.spark.graph.jena.model.SparkExecutionModel
 import org.scalatest.FunSuite
+
+import scala.collection.JavaConverters._
 import scala.collection.immutable.TreeMap
 import scala.io.Source
 

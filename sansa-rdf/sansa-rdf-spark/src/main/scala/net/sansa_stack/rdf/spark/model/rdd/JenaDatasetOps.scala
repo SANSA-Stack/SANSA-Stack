@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
-import org.aksw.jena_sparql_api.utils.model.ResourceInDataset
 import org.apache.jena.query.Dataset
 import org.apache.jena.rdf.model.Resource
 
