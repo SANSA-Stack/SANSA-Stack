@@ -2,8 +2,9 @@ package net.sansa_stack.examples.spark.query
 
 import java.awt.Desktop
 import java.net.URI
+import java.nio.file.Paths
 
-import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, QueryExecutionFactoryOntopSpark}
+import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, PartitionSerDe, QueryExecutionFactoryOntopSpark}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
@@ -52,14 +53,15 @@ object OntopBasedSPARQLEngine {
       .enableHiveSupport()
       .getOrCreate()
 
+    val partitioner = RdfPartitionerComplex(false)
+
     val ontopEngine = if (input != null) {
       // load the data into an RDD
       val lang = Lang.NTRIPLES
       val data = spark.rdf(lang)(input)
 
-    // apply vertical partitioning which is necessary for the current Ontop integration
-    val partitioner = RdfPartitionerComplex(false)
-    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner)
+      // apply vertical partitioning which is necessary for the current Ontop integration
+      val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner)
 
       // create the SPARQL engine
       OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
@@ -67,7 +69,7 @@ object OntopBasedSPARQLEngine {
       // load partitioning metadata
       val partitions = PartitionSerDe.deserializeFrom(Paths.get(partitioningMetadataPath))
       // create the SPARQL engine
-      OntopSPARQLEngine(spark, database, partitions, None)
+      OntopSPARQLEngine(spark, database, partitioner, partitions, None)
     }
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI

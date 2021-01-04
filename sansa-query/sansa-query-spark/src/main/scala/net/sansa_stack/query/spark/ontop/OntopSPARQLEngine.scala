@@ -447,10 +447,17 @@ object OntopSPARQLEngine {
     new OntopCLI().run(args)
   }
 
-  def apply(spark: SparkSession, databaseName: String, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Set[RdfPartitionStateDefault], ontology: Option[OWLOntology]): OntopSPARQLEngine
+  def apply(spark: SparkSession,
+            databaseName: String,
+            partitioner: RdfPartitioner[RdfPartitionStateDefault],
+            partitions: Set[RdfPartitionStateDefault],
+            ontology: Option[OWLOntology]): OntopSPARQLEngine
   = new OntopSPARQLEngine(spark, databaseName, partitioner, partitions, ontology)
 
-  def apply(spark: SparkSession, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]], ontology: Option[OWLOntology]): OntopSPARQLEngine = {
+  def apply(spark: SparkSession,
+            partitioner: RdfPartitioner[RdfPartitionStateDefault],
+            partitions: Map[RdfPartitionStateDefault, RDD[Row]],
+            ontology: Option[OWLOntology]): OntopSPARQLEngine = {
     // create and register Spark tables
     SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner, partitions)
 

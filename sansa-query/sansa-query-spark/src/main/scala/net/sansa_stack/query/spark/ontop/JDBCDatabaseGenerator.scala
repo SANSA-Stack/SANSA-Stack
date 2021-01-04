@@ -85,7 +85,7 @@ object JDBCDatabaseGenerator {
                        |o ${colType.get} NOT NULL)
                        |""".stripMargin
                   } else {
-                    logger.error(s"Error: couldn't create H2 table for property $predicate with schema ${p.layout.schema}")
+                    logger.error(s"Error: couldn't create H2 table for property $predicate with schema $schema")
                     ""
                   }
                 }
