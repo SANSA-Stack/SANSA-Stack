@@ -2,25 +2,25 @@ package net.sansa_stack.rdf.flink.io.nquads
 
 import java.net.URI
 
-import scala.collection.JavaConverters._
-import scala.reflect.ClassTag
-
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
 import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
 import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
-import org.apache.flink.api.scala.{ DataSet, ExecutionEnvironment }
+import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
 import org.apache.flink.streaming.api.scala._
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.graph.Triple
-import org.apache.jena.riot.{ RIOT, SysRIOT }
-import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.SysRIOT.fmtMessage
+import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
+import org.apache.jena.riot.{RIOT, SysRIOT}
 import org.apache.jena.sparql.core.Quad
-import org.slf4j.{ Logger, LoggerFactory }
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
 /**
  * An N-Quads reader. One quad per line is assumed.

@@ -1,11 +1,11 @@
 package net.sansa_stack.query.spark.ontop;
 
-import javax.annotation.Nonnull;
-import java.util.stream.Collectors;
-
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbolSerializer;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.NullIgnoringDBAvgFunctionSymbol;
 import it.unibz.inf.ontop.model.type.DBTermType;
+
+import javax.annotation.Nonnull;
+import java.util.stream.Collectors;
 
 public class ForcingFloatingDBAvgFunctionSymbolImpl extends NullIgnoringDBAvgFunctionSymbol {
 

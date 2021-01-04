@@ -20,10 +20,37 @@ import org.apache.jena.vocabulary.{RDF, XSD}
 // *                      relaxed pattern `y-M-d` which also allows single digits for year, month and day though
 // *                      officially according to XSD it must be `yyyy-MM-dd`
  */
-class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false)
-  extends RdfPartitioner[RdfPartitionComplex]
+class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false, partitionPerLangTag: Boolean = true)
+  extends RdfPartitionerBase(distinguishStringLiterals, partitionPerLangTag)
     with Serializable {
 
+  override def determineLayoutDatatype(dtypeIri: String): TripleLayout = {
+    val dti = if (dtypeIri == RDF.langString.getURI) XSD.xstring.getURI else dtypeIri
+
+    var v = TypeMapper.getInstance.getSafeTypeByName(dti).getJavaClass
+
+    // type mapper returns null for some integer types
+    if (v == null && intDTypeURIs.contains(dtypeIri)) v = classOf[Integer]
+
+    v match {
+      case w if w == classOf[java.lang.Boolean] => TripleLayoutBoolean
+      case w if w == classOf[java.lang.Byte] || w == classOf[java.lang.Short]
+        || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long] => TripleLayoutLong
+      case w if w == classOf[java.lang.Double] => TripleLayoutDouble
+      case w if w == classOf[java.lang.Float] => TripleLayoutFloat
+      case w if w == classOf[java.math.BigDecimal] => TripleLayoutDecimal
+      case w if w == classOf[java.math.BigInteger] => TripleLayoutLong // xsd:integer
+      case w if dtypeIri == XSD.date.getURI => TripleLayoutStringDate // v will be null for xsd:date, thus, we have to compare the datatype URI
+      case w if dtypeIri == XSD.dateTime.getURI || dtypeIri == XSD.dateTimeStamp.getURI => TripleLayoutStringTimestamp
+      // case w if(w == classOf[String]) => TripleLayoutString
+      case w => TripleLayoutString
+      // case _ => TripleLayoutStringDatatype
+
+      // case _ => throw new RuntimeException("Unsupported object type: " + dtypeIri)
+    }
+  }
+
+  /*
   def getUriOrBNodeString(node: Node): String = {
     val termType = getRdfTermType(node)
     termType match {
@@ -52,8 +79,10 @@ class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false)
   def isTypedLiteral(node: Node): Boolean = {
     node.isLiteral && !isPlainLiteral(node)
   }
+  */
 
-  def fromTriple(t: Triple): RdfPartitionComplex = {
+  /*
+  def fromTriple(t: Triple): RdfPartitionDefault = {
     val s = t.getSubject
     val o = t.getObject
 
@@ -76,14 +105,17 @@ class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false)
 
     val lang = if (langTagPresent) Some(o.getLiteralLanguage) else None
 
-    RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, this)
+    RdfPartitionDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang, this)
   }
+*/
+
 
   /**
    * Lay a triple out based on the partition
    * Does not (re-)check the matches condition
    */
-  def determineLayout(t: RdfPartitionComplex): TripleLayout = {
+    /*
+  def determineLayout(t: RdfPartitionDefault): TripleLayout = {
     val oType = t.objectType
 
     val layout = oType match {
@@ -107,37 +139,7 @@ class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false)
     }
     layout
   }
-
-  private val intDTypeURIs = Set(XSDDatatype.XSDnegativeInteger, XSDDatatype.XSDpositiveInteger,
-    XSDDatatype.XSDnonNegativeInteger, XSDDatatype.XSDnonPositiveInteger,
-    XSDDatatype.XSDinteger, XSDDatatype.XSDint)
-    .map(_.getURI)
-
-  def determineLayoutDatatype(dtypeIri: String): TripleLayout = {
-    val dti = if (dtypeIri == RDF.langString.getURI) XSD.xstring.getURI else dtypeIri
-
-    var v = TypeMapper.getInstance.getSafeTypeByName(dti).getJavaClass
-
-    // type mapper returns null for some integer types
-    if (v == null && intDTypeURIs.contains(dtypeIri)) v = classOf[Integer]
-
-    v match {
-      case w if w == classOf[java.lang.Boolean] => TripleLayoutBoolean
-      case w if w == classOf[java.lang.Byte] || w == classOf[java.lang.Short]
-                || w == classOf[java.lang.Integer] || w == classOf[java.lang.Long] => TripleLayoutLong
-      case w if w == classOf[java.lang.Double] => TripleLayoutDouble
-      case w if w == classOf[java.lang.Float] => TripleLayoutFloat
-      case w if w == classOf[java.math.BigDecimal] => TripleLayoutDecimal
-      case w if w == classOf[java.math.BigInteger] => TripleLayoutLong // xsd:integer
-      case w if dtypeIri == XSD.date.getURI => TripleLayoutStringDate // v will be null for xsd:date, thus, we have to compare the datatype URI
-      case w if dtypeIri == XSD.dateTime.getURI || dtypeIri == XSD.dateTimeStamp.getURI => TripleLayoutStringTimestamp
-      // case w if(w == classOf[String]) => TripleLayoutString
-      case w => TripleLayoutString
-      // case _ => TripleLayoutStringDatatype
-
-      // case _ => throw new RuntimeException("Unsupported object type: " + dtypeIri)
-    }
-  }
+  */
 }
 
 object RdfPartitionerComplex {

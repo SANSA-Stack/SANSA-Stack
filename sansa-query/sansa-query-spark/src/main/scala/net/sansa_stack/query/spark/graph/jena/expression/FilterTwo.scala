@@ -2,7 +2,6 @@ package net.sansa_stack.query.spark.graph.jena.expression
 
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
-import org.apache.jena.sparql.expr.NodeValue
 
 abstract class FilterTwo(protected val left: Expression, protected val right: Expression) extends Filter {
 

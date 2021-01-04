@@ -11,8 +11,6 @@ import org.scalatest.FunSuite
  */
 class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.rdf.spark.io._
-
   test("loading N-Triples file into RDD should result in 10 triples") {
 
     val path = getClass.getResource("/loader/data.nt").getPath

@@ -4,13 +4,13 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.util
 
-import scala.collection.mutable
-
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.google.common.collect.ArrayListMultimap
 import com.typesafe.scalalogging.Logger
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory}
 import org.apache.jena.rdf.model.ModelFactory
+
+import scala.collection.mutable
 
 /**
   * Created by mmami on 26.07.17.

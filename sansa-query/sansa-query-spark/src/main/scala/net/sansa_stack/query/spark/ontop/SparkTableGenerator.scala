@@ -3,12 +3,11 @@ package net.sansa_stack.query.spark.ontop
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
+import org.apache.spark.sql.{Row, SparkSession}
 
 /**
  * @author Lorenz Buehmann
@@ -20,7 +19,7 @@ class SparkTableGenerator(spark: SparkSession,
 
   val logger = com.typesafe.scalalogging.Logger(SparkTableGenerator.getClass)
 
-  implicit val o: Ordering[RdfPartitionComplex] = Ordering.by(e => (e.predicate, e.subjectType, e.objectType, e.langTagPresent, e.lang, e.datatype))
+  implicit val o: Ordering[RdfPartitionStateDefault] = Ordering.by(e => (e.predicate, e.subjectType, e.objectType, e.langTagPresent, e.lang, e.datatype))
 
   /**
    * Creates and registers a Spark table p(s,o) for each partition.
@@ -30,7 +29,7 @@ class SparkTableGenerator(spark: SparkSession,
    *
    * @param partitions the partitions
    */
-  def createAndRegisterSparkTables(partitions: Map[RdfPartitionComplex, RDD[Row]]): Unit = {
+  def createAndRegisterSparkTables(partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]]): Unit = {
 
     //    val partitions = Map(partitionsMap.toArray: _*) // scala.collection.immutable.TreeMap(partitionsMap.toArray: _*)
 
@@ -52,7 +51,7 @@ class SparkTableGenerator(spark: SparkSession,
       .map(map => map._2.head)
       .map(e => (e._2, e._3))
 
-      .foreach { case (p, rdd) => createSparkTable(p, rdd) }
+      .foreach { case (p, rdd) => createSparkTable(partitioner, p, rdd) }
 
     // register the non-lang tagged RDDs as table
     partitions
@@ -64,19 +63,20 @@ class SparkTableGenerator(spark: SparkSession,
       .map(e => (e._2, e._3))
 
       .foreach {
-        case (p, rdd) => createSparkTable(p, rdd)
+        case (p, rdd) => createSparkTable(partitioner, p, rdd)
       }
   }
 
   /**
    * creates a Spark table for each RDF partition
    */
-  private def createSparkTable(p: RdfPartitionComplex, rdd: RDD[Row]) = {
+  private def createSparkTable(partitioner: RdfPartitioner[RdfPartitionStateDefault], p: RdfPartitionStateDefault, rdd: RDD[Row]) = {
 
     val name = SQLUtils.createTableName(p, blankNodeStrategy)
     logger.debug(s"creating Spark table ${escapeTablename(name)}")
 
-    val scalaSchema = p.layout.schema
+    // val scalaSchema = p.layout.schema
+    val scalaSchema = partitioner.determineLayout(p).schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = spark.createDataFrame(rdd, sparkSchema).persist()
     //    df.show(false)

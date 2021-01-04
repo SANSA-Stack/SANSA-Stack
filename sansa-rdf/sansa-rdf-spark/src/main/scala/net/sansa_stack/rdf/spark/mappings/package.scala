@@ -1,8 +1,6 @@
 package net.sansa_stack.rdf.spark
 
-import net.sansa_stack.rdf.spark.mappings.R2RMLMappings
-import net.sansa_stack.rdf.spark.utils.Logging
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 

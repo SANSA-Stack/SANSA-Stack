@@ -1,11 +1,11 @@
 package net.sansa_stack.query.spark.ontop;
 
+import com.esotericsoftware.reflectasm.shaded.org.objectweb.asm.*;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
-
-import com.esotericsoftware.reflectasm.shaded.org.objectweb.asm.*;
 
 public class LambdaFactoryAgent {
     public static void agentmain(String agentArgs, Instrumentation inst) {

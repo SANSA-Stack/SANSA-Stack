@@ -1,12 +1,10 @@
 package net.sansa_stack.owl.spark.rdd
 
+import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import scala.collection.immutable
-
-import net.sansa_stack.owl.common.parsing.OWLXMLSyntaxParsing
 
 object OWLXMLSyntaxOWLExpressionsRDDBuilder {
 

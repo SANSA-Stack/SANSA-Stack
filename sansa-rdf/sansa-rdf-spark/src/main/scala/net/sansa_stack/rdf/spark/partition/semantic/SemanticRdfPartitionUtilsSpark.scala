@@ -1,7 +1,5 @@
 package net.sansa_stack.rdf.spark.partition.semantic
 
-import java.util.concurrent.TimeUnit
-
 import net.sansa_stack.rdf.common.partition.utils.Symbols
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd._

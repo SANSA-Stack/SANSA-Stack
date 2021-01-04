@@ -3,8 +3,7 @@ package net.sansa_stack.rdf.flink.stats
 import java.io.StringWriter
 
 import net.sansa_stack.rdf.flink.utils.{Logging, NodeKey}
-import org.apache.flink.api.scala._
-import org.apache.flink.api.scala.DataSet
+import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.flink.core.fs.FileSystem
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.vocabulary.{OWL, RDF, RDFS}

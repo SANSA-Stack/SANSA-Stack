@@ -3,7 +3,7 @@ package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 import org.apache.spark.ml.feature.{MinHashLSH, MinHashLSHModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{col, lit, udf}
+import org.apache.spark.sql.functions.{col, lit}
 
 class MinHashModel extends GenericSimilarityEstimatorModel {
 

@@ -4,10 +4,9 @@ import java.io.StringWriter
 
 import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.datatypes.xsd.XSDDatatype
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.expr.NodeValue
-import org.apache.jena.vocabulary.{ OWL, RDF, RDFS, XSD }
-import org.apache.spark.graphx.VertexRDD
+import org.apache.jena.vocabulary.{OWL, RDF, RDFS, XSD}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 

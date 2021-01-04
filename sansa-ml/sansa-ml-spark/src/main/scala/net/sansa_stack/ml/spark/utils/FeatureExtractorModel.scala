@@ -3,13 +3,11 @@ package net.sansa_stack.ml.spark.utils
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.feature.Tokenizer
-import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.apache.spark.sql.functions.{collect_list, udf}
+import org.apache.spark.sql.functions.collect_list
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 /**
  * This class creates from a dataset of triples a feature representing dataframe which is needed for steps like spark mllib countVect

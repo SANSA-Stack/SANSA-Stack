@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.spark.io.rdfxml
 
-import com.fasterxml.jackson.core.JsonParser
 import org.apache.jena.riot.RDFParserBuilder
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.util.CaseInsensitiveMap

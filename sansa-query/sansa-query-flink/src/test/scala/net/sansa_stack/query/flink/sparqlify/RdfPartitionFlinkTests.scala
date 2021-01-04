@@ -1,13 +1,11 @@
 package net.sansa_stack.query.flink.sparqlify
 
-import scala.collection.JavaConverters._
-
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
 import net.sansa_stack.rdf.spark.kryo.sparqlify.RestrictedExprSerializer
@@ -21,6 +19,8 @@ import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.query.{Query, ResultSetFormatter}
 import org.scalatest._
 
+import scala.collection.JavaConverters._
+
 class TestRdfPartitionFlink extends FlatSpec {
 
   "A partitioner" should "support custom datatypes" in {
@@ -31,8 +31,8 @@ class TestRdfPartitionFlink extends FlatSpec {
     env.getConfig.addDefaultKryoSerializer(classOf[HashMultimap[_, _]], classOf[HashMultimapSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
     // env.getConfig.registerTypeWithKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
-    env.getConfig.registerKryoType(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault])
-    env.getConfig.registerKryoType(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault]])
+    env.getConfig.registerKryoType(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault])
+    env.getConfig.registerKryoType(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault]])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node], classOf[NodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[Array[org.apache.jena.graph.Node]], classOf[NodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
@@ -62,13 +62,13 @@ class TestRdfPartitionFlink extends FlatSpec {
     // .map(t => RDFTriple(t.getSubject, t.getPredicate, t.getObject))
     // .toList
     val dsAll: DataSet[Triple] = env.fromCollection(triples)
-    val xpartitions: Map[RdfPartitionDefault, DataSet[_ <: Product]] = RdfPartitionUtilsFlink.partitionGraph(dsAll)
+    val corePartitions: Map[RdfPartitionStateDefault, DataSet[_ <: Product]] = RdfPartitionUtilsFlink.partitionGraph(dsAll, RdfPartitionerDefault)
 
-    val emptyPartition: RdfPartitionDefault = RdfPartitionDefault(1, "http://ex.org/empty_table", 1, "", false)
+    val emptyPartition: RdfPartitionStateDefault = RdfPartitionStateDefault(1, "http://ex.org/empty_table", 1, "", false, Option.empty)
     val emptyDataset: DataSet[SchemaStringString] = env.fromCollection(Set[SchemaStringString]())
-    val partitions: Map[RdfPartitionDefault, DataSet[_ <: Product]] = xpartitions + (emptyPartition -> emptyDataset)
+    val partitions: Map[RdfPartitionStateDefault, DataSet[_ <: Product]] = corePartitions + (emptyPartition -> emptyDataset)
 
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(env, flinkTable, partitions)
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(env, flinkTable, RdfPartitionerDefault, partitions)
 
     val qef = FluentQueryExecutionFactory.from(new QueryExecutionFactorySparqlifyFlink(env, flinkTable, rewriter))
       .config()

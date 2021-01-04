@@ -1,11 +1,10 @@
 package net.sansa_stack.owl.flink.dataset
 
 import com.typesafe.scalalogging.Logger
+import net.sansa_stack.owl.common.parsing.ManchesterSyntaxParsing
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model.{OWLAxiom, OWLRuntimeException}
-
-import net.sansa_stack.owl.common.parsing.ManchesterSyntaxParsing
 
 
 object ManchesterSyntaxOWLAxiomsDataSetBuilder extends ManchesterSyntaxParsing {

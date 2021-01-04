@@ -3,15 +3,14 @@ package net.sansa_stack.owl.spark.writers
 import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter, PrintWriter}
 import java.util.Collections
 
-import scala.collection.JavaConverters._
-
+import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.eclipse.rdf4j.rio.RDFFormat
 import org.eclipse.rdf4j.rio.rdfjson.RDFJSONWriter
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.RDFJsonDocumentFormat
 import org.semanticweb.owlapi.model.OWLAxiom
 
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import scala.collection.JavaConverters._
 
 
 object RDFJsonWriter extends OWLWriterBase {

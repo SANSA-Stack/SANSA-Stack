@@ -2,16 +2,15 @@ package net.sansa_stack.rdf.spark.model.graph
 
 import java.io.StringWriter
 
-import scala.Iterator
-import scala.reflect.ClassTag
-import scala.util.hashing.MurmurHash3
-
 import net.sansa_stack.rdf.spark.utils.NodeUtils
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+
+import scala.reflect.ClassTag
+import scala.util.hashing.MurmurHash3
 
 /**
  * Spark/GraphX based implementation of RDD[Triple].

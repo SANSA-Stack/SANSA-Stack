@@ -1,10 +1,10 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
-import scala.collection.mutable
-
 import net.sansa_stack.query.spark.graph.jena.util.Result
 import org.apache.jena.graph.Node
 import org.apache.spark.rdd.RDD
+
+import scala.collection.mutable
 
 object IntermediateResult {
 

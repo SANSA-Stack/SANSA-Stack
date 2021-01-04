@@ -2,13 +2,12 @@ package net.sansa_stack.ml.spark.utils
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.autoPrepo
+import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.{Encoders, SparkSession}
 import org.scalatest.FunSuite
-import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.sys.JenaSystem
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 
 class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteBase{
 

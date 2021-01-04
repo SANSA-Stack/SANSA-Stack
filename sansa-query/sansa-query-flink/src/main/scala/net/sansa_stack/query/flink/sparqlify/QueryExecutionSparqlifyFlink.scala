@@ -3,8 +3,6 @@ package net.sansa_stack.query.flink.sparqlify
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util
 
-import scala.collection.JavaConverters._
-
 import com.esotericsoftware.kryo.io.{Input, Output}
 import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, QueryExecutionFactory, ResultSetCloseable}
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
@@ -17,6 +15,8 @@ import org.apache.flink.table.api.bridge.scala.{BatchTableEnvironment, _}
 import org.apache.flink.types.Row
 import org.apache.jena.query.{Query, QueryExecution}
 import org.apache.jena.sparql.engine.binding.Binding
+
+import scala.collection.JavaConverters._
 
 /**
   * Created by Simon Bin on 12/06/17.

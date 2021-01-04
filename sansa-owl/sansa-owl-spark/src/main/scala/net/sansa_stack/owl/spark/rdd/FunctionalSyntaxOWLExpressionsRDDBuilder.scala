@@ -1,10 +1,9 @@
 package net.sansa_stack.owl.spark.rdd
 
-import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.spark.sql.SparkSession
-
 import net.sansa_stack.owl.common.parsing.{FunctionalSyntaxExpressionBuilder, FunctionalSyntaxPrefixParsing}
 import net.sansa_stack.owl.spark.hadoop.FunctionalSyntaxInputFormat
+import org.apache.hadoop.io.{LongWritable, Text}
+import org.apache.spark.sql.SparkSession
 
 
 object FunctionalSyntaxOWLExpressionsRDDBuilder extends Serializable with FunctionalSyntaxPrefixParsing {

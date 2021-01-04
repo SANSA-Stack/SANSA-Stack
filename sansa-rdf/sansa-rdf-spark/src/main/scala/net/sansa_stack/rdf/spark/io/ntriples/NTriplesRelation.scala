@@ -3,20 +3,19 @@ package net.sansa_stack.rdf.spark.io.ntriples
 import java.io.ByteArrayInputStream
 import java.util.regex.Pattern
 
-import scala.util.{Failure, Success, Try}
-
 import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.io.ntriples.ParseMode._
-import net.sansa_stack.rdf.spark.io.ntriples.ParseMode.ParseMode
+import net.sansa_stack.rdf.spark.io.ntriples.ParseMode.{ParseMode, _}
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.lang.LangNTriples
 import org.apache.jena.riot.system.RiotLib
 import org.apache.jena.riot.tokens.{Tokenizer, TokenizerFactory}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{Row, SQLContext}
+
+import scala.util.{Failure, Success, Try}
 
 /**
   * A custom relation that represents N-Triples.

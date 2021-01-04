@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.utils
 
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.Node
 
 object NodeUtils {
 

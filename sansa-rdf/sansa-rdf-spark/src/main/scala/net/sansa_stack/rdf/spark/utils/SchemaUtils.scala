@@ -1,8 +1,8 @@
 package net.sansa_stack.rdf.spark.utils
 
-import scala.collection.mutable.LinkedHashMap
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
+import scala.collection.mutable.LinkedHashMap
 
 object SchemaUtils {
 

@@ -1,10 +1,8 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.completeness
 
 import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
-import org.apache.flink.api.scala._
-import org.apache.flink.api.scala.DataSet
-import org.apache.flink.api.scala.ExecutionEnvironment
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.flink.api.scala.{DataSet, _}
+import org.apache.jena.graph.Triple
 
 /**
  * @author Gezim Sejdiu

@@ -1,13 +1,13 @@
 package net.sansa_stack.query.spark.ontop
 
-import scala.collection.JavaConverters._
-
 import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, QueryExecutionFactory, ResultSetCloseable}
 import org.aksw.jena_sparql_api.utils.ResultSetUtils
 import org.apache.jena.graph.GraphUtil
 import org.apache.jena.query.{Query, QueryExecution}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.sparql.graph.GraphFactory
+
+import scala.collection.JavaConverters._
 
 class QueryExecutionOntopSpark(query: Query, subFactory: QueryExecutionFactory, ontop: OntopSPARQLEngine)
 	extends QueryExecutionBaseSelect(query, subFactory) {

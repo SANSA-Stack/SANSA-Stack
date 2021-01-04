@@ -2,15 +2,14 @@ package net.sansa_stack.rdf.spark.io.benchmark.quad
 
 import java.net.URI
 
+import com.ibm.sparktc.sparkbench.utils.GeneralFunctions._
 import com.ibm.sparktc.sparkbench.utils.{SaveModes, SparkBenchException}
 import com.ibm.sparktc.sparkbench.workload.{Workload, WorkloadDefaults}
-import com.ibm.sparktc.sparkbench.utils.GeneralFunctions._
+import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
-import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 
 import scala.collection.JavaConverters._
 

@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.dof.node
 import java.util.Iterator
 
 import net.sansa_stack.query.spark.dof.bindings.Dof
-import org.apache.jena.sparql.core.{ TriplePath, Var }
+import org.apache.jena.sparql.core.{TriplePath, Var}
 import org.apache.jena.sparql.syntax.ElementPathBlock
 
 object Pattern {

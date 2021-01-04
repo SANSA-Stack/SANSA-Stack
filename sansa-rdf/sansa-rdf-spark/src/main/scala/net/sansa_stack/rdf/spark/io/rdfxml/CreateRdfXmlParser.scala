@@ -3,10 +3,9 @@ package net.sansa_stack.rdf.spark.io.rdfxml
 import java.io.{ByteArrayInputStream, InputStream}
 import java.nio.ByteBuffer
 
-import com.fasterxml.jackson.core.{JsonFactory, JsonParser}
 import org.apache.hadoop.io.Text
-import org.apache.jena.riot.{RDFLanguages, RDFParser, RDFParserBuilder}
 import org.apache.jena.riot.system.ErrorHandlerFactory
+import org.apache.jena.riot.{RDFLanguages, RDFParser, RDFParserBuilder}
 import org.apache.spark.unsafe.types.UTF8String
 
 private[rdfxml] object CreateRdfXmlParser extends Serializable {

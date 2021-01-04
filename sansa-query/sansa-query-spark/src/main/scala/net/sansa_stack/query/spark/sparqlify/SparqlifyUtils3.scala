@@ -1,25 +1,22 @@
 package net.sansa_stack.query.spark.sparqlify
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
 import org.aksw.obda.domain.impl.LogicalTableTableName
-import org.aksw.sparqlify.algebra.sql.nodes.SqlOpTable
 import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.config.syntax.Config
-import org.aksw.sparqlify.core.algorithms.CandidateViewSelectorSparqlify
-import org.aksw.sparqlify.core.algorithms.ViewDefinitionNormalizerImpl
+import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
 import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
-import org.aksw.sparqlify.validation.LoggerCount
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{Row, SparkSession}
 
 object SparqlifyUtils3 // extends StrictLogging
 {
-  def createSparqlSqlRewriter(sparkSession: SparkSession, partitions: Map[RdfPartitionDefault, RDD[Row]]): SparqlSqlStringRewriter = {
+  def createSparqlSqlRewriter(sparkSession: SparkSession, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]]): SparqlSqlStringRewriter = {
     val config = new Config()
     // val loggerCount = new LoggerCount(logger.underlying)
 
@@ -38,7 +35,7 @@ object SparqlifyUtils3 // extends StrictLogging
         //
         //        logger.debug("Processing RdfPartition: " + p)
 
-        val vd = SparqlifyUtils2.createViewDefinition(p)
+        val vd = SparqlifyUtils2.createViewDefinition(partitioner, p)
         //       logger.debug("Created view definition: " + vd)
 
         val tableName = vd.getLogicalTable match {
@@ -46,7 +43,8 @@ object SparqlifyUtils3 // extends StrictLogging
           case _ => throw new RuntimeException("Table name required - instead got: " + vd)
         }
 
-        val scalaSchema = p.layout.schema
+        // val scalaSchema = p.layout.schema
+        val scalaSchema = partitioner.determineLayout(p).schema
         val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
         val df = sparkSession.createDataFrame(rdd, sparkSchema).persist()
 

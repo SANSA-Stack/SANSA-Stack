@@ -3,6 +3,7 @@ package net.sansa_stack.query.spark.dof.bindings
 import net.sansa_stack.query.spark.dof.node._
 import net.sansa_stack.query.spark.dof.tensor.Tensor
 import org.apache.jena.graph.Triple
+
 import scala.reflect.ClassTag
 
 /*

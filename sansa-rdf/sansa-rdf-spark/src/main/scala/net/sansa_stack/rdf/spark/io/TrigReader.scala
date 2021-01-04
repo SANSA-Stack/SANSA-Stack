@@ -2,13 +2,12 @@ package net.sansa_stack.rdf.spark.io
 
 import java.net.URI
 
-import scala.collection.JavaConverters._
-
+import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
 import org.apache.spark.sql.SparkSession
 
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import scala.collection.JavaConverters._
 
 /**
  * A simple proof of concept main class for Trig reader.

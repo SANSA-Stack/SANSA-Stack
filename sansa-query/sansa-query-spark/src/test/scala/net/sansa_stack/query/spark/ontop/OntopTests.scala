@@ -2,9 +2,9 @@ package net.sansa_stack.query.spark.ontop
 
 import java.io.{File, FileInputStream}
 
-import scala.collection.JavaConverters._
-import scala.io.Source
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.query.spark.query._
+import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{Query, QueryFactory, ResultSet, ResultSetFactory}
 import org.apache.jena.rdf.model.ModelFactory
@@ -12,12 +12,13 @@ import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.engine.ResultSetStream
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.resultset.ResultSetCompare
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
-import net.sansa_stack.query.spark.query._
-import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.sys.JenaSystem
+
+import scala.collection.JavaConverters._
+import scala.io.Source
 
 class OntopTests extends FunSuite with DataFrameSuiteBase {
 
