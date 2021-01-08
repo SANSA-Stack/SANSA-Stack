@@ -1,7 +1,7 @@
 # Documentation
 This module provides the scala doc documentation.You can find the scala docs [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/index.html). The module tree are accessabe on the rigth hand side.
 We also provide ReadMe files in the SANSA-Stack Github project. The Github project is available [here](https://github.com/SANSA-Stack/SANSA-Stack).
-# Layers
+## Layers
 The SANSA project is structured in the following five layers developed in their respective sub-folders:
 * RDF [scala-docs](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/rdf/index.html), [readme](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-rdf/README.md), [package](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-rdf)
 * OWL [scala-docs](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/owl/index.html), [readme](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-owl/README.md), [package](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-owl)
