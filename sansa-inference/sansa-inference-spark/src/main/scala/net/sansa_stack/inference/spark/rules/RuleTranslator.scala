@@ -101,9 +101,11 @@ object RuleTranslator {
 
     var str = if (p.isVariable) "triple" else p.getURI
     str += "("
-    str += (if (s.isVariable) s.getName.replace("?", "") else s"${s.toString}")
-    str += ","
-    str += (if (o.isVariable) o.getName.replace("?", "") else (if (o.isLiteral) s"${o.getLiteralLexicalForm}" else o.toString))
+    str += (if (s.isVariable) s.getName.replace("?", "").toUpperCase else s"${s.toString}")
+    str += ", "
+    if (p.isVariable) str += p.getName.replace("?", "").toUpperCase + ", "
+    str += (if (o.isVariable) o.getName.replace("?", "").toUpperCase
+            else (if (o.isLiteral) s"${o.getLiteralLexicalForm}" else o.toString))
     str += ")"
 
     str
