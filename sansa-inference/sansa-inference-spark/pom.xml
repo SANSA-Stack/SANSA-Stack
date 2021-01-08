@@ -230,6 +230,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>DeALS</groupId>
+            <artifactId>DeALS</artifactId>
+            <version>0.9</version>
+        </dependency>
     </dependencies>
 
     <build>
