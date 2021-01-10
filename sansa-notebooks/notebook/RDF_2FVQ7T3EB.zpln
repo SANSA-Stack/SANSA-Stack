@@ -1,0 +1,170 @@
+{
+  "paragraphs": [
+    {
+      "title": "PageRank of resources example",
+      "text": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.rdf.spark.model._\nimport org.apache.jena.riot.Lang\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval graph \u003d triples.asGraph()\n\nval pagerank \u003d graph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(graph.vertices).\n    map({ case (k, (r, v)) \u003d\u003e (r, v, k) }).\n    sortBy(50 - _._1)\n\nval rankedreport \u003d report.map(f \u003d\u003e f._2 + \"\\t\" + f._1 )\nprintln(\"%table resource\\t rank\\n \" + rankedreport.take(50).mkString(\"\\n\"))",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 20:55:44.863",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610310208846_1191092432",
+      "id": "paragraph_1610310208846_1191092432",
+      "dateCreated": "2021-01-10 20:23:28.848",
+      "status": "READY"
+    },
+    {
+      "title": "Triple Ops example",
+      "text": "import org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.rdf.spark.model._\nimport org.apache.jena.graph.NodeFactory\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\n\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\n//Triples filtered by subject ( \"http://dbpedia.org/resource/Charles_Dickens\" )\nprintln(\"All triples related to Dickens:\\n\" + triples.find(Some(NodeFactory.createURI(\"http://dbpedia.org/resource/Charles_Dickens\")), None, None).collect().mkString(\"\\n\"))\n\n//Triples filtered by predicate ( \"http://dbpedia.org/ontology/influenced\" )\nprintln(\"All triples for predicate influenced:\\n\" + triples.find(None, Some(NodeFactory.createURI(\"http://dbpedia.org/ontology/influenced\")), None).collect().mkString(\"\\n\"))\n\n//Triples filtered by object ( \u003chttp://dbpedia.org/resource/Henry_James\u003e )\nprintln(\"All triples influenced by Henry_James:\\n\" + triples.find(None, None, Some(NodeFactory.createURI(\"http://dbpedia.org/resource/Henry_James\"))).collect().mkString(\"\\n\"))\n\nprintln(\"Number of triples: \" + triples.distinct.count())\nprintln(\"Number of subjects: \" + triples.getSubjects.distinct.count())\nprintln(\"Number of predicates: \" + triples.getPredicates.distinct.count())\nprintln(\"Number of objects: \" + triples.getObjects.distinct.count())\n\nval subjects \u003d triples.filterSubjects(_.isURI()).collect.mkString(\"\\n\")\n\nval predicates \u003d triples.filterPredicates(_.isVariable()).collect.mkString(\"\\n\")\nval objects \u003d triples.filterObjects(_.isLiteral()).collect.mkString(\"\\n\")\n\n//triples.getTriples().take(5).foreach(println(_))\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 20:56:33.764",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312146636_1957853929",
+      "id": "paragraph_1610312146636_1957853929",
+      "dateCreated": "2021-01-10 20:55:46.636",
+      "status": "READY"
+    },
+    {
+      "title": "Triple reader example",
+      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\n\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\ntriples.take(5).foreach(println(_))",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 20:57:05.921",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312197029_171771485",
+      "id": "paragraph_1610312197029_171771485",
+      "dateCreated": "2021-01-10 20:56:37.030",
+      "status": "READY"
+    },
+    {
+      "title": "RDF Statistic example",
+      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.stats._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\n\nval triples \u003d spark.rdf(lang)(input)\n\nval propertyDist \u003d triples.statsPropertyUsage()\n\nval sortedValues \u003d propertyDist.sortBy(_._2, false).take(100).\n                   map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + sortedValues.mkString(\"\\n\"))\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 20:57:34.964",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312227814_1736015550",
+      "id": "paragraph_1610312227814_1736015550",
+      "dateCreated": "2021-01-10 20:57:07.814",
+      "status": "READY"
+    },
+    {
+      "title": "RDF Quality Assessment Example",
+      "text": "import org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.qualityassessment._\nimport net.sansa_stack.rdf.spark.io._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\n// compute  quality assessment\nval completeness_schema \u003d triples.assessSchemaCompleteness()\nval completeness_interlinking \u003d triples.assessInterlinkingCompleteness()\nval completeness_property \u003d triples.assessPropertyCompleteness()\n\nval syntacticvalidity_literalnumeric \u003d triples.assessLiteralNumericRangeChecker()\nval syntacticvalidity_XSDDatatypeCompatibleLiterals \u003d triples.assessXSDDatatypeCompatibleLiterals()\n\nval availability_DereferenceableUris \u003d triples.assessDereferenceableUris()\n\nval relevancy_CoverageDetail \u003d triples.assessCoverageDetail()\nval relevancy_CoverageScope \u003d triples.assessCoverageScope()\nval relevancy_AmountOfTriples \u003d triples.assessAmountOfTriples()\n\nval performance_NoHashURIs \u003d triples.assessNoHashUris()\nval understandability_LabeledResources \u003d triples.assessLabeledResources()\n\nval AssessQualityStr \u003d s\"\"\"%table\nmetric\\tvalue\ncompleteness_schema\\t$completeness_schema\ncompleteness_interlinking\\t$completeness_interlinking \ncompleteness_property\\t$completeness_property\nsyntacticvalidity_literalnumeric\\t$syntacticvalidity_literalnumeric \nsyntacticvalidity_XSDDatatypeCompatibleLiterals\\t$syntacticvalidity_XSDDatatypeCompatibleLiterals\navailability_DereferenceableUris\\t$availability_DereferenceableUris\nrelevancy_CoverageDetail\\t$relevancy_CoverageDetail\nrelevancy_CoverageScope\\t$relevancy_CoverageScope\nrelevancy_AmountOfTriples\\t$relevancy_AmountOfTriples\nperformance_NoHashURIs\\t$performance_NoHashURIs\nunderstandability_LabeledResources\\t$understandability_LabeledResources  \n\"\"\"\n\nz.show(AssessQualityStr)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 20:58:08.074",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312255072_897947671",
+      "id": "paragraph_1610312255072_897947671",
+      "dateCreated": "2021-01-10 20:57:35.073",
+      "status": "READY"
+    }
+  ],
+  "name": "RDF",
+  "id": "2FVQ7T3EB",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-preview2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

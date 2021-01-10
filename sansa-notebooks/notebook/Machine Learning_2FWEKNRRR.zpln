@@ -1,0 +1,139 @@
+{
+  "paragraphs": [
+    {
+      "title": "RDF By Modularity Clustering example",
+      "text": "import scala.collection.mutable\nimport org.apache.spark.sql.SparkSession\nimport org.apache.log4j.{ Level, Logger }\nimport net.sansa_stack.ml.spark.clustering.algorithms.RDFByModularityClustering\n\nval graphFile \u003d \"hdfs://namenode:8020/data/Clustering_sampledata.nt\"\nval outputFile \u003d \"hdfs://namenode:8020/data/clustering.out\"\nval numIterations \u003d 10\n\nRDFByModularityClustering(sc, numIterations, graphFile, outputFile)",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:02:25.587",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312520575_1685216765",
+      "id": "paragraph_1610312520575_1685216765",
+      "dateCreated": "2021-01-10 21:02:00.576",
+      "status": "READY"
+    },
+    {
+      "title": "Power Iteration Clustering example",
+      "text": "import net.sansa_stack.ml.spark.clustering._\nimport net.sansa_stack.ml.spark.clustering.algorithms._\n\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.model._\n\nval input \u003d \"hdfs://namenode:8020/data/Clustering_sampledata.nt\"\n\nval maxIterations \u003d 10\nval k \u003d2\n\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval cluster \u003d triples.cluster(ClusteringAlgorithm.RDFGraphPowerIterationClustering).asInstanceOf[RDFGraphPowerIterationClustering].\n              setK(k).setMaxIterations(maxIterations).run()\n\ncluster.take(5).foreach(println)",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:02:55.984",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312547223_1458904442",
+      "id": "paragraph_1610312547223_1458904442",
+      "dateCreated": "2021-01-10 21:02:27.224",
+      "status": "READY"
+    },
+    {
+      "title": "Detecting Numerical Outliers in the dataset (experimental)",
+      "text": "import scala.collection.mutable\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.spark.storage.StorageLevel\nimport net.sansa_stack.ml.spark.outliers.anomalydetection._\nimport org.apache.spark.rdd.RDD\n\n\nval numofpartition   \u003d 10\nval threshold        \u003d 0.45\nval anomalyListLimit \u003d 5\n\nval input \u003d \"hdfs://namenode:8020/data/outliers_dataset.nt\"\n\n//N-Triples Reader\nval lang \u003d Lang.NTRIPLES\nval triplesRDD \u003d spark.rdf(lang)(input).repartition(numofpartition).persist()\n\n//filtering numeric literal having xsd type double,integer,nonNegativeInteger and squareKilometre\nval objList \u003d List(\n  \"http://www.w3.org/2001/XMLSchema#double\",\n  \"http://www.w3.org/2001/XMLSchema#integer\",\n  \"http://www.w3.org/2001/XMLSchema#nonNegativeInteger\",\n  \"http://dbpedia.org/datatype/squareKilometre\")\n\n//helful for considering only Dbpedia type as their will be yago type,wikidata type also\nval triplesType \u003d List(\"http://dbpedia.org/ontology\")\n\n//some of the supertype which are present for most of the subject\nval listSuperType \u003d List(\n  \"http://dbpedia.org/ontology/Activity\", \"http://dbpedia.org/ontology/Organisation\",\n  \"http://dbpedia.org/ontology/Agent\", \"http://dbpedia.org/ontology/SportsLeague\",\n  \"http://dbpedia.org/ontology/Person\", \"http://dbpedia.org/ontology/Athlete\",\n  \"http://dbpedia.org/ontology/Event\", \"http://dbpedia.org/ontology/Place\",\n  \"http://dbpedia.org/ontology/PopulatedPlace\", \"http://dbpedia.org/ontology/Region\",\n  \"http://dbpedia.org/ontology/Species\", \"http://dbpedia.org/ontology/Eukaryote\",\n  \"http://dbpedia.org/ontology/Location\")\n\n//hypernym URI\nval hypernym \u003d \"http://purl.org/linguistics/gold/hypernym\"\n\nvar clusterOfSubject: RDD[(Set[(String, String, Object)])] \u003d null\nprintln(\"AnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \")\n\nval outDetection \u003d new AnomalyWithHashingTF(triplesRDD, objList, triplesType, threshold, listSuperType, spark, hypernym, numofpartition) with Serializable\nclusterOfSubject \u003d outDetection.run()\n\nval setData \u003d clusterOfSubject.repartition(1000).persist(StorageLevel.MEMORY_AND_DISK)\nval setDataStore \u003d setData.map(f \u003d\u003e f.toSeq)\n\nval setDataSize \u003d setDataStore.filter(f \u003d\u003e f.size \u003e anomalyListLimit)\n\nval test \u003d setDataSize.map(f \u003d\u003e outDetection.iqr2(f, anomalyListLimit))\n\ntest.take(5).foreach(println)\n\n//val testfilter \u003d test.filter(f \u003d\u003e f.size \u003e 0) //.distinct()\n//val testfilterDistinct \u003d testfilter.flatMap(f \u003d\u003e f)\n\n//testfilterDistinct.take(10).foreach(println)",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:03:39.312",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312577333_1071550035",
+      "id": "paragraph_1610312577333_1071550035",
+      "dateCreated": "2021-01-10 21:02:57.333",
+      "status": "READY"
+    },
+    {
+      "title": "RDF Graph Kernel example",
+      "text": "import net.sansa_stack.ml.spark.kernel._\nimport net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval t0 \u003d System.nanoTime\nval lang \u003d Lang.NTRIPLES\nval iteration \u003d2\nval input \u003d \"hdfs://namenode:8020/data/aifb-fixed_no_schema4.nt\"\n\nval triples \u003d spark.rdf(lang)(input).\n              filter(_.getPredicate.getURI !\u003d \"http://swrc.ontoware.org/ontology#employs\")\n\nval rdfFastGraphKernel \u003d RDFFastGraphKernel(spark, triples, \"http://swrc.ontoware.org/ontology#affiliation\")\nval data \u003d rdfFastGraphKernel.getMLLibLabeledPoints\n\nval t1 \u003d System.nanoTime\nRDFFastTreeGraphKernelUtil.printTime(\"Initialization\", t0, t1)\n\nRDFFastTreeGraphKernelUtil.predictLogisticRegressionMLLIB(data, 4, iteration)\n\nval t2 \u003d System.nanoTime\nRDFFastTreeGraphKernelUtil.printTime(\"Run Prediction\", t1, t2)",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:04:04.867",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312624936_1362742657",
+      "id": "paragraph_1610312624936_1362742657",
+      "dateCreated": "2021-01-10 21:03:44.936",
+      "status": "READY"
+    }
+  ],
+  "name": "Machine Learning",
+  "id": "2FWEKNRRR",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-preview2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

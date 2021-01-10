@@ -1,0 +1,77 @@
+{
+  "paragraphs": [
+    {
+      "title": "RDD OWL reader example (Functional syntax)",
+      "text": "import net.sansa_stack.owl.spark.owl._\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\nval dataset \u003d spark.owl(Syntax.FUNCTIONAL)(input)\ndataset.take(10).foreach(println(_))",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:05:06.038",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312678923_31589449",
+      "id": "paragraph_1610312678923_31589449",
+      "dateCreated": "2021-01-10 21:04:38.923",
+      "status": "READY"
+    },
+    {
+      "title": "RDD OWL reader example (Manchester syntax)",
+      "text": "import net.sansa_stack.owl.spark.owl._\n\nval input \u003d \"hdfs://namenode:8020/data/ont_manchester.owl\"\n\nval dataset \u003d spark.owl(Syntax.MANCHESTER)(input)\ndataset.take(10).foreach(println(_))",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:05:33.751",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312706140_2079012117",
+      "id": "paragraph_1610312706140_2079012117",
+      "dateCreated": "2021-01-10 21:05:06.140",
+      "status": "READY"
+    }
+  ],
+  "name": "OWL",
+  "id": "2FUZYCTVG",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-preview2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}
