@@ -1,9 +1,9 @@
 default:
 	mkdir -p examples/jars
-	wget -O examples/jars/sansa-examples-spark.jar https://github.com/SANSA-Stack/SANSA-Examples/releases/download/latest-SNAPSHOT/sansa-examples-spark_2.11-develop.jar
+	wget -O examples/jars/sansa-examples-spark.jar https://www.dropbox.com/s/pfpt3zfl0k1qsfw/sansa-examples-spark.jar?dl=1
 
 load-data:
-	docker run -it --rm -v $(shell pwd)/examples/data:/data --net spark-net -e "CORE_CONF_fs_defaultFS=hdfs://namenode:8020" bde2020/hadoop-namenode:1.1.0-hadoop2.8-java8 hdfs dfs -copyFromLocal /data /data
+	docker run -it --rm -v $(shell pwd)/examples/data:/data --net spark-net -e "CORE_CONF_fs_defaultFS=hdfs://namenode:8020" bde2020/hadoop-namenode:2.0.0-hadoop3.1.1-java8 hdfs dfs -copyFromLocal /data /data
 	docker exec -it namenode hdfs dfs -ls /data
 
 up:
