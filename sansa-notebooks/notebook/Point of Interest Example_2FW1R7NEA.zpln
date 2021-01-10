@@ -1,0 +1,231 @@
+{
+  "paragraphs": [
+    {
+      "title": "1. Load Data",
+      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\n\nval input \u003d \"hdfs://namenode:8020/data/GermanyPopulatedPlaces.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:10:06.739",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312983337_1871906665",
+      "id": "paragraph_1610312983337_1871906665",
+      "dateCreated": "2021-01-10 21:09:43.337",
+      "status": "READY"
+    },
+    {
+      "title": "2. Compute statistics (i.e. Property Distribution)",
+      "text": "import net.sansa_stack.rdf.spark.stats._\n\nval propertyDist \u003dtriples.statsPropertyUsage().\n                  map(f \u003d\u003e f._1.getLocalName+ \"\\t\" + f._2)\n\nprintln(\"%table Property Distribution\\tFrequency\\n \" + propertyDist.take(100).mkString(\"\\n\"))\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:10:30.406",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313015042_114852627",
+      "id": "paragraph_1610313015042_114852627",
+      "dateCreated": "2021-01-10 21:10:15.042",
+      "status": "READY"
+    },
+    {
+      "title": "3. Infer new Knowledge",
+      "text": "import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport java.net.{ URI \u003d\u003e JavaURI }\n\nval RDFGraph \u003d RDFGraphLoader.loadFromDisk(spark, JavaURI.create(input), 4)\nval reasoner \u003d new ForwardRuleReasonerRDFS(spark.sparkContext)\nval inferredGraph \u003d reasoner.apply(RDFGraph)\ninferredGraph.cache()\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:10:56.334",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313030489_1351503050",
+      "id": "paragraph_1610313030489_1351503050",
+      "dateCreated": "2021-01-10 21:10:30.490",
+      "status": "READY"
+    },
+    {
+      "title": "3.1 Compute statistics (i.e Class Distribution to the original graph)",
+      "text": "val rdf_stats_class_dist \u003d triples.statsClassUsageCount().\n                           map(f \u003d\u003e f._1.toString.substring(f._1.toString.lastIndexOf(\"/\") + 1)+ \"\\t\" + f._2)\nprintln(\"%table Class Distribution\\tFrequency\\n \" + rdf_stats_class_dist.take(100).mkString(\"\\n\"))\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:11:24.868",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313056417_1203589945",
+      "id": "paragraph_1610313056417_1203589945",
+      "dateCreated": "2021-01-10 21:10:56.417",
+      "status": "READY"
+    },
+    {
+      "title": "3.2 Compute statistics (i.e size of the inferred graph)",
+      "text": "val O_graph \u003d \"original graph\" + \"\\t\" + triples.count \nval I_Graph \u003d \"\\n inferred graph\" + \"\\t\" + inferredGraph.size\n\nprintln(\"%table graph\\t size\\n \" + O_graph.union(I_Graph))\n\n//val I_Graph \u003d \"inferred graph\" + \"\\t\" + inferredGraph.size\n//println(\"%table graph\\t size\\n \" + I_Graph)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:11:51.628",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313091686_902752253",
+      "id": "paragraph_1610313091686_902752253",
+      "dateCreated": "2021-01-10 21:11:31.686",
+      "status": "READY"
+    },
+    {
+      "title": "4. Compute resource ranking and get top 50 POIs.",
+      "text": "import org.apache.spark.graphx.Graph\nimport net.sansa_stack.rdf.spark.model._\n\nval graph_rep \u003dtriples.asGraph()\n   // Create a subgraph based on the vertices connected by geoproperty.\nsval geoSubgraph \u003d\n    graph_rep.subgraph(t \u003d\u003e t.attr \u003d\u003d\"http://www.w3.org/2006/vcard/ns#geo\")\n\nval pagerank \u003d geoSubgraph.pageRank(0.00001).vertices\nval report \u003d pagerank.join(geoSubgraph.vertices).\n      map({ case (k, (r, v)) \u003d\u003e (r, v, k) }).\n      sortBy(50 - _._1)\n\ncase class POI(geoloc:Long, rank:Double, lat: String, lon: String)\n val POIs \u003d report.filter(f\u003d\u003ef._2.isLiteral()\u0026\u0026 f._2.getLiteralLexicalForm().startsWith(\"geo:\")).map { f \u003d\u003e\n    val geoloc \u003d f._3\n    val rank \u003d f._1\n    val geo \u003d f._2.getLiteralLexicalForm.split(\"[:,]+\")\n    val lat \u003d geo(1)\n    val lon \u003d geo(2)\n\n    POI(geoloc, rank, lat, lon)\n\n  }.take(50)\n\nz.angularBind(\"pois\", POIs) // this is what sends the data to the map\n\nval reportPOI \u003d POIs.map(f \u003d\u003e f.geoloc + \"\\t\" + f.lat+\", \" + f.lon + \"\\t\" + f.rank)\nprintln(\"%table geoloc \\t geocord \\t rank \\n \" + reportPOI.mkString(\"\\n\"))",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:13:23.154",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313117872_1916196165",
+      "id": "paragraph_1610313117872_1916196165",
+      "dateCreated": "2021-01-10 21:11:57.872",
+      "status": "READY"
+    },
+    {
+      "title": "5.Show POI on the map",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:12:44.409",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313148279_1087898904",
+      "id": "paragraph_1610313148279_1087898904",
+      "dateCreated": "2021-01-10 21:12:28.279",
+      "status": "READY"
+    }
+  ],
+  "name": "Point of Interest Example",
+  "id": "2FW1R7NEA",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-preview2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

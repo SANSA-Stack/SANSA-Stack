@@ -1,0 +1,230 @@
+{
+  "paragraphs": [
+    {
+      "title": "Loading data and creating KV pair of poiID,categories",
+      "text": "%spark\nimport org.apache.jena.riot.Lang\nimport com.typesafe.config.ConfigFactory\nimport net.sansa_stack.ml.spark.clustering.utils.DataProcessing\nimport net.sansa_stack.rdf.spark.io._\n\n\nval input \u003d \"hdfs://namenode:8020/data/clusteringPipeline.nt\"\nval lang \u003d Lang.NTRIPLES\nval triples \u003d spark.rdf(lang)(input)\n\nval conf \u003d ConfigFactory.load()\nval data \u003d new DataProcessing(spark \u003d spark, conf \u003d conf,triples)\nval pois \u003d data.pois\nval poiCategorySet \u003d pois.map(poi \u003d\u003e (poi.poi_id, poi.categories.categories.toSet)).persist()",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:21:04.290",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313631633_936899876",
+      "id": "paragraph_1610313631633_936899876",
+      "dateCreated": "2021-01-10 21:20:31.633",
+      "status": "READY"
+    },
+    {
+      "title": "Applying K-means Clustering Algorithm on Categories",
+      "text": "%spark\nimport net.sansa_stack.ml.spark.clustering.algorithms.Encoder\nimport net.sansa_stack.ml.spark.clustering.algorithms.Kmeans\nimport net.sansa_stack.ml.spark.clustering._\n\n\nval (avgVectorDF, word2Vec) \u003d new Encoder().wordVectorEncoder(poiCategorySet, spark)\n\nval db \u003d triples.cluster(ClusteringAlgorithm.KMeans).asInstanceOf[Kmeans]\n\nval avgVectorClusters \u003d db.kmClustering(8,5,avgVectorDF,spark)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:21:29.151",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313669933_365809171",
+      "id": "paragraph_1610313669933_365809171",
+      "dateCreated": "2021-01-10 21:21:09.933",
+      "status": "READY"
+    },
+    {
+      "title": "Save the output in the HDFS",
+      "text": "%spark\n\nimport net.sansa_stack.ml.spark.clustering.utils.Common\nimport net.sansa_stack.ml.spark.clustering.datatypes.{Cluster, Clusters, POI}\n\nval assignments \u003d avgVectorClusters.toList.sortBy { case (k, v) \u003d\u003e v.length }\nval assm\u003dassignments.toArray\nval poisKeyPair \u003d pois.keyBy(f \u003d\u003e f.poi_id).persist()\n\nval clustersPois \u003d Clusters(assignments.size, assignments.map(_._2.length).toArray, assm.map(f \u003d\u003e Cluster(f._1, Common.join( spark.sparkContext,f._2, poisKeyPair))))\n\nval newAssignment \u003d assignments.map(f \u003d\u003e (f._1, spark.sparkContext.parallelize(f._2).map(x \u003d\u003e (x, x)).join(poisKeyPair).map(x \u003d\u003e ( x._2._2.poi_id, x._2._2.categories, x._2._2.coordinate)).collect()))\nval newAssignmentRDD \u003d spark.sparkContext.parallelize(newAssignment)\nval newAssignmentRDDTriple2 \u003d newAssignmentRDD.map(cluster \u003d\u003e (cluster._1, cluster._2.flatMap(poi \u003d\u003e\n    List{(poi._1.toString,( poi._2.categories.mkString(\";\"))+\",\", poi._3.latitude, poi._3.longitude)}\n    ).toList))\nval res\u003dnewAssignmentRDDTriple2.flatMap(f\u003d\u003e(f._2.map(g\u003d\u003e(f._1,(f._1,g._1,g._2,g._3,g._4))))).groupByKey\nval res1\u003dres.map(f\u003d\u003e(f._2.toList))\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:21:52.065",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313693195_1882594191",
+      "id": "paragraph_1610313693195_1882594191",
+      "dateCreated": "2021-01-10 21:21:33.195",
+      "status": "READY"
+    },
+    {
+      "title": "Binding K-means clustering result from spark to angular",
+      "text": "%spark\nz.angularBind(\"clustersPois\", clustersPois)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:22:16.710",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313713212_37633403",
+      "id": "paragraph_1610313713212_37633403",
+      "dateCreated": "2021-01-10 21:21:53.213",
+      "status": "READY"
+    },
+    {
+      "title": "Reading K-means clustering output and preparing it for DBSCAN algo",
+      "text": "%spark\nimport com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }\n\nval geometryFactory \u003d new GeometryFactory()\n\nval dbParam \u003d res1.collect.map(str \u003d\u003e str.map{parts\u003d\u003e\n   val poid\u003dparts._1.toString\n   val lat \u003d parts._4\n   val long\u003d parts._5\n   val point \u003d geometryFactory.createPoint(new Coordinate(long, lat))\n   point.setUserData(poid)\n   point\n})\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:22:51.354",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313753841_1500713332",
+      "id": "paragraph_1610313753841_1500713332",
+      "dateCreated": "2021-01-10 21:22:33.843",
+      "status": "READY"
+    },
+    {
+      "title": "Apply DBSCAN on each K-means cluster",
+      "text": "%spark\nimport net.sansa_stack.ml.spark.clustering.algorithms.DBSCAN\nimport scala.util.parsing.json._\nimport org.json4s.jackson.Serialization.write\nimport org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }   \n  \nval dbfilter\u003ddbparam.filter(f \u003d\u003e f.size \u003e 35) // NOTE: 35 takes time but if reduced it may raise a GeoSpark paritioning issue\ncase class Coordinate2(longitude: Double, latitude: Double)\ncase class Cluster2(cluster_id: String, cluster_id_kmeans:String,poi_in_cluster:  Array[Coordinate2])\ncase class Clusters1(numOfClusters: Int, clusterSizes:Array[Int], clusters: Array[Cluster2])\n\nval broadcastRDD \u003d spark.sparkContext.broadcast(dbfilter)\nval convertRDD\u003dbroadcastRDD.value.map{case u\u003d\u003espark.sparkContext.parallelize(u)}\n\nval dbscan \u003d triples.cluster(ClusteringAlgorithm.DBSCAN).asInstanceOf[DBSCAN]\n\nval k \u003d convertRDD.map(f \u003d\u003e dbscan.dbclusters(f, 0.001, 2, spark))\n\nval clusterIDPOIidPair \u003d k.map(arr \u003d\u003e arr.map(f \u003d\u003e (f._1, f._2.map(g \u003d\u003e (g._1,g._2.lat,g._2.lon)))).groupByKey())\nval temp\u003d clusterIDPOIidPair.reduce( _ ++ _ )\n\n\nval col\u003dtemp.collect().toArray\nval exp\u003dcol.map(f \u003d\u003e (f._1,f._2.map(f \u003d\u003e (f.length)).toArray)).toArray\n\ndef subsequenceT(a: String): String \u003d {\n    a.substring(0, 1)\n}\n\ndef findTerm(gt: (String, Iterable[Array[(String, Double, Double)]])): Cluster2 \u003d {\n    val a\u003dgt._1\n    val c\u003dgt._2.map(f \u003d\u003e f.head).map(f \u003d\u003e f._1).head\n    val func\u003dsubsequenceT(c)\n    val b\u003dgt._2.flatMap(f \u003d\u003e f.map(f \u003d\u003e (Coordinate2(f._3,f._2))))\n    (Cluster2(a,func,b.toArray))\n}\n\nval newdata\u003dcol.map(f \u003d\u003e f._2.map(f \u003d\u003e f.length).toArray).flatMap(f \u003d\u003e f).toArray\nval pois\u003dClusters1(exp.size, newdata,col.map(g \u003d\u003e findTerm(g)))\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:23:20.572",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313775920_1918257189",
+      "id": "paragraph_1610313775920_1918257189",
+      "dateCreated": "2021-01-10 21:22:55.920",
+      "status": "READY"
+    },
+    {
+      "text": "%spark\nz.angularBind(\"someScopeVar\", pois)",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:23:31.220",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313806750_1600478766",
+      "id": "paragraph_1610313806750_1600478766",
+      "dateCreated": "2021-01-10 21:23:26.764",
+      "status": "READY"
+    }
+  ],
+  "name": "Semantic-Geo Pipeline",
+  "id": "2FUQE9ZW3",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-preview2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

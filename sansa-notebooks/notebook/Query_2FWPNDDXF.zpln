@@ -1,0 +1,108 @@
+{
+  "paragraphs": [
+    {
+      "title": "Sparqlify example",
+      "text": "import org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.query.spark.query._\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval lang \u003d Lang.NTRIPLES\n\nval triples \u003d spark.rdf(lang)(input)\n\nval sparqlQuery \u003d \"\"\"SELECT ?s ?p ?o\n                            WHERE {?s ?p ?o }\n                     LIMIT 10\"\"\"\n    \nval result \u003d triples.sparql(sparqlQuery)\n        \nz.show(result)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:18:34.588",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313487236_1405175646",
+      "id": "paragraph_1610313487236_1405175646",
+      "dateCreated": "2021-01-10 21:18:07.236",
+      "status": "READY"
+    },
+    {
+      "title": "DataLake (CSV) example",
+      "text": "import net.sansa_stack.query.spark.query._\n\nval queryFile \u003d \"hdfs://namenode:8020/data/datalake/queries/Q1.sparql\"\nval configFile  \u003d \"hdfs://namenode:8020/data/datalake/config_csv-only\"\nval mappingsFile \u003d \"hdfs://namenode:8020/data/datalake/mappings_csv-only.ttl\"\n\n\nval result \u003d spark.sparqlDL(queryFile, mappingsFile, configFile)\n\nz.show(result)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:19:16.048",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313514671_818673193",
+      "id": "paragraph_1610313514671_818673193",
+      "dateCreated": "2021-01-10 21:18:34.672",
+      "status": "READY"
+    },
+    {
+      "title": "Sparqlify Example with SPARQL Endpoint",
+      "text": "import scala.collection.mutable\n\nimport org.apache.jena.riot.Lang\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.query.spark.query._\nimport net.sansa_stack.query.spark.sparqlify.QueryExecutionFactorySparqlifySpark\nimport net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3\nimport org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer\n\n\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval triples \u003d  spark.rdf(Lang.NTRIPLES)(input)\nval partitions \u003d triples.partitionGraph()\n\nval rewriter \u003d SparqlifyUtils3.createSparqlSqlRewriter(spark, )\n    \nval port \u003d 7531\n    \nval qef \u003d new QueryExecutionFactorySparqlifySpark(spark, rewriter)\nval server \u003d FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()\n\n\nserver.join()\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:19:59.063",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610313580315_1605705670",
+      "id": "paragraph_1610313580315_1605705670",
+      "dateCreated": "2021-01-10 21:19:40.315",
+      "status": "READY"
+    }
+  ],
+  "name": "Query",
+  "id": "2FWPNDDXF",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-preview2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

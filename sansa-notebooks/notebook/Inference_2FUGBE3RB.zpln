@@ -1,0 +1,77 @@
+{
+  "paragraphs": [
+    {
+      "title": "Spark \u0027rdfs\u0027 Reasoning example on triples",
+      "text": "import java.io.File\nimport java.net.URI\n\nimport net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.data.loader.RDFGraphLoader\nimport net.sansa_stack.inference.spark.data.writer.RDFGraphWriter\nimport net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}\n\n// load triples from disk\nval input \u003d \"hdfs://namenode:8020/data/rdf.nt\"\nval output \u003d \"hdfs://namenode:8020/data/output/\"\nval argprofile \u003d \"rdfs\"\n\nval profile \u003d argprofile match {\n      case \"rdfs\"        \u003d\u003e ReasoningProfile.RDFS\n      case \"rdfs-simple\" \u003d\u003e ReasoningProfile.RDFS_SIMPLE\n      case \"owl-horst\"   \u003d\u003e ReasoningProfile.OWL_HORST\n      case \"transitive\"  \u003d\u003e ReasoningProfile.TRANSITIVE\n\n}\n\n// the degree of parallelism\nval parallelism \u003d 4\n\n// load triples from disk\nval graph \u003d RDFGraphLoader.loadFromDisk(spark, URI.create(input), parallelism)\nprintln(s\"|G|\u003d${graph.size()}\")\n\n// create reasoner\nval reasoner \u003d profile match {\n   case TRANSITIVE \u003d\u003e new TransitiveReasoner(spark.sparkContext, parallelism)\n   case RDFS       \u003d\u003e new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)\n   case RDFS_SIMPLE \u003d\u003e\n   var r \u003d new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism) //.level.+(RDFSLevel.SIMPLE)\n     r.level \u003d RDFSLevel.SIMPLE\n     r\n   case OWL_HORST \u003d\u003e new ForwardRuleReasonerOWLHorst(spark.sparkContext)\n}\n\n// compute inferred graph\nval inferredGraph \u003d reasoner.apply(graph)\nprintln(s\"|G_inferred|\u003d${inferredGraph.size()}\")\n\n// write triples to disk\n//RDFGraphWriter.writeToDisk(inferredGraph, output)\n\nval O_graph \u003d \"original graph\" + \"\\t\" + graph.size \nval I_Graph \u003d \"\\n inferred graph\" + \"\\t\" + inferredGraph.size\n\nprintln(\"%table graph\\t size\\n \" + O_graph.union(I_Graph))\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:00:21.524",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312368429_1422914069",
+      "id": "paragraph_1610312368429_1422914069",
+      "dateCreated": "2021-01-10 20:59:28.429",
+      "status": "READY"
+    },
+    {
+      "title": "Spark \u0027rdfs\u0027 Reasoning example on axioms",
+      "text": "import net.sansa_stack.inference.rules.{ RDFSLevel, ReasoningProfile }\nimport net.sansa_stack.inference.rules.ReasoningProfile._\nimport net.sansa_stack.inference.spark.forwardchaining.axioms.{ ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner }\nimport net.sansa_stack.owl.spark.owl._\nimport org.apache.spark.rdd.RDD\nimport org.semanticweb.owlapi.model.OWLAxiom\n\nval input \u003d \"hdfs://namenode:8020/data/ont_functional.owl\"\n\n// load axioms from disk\nvar owlAxioms \u003d spark.owl(Syntax.FUNCTIONAL)(input)\nprintln(s\"|G| \u003d ${owlAxioms.count()}\")\n\n// the degree of parallelism\nval parallelism \u003d 4\n\n// create reasoner and compute inferred graph\nval inferredGraph_axioms \u003d new ForwardRuleReasonerRDFS(spark.sparkContext, parallelism)(owlAxioms)\n\nprintln(s\"|G_inf| \u003d ${inferredGraph_axioms.count()}\")\n\n\nval O_graph_axioms \u003d \"original graph\" + \"\\t\" + owlAxioms.count \nval I_axioms \u003d \"\\n inferred axioms\" + \"\\t\" + inferredGraph_axioms.count\nval I_Graph_axioms \u003d \"\\n inferred graph\" + \"\\t\" + (owlAxioms.count  + inferredGraph_axioms.count)\n\nprintln(\"%table graph\\t size\\n \" + O_graph_axioms.union(I_axioms).union(I_Graph_axioms))",
+      "user": "anonymous",
+      "dateUpdated": "2021-01-10 21:01:05.277",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610312450827_531987544",
+      "id": "paragraph_1610312450827_531987544",
+      "dateCreated": "2021-01-10 21:00:50.827",
+      "status": "READY"
+    }
+  ],
+  "name": "Inference",
+  "id": "2FUGBE3RB",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-preview2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}
