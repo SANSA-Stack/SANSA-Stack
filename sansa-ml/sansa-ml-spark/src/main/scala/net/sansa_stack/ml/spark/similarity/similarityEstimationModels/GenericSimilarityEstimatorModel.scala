@@ -1,8 +1,8 @@
 package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 
 import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.sql.functions.{col, udf, lit, typedLit}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.{col, lit, typedLit, udf}
 
 /**
  * This class is the superclass for all novel created feature based semantic similarity models

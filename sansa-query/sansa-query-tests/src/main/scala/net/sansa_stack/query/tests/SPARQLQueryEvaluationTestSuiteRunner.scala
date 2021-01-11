@@ -2,15 +2,14 @@ package net.sansa_stack.query.tests
 
 import java.net.URL
 
-import scala.collection.mutable
-
+import net.sansa_stack.query.tests.util._
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.resultset.{ResultSetCompare, ResultsFormat, SPARQLResult}
 import org.scalatest.FunSuite
 
-import net.sansa_stack.query.tests.util._
+import scala.collection.mutable
 
 
 

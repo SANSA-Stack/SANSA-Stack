@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.expression
 
 import net.sansa_stack.query.spark.graph.jena.model.SparkExecutionModel
-import net.sansa_stack.query.spark.graph.jena.util.{ BasicGraphPattern, Result }
+import net.sansa_stack.query.spark.graph.jena.util.{BasicGraphPattern, Result}
 import org.apache.jena.graph.Node
 import org.apache.spark.rdd.RDD
 

@@ -1,14 +1,11 @@
 package net.sansa_stack.rdf.common.partition.layout
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
 import scala.reflect.runtime.universe.{Type, typeOf}
 
 import org.apache.jena.graph.Triple
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
-import net.sansa_stack.rdf.common.partition.schema.{SchemaStringBoolean, SchemaStringDate}
+import net.sansa_stack.rdf.common.partition.schema.SchemaStringBoolean
 
 
 /**
@@ -27,7 +24,7 @@ object TripleLayoutBoolean
     val s = t.getSubject
     val o = t.getObject
     val v = if (o.isLiteral && o.getLiteralValue.isInstanceOf[Boolean]) o.getLiteralValue.asInstanceOf[Boolean]
-     else throw new RuntimeException(s"Layout only for boolean literals: $t")
+            else throw new RuntimeException(s"Layout only for boolean literals: $t")
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 

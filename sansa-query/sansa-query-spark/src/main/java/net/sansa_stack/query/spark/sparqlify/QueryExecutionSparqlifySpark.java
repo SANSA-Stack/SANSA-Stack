@@ -1,8 +1,5 @@
 package net.sansa_stack.query.spark.sparqlify;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.ResultSetCloseable;
@@ -18,6 +15,9 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class QueryExecutionSparqlifySpark extends QueryExecutionBaseSelect {
 	public QueryExecutionSparqlifySpark(Query query, QueryExecutionFactory subFactory, SparkSession sparkSession,

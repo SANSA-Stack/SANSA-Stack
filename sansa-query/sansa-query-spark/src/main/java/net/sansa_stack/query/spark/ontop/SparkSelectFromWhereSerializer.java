@@ -1,16 +1,15 @@
 package net.sansa_stack.query.spark.ontop;
 
-import java.util.Map;
-import java.util.Optional;
-
 import com.google.inject.Inject;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap;
 import it.unibz.inf.ontop.dbschema.DBParameters;
 import it.unibz.inf.ontop.dbschema.QualifiedAttributeID;
-import it.unibz.inf.ontop.dbschema.QuotedIDFactory;
 import it.unibz.inf.ontop.dbschema.RelationID;
-import it.unibz.inf.ontop.generation.algebra.*;
+import it.unibz.inf.ontop.generation.algebra.BinaryJoinExpression;
+import it.unibz.inf.ontop.generation.algebra.SQLExpression;
+import it.unibz.inf.ontop.generation.algebra.SQLTable;
+import it.unibz.inf.ontop.generation.algebra.SelectFromWhereWithModifiers;
 import it.unibz.inf.ontop.generation.serializer.SQLSerializationException;
 import it.unibz.inf.ontop.generation.serializer.impl.DefaultSelectFromWhereSerializer;
 import it.unibz.inf.ontop.generation.serializer.impl.SQLTermSerializer;
@@ -18,6 +17,9 @@ import it.unibz.inf.ontop.model.term.*;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbol;
 import it.unibz.inf.ontop.model.type.DBTermType;
 import it.unibz.inf.ontop.utils.ImmutableCollectors;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Lorenz Buehmann

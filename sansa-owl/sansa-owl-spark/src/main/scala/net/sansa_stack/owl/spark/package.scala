@@ -1,13 +1,12 @@
 package net.sansa_stack.owl.spark
 
+import net.sansa_stack.owl.spark.rdd._
+import net.sansa_stack.owl.spark.writers._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.formats._
 import org.semanticweb.owlapi.model.{AxiomType, OWLAxiom, OWLDocumentFormat}
-
-import net.sansa_stack.owl.spark.rdd._
-import net.sansa_stack.owl.spark.writers._
 
 class UnknownOWLFormatException(msg: String) extends Exception
 

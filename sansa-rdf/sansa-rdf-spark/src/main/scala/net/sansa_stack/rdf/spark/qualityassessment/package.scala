@@ -11,9 +11,8 @@ import net.sansa_stack.rdf.spark.qualityassessment.metrics.relevancy._
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.reprconciseness._
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.syntacticvalidity._
 import net.sansa_stack.rdf.spark.qualityassessment.metrics.understandability.LabeledResources
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 
 /**
  * @author Gezim Sejdiu

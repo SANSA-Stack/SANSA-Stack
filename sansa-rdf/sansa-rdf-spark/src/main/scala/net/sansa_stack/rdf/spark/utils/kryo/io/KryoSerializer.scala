@@ -2,10 +2,10 @@ package net.sansa_stack.rdf.spark.utils.kryo.io
 
 import java.nio.ByteBuffer
 
-import scala.reflect.ClassTag
-
 import org.apache.spark.SparkEnv
 import org.apache.spark.serializer.Serializer
+
+import scala.reflect.ClassTag
 
 
 /**

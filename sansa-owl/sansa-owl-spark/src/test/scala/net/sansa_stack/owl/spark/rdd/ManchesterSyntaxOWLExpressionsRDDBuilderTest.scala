@@ -1,10 +1,9 @@
 package net.sansa_stack.owl.spark.rdd
 
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.owl.spark.owl._
 import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
-
-import net.sansa_stack.owl.spark.owl._
 
 
 class ManchesterSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedSparkContext {

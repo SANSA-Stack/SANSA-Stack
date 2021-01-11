@@ -1,17 +1,16 @@
 package net.sansa_stack.ml.spark.similarity.examples
 
-import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{BatetModel, BraunBlanquetModel, DiceModel, JaccardModel, MinHashModel, OchiaiModel, SimpsonModel, TverskyModel}
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels._
 import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
-import org.apache.jena.riot.Lang
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph
+import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.types.DataTypes
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 /**
  * This class object presents the minimal option to call available similarity functions

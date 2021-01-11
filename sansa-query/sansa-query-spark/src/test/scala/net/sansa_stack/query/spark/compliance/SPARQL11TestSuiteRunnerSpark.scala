@@ -1,8 +1,7 @@
 package net.sansa_stack.query.spark.compliance
 
-import scala.collection.mutable
-
-import com.holdenkarau.spark.testing.{SharedSparkContext}
+import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuiteRunner
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
@@ -10,8 +9,6 @@ import org.apache.jena.sparql.expr.NodeValue
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.{ConfigMap, Suite}
-
-import net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuiteRunner
 
 /**
  * SPARQL 1.1 test suite runner on Apache Spark.

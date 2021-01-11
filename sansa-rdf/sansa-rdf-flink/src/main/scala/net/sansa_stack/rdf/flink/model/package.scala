@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.flink
 import net.sansa_stack.rdf.flink.model.graph.GraphOps
 import org.apache.flink.api.scala.DataSet
 import org.apache.flink.graph.scala._
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 
 
 /**

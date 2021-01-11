@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.sparqlify;
 
-import java.io.Serializable;
-
+import com.google.common.collect.Multimap;
 import org.aksw.jena_sparql_api.views.RestrictedExpr;
 import org.aksw.sparqlify.core.sparql.ItemProcessorSparqlify;
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding;
@@ -11,7 +10,7 @@ import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
 
-import com.google.common.collect.Multimap;
+import java.io.Serializable;
 
 public class SparkRowMapperSparqlify
 	implements Function<Row, Binding>, Serializable

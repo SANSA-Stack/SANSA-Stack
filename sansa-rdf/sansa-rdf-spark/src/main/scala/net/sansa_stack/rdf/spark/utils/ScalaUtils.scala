@@ -2,8 +2,8 @@ package net.sansa_stack.rdf.spark.utils
 
 import java.io.{Closeable, IOException}
 
-import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 /**
   * @author Lorenz Buehmann

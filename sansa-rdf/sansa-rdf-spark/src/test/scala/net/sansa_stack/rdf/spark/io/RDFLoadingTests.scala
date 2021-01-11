@@ -5,9 +5,9 @@ import java.net.{URI, URL}
 import java.nio.file.{Files, Path}
 import java.util.zip.ZipInputStream
 
-import scala.collection.JavaConverters._
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.rdf.spark.model._
+import net.sansa_stack.rdf.spark.utils.tags.ConformanceTestSuite
 import org.apache.jena.graph.GraphUtil
 import org.apache.jena.rdf.model.{ModelFactory, ResourceFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
@@ -17,10 +17,8 @@ import org.apache.jena.sparql.serializer.SerializationContext
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.RDF
 import org.scalatest.FunSuite
-import org.scalatest.tags._
 
-import net.sansa_stack.rdf.spark.model._
-import net.sansa_stack.rdf.spark.utils.tags.ConformanceTestSuite
+import scala.collection.JavaConverters._
 
 /**
   * Tests for loading triples from either N-Triples are Turtle files into a DataFrame.

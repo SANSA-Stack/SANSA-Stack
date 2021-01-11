@@ -1,13 +1,13 @@
 package net.sansa_stack.query.spark.graph.jena.util
 
-import scala.util.control.Breaks._
-
 import net.sansa_stack.query.spark.graph.jena.model.SparkExecutionModel
 import org.apache.jena.graph.Node
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.graphx.{ Edge, EdgeDirection, Graph, VertexId }
+import org.apache.spark.graphx.{Graph, VertexId}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
+import scala.util.control.Breaks._
 
 /**
  * A match set of vertex v is the set of all candidates of the target vertex matching triple patterns

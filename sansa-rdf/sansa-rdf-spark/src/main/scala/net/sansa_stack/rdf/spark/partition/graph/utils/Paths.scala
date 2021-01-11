@@ -3,6 +3,7 @@ package net.sansa_stack.rdf.spark.partition.graph.utils
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.graphx._
 import org.apache.spark.sql.SparkSession
+
 import scala.reflect.ClassTag
 /**
   * A path List(e0,e1,...,em) is called an end-to-end path that, src of e0 is a source vertex that has no incoming edges,

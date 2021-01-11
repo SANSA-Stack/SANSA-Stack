@@ -2,22 +2,25 @@ package net.sansa_stack.examples.spark.query
 
 import java.awt.Desktop
 import java.net.URI
+import java.nio.file.Paths
+
+import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, PartitionSerDe, QueryExecutionFactoryOntopSpark}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
-import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, PartitionSerDe, QueryExecutionFactoryOntopSpark}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-
-import java.nio.file.Paths
 
 /**
   * Run SPARQL queries over Spark using Ontop as SPARQL-to-SQL rewriter.
   */
 object OntopBasedSPARQLEngine {
+
+  JenaSystem.init
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
@@ -47,7 +50,10 @@ object OntopBasedSPARQLEngine {
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
       .config("spark.sql.crossJoin.enabled", true)
+      .enableHiveSupport()
       .getOrCreate()
+
+    val partitioner = RdfPartitionerComplex(false)
 
     val ontopEngine = if (input != null) {
       // load the data into an RDD
@@ -55,23 +61,22 @@ object OntopBasedSPARQLEngine {
       val data = spark.rdf(lang)(input)
 
       // apply vertical partitioning which is necessary for the current Ontop integration
-      val partitions: Map[RdfPartitionComplex, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner = RdfPartitionerComplex(false))
+      val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner)
 
       // create the SPARQL engine
-      OntopSPARQLEngine(spark, partitions, ontology = None)
+      OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
     } else {
       // load partitioning metadata
       val partitions = PartitionSerDe.deserializeFrom(Paths.get(partitioningMetadataPath))
       // create the SPARQL engine
-      OntopSPARQLEngine(spark, database, partitions, None)
+      OntopSPARQLEngine(spark, database, partitioner, partitions, None)
     }
-
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI
     run match {
       case "cli" =>
         // only SELECT queries will be considered here
-        val result = ontopEngine.execSelect(sparqlQuery)
+        val result = ontopEngine.execSelect(sparqlQuery).collect()
         // show bindings on command line
         result.foreach(println)
       case "endpoint" =>
@@ -114,7 +119,7 @@ object OntopBasedSPARQLEngine {
       .action((x, c) => c.copy(database = x))
       .text("the name of the Spark database used as KB")
 
-    opt[String]('q', "sparql").optional().valueName("<query>").
+    opt[String]('q', "query").optional().valueName("<query>").
       action((x, c) => c.copy(sparql = x)).
       validate(x => try {
         QueryFactory.create(x)

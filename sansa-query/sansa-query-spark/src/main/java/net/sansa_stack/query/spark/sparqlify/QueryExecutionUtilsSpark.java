@@ -1,5 +1,7 @@
 package net.sansa_stack.query.spark.sparqlify;
 
+import com.google.common.collect.Multimap;
+import net.sansa_stack.rdf.spark.utils.kryo.io.JavaKryoSerializationWrapper;
 import org.aksw.jena_sparql_api.views.RestrictedExpr;
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite;
 import org.apache.jena.query.Query;
@@ -9,10 +11,6 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-
-import com.google.common.collect.Multimap;
-
-import net.sansa_stack.rdf.spark.utils.kryo.io.JavaKryoSerializationWrapper;
 
 public class QueryExecutionUtilsSpark {
 	public static JavaRDD<Binding> createQueryExecution(SparkSession sparkSession, SparqlSqlStringRewrite rewrite, Query query) {

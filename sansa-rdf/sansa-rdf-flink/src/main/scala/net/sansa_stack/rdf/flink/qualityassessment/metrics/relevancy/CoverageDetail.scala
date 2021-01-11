@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.flink.qualityassessment.metrics.relevancy
 
 import org.apache.flink.api.scala._
-import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.graph.Triple
 
 /**
   * @author Gezim Sejdiu

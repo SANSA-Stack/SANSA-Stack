@@ -1,10 +1,9 @@
 package net.sansa_stack.rdf.spark.model.df
 
+import net.sansa_stack.rdf.spark.io.fromRow
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-
-import net.sansa_stack.rdf.spark.io.fromRow
 
 /**
  * Spark/DataFrame based implementation of DataFrame of triples.

@@ -1,14 +1,13 @@
 package net.sansa_stack.query.spark.dof.tensor
 
-import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.sparql.core.Var
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-
 import net.sansa_stack.query.spark.dof.bindings._
 import net.sansa_stack.query.spark.dof.node._
 import net.sansa_stack.query.spark.dof.triple.Reader
 import net.sansa_stack.query.spark.utils.SetAccumulator
+import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.sparql.core.Var
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 object NSetAccumulator
   extends SetAccumulator[Node] {

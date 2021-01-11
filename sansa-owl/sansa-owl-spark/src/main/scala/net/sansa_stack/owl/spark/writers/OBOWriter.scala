@@ -3,13 +3,12 @@ package net.sansa_stack.owl.spark.writers
 import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter, PrintWriter}
 import java.util.Collections
 
-import scala.collection.JavaConverters._
-
+import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.obolibrary.obo2owl.OWLAPIOwl2Obo
 import org.obolibrary.oboformat.writer.OBOFormatWriter
 import org.semanticweb.owlapi.apibinding.OWLManager
 
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import scala.collection.JavaConverters._
 
 object OBOWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =

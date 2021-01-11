@@ -2,17 +2,16 @@ package net.sansa_stack.examples.spark.inference.triples
 
 import java.net.URI
 
-import scala.collection.Seq
-
+import net.sansa_stack.inference.rules.ReasoningProfile._
+import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
+import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
+import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.SparkSession
 import scopt.{OptionParser, Read}
 
-import net.sansa_stack.inference.rules.ReasoningProfile._
-import net.sansa_stack.inference.rules.{RDFSLevel, ReasoningProfile}
-import net.sansa_stack.inference.spark.forwardchaining.triples.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS, TransitiveReasoner}
-import net.sansa_stack.rdf.spark.io._
+import scala.collection.Seq
 
 object RDFGraphInference {
 

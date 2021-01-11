@@ -2,7 +2,7 @@ package net.sansa_stack.rdf.flink.qualityassessment.metrics.performance
 
 import net.sansa_stack.rdf.common.qualityassessment.utils.NodeUtils._
 import org.apache.flink.api.scala.DataSet
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.Triple
 
 /**
  *

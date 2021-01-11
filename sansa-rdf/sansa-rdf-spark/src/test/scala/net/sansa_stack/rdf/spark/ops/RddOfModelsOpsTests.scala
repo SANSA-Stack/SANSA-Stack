@@ -1,14 +1,13 @@
 package net.sansa_stack.rdf.spark.ops
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.query.{QueryFactory, Syntax}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.SparkConf
-import org.scalatest.FunSuite
-import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
+import org.scalatest.FunSuite
 
 import scala.collection.JavaConverters._
 

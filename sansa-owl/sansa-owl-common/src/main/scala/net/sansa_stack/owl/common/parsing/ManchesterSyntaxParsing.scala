@@ -1,12 +1,10 @@
 package net.sansa_stack.owl.common.parsing
 
-import scala.collection.JavaConverters._
-
 import com.typesafe.scalalogging.Logger
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.expression.OWLEntityChecker
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntax
-import org.semanticweb.owlapi.model.{OWLAnnotationProperty, OWLAxiom, OWLClass, OWLDataProperty, OWLDatatype, OWLLogicalEntity, OWLNamedIndividual, OWLObjectProperty, OWLOntology}
+import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 

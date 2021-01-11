@@ -1,11 +1,9 @@
 package net.sansa_stack.query.spark.graph.jena.util
 
-import scala.reflect.ClassTag
-
-import net.sansa_stack.query.spark.graph.jena.SparqlParser
-import net.sansa_stack.rdf.spark.io.NTripleReader
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
+import scala.reflect.ClassTag
 
 /**
  * Object to create result of graph query from target rdf graph.

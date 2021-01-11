@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.hdt
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang

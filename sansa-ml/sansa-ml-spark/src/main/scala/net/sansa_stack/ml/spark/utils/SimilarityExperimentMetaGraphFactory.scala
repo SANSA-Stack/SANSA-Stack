@@ -2,12 +2,10 @@ package net.sansa_stack.ml.spark.utils
 
 import java.util.{Calendar, Date}
 
-import org.apache.jena.datatypes.RDFDatatype
-import org.apache.jena.datatypes.xsd.{XSDDatatype, XSDDateTime}
-import org.apache.jena.datatypes.xsd.impl.{XSDDateTimeType, XSDDouble}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
 
 class SimilarityExperimentMetaGraphFactory {

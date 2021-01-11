@@ -1,14 +1,14 @@
 package net.sansa_stack.examples.spark.query
 
-import scala.concurrent.duration.Duration
-
 import net.sansa_stack.query.spark.graph.jena.SparqlParser
-import net.sansa_stack.query.spark.graph.jena.model.{ Config => modelConfig, IntermediateResult, SparkExecutionModel }
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel, Config => modelConfig}
 import net.sansa_stack.rdf.spark.partition.graph.algo._
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.log4j.Logger
 import org.apache.spark.graphx.Graph
+
+import scala.concurrent.duration.Duration
 
 object GraphQuery {
 

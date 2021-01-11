@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark.partition.graph.utils
 
 import org.apache.spark.graphx.{PartitionID, VertexId}
+
 import scala.collection.mutable
 
 /**

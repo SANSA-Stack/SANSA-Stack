@@ -2,8 +2,6 @@ package net.sansa_stack.examples.spark.rdf
 
 import java.io.File
 
-import scala.collection.mutable
-
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.stats._
 import org.apache.jena.riot.Lang

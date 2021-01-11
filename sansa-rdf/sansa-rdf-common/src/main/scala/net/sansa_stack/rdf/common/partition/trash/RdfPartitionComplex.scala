@@ -5,8 +5,11 @@ import org.apache.jena.graph.Triple
 import net.sansa_stack.rdf.common.partition.layout.TripleLayout
 
 /**
+ * FIXME Attributes have been merged with RdfPartitionDefault ; delete this file once system is sufficiently tested
+ *
  * special datatypes: b for blank, u for uri, typed literal otherwise
  */
+/*
 case class RdfPartitionComplex(subjectType: Byte,
                                predicate: String,
                                objectType: Byte,
@@ -29,3 +32,4 @@ case class RdfPartitionComplex(subjectType: Byte,
   }
   override def hashCode: Int = (subjectType, predicate, objectType, datatype, langTagPresent, lang).##
 }
+*/

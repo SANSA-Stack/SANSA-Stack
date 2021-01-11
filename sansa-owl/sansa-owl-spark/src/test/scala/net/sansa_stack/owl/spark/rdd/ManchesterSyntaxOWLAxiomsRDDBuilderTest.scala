@@ -2,9 +2,8 @@ package net.sansa_stack.owl.spark.rdd
 
 import java.util.stream.Collectors
 
-import scala.collection.JavaConverters._
-
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.owl.spark.owl._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
@@ -13,7 +12,7 @@ import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl}
 
-import net.sansa_stack.owl.spark.owl._
+import scala.collection.JavaConverters._
 
 class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends FunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
