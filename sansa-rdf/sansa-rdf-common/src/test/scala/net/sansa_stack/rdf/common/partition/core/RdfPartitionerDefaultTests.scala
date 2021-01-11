@@ -67,9 +67,12 @@ class RdfPartitionerDefaultTests extends FunSuite {
     val partitionState = new RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
       2, "http://www.w3.org/2001/XMLSchema#string", true, Option.empty)
 
-    val triplesMap = R2rmlUtils.createViewDefinition(RdfPartitionerDefault, partitionState)
-    triplesMap.getModel.setNsPrefix("rr", RR.getURI)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState)
 
+    // There must be just a single triples map
+    assert(triplesMaps.size == 1)
+
+    val triplesMap = triplesMaps(0)
     val actual = triplesMap.getModel
 
     assert(expected.isIsomorphicWith(actual))

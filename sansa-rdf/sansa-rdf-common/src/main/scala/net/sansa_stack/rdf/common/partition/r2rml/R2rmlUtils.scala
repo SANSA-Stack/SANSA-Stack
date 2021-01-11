@@ -27,7 +27,20 @@ object R2rmlUtils {
     attrName
   }
 
-  def createViewDefinition(partitioner: RdfPartitioner[RdfPartitionStateDefault], p: RdfPartitionStateDefault): TriplesMap = {
+
+  /**
+   * Transform a RdfPartitionStateDefault into a sequence of R2RML mappings.
+   * TODO Clarify whether the returned mappings share the same Model or are backed by individual ones
+   * If the language handling strategy demands a dedicated column for language tags then the
+   * resulting R2RML contains the non-standard 'rr:langColumn' property.
+   *
+   * FIXME Creating mappings per language tag needs yet to be implemented
+   *
+   * @param partitioner
+   * @param p
+   * @return
+   */
+  def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault], p: RdfPartitionStateDefault): Seq[TriplesMap] = {
     // val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
     // println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
 
@@ -68,7 +81,7 @@ object R2rmlUtils {
 
     tm.getOrSetLogicalTable().setTableName(tableName)
 
-    tm
+    Seq(tm)
   }
 
   def setTermMapForNode(target: TermMap, offset: Int, attrNames: List[String], termType: Byte, datatype: String, langTagPresent: Boolean): TermMap = {
