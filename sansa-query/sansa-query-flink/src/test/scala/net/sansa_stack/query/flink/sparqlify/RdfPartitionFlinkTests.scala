@@ -64,7 +64,7 @@ class TestRdfPartitionFlink extends FlatSpec {
     val dsAll: DataSet[Triple] = env.fromCollection(triples)
     val corePartitions: Map[RdfPartitionStateDefault, DataSet[_ <: Product]] = RdfPartitionUtilsFlink.partitionGraph(dsAll, RdfPartitionerDefault)
 
-    val emptyPartition: RdfPartitionStateDefault = RdfPartitionStateDefault(1, "http://ex.org/empty_table", 1, "", false, Option.empty)
+    val emptyPartition: RdfPartitionStateDefault = RdfPartitionStateDefault(1, "http://ex.org/empty_table", 1, "", false, Set())
     val emptyDataset: DataSet[SchemaStringString] = env.fromCollection(Set[SchemaStringString]())
     val partitions: Map[RdfPartitionStateDefault, DataSet[_ <: Product]] = corePartitions + (emptyPartition -> emptyDataset)
 

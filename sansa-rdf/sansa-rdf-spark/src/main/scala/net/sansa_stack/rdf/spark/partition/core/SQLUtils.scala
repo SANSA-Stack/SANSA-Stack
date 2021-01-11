@@ -1,11 +1,12 @@
-package net.sansa_stack.query.spark.ontop
+package net.sansa_stack.rdf.spark.partition.core
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 import org.apache.jena.graph.NodeFactory
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 
 /**
  * Some utilities for working with SQL objects.
@@ -24,6 +25,12 @@ object SQLUtils {
   }
 
 
+  /**
+   * Creates a SQL table name for a partition.
+   * @param p the RDF partition
+   * @param blankNodeStrategy
+   * @return
+   */
   def createTableName(p: RdfPartitionStateDefault, blankNodeStrategy: BlankNodeStrategy.Value): String = {
     val pred = p.predicate
 

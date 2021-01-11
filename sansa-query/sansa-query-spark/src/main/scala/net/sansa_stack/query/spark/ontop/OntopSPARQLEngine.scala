@@ -15,6 +15,7 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{QueryFactory, QueryType}
@@ -26,8 +27,9 @@ import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
-
 import scala.collection.JavaConverters._
+
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils, SparkTableGenerator}
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T

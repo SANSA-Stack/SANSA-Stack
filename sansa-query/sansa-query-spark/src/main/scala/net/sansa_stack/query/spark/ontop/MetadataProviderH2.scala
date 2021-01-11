@@ -3,10 +3,12 @@ package net.sansa_stack.query.spark.ontop
 import it.unibz.inf.ontop.dbschema.MetadataProvider
 import it.unibz.inf.ontop.dbschema.impl.OfflineMetadataProviderBuilder
 import it.unibz.inf.ontop.injection.OntopModelConfiguration
+
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStringDouble, SchemaStringStringType}
-
 import scala.reflect.runtime.universe.typeOf
+
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 /**
  * @author Lorenz Buehmann
  */

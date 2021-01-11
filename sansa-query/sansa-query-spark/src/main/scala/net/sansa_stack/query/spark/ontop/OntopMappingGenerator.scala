@@ -5,8 +5,9 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.jena.vocabulary.{RDF, XSD}
 import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
-
 import scala.collection.JavaConverters._
+
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 
 /**
  * @author Lorenz Buehmann
@@ -48,16 +49,26 @@ object OntopMappingGenerator {
 
     // object is string literal
     def createMappingStringLit(id: String, tableName: String, partition: RdfPartitionStateDefault): String = {
-      val lang = Option(StringUtils.trimToNull(partition.lang.getOrElse("")))
+      val languages = partition.languages
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
-      val targetObject = if (lang.nonEmpty) s""" "{o}"@${lang.get} """ else "\"{o}\""
-      val whereConditionLang = if (lang.nonEmpty) s""" "l" = '${lang.get}' """ else "\"l\" = ''" // IS NULL"
 
-      s"""
-         |mappingId     $id
-         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE $whereConditionLang
-         |target        $targetSubject <${partition.predicate}> $targetObject .
-         |""".stripMargin
+      if (languages.isEmpty) { // no language tag, i.e. xsd:string
+        s"""
+           |mappingId     $id
+           |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "l" = ''
+           |target        $targetSubject <${partition.predicate}> "{o}" .
+           |""".stripMargin
+      } else {
+        languages.map(lang => {
+          // need a local ID per language
+          val id = tableName + "_lang"
+          s"""
+             |mappingId     $id
+             |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "l" = '$lang'
+             |target        $targetSubject <${partition.predicate}> "{o}"@$lang .
+             |""".stripMargin
+        }).mkString("\n")
+      }
     }
 
     // object is other literal
@@ -100,7 +111,7 @@ object OntopMappingGenerator {
         .map {
           case p@RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>
             val tableName = SQLUtils.createTableName(p, blankNodeStrategy)
-            val id = SQLUtils.escapeTablename(tableName + lang.getOrElse(""))
+            val id = SQLUtils.escapeTablename(tableName)
 
             if (predicate == RDF.`type`.getURI) { // rdf:type mapping expansion here
               if (ontology.nonEmpty) ontology.get.getClassesInSignature(Imports.EXCLUDED).asScala.map(cls => createClassMapping(id, tableName, p, cls.toStringID)).mkString("\n") else ""
