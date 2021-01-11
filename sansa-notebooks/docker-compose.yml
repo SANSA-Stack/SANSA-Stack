@@ -2,6 +2,7 @@ version: "2.1"
 
 services:
   namenode:
+    restart: always
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.1.1-java8
     container_name: namenode
     volumes:
@@ -20,7 +21,7 @@ services:
       retries: 100
     networks:
       - spark-net
-  datanode:
+  datanode:    
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.1.1-java8
     container_name: datanode
     volumes:
@@ -32,7 +33,7 @@ services:
         condition: service_healthy
     healthcheck:
       interval: 5s
-      retries: 100
+      retries: 100      
     networks:
       - spark-net
   spark-master:
