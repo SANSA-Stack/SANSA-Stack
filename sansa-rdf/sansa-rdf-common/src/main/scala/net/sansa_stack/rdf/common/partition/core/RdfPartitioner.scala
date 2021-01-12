@@ -28,5 +28,13 @@ trait RdfPartitioner[S] {
     val newPartition = fromTriple(triple)
     newPartition.equals(partition)
   }
+
+  /**
+   * Aggregate partitions.
+   *
+   * @param partitions the partitions
+   * @return the aggregated partitions
+   */
+  def aggregate(partitions: Seq[S]): Seq[S]
 }
 

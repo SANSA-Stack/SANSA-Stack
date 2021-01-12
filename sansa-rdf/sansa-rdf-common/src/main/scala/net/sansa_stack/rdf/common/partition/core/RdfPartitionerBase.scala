@@ -82,10 +82,9 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
       ((distinguishStringLiterals && o.getLiteralDatatypeURI == RDF.langString.getURI && o.getLiteralLanguage.trim().nonEmpty)
         || (!distinguishStringLiterals && isPlainLiteral(o)))
 
-    val lang = if (langTagPresent && partitionPerLangTag) Some(o.getLiteralLanguage) else None
+    val lang = if (langTagPresent && partitionPerLangTag) Set(o.getLiteralLanguage) else Set.empty[String]
 
-    RdfPartitionStateDefault(subjectType, predicate, objectType, datatype,
-      langTagPresent, lang)
+    RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang)
   }
 
   /**
@@ -115,6 +114,19 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
       case _ => throw new RuntimeException(s"Unsupported object type: $t")
     }
     layout
+  }
+
+  override def aggregate(partitions: Seq[RdfPartitionStateDefault]): Seq[RdfPartitionStateDefault] = {
+    partitions
+      .filter(_.languages.nonEmpty)
+      .map(p => (p.predicate, p.subjectType) -> p)
+      .groupBy(_._1)
+      .map { case (k, v) =>
+        val states = v.map(_._2)
+        val languages = states.flatMap(_.languages).toSet
+        val p = states.head
+        RdfPartitionStateDefault(p.subjectType, p.predicate, p.objectType, p.datatype, p.langTagPresent, languages)
+      }.toSeq ++ partitions.filter(_.languages.isEmpty)
   }
 
     /*

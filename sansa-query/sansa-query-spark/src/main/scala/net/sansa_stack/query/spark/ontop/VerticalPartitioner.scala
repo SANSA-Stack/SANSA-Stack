@@ -5,7 +5,7 @@ import java.net.URI
 import java.nio.file.Paths
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
 import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
@@ -231,6 +231,7 @@ object VerticalPartitioner {
     // create the Spark tables
     println("creating Spark tables ...")
     SparkTableGenerator(spark,
+                        database = config.databaseName,
                         blankNodeStrategy = config.blankNodeStrategy,
                         useHive = false,
                         computeStatistics = config.computeStatistics)

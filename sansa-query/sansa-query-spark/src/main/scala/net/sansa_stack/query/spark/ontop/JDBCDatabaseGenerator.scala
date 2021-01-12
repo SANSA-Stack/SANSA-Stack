@@ -6,8 +6,9 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
 import net.sansa_stack.rdf.common.partition.schema._
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
-
 import scala.reflect.runtime.universe.typeOf
+
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 
 /**
  * Setup the JDBC database needed for the Ontop metadata extraction.

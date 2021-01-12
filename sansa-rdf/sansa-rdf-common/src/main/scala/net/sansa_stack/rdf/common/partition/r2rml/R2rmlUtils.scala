@@ -3,6 +3,7 @@ package net.sansa_stack.rdf.common.partition.r2rml
 import java.util
 
 import com.google.common.collect.ImmutableMap
+
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2.createExprForNode
 import org.aksw.jena_sparql_api.utils.Vars
@@ -12,10 +13,9 @@ import org.aksw.r2rml.jena.domain.api.{ObjectMap, PredicateObjectMap, SubjectMap
 import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.r2rmlx.domain.api.TermMapX
 import org.apache.jena.graph.NodeFactory
-import org.apache.jena.rdf.model.{ModelFactory, ResourceFactory}
+import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory}
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.expr.{Expr, ExprVar}
-
 import scala.reflect.runtime.universe.MethodSymbol
 
 object R2rmlUtils {
@@ -25,6 +25,14 @@ object R2rmlUtils {
   def newExprVar(i: Int, attrNames: List[String]): ExprVar = {
     val attrName = attrNames(i)
     attrName
+  }
+
+  def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                          partitions: Seq[RdfPartitionStateDefault],
+                          model: Model,
+                          explodeLanguageTags: Boolean): Seq[TriplesMap] = {
+    partitions
+      .flatMap(p => createR2rmlMappings(partitioner, p, model, explodeLanguageTags))
   }
 
 
@@ -40,7 +48,10 @@ object R2rmlUtils {
    * @param p
    * @return
    */
-  def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault], p: RdfPartitionStateDefault): Seq[TriplesMap] = {
+  def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                          p: RdfPartitionStateDefault,
+                          model: Model,
+                          explodeLanguageTags: Boolean): Seq[TriplesMap] = {
     // val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
     // println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
 
@@ -69,19 +80,45 @@ object R2rmlUtils {
     // .replace("#", "__").replace("-", "_")
 
     // TODO Ensure tableName is safe
-    val tm: TriplesMap = ModelFactory.createDefaultModel.createResource.as(classOf[TriplesMap])
-    val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
-    pom.getPredicates.add(tm.getModel.wrapAsResource(pn))
 
-    val sm: SubjectMap = tm.getOrSetSubjectMap()
-    val om: ObjectMap = pom.addNewObjectMap()
+    if (explodeLanguageTags && attrNames.length == 3) {
+      val langCol = attrNames(2)
+      val columns = attrNames.slice(0, 2).mkString(", ")
 
-    setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
-    setTermMapForNode(om, 1, attrNames, p.objectType, p.datatype, p.langTagPresent)
+      p.languages.map(lang => {
+        val tm: TriplesMap = model.createResource.as(classOf[TriplesMap])
 
-    tm.getOrSetLogicalTable().setTableName(tableName)
+        // create subject map
+        val sm: SubjectMap = tm.getOrSetSubjectMap()
+        setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
 
-    Seq(tm)
+        val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
+        pom.getPredicates.add(tm.getModel.wrapAsResource(pn))
+
+        val om: ObjectMap = pom.addNewObjectMap()
+        om.setColumn(attrNames(1))
+        om.setLanguage(lang)
+
+        tm.getOrSetLogicalTable().setSqlQuery(s"SELECT $columns FROM $tableName WHERE $langCol = '$lang'")
+
+        tm
+      }).toSeq
+    } else {
+      val tm: TriplesMap = ModelFactory.createDefaultModel.createResource.as(classOf[TriplesMap])
+      val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
+      pom.getPredicates.add(tm.getModel.wrapAsResource(pn))
+
+      val sm: SubjectMap = tm.getOrSetSubjectMap()
+      val om: ObjectMap = pom.addNewObjectMap()
+
+      // create subject map
+      setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
+      setTermMapForNode(om, 1, attrNames, p.objectType, p.datatype, p.langTagPresent)
+
+      tm.getOrSetLogicalTable().setTableName(tableName)
+
+      Seq(tm)
+    }
   }
 
   def setTermMapForNode(target: TermMap, offset: Int, attrNames: List[String], termType: Byte, datatype: String, langTagPresent: Boolean): TermMap = {
