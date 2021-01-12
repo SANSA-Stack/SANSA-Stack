@@ -88,7 +88,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
     RDFDataMgr.read(expected, new ByteArrayInputStream(
       """
         | @base          <http://www.w3.org/ns/r2rml#> .
-        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT s, o FROM http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang WHERE l = 'fr'" ] ;
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'fr'" ] ;
         |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
         |                                           <#language>  "fr"
         |                                         ] ;
@@ -99,7 +99,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |                 ]
         |] .
         |
-        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT s, o FROM http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang WHERE l = 'de'" ] ;
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'de'" ] ;
         |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
         |                                           <#language>  "de"
         |                                         ] ;
@@ -110,7 +110,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |                 ]
         |] .
         |
-        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT s, o FROM http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang WHERE l = 'en'" ] ;
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'en'" ] ;
         |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
         |                                           <#language>  "en"
         |                                         ] ;
@@ -131,6 +131,8 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true)
 
+    RDFDataMgr.write(System.out, actual, RDFFormat.TURTLE_PRETTY)
+
     assert(triplesMaps.size == languages.size)
 
     assert(expected.isIsomorphicWith(actual))
@@ -141,10 +143,13 @@ class RdfPartitionerDefaultTests extends FunSuite {
     val partitionState = RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
       2, "http://www.w3.org/2001/XMLSchema#string", true, Set("en", "de", "fr"))
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, ModelFactory.createDefaultModel(), true)
+    val exportModel = ModelFactory.createDefaultModel()
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, exportModel, true)
 
-    val exportModel = RdfPartitionImportExport.exportAsR2RML(RdfPartitionerDefault, Seq(partitionState), true)
+     // val exportModel = exportModel // RdfPartitionImportExport.exportAsR2RML(RdfPartitionerDefault, partitionState, true)
     exportModel.write(System.out, "Turtle", "http://www.w3.org/ns/r2rml#")
+
+    // TODO Add serialization and deserialization
 
     val importedTriplesMaps = RdfPartitionImportExport.importFromR2RML(exportModel)
 
