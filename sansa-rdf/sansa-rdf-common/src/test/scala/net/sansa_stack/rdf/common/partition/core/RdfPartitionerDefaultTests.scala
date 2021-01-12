@@ -2,6 +2,8 @@ package net.sansa_stack.rdf.common.partition.core
 
 import java.io.ByteArrayInputStream
 
+import org.aksw.obda.jena.r2rml.impl.R2rmlExporter
+
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault._
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.schema.{SchemaStringString, SchemaStringStringLang}
@@ -31,11 +33,11 @@ class RdfPartitionerDefaultTests extends FunSuite {
     assert(getRdfTermType(triple.getSubject) == 1)
   }
 
-  test("chechking if data type is PlainLiteral should match") {
+  test("checking if data type is PlainLiteral should match") {
     assert(isPlainLiteralDatatype(triple.getObject.getLiteralDatatypeURI))
   }
 
-  test("chechking if [[Node]] is TypedLiteral should match") {
+  test("checking if [[Node]] is TypedLiteral should match") {
     assert(!isTypedLiteral(triple.getObject))
   }
 
@@ -64,10 +66,12 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |] .
         |""".stripMargin.getBytes()), Lang.TURTLE)
 
-    val partitionState = new RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
-      2, "http://www.w3.org/2001/XMLSchema#string", true, Option.empty)
+    val partitionState = RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
+      2, "http://www.w3.org/2001/XMLSchema#string", true, Set("en", "de", "fr"))
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState)
+    val model = ModelFactory.createDefaultModel()
+
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, model, false)
 
     // There must be just a single triples map
     assert(triplesMaps.size == 1)
@@ -78,13 +82,84 @@ class RdfPartitionerDefaultTests extends FunSuite {
     assert(expected.isIsomorphicWith(actual))
   }
 
+  test("export partition with lang tags exploded as R2RML should result in a separate TriplesMap per language tag") {
+
+    val expected : Model = ModelFactory.createDefaultModel
+    RDFDataMgr.read(expected, new ByteArrayInputStream(
+      """
+        | @base          <http://www.w3.org/ns/r2rml#> .
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT s, o FROM http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang WHERE l = 'fr'" ] ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
+        |                                           <#language>  "fr"
+        |                                         ] ;
+        |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
+        |                         ] ;
+        |  <#subjectMap>  [ <#column>  "s" ;
+        |                   <#datatype>  <#IRI>
+        |                 ]
+        |] .
+        |
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT s, o FROM http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang WHERE l = 'de'" ] ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
+        |                                           <#language>  "de"
+        |                                         ] ;
+        |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
+        |                         ] ;
+        |  <#subjectMap>  [ <#column>  "s" ;
+        |                   <#datatype>  <#IRI>
+        |                 ]
+        |] .
+        |
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT s, o FROM http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang WHERE l = 'en'" ] ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
+        |                                           <#language>  "en"
+        |                                         ] ;
+        |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
+        |                         ] ;
+        |  <#subjectMap>  [ <#column>  "s" ;
+        |                   <#datatype>  <#IRI>
+        |                 ]
+        |] .
+        |""".stripMargin.getBytes()), Lang.TURTLE)
+
+    val languages = Set("en", "de", "fr")
+
+    val partitionState = RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
+      2, "http://www.w3.org/2001/XMLSchema#string", true, )
+
+    val actual = ModelFactory.createDefaultModel()
+
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true)
+
+    assert(triplesMaps.size == languages.size)
+
+    assert(expected.isIsomorphicWith(actual))
+  }
+
+  test("R2RML import/export should work") {
+
+    val partitionState = RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
+      2, "http://www.w3.org/2001/XMLSchema#string", true, Set("en", "de", "fr"))
+
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, ModelFactory.createDefaultModel(), true)
+
+    val exportModel = RdfPartitionImportExport.exportAsR2RML(RdfPartitionerDefault, Seq(partitionState), true)
+    exportModel.write(System.out, "Turtle", "http://www.w3.org/ns/r2rml#")
+
+    val importedTriplesMaps = RdfPartitionImportExport.importFromR2RML(exportModel)
+
+    assert(triplesMaps.size == importedTriplesMaps.size)
+
+    assert(importedTriplesMaps.head.getModel.isIsomorphicWith(triplesMaps.head.getModel))
+  }
+
   test("determining Layout should match") {
-    val expectedLayout = new SchemaStringStringLang("http://dbpedia.org/resource/Guy_de_Maupassant", "Guy De", "")
+    val expectedLayout = SchemaStringStringLang("http://dbpedia.org/resource/Guy_de_Maupassant", "Guy De", "")
     assert(determineLayout(fromTriple(triple)).fromTriple(triple).equals(expectedLayout))
   }
 
   test("determining Layout Datatype should match") {
-    val expectedLayoutDatatype = new SchemaStringString("http://dbpedia.org/resource/Guy_de_Maupassant", "Guy De")
+    val expectedLayoutDatatype = SchemaStringString("http://dbpedia.org/resource/Guy_de_Maupassant", "Guy De")
     assert(determineLayoutDatatype(triple.getObject.getLiteralDatatypeURI).fromTriple(triple).equals(expectedLayoutDatatype))
   }
 }

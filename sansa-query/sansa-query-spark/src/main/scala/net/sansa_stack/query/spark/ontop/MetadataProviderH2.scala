@@ -9,7 +9,10 @@ import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStri
 import scala.reflect.runtime.universe.typeOf
 
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
+
 /**
+ * Generate the JDBC metadata.
+ *
  * @author Lorenz Buehmann
  */
 class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
@@ -17,13 +20,17 @@ class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
   val logger = com.typesafe.scalalogging.Logger("MetadataProviderH2")
 
 
-  def generate(partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Seq[RdfPartitionStateDefault], blankNodeStrategy: BlankNodeStrategy.Value): MetadataProvider = {
+  def generate(partitioner: RdfPartitioner[RdfPartitionStateDefault],
+               partitions: Seq[RdfPartitionStateDefault],
+               blankNodeStrategy: BlankNodeStrategy.Value): MetadataProvider = {
     val builder = new OfflineMetadataProviderBuilder(defaultConfiguration.getTypeFactory)
     partitions.foreach(p => generate(partitioner, p, blankNodeStrategy, builder))
     builder.build()
   }
 
-  private def generate(partitioner: RdfPartitioner[RdfPartitionStateDefault], p: RdfPartitionStateDefault, blankNodeStrategy: BlankNodeStrategy.Value,
+  private def generate(partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                       p: RdfPartitionStateDefault,
+                       blankNodeStrategy: BlankNodeStrategy.Value,
                        builder: OfflineMetadataProviderBuilder): Unit = {
     val schema = partitioner.determineLayout(p).schema
 

@@ -82,7 +82,7 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
       ((distinguishStringLiterals && o.getLiteralDatatypeURI == RDF.langString.getURI && o.getLiteralLanguage.trim().nonEmpty)
         || (!distinguishStringLiterals && isPlainLiteral(o)))
 
-    val lang = if (langTagPresent && partitionPerLangTag) Set(o.getLiteralLanguage) else Set[String]()
+    val lang = if (langTagPresent && partitionPerLangTag) Set(o.getLiteralLanguage) else Set.empty[String]
 
     RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang)
   }
