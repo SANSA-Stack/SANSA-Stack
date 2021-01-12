@@ -274,6 +274,12 @@
                 <version>1.20</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.aksw.r2rml</groupId>
+                <artifactId>r2rml-jena-plugin</artifactId>
+                <version>3.17.0-1-SNAPSHOT</version>
+            </dependency>
+
             <!-- Datalake (used in sansa-query) -->
             <!--
             <dependency>
