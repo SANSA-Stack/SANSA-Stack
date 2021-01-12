@@ -125,7 +125,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
     val languages = Set("en", "de", "fr")
 
     val partitionState = RdfPartitionStateDefault(1, "http://xmlns.com/foaf/0.1/givenName",
-      2, "http://www.w3.org/2001/XMLSchema#string", true, )
+      2, "http://www.w3.org/2001/XMLSchema#string", true, languages)
 
     val actual = ModelFactory.createDefaultModel()
 
