@@ -35,3 +35,5 @@ tmp
 scalastyle-output.xml
 
 metastore_db
+spark-warehouse
+
