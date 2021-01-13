@@ -1,14 +1,13 @@
-package net.sansa_stack.ml.spark.featureExtraction
+package net.sansa_stack.ml.spark.pipeline
 
+import net.sansa_stack.ml.spark.featureExtraction.SparqlFrame
 import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator
 import org.apache.jena.riot.Lang
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SampleFeatureExtractionPipeline {
   def main(args: Array[String]): Unit = {
@@ -39,19 +38,20 @@ object SampleFeatureExtractionPipeline {
     we use the auto rdf2feature
      */
     // OPTION 1
-    val manualSparqlString = """
-                               |SELECT ?seed ?seed__down_age ?seed__down_name
-                               |
-                               |WHERE {
-                               |	?seed a <http://dig.isi.edu/Person> .
-                               |
-                               |	OPTIONAL {
-                               |		?seed <http://dig.isi.edu/age> ?seed__down_age .
-                               |	}
-                               |	OPTIONAL {
-                               |		?seed <http://dig.isi.edu/name> ?seed__down_name .
-                               |	}
-                               |}""".stripMargin
+    val manualSparqlString =
+    """
+      |SELECT ?seed ?seed__down_age ?seed__down_name
+      |
+      |WHERE {
+      |	?seed a <http://dig.isi.edu/Person> .
+      |
+      |	OPTIONAL {
+      |		?seed <http://dig.isi.edu/age> ?seed__down_age .
+      |	}
+      |	OPTIONAL {
+      |		?seed <http://dig.isi.edu/name> ?seed__down_name .
+      |	}
+      |}""".stripMargin
     // OPTION 2
     val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 1, 2, 3, featuresInOptionalBlocks = true)
 
