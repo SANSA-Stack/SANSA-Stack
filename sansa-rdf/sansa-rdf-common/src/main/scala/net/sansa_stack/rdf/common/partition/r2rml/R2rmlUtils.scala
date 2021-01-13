@@ -100,7 +100,7 @@ object R2rmlUtils {
         om.setLanguage(lang)
 
 
-        tm.getOrSetLogicalTable().setSqlQuery(s"SELECT $columnsSql FROM $tableNameSql WHERE $langColSql = $langSql")
+        tm.getOrSetLogicalTable().asR2rmlView().setSqlQuery(s"SELECT $columnsSql FROM $tableNameSql WHERE $langColSql = $langSql")
 
         tm
       }).toSeq
@@ -116,7 +116,7 @@ object R2rmlUtils {
       setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
       setTermMapForNode(om, 1, attrNames, p.objectType, p.datatype, p.langTagPresent)
 
-      tm.getOrSetLogicalTable().setTableName(tableName)
+      tm.getOrSetLogicalTable().asBaseTableOrView().setTableName(tableName)
 
       Seq(tm)
     }
