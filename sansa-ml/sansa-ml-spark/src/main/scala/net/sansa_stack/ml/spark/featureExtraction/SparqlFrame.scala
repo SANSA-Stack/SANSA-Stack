@@ -22,7 +22,7 @@ import scala.collection.mutable.ListBuffer
 
 class SparqlFrame extends Transformer{
   var _query: String = _
-  var _queryExcecutionEngine: String = "sparqlify"
+  var _queryExcecutionEngine: String = "ontop"
 
   override val uid: String = Identifiable.randomUID("sparqlFrame")
 
@@ -30,11 +30,25 @@ class SparqlFrame extends Transformer{
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 
+  /**
+   * setter for query as string
+   *
+   * @param queryString a sparql query defining which features you want to have
+   * @return the set transformer
+   */
   def setSparqlQuery(queryString: String): this.type = {
     _query = queryString
     this
   }
 
+  /**
+   * setter to specify which query excecution engine to be used
+   *
+   * option one is ontop option two sparqlify
+   *
+   * @param queryExcecutionEngine a string either ontop or sparqlify
+   * @return the set transformer
+   */
   def setQueryExcecutionEngine(queryExcecutionEngine: String): this.type = {
     if (queryExcecutionEngine == "ontop" | queryExcecutionEngine == "sparqlify") {
       _queryExcecutionEngine = queryExcecutionEngine
@@ -48,9 +62,14 @@ class SparqlFrame extends Transformer{
   override def transformSchema(schema: StructType): StructType =
     throw new NotImplementedError()
 
+  /**
+   * call of repective query laver to get query result as RDD[Bindings]
+   * @param dataset the readin KG as Dataset[Triple]
+   * @return the aswer from the query as rdd bindings so features are a var binding
+   */
   protected def getResultBindings(dataset: Dataset[_]): RDD[Binding] = {
     if (_queryExcecutionEngine == "ontop") {
-      println("Usage of Ontop for Query Execution")
+      println("SparqlFrame: Usage of Ontop for Query Execution")
       implicit val tripleEncoder = Encoders.kryo(classOf[Triple])
 
       val partitions: Map[RdfPartitionComplex, RDD[Row]] =
@@ -64,7 +83,7 @@ class SparqlFrame extends Transformer{
       bindings
     }
     else {
-      println("Usage of Sparqlify for Query Execution")
+      println("SparqlFrame: Usage of Sparqlify for Query Execution")
       val query = QueryFactory.create(_query)
       implicit val tripleEncoder = Encoders.kryo(classOf[Triple])
       val partitions = RdfPartitionUtilsSpark.partitionGraph(dataset.as[Triple].rdd)
@@ -82,6 +101,14 @@ class SparqlFrame extends Transformer{
 
   }
 
+  /**
+   * creates a natic spark mllib dataframe with columns corresponding to the projection variables
+   *
+   * columns are implicitly casted to string or if specified in literals to repective integer ect
+   *
+   * @param dataset the knowledge graph as dataset of jena triple
+   * @return a dataframe with columns corresponding to projection variables
+   */
   def transform(dataset: Dataset[_]): DataFrame = {
     val parser = new ParserSPARQL11()
     val projectionVars: Seq[Var] = parser.parse(new Query(), _query).getProjectVars.asScala
