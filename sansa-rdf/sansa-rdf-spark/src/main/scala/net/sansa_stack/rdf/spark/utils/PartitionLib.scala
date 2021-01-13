@@ -31,7 +31,7 @@ object PartitionLib {
         R2rmlUtils.createR2rmlMappings(
           partitioner,
           partition,
-          p => SQLUtils.createTableName(p, BlankNodeStrategy.Table),
+          p => R2rmlUtils.createDefaultTableName(p),
           new SqlEscaperBacktick,
           model, explodeLanguageTags)
       )

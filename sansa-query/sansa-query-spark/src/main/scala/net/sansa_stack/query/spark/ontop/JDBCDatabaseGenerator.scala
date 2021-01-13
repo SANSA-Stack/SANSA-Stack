@@ -8,6 +8,9 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 import scala.reflect.runtime.universe.typeOf
 
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 
 /**
@@ -19,6 +22,7 @@ object JDBCDatabaseGenerator {
 
   val logger = com.typesafe.scalalogging.Logger(JDBCDatabaseGenerator.getClass)
 
+  val sqlEscaper = new SqlEscaperDoubleQuote()
 
   // mapping from partition type to H2 database type
   private val partitionType2DatabaseType = Map(
@@ -49,7 +53,7 @@ object JDBCDatabaseGenerator {
 
       partitions.foreach { p =>
 
-        val name = SQLUtils.createTableName(p, blankNodeStrategy)
+        val name = R2rmlUtils.createDefaultTableName(p)
 
 //        val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
         val schema = partitioner.determineLayout(p).schema
@@ -59,19 +63,19 @@ object JDBCDatabaseGenerator {
         p match {
           case RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>
             val s = objectType match {
-              case 0|1 => s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
+              case 0|1 => s"CREATE TABLE IF NOT EXISTS ${sqlEscaper.escapeTableName(name)} (" +
                 "s varchar(255) NOT NULL," +
                 "o varchar(255) NOT NULL" +
                 ")"
               case 2 => if (schema == typeOf[SchemaStringStringLang]) {
-                s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
+                s"CREATE TABLE IF NOT EXISTS ${sqlEscaper.escapeTableName(name)} (" +
                   "s varchar(255) NOT NULL," +
                   "o varchar(255) NOT NULL," +
                   "l varchar(10)" +
                   ")"
               } else {
                 if (schema == typeOf[SchemaStringStringType]) {
-                  s"CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (" +
+                  s"CREATE TABLE IF NOT EXISTS ${sqlEscaper.escapeTableName(name)} (" +
                     "s varchar(255) NOT NULL," +
                     "o varchar(255) NOT NULL," +
                     "t varchar(255) NOT NULL" +
@@ -81,7 +85,7 @@ object JDBCDatabaseGenerator {
 
                   if (colType.isDefined) {
                     s"""
-                       |CREATE TABLE IF NOT EXISTS ${SQLUtils.escapeTablename(name)} (
+                       |CREATE TABLE IF NOT EXISTS ${sqlEscaper.escapeTableName(name)} (
                        |s varchar(255) NOT NULL,
                        |o ${colType.get} NOT NULL)
                        |""".stripMargin

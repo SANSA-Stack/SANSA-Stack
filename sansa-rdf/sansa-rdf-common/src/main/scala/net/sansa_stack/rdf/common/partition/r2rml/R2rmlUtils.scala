@@ -80,7 +80,7 @@ object R2rmlUtils {
 
     if (explodeLanguageTags && attrNames.length == 3) {
       val langColSql = sqlEscaper.escapeColumnName(attrNames(2))
-      val columnsSql = attrNames.slice(0, 2).map(sqlEscaper.escapeColumnName(_)).mkString(", ")
+      val columnsSql = attrNames.slice(0, 2).map(sqlEscaper.escapeColumnName).mkString(", ")
 
       p.languages.map(lang => {
         val tableNameSql = sqlEscaper.escapeTableName(tableName)

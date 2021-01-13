@@ -118,7 +118,9 @@ package object query {
    * @param ontology an optional ontology containing schema information like classes, class hierarchy, etc. which
    *                 can be used for query optimization as well as OWL QL inference based query rewriting
    */
-  class OntopSPARQLExecutor(partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]], ontology: Option[OWLOntology] = None)
+  class OntopSPARQLExecutor(partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                            partitions: Map[RdfPartitionStateDefault, RDD[Row]],
+                            ontology: Option[OWLOntology] = None)
     extends QueryExecutor
       with Serializable {
 

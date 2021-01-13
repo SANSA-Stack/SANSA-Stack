@@ -3,11 +3,15 @@ package net.sansa_stack.rdf.spark.partition.core
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SaveMode, SparkSession}
+
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 
 /**
  * Creates Spark tables for given RDF partitions.
@@ -27,6 +31,8 @@ class SparkTableGenerator(spark: SparkSession,
 
   val logger = com.typesafe.scalalogging.Logger(SparkTableGenerator.getClass)
 
+  val sqlEscaper = new SqlEscaperBacktick()
+
   if (database != null && database.trim.nonEmpty) {
     spark.sql(s"CREATE DATABASE IF NOT EXISTS $database")
     spark.sql(s"USE $database")
@@ -39,7 +45,7 @@ class SparkTableGenerator(spark: SparkSession,
    *       the (optional) language tag is used instead.
    * @param partitioner the partitioner
    * @param partitions the partitions
-   * @param persistent if the tables will be saved to dis, i.e. they will be kept after the Spark session has been closed
+   * @param persistent if the tables will be saved to disk, i.e. they will be kept after the Spark session has been closed
    */
   def createAndRegisterSparkTables(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                                    partitions: Map[RdfPartitionStateDefault, RDD[Row]],
@@ -58,23 +64,23 @@ class SparkTableGenerator(spark: SparkSession,
         (p, rdd)
       }
 
-      .map { case (p, rdd) => (SQLUtils.createTableName(p, blankNodeStrategy), p, rdd) }
+      .map { case (p, rdd) => (R2rmlUtils.createDefaultTableName(p), p, rdd) }
       .groupBy(_._1)
       .map(map => map._2.head)
       .map(e => (e._2, e._3))
 
-      .foreach { case (p, rdd) => createSparkTable(partitioner, p, rdd) }
+      .foreach { case (p, rdd) => createSparkTable(partitioner, p, rdd, persistent) }
 
     // register the non-lang-tagged RDDs as table
     partitions
       .filter(_._1.languages.isEmpty)
-      .map { case (p, rdd) => (SQLUtils.createTableName(p, blankNodeStrategy), p, rdd) }
+      .map { case (p, rdd) => (R2rmlUtils.createDefaultTableName(p), p, rdd) }
       .groupBy(_._1)
       .map(map => map._2.head)
       .map(e => (e._2, e._3))
 
       .foreach {
-        case (p, rdd) => createSparkTable(partitioner, p, rdd)
+        case (p, rdd) => createSparkTable(partitioner, p, rdd, persistent)
       }
   }
 
@@ -83,16 +89,15 @@ class SparkTableGenerator(spark: SparkSession,
    */
   private def createSparkTable(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                                p: RdfPartitionStateDefault,
-                               rdd: RDD[Row]): Unit = {
+                               rdd: RDD[Row],
+                               persistent: Boolean): Unit = {
 
     // create table name
-    val name = SQLUtils.createTableName(p, blankNodeStrategy)
-    logger.debug(s"creating Spark table ${escapeTablename(name)}")
-
-    println(name)
-
+    val name = R2rmlUtils.createDefaultTableName(p)
     // escape table name for Spark/Hive
-    val escapedTableName = escapeTablename(name)
+    val escapedTableName = sqlEscaper.escapeTableName(name)
+    logger.debug(s"creating Spark table $escapedTableName")
+    println(escapedTableName)
 
     // create the DataFrame out of the RDD and the schema
     val scalaSchema = partitioner.determineLayout(p).schema
@@ -106,34 +111,29 @@ class SparkTableGenerator(spark: SparkSession,
       spark.sql(s"DROP TABLE IF EXISTS `$escapedTableName`")
       val query =
         s"""
-           |CREATE TABLE IF NOT EXISTS `$escapedTableName`
+           |CREATE TABLE IF NOT EXISTS $escapedTableName
            |
            |USING PARQUET
-           |AS SELECT * FROM `${escapedTableName}_tmp`
+           |AS SELECT * FROM ${escapedTableName}_tmp
            |""".stripMargin
       spark.sql(query)
     } else {
-      df.createOrReplaceTempView(s"`$escapedTableName`")
-      df.write
-        .mode(SaveMode.Overwrite)
-        .format("parquet")
-        .saveAsTable(escapedTableName)
+      df.createOrReplaceTempView(s"$escapedTableName")
+      if (persistent) {
+        df.write
+          .mode(SaveMode.Overwrite)
+          .format("parquet")
+          .saveAsTable(escapedTableName)
+      }
     }
 
     // optionally, compute table statistics
     if (computeStatistics) {
       val columns = spark.table(escapedTableName).columns.mkString(",")
-      spark.sql(s"ANALYZE TABLE `$escapedTableName` COMPUTE STATISTICS FOR COLUMNS $columns")
+      spark.sql(s"ANALYZE TABLE $escapedTableName COMPUTE STATISTICS FOR COLUMNS $columns")
     }
 
   }
-
-  private def escapeTablename(path: String): String =
-    URLEncoder.encode(path, StandardCharsets.UTF_8.toString)
-      .toLowerCase
-      .replace('%', 'P')
-      .replace('.', 'C')
-      .replace("-", "dash")
 
 }
 

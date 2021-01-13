@@ -8,6 +8,9 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
 import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStringDouble, SchemaStringStringType}
 import scala.reflect.runtime.universe.typeOf
 
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 
 /**
@@ -18,6 +21,8 @@ import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
 
   val logger = com.typesafe.scalalogging.Logger("MetadataProviderH2")
+
+  val sqlEscaper = new SqlEscaperDoubleQuote()
 
 
   def generate(partitioner: RdfPartitioner[RdfPartitionStateDefault],
@@ -34,34 +39,35 @@ class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
                        builder: OfflineMetadataProviderBuilder): Unit = {
     val schema = partitioner.determineLayout(p).schema
 
-    val name = SQLUtils.createTableName(p, blankNodeStrategy)
+    val name = R2rmlUtils.createDefaultTableName(p)
+    val escapedTableName = sqlEscaper.escapeTableName(name)
     p match {
       case RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>
         objectType match {
           case 1 =>
-            builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
+            builder.createDatabaseRelation(escapedTableName,
               "s", builder.getDBTypeFactory.getDBStringType, false,
               "o", builder.getDBTypeFactory.getDBStringType, false)
           case 2 => if (langTagPresent) {
-            builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
+            builder.createDatabaseRelation(escapedTableName,
               "s", builder.getDBTypeFactory.getDBStringType, false,
               "o", builder.getDBTypeFactory.getDBStringType, false,
               "l", builder.getDBTypeFactory.getDBStringType, false)
           } else {
             if (schema == typeOf[SchemaStringStringType]) {
-              builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
+              builder.createDatabaseRelation(escapedTableName,
                 "s", builder.getDBTypeFactory.getDBStringType, false,
                 "o", builder.getDBTypeFactory.getDBStringType, false,
                 "t", builder.getDBTypeFactory.getDBStringType, false)
             } else {
               schema match {
-                case t if t =:= typeOf[SchemaStringDouble] => builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
+                case t if t =:= typeOf[SchemaStringDouble] => builder.createDatabaseRelation(escapedTableName,
                   "s", builder.getDBTypeFactory.getDBStringType, false,
                   "o", builder.getDBTypeFactory.getDBDoubleType, false)
-                case t if t =:= typeOf[SchemaStringDouble] => builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
+                case t if t =:= typeOf[SchemaStringDouble] => builder.createDatabaseRelation(escapedTableName,
                   "s", builder.getDBTypeFactory.getDBStringType, false,
                   "o", builder.getDBTypeFactory.getDBDecimalType, false)
-                case t if t =:= typeOf[SchemaStringDate] => builder.createDatabaseRelation(SQLUtils.escapeTablename(name),
+                case t if t =:= typeOf[SchemaStringDate] => builder.createDatabaseRelation(escapedTableName,
                   "s", builder.getDBTypeFactory.getDBStringType, false,
                   "o", builder.getDBTypeFactory.getDBDateType, false)
                 case _ => logger.error(s"Error: couldn't create Spark table for property $predicate with schema ${schema}")
