@@ -16,7 +16,7 @@ The current stack provides:
 ### Sparql Transformer
 [Sparql Transformer](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SPARQLQuery.html):
 The SPARQL Transformer is implemented as a [Spark MLlib Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers). It reads RDF data as a `DataSet` and produces a `DataFrame` of type Apache Jena `Node`. Currently supported are up to 5 projection variables. A sample usage could be:
-```
+```Scala
 val spark = SparkSession.builder()
     .appName(sc.appName)
     .master(sc.master)
