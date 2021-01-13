@@ -6,5 +6,5 @@ import org.apache.spark.rdd.RDD
 
 trait ResultSetSpark {
   def getResultVars: Seq[Var]
-  def getRdd: RDD[Binding]
+  def getBindings: RDD[Binding]
 }

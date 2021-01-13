@@ -12,7 +12,8 @@ import org.apache.spark.rdd.RDD
  * @param decoratee The JavaQueryExecutionSpark instance to wrap
  */
 class QueryExecutionSparkFromJava(decoratee: JavaQueryExecutionSpark)
-  extends QueryExecutionDecoratorBase[JavaQueryExecutionSpark](decoratee) with QueryExecutionSpark
+  extends QueryExecutionDecoratorBase[JavaQueryExecutionSpark](decoratee)
+    with QueryExecutionSpark
 {
   override def execSelectSpark(): ResultSetSpark = {
     val javaRs = decoratee.execSelectSparkJava
@@ -20,7 +21,7 @@ class QueryExecutionSparkFromJava(decoratee: JavaQueryExecutionSpark)
     new ResultSetSpark {
       import collection.JavaConverters._
       override def getResultVars: Seq[Var] = javaRs.getResultVars.asScala.toSeq
-      override def getRdd: RDD[Binding] = javaRs.getRdd.rdd
+      override def getBindings: RDD[Binding] = javaRs.getRdd.rdd
     }
   }
 

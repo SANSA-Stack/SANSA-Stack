@@ -19,7 +19,7 @@ import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFacto
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{QueryFactory, QueryType}
-import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.sparql.engine.binding.{Binding, BindingUtils}
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
@@ -30,6 +30,8 @@ import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
 import scala.collection.JavaConverters._
 
 import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperDoubleQuote}
+import org.apache.jena.sparql.modify.TemplateLib
+import org.apache.jena.sparql.util.ResultSetUtils
 
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils, SparkTableGenerator}
