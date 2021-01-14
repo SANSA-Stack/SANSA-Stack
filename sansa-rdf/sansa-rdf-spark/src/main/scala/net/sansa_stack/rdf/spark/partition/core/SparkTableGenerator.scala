@@ -95,7 +95,6 @@ class SparkTableGenerator(spark: SparkSession,
     // escape table name for Spark/Hive
     val escapedTableName = sqlEscaper.escapeTableName(name)
     logger.debug(s"creating Spark table $name")
-    println(name)
 
     // create the DataFrame out of the RDD and the schema
     val scalaSchema = partitioner.determineLayout(p).schema

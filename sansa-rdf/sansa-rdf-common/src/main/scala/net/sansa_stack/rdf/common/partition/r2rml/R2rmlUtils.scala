@@ -47,6 +47,22 @@ object R2rmlUtils {
         explodeLanguageTags))
   }
 
+  def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                          partitions: Seq[RdfPartitionStateDefault],
+                          extractTableName: RdfPartitionStateDefault => String,
+                          sqlEscaper: SqlEscaper,
+                          model: Model,
+                          explodeLanguageTags: Boolean): Seq[TriplesMap] = {
+    partitions
+      .flatMap(p => createR2rmlMappings(
+        partitioner,
+        p,
+        extractTableName,
+        sqlEscaper,
+        model,
+        explodeLanguageTags))
+  }
+
 
   /**
    * Transform a RdfPartitionStateDefault into a sequence of R2RML mappings.
