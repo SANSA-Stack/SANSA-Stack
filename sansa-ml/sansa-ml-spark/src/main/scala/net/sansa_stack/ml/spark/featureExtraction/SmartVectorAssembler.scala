@@ -163,19 +163,20 @@ class SmartVectorAssembler extends Transformer{
           .fit(dfOnlyfeatures)
         dfOnlyfeatures = indexer
           .transform(dfOnlyfeatures)
+        dfOnlyfeatures.select(columnName).show(false)
         dfOnlyfeatures = dfOnlyfeatures.drop(columnName)
+        dfOnlyfeatures.select("string2indexed_" + columnName).show(false)
         // dfOnlyfeatures.show(false)
         println(indexer.labelsArray(0).size)
         println(indexer.labelsArray(0).toSeq.mkString(" "))
-        println(indexer.labelsArray(1).toSeq.mkString(" "))
 
-        val indexOfUnknown = indexer.labelsArray(0).size -1
-        dfOnlyfeatures.show(false)
-        // dfOnlyfeatures = dfOnlyfeatures.withColumn("string2indexed_" + columnName, when(col("string2indexed_" + columnName) === indexOfUnknown, -1).otherwise(col("string2indexed_" + columnName)))
+        val indexOfUnknown = indexer.labelsArray(0).size
+
+        dfOnlyfeatures = dfOnlyfeatures.withColumn("string2indexed_" + columnName, when(col("string2indexed_" + columnName) === indexOfUnknown.toDouble, -1).otherwise(col("string2indexed_" + columnName)))
+        dfOnlyfeatures.select("string2indexed_" + columnName).show(false)
       }
     }
     println("indexed df")
-    dfOnlyfeatures.show(false)
 
     // collaps multiple rows for same entity
     println("collaps multiple rows for same entity")
