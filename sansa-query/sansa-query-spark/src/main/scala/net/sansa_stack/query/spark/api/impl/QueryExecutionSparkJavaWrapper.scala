@@ -11,7 +11,7 @@ import org.apache.spark.rdd.RDD
  *
  * @param decoratee The JavaQueryExecutionSpark instance to wrap
  */
-class QueryExecutionSparkFromJava(decoratee: JavaQueryExecutionSpark)
+class QueryExecutionSparkJavaWrapper(decoratee: JavaQueryExecutionSpark)
   extends QueryExecutionDecoratorBase[JavaQueryExecutionSpark](decoratee)
     with QueryExecutionSpark
 {

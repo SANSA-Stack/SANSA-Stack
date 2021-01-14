@@ -1,13 +1,17 @@
 package net.sansa_stack.query.spark
 
 import com.google.common.cache.{CacheBuilder, CacheLoader}
+import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
 import net.sansa_stack.query.spark.semantic.QuerySystem
-import net.sansa_stack.query.spark.sparqlify.{QueryExecutionSpark, SparkRowMapperSparqlify, SparqlifyUtils3}
+import net.sansa_stack.query.spark.sparqlify.{QueryEngineFactorySparqlify, QueryExecutionSpark, SparkRowMapperSparqlify, SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, RdfPartitionerDefault}
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlMappingCollection
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.utils.kryo.io.JavaKryoSerializationWrapper
+import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
+import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.engine.binding.Binding
@@ -148,8 +152,21 @@ package object query {
     override def sparqlRDD(sparqlQuery: String): RDD[Binding] = sparqlEngine.execSelect(sparqlQuery)
   }
 
+  implicit class SparqlifySPARQLExecutor2(val partitions: R2rmlMappingCollection) {
+    // extends QueryExecutor
+      // with Serializable {
+
+    def sparqlify(): QueryExecutionFactorySpark = {
+      val sparkSession = SparkSession.builder().getOrCreate()
+
+      val engineFactory = new QueryEngineFactorySparqlify(sparkSession)
+      engineFactory.create(null, partitions.getR2rmlModel)
+    }
+  }
+
   /**
    * A Sparqlify backed SPARQL executor working on the given RDF partitions.
+   * FIXME Needs porting
    *
    * @param partitions the RDF partitions to work on
    */
@@ -170,7 +187,7 @@ package object query {
 
     val spark = SparkSession.builder().getOrCreate()
 
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, RdfPartitionerDefault, partitions)
+    val rewriter: SparqlSqlStringRewriter = null // SparqlifyUtils3.createSparqlSqlRewriter(spark, RdfPartitionerDefault, partitions)
 
     override def sparql(sparqlQuery: String): DataFrame = {
       val query = QueryFactory.create(sparqlQuery)
@@ -197,6 +214,7 @@ package object query {
     }
 
   }
+
 
   implicit class Semantic(partitions: RDD[String]) extends Serializable {
 

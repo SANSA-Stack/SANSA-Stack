@@ -68,7 +68,7 @@ object MainSansaBSBM {
 
     // Spark SQL does not support OFFSET - so for testing just remove it from the query
     val conn = new SparqlQueryConnectionJsa(FluentQueryExecutionFactory
-        .from(new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
+        .from(new JavaQueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
         .config()
           .withQueryTransform(q => { q.setOffset(Query.NOLIMIT); q })
           .withParser(q => QueryFactory.create(q))
