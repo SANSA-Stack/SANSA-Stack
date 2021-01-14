@@ -20,6 +20,10 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
+/**
+ * This SparqlFrame Transformer creates a dataframe based on a SPARQL query
+ * the resulting columns correspond to projection variables
+ */
 class SparqlFrame extends Transformer{
   var _query: String = _
   var _queryExcecutionEngine: String = "ontop"
