@@ -1,16 +1,12 @@
 package net.sansa_stack.rdf.spark.partition.core
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
-
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SaveMode, SparkSession}
 
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 
 /**
@@ -49,6 +45,7 @@ class SparkTableGenerator(spark: SparkSession,
    */
   def createAndRegisterSparkTables(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                                    partitions: Map[RdfPartitionStateDefault, RDD[Row]],
+                                   extractTableName: RdfPartitionStateDefault => String = R2rmlUtils.createDefaultTableName,
                                    persistent: Boolean = false): Unit = {
 
     // register the lang-tagged RDDs as a single table:
@@ -64,23 +61,23 @@ class SparkTableGenerator(spark: SparkSession,
         (p, rdd)
       }
 
-      .map { case (p, rdd) => (R2rmlUtils.createDefaultTableName(p), p, rdd) }
+      .map { case (p, rdd) => (extractTableName(p), p, rdd) }
       .groupBy(_._1)
       .map(map => map._2.head)
       .map(e => (e._2, e._3))
 
-      .foreach { case (p, rdd) => createSparkTable(partitioner, p, rdd, persistent) }
+      .foreach { case (p, rdd) => createSparkTable(partitioner, p, rdd, extractTableName, persistent) }
 
     // register the non-lang-tagged RDDs as table
     partitions
       .filter(_._1.languages.isEmpty)
-      .map { case (p, rdd) => (R2rmlUtils.createDefaultTableName(p), p, rdd) }
+      .map { case (p, rdd) => (extractTableName(p), p, rdd) }
       .groupBy(_._1)
       .map(map => map._2.head)
       .map(e => (e._2, e._3))
 
       .foreach {
-        case (p, rdd) => createSparkTable(partitioner, p, rdd, persistent)
+        case (p, rdd) => createSparkTable(partitioner, p, rdd, extractTableName, persistent)
       }
   }
 
@@ -90,14 +87,15 @@ class SparkTableGenerator(spark: SparkSession,
   private def createSparkTable(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                                p: RdfPartitionStateDefault,
                                rdd: RDD[Row],
+                               extractTableName: RdfPartitionStateDefault => String,
                                persistent: Boolean): Unit = {
 
     // create table name
-    val name = R2rmlUtils.createDefaultTableName(p)
+    val name = extractTableName(p)
     // escape table name for Spark/Hive
     val escapedTableName = sqlEscaper.escapeTableName(name)
-    logger.debug(s"creating Spark table $escapedTableName")
-    println(escapedTableName)
+    logger.debug(s"creating Spark table $name")
+    println(name)
 
     // create the DataFrame out of the RDD and the schema
     val scalaSchema = partitioner.determineLayout(p).schema
