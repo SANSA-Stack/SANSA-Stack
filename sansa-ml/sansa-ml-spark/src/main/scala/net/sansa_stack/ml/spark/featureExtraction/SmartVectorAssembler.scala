@@ -8,8 +8,6 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{StringType, StructType}
 import org.apache.spark.sql.functions.{udf, _}
 
-import scala.util.Random
-
 /**
  * This Transformer creates a needed Dataframe for common ML approaches in Spark MLlib.
  * The resulting Dataframe consists of a column features which is a numeric vector for each entity
@@ -137,6 +135,11 @@ class SmartVectorAssembler extends Transformer{
     }
   }
 
+  /**
+   * transforms a dataframe of query results to a numeric feature vectors and a id and label column
+   * @param dataset dataframe with columns for id features and optional label
+   * @return dataframe with columns id features and optional label where features are numeric vectors which incooperate with mllib
+   */
   def transform(dataset: Dataset[_]): DataFrame = {
 
     val df = dataset.toDF()
@@ -157,7 +160,6 @@ class SmartVectorAssembler extends Transformer{
 
         // decide what to do
         if (dfFeaturesSchemaMap(columnName) ==  StringType) {
-          // println(f"columnName $columnName goes through indexer")
           val indexer = new StringIndexer()
             .setInputCol(columnName)
             .setOutputCol("string2indexed_" + columnName)
@@ -174,11 +176,9 @@ class SmartVectorAssembler extends Transformer{
                 .otherwise(col("string2indexed_" + columnName)
                 )
             )
-          // dfOnlyfeatures.select("string2indexed_" + columnName).show(false)
         }
       }
     }
-
 
     // set tmpFeatureColumns
     var tmpFeatureColumns = digitizedDf.columns
