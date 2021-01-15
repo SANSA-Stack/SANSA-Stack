@@ -20,9 +20,10 @@ object OntopConnection2 {
   val logger = com.typesafe.scalalogging.Logger(classOf[OntopConnection])
 
   // create the tmp DB needed for Ontop
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
-  private val JDBC_USER = "sa"
-  private val JDBC_PASSWORD = ""
+  val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
+//  val JDBC_URL = "jdbc:h2:file:/tmp/sansaontopdb;DATABASE_TO_UPPER=FALSE"
+  val JDBC_USER = "sa"
+  val JDBC_PASSWORD = ""
 
   lazy val connection: Connection = try {
     logger.debug("creating DB connection ...")

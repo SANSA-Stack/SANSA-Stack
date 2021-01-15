@@ -106,13 +106,13 @@ object R2rmlUtils {
 
         // create subject map
         val sm: SubjectMap = tm.getOrSetSubjectMap()
-        setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
+        setTermMapForNode(sm, 0, attrNames.slice(0, 2).map(sqlEscaper.escapeColumnName), p.subjectType, "", false)
 
         val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
         pom.addPredicate(predicateIri)
 
         val om: ObjectMap = pom.addNewObjectMap()
-        om.setColumn(attrNames(1))
+        om.setColumn(sqlEscaper.escapeColumnName(attrNames(1)))
         om.setLanguage(lang)
 
 

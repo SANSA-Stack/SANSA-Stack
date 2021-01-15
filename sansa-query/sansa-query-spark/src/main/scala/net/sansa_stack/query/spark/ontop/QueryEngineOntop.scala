@@ -83,18 +83,18 @@ class OntopSPARQL2SQLRewriter2(jdbcMetaData: Map[String, String],
   private val JDBC_USER = "sa"
   private val JDBC_PASSWORD = ""
 
-  private lazy val connection: Connection = try {
-    // scalastyle:off classforname
-    Class.forName("org.h2.Driver")
-    // scalastyle:on classforname
-    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-  } catch {
-    case e: SQLException =>
-      logger.error("Error occurred when creating in-memory H2 database", e)
-      throw e
-  }
+//  private lazy val connection: Connection = try {
+//    // scalastyle:off classforname
+//    Class.forName("org.h2.Driver")
+//    // scalastyle:on classforname
+//    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+//  } catch {
+//    case e: SQLException =>
+//      logger.error("Error occurred when creating in-memory H2 database", e)
+//      throw e
+//  }
 
-  JDBCDatabaseGenerator.generateTables(connection, jdbcMetaData)
+  JDBCDatabaseGenerator.generateTables(OntopConnection2.connection, jdbcMetaData)
 
   // the Ontop core
   val reformulationConfiguration = OntopUtils2.createReformulationConfig(mappingsModel, ontopProperties, ontology)
@@ -110,7 +110,8 @@ class OntopSPARQL2SQLRewriter2(jdbcMetaData: Map[String, String],
   def createSQLQuery(sparqlQuery: String): OntopQueryRewrite2 = {
     val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
+    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery,
+      queryReformulator.getQueryLoggerFactory.create(it.unibz.inf.ontop.com.google.common.collect.ImmutableMultimap.of()))
 
     val sqlQuery = OntopUtils2.extractSQLQuery(executableQuery)
     val constructionNode = OntopUtils2.extractRootConstructionNode(executableQuery)
@@ -122,7 +123,7 @@ class OntopSPARQL2SQLRewriter2(jdbcMetaData: Map[String, String],
       executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory)
   }
 
-  def close(): Unit = connection.close()
+  def close(): Unit = OntopConnection2.connection.close()
 }
 
 /**
@@ -130,7 +131,7 @@ class OntopSPARQL2SQLRewriter2(jdbcMetaData: Map[String, String],
  *
  * @param spark the Spark session
  * @param databaseName an existing Spark database that contains the tables for the RDF partitions
- * @param partitions the RDF partitions
+ * @param mappingsModel the RDF partitions
  * @param ontology an (optional) ontology that will be used for query optimization and rewriting
  */
 class QueryEngineOntop(val spark: SparkSession,
@@ -150,8 +151,14 @@ class QueryEngineOntop(val spark: SparkSession,
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
 
   val jdbcMetaData = spark.catalog.listTables().collect().map(t =>
-    (t.name, spark.table(sqlEscaper.escapeTableName(t.name)).schema.toDDL)
+    (t.name,
+      spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f =>
+        s"${sqlEscaper.escapeColumnName(f.name)} ${f.dataType.sql} ${if (!f.nullable) "NOT NULL" else ""}"
+      ).mkString(",")
+    )
   ).toMap
+//      spark.table(sqlEscaper.escapeTableName(t.name)).schema.toDDL)
+
 
 //  private val sparql2sql = OntopSPARQL2SQLRewriter(partitioner, partitions, blankNodeStrategy, ontology)
   private val sparql2sql = new OntopSPARQL2SQLRewriter2(jdbcMetaData, mappingsModel, ontology)

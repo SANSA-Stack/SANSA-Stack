@@ -23,8 +23,8 @@ object SQLUtils {
   def escapeTablename(name: String): String = {
     URLEncoder.encode(name, StandardCharsets.UTF_8.toString)
       .toLowerCase
-      .replace('%', 'P')
-      .replace('.', 'C')
+      .replace('%', 'p')
+      .replace('.', 'c')
       .replace("-", "dash")
   }
 

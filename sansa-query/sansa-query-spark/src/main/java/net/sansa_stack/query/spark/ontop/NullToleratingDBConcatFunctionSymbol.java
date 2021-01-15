@@ -1,7 +1,9 @@
 package net.sansa_stack.query.spark.ontop;
 
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
+import it.unibz.inf.ontop.exception.MinorOntopInternalBugException;
 import it.unibz.inf.ontop.iq.node.VariableNullability;
+import it.unibz.inf.ontop.model.term.Constant;
 import it.unibz.inf.ontop.model.term.ImmutableTerm;
 import it.unibz.inf.ontop.model.term.IncrementalEvaluation;
 import it.unibz.inf.ontop.model.term.TermFactory;
@@ -40,5 +42,12 @@ public class NullToleratingDBConcatFunctionSymbol extends AbstractDBConcatFuncti
     public IncrementalEvaluation evaluateIsNotNull(ImmutableList<? extends ImmutableTerm> terms, TermFactory termFactory,
                                                    VariableNullability variableNullability) {
         return IncrementalEvaluation.declareIsTrue();
+    }
+
+    @Override
+    protected String extractString(Constant constant) {
+        if (constant.isNull())
+            throw new MinorOntopInternalBugException("Was expecting a non-null constant. Should be reached this point");
+        return constant.getValue();
     }
 }

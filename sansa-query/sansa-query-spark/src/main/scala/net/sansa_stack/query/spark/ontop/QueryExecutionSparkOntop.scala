@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 class QueryExecutionSparkOntop(query: Query,
                                subFactory: QueryExecutionFactory,
                                spark: SparkSession,
-                               ontop: OntopSPARQLEngine)
+                               ontop: QueryEngineOntop)
     extends QueryExecutionSparkBase(query, subFactory, spark) {
 
   override def execSelectSpark(): ResultSetSpark = {

@@ -112,7 +112,8 @@ class OntopSPARQL2SQLRewriter(val partitioner: RdfPartitioner[RdfPartitionStateD
   def createSQLQuery(sparqlQuery: String): OntopQueryRewrite = {
     val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
+    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery,
+      queryReformulator.getQueryLoggerFactory.create(it.unibz.inf.ontop.com.google.common.collect.ImmutableMultimap.of()))
 
     val sqlQuery = OntopUtils.extractSQLQuery(executableQuery)
     val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)

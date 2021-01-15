@@ -48,7 +48,8 @@ class OntopRowMapper(
 
   val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-  val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
+  val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery,
+    queryReformulator.getQueryLoggerFactory.create(it.unibz.inf.ontop.com.google.common.collect.ImmutableMultimap.of()))
 
   val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)
   val nativeNode = OntopUtils.extractNativeNode(executableQuery)
@@ -171,7 +172,7 @@ class OntopRowMapper(
       val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
       NodeFactory.createLiteral(lit.getValue, lang, dt)
     } else if (termType.isA(typeFactory.getBlankNodeType)) {
-      NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getName)
+      NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getInternalLabel)
     } else {
       null.asInstanceOf[Node]
     }

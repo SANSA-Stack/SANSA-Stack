@@ -12,7 +12,7 @@ import net.sansa_stack.query.spark.api.impl.QueryEngineFactoryBase
 class QueryEngineFactoryOntop(spark: SparkSession) extends QueryEngineFactoryBase(spark) {
 
   override def create(database: String, mappingModel: Model): QueryExecutionFactorySpark = {
-    val ontop: OntopSPARQLEngine = null
+    val ontop: QueryEngineOntop = null
 
     new QueryExecutionFactorySparkOntop(spark, ontop)
   }

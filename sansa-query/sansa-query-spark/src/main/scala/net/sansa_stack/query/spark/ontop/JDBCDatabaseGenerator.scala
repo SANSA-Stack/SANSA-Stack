@@ -56,7 +56,7 @@ object JDBCDatabaseGenerator {
         |""".stripMargin
 
     }.mkString(";")
-    println(s)
+//    println(s)
 
     try {
       val stmt = connection.createStatement()
@@ -66,11 +66,6 @@ object JDBCDatabaseGenerator {
       stmt.executeUpdate(s)
 
       connection.commit()
-
-      val rs = stmt.executeQuery("SHOW TABLES")
-      while (rs.next()) {
-        println(rs.getString(1))
-      }
     } catch {
       case e: SQLException => logger.error("Error occurred when creating in-memory H2 database", e)
     }

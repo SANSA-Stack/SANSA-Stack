@@ -1,7 +1,5 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.StringReader
-import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
 
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException}
@@ -17,17 +15,10 @@ import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
 
-import net.sansa_stack.query.spark.ontop.OntopConnection2.{JDBC_PASSWORD, JDBC_URL, JDBC_USER, logger}
-
 /**
  * @author Lorenz Buehmann
  */
 object OntopUtils2 extends Serializable {
-
-  // create the tmp DB needed for Ontop
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
-  private val JDBC_USER = "sa"
-  private val JDBC_PASSWORD = ""
 
   def toNode(constant: RDFConstant, typeFactory: TypeFactory): Node = {
     val termType = constant.getType
@@ -104,24 +95,11 @@ object OntopUtils2 extends Serializable {
     val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder.ontology(ontology.get)
                   else OntopMappingSQLAllConfiguration.defaultBuilder
 
-    try {
-      val conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-      val rs = conn.createStatement().executeQuery("SHOW TABLES")
-      println("OBDA")
-      while (rs.next()) {
-        println(rs.getString(1))
-      }
-    } catch {
-      case e: SQLException =>
-        throw e
-    }
-
-
     val mappingConfiguration = builder
       .r2rmlMappingGraph(new JenaRDF().asGraph(obdaMappings))
-      .jdbcUrl(JDBC_URL)
-      .jdbcUser(JDBC_USER)
-      .jdbcPassword(JDBC_PASSWORD)
+      .jdbcUrl(OntopConnection2.JDBC_URL)
+      .jdbcUser(OntopConnection2.JDBC_USER)
+      .jdbcPassword(OntopConnection2.JDBC_PASSWORD)
       .properties(properties)
       .enableTestMode
       .build
@@ -135,14 +113,14 @@ object OntopUtils2 extends Serializable {
     val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
                                               .ontology(ontology.get)
                                               .properties(properties)
-                                              .jdbcUser(JDBC_USER)
-                                              .jdbcPassword(JDBC_PASSWORD)
+                                              .jdbcUser(OntopConnection2.JDBC_USER)
+                                              .jdbcPassword(OntopConnection2.JDBC_PASSWORD)
                   else OntopReformulationSQLConfiguration.defaultBuilder
 
     builder
       .obdaSpecification(obdaSpecification)
       .properties(properties)
-      .jdbcUrl(JDBC_URL)
+      .jdbcUrl(OntopConnection2.JDBC_URL)
       .enableTestMode
       .build
   }
