@@ -83,18 +83,18 @@ class OntopSPARQL2SQLRewriter2(jdbcMetaData: Map[String, String],
   private val JDBC_USER = "sa"
   private val JDBC_PASSWORD = ""
 
-//  private lazy val connection: Connection = try {
-//    // scalastyle:off classforname
-//    Class.forName("org.h2.Driver")
-//    // scalastyle:on classforname
-//    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-//  } catch {
-//    case e: SQLException =>
-//      logger.error("Error occurred when creating in-memory H2 database", e)
-//      throw e
-//  }
+  private lazy val connection: Connection = try {
+    // scalastyle:off classforname
+    Class.forName("org.h2.Driver")
+    // scalastyle:on classforname
+    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+  } catch {
+    case e: SQLException =>
+      logger.error("Error occurred when creating in-memory H2 database", e)
+      throw e
+  }
 
-  JDBCDatabaseGenerator.generateTables(OntopConnection2.connection, jdbcMetaData)
+  JDBCDatabaseGenerator.generateTables(connection, jdbcMetaData)
 
   // the Ontop core
   val reformulationConfiguration = OntopUtils2.createReformulationConfig(mappingsModel, ontopProperties, ontology)
@@ -141,15 +141,18 @@ class QueryEngineOntop(val spark: SparkSession,
 
   private val logger = com.typesafe.scalalogging.Logger[OntopSPARQLEngine]
 
-  val sqlEscaper = new SqlEscaperBacktick()
+  // set the current Spark SQL database if given
+  if (databaseName != null && databaseName.trim.nonEmpty) {
+    spark.sql(s"USE $databaseName")
+  }
 
   // if no ontology has been provided, we try to extract it from the dataset
   if (ontology.isEmpty) {
     ontology = createOntology()
   }
 
-  val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
-
+  // get the JDBC metadata from the Spark tables
+  val sqlEscaper = new SqlEscaperBacktick()
   val jdbcMetaData = spark.catalog.listTables().collect().map(t =>
     (t.name,
       spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f =>
@@ -157,10 +160,7 @@ class QueryEngineOntop(val spark: SparkSession,
       ).mkString(",")
     )
   ).toMap
-//      spark.table(sqlEscaper.escapeTableName(t.name)).schema.toDDL)
 
-
-//  private val sparql2sql = OntopSPARQL2SQLRewriter(partitioner, partitions, blankNodeStrategy, ontology)
   private val sparql2sql = new OntopSPARQL2SQLRewriter2(jdbcMetaData, mappingsModel, ontology)
 
   val typeFactory = sparql2sql.typeFactory
@@ -168,9 +168,7 @@ class QueryEngineOntop(val spark: SparkSession,
   // mapping from RDF datatype to Spark SQL datatype
   val rdfDatatype2SQLCastName = DatatypeMappings(typeFactory)
 
-  if (databaseName != null && databaseName.trim.nonEmpty) {
-    spark.sql(s"USE $databaseName")
-  }
+
 
   /**
    * creates an ontology from the given partitions.
@@ -322,6 +320,12 @@ class QueryEngineOntop(val spark: SparkSession,
    */
   def execConstruct(query: String): RDD[org.apache.jena.graph.Triple] = {
     checkQueryType(query, QueryType.CONSTRUCT)
+
+    val q = QueryFactory.create(query)
+
+    val pattern = q.getQueryPattern
+    val template = q.getConstructTemplate
+    val vars = q.getProjectVars
 
     val df = executeDebug(query)._1
 
