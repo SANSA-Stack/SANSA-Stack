@@ -13,6 +13,7 @@ The current stack provides:
 - [RDF2Feature - AutoSparql Generation for Feature Extraction](#rdf2feature-autosparql-generation-for-feature-extraction)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 - [SparqlFrame Feature Extractor](#sparqlframe-feature-extractor)
+- [Smart Vector Assembler](#smart-vector-assembler)
 
 ### Sparql Transformer
 [Sparql Transformer](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SPARQLQuery.html):
@@ -144,6 +145,46 @@ val model = kmeans.fit(assembledDf.distinct())
 
 // Make predictions
 val predictions = model.transform(assembledDf)
+```
+
+### Smart Vector Assembler
+This Transformer creates a needed Dataframe for common ML approaches in Spark MLlib.
+The resulting Dataframe consists of a column features which is a numeric vector for each entity
+The other columns are the id/identifier column like the node id
+And optional column for label
+```scala 
+/*
+FEATURE EXTRACTION OVER SPARQL
+Gain Features from Query
+this creates a dataframe with coulms corresponding to Sparql features
+ */
+println("CREATE FEATURE EXTRACTING SPARQL")
+val sparqlFrame = new SparqlFrame()
+  .setSparqlQuery(queryString)
+  .setQueryExcecutionEngine("ontop")
+val res = sparqlFrame.transform(dataset)
+res.show()
+
+/*
+Create Numeric Feature Vectors
+*/
+println("SMART VECTOR ASSEMBLER")
+val smartVectorAssembler = new SmartVectorAssembler()
+  .setEntityColumn("seed")
+  .setLabelColumn("seed__down_age")
+val assembledDf = smartVectorAssembler.transform(res)
+assembledDf.show(false)
+```
+this creates a dataframe e.g. of such a shape
+```
++--------------------------+-----+------------------------+
+|id                        |label|features                |
++--------------------------+-----+------------------------+
+|http://dig.isi.edu/Mary   |25   |[28.0,-1.0,2.0,0.0,-1.0]|
+|http://dig.isi.edu/John   |28   |[25.0,-1.0,1.0,1.0,-1.0]|
+|http://dig.isi.edu/John_jr|2    |[-1.0,25.0,0.0,-1.0,1.0]|
+|http://dig.isi.edu/John_jr|2    |[-1.0,28.0,0.0,-1.0,0.0]|
++--------------------------+-----+------------------------+
 ```
 
 ### Feature Based Semantic Similarity Estimations
