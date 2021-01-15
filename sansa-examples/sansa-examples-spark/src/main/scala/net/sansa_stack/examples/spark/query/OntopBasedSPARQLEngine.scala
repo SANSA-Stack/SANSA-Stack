@@ -4,7 +4,7 @@ import java.awt.Desktop
 import java.net.URI
 import java.nio.file.Paths
 
-import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, PartitionSerDe, QueryExecutionFactoryOntopSpark}
+import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, PartitionSerDe, QueryExecutionFactorySparkOntop}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
@@ -80,7 +80,7 @@ object OntopBasedSPARQLEngine {
         // show bindings on command line
         result.foreach(println)
       case "endpoint" =>
-        val qef = new QueryExecutionFactoryOntopSpark(spark, ontopEngine)
+        val qef = new QueryExecutionFactorySparkOntop(spark, ontopEngine)
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
         if (Desktop.isDesktopSupported) {
           Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))

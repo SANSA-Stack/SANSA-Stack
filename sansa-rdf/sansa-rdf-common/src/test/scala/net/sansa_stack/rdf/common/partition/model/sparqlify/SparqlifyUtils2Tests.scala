@@ -1,14 +1,9 @@
 package net.sansa_stack.rdf.common.partition.model.sparqlify
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
-import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2._
-import org.aksw.obda.jena.domain.impl.ViewDefinition
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
-import org.scalatest.FunSuite
-
 /**
  * @author Gezim Sejdiu
  */
+/*
 class SparqlifyUtils2Tests extends FunSuite {
 
   val triple = Triple.create(
@@ -24,3 +19,4 @@ class SparqlifyUtils2Tests extends FunSuite {
   }
 
 }
+*/

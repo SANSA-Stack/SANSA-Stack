@@ -19,7 +19,7 @@ import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFacto
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.{QueryFactory, QueryType}
-import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.sparql.engine.binding.{Binding, BindingUtils}
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
@@ -29,6 +29,11 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
 import scala.collection.JavaConverters._
 
+import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperDoubleQuote}
+import org.apache.jena.sparql.modify.TemplateLib
+import org.apache.jena.sparql.util.ResultSetUtils
+
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils, SparkTableGenerator}
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
@@ -159,6 +164,8 @@ class OntopSPARQLEngine(val spark: SparkSession,
 
   private val logger = com.typesafe.scalalogging.Logger[OntopSPARQLEngine]
 
+  val sqlEscaper = new SqlEscaperBacktick()
+
   // if no ontology has been provided, we try to extract it from the dataset
   if (ontology.isEmpty) {
     ontology = createOntology()
@@ -192,10 +199,10 @@ class OntopSPARQLEngine(val spark: SparkSession,
     if (typePartitions.nonEmpty) {
       // generate the table names for those rdf:type partitions
       // there can be more than one because the partitioner creates a separate partition for each subject and object type
-      val names = typePartitions.map(p => SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy), quotChar = '`'))
+      val names = typePartitions.map(p => R2rmlUtils.createDefaultTableName(p))
 
       // create the SQL query as UNION of
-      val sql = names.map(name => s"SELECT DISTINCT o FROM $name").mkString(" UNION ")
+      val sql = names.map(name => s"SELECT DISTINCT o FROM ${sqlEscaper.escapeTableName(name)}").mkString(" UNION ")
 
       val df = spark.sql(sql)
 

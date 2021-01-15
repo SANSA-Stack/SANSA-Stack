@@ -2,7 +2,7 @@ package net.sansa_stack.query.spark.sparqlify.server
 
 import java.io.File
 
-import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
+import net.sansa_stack.query.spark.sparqlify.{JavaQueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
@@ -14,6 +14,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
 import scala.collection.JavaConverters._
+import net.sansa_stack.rdf.spark.partition._
+import net.sansa_stack.query.spark._
+import net.sansa_stack.query.spark.query.SparqlifySPARQLExecutor2
 
 object MainSansaSparqlServer {
 
@@ -66,13 +69,15 @@ object MainSansaSparqlServer {
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
+    val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
+
     // val map = graphRdd.partitionGraphByPredicates
-    val partitioner = RdfPartitionerDefault
-
-    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
-
-    val qef = new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
+//    val partitioner = RdfPartitionerDefault
+//
+//    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
+//    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
+//
+//    val qef = new JavaQueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
 
     val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
     server.join()

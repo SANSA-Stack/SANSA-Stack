@@ -7,6 +7,9 @@ import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
 import scala.collection.JavaConverters._
 
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 
 /**
@@ -15,6 +18,8 @@ import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 object OntopMappingGenerator {
 
   val logger = com.typesafe.scalalogging.Logger(OntopMappingGenerator.getClass)
+
+  val sqlEscaper = new SqlEscaperDoubleQuote()
 
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
   val distinguishStringLiterals: Boolean = false
@@ -30,7 +35,7 @@ object OntopMappingGenerator {
       if (blankNodeStrategy == BlankNodeStrategy.Table) {
         s"""
            |mappingId     $id
-           |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)}
+           |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)}
            |target        $targetSubject <${partition.predicate}> $targetObject .
            |""".stripMargin
       } else if (blankNodeStrategy == BlankNodeStrategy.Column) {
@@ -39,7 +44,7 @@ object OntopMappingGenerator {
 
         s"""
            |mappingId     $id
-           |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE $whereCondition
+           |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE $whereCondition
            |target        $targetSubject <${partition.predicate}> $targetObject .
            |""".stripMargin
       } else {
@@ -55,7 +60,7 @@ object OntopMappingGenerator {
       if (languages.isEmpty) { // no language tag, i.e. xsd:string
         s"""
            |mappingId     $id
-           |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "l" = ''
+           |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE "l" = ''
            |target        $targetSubject <${partition.predicate}> "{o}" .
            |""".stripMargin
       } else {
@@ -64,7 +69,7 @@ object OntopMappingGenerator {
           val id = tableName + "_lang"
           s"""
              |mappingId     $id
-             |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "l" = '$lang'
+             |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE "l" = '$lang'
              |target        $targetSubject <${partition.predicate}> "{o}"@$lang .
              |""".stripMargin
         }).mkString("\n")
@@ -76,7 +81,7 @@ object OntopMappingGenerator {
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       s"""
          |mappingId     $id
-         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)}
+         |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)}
          |target        $targetSubject <${partition.predicate}> "{o}"^^<${partition.datatype}> .
          |""".stripMargin
     }
@@ -86,7 +91,7 @@ object OntopMappingGenerator {
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       s"""
          |mappingId     $id
-         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "o" = '$cls'
+         |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE "o" = '$cls'
          |target        $targetSubject <${RDF.`type`.getURI}> <$cls> .
          |""".stripMargin
     }
@@ -94,7 +99,7 @@ object OntopMappingGenerator {
     def createMappingLiteralWithType(id: String, tableName: String, property: String): String = {
       s"""
          |mappingId     $id
-         |source        SELECT "s", "o", "t" FROM ${SQLUtils.escapeTablename(tableName)}
+         |source        SELECT "s", "o", "t" FROM ${sqlEscaper.escapeTableName(tableName)}
          |target        <{s}> <$property> "{o}"^^<{t}> .
          |""".stripMargin
     }
@@ -110,8 +115,8 @@ object OntopMappingGenerator {
       partitions
         .map {
           case p@RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>
-            val tableName = SQLUtils.createTableName(p, blankNodeStrategy)
-            val id = SQLUtils.escapeTablename(tableName)
+            val tableName = R2rmlUtils.createDefaultTableName(p)
+            val id = sqlEscaper.escapeTableName(tableName)
 
             if (predicate == RDF.`type`.getURI) { // rdf:type mapping expansion here
               if (ontology.nonEmpty) ontology.get.getClassesInSignature(Imports.EXCLUDED).asScala.map(cls => createClassMapping(id, tableName, p, cls.toStringID)).mkString("\n") else ""

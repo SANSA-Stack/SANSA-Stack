@@ -7,7 +7,7 @@ import org.apache.spark.api.java.JavaRDD;
 import java.util.List;
 
 public class ResultSetSparkImpl
-    implements ResultSetSpark
+    implements JavaResultSetSpark
 {
     protected List<Var> resultVars;
     protected JavaRDD<Binding> rdd;

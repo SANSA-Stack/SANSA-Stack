@@ -24,36 +24,6 @@ object SQLUtils {
     if (quoted) s"""$quotChar$s$quotChar""" else s
   }
 
-
-  /**
-   * Creates a SQL table name for a partition.
-   * @param p the RDF partition
-   * @param blankNodeStrategy
-   * @return
-   */
-  def createTableName(p: RdfPartitionStateDefault, blankNodeStrategy: BlankNodeStrategy.Value): String = {
-    val pred = p.predicate
-
-    // For now let's just use the full predicate as the uri
-    // val predPart = pred.substring(pred.lastIndexOf("/") + 1)
-    val predPart = pred
-    val pn = NodeFactory.createURI(p.predicate)
-
-    val dt = p.datatype
-    val dtPart = if (dt != null && dt.nonEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
-    val langPart = if (p.langTagPresent) "_lang" else ""
-    val blankPart = if (blankNodeStrategy == BlankNodeStrategy.Table) {
-      var tmp = ""
-      if (p.subjectType == 0) tmp += "_s_blank"
-      if (p.objectType == 0) tmp += "_o_blank"
-      tmp
-    } else ""
-
-    val tableName = predPart + dtPart + langPart + blankPart// .replace("#", "__").replace("-", "_")
-
-    tableName
-  }
-
   /**
    * perform some SQL query processing taking queries from a CLI
    * @param spark
