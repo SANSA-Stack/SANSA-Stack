@@ -1,12 +1,14 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{StringType, StructType}
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{udf, _}
+
+import scala.util.Random
 
 /**
  * This Transformer creates a needed Dataframe for common ML approaches in Spark MLlib.
@@ -28,6 +30,9 @@ class SmartVectorAssembler extends Transformer{
   // working process onfiguration
   var _numericCollapsingStrategy: String = "median"
   var _stringCollapsingStrategy: String = "concat"
+
+  // null replacement
+  var _nullReplacement: Int = -1
 
   protected val spark = SparkSession.builder().getOrCreate()
 
@@ -133,7 +138,6 @@ class SmartVectorAssembler extends Transformer{
   }
 
   def transform(dataset: Dataset[_]): DataFrame = {
-    import spark.implicits._
 
     val df = dataset.toDF()
 
@@ -145,53 +149,89 @@ class SmartVectorAssembler extends Transformer{
     validateFeatureColumns(cols = allColumns)
 
     // replace strings by numeric values
-    var dfOnlyfeatures = df.select(_featureColumns.head, _featureColumns.tail: _*)
-    println("only features")
-    dfOnlyfeatures.show(false)
-    // val columnTypes = dfOnlyfeatures.schema.map(_.name, _.dataType).foreach(println(_))
-    val dfFeaturesSchemaMap = dfOnlyfeatures.schema.map(e => (e.name, e.dataType)).toMap
+    var digitizedDf = df
+    val dfFeaturesSchemaMap = digitizedDf.schema.map(e => (e.name, e.dataType)).toMap
 
-    for (columnName <- dfOnlyfeatures.columns) {
+    for (columnName <- digitizedDf.columns) {
+      if ((columnName != _entityColumn) && (columnName != _labelColumn)) {
+
         // decide what to do
-      println(columnName, dfFeaturesSchemaMap(columnName))
-      if (dfFeaturesSchemaMap(columnName) ==  StringType) {
-        println(f"columnName $columnName goes through indexer")
-        val indexer = new StringIndexer()
-          .setInputCol(columnName)
-          .setOutputCol("string2indexed_" + columnName)
-          .setHandleInvalid("keep") // for null values
-          .fit(dfOnlyfeatures)
-        dfOnlyfeatures = indexer
-          .transform(dfOnlyfeatures)
-        dfOnlyfeatures.select(columnName).show(false)
-        dfOnlyfeatures = dfOnlyfeatures.drop(columnName)
-        dfOnlyfeatures.select("string2indexed_" + columnName).show(false)
-        // dfOnlyfeatures.show(false)
-        println(indexer.labelsArray(0).size)
-        println(indexer.labelsArray(0).toSeq.mkString(" "))
+        if (dfFeaturesSchemaMap(columnName) ==  StringType) {
+          // println(f"columnName $columnName goes through indexer")
+          val indexer = new StringIndexer()
+            .setInputCol(columnName)
+            .setOutputCol("string2indexed_" + columnName)
+            .setHandleInvalid("keep") // for null values
+            .fit(digitizedDf)
+          digitizedDf = indexer
+            .transform(digitizedDf)
+          digitizedDf = digitizedDf.drop(columnName)
 
-        val indexOfUnknown = indexer.labelsArray(0).size
+          val indexOfUnknown = indexer.labelsArray(0).size
 
-        dfOnlyfeatures = dfOnlyfeatures.withColumn("string2indexed_" + columnName, when(col("string2indexed_" + columnName) === indexOfUnknown.toDouble, -1).otherwise(col("string2indexed_" + columnName)))
-        dfOnlyfeatures.select("string2indexed_" + columnName).show(false)
+          digitizedDf = digitizedDf.withColumn("string2indexed_" + columnName,
+              when(col("string2indexed_" + columnName) === indexOfUnknown.toDouble, null)
+                .otherwise(col("string2indexed_" + columnName)
+                )
+            )
+          // dfOnlyfeatures.select("string2indexed_" + columnName).show(false)
+        }
       }
     }
-    println("indexed df")
 
+
+    // set tmpFeatureColumns
+    var tmpFeatureColumns = digitizedDf.columns
+      .filterNot(elm => elm == _labelColumn)
+      .filterNot(elm => elm == _entityColumn)
+
+    /*
     // collaps multiple rows for same entity
     println("collaps multiple rows for same entity")
     val groupCol = _entityColumn
-    val aggCols = (_featureColumns.toSet - groupCol).map(
+    val aggCols = (tmpFeatureColumns.toSet - groupCol).map(
       colName => collect_list(colName).as("collect_list(" + colName + ")")
     ).toList
-    val groupedDf = df.groupBy(groupCol).agg(aggCols.head, aggCols.tail: _*)
+    var groupedDf = digitizedDf.groupBy(groupCol).agg(aggCols.head, aggCols.tail: _*)
+    groupedDf.show(false)
+
+    // set tmpColapedFeatureColumns
+    tmpFeatureColumns = groupedDf.columns
+      .filterNot(elm => elm == _labelColumn)
+      .filterNot(elm => elm == _entityColumn)
 
     // decision what to do with lists
+    // println(groupedDf.schema)
+    val randomSampleFromArray = udf((a) => {
+      println(a.getClass)
+      // Random.shuffle(a.toList).take(1)
+    })
+    for (columnName <- tmpColapedFeatureColumns) {
+      groupedDf = groupedDf.withColumn(columnName, randomSampleFromArray(col(columnName)))
+    }
+     */
 
-    groupedDf
+    // Handle Null values
+    digitizedDf = digitizedDf.na.fill(_nullReplacement)
+
+    // assemble feature vector
+    val assembler = new VectorAssembler()
+      .setInputCols(tmpFeatureColumns)
+      .setOutputCol("features").setHandleInvalid("keep")
+    val assembledDf = assembler.transform(digitizedDf)
+
+    var cleanDf = assembledDf
+    if (_labelColumn == null) {
+      cleanDf = cleanDf
+        .withColumnRenamed(_entityColumn, "id")
+        .select("id", "features")
+    }
+    else {
+      cleanDf = cleanDf
+        .withColumnRenamed(_entityColumn, "id")
+        .withColumnRenamed(_labelColumn, "label")
+        .select("id", "label", "features")
+    }
+    cleanDf
   }
-
-
-
-
 }
