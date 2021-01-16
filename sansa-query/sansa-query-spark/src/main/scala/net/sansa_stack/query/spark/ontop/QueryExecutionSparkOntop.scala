@@ -16,7 +16,7 @@ class QueryExecutionSparkOntop(query: Query,
     extends QueryExecutionSparkBase(query, subFactory, spark) {
 
   override def execSelectSpark(): ResultSetSpark = {
-    val bindings = ontop.execSelect(query.toString())
+    val bindings = ontop.computeBindings(query.toString())
 
     val resultVars = query.getProjectVars.asScala
 

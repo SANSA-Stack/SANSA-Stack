@@ -1,13 +1,14 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.sql.{Connection, DriverManager, SQLException}
-import java.util
 import java.util.Properties
+
+import scala.collection.JavaConverters._
 
 import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
-import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
+import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.ConstructionNode
@@ -15,27 +16,13 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
-
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import org.apache.jena.graph.Triple
-import org.apache.jena.query.{QueryFactory, QueryType}
-import org.apache.jena.sparql.engine.binding.{Binding, BindingUtils}
-import org.apache.jena.vocabulary.RDF
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.StringType
-import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
-import scala.collection.JavaConverters._
-
-import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperDoubleQuote}
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.sparql.modify.TemplateLib
-import org.apache.jena.sparql.util.ResultSetUtils
-
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils, SparkTableGenerator}
 
 trait SPARQL2SQLRewriter2[T <: QueryRewrite2] {
   def createSQLQuery(sparqlQuery: String): T
@@ -270,14 +257,14 @@ class QueryEngineOntop(val spark: SparkSession,
 
 
   /**
-   * Executes a SELECT query on the provided dataset partitions and returns a DataFrame.
+   * Computes the bindings of the query independently of the query type. This works,
+   * because all non-SELECT queries can be reduced to SELECT queries with a post-processing.
    *
    * @param query the SPARQL query
    * @return an RDD of solution bindings
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
-  def execSelect(query: String): RDD[Binding] = {
-    checkQueryType(query, QueryType.SELECT)
+  def computeBindings(query: String): RDD[Binding] = {
 
     val df = executeDebug(query)._1
 
@@ -297,59 +284,6 @@ class QueryEngineOntop(val spark: SparkSession,
     }).rdd
 
   }
-
-  /**
-   * Executes an ASK query on the provided dataset partitions.
-   *
-   * @param query the SPARQL query
-   * @return `true` or `false` depending on the result of the ASK query execution
-   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
-   */
-  def execAsk(query: String): Boolean = {
-    checkQueryType(query, QueryType.ASK)
-    val df = executeDebug(query)._1
-    !df.isEmpty
-  }
-
-  /**
-   * Executes a CONSTRUCT query on the provided dataset partitions.
-   *
-   * @param query the SPARQL query
-   * @return an RDD of triples
-   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
-   */
-  def execConstruct(query: String): RDD[org.apache.jena.graph.Triple] = {
-    checkQueryType(query, QueryType.CONSTRUCT)
-
-    val q = QueryFactory.create(query)
-
-    val pattern = q.getQueryPattern
-    val template = q.getConstructTemplate
-    val vars = q.getProjectVars
-
-    val df = executeDebug(query)._1
-
-    val sparqlQueryBC = spark.sparkContext.broadcast(query)
-    val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappingsModel)
-    val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
-    val metaDataBC = spark.sparkContext.broadcast(jdbcMetaData)
-    val ontologyBC = spark.sparkContext.broadcast(ontology)
-
-    implicit val tripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
-    df.mapPartitions(iterator => {
-      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value)
-      val it = mapper.toTriples(iterator)
-      mapper.close()
-      it
-    }).rdd
-  }
-
-  private def checkQueryType(query: String, queryType: QueryType) = {
-    val q = QueryFactory.create(query)
-    if (q.queryType() != queryType) throw new RuntimeException(s"Wrong query type. Expected ${queryType.toString} query," +
-      s" got ${q.queryType().toString}")
-  }
-
 
 }
 

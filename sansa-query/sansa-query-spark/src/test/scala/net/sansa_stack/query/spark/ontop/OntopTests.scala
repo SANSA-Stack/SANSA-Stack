@@ -51,7 +51,7 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
     SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,
       partitions2RDD,
       extractTableName = tableNameFn)
-    R2rmlUtils.createR2rmlMappings(partitioner, partitions, tableNameFn, new SqlEscaperDoubleQuote(), mappingsModel, true)
+    R2rmlUtils.createR2rmlMappings(partitioner, partitions, tableNameFn, new SqlEscaperDoubleQuote(), mappingsModel, true, true)
     mappingsModel.write(System.out, "Turtle")
     ontop = QueryEngineOntop(spark, "test", mappingsModel, None)
 
@@ -75,7 +75,7 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
       val queryString = Source.fromFile(getClass.getResource(s"/sparklify/queries/bsbm/$q.sparql").getPath).getLines.mkString("\n")
       val query = QueryFactory.create(queryString)
 
-      val result = ontop.execSelect(queryString).collect()
+      val result = ontop.computeBindings(queryString).collect()
 //      val result = sparqlExecutor.sparqlRDD(queryString).collect()
 
       val rs = resultSetFromBindings(query, result)

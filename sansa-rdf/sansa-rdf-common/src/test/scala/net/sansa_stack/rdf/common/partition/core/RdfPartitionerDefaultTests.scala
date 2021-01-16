@@ -71,7 +71,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val model = ModelFactory.createDefaultModel()
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, model, false)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, model, false, false)
 
     // There must be just a single triples map
     assert(triplesMaps.size == 1)
@@ -129,7 +129,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val actual = ModelFactory.createDefaultModel()
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true, false)
 
     RDFDataMgr.write(System.out, actual, RDFFormat.TURTLE_PRETTY)
 
@@ -144,7 +144,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
       2, "http://www.w3.org/2001/XMLSchema#string", true, Set("en", "de", "fr"))
 
     val exportModel = ModelFactory.createDefaultModel()
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, exportModel, true)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, exportModel, true, false)
 
      // val exportModel = exportModel // RdfPartitionImportExport.exportAsR2RML(RdfPartitionerDefault, partitionState, true)
     exportModel.write(System.out, "Turtle", "http://www.w3.org/ns/r2rml#")
