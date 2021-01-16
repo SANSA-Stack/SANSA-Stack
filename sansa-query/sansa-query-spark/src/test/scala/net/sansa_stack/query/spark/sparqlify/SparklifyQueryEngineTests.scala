@@ -153,7 +153,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
     val partitioner = RdfPartitionerDefault
     val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, RdfPartitionerDefault)
     val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitioner, partitions)
-    val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
+    val qef = new JavaQueryExecutionFactorySparqlifySpark(spark, rewriter)
     val str = ResultSetFormatter.asText(qef.createQueryExecution(queryStr).execSelect())
         .toLowerCase
     assert(!str.contains("null"))

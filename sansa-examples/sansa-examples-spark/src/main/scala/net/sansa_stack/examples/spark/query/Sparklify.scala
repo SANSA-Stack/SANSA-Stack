@@ -3,7 +3,7 @@ package net.sansa_stack.examples.spark.query
 import java.awt.Desktop
 import java.net.URI
 
-import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
+import net.sansa_stack.query.spark.sparqlify.{JavaQueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
@@ -66,7 +66,7 @@ object Sparklify {
         val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
         val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitioner, partitions)
 
-        val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
+        val qef = new JavaQueryExecutionFactorySparqlifySpark(spark, rewriter)
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(config.port).create()
         if (Desktop.isDesktopSupported) {
           Desktop.getDesktop.browse(URI.create("http://localhost:" + config.port + "/sparql"))

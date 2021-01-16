@@ -16,6 +16,7 @@ import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.expr.{Expr, ExprVar, NodeValue}
 
+// This is now all unified in R2rmlUtils
 object SparqlifyUtils2 {
   implicit def newExprVar(varName: String): ExprVar = new ExprVar(Var.alloc(varName))
   implicit def newExprVar(varId: Int): ExprVar = "_" + varId

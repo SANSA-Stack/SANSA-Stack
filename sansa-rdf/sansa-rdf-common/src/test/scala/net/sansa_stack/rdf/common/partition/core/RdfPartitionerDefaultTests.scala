@@ -151,7 +151,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     // TODO Add serialization and deserialization
 
-    val importedTriplesMaps = RdfPartitionImportExport.importFromR2RML(exportModel)
+    val importedTriplesMaps = R2rmlUtils.streamTriplesMaps(exportModel).toSeq
 
     assert(triplesMaps.size == importedTriplesMaps.size)
 

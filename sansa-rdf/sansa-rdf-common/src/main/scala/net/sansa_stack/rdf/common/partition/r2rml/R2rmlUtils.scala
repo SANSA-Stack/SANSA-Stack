@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.common.partition.r2rml
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
+import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api._
 import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.r2rmlx.domain.api.TermMapX
@@ -121,7 +122,7 @@ object R2rmlUtils {
         tm
       }).toSeq
     } else {
-      val tm: TriplesMap = ModelFactory.createDefaultModel.createResource.as(classOf[TriplesMap])
+      val tm: TriplesMap = outModel.createResource.as(classOf[TriplesMap])
       val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
       pom.addPredicate(predicateIri)
 
@@ -188,5 +189,16 @@ object R2rmlUtils {
     val tableName = predPart + dtPart + langPart + sTermTypePart + oTermTypePart
 
     tableName
+  }
+
+  /**
+   * Imports the RDF partition states as `TriplesMap` from the given RDF data model.
+   *
+   * @param model the model
+   * @return the RDF partition states as `TriplesMap`
+   */
+  def streamTriplesMaps(model: Model): Iterator[TriplesMap] = {
+    import collection.JavaConverters._
+    R2rmlLib.streamTriplesMaps(model).iterator().asScala.toIterator
   }
 }
