@@ -2,24 +2,15 @@ package net.sansa_stack.query.spark.compliance
 
 import java.util.Properties
 
-import com.google.common.collect.Sets
-import it.unibz.inf.ontop.exception.OntopInternalBugException
-import it.unibz.inf.ontop.model.term._
-import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import scala.collection.JavaConverters._
+
 import org.apache.jena.query._
-import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.sparql.engine.ResultSetStream
-import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.graph.GraphFactory
+import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.resultset.SPARQLResult
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
 import org.scalatest.tags.Slow
 import org.scalatest.{ConfigMap, DoNotDiscover}
 
-import scala.collection.JavaConverters._
+import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 
 
 /**
@@ -84,72 +75,48 @@ class SPARQL11TestSuiteRunnerSparkOntop
   )
 
 
-  override lazy val IGNORE_FILTER = t => t.name.startsWith("HOUR")
+  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS")
 
-  var ontopProperties: Properties = _
+  var engineFactory: QueryEngineFactoryOntop = _
 
   override def beforeAll(configMap: ConfigMap): Unit = {
     super.beforeAll(configMap)
-    ontopProperties = new Properties()
-    ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
+    engineFactory = new QueryEngineFactoryOntop(spark)
   }
 
   override def runQuery(query: Query, data: Model): SPARQLResult = {
     // distribute on Spark
     val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
 
-    val partitioner = new RdfPartitionerComplex(distinguishStringLiterals = false)
+    // we create a Spark database here to keep the implicit partitioning separate
+    val db = "TEST"
+    spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
+    spark.sql(s"USE $db")
 
-    // do partitioning here
-    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] =
-      RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner)
-
-    // create the query engine
-    val queryEngine = OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
+    val qef = engineFactory.create(triplesRDD)
+    val qe = qef.createQueryExecution(query)
 
     // produce result based on query type
     val result = if (query.isSelectType) { // SELECT
-      // convert to bindings
-      implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
-      val bindings = queryEngine.execSelect(query.toString()).collect()
-
-      // we have to get the vars from the initial query as bindings are just hashmaps without preserving order
-      val vars = query.getResultVars
-      val bindingVars = bindings.flatMap(_.vars().asScala).distinct.map(_.getVarName).toList.asJava
-      // sanity check if there is a difference in the projected vars
-      if (!Sets.symmetricDifference(Sets.newHashSet(vars), Sets.newHashSet(bindingVars)).isEmpty) {
-        println(s"projected vars do not match\nexpected: $vars\ngot:$bindingVars")
-      }
-
-      // create the SPARQL result
-      val model = ModelFactory.createDefaultModel()
-
-      val resultsActual = new ResultSetStream(vars, model, bindings.toList.asJava.iterator())
-      new SPARQLResult(resultsActual)
+      val rs = qe.execSelect()
+      new SPARQLResult(rs)
     } else if (query.isAskType) { // ASK
-      // map DF entry to boolean
-      val b = queryEngine.execAsk(query.toString())
+      val b = qe.execAsk()
       new SPARQLResult(b)
     } else if (query.isConstructType) { // CONSTRUCT
-      val triples = queryEngine.execConstruct(query.toString()).collect()
-      // create the SPARQL result
-      val g = GraphFactory.createDefaultGraph()
-      triples.foreach(g.add)
-      val model = ModelFactory.createModelForGraph(g)
-      new SPARQLResult(model)
-
+      val triples = qe.execConstruct()
+      new SPARQLResult(triples)
     } else { // DESCRIBE todo
       fail("unsupported query type: DESCRIBE")
       null
     }
     // clean up
-    queryEngine.clear()
+    // we drop the Spark database to remove all tables
+    spark.sql(s"DROP DATABASE IF EXISTS $db")
+    qe.close()
 
     result
   }
-
-  class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
-  class InvalidConstantTypeInResultException(message: String) extends OntopInternalBugException(message)
 
 }
 

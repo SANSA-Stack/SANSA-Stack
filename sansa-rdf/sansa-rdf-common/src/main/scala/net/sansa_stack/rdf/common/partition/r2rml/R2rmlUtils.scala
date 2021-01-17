@@ -129,7 +129,7 @@ object R2rmlUtils {
         // and the object map
         val om: ObjectMap = pom.addNewObjectMap()
         om.setColumn(escapedColumns(1))
-        om.setLanguage(p.languages.head)
+        if (p.languages.head.trim.nonEmpty) om.setLanguage(p.languages.head)
 
         tm.getOrSetLogicalTable().asBaseTableOrView().setTableName(tableName)
 
@@ -150,7 +150,7 @@ object R2rmlUtils {
 
           val om: ObjectMap = pom.addNewObjectMap()
           om.setColumn(escapedColumns(1))
-          om.setLanguage(lang)
+          if (lang.trim.nonEmpty) om.setLanguage(lang)
 
           tm.getOrSetLogicalTable().asR2rmlView().setSqlQuery(s"SELECT $columnsSql FROM $tableNameSql WHERE $langColSql = $langSql")
 

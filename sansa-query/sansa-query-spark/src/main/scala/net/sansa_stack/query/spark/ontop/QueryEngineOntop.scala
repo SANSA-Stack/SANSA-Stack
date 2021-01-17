@@ -126,7 +126,7 @@ class QueryEngineOntop(val spark: SparkSession,
                        val mappingsModel: Model,
                        var ontology: Option[OWLOntology]) {
 
-  private val logger = com.typesafe.scalalogging.Logger[OntopSPARQLEngine]
+  private val logger = com.typesafe.scalalogging.Logger[QueryEngineOntop]
 
   // set the current Spark SQL database if given
   if (databaseName != null && databaseName.trim.nonEmpty) {
@@ -155,6 +155,10 @@ class QueryEngineOntop(val spark: SparkSession,
   // mapping from RDF datatype to Spark SQL datatype
   val rdfDatatype2SQLCastName = DatatypeMappings(typeFactory)
 
+
+  // some debug stuff
+  mappingsModel.write(System.out, "Turtle")
+  spark.catalog.listTables().collect().foreach(t => spark.table(sqlEscaper.escapeTableName(t.name)).show(false))
 
 
   /**
