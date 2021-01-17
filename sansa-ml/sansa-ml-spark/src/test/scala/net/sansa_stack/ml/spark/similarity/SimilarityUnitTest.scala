@@ -11,10 +11,9 @@ import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.types.DataTypes
 import org.apache.spark.sql.{DataFrame, Dataset}
-import org.scalatest.FunSuite
 import org.scalactic.TolerantNumerics
+import org.scalatest.FunSuite
 
 class SimilarityUnitTest extends FunSuite with DataFrameSuiteBase {
 

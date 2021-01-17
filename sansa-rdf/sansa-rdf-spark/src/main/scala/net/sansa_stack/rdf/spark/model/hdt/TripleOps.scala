@@ -2,8 +2,8 @@ package net.sansa_stack.rdf.spark.model.hdt
 
 import org.apache.jena.graph.Triple
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{ DataFrame, Row, SaveMode, SparkSession }
-import org.apache.spark.sql.types.{ LongType, StringType, StructField, StructType }
+import org.apache.spark.sql.types.{LongType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
 
 object TripleOps {
 

@@ -14,7 +14,7 @@ object TripleLayoutLong
   override def fromTriple(t: Triple): SchemaStringLong = {
     val s = t.getSubject
     val o = t.getObject
-    val v = if (o.isLiteral() && o.getLiteralValue.isInstanceOf[Number]) {
+    val v = if (o.isLiteral && o.getLiteralValue.isInstanceOf[Number]) {
       o.getLiteralValue.asInstanceOf[Number]
     } else throw new RuntimeException("Layout only for doubles" + t)
 

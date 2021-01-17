@@ -1,11 +1,11 @@
 package net.sansa_stack.query.tests
 
-import scala.collection.JavaConverters._
-
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
 import org.apache.jena.rdf.model.{ModelFactory, RDFList}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.scalatest.FunSuite
+
+import scala.collection.JavaConverters._
 
 
 /**

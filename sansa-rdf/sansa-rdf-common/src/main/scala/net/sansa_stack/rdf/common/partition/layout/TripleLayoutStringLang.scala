@@ -18,7 +18,7 @@ object TripleLayoutStringLang
 
     val sStr = RdfPartitionerDefault.getUriOrBNodeString(s)
 
-    val result = if (o.isLiteral()) {
+    val result = if (o.isLiteral) {
       SchemaStringStringLang(sStr, o.getLiteralLexicalForm, o.getLiteralLanguage)
     } else {
       throw new RuntimeException("Layout only for literals")

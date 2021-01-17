@@ -36,10 +36,3 @@ object TripleLayoutStringDate
     SchemaStringDate(sStr, v)
   }
 }
-
-/*
-object TripleLayoutStringDate {
-  def apply(formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("y-M-d")): TripleLayoutStringDate = new TripleLayoutStringDate(formatter)
-}
- */
-

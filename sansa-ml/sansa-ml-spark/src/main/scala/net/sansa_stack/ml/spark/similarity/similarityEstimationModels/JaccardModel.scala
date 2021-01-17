@@ -1,11 +1,8 @@
 package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 
-import org.apache.spark
 import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import org.apache.spark.sql.functions.{col, lit, typedLit, udf}
-import org.apache.spark.sql.types.{ArrayType, StringType, StructField, StructType}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.{col, udf}
 
 class JaccardModel extends GenericSimilarityEstimatorModel {
 

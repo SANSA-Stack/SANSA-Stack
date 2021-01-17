@@ -11,6 +11,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.util.OWLAPIStreamUtils.asList
 import org.slf4j.{Logger, LoggerFactory}
+
 import scala.collection.JavaConverters._
 import scala.collection.immutable.Stream
 import scala.compat.java8.StreamConverters._

@@ -4,10 +4,9 @@ import java.util
 
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe._
-
 import collection.JavaConverters._
 import com.google.common.collect.ImmutableMap
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.aksw.jena_sparql_api.utils.Vars
 import org.aksw.jena_sparql_api.views.E_RdfTerm
 import org.aksw.obda.domain.api.Constraint
@@ -17,6 +16,7 @@ import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.expr.{Expr, ExprVar, NodeValue}
 
+// This is now all unified in R2rmlUtils
 object SparqlifyUtils2 {
   implicit def newExprVar(varName: String): ExprVar = new ExprVar(Var.alloc(varName))
   implicit def newExprVar(varId: Int): ExprVar = "_" + varId
@@ -26,13 +26,14 @@ object SparqlifyUtils2 {
     attrName
   }
 
-  def createViewDefinition(p: RdfPartitionDefault): ViewDefinition = {
+  def createViewDefinition(partitioner: RdfPartitioner[RdfPartitionStateDefault], p: RdfPartitionStateDefault): ViewDefinition = {
     // val basicTableInfo = basicTableInfoProvider.getBasicTableInfo(sqlQueryStr)
     // println("Result schema: " + basicTableInfoProvider.getBasicTableInfo(sqlQueryStr))
 
     // items.foreach(x => println("Item: " + x))
 
-    val t = p.layout.schema
+    val t = partitioner.determineLayout(p).schema
+    // val t = p.layout.schema
     val attrNames = t.members.sorted.collect({ case m: MethodSymbol if m.isCaseAccessor => m.name.toString })
 
     // println("Counting the dataset: " + ds.count())
@@ -44,7 +45,7 @@ object SparqlifyUtils2 {
     val pn = NodeFactory.createURI(p.predicate)
 
     val dt = p.datatype
-    val dtPart = if (dt != null && !dt.isEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
+    val dtPart = if (dt != null && dt.nonEmpty) "_" + dt.substring(dt.lastIndexOf("/") + 1) else ""
     val langPart = if (p.langTagPresent) "_lang" else ""
 
     val sTermTypePart = if (p.subjectType == 0) "sbn" else ""

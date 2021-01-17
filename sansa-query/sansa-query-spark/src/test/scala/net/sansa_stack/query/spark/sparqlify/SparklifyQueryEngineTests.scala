@@ -1,21 +1,23 @@
 package net.sansa_stack.query.spark.sparqlify
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionDefault
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import org.apache.jena.query.{ARQ, QueryFactory, ResultSetFormatter}
-import org.apache.jena.riot.{Lang, RIOT}
+import org.apache.jena.graph.Triple
+import org.apache.jena.query.{ARQ, ResultSetFormatter}
+import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.scalatest.FunSuite
+
 import scala.io.Source
 
-import org.apache.jena.graph.Triple
-
 class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
+
+  JenaSystem.init
 
   import net.sansa_stack.query.spark.query._
 
@@ -148,9 +150,10 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
     val triples = spark.rdf(Lang.NTRIPLES)(input)
 
-    val partitions: Map[RdfPartitionDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples)
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
-    val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
+    val partitioner = RdfPartitionerDefault
+    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, RdfPartitionerDefault)
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitioner, partitions)
+    val qef = new JavaQueryExecutionFactorySparqlifySpark(spark, rewriter)
     val str = ResultSetFormatter.asText(qef.createQueryExecution(queryStr).execSelect())
         .toLowerCase
     assert(!str.contains("null"))

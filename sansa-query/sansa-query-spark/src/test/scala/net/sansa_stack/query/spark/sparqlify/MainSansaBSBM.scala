@@ -5,12 +5,12 @@ import java.io.File
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import benchmark.testdriver.{LocalSPARQLParameterPool, SPARQLConnection2, TestDriver}
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
 import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.jena.query.{Query, QueryFactory}
-import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 import org.apache.spark.sql.{Row, SparkSession}
 
@@ -61,13 +61,14 @@ object MainSansaBSBM {
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
     // val map = graphRdd.partitionGraphByPredicates
-    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd)
+    val partitioner = RdfPartitionerDefault
+    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
 
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitions)
+    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
 
     // Spark SQL does not support OFFSET - so for testing just remove it from the query
     val conn = new SparqlQueryConnectionJsa(FluentQueryExecutionFactory
-        .from(new QueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
+        .from(new JavaQueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
         .config()
           .withQueryTransform(q => { q.setOffset(Query.NOLIMIT); q })
           .withParser(q => QueryFactory.create(q))

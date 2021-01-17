@@ -11,7 +11,6 @@ package net.sansa_stack.rdf.spark.kge.triples
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import scala.reflect.api.materializeTypeTag
 
 class Triples(filePath: String, delimiter: String = "\t", header: Boolean = false,
               numeric: Boolean = false, spark: SparkSession) {

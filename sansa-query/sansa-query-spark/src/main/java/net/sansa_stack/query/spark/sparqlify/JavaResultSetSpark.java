@@ -13,7 +13,7 @@ import java.util.List;
  * Use {@code getRdd().rdd()} to obtain the scala RDD.
  *
  */
-public interface ResultSetSpark {
+public interface JavaResultSetSpark {
     List<Var> getResultVars();
     JavaRDD<Binding> getRdd();
 }

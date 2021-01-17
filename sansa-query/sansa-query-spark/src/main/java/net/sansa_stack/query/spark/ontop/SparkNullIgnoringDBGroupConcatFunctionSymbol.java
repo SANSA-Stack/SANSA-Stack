@@ -1,10 +1,10 @@
 package net.sansa_stack.query.spark.ontop;
 
-import javax.annotation.Nonnull;
-
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbolSerializer;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.NullIgnoringDBGroupConcatFunctionSymbol;
 import it.unibz.inf.ontop.model.type.DBTermType;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author Lorenz Buehmann

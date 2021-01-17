@@ -1,10 +1,6 @@
 package net.sansa_stack.ml.spark.similarity.run
 
-import java.io.File
-import java.util.Calendar
-
-import com.typesafe.config.ConfigFactory
-import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{BatetModel, BraunBlanquetModel, DiceModel, GenericSimilarityEstimatorModel, JaccardModel, MinHashModel, OchiaiModel, SimpsonModel, TverskyModel}
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels._
 import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph

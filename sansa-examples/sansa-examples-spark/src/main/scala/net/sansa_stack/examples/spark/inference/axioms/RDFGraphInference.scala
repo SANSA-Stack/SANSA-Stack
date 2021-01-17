@@ -4,9 +4,7 @@ import net.sansa_stack.inference.rules.ReasoningProfile
 import net.sansa_stack.inference.rules.ReasoningProfile._
 import net.sansa_stack.inference.spark.forwardchaining.axioms.{ForwardRuleReasonerOWLHorst, ForwardRuleReasonerRDFS}
 import net.sansa_stack.owl.spark.owl._
-
 import org.apache.spark.sql.SparkSession
-
 import scopt.OptionParser
 
 object RDFGraphInference {

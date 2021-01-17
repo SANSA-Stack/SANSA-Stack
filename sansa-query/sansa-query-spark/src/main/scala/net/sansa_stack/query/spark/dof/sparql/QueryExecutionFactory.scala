@@ -2,7 +2,8 @@ package net.sansa_stack.query.spark.dof.sparql
 
 import net.sansa_stack.query.spark.dof.bindings.Result
 import net.sansa_stack.query.spark.dof.tensor.Tensor
-import org.apache.jena.query.{ Query, QueryFactory }
+import org.apache.jena.query.{Query, QueryFactory}
+
 import scala.reflect.ClassTag
 
 object QueryExecutionFactory {

@@ -4,6 +4,10 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Paths
 
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex}
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
 import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
@@ -13,8 +17,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession, SaveMode => TableSave
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 
 
 /**
@@ -156,9 +159,9 @@ object VerticalPartitioner {
 
   private def run(config: Config): Unit = {
 
-    import scala.collection.JavaConverters._
-
     import net.sansa_stack.rdf.spark.io._
+
+    import scala.collection.JavaConverters._
 
     val spark = SparkSession.builder
 //      .master("local")
@@ -170,7 +173,7 @@ object VerticalPartitioner {
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
 //      .config("spark.default.parallelism", "4")
 //      .config("spark.sql.shuffle.partitions", "4")
-//      .config("spark.sql.warehouse.dir", config.outputPath.)
+      .config("spark.sql.warehouse.dir", config.outputPath.toString)
       .config("spark.sql.cbo.enabled", true)
       .config("spark.sql.statistics.histogram.enabled", true)
       .enableHiveSupport()
@@ -204,7 +207,8 @@ object VerticalPartitioner {
 
     // do partitioning here
     println("computing partitions ...")
-    val partitions: Map[RdfPartitionComplex, RDD[Row]] = time(RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner = RdfPartitionerComplex()))
+    val partitioner = RdfPartitionerComplex()
+    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = time(RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner))
     println(s"#partitions: ${partitions.size}")
     println(partitions.mkString("\n"))
 
@@ -231,11 +235,13 @@ object VerticalPartitioner {
     // create the Spark tables
     println("creating Spark tables ...")
     SparkTableGenerator(spark,
+                        database = config.databaseName,
                         blankNodeStrategy = config.blankNodeStrategy,
                         useHive = false,
                         computeStatistics = config.computeStatistics)
-      .createAndRegisterSparkTables(partitions)
-    spark.catalog.listTables(config.databaseName).collect().foreach(t => spark.table(t.name).write.mode(saveMode).format("parquet"))
+      .createAndRegisterSparkTables(partitioner, partitions)
+    spark.catalog.listTables(config.databaseName).collect().foreach(t =>
+      spark.table(t.name).write.mode(saveMode).format("parquet").saveAsTable(t.name))
 //    partitions.foreach {
 //      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
 //                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
@@ -250,7 +256,7 @@ object VerticalPartitioner {
     spark.stop()
   }
 
-//  def getOrCreate(databaseName: String): Set[RdfPartitionComplex]: Unit {
+//  def getOrCreate(databaseName: String): Set[RdfPartitionDefault]: Unit {
 //
 //  }
 
@@ -261,8 +267,10 @@ object VerticalPartitioner {
     (sCnt, oCnt)
   }
 
+  val sqlEscaper = new SqlEscaperBacktick()
   private def createSparkTable(session: SparkSession,
-                               p: RdfPartitionComplex,
+                               partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                               p: RdfPartitionStateDefault,
                                rdd: RDD[Row],
                                saveMode: TableSaveMode,
                                blankNodeStrategy: BlankNodeStrategy.Value,
@@ -270,8 +278,9 @@ object VerticalPartitioner {
                                path: String,
                                usePartitioning: Boolean,
                                partitioningThreshold: Int): Unit = {
-    val tableName = SQLUtils.escapeTablename(SQLUtils.createTableName(p, blankNodeStrategy), quoted = false)
-    val scalaSchema = p.layout.schema
+    val tableName = sqlEscaper.escapeTableName(R2rmlUtils.createDefaultTableName(p))
+    // val scalaSchema = p.layout.schema
+    val scalaSchema = partitioner.determineLayout(p).schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
     val df = session.createDataFrame(rdd, sparkSchema)
 

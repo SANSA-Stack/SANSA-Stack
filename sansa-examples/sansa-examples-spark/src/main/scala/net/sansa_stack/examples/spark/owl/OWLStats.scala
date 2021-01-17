@@ -2,11 +2,9 @@ package net.sansa_stack.examples.spark.owl
 
 import java.io.File
 
-import org.apache.spark.sql.SparkSession
-
-import net.sansa_stack.owl.spark.owl._
-import net.sansa_stack.owl.spark.owl.Syntax
+import net.sansa_stack.owl.spark.owl.{Syntax, _}
 import net.sansa_stack.owl.spark.stats.OWLStats
+import org.apache.spark.sql.SparkSession
 
 object OWLStats {
 

@@ -1,12 +1,12 @@
 package net.sansa_stack.owl.common.parsing
 
-import scala.collection.mutable
-import scala.util.matching.Regex
-import scala.util.parsing.combinator.RegexParsers
-
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{IRI, OWLDataFactory}
 import org.semanticweb.owlapi.vocab.Namespaces
+
+import scala.collection.mutable
+import scala.util.matching.Regex
+import scala.util.parsing.combinator.RegexParsers
 
 
 

@@ -21,6 +21,8 @@ object DatatypeMappings {
     typeFactory.getXsdFloatDatatype -> FloatType,
     typeFactory.getDatatype(XSD.SHORT) -> ShortType,
     typeFactory.getDatatype(XSD.DATE) -> DateType,
+    typeFactory.getXsdDatetimeDatatype -> TimestampType,
+    typeFactory.getXsdDatetimeStampDatatype -> TimestampType,
     typeFactory.getDatatype(XSD.BYTE) -> ByteType,
     typeFactory.getDatatype(XSD.LONG) -> LongType
   )

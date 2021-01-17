@@ -1,8 +1,8 @@
 package net.sansa_stack.rdf.spark.partition.graph.evaluation
 
-import scala.reflect.ClassTag
-
 import net.sansa_stack.rdf.spark.partition.graph.algo.PartitionAlgo
+
+import scala.reflect.ClassTag
 
 /**
  * Evaluator for partition strategy.

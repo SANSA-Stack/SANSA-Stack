@@ -1,10 +1,9 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
 import net.sansa_stack.rdf.spark.utils._
-import org.apache.jena.graph.{ Node, Triple }
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{ StringType, StructField, StructType }
 
 /**
  * Spark/RDD based implementation of RDD[Triple].

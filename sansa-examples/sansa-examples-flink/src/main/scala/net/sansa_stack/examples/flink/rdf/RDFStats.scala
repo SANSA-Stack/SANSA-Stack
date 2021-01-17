@@ -2,8 +2,6 @@ package net.sansa_stack.examples.flink.rdf
 
 import java.io.File
 
-import scala.collection.mutable
-
 import net.sansa_stack.rdf.flink.io._
 import net.sansa_stack.rdf.flink.stats._
 import org.apache.flink.api.scala.ExecutionEnvironment

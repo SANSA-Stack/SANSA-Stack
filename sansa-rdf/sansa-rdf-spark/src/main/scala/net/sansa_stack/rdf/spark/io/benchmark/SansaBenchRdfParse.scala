@@ -1,18 +1,16 @@
 package net.sansa_stack.rdf.spark.io.benchmark
 
-import java.io.{ ByteArrayInputStream, File, InputStream }
+import java.io.{ByteArrayInputStream, File, InputStream}
 import java.util.concurrent.TimeUnit
 
-import scala.collection.JavaConverters._
-
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
-import net.sansa_stack.rdf.spark.io.NTripleReader
-import org.apache.commons.io.IOUtils
 import org.apache.jena.ext.com.google.common.base.Stopwatch
 import org.apache.jena.graph.Triple
-import org.apache.jena.riot.{ Lang, RDFDataMgr }
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
+import scala.collection.JavaConverters._
 
 object SansaBenchRdfParse {
   def main(args: Array[String]): Unit = {

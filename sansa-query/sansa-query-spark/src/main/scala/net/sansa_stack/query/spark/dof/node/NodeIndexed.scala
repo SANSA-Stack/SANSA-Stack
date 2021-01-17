@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.dof.node
 
 import org.apache.spark.rdd.RDD
+
 import scala.reflect.ClassTag
 
 object NodeIndexed {

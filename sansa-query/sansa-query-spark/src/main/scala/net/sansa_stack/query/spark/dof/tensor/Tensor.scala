@@ -2,10 +2,10 @@ package net.sansa_stack.query.spark.dof.tensor
 
 import net.sansa_stack.query.spark.dof.node.SPO
 import net.sansa_stack.query.spark.dof.triple.Reader
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.spark.SparkContext
+import org.apache.jena.graph.Node
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+
 import scala.reflect.ClassTag
 
 abstract class Tensor[R, N: ClassTag, T, A](spark: SparkSession, reader: Reader)

@@ -1,9 +1,5 @@
 package net.sansa_stack.owl.spark.dataset
 
-import java.util.stream.Collectors
-
-import scala.collection.JavaConverters._
-
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
 import org.scalatest.FunSuite
@@ -11,6 +7,8 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl}
+
+import scala.collection.JavaConverters._
 
 
 

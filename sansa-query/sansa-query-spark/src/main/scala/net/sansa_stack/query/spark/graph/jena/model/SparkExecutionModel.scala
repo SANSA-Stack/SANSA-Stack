@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.graph.jena.model
 
-import net.sansa_stack.query.spark.graph.jena.expression.{ Expression, Filter, Pattern }
+import net.sansa_stack.query.spark.graph.jena.expression.{Expression, Filter, Pattern}
 import net.sansa_stack.query.spark.graph.jena.resultOp.ResultGroup
 import net.sansa_stack.query.spark.graph.jena.util._
 import net.sansa_stack.rdf.spark.io._

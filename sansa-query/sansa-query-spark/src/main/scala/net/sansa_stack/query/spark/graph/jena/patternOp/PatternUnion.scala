@@ -1,12 +1,7 @@
 package net.sansa_stack.query.spark.graph.jena.patternOp
 
-import scala.collection.mutable
-
-import net.sansa_stack.query.spark.graph.jena.Ops
-import net.sansa_stack.query.spark.graph.jena.model.{ IntermediateResult, SparkExecutionModel }
-import net.sansa_stack.query.spark.graph.jena.resultOp.ResultOp
-import net.sansa_stack.query.spark.graph.jena.util.BasicGraphPattern
-import org.apache.jena.graph.{ Node, Triple }
+import net.sansa_stack.query.spark.graph.jena.model.{IntermediateResult, SparkExecutionModel}
+import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpUnion
 import org.apache.spark.graphx.Graph

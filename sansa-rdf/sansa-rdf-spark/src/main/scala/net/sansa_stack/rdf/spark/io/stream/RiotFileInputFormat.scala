@@ -1,23 +1,23 @@
 package net.sansa_stack.rdf.spark.io.stream
 
-import java.io.{ Closeable, InputStream, IOException }
+import java.io.{Closeable, IOException, InputStream}
 import java.util
-import java.util.concurrent.{ SynchronousQueue, TimeUnit }
 import java.util.concurrent.atomic.AtomicLong
-
-import scala.collection.JavaConverters._
+import java.util.concurrent.{SynchronousQueue, TimeUnit}
 
 import net.sansa_stack.rdf.common.annotation.Experimental
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.io.compress.{ CodecPool, CompressionCodecFactory }
-import org.apache.hadoop.mapreduce.{ InputSplit, JobContext, RecordReader, TaskAttemptContext }
-import org.apache.hadoop.mapreduce.lib.input.{ CombineFileInputFormat, CombineFileSplit }
-import org.apache.jena.graph.{ Node, NodeFactory, Triple }
-import org.apache.jena.riot.{ RDFLanguages, RDFParser, RiotException }
-import org.apache.jena.riot.system.{ ErrorHandlerFactory, StreamRDFBase }
+import org.apache.hadoop.io.compress.{CodecPool, CompressionCodecFactory}
+import org.apache.hadoop.mapreduce.lib.input.{CombineFileInputFormat, CombineFileSplit}
+import org.apache.hadoop.mapreduce.{InputSplit, JobContext, RecordReader, TaskAttemptContext}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.jena.riot.system.{ErrorHandlerFactory, StreamRDFBase}
+import org.apache.jena.riot.{RDFLanguages, RDFParser, RiotException}
+
+import scala.collection.JavaConverters._
 
 /**
  * A custom Hadoop input format that uses the Apache Jena RDF I/O technology (RIOT) to parse

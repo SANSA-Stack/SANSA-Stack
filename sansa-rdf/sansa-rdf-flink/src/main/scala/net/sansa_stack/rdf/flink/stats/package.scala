@@ -1,8 +1,7 @@
 package net.sansa_stack.rdf.flink
 
 import net.sansa_stack.rdf.flink.utils.Logging
-import org.apache.flink.api.scala._
-import org.apache.flink.api.scala.DataSet
+import org.apache.flink.api.scala.{DataSet, _}
 import org.apache.jena.graph.{Node, Triple}
 
 package object stats {

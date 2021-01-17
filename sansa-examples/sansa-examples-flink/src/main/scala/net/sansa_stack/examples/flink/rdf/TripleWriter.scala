@@ -1,8 +1,7 @@
 package net.sansa_stack.examples.flink.rdf
 
-import org.apache.flink.api.scala.ExecutionEnvironment
-
 import net.sansa_stack.rdf.flink.io._
+import org.apache.flink.api.scala.ExecutionEnvironment
 
 object TripleWriter {
 

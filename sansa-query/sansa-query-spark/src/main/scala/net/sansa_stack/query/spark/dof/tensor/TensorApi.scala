@@ -1,8 +1,8 @@
 package net.sansa_stack.query.spark.dof.tensor
 
 import net.sansa_stack.query.spark.dof.bindings.Result
-import net.sansa_stack.query.spark.dof.node.{ SPO, VariableMap }
-import org.apache.jena.graph.{ Node, Triple }
+import net.sansa_stack.query.spark.dof.node.{SPO, VariableMap}
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.core.Var
 import org.apache.spark.rdd.RDD
 

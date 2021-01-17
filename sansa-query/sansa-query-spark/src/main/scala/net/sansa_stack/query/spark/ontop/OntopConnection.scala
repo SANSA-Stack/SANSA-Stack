@@ -5,9 +5,8 @@ import java.util.Properties
 
 import it.unibz.inf.ontop.answering.connection.OntopConnection
 import it.unibz.inf.ontop.injection.OntopReformulationSQLConfiguration
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.semanticweb.owlapi.model.OWLOntology
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
 
 /**
  * Used to keep expensive resource per executor alive.
@@ -24,9 +23,9 @@ object OntopConnection {
   private val JDBC_PASSWORD = ""
 
   lazy val connection: Connection = try {
-//    println("creating DB connection ")
+    logger.debug("creating DB connection ...")
     val conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-//    println("created DB connection")
+    logger.debug(" ... done")
     conn
   } catch {
     case e: SQLException =>
@@ -36,20 +35,21 @@ object OntopConnection {
     connection.close()
   }
 
-  var configs = Map[Set[RdfPartitionComplex], OntopReformulationSQLConfiguration]()
+  var configs = Map[Set[RdfPartitionStateDefault], OntopReformulationSQLConfiguration]()
 
-  def apply(obdaMappings: String, properties: Properties, partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
+  def apply(obdaMappings: String, properties: Properties, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Set[RdfPartitionStateDefault], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
     val conf = configs.getOrElse(partitions, {
-      logger.debug("creating reformulation config")
+      logger.debug("creating reformulation config ...")
+      println("creating reformulation config ...")
       val reformulationConfiguration = {
-        JDBCDatabaseGenerator.generateTables(connection, partitions)
+        JDBCDatabaseGenerator.generateTables(connection, partitioner, partitions)
 
         OntopUtils.createReformulationConfig(obdaMappings, properties, ontology)
       }
 
       configs += partitions -> reformulationConfiguration
 
-//      println("done")
+      logger.debug("...done")
       reformulationConfiguration
     })
     conf

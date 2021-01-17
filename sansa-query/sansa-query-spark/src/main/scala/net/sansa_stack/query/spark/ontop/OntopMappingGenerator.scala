@@ -1,13 +1,16 @@
 package net.sansa_stack.query.spark.ontop
 
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 import org.apache.commons.lang3.StringUtils
 import org.apache.jena.vocabulary.{RDF, XSD}
-import org.semanticweb.owlapi.model.{OWLOntology, OWLSignature}
-
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionComplex
+import org.semanticweb.owlapi.model.OWLOntology
+import org.semanticweb.owlapi.model.parameters.Imports
 import scala.collection.JavaConverters._
 
-import org.semanticweb.owlapi.model.parameters.Imports
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 
 /**
  * @author Lorenz Buehmann
@@ -16,13 +19,15 @@ object OntopMappingGenerator {
 
   val logger = com.typesafe.scalalogging.Logger(OntopMappingGenerator.getClass)
 
+  val sqlEscaper = new SqlEscaperDoubleQuote()
+
   val blankNodeStrategy: BlankNodeStrategy.Value = BlankNodeStrategy.Table
   val distinguishStringLiterals: Boolean = false
 
-  def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionComplex], ontology: Option[OWLOntology] = None): String = {
+  def createOBDAMappingsForPartitions(partitions: Set[RdfPartitionStateDefault], ontology: Option[OWLOntology] = None): String = {
 
     // object is URI or bnode
-    def createMapping(id: String, tableName: String, partition: RdfPartitionComplex): String = {
+    def createMapping(id: String, tableName: String, partition: RdfPartitionStateDefault): String = {
 
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       val targetObject = if (partition.objectType == 0) "_:{o}" else "<{o}>"
@@ -30,7 +35,7 @@ object OntopMappingGenerator {
       if (blankNodeStrategy == BlankNodeStrategy.Table) {
         s"""
            |mappingId     $id
-           |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)}
+           |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)}
            |target        $targetSubject <${partition.predicate}> $targetObject .
            |""".stripMargin
       } else if (blankNodeStrategy == BlankNodeStrategy.Column) {
@@ -39,7 +44,7 @@ object OntopMappingGenerator {
 
         s"""
            |mappingId     $id
-           |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE $whereCondition
+           |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE $whereCondition
            |target        $targetSubject <${partition.predicate}> $targetObject .
            |""".stripMargin
       } else {
@@ -48,35 +53,45 @@ object OntopMappingGenerator {
     }
 
     // object is string literal
-    def createMappingStringLit(id: String, tableName: String, partition: RdfPartitionComplex): String = {
-      val lang = Option(StringUtils.trimToNull(partition.lang.getOrElse("")))
+    def createMappingStringLit(id: String, tableName: String, partition: RdfPartitionStateDefault): String = {
+      val languages = partition.languages
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
-      val targetObject = if (lang.nonEmpty) s""" "{o}"@${lang.get} """ else "\"{o}\""
-      val whereConditionLang = if (lang.nonEmpty) s""" "l" = '${lang.get}' """ else "\"l\" = ''" // IS NULL"
 
-      s"""
-         |mappingId     $id
-         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE $whereConditionLang
-         |target        $targetSubject <${partition.predicate}> $targetObject .
-         |""".stripMargin
+      if (languages.isEmpty) { // no language tag, i.e. xsd:string
+        s"""
+           |mappingId     $id
+           |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE "l" = ''
+           |target        $targetSubject <${partition.predicate}> "{o}" .
+           |""".stripMargin
+      } else {
+        languages.map(lang => {
+          // need a local ID per language
+          val id = tableName + "_lang"
+          s"""
+             |mappingId     $id
+             |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE "l" = '$lang'
+             |target        $targetSubject <${partition.predicate}> "{o}"@$lang .
+             |""".stripMargin
+        }).mkString("\n")
+      }
     }
 
     // object is other literal
-    def createMappingLit(id: String, tableName: String, partition: RdfPartitionComplex): String = {
+    def createMappingLit(id: String, tableName: String, partition: RdfPartitionStateDefault): String = {
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       s"""
          |mappingId     $id
-         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)}
+         |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)}
          |target        $targetSubject <${partition.predicate}> "{o}"^^<${partition.datatype}> .
          |""".stripMargin
     }
 
     // class assertion mapping
-    def createClassMapping(id: String, tableName: String, partition: RdfPartitionComplex, cls: String): String = {
+    def createClassMapping(id: String, tableName: String, partition: RdfPartitionStateDefault, cls: String): String = {
       val targetSubject = if (partition.subjectType == 0) "_:{s}" else "<{s}>"
       s"""
          |mappingId     $id
-         |source        SELECT "s", "o" FROM ${SQLUtils.escapeTablename(tableName)} WHERE "o" = '$cls'
+         |source        SELECT "s", "o" FROM ${sqlEscaper.escapeTableName(tableName)} WHERE "o" = '$cls'
          |target        $targetSubject <${RDF.`type`.getURI}> <$cls> .
          |""".stripMargin
     }
@@ -84,7 +99,7 @@ object OntopMappingGenerator {
     def createMappingLiteralWithType(id: String, tableName: String, property: String): String = {
       s"""
          |mappingId     $id
-         |source        SELECT "s", "o", "t" FROM ${SQLUtils.escapeTablename(tableName)}
+         |source        SELECT "s", "o", "t" FROM ${sqlEscaper.escapeTableName(tableName)}
          |target        <{s}> <$property> "{o}"^^<{t}> .
          |""".stripMargin
     }
@@ -99,9 +114,9 @@ object OntopMappingGenerator {
     "[MappingDeclaration] @collection [[" +
       partitions
         .map {
-          case p@RdfPartitionComplex(subjectType, predicate, objectType, datatype, langTagPresent, lang, partitioner) =>
-            val tableName = SQLUtils.createTableName(p, blankNodeStrategy)
-            val id = SQLUtils.escapeTablename(tableName + lang.getOrElse(""))
+          case p@RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>
+            val tableName = R2rmlUtils.createDefaultTableName(p)
+            val id = sqlEscaper.escapeTableName(tableName)
 
             if (predicate == RDF.`type`.getURI) { // rdf:type mapping expansion here
               if (ontology.nonEmpty) ontology.get.getClassesInSignature(Imports.EXCLUDED).asScala.map(cls => createClassMapping(id, tableName, p, cls.toStringID)).mkString("\n") else ""
