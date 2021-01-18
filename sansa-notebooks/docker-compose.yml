@@ -1,9 +1,8 @@
-version: "2.1"
+version: "3.4"
 
 services:
   namenode:
-    restart: always
-    image: bde2020/hadoop-namenode:2.0.0-hadoop3.1.1-java8
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.1.3-java8
     container_name: namenode
     volumes:
       - ./data/namenode:/hadoop/dfs/name
@@ -15,14 +14,14 @@ services:
       - CORE_CONF_hadoop_proxyuser_hue_groups=*
       - HDFS_CONF_dfs_webhdfs_enabled=true
       - HDFS_CONF_dfs_permissions_enabled=false
-    command: /opt/hadoop-3.1.1/bin/hdfs --config /etc/hadoop namenode -rollingUpgrade started  
     healthcheck:
       interval: 5s
       retries: 100
+      start_period: 10s
     networks:
       - spark-net
   datanode:    
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.1.1-java8
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.1.3-java8
     container_name: datanode
     volumes:
       - ./data/datanode:/hadoop/dfs/data
@@ -33,7 +32,8 @@ services:
         condition: service_healthy
     healthcheck:
       interval: 5s
-      retries: 100      
+      retries: 100
+      start_period: 10s      
     networks:
       - spark-net
   spark-master:
@@ -82,7 +82,7 @@ services:
       CORE_CONF_fs_defaultFS: "hdfs://namenode:8020"
       SPARK_MASTER: "spark://spark-master:7077"
       MASTER: "spark://spark-master:7077"
-      SPARK_SUBMIT_OPTIONS: "--jars /opt/sansa-examples/jars/sansa-examples-spark.jar --conf spark.serializer=org.apache.spark.serializer.KryoSerializer --conf spark.kryo.registrator=org.datasyslab.geospark.serde.GeoSparkKryoRegistrator --conf spark.kryo.registrator=net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator"
+      SPARK_SUBMIT_OPTIONS: "--jars /opt/sansa-examples/jars/sansa-examples-spark.jar" #--conf spark.serializer=org.apache.spark.serializer.KryoSerializer --conf spark.kryo.registrator=org.datasyslab.geospark.serde.GeoSparkKryoRegistrator --conf spark.kryo.registrator=net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator"
       SPARK_HOME: "/zeppelin/spark"
       ZEPPELIN_NOTEBOOK_NEW_FORMAT_CONVERT: "true"
     depends_on:
