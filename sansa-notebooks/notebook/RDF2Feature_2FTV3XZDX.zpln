@@ -1,9 +1,9 @@
 {
   "paragraphs": [
     {
-      "text": "import java.nio.charset.StandardCharsets\nimport java.nio.file.{Files, Paths}\n\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.rdf.spark.model._\nimport org.apache.jena.graph.Node\nimport org.apache.jena.riot.RDFLanguages\nimport org.apache.spark.sql.functions._\nimport org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}\n\nimport scala.collection.mutable.ListBuffer\nimport scala.util.control.Breaks._\n\n\nval inputFilePath: String \u003d \"hdfs://namenode:8020/data/test.nt\"\nval seedVarName \u003d \"?seed\"\nval whereClauseForSeed \u003d \"?seed a \u003chttp://dig.isi.edu/Person\u003e\"\nval maxUp: Int \u003d 2\nval maxDown: Int \u003d 4\nval seedNumber: Int \u003d 3\nval seedNumberAsRatio: Double \u003d 0.0\nval numberRandomWalks: Int \u003d 0\nval sortedByLinks \u003d true\n\nimplicit val nodeTupleEncoder \u003d Encoders.kryo(classOf[(Node, Node, Node)])\n\n// get lang from filename\nval lang \u003d RDFLanguages.filenameToLang(inputFilePath)\n\n// load RDF to Dataframe\nval df: DataFrame \u003d spark.read.rdf(lang)(inputFilePath).cache()\n\nval (totalSparqlQuery: String, var_names: List[String]) \u003d autoPrepo(\n      df \u003d df,\n      seedVarName \u003d seedVarName,\n      seedWhereClause \u003d whereClauseForSeed,\n      maxUp \u003d maxUp,\n      maxDown \u003d maxDown,\n      numberSeeds \u003d seedNumber,\n      ratioNumberSeeds \u003d seedNumberAsRatio,\n      numberRandomWalks \u003d numberRandomWalks,\n      sortedByLinks \u003d sortedByLinks\n)\n\nprintln(\n  f\"\"\"\n     |The automatic created feature extracting sparql fetched ${var_names.size} projection variables representing literals.\n     |the projection variables are:\n     |${var_names.map(vn \u003d\u003e f\"\\t$vn\").mkString(\"\\n\")}\n     |\\n\n     |\"\"\".stripMargin)\nprintln(f\"The resulting sparql query is: \\n$totalSparqlQuery\")\nprintln(f\"generated sparql has been stored to: $outputFilePath\")",
+      "text": "import java.nio.charset.StandardCharsets\nimport java.nio.file.{Files, Paths}\n\nimport net.sansa_stack.rdf.spark.io._\nimport net.sansa_stack.rdf.spark.model._\nimport org.apache.jena.graph.Node\nimport org.apache.jena.riot.RDFLanguages\nimport org.apache.spark.sql.functions._\nimport org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}\n\nimport scala.collection.mutable.ListBuffer\nimport scala.util.control.Breaks._\nimport net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator\n\n\nval inputFilePath: String \u003d \"hdfs://namenode:8020/data/test.ttl\"\nval seedVarName \u003d \"?seed\"\nval whereClauseForSeed \u003d \"?seed a \u003chttp://dig.isi.edu/Person\u003e\"\nval maxUp: Int \u003d 2\nval maxDown: Int \u003d 4\nval seedNumber: Int \u003d 3\nval seedNumberAsRatio: Double \u003d 0.0\nval numberRandomWalks: Int \u003d 0\nval sortedByLinks \u003d true\n\nimplicit val nodeTupleEncoder \u003d Encoders.kryo(classOf[(Node, Node, Node)])\n\n// get lang from filename\nval lang \u003d RDFLanguages.filenameToLang(inputFilePath)\n\n// load RDF to Dataframe\nval df: DataFrame \u003d spark.read.rdf(lang)(inputFilePath).cache()\n\nval (totalSparqlQuery: String, var_names: List[String]) \u003d FeatureExtractingSparqlGenerator.autoPrepo(\n      df \u003d df,\n      seedVarName \u003d seedVarName,\n      seedWhereClause \u003d whereClauseForSeed,\n      maxUp \u003d maxUp,\n      maxDown \u003d maxDown,\n      numberSeeds \u003d seedNumber,\n      ratioNumberSeeds \u003d seedNumberAsRatio,\n      numberRandomWalks \u003d numberRandomWalks,\n      sortedByLinks \u003d sortedByLinks\n)\n\nprintln(\n  f\"\"\"\n     |The automatic created feature extracting sparql fetched ${var_names.size} projection variables representing literals.\n     |the projection variables are:\n     |${var_names.map(vn \u003d\u003e f\"\\t$vn\").mkString(\"\\n\")}\n     |\\n\n     |\"\"\".stripMargin)\nprintln(f\"The resulting sparql query is: \\n$totalSparqlQuery\")",
       "user": "anonymous",
-      "dateUpdated": "2021-01-11 11:06:17.659",
+      "dateUpdated": "2021-01-18 00:06:40.666",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -22,11 +22,41 @@
         "forms": {}
       },
       "apps": [],
-      "runtimeInfos": {},
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://7f34cb118495:4040/jobs/job?id\u003d0"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
       "progressUpdateIntervalMs": 500,
       "jobName": "paragraph_1610362917777_1468547983",
       "id": "paragraph_1610362917777_1468547983",
       "dateCreated": "2021-01-11 11:01:57.777",
+      "dateStarted": "2021-01-18 00:06:41.102",
+      "dateFinished": "2021-01-18 00:06:26.516",
+      "status": "RUNNING"
+    },
+    {
+      "user": "anonymous",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1610928209307_126799728",
+      "id": "paragraph_1610928209307_126799728",
+      "dateCreated": "2021-01-18 00:03:29.392",
       "status": "READY"
     }
   ],
