@@ -26,11 +26,11 @@ abstract class QueryEngineFactoryBase(spark: SparkSession) extends QueryEngineFa
 
     val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
 
-    partitions2RDD.foreach {
-      case (p, rdd) =>
-        println(p)
-        rdd.collect().foreach(println)
-    }
+//    partitions2RDD.foreach {
+//      case (p, rdd) =>
+//        println(p)
+//        rdd.collect().foreach(println)
+//    }
 
     // create the Spark tables
     SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,

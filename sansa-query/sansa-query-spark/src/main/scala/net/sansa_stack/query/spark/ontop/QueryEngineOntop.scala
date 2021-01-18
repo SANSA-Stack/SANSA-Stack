@@ -10,6 +10,7 @@ import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
+import it.unibz.inf.ontop.iq.IQ
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.ConstructionNode
 import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
@@ -42,7 +43,8 @@ case class OntopQueryRewrite2(sparqlQuery: String,
                              sparqlVar2Term: ImmutableSubstitution[ImmutableTerm],
                              termFactory: TermFactory,
                              typeFactory: TypeFactory,
-                             substitutionFactory: SubstitutionFactory
+                             substitutionFactory: SubstitutionFactory,
+                              executableQuery: IQ
                             ) extends QueryRewrite2(sparqlQuery, sqlQuery) {}
 
 /**
@@ -107,7 +109,7 @@ class OntopSPARQL2SQLRewriter2(jdbcMetaData: Map[String, String],
     val typeMap = nativeNode.getTypeMap
 
     OntopQueryRewrite2(sparqlQuery, inputQuery, sqlQuery, signature, typeMap, constructionNode,
-      executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory)
+      executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory, executableQuery)
   }
 
   def close(): Unit = OntopConnection2.connection.close()
@@ -156,9 +158,9 @@ class QueryEngineOntop(val spark: SparkSession,
   val rdfDatatype2SQLCastName = DatatypeMappings(typeFactory)
 
 
-  // some debug stuff
-  mappingsModel.write(System.out, "Turtle")
-  spark.catalog.listTables().collect().foreach(t => spark.table(sqlEscaper.escapeTableName(t.name)).show(false))
+//  // some debug stuff
+//  mappingsModel.write(System.out, "Turtle")
+//  spark.catalog.listTables().collect().foreach(t => spark.table(sqlEscaper.escapeTableName(t.name)).show(false))
 
 
   /**
@@ -270,7 +272,8 @@ class QueryEngineOntop(val spark: SparkSession,
    */
   def computeBindings(query: String): RDD[Binding] = {
 
-    val df = executeDebug(query)._1
+    val df2Rewrite = executeDebug(query)
+    val df = df2Rewrite._1
 
     val sparqlQueryBC = spark.sparkContext.broadcast(query)
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappingsModel)
@@ -281,7 +284,7 @@ class QueryEngineOntop(val spark: SparkSession,
     implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
     df.coalesce(20).mapPartitions(iterator => {
 //      println("mapping partition")
-      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value)
+      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, "id")
       val it = iterator.map(mapper.map)
 //      mapper.close()
       it

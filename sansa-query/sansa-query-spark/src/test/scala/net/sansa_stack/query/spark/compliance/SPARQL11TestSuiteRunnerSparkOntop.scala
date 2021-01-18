@@ -4,12 +4,15 @@ import java.util.Properties
 
 import scala.collection.JavaConverters._
 
+import org.apache.jena.graph.Triple
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.resultset.SPARQLResult
+import org.apache.spark.rdd.RDD
 import org.scalatest.tags.Slow
 import org.scalatest.{ConfigMap, DoNotDiscover}
 
+import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 
 
@@ -75,7 +78,8 @@ class SPARQL11TestSuiteRunnerSparkOntop
   )
 
 
-  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS")
+//  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS") || t.name.startsWith("UCASE")
+override lazy val IGNORE_FILTER = t => t.dataFile.contains("/functions")  && t.name.startsWith("isNu")
 
   var engineFactory: QueryEngineFactoryOntop = _
 
@@ -84,16 +88,31 @@ class SPARQL11TestSuiteRunnerSparkOntop
     engineFactory = new QueryEngineFactoryOntop(spark)
   }
 
+  val db = "TEST"
+
+  var previousModel: Model = _
+  var triplesRDD: RDD[Triple] = _
+  var qef: QueryExecutionFactorySpark = _
+
   override def runQuery(query: Query, data: Model): SPARQLResult = {
-    // distribute on Spark
-    val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
+    // do some caching here to avoid reloading the same data
+    if (data != previousModel) {
+      // we drop the Spark database to remove all tables
+      spark.sql(s"DROP DATABASE IF EXISTS $db")
 
-    // we create a Spark database here to keep the implicit partitioning separate
-    val db = "TEST"
-    spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
-    spark.sql(s"USE $db")
+      // distribute on Spark
+      triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
 
-    val qef = engineFactory.create(triplesRDD)
+      // we create a Spark database here to keep the implicit partitioning separate
+
+      spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
+      spark.sql(s"USE $db")
+
+      qef = engineFactory.create(triplesRDD)
+
+      previousModel = data
+    }
+
     val qe = qef.createQueryExecution(query)
 
     // produce result based on query type
@@ -111,8 +130,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
       null
     }
     // clean up
-    // we drop the Spark database to remove all tables
-    spark.sql(s"DROP DATABASE IF EXISTS $db")
+
     qe.close()
 
     result

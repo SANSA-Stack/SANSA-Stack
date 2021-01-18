@@ -8,6 +8,7 @@ import scala.collection.mutable
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.exception.OntopInternalBugException
+import it.unibz.inf.ontop.iq.IQ
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
@@ -34,7 +35,8 @@ class OntopRowMapper2(
                       jdbcMetaData: Map[String, String],
                       sparqlQuery: String,
                       ontology: Option[OWLOntology],
-                      id: String = "id") {
+                      id: String = "id"
+                     ) {
 
 //  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 

@@ -77,46 +77,48 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VE
     .filter(data => !IGNORE.contains(data.uri))
     .filter(t => IGNORE_NAMES.isEmpty || IGNORE_NAMES.exists(t.name.startsWith))
     .filter(IGNORE_FILTER)
-    //    .slice(0, 5)
-//    .filter(data => data.name.startsWith("CONTAINS"))
-    .foreach { d =>
+    .groupBy(_.dataFile)
+    .foreach { case (dataFile, tests) =>
+      // load data
+      val data = loadData(dataFile)
+      data.setNsPrefix("", "http://www.example.org/")
+      println("Data:")
+      data.write(System.out, "Turtle")
 
-      // get the relevant data from the test case
-      val queryFileURL = d.queryFile
-      val resultFileURL = d.resultsFile
-      val datasetURL = d.dataFile
-      val testName = d.name
+      tests.foreach(testCase => {
+        // get the relevant data from the test case
+        val queryFileURL = testCase.queryFile
+        val resultFileURL = testCase.resultsFile
+        val datasetURL = testCase.dataFile
+        val testName = testCase.name
 
-      // test starts here
-      test(s"testing $testName") {
-        val queryString = readQueryString(queryFileURL)
-        val query = QueryFactory.create(queryString)
-        println(s"SPARQL query:\n $query")
+        // test starts here
+        test(s"testing $testName") {
+          val queryString = readQueryString(queryFileURL)
+          val query = QueryFactory.create(queryString)
+          println(s"SPARQL query:\n $query")
 
-        // load data
-        val data = loadData(datasetURL)
-        data.setNsPrefix("", "http://www.example.org/")
-        println("Data:")
-        data.write(System.out, "Turtle")
+          // run the SPARQL query
+          val actualResult = runQuery(query, data)
 
-        // run the SPARQL query
-        val actualResult = runQuery(query, data)
+          // read expected result
+          val expectedResult = readExpectedResult(resultFileURL)
 
-        // read expected result
-        val expectedResult = readExpectedResult(resultFileURL)
-
-        // compare results
-        if (query.isSelectType) {
-          processSelect(query, expectedResult, actualResult)
-        } else if (query.isAskType) {
-          processAsk(query, expectedResult, actualResult)
-        } else if (query.isConstructType || query.isDescribeType) {
-          processGraph(query, expectedResult, actualResult)
-        } else {
-          fail(s"unsupported query type: ${query.getQueryType}")
+          // compare results
+          if (query.isSelectType) {
+            processSelect(query, expectedResult, actualResult)
+          } else if (query.isAskType) {
+            processAsk(query, expectedResult, actualResult)
+          } else if (query.isConstructType || query.isDescribeType) {
+            processGraph(query, expectedResult, actualResult)
+          } else {
+            fail(s"unsupported query type: ${query.queryType().name()}")
+          }
         }
-      }
+      })
     }
+
+//  def runQueries(queries: Seq[Query], data: Model): Seq[SPARQLResult]
 
   /**
    * Executes the given SPARQL query and returns the result. The result must be a resultset, Boolean value or a
