@@ -100,6 +100,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.aksw.jena-sparql-api</groupId>
+            <artifactId>jena-sparql-api-analytics</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
         </dependency>
