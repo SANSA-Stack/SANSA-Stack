@@ -60,7 +60,8 @@ class SPARQL11TestSuiteRunnerSparkOntop
     negationManifest + "full-minuend", negationManifest + "partial-minuend", // TODO: enable it
     negationManifest + "full-minuend-modified", negationManifest + "partial-minuend-modified",
     /* EXISTS not supported yet */
-    existsManifest + "exists01", existsManifest + "exists02", existsManifest + "exists03", existsManifest + "exists04", existsManifest + "exists05", /* PROPERTY PATH */
+    existsManifest + "exists01", existsManifest + "exists02", existsManifest + "exists03", existsManifest + "exists04", existsManifest + "exists05",
+    /* PROPERTY PATH */
     // Not supported: ArbitraryLengthPath
     propertyPathManifest + "pp02", // wrong result, unexpected binding
     propertyPathManifest + "pp06", propertyPathManifest + "pp12", propertyPathManifest + "pp14", propertyPathManifest + "pp16", propertyPathManifest + "pp21", propertyPathManifest + "pp23", propertyPathManifest + "pp25", // Not supported: ZeroLengthPath
@@ -79,7 +80,8 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
 
 //  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS") || t.name.startsWith("UCASE")
-override lazy val IGNORE_FILTER = t => t.dataFile.contains("/functions")  && t.name.startsWith("isNu")
+//override lazy val IGNORE_FILTER = t => t.dataFile.contains("/functions")  && t.name.startsWith("isNu")
+  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates") && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
 
   var engineFactory: QueryEngineFactoryOntop = _
 
