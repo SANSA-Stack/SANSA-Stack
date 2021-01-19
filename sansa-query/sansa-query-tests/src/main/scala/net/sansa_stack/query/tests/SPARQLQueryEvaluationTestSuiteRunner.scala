@@ -89,7 +89,6 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VE
         // get the relevant data from the test case
         val queryFileURL = testCase.queryFile
         val resultFileURL = testCase.resultsFile
-        val datasetURL = testCase.dataFile
         val testName = testCase.name
 
         // test starts here

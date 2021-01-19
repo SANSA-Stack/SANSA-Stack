@@ -38,10 +38,15 @@ object OntopConnection2 {
     connection.close()
   }
 
-  var configs = Map[Map[String, String], OntopReformulationSQLConfiguration]()
+  var configs = Map[String, OntopReformulationSQLConfiguration]()
 
-  def apply(obdaMappings: Model, properties: Properties, jdbcMetaData: Map[String, String], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
-    val conf = configs.getOrElse(jdbcMetaData, {
+  def apply(id: String,
+            obdaMappings: Model,
+            properties: Properties,
+            jdbcMetaData: Map[String, String],
+            ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
+
+    val conf = configs.getOrElse(id, {
       logger.debug("creating reformulation config ...")
       println("creating reformulation config ...")
       val reformulationConfiguration = {
@@ -50,12 +55,14 @@ object OntopConnection2 {
         OntopUtils2.createReformulationConfig(obdaMappings, properties, ontology)
       }
 
-      configs += jdbcMetaData -> reformulationConfiguration
+      configs += id -> reformulationConfiguration
 
       logger.debug("...done")
       reformulationConfiguration
     })
     conf
   }
+
+  def clear(): Unit = configs = Map[String, OntopReformulationSQLConfiguration]()
 
 }

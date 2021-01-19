@@ -38,6 +38,7 @@ object OntopUtils extends Serializable {
   }
 
   def evaluate(term: ImmutableTerm): Option[RDFConstant] = {
+    println(s"term:$term")
     val simplifiedTerm = term.simplify
     simplifiedTerm match {
       case constant: Constant =>

@@ -157,6 +157,8 @@ class QueryEngineOntop(val spark: SparkSession,
   // mapping from RDF datatype to Spark SQL datatype
   val rdfDatatype2SQLCastName = DatatypeMappings(typeFactory)
 
+  val id: String = jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
+
 
 //  // some debug stuff
 //  mappingsModel.write(System.out, "Turtle")
@@ -274,17 +276,19 @@ class QueryEngineOntop(val spark: SparkSession,
 
     val df2Rewrite = executeDebug(query)
     val df = df2Rewrite._1
+    df.show(false)
 
     val sparqlQueryBC = spark.sparkContext.broadcast(query)
     val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappingsModel)
     val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
     val metaDataBC = spark.sparkContext.broadcast(jdbcMetaData)
     val ontologyBC = spark.sparkContext.broadcast(ontology)
+    val idBC = spark.sparkContext.broadcast(id)
 
     implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
-    df.coalesce(20).mapPartitions(iterator => {
+    df.coalesce(1).mapPartitions(iterator => {
 //      println("mapping partition")
-      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, "id")
+      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, idBC.value)
       val it = iterator.map(mapper.map)
 //      mapper.close()
       it

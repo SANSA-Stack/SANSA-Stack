@@ -35,13 +35,13 @@ class OntopRowMapper2(
                       jdbcMetaData: Map[String, String],
                       sparqlQuery: String,
                       ontology: Option[OWLOntology],
-                      id: String = "id"
+                      id: String
                      ) {
 
 //  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
 
-  val reformulationConfiguration = OntopConnection2(obdaMappings, properties, jdbcMetaData, ontology)
+  val reformulationConfiguration = OntopConnection2(id, obdaMappings, properties, jdbcMetaData, ontology)
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
@@ -61,13 +61,15 @@ class OntopRowMapper2(
   val sparqlVar2Term = constructionNode.getSubstitution
   val answerAtom = executableQuery.getProjectionAtom
 
+  println(executableQuery)
+
 
 
   def map(row: Row): Binding = {
     toBinding(row)
   }
 
-  def toBinding(row: Row): Binding = {
+  def toBinding(row: Row): Binding = { println(row)
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]
