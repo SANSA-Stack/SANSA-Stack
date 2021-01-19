@@ -110,8 +110,9 @@ object R2rmlUtils {
     }
 
     if (explodeLanguageTags && attrNames.length == 3) {
-      val escapedColumns = if (escapeIdentifiers) attrNames else attrNames.slice(0, 2).map(sqlEscaper.escapeColumnName)
-      val columnsSql = escapedColumns.mkString(", ")
+      val escapedColumns = if (escapeIdentifiers) attrNames else attrNames.map(sqlEscaper.escapeColumnName)
+      val projectedColumns = escapedColumns.slice(0, 2)
+      val columnsSql = projectedColumns.mkString(", ")
       val langColSql = escapedColumns(2)
 
       // if there is only one language tag, we can omit the SQL query with the FILTER on the lang column
