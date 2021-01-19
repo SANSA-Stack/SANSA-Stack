@@ -15,7 +15,7 @@ object RddOfDatasetsOps {
     rddOfDatasets.flatMap(JenaDatasetOps.naturalResources)
   }
 
-  @inline def sparqlFlatMap(rddOfDatasets: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {
+  @inline def flatMapWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
     rddOfDatasets.flatMap(in => {
       // TODO I don't get why the Query object is not serializablbe even though
@@ -43,7 +43,7 @@ object RddOfDatasetsOps {
     })
   }
 
-  @inline def sparqlFilter(rddOfDatasets: RDD[_ <: Dataset], queryStr: String, drop: Boolean): RDD[_ <: Dataset] = {
+  @inline def filterWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String, drop: Boolean): RDD[_ <: Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
     rddOfDatasets.filter(in => {
       // TODO Make deserialization of query work

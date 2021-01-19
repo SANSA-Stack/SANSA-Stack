@@ -49,11 +49,11 @@ package object ops {
      * @param query
      * @return
      */
-    @inline def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetsOps.sparqlFlatMap(rddOfDatasets, query.toString())
+    @inline def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetsOps.flatMapWithSparql(rddOfDatasets, query.toString())
 
     @inline def sparqlFilterKeep(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, false)
     @inline def sparqlFilterDrop(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, true)
-    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetsOps.sparqlFilter(rddOfDatasets, query.toString(), drop)
+    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetsOps.filterWithSparql(rddOfDatasets, query.toString(), drop)
 
     @inline def mapToNaturalResources(): RDD[Resource] = RddOfDatasetsOps.naturalResources(rddOfDatasets)
   }

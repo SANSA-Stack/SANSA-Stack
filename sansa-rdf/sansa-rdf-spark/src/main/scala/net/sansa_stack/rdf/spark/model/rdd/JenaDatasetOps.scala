@@ -9,7 +9,16 @@ object JenaDatasetOps {
 
   /**
    * Natural resources of a dataset are all those IRIs that match the name of the enclosing
-   * named graph
+   * named graph.
+   *
+   * For example, in the example below a {@link Resource} of dbr:Leipzig
+   * is the 'natural resource' in that named graph.
+   * <pre>
+   * dbr:Leipzig {
+   *   dbr:Leipzig a dbo:City .
+   *   eg:foo a eg:Bar .
+   * }
+   * </pre>
    *
    * TODO Change Resource result to ResourceInDataset in order to retain the Dataset reference
    */
