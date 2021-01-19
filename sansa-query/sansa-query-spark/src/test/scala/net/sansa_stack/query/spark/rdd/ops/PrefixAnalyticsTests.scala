@@ -9,6 +9,7 @@ import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.types.{DataType, DataTypes}
 import org.scalatest.FunSuite
 
 class PrefixAnalyticsTests extends FunSuite with DataFrameSuiteBase {
@@ -33,8 +34,10 @@ class PrefixAnalyticsTests extends FunSuite with DataFrameSuiteBase {
     val rdd: RDD[Binding] = sc.parallelize(bindings)
 
     val evalResult = RddOfAnyOps.aggregateUsingJavaCollector(rdd, ResultSetAnalytics.usedPrefixes(6).asCollector())
-
     println(evalResult)
+
+    val evalResult2 = RddOfAnyOps.aggregateUsingJavaCollector(rdd, ResultSetAnalytics.usedDatatypes.asCollector)
+    println(evalResult2)
 
     // TODO Actually We want to test over all columns with a Map[Var, Set[String]]
     // val hack: RDD[String] = rdd.map(b => b.get(Vars.s)).filter(_.isURI).map(_.getURI)

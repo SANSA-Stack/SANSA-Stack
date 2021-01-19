@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.ops.rdd
 
+import com.google.common.collect.Multiset
 import org.aksw.jena_sparql_api.utils.BindingUtils
 import org.apache.jena.datatypes.RDFDatatype
 import org.apache.jena.sparql.core.Var
@@ -32,8 +33,8 @@ object RddOfBindingOps {
    *
    * @return
    */
-  def usedDatatypeIris(): mutable.MultiMap[Var, RDFDatatype] = {
-  null
+  def usedDatatypeIris(): mutable.Map[Var, Multiset[String]] = {
+    null
   }
 
   /**
