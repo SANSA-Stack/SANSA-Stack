@@ -135,11 +135,6 @@ class QueryEngineOntop(val spark: SparkSession,
     spark.sql(s"USE $databaseName")
   }
 
-  // if no ontology has been provided, we try to extract it from the dataset
-  if (ontology.isEmpty) {
-    ontology = createOntology()
-  }
-
   // get the JDBC metadata from the Spark tables
   val sqlEscaper = new SqlEscaperBacktick()
   val jdbcMetaData = spark.catalog.listTables().collect().map(t =>
@@ -149,6 +144,11 @@ class QueryEngineOntop(val spark: SparkSession,
       ).mkString(",")
     )
   ).toMap
+
+  // if no ontology has been provided, we try to extract it from the dataset
+  if (ontology.isEmpty) {
+    ontology = createOntology()
+  }
 
   private val sparql2sql = new OntopSPARQL2SQLRewriter2(jdbcMetaData, mappingsModel, ontology)
 
