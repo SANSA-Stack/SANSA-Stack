@@ -89,7 +89,7 @@ object OntopUtils2 extends Serializable {
         "The \"executable\" query is not starting with a construction node\n" + executableQuery))
   }
 
-
+  import scala.language.existentials
   @throws[OBDASpecificationException]
   private def loadOBDASpecification(obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology]) = {
     val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder.ontology(ontology.get)
