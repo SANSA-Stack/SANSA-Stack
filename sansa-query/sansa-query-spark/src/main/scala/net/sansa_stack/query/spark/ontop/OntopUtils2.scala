@@ -41,10 +41,10 @@ object OntopUtils2 extends Serializable {
         if (constant.isNull) return None
         if (constant.isInstanceOf[DBConstant]) throw new InvalidConstantTypeInResultException(constant +
           "is a DB constant. But a binding cannot have a DB constant as value")
-        throw new InvalidConstantTypeInResultException2("Unexpected constant type for " + constant)
+        throw new InvalidConstantTypeInResultException("Unexpected constant type for " + constant)
       case _ =>
     }
-    throw new InvalidTermAsResultException2(simplifiedTerm)
+    throw new InvalidTermAsResultException(simplifiedTerm)
   }
 
   @throws[EmptyQueryException]
@@ -127,5 +127,5 @@ object OntopUtils2 extends Serializable {
 
 }
 
-class InvalidTermAsResultException2(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
-class InvalidConstantTypeInResultException2(message: String) extends OntopInternalBugException(message)
+class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
+class InvalidConstantTypeInResultException(message: String) extends OntopInternalBugException(message)

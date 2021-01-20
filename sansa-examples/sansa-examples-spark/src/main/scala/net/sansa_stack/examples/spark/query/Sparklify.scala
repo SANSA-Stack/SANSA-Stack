@@ -52,21 +52,17 @@ object Sparklify {
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
       .getOrCreate()
 
+    import net.sansa_stack.query.spark._
     val lang = Lang.NTRIPLES
-    val graphRdd = spark.rdf(lang)(config.dataFilenameOrUri)
+    val triplesRDD = spark.rdf(lang)(config.dataFilenameOrUri)
+    val qef = triplesRDD.sparql()
 
     config.run match {
       case "cli" =>
-        import net.sansa_stack.query.spark.query._
-        // val sparqlQuery = "SELECT * WHERE {?s ?p ?o} LIMIT 10"
-        val result = graphRdd.sparql(config.queryString)
-        result.rdd.foreach(println)
+        val qe = qef.createQueryExecution(config.queryString)
+        val result = qe.execSelectSpark()
+        result.getBindings.foreach(println)
       case _ =>
-        val partitioner = RdfPartitionerDefault
-        val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
-        val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitioner, partitions)
-
-        val qef = new JavaQueryExecutionFactorySparqlifySpark(spark, rewriter)
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(config.port).create()
         if (Desktop.isDesktopSupported) {
           Desktop.getDesktop.browse(URI.create("http://localhost:" + config.port + "/sparql"))

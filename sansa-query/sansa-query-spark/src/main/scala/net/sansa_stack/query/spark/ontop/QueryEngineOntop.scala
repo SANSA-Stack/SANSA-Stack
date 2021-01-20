@@ -61,7 +61,7 @@ class OntopSPARQL2SQLRewriter2(jdbcMetaData: Map[String, String],
   extends SPARQL2SQLRewriter2[OntopQueryRewrite2]
     with Serializable {
 
-  private val logger = com.typesafe.scalalogging.Logger(classOf[OntopSPARQL2SQLRewriter])
+  private val logger = com.typesafe.scalalogging.Logger(classOf[OntopSPARQL2SQLRewriter2])
 
   // load Ontop properties
   val ontopProperties = new Properties()
@@ -127,6 +127,8 @@ class QueryEngineOntop(val spark: SparkSession,
                        val databaseName: String,
                        val mappingsModel: Model,
                        var ontology: Option[OWLOntology]) {
+  require(spark != null, "Spark session must not be null.")
+  require(!mappingsModel.isEmpty, "Mappings model must not be empty.")
 
   private val logger = com.typesafe.scalalogging.Logger[QueryEngineOntop]
 

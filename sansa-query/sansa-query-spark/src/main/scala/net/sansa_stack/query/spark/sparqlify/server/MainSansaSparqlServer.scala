@@ -16,7 +16,7 @@ import org.apache.spark.sql.{Row, SparkSession}
 import scala.collection.JavaConverters._
 import net.sansa_stack.rdf.spark.partition._
 import net.sansa_stack.query.spark._
-import net.sansa_stack.query.spark.query.SparqlifySPARQLExecutor2
+import net.sansa_stack.query.spark._
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 

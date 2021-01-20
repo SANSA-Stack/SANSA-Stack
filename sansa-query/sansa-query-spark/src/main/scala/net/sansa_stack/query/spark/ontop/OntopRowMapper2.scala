@@ -54,8 +54,8 @@ class OntopRowMapper2(
   val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery,
     queryReformulator.getQueryLoggerFactory.create(it.unibz.inf.ontop.com.google.common.collect.ImmutableMultimap.of()))
 
-  val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)
-  val nativeNode = OntopUtils.extractNativeNode(executableQuery)
+  val constructionNode = OntopUtils2.extractRootConstructionNode(executableQuery)
+  val nativeNode = OntopUtils2.extractNativeNode(executableQuery)
   val sqlSignature = nativeNode.getVariables
   val sqlTypeMap = nativeNode.getTypeMap
   val sparqlVar2Term = constructionNode.getSubstitution
@@ -86,7 +86,7 @@ class OntopRowMapper2(
 
     val composition = sub.composeWith(sparqlVar2Term)
     val ontopBindings = answerAtom.getArguments.asScala.map(v => {
-      (v, OntopUtils.evaluate(composition.apply(v)))
+      (v, OntopUtils2.evaluate(composition.apply(v)))
     })
 
     ontopBindings.foreach {

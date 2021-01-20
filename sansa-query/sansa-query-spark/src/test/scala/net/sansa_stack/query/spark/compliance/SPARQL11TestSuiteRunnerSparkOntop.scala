@@ -80,9 +80,9 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
 
 //  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS") || t.name.startsWith("UCASE")
-//override lazy val IGNORE_FILTER = t => t.dataFile.contains("/functions")  && t.name.startsWith("isNu")
-  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates")// && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
-
+override lazy val IGNORE_FILTER = t => t.dataFile.contains("/functions")
+//  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates")// && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
+//override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
   var engineFactory: QueryEngineFactoryOntop = _
 
   override def beforeAll(configMap: ConfigMap): Unit = {
