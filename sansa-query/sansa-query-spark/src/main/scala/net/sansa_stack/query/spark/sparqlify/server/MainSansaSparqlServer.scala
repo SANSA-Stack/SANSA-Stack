@@ -17,6 +17,8 @@ import scala.collection.JavaConverters._
 import net.sansa_stack.rdf.spark.partition._
 import net.sansa_stack.query.spark._
 import net.sansa_stack.query.spark.query.SparqlifySPARQLExecutor2
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.types.StructType
 
 object MainSansaSparqlServer {
 
@@ -70,6 +72,9 @@ object MainSansaSparqlServer {
     val graphRdd = sparkSession.sparkContext.parallelize(it)
 
     val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
+
+    val bindngs: RDD[Binding] = qef.createQueryExecution("SELECT * { ?s ?p ?o }")
+      .execSelectSpark().getBindings
 
     // val map = graphRdd.partitionGraphByPredicates
 //    val partitioner = RdfPartitionerDefault

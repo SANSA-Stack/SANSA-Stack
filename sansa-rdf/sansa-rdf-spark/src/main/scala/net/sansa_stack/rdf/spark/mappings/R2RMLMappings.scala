@@ -9,6 +9,9 @@ import org.apache.spark.sql.SparkSession
 /**
  * Provide a set of functions to deal with SQL tables and R2RML mappings.
  *
+ * FIXME We now have a prope R2RML API and we are refactoring partitioning; so this class is a removal candidate ~ Claus 2020-01-16
+ *
+ *
  * @author dgraux
  */
 object R2RMLMappings extends Serializable {

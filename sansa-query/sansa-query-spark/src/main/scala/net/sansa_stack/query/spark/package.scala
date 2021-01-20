@@ -4,22 +4,28 @@ import com.google.common.cache.{CacheBuilder, CacheLoader}
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
+import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
 import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.query.spark.sparqlify.{QueryEngineFactorySparqlify, QueryExecutionSpark, SparkRowMapperSparqlify, SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, RdfPartitionerDefault}
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlMappingCollection
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlModel
+import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.utils.kryo.io.JavaKryoSerializationWrapper
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
+import org.apache.jena.datatypes.RDFDatatype
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
+import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.java.function.Function
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.model.OWLOntology
+
+import scala.collection.mutable
 
 /**
  * Wrap up implicit classes/methods to query RDF data from N-Triples files into either [[Sparqlify]] or
@@ -95,6 +101,16 @@ package object query {
 
   }
 
+
+  /**
+   *
+   *
+   */
+  implicit class RddOfBindingImplicits(rddOfTriple: RDD[_ <: Binding]) {
+
+    // def usedPrefixes(targetSize: Int): mutable.MultiMap[Var, RDFDatatype] = RddOfBindingOps.usedIriPrefixes(rddOfTriple)
+  }
+
   /**
    * An Sparqlify backed SPARQL executor implicitly bound to an RDD[Triple].
    *
@@ -152,15 +168,13 @@ package object query {
     override def sparqlRDD(sparqlQuery: String): RDD[Binding] = sparqlEngine.execSelect(sparqlQuery)
   }
 
-  implicit class SparqlifySPARQLExecutor2(val partitions: R2rmlMappingCollection) {
+  implicit class SparqlifySPARQLExecutor2(val mappedSession: R2rmlMappedSparkSession) {
     // extends QueryExecutor
       // with Serializable {
 
     def sparqlify(): QueryExecutionFactorySpark = {
-      val sparkSession = SparkSession.builder().getOrCreate()
-
-      val engineFactory = new QueryEngineFactorySparqlify(sparkSession)
-      engineFactory.create(null, partitions.getR2rmlModel)
+      val engineFactory = new QueryEngineFactorySparqlify(mappedSession.sparkSession)
+      engineFactory.create(null, mappedSession.r2rmlModel)
     }
   }
 

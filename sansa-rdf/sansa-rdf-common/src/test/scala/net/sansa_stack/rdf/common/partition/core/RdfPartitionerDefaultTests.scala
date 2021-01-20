@@ -56,7 +56,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |
         |[ rr:logicalTable        [ rr:tableName  "http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang" ] ;
         |  rr:predicateObjectMap  [ rr:objectMap  [ rr:column      "o" ;
-        |                                           rr:langColumn  "l"
+        |                                           rr:languageColumn  "l"
         |                                         ] ;
         |                           rr:predicate  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
@@ -71,7 +71,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val model = ModelFactory.createDefaultModel()
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, model, false)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, model, false, false)
 
     // There must be just a single triples map
     assert(triplesMaps.size == 1)
@@ -79,7 +79,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
     val triplesMap = triplesMaps(0)
     val actual = triplesMap.getModel
 
-    assert(expected.isIsomorphicWith(actual))
+    assert(expected.isIsomorphicWith(model))
   }
 
   test("export partition with lang tags exploded as R2RML should result in a separate TriplesMap per language tag") {
@@ -89,34 +89,34 @@ class RdfPartitionerDefaultTests extends FunSuite {
       """
         | @base          <http://www.w3.org/ns/r2rml#> .
         |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'fr'" ] ;
-        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "`o`" ;
         |                                           <#language>  "fr"
         |                                         ] ;
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
-        |  <#subjectMap>  [ <#column>  "s" ;
+        |  <#subjectMap>  [ <#column>  "`s`" ;
         |                   <#datatype>  <#IRI>
         |                 ]
         |] .
         |
         |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'de'" ] ;
-        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "`o`" ;
         |                                           <#language>  "de"
         |                                         ] ;
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
-        |  <#subjectMap>  [ <#column>  "s" ;
+        |  <#subjectMap>  [ <#column>  "`s`" ;
         |                   <#datatype>  <#IRI>
         |                 ]
         |] .
         |
         |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'en'" ] ;
-        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "o" ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "`o`" ;
         |                                           <#language>  "en"
         |                                         ] ;
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
-        |  <#subjectMap>  [ <#column>  "s" ;
+        |  <#subjectMap>  [ <#column>  "`s`" ;
         |                   <#datatype>  <#IRI>
         |                 ]
         |] .
@@ -129,7 +129,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val actual = ModelFactory.createDefaultModel()
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true, true)
 
     RDFDataMgr.write(System.out, actual, RDFFormat.TURTLE_PRETTY)
 
@@ -144,7 +144,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
       2, "http://www.w3.org/2001/XMLSchema#string", true, Set("en", "de", "fr"))
 
     val exportModel = ModelFactory.createDefaultModel()
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, exportModel, true)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, exportModel, true, true)
 
      // val exportModel = exportModel // RdfPartitionImportExport.exportAsR2RML(RdfPartitionerDefault, partitionState, true)
     exportModel.write(System.out, "Turtle", "http://www.w3.org/ns/r2rml#")

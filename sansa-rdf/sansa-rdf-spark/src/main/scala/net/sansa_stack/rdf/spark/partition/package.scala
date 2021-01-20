@@ -2,7 +2,8 @@ package net.sansa_stack.rdf.spark
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerDefault}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils.createR2rmlMappings
-import net.sansa_stack.rdf.common.partition.r2rml.{R2rmlMappingCollection, R2rmlMappingCollectionImpl, R2rmlUtils}
+import net.sansa_stack.rdf.common.partition.r2rml.{R2rmlModel, R2rmlUtils}
+import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
 import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SparkTableGenerator}
 import net.sansa_stack.rdf.spark.partition.semantic.SemanticRdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.utils.Logging
@@ -28,27 +29,26 @@ package object partition extends Logging {
     val CORE, SEMANTIC = Value
   }
 
-  implicit class RDFPartition(triples: RDD[Triple]) extends Serializable {
+  implicit class RDFPartition(rddOfTriples: RDD[Triple]) extends Serializable {
 
     /**
      * Default partition - using VP.
      */
     def partitionGraph(): Map[RdfPartitionStateDefault, RDD[Row]] = {
-      RdfPartitionUtilsSpark.partitionGraph(triples, RdfPartitionerDefault)
+      RdfPartitionUtilsSpark.partitionGraph(rddOfTriples, RdfPartitionerDefault)
     }
 
     /**
      * Default partition - using VP.
      */
-    def verticalPartition(partitioner: RdfPartitioner[RdfPartitionStateDefault], explodeLanguageTags: Boolean = false): R2rmlMappingCollection = {
+    def verticalPartition(partitioner: RdfPartitioner[RdfPartitionStateDefault], explodeLanguageTags: Boolean = false): R2rmlMappedSparkSession = {
       val partitioning: Map[RdfPartitionStateDefault, RDD[Row]] =
-        RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
+        RdfPartitionUtilsSpark.partitionGraph(rddOfTriples, partitioner)
 
       val model: Model = ModelFactory.createDefaultModel
       // R2rmlUtils.createR2rmlMappings(partitioner, partitioning.keys.toSeq, model, explodeLanguageTags)
 
-      // FIXME Hack!
-      val sparkSession = SparkSession.builder().getOrCreate()
+      val sparkSession = SparkSession.builder.config(rddOfTriples.sparkContext.getConf).getOrCreate()
 
       val tableNaming = R2rmlUtils.createDefaultTableName(_)
       val sqlEscaper = new SqlEscaperBacktick
@@ -82,7 +82,7 @@ package object partition extends Logging {
 
       new SparkTableGenerator(sparkSession).createAndRegisterSparkTables(partitioner, partitioning, tableNaming)
 
-      new R2rmlMappingCollectionImpl(model)
+      new R2rmlMappedSparkSession(sparkSession, model)
     }
 
 
@@ -90,7 +90,7 @@ package object partition extends Logging {
      * semantic partition of and RDF graph
      */
     def partitionGraphAsSemantic(): RDD[String] = {
-      SemanticRdfPartitionUtilsSpark.partitionGraph(triples)
+      SemanticRdfPartitionUtilsSpark.partitionGraph(rddOfTriples)
     }
 
   }
