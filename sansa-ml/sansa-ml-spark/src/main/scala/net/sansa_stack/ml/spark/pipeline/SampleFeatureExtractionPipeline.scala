@@ -57,7 +57,7 @@ object SampleFeatureExtractionPipeline {
     val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 1, 2, 3, featuresInOptionalBlocks = true)
 
     // select the query you want to use or adjust the automatic created one
-    println("FEATURE EXTRACTION OVER SPARQL")
+    println("CREATE FEATURE EXTRACTING SPARQL")
     val queryString = autoSparqlString
     println()
     println(queryString)
@@ -67,7 +67,7 @@ object SampleFeatureExtractionPipeline {
     Gain Features from Query
     this creates a dataframe with coulms corresponding to Sparql features
      */
-    println("CREATE FEATURE EXTRACTING SPARQL")
+    println("FEATURE EXTRACTION OVER SPARQL")
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine("ontop")
