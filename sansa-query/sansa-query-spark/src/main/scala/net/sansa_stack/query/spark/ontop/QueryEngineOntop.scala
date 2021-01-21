@@ -247,6 +247,11 @@ class QueryEngineOntop(val spark: SparkSession,
         .replace("`PUBLIC`.", "")
       logger.info(s"SQL query:\n$sql")
 
+      val bc = spark.sparkContext.broadcast((queryRewrite.sqlSignature, queryRewrite.sqlTypeMap, queryRewrite.answerAtom, queryRewrite.sparqlVar2Term))
+
+      implicit val encoder = org.apache.spark.sql.Encoders.STRING
+      spark.createDataset(List("1")).foreach(el => println(bc.value))
+
       // execute SQL query
       val resultRaw = spark.sql(sql)
       //    result.show(false)
