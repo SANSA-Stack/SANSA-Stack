@@ -16,7 +16,10 @@ import org.apache.spark.sql.{Row, SparkSession}
 import scala.collection.JavaConverters._
 import net.sansa_stack.rdf.spark.partition._
 import net.sansa_stack.query.spark._
+import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
 import net.sansa_stack.query.spark.query.SparqlifySPARQLExecutor2
+import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
+import org.apache.jena.vocabulary.{OWL, RDFS}
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 
@@ -69,20 +72,22 @@ object MainSansaSparqlServer {
 
     val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
-    val graphRdd = sparkSession.sparkContext.parallelize(it)
+    var graphRdd: RDD[org.apache.jena.graph.Triple] = sparkSession.sparkContext.parallelize(it)
+
+    import net.sansa_stack.query.spark.query._
+    import net.sansa_stack.rdf.spark.model._
+    graphRdd = graphRdd.filterPredicates(_.equals(RDFS.label.asNode()))
+
 
     val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
 
-    val bindngs: RDD[Binding] = qef.createQueryExecution("SELECT * { ?s ?p ?o }")
-      .execSelectSpark().getBindings
+    val resultSet = qef.createQueryExecution("SELECT * { ?s ?p ?o }")
+      .execSelectSpark()
 
-    // val map = graphRdd.partitionGraphByPredicates
-//    val partitioner = RdfPartitionerDefault
-//
-//    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
-//    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
-//
-//    val qef = new JavaQueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
+    val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
+    val df = RddToDataFrameMapper.applySchemaMapping(sparkSession, resultSet.getBindings, schemaMapping)
+
+    df.show(10)
 
     val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
     server.join()

@@ -2,13 +2,32 @@ package net.sansa_stack.rdf.spark.utils
 
 import java.io.{Closeable, IOException}
 
+import org.apache.spark.sql.catalyst.ScalaReflection
+
+import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe.{ClassSymbol, Type}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
   * @author Lorenz Buehmann
+  * @author Claus Stadler
   */
 object ScalaUtils extends Logging {
+
+  /**
+   * Return the scala type for a (java) class
+   *
+   * @param cls A (java) class
+   * @return The scala Type instance
+   */
+  def getScalaType(cls: Class[_]): Type = {
+    val classSymbol: ClassSymbol = universe.runtimeMirror(cls.getClassLoader).classSymbol(cls)
+    val result: Type = classSymbol.toType
+
+    result
+  }
+
   /**
     * Execute a block of code that returns a value, re-throwing any non-fatal uncaught
     * exceptions as IOException. This is used when implementing Externalizable and Serializable's
