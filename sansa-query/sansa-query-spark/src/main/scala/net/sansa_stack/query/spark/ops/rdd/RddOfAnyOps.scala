@@ -34,13 +34,16 @@ object RddOfAnyOps {
   /**
    * Aggregate over an RDD using a Java Collector. The collector and its attributes
    * must be serializable.
-   * FIXME Probably the requirement for serialization makes this method rather useless
+   *
+   * IMPORTANT The collector must be serializable - Standard Java collectors are not!
+   * Our {@link org.aksw.jena_sparql_api.mapper.parallel.AggBuilder} framework however
+   * produces such collectors that can be used both in java8 streams and spark.
    *
    * @param rdd
    * @param collector
    * @return
    */
-  def aggregateUsingJavaCollector[T: ClassTag, A: ClassTag, C: ClassTag](rdd: RDD[T], collector: Collector[T, A, C]): C = {
+  def aggregateUsingJavaCollector[T: ClassTag, A: ClassTag, R: ClassTag](rdd: RDD[_ <: T], collector: Collector[_ >: T, A, R]): R = {
     var unfinishedResult = rdd
       .mapPartitions(it => {
         val result = collector.supplier.get

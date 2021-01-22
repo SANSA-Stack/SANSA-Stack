@@ -1,10 +1,12 @@
 package net.sansa_stack.query.spark
 
+import java.util.stream.Collector
+
 import com.google.common.cache.{CacheBuilder, CacheLoader}
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
+import net.sansa_stack.query.spark.ops.rdd.{RddOfAnyOps, RddOfBindingOps}
 import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.query.spark.sparqlify.{QueryEngineFactorySparqlify, QueryExecutionSpark, SparkRowMapperSparqlify, SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, RdfPartitionerDefault}
@@ -26,6 +28,7 @@ import org.apache.spark.sql.{DataFrame, Encoder, Row, SparkSession}
 import org.semanticweb.owlapi.model.OWLOntology
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
 
 /**
  * Wrap up implicit classes/methods to query RDF data from N-Triples files into either [[Sparqlify]] or
@@ -107,6 +110,15 @@ package object query {
    *
    */
   implicit class RddOfBindingImplicits(rddOfTriple: RDD[_ <: Binding]) {
+
+    // def usedPrefixes(targetSize: Int): mutable.MultiMap[Var, RDFDatatype] = RddOfBindingOps.usedIriPrefixes(rddOfTriple)
+  }
+
+  implicit class RddOfAnyImplicits[T: ClassTag](rdd: RDD[T]) {
+
+    def javaCollect[A: ClassTag, R: ClassTag](collector: Collector[_ >: T, A, R]): R = {
+      RddOfAnyOps.aggregateUsingJavaCollector(rdd, collector)
+    }
 
     // def usedPrefixes(targetSize: Int): mutable.MultiMap[Var, RDFDatatype] = RddOfBindingOps.usedIriPrefixes(rddOfTriple)
   }

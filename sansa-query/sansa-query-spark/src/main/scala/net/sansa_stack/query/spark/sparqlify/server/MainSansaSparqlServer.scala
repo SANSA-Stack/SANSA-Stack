@@ -2,23 +2,20 @@ package net.sansa_stack.query.spark.sparqlify.server
 
 import java.io.File
 
-import net.sansa_stack.query.spark.sparqlify.{JavaQueryExecutionFactorySparqlifySpark, SparqlifyUtils3}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.spark.partition._
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.apache.jena.sparql.expr.{E_Equals, ExprVar, NodeValue}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
 import scala.collection.JavaConverters._
-import net.sansa_stack.rdf.spark.partition._
-import net.sansa_stack.query.spark._
-import net.sansa_stack.query.spark.query.SparqlifySPARQLExecutor2
-import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.types.StructType
 
 object MainSansaSparqlServer {
 
@@ -40,8 +37,7 @@ object MainSansaSparqlServer {
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.eventLog.enabled", "true")
-      .config("spark.kryo.registrator", String.join(
-        ", ",
+      .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
       .config("spark.default.parallelism", "4")
@@ -54,6 +50,12 @@ object MainSansaSparqlServer {
 
     sparkSession.conf.set("spark.sql.crossJoin.enabled", "true")
 
+    // xsd:integer maps to java.util.BigInteger - already spent hours trying to get those into
+    // dataframes but i keep getting
+    // it works with xsd:int though
+    // spark java.math.BigInteger is not a valid external type for schema of decimal(38,0)
+//    <http://dbpedia.org/resource/Guy_de_Maupassant> <http://example.org/ontology/age> "30"^^<http://www.w3.org/2001/XMLSchema#integer> .
+
     val triplesString =
       """<http://dbpedia.org/resource/Guy_de_Maupassant> <http://xmlns.com/foaf/0.1/givenName> "Guy De" .
         |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://example.org/ontology/age> "30"^^<http://www.w3.org/2001/XMLSchema#integer> .
@@ -62,6 +64,7 @@ object MainSansaSparqlServer {
         |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Passy> .
         |<http://dbpedia.org/resource/Charles_Dickens> <http://xmlns.com/foaf/0.1/givenName> "Charles"@en .
         |<http://dbpedia.org/resource/Charles_Dickens> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Gads_Hill_Place> .
+        |<http://dbpedia.org/resource/Charles_Dickens> <http://example.org/ontology/age> "20"^^<http://www.w3.org/2001/XMLSchema#short> .
         |<http://someOnt/1> <http://someOnt/184298> <http://someOnt/272277> .
         |<http://someOnt/184298> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#AnnotationProperty> .
         |<http://snomedct-20170731T150000Z> <http://www.w3.org/2002/07/owl#versionInfo> "20170731T150000Z"@en .
@@ -69,20 +72,22 @@ object MainSansaSparqlServer {
 
     val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
-    val graphRdd = sparkSession.sparkContext.parallelize(it)
+    var graphRdd: RDD[org.apache.jena.graph.Triple] = sparkSession.sparkContext.parallelize(it)
+
+    import net.sansa_stack.query.spark.query._
+    // graphRdd = graphRdd.filterPredicates(_.equals(RDFS.label.asNode()))
+
 
     val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
 
-    val bindngs: RDD[Binding] = qef.createQueryExecution("SELECT * { ?s ?p ?o }")
-      .execSelectSpark().getBindings
+    val resultSet = qef.createQueryExecution("SELECT * { ?s ?p ?o }")
+      .execSelectSpark()
 
-    // val map = graphRdd.partitionGraphByPredicates
-//    val partitioner = RdfPartitionerDefault
-//
-//    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
-//    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
-//
-//    val qef = new JavaQueryExecutionFactorySparqlifySpark(sparkSession, rewriter)
+    val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
+    println(schemaMapping)
+    val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+
+    df.show(20)
 
     val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
     server.join()
@@ -90,6 +95,11 @@ object MainSansaSparqlServer {
     /*
      * val result = graphRdd.partitionGraph().sparql("SELECT * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
      */
+
+    // Test for whether expr serialization works at all
+//    resultSet.getBindings.map(x => new E_Equals(new ExprVar(Var.alloc("x")), NodeValue.makeBoolean(true)))
+//      .collect()
+
 
     //
     //    val q = QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }")
