@@ -116,7 +116,6 @@ class SparqlFrame extends Transformer{
       .execSelectSpark()
 
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
-    println(schemaMapping)
     val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df
