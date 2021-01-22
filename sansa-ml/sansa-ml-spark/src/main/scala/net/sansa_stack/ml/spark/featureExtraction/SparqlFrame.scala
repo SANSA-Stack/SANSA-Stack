@@ -2,7 +2,7 @@ package net.sansa_stack.ml.spark.featureExtraction
 
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
 import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, QueryExecutionSparqlifySpark, SparqlifyUtils3}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.query.{Query, QueryFactory}
@@ -10,6 +10,8 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.lang.ParserSPARQL11
 import org.apache.spark.api.java.JavaRDD
+import net.sansa_stack.query.spark.query._
+
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
@@ -103,7 +105,7 @@ class SparqlFrame extends Transformer{
       scalaRdd
     }
 
-  }
+  } */
 
   /**
    * creates a natic spark mllib dataframe with columns corresponding to the projection variables
@@ -114,6 +116,15 @@ class SparqlFrame extends Transformer{
    * @return a dataframe with columns corresponding to projection variables
    */
   def transform(dataset: Dataset[_]): DataFrame = {
+    /* if (_queryExcecutionEngine == "sparqlify") {
+      val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
+      val qef = dataset.rdd.verticalPartition(RdfPartitionerDefault).sparqlify
+      val resultSet = qef.createQueryExcecution(_query)
+      val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
+      val df = RddToDataFrameMapper.applySchemaMapping(spark, resultSet.getBindings, schemaMapping)
+      df
+    } */
+
     val parser = new ParserSPARQL11()
     val projectionVars: Seq[Var] = parser.parse(new Query(), _query).getProjectVars.asScala
     val bindings: RDD[Binding] = getResultBindings(dataset)
