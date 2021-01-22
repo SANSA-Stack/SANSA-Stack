@@ -3,14 +3,17 @@ package net.sansa_stack.query.spark.ops.rdd
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.DataTypeUtils
 import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
+import org.aksw.jena_sparql_api.rdf.collections.{ConverterFromRDFNodeMapper, NodeMapperFromRdfDatatype}
 import org.aksw.jena_sparql_api.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
 import org.aksw.jena_sparql_api.utils.NodeUtils
+import org.aksw.r2rml.common.vocab.R2RMLStrings
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.vocabulary.XSD
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.cassandra.DataTypeConverter
+import org.apache.spark.sql.types.{DataType, DataTypes, DecimalType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 /**
@@ -70,19 +73,13 @@ object RddToDataFrameMapper {
 
     val typeMapper = TypeMapper.getInstance
 
-    val structType = new StructType
-
-    for (v <- schemaMapping.getDefinedVars.asScala) {
+    val structFields = schemaMapping.getDefinedVars.iterator().asScala.map(v => {
       val fieldMapping: FieldMapping = schemaMapping.getFieldMapping.get(v)
 
       val datatypeIri = fieldMapping.getDatatypeIri
 
       // Special cases: R2RML IRI and BlankNodes
-      val effectiveDatatypeIri = datatypeIri match {
-        case NodeUtils.R2RML_IRI => XSD.xstring.getURI
-        case NodeUtils.R2RML_BlankNode => XSD.xstring.getURI
-        case default => default
-      }
+      val effectiveDatatypeIri = getEffectiveDatatype(datatypeIri)
 
       val rdfDatatype = typeMapper.getSafeTypeByName(effectiveDatatypeIri)
       val javaClass = rdfDatatype.getJavaClass
@@ -91,28 +88,44 @@ object RddToDataFrameMapper {
       val dataType = DataTypeUtils.getSparkType(javaClass)
       val isNullable = fieldMapping.isNullable
 
-      structType.add(name, dataType, isNullable)
-    }
+      StructField(name, dataType, isNullable)
+    }).toSeq
+
+    val targetSchema = StructType(structFields)
+
+    println(targetSchema)
 
     val rows: RDD[Row] = bindings.map(mapToRow(_, schemaMapping))
-    sparkSession.createDataFrame(rows, structType)
+    sparkSession.createDataFrame(rows, targetSchema)
+  }
+
+  def getEffectiveDatatype(datatypeIri: String): String = {
+    datatypeIri match {
+      case R2RMLStrings.IRI => XSD.xstring.getURI
+      case R2RMLStrings.BlankNode => XSD.xstring.getURI
+      case default => default
+    }
   }
 
   def mapToRow(binding: Binding, schemaMapping: SchemaMapping): Row = {
     val typeMapper = TypeMapper.getInstance
 
-    val seq = schemaMapping.getDefinedVars.asScala.map(v => {
+    val seq = schemaMapping.getDefinedVars.iterator().asScala.map(v => {
+
       val fieldMapping = schemaMapping.getFieldMapping.get(v)
       val decisionTreeExpr = fieldMapping.getDefinition
 
       val node = decisionTreeExpr.eval(binding)
-      val javaValue =
-        if (node.isURI) node.getURI
+      val javaValue: Any = {
+        if (node == null) null
+        else if (node.isURI) node.getURI
         else if (node.isBlank) node.getBlankNodeLabel
-        else node.getLiteralValue
+        else NodeMapperFromRdfDatatype.toJavaCore(node, typeMapper.getSafeTypeByName(
+          getEffectiveDatatype(fieldMapping.getDatatypeIri)))
+      }
 
       javaValue
-    }).toSeq
+    }).toList
 
     Row.fromSeq(seq)
   }

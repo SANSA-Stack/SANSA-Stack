@@ -40,6 +40,7 @@ object JenaKryoSerializers {
 
     private val profile = setupInternalParserProfile
 
+    // TODO ARQ should be query layer rather than rdf
     val pmap: PrefixMap = PrefixMapFactory.createForInput
     pmap.add("rdf", ARQConstants.rdfPrefix)
     pmap.add("rdfs", ARQConstants.rdfsPrefix)
@@ -56,7 +57,7 @@ object JenaKryoSerializers {
       writer.clear()
     }
 
-    def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
+    override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
       val s = input.readString()
       val n = parse(s)
 //      println(s"deserializing string $s   => $n")
@@ -98,7 +99,7 @@ object JenaKryoSerializers {
       }
     }
 
-    def read(kryo: Kryo, input: Input, objClass: Class[Array[JenaNode]]): Array[JenaNode] = {
+    override def read(kryo: Kryo, input: Input, objClass: Class[Array[JenaNode]]): Array[JenaNode] = {
       val nodes = new Array[JenaNode](input.readInt(true))
       var i = 0
       while(i < nodes.length) {
@@ -151,25 +152,26 @@ object JenaKryoSerializers {
   class ExprSerializer extends Serializer[Expr] {
     override def write(kryo: Kryo, output: Output, obj: Expr) {
       val str = ExprUtils.fmtSPARQL(obj)
+      // println("SERING THIS EXPR " + obj + " as " + str)
       output.writeString(str)
     }
 
-    def read(kryo: Kryo, input: Input, objClass: Class[Expr]): Expr = {
+    override def read(kryo: Kryo, input: Input, objClass: Class[Expr]): Expr = {
       val str = input.readString()
       ExprUtils.parse(str)
     }
   }
 
 
-   class VarSerializer extends Serializer[Var] {
+  class VarSerializer extends Serializer[Var] {
     override def write(kryo: Kryo, output: Output, obj: Var) {
       output.writeString(obj.getName)
     }
 
-     def read(kryo: Kryo, input: Input, objClass: Class[Var]): Var = {
+    override def read(kryo: Kryo, input: Input, objClass: Class[Var]): Var = {
       Var.alloc(input.readString)
     }
-   }
+  }
 
   /**
     * Kryo Serializer for Node_URI
@@ -207,7 +209,7 @@ object JenaKryoSerializers {
       kryo.writeClassAndObject(output, obj.getObject)
     }
 
-    def read(kryo: Kryo, input: Input, objClass: Class[JenaTriple]): JenaTriple = {
+    override def read(kryo: Kryo, input: Input, objClass: Class[JenaTriple]): JenaTriple = {
       val s = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val o = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
@@ -223,7 +225,7 @@ object JenaKryoSerializers {
       kryo.writeClassAndObject(output, obj.getObject)
     }
 
-    def read(kryo: Kryo, input: Input, objClass: Class[JenaQuad]): JenaQuad = {
+    override def read(kryo: Kryo, input: Input, objClass: Class[JenaQuad]): JenaQuad = {
       val g = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val s = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
       val p = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
@@ -233,6 +235,7 @@ object JenaKryoSerializers {
   }
 
 
+  // TODO This should go into query layer ~ Claus
   class QuerySerializer extends Serializer[Query] {
     override def write(kryo: Kryo, output: Output, obj: Query) {
       // Do we need to write the String class?
