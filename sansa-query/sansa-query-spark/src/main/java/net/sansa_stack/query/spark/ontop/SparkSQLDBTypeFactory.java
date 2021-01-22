@@ -15,8 +15,7 @@ import it.unibz.inf.ontop.model.vocabulary.XSD;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import static it.unibz.inf.ontop.model.type.DBTermType.Category.FLOAT_DOUBLE;
-import static it.unibz.inf.ontop.model.type.DBTermType.Category.INTEGER;
+import static it.unibz.inf.ontop.model.type.DBTermType.Category.*;
 
 class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
 
@@ -92,8 +91,9 @@ class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
         DBTermType longType = new NumberDBTermType(LONG_STR, rootAncestry, typeFactory.getDatatype(XSD.LONG), INTEGER);
         DBTermType floatType = new NumberDBTermType(FLOAT_STR, rootAncestry, typeFactory.getDatatype(XSD.FLOAT), FLOAT_DOUBLE);
 
-        RDFDatatype xsdString = typeFactory.getXsdStringDatatype();
-        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, xsdString));
+//        RDFDatatype xsdString = typeFactory.getXsdStringDatatype();
+//        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, xsdString));
+        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, typeFactory.getDatatype(XSD.STRING)));
         map.put(BYTE_STR,byteType);
         map.put(TINYINT_STR,byteType);
         map.put(SHORT_STR,shortType);

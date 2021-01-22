@@ -10,6 +10,7 @@ import it.unibz.inf.ontop.model.term.TermFactory;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBBooleanFunctionSymbol;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBConcatFunctionSymbol;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbol;
+import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbolSerializer;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.AbstractSQLDBFunctionSymbolFactory;
 import it.unibz.inf.ontop.model.type.DBTermType;
 import it.unibz.inf.ontop.model.type.DBTypeFactory;
@@ -211,7 +212,7 @@ public class SparkSQLDBFunctionSymbolFactory extends AbstractSQLDBFunctionSymbol
     @Override
     protected DBFunctionSymbol createDBGroupConcat(DBTermType dbStringType, boolean isDistinct) {
         return new SparkNullIgnoringDBGroupConcatFunctionSymbol(dbStringType, isDistinct,
-                (terms, termConverter, termFactory) -> String.format(
+                (DBFunctionSymbolSerializer) (terms, termConverter, termFactory) -> String.format(
                         "concat_ws(%s, %s(%s))",
                         termConverter.apply(terms.get(1)),
                         isDistinct ? "collect_set" : "collect_list",
