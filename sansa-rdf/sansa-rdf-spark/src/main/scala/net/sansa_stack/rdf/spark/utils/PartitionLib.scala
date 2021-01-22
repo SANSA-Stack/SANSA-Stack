@@ -23,7 +23,8 @@ object PartitionLib {
      */
     def exportAsR2RML(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                       partitions: Seq[RdfPartitionStateDefault],
-                      explodeLanguageTags: Boolean = false): Model = {
+                      explodeLanguageTags: Boolean = false,
+                      escapeIdentifiers: Boolean = false): Model = {
       // put all triple maps into a single model
       val model = ModelFactory.createDefaultModel()
 
@@ -33,7 +34,9 @@ object PartitionLib {
           partition,
           p => R2rmlUtils.createDefaultTableName(p),
           new SqlEscaperBacktick,
-          model, explodeLanguageTags)
+          model,
+          explodeLanguageTags,
+          escapeIdentifiers)
       )
 
       model

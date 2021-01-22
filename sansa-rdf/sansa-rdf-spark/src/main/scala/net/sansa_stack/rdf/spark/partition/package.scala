@@ -41,7 +41,9 @@ package object partition extends Logging {
     /**
      * Default partition - using VP.
      */
-    def verticalPartition(partitioner: RdfPartitioner[RdfPartitionStateDefault], explodeLanguageTags: Boolean = false): R2rmlMappedSparkSession = {
+    def verticalPartition(partitioner: RdfPartitioner[RdfPartitionStateDefault],
+                          explodeLanguageTags: Boolean = false,
+                          escapeIdentifiers: Boolean = false): R2rmlMappedSparkSession = {
       val partitioning: Map[RdfPartitionStateDefault, RDD[Row]] =
         RdfPartitionUtilsSpark.partitionGraph(rddOfTriples, partitioner)
 
@@ -67,7 +69,8 @@ package object partition extends Logging {
           tableNaming,
           sqlEscaper,
           model,
-          explodeLanguageTags)
+          explodeLanguageTags,
+          escapeIdentifiers)
 
 //        triplesMaps.foreach(tm =>
 //          RDFDataMgr.write(System.err, model, RDFFormat.TURTLE_PRETTY)
