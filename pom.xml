@@ -314,35 +314,44 @@
                 <version>${jsa.version}</version>
             </dependency>
 
+            <!-- rxjava ideomatic SPARQL fluents
+                 Ssimilar to Java8 Streams but with resource management and back pressure handling  -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-rx</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
+            <!-- Io package; used for the distributed trig reader hadoop plugin -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-io-core</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
+            <!-- Annotations for auto-generating implementations of custom Jena Resources -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-mapper-annotations</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
+            <!-- The annotation processor that auto-generates implementations of custom Jena Resources -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-mapper-proxy</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
+            <!-- Legacy dependency; mainly used because of a dedicated HealthCheck runner for SPARQL endpoints
+            TODO Mark for removal -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-virtuoso</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
+
+            <!-- Algebra and query optimization package; features transformers not part of jena -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-algebra</artifactId>
@@ -355,9 +364,24 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- Parallelizable aggregation builder framework + tuple/binding analysers -->
+            <dependency>
+                <groupId>org.aksw.jena-sparql-api</groupId>
+                <artifactId>jena-sparql-api-analytics</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-views</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <!-- Used for result set analysis such as used datatypes and prefixs -->
+            <dependency>
+                <groupId>org.aksw.jena-sparql-api</groupId>
+                <artifactId>jena-sparql-api-analytics</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
@@ -1145,6 +1169,13 @@
                 <groupId>com.ibm.sparktc</groupId>
                 <artifactId>spark-bench_2.12</artifactId>
                 <version>3.0.1_0.4.0-RELEASE</version>
+            </dependency>
+
+            <!-- Scala HTTP wrapper -->
+            <dependency>
+                <groupId>org.scalaj</groupId>
+                <artifactId>scalaj-http_${scala.binary.version}</artifactId>
+                <version>2.4.2</version>
             </dependency>
 
         </dependencies>
