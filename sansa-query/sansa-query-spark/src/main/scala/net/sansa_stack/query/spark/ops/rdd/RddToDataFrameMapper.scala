@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.ops.rdd
 
 import java.math.BigInteger
+import java.util
 
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
@@ -47,7 +48,9 @@ object RddToDataFrameMapper {
 
   def createSchemaMapping(resultSet: ResultSetSpark): SchemaMapping = {
 
-    val javaResultVars = resultSet.getResultVars.toSet.asJava
+    // Create a linked hash set from the list of result vars
+    // The schema mapper will respect the order
+    val javaResultVars = new util.LinkedHashSet(resultSet.getResultVars.asJava)
 
     // Gather result set statistics using the analytic functions
     val usedDatatypesAndNulls = resultSet.getBindings.javaCollect(
