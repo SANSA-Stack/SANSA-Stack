@@ -64,6 +64,7 @@ object MainSansaSparqlServer {
         |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Passy> .
         |<http://dbpedia.org/resource/Charles_Dickens> <http://xmlns.com/foaf/0.1/givenName> "Charles"@en .
         |<http://dbpedia.org/resource/Charles_Dickens> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Gads_Hill_Place> .
+        |<http://dbpedia.org/resource/Charles_Dickens> <http://example.org/ontology/age> "20"^^<http://www.w3.org/2001/XMLSchema#short> .
         |<http://someOnt/1> <http://someOnt/184298> <http://someOnt/272277> .
         |<http://someOnt/184298> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#AnnotationProperty> .
         |<http://snomedct-20170731T150000Z> <http://www.w3.org/2002/07/owl#versionInfo> "20170731T150000Z"@en .
@@ -83,9 +84,10 @@ object MainSansaSparqlServer {
       .execSelectSpark()
 
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
+    println(schemaMapping)
     val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
-    df.show(10)
+    df.show(20)
 
     val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).create
     server.join()
