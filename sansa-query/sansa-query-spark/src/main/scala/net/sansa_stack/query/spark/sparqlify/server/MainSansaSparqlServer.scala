@@ -58,7 +58,7 @@ object MainSansaSparqlServer {
 
     val triplesString =
       """<http://dbpedia.org/resource/Guy_de_Maupassant> <http://xmlns.com/foaf/0.1/givenName> "Guy De" .
-        |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://example.org/ontology/age> "30"^^<http://www.w3.org/2001/XMLSchema#int> .
+        |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://example.org/ontology/age> "30"^^<http://www.w3.org/2001/XMLSchema#integer> .
         |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/influenced> <http://dbpedia.org/resource/Tobias_Wolff> .
         |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/influenced> <http://dbpedia.org/resource/Henry_James> .
         |<http://dbpedia.org/resource/Guy_de_Maupassant> <http://dbpedia.org/ontology/deathPlace> <http://dbpedia.org/resource/Passy> .
@@ -83,7 +83,7 @@ object MainSansaSparqlServer {
       .execSelectSpark()
 
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
-    val df = RddToDataFrameMapper.applySchemaMapping(sparkSession, resultSet.getBindings, schemaMapping)
+    val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df.show(10)
 

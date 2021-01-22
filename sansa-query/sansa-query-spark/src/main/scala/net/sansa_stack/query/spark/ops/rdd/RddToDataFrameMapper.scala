@@ -1,7 +1,9 @@
 package net.sansa_stack.query.spark.ops.rdd
 
+import java.math.BigInteger
+
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
-import net.sansa_stack.rdf.spark.utils.DataTypeUtils
+import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
 import org.aksw.jena_sparql_api.rdf.collections.{ConverterFromRDFNodeMapper, NodeMapperFromRdfDatatype}
 import org.aksw.jena_sparql_api.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
@@ -67,10 +69,10 @@ object RddToDataFrameMapper {
   // applySchemaMapping(resultSet.getBindings, schemaMapping)
 
   def applySchemaMapping(
-                          sparkSession: SparkSession,
                           bindings: RDD[Binding],
                           schemaMapping: SchemaMapping): DataFrame = {
 
+    val sparkSession = SparkSessionUtils.getSessionFromRdd(bindings)
     val typeMapper = TypeMapper.getInstance
 
     val structFields = schemaMapping.getDefinedVars.iterator().asScala.map(v => {
@@ -99,6 +101,12 @@ object RddToDataFrameMapper {
     sparkSession.createDataFrame(rows, targetSchema)
   }
 
+  /**
+   * Returns rr:IRI and rr:BlankNode as xsd:string
+   *
+   * @param datatypeIri
+   * @return
+   */
   def getEffectiveDatatype(datatypeIri: String): String = {
     datatypeIri match {
       case R2RMLStrings.IRI => XSD.xstring.getURI
@@ -116,7 +124,7 @@ object RddToDataFrameMapper {
       val decisionTreeExpr = fieldMapping.getDefinition
 
       val node = decisionTreeExpr.eval(binding)
-      val javaValue: Any = {
+      val rawJavaValue: Any = {
         if (node == null) null
         else if (node.isURI) node.getURI
         else if (node.isBlank) node.getBlankNodeLabel
@@ -124,8 +132,11 @@ object RddToDataFrameMapper {
           getEffectiveDatatype(fieldMapping.getDatatypeIri)))
       }
 
-      javaValue
-    }).toList
+      // Special handling for BigInteger
+      val effectiveJavaValue = DataTypeUtils.enforceSparkCompatibility(rawJavaValue)
+
+      effectiveJavaValue
+    }).toSeq
 
     Row.fromSeq(seq)
   }
