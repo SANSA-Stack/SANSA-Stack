@@ -91,9 +91,9 @@ class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
         DBTermType longType = new NumberDBTermType(LONG_STR, rootAncestry, typeFactory.getDatatype(XSD.LONG), INTEGER);
         DBTermType floatType = new NumberDBTermType(FLOAT_STR, rootAncestry, typeFactory.getDatatype(XSD.FLOAT), FLOAT_DOUBLE);
 
-//        RDFDatatype xsdString = typeFactory.getXsdStringDatatype();
-//        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, xsdString));
-        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, typeFactory.getDatatype(XSD.STRING)));
+        RDFDatatype xsdString = typeFactory.getXsdStringDatatype();
+        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, xsdString));
+//        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, typeFactory.getDatatype(XSD.STRING)));
         map.put(BYTE_STR,byteType);
         map.put(TINYINT_STR,byteType);
         map.put(SHORT_STR,shortType);
