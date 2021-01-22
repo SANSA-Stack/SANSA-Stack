@@ -84,7 +84,9 @@
 
         <owlapi.version>5.1.17</owlapi.version>
 
-        <ontop.version>4.0.3-owlapi5.17-guava-shaded</ontop.version>
+<!--        <ontop.version>4.0.3-owlapi5.17-guava-shaded</ontop.version>-->
+        <ontop.version>4.1.0-beta-1-guava-shaded-owlapiv5-SNAPSHOT</ontop.version>
+
 
         <sansa.version>${project.version}</sansa.version>
         <!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->

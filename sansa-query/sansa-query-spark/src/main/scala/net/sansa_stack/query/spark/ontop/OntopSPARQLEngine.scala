@@ -7,7 +7,7 @@ import java.util.Properties
 import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
-import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet, Sets}
+import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableMultimap, ImmutableSortedSet, Sets}
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.ConstructionNode
@@ -112,7 +112,7 @@ class OntopSPARQL2SQLRewriter(val partitioner: RdfPartitioner[RdfPartitionStateD
   def createSQLQuery(sparqlQuery: String): OntopQueryRewrite = {
     val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
+    val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create(ImmutableMultimap.of[String, String]()))
 
     val sqlQuery = OntopUtils.extractSQLQuery(executableQuery)
     val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)

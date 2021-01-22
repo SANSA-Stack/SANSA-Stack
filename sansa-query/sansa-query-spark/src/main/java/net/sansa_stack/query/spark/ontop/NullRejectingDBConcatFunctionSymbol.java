@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.ontop;
 
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
+import it.unibz.inf.ontop.model.term.Constant;
 import it.unibz.inf.ontop.model.term.ImmutableTerm;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbolSerializer;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.AbstractDBConcatFunctionSymbol;
@@ -24,6 +25,13 @@ public class NullRejectingDBConcatFunctionSymbol extends AbstractDBConcatFunctio
     }
 
     @Override
+    protected String extractString(Constant constant) {
+        return constant.isNull()
+                ? ""
+                : constant.getValue();
+    }
+
+    @Override
     public boolean isAlwaysInjectiveInTheAbsenceOfNonInjectiveFunctionalTerms() {
         return false;
     }
@@ -35,4 +43,6 @@ public class NullRejectingDBConcatFunctionSymbol extends AbstractDBConcatFunctio
     public boolean canBePostProcessed(ImmutableList<? extends ImmutableTerm> arguments) {
         return false;
     }
+
+
 }
