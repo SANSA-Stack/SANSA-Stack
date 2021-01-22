@@ -1,17 +1,10 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
-import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, QueryExecutionSparqlifySpark, SparqlifyUtils3}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionComplex, RdfPartitionerComplex, RdfPartitionerDefault}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import org.apache.jena.graph.{Node, Triple}
-import org.apache.jena.query.{Query, QueryFactory}
-import org.apache.jena.sparql.core.Var
-import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.lang.ParserSPARQL11
-import org.apache.spark.api.java.JavaRDD
+import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
+import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark.query._
-
+import net.sansa_stack.rdf.spark.partition.RDFPartition
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
@@ -67,7 +60,7 @@ class SparqlFrame extends Transformer{
 
   override def transformSchema(schema: StructType): StructType =
     throw new NotImplementedError()
-
+  /*
   /**
    * call of repective query laver to get query result as RDD[Bindings]
    * @param dataset the readin KG as Dataset[Triple]
@@ -116,6 +109,19 @@ class SparqlFrame extends Transformer{
    * @return a dataframe with columns corresponding to projection variables
    */
   def transform(dataset: Dataset[_]): DataFrame = {
+    val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
+    val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
+
+    val resultSet = qef.createQueryExecution(_query)
+      .execSelectSpark()
+
+    val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
+    println(schemaMapping)
+    val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+
+    df
+  }
+
     /* if (_queryExcecutionEngine == "sparqlify") {
       val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
       val qef = dataset.rdd.verticalPartition(RdfPartitionerDefault).sparqlify
@@ -124,7 +130,7 @@ class SparqlFrame extends Transformer{
       val df = RddToDataFrameMapper.applySchemaMapping(spark, resultSet.getBindings, schemaMapping)
       df
     } */
-
+/*
     val parser = new ParserSPARQL11()
     val projectionVars: Seq[Var] = parser.parse(new Query(), _query).getProjectVars.asScala
     val bindings: RDD[Binding] = getResultBindings(dataset)
@@ -210,5 +216,5 @@ class SparqlFrame extends Transformer{
     })
 
     spark.createDataFrame(featuresNativeScalaDataTypes.map(Row.fromSeq(_)), schema)
-  }
+  } */
 }

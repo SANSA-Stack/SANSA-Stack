@@ -7,7 +7,7 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
 import org.apache.spark.sql.{DataFrame, Encoders, SparkSession}
 import org.scalatest.FunSuite
 import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.query.spark.sparqlify.{QueryExecutionFactorySparqlifySpark, QueryExecutionSparqlifySpark, SparqlifyUtils3}
+import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.QueryFactory
