@@ -37,7 +37,7 @@ class OntopRowMapper(
                      ) {
 
 
-  val reformulationConfiguration = OntopConnection2(id, obdaMappings, properties, jdbcMetaData, ontology)
+  val reformulationConfiguration = OntopConnection(id, obdaMappings, properties, jdbcMetaData, ontology)
 
 
   val termFactory = reformulationConfiguration.getTermFactory
@@ -57,7 +57,7 @@ class OntopRowMapper(
     toBinding(row)
   }
 
-  def toBinding(row: Row): Binding = { println(row)
+  def toBinding(row: Row): Binding = { // println(row)
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]
@@ -74,7 +74,7 @@ class OntopRowMapper(
 
     val composition = sub.composeWith(sparqlVar2Term)
     val ontopBindings = answerAtom.getArguments.asScala.map(v => {
-      (v, OntopUtils2.evaluate(composition.apply(v)))
+      (v, OntopUtils.evaluate(composition.apply(v)))
     })
 
     ontopBindings.foreach {

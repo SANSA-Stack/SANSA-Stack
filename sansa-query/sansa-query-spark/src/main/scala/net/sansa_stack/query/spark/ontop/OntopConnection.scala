@@ -15,7 +15,7 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
  *
  * @author Lorenz Buehmann
  */
-object OntopConnection2 {
+object OntopConnection {
 
   val logger = com.typesafe.scalalogging.Logger(classOf[OntopConnection])
 
@@ -52,7 +52,7 @@ object OntopConnection2 {
       val reformulationConfiguration = {
         JDBCDatabaseGenerator.generateTables(connection, jdbcMetaData)
 
-        OntopUtils2.createReformulationConfig(obdaMappings, properties, ontology)
+        OntopUtils.createReformulationConfig(obdaMappings, properties, ontology)
       }
 
       configs += id -> reformulationConfiguration

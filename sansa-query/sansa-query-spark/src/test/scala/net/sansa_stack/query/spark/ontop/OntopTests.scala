@@ -30,7 +30,7 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    JenaSystem.init();
+    JenaSystem.init()
 
     val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
 
@@ -63,12 +63,6 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
       assert(resultSetEquivalent(query, rs, rsTarget))
     }
   })
-
-  private def resultSetFromBindings(query: Query, bindings: Array[Binding]): ResultSet = {
-    val model = ModelFactory.createDefaultModel()
-    val rs = new ResultSetStream(query.getResultVars, model, bindings.toList.asJava.iterator())
-    rs
-  }
 
   def resultSetEquivalent(query: Query, resultsActual: ResultSet, resultsExpected: ResultSet): Boolean = {
     val testByValue = true

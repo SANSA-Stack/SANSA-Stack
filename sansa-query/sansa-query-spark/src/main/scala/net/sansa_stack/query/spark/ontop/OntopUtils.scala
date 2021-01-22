@@ -18,7 +18,7 @@ import org.semanticweb.owlapi.model.OWLOntology
 /**
  * @author Lorenz Buehmann
  */
-object OntopUtils2 extends Serializable {
+object OntopUtils extends Serializable {
 
   def toNode(constant: RDFConstant, typeFactory: TypeFactory): Node = {
     val termType = constant.getType
@@ -97,9 +97,9 @@ object OntopUtils2 extends Serializable {
 
     val mappingConfiguration = builder
       .r2rmlMappingGraph(new JenaRDF().asGraph(obdaMappings))
-      .jdbcUrl(OntopConnection2.JDBC_URL)
-      .jdbcUser(OntopConnection2.JDBC_USER)
-      .jdbcPassword(OntopConnection2.JDBC_PASSWORD)
+      .jdbcUrl(OntopConnection.JDBC_URL)
+      .jdbcUser(OntopConnection.JDBC_USER)
+      .jdbcPassword(OntopConnection.JDBC_PASSWORD)
       .properties(properties)
       .enableTestMode
       .build
@@ -113,19 +113,19 @@ object OntopUtils2 extends Serializable {
     val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
                                               .ontology(ontology.get)
                                               .properties(properties)
-                                              .jdbcUser(OntopConnection2.JDBC_USER)
-                                              .jdbcPassword(OntopConnection2.JDBC_PASSWORD)
+                                              .jdbcUser(OntopConnection.JDBC_USER)
+                                              .jdbcPassword(OntopConnection.JDBC_PASSWORD)
                   else OntopReformulationSQLConfiguration.defaultBuilder
 
     builder
       .obdaSpecification(obdaSpecification)
       .properties(properties)
-      .jdbcUrl(OntopConnection2.JDBC_URL)
+      .jdbcUrl(OntopConnection.JDBC_URL)
       .enableTestMode
       .build
   }
 
 }
 
-class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
+class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException(s"Term $term does not evaluate to a constant")
 class InvalidConstantTypeInResultException(message: String) extends OntopInternalBugException(message)
