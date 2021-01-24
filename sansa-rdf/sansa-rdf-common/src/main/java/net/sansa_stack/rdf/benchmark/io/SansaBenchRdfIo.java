@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.aksw.commons.util.compress.MetaBZip2CompressorInputStream;
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
@@ -64,8 +64,8 @@ public class SansaBenchRdfIo {
 		if(!file.exists()) {
 			File tmpFile = new File(file.getPath() + ".tmp");
 		
-			try(InputStream in = new MetaBZip2CompressorInputStream(new URL(url).openStream());
-					OutputStream out = new FileOutputStream(tmpFile)) {
+			try(InputStream in = new BZip2CompressorInputStream(new URL(url).openStream(), true);
+				OutputStream out = new FileOutputStream(tmpFile)) {
 				IOUtils.copy(in, out);
 				out.flush();
 			}
