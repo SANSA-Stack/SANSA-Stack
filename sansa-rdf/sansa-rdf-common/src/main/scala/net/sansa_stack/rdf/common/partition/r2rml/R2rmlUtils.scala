@@ -248,7 +248,7 @@ object R2rmlUtils {
    * @param model the model
    * @return
    */
-  def triplesMapsForPredicate(predicate : Property, model: Model): Iterator[TriplesMap] = {
+  def triplesMapsForPredicate(predicate: Property, model: Model): Iterator[TriplesMap] = {
     model
       .listResourcesWithProperty(RR.subjectMap).asScala
       .map(_.as(classOf[TriplesMap]))
