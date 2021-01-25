@@ -10,7 +10,7 @@ import org.scalatest.FunSuite
 
 class HDTTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.query.spark.query._
+  import net.sansa_stack.query.spark._
 
   var hdt_triples: DataFrame = _
 

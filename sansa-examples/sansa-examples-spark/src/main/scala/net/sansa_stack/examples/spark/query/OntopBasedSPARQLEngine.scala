@@ -2,18 +2,23 @@ package net.sansa_stack.examples.spark.query
 
 import java.awt.Desktop
 import java.net.URI
-import java.nio.file.Paths
 
-import net.sansa_stack.query.spark.ontop.{OntopSPARQLEngine, PartitionSerDe, QueryExecutionFactorySparkOntop}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import scala.collection.convert.ImplicitConversions.`iterator asScala`
+
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 import org.apache.jena.query.QueryFactory
+import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
+
+import net.sansa_stack.query.spark.ontop.{QueryEngineOntop, QueryExecutionFactorySparkOntop}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
 
 /**
   * Run SPARQL queries over Spark using Ontop as SPARQL-to-SQL rewriter.
@@ -53,34 +58,38 @@ object OntopBasedSPARQLEngine {
       .enableHiveSupport()
       .getOrCreate()
 
-    val partitioner = RdfPartitionerComplex(false)
+    // load the data into an RDD
+    val lang = Lang.NTRIPLES
+    val triples = spark.rdf(lang)(input)
 
-    val ontopEngine = if (input != null) {
-      // load the data into an RDD
-      val lang = Lang.NTRIPLES
-      val data = spark.rdf(lang)(input)
+    // apply vertical partitioning which is necessary for the current Ontop integration
+    val partitioner = RdfPartitionerComplex()
+    val partitions2RDD: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
 
-      // apply vertical partitioning which is necessary for the current Ontop integration
-      val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(data, partitioner)
+    val mappingsModel = ModelFactory.createDefaultModel()
+    val partitions = partitions2RDD.keySet.toSeq
 
-      // create the SPARQL engine
-      OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
-    } else {
-      // load partitioning metadata
-      val partitions = PartitionSerDe.deserializeFrom(Paths.get(partitioningMetadataPath))
-      // create the SPARQL engine
-      OntopSPARQLEngine(spark, database, partitioner, partitions, None)
-    }
+    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
+    SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,
+                                                            partitions2RDD,
+                                                            extractTableName = tableNameFn)
+    R2rmlUtils.createR2rmlMappings(partitioner, partitions, tableNameFn, new SqlEscaperDoubleQuote(), mappingsModel, true, escapeIdentifiers = true)
+
+    val ontop = QueryEngineOntop(spark, "test", mappingsModel, None)
+
+    val qef = new QueryExecutionFactorySparkOntop(spark, ontop)
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI
     run match {
       case "cli" =>
         // only SELECT queries will be considered here
-        val result = ontopEngine.execSelect(sparqlQuery).collect()
+        val query = QueryFactory.create(sparqlQuery)
+        val qe = qef.createQueryExecution(query)
+
+        val result = qe.execSelect()
         // show bindings on command line
         result.foreach(println)
       case "endpoint" =>
-        val qef = new QueryExecutionFactorySparkOntop(spark, ontopEngine)
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
         if (Desktop.isDesktopSupported) {
           Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))

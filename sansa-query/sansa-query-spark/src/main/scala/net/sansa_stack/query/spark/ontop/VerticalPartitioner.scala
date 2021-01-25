@@ -32,7 +32,7 @@ object VerticalPartitioner {
   val warehouseLocation = new File("spark-warehouse").getAbsolutePath
 
   implicit val bNodeRead: scopt.Read[BlankNodeStrategy.Value] =
-    scopt.Read.reads(BlankNodeStrategy withName)
+    scopt.Read.reads(BlankNodeStrategy.withName)
 
   case class Config(
                      inputPath: URI = null,

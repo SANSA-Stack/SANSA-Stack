@@ -3,8 +3,8 @@ package net.sansa_stack.rdf.spark.partition.core
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{Row, SaveMode, SparkSession}
+import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
@@ -95,12 +95,23 @@ class SparkTableGenerator(spark: SparkSession,
     // escape table name for Spark/Hive
     val escapedTableName = sqlEscaper.escapeTableName(name)
     logger.debug(s"creating Spark table $name")
-    println(name)
 
     // create the DataFrame out of the RDD and the schema
     val scalaSchema = partitioner.determineLayout(p).schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
-    val df = spark.createDataFrame(rdd, sparkSchema).persist()
+
+    def setNullableStateOfColumn( df: DataFrame, nullable: Boolean) : DataFrame = {
+
+      // get schema
+      val schema = df.schema
+      // modify [[StructField] with name `cn`
+      val newSchema = StructType(schema.map {
+        case StructField( c, t, _, m) => StructField( c, t, nullable = nullable, m)
+      })
+      // apply new schema
+      df.sqlContext.createDataFrame( df.rdd, newSchema )
+    }
+    val df = setNullableStateOfColumn(spark.createDataFrame(rdd, sparkSchema), false).persist()
 
     if (useHive) {
       df.createOrReplaceTempView(s"`${escapedTableName}_tmp`")

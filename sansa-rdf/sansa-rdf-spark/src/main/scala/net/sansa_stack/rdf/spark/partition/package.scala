@@ -52,7 +52,7 @@ package object partition extends Logging {
 
       val sparkSession = SparkSession.builder.config(rddOfTriples.sparkContext.getConf).getOrCreate()
 
-      val tableNaming = R2rmlUtils.createDefaultTableName(_)
+      val tableNaming = R2rmlUtils.createDefaultTableName _
       val sqlEscaper = new SqlEscaperBacktick
 
       partitioning.foreach { case(p, rdd) =>
@@ -70,7 +70,8 @@ package object partition extends Logging {
           sqlEscaper,
           model,
           explodeLanguageTags,
-          escapeIdentifiers)
+          escapeIdentifiers
+        )
 
 //        triplesMaps.foreach(tm =>
 //          RDFDataMgr.write(System.err, model, RDFFormat.TURTLE_PRETTY)
@@ -85,7 +86,7 @@ package object partition extends Logging {
 
       new SparkTableGenerator(sparkSession).createAndRegisterSparkTables(partitioner, partitioning, tableNaming)
 
-      new R2rmlMappedSparkSession(sparkSession, model)
+      R2rmlMappedSparkSession(sparkSession, model)
     }
 
 
