@@ -5,7 +5,6 @@ import java.util.Properties
 
 import scala.collection.JavaConverters._
 
-import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
@@ -17,14 +16,18 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+import org.aksw.r2rml.jena.arq.lib.R2rmlLib
+import org.aksw.r2rml.jena.domain.api.TriplesMap
+import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
-import org.apache.jena.rdf.model.Model
+import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.spark.broadcast.Broadcast
+import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
-import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
+import org.semanticweb.owlapi.model.OWLOntology
+
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -73,21 +76,7 @@ class OntopSPARQL2SQLRewriter(jdbcMetaData: Map[String, String],
   val ontopProperties = new Properties()
   ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
 
-  // create the tmp DB needed for Ontop
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
-  private val JDBC_USER = "sa"
-  private val JDBC_PASSWORD = ""
-
-  private lazy val connection: Connection = try {
-    // scalastyle:off classforname
-    Class.forName("org.h2.Driver")
-    // scalastyle:on classforname
-    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
-  } catch {
-    case e: SQLException =>
-      logger.error("Error occurred when creating in-memory H2 database", e)
-      throw e
-  }
+  private lazy val connection: Connection = JDBCConnection.connection
 
   JDBCDatabaseGenerator.generateTables(connection, jdbcMetaData)
 
@@ -155,69 +144,52 @@ class QueryEngineOntop(val spark: SparkSession,
 
   // if no ontology has been provided, we try to extract it from the dataset
   if (ontology.isEmpty) {
-    ontology = createOntology()
+    ontology = OntologyExtractor.extract(spark)
   }
+
+  expandMappingsWithTypes(mappingsModel)
 
   private val sparql2sql = new OntopSPARQL2SQLRewriter(jdbcMetaData, mappingsModel, ontology)
 
-  val typeFactory = sparql2sql.typeFactory
-
-  // mapping from RDF datatype to Spark SQL datatype
-  val rdfDatatype2SQLCastName = DatatypeMappings(typeFactory)
-
-  val id: String = jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
-
-
-//  // some debug stuff
-//  mappingsModel.write(System.out, "Turtle")
-//  spark.catalog.listTables().collect().foreach(t => spark.table(sqlEscaper.escapeTableName(t.name)).show(false))
+  // define an ID for the whole setup - this will be used for caching of the whole Ontop setup
+  private val id: String = jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
 
 
   /**
-   * creates an ontology from the given partitions.
-   * This is necessary for rdf:type information which is handled not in forms of SQL tables by Ontop
-   * but by a given set of entities contained in the ontology.
-   * TODO we we just use class declaration axioms for now
-   *      but it could be extended to extract more sophisticated schema axioms that can be used for inference
+   * We have to add separate mappings for each rdf:type in Ontop.
    */
-  private def createOntology(): Option[OWLOntology] = {
-    logger.debug("extracting ontology from dataset")
-    // get the partitions that contain the rdf:type triples
+  def expandMappingsWithTypes(model: Model): Unit = {
+    // get the rdf:type TripleMaps with o being an IRI
+    val tms = R2rmlUtils.triplesMapsForPredicate(RDF.`type`, model)
+      .filter(_.getPredicateObjectMaps.asScala.exists(_.getObjectMaps.asScala.exists(_.asTermMap().getTermType == RR.IRI.inModel(model))))
 
-    val typePartitions = spark.catalog.listTables().filter(_.name.contains("type")).collect()
+    tms.foreach(tm => {
+      val tableName = tm.getLogicalTable.asBaseTableOrView().getTableName
 
-    if (typePartitions.nonEmpty) {
-      // generate the table names for those rdf:type partitions
-      // there can be more than one because the partitioner creates a separate partition for each subject and object type
-      val names = typePartitions.map(_.name)
+      val s = tm.getSubjectMap.getColumn
+      val o = tm.getPredicateObjectMaps.asScala.head.getObjectMaps.asScala.head.asTermMap().getColumn // TODO we assume a single predicate-object map here
 
-      // create the SQL query as UNION of
-      val sql = names.map(name => s"SELECT DISTINCT o FROM ${sqlEscaper.escapeTableName(name)}").mkString(" UNION ")
-
-      val df = spark.sql(sql)
+      // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
+      val tn = sqlEscaper.escapeTableName(tableName.stripPrefix("\"").stripSuffix("\""))
+      val to = sqlEscaper.escapeColumnName(o.stripPrefix("\"").stripSuffix("\""))
+      val df = spark.sql(s"SELECT DISTINCT $to FROM $tn")
 
       val classes = df.collect().map(_.getString(0))
+      classes.foreach(cls => {
+        val tm = model.createResource.as(classOf[TriplesMap])
+        tm.getOrSetLogicalTable().asR2rmlView().setSqlQuery(s"SELECT $s FROM $tableName WHERE $o = '$cls'")
+        val sm = tm.getOrSetSubjectMap()
+        sm.setColumn(s)
+        sm.setTermType(RR.IRI.inModel(model))
 
-      // we just use declaration axioms for now
-      val dataFactory = OWLManager.getOWLDataFactory
-      val axioms: Set[OWLAxiom] = classes.map(cls =>
-            dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(IRI.create(cls)))).toSet
-      val ontology = createOntology(axioms)
+        val pom = tm.addNewPredicateObjectMap()
+        pom.addPredicate(RDF.`type`.inModel(model))
+        pom.addObject(model.createResource(cls))
+      })
 
-      Some(ontology)
-    } else {
-      None
-    }
+      model.removeAll(tm, null, null)
+    })
   }
-
-  /**
-   * creates a non-concurrent aware ontology - used to avoid overhead during serialization.
-   */
-  private def createOntology(axioms: Set[OWLAxiom]): OWLOntology = {
-    val man = new OWLAPIImplProfile().createManager(false)
-    man.createOntology(axioms.asJava)
-  }
-
 
   /**
    * Shutdown of the engine, i.e. all open resource will be closed.
@@ -320,7 +292,13 @@ object QueryEngineOntop {
   def apply(spark: SparkSession,
             databaseName: String,
             mappingsModel: Model,
-            ontology: Option[OWLOntology]): QueryEngineOntop
-  = new QueryEngineOntop(spark, databaseName, mappingsModel, ontology)
+            ontology: Option[OWLOntology]): QueryEngineOntop = {
+    // expand shortcuts of R2RML model
+    val newModel = ModelFactory.createDefaultModel()
+    newModel.add(mappingsModel)
+    R2rmlUtils.streamTriplesMaps(newModel).toList.foreach(R2rmlLib.expandShortcuts)
+
+    new QueryEngineOntop(spark, databaseName, newModel, ontology)
+  }
 
 }
