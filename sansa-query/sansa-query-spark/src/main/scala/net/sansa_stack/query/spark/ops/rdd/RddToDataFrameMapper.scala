@@ -39,7 +39,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
  * Jena's [[TypeMapper]] is used to resolve datatypeIris to [[org.apache.jena.datatypes.RDFDatatype]] instances which in
  * turn give access to the Java class which finally is converted to a spark type via [[DataTypeUtils]].
  *
- *
+ * FIXME Rename to ResultSetToFrameMapper
  */
 object RddToDataFrameMapper {
   import net.sansa_stack.query.spark.query._
