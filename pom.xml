@@ -1178,6 +1178,13 @@
                 <version>0.5.0</version>
             </dependency>
 
+            <!-- Scala HTTP wrapper -->
+            <dependency>
+                <groupId>org.scalaj</groupId>
+                <artifactId>scalaj-http_${scala.binary.version}</artifactId>
+                <version>2.4.2</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

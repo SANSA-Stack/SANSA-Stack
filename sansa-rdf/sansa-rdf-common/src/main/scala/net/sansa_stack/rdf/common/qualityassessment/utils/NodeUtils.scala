@@ -1,16 +1,15 @@
 package net.sansa_stack.rdf.common.qualityassessment.utils
 
-import java.io.IOException
-import java.net.{ HttpURLConnection, MalformedURLException, ProtocolException }
-import java.net.URL
-
 import scala.collection.Seq
 import scala.util.matching.Regex
+import scala.util.{Failure, Success, Try}
+
+import org.apache.jena.graph.Node
+import org.apache.jena.vocabulary.{OWL, RDFS}
+import scalaj.http.Http
 
 import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
 import net.sansa_stack.rdf.common.qualityassessment.utils.vocabularies.DQV
-import org.apache.jena.graph.{ Node, Triple }
-import org.apache.jena.vocabulary.{OWL, RDFS }
 
 
 /**
@@ -37,35 +36,36 @@ object NodeUtils extends Serializable {
    * a legal lexical form of this datatype.
    */
   def isLexicalFormCompatibleWithDatatype(node: Node): Boolean =
-    node.getLiteralDatatype().isValid(node.getLiteralLexicalForm)
+    node.getLiteralDatatype.isValid(node.getLiteralLexicalForm)
 
   val isLicenseDefination = new Regex(".*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*")
-  val licenceIndications = Seq(DQV.dqv_description, RDFS.comment, RDFS.label)
+  val licenceIndications: Seq[String] = Seq(DQV.dqv_description, RDFS.comment.getURI, RDFS.label.getURI)
 
   /**
-   * Checks if a given [[resource]] contains license statements.
+   * Checks if a given `resource` contains license statements.
    * License statements : .*(licensed?|copyrighte?d?).*(under|grante?d?|rights?).*
    * @param node the resource to be checked.
    * @return `true` if contains these definition, otherwise `false`.
    */
   def isLicenseStatement(node: Node): Boolean =
-    isLicenseDefination.findFirstIn(node.getLiteralLexicalForm).size != 0
+    isLicenseDefination.findFirstIn(node.getLiteralLexicalForm).isDefined
 
   /**
-   * Checks if a given [[resource]] contains license indications.
-   * License indications : [[http://www.w3.org/ns/dqv#description dqv:description]], [[https://www.w3.org/2000/01/rdf-schema#comment RDFS.comment]], [[https://www.w3.org/2000/01/rdf-schema#label RDFS.label]]
+   * Checks if a given `resource` contains license indications.
+   * License indications : [[http://www.w3.org/ns/dqv#description dqv:description]],
+   * [[https://www.w3.org/2000/01/rdf-schema#comment RDFS.comment]],
+   * [[https://www.w3.org/2000/01/rdf-schema#label RDFS.label]]
    * @param node the resource to be checked.
    * @return `true` if contains these indications, otherwise `false`.
    */
-  def hasLicenceIndications(node: Node): Boolean =
-    licenceIndications.contains(node.getURI)
+  def hasLicenceIndications(node: Node): Boolean = licenceIndications.contains(node.getURI)
 
-  val licenceAssociated = Seq(DQV.cclicence, DQV.dbolicense, DQV.xhtmllicense, DQV.dclicence,
+  val licenceAssociated: Seq[String] = Seq(DQV.cclicence, DQV.dbolicense, DQV.xhtmllicense, DQV.dclicence,
     DQV.dcrights, DQV.dctlicense, DQV.dbplicence, DQV.doaplicense,
     DQV.dctrights, DQV.schemalicense, "wrcc:license", "sz:license_text")
 
   /**
-   * Checks if a given [[resource]] is license associated.
+   * Checks if a given `resource` is license associated.
    * @param node the resource to be checked.
    * @return `true` if contains these definition, otherwise `false`.
    */
@@ -76,69 +76,25 @@ object NodeUtils extends Serializable {
    * Checks if a resource @node is broken
    */
   def isBroken(node: Node): Boolean = {
-    var isBroken = false
-    var extUrl: URL = null
-
-    try {
-      extUrl = new URL(node.getURI()) // retrieving extUrl
-    } catch {
-      case e: MalformedURLException =>
-        (isBroken = true)
-        true
+    Try(Http(node.getURI)
+        .method("HEAD")
+        .asString) match {
+      case Success(response) => !(response.code >= 200 && response.code < 400)
+      case Failure(exception) => true
     }
-
-    var urlConn: HttpURLConnection = null
-    try {
-      urlConn = extUrl.openConnection().asInstanceOf[HttpURLConnection]
-    } catch {
-      case ioe: IOException =>
-        (isBroken = true) // IO Exception
-        true
-      case e: Exception =>
-        (isBroken = true) // General Exception
-        true
-    }
-    try {
-      urlConn.setRequestMethod("HEAD")
-    } catch {
-      case e: ProtocolException =>
-        (isBroken = true) // Protocol error
-        true
-    }
-
-    var responseCode = 0;
-
-    try {
-      urlConn.connect();
-      responseCode = urlConn.getResponseCode();
-    } catch {
-      case e: IOException =>
-        (isBroken = true) // Not able to retrieve response code
-        true
-    }
-
-    if (responseCode >= 200 && responseCode < 400) {
-      isBroken = false
-      false
-    } else {
-      isBroken = true // Bad response code
-      true
-    }
-
-    isBroken
   }
 
-  def isHashUri(node: Node): Boolean = node.getURI().indexOf("#") > -1
+  def isHashUri(node: Node): Boolean = node.getURI.indexOf("#") > -1
 
   def getParentURI(node: Node): String = {
 
     var parentURI = ""
-    if (node.isURI() && node.getURI().toString() != "") {
+    if (node.isURI && node.getURI != "") {
 
-      val lastSlashIx = node.getURI().lastIndexOf('/')
+      val lastSlashIx = node.getURI.lastIndexOf('/')
 
       if (lastSlashIx > 0) {
-        parentURI = node.getURI().substring(0, lastSlashIx)
+        parentURI = node.getURI.substring(0, lastSlashIx)
       } else parentURI = ""
     }
     parentURI
@@ -157,13 +113,13 @@ object NodeUtils extends Serializable {
     (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL.Class)
 
   def resourceTooLong(node: Node): Boolean =
-    (node.getURI().length() >= shortURIThreshold)
+    node.getURI.length() >= shortURIThreshold
 
   def hasQueryString(node: Node): Boolean = {
-    val uri = node.getURI()
+    val uri = node.getURI
     val qMarkIndex = uri.indexOf("?")
     val hashTagIndex = uri.indexOf("#")
 
-    (qMarkIndex > -1 && (hashTagIndex == -1 || qMarkIndex < hashTagIndex))
+    qMarkIndex > -1 && (hashTagIndex == -1 || qMarkIndex < hashTagIndex)
   }
 }
