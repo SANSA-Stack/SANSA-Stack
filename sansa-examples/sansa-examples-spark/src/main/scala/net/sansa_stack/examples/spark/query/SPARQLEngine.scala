@@ -6,31 +6,29 @@ import java.net.URI
 import scala.collection.convert.ImplicitConversions.`iterator asScala`
 
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 import org.apache.jena.query.QueryFactory
-import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.SparkSession
 
-import net.sansa_stack.query.spark.ontop.{QueryEngineOntop, QueryExecutionFactorySparkOntop}
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.query.spark.SPARQLEngine
+import net.sansa_stack.query.spark.SPARQLEngine.{Ontop, SPARQLEngine, Sparqlify}
+import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
+import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
 
 /**
   * Run SPARQL queries over Spark using Ontop as SPARQL-to-SQL rewriter.
   */
-object OntopBasedSPARQLEngine {
+object SPARQLEngine {
 
   JenaSystem.init
 
   def main(args: Array[String]) {
     parser.parse(args, Config()) match {
       case Some(config) =>
-        run(config.in, config.database, config.partitioningMetadataPath, config.sparql, config.runMode, config.port)
+        run(config.in, config.database, config.partitioningMetadataPath, config.queryEngine,
+          config.sparql, config.runMode, config.port)
       case None =>
         println(parser.usage)
     }
@@ -39,16 +37,17 @@ object OntopBasedSPARQLEngine {
   def run(input: String,
           database: String,
           partitioningMetadataPath: URI,
+          queryEngine: SPARQLEngine.Value,
           sparqlQuery: String = "",
           run: String = "cli",
           port: Int = 7531): Unit = {
 
     println("======================================")
-    println("|   Ontop based SPARQL example       |")
+    println("|   SPARQL example                   |")
     println("======================================")
 
     val spark = SparkSession.builder
-      .appName(s"Ontop SPARQL example ( $input )")
+      .appName(s"SPARQL example ( $input )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
         ", ",
@@ -62,22 +61,13 @@ object OntopBasedSPARQLEngine {
     val lang = Lang.NTRIPLES
     val triples = spark.rdf(lang)(input)
 
-    // apply vertical partitioning which is necessary for the current Ontop integration
-    val partitioner = RdfPartitionerComplex()
-    val partitions2RDD: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
+    val queryEngineFactory = queryEngine match {
+      case Ontop => new QueryEngineFactoryOntop(spark)
+      case Sparqlify => new QueryEngineFactorySparqlify(spark)
+      case _ => throw new RuntimeException("Unsupported query engine")
+    }
 
-    val mappingsModel = ModelFactory.createDefaultModel()
-    val partitions = partitions2RDD.keySet.toSeq
-
-    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
-    SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,
-                                                            partitions2RDD,
-                                                            extractTableName = tableNameFn)
-    R2rmlUtils.createR2rmlMappings(partitioner, partitions, tableNameFn, new SqlEscaperDoubleQuote(), mappingsModel, true, escapeIdentifiers = true)
-
-    val ontop = QueryEngineOntop(spark, "test", mappingsModel, None)
-
-    val qef = new QueryExecutionFactorySparkOntop(spark, ontop)
+    val qef = queryEngineFactory.create(triples)
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI
     run match {
@@ -102,17 +92,20 @@ object OntopBasedSPARQLEngine {
 
   }
 
+  implicit val sparqlEngineRead: scopt.Read[SPARQLEngine.Value] = scopt.Read.reads(SPARQLEngine.withName)
+
   case class Config(in: String = null,
                     database: String = null,
                     partitioningMetadataPath: URI = null,
+                    queryEngine: SPARQLEngine.Value = null,
                     sparql: String = "SELECT * WHERE {?s ?p ?o} LIMIT 10",
                     runMode: String = "cli",
                     port: Int = 7531,
                     browser: Boolean = true)
 
-  val parser = new scopt.OptionParser[Config]("Ontop SPARQL example") {
+  val parser = new scopt.OptionParser[Config]("SPARQL example") {
 
-    head("Ontop SPARQL example")
+    head("SPARQL example")
 
     opt[String]('i', "input")
       .valueName("<path>").
@@ -127,6 +120,10 @@ object OntopBasedSPARQLEngine {
       .abbr("db")
       .action((x, c) => c.copy(database = x))
       .text("the name of the Spark database used as KB")
+
+    opt[SPARQLEngine]("sparql-engine")
+      .action((x, c) => c.copy(queryEngine = x))
+      .text("the SPARQL backend ('Ontop', 'Sparqlify'")
 
     opt[String]('q', "query").optional().valueName("<query>").
       action((x, c) => c.copy(sparql = x)).

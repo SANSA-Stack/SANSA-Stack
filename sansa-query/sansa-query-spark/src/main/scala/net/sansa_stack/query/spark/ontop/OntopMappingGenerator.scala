@@ -1,16 +1,15 @@
 package net.sansa_stack.query.spark.ontop
 
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
-import org.apache.commons.lang3.StringUtils
-import org.apache.jena.vocabulary.{RDF, XSD}
-import org.semanticweb.owlapi.model.OWLOntology
-import org.semanticweb.owlapi.model.parameters.Imports
 import scala.collection.JavaConverters._
 
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+import org.apache.jena.vocabulary.{RDF, XSD}
+import org.semanticweb.owlapi.model.OWLOntology
+import org.semanticweb.owlapi.model.parameters.Imports
 
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
+import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
 
 /**
  * @author Lorenz Buehmann

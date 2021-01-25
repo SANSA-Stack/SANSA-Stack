@@ -96,6 +96,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.scalaj</groupId>
+			<artifactId>scalaj-http_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.aksw.r2rml</groupId>
 			<artifactId>r2rml-jena-plugin</artifactId>
 		</dependency>

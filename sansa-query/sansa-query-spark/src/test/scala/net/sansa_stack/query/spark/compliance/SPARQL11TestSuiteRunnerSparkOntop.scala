@@ -1,18 +1,9 @@
 package net.sansa_stack.query.spark.compliance
 
-import java.util.Properties
-
-import scala.collection.JavaConverters._
-
-import org.apache.jena.graph.Triple
-import org.apache.jena.query._
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.sparql.resultset.SPARQLResult
-import org.apache.spark.rdd.RDD
+import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
-import org.scalatest.{ConfigMap, DoNotDiscover}
 
-import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
+import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 
 
@@ -80,66 +71,12 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
 
 //  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS") || t.name.startsWith("UCASE")
-//override lazy val IGNORE_FILTER = t => t.dataFile.contains("/functions")
 //  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates")// && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
-//override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
+// override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
 
   override lazy val IGNORE_FILTER = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
-  var engineFactory: QueryEngineFactoryOntop = _
 
-  override def beforeAll(configMap: ConfigMap): Unit = {
-    super.beforeAll(configMap)
-    engineFactory = new QueryEngineFactoryOntop(spark)
-  }
-
-  val db = "TEST"
-
-  var previousModel: Model = _
-  var triplesRDD: RDD[Triple] = _
-  var qef: QueryExecutionFactorySpark = _
-
-  override def runQuery(query: Query, data: Model): SPARQLResult = {
-    // do some caching here to avoid reloading the same data
-    if (data != previousModel) {
-      // we drop the Spark database to remove all tables
-      spark.sql(s"DROP DATABASE IF EXISTS $db")
-
-      // distribute on Spark
-      triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
-
-      // we create a Spark database here to keep the implicit partitioning separate
-
-      spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
-      spark.sql(s"USE $db")
-
-      qef = engineFactory.create(triplesRDD)
-
-      previousModel = data
-    }
-
-    val qe = qef.createQueryExecution(query)
-
-    // produce result based on query type
-    val result = if (query.isSelectType) { // SELECT
-      val rs = qe.execSelect()
-      new SPARQLResult(rs)
-    } else if (query.isAskType) { // ASK
-      val b = qe.execAsk()
-      new SPARQLResult(b)
-    } else if (query.isConstructType) { // CONSTRUCT
-      val triples = qe.execConstruct()
-      new SPARQLResult(triples)
-    } else { // DESCRIBE todo
-      fail("unsupported query type: DESCRIBE")
-      null
-    }
-    // clean up
-
-    qe.close()
-
-    result
-  }
-
+  override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 }
 
 import org.scalatest.Tag
