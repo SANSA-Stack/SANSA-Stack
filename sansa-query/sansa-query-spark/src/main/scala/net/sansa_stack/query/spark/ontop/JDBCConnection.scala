@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.ontop
 import java.sql.{Connection, DriverManager, SQLException}
 
 /**
- * Creates an in-memory H" JDBC connection.
+ * Creates an in-memory H2 JDBC connection.
  *
  * @author Lorenz Buehmann
  */
