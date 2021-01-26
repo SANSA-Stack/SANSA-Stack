@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.StringReader
 import java.util.Properties
 
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException}
@@ -10,19 +9,16 @@ import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
 import it.unibz.inf.ontop.iq.{IQ, IQTree, UnaryIQTree}
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
+import org.apache.commons.rdf.jena.JenaRDF
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.{Node, NodeFactory}
+import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
 
 /**
  * @author Lorenz Buehmann
  */
 object OntopUtils extends Serializable {
-
-  // create the tmp DB needed for Ontop
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
-  private val JDBC_USER = "sa"
-  private val JDBC_PASSWORD = ""
 
   def toNode(constant: RDFConstant, typeFactory: TypeFactory): Node = {
     val termType = constant.getType
@@ -93,17 +89,17 @@ object OntopUtils extends Serializable {
         "The \"executable\" query is not starting with a construction node\n" + executableQuery))
   }
 
-
+  import scala.language.existentials
   @throws[OBDASpecificationException]
-  private def loadOBDASpecification(obdaMappings: String, properties: Properties, ontology: Option[OWLOntology]) = {
+  private def loadOBDASpecification(obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology]) = {
     val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder.ontology(ontology.get)
                   else OntopMappingSQLAllConfiguration.defaultBuilder
 
     val mappingConfiguration = builder
-      .nativeOntopMappingReader(new StringReader(obdaMappings))
-      .jdbcUrl(JDBC_URL)
-      .jdbcUser(JDBC_USER)
-      .jdbcPassword(JDBC_PASSWORD)
+      .r2rmlMappingGraph(new JenaRDF().asGraph(obdaMappings))
+      .jdbcUrl(OntopConnection.JDBC_URL)
+      .jdbcUser(OntopConnection.JDBC_USER)
+      .jdbcPassword(OntopConnection.JDBC_PASSWORD)
       .properties(properties)
       .enableTestMode
       .build
@@ -111,25 +107,25 @@ object OntopUtils extends Serializable {
   }
 
   @throws[OBDASpecificationException]
-  def createReformulationConfig(obdaMappings: String, properties: Properties, ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
+  def createReformulationConfig(obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
     val obdaSpecification = loadOBDASpecification(obdaMappings, properties, ontology)
 
     val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
                                               .ontology(ontology.get)
                                               .properties(properties)
-                                              .jdbcUser(JDBC_USER)
-                                              .jdbcPassword(JDBC_PASSWORD)
+                                              .jdbcUser(OntopConnection.JDBC_USER)
+                                              .jdbcPassword(OntopConnection.JDBC_PASSWORD)
                   else OntopReformulationSQLConfiguration.defaultBuilder
 
     builder
       .obdaSpecification(obdaSpecification)
       .properties(properties)
-      .jdbcUrl(JDBC_URL)
+      .jdbcUrl(OntopConnection.JDBC_URL)
       .enableTestMode
       .build
   }
 
 }
 
-class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
+class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException(s"Term $term does not evaluate to a constant")
 class InvalidConstantTypeInResultException(message: String) extends OntopInternalBugException(message)

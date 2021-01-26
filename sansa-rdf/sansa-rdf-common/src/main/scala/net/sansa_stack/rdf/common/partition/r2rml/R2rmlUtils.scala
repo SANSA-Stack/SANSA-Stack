@@ -1,17 +1,19 @@
 package net.sansa_stack.rdf.common.partition.r2rml
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
+import scala.collection.JavaConverters._
+import scala.reflect.runtime.universe.MethodSymbol
+
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api._
 import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.r2rmlx.domain.api.TermMapX
 import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaper, SqlEscaperBacktick}
 import org.apache.jena.graph.NodeFactory
-import org.apache.jena.rdf.model.{Model, ModelFactory, ResourceFactory}
+import org.apache.jena.rdf.model.{Model, Property, Resource, ResourceFactory}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.ExprVar
 
-import scala.reflect.runtime.universe.MethodSymbol
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 
 object R2rmlUtils {
   implicit def newExprVar(varName: String): ExprVar = new ExprVar(Var.alloc(varName))
@@ -184,8 +186,8 @@ object R2rmlUtils {
 
     termType match {
       // TODO The RR.IRI.inModel(...) is a workaround right now
-      case 0 => target.setColumn(attrNames(o)).setDatatype(RR.BlankNode.inModel(target.getModel))
-      case 1 => target.setColumn(attrNames(o)).setDatatype(RR.IRI.inModel(target.getModel))
+      case 0 => target.setColumn(attrNames(o)).setTermType(RR.BlankNode.inModel(target.getModel))
+      case 1 => target.setColumn(attrNames(o)).setTermType(RR.IRI.inModel(target.getModel))
       case 2 =>
         target.setColumn(attrNames(o))
         if (langTagPresent) {
@@ -236,6 +238,21 @@ object R2rmlUtils {
    */
   def streamTriplesMaps(model: Model): Iterator[TriplesMap] = {
     import collection.JavaConverters._
-    R2rmlLib.streamTriplesMaps(model).iterator().asScala.toIterator
+    R2rmlLib.streamTriplesMaps(model).iterator().asScala
+  }
+
+  /**
+   * Returns all triples maps for the given predicate.
+   *
+   * @param predicate the predicate
+   * @param model the model
+   * @return
+   */
+  def triplesMapsForPredicate(predicate: Property, model: Model): Iterator[TriplesMap] = {
+    model
+      .listResourcesWithProperty(RR.subjectMap).asScala
+      .map(_.as(classOf[TriplesMap]))
+      .filter(tm =>
+        tm.getPredicateObjectMaps.asScala.exists(_.getPredicateMaps.asScala.exists(pm => Option(pm.getConstant).contains(predicate))))
   }
 }

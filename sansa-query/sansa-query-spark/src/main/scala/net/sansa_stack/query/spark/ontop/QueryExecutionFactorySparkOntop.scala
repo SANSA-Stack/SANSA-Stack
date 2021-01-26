@@ -12,7 +12,7 @@ import net.sansa_stack.query.spark.api.impl.QueryExecutionFactorySparkBase
  * @author Lorenz Buehmann
  */
 class QueryExecutionFactorySparkOntop(spark: SparkSession,
-                                      ontop: OntopSPARQLEngine)
+                                      ontop: QueryEngineOntop)
   extends QueryExecutionFactorySparkBase(spark) {
 
   override def createQueryExecution(query: Query): QueryExecutionSpark = {

@@ -20,12 +20,12 @@ class Run[A](executor: QueryExecutor[A]) {
     val logger = Logger("SANSA-DataLake")
 
     // 1. Read SPARQL query
-    logger.info("QUERY ANALYSIS startigng...")
+    logger.info("QUERY ANALYSIS starting...")
 
     try {
       var query = Helpers.readFileFromPath(queryFile)
 
-      println(s"Going to execute the query:\n$query")
+      logger.info(s"Going to execute the query:\n$query")
 
       // Transformations
       var transformExist = false
@@ -319,7 +319,7 @@ class Run[A](executor: QueryExecutor[A]) {
         finalDataSet = executor.limit(finalDataSet, limit)
       }
 
-      executor.run(finalDataSet)
+//      executor.run(finalDataSet)
 
       finalDataSet.asInstanceOf[DataFrame]
 

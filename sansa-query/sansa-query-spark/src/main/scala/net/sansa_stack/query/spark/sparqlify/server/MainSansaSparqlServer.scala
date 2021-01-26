@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.sparqlify.server
 
 import java.io.File
 
+import net.sansa_stack.query.spark._
 import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.partition._
@@ -9,9 +10,7 @@ import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
-import org.apache.jena.sparql.expr.{E_Equals, ExprVar, NodeValue}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
@@ -73,8 +72,6 @@ object MainSansaSparqlServer {
     val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     var graphRdd: RDD[org.apache.jena.graph.Triple] = sparkSession.sparkContext.parallelize(it)
-
-    import net.sansa_stack.query.spark.query._
     // graphRdd = graphRdd.filterPredicates(_.equals(RDFS.label.asNode()))
 
 

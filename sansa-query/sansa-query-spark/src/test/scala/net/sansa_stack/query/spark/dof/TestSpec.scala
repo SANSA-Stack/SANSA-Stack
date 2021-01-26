@@ -37,7 +37,7 @@ class TestSpec extends FunSuite with DataFrameSuiteBase {
   def runExternalTests: Unit = {
     val pattern = "\\w*?([\\d]+)\\.dat".r
 
-    new java.io.File(externalTests).listFiles.sorted.filter(_.getName.endsWith(".dat")).foreach(
+    new java.io.File(externalTests).listFiles.filter(_.getName.endsWith(".dat")).sorted.foreach(
       q => {
         val name = q.getName
         val pattern(tid) = name
@@ -46,7 +46,7 @@ class TestSpec extends FunSuite with DataFrameSuiteBase {
         if (tensorId >= FROM_TENSOR && tensorId <= TO_TENSOR) {
           assert(tr.getModels.contains(tensorId.toInt), s"\nTensor with ID=$tensorId does not exist. Check $name")
 
-          val queries = new String(java.nio.file.Files.readAllBytes(q.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+          val queries = new String(java.nio.file.Files.readAllBytes(q.toPath), java.nio.charset.StandardCharsets.UTF_8);
           queries.split(",").zipWithIndex.foreach {
             case (str, id) =>
               if (externalQueryId < 0 || id == externalQueryId) {
@@ -65,7 +65,7 @@ class TestSpec extends FunSuite with DataFrameSuiteBase {
       val resource = s"university0_$fileNumber.nt"
 
       val path = if (basePath == null || basePath.isEmpty) {
-                   getClass.getResource(resource).getPath()
+                   getClass.getResource(resource).getPath
                  } else {
                    basePath + resource
                  }
@@ -126,7 +126,7 @@ class TestSpec extends FunSuite with DataFrameSuiteBase {
         var binding = TreeMap[String, String]()
         currentLine = lines.next
         val values = currentLine.split("\t").toIndexedSeq
-        for (i <- 0 until variables.size) {
+        for (i <- variables.indices) {
           binding += variables(i) -> values(i)
         }
         solution = binding :: solution

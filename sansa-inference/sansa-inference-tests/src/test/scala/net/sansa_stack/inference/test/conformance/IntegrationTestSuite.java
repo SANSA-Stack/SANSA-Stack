@@ -1,4 +1,4 @@
-package net.sansa_stack.test.conformance;
+package net.sansa_stack.inference.test.conformance;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,25 +1,10 @@
 package net.sansa_stack.query.spark.compliance
 
-import java.util.Properties
-
-import com.google.common.collect.Sets
-import it.unibz.inf.ontop.exception.OntopInternalBugException
-import it.unibz.inf.ontop.model.term._
-import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import org.apache.jena.query._
-import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.sparql.engine.ResultSetStream
-import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.graph.GraphFactory
-import org.apache.jena.sparql.resultset.SPARQLResult
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
+import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
-import org.scalatest.{ConfigMap, DoNotDiscover}
 
-import scala.collection.JavaConverters._
+import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
+import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 
 
 /**
@@ -66,7 +51,8 @@ class SPARQL11TestSuiteRunnerSparkOntop
     negationManifest + "full-minuend", negationManifest + "partial-minuend", // TODO: enable it
     negationManifest + "full-minuend-modified", negationManifest + "partial-minuend-modified",
     /* EXISTS not supported yet */
-    existsManifest + "exists01", existsManifest + "exists02", existsManifest + "exists03", existsManifest + "exists04", existsManifest + "exists05", /* PROPERTY PATH */
+    existsManifest + "exists01", existsManifest + "exists02", existsManifest + "exists03", existsManifest + "exists04", existsManifest + "exists05",
+    /* PROPERTY PATH */
     // Not supported: ArbitraryLengthPath
     propertyPathManifest + "pp02", // wrong result, unexpected binding
     propertyPathManifest + "pp06", propertyPathManifest + "pp12", propertyPathManifest + "pp14", propertyPathManifest + "pp16", propertyPathManifest + "pp21", propertyPathManifest + "pp23", propertyPathManifest + "pp25", // Not supported: ZeroLengthPath
@@ -84,73 +70,13 @@ class SPARQL11TestSuiteRunnerSparkOntop
   )
 
 
-  override lazy val IGNORE_FILTER = t => t.name.startsWith("HOUR")
+//  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS") || t.name.startsWith("UCASE")
+//  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates")// && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
+// override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
 
-  var ontopProperties: Properties = _
+  override lazy val IGNORE_FILTER = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
 
-  override def beforeAll(configMap: ConfigMap): Unit = {
-    super.beforeAll(configMap)
-    ontopProperties = new Properties()
-    ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
-  }
-
-  override def runQuery(query: Query, data: Model): SPARQLResult = {
-    // distribute on Spark
-    val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
-
-    val partitioner = new RdfPartitionerComplex(distinguishStringLiterals = false)
-
-    // do partitioning here
-    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] =
-      RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner)
-
-    // create the query engine
-    val queryEngine = OntopSPARQLEngine(spark, partitioner, partitions, ontology = None)
-
-    // produce result based on query type
-    val result = if (query.isSelectType) { // SELECT
-      // convert to bindings
-      implicit val myObjEncoder = org.apache.spark.sql.Encoders.kryo[Binding]
-      val bindings = queryEngine.execSelect(query.toString()).collect()
-
-      // we have to get the vars from the initial query as bindings are just hashmaps without preserving order
-      val vars = query.getResultVars
-      val bindingVars = bindings.flatMap(_.vars().asScala).distinct.map(_.getVarName).toList.asJava
-      // sanity check if there is a difference in the projected vars
-      if (!Sets.symmetricDifference(Sets.newHashSet(vars), Sets.newHashSet(bindingVars)).isEmpty) {
-        println(s"projected vars do not match\nexpected: $vars\ngot:$bindingVars")
-      }
-
-      // create the SPARQL result
-      val model = ModelFactory.createDefaultModel()
-
-      val resultsActual = new ResultSetStream(vars, model, bindings.toList.asJava.iterator())
-      new SPARQLResult(resultsActual)
-    } else if (query.isAskType) { // ASK
-      // map DF entry to boolean
-      val b = queryEngine.execAsk(query.toString())
-      new SPARQLResult(b)
-    } else if (query.isConstructType) { // CONSTRUCT
-      val triples = queryEngine.execConstruct(query.toString()).collect()
-      // create the SPARQL result
-      val g = GraphFactory.createDefaultGraph()
-      triples.foreach(g.add)
-      val model = ModelFactory.createModelForGraph(g)
-      new SPARQLResult(model)
-
-    } else { // DESCRIBE todo
-      fail("unsupported query type: DESCRIBE")
-      null
-    }
-    // clean up
-    queryEngine.clear()
-
-    result
-  }
-
-  class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
-  class InvalidConstantTypeInResultException(message: String) extends OntopInternalBugException(message)
-
+  override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 }
 
 import org.scalatest.Tag

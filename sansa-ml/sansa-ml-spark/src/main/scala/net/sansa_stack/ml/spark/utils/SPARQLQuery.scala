@@ -1,8 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
-import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
+import scala.collection.JavaConverters._
+
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.query.Query
 import org.apache.jena.sparql.core.Var
@@ -14,8 +13,6 @@ import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{DataTypes, StructField, StructType}
-
-import scala.collection.JavaConverters._
 
 /**
   * A SPARQL query transformer instance takes a SPARQL query string as
@@ -36,16 +33,19 @@ abstract class SPARQLQuery(queryString: String) extends Transformer {
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 
   protected def getResultBindings(dataset: Dataset[_]): RDD[Binding] = {
+    // convert Dataset to RDD[Triple] // TODO why do we need this?
     implicit val tripleEncoder = Encoders.kryo(classOf[Triple])
+    val triplesRDD = dataset.as[Triple].rdd
 
-    val partitioner = RdfPartitionerComplex(false);
-    val partitions: Map[RdfPartitionStateDefault, RDD[Row]] =
-      RdfPartitionUtilsSpark.partitionGraph(
-        dataset.as[Triple].rdd,
-        partitioner = RdfPartitionerComplex(false))
+    // create query engine
+    import net.sansa_stack.query.spark._
+    val qef = triplesRDD.sparql(SPARQLEngine.Ontop)
 
-    val sparqlEngine = OntopSPARQLEngine(spark, partitioner, partitions, Option.empty)
-    val bindings: RDD[Binding] = sparqlEngine.execSelect(queryString)
+    // create query execution
+    val qe = qef.createQueryExecution(queryString)
+
+    // compute bindings
+    val bindings: RDD[Binding] = qe.execSelectSpark().getBindings
 
     bindings
   }

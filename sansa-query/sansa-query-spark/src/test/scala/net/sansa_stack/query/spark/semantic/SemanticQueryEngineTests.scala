@@ -4,19 +4,22 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition._
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
 
 class SemanticQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.query.spark.query._
+  JenaSystem.init
+
+  import net.sansa_stack.query.spark._
 
   var partitionTriples: RDD[String] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
+    val input = getClass.getResource("/sansa-sparql-ts/bsbm/bsbm-sample.nt").getPath
     val triples = spark.rdf(Lang.NTRIPLES)(input).cache()
 
     partitionTriples = triples.partitionGraphAsSemantic().cache()

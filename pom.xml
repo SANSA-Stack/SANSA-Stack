@@ -84,7 +84,8 @@
 
         <owlapi.version>5.1.17</owlapi.version>
 
-        <ontop.version>4.0.3-owlapi5.17-guava-shaded</ontop.version>
+        <ontop.version>4.1.0-beta-1-guava-shaded-owlapiv5-SNAPSHOT</ontop.version>
+
 
         <sansa.version>${project.version}</sansa.version>
         <!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
@@ -1171,6 +1172,12 @@
                 <version>3.0.1_0.4.0-RELEASE</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-rdf-jena</artifactId>
+                <version>0.5.0</version>
+            </dependency>
+
             <!-- Scala HTTP wrapper -->
             <dependency>
                 <groupId>org.scalaj</groupId>
@@ -1608,7 +1615,13 @@
 
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.1.2</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.2.0</version>
                 </plugin>
 
 

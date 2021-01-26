@@ -1,78 +1,80 @@
 package net.sansa_stack.query.tests
 
-import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
-import org.apache.jena.rdf.model.{ModelFactory, RDFList}
+import java.net.URI
+import java.nio.file.Paths
+
+import org.apache.jena.query.{Query, QueryExecutionFactory, QueryFactory, ResultSetFormatter}
+import org.apache.jena.rdf.model.{Model, ModelFactory, RDFList}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.util.SplitIRI
 import org.scalatest.FunSuite
 
 import scala.collection.JavaConverters._
 
+object SPARQLQueryEvaluationTestSuite {
+
+  def main(args: Array[String]): Unit = {
+    new SPARQLQueryEvaluationTestSuite("/sparql11/data-sparql11/manifest-sparql11-query.ttl").tests.foreach(println(_))
+  }
+
+  val DEFAULT_QUERY: Query = QueryFactory.create(
+"""
+  |prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  |prefix : <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#>
+  |prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
+  |prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
+  |prefix qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
+  |prefix dawgt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
+  |
+  |SELECT * {
+  |?test rdf:type mf:QueryEvaluationTest ;
+  |    mf:name    ?name ;
+  |    mf:action
+  |         [ qt:query  ?queryFile ;
+  |           qt:data   ?dataFile ] ;
+  |    mf:result  ?resultsFile .
+  |OPTIONAL {?test rdfs:comment ?description }
+  |}
+  |""".stripMargin)
+}
 
 /**
  * @author Lorenz Buehmann
  */
-class SPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VERSION.Value)
+class SPARQLQueryEvaluationTestSuite(manifestPath: String, patternQuery: Query = SPARQLQueryEvaluationTestSuite.DEFAULT_QUERY)
   extends FunSuite {
-
-  protected val aggregatesManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#"
-  protected val bindManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bind/manifest#"
-  protected val bindingsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bindings/manifest#"
-  protected val functionsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/functions/manifest#"
-  protected val constructManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#"
-  protected val csvTscResManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/csv-tsv-res/manifest#"
-  protected val groupingManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/grouping/manifest#"
-  protected val negationManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation/manifest#"
-  protected val existsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/exists/manifest#"
-  protected val projectExpressionManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/project-expression/manifest#"
-  protected val propertyPathManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/property-path/manifest#"
-  protected val subqueryManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#"
-  protected val serviceManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/service/manifest#"
 
   // contains the list of ignored tests cases, must be overridden
   lazy val IGNORE: Set[String] = Set.empty[String]
 
-  val baseDir = "/sparql11"
-  val testDirSPARQL11: String = baseDir + (if (sparqlVersion == SPARQL_VERSION.SPARQL_11) "/data-sparql11/" else "/data-r2/")
-
-  private def loadTestCasesFromManifest(): List[SPARQLQueryEvaluationTest] = {
-    val baseURL = classOf[SPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11)
-    val url = classOf[SPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11 + "manifest-sparql11-query.ttl")
+  private def loadTestCasesFromManifest(path: String): List[SPARQLQueryEvaluationTest] = {
+    val uri = URI.create(path)
+    val url = if (uri.isAbsolute) {
+      uri.toURL
+    } else {
+      classOf[SPARQLQueryEvaluationTestSuite].getResource(path)
+    }
+    val baseURI = Paths.get(url.toURI).getParent.toString + "/"
     val model = ModelFactory.createDefaultModel()
 
-    RDFDataMgr.read(model, url.getPath, baseURL.getPath, Lang.TURTLE)
+    RDFDataMgr.read(model, url.getPath, baseURI, Lang.TURTLE)
 
-    val includesList = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#include")).next().as(classOf[RDFList])
+    // load test cases
+    val tests = extractTests(model)
 
-    includesList.asJavaList().asScala.flatMap(subDir => loadTestCasesFromSubManifest(subDir.asResource().getURI)).toList
+    // process nested manifests
+    val it = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#include"))
+    val includesList = if (it.hasNext) {
+      it.next().as(classOf[RDFList]).asJavaList().asScala
+    } else {
+      Iterator.empty
+    }
+
+    tests ++ includesList.flatMap(subDir => loadTestCasesFromManifest(subDir.asResource().getURI)).toList
   }
 
-  private def loadTestCasesFromSubManifest(path: String) = {
-    val model = RDFDataMgr.loadModel(path, Lang.TURTLE)
-
-    val members = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#entries")).next().as(classOf[RDFList])
-
-    val query = QueryFactory.create(
-      """
-        |prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        |prefix : <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#>
-        |prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
-        |prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
-        |prefix qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
-        |prefix dawgt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
-        |
-        |SELECT * {
-        |?test rdf:type mf:QueryEvaluationTest ;
-        |    mf:name    ?name ;
-        |    dawgt:approval dawgt:Approved ;
-        |    mf:action
-        |         [ qt:query  ?queryFile ;
-        |           qt:data   ?dataFile ] ;
-        |    mf:result  ?resultsFile .
-        |OPTIONAL {?test rdfs:comment ?description }
-        |}
-        |""".stripMargin)
-
-    val qe = QueryExecutionFactory.create(query, model)
+  private def extractTests(model: Model) = {
+    val qe = QueryExecutionFactory.create(patternQuery, model)
     val rs = qe.execSelect()
 
     ResultSetFormatter.toList(rs).asScala.map(qs => {
@@ -80,11 +82,11 @@ class SPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VERSION.Value)
 
       SPARQLQueryEvaluationTest(
         qs.getResource("test").getURI,
-        qs.getLiteral("name").getLexicalForm,
+        Option(qs.getLiteral("name")).map(_.getLexicalForm).getOrElse(SplitIRI.localname(qs.getResource("test").getURI)),
         desc,
         qs.getResource("queryFile").getURI,
         qs.getResource("dataFile").getURI,
-        qs.getResource("resultsFile").getURI
+        Option(qs.getResource("resultsFile")).map(_.getURI)
       )
     }
     ).toList
@@ -94,13 +96,8 @@ class SPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VERSION.Value)
   /**
    * the list of SPARQL evaluation tests
    */
-  val tests: List[SPARQLQueryEvaluationTest] = loadTestCasesFromManifest()
+  val tests: List[SPARQLQueryEvaluationTest] = loadTestCasesFromManifest(manifestPath)
 
 
 }
 
-object SPARQLQueryEvaluationTestSuite {
-  def main(args: Array[String]): Unit = {
-    new SPARQLQueryEvaluationTestSuite(SPARQL_VERSION.SPARQL_11).tests.foreach(println(_))
-  }
-}

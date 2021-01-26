@@ -8,7 +8,7 @@ import org.apache.jena.rdf.model.Model
 
 import net.sansa_stack.inference.data.{Jena, JenaOps}
 import net.sansa_stack.inference.flink.data.{RDFGraph, RDFGraphWriter}
-import net.sansa_stack.test.conformance.RDFSConformanceTestBase
+import net.sansa_stack.inference.test.conformance.RDFSConformanceTestBase
 
 /**
   * The class is used to check the conformance of each materialization rule of RDFS(simple) entailment.

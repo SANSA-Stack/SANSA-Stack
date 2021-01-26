@@ -16,4 +16,4 @@ case class SPARQLQueryEvaluationTest(uri: String,
                                      description: String,
                                      queryFile: String,
                                      dataFile: String,
-                                     resultsFile: String)
+                                     resultsFile: Option[String])

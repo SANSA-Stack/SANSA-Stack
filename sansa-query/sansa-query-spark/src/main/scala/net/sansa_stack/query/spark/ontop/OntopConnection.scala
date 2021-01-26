@@ -5,8 +5,10 @@ import java.util.Properties
 
 import it.unibz.inf.ontop.answering.connection.OntopConnection
 import it.unibz.inf.ontop.injection.OntopReformulationSQLConfiguration
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
+import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
+
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 
 /**
  * Used to keep expensive resource per executor alive.
@@ -18,9 +20,10 @@ object OntopConnection {
   val logger = com.typesafe.scalalogging.Logger(classOf[OntopConnection])
 
   // create the tmp DB needed for Ontop
-  private val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
-  private val JDBC_USER = "sa"
-  private val JDBC_PASSWORD = ""
+  val JDBC_URL = "jdbc:h2:mem:sansaontopdb;DATABASE_TO_UPPER=FALSE"
+//  val JDBC_URL = "jdbc:h2:file:/tmp/sansaontopdb;DATABASE_TO_UPPER=FALSE"
+  val JDBC_USER = "sa"
+  val JDBC_PASSWORD = ""
 
   lazy val connection: Connection = try {
     logger.debug("creating DB connection ...")
@@ -35,24 +38,31 @@ object OntopConnection {
     connection.close()
   }
 
-  var configs = Map[Set[RdfPartitionStateDefault], OntopReformulationSQLConfiguration]()
+  var configs = Map[String, OntopReformulationSQLConfiguration]()
 
-  def apply(obdaMappings: String, properties: Properties, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Set[RdfPartitionStateDefault], ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
-    val conf = configs.getOrElse(partitions, {
+  def apply(id: String,
+            obdaMappings: Model,
+            properties: Properties,
+            jdbcMetaData: Map[String, String],
+            ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
+
+    val conf = configs.getOrElse(id, {
       logger.debug("creating reformulation config ...")
       println("creating reformulation config ...")
       val reformulationConfiguration = {
-        JDBCDatabaseGenerator.generateTables(connection, partitioner, partitions)
+        JDBCDatabaseGenerator.generateTables(connection, jdbcMetaData)
 
         OntopUtils.createReformulationConfig(obdaMappings, properties, ontology)
       }
 
-      configs += partitions -> reformulationConfiguration
+      configs += id -> reformulationConfiguration
 
       logger.debug("...done")
       reformulationConfiguration
     })
     conf
   }
+
+  def clear(): Unit = configs = Map[String, OntopReformulationSQLConfiguration]()
 
 }

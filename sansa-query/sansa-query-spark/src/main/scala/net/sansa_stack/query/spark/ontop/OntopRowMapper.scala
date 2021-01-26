@@ -2,15 +2,18 @@ package net.sansa_stack.query.spark.ontop
 
 import java.util.Properties
 
+import scala.collection.JavaConverters._
+import scala.collection.mutable
+
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.Row
@@ -18,27 +21,24 @@ import org.eclipse.rdf4j.model.{IRI, Literal}
 import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
 import org.semanticweb.owlapi.model.OWLOntology
 
-import scala.collection.JavaConverters._
-import scala.collection.mutable
-
 /**
  * Mapper of Spark DataFrame rows to other entities, e.g. binding, triple, ...
  *
  * @author Lorenz Buehmann
  */
 class OntopRowMapper(
-                      obdaMappings: String,
+                      obdaMappings: Model,
                       properties: Properties,
-                      partitioner: RdfPartitioner[RdfPartitionStateDefault],
-                      partitions: Set[RdfPartitionStateDefault],
+                      jdbcMetaData: Map[String, String],
                       sparqlQuery: String,
                       ontology: Option[OWLOntology],
-                      id: String = "id") {
+                      id: String,
+                      rewriteInstruction: RewriteInstruction
+                     ) {
 
-//  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
+  val reformulationConfiguration = OntopConnection(id, obdaMappings, properties, jdbcMetaData, ontology)
 
-  val reformulationConfiguration = OntopConnection(obdaMappings, properties, partitioner, partitions, ontology)
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
@@ -48,22 +48,16 @@ class OntopRowMapper(
 
   val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-  val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery, queryReformulator.getQueryLoggerFactory.create())
-
-  val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)
-  val nativeNode = OntopUtils.extractNativeNode(executableQuery)
-  val sqlSignature = nativeNode.getVariables
-  val sqlTypeMap = nativeNode.getTypeMap
-  val sparqlVar2Term = constructionNode.getSubstitution
-  val answerAtom = executableQuery.getProjectionAtom
-
-
+  val sqlSignature = rewriteInstruction.sqlSignature
+  val sqlTypeMap = rewriteInstruction.sqlTypeMap
+  val sparqlVar2Term = rewriteInstruction.substitution
+  val answerAtom = rewriteInstruction.anserAtom
 
   def map(row: Row): Binding = {
     toBinding(row)
   }
 
-  def toBinding(row: Row): Binding = {
+  def toBinding(row: Row): Binding = { // println(row)
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]
@@ -171,7 +165,7 @@ class OntopRowMapper(
       val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
       NodeFactory.createLiteral(lit.getValue, lang, dt)
     } else if (termType.isA(typeFactory.getBlankNodeType)) {
-      NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getName)
+      NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getInternalLabel)
     } else {
       null.asInstanceOf[Node]
     }

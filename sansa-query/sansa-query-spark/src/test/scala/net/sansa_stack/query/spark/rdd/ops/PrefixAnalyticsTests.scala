@@ -43,7 +43,7 @@ class PrefixAnalyticsTests extends FunSuite with DataFrameSuiteBase {
     import net.sansa_stack.rdf.spark.model._
 
 
-    import net.sansa_stack.query.spark.query._
+    import net.sansa_stack.query.spark._
 
     val evalResult = rdd.javaCollect(ResultSetAnalytics.usedPrefixes(6).asCollector())
     println(evalResult)
