@@ -30,7 +30,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
+    val input = getClass.getResource("/custom-sparql-ts/bsbm/bsbm-sample.nt").getPath
     triples = spark.rdf(Lang.NTRIPLES)(input).cache()
     queryEngineFactory = new QueryEngineFactorySparqlify(spark)
     qef = queryEngineFactory.create(triples)
@@ -53,7 +53,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
 
   test("result of running BSBM Q1 should match") {
-    val query = Source.fromFile(getClass.getResource("/sparklify/queries/bsbm/bsbm-q1.rq").getPath).getLines.mkString
+    val query = Source.fromFile(getClass.getResource("/custom-sparql-ts/bsbm/bsbm-q1.rq").getPath).getLines.mkString
 
     val result = sparql(query)
 
@@ -63,7 +63,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("result of running BSBM Q2 should match") {
-    val query = Source.fromFile(getClass.getResource("/sparklify/queries/bsbm/bsbm-q2.rq").getPath).getLines.mkString
+    val query = Source.fromFile(getClass.getResource("/custom-sparql-ts/bsbm/bsbm-q2.rq").getPath).getLines.mkString
 
     val result = sparql(query)
 
@@ -73,7 +73,7 @@ class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test("result of running BSBM Q3 should match") {
-    val query = Source.fromFile(getClass.getResource("/sparklify/queries/bsbm/bsbm-q3.rq").getPath).getLines.mkString
+    val query = Source.fromFile(getClass.getResource("/custom-sparql-ts/bsbm/bsbm-q3.rq").getPath).getLines.mkString
 
     val result = sparql(query)
 
