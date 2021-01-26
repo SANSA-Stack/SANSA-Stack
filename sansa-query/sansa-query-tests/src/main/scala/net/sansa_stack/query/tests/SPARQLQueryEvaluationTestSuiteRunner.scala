@@ -98,8 +98,9 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
 
   private def processAsk(query: Query, resultExpected: Option[SPARQLResult], resultActual: SPARQLResult) = {
 
-    if (!resultExpected.isDefined) {
-      ResultSetMgr.write(System.out, resultActual.getBooleanResult, ResultSetLang.SPARQLResultSetText)
+    if (resultExpected.isEmpty) {
+      ResultSetMgr.write(System.out, resultActual.getBooleanResult, ResultSetLang.SPARQLResultSetXML)
+      fail("No expected result defined - actual output printed to console")
     } else {
       assert(resultActual.getBooleanResult == resultExpected.get.getBooleanResult, "Result of ASK query does not match")
     }
@@ -107,11 +108,12 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
 
   private def processGraph(query: Query, resultExpectedOpt: Option[SPARQLResult], resultActual: SPARQLResult) = {
 
-    if (!resultExpectedOpt.isDefined) {
+    if (resultExpectedOpt.isEmpty) {
       if (query.isConstructQuad) {
         RDFDataMgr.write(System.out, resultActual.getDataset, RDFFormat.TRIG_PRETTY)
       } else {
-        RDFDataMgr.write(System.out, resultActual.getDataset, RDFFormat.TURTLE_PRETTY)
+        RDFDataMgr.write(System.out, resultActual.getModel, RDFFormat.TURTLE_PRETTY)
+        fail("No expected result defined - actual output printed to console")
       }
     } else {
       val resultExpected = resultExpectedOpt.get
@@ -160,8 +162,9 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
   private def processSelect(query: Query, resultsOpt: Option[SPARQLResult], resultsAct: SPARQLResult) = {
     val resultsActual = ResultSetFactory.makeRewindable(resultsAct.getResultSet)
 
-    if (!resultsOpt.isDefined) {
-      ResultSetMgr.write(System.out, resultsActual, ResultSetLang.SPARQLResultSetText)
+    if (resultsOpt.isEmpty) {
+      ResultSetMgr.write(System.out, resultsActual, ResultSetLang.SPARQLResultSetXML)
+      fail("No expected result defined - actual output printed to console")
     } else {
       val results = resultsOpt.get
 

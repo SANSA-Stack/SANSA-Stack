@@ -6,6 +6,7 @@ import java.nio.file.Paths
 import org.apache.jena.query.{Query, QueryExecutionFactory, QueryFactory, ResultSetFormatter}
 import org.apache.jena.rdf.model.{Model, ModelFactory, RDFList}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.util.SplitIRI
 import org.scalatest.FunSuite
 
 import scala.collection.JavaConverters._
@@ -81,7 +82,7 @@ class SPARQLQueryEvaluationTestSuite(manifestPath: String, patternQuery: Query =
 
       SPARQLQueryEvaluationTest(
         qs.getResource("test").getURI,
-        Option(qs.getLiteral("name")).map(_.getLexicalForm).getOrElse(qs.getResource("test").getURI),
+        Option(qs.getLiteral("name")).map(_.getLexicalForm).getOrElse(SplitIRI.localname(qs.getResource("test").getURI)),
         desc,
         qs.getResource("queryFile").getURI,
         qs.getResource("dataFile").getURI,

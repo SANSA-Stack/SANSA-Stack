@@ -30,7 +30,7 @@
 :issue15-q1 rdf:type mf:QueryEvaluationTest ;
     dawgt:approval dawgt:Approved ;
     mf:action
-         [ qt:query  <issue-15-q1.rq> ;
+         [ qt:query  <issue15-q1.rq> ;
            qt:data   <issue43.nt> ] ;
     mf:result  <issue15-q1.srx> ;
     .
@@ -62,7 +62,7 @@
 :issue17-q1 rdf:type mf:QueryEvaluationTest ;
     dawgt:approval dawgt:Approved ;
     mf:action
-         [ qt:query  <issue-17-q1.rq> ;
+         [ qt:query  <issue17-q1.rq> ;
            qt:data   <issue43.nt> ] ;
     mf:result  <issue17-q1.srx> ;
     .
@@ -95,15 +95,15 @@
 :issue34-q1 rdf:type mf:QueryEvaluationTest ;
     dawgt:approval dawgt:Approved ;
     mf:action
-         [ qt:query  <construct-where-spo.rq> ;
+         [ qt:query  <select-spo.rq> ;
            qt:data   <issue34.nt> ] ;
-    mf:result  <issue34.nt> ;
+    mf:result  <issue34.srx> ;
     .
 
 :issue44-q1 rdf:type mf:QueryEvaluationTest ;
     dawgt:approval dawgt:Approved ;
     mf:action
-         [ qt:query  <construct-where-spo.rq> ;
+         [ qt:query  <issue44.rq> ;
            qt:data   <issue44.nt> ] ;
-#    mf:result  <issue44.nt> ;
+    mf:result  <issue44.srx> ;
     .

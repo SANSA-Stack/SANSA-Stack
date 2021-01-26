@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.sparqlify
 import net.sansa_stack.query.spark.SPARQLTestSuiteRunnerSpark
 import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
 import net.sansa_stack.query.spark.sparqlify.SPARQLTestSuiteRunnerSparkSparqlify.CUSTOM_TS_QUERY
-import net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuite
+import net.sansa_stack.query.tests.{SPARQLQueryEvaluationTest, SPARQLQueryEvaluationTestSuite}
 import org.apache.jena.query.{Query, QueryFactory}
 
 object SPARQLTestSuiteRunnerSparkSparqlify {
@@ -32,8 +32,10 @@ object SPARQLTestSuiteRunnerSparkSparqlify {
 class SPARQLTestSuiteRunnerSparkSparqlify
   extends SPARQLTestSuiteRunnerSpark(new SPARQLQueryEvaluationTestSuite(
     "/custom-sparql-ts/manifest.ttl",
-    SPARQLTestSuiteRunnerSparkSparqlify.CUSTOM_TS_QUERY))
-{
+    SPARQLTestSuiteRunnerSparkSparqlify.CUSTOM_TS_QUERY)) {
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactorySparqlify(spark)
+
+//  override lazy val IGNORE_FILTER: SPARQLQueryEvaluationTest => Boolean
+//  = _.name.contains("15-q1")
 }
