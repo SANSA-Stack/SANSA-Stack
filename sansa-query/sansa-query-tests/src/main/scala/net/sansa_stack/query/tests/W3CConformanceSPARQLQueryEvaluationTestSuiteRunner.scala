@@ -101,7 +101,7 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
           val actualResult = runQuery(query, data)
 
           // read expected result
-          val expectedResult = readExpectedResult(resultFileURL)
+          val expectedResult = readExpectedResult(resultFileURL.get)
 
           // compare results
           if (query.isSelectType) {

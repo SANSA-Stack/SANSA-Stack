@@ -25,7 +25,7 @@
 #         [ qt:query  <spo.rq> ;
 #           qt:data   <issue14.nt> ] ;
 #    mf:result  <> ;
-    .
+#    .
 
 :issue15-q1 rdf:type mf:QueryEvaluationTest ;
     dawgt:approval dawgt:Approved ;

@@ -84,7 +84,7 @@ class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VER
         desc,
         qs.getResource("queryFile").getURI,
         qs.getResource("dataFile").getURI,
-        qs.getResource("resultsFile").getURI
+        Some(qs.getResource("resultsFile").getURI)
       )
     }
     ).toList

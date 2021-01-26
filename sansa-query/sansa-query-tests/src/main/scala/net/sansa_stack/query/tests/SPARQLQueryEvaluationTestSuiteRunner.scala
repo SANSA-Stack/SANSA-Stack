@@ -5,7 +5,8 @@ import java.net.URL
 import net.sansa_stack.query.tests.util._
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.riot.resultset.ResultSetLang
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, ResultSetMgr}
 import org.apache.jena.sparql.resultset.{ResultSetCompare, ResultsFormat, SPARQLResult}
 import org.scalatest.FunSuite
 
@@ -67,7 +68,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
           val actualResult = runQuery(query, data)
 
           // read expected result
-          val expectedResult = readExpectedResult(resultFileURL)
+          val expectedResult: Option[SPARQLResult] = resultFileURL.map(readExpectedResult)
 
           // compare results
           if (query.isSelectType) {
@@ -95,85 +96,107 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
    */
   def runQuery(query: Query, data: Model): SPARQLResult
 
-  private def processAsk(query: Query, resultExpected: SPARQLResult, resultActual: SPARQLResult) = {
-    assert(resultActual.getBooleanResult == resultExpected.getBooleanResult, "Result of ASK query does not match")
-  }
+  private def processAsk(query: Query, resultExpected: Option[SPARQLResult], resultActual: SPARQLResult) = {
 
-  private def processGraph(query: Query, resultExpected: SPARQLResult, resultActual: SPARQLResult) = {
-    if (query.isConstructQuad) {
-      import org.apache.jena.sparql.util.IsoMatcher
-      try {
-        if (!resultExpected.isDataset) fail("Expected results are not a graph: ")
-        val resultsExpected = resultExpected.getDataset
-        if (!IsoMatcher.isomorphic(resultsExpected.asDatasetGraph, resultActual.getDataset.asDatasetGraph())) {
-          fail("Results do not match: ")
-        }
-      } catch {
-        case ex: Exception =>
-          val typeName = if (query.isConstructType) "construct" else "describe"
-          fail("Exception in result testing (" + typeName + "): " + ex)
-      }
-    }
-    else {
-      try {
-        if (!resultExpected.isGraph) fail("Expected results are not a graph: ")
-        if (!resultExpected.getModel.isIsomorphicWith(resultActual.getModel)) {
-          import org.apache.jena.util.FileUtils
-          val out = FileUtils.asPrintWriterUTF8(System.out)
-          out.println("=======================================")
-          out.println("Failure:")
-          out.println(s"Query:\n$query")
-          out.println("expected:")
-          resultExpected.getModel.write(out, "TTL")
-          out.println("---------------------------------------")
-          out.println("got:")
-          resultActual.getModel.write(out, "TTL")
-          fail("Results do not match: " + query)
-        }
-      } catch {
-        case ex: Exception =>
-          val typeName = if (query.isConstructType) "construct"
-          else "describe"
-          fail("Exception in result testing (" + typeName + "): " + ex)
-      }
+    if (!resultExpected.isDefined) {
+      ResultSetMgr.write(System.out, resultActual.getBooleanResult, ResultSetLang.SPARQLResultSetText)
+    } else {
+      assert(resultActual.getBooleanResult == resultExpected.get.getBooleanResult, "Result of ASK query does not match")
     }
   }
 
-  private def processSelect(query: Query, results: SPARQLResult, resultsAct: SPARQLResult) = {
+  private def processGraph(query: Query, resultExpectedOpt: Option[SPARQLResult], resultActual: SPARQLResult) = {
+
+    if (!resultExpectedOpt.isDefined) {
+      if (query.isConstructQuad) {
+        RDFDataMgr.write(System.out, resultActual.getDataset, RDFFormat.TRIG_PRETTY)
+      } else {
+        RDFDataMgr.write(System.out, resultActual.getDataset, RDFFormat.TURTLE_PRETTY)
+      }
+    } else {
+      val resultExpected = resultExpectedOpt.get
+
+
+      if (query.isConstructQuad) {
+        import org.apache.jena.sparql.util.IsoMatcher
+        try {
+          if (!resultExpected.isDataset) fail("Expected results are not a graph: ")
+          val resultsExpected = resultExpected.getDataset
+          if (!IsoMatcher.isomorphic(resultsExpected.asDatasetGraph, resultActual.getDataset.asDatasetGraph())) {
+            fail("Results do not match: ")
+          }
+        } catch {
+          case ex: Exception =>
+            val typeName = if (query.isConstructType) "construct" else "describe"
+            fail("Exception in result testing (" + typeName + "): " + ex)
+        }
+      }
+      else {
+        try {
+          if (!resultExpected.isGraph) fail("Expected results are not a graph: ")
+          if (!resultExpected.getModel.isIsomorphicWith(resultActual.getModel)) {
+            import org.apache.jena.util.FileUtils
+            val out = FileUtils.asPrintWriterUTF8(System.out)
+            out.println("=======================================")
+            out.println("Failure:")
+            out.println(s"Query:\n$query")
+            out.println("expected:")
+            resultExpected.getModel.write(out, "TTL")
+            out.println("---------------------------------------")
+            out.println("got:")
+            resultActual.getModel.write(out, "TTL")
+            fail("Results do not match: " + query)
+          }
+        } catch {
+          case ex: Exception =>
+            val typeName = if (query.isConstructType) "construct"
+            else "describe"
+            fail("Exception in result testing (" + typeName + "): " + ex)
+        }
+      }
+    }
+  }
+
+  private def processSelect(query: Query, resultsOpt: Option[SPARQLResult], resultsAct: SPARQLResult) = {
     val resultsActual = ResultSetFactory.makeRewindable(resultsAct.getResultSet)
 
-    val resultsExpected =
-      if (results.isResultSet) {
-        ResultSetFactory.makeRewindable(results.getResultSet)
-      } else if (results.isModel) {
-        ResultSetFactory.makeRewindable(results.getModel)
-      } else {
-        fail("Wrong result type for SELECT query")
-        null
+    if (!resultsOpt.isDefined) {
+      ResultSetMgr.write(System.out, resultsActual, ResultSetLang.SPARQLResultSetText)
+    } else {
+      val results = resultsOpt.get
+
+      val resultsExpected =
+        if (results.isResultSet) {
+          ResultSetFactory.makeRewindable(results.getResultSet)
+        } else if (results.isModel) {
+          ResultSetFactory.makeRewindable(results.getModel)
+        } else {
+          fail("Wrong result type for SELECT query")
+          null
+        }
+
+      // compare results
+      val b = resultSetEquivalent(query, resultsActual, resultsExpected)
+
+      // print error message
+      if (!b) {
+        resultsExpected.reset()
+        resultsActual.reset()
+        println(
+          s"""
+             |=================================
+             |Failure:
+             |Query:
+             |$query
+             |Got: ${resultsActual.size()} ---------------------
+             |${ResultSetFormatter.asText(resultsActual, query.getPrologue)}
+             |Expected: ${resultsExpected.size()} ------------------
+             |${ResultSetFormatter.asText(resultsExpected, query.getPrologue)}
+             |""".stripMargin
+        )
       }
-
-    // compare results
-    val b = resultSetEquivalent(query, resultsActual, resultsExpected)
-
-    // print error message
-    if (!b) {
-      resultsExpected.reset()
-      resultsActual.reset()
-      println(
-        s"""
-           |=================================
-           |Failure:
-           |Query:
-           |$query
-           |Got: ${resultsActual.size()} ---------------------
-           |${ResultSetFormatter.asText(resultsActual, query.getPrologue)}
-           |Expected: ${resultsExpected.size()} ------------------
-           |${ResultSetFormatter.asText(resultsExpected, query.getPrologue)}
-           |""".stripMargin
-      )
+      assert(b, "Results of SELECT query do not match")
     }
-    assert(b, "Results of SELECT query do not match")
-
   }
 
   private def resultSetEquivalent(query: Query, resultsActual: ResultSet, resultsExpected: ResultSet): Boolean = {

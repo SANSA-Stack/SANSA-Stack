@@ -3,17 +3,44 @@ package net.sansa_stack.query.tests
 import java.net.URI
 import java.nio.file.Paths
 
-import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
+import org.apache.jena.query.{Query, QueryExecutionFactory, QueryFactory, ResultSetFormatter}
 import org.apache.jena.rdf.model.{Model, ModelFactory, RDFList}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.scalatest.FunSuite
+
 import scala.collection.JavaConverters._
 
+object SPARQLQueryEvaluationTestSuite {
+
+  def main(args: Array[String]): Unit = {
+    new SPARQLQueryEvaluationTestSuite("/sparql11/data-sparql11/manifest-sparql11-query.ttl").tests.foreach(println(_))
+  }
+
+  val DEFAULT_QUERY: Query = QueryFactory.create(
+"""
+  |prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  |prefix : <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#>
+  |prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
+  |prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
+  |prefix qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
+  |prefix dawgt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
+  |
+  |SELECT * {
+  |?test rdf:type mf:QueryEvaluationTest ;
+  |    mf:name    ?name ;
+  |    mf:action
+  |         [ qt:query  ?queryFile ;
+  |           qt:data   ?dataFile ] ;
+  |    mf:result  ?resultsFile .
+  |OPTIONAL {?test rdfs:comment ?description }
+  |}
+  |""".stripMargin)
+}
 
 /**
  * @author Lorenz Buehmann
  */
-class SPARQLQueryEvaluationTestSuite(manifestPath: String)
+class SPARQLQueryEvaluationTestSuite(manifestPath: String, patternQuery: Query = SPARQLQueryEvaluationTestSuite.DEFAULT_QUERY)
   extends FunSuite {
 
   // contains the list of ignored tests cases, must be overridden
@@ -45,26 +72,6 @@ class SPARQLQueryEvaluationTestSuite(manifestPath: String)
     tests ++ includesList.flatMap(subDir => loadTestCasesFromManifest(subDir.asResource().getURI)).toList
   }
 
-  lazy val patternQuery = QueryFactory.create(
-    """
-      |prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-      |prefix : <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#>
-      |prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
-      |prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
-      |prefix qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#>
-      |prefix dawgt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#>
-      |
-      |SELECT * {
-      |?test rdf:type mf:QueryEvaluationTest ;
-      |    mf:name    ?name ;
-      |    mf:action
-      |         [ qt:query  ?queryFile ;
-      |           qt:data   ?dataFile ] ;
-      |    mf:result  ?resultsFile .
-      |OPTIONAL {?test rdfs:comment ?description }
-      |}
-      |""".stripMargin)
-
   private def extractTests(model: Model) = {
     val qe = QueryExecutionFactory.create(patternQuery, model)
     val rs = qe.execSelect()
@@ -74,11 +81,11 @@ class SPARQLQueryEvaluationTestSuite(manifestPath: String)
 
       SPARQLQueryEvaluationTest(
         qs.getResource("test").getURI,
-        qs.getLiteral("name").getLexicalForm,
+        Option(qs.getLiteral("name")).map(_.getLexicalForm).getOrElse(qs.getResource("test").getURI),
         desc,
         qs.getResource("queryFile").getURI,
         qs.getResource("dataFile").getURI,
-        qs.getResource("resultsFile").getURI
+        Option(qs.getResource("resultsFile")).map(_.getURI)
       )
     }
     ).toList
@@ -93,8 +100,3 @@ class SPARQLQueryEvaluationTestSuite(manifestPath: String)
 
 }
 
-object SPARQLQueryEvaluationTestSuite {
-  def main(args: Array[String]): Unit = {
-    new SPARQLQueryEvaluationTestSuite("/sparql11/data-sparql11/manifest-sparql11-query.ttl").tests.foreach(println(_))
-  }
-}
