@@ -1,8 +1,8 @@
-package net.sansa_stack.query.spark.compliance
+package net.sansa_stack.query.spark
+
+import scala.collection.JavaConverters._
 
 import com.holdenkarau.spark.testing.SharedSparkContext
-
-import net.sansa_stack.query.tests.{SPARQLQueryEvaluationTestSuite, SPARQLQueryEvaluationTestSuiteRunner, W3CConformanceSPARQLQueryEvaluationTestSuiteRunner}
 import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.Model
@@ -16,7 +16,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.{ConfigMap, Suite}
 
 import net.sansa_stack.query.spark.api.domain.{QueryEngineFactory, QueryExecutionFactorySpark}
-import scala.collection.JavaConverters._
+import net.sansa_stack.query.tests.{SPARQLQueryEvaluationTestSuite, SPARQLQueryEvaluationTestSuiteRunner}
 
 /**
  * SPARQL 1.1 test suite runner on Apache Spark.
@@ -24,8 +24,8 @@ import scala.collection.JavaConverters._
  *
  * @author Lorenz Buehmann
  */
-abstract class SPARQL11TestSuiteRunnerSpark
-  extends W3CConformanceSPARQLQueryEvaluationTestSuiteRunner
+abstract class SPARQLTestSuiteRunnerSpark(testSuite: SPARQLQueryEvaluationTestSuite)
+  extends SPARQLQueryEvaluationTestSuiteRunner(testSuite)
 //
     with org.scalatest.BeforeAndAfterAllConfigMap
     with SharedSparkContext { self: Suite =>
