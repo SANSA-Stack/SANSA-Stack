@@ -12,11 +12,13 @@ import scala.collection.JavaConverters._
 class QueryExecutionSparkOntop(query: Query,
                                subFactory: QueryExecutionFactory,
                                spark: SparkSession,
-                               ontop: OntopSPARQLEngine)
+                               ontop: QueryEngineOntop)
     extends QueryExecutionSparkBase(query, subFactory, spark) {
 
   override def execSelectSpark(): ResultSetSpark = {
-    val bindings = ontop.execSelect(query.toString())
+    val bindings = ontop.computeBindings(query.toString())
+//    println("bindings:")
+//    bindings.collect().foreach(println)
 
     val resultVars = query.getProjectVars.asScala
 

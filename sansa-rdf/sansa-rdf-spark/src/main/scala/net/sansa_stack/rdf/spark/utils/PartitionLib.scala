@@ -19,6 +19,7 @@ object PartitionLib {
      * @param explodeLanguageTags if `true` a separate mapping/TriplesMap will be created for each language tag,
      *                            otherwise a mapping to a column for the language tag represented by
      *                            `rr:langColumn` property will be used (note, this is an extension of R2RML)
+     * @param escapeIdentifiers if all SQL identifiers have to be escaped
      * @return the model containing the RDF partition states as as R2RML syntax
      */
     def exportAsR2RML(partitioner: RdfPartitioner[RdfPartitionStateDefault],

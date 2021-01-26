@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 
 class TestDataLakeEngine extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.query.spark.query._
+  import net.sansa_stack.query.spark._
 
   val configFile = getClass.getResource("/datalake/config_csv-only").getPath
   val mappingsFile = getClass.getResource("/datalake/mappings_csv-only.ttl").getPath

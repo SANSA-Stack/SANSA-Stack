@@ -5,7 +5,8 @@ import java.net.URL
 import net.sansa_stack.query.tests.util._
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.riot.resultset.ResultSetLang
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, ResultSetMgr}
 import org.apache.jena.sparql.resultset.{ResultSetCompare, ResultsFormat, SPARQLResult}
 import org.scalatest.FunSuite
 
@@ -19,45 +20,11 @@ import scala.collection.mutable
  * Inheriting classes have to implement the method
  * [[net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuiteRunner#runQuery(org.apache.jena.query.Query, org.apache.jena.rdf.model.Model)]] method.
  *
- * @param sparqlVersion the SPARQL version of the test suite, i.e. either SPARQL 1.0 or 1.1
+ * @param sparqlVersion the test suite
  * @author Lorenz Buehmann
  */
-abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VERSION.Value = SPARQL_VERSION.SPARQL_11)
+abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEvaluationTestSuite)
   extends FunSuite {
-
-  // below vars hold the namespaces for different types of test cases
-  // SPARQL 1.0
-  protected val algebraManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/algebra/manifest#"
-  protected val basicManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/basic/manifest#"
-  protected val booleanManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/boolean-effective-value/manifest#"
-  protected val castManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/cast/manifest#"
-  protected val constructManifest10: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/construct/manifest#"
-  protected val datasetManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/dataset/manifest#"
-  protected val distinctManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/distinct/manifest#"
-  protected val exprBuiltInManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/expr-builtin/manifest#"
-  protected val exprEqualsManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/expr-equals/manifest#"
-  protected val graphManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/graph/manifest#"
-  protected val openWorldManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/open-world/manifest#"
-  protected val regexManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/regex/manifest#"
-  protected val solutionSeqManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/solution-seq/manifest#"
-  protected val sortManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/sort/manifest#"
-  protected val typePromotionManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/type-promotion/manifest#"
-  protected val optionalManifest: String = "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/optional/manifest#"
-
-  // SPARQL 1.1
-  protected val aggregatesManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#"
-  protected val bindManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bind/manifest#"
-  protected val bindingsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bindings/manifest#"
-  protected val functionsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/functions/manifest#"
-  protected val constructManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/construct/manifest#"
-  protected val csvTscResManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/csv-tsv-res/manifest#"
-  protected val groupingManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/grouping/manifest#"
-  protected val negationManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation/manifest#"
-  protected val existsManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/exists/manifest#"
-  protected val projectExpressionManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/project-expression/manifest#"
-  protected val propertyPathManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/property-path/manifest#"
-  protected val subqueryManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#"
-  protected val serviceManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/service/manifest#"
 
   // contains the list of ignored tests case IDs, must be overridden
   lazy val IGNORE: Set[String] = Set.empty[String]
@@ -69,7 +36,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VE
   lazy val IGNORE_FILTER: SPARQLQueryEvaluationTest => Boolean = _ => {true}
 
   // holds the test data
-  val testData: List[SPARQLQueryEvaluationTest] = new SPARQLQueryEvaluationTestSuite(sparqlVersion).tests
+  val testData: List[SPARQLQueryEvaluationTest] = testSuite.tests
 
   // the main loop over the test data starts here
   // a single ScalaTest is generated per query
@@ -77,46 +44,47 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VE
     .filter(data => !IGNORE.contains(data.uri))
     .filter(t => IGNORE_NAMES.isEmpty || IGNORE_NAMES.exists(t.name.startsWith))
     .filter(IGNORE_FILTER)
-    //    .slice(0, 5)
-//    .filter(data => data.name.startsWith("CONTAINS"))
-    .foreach { d =>
+    .groupBy(_.dataFile)
+    .foreach { case (dataFile, tests) =>
+      // load data
+      val data = loadData(dataFile)
+      data.setNsPrefix("", "http://www.example.org/")
+      println("Data:")
+      data.write(System.out, "Turtle")
 
-      // get the relevant data from the test case
-      val queryFileURL = d.queryFile
-      val resultFileURL = d.resultsFile
-      val datasetURL = d.dataFile
-      val testName = d.name
+      tests.foreach(testCase => {
+        // get the relevant data from the test case
+        val queryFileURL = testCase.queryFile
+        val resultFileURL = testCase.resultsFile
+        val testName = testCase.name
 
-      // test starts here
-      test(s"testing $testName") {
-        val queryString = readQueryString(queryFileURL)
-        val query = QueryFactory.create(queryString)
-        println(s"SPARQL query:\n $query")
+        // test starts here
+        test(s"testing $testName") {
+          val queryString = readQueryString(queryFileURL)
+          val query = QueryFactory.create(queryString)
+          println(s"SPARQL query:\n $query")
 
-        // load data
-        val data = loadData(datasetURL)
-        data.setNsPrefix("", "http://www.example.org/")
-        println("Data:")
-        data.write(System.out, "Turtle")
+          // run the SPARQL query
+          val actualResult = runQuery(query, data)
 
-        // run the SPARQL query
-        val actualResult = runQuery(query, data)
+          // read expected result
+          val expectedResult: Option[SPARQLResult] = resultFileURL.map(readExpectedResult)
 
-        // read expected result
-        val expectedResult = readExpectedResult(resultFileURL)
-
-        // compare results
-        if (query.isSelectType) {
-          processSelect(query, expectedResult, actualResult)
-        } else if (query.isAskType) {
-          processAsk(query, expectedResult, actualResult)
-        } else if (query.isConstructType || query.isDescribeType) {
-          processGraph(query, expectedResult, actualResult)
-        } else {
-          fail(s"unsupported query type: ${query.getQueryType}")
+          // compare results
+          if (query.isSelectType) {
+            processSelect(query, expectedResult, actualResult)
+          } else if (query.isAskType) {
+            processAsk(query, expectedResult, actualResult)
+          } else if (query.isConstructType || query.isDescribeType) {
+            processGraph(query, expectedResult, actualResult)
+          } else {
+            fail(s"unsupported query type: ${query.queryType().name()}")
+          }
         }
-      }
+      })
     }
+
+//  def runQueries(queries: Seq[Query], data: Model): Seq[SPARQLResult]
 
   /**
    * Executes the given SPARQL query and returns the result. The result must be a resultset, Boolean value or a
@@ -128,85 +96,110 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VE
    */
   def runQuery(query: Query, data: Model): SPARQLResult
 
-  private def processAsk(query: Query, resultExpected: SPARQLResult, resultActual: SPARQLResult) = {
-    assert(resultActual.getBooleanResult == resultExpected.getBooleanResult, "Result of ASK query does not match")
-  }
+  private def processAsk(query: Query, resultExpected: Option[SPARQLResult], resultActual: SPARQLResult) = {
 
-  private def processGraph(query: Query, resultExpected: SPARQLResult, resultActual: SPARQLResult) = {
-    if (query.isConstructQuad) {
-      import org.apache.jena.sparql.util.IsoMatcher
-      try {
-        if (!resultExpected.isDataset) fail("Expected results are not a graph: ")
-        val resultsExpected = resultExpected.getDataset
-        if (!IsoMatcher.isomorphic(resultsExpected.asDatasetGraph, resultActual.getDataset.asDatasetGraph())) {
-          fail("Results do not match: ")
-        }
-      } catch {
-        case ex: Exception =>
-          val typeName = if (query.isConstructType) "construct" else "describe"
-          fail("Exception in result testing (" + typeName + "): " + ex)
-      }
-    }
-    else {
-      try {
-        if (!resultExpected.isGraph) fail("Expected results are not a graph: ")
-        if (!resultExpected.getModel.isIsomorphicWith(resultActual.getModel)) {
-          import org.apache.jena.util.FileUtils
-          val out = FileUtils.asPrintWriterUTF8(System.out)
-          out.println("=======================================")
-          out.println("Failure:")
-          out.println(s"Query:\n$query")
-          out.println("expected:")
-          resultExpected.getModel.write(out, "TTL")
-          out.println("---------------------------------------")
-          out.println("got:")
-          resultActual.getModel.write(out, "TTL")
-          fail("Results do not match: " + query)
-        }
-      } catch {
-        case ex: Exception =>
-          val typeName = if (query.isConstructType) "construct"
-          else "describe"
-          fail("Exception in result testing (" + typeName + "): " + ex)
-      }
+    if (resultExpected.isEmpty) {
+      ResultSetMgr.write(System.out, resultActual.getBooleanResult, ResultSetLang.SPARQLResultSetXML)
+      fail("No expected result defined - actual output printed to console")
+    } else {
+      assert(resultActual.getBooleanResult == resultExpected.get.getBooleanResult, "Result of ASK query does not match")
     }
   }
 
-  private def processSelect(query: Query, results: SPARQLResult, resultsAct: SPARQLResult) = {
+  private def processGraph(query: Query, resultExpectedOpt: Option[SPARQLResult], resultActual: SPARQLResult) = {
+
+    if (resultExpectedOpt.isEmpty) {
+      if (query.isConstructQuad) {
+        RDFDataMgr.write(System.out, resultActual.getDataset, RDFFormat.TRIG_PRETTY)
+      } else {
+        RDFDataMgr.write(System.out, resultActual.getModel, RDFFormat.TURTLE_PRETTY)
+        fail("No expected result defined - actual output printed to console")
+      }
+    } else {
+      val resultExpected = resultExpectedOpt.get
+
+
+      if (query.isConstructQuad) {
+        import org.apache.jena.sparql.util.IsoMatcher
+        try {
+          if (!resultExpected.isDataset) fail("Expected results are not a graph: ")
+          val resultsExpected = resultExpected.getDataset
+          if (!IsoMatcher.isomorphic(resultsExpected.asDatasetGraph, resultActual.getDataset.asDatasetGraph())) {
+            fail("Results do not match: ")
+          }
+        } catch {
+          case ex: Exception =>
+            val typeName = if (query.isConstructType) "construct" else "describe"
+            fail("Exception in result testing (" + typeName + "): " + ex)
+        }
+      }
+      else {
+        try {
+          if (!resultExpected.isGraph) fail("Expected results are not a graph: ")
+          if (!resultExpected.getModel.isIsomorphicWith(resultActual.getModel)) {
+            import org.apache.jena.util.FileUtils
+            val out = FileUtils.asPrintWriterUTF8(System.out)
+            out.println("=======================================")
+            out.println("Failure:")
+            out.println(s"Query:\n$query")
+            out.println("expected:")
+            resultExpected.getModel.write(out, "TTL")
+            out.println("---------------------------------------")
+            out.println("got:")
+            resultActual.getModel.write(out, "TTL")
+            fail("Results do not match: " + query)
+          }
+        } catch {
+          case ex: Exception =>
+            val typeName = if (query.isConstructType) "construct"
+            else "describe"
+            fail("Exception in result testing (" + typeName + "): " + ex)
+        }
+      }
+    }
+  }
+
+  private def processSelect(query: Query, resultsOpt: Option[SPARQLResult], resultsAct: SPARQLResult) = {
     val resultsActual = ResultSetFactory.makeRewindable(resultsAct.getResultSet)
 
-    val resultsExpected =
-      if (results.isResultSet) {
-        ResultSetFactory.makeRewindable(results.getResultSet)
-      } else if (results.isModel) {
-        ResultSetFactory.makeRewindable(results.getModel)
-      } else {
-        fail("Wrong result type for SELECT query")
-        null
+    if (resultsOpt.isEmpty) {
+      ResultSetMgr.write(System.out, resultsActual, ResultSetLang.SPARQLResultSetXML)
+      fail("No expected result defined - actual output printed to console")
+    } else {
+      val results = resultsOpt.get
+
+      val resultsExpected =
+        if (results.isResultSet) {
+          ResultSetFactory.makeRewindable(results.getResultSet)
+        } else if (results.isModel) {
+          ResultSetFactory.makeRewindable(results.getModel)
+        } else {
+          fail("Wrong result type for SELECT query")
+          null
+        }
+
+      // compare results
+      val b = resultSetEquivalent(query, resultsActual, resultsExpected)
+
+      // print error message
+      if (!b) {
+        resultsExpected.reset()
+        resultsActual.reset()
+        println(
+          s"""
+             |=================================
+             |Failure:
+             |Query:
+             |$query
+             |Got: ${resultsActual.size()} ---------------------
+             |${ResultSetFormatter.asText(resultsActual, query.getPrologue)}
+             |Expected: ${resultsExpected.size()} ------------------
+             |${ResultSetFormatter.asText(resultsExpected, query.getPrologue)}
+             |""".stripMargin
+        )
       }
-
-    // compare results
-    val b = resultSetEquivalent(query, resultsActual, resultsExpected)
-
-    // print error message
-    if (!b) {
-      resultsExpected.reset()
-      resultsActual.reset()
-      println(
-        s"""
-           |=================================
-           |Failure:
-           |Query:
-           |$query
-           |Got: ${resultsActual.size()} ---------------------
-           |${ResultSetFormatter.asText(resultsActual, query.getPrologue)}
-           |Expected: ${resultsExpected.size()} ------------------
-           |${ResultSetFormatter.asText(resultsExpected, query.getPrologue)}
-           |""".stripMargin
-      )
+      assert(b, "Results of SELECT query do not match")
     }
-    assert(b, "Results of SELECT query do not match")
-
   }
 
   private def resultSetEquivalent(query: Query, resultsActual: ResultSet, resultsExpected: ResultSet): Boolean = {

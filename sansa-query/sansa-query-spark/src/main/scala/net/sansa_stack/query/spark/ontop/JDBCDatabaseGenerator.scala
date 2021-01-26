@@ -2,16 +2,16 @@ package net.sansa_stack.query.spark.ontop
 
 import java.sql.{Connection, SQLException}
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import net.sansa_stack.rdf.common.partition.schema._
-import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.types.StructType
 import scala.reflect.runtime.universe.typeOf
 
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.types.StructType
 
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
+import net.sansa_stack.rdf.common.partition.schema._
+import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
 
 /**
  * Setup the JDBC database needed for the Ontop metadata extraction.
@@ -35,6 +35,42 @@ object JDBCDatabaseGenerator {
     typeOf[SchemaStringDate] -> "DATE",
     typeOf[SchemaStringTimestamp] -> "TIMESTAMP"
   ) // .map(e => (typeOf[e._1.type], e._2))
+
+  private val spark2H2DatatypeMapping = Map(
+    "STRING" -> "VARCHAR"
+  )
+
+  def generateTables(connection: Connection,
+                     jdbcMetaData: Map[String, String]): Unit = {
+
+    val s = jdbcMetaData.map { case (tableName, ddl) =>
+
+      // replace Spark datatypes with H2 types
+      var ddlH2 = ddl
+      spark2H2DatatypeMapping.foreach{ case (from, to) => ddlH2 = ddlH2.replace(from, to) }
+      ddlH2 = ddlH2.replace("`", "\"")
+
+      s"""
+        |CREATE TABLE IF NOT EXISTS ${sqlEscaper.escapeColumnName(tableName)}
+        |($ddlH2)
+        |""".stripMargin
+
+    }.mkString(";")
+//    println(s)
+
+    try {
+      val stmt = connection.createStatement()
+
+      stmt.executeUpdate("DROP ALL OBJECTS")
+
+      stmt.executeUpdate(s)
+
+      connection.commit()
+    } catch {
+      case e: SQLException => logger.error("Error occurred when creating in-memory H2 database", e)
+    }
+
+  }
 
   /**
    * Generates the tables per partitions for the database at the given connection.
