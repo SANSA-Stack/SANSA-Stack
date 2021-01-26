@@ -69,7 +69,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VE
   lazy val IGNORE_FILTER: SPARQLQueryEvaluationTest => Boolean = _ => {true}
 
   // holds the test data
-  val testData: List[SPARQLQueryEvaluationTest] = new SPARQLQueryEvaluationTestSuite(sparqlVersion).tests
+  val testData: List[SPARQLQueryEvaluationTest] = new W3cConformanceSPARQLQueryEvaluationTestSuite(sparqlVersion).tests
 
   // the main loop over the test data starts here
   // a single ScalaTest is generated per query
