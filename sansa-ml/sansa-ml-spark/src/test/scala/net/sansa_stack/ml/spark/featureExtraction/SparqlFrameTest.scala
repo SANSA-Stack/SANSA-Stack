@@ -42,7 +42,7 @@ class SparqlFrameTest extends FunSuite with SharedSparkContext{
     JenaSystem.init()
     spark.sparkContext.setLogLevel("ERROR")
   }
-  test("Test SparqlFrame query extracting two features with ontop") {
+  test("Test SparqlFrame query extracting two features with sparqlify") {
     val dataset = getData()
     val queryString = """
                         |SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasSpouse__down_name
@@ -63,8 +63,10 @@ class SparqlFrameTest extends FunSuite with SharedSparkContext{
                         |}""".stripMargin
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
-      .setQueryExcecutionEngine("ontop")
+      .setQueryExcecutionEngine("sparqlify")
     val res: DataFrame = sparqlFrame.transform(dataset)
+
+    res.show(false)
 
     val ages = res.select("seed__down_age").rdd.map(r => r(0)).collect()
     val names = res.select("seed__down_name").rdd.map(r => r(0)).collect()

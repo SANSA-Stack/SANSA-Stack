@@ -49,7 +49,7 @@ class SparqlFrame extends Transformer{
    * @return the set transformer
    */
   def setQueryExcecutionEngine(queryExcecutionEngine: String): this.type = {
-    if (queryExcecutionEngine == "ontop" | queryExcecutionEngine == "sparqlify") {
+    if (queryExcecutionEngine == "sparqlify") {
       _queryExcecutionEngine = queryExcecutionEngine
     }
     else {
@@ -110,6 +110,7 @@ class SparqlFrame extends Transformer{
    */
   def transform(dataset: Dataset[_]): DataFrame = {
     val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
+    graphRdd.foreach(println(_))
     val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
 
     val resultSet = qef.createQueryExecution(_query)
@@ -118,6 +119,7 @@ class SparqlFrame extends Transformer{
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
     println(schemaMapping)
     val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+    df.show(false)
 
     df
   }
