@@ -32,7 +32,7 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
 
     JenaSystem.init()
 
-    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
+    val input = getClass.getResource("/sansa-sparql-ts/bsbm/bsbm-sample.nt").getPath
 
     triples = spark.rdf(Lang.NTRIPLES)(input).cache()
 
@@ -49,16 +49,16 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
     conf
   }
 
-  val queries = List("Q1", "Q2", "Q3")
+  val queries = List("q1", "q2", "q3")
 
   queries.foreach(q => {
     test(s"Test Ontop with BSBM $q") {
-      val queryString = Source.fromFile(getClass.getResource(s"/sparklify/queries/bsbm/$q.sparql").getPath).getLines.mkString("\n")
+      val queryString = Source.fromFile(getClass.getResource(s"/sansa-sparql-ts/bsbm/bsbm-$q.rq").getPath).getLines.mkString("\n")
       val query = QueryFactory.create(queryString)
 
       val rs = qef.createQueryExecution(query).execSelect()
 
-      val rsTarget = ResultSetFactory.fromXML(new FileInputStream(new File(getClass.getResource(s"/sparklify/queries/bsbm/$q.srx").getPath)))
+      val rsTarget = ResultSetFactory.fromXML(new FileInputStream(new File(getClass.getResource(s"/sansa-sparql-ts/bsbm/bsbm-$q.srx").getPath)))
 
       assert(resultSetEquivalent(query, rs, rsTarget))
     }

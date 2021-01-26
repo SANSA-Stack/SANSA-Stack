@@ -31,7 +31,7 @@ object SPARQLTestSuiteRunnerSparkSparqlify {
 
 class SPARQLTestSuiteRunnerSparkSparqlify
   extends SPARQLTestSuiteRunnerSpark(new SPARQLQueryEvaluationTestSuite(
-    "/custom-sparql-ts/manifest.ttl",
+    "/sansa-sparql-ts/manifest.ttl",
     SPARQLTestSuiteRunnerSparkSparqlify.CUSTOM_TS_QUERY)) {
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactorySparqlify(spark)
