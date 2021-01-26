@@ -234,14 +234,15 @@ public class SansaIT {
         String sparqlEndpointUrl = "http://localhost:" + sparkTestPort + "/sparql";
 
         String[] args = new String[] {
-                 "--class", "net.sansa_stack.examples.spark.query.Sparklify",
+                 "--class", "net.sansa_stack.examples.spark.query.SPARQLEngineExample",
                 "--master", sparkMasterUrl,
                 "--num-executors", "2",
                 "--executor-memory", "1G",
                 "--executor-cores", "2",
                 "/spark/bin/" + jarBundleContainerPath.toString(),
+                "endpoint",
+                "--sparql-engine", "Sparqlify",
                 "-i", "rdf.nt",
-                "-r", "endpoint",
                 "-p", Integer.toString(sparkTestPort)
         };
 
@@ -258,14 +259,15 @@ public class SansaIT {
 
         String[] args = new String[] {
                 // "--class", "net.sansa_stack.examples.spark.query.Sparklify",
-                "--class", "net.sansa_stack.examples.spark.query.OntopBasedSPARQLEngine",
+                "--class", "net.sansa_stack.examples.spark.query.SPARQLEngineExample",
                 "--master", sparkMasterUrl,
                 "--num-executors", "2",
                 "--executor-memory", "1G",
                 "--executor-cores", "2",
                 "/spark/bin/" + jarBundleContainerPath.toString(),
+                "endpoint",
+                "--sparql-engine", "Ontop",
                 "-i", "rdf.nt",
-                "-r", "endpoint",
                 "-p", Integer.toString(sparkTestPort)
         };
 
