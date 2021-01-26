@@ -3,7 +3,7 @@ package net.sansa_stack.ml.spark.featureExtraction
 import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
 import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
-import net.sansa_stack.query.spark.query._
+import net.sansa_stack.query.spark._
 import net.sansa_stack.rdf.spark.partition.RDFPartition
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
