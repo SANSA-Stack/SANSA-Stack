@@ -9,6 +9,10 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
 import org.scalatest.FunSuite
 
 class SPARQLQueryTest extends FunSuite with SharedSparkContext {
+
+  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+
   lazy val spark = SparkSession.builder()
     .appName(sc.appName)
     .master(sc.master)
