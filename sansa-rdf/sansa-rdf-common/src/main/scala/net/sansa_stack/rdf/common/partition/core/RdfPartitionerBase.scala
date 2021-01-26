@@ -83,7 +83,11 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
         || (!distinguishStringLiterals && isPlainLiteral(o)))
 
 
-    val lang = if (langTagPresent && partitionPerLangTag && o.getLiteralLanguage.nonEmpty) Set(o.getLiteralLanguage) else Set.empty[String]
+    val lang = if (langTagPresent && partitionPerLangTag) {
+      Set(o.getLiteralLanguage)
+    } else {
+      Set.empty[String]
+    }
 
     RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang)
   }
@@ -130,21 +134,18 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
       }.toSeq ++ partitions.filter(_.languages.isEmpty)
   }
 
-    /*
-  def determineLayout(t: RdfPartitionDefault): TripleLayout = {
-    val oType = t.objectType
+  // we have to override this method here, because now with a partition state holding possibly multiple languages,
+  // we have to check for containment instead of equality
+  override def matches(partition: RdfPartitionStateDefault, triple: Triple): Boolean = {
+    val newPartition = fromTriple(triple)
 
-    val layout = oType match {
-      case 0 => TripleLayoutString
-      case 1 => TripleLayoutString
-      case 2 => if (isPlainLiteralDatatype(t.datatype)) TripleLayoutStringLang else determineLayoutDatatype(t.datatype)
-      // if(!t.langTagPresent)
-      // TripleLayoutString else TripleLayoutStringLang
-      case _ => throw new RuntimeException("Unsupported object type: " + t)
-    }
-    layout
+    partition.predicate == newPartition.predicate &&
+      partition.subjectType == newPartition.subjectType &&
+      partition.objectType == newPartition.objectType &&
+      partition.langTagPresent == newPartition.langTagPresent &&
+      partition.datatype == newPartition.datatype &&
+      newPartition.languages.subsetOf(partition.languages)
   }
-  */
 
   protected val intDTypeURIs: Set[String] = Set(XSDDatatype.XSDnegativeInteger, XSDDatatype.XSDpositiveInteger,
     XSDDatatype.XSDnonNegativeInteger, XSDDatatype.XSDnonPositiveInteger,

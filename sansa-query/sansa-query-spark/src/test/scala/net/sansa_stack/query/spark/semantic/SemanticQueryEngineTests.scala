@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
 
 class SemanticQueryEngineTests extends FunSuite with DataFrameSuiteBase {
 
-  import net.sansa_stack.query.spark.query._
+  import net.sansa_stack.query.spark._
 
   var partitionTriples: RDD[String] = _
 

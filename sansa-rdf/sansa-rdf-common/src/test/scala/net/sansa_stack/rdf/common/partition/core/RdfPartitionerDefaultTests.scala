@@ -61,7 +61,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |                           rr:predicate  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
         |  rr:subjectMap          [ rr:column    "s" ;
-        |                           rr:datatype  rr:IRI
+        |                           rr:termType  rr:IRI
         |                         ]
         |] .
         |""".stripMargin.getBytes()), Lang.TURTLE)
@@ -95,7 +95,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
         |  <#subjectMap>  [ <#column>  "`s`" ;
-        |                   <#datatype>  <#IRI>
+        |                   <#termType>  <#IRI>
         |                 ]
         |] .
         |
@@ -106,7 +106,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
         |  <#subjectMap>  [ <#column>  "`s`" ;
-        |                   <#datatype>  <#IRI>
+        |                   <#termType>  <#IRI>
         |                 ]
         |] .
         |
@@ -117,7 +117,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
         |  <#subjectMap>  [ <#column>  "`s`" ;
-        |                   <#datatype>  <#IRI>
+        |                   <#termType>  <#IRI>
         |                 ]
         |] .
         |""".stripMargin.getBytes()), Lang.TURTLE)

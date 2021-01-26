@@ -8,6 +8,7 @@ import scala.collection.mutable
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.exception.OntopInternalBugException
+import it.unibz.inf.ontop.iq.IQ
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
@@ -21,24 +22,26 @@ import org.eclipse.rdf4j.model.{IRI, Literal}
 import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
 import org.semanticweb.owlapi.model.OWLOntology
 
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
+
 /**
  * Mapper of Spark DataFrame rows to other entities, e.g. binding, triple, ...
  *
  * @author Lorenz Buehmann
  */
-class OntopRowMapper(
+class OntopRowMapper2(
                       obdaMappings: Model,
                       properties: Properties,
                       jdbcMetaData: Map[String, String],
                       sparqlQuery: String,
                       ontology: Option[OWLOntology],
-                      id: String,
-                      rewriteInstruction: RewriteInstruction
+                      id: String
                      ) {
+
+//  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
 
   val reformulationConfiguration = OntopConnection(id, obdaMappings, properties, jdbcMetaData, ontology)
-
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
@@ -48,16 +51,25 @@ class OntopRowMapper(
 
   val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-  val sqlSignature = rewriteInstruction.sqlSignature
-  val sqlTypeMap = rewriteInstruction.sqlTypeMap
-  val sparqlVar2Term = rewriteInstruction.substitution
-  val answerAtom = rewriteInstruction.anserAtom
+  val executableQuery = queryReformulator.reformulateIntoNativeQuery(inputQuery,
+    queryReformulator.getQueryLoggerFactory.create(it.unibz.inf.ontop.com.google.common.collect.ImmutableMultimap.of()))
+
+  val constructionNode = OntopUtils.extractRootConstructionNode(executableQuery)
+  val nativeNode = OntopUtils.extractNativeNode(executableQuery)
+  val sqlSignature = nativeNode.getVariables
+  val sqlTypeMap = nativeNode.getTypeMap
+  val sparqlVar2Term = constructionNode.getSubstitution
+  val answerAtom = executableQuery.getProjectionAtom
+
+  println(executableQuery)
+
+
 
   def map(row: Row): Binding = {
     toBinding(row)
   }
 
-  def toBinding(row: Row): Binding = { // println(row)
+  def toBinding(row: Row): Binding = { println(row)
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]

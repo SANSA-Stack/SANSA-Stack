@@ -1,6 +1,6 @@
 package net.sansa_stack.examples.spark.query
 
-import net.sansa_stack.query.spark.query._
+import net.sansa_stack.query.spark._
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang

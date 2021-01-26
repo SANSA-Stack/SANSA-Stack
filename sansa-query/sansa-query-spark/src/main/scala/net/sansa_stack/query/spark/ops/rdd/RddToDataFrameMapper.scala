@@ -42,7 +42,7 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
  * FIXME Rename to ResultSetToFrameMapper
  */
 object RddToDataFrameMapper {
-  import net.sansa_stack.query.spark.query._
+  import net.sansa_stack.query.spark._
 
   import collection.JavaConverters._
 

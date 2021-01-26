@@ -1,16 +1,10 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.File
 import java.net.URI
-import java.nio.file.Paths
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerComplex}
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import org.apache.jena.query.{QueryFactory, QueryType}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SparkSession}
-import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.OWLOntology
+import org.apache.jena.query.{QueryFactory, QueryType, ResultSetFormatter}
+import org.apache.jena.riot.RDFDataMgr
+import org.apache.spark.sql.SparkSession
 import scopt.OParser
 
 /**
@@ -45,51 +39,17 @@ class OntopCLI {
       .enableHiveSupport()
       .getOrCreate()
 
-    val partitioner = RdfPartitionerComplex(false)
-
-    val sparqlEngine =
+    val qef =
       if (config.inputPath != null) {
         // read triples as RDD[Triple]
-        var triplesRDD = spark.ntriples()(config.inputPath.toString).cache()
-
-        // load optional schema file and filter properties used for VP
-        var ont: OWLOntology = null
-
-        if (config.schemaPath != null) {
-          val owlFile = new File(config.schemaPath)
-          val man = OWLManager.createOWLOntologyManager()
-          ont = man.loadOntologyFromOntologyDocument(owlFile)
-          //    val cleanOnt = man.createOntology()
-          //    man.addAxioms(cleanOnt, ont.asInstanceOf[HasLogicalAxioms].getLogicalAxioms)
-          //
-          //    owlFile = "/tmp/clean-dbo.nt"
-          //    man.saveOntology(cleanOnt, new FileOutputStream(owlFile))
-
-//          // get all object properties in schema file
-//          val objectProperties = ont.asInstanceOf[HasObjectPropertiesInSignature].getObjectPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
-//
-//          // get all object properties in schema file
-//          val dataProperties = ont.asInstanceOf[HasDataPropertiesInSignature].getDataPropertiesInSignature.iterator().asScala.map(_.toStringID).toSet
-//
-//          var schemaProperties = objectProperties ++ dataProperties
-//          schemaProperties = Set("http://dbpedia.org/ontology/birthPlace", "http://dbpedia.org/ontology/birthDate")
-//
-//          // filter triples RDD
-//          triplesRDD = triplesRDD.filter(t => schemaProperties.contains(t.getPredicate.getURI))
-        }
-
-        // do partitioning here
-        logger.info("computing partitions ...")
-        val partitions: Map[RdfPartitionStateDefault, RDD[Row]] = RdfPartitionUtilsSpark.partitionGraph(triplesRDD, partitioner)
-        logger.info(s"got ${partitions.keySet.size} partitions ...")
+        val triplesRDD = spark.ntriples()(config.inputPath.toString).cache()
 
         // create the SPARQL engine
-        OntopSPARQLEngine(spark, partitioner, partitions, Option(ont))
+        import net.sansa_stack.query.spark._
+        triplesRDD.sparql(SPARQLEngine.Ontop)
       } else {
-        // load partitioning metadata
-        val partitions = PartitionSerDe.deserializeFrom(Paths.get(config.metaDataPath))
-        // create the SPARQL engine
-        OntopSPARQLEngine(spark, config.databaseName, partitioner, partitions, None)
+        val mappingsModel = RDFDataMgr.loadModel(config.metaDataPath.toString)
+        new QueryEngineFactoryOntop(spark).create(config.databaseName, mappingsModel)
       }
 
     var input = config.initialQuery
@@ -98,17 +58,21 @@ class OntopCLI {
       try {
         val q = QueryFactory.create(query)
 
-        q.queryType() match {
+        val qe = qef.createQueryExecution(q)
+
+        val qt = q.getClass.getDeclaredMethod("queryType").invoke(q).asInstanceOf[QueryType] // TODO Scala compiler from CLI fails without reflection ...
+
+        qt match {
           case QueryType.SELECT =>
-            val res = sparqlEngine.execSelect(query)
-            println(res.collect().mkString("\n"))
+            val rs = qe.execSelect()
+            ResultSetFormatter.out(rs)
           case QueryType.ASK =>
-            val res = sparqlEngine.execAsk(query)
+            val res = qe.execAsk()
             println(res)
           case QueryType.CONSTRUCT =>
-            val res = sparqlEngine.execConstruct(query)
-            println(res.collect().mkString("\n"))
-          case _ => throw new RuntimeException(s"unsupported query type: ${q.queryType()}")
+            val res = qe.execConstruct()
+            res.write(System.out, "Turtle")
+          case _ => throw new RuntimeException(s"unsupported query type: ${qt.name()}")
         }
       } catch {
         case e: Exception => Console.err.println("failed to execute query")
@@ -126,8 +90,6 @@ class OntopCLI {
       println("enter SPARQL query (press 'q' to quit): ")
       input = scala.io.StdIn.readLine()
     }
-
-    sparqlEngine.stop()
 
     spark.stop()
   }

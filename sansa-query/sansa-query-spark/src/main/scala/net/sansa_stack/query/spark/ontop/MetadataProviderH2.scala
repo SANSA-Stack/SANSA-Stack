@@ -2,7 +2,7 @@ package net.sansa_stack.query.spark.ontop
 
 import it.unibz.inf.ontop.dbschema.MetadataProvider
 import it.unibz.inf.ontop.dbschema.impl.OfflineMetadataProviderBuilder
-import it.unibz.inf.ontop.injection.OntopModelConfiguration
+import it.unibz.inf.ontop.injection.{CoreSingletons, OntopModelConfiguration}
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStringDouble, SchemaStringStringType}
@@ -28,7 +28,7 @@ class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
   def generate(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                partitions: Seq[RdfPartitionStateDefault],
                blankNodeStrategy: BlankNodeStrategy.Value): MetadataProvider = {
-    val builder = new OfflineMetadataProviderBuilder(defaultConfiguration.getTypeFactory)
+    val builder = new OfflineMetadataProviderBuilder(defaultConfiguration.getInjector.getInstance(classOf[CoreSingletons]))
     partitions.foreach(p => generate(partitioner, p, blankNodeStrategy, builder))
     builder.build()
   }
