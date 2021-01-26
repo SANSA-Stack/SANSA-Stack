@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.compliance
+package net.sansa_stack.query.spark
 
 import scala.collection.JavaConverters._
 
@@ -12,16 +12,16 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.{ConfigMap, Suite}
 
 import net.sansa_stack.query.spark.api.domain.{QueryEngineFactory, QueryExecutionFactorySpark}
-import net.sansa_stack.query.tests.W3CConformanceSPARQLQueryEvaluationTestSuiteRunner
+import net.sansa_stack.query.tests.{SPARQLQueryEvaluationTestSuite, SPARQLQueryEvaluationTestSuiteRunner}
 
 /**
- * SPARQL 1.1 test suite runner on Apache Spark.
+ * SPARQL test suite runner on Apache Spark.
  *
  *
  * @author Lorenz Buehmann
  */
-abstract class SPARQL11TestSuiteRunnerSpark
-  extends W3CConformanceSPARQLQueryEvaluationTestSuiteRunner
+abstract class SPARQLTestSuiteRunnerSpark(testSuite: SPARQLQueryEvaluationTestSuite)
+  extends SPARQLQueryEvaluationTestSuiteRunner(testSuite)
 //
     with org.scalatest.BeforeAndAfterAllConfigMap
     with SharedSparkContext { self: Suite =>
@@ -110,5 +110,4 @@ abstract class SPARQL11TestSuiteRunnerSpark
 
     result
   }
-
 }
