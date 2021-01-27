@@ -4,11 +4,14 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang
+import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.DataFrame
 import org.scalatest.FunSuite
 
 
 class HDTTests extends FunSuite with DataFrameSuiteBase {
+
+  JenaSystem.init
 
   import net.sansa_stack.query.spark._
 
@@ -17,7 +20,7 @@ class HDTTests extends FunSuite with DataFrameSuiteBase {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    val input = getClass.getResource("/datasets/bsbm-sample.nt").getPath
+    val input = getClass.getResource("/sansa-sparql-ts/bsbm/bsbm-sample.nt").getPath
     val triples = spark.rdf(Lang.NTRIPLES)(input)
     hdt_triples = triples.asHDT().cache()
   }

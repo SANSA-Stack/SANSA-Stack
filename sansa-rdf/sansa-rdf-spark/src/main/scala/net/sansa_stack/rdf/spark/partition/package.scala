@@ -52,7 +52,12 @@ package object partition extends Logging {
 
       val sparkSession = SparkSession.builder.config(rddOfTriples.sparkContext.getConf).getOrCreate()
 
-      val tableNaming = R2rmlUtils.createDefaultTableName _
+      // Create a table prefix for each partitioning of RDDs
+      // TODO Encode partitioner hash into the name
+      val rddId = System.identityHashCode(rddOfTriples)
+      val tableNaming: RdfPartitionStateDefault => String =
+        partitionState => "rdd" + rddId + "_" + R2rmlUtils.createDefaultTableName(partitionState)
+
       val sqlEscaper = new SqlEscaperBacktick
 
       partitioning.foreach { case(p, rdd) =>

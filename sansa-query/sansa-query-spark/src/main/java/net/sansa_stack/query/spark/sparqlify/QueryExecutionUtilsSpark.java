@@ -28,7 +28,7 @@ public class QueryExecutionUtilsSpark {
 
 		Dataset<Row> dataset = sparkSession.sql(sqlQueryStr);
 
-//		System.out.println("SqlQueryStr: " + sqlQueryStr);
+		System.err.println("SqlQueryStr: " + sqlQueryStr);
 //		System.out.println("VarDef: " + rewrite.getVarDefinition());
 
 		SparkRowMapperSparqlify rowMapper = new SparkRowMapperSparqlify(varDef);
