@@ -1,7 +1,7 @@
-package net.sansa_stack.ml.spark.utils
+package net.sansa_stack.ml.spark.featureExtraction
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.autoPrepo
+import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.createSparql
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
@@ -10,6 +10,9 @@ import org.apache.spark.sql.{Encoders, SparkSession}
 import org.scalatest.FunSuite
 
 class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteBase{
+
+  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -45,7 +48,7 @@ class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteB
     // first mini file:
     val df = spark.read.rdf(Lang.TURTLE)(inputFilePath)
 
-    val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
+    val (totalSparqlQuery: String, var_names: List[String]) = createSparql(
       df = df,
       seedVarName = seedVarName,
       seedWhereClause = whereClauseForSeed,

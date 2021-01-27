@@ -12,11 +12,13 @@ The current stack provides:
 - [Sparql Transformer](#sparql-transformer)
 - [RDF2Feature - AutoSparql Generation for Feature Extraction](#rdf2feature-autosparql-generation-for-feature-extraction)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
+- [SparqlFrame Feature Extractor](#sparqlframe-feature-extractor)
+- [Smart Vector Assembler](#smart-vector-assembler)
 
 ### Sparql Transformer
 [Sparql Transformer](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SPARQLQuery.html):
 The SPARQL Transformer is implemented as a [Spark MLlib Transformer](https://spark.apache.org/docs/latest/ml-pipeline.html#transformers). It reads RDF data as a `DataSet` and produces a `DataFrame` of type Apache Jena `Node`. Currently supported are up to 5 projection variables. A sample usage could be:
-```Scala
+```scala 
 val spark = SparkSession.builder()
     .appName(sc.appName)
     .master(sc.master)
@@ -45,7 +47,7 @@ this sample is taken from a [Scala unit test](https://github.com/SANSA-Stack/SAN
 ### RDF2Feature AutoSparql Generation for Feature Extraction
 [AutoSparql Generation for Feature Extraction](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html):
 This module [(scaladocs)](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html) creates a SPARQL query traversing the tree to gain literals which can be used as features for common feature based Machine Learning Approaches. The user needs only to specify the WHERE clause, how to reach the entities, which should be considered as seeds/roots for graph traversal. This traversal will then provide a SPARQL Query to fetch connected features from Literals. As sample usage would be:
-```
+```scala
 val inputFilePath: String = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
 val seedVarName = "?seed"
 val whereClauseForSeed = "?seed a <http://dig.isi.edu/Person>"
@@ -80,6 +82,111 @@ println(totalSparqlQuery)
 ```
 This sample is taken from [scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGeneratorTest.scala)
 
+### SparqlFrame Feature Extractor
+With SparqlFrame we provide a Transformer which takes a String representing a sparql query. You can also use our [RDF2Feature - AutoSparql Generation for Feature Extraction](#rdf2feature-autosparql-generation-for-feature-extraction).
+It uses ONTOP or SPARQLIFY from query layer to gain query results. THe values are casted to String if not all elements in a repective feature column are of a respective type like Integer.
+```scala 
+// setup spark session
+val spark = SparkSession.builder
+  .appName(s"SampleFeatureExtractionPipeline")
+  .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
+  .config("spark.kryo.registrator", String.join(
+    ", ",
+    "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+    "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+  // .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
+  .getOrCreate()
+spark.sparkContext.setLogLevel("ERROR")
+JenaSystem.init()
+
+// READ IN DATA
+val inputFilePath = "/Users/carstendraschner/GitHub/SANSA-Stack/sansa-ml/sansa-ml-spark/src/main/resources/test.ttl"
+val df: DataFrame = spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
+val dataset = df.toDS()
+
+val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 1, 2, 3, featuresInOptionalBlocks = true)
+
+val queryString = autoSparqlString
+
+// FEATURE EXTRACTION OVER SPARQL
+val sparqlFrame = new SparqlFrame()
+  .setSparqlQuery(queryString)
+  .setQueryExcecutionEngine("ontop")
+val res = sparqlFrame.transform(dataset)
+res.show()
+```
+this creates a dataframe e.g. of such a shape
+```
++--------------------------+--------------+---------------+
+|seed                      |seed__down_age|seed__down_name|
++--------------------------+--------------+---------------+
+|http://dig.isi.edu/Mary   |25            |Mary           |
+|http://dig.isi.edu/John   |28            |John           |
+|http://dig.isi.edu/John_jr|2             |John Jr.       |
++--------------------------+--------------+---------------+
+```
+this dataframe can then be manipulated by native apache spark mllib transformers for desired scenario
+```scala
+val indexer = new StringIndexer()
+  .setInputCol("seed__down_name")
+  .setOutputCol("seed__down_name_Index")
+val indexed = indexer.fit(res).transform(res)
+// ASSEMBLE VECTOR
+val assembler = new VectorAssembler()
+  .setInputCols(Array("seed__down_age", "seed__down_name_Index"))
+  .setOutputCol("features")
+val output = assembler.transform(indexed)
+val assembledDf = output.select("seed", "features")
+assembledDf.show(false)
+
+// APPLY Common SPARK MLlib Example Algorithm
+val kmeans = new KMeans().setK(2) // .setSeed(1L)
+val model = kmeans.fit(assembledDf.distinct())
+
+// Make predictions
+val predictions = model.transform(assembledDf)
+```
+
+### Smart Vector Assembler
+This Transformer creates a needed Dataframe for common ML approaches in Spark MLlib.
+The resulting Dataframe consists of a column features which is a numeric vector for each entity
+The other columns are the id/identifier column like the node id
+And optional column for label
+```scala 
+/*
+FEATURE EXTRACTION OVER SPARQL
+Gain Features from Query
+this creates a dataframe with coulms corresponding to Sparql features
+ */
+println("CREATE FEATURE EXTRACTING SPARQL")
+val sparqlFrame = new SparqlFrame()
+  .setSparqlQuery(queryString)
+  .setQueryExcecutionEngine("ontop")
+val res = sparqlFrame.transform(dataset)
+res.show()
+
+/*
+Create Numeric Feature Vectors
+*/
+println("SMART VECTOR ASSEMBLER")
+val smartVectorAssembler = new SmartVectorAssembler()
+  .setEntityColumn("seed")
+  .setLabelColumn("seed__down_age")
+val assembledDf = smartVectorAssembler.transform(res)
+assembledDf.show(false)
+```
+this creates a dataframe e.g. of such a shape
+```
++--------------------------+-----+------------------------+
+|id                        |label|features                |
++--------------------------+-----+------------------------+
+|http://dig.isi.edu/Mary   |25   |[28.0,-1.0,2.0,0.0,-1.0]|
+|http://dig.isi.edu/John   |28   |[25.0,-1.0,1.0,1.0,-1.0]|
+|http://dig.isi.edu/John_jr|2    |[-1.0,25.0,0.0,-1.0,1.0]|
+|http://dig.isi.edu/John_jr|2    |[-1.0,28.0,0.0,-1.0,0.0]|
++--------------------------+-----+------------------------+
+```
+
 ### Feature Based Semantic Similarity Estimations
 [DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
 DistSim is the scalable distributed in-memory Semantic Similarity Estimation for RDF Knowledge Graph Frameworks which has been integrated into the SANSA stack in the SANSA Machine Learning package. The Scaladoc is available [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.7.1_ICSC_paper/#package), the respective similarity estimation models are in this [Github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils can be found [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
@@ -93,7 +200,7 @@ DistSim is the scalable distributed in-memory Semantic Similarity Estimation for
 #### Usage of Modules
 **Feature Extraction**
 How to use Semantic Similarity Pipeline Modules:
-```
+```scala
 val featureExtractorModel = new FeatureExtractorModel()
        .setMode("an")
 val extractedFeaturesDataFrame = featureExtractorModel
@@ -102,7 +209,7 @@ val extractedFeaturesDataFrame = featureExtractorModel
 extractedFeaturesDataFrame.show()
 ```
 Transform features to indexed feature representation:
-```
+```scala
 val cvModel: CountVectorizerModel = new CountVectorizer()
         .setInputCol("extractedFeatures")
         .setOutputCol("vectorizedFeatures")
@@ -112,7 +219,7 @@ val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
 
 (optional but recommended) filter out feature vectors which does not contain any feature
 
-```
+```scala
 val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
        val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures")
        countVectorizedFeaturesDataFrame.show()
@@ -139,7 +246,7 @@ Currently, we provide these similarity estimation models:
 * Tversky
 
 **Usage of MinHash**
-```
+```scala
 val minHashModel: MinHashLSHModel = new MinHashLSH()
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
@@ -149,7 +256,7 @@ minHashModel.approxSimilarityJoin(countVectorizedFeaturesDataFrame, countVectori
 ```
 
 **Usage of Jaccard**
-```
+```scala
 val jaccardModel: JaccardModel = new JaccardModel()
       .setInputCol("vectorizedFeatures")
      jaccardModel.nearestNeighbors(countVectorizedFeaturesDataFrame, sample_key, 10).show()
@@ -157,7 +264,7 @@ val jaccardModel: JaccardModel = new JaccardModel()
 ```
 
 **Usage of Tversky**
-```
+```scala
 val tverskyModel: TverskyModel = new TverskyModel()
        .setInputCol("vectorizedFeatures")
        .setAlpha(1.0)
@@ -169,6 +276,8 @@ tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFea
 ## Module Roadmap
 * Generic Feature Extractor Pipeline
 * Domain Aware Semantic Similarity Estimation
+* KGE
+* Clustering
 
 Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
 

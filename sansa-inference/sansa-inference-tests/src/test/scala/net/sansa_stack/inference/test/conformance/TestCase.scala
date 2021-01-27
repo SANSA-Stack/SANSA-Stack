@@ -1,4 +1,4 @@
-package net.sansa_stack.test.conformance
+package net.sansa_stack.inference.test.conformance
 
 import org.apache.jena.rdf.model.Model
 

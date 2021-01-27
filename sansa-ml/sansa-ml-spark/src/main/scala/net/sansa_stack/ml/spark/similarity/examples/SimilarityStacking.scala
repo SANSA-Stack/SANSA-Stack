@@ -18,7 +18,6 @@ object SimilarityStacking {
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"MinMal Semantic Similarity Estimation Calls")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 
@@ -50,7 +49,7 @@ object SimilarityStacking {
       .setOutputCol("vectorizedFeatures")
       .fit(filteredFeaturesDataFrame)
     val tmpCvDf: DataFrame = cvModel.transform(filteredFeaturesDataFrame)
-    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
+    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 })
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures").cache()
     countVectorizedFeaturesDataFrame.show(false)
 

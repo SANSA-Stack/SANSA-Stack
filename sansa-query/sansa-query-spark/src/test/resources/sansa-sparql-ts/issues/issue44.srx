@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head>
+    <variable name="stm"/>
+    <variable name="en"/>
+    <variable name="enAtr"/>
+    <variable name="enAtrVal"/>
+  </head>
+  <results>
+    <result>
+      <binding name="stm">
+        <uri>http://test.com/blaSt1</uri>
+      </binding>
+      <binding name="en">
+        <uri>http://test.com/blaS</uri>
+      </binding>
+      <binding name="enAtr">
+        <uri>http://test.com/blaP</uri>
+      </binding>
+      <binding name="enAtrVal">
+        <uri>http://test.com/blaO</uri>
+      </binding>
+    </result>
+    <result>
+      <binding name="stm">
+        <bnode>b0</bnode>
+      </binding>
+      <binding name="en">
+        <uri>http://test.com/blaS</uri>
+      </binding>
+      <binding name="enAtr">
+        <uri>http://test.com/blaP</uri>
+      </binding>
+      <binding name="enAtrVal">
+        <uri>http://test.com/blaO</uri>
+      </binding>
+    </result>
+  </results>
+</sparql>

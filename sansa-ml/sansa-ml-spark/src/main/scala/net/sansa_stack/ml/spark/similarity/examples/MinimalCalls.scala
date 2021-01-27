@@ -28,7 +28,6 @@ object MinimalCalls {
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"MinMal Semantic Similarity Estimation Calls")
-      .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 
