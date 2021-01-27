@@ -134,19 +134,23 @@ class QueryEngineOntop(val spark: SparkSession,
 
   // get the JDBC metadata from the Spark tables
   val sqlEscaper = new SqlEscaperBacktick()
-  val jdbcMetaData = spark.catalog.listTables().collect().map(t =>
+  val jdbcMetaData = spark.catalog.listTables().collect().map(t => {
+    val fields = spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f => sqlEscaper.escapeColumnName(f.name)).mkString(",")
+    val keyCondition = s"PRIMARY KEY ($fields)"
     (t.name,
       spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f =>
         s"${sqlEscaper.escapeColumnName(f.name)} ${f.dataType.sql} ${if (!f.nullable) "NOT NULL" else ""}"
       ).mkString(",")
+        + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
     )
-  ).toMap
+  }).toMap
 
   // if no ontology has been provided, we try to extract it from the dataset
   if (ontology.isEmpty) {
     ontology = OntologyExtractor.extract(spark)
   }
 
+  // we have to add separate mappings for each rdf:type in Ontop.
   expandMappingsWithTypes(mappingsModel)
 
   private val sparql2sql = new OntopSPARQL2SQLRewriter(jdbcMetaData, mappingsModel, ontology)
