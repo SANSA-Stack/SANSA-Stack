@@ -98,9 +98,9 @@ object SPARQLEngineExample {
         ResultSetFormatter.out(rs)
       case "endpoint" =>
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
-        if (Desktop.isDesktopSupported) {
-          Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
-        }
+//        if (Desktop.isDesktopSupported) {
+//          Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
+//        }
         server.join()
       case _ => // should never happen
     }

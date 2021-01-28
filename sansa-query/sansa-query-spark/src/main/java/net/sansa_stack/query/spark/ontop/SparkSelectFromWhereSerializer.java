@@ -44,15 +44,15 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
         return selectFromWhere.acceptVisitor(
                 new DefaultRelationVisitingSerializer(dbParameters.getQuotedIDFactory()) {
 
-                    Deque<Boolean> handleOffsetStack = new ArrayDeque<>();
+                    final Deque<Boolean> handleOffsetStack = new ArrayDeque<>();
                     String rowNumCol = "row_num";
                     private boolean needOffsetProcessed() {
                         return Optional.ofNullable(handleOffsetStack.peek()).orElse(false);
                     }
 
-                    Deque<Boolean> distinctStack = new ArrayDeque<>();
-                    Deque<ImmutableSortedSet<Variable>> projectionVariableStack = new ArrayDeque<>();
-                    Deque<ImmutableMap<Variable, QuotedID>> variableAliasesStack = new ArrayDeque<>();
+                    final Deque<Boolean> distinctStack = new ArrayDeque<>();
+                    final Deque<ImmutableSortedSet<Variable>> projectionVariableStack = new ArrayDeque<>();
+                    final Deque<ImmutableMap<Variable, QuotedID>> variableAliasesStack = new ArrayDeque<>();
 
                     @Override
                     public QuerySerialization visit(SelectFromWhereWithModifiers selectFromWhere) {
@@ -73,7 +73,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                             if (limit > 0) {
                                 offsetExpression += String.format(" AND %s < %d", rowNumCol, offset+limit);
                             }
-                            String newQuery = "WITH result AS (" + query + ") SELECT * FROM result WHERE " + offsetExpression;
+                            String newQuery = String.format("WITH result AS (%s) SELECT * FROM result WHERE %s", query, offsetExpression);
                             querySerialization = new DefaultSelectFromWhereSerializer.QuerySerializationImpl(newQuery, querySerialization.getColumnIDs());
                         }
 
@@ -90,10 +90,10 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                         variableAliasesStack.push(variableAliases);
                         String projection = super.serializeProjection(projectedVariables, variableAliases, substitution, columnIDs);
                         if (needOffsetProcessed()) {
-                            String sortExpr = projectedVariables.stream().map((v) ->
-                                    SparkSelectFromWhereSerializer.this.sqlTermSerializer.serialize((ImmutableTerm) Optional.ofNullable(substitution.get(v)).orElse(v), columnIDs))
+                            String sortExprStr = projectedVariables.stream().map((v) ->
+                                    SparkSelectFromWhereSerializer.this.sqlTermSerializer.serialize(Optional.ofNullable(substitution.get(v)).orElse(v), columnIDs))
                                     .collect(Collectors.joining(", "));
-                            projection += ", row_number() over (order by " + sortExpr + ") as " + rowNumCol;
+                            projection += String.format(", row_number() over (order by %s) as %s", sortExprStr, rowNumCol);
                         }
                         return projection;
                     }
@@ -153,7 +153,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
 
                     @Override
                     protected String serializeOrderBy(ImmutableList<SQLOrderComparator> sortConditions, ImmutableMap<Variable, QualifiedAttributeID> columnIDs) {
-                        if (orderByWorkaround && distinctStack.peek()) {
+                        if (orderByWorkaround && Optional.ofNullable(distinctStack.peek()).orElse(false)) {
                             if (sortConditions.isEmpty()) {
                                 return "";
                             } else {

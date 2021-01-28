@@ -1,10 +1,12 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.File
+import java.io.{File, FileOutputStream}
 import java.net.URI
 import java.nio.file.Paths
 
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+import org.aksw.r2rml.jena.vocab.RR
+import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperDoubleQuote}
+import org.apache.jena.rdf.model.ModelFactory
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex}
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
@@ -129,6 +131,8 @@ object VerticalPartitioner {
 
   }
 
+  val sqlEscaper = new SqlEscaperBacktick()
+
   private def showTables(databaseName: String): Unit = {
     val spark = SparkSession.builder
       //      .master("local")
@@ -146,7 +150,7 @@ object VerticalPartitioner {
       .enableHiveSupport()
       .getOrCreate()
 
-    spark.sql(s"use $databaseName")
+    spark.sql(s"use ${sqlEscaper.escapeIdentifier(databaseName)}")
     spark.sql("show tables").show(1000, false)
     spark.sql("show tables").select("tableName").collect().foreach(
       row => {
@@ -212,14 +216,16 @@ object VerticalPartitioner {
     println(s"#partitions: ${partitions.size}")
     println(partitions.mkString("\n"))
 
+    val dbName = sqlEscaper.escapeIdentifier(config.databaseName)
+
     // we drop the database if forced
-    if (config.dropDatabase) spark.sql(s"DROP DATABASE IF EXISTS ${config.databaseName} CASCADE")
+    if (config.dropDatabase) spark.sql(s"DROP DATABASE IF EXISTS $dbName CASCADE")
 
     // create database in Spark
-    spark.sql(s"create database if not exists ${config.databaseName}")
+    spark.sql(s"create database if not exists $dbName")
 
     // set database as current
-    spark.sql(s"use ${config.databaseName}")
+    spark.sql(s"use $dbName")
 
     val saveMode: TableSaveMode =
       if (config.saveIgnore) {
@@ -234,25 +240,35 @@ object VerticalPartitioner {
 
     // create the Spark tables
     println("creating Spark tables ...")
+    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
     SparkTableGenerator(spark,
                         database = config.databaseName,
                         blankNodeStrategy = config.blankNodeStrategy,
                         useHive = false,
                         computeStatistics = config.computeStatistics)
-      .createAndRegisterSparkTables(partitioner, partitions)
+      .createAndRegisterSparkTables(partitioner, partitions, extractTableName = tableNameFn)
     spark.catalog.listTables(config.databaseName).collect().foreach(t =>
-      spark.table(t.name).write.mode(saveMode).format("parquet").saveAsTable(t.name))
-//    partitions.foreach {
-//      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
-//                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
-//                                        config.usePartitioning, config.partitioningThreshold)
-//    }
+      spark.table(sqlEscaper.escapeTableName(t.name)).write.mode(saveMode).format("parquet").saveAsTable(SQLUtils.escapeTablename(t.name)))
+    //    partitions.foreach {
+    //      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
+    //                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
+    //                                        config.usePartitioning, config.partitioningThreshold)
+    //    }
 
     // write the partition metadata to disk
-    val path = Paths.get(s"/tmp/${config.databaseName}.ser")
-    println(s"writing partitioning metadata to $path")
-    PartitionSerDe.serializeTo(partitions.keySet, path)
+    val path = Paths.get(s"/tmp/${config.databaseName}-r2rml-mappings.ttl")
+    println(s"writing R2RML mapping model to $path")
+    val model = ModelFactory.createDefaultModel()
+    R2rmlUtils.createR2rmlMappings(
+      partitioner,
+      partitions.keySet.toSeq,
+      tableNameFn,
+      new SqlEscaperDoubleQuote(),
+      model,
+      explodeLanguageTags = true,
+      escapeIdentifiers = true)
 
+    model.write(new FileOutputStream(path.toFile), "TURTLE", RR.uri)
     spark.stop()
   }
 
@@ -267,7 +283,6 @@ object VerticalPartitioner {
     (sCnt, oCnt)
   }
 
-  val sqlEscaper = new SqlEscaperBacktick()
   private def createSparkTable(session: SparkSession,
                                partitioner: RdfPartitioner[RdfPartitionStateDefault],
                                p: RdfPartitionStateDefault,
