@@ -133,15 +133,15 @@ class QueryEngineOntop(val spark: SparkSession,
   }
 
   // get the JDBC metadata from the Spark tables
-  val sqlEscaper = new SqlEscaperBacktick()
-  val jdbcMetaData = spark.catalog.listTables().collect().map(t => {
+  private val sqlEscaper = new SqlEscaperBacktick()
+  private val jdbcMetaData = spark.catalog.listTables().collect().map(t => {
     val fields = spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f => sqlEscaper.escapeColumnName(f.name)).mkString(",")
     val keyCondition = s"PRIMARY KEY ($fields)"
     (t.name,
       spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f =>
         s"${sqlEscaper.escapeColumnName(f.name)} ${f.dataType.sql} ${if (!f.nullable) "NOT NULL" else ""}"
       ).mkString(",")
-        + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
+//        + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
     )
   }).toMap
 
@@ -162,7 +162,7 @@ class QueryEngineOntop(val spark: SparkSession,
   /**
    * We have to add separate mappings for each rdf:type in Ontop.
    */
-  def expandMappingsWithTypes(model: Model): Unit = {
+  private def expandMappingsWithTypes(model: Model): Unit = {
     // get the rdf:type TripleMaps with o being an IRI
     val tms = R2rmlUtils.triplesMapsForPredicate(RDF.`type`, model)
       .filter(_.getPredicateObjectMaps.asScala.exists(_.getObjectMaps.asScala.exists(_.asTermMap().getTermType == RR.IRI.inModel(model))))
