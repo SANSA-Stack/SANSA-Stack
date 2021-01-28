@@ -1,10 +1,15 @@
 package net.sansa_stack.query.spark.ontop
 
+import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy
+import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.serializers.ClosureSerializer
+import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure
+import de.javakaffee.kryoserializers.KryoReflectionFactorySupport
+
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
-
 import scala.collection.JavaConverters._
-
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
@@ -16,6 +21,7 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+import net.sansa_stack.query.spark.ontop.kryo.{ImmutableListSerializer, ImmutableMapSerializer, ImmutableSortedSetSerializer}
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api.TriplesMap
 import org.aksw.r2rml.jena.vocab.RR
@@ -26,8 +32,11 @@ import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
 import org.semanticweb.owlapi.model.OWLOntology
-
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import org.objenesis.strategy.StdInstantiatorStrategy
+
+import java.lang.invoke.SerializedLambda
+import java.lang.reflect.InvocationHandler
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -54,7 +63,7 @@ case class OntopQueryRewrite(sparqlQuery: String,
 case class RewriteInstruction(sqlSignature: ImmutableSortedSet[Variable],
                               sqlTypeMap: ImmutableMap[Variable, DBTermType],
                               anserAtom: DistinctVariableOnlyDataAtom,
-                              substitution: ImmutableSubstitution[ImmutableTerm])
+                              sparqlVar2Term: ImmutableMap[Variable, ImmutableTerm])
 
 /**
  * A SPARQL to SQL rewriter based on Ontop.
@@ -265,13 +274,15 @@ class QueryEngineOntop(val spark: SparkSession,
       case Some(rewrite) =>
         val df = df2Rewrite._1
 
+        kryo(RewriteInstruction(rewrite.sqlSignature, rewrite.sqlTypeMap, rewrite.answerAtom, rewrite.sparqlVar2Term.getImmutableMap))
+
         val sparqlQueryBC = spark.sparkContext.broadcast(query)
         val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappingsModel)
         val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
         val metaDataBC = spark.sparkContext.broadcast(jdbcMetaData)
         val ontologyBC = spark.sparkContext.broadcast(ontology)
         val idBC = spark.sparkContext.broadcast(id)
-        val rewriteBC = spark.sparkContext.broadcast(RewriteInstruction(rewrite.sqlSignature, rewrite.sqlTypeMap, rewrite.answerAtom, rewrite.sparqlVar2Term))
+        val rewriteBC = spark.sparkContext.broadcast(RewriteInstruction(rewrite.sqlSignature, rewrite.sqlTypeMap, rewrite.answerAtom, rewrite.sparqlVar2Term.getImmutableMap))
 
         implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
         df.coalesce(10).mapPartitions(iterator => {
@@ -283,6 +294,32 @@ class QueryEngineOntop(val spark: SparkSession,
         }).rdd
       case None => spark.sparkContext.emptyRDD
     }
+  }
+
+  def kryo(rewriteInstruction: RewriteInstruction): Unit = {
+    val kryo = new Kryo() // ReflectionFactorySupport()
+
+    kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
+    ImmutableListSerializer.registerSerializers(kryo)
+    ImmutableSortedSetSerializer.registerSerializers(kryo)
+    ImmutableMapSerializer.registerSerializers(kryo)
+    kryo.register(classOf[Array[AnyRef]])
+    kryo.register(classOf[Class[_]])
+    kryo.register(classOf[RewriteInstruction])
+    kryo.register(classOf[SerializedLambda])
+    kryo.register(classOf[Closure], new ClosureSerializer())
+    import de.javakaffee.kryoserializers.JdkProxySerializer
+    kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
+
+    // Register all classes to be serialized.
+//    kryo.register(classOf[Nothing])
+
+
+    val output = new Output(1024, -1)
+    kryo.writeObject(output, rewriteInstruction)
+
+    val input = new Input(output.getBuffer, 0, output.position)
+    val rewriteInstruction2 = kryo.readObject(input, classOf[RewriteInstruction])
   }
 
 }

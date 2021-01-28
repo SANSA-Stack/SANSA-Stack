@@ -1,16 +1,15 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.util.Properties
-
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
+import it.unibz.inf.ontop.substitution.impl.ImmutableSubstitutionImpl
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.rdf.model.Model
@@ -50,8 +49,11 @@ class OntopRowMapper(
 
   val sqlSignature = rewriteInstruction.sqlSignature
   val sqlTypeMap = rewriteInstruction.sqlTypeMap
-  val sparqlVar2Term = rewriteInstruction.substitution
+  val sparqlVar2Term = rewriteInstruction.sparqlVar2Term
   val answerAtom = rewriteInstruction.anserAtom
+
+  val substitution = substitutionFactory.getSubstitution(sparqlVar2Term)
+
 
   def map(row: Row): Binding = {
     toBinding(row)
@@ -72,7 +74,7 @@ class OntopRowMapper(
     }
     val sub = substitutionFactory.getSubstitution(builder.build)
 
-    val composition = sub.composeWith(sparqlVar2Term)
+    val composition = sub.composeWith(substitution)
     val ontopBindings = answerAtom.getArguments.asScala.map(v => {
       (v, OntopUtils.evaluate(composition.apply(v)))
     })
