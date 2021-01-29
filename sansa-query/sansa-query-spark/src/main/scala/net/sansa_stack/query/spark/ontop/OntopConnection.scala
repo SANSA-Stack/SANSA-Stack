@@ -25,6 +25,10 @@ object OntopConnection {
   val JDBC_USER = "sa"
   val JDBC_PASSWORD = ""
 
+  // scalastyle:off classforname
+  Class.forName("org.h2.Driver")
+  // scalastyle:on classforname
+
   lazy val connection: Connection = try {
     logger.debug("creating DB connection ...")
     val conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)

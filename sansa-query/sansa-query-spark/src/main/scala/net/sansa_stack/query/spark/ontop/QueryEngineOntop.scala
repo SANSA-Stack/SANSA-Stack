@@ -64,7 +64,8 @@ case class RewriteInstruction(sqlSignature: ImmutableSortedSet[Variable],
  * @constructor create a new Ontop SPARQL to SQL rewriter based on RDF partitions.
  * @param partitions the RDF partitions
  */
-class OntopSPARQL2SQLRewriter(jdbcMetaData: Map[String, String],
+class OntopSPARQL2SQLRewriter(ontopSessionId: String,
+                               jdbcMetaData: Map[String, String],
                               val mappingsModel: Model,
                               ontology: Option[OWLOntology] = None)
   extends SPARQL2SQLRewriter[OntopQueryRewrite]
@@ -76,12 +77,8 @@ class OntopSPARQL2SQLRewriter(jdbcMetaData: Map[String, String],
   val ontopProperties = new Properties()
   ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
 
-  private lazy val connection: Connection = JDBCConnection.connection
-
-  JDBCDatabaseGenerator.generateTables(connection, jdbcMetaData)
-
   // the Ontop core
-  val reformulationConfiguration = OntopUtils.createReformulationConfig(mappingsModel, ontopProperties, ontology)
+  val reformulationConfiguration = OntopConnection(ontopSessionId, mappingsModel, ontopProperties, jdbcMetaData, ontology)
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
   val queryReformulator = reformulationConfiguration.loadQueryReformulator
@@ -141,7 +138,7 @@ class QueryEngineOntop(val spark: SparkSession,
       spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f =>
         s"${sqlEscaper.escapeColumnName(f.name)} ${f.dataType.sql} ${if (!f.nullable) "NOT NULL" else ""}"
       ).mkString(",")
-//        + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
+        + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
     )
   }).toMap
 
@@ -153,10 +150,12 @@ class QueryEngineOntop(val spark: SparkSession,
   // we have to add separate mappings for each rdf:type in Ontop.
   expandMappingsWithTypes(mappingsModel)
 
-  private val sparql2sql = new OntopSPARQL2SQLRewriter(jdbcMetaData, mappingsModel, ontology)
-
   // define an ID for the whole setup - this will be used for caching of the whole Ontop setup
-  private val id: String = jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
+  private val id: String = generateSessionId()
+
+  private val sparql2sql = new OntopSPARQL2SQLRewriter(id, jdbcMetaData, mappingsModel, ontology)
+
+  private def generateSessionId(): String = jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
 
 
   /**
@@ -281,7 +280,7 @@ class QueryEngineOntop(val spark: SparkSession,
 //        val rewriteBC = spark.sparkContext.broadcast(rwi)
 
         implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
-        df.coalesce(10).mapPartitions(iterator => {
+        df.coalesce(50).mapPartitions(iterator => {
           //      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, idBC.value)
           val mapper = new OntopRowMapper(
             mappingsBC.value,

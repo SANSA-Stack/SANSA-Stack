@@ -13,12 +13,12 @@ import it.unibz.inf.ontop.com.google.common.collect.Table;
 /**
  * A kryo {@link Serializer} for guava-libraries {@link ImmutableList}.
  */
-public class ImmutableListSerializer extends Serializer<ImmutableList<Object>> {
+public class ShadedImmutableListSerializer extends Serializer<ImmutableList<Object>> {
 
     private static final boolean DOES_NOT_ACCEPT_NULL = false;
     private static final boolean IMMUTABLE = true;
 
-    public ImmutableListSerializer() {
+    public ShadedImmutableListSerializer() {
         super(DOES_NOT_ACCEPT_NULL, IMMUTABLE);
     }
 
@@ -41,7 +41,7 @@ public class ImmutableListSerializer extends Serializer<ImmutableList<Object>> {
     }
 
     /**
-     * Creates a new {@link ImmutableListSerializer} and registers its serializer
+     * Creates a new {@link ShadedImmutableListSerializer} and registers its serializer
      * for the several ImmutableList related classes.
      *
      * @param kryo the {@link Kryo} instance to set the serializer on
@@ -62,7 +62,7 @@ public class ImmutableListSerializer extends Serializer<ImmutableList<Object>> {
         //  +- Values (ImmutableTable values)
         //      Used by return value of #values() when there are multiple cells
 
-        final ImmutableListSerializer serializer = new ImmutableListSerializer();
+        final ShadedImmutableListSerializer serializer = new ShadedImmutableListSerializer();
 
         kryo.register(ImmutableList.class, serializer);
 

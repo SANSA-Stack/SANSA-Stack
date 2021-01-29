@@ -38,7 +38,6 @@ class OntopRowMapper(
                     , output: Output
                      ) {
 
-
   val reformulationConfiguration = OntopConnection(id, obdaMappings, properties, jdbcMetaData, ontology)
 
 

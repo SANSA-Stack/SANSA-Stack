@@ -15,12 +15,12 @@ import java.util.Map;
 /**
  * A kryo {@link Serializer} for guava-libraries {@link ImmutableMap}.
  */
-public class ImmutableMapSerializer extends Serializer<ImmutableMap<Object, ? extends Object>> {
+public class ShadedImmutableMapSerializer extends Serializer<ImmutableMap<Object, ? extends Object>> {
 
     private static final boolean DOES_NOT_ACCEPT_NULL = true;
     private static final boolean IMMUTABLE = true;
 
-    public ImmutableMapSerializer() {
+    public ShadedImmutableMapSerializer() {
         super(DOES_NOT_ACCEPT_NULL, IMMUTABLE);
     }
 
@@ -36,14 +36,14 @@ public class ImmutableMapSerializer extends Serializer<ImmutableMap<Object, ? ex
     }
 
     /**
-     * Creates a new {@link ImmutableMapSerializer} and registers its serializer
+     * Creates a new {@link ShadedImmutableMapSerializer} and registers its serializer
      * for the several ImmutableMap related classes.
      *
      * @param kryo the {@link Kryo} instance to set the serializer on
      */
     public static void registerSerializers(final Kryo kryo) {
 
-        final ImmutableMapSerializer serializer = new ImmutableMapSerializer();
+        final ShadedImmutableMapSerializer serializer = new ShadedImmutableMapSerializer();
 
         kryo.register(ImmutableMap.class, serializer);
         kryo.register(ImmutableMap.of().getClass(), serializer);

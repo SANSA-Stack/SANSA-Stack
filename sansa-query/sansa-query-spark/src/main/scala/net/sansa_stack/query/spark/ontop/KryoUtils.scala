@@ -10,11 +10,13 @@ import com.esotericsoftware.kryo.serializers.ClosureSerializer
 import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import net.sansa_stack.query.spark.ontop.kryo.{ImmutableListSerializer, ImmutableMapSerializer, ImmutableSortedSetSerializer}
+import net.sansa_stack.query.spark.ontop.kryo.{ShadedImmutableListSerializer, ShadedImmutableMapSerializer, ShadedImmutableSortedSetSerializer}
 
 
 
 /**
+ * Utility class to (de)serialize the Ontop rewrite instructions.
+ *
  * @author Lorenz Buehmann
  */
 object KryoUtils {
@@ -23,9 +25,9 @@ object KryoUtils {
     val kryo = new Kryo() // ReflectionFactorySupport()
 
     kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
-    ImmutableListSerializer.registerSerializers(kryo)
-    ImmutableSortedSetSerializer.registerSerializers(kryo)
-    ImmutableMapSerializer.registerSerializers(kryo)
+    ShadedImmutableListSerializer.registerSerializers(kryo)
+    ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
+    ShadedImmutableMapSerializer.registerSerializers(kryo)
     ImmutableFunctionalTermSerializer.registerSerializers(kryo, ontopSessionId)
     kryo.register(classOf[Array[AnyRef]])
     kryo.register(classOf[Class[_]])
@@ -34,7 +36,6 @@ object KryoUtils {
     kryo.register(classOf[Closure], new ClosureSerializer())
     import de.javakaffee.kryoserializers.JdkProxySerializer
     kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
-
 
     val output = new Output(1024, -1)
     kryo.writeObject(output, rewriteInstruction)
@@ -45,10 +46,15 @@ object KryoUtils {
   def deserialize(output: Output, ontopSessionId: String): RewriteInstruction = {
     val kryo = new Kryo() // ReflectionFactorySupport()
 
+    // we need the current class loader which hopefully is the Spark classloader to get all the Ontop packages in
+    // the Kryo classpath
+    val classLoader = Thread.currentThread.getContextClassLoader
+    kryo.setClassLoader(classLoader)
+
     kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
-    ImmutableListSerializer.registerSerializers(kryo)
-    ImmutableSortedSetSerializer.registerSerializers(kryo)
-    ImmutableMapSerializer.registerSerializers(kryo)
+    ShadedImmutableListSerializer.registerSerializers(kryo)
+    ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
+    ShadedImmutableMapSerializer.registerSerializers(kryo)
     ImmutableFunctionalTermSerializer.registerSerializers(kryo, ontopSessionId)
     kryo.register(classOf[Array[AnyRef]])
     kryo.register(classOf[Class[_]])

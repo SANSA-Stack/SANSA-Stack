@@ -10,12 +10,12 @@ import java.util.Comparator;
 /**
  * A kryo {@link Serializer} for guava-libraries {@link ImmutableSortedSet}.
  */
-public class ImmutableSortedSetSerializer extends Serializer<ImmutableSortedSet<Object>> {
+public class ShadedImmutableSortedSetSerializer extends Serializer<ImmutableSortedSet<Object>> {
 
   private static final boolean DOES_NOT_ACCEPT_NULL = false;
   private static final boolean IMMUTABLE = true;
 
-  public ImmutableSortedSetSerializer() {
+  public ShadedImmutableSortedSetSerializer() {
     super(DOES_NOT_ACCEPT_NULL, IMMUTABLE);
   }
 
@@ -40,7 +40,7 @@ public class ImmutableSortedSetSerializer extends Serializer<ImmutableSortedSet<
   }
 
   /**
-   * Creates a new {@link ImmutableSortedSetSerializer} and registers its serializer
+   * Creates a new {@link ShadedImmutableSortedSetSerializer} and registers its serializer
    * for the several ImmutableSortedSet related classes.
    *
    * @param kryo the {@link Kryo} instance to set the serializer on
@@ -52,7 +52,7 @@ public class ImmutableSortedSetSerializer extends Serializer<ImmutableSortedSet<
     //  +- RegularImmutableSortedSet
     //  +- DescendingImmutableSortedSet
 
-    final ImmutableSortedSetSerializer serializer = new ImmutableSortedSetSerializer();
+    final ShadedImmutableSortedSetSerializer serializer = new ShadedImmutableSortedSetSerializer();
 
     kryo.register(ImmutableSortedSet.class, serializer);
     kryo.register(ImmutableSortedSet.of().getClass(), serializer);
