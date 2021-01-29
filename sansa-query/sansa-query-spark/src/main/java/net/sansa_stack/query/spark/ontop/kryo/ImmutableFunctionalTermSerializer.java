@@ -12,6 +12,7 @@ import it.unibz.inf.ontop.model.term.impl.ImmutableFunctionalTermImpl;
 import it.unibz.inf.ontop.model.term.impl.NonGroundFunctionalTermImpl;
 
 import net.sansa_stack.query.spark.ontop.OntopConnection;
+import net.sansa_stack.query.spark.ontop.OntopConnection$;
 
 /**
  * A kryo {@link Serializer} for guava-libraries {@link ImmutableList}.
@@ -38,7 +39,8 @@ public class ImmutableFunctionalTermSerializer extends Serializer<ImmutableFunct
         final FunctionSymbol functionSymbol = (FunctionSymbol) kryo.readClassAndObject(input);
         final ImmutableList<? extends it.unibz.inf.ontop.model.term.ImmutableTerm> terms = (ImmutableList<? extends it.unibz.inf.ontop.model.term.ImmutableTerm>) kryo.readClassAndObject(input);
 
-        TermFactory termFactory = OntopConnection.configs().get(ontopSessionID).get().getTermFactory();
+        OntopConnection$ conn = OntopConnection$.MODULE$;
+        TermFactory termFactory = conn.configs().get(ontopSessionID).get().getTermFactory();
         ImmutableFunctionalTerm term = termFactory.getImmutableFunctionalTerm(functionSymbol, terms);
 
         return term;
