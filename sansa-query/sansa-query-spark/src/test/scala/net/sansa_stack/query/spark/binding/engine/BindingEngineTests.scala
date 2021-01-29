@@ -17,7 +17,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
 
-class RddOfBindingOpsTests extends FunSuite with DataFrameSuiteBase {
+class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
 
   // JenaSystem.init
 
