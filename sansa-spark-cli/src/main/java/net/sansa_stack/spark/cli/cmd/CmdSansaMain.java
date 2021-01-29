@@ -1,8 +1,8 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
-@CommandLine.Command(name = "sansa",
+@Command(name = "sansa",
         versionProvider = VersionProviderSansa.class,
         description = "SANSA Command Line Tooling",
         subcommands = {

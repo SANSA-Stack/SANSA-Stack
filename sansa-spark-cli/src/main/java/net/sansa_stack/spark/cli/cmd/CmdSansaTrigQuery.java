@@ -1,8 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
 import net.sansa_stack.spark.cli.CmdSansaTrigQueryImpl;
-import net.sansa_stack.spark.cli.CmdSansaTrigQueryImpl$;
-import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 

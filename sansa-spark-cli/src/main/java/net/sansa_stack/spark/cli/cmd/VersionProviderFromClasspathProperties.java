@@ -1,11 +1,11 @@
 package net.sansa_stack.spark.cli.cmd;
 
+import picocli.CommandLine.IVersionProvider;
+
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Properties;
-
-import picocli.CommandLine.IVersionProvider;
 
 /**
  * Implementation of picocli's {@link IVersionProvider} that reads the version string
