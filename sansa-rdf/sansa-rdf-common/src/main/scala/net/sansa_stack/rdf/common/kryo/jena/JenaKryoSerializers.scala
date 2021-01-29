@@ -17,8 +17,7 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RIOT}
 import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfile, ParserProfileStd, PrefixMapExtended, RiotLib}
 import org.apache.jena.riot.tokens.{TokenizerFactory, TokenizerText}
 import org.apache.jena.sparql.ARQConstants
-import org.apache.jena.sparql.core.{Quad => JenaQuad}
-import org.apache.jena.sparql.core.Var
+import org.apache.jena.sparql.core.{Var, VarExprList, Quad => JenaQuad}
 import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.sparql.util.{ExprUtils, FmtUtils, NodeFactoryExtra}
 
@@ -144,8 +143,35 @@ object JenaKryoSerializers {
       output.writeString(obj.toString)
     }
 
-    def read(kryo: Kryo, input: Input, objClass: Class[Node_Variable]): Node_Variable = {
+    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Variable]): Node_Variable = {
       NodeFactory.createVariable(input.readString).asInstanceOf[Node_Variable]
+    }
+  }
+
+
+  class VarExprListSerializer extends Serializer[VarExprList] {
+    override def write(kryo: Kryo, output: Output, obj: VarExprList) {
+      kryo.writeClassAndObject(output, obj.getVars)
+      kryo.writeClassAndObject(output, obj.getExprs)
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[VarExprList]): VarExprList = {
+      val vars = kryo.readClassAndObject(input).asInstanceOf[java.util.List[Var]]
+      val map = kryo.readClassAndObject(input).asInstanceOf[java.util.Map[Var, Expr]]
+
+      val r = new VarExprList
+      vars.forEach(v => {
+        val e = map.get(v)
+        if (e == null) {
+          r.add(v)
+        } else {
+          r.add(v, e)
+        }
+      })
+
+      r
+      // kryo.writeClassAndObject(output, obj.getVars)
+      // kryo.writeClassAndObject(output, obj.getExprs)
     }
   }
 

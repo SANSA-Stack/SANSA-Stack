@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark
 
-import net.sansa_stack.rdf.spark.model.rdd.{RddOfDatasetsOps, RddOfModelsOps, RddOfResourcesOps, RddOfTriplesOps}
+import net.sansa_stack.rdf.spark.model.rdd.{RddOfDatasetOps, RddOfModelsOps, RddOfResourcesOps, RddOfTriplesOps}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, RDFNode, Resource}
@@ -49,13 +49,13 @@ package object ops {
      * @param query
      * @return
      */
-    @inline def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetsOps.flatMapWithSparql(rddOfDatasets, query.toString())
+    @inline def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetOps.flatMapWithSparql(rddOfDatasets, query.toString())
 
     @inline def sparqlFilterKeep(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, false)
     @inline def sparqlFilterDrop(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, true)
-    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetsOps.filterWithSparql(rddOfDatasets, query.toString(), drop)
+    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetOps.filterWithSparql(rddOfDatasets, query.toString(), drop)
 
-    @inline def mapToNaturalResources(): RDD[Resource] = RddOfDatasetsOps.naturalResources(rddOfDatasets)
+    @inline def mapToNaturalResources(): RDD[Resource] = RddOfDatasetOps.naturalResources(rddOfDatasets)
   }
 
 }
