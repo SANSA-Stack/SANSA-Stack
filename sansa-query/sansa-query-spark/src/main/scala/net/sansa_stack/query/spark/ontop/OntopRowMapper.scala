@@ -1,8 +1,11 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.util.Properties
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+
+import com.esotericsoftware.kryo.io.Output
 import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.exception.OntopInternalBugException
@@ -31,8 +34,8 @@ class OntopRowMapper(
                       jdbcMetaData: Map[String, String],
                       sparqlQuery: String,
                       ontology: Option[OWLOntology],
-                      id: String,
-                      rewriteInstruction: RewriteInstruction
+                      id: String
+                    , output: Output
                      ) {
 
 
@@ -47,12 +50,15 @@ class OntopRowMapper(
 
   val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
+  val rewriteInstruction = KryoUtils.deserialize(output, id)
+
   val sqlSignature = rewriteInstruction.sqlSignature
   val sqlTypeMap = rewriteInstruction.sqlTypeMap
   val sparqlVar2Term = rewriteInstruction.sparqlVar2Term
   val answerAtom = rewriteInstruction.anserAtom
 
   val substitution = substitutionFactory.getSubstitution(sparqlVar2Term)
+
 
 
   def map(row: Row): Binding = {
