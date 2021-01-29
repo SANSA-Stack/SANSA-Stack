@@ -1316,10 +1316,12 @@
                     </configuration>
                     <executions>
                         <execution>
+                            <id>scala-compile-first</id>
+                            <phase>process-resources</phase>
                             <goals>
                                 <goal>add-source</goal>
                                 <goal>compile</goal>
-                                <goal>testCompile</goal>
+                                <!-- <goal>testCompile</goal> -->
                             </goals>
                             <configuration>
                                 <scalaVersion>${scala.version}</scalaVersion>
@@ -1352,6 +1354,13 @@
                                 <!--</javacArgs> -->
 
                             </configuration>
+                        </execution>
+                        <execution>
+                            <id>scala-test-compile</id>
+                            <phase>process-test-resources</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
                         </execution>
                         <execution>
                             <id>attach-javadocs</id>
@@ -1662,12 +1671,12 @@
                     <version>3.1.0</version>
                 </plugin>
 
-<!--
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>
-                </plugin>
--->
+                <!--
+                                <plugin>
+                                    <artifactId>maven-dependency-plugin</artifactId>
+                                    <version>3.1.2</version>
+                                </plugin>
+                -->
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

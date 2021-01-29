@@ -32,6 +32,8 @@ public class CmdSansaTrigQuery
 
     @Override
     public Integer call() throws Exception {
+        CmdSansaTrigQueryImpl test = new CmdSansaTrigQueryImpl();
+        System.err.println("Created instance: " + test);
         return CmdSansaTrigQueryImpl.run(this);
     }
 }
