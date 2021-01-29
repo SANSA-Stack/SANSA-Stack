@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.cli
+package net.sansa_stack.spark.cli.cmd.impl
 
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 /**
  * Called from the Java class [[CmdSansaTrigQuery]]
  */
+class CmdSansaTrigQueryImpl
 object CmdSansaTrigQueryImpl {
   private val logger = LoggerFactory.getLogger(getClass)
     // JenaSystem.init()

@@ -9,5 +9,5 @@ import picocli.CommandLine.Command;
         CmdSansaTrigQuery.class
 })
 public class CmdSansaMain {
-    public static boolean debugMode = false;
+    public boolean debugMode = false;
 }
