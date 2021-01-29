@@ -70,7 +70,7 @@ object SampleFeatureExtractionPipeline {
     println("FEATURE EXTRACTION OVER SPARQL")
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
-      .setQueryExcecutionEngine("ontop")
+      .setQueryExcecutionEngine("sparqlify")
     val res = sparqlFrame.transform(dataset)
     res.show()
 

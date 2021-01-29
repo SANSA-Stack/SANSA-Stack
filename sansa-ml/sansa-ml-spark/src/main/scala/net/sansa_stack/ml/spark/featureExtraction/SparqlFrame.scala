@@ -3,7 +3,7 @@ package net.sansa_stack.ml.spark.featureExtraction
 import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
 import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
-import net.sansa_stack.query.spark.query._
+import net.sansa_stack.query.spark._
 import net.sansa_stack.rdf.spark.partition.RDFPartition
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
@@ -21,7 +21,7 @@ import scala.collection.mutable.ListBuffer
  */
 class SparqlFrame extends Transformer{
   var _query: String = _
-  var _queryExcecutionEngine: String = "ontop"
+  var _queryExcecutionEngine: String = "sparqlify"
 
   override val uid: String = Identifiable.randomUID("sparqlFrame")
 
@@ -49,11 +49,11 @@ class SparqlFrame extends Transformer{
    * @return the set transformer
    */
   def setQueryExcecutionEngine(queryExcecutionEngine: String): this.type = {
-    if (queryExcecutionEngine == "ontop" | queryExcecutionEngine == "sparqlify") {
+    if (queryExcecutionEngine == "sparqlify" | queryExcecutionEngine == "ontop" ) {
       _queryExcecutionEngine = queryExcecutionEngine
     }
     else {
-      throw new Exception("This excecutor is not supported")
+      throw new Exception(s"Your set engine: ${_queryExcecutionEngine} not supported. at the moment only ontop and sparqlify")
     }
     this
   }
@@ -110,13 +110,20 @@ class SparqlFrame extends Transformer{
    */
   def transform(dataset: Dataset[_]): DataFrame = {
     val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
-    val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
+    graphRdd.foreach(println(_))
+
+    val qef = _queryExcecutionEngine match {
+      case "sparqlify" =>
+        graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
+      case "ontop" =>
+        graphRdd.verticalPartition(RdfPartitionerDefault).ontop
+      // case _ => throw new Exception(s"Your set engine: ${_queryExcecutionEngine} not supported")
+    }
 
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
 
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
-    println(schemaMapping)
     val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df

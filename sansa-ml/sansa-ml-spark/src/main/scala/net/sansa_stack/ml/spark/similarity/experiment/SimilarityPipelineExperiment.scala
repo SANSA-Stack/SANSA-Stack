@@ -176,13 +176,10 @@ object SimilarityPipelineExperiment {
   }
     /**
      * start spark session
-     * .master("local[*]") needed if you run in local system and not on spark servers
      */
     val spark = SparkSession.builder
-      .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
-      .master(sparkMaster) // TODO why do we need to specify this?
-      // .master("spark://172.18.160.16:3090") // to run on server
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
+      .appName(s"SimilarityPipelineExperiment")
+      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 
     /**
@@ -260,12 +257,9 @@ object SimilarityPipelineExperiment {
 
     /**
      * start spark session
-     * .master("local[*]") needed if you run in local system and not on spark servers
      */
     val spark = SparkSession.builder
       .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
-      .master(sparkMaster) // TODO why do we need to specify this?
-      // .master("spark://172.18.160.16:3090") // to run on server
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()
 

@@ -11,6 +11,9 @@ import org.scalatest.FunSuite
 
 class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteBase{
 
+  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+
   override def beforeAll(): Unit = {
     super.beforeAll()
 
