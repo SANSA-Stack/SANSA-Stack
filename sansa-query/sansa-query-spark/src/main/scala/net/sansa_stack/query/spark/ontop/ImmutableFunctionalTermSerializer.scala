@@ -6,7 +6,7 @@ import com.esotericsoftware.kryo.io.{Input, Output}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList
 import it.unibz.inf.ontop.model.term.ImmutableFunctionalTerm
 import it.unibz.inf.ontop.model.term.functionsymbol.FunctionSymbol
-import it.unibz.inf.ontop.model.term.impl.{ImmutableFunctionalTermImpl, NonGroundFunctionalTermImpl}
+import it.unibz.inf.ontop.model.term.impl.{GroundExpressionImpl, ImmutableFunctionalTermImpl, NonGroundExpressionImpl, NonGroundFunctionalTermImpl}
 
 class ImmutableFunctionalTermSerializer(ontopSessionID: String)
   extends Serializer[ImmutableFunctionalTerm](false, true) {
@@ -35,6 +35,9 @@ object ImmutableFunctionalTermSerializer {
 
     kryo.register(classOf[ImmutableFunctionalTermImpl], serializer)
     kryo.register(classOf[NonGroundFunctionalTermImpl], serializer)
+    kryo.register(classOf[NonGroundExpressionImpl], serializer)
+    kryo.register(classOf[GroundExpressionImpl], serializer)
+
     kryo.register(classOf[ImmutableFunctionalTerm], serializer)
   }
 }
