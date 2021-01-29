@@ -10,7 +10,9 @@ import com.esotericsoftware.kryo.serializers.ClosureSerializer
 import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import net.sansa_stack.query.spark.ontop.kryo.{ImmutableFunctionalTermSerializer, ImmutableListSerializer, ImmutableMapSerializer, ImmutableSortedSetSerializer}
+import net.sansa_stack.query.spark.ontop.kryo.{ImmutableListSerializer, ImmutableMapSerializer, ImmutableSortedSetSerializer}
+
+
 
 /**
  * @author Lorenz Buehmann
