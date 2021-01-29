@@ -10,7 +10,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.sansa_stack</groupId>
+			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-metadata</artifactId>
 		</dependency>
 
