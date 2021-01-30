@@ -116,6 +116,7 @@
         <module>sansa-integration-tests</module>
         <module>sansa-spark-cli</module>
         <module>sansa-debian-spark-cli</module>
+        <module>sansa-bench-spark</module>
     </modules>
 
 

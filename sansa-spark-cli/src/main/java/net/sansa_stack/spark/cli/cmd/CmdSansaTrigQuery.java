@@ -17,7 +17,9 @@ public class CmdSansaTrigQuery
             defaultValue = "local[*]")
     public String sparkMaster;
 
-    @Option(names = { "-o", "--out-format" }, description = "Output format")
+    @Option(names = { "-o", "--out-format" },
+            description = "Output format. Defaults to ${DEFAULT-VALUE}",
+            defaultValue = "srj")
     public String outFormat = null;
 
     @Option(names = { "--rq" }, description = "File with a SPARQL query (RDF Query)")
