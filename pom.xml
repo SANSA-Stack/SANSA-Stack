@@ -137,6 +137,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-spark-cli</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- SANSA layers -->
             <!-- RDF Layer -->
             <dependency>

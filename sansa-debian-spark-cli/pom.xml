@@ -22,7 +22,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-spark-cli</artifactId>
         </dependency>
     </dependencies>
 
@@ -49,7 +49,7 @@
 
     <profiles>
         <profile>
-            <id>dist</id>
+            <id>deb</id>
             <activation>
                 <property>
                     <name>deb</name>

@@ -373,6 +373,7 @@
 -->
 
     <build>
+        <!--
         <plugins>
             <plugin>
                 <groupId>org.scalatest</groupId>
@@ -382,6 +383,7 @@
                 </configuration>
             </plugin>
         </plugins>
+        -->
     </build>
 
 </project>

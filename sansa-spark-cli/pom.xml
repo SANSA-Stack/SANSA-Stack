@@ -13,11 +13,13 @@
     <artifactId>sansa-spark-cli</artifactId>
     <packaging>jar</packaging>
 
+<!--
     <properties>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
     </properties>
-
+-->
+<!--
     <build>
         <resources>
             <resource>
@@ -29,6 +31,7 @@
             </resource>
         </resources>
     </build>
+-->
 
     <dependencies>
 
