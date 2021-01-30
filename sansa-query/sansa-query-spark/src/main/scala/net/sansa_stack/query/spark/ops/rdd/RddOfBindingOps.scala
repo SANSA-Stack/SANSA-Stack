@@ -150,7 +150,8 @@ object RddOfBindingOps {
       QueryUtils.elementToQuery(op.getServiceElement)
     }
 
-    RddOfDatasetOps.selectWithSparql(rdd, query)
+    // RddOfDatasetOps.selectWithSparql(rdd, query)
+    RddOfDatasetOps.mapPartitionsWithSparql(rdd, query)
   }
 
 
