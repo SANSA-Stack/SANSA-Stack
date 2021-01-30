@@ -9,9 +9,12 @@ import java.util.concurrent.Callable;
 @Command(name = "trig",
         description = "Run a special SPARQL query on a trig file")
 public class CmdSansaTrigQuery
+    extends CmdBase
     implements Callable<Integer>
 {
-    @Option(names = { "-m", "--spark-master" }, defaultValue = "local[*]")
+    @Option(names = { "-m", "--spark-master" },
+            description = "Spark master. Defaults to ${DEFAULT-VALUE}",
+            defaultValue = "local[*]")
     public String sparkMaster;
 
     @Option(names = { "-o", "--out-format" }, description = "Output format")
@@ -26,8 +29,6 @@ public class CmdSansaTrigQuery
 
     @Override
     public Integer call() throws Exception {
-        CmdSansaTrigQueryImpl test = new CmdSansaTrigQueryImpl();
-        System.err.println("Created instance: " + test);
         return CmdSansaTrigQueryImpl.run(this);
     }
 }

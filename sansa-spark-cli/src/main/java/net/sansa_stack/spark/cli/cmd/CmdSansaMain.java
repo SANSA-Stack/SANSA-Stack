@@ -10,8 +10,7 @@ import picocli.CommandLine.Option;
         subcommands = {
         CmdSansaTrigQuery.class
 })
-public class CmdSansaMain {
-    public boolean debugMode = false;
+public class CmdSansaMain extends CmdBase {
 
     @Option(names = { "-h", "--help" }, usageHelp = true)
     public boolean help = false;

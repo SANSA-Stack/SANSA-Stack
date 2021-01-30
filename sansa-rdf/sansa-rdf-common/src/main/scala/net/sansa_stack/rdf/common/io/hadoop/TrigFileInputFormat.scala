@@ -88,7 +88,7 @@ class TrigFileInputFormat
           RDFDataMgr.parse(prefixSink, boundedIs, Lang.TRIG)
         } catch {
           // Ignore broken pipe exception because we deliberately cut off the stream
-          case e: Exception => logger.warn("TODO Improve this non-fatal exception", e)
+          case e: Exception => // logger.warn("TODO Improve this non-fatal exception", e)
         }
 
         // TODO apparently, prefix declarations could span multiple lines, i.e. technically we

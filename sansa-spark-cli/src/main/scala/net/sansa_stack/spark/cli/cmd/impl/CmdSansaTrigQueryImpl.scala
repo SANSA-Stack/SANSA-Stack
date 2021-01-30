@@ -64,7 +64,7 @@ object CmdSansaTrigQueryImpl {
 
     ResultSetMgr.write(System.out, resultSetSpark.collectToTable().toResultSet, outLang)
 
-    logger.info("Elapsed time: " + stopwatch.elapsed(TimeUnit.SECONDS))
+    logger.info("Processing time: " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds")
 
     0 // exit code
   }
