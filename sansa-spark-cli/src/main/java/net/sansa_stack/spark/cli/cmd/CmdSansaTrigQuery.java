@@ -11,14 +11,8 @@ import java.util.concurrent.Callable;
 public class CmdSansaTrigQuery
     implements Callable<Integer>
 {
-    @Option(names = { "-m", "--spark-master" })
-    public String sparkMaster = "local[*]";
-
-    @Option(names = { "-h", "--help" }, usageHelp = true)
-    public boolean help = false;
-
-    @Option(names = { "-v", "--version" }, versionHelp = true)
-    public boolean version = false;
+    @Option(names = { "-m", "--spark-master" }, defaultValue = "local[*]")
+    public String sparkMaster;
 
     @Option(names = { "-o", "--out-format" }, description = "Output format")
     public String outFormat = null;
