@@ -1,7 +1,13 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
+import java.util.Objects
+
+import org.aksw.jena_sparql_api.utils.IteratorResultSetBinding
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.Resource
+import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.sparql.util.DatasetUtils
+import org.apache.jena.sparql.util.compose.DatasetLib
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
@@ -9,10 +15,66 @@ import scala.collection.JavaConverters._
 /**
  * Operations for RDD[Dataset]
  */
-object RddOfDatasetsOps {
+object RddOfDatasetOps {
 
   @inline def naturalResources(rddOfDatasets: RDD[_ <: Dataset]): RDD[Resource] = {
     rddOfDatasets.flatMap(JenaDatasetOps.naturalResources)
+  }
+
+
+  /* run one query per partition (i.e. over multiple graphs) */
+  def mapPartitionsWithSparql(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
+    // def flatMapQuery(query: Query): RDD[Dataset] =
+    val queryBc = rdd.context.broadcast(query)
+
+    Objects.requireNonNull(query)
+
+    rdd.mapPartitions(datasets =>
+    {
+      val all = DatasetFactory.create
+      datasets.foreach(ds => ds.asDatasetGraph.find
+        .forEachRemaining(x => all.asDatasetGraph().add(x)))
+
+      val query = queryBc.value
+      // TODO I don't get why the Query object is not serializablbe even though
+      // the registrator for it is loaded ... investigae...
+
+      val qe = QueryExecutionFactory.create(query, all)
+      var r: Seq[Binding] = null
+      try {
+        r = new IteratorResultSetBinding(qe.execSelect).asScala.toList
+      } finally {
+        qe.close()
+      }
+
+      r.iterator
+    })
+  }
+
+  /**
+   * Run a select query on each individual dataset in the RDD
+   */
+  def selectWithSparql(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
+    // def flatMapQuery(query: Query): RDD[Dataset] =
+    val queryBc = rdd.context.broadcast(query)
+
+    Objects.requireNonNull(query)
+
+    rdd.flatMap(in => {
+      val query = queryBc.value
+      // TODO I don't get why the Query object is not serializablbe even though
+      // the registrator for it is loaded ... investigae...
+
+      val qe = QueryExecutionFactory.create(query, in)
+      var r: Seq[Binding] = null
+      try {
+        r = new IteratorResultSetBinding(qe.execSelect).asScala.toList
+      } finally {
+        qe.close()
+      }
+
+      r
+    })
   }
 
   @inline def flatMapWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {

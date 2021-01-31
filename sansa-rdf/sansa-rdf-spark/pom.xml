@@ -165,10 +165,6 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.ibm.sparktc</groupId>
-			<artifactId>spark-bench_2.12</artifactId>
-		</dependency>
 
     </dependencies>
 

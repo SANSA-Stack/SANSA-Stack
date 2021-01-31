@@ -6,7 +6,7 @@ import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
 import net.sansa_stack.rdf.spark.kryo.jena.KryoRegistratorRDFNode
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.impl.ModelCom
-import org.apache.jena.sparql.core.DatasetImpl
+import org.apache.jena.sparql.core.{DatasetImpl, VarExprList}
 import org.apache.spark.serializer.KryoRegistrator
 
 /**
@@ -38,8 +38,10 @@ class JenaKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[org.apache.jena.sparql.expr.E_Datatype], new ExprSerializer)
     kryo.register(classOf[org.apache.jena.sparql.expr.E_IRI], new ExprSerializer)
     kryo.register(classOf[org.apache.jena.sparql.expr.E_Datatype], new ExprSerializer)
+    kryo.register(classOf[org.apache.jena.sparql.expr.E_StrConcat], new ExprSerializer)
     kryo.register(classOf[org.apache.jena.sparql.expr.Expr], new ExprSerializer)
 
+    kryo.register(classOf[org.apache.jena.sparql.core.VarExprList], new VarExprListSerializer)
 
     kryo.register(classOf[Query], new QuerySerializer)
 

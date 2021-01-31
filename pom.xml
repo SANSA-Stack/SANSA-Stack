@@ -105,6 +105,7 @@
     </properties>
 
     <modules>
+        <module>sansa-metadata</module>
         <module>sansa-rdf</module>
         <module>sansa-datalake</module>
         <module>sansa-query</module>
@@ -113,6 +114,9 @@
         <module>sansa-ml</module>
         <module>sansa-examples</module>
         <module>sansa-integration-tests</module>
+        <module>sansa-spark-cli</module>
+        <module>sansa-debian-spark-cli</module>
+        <module>sansa-bench-spark</module>
     </modules>
 
 
@@ -127,6 +131,18 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- General SANSA metadata file (build time / version) -->
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-metadata</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-spark-cli</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- SANSA layers -->
             <!-- RDF Layer -->
@@ -278,7 +294,7 @@
             <dependency>
                 <groupId>org.aksw.r2rml</groupId>
                 <artifactId>r2rml-jena-plugin</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>0.9.0-SNAPSHOT</version>
             </dependency>
 
             <!-- Datalake (used in sansa-query) -->
@@ -289,6 +305,14 @@
                 <version>${project.version}</version>
             </dependency>
             -->
+
+            <!-- Our exception utils -->
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-util</artifactId>
+                <version>0.8.16-SNAPSHOT</version>
+                <scope>compile</scope>
+            </dependency>
 
             <!-- web server component for use with sparqlify in sansa-query -->
             <dependency>
@@ -366,13 +390,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- Parallelizable aggregation builder framework + tuple/binding analysers -->
-            <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-analytics</artifactId>
-                <version>${jsa.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-views</artifactId>
@@ -380,11 +397,21 @@
             </dependency>
 
             <!-- Used for result set analysis such as used datatypes and prefixs -->
+            <!-- Parallelizable aggregation builder framework + tuple/binding analysers -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-analytics</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
+
+
+            <!-- Mighty command line parsing framework -->
+            <dependency>
+                <groupId>info.picocli</groupId>
+                <artifactId>picocli</artifactId>
+                <version>4.4.0</version>
+            </dependency>
+
 
             <!-- Http components -->
             <dependency>
@@ -409,21 +436,21 @@
 
 
             <!-- Servlet engines -->
-<!--
-            <dependency>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>jetty</artifactId>
-                < !- - <scope>provided</scope> - - >
-                <version>${mortbay.jetty.version}</version>
-            </dependency>
+            <!--
+                        <dependency>
+                            <groupId>org.mortbay.jetty</groupId>
+                            <artifactId>jetty</artifactId>
+                            < !- - <scope>provided</scope> - - >
+                            <version>${mortbay.jetty.version}</version>
+                        </dependency>
 
-            <dependency>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>jetty-util</artifactId>
-                < !- - <scope>provided</scope> - - >
-                <version>${mortbay.jetty.version}</version>
-            </dependency>
--->
+                        <dependency>
+                            <groupId>org.mortbay.jetty</groupId>
+                            <artifactId>jetty-util</artifactId>
+                            < !- - <scope>provided</scope> - - >
+                            <version>${mortbay.jetty.version}</version>
+                        </dependency>
+            -->
 
             <!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-util</artifactId>
                 <version>${jetty.version}</version> </dependency> -->
@@ -1296,10 +1323,12 @@
                     </configuration>
                     <executions>
                         <execution>
+                            <id>scala-compile-first</id>
+                            <phase>process-resources</phase>
                             <goals>
                                 <goal>add-source</goal>
                                 <goal>compile</goal>
-                                <goal>testCompile</goal>
+                                <!-- <goal>testCompile</goal> -->
                             </goals>
                             <configuration>
                                 <scalaVersion>${scala.version}</scalaVersion>
@@ -1332,6 +1361,13 @@
                                 <!--</javacArgs> -->
 
                             </configuration>
+                        </execution>
+                        <execution>
+                            <id>scala-test-compile</id>
+                            <phase>process-test-resources</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
                         </execution>
                         <execution>
                             <id>attach-javadocs</id>
@@ -1549,6 +1585,35 @@
                 </plugin>
 
                 <plugin>
+                    <artifactId>jdeb</artifactId>
+                    <groupId>org.vafer</groupId>
+                    <version>1.8</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.1.2</version>
+                    <executions>
+                        <execution>
+                            <phase>prepare-package</phase>
+                            <!-- <phase>package</phase> -->
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <!-- <useBaseVersion>false</useBaseVersion> -->
+                        <overWriteReleases>false</overWriteReleases>
+                        <overWriteSnapshots>true</overWriteSnapshots>
+                        <includeScope>runtime</includeScope>
+                        <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                    </configuration>
+                </plugin>
+
+
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.1.1</version>
@@ -1613,10 +1678,12 @@
                     <version>3.1.0</version>
                 </plugin>
 
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>
-                </plugin>
+                <!--
+                                <plugin>
+                                    <artifactId>maven-dependency-plugin</artifactId>
+                                    <version>3.1.2</version>
+                                </plugin>
+                -->
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1678,12 +1745,6 @@
                     </configuration>
                 </plugin>
 
-
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>jdepend-maven-plugin</artifactId>
-                    <version>2.0</version>
-                </plugin>
 
                 <!-- Scalastyle -->
                 <plugin>

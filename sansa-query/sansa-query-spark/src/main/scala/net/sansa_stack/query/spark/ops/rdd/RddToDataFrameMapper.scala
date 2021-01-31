@@ -9,7 +9,7 @@ import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
 import org.aksw.jena_sparql_api.rdf.collections.{ConverterFromRDFNodeMapper, NodeMapperFromRdfDatatype}
 import org.aksw.jena_sparql_api.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
 import org.aksw.jena_sparql_api.utils.NodeUtils
-import org.aksw.r2rml.common.vocab.R2RMLStrings
+import org.aksw.r2rml.common.vocab.R2rmlTerms
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
@@ -112,8 +112,8 @@ object RddToDataFrameMapper {
    */
   def getEffectiveDatatype(datatypeIri: String): String = {
     datatypeIri match {
-      case R2RMLStrings.IRI => XSD.xstring.getURI
-      case R2RMLStrings.BlankNode => XSD.xstring.getURI
+      case R2rmlTerms.IRI => XSD.xstring.getURI
+      case R2rmlTerms.BlankNode => XSD.xstring.getURI
       case default => default
     }
   }

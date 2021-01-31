@@ -48,7 +48,7 @@ abstract class QueryEngineFactoryBase(spark: SparkSession) extends QueryEngineFa
       explodeLanguageTags,
       escapeIdentifiers)
 
-    mappingsModel.write(System.out, "Turtle")
+    // mappingsModel.write(System.out, "Turtle")
 
     create(null, mappingsModel)
 

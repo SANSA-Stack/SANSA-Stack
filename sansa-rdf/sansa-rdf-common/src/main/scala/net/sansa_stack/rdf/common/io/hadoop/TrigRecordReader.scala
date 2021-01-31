@@ -77,7 +77,7 @@ class TrigRecordReader
     // println("TRIG READER INITIALIZE CALLED")
     val job = context.getConfiguration
 
-    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
+    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024 * 1024)
     minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 12)
     probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
 
