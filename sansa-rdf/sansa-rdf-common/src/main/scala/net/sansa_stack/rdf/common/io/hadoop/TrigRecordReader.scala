@@ -287,7 +287,7 @@ class TrigRecordReader
     // println(s"Adjusted split end $splitEnd to $adjustedSplitEnd [adjusted by $deltaSplitEnd bytes]")
 
     //val tailBufferLength = IOUtils.read(stream, tailBuffer, 0, tailBuffer.length)
-    val tailBufferLength = fuckRead(stream, tailBuffer, 0, tailBuffer.length)
+    val tailBufferLength = readAvailable(stream, tailBuffer, 0, tailBuffer.length)
     // val tailBufferLength = fuckRead2(stream, tailBuffer, 0, tailBuffer.length, rawStream, adjustedSplitEnd)
     // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
@@ -300,7 +300,7 @@ class TrigRecordReader
     // TODO We need to ensure the headBuffer content does not go beyond the split boundary
     // othewise it results in an overlap with the tail buffer
     // val headBufferLength = IOUtils.read(stream, headBuffer, 0, headBuffer.length)
-    val headBufferLength = fuckRead2(stream, headBuffer, 0, headBuffer.length, rawStream, adjustedSplitEnd)
+    val headBufferLength = readAvailableByBlock(stream, headBuffer, 0, headBuffer.length, rawStream, adjustedSplitEnd)
     // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
     //    val deltaSplitStart = adjustedSplitStart - splitStart
@@ -511,7 +511,7 @@ class TrigRecordReader
           throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
         } else {
           // Here we assume we read into the last chunk which contained no full record
-          System.err.println("No more records found after pos " + splitStart + nextProbePos)
+          logger.warn("No more records found after pos " + (splitStart + nextProbePos))
         }
 
 
@@ -603,10 +603,14 @@ class TrigRecordReader
 
 
 
-
+  /**
+   * Read available data - until an underlying backing stream reaches a boundary
+   * assumes that the underlying stream is conceptually in hadoop's READ_BY_BLOCK mode
+   * i.e. read() returns upon reaching the boundary with the position set to that boundary
+   */
   @throws[IOException]
-  def fuckRead2(input: InputStream, buffer: Array[Byte], offset: Int, length: Int,
-                rawStream: InputStream with fs.Seekable, maxRawPos: Long): Int = {
+  def readAvailableByBlock(input: InputStream, buffer: Array[Byte], offset: Int, length: Int,
+                           rawStream: InputStream with fs.Seekable, maxRawPos: Long): Int = {
 
     if (length < 0) throw new IllegalArgumentException("Length must not be negative: " + length)
 
@@ -627,19 +631,17 @@ class TrigRecordReader
       var contrib = 0
       val nextOffset = offset + result
 
-      try {
-
-        val cap = Math.min(workaroundBuffer.length, remaining)
-        contrib = input.read(workaroundBuffer, 0, cap)
+      val cap = Math.min(workaroundBuffer.length, remaining)
+      contrib = input.read(workaroundBuffer, 0, cap)
         // val beforeReadPos = input.asInstanceOf[fs.Seekable].getPos
         // contrib = input.read(buffer, nextOffset, remaining)
         // println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
-      } catch {
-//        case e: IndexOutOfBoundsException =>
-//          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
-//          contrib = -1
-        case e => throw new RuntimeException("fuck", e)
-      }
+//      } catch {
+////        case e: IndexOutOfBoundsException =>
+////          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
+////          contrib = -1
+//        case e => throw new RuntimeException("error", e)
+//      }
       // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)
       if (contrib < 0) {
         remaining = 0
@@ -662,8 +664,9 @@ class TrigRecordReader
     result
   }
 
+
   @throws[IOException]
-  def fuckRead(input: InputStream, buffer: Array[Byte], offset: Int, length: Int): Int = {
+  def readAvailable(input: InputStream, buffer: Array[Byte], offset: Int, length: Int): Int = {
 
     // Workaround for https://issues.apache.org/jira/browse/HADOOP-17453:
     // Using non-zero offsets for read are bugged
@@ -683,18 +686,18 @@ class TrigRecordReader
       iter += 1
       var contrib = 0
       val nextOffset = offset + result
-      try {
+//      try {
 
-        val pos = input.asInstanceOf[fs.Seekable].getPos
-        val cap = Math.min(workaroundBuffer.length, remaining)
-        contrib = input.read(workaroundBuffer, 0, cap)
+      // val pos = input.asInstanceOf[fs.Seekable].getPos
+      val cap = Math.min(workaroundBuffer.length, remaining)
+      contrib = input.read(workaroundBuffer, 0, cap)
         // println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
-      } catch {
-        // case e: IndexOutOfBoundsException =>
-        //  println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
-        //  contrib = -1
-        case e => throw new RuntimeException("fuck", e)
-      }
+//      } catch {
+//        // case e: IndexOutOfBoundsException =>
+//        //  println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
+//        //  contrib = -1
+//        case e => throw new RuntimeException("error", e)
+//      }
       // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)
       if (contrib < 0) { // EOF
 
