@@ -1,13 +1,17 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
-import java.nio.file.Paths
+import java.nio.file.{Files, Path, Paths}
+import java.util
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
 import com.google.common.base.Stopwatch
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
+import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
 import net.sansa_stack.spark.cli.cmd.CmdSansaTrigQuery
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
+import org.apache.jena.ext.com.google.common.collect.Sets
 import org.apache.jena.query.{Dataset, QueryFactory, Syntax}
 import org.apache.jena.riot.{Lang, ResultSetMgr}
 import org.apache.spark.rdd.RDD
@@ -39,12 +43,26 @@ object CmdSansaTrigQueryImpl {
     logger.info("Loaded query " + queryString)
     val query = QueryFactory.create(queryString, Syntax.syntaxARQ)
 
-    val trigFile = Paths.get(cmd.trigFile).toAbsolutePath
+    import collection.JavaConverters._
 
+    val trigFiles = cmd.trigFiles.asScala
+      .map(pathStr => Paths.get(pathStr).toAbsolutePath)
+      .toList
+
+    val validPaths = trigFiles
+      .filter(Files.exists(_))
+      .filter(!Files.isDirectory(_))
+      .filter(Files.isReadable(_))
+      .toSet
+
+    val invalidPaths = trigFiles.toSet.diff(validPaths)
+    if (!invalidPaths.isEmpty) {
+      throw new IllegalArgumentException("The following paths are invalid (do not exist or are not a (readable) file): " + invalidPaths)
+    }
 
     val spark = SparkSession.builder
       .master(cmd.sparkMaster)
-      .appName(s"SPARQL example ( $trigFile )")
+      .appName(s"SPARQL example ( $trigFiles )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
         ", ",
@@ -55,12 +73,18 @@ object CmdSansaTrigQueryImpl {
 
     import net.sansa_stack.rdf.spark.io._
 
-    val rdd: RDD[Dataset] = spark.datasets(Lang.TRIG)(trigFile.toString)
+    val initialRdd: RDD[Dataset] = validPaths
+      .map(path => spark.datasets(Lang.TRIG)(path.toString))
+      .reduce((a, b) => a.union(b))
+
+    val effectiveRdd = if (cmd.makeDistinct) RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
+      else initialRdd
+
 
     val stopwatch = Stopwatch.createStarted()
 
     val resultSetSpark: ResultSetSpark =
-      RddOfBindingOps.selectWithSparql(rdd, query)
+      RddOfBindingOps.selectWithSparql(effectiveRdd, query)
 
     ResultSetMgr.write(System.out, resultSetSpark.collectToTable().toResultSet, outLang)
 
