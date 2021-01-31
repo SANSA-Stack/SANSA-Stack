@@ -3,6 +3,8 @@ package net.sansa_stack.rdf.common.io.hadoop
 import java.io._
 import java.nio.ByteBuffer
 import java.nio.channels.{Channels, ReadableByteChannel}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.util
 import java.util.Collections
 import java.util.concurrent.Callable
@@ -11,6 +13,7 @@ import java.util.function.Predicate
 import java.util.regex.{Matcher, Pattern}
 
 import io.reactivex.rxjava3.core.Flowable
+import net.sansa_stack.rdf.common.{InterruptingReadableByteChannel, SeekableInputStream}
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
 import org.apache.commons.io.IOUtils
@@ -24,6 +27,7 @@ import org.apache.jena.ext.com.google.common.primitives.Ints
 import org.apache.jena.query.{Dataset, DatasetFactory}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -42,14 +46,13 @@ object TrigRecordReader {
 class TrigRecordReader
   extends RecordReader[LongWritable, Dataset] {
 
+  private val logger = LoggerFactory.getLogger(classOf[TrigRecordReader])
+
   var maxRecordLength: Int = _
   var minRecordLength: Int = _
   var probeRecordCount: Int = _
 
   private val trigFwdPattern: Pattern = Pattern.compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE)
-
-  // This pattern is no longer needed and its not up to date
-  private val trigBwdPattern: Pattern = Pattern.compile("esab@?|xiferp@?|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
 
   // private var start, end, position = 0L
 
@@ -73,13 +76,20 @@ class TrigRecordReader
   protected var splitEnd: Long = -1
 
 
+  /**
+   * Read out config paramaters (prefixes, length thresholds, ...) and
+   * examine the codec in order to set an internal
+   * flag whether the stream will be encoded or not.
+   *
+   */
   override def initialize(inputSplit: InputSplit, context: TaskAttemptContext): Unit = {
     // println("TRIG READER INITIALIZE CALLED")
     val job = context.getConfiguration
 
     maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024)
+    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 200 * 1024 * 1024)
     minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 12)
-    probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
+    probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 1)
 
     val str = context.getConfiguration.get("prefixes")
     val model = ModelFactory.createDefaultModel()
@@ -97,6 +107,7 @@ class TrigRecordReader
     // We may need to wrap it with a decoder below
     // var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
     rawStream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+    // println("Got raw stream positioned at: " + rawStream.getPos)
     isEncoded = false
 
 
@@ -106,6 +117,9 @@ class TrigRecordReader
     splitStart = split.getStart
     splitLength = split.getLength
     splitEnd = splitStart + splitLength
+
+    // maxRecordLength = Math.min(maxRecordLength, splitLength)
+    // println("Split length = " + splitLength)
 
     // val rawDesiredBufferLength = split.getLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, split.getLength - 1)
 
@@ -139,6 +153,17 @@ class TrigRecordReader
   }
 
 
+  /**
+   * Seek to a given offset and prepare to read up to the 'end' position (exclusive)
+   * For non-encoded streams this is just performs a seek on th stream and returns
+   * start/end unchanged.
+   * Encoded streams will adjust the seek to the data part that follows some header
+   * information
+   *
+   * @param start
+   * @param end
+   * @return
+   */
   def setStreamToInterval(start: Long, end: Long): (Long, Long) = {
 
     var result: (Long, Long) = null
@@ -149,9 +174,10 @@ class TrigRecordReader
       if (codec.isInstanceOf[SplittableCompressionCodec]) {
         val scc = codec.asInstanceOf[SplittableCompressionCodec]
 
+        // rawStream.seek(0)
         // rawStream.seek(start)
         // try {
-          val tmp = scc.createInputStream(rawStream, decompressor, start, end,
+          val tmp: SplitCompressionInputStream = scc.createInputStream(rawStream, decompressor, start, end,
             SplittableCompressionCodec.READ_MODE.BYBLOCK)
 
           // tmp.read(new Array[Byte](1))
@@ -159,7 +185,7 @@ class TrigRecordReader
           val adjustedStart = tmp.getAdjustedStart
           val adjustedEnd = tmp.getAdjustedEnd
 
-          val rawPos = rawStream.getPos
+          // val rawPos = rawStream.getPos
           // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
 
           stream = tmp
@@ -172,101 +198,18 @@ class TrigRecordReader
         throw new RuntimeException("Don't know how to handle codec: " + codec)
       }
     } else {
-      stream = rawStream
-      stream.seek(start)
+      rawStream.seek(start)
+      // stream = rawStream
+      // stream.seek(start)
+      stream = new SeekableInputStream(
+        Channels.newInputStream(new InterruptingReadableByteChannel(rawStream, rawStream, end)),
+        rawStream);
 
       result = (start, end)
     }
 
     result
   }
-
-
-
-  /**
-    * Transfers all decoded data that corresponds to the region
-    * between splitStart and splitEnd of the given stream
-    * plus a given number of extra bytes into a buffer
-    *
-    * @param stream The input stream, possibly compressed
-    * @param splitStart Start position of the split which may be encoded data
-    * @param splitEnd End position of the split which may be encoded data
-    * @param requestedExtraBytes Additional number of decoded bytes to read
-    * @return
-    */
-  def readToBuffer(stream: InputStream with fs.Seekable, isEncoded: Boolean, splitStart: Long, splitEnd: Long,
-                   requestedExtraBytes: Int): (ArrayBuffer[Byte], Int) = {
-
-    val splitLength = splitEnd - splitStart
-
-    // TODO ArrayBuffer has linear complexity for appending; use a better data structure
-    val buffer = new ArrayBuffer[Byte]()
-    // Read data in blocks of 'length' size
-    // It is important to understand that the
-    // stream's read method by contract must return once it hits a block boundary
-    // This does not hold for non-encoded streams for which we count the bytes ourself
-    val length = 1 * 1024 * 1024
-    val blockBuffer = new Array[Byte](length)
-
-    var n: Int = 0
-    do {
-      buffer ++= blockBuffer.slice(0, n)
-
-      val streamPos = stream.getPos
-      if (streamPos >= splitEnd) {
-        n = -1
-      } else {
-        val readLimit = if (isEncoded) length else Math.min(length, Ints.checkedCast(splitLength - buffer.length))
-
-        n = stream.read(blockBuffer, 0, readLimit)
-      }
-    } while (n >= 0)
-
-
-    val tailBuffer = new Array[Byte](requestedExtraBytes)
-    var actualExtraBytes = 0
-    n = 0
-    do {
-      actualExtraBytes += n
-      val remaining = requestedExtraBytes - actualExtraBytes
-      n = if (remaining == 0) -1 else stream.read(tailBuffer, actualExtraBytes, remaining)
-    } while (n >= 0)
-    buffer ++= tailBuffer.slice(0, actualExtraBytes)
-
-    if (actualExtraBytes < 0) {
-      throw new RuntimeException(s"Attempt to buffer $requestedExtraBytes bytes from split failed")
-    }
-
-    (buffer, actualExtraBytes)
-  }
-
-
-/*
-  def readToBuffer2(stream: InputStream with fs.Seekable, buffer: Array[Byte], initialOffset: Int, len: Int): Int = {
-
-    val startPos = stream.getPos
-    val splitEnd = startPos + len
-
-    var offset = initialOffset
-    var n: Int = 0
-    do {
-      val remaining = Math.min(buffer.length - offset, len)
-      if(remaining > 0) {
-        val streamPos = stream.getPos
-        n = stream.read(buffer, offset, remaining)
-
-        if(n >= 0) {
-          offset += n
-        }
-      } else {
-        n = -1
-      }
-    } while (n >= 0)
-
-
-    offset - initialOffset
-  }
-  */
 
 
   def createDatasetFlow(): Flowable[Dataset] = {
@@ -311,8 +254,25 @@ class TrigRecordReader
       quadCount
     }
 
-    val desiredExtraBytes = Ints.checkedCast(Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, splitLength - 1))
+    // Except for the first split, the first record in each split is skipped
+    // because it may belong to the last record of the previous split.
+    // So we need to read past the first record, then find the second record
+    // and then find probeRecordCount further records to validate the second one
+    // Hence we need to read up to (2 + probeRecordCount) * maxRecordLength bytes
+    val desiredExtraBytes = (2 + probeRecordCount) * maxRecordLength
+    /*
+    Ints.checkedCast(Math.min(
+      2 * maxRecordLength + probeRecordCount * maxRecordLength,
+      splitLength - 1))
+    }
+    */
 
+    // logger.info("desiredExtraBytes = " + desiredExtraBytes)
+
+
+    // FIXME these buffers can become very large when dealing with huge graphs
+    // especially when their content stretch over splits
+    // Somehow find a way to allocate them dynamically
     val tailBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
     val headBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
 
@@ -324,27 +284,36 @@ class TrigRecordReader
     // val (adjustedSplitEnd, _) = setStreamToInterval(splitEnd, splitEnd + splitLength)
 
     // val deltaSplitEnd = adjustedSplitEnd - splitEnd
-    // println(s"Adjusted split end $splitEnd to $adjustedSplitEnd [$deltaSplitEnd]")
+    // println(s"Adjusted split end $splitEnd to $adjustedSplitEnd [adjusted by $deltaSplitEnd bytes]")
 
     val tailBufferLength = IOUtils.read(stream, tailBuffer, 0, tailBuffer.length)
+    // val tailBufferLength = fuckRead(stream, tailBuffer, 0, tailBuffer.length)
+    // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
     // Set the stream to the start of the split and get the head buffer
     // Note that we will use the stream in its state to read the body part
 
     val (adjustedSplitStart, _) = setStreamToInterval(splitStart, adjustedSplitEnd)
     // val (adjustedSplitStart, _) = setStreamToInterval(splitStart, splitEnd)
-    val headBufferLength = IOUtils.read(stream, headBuffer, 0, headBuffer.length)
 
-    val deltaSplitStart = adjustedSplitStart - splitStart
+    // TODO We need to ensure the headBuffer content does not go beyond the split boundary
+    // othewise it results in an overlap with the tail buffer
+    // val headBufferLength = IOUtils.read(stream, headBuffer, 0, headBuffer.length)
+    val headBufferLength = fuckRead2(stream, headBuffer, 0, headBuffer.length, rawStream, adjustedSplitEnd)
+    // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
+
+    //    val deltaSplitStart = adjustedSplitStart - splitStart
     // println(s"Adjusted split start $splitStart to $adjustedSplitStart [$deltaSplitStart]")
 
     // Stream is now positioned at beginning of body region
     // And head and tail buffers have been populated
 
+    logger.info(s"adjustment: [$splitStart, $splitEnd) -> [$adjustedSplitStart, $adjustedSplitEnd)")
+    logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
 
     // Set up the body stream whose read method returns
     // -1 upon reaching the split boundry
-    val bodyStream = Channels.newInputStream(new ReadableByteChannel {
+    var bodyStream: InputStream = Channels.newInputStream(new ReadableByteChannel {
       val blockBuffer: Array[Byte] = new Array[Byte](1 * 1024 * 1024)
       var lastRead = -1
 
@@ -361,24 +330,27 @@ class TrigRecordReader
           val remainingBufferLen = dst.remaining()
           // If the stream is encoded we do not know how many bytes we need to read
           // and rely on the read to return on the encoding block boundary
-//          val readLimit = if (isEncoded) remainingBufferLen
-//            else Math.min(remainingBufferLen, remainingSplitLen)
+          //          val readLimit = if (isEncoded) remainingBufferLen
+          //            else Math.min(remainingBufferLen, remainingSplitLen)
           val readLimit = Math.min(Math.min(remainingBufferLen, remainingSplitLen), blockBuffer.length)
 
+          // TODO We could read into dst directly
           n = stream.read(blockBuffer, 0, readLimit)
 
           // println(s"read limit = $readLimit - n = $n")
-          if(n >= 0) {
+          if (n >= 0) {
             lastRead = n
             dst.put(blockBuffer, 0, n)
           }
           // else {
-            // println(s"End of stream reached; lastRead=$lastRead")
+          // println(s"End of stream reached; lastRead=$lastRead")
           // }
         }
         n
       }
+
       override def isOpen: Boolean = true
+
       override def close(): Unit = {}
     })
 
@@ -402,16 +374,54 @@ class TrigRecordReader
     // println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
 
     // Assemble the overall stream
-    val headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+    var prefixStream: InputStream = new ByteArrayInputStream(prefixBytes)
 
-    // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
-    val displacement = if (isEncoded) 1 else 0
-    val tailStream = new ByteArrayInputStream(tailBuffer, displacement, tailBytes - displacement)
-    // val tailStream = new ByteArrayInputStream(tailBuffer, 0, tailBytes)
+    var headStream: InputStream = null
+    // var bodyStream: InputStream = null
+    var tailStream: InputStream = null
 
-    val prefixStream = new ByteArrayInputStream(prefixBytes)
-    val fullStream = new SequenceInputStream(Collections.enumeration(
+    if (headBytes < 0) {
+      logger.error("NEED TO HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD")
+
+      // No data from this split
+      headStream = new ByteArrayInputStream(Array[Byte]())
+      bodyStream = new ByteArrayInputStream(Array[Byte]())
+      tailStream = new ByteArrayInputStream(Array[Byte]())
+    } else {
+
+      headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+
+      // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
+      val displacement = if (isEncoded) 1 else 0
+      tailStream = new ByteArrayInputStream(tailBuffer, displacement, tailBytes - displacement)
+      // val tailStream = new ByteArrayInputStream(tailBuffer, 0, tailBytes)
+    }
+
+    val writeOutSegments = true
+
+    if (writeOutSegments) {
+      logger.info("Writing segment " + splitStart)
+
+      val prefixFile = Paths.get("/tmp/segment" + splitStart + ".prefix.trig")
+      val headFile = Paths.get("/tmp/segment" + splitStart + ".head.trig")
+      val bodyFile = Paths.get("/tmp/segment" + splitStart + ".body.trig")
+      val tailFile = Paths.get("/tmp/segment" + splitStart + ".tail.trig")
+      Files.copy(prefixStream, prefixFile)
+      Files.copy(headStream, headFile)
+      Files.copy(bodyStream, bodyFile)
+      Files.copy(tailStream, tailFile)
+      // Nicely close streams? Then again, must parts are in-memory buffers and this is debugging code only
+      prefixStream = Files.newInputStream(prefixFile, StandardOpenOption.READ)
+      headStream = Files.newInputStream(headFile, StandardOpenOption.READ)
+      bodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ)
+      tailStream = Files.newInputStream(tailFile, StandardOpenOption.READ)
+    }
+
+
+    var fullStream: InputStream = new SequenceInputStream(Collections.enumeration(
       util.Arrays.asList(prefixStream, headStream, bodyStream, tailStream)))
+
+
 
     var result: Flowable[Dataset] = null
     if(headBytes >= 0) {
@@ -464,8 +474,25 @@ class TrigRecordReader
     result
   }
 
-
-  def skipOverNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
+  /**
+   * Find the start of the *second* recard as seen from 'splitStart' (inclusive)
+   *
+   *
+   * @param nav
+   * @param splitStart
+   * @param absProbeRegionStart
+   * @param maxRecordLength
+   * @param absDataRegionEnd
+   * @param prober
+   * @return
+   */
+  def skipOverNextRecord(
+                          nav: PageNavigator,
+                          splitStart: Long,
+                          absProbeRegionStart: Long,
+                          maxRecordLength: Long,
+                          absDataRegionEnd: Long,
+                          prober: Seekable => Boolean): Long = {
     var result = -1L
 
     val availableDataRegion = absDataRegionEnd - absProbeRegionStart
@@ -474,9 +501,18 @@ class TrigRecordReader
     while (i < 2) {
       val candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, prober)
       if (candidatePos < 0) {
+        // If there is more than maxRecordLength data available then
+        // it is inconsistent for findNextRecord to indicate that no record was found
+        // Either the maxRecordLength parameter is too small,
+        // or there is an internal error with the prober
+        // or there is a problem with the data (e.g. syntax error)
         if (availableDataRegion >= maxRecordLength) {
           throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
+        } else {
+          // Here we assume we read into the last chunk which contained no full record
+          System.err.println("No more records found after pos " + splitStart + nextProbePos)
         }
+
 
         // Retain best found candidate position
         // effectiveRecordRangeEnd = dataRegionEnd
@@ -563,10 +599,201 @@ class TrigRecordReader
   override def close(): Unit = {
   }
 
+
+
+  @throws[IOException]
+  def fuckRead(input: InputStream, buffer: Array[Byte], offset: Int, length: Int): Int = {
+    if (length < 0) throw new IllegalArgumentException("Length must not be negative: " + length)
+
+    if (offset + length > buffer.length) {
+      throw new IllegalArgumentException("Requested offset + length greater than capacity of the provided buffer")
+    }
+
+    var remaining = length
+    var result = 0
+    var iter = 0
+    while (remaining > 0) {
+      iter += 1
+      var contrib = 0
+      try {
+        val nextOffset = offset + result
+
+        val pos = input.asInstanceOf[fs.Seekable].getPos
+        contrib = input.read(buffer, nextOffset, remaining)
+        println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
+      } catch {
+        case e: IndexOutOfBoundsException =>
+          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
+          contrib = -1
+        case e => throw new RuntimeException("fuck", e)
+      }
+      // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)
+      if (contrib < 0) { // EOF
+
+        // Adjust the result to EOF if we haven't seen any byts
+        // if (result == 0) {
+        //   result = -1
+        // }
+        remaining = 0
+      } else {
+        result += contrib
+        remaining -= contrib
+      }
+    }
+    result
+  }
+
+  @throws[IOException]
+  def fuckRead2(input: InputStream, buffer: Array[Byte], offset: Int, length: Int,
+                rawStream: InputStream with fs.Seekable, maxRawPos: Long): Int = {
+    if (length < 0) throw new IllegalArgumentException("Length must not be negative: " + length)
+
+    if (offset + length > buffer.length) {
+      throw new IllegalArgumentException("Requested offset + length greater than capacity of the provided buffer")
+    }
+
+    var remaining = length
+    var result = 0
+    var iter = 0
+    while (remaining > 0) {
+      iter += 1
+      var contrib = 0
+      try {
+        val nextOffset = offset + result
+
+        // val beforeReadPos = input.asInstanceOf[fs.Seekable].getPos
+        contrib = input.read(buffer, nextOffset, remaining)
+        // println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
+      } catch {
+        case e: IndexOutOfBoundsException =>
+          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
+          contrib = -1
+        case e => throw new RuntimeException("fuck", e)
+      }
+      // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)
+      if (contrib < 0) { // EOF
+
+        // Adjust the result to EOF if we haven't seen any byts
+        // if (result == 0) {
+        //   result = -1
+        // }
+        remaining = 0
+      } else {
+        result += contrib
+        remaining -= contrib
+      }
+
+      val rawPos = rawStream.getPos
+
+      val exceed = rawPos - maxRawPos
+      if (exceed >= 0) {
+        logger.warn("Exceeded maximum boundary by " + exceed + " bytes")
+        remaining = 0
+      }
+
+    }
+    result
+  }
+
+
   // def printSeekable(seekable: Seekable): Unit = {
   //   val tmp = seekable.cloneObject()
   //   val pos = seekable.getPos
   //   System.out.println(s"BUFFER: $pos" + IOUtils.toString(Channels.newInputStream(tmp)))
   // }
 
+
+
+
+  // This pattern is no longer needed and its not up to date
+  // private val trigBwdPattern: Pattern = Pattern.compile("esab@?|xiferp@?|\\{\\s*(>[^<]*<|[^-\\s]+:_)\\s*(hparg)?", Pattern.CASE_INSENSITIVE)
+
+  /**
+   * DEPRECATED AND NO LONGER USED! Our current approach does much better than reading large chunks into
+   * buffers - kept here for reference for the time being but will likely be removed
+   *
+   * Transfers all decoded data that corresponds to the region
+   * between splitStart and splitEnd of the given stream
+   * plus a given number of extra bytes into a buffer
+   *
+   * @param stream The input stream, possibly compressed
+   * @param splitStart Start position of the split which may be encoded data
+   * @param splitEnd End position of the split which may be encoded data
+   * @param requestedExtraBytes Additional number of decoded bytes to read
+   * @return
+   */
+  def readToBuffer(stream: InputStream with fs.Seekable, isEncoded: Boolean, splitStart: Long, splitEnd: Long,
+                   requestedExtraBytes: Int): (ArrayBuffer[Byte], Int) = {
+
+    val splitLength = splitEnd - splitStart
+
+    // TODO ArrayBuffer has linear complexity for appending; use a better data structure
+    val buffer = new ArrayBuffer[Byte]()
+    // Read data in blocks of 'length' size
+    // It is important to understand that the
+    // stream's read method by contract must return once it hits a block boundary
+    // This does not hold for non-encoded streams for which we count the bytes ourself
+    val length = 1 * 1024 * 1024
+    val blockBuffer = new Array[Byte](length)
+
+    var n: Int = 0
+    do {
+      buffer ++= blockBuffer.slice(0, n)
+
+      val streamPos = stream.getPos
+      if (streamPos >= splitEnd) {
+        n = -1
+      } else {
+        val readLimit = if (isEncoded) length else Math.min(length, Ints.checkedCast(splitLength - buffer.length))
+
+        n = stream.read(blockBuffer, 0, readLimit)
+      }
+    } while (n >= 0)
+
+
+    val tailBuffer = new Array[Byte](requestedExtraBytes)
+    var actualExtraBytes = 0
+    n = 0
+    do {
+      actualExtraBytes += n
+      val remaining = requestedExtraBytes - actualExtraBytes
+      n = if (remaining == 0) -1 else stream.read(tailBuffer, actualExtraBytes, remaining)
+    } while (n >= 0)
+    buffer ++= tailBuffer.slice(0, actualExtraBytes)
+
+    if (actualExtraBytes < 0) {
+      throw new RuntimeException(s"Attempt to buffer $requestedExtraBytes bytes from split failed")
+    }
+
+    (buffer, actualExtraBytes)
+  }
 }
+
+
+/*
+  def readToBuffer2(stream: InputStream with fs.Seekable, buffer: Array[Byte], initialOffset: Int, len: Int): Int = {
+
+    val startPos = stream.getPos
+    val splitEnd = startPos + len
+
+    var offset = initialOffset
+    var n: Int = 0
+    do {
+      val remaining = Math.min(buffer.length - offset, len)
+      if(remaining > 0) {
+        val streamPos = stream.getPos
+        n = stream.read(buffer, offset, remaining)
+
+        if(n >= 0) {
+          offset += n
+        }
+      } else {
+        n = -1
+      }
+    } while (n >= 0)
+
+
+    offset - initialOffset
+  }
+  */
+

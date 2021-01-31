@@ -55,15 +55,12 @@ object RddOfDatasetOps {
    * Run a select query on each individual dataset in the RDD
    */
   def selectWithSparql(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
-    // def flatMapQuery(query: Query): RDD[Dataset] =
     val queryBc = rdd.context.broadcast(query)
 
     Objects.requireNonNull(query)
 
     rdd.flatMap(in => {
       val query = queryBc.value
-      // TODO I don't get why the Query object is not serializablbe even though
-      // the registrator for it is loaded ... investigae...
 
       val qe = QueryExecutionFactory.create(query, in)
       var r: Seq[Binding] = null
