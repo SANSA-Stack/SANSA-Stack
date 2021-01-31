@@ -286,8 +286,9 @@ class TrigRecordReader
     // val deltaSplitEnd = adjustedSplitEnd - splitEnd
     // println(s"Adjusted split end $splitEnd to $adjustedSplitEnd [adjusted by $deltaSplitEnd bytes]")
 
-    val tailBufferLength = IOUtils.read(stream, tailBuffer, 0, tailBuffer.length)
-    // val tailBufferLength = fuckRead(stream, tailBuffer, 0, tailBuffer.length)
+    //val tailBufferLength = IOUtils.read(stream, tailBuffer, 0, tailBuffer.length)
+    val tailBufferLength = fuckRead(stream, tailBuffer, 0, tailBuffer.length)
+    // val tailBufferLength = fuckRead2(stream, tailBuffer, 0, tailBuffer.length, rawStream, adjustedSplitEnd)
     // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
     // Set the stream to the start of the split and get the head buffer
@@ -397,7 +398,7 @@ class TrigRecordReader
       // val tailStream = new ByteArrayInputStream(tailBuffer, 0, tailBytes)
     }
 
-    val writeOutSegments = true
+    val writeOutSegments = false
 
     if (writeOutSegments) {
       logger.info("Writing segment " + splitStart)
@@ -601,56 +602,22 @@ class TrigRecordReader
 
 
 
-  @throws[IOException]
-  def fuckRead(input: InputStream, buffer: Array[Byte], offset: Int, length: Int): Int = {
-    if (length < 0) throw new IllegalArgumentException("Length must not be negative: " + length)
 
-    if (offset + length > buffer.length) {
-      throw new IllegalArgumentException("Requested offset + length greater than capacity of the provided buffer")
-    }
-
-    var remaining = length
-    var result = 0
-    var iter = 0
-    while (remaining > 0) {
-      iter += 1
-      var contrib = 0
-      try {
-        val nextOffset = offset + result
-
-        val pos = input.asInstanceOf[fs.Seekable].getPos
-        contrib = input.read(buffer, nextOffset, remaining)
-        println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
-      } catch {
-        case e: IndexOutOfBoundsException =>
-          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
-          contrib = -1
-        case e => throw new RuntimeException("fuck", e)
-      }
-      // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)
-      if (contrib < 0) { // EOF
-
-        // Adjust the result to EOF if we haven't seen any byts
-        // if (result == 0) {
-        //   result = -1
-        // }
-        remaining = 0
-      } else {
-        result += contrib
-        remaining -= contrib
-      }
-    }
-    result
-  }
 
   @throws[IOException]
   def fuckRead2(input: InputStream, buffer: Array[Byte], offset: Int, length: Int,
                 rawStream: InputStream with fs.Seekable, maxRawPos: Long): Int = {
+
     if (length < 0) throw new IllegalArgumentException("Length must not be negative: " + length)
 
     if (offset + length > buffer.length) {
       throw new IllegalArgumentException("Requested offset + length greater than capacity of the provided buffer")
     }
+
+    // Workaround for https://issues.apache.org/jira/browse/HADOOP-17453:
+    // Using non-zero offsets for read are bugged
+    // So we read into this intermediate workaround buffer before writing to the actual output buffer
+    val workaroundBuffer = new Array[Byte](1024 * 1024)
 
     var remaining = length
     var result = 0
@@ -658,27 +625,27 @@ class TrigRecordReader
     while (remaining > 0) {
       iter += 1
       var contrib = 0
-      try {
-        val nextOffset = offset + result
+      val nextOffset = offset + result
 
+      try {
+
+        val cap = Math.min(workaroundBuffer.length, remaining)
+        contrib = input.read(workaroundBuffer, 0, cap)
         // val beforeReadPos = input.asInstanceOf[fs.Seekable].getPos
-        contrib = input.read(buffer, nextOffset, remaining)
+        // contrib = input.read(buffer, nextOffset, remaining)
         // println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
       } catch {
-        case e: IndexOutOfBoundsException =>
-          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
-          contrib = -1
+//        case e: IndexOutOfBoundsException =>
+//          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
+//          contrib = -1
         case e => throw new RuntimeException("fuck", e)
       }
       // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)
-      if (contrib < 0) { // EOF
-
-        // Adjust the result to EOF if we haven't seen any byts
-        // if (result == 0) {
-        //   result = -1
-        // }
+      if (contrib < 0) {
         remaining = 0
       } else {
+        System.arraycopy(workaroundBuffer, 0, buffer, nextOffset, contrib)
+
         result += contrib
         remaining -= contrib
       }
@@ -695,6 +662,56 @@ class TrigRecordReader
     result
   }
 
+  @throws[IOException]
+  def fuckRead(input: InputStream, buffer: Array[Byte], offset: Int, length: Int): Int = {
+
+    // Workaround for https://issues.apache.org/jira/browse/HADOOP-17453:
+    // Using non-zero offsets for read are bugged
+    // So we read into this intermediate workaround buffer before writing to the actual output buffer
+    val workaroundBuffer = new Array[Byte](1024 * 1024)
+
+    if (length < 0) throw new IllegalArgumentException("Length must not be negative: " + length)
+
+    if (offset + length > buffer.length) {
+      throw new IllegalArgumentException("Requested offset + length greater than capacity of the provided buffer")
+    }
+
+    var remaining = length
+    var result = 0
+    var iter = 0
+    while (remaining > 0) {
+      iter += 1
+      var contrib = 0
+      val nextOffset = offset + result
+      try {
+
+        val pos = input.asInstanceOf[fs.Seekable].getPos
+        val cap = Math.min(workaroundBuffer.length, remaining)
+        contrib = input.read(workaroundBuffer, 0, cap)
+        // println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
+      } catch {
+        // case e: IndexOutOfBoundsException =>
+        //  println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
+        //  contrib = -1
+        case e => throw new RuntimeException("fuck", e)
+      }
+      // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)
+      if (contrib < 0) { // EOF
+
+        // Adjust the result to EOF if we haven't seen any byts
+        // if (result == 0) {
+        //   result = -1
+        // }
+        remaining = 0
+      } else {
+        System.arraycopy(workaroundBuffer, 0, buffer, nextOffset, contrib)
+
+        result += contrib
+        remaining -= contrib
+      }
+    }
+    result
+  }
 
   // def printSeekable(seekable: Seekable): Unit = {
   //   val tmp = seekable.cloneObject()
@@ -796,4 +813,5 @@ class TrigRecordReader
     offset - initialOffset
   }
   */
+
 

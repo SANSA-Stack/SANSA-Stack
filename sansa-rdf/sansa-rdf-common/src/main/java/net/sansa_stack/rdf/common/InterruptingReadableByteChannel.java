@@ -32,7 +32,8 @@ public class InterruptingReadableByteChannel
     @Override
     public int read(ByteBuffer byteBuffer) throws IOException {
         long pos = seekable.getPos();
-        int remainingUntilInterrupt = !interrupted && pos <= interruptPos
+
+        int remainingUntilInterrupt = !interrupted && pos < interruptPos
             ? Ints.saturatedCast(interruptPos - pos)
                 : Integer.MAX_VALUE;
 
