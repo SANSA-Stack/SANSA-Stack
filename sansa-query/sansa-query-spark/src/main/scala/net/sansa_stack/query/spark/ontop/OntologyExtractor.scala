@@ -11,7 +11,6 @@ import org.aksw.r2rml.jena.vocab.RR
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.vocabulary.RDF
 
-import net.sansa_stack.query.spark.ontop.OntologyExtractor.createOntology
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 
 /**
@@ -56,6 +55,7 @@ object OntologyExtractor {
     }).mkString(" UNION ")
 
     if (sql.nonEmpty) {
+      println(s"class retrieval query:\n$sql")
       val df = spark.sql(sql)
 
       val classes = df.collect().map(_.getString(0))
@@ -65,6 +65,10 @@ object OntologyExtractor {
       val axioms: Set[OWLAxiom] = classes.map(cls =>
         dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(IRI.create(cls)))).toSet
       val ontology = createOntology(axioms)
+
+      import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat
+      import java.io.{File, FileOutputStream}
+      ontology.saveOntology(new RDFXMLDocumentFormat(), new FileOutputStream(new File("/tmp/ontop-ontology.rdf")))
 
       logger.info(s"ontology contains ${classes.length} classes and ${ontology.getLogicalAxiomCount()} logical axioms.")
 

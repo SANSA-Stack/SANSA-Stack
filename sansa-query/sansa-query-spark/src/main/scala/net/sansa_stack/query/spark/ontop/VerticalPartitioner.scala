@@ -8,7 +8,7 @@ import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperDoubleQuote}
 import org.apache.jena.rdf.model.ModelFactory
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex}
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, TermType}
 import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
 import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.RDF
@@ -240,22 +240,49 @@ object VerticalPartitioner {
 
     // create the Spark tables
     println("creating Spark tables ...")
+    // we use a URL encoding on top of the default table naming to avoid file path issues when saving to disk
     val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
+
+    // generated the Spark tables (virtually, not materialized yet)
     SparkTableGenerator(spark,
                         database = config.databaseName,
                         blankNodeStrategy = config.blankNodeStrategy,
                         useHive = false,
                         computeStatistics = config.computeStatistics)
       .createAndRegisterSparkTables(partitioner, partitions, extractTableName = tableNameFn)
-    spark.catalog.listTables(config.databaseName).collect().foreach(t =>
-      spark.table(sqlEscaper.escapeTableName(t.name)).write.mode(saveMode).format("parquet").saveAsTable(SQLUtils.escapeTablename(t.name)))
+
+    // determine the rdf:type partition (we assume just one here, no blank nodes classes aka complex classes covered)
+    val typeTableName = partitions.keySet
+      .find(p => p.predicate == RDF.`type`.getURI && p.subjectType == TermType.IRI && p.objectType == TermType.IRI)
+      .map(tableNameFn)
+
+    // save tables to disk
+    spark.catalog.listTables(config.databaseName).collect().foreach(t => {
+
+      try {
+        var writer = spark.table(sqlEscaper.escapeTableName(t.name)).write
+          .mode(saveMode)
+          .format("parquet")
+
+        // rdf:type partition will be partitioned by types
+        if (typeTableName.contains(t.name)) {
+          writer = writer.partitionBy("o")
+        }
+
+        writer.saveAsTable(SQLUtils.escapeTablename(t.name))
+      } catch {
+        case e: Exception => System.err.println(s"failed to write table ${t.name} as Parquet to disk. Reason:")
+                              e.printStackTrace()
+      }
+
+    })
     //    partitions.foreach {
     //      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
     //                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
     //                                        config.usePartitioning, config.partitioningThreshold)
     //    }
 
-    // write the partition metadata to disk
+    // write the partitioning metadata as R2RML mappings to disk
     val path = Paths.get(s"/tmp/${config.databaseName}-r2rml-mappings.ttl")
     println(s"writing R2RML mapping model to $path")
     val model = ModelFactory.createDefaultModel()
