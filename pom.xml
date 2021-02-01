@@ -106,6 +106,7 @@
 
     <modules>
         <module>sansa-metadata</module>
+	<module>sansa-resource-testdata</module>
         <module>sansa-rdf</module>
         <module>sansa-datalake</module>
         <module>sansa-query</module>
