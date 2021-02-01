@@ -8,6 +8,8 @@ import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.Logging
+import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
+import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseWrapper
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
@@ -15,7 +17,10 @@ import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.jena.query.{Dataset => JenaDataset}
-import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
+import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter}
+import org.apache.jena.riot.writer.WriterStreamRDFBase
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RDFLanguages}
 import org.apache.jena.shared.PrefixMapping
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.{FmtUtils, NodeFactoryExtra}
@@ -235,6 +240,8 @@ package object io {
     }
   }
 
+
+
   /**
    * Adds method `saveAsNQuadsFile` to an RDD[Quad] that allows to write N-Quads files.
    */
@@ -287,6 +294,110 @@ package object io {
         .saveAsTextFile(path)
     }
   }
+
+
+  def makeString(prefixMapping: PrefixMapping, rdfFormat: RDFFormat): String = {
+    val tmp: Model = ModelFactory.createDefaultModel
+    tmp.setNsPrefixes(prefixMapping)
+    val baos = new ByteArrayOutputStream()
+    RDFDataMgr.write(baos, tmp, RDFFormat.TURTLE_PRETTY)
+    baos.toString("UTF-8").trim
+  }
+
+
+  /**
+   * Adds method `saveAsNQuadsFile` to an RDD[Quad] that allows to write N-Quads files.
+   */
+  implicit class RDFChunkWriter[T](quads: RDD[JenaDataset]) {
+
+    /**
+     * Save the data in N-Quads format.
+     *
+     * @param path the path where the N-Quads file(s) will be written to
+     * @param mode the expected behavior of saving the data to a data source
+     * @param exitOnError whether to stop if an error occurred
+     */
+    def saveAsFile(path: String,
+                   prefixMapping: PrefixMapping,
+                   rdfFormat: RDFFormat,
+                   mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+                   exitOnError: Boolean = false): Unit = {
+
+      val fsPath = new Path(path)
+      val fs = fsPath.getFileSystem(quads.sparkContext.hadoopConfiguration)
+
+      val doSave = if (fs.exists(fsPath)) {
+        mode match {
+          case SaveMode.Overwrite =>
+            fs.delete(fsPath, true)
+            true
+          case SaveMode.ErrorIfExists =>
+            sys.error(s"Given path $path already exists!")
+            if (exitOnError) sys.exit(1)
+            false
+          case SaveMode.Ignore => false
+          case _ =>
+            throw new IllegalStateException(s"Unsupported save mode $mode ")
+        }
+      } else {
+        true
+      }
+
+      import scala.collection.JavaConverters._
+
+      val prefixStr: String =
+        if (prefixMapping != null && !prefixMapping.hasNoMappings) {
+          makeString(prefixMapping, RDFFormat.TURTLE_PRETTY)
+        } else {
+          null
+        }
+
+
+      val prefixMappingBc = quads.sparkContext.broadcast(prefixMapping)
+
+      // save only if there was no failure with the path before
+      if (doSave) {
+        val rdfFormatStr = rdfFormat.toString
+
+        val dataBlocks = quads
+          .mapPartitions(p => {
+            if (p.hasNext) {
+              val rdfFormat = RDFLanguagesEx.findRdfFormat(rdfFormatStr)
+
+              val baos = new ByteArrayOutputStream()
+              val rawWriter = StreamRDFWriter.getWriterStream(baos, rdfFormat, null)
+              val writer = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
+                prefixMappingBc.value, rawWriter.asInstanceOf[WriterStreamRDFBase])
+
+              while (p.hasNext) {
+                val ds: JenaDataset = p.next
+                StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), writer)
+              }
+
+              Collections.singleton(baos.toString("UTF-8").trim).iterator().asScala
+            } else {
+              Iterator()
+            }
+          })
+
+        // If there are prefixes then serialize them and prepend
+        // their string to the output
+
+        val allBlocks: RDD[String] =
+          if (prefixStr != null) {
+            val prefixRdd = quads.sparkContext.parallelize(Seq(prefixStr))
+            prefixRdd.union(dataBlocks)
+          } else {
+            dataBlocks
+          }
+
+          allBlocks
+            .saveAsTextFile(path)
+      }
+    }
+  }
+
+
 
   /**
    * Adds methods, `rdf(lang: Lang)`, `ntriples`, `nquads`, and `turtle`, to [[SparkSession]] that allows to read
