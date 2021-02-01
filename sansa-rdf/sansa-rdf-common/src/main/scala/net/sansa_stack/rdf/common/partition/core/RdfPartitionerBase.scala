@@ -26,15 +26,15 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
   def getUriOrBNodeString(node: Node): String = {
     val termType = getRdfTermType(node)
     termType match {
-      case 0 => node.getBlankNodeId.getLabelString
-      case 1 => node.getURI
+      case TermType.BLANK => node.getBlankNodeId.getLabelString
+      case TermType.IRI => node.getURI
       case _ => throw new RuntimeException("Neither Uri nor blank node: " + node)
     }
   }
 
   def getRdfTermType(node: Node): Byte = {
     val result =
-      if (node.isURI) 1.toByte else if (node.isLiteral) 2.toByte else if (node.isBlank) 0.toByte else {
+      if (node.isURI) TermType.IRI.toByte else if (node.isLiteral) TermType.LITERAL.toByte else if (node.isBlank) TermType.BLANK.toByte else {
         throw new RuntimeException("Unknown RDF term type: " + node)
       } // -1
     result
@@ -100,8 +100,8 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
     val oType = t.objectType
 
     val layout = oType match {
-      case 0 | 1 => TripleLayoutString // URI or bnode
-      case 2 => if (distinguishStringLiterals) {
+      case TermType.BLANK | TermType.IRI => TripleLayoutString // URI or bnode
+      case TermType.LITERAL => if (distinguishStringLiterals) {
         if (t.datatype == RDF.langString.getURI) {
           TripleLayoutStringLang
         } else if (t.datatype == XSD.xstring.getURI) {
