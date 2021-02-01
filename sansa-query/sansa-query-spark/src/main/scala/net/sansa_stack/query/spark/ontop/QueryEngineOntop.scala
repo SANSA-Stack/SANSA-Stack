@@ -144,7 +144,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
   // if no ontology has been provided, we try to extract it from the dataset
   if (ontology.isEmpty) {
-    ontology = OntologyExtractor.extract(spark)
+    ontology = OntologyExtractor.extract(spark, mappingsModel)
   }
 
   // we have to add separate mappings for each rdf:type in Ontop.
