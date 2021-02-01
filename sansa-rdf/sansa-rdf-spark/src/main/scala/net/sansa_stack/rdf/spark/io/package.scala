@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream
 import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
+
 import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
@@ -13,7 +14,8 @@ import org.apache.hadoop.io.LongWritable
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
-import org.apache.jena.hadoop.rdf.types.TripleWritable
+import org.apache.jena.hadoop.rdf.io.output.QuadsOutputFormat
+import org.apache.jena.hadoop.rdf.types.{QuadWritable, TripleWritable}
 import org.apache.jena.query.{Dataset => JenaDataset}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
 import org.apache.jena.shared.PrefixMapping
@@ -285,6 +287,28 @@ package object io {
           }
         })
         .saveAsTextFile(path)
+    }
+
+    def save(path: String): Unit = {
+      // determine language based on file extension
+      val lang = RDFLanguages.filenameToLang(path)
+
+      // unknown format
+      if (!RDFLanguages.isQuads(lang)) {
+        throw new IllegalArgumentException(s"couldn't determine syntax for RDF quads based on file extension in given path $path")
+      }
+
+      // N-Triples can be handle efficiently via file splits
+      if (lang == Lang.NQUADS) {
+        saveAsNQuadsFile(path)
+      } else { // others can't
+        val sc = quads.sparkContext
+
+        val confHadoop = sc.hadoopConfiguration
+
+        quads.zipWithIndex().map{case (k, v) => (v, k)}
+          .saveAsNewAPIHadoopFile(path, classOf[LongWritable], classOf[QuadWritable], classOf[QuadsOutputFormat[LongWritable]], confHadoop)
+      }
     }
   }
 
