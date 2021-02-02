@@ -13,10 +13,11 @@ import java.util.function.Predicate
 import java.util.regex.{Matcher, Pattern}
 
 import io.reactivex.rxjava3.core.Flowable
-import net.sansa_stack.rdf.common.{InterruptingReadableByteChannel, SeekableInputStream}
+import net.sansa_stack.rdf.common.{InterruptingReadableByteChannel, ReadableByteChannelWithConditionalBound, SeekableInputStream}
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
 import org.apache.commons.io.IOUtils
+import org.apache.commons.io.input.BoundedInputStream
 import org.apache.hadoop.fs
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.io.compress._
@@ -272,8 +273,8 @@ class TrigRecordReader
     // FIXME these buffers can become very large when dealing with huge graphs
     // especially when their content stretch over splits
     // Somehow find a way to allocate them dynamically
-    val tailBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
-    val headBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
+    // val tailBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
+    // val headBuffer: Array[Byte] = new Array[Byte](desiredExtraBytes)
 
     // val inputSplit: InputSplit = null
 
@@ -285,8 +286,22 @@ class TrigRecordReader
     // val deltaSplitEnd = adjustedSplitEnd - splitEnd
     // println(s"Adjusted split end $splitEnd to $adjustedSplitEnd [adjusted by $deltaSplitEnd bytes]")
 
-    //val tailBufferLength = IOUtils.read(stream, tailBuffer, 0, tailBuffer.length)
-    val tailBufferLength = readAvailable(stream, tailBuffer, 0, tailBuffer.length)
+    // val tailBufferLength = IOUtils.read(stream, tailBuffer, 0, tailBuffer.length)
+    // val tailBufferLength = readAvailable(stream, tailBuffer, 0, tailBuffer.length)
+
+    val tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024)
+    val tailNav: Seekable = tailBuffer.newChannel()
+
+    // val buffer = BufferFromInputStream.create(stream, 1024 * 1024).newChannel()
+
+
+
+
+    // val tailNav = new PageNavigator(new PageManagerForByteBuffer(ByteBuffer.wrap(tailBuffer)))
+    // val tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, tailBufferLength, prober)
+    val tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, desiredExtraBytes, prober)
+    val tailBytes = if (tmp < 0) 0 else Ints.checkedCast(tmp)
+
     // val tailBufferLength = fuckRead2(stream, tailBuffer, 0, tailBuffer.length, rawStream, adjustedSplitEnd)
     // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
@@ -299,7 +314,38 @@ class TrigRecordReader
     // TODO We need to ensure the headBuffer content does not go beyond the split boundary
     // othewise it results in an overlap with the tail buffer
     // val headBufferLength = IOUtils.read(stream, headBuffer, 0, headBuffer.length)
-    val headBufferLength = readAvailableByBlock(stream, headBuffer, 0, headBuffer.length, rawStream, adjustedSplitEnd)
+
+    // val headChannelFactory = BufferFromInputStream.create(stream, 1024 * 1024)
+
+    // TODO We need to dynamically cap the read at the split boundary
+    // Probably we just ned to modify the InterruptingReadablyByteChannel to return EOF
+    // val headBufferLength = readAvailableByBlock(stream, headBuffer, 0, headBuffer.length, rawStream, adjustedSplitEnd)
+    val splitBoundedHeadStream = Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
+      xstream => {
+        val rawPos = stream.getPos
+
+        val exceed = rawPos - adjustedSplitEnd
+        val eofReached = exceed >= 0
+        if (eofReached) {
+          logger.warn("Exceeded maximum boundary by " + exceed + " bytes")
+        }
+        eofReached
+      }))
+
+
+    val headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024)
+    val headNav: Seekable = headBuffer.newChannel()
+
+
+    val headBytes: Int = if (splitStart == 0) {
+      0
+    } else {
+
+      // val headNav = new PageNavigator(new PageManagerForByteBuffer(ByteBuffer.wrap(headBuffer)))
+      // Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, headBufferLength, prober))
+      Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, desiredExtraBytes, prober))
+    }
+
     // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
     //    val deltaSplitStart = adjustedSplitStart - splitStart
@@ -309,7 +355,7 @@ class TrigRecordReader
     // And head and tail buffers have been populated
 
     logger.info(s"adjustment: [$splitStart, $splitEnd) -> [$adjustedSplitStart, $adjustedSplitEnd)")
-    logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
+    // logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
 
     // Set up the body stream whose read method returns
     // -1 upon reaching the split boundry
@@ -358,17 +404,8 @@ class TrigRecordReader
     // Find the second record in the next split - i.e. after splitEnd (inclusive)
     // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
     // such as <g> { } | <g> { }   (where '|' denotes the split boundary)
-    val tailNav = new PageNavigator(new PageManagerForByteBuffer(ByteBuffer.wrap(tailBuffer)))
-    val tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, tailBufferLength, prober)
-    val tailBytes = if (tmp < 0) 0 else Ints.checkedCast(tmp)
 
     // If we are at start 0, we parse from the beginning - otherwise we skip the first record
-    val headBytes: Int = if (splitStart == 0) {
-      0
-    } else {
-      val headNav = new PageNavigator(new PageManagerForByteBuffer(ByteBuffer.wrap(headBuffer)))
-      Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, headBufferLength, prober))
-    }
 
     // println("HEAD BUFFER: " + new String(headBuffer, headBytes, headBufferLength - headBytes, StandardCharsets.UTF_8))
     // println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
@@ -381,7 +418,7 @@ class TrigRecordReader
     var tailStream: InputStream = null
 
     if (headBytes < 0) {
-      logger.error("NEED TO HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD")
+      logger.error("NEED TO PROPERLY HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD")
 
       // No data from this split
       headStream = new ByteArrayInputStream(Array[Byte]())
@@ -389,11 +426,20 @@ class TrigRecordReader
       tailStream = new ByteArrayInputStream(Array[Byte]())
     } else {
 
-      headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+
+      // headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+
+      val headChannel = headBuffer.newChannel()
+      headChannel.nextPos(headBytes)
+      headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headBuffer.getKnownDataSize - headBytes)
+
 
       // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
       val displacement = if (isEncoded) 1 else 0
-      tailStream = new ByteArrayInputStream(tailBuffer, displacement, tailBytes - displacement)
+      // tailStream = new ByteArrayInputStream(tailBuffer, displacement, tailBytes - displacement)
+      val tailChannel = tailBuffer.newChannel()
+      tailChannel.nextPos(displacement)
+      tailStream = new BoundedInputStream(Channels.newInputStream(tailBuffer.newChannel()), tailBytes - displacement)
       // val tailStream = new ByteArrayInputStream(tailBuffer, 0, tailBytes)
     }
 
@@ -451,7 +497,7 @@ class TrigRecordReader
   }
 
 
-  def findNextRecord(nav: PageNavigator, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
+  def findNextRecord(nav: Seekable, splitStart: Long, absProbeRegionStart: Long, maxRecordLength: Long, absDataRegionEnd: Long, prober: Seekable => Boolean): Long = {
     // Set up absolute positions
     val absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd) // = splitStart + bufferLength
     val relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart)
@@ -461,10 +507,15 @@ class TrigRecordReader
     // Data region is up to the end of the buffer
     val relDataRegionEnd = absDataRegionEnd - absProbeRegionStart
 
-    val seekable = nav.clone
+    val seekable: Seekable = nav.cloneObject
     seekable.setPos(absProbeRegionStart - splitStart)
-    seekable.limitNext(relDataRegionEnd)
+    // seekable.limitNext(relDataRegionEnd)
+    // val charSequence = new CharSequenceFromSeekable(seekable)
+    // seekable.limitNext(relDataRegionEnd)
+    // TODO The original code used limitNext but do we need that
+    //  if we set the matcher region anyway?
     val charSequence = new CharSequenceFromSeekable(seekable)
+
     val fwdMatcher = trigFwdPattern.matcher(charSequence)
     fwdMatcher.region(0, relProbeRegionEnd)
 
@@ -487,7 +538,7 @@ class TrigRecordReader
    * @return
    */
   def skipOverNextRecord(
-                          nav: PageNavigator,
+                          nav: Seekable,
                           splitStart: Long,
                           absProbeRegionStart: Long,
                           maxRecordLength: Long,
@@ -507,7 +558,9 @@ class TrigRecordReader
         // or there is an internal error with the prober
         // or there is a problem with the data (e.g. syntax error)
         if (availableDataRegion >= maxRecordLength) {
-          throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
+          // FIXME
+          logger.warn(s"TODO AVAILABLE DATA IS NOT YET ADJUSTED TO ACTUAL DATA. Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
+          // throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
         } else {
           // Here we assume we read into the last chunk which contained no full record
           logger.warn("No more records found after pos " + (splitStart + nextProbePos))
@@ -636,9 +689,9 @@ class TrigRecordReader
         // contrib = input.read(buffer, nextOffset, remaining)
         // println("[" + Thread.currentThread() + "]: Attempt to read from pos " + pos + " with contrib " + contrib + " lead to " + input.asInstanceOf[fs.Seekable].getPos)
 //      } catch {
-////        case e: IndexOutOfBoundsException =>
-////          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
-////          contrib = -1
+// //        case e: IndexOutOfBoundsException =>
+// //          println("[" + Thread.currentThread() + "]: IndexOutOfBounds ignored")
+// //          contrib = -1
 //        case e => throw new RuntimeException("error", e)
 //      }
       // println("COUNT [" + Thread.currentThread() + "]: contributed " + contrib + " bytes in iteration " + iter)

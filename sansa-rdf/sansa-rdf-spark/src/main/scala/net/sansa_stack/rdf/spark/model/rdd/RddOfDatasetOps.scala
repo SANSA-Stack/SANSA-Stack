@@ -38,6 +38,7 @@ object RddOfDatasetOps {
 
     val result: RDD[Dataset] = graphNameAndModel
       .reduceByKey((g1, g2) => { g1.add(g2); g1 })
+      .sortByKey()
       .map({ case (graphName, model) =>
         val r = DatasetFactory.create
         r.addNamedModel(graphName, model)

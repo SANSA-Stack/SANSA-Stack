@@ -7,7 +7,7 @@ import picocli.CommandLine.Parameters;
 
 import java.util.List;
 import java.util.concurrent.Callable;
-@Command(name = "trig",
+@Command(name = "query",
         description = "Run a special SPARQL query on a trig file")
 public class CmdSansaTrigQuery
     extends CmdBase
