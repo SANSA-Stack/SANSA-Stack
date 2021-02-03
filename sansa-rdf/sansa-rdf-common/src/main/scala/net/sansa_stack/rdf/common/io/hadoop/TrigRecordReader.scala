@@ -283,6 +283,10 @@ class TrigRecordReader
     val (adjustedSplitEnd, _) = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes)
     // val (adjustedSplitEnd, _) = setStreamToInterval(splitEnd, splitEnd + splitLength)
 
+    if (adjustedSplitEnd != splitEnd) {
+      throw new RuntimeException("difference!")
+    }
+
     // val deltaSplitEnd = adjustedSplitEnd - splitEnd
     // println(s"Adjusted split end $splitEnd to $adjustedSplitEnd [adjusted by $deltaSplitEnd bytes]")
 
@@ -320,17 +324,20 @@ class TrigRecordReader
     // TODO We need to dynamically cap the read at the split boundary
     // Probably we just ned to modify the InterruptingReadablyByteChannel to return EOF
     // val headBufferLength = readAvailableByBlock(stream, headBuffer, 0, headBuffer.length, rawStream, adjustedSplitEnd)
-    val splitBoundedHeadStream = Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
-      xstream => {
-        val rawPos = stream.getPos
 
-        val exceed = rawPos - adjustedSplitEnd
-        val eofReached = exceed >= 0
-        if (eofReached) {
-          logger.warn("Exceeded maximum boundary by " + exceed + " bytes")
-        }
-        eofReached
-      }))
+    val hitSplitBound: (InputStream with fs.Seekable, Long) => Boolean = (strm, splitPos) => {
+      val rawPos = strm.getPos
+
+      val exceed = rawPos - splitPos
+      val eofReached = exceed >= 0
+      if (eofReached) {
+        logger.warn("Exceeded maximum boundary by " + exceed + " bytes")
+      }
+      eofReached
+    }
+
+    val splitBoundedHeadStream = Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
+      xstream => hitSplitBound(stream, adjustedSplitEnd)))
 
 
     val headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024)
@@ -359,6 +366,11 @@ class TrigRecordReader
 
     // Set up the body stream whose read method returns
     // -1 upon reaching the split boundry
+    var splitBoundedBodyStream: InputStream =
+      Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
+      xstream => hitSplitBound(stream, adjustedSplitEnd)))
+
+/*
     var bodyStream: InputStream = Channels.newInputStream(new ReadableByteChannel {
       val blockBuffer: Array[Byte] = new Array[Byte](1 * 1024 * 1024)
       var lastRead = -1
@@ -399,7 +411,7 @@ class TrigRecordReader
 
       override def close(): Unit = {}
     })
-
+*/
 
     // Find the second record in the next split - i.e. after splitEnd (inclusive)
     // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
@@ -422,7 +434,7 @@ class TrigRecordReader
 
       // No data from this split
       headStream = new ByteArrayInputStream(Array[Byte]())
-      bodyStream = new ByteArrayInputStream(Array[Byte]())
+      splitBoundedBodyStream = new ByteArrayInputStream(Array[Byte]())
       tailStream = new ByteArrayInputStream(Array[Byte]())
     } else {
 
@@ -436,10 +448,21 @@ class TrigRecordReader
 
       // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
       val displacement = if (isEncoded) 1 else 0
+      // val displacement = 0
+
       // tailStream = new ByteArrayInputStream(tailBuffer, displacement, tailBytes - displacement)
       val tailChannel = tailBuffer.newChannel()
       tailChannel.nextPos(displacement)
-      tailStream = new BoundedInputStream(Channels.newInputStream(tailBuffer.newChannel()), tailBytes - displacement)
+      /*
+      for (i <- 0 to 10) {
+        val pos = tailChannel.getPos()
+        val ch = tailChannel.get(i)
+        println(s"i - pos: ${pos} STRING: ${ch}")
+      }
+      System.exit(0)
+      */
+      tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes - displacement)
+      // tailStream = new BoundedInputStream(Channels.newInputStream(tailBuffer.newChannel()), tailBytes - displacement)
       // val tailStream = new ByteArrayInputStream(tailBuffer, 0, tailBytes)
     }
 
@@ -454,18 +477,18 @@ class TrigRecordReader
       val tailFile = Paths.get("/tmp/segment" + splitStart + ".tail.trig")
       Files.copy(prefixStream, prefixFile)
       Files.copy(headStream, headFile)
-      Files.copy(bodyStream, bodyFile)
+      Files.copy(splitBoundedBodyStream, bodyFile)
       Files.copy(tailStream, tailFile)
       // Nicely close streams? Then again, must parts are in-memory buffers and this is debugging code only
       prefixStream = Files.newInputStream(prefixFile, StandardOpenOption.READ)
       headStream = Files.newInputStream(headFile, StandardOpenOption.READ)
-      bodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ)
+      splitBoundedBodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ)
       tailStream = Files.newInputStream(tailFile, StandardOpenOption.READ)
     }
 
 
     var fullStream: InputStream = new SequenceInputStream(Collections.enumeration(
-      util.Arrays.asList(prefixStream, headStream, bodyStream, tailStream)))
+      util.Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream)))
 
 
 
