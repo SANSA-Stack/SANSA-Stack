@@ -72,8 +72,8 @@ class TrigRecordReader
 
   private val logger = LoggerFactory.getLogger(classOf[TrigRecordReader])
 
-  var maxRecordLength: Int = _
-  var minRecordLength: Int = _
+  var maxRecordLength: Long = _
+  var minRecordLength: Long = _
   var probeRecordCount: Int = _
 
   /**
@@ -115,8 +115,8 @@ class TrigRecordReader
     // println("TRIG READER INITIALIZE CALLED")
     val job = context.getConfiguration
 
-    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 1 * 1024 * 1024)
-    minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 12)
+    maxRecordLength = job.getLong(TrigRecordReader.MAX_RECORD_LENGTH, 1 * 1024 * 1024)
+    minRecordLength = job.getLong(TrigRecordReader.MIN_RECORD_LENGTH, 12)
     probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 5)
 
     val str = context.getConfiguration.get("prefixes")
@@ -300,7 +300,7 @@ class TrigRecordReader
     // So we need to read past the first record, then find the second record
     // and then find probeRecordCount further records to validate the second one
     // Hence we need to read up to (2 + probeRecordCount) * maxRecordLength bytes
-    val desiredExtraBytes = (2 + probeRecordCount) * maxRecordLength
+    val desiredExtraBytes: Long = (2 + probeRecordCount) * maxRecordLength
 
     // Set the stream to the end of the split and get the tail buffer
     val (adjustedSplitEnd, _) = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes)
