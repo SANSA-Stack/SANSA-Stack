@@ -49,7 +49,7 @@ class TrigRecordReaderTest extends FunSuite {
 
   // val referenceFile new File(getClass.getClassLoader.getResource("/hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
 
-  val referencePath = Paths.get("sansa-resource-testdata/target/classes/hobbit-sensor-stream-150k-events-data.trig.bz2").toAbsolutePath
+  val referencePath = Paths.get("../../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2").toAbsolutePath
   val testPath = referencePath
   // val testFile = new File(getClass.getClassLoader.getResource("/hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
 

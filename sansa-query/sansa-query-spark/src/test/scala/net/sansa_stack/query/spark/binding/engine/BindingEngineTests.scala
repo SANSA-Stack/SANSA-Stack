@@ -46,7 +46,7 @@ class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
 
   test("group of RDD[Binding] should match expected result") {
     // val referenceFile = new File(getClass.getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
-    val referencePath = Paths.get("sansa-resource-testdata/target/classes/hobbit-sensor-stream-150k-events-data.trig.bz2").toAbsolutePath
+    val referencePath = Paths.get("../../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2").toAbsolutePath
 
 
     // read the target dataset
