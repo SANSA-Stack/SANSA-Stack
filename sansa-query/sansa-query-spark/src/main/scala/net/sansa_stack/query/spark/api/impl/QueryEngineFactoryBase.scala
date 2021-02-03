@@ -22,14 +22,17 @@ abstract class QueryEngineFactoryBase(spark: SparkSession) extends QueryEngineFa
                        sqlEscaper: SqlEscaper = new SqlEscaperBacktick(),
                        escapeIdentifiers: Boolean = false): QueryExecutionFactorySpark = {
     // apply vertical partitioning
-    val partitions2RDD = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
-
-
     import net.sansa_stack.rdf.spark.partition._
+    // Pass the table name from the outside?
+    // val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
+
     val r2rmlMappedSparkSession = triples.verticalPartition(partitioner, explodeLanguageTags, sqlEscaper, escapeIdentifiers)
 
+    val mappingsModel = r2rmlMappedSparkSession.r2rmlModel
+    create(null, mappingsModel)
+  }
 
-//    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
+    // val partitions2RDD = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
 
 //    partitions2RDD.foreach {
 //      case (p, rdd) =>
@@ -54,11 +57,6 @@ abstract class QueryEngineFactoryBase(spark: SparkSession) extends QueryEngineFa
 //      escapeIdentifiers)
 
     // mappingsModel.write(System.out, "Turtle")
-
-    val mappingsModel = r2rmlMappedSparkSession.r2rmlModel
-    create(null, mappingsModel)
-
-  }
 
   override def create(triples: RDD[graph.Triple]): QueryExecutionFactorySpark = {
     createWithPartitioning(triples)

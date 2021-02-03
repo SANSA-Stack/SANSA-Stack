@@ -4,7 +4,7 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils.createR2rmlMappings
 import net.sansa_stack.rdf.common.partition.r2rml.{R2rmlModel, R2rmlUtils}
 import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
-import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SparkTableGenerator}
+import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
 import net.sansa_stack.rdf.spark.partition.semantic.SemanticRdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaper, SqlEscaperBacktick}
@@ -57,7 +57,7 @@ package object partition extends Logging {
       // TODO Encode partitioner hash into the name
       val rddId = System.identityHashCode(rddOfTriples)
       val tableNaming: RdfPartitionStateDefault => String =
-        partitionState => "rdd" + rddId + "_" + R2rmlUtils.createDefaultTableName(partitionState)
+        partitionState => "rdd" + rddId + "_" + SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(partitionState))
 
       // val sqlEscaper = new SqlEscaperBacktick
 
