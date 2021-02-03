@@ -11,7 +11,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-metadata</artifactId>
+			<artifactId>sansa-resource-metadata</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-resource-testdata</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
