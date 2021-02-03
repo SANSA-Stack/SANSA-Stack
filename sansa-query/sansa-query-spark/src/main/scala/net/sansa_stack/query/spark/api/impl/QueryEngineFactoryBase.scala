@@ -24,7 +24,12 @@ abstract class QueryEngineFactoryBase(spark: SparkSession) extends QueryEngineFa
     // apply vertical partitioning
     val partitions2RDD = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
 
-    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
+
+    import net.sansa_stack.rdf.spark.partition._
+    val r2rmlMappedSparkSession = triples.verticalPartition(partitioner, explodeLanguageTags, sqlEscaper, escapeIdentifiers)
+
+
+//    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
 
 //    partitions2RDD.foreach {
 //      case (p, rdd) =>
@@ -33,23 +38,24 @@ abstract class QueryEngineFactoryBase(spark: SparkSession) extends QueryEngineFa
 //    }
 
     // create the Spark tables
-    SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,
-      partitions2RDD,
-      extractTableName = tableNameFn)
-
-    // create the mappings model
-    val mappingsModel = ModelFactory.createDefaultModel()
-    R2rmlUtils.createR2rmlMappings(
-      partitioner,
-      partitions2RDD.keySet.toSeq,
-      tableNameFn,
-      sqlEscaper,
-      mappingsModel,
-      explodeLanguageTags,
-      escapeIdentifiers)
+//    SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,
+//      partitions2RDD,
+//      extractTableName = tableNameFn)
+//
+//    // create the mappings model
+//    val mappingsModel = ModelFactory.createDefaultModel()
+//    R2rmlUtils.createR2rmlMappings(
+//      partitioner,
+//      partitions2RDD.keySet.toSeq,
+//      tableNameFn,
+//      sqlEscaper,
+//      mappingsModel,
+//      explodeLanguageTags,
+//      escapeIdentifiers)
 
     // mappingsModel.write(System.out, "Turtle")
 
+    val mappingsModel = r2rmlMappedSparkSession.r2rmlModel
     create(null, mappingsModel)
 
   }

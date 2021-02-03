@@ -4,7 +4,7 @@ import org.apache.hadoop.fs.Seekable;
 
 import java.io.IOException;
 
-public interface SeekableBase
+public interface SeekableDecorator
     extends Seekable
 {
     Seekable getSeekable();

@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 /** Combine Seekable and InputStream into one class */
 public class SeekableInputStream
-    extends ProxyInputStream implements SeekableBase
+    extends ProxyInputStream implements SeekableDecorator
 {
     protected Seekable seekable;
 

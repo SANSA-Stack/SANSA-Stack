@@ -12,7 +12,7 @@ import java.nio.channels.ReadableByteChannel;
  *  (before crossing it) such as a split boundary
  */
 public class InterruptingReadableByteChannel
-    implements ReadableByteChannel, SeekableBase
+    implements ReadableByteChannel, SeekableDecorator
 {
     protected byte[] buffer = new byte[1024 * 1024];
     protected boolean interrupted = false;
