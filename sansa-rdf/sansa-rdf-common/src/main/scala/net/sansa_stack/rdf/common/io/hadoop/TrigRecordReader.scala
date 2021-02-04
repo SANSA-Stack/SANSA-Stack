@@ -170,7 +170,7 @@ class TrigRecordReader
   def initDatasetFlow(): Unit = {
 
 
-    val sw = Stopwatch.createStarted()
+    // val sw = Stopwatch.createStarted()
     // val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
 
     // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
@@ -590,8 +590,24 @@ class TrigRecordReader
 
   override def getCurrentValue: Dataset = currentValue
 
-  override def getProgress: Float = 0
+  override def getProgress: Float = {
+    // Very raw estimate; does not take head / tail buffers into accoun
+    // Also, in the beginning the position is beyond th split end in order to find the end position
+    // At this time the progress would be reported as 100%
+    if (this.splitStart == this.splitEnd) 0.0F
+    else Math.min(1.0F, (this.rawStream.getPos - this.splitStart).toFloat / (this.splitEnd - this.splitStart).toFloat)
+  }
 
   override def close(): Unit = {
+    try {
+      // Under normal operation this close is redundant because the stream is owned
+      // by the flowable which closes it the moment it has consumed the last item
+      stream.close
+    } finally {
+      if (this.decompressor != null) {
+        CodecPool.returnDecompressor(this.decompressor)
+        this.decompressor = null
+      }
+    }
   }
 }
