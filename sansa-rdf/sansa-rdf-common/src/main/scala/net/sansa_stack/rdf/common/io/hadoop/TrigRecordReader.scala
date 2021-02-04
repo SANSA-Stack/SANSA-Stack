@@ -9,12 +9,11 @@ import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Predicate
 import java.util.regex.{Matcher, Pattern}
-
 import io.reactivex.rxjava3.core.Flowable
 import net.sansa_stack.rdf.common.{InterruptingReadableByteChannel, ReadableByteChannelWithConditionalBound, SeekableInputStream}
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
-import org.apache.commons.io.input.BoundedInputStream
+import org.apache.commons.io.input.{BoundedInputStream, CloseShieldInputStream}
 import org.apache.hadoop.fs
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.io.compress._
@@ -95,6 +94,7 @@ class TrigRecordReader
   protected var decompressor: Decompressor = _
 
 
+  protected var split: FileSplit = _
   protected var codec: CompressionCodec = _
   protected var prefixBytes: Array[Byte] = _
   protected var rawStream: InputStream with fs.Seekable = _
@@ -129,7 +129,7 @@ class TrigRecordReader
     prefixBytes = baos.toByteArray
 
 
-    val split = inputSplit.asInstanceOf[FileSplit]
+    split = inputSplit.asInstanceOf[FileSplit]
 
     // By default use the given stream
     // We may need to wrap it with a decoder below
@@ -340,8 +340,8 @@ class TrigRecordReader
     // Set up the body stream whose read method returns
     // -1 upon reaching the split boundry
     var splitBoundedBodyStream: InputStream =
-    Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
-      xstream => hitSplitBound(stream, adjustedSplitEnd)))
+    new CloseShieldInputStream(Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
+      xstream => hitSplitBound(stream, adjustedSplitEnd))))
 
     // Find the second record in the next split - i.e. after splitEnd (inclusive)
     // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
@@ -389,12 +389,16 @@ class TrigRecordReader
     val writeOutSegments = false
 
     if (writeOutSegments) {
-      logger.info("Writing segment " + splitStart)
+      val splitName = split.getPath.getName
 
-      val prefixFile = Paths.get("/tmp/segment" + splitStart + ".prefix.trig")
-      val headFile = Paths.get("/tmp/segment" + splitStart + ".head.trig")
-      val bodyFile = Paths.get("/tmp/segment" + splitStart + ".body.trig")
-      val tailFile = Paths.get("/tmp/segment" + splitStart + ".tail.trig")
+      logger.info("Writing segment " + splitName + " " + splitStart)
+
+      val basePath = Paths.get("/tmp/")
+
+      val prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.trig")
+      val headFile = basePath.resolve(splitName + "_" + splitStart + ".head.trig")
+      val bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.trig")
+      val tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.trig")
       Files.copy(prefixStream, prefixFile)
       Files.copy(headStream, headFile)
       Files.copy(splitBoundedBodyStream, bodyFile)
