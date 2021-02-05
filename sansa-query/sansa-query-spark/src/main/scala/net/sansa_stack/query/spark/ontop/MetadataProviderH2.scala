@@ -1,17 +1,17 @@
 package net.sansa_stack.query.spark.ontop
 
+import scala.reflect.runtime.universe.typeOf
+
 import it.unibz.inf.ontop.dbschema.MetadataProvider
 import it.unibz.inf.ontop.dbschema.impl.OfflineMetadataProviderBuilder
 import it.unibz.inf.ontop.injection.{CoreSingletons, OntopModelConfiguration}
-
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStringDouble, SchemaStringStringType}
-import scala.reflect.runtime.universe.typeOf
-
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
+import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStringDouble, SchemaStringStringType}
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
 
 /**
  * Generate the JDBC metadata.
@@ -39,7 +39,7 @@ class MetadataProviderH2(defaultConfiguration: OntopModelConfiguration) {
                        builder: OfflineMetadataProviderBuilder): Unit = {
     val schema = partitioner.determineLayout(p).schema
 
-    val name = R2rmlUtils.createDefaultTableName(p)
+    val name = SQLUtils.createDefaultTableName(p)
     val escapedTableName = sqlEscaper.escapeTableName(name)
     p match {
       case RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>

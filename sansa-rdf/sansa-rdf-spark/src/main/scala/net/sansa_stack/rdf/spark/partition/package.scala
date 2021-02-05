@@ -1,20 +1,18 @@
 package net.sansa_stack.rdf.spark
 
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+import org.apache.jena.graph.Triple
+import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql._
+
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerDefault}
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils.createR2rmlMappings
-import net.sansa_stack.rdf.common.partition.r2rml.{R2rmlModel, R2rmlUtils}
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
 import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SparkTableGenerator}
 import net.sansa_stack.rdf.spark.partition.semantic.SemanticRdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.utils.Logging
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
-import org.apache.jena.graph.Triple
-import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.types.StructType
 
 /**
  * Wrap up implicit classes/methods to partition RDF data from N-Triples
@@ -56,7 +54,7 @@ package object partition extends Logging {
       // TODO Encode partitioner hash into the name
       val rddId = System.identityHashCode(rddOfTriples)
       val tableNaming: RdfPartitionStateDefault => String =
-        partitionState => "rdd" + rddId + "_" + R2rmlUtils.createDefaultTableName(partitionState)
+        partitionState => "rdd" + rddId + "_" + SQLUtils.createDefaultTableName(partitionState)
 
       val sqlEscaper = new SqlEscaperBacktick
 
@@ -72,6 +70,7 @@ package object partition extends Logging {
           partitioner,
           p,
           tableNaming,
+          None,
           sqlEscaper,
           model,
           explodeLanguageTags,

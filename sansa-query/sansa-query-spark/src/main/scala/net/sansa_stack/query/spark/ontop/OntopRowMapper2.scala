@@ -29,19 +29,19 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
  *
  * @author Lorenz Buehmann
  */
-class OntopRowMapper2(
+class OntopRowMapper2(sessionId: String,
+                      database: Option[String],
                       obdaMappings: Model,
                       properties: Properties,
                       jdbcMetaData: Map[String, String],
                       sparqlQuery: String,
                       ontology: Option[OWLOntology],
-                      id: String
+
                      ) {
 
-//  val metatdata = new MetadataProviderH2(OntopModelConfiguration.defaultBuilder.build()).generate(partitions)
 
 
-  val reformulationConfiguration = OntopConnection(id, obdaMappings, properties, jdbcMetaData, ontology)
+  val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory

@@ -7,19 +7,21 @@ import java.nio.file.Paths
 import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperDoubleQuote}
 import org.apache.jena.rdf.model.ModelFactory
-
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, TermType}
-import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SQLUtils, SparkTableGenerator}
 import org.apache.jena.sys.JenaSystem
-import org.apache.jena.vocabulary.RDF
+import org.apache.jena.vocabulary.{RDF, XSD}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.internal.SQLConf.LegacyBehaviorPolicy
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SparkSession, SaveMode => TableSaveMode}
+import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession, SaveMode => TableSaveMode}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
 
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, TermType}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SparkTableGenerator}
 
 
 /**
@@ -133,6 +135,8 @@ object VerticalPartitioner {
 
   val sqlEscaper = new SqlEscaperBacktick()
 
+
+
   private def showTables(databaseName: String): Unit = {
     val spark = SparkSession.builder
       //      .master("local")
@@ -154,7 +158,8 @@ object VerticalPartitioner {
     spark.sql("show tables").show(1000, false)
     spark.sql("show tables").select("tableName").collect().foreach(
       row => {
-        print(row.getString(0))
+        spark.sql(s"describe extended ${row.getString(0)}").show(21, false)
+        spark.sql(s"DESC FORMATTED ${row.getString(0)}").show(false)
         spark.sql(s"select * from ${row.getString(0)}").show(false)
       })
 
@@ -163,23 +168,24 @@ object VerticalPartitioner {
 
   private def run(config: Config): Unit = {
 
-    import net.sansa_stack.rdf.spark.io._
-
     import scala.collection.JavaConverters._
 
+    import net.sansa_stack.rdf.spark.io._
+
     val spark = SparkSession.builder
-//      .master("local")
+      //      .master("local")
       .appName("vpartitioner")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrationRequired", "true")
       // .config("spark.eventLog.enabled", "true")
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
-//      .config("spark.default.parallelism", "4")
-//      .config("spark.sql.shuffle.partitions", "4")
+      //      .config("spark.default.parallelism", "4")
+      //      .config("spark.sql.shuffle.partitions", "4")
       .config("spark.sql.warehouse.dir", config.outputPath.toString)
       .config("spark.sql.cbo.enabled", true)
       .config("spark.sql.statistics.histogram.enabled", true)
+      .config("spark.sql.legacy.parquet.datetimeRebaseModeInWrite", LegacyBehaviorPolicy.CORRECTED.toString)
       .enableHiveSupport()
       .getOrCreate()
 
@@ -188,15 +194,15 @@ object VerticalPartitioner {
 
     // we do terminate here if a database exist but neither overwrite or drop first was forced
     if (dbExists && !(config.saveAppend || config.saveOverwrite || config.saveAppend || config.dropDatabase)) {
-        System.err.println("Error: database already exists. Please use CLI flags --drop-db or --overwrite-db to continue")
-        return
+      System.err.println("Error: database already exists. Please use CLI flags --drop-db or --overwrite-db to continue")
+      return
     }
 
     // read triples as RDD[Triple]
     var triplesRDD = spark.ntriples()(config.inputPath.toString)
 
     // filter properties if schema ontology was given
-    if(config.schemaPath != null) {
+    if (config.schemaPath != null) {
       val man = OWLManager.createOWLOntologyManager()
       val ont = man.loadOntologyFromOntologyDocument(IRI.create(config.schemaPath))
       // get all object properties in schema file
@@ -241,46 +247,74 @@ object VerticalPartitioner {
     // create the Spark tables
     println("creating Spark tables ...")
     // we use a URL encoding on top of the default table naming to avoid file path issues when saving to disk
-    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
+    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.encodeTablename(SQLUtils.createDefaultTableName(p))
 
     // generated the Spark tables (virtually, not materialized yet)
-    SparkTableGenerator(spark,
-                        database = config.databaseName,
-                        blankNodeStrategy = config.blankNodeStrategy,
-                        useHive = false,
-                        computeStatistics = config.computeStatistics)
+    val partitionToTableName: Seq[(RdfPartitionStateDefault, String)] = SparkTableGenerator(spark,
+      database = Option(config.databaseName),
+      blankNodeStrategy = config.blankNodeStrategy,
+      useHive = false,
+      computeStatistics = config.computeStatistics)
       .createAndRegisterSparkTables(partitioner, partitions, extractTableName = tableNameFn)
 
     // determine the rdf:type partition (we assume just one here, no blank nodes classes aka complex classes covered)
-    val typeTableName = partitions.keySet
-      .find(p => p.predicate == RDF.`type`.getURI && p.subjectType == TermType.IRI && p.objectType == TermType.IRI)
-      .map(tableNameFn)
+    val typeTableName = partitionToTableName
+      .find { case (p, _) => p.predicate == RDF.`type`.getURI && p.subjectType == TermType.IRI && p.objectType == TermType.IRI }
+      .map(_._2)
+
+    val dateDatatypes = Seq(XSD.date, XSD.gYear, XSD.gMonthDay, XSD.gDay, XSD.gMonth, XSD.gYearMonth).map(_.getURI)
 
     // save tables to disk
-    spark.catalog.listTables(config.databaseName).collect().foreach(t => {
+    partitionToTableName.foreach { case (p, tableName) =>
 
       try {
-        var writer = spark.table(sqlEscaper.escapeTableName(t.name)).write
-          .mode(saveMode)
-          .format("parquet")
+        val df = spark.table(sqlEscaper.escapeTableName(tableName))
+        var writer: DataFrameWriter[Row] = df.write
 
         // rdf:type partition will be partitioned by types
-        if (typeTableName.contains(t.name)) {
-          writer = writer.partitionBy("o")
+        if (typeTableName.contains(tableName)) {
+          writer = df.repartition(col("o"))
+            .sortWithinPartitions(col("o"), col("s"))
+            .write
+            .partitionBy("o")
         }
 
-        writer.saveAsTable(SQLUtils.escapeTablename(t.name))
+        // handle literals
+        if (p.objectType == TermType.LITERAL) {
+          // we do always partition by language tag
+          if (p.languages.size >= 2) {
+            writer = df.repartition(col("l"))
+              .sortWithinPartitions(col("l"), col("o"), col("s"))
+              .write
+              .partitionBy("l")
+          }
+
+          // date literals are also a good value for partitioning
+          if (dateDatatypes.contains(p.datatype)) {
+            writer = df.repartition(col("o"))
+              .sortWithinPartitions(col("o"), col("s"))
+              .write
+              .partitionBy("o")
+          }
+
+        }
+
+        writer
+          .mode(saveMode)
+          .format("parquet")
+          .saveAsTable(SQLUtils.encodeTablename(tableName))
       } catch {
-        case e: Exception => System.err.println(s"failed to write table ${t.name} as Parquet to disk. Reason:")
-                              e.printStackTrace()
+        case e: Exception => System.err.println(s"failed to write table ${tableName} as Parquet to disk. Reason:")
+          e.printStackTrace()
       }
 
-    })
-    //    partitions.foreach {
-    //      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
-    //                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
-    //                                        config.usePartitioning, config.partitioningThreshold)
-    //    }
+
+      //    partitions.foreach {
+      //      case (p, rdd) => createSparkTable(spark, p, rdd, saveMode,
+      //                                        config.blankNodeStrategy, config.computeStatistics, config.outputPath.toString,
+      //                                        config.usePartitioning, config.partitioningThreshold)
+      //    }
+    }
 
     // write the partitioning metadata as R2RML mappings to disk
     val path = Paths.get(s"/tmp/${config.databaseName}-r2rml-mappings.ttl")
@@ -290,6 +324,7 @@ object VerticalPartitioner {
       partitioner,
       partitions.keySet.toSeq,
       tableNameFn,
+      Option(config.databaseName),
       new SqlEscaperDoubleQuote(),
       model,
       explodeLanguageTags = true,
@@ -320,7 +355,7 @@ object VerticalPartitioner {
                                path: String,
                                usePartitioning: Boolean,
                                partitioningThreshold: Int): Unit = {
-    val tableName = sqlEscaper.escapeTableName(R2rmlUtils.createDefaultTableName(p))
+    val tableName = sqlEscaper.escapeTableName(SQLUtils.createDefaultTableName(p))
     // val scalaSchema = p.layout.schema
     val scalaSchema = partitioner.determineLayout(p).schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]

@@ -1,10 +1,11 @@
 package net.sansa_stack.rdf.spark.utils
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, SQLUtils}
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
 import org.apache.jena.rdf.model.{Model, ModelFactory}
+
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 
 /**
  * @author Lorenz Buehmann
@@ -33,7 +34,8 @@ object PartitionLib {
         R2rmlUtils.createR2rmlMappings(
           partitioner,
           partition,
-          p => R2rmlUtils.createDefaultTableName(p),
+          p => SQLUtils.createDefaultTableName(p),
+          None,
           new SqlEscaperBacktick,
           model,
           explodeLanguageTags,

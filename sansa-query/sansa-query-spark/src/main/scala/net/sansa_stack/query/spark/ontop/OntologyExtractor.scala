@@ -12,6 +12,7 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.vocabulary.RDF
 
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 
 /**
  * An extractor for an ontology.
@@ -42,17 +43,17 @@ object OntologyExtractor {
 
     val sql =
       tms.map(tm => {
-      val tableName = tm.getLogicalTable.asBaseTableOrView().getTableName
+        val tableName = tm.getLogicalTable.asBaseTableOrView().getTableName
 
-      val o = tm.getPredicateObjectMaps.asScala.head.getObjectMaps.asScala.head.asTermMap().getColumn // TODO we assume a single predicate-object map here
+        val o = tm.getPredicateObjectMaps.asScala.head.getObjectMaps.asScala.head.asTermMap().getColumn // TODO we assume a single predicate-object map here
 
-      // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
-      val tn = sqlEscaper.escapeTableName(tableName.stripPrefix("\"").stripSuffix("\""))
-      val to = sqlEscaper.escapeColumnName(o.stripPrefix("\"").stripSuffix("\""))
+        // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
+        val tn = SQLUtils.parseTableIdentifier(tableName)
+        val to = sqlEscaper.escapeColumnName(o.stripPrefix("\"").stripSuffix("\""))
 
-      s"SELECT DISTINCT $to AS $clsCol FROM $tn"
+        s"SELECT DISTINCT $to AS $clsCol FROM $tn"
 
-    }).mkString(" UNION ")
+      }).mkString(" UNION ")
 
     if (sql.nonEmpty) {
       println(s"class retrieval query:\n$sql")

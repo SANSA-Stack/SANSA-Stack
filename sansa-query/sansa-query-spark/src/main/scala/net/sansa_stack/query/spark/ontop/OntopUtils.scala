@@ -91,13 +91,13 @@ object OntopUtils extends Serializable {
 
   import scala.language.existentials
   @throws[OBDASpecificationException]
-  private def loadOBDASpecification(obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology]) = {
+  private def loadOBDASpecification(database: Option[String], obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology]) = {
     val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder.ontology(ontology.get)
                   else OntopMappingSQLAllConfiguration.defaultBuilder
 
     val mappingConfiguration = builder
       .r2rmlMappingGraph(new JenaRDF().asGraph(obdaMappings))
-      .jdbcUrl(OntopConnection.JDBC_URL)
+      .jdbcUrl(OntopConnection.getConnectionURL(database))
       .jdbcUser(OntopConnection.JDBC_USER)
       .jdbcPassword(OntopConnection.JDBC_PASSWORD)
       .properties(properties)
@@ -107,8 +107,8 @@ object OntopUtils extends Serializable {
   }
 
   @throws[OBDASpecificationException]
-  def createReformulationConfig(obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
-    val obdaSpecification = loadOBDASpecification(obdaMappings, properties, ontology)
+  def createReformulationConfig(database: Option[String], obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
+    val obdaSpecification = loadOBDASpecification(database, obdaMappings, properties, ontology)
 
     val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
                                               .ontology(ontology.get)
@@ -120,7 +120,7 @@ object OntopUtils extends Serializable {
     builder
       .obdaSpecification(obdaSpecification)
       .properties(properties)
-      .jdbcUrl(OntopConnection.JDBC_URL)
+      .jdbcUrl(OntopConnection.getConnectionURL(database))
       .enableTestMode
       .build
   }

@@ -28,17 +28,17 @@ import org.semanticweb.owlapi.model.OWLOntology
  *
  * @author Lorenz Buehmann
  */
-class OntopRowMapper(
-                      obdaMappings: Model,
-                      properties: Properties,
-                      jdbcMetaData: Map[String, String],
-                      sparqlQuery: String,
-                      ontology: Option[OWLOntology],
-                      id: String
-                    , output: Output
-                     ) {
+class OntopRowMapper(sessionId: String,
+                     database: Option[String],
+                     obdaMappings: Model,
+                     properties: Properties,
+                     jdbcMetaData: Map[String, String],
+                     sparqlQuery: String,
+                     ontology: Option[OWLOntology],
+                     output: Output
+                    ) {
 
-  val reformulationConfiguration = OntopConnection(id, obdaMappings, properties, jdbcMetaData, ontology)
+  val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
 
 
   val termFactory = reformulationConfiguration.getTermFactory
@@ -49,7 +49,7 @@ class OntopRowMapper(
 
   val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
-  val rewriteInstruction = KryoUtils.deserialize(output, id)
+  val rewriteInstruction = KryoUtils.deserialize(output, sessionId)
 
   val sqlSignature = rewriteInstruction.sqlSignature
   val sqlTypeMap = rewriteInstruction.sqlTypeMap
