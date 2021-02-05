@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.binding.engine
 
 import java.io.{File, FileInputStream}
+import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
 
 import com.google.common.base.Stopwatch
@@ -44,12 +45,17 @@ class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
 
 
   test("group of RDD[Binding] should match expected result") {
-    val referenceFile = new File(getClass.getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
+    // val referenceFile = new File(getClass.getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
+    val referencePath = Paths.get("../../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2").toAbsolutePath
+
 
     // read the target dataset
     val sw = Stopwatch.createStarted
     val refDataset = DatasetFactory.create()
-    RDFDataMgr.read(refDataset, new BZip2CompressorInputStream(new FileInputStream(referenceFile)), Lang.TRIG)
+    val in = new BZip2CompressorInputStream(Files.newInputStream(referencePath))
+    RDFDataMgr.read(refDataset, in, Lang.TRIG)
+    // TODO Use try-with-resources ... scala 2.13's Using...
+    in.close
 
     val qe = QueryExecutionFactory.create(
       """

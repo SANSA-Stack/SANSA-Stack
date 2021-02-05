@@ -105,7 +105,8 @@
     </properties>
 
     <modules>
-        <module>sansa-metadata</module>
+        <module>sansa-resource-metadata</module>
+        <module>sansa-resource-testdata</module>
         <module>sansa-rdf</module>
         <module>sansa-datalake</module>
         <module>sansa-query</module>
@@ -134,7 +135,13 @@
             <!-- General SANSA metadata file (build time / version) -->
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-metadata</artifactId>
+                <artifactId>sansa-resource-metadata</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-resource-testdata</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

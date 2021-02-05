@@ -1,7 +1,9 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
 import java.io.{ByteArrayInputStream, File, FileInputStream}
+import java.nio.file.{Files, Paths}
 
+import com.google.common.reflect.ClassPath
 import org.aksw.commons.collections.diff.{CollectionDiff, Diff, SetDiff}
 import org.aksw.jena_sparql_api.core.utils.FN_QuadDiffUnique
 import org.aksw.jena_sparql_api.update.QuadDiffIterator
@@ -45,16 +47,18 @@ class TrigRecordReaderTest extends FunSuite {
   // val testFile = new File("/home/raven/Projects/Eclipse/facete3-parent/version1/hobbit-sensor-stream-150k-events-data.trig.bz2")
 
 
-  val referenceFile = new File(getClass.getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
-  val testFile = new File(getClass.getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
+  // val referenceFile new File(getClass.getClassLoader.getResource("/hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
 
-  val path = new Path(testFile.getAbsolutePath)
+  val referencePath = Paths.get("../../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2").toAbsolutePath
+  val testPath = referencePath
+  // val testFile = new File(getClass.getClassLoader.getResource("/hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
 
-  val fileLengthTotal = testFile.length()
+
+  val fileLengthTotal = Files.size(testPath)
 
   // read the target dataset
   val targetDataset = DatasetFactory.create()
-  RDFDataMgr.read(targetDataset, new BZip2CompressorInputStream(new FileInputStream(referenceFile)), Lang.TRIG)
+  RDFDataMgr.read(targetDataset, new BZip2CompressorInputStream(Files.newInputStream(referencePath)), Lang.TRIG)
 
 
   val maxNumSplits = 5
@@ -63,7 +67,8 @@ class TrigRecordReaderTest extends FunSuite {
   val inputFormat = new TrigFileInputFormat()
 
   // add input path of the file
-  FileInputFormat.addInputPath(job, new Path(testFile.getAbsolutePath))
+  val testHadoopPath = new Path(testPath.toString)
+  FileInputFormat.addInputPath(job, testHadoopPath)
 
   // call once to compute the prefixes
   inputFormat.getSplits(job)
@@ -175,7 +180,7 @@ class TrigRecordReaderTest extends FunSuite {
       val end = Math.min((i + 1) * splitLength, fileLengthTotal)
       val length = end - start
 
-      new FileSplit(path, start, length, null).asInstanceOf[InputSplit]
+      new FileSplit(testHadoopPath, start, length, null).asInstanceOf[InputSplit]
     }
   }
 

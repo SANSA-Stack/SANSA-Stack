@@ -75,6 +75,11 @@ object RddOfBindingOps {
   }
 
 
+  def naturalJoin(rdd1: RDD[Binding], rdd2: RDD[Binding], commonVars: util.Set[Var]): RDD[Binding] = {
+    // This op might better fit into ResultSetSparkOps
+    ???
+  }
+
   def group(rdd: RDD[Binding], groupVars: VarExprList, aggregators: util.List[ExprAggregator]): RDD[Binding] = {
     import collection.JavaConverters._
 

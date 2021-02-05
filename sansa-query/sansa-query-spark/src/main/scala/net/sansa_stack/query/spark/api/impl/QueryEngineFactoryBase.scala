@@ -18,50 +18,43 @@ import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SparkTa
 abstract class QueryEngineFactoryBase(spark: SparkSession)
   extends QueryEngineFactory {
 
-  val dbNameFn: RDD[graph.Triple] => String = triplesRDD => s"sansa_${triplesRDD.id}"
-
   protected def createWithPartitioning(triples: RDD[graph.Triple],
                                        partitioner: RdfPartitioner[RdfPartitionStateDefault] = RdfPartitionerDefault,
                                        explodeLanguageTags: Boolean = false,
                                        sqlEscaper: SqlEscaper = new SqlEscaperBacktick(),
                                        escapeIdentifiers: Boolean = false): QueryExecutionFactorySpark = {
     // apply vertical partitioning
-    val partitions2RDD = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
+    import net.sansa_stack.rdf.spark.partition._
+    // Pass the table name from the outside?
+    // val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.escapeTablename(R2rmlUtils.createDefaultTableName(p))
 
-    // we use the RDD ID as table name as this ID is guaranteed to be unique among the Spark session
-    val dbName = dbNameFn(triples)
+    val r2rmlMappedSparkSession = triples.verticalPartition(partitioner, explodeLanguageTags, sqlEscaper, escapeIdentifiers)
+
+    val mappingsModel = r2rmlMappedSparkSession.r2rmlModel
+    create(null, mappingsModel)
+  }
+
+    // val partitions2RDD = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
 
 //    val tableNameFn: RdfPartitionStateDefault => (Option[String], String) = p => (Some(dbName), SQLUtils.encodeTablename(R2rmlUtils.createDefaultTableName(p)))
-    val tableNameFn: RdfPartitionStateDefault => String = p => SQLUtils.encodeTablename(SQLUtils.createDefaultTableName(p))
-
-    val database = None // Some(dbName) // TODO activate the database per RDD here
 
     // create the Spark tables
-    SparkTableGenerator(spark, database).createAndRegisterSparkTables(
-      partitioner,
-      partitions2RDD,
-      extractTableName = tableNameFn)
+//    SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,
+//      partitions2RDD,
+//      extractTableName = tableNameFn)
+//
+//    // create the mappings model
+//    val mappingsModel = ModelFactory.createDefaultModel()
+//    R2rmlUtils.createR2rmlMappings(
+//      partitioner,
+//      partitions2RDD.keySet.toSeq,
+//      tableNameFn,
+//      sqlEscaper,
+//      mappingsModel,
+//      explodeLanguageTags,
+//      escapeIdentifiers)
 
-//    spark.catalog.listDatabases().show(false)
-//    spark.catalog.listDatabases().collect().foreach(db => spark.catalog.listTables(db.name).show(false))
-
-    // create the mappings model
-    val mappingsModel = ModelFactory.createDefaultModel()
-    R2rmlUtils.createR2rmlMappings(
-      partitioner,
-      partitions2RDD.keySet.toSeq,
-      tableNameFn,
-      database,
-      sqlEscaper,
-      mappingsModel,
-      explodeLanguageTags,
-      escapeIdentifiers)
-
-//     mappingsModel.write(System.out, "Turtle")
-
-    create(database, mappingsModel)
-
-  }
+    // mappingsModel.write(System.out, "Turtle")
 
   override def create(triples: RDD[graph.Triple]): QueryExecutionFactorySpark = {
     createWithPartitioning(triples)
