@@ -31,30 +31,8 @@ abstract class QueryEngineFactoryBase(spark: SparkSession)
     val r2rmlMappedSparkSession = triples.verticalPartition(partitioner, explodeLanguageTags, sqlEscaper, escapeIdentifiers)
 
     val mappingsModel = r2rmlMappedSparkSession.r2rmlModel
-    create(null, mappingsModel)
+    create(None, mappingsModel)
   }
-
-    // val partitions2RDD = RdfPartitionUtilsSpark.partitionGraph(triples, partitioner)
-
-//    val tableNameFn: RdfPartitionStateDefault => (Option[String], String) = p => (Some(dbName), SQLUtils.encodeTablename(R2rmlUtils.createDefaultTableName(p)))
-
-    // create the Spark tables
-//    SparkTableGenerator(spark).createAndRegisterSparkTables(partitioner,
-//      partitions2RDD,
-//      extractTableName = tableNameFn)
-//
-//    // create the mappings model
-//    val mappingsModel = ModelFactory.createDefaultModel()
-//    R2rmlUtils.createR2rmlMappings(
-//      partitioner,
-//      partitions2RDD.keySet.toSeq,
-//      tableNameFn,
-//      sqlEscaper,
-//      mappingsModel,
-//      explodeLanguageTags,
-//      escapeIdentifiers)
-
-    // mappingsModel.write(System.out, "Turtle")
 
   override def create(triples: RDD[graph.Triple]): QueryExecutionFactorySpark = {
     createWithPartitioning(triples)

@@ -36,6 +36,9 @@ class QueryEngineFactoryOntop(spark: SparkSession)
   }
 
   def create(database: Option[String], mappingModel: Model, ontology: OWLOntology): QueryExecutionFactorySpark = {
+    require(database != null, "database must non be null. Use None for absence.")
+    require(mappingModel != null, "mappings must not be null.")
+
     val ontop: QueryEngineOntop = QueryEngineOntop(spark, database, mappingModel, Option(ontology))
 
     new QueryExecutionFactorySparkOntop(spark, database, ontop)

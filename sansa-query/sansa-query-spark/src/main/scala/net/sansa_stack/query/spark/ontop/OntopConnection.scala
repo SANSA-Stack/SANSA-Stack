@@ -43,7 +43,7 @@ object OntopConnection {
    */
   def getOrCreateConnection(database: Option[String]): Connection = {
     val db = database.getOrElse(DEFAULT_DATABASE) // for caching we have to use a default key
-    connections.getOrElse(database.getOrElse(db), {
+    connections.getOrElse(db, {
       try {
         logger.debug("creating DB connection ...")
         val conn = DriverManager.getConnection(getConnectionURL(database), JDBC_USER, JDBC_PASSWORD)
