@@ -5,29 +5,34 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import java.util.List;
 import java.util.concurrent.Callable;
-@Command(name = "trig",
+@Command(name = "query",
         description = "Run a special SPARQL query on a trig file")
 public class CmdSansaTrigQuery
     extends CmdBase
     implements Callable<Integer>
 {
     @Option(names = { "-m", "--spark-master" },
-            description = "Spark master. Defaults to ${DEFAULT-VALUE}",
+            description = "Spark master. Default: ${DEFAULT-VALUE}",
             defaultValue = "local[*]")
     public String sparkMaster;
 
     @Option(names = { "-o", "--out-format" },
-            description = "Output format. Defaults to ${DEFAULT-VALUE}",
+            description = "Output format. Default: ${DEFAULT-VALUE}",
             defaultValue = "srj")
     public String outFormat = null;
 
     @Option(names = { "--rq" }, description = "File with a SPARQL query (RDF Query)")
     public String queryFile = null;
 
-    @Parameters(arity = "1", description = "Trig File")
-    public String trigFile;
+    @Parameters(arity = "1..n", description = "Trig File")
+    public List<String> trigFiles;
 
+    @Option(names = { "--distinct", "--make-distinct" },
+            description = "Start with making all quads across all input files distinct; groups all named graphs by name. Default: ${DEFAULT-VALUE}",
+            defaultValue = "false")
+    public boolean makeDistinct;
 
     @Override
     public Integer call() throws Exception {
