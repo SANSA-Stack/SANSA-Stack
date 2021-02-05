@@ -5,7 +5,7 @@ import org.apache.hadoop.fs.Seekable;
 
 import java.io.InputStream;
 
-/** Combine Seekable and InputStream into one class */
+/** Combines Hadoop's Seekable and InputStream into one class */
 public class SeekableInputStream
     extends ProxyInputStream implements SeekableDecorator
 {

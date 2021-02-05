@@ -4,6 +4,7 @@ import org.apache.commons.io.input.ProxyInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -11,24 +12,39 @@ import java.util.function.Function;
 public class InputStreamWithCloseLogging
     extends ProxyInputStream
 {
-    protected Consumer<? super Throwable> stackTraceConsumer;
+    protected Throwable creationStackTrace;
+    protected BiConsumer<? super Throwable, ? super Throwable> stackTraceConsumer;
 
-    public InputStreamWithCloseLogging(InputStream proxy, Consumer<? super Throwable> stackTraceConsumer) {
+    public InputStreamWithCloseLogging(InputStream proxy, BiConsumer<? super Throwable, ? super Throwable> stackTraceConsumer) {
         super(proxy);
+        this.creationStackTrace = new Throwable();
         this.stackTraceConsumer = stackTraceConsumer;
     }
 
     @Override
     public void close() throws IOException {
-        stackTraceConsumer.accept(new Throwable());
+        Throwable closingStackTrace = new Throwable();
+        stackTraceConsumer.accept(creationStackTrace, closingStackTrace);
         super.close();
     }
 
     /** Convenience method for e.g. .wrap(inputStream, ExceptionUtils::getFullStackTrace, logger::info) */
     public static InputStream wrap(InputStream proxy, Function<? super Throwable, String> toString, Consumer<? super String> logger) {
-        return new InputStreamWithCloseLogging(proxy, t -> {
-            String str = toString.apply(t);
-            logger.accept(str);
+        return new InputStreamWithCloseLogging(proxy, (creation, closing) -> {
+            String creationStr = toString.apply(creation);
+            String closingStr = toString.apply(closing);
+            String msg = "Closing stream created at:\n" + creationStr + " with close called at:\n" + closingStr;
+
+            logger.accept(msg);
         });
     }
+
+    /*
+    public static InputStream failOnClose(InputStream proxy) {
+        return new InputStreamWithCloseLogging(proxy, (creation, closing) -> {
+            throw new RuntimeException("close() was unexpectedly called");
+        });
+    }
+     */
+
 }

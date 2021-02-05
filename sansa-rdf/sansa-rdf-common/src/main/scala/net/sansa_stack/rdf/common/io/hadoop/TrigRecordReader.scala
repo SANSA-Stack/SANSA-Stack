@@ -1,5 +1,7 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
+import com.google.common.io.ByteStreams
+
 import java.io._
 import java.nio.channels.{Channels, ReadableByteChannel}
 import java.nio.file.{Files, Paths, StandardOpenOption}
@@ -10,9 +12,10 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Predicate
 import java.util.regex.{Matcher, Pattern}
 import io.reactivex.rxjava3.core.Flowable
-import net.sansa_stack.rdf.common.{InputStreamWithCloseLogging, InterruptingReadableByteChannel, ReadableByteChannelWithConditionalBound, SeekableInputStream}
+import net.sansa_stack.rdf.common.{InputStreamWithCloseIgnore, InputStreamWithCloseLogging, InterruptingReadableByteChannel, ReadableByteChannelImpl2, ReadableByteChannelWithConditionalBound, SeekableInputStream}
 import org.aksw.jena_sparql_api.io.binseach._
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx
+import org.apache.commons.io.IOUtils
 import org.apache.commons.io.input.{BoundedInputStream, CloseShieldInputStream}
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.hadoop.fs
@@ -106,6 +109,29 @@ class TrigRecordReader
   protected var splitEnd: Long = -1
 
 
+  import sun.nio.ch.Interruptible
+  import java.lang.reflect.Field
+  import java.nio.channels.FileChannel
+  import java.nio.channels.spi.AbstractInterruptibleChannel
+
+  /**
+   * It took one week to figure out the race condition that would indeterministically cause jena to bail out with
+   * parse errors in the assembled head/body/tail buffers. So the reason is, that RDFDataMgrRx tries
+   * to interrupt the producer thread of the RDF parser (if there is one). However, FileChannel
+   * extends AbstractInterruptibleChannel which in turn closes itself if during read the thread is interrupted.
+   *
+   * https://stackoverflow.com/questions/52261086/is-there-a-way-to-prevent-closedbyinterruptexception
+   */
+  def doNotCloseOnInterrupt(fc: AbstractInterruptibleChannel): Unit = {
+    try {
+      val field = classOf[AbstractInterruptibleChannel].getDeclaredField("interruptor")
+      field.setAccessible(true)
+      field.set(fc, (thread: Thread) => logger.warn(fc + " not closed on interrupt").asInstanceOf[Interruptible])
+    } catch {
+      case e: Exception =>
+        logger.warn("Couldn't disable close on interrupt", e)
+    }
+  }
   /**
    * Read out config paramaters (prefixes, length thresholds, ...) and
    * examine the codec in order to set an internal
@@ -117,8 +143,8 @@ class TrigRecordReader
     val job = context.getConfiguration
 
     maxRecordLength = job.getLong(TrigRecordReader.MAX_RECORD_LENGTH, 1 * 1024 * 1024)
-    minRecordLength = job.getLong(TrigRecordReader.MIN_RECORD_LENGTH, 12)
-    probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 5)
+    minRecordLength = job.getLong(TrigRecordReader.MIN_RECORD_LENGTH, 1) // 12)
+    probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10)
 
     val str = context.getConfiguration.get("prefixes")
     val model = ModelFactory.createDefaultModel()
@@ -136,6 +162,11 @@ class TrigRecordReader
     // We may need to wrap it with a decoder below
     // var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
     rawStream = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+
+//    if (rawStream.isInstanceOf[AbstractInterruptibleChannel]) {
+//      doNotCloseOnInterrupt(rawStream.asInstanceOf[AbstractInterruptibleChannel])
+//    }
+
     // println("Got raw stream positioned at: " + rawStream.getPos)
     isEncoded = false
 
@@ -199,7 +230,7 @@ class TrigRecordReader
 
     if (null != codec) {
       if (decompressor != null) {
-        CodecPool.returnDecompressor(decompressor)
+        // CodecPool.returnDecompressor(decompressor)
       }
 
       decompressor = CodecPool.getDecompressor(codec)
@@ -210,8 +241,14 @@ class TrigRecordReader
         // rawStream.seek(0)
         // rawStream.seek(start)
         // try {
+
         val tmp: SplitCompressionInputStream = scc.createInputStream(rawStream, decompressor, start, end,
           SplittableCompressionCodec.READ_MODE.BYBLOCK)
+
+
+//        val tmp: SplitCompressionInputStream = scc.createInputStream(
+//          new SeekableInputStream(new CloseShieldInputStream(rawStream), rawStream), decompressor, start, end,
+//          SplittableCompressionCodec.READ_MODE.BYBLOCK)
 
         // tmp.read(new Array[Byte](1))
         // tmp.skip(0)
@@ -221,7 +258,7 @@ class TrigRecordReader
         // val rawPos = rawStream.getPos
         // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
 
-        stream = new SeekableInputStream(new CloseShieldInputStream(tmp), tmp)
+        stream = tmp // new SeekableInputStream(new CloseShieldInputStream(tmp), tmp)
 
         result = (adjustedStart, adjustedEnd)
         // } catch {
@@ -234,8 +271,14 @@ class TrigRecordReader
       rawStream.seek(start)
       // stream = rawStream
       // stream.seek(start)
-      stream = new SeekableInputStream(
-        new CloseShieldInputStream(Channels.newInputStream(new InterruptingReadableByteChannel(rawStream, rawStream, end))),
+
+      stream =
+        new SeekableInputStream(
+          new InputStreamWithCloseIgnore(
+            Channels.newInputStream(
+              new InterruptingReadableByteChannel(
+                InputStreamWithCloseLogging.wrap(rawStream,
+                  ExceptionUtils.getStackTrace(_), logUnexpectedClose(_)), rawStream, end))),
         rawStream);
 
       result = (start, end)
@@ -244,6 +287,13 @@ class TrigRecordReader
     result
   }
 
+  def logClose(str: String): Unit = {
+    // logger.info(str)
+  }
+  def logUnexpectedClose(str: String): Unit = {
+    logger.error(str)
+    throw new RuntimeException("Unexpected close")
+  }
 
   def createDatasetFlow(): Flowable[Dataset] = {
 
@@ -282,6 +332,7 @@ class TrigRecordReader
         // .doOnError(new Consumer[Throwable] {
         //   override def accept(t: Throwable): Unit = t.printStackTrace
         // })
+
         .onErrorReturnItem(-1L)
         .blockingGet() > 0
       quadCount
@@ -299,6 +350,7 @@ class TrigRecordReader
       }
       eofReached
     }
+
 
     // Except for the first split, the first record in each split is skipped
     // because it may belong to the last record of the previous split.
@@ -320,8 +372,11 @@ class TrigRecordReader
     // Note that we will use the stream in its state to read the body part
     val (adjustedSplitStart, _) = setStreamToInterval(splitStart, adjustedSplitEnd)
 
-    val splitBoundedHeadStream = Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
-      xstream => hitSplitBound(stream, adjustedSplitEnd)))
+    val splitBoundedHeadStream =
+      Channels.newInputStream(
+        new ReadableByteChannelWithConditionalBound[ReadableByteChannel](
+          new ReadableByteChannelImpl2(stream),
+      xstream => hitSplitBound(rawStream, adjustedSplitEnd)))
 
     val headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024)
     val headNav: Seekable = headBuffer.newChannel()
@@ -349,9 +404,34 @@ class TrigRecordReader
 //    new CloseShieldInputStream(Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
 //      xstream => hitSplitBound(stream, adjustedSplitEnd)))), ExceptionUtils.getStackTrace(_), logger.info(_))
 
-    var splitBoundedBodyStream: InputStream = InputStreamWithCloseLogging.wrap(
-      Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
-        xstream => hitSplitBound(stream, adjustedSplitEnd))), ExceptionUtils.getStackTrace(_), logger.info(_))
+    var splitBoundedBodyStream: InputStream =
+      Channels.newInputStream(
+        new ReadableByteChannelWithConditionalBound[ReadableByteChannel](
+          new ReadableByteChannelImpl2(stream),
+      xstream => hitSplitBound(stream, adjustedSplitEnd)))
+
+    /*
+        val bodyCore = InputStreamWithCloseLogging.wrap(
+          Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
+            xstream => hitSplitBound(rawStream, adjustedSplitEnd))), ExceptionUtils.getStackTrace(_), logClose(_))
+
+        var splitBoundedBodyStream: InputStream = new CloseShieldInputStream(bodyCore)
+
+        val bodyBytes = ByteStreams.toByteArray(splitBoundedBodyStream)
+
+        if (bodyBytes.length == 0) {
+          logger.warn(s"Original split start/end: $splitStart - $splitEnd - pos: ${rawStream.getPos}")
+          logger.warn(s"Adjusted split start/end: $adjustedSplitStart - $adjustedSplitEnd - pos: ${rawStream.getPos}")
+          logger.warn(s"Head bytes: $headBytes - known head buffer size:" + headBuffer.getKnownDataSize)
+
+          logger.warn("0 length body - WTF IS WRONG???")
+
+          val again = ByteStreams.toByteArray(bodyCore)
+          logger.warn("Now got: " + again.length)
+        }
+
+        splitBoundedBodyStream = new ByteArrayInputStream(bodyBytes)
+    */
 
     // Find the second record in the next split - i.e. after splitEnd (inclusive)
     // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
@@ -371,7 +451,7 @@ class TrigRecordReader
       // FIXME There are two possibilities now why we couldn't find a record
       //  - There were errors in the data
       //  - There is a record that goes across this split
-      logger.error("NEED TO PROPERLY HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD")
+      logger.warn("NEED TO PROPERLY HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD")
 
       // No data from this split
       headStream = new ByteArrayInputStream(Array[Byte]())
@@ -386,6 +466,14 @@ class TrigRecordReader
       headChannel.nextPos(headBytes)
       headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headBuffer.getKnownDataSize - headBytes)
 
+      val expectedBodyOffset = adjustedSplitStart + headBuffer.getKnownDataSize
+      // println(s"adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
+
+      if (expectedBodyOffset != stream.getPos) {
+        throw new RuntimeException("should not happen")
+        // Thread.sleep(1000)
+        // println(s"RETRY: adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
+      }
 
       // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
       val displacement = if (isEncoded) 1 else 0
@@ -403,7 +491,7 @@ class TrigRecordReader
 
       logger.info("Writing segment " + splitName + " " + splitStart)
 
-      val basePath = Paths.get("/tmp/")
+      val basePath = Paths.get("/mnt/LinuxData/tmp/")
 
       val prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.trig")
       val headFile = basePath.resolve(splitName + "_" + splitStart + ".head.trig")
@@ -422,7 +510,7 @@ class TrigRecordReader
 
 
     var fullStream: InputStream = InputStreamWithCloseLogging.wrap(new SequenceInputStream(Collections.enumeration(
-      util.Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream))), ExceptionUtils.getStackTrace(_), logger.info(_))
+      util.Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream))), ExceptionUtils.getStackTrace(_), logClose(_))
 
 
     var result: Flowable[Dataset] = null
@@ -610,9 +698,14 @@ class TrigRecordReader
 
   override def close(): Unit = {
     try {
-      // Under normal operation this close is redundant because the stream is owned
-      // by the flowable which closes it the moment it has consumed the last item
-      stream.close
+      // Stream apparently can be null if hadoop aborts a record reader early due
+      // an encountered error (not necessarily related to this instance)
+      if (rawStream != null) {
+        // Under normal operation this close is redundant because the stream is owned
+        // by the flowable which closes it the moment it has consumed the last item
+        rawStream.close
+        rawStream = null
+      }
     } finally {
       if (this.decompressor != null) {
         CodecPool.returnDecompressor(this.decompressor)
