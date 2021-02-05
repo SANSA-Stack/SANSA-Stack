@@ -258,9 +258,15 @@ class TrigRecordReader
         // val rawPos = rawStream.getPos
         // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
 
-        stream = tmp // new SeekableInputStream(new CloseShieldInputStream(tmp), tmp)
+        // stream = tmp // new SeekableInputStream(new CloseShieldInputStream(tmp), tmp)
 
-        result = (adjustedStart, adjustedEnd)
+        stream =
+          new SeekableInputStream(
+            new InputStreamWithCloseIgnore(
+              InputStreamWithCloseLogging.wrap(tmp,
+                ExceptionUtils.getStackTrace(_), logUnexpectedClose(_))), tmp)
+
+            result = (adjustedStart, adjustedEnd)
         // } catch {
         // case _ => result = setStreamToInterval(start - 1, start -1)
         // }
@@ -466,13 +472,15 @@ class TrigRecordReader
       headChannel.nextPos(headBytes)
       headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headBuffer.getKnownDataSize - headBytes)
 
-      val expectedBodyOffset = adjustedSplitStart + headBuffer.getKnownDataSize
-      // println(s"adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
+      // Sanity check for non-encoded data: The body must immediately follow
+      // the (adjusted) split start + the know header size
+      if (!isEncoded) {
+        val expectedBodyOffset = adjustedSplitStart + headBuffer.getKnownDataSize
+        // println(s"adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
 
-      if (expectedBodyOffset != stream.getPos) {
-        throw new RuntimeException("should not happen")
-        // Thread.sleep(1000)
-        // println(s"RETRY: adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
+        if (expectedBodyOffset != stream.getPos) {
+          throw new RuntimeException("Expected body offset does not match actual one: adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
+        }
       }
 
       // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
