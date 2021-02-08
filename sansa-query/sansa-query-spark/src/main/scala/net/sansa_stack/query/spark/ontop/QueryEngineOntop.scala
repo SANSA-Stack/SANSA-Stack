@@ -62,7 +62,12 @@ case class RewriteInstruction(sqlSignature: ImmutableSortedSet[Variable],
  * RDF partitions will be taken into account to generate Ontop mappings to an in-memory H2 database.
  *
  * @constructor create a new Ontop SPARQL to SQL rewriter based on RDF partitions.
- * @param partitions the RDF partitions
+ *
+ * @param ontopSessionId the current Ontop session ID
+ * @param database an optional database name
+ * @param jdbcMetaData the JDBC meta data gathered from Spark to simulate a SQL backend via in-memory H2 database
+ * @param mappingsModel the R2RML mappings model
+ * @param ontology an optional ontology
  */
 class OntopSPARQL2SQLRewriter(ontopSessionId: String,
                               database: Option[String],

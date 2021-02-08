@@ -77,7 +77,7 @@ object SPARQLEngineExample {
         val mappings = ModelFactory.createDefaultModel()
         RDFDataMgr.read(mappings, mappingsFile.toString)
 
-        queryEngineFactory.create(database, mappings)
+        queryEngineFactory.create(Some(database), mappings)
       } else {
         // load the data into an RDD
         val lang = Lang.NTRIPLES

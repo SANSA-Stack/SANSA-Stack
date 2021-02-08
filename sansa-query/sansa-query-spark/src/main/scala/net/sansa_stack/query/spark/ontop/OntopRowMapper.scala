@@ -43,11 +43,8 @@ class OntopRowMapper(sessionId: String,
 
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
-  val queryReformulator = reformulationConfiguration.loadQueryReformulator
-  val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
-  val inputQueryFactory = queryReformulator.getInputQueryFactory
 
-  val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
+  val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
 
   val rewriteInstruction = KryoUtils.deserialize(output, sessionId)
 
@@ -85,12 +82,18 @@ class OntopRowMapper(sessionId: String,
     })
 
     ontopBindings.foreach {
-      case (v, Some(term)) => binding.add(Var.alloc(v.getName), toNode(term, typeFactory))
+      case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
       case _ =>
     }
 //    println(s"row: $row --- binding: $binding")
     binding
   }
+
+  // TODO this part is not used anymore, remove the commented code
+  /*
+  val queryReformulator = reformulationConfiguration.loadQueryReformulator
+  val inputQueryFactory = queryReformulator.getInputQueryFactory
+  val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
 
   def toTriples(rows: Iterator[Row]): Iterator[Triple] = {
     val constructTemplate = inputQuery.asInstanceOf[ConstructQuery].getConstructTemplate
@@ -108,7 +111,9 @@ class OntopRowMapper(sessionId: String,
   /**
    * Convert a single binding to a set of triples.
    */
-  private def toTriples(binding: Binding, constructTemplate: ConstructTemplate, extMap: Map[String, ValueExpr]): mutable.Buffer[Triple] = {
+  private def toTriples(binding: Binding,
+                        constructTemplate: ConstructTemplate,
+                        extMap: Map[String, ValueExpr]): mutable.Buffer[Triple] = {
     val l = constructTemplate.getProjectionElemList.asScala
     l.flatMap { peList =>
       val size = peList.getElements.size()
@@ -138,45 +143,30 @@ class OntopRowMapper(sessionId: String,
   private def getConstant(node: ProjectionElem, binding: Binding, extMap: Map[String, ValueExpr]): Node = {
     var constant: Node = null
 
-    val node_name = node.getSourceName
+    val nodeName = node.getSourceName
 
-    val ve: Option[ValueExpr] = if (extMap != null) extMap.get(node_name) else None
+    val ve: Option[ValueExpr] = if (extMap != null) extMap.get(nodeName) else None
 
     // for constant terms in the template
     if (ve.isDefined && ve.get.isInstanceOf[ValueConstant]) {
       val vc = ve.get.asInstanceOf[ValueConstant]
       vc.getValue match {
-        case _: IRI =>
-          constant = NodeFactory.createURI(vc.getValue.stringValue)
+        case iri: IRI =>
+          constant = NodeFactory.createURI(iri.stringValue)
         case lit: Literal =>
           val dt = TypeMapper.getInstance().getTypeByName(lit.getDatatype.toString)
-          constant = NodeFactory.createLiteral(vc.getValue.stringValue, dt)
-        case _ =>
-          constant = NodeFactory.createBlankNode(vc.getValue.stringValue)
+          constant = NodeFactory.createLiteral(lit.stringValue, dt)
+        case bnode =>
+          constant = NodeFactory.createBlankNode(bnode.stringValue)
       }
     } else { // for variable bindings
-      constant = binding.get(Var.alloc(node_name))
+      constant = binding.get(Var.alloc(nodeName))
     }
 
     constant
   }
 
-  private def toNode(constant: RDFConstant, typeFactory: TypeFactory): Node = {
-    val termType = constant.getType
-    if (termType.isA(typeFactory.getIRITermType)) {
-      NodeFactory.createURI(constant.asInstanceOf[IRIConstant].getIRI.getIRIString)
-    } else if (termType.isA(typeFactory.getAbstractRDFSLiteral)) {
-      val lit = constant.asInstanceOf[RDFLiteralConstant]
-      val litType = lit.getType
-      val dt = TypeMapper.getInstance().getTypeByName(litType.getIRI.getIRIString)
-      val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
-      NodeFactory.createLiteral(lit.getValue, lang, dt)
-    } else if (termType.isA(typeFactory.getBlankNodeType)) {
-      NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getInternalLabel)
-    } else {
-      null.asInstanceOf[Node]
-    }
-  }
+  */
 
   def close(): Unit = {
 
