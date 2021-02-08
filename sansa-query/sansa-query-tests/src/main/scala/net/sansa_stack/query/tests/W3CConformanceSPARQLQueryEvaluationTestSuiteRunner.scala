@@ -6,6 +6,8 @@ import scala.collection.mutable
 
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
+import org.apache.jena.riot.resultset.rw.ReadAnything
+import org.apache.jena.riot.system.stream.StreamManager
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.resultset.{ResultSetCompare, ResultsFormat, SPARQLResult}
 import org.scalatest.FunSuite
@@ -230,7 +232,7 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
 
   private def readQueryString(queryFileURL: String): String = {
     println(s"loading query from $queryFileURL")
-    val is = new URL(queryFileURL).openStream
+    val is = StreamManager.get().open(queryFileURL)
     withResources[AutoCloseable, String](is)(_ => {
       scala.io.Source.fromInputStream(is).mkString
     })
@@ -238,18 +240,18 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
 
   private def readExpectedResult(resultFileURL: String): SPARQLResult = {
     println(s"loading expected result from $resultFileURL")
-    val fileURL = new URL(resultFileURL).toString
+    val format = ResultsFormat.guessSyntax(resultFileURL)
 
-    val format = ResultsFormat.guessSyntax(fileURL)
+    val is = StreamManager.get().open(resultFileURL)
 
     // CONSTRUCT or DESCRIBE
     if (ResultsFormat.isRDFGraphSyntax(format)) {
-      val m = RDFDataMgr.loadModel(fileURL)
+      val m = loadData(resultFileURL)
       return new SPARQLResult(m)
     }
 
     // SELECT or ASK result
-    ResultSetFactory.result(fileURL)
+    ReadAnything.read(resultFileURL)
   }
 
   private def loadData(datasetURL: String): Model = {
@@ -257,7 +259,8 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     import java.io.IOException
     import java.net.MalformedURLException
     try {
-      val is = new URL(datasetURL).openStream()
+      val is = StreamManager.get().open(datasetURL)
+//      val is = new URL(datasetURL).openStream()
 
       withResources[AutoCloseable, Model](is)(_ => {
         val data = ModelFactory.createDefaultModel()
