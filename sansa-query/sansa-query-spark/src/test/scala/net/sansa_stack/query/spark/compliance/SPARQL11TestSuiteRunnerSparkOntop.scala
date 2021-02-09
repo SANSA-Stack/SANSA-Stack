@@ -74,7 +74,8 @@ class SPARQL11TestSuiteRunnerSparkOntop
 //  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates")// && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
 // override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
 
-  override lazy val IGNORE_FILTER = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
+//  override lazy val IGNORE_FILTER = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
+//override lazy val IGNORE_FILTER = t => t.dataFile.contains("projexp01")
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 }

@@ -59,41 +59,19 @@ class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VER
   }
 
   private def loadTestCasesFromManifest(): List[SPARQLQueryEvaluationTest] = {
-    // ClassPath.from(this.getClass.getClassLoader).getResources.asScala.filter(_.getResourceName.endsWith("manifest.ttl")).foreach(println)
     val baseURL = classOf[W3cConformanceSPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11)
     val model = ModelFactory.createDefaultModel()
 
-
-
-//    val filename = resolveGlobal("sparql11/data-sparql11/manifest-sparql11-query.ttl")
-//    val manifest = FileManager.get.loadModel(filename)
-//    println(manifest)
-
-//    val url = classOf[W3cConformanceSPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11 + "manifest-sparql11-query.ttl")
-//    val is = url.openStream()
-
-
     RDFParserBuilder.create.source("sparql11/data-sparql11/manifest-sparql11-query.ttl").checking(false).resolveURIs(false).parse(model)
-
-
-//    RDFDataMgr.read(model, "sparql11/data-sparql11/manifest-sparql11-query.ttl", "sparql11/", Lang.TURTLE)
-
-//    val model = RDFDataMgr.loadModel("sparql11/data-sparql11/manifest-sparql11-query.ttl")
 
     val includesList = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#include")).next().as(classOf[RDFList])
 
-    includesList.asJavaList().asScala.flatMap(subDir => {
-      println(subDir)
-      loadTestCasesFromSubManifest(subDir.asResource(), "sparql11/data-sparql11/")
-    }).toList
-
+    includesList.asJavaList().asScala.flatMap(subDir => loadTestCasesFromSubManifest(subDir.asResource(), "sparql11/data-sparql11/")).toList
   }
 
   private def loadTestCasesFromSubManifest(r: Resource, base: String) = {
     val model = ModelFactory.createDefaultModel()
-    println(r.getURI)
     RDFParserBuilder.create.source(base + r.getURI).checking(false).resolveURIs(false).parse(model)
-//    RDFDataMgr.read(model, r.getURI, base, Lang.TURTLE)
 
     val uri = URI.create(r.getURI)
     val parent = Paths.get(base + (if (uri.getPath().endsWith("/")) uri.resolve("..") else uri.resolve(".")).toString)
