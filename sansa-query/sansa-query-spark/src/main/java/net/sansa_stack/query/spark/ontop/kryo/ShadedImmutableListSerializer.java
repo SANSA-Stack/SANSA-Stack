@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.ontop.kryo;
 
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
@@ -65,6 +66,11 @@ public class ShadedImmutableListSerializer extends Serializer<ImmutableList<Obje
         final ShadedImmutableListSerializer serializer = new ShadedImmutableListSerializer();
 
         kryo.register(ImmutableList.class, serializer);
+        try {
+            kryo.register(Class.forName("it.unibz.inf.ontop.com.google.common.collect.RegularImmutableAsList"), serializer);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
         // Note:
         //  Only registering above is good enough for serializing/deserializing.
