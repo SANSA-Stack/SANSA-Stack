@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.ontop.kryo;
 
-import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;

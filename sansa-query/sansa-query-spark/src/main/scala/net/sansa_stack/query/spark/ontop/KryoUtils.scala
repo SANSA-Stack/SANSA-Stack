@@ -15,7 +15,7 @@ import it.unibz.inf.ontop.model.term.TermFactory
 import it.unibz.inf.ontop.model.term.impl.TermFactoryImpl
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import net.sansa_stack.query.spark.ontop.kryo.{ShadedBiMapSerializer, ShadedImmutableBiMapSerializer, ShadedImmutableListSerializer, ShadedImmutableMapSerializer, ShadedImmutableSortedSetSerializer}
+import net.sansa_stack.query.spark.ontop.kryo.{ShadedBiMapSerializer, ShadedImmutableBiMapSerializer, ShadedImmutableListSerializer, ShadedImmutableMapSerializer, ShadedImmutableSortedSetSerializer, ShadedImmutableTableSerializer}
 
 
 
@@ -35,6 +35,7 @@ object KryoUtils {
     ShadedImmutableMapSerializer.registerSerializers(kryo)
     ShadedImmutableBiMapSerializer.registerSerializers(kryo)
     ShadedBiMapSerializer.registerSerializers(kryo)
+    ShadedImmutableTableSerializer.registerSerializers(kryo)
     ImmutableFunctionalTermSerializer.registerSerializers(kryo, ontopSessionId)
     kryo.register(classOf[Array[AnyRef]])
     kryo.register(classOf[Class[_]])
@@ -69,6 +70,7 @@ object KryoUtils {
     ShadedImmutableMapSerializer.registerSerializers(kryo)
     ShadedImmutableBiMapSerializer.registerSerializers(kryo)
     ShadedBiMapSerializer.registerSerializers(kryo)
+    ShadedImmutableTableSerializer.registerSerializers(kryo)
     ImmutableFunctionalTermSerializer.registerSerializers(kryo, ontopSessionId)
     kryo.register(classOf[Array[AnyRef]])
     kryo.register(classOf[Class[_]])
