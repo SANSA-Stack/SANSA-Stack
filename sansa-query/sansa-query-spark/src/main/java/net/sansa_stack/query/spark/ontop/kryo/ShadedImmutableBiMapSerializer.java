@@ -8,10 +8,11 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import it.unibz.inf.ontop.com.google.common.collect.*;
+import it.unibz.inf.ontop.com.google.common.collect.ImmutableBiMap;
+import it.unibz.inf.ontop.com.google.common.collect.Maps;
 
 /**
- * A kryo {@link Serializer} for guava-libraries {@link ImmutableList}.
+ * A kryo {@link Serializer} for guava-libraries {@link ImmutableBiMap}.
  */
 public class ShadedImmutableBiMapSerializer extends Serializer<ImmutableBiMap<Object, Object>> {
 
