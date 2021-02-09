@@ -59,7 +59,6 @@ val nodeFormatter = new NodeFormatterNT()
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
       val s = input.readString()
-      println(s)
       val n = parse(s)
 //      println(s"deserializing string $s   => $n")
       n
@@ -71,7 +70,6 @@ val nodeFormatter = new NodeFormatterNT()
         null
       } else {
         val t = tokenizer.next()
-        println(t)
         profile.create(null, t)
       }
       n
