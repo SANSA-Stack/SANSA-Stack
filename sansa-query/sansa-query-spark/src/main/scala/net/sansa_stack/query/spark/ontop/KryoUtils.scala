@@ -49,26 +49,24 @@ object KryoUtils {
   kryoPool.borrow()
 
   def serialize(rewriteInstruction: RewriteInstruction, ontopSessionId: String): Output = {
-//    val kryo = new Kryo() // ReflectionFactorySupport()
-//
-//    kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
-//
-//    ShadedImmutableListSerializer.registerSerializers(kryo)
-//    ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
-//    ShadedImmutableMapSerializer.registerSerializers(kryo)
-//    ShadedImmutableBiMapSerializer.registerSerializers(kryo)
-//    ShadedBiMapSerializer.registerSerializers(kryo)
-//    ShadedImmutableTableSerializer.registerSerializers(kryo)
-//
-//    kryo.register(classOf[Array[AnyRef]])
-//    kryo.register(classOf[Class[_]])
-//    kryo.register(classOf[RewriteInstruction])
-//    kryo.register(classOf[SerializedLambda])
-//    kryo.register(classOf[Closure], new ClosureSerializer())
-//    kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
+    val kryo = new Kryo() // ReflectionFactorySupport()
 
+    kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
 
-    val kryo = kryoPool.borrow()
+    ShadedImmutableListSerializer.registerSerializers(kryo)
+    ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
+    ShadedImmutableMapSerializer.registerSerializers(kryo)
+    ShadedImmutableBiMapSerializer.registerSerializers(kryo)
+    ShadedBiMapSerializer.registerSerializers(kryo)
+    ShadedImmutableTableSerializer.registerSerializers(kryo)
+
+    kryo.register(classOf[Array[AnyRef]])
+    kryo.register(classOf[Class[_]])
+    kryo.register(classOf[RewriteInstruction])
+    kryo.register(classOf[SerializedLambda])
+    kryo.register(classOf[Closure], new ClosureSerializer())
+    kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
+
     ImmutableFunctionalTermSerializer.registerSerializers(kryo, ontopSessionId)
     kryo.register(classOf[TermFactory], new TermFactorySerializer(ontopSessionId))
     kryo.register(classOf[TermFactoryImpl], new TermFactorySerializer(ontopSessionId))
@@ -78,37 +76,30 @@ object KryoUtils {
     val output = new Output(1024, -1)
     kryo.writeObject(output, rewriteInstruction)
 
-    kryoPool.release(kryo)
-
     output
   }
 
   def deserialize(output: Output, ontopSessionId: String): RewriteInstruction = {
-//    val kryo = new Kryo() // ReflectionFactorySupport()
-//
-//    // we need the current class loader which hopefully is the Spark classloader to get all the Ontop packages in
-//    // the Kryo classpath
-//    val classLoader = Thread.currentThread.getContextClassLoader
-//    kryo.setClassLoader(classLoader)
-//
-//    kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy())
-//
-//    ShadedImmutableListSerializer.registerSerializers(kryo)
-//    ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
-//    ShadedImmutableMapSerializer.registerSerializers(kryo)
-//    ShadedImmutableBiMapSerializer.registerSerializers(kryo)
-//    ShadedBiMapSerializer.registerSerializers(kryo)
-//    ShadedImmutableTableSerializer.registerSerializers(kryo)
-//
-//    kryo.register(classOf[Array[AnyRef]])
-//    kryo.register(classOf[Class[_]])
-//    kryo.register(classOf[RewriteInstruction])
-//    kryo.register(classOf[SerializedLambda])
-//    kryo.register(classOf[Closure], new ClosureSerializer())
-//    kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
+    val kryo = new Kryo() // ReflectionFactorySupport()
 
-    val kryo = kryoPool.borrow()
+    kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
 
+    ShadedImmutableListSerializer.registerSerializers(kryo)
+    ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
+    ShadedImmutableMapSerializer.registerSerializers(kryo)
+    ShadedImmutableBiMapSerializer.registerSerializers(kryo)
+    ShadedBiMapSerializer.registerSerializers(kryo)
+    ShadedImmutableTableSerializer.registerSerializers(kryo)
+
+    kryo.register(classOf[Array[AnyRef]])
+    kryo.register(classOf[Class[_]])
+    kryo.register(classOf[RewriteInstruction])
+    kryo.register(classOf[SerializedLambda])
+    kryo.register(classOf[Closure], new ClosureSerializer())
+    kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
+
+    // we need the current class loader which hopefully is the Spark classloader to get all the Ontop packages in
+    // the Kryo classpath
     val classLoader = Thread.currentThread.getContextClassLoader
     kryo.setClassLoader(classLoader)
 
@@ -120,8 +111,6 @@ object KryoUtils {
 
     val input = new Input(output.getBuffer, 0, output.position)
     val rewriteInstruction = kryo.readObject(input, classOf[RewriteInstruction])
-
-    kryoPool.release(kryo)
 
     rewriteInstruction
   }
