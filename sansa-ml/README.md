@@ -69,7 +69,7 @@ implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 // first mini file:
 val df = spark.read.rdf(Lang.TURTLE)(inputFilePath)
 
-val (totalSparqlQuery: String, var_names: List[String]) = autoPrepo(
+val (totalSparqlQuery: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
   df = df,
   seedVarName = seedVarName,
   seedWhereClause = whereClauseForSeed,
