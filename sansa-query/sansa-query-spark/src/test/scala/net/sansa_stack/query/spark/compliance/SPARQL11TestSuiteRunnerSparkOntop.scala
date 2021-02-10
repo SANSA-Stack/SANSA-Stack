@@ -1,10 +1,17 @@
 package net.sansa_stack.query.spark.compliance
 
+import java.util.Objects
+
+import org.apache.jena.query.Query
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.sparql.resultset.SPARQLResult
 import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
 
 import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
-import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
+import net.sansa_stack.query.spark.ontop.KryoUtils.enableLoggingToFile
+import net.sansa_stack.query.spark.ontop.{KryoUtils, QueryEngineFactoryOntop}
+import net.sansa_stack.query.tests.SPARQLQueryEvaluationTest
 
 
 /**
@@ -17,6 +24,8 @@ import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 @Slow
 class SPARQL11TestSuiteRunnerSparkOntop
   extends SPARQL11TestSuiteRunnerSpark {
+
+//  KryoUtils.enableLoggingToFile("/tmp/kryo.log")
 
   override lazy val IGNORE = Set(/* AGGREGATES */
     aggregatesManifest + "agg-err-02", /* BINDINGS */
@@ -66,7 +75,14 @@ class SPARQL11TestSuiteRunnerSparkOntop
     subqueryManifest + "subquery10", // ORDER BY IRI (for supported by the SI)
     subqueryManifest + "subquery11", // unbound variable: Var TODO: fix it
     subqueryManifest + "subquery12", subqueryManifest + "subquery13", // missing results (TODO: fix)
-    subqueryManifest + "subquery14"
+    subqueryManifest + "subquery14",
+
+
+    // some tests that work on an empty model which we do not support in Spark query as the mappings would be empty (could be handled but
+    // most likely will never happen)
+    functionsManifest + "struuid01", functionsManifest + "uuid01",
+    // timezone
+    functionsManifest + "tz", functionsManifest + "timezone",
   )
 
 
@@ -75,9 +91,21 @@ class SPARQL11TestSuiteRunnerSparkOntop
 // override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
 
 //  override lazy val IGNORE_FILTER = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
-//override lazy val IGNORE_FILTER = t => t.dataFile.contains("projexp01")
+  override lazy val IGNORE_FILTER = t => t.queryFile.contains("function") || t.queryFile.contains("project") // && t.name.contains("STR")
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
+
+  KryoUtils.kryoLoggingEnabled = false
+
+  override def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
+    enableLoggingToFile(s"/tmp/kryo/kryo-trace-${testCase.name}.log")
+    super.runTest(testCase, data)
+  }
+
+  override def runQuery(query: Query, data: Model): SPARQLResult = {
+    com.esotericsoftware.minlog.Log.info(s"******** RUNNING QUERY *********\n$query")
+    super.runQuery(query, data)
+  }
 }
 
 import org.scalatest.Tag

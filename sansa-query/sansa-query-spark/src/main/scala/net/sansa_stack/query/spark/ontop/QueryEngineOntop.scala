@@ -289,7 +289,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
         implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
         df
-          .coalesce(50)
+          .coalesce(8)
           .mapPartitions(iterator => {
           //      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, idBC.value)
           val mapper = new OntopRowMapper(

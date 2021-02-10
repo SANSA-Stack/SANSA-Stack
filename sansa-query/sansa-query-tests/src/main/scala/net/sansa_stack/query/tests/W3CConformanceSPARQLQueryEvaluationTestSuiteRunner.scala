@@ -88,36 +88,40 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
       data.write(System.out, "Turtle")
 
       tests.foreach(testCase => {
-        // get the relevant data from the test case
-        val queryFileURL = testCase.queryFile
-        val resultFileURL = testCase.resultsFile
-        val testName = testCase.name
-
         // test starts here
-        test(s"testing $testName") {
-          val queryString = readQueryString(queryFileURL)
-          val query = QueryFactory.create(queryString)
-          println(s"SPARQL query:\n $query")
-
-          // run the SPARQL query
-          val actualResult = runQuery(query, data)
-
-          // read expected result
-          val expectedResult = readExpectedResult(resultFileURL.get)
-
-          // compare results
-          if (query.isSelectType) {
-            processSelect(query, expectedResult, actualResult)
-          } else if (query.isAskType) {
-            processAsk(query, expectedResult, actualResult)
-          } else if (query.isConstructType || query.isDescribeType) {
-            processGraph(query, expectedResult, actualResult)
-          } else {
-            fail(s"unsupported query type: ${query.queryType().name()}")
-          }
+        test(s"testing ${testCase.name}") {
+          runTest(testCase, data)
         }
       })
     }
+
+  def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
+    // get the relevant data from the test case
+    val queryFileURL = testCase.queryFile
+    val resultFileURL = testCase.resultsFile
+    val testName = testCase.name
+
+    val queryString = readQueryString(queryFileURL)
+    val query = QueryFactory.create(queryString)
+    println(s"SPARQL query:\n $query")
+
+    // run the SPARQL query
+    val actualResult = runQuery(query, data)
+
+    // read expected result
+    val expectedResult = readExpectedResult(resultFileURL.get)
+
+    // compare results
+    if (query.isSelectType) {
+      processSelect(query, expectedResult, actualResult)
+    } else if (query.isAskType) {
+      processAsk(query, expectedResult, actualResult)
+    } else if (query.isConstructType || query.isDescribeType) {
+      processGraph(query, expectedResult, actualResult)
+    } else {
+      fail(s"unsupported query type: ${query.queryType().name()}")
+    }
+  }
 
 //  def runQueries(queries: Seq[Query], data: Model): Seq[SPARQLResult]
 
