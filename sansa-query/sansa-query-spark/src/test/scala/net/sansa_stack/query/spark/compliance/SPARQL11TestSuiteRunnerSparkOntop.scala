@@ -95,7 +95,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 
-  KryoUtils.kryoLoggingEnabled = false
+  KryoUtils.kryoLoggingEnabled = true
 
   override def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
     enableLoggingToFile(s"/tmp/kryo/kryo-trace-${testCase.name}.log")

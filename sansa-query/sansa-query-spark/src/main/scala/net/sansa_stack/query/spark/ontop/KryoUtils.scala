@@ -179,7 +179,7 @@ object KryoUtils {
     override def log(level: Int, category: String, message: String, ex: Throwable): Unit = {
       val builder = new StringBuilder(256)
 
-      builder.append(s"Thread: ${Thread.currentThread().getId} - ")
+//      builder.append(s"Thread: ${Thread.currentThread().getId} - ")
 
       val time = new Date().getTime - firstLogTime
       val minutes = time / (1000 * 60)
