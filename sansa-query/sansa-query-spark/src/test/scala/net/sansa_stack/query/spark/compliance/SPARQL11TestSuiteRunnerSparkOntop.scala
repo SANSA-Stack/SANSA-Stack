@@ -39,8 +39,8 @@ class SPARQL11TestSuiteRunnerSparkOntop
     functionsManifest + "iri01", // not supported in H2 transformation
     functionsManifest + "md5-01", functionsManifest + "md5-02", // The SI does not support IRIs as ORDER BY conditions
     functionsManifest + "plus-1", functionsManifest + "plus-2", // SHA1 is not supported in H2
-    functionsManifest + "sha1-01", functionsManifest + "sha1-02", // SHA512 is not supported in H2
-    functionsManifest + "sha512-01", functionsManifest + "sha512-02",
+//    functionsManifest + "sha1-01", functionsManifest + "sha1-02", // SHA512 is not supported in H2
+//    functionsManifest + "sha512-01", functionsManifest + "sha512-02",
     functionsManifest + "strdt01", functionsManifest + "strdt02", functionsManifest + "strdt03",
     functionsManifest + "strlang01", functionsManifest + "strlang02", functionsManifest + "strlang03",
 //    functionsManifest + "timezone", // TZ is not supported in H2

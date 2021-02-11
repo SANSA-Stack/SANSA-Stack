@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.ontop
 
+import java.text.DecimalFormat
 import java.util.Properties
 
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException}
@@ -11,6 +12,7 @@ import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import org.apache.commons.rdf.jena.JenaRDF
 import org.apache.jena.datatypes.TypeMapper
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
@@ -19,6 +21,12 @@ import org.semanticweb.owlapi.model.OWLOntology
  * @author Lorenz Buehmann
  */
 object OntopUtils extends Serializable {
+
+  val fixScientificNotation: Boolean = true
+  import java.text.NumberFormat
+  val formatter = NumberFormat.getInstance()
+  formatter.setMaximumIntegerDigits(Integer.MAX_VALUE)
+  formatter.setMaximumFractionDigits(Integer.MAX_VALUE)
 
 
   /**
@@ -33,10 +41,20 @@ object OntopUtils extends Serializable {
       NodeFactory.createURI(constant.asInstanceOf[IRIConstant].getIRI.getIRIString)
     } else if (termType.isA(typeFactory.getAbstractRDFSLiteral)) {
       val lit = constant.asInstanceOf[RDFLiteralConstant]
+      // parse datatype
       val litType = lit.getType
       val dt = TypeMapper.getInstance().getTypeByName(litType.getIRI.getIRIString)
+
+      // workaround scientific notation in decimal values
+      var lexicalForm = lit.getValue
+      if (fixScientificNotation && dt == XSDDatatype.XSDdecimal) {
+        val d = java.lang.Double.parseDouble(lexicalForm)
+        lexicalForm = formatter.format(d)
+      }
+      // parse lang tag
       val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
-      NodeFactory.createLiteral(lit.getValue, lang, dt)
+
+      NodeFactory.createLiteral(lexicalForm, lang, dt)
     } else if (termType.isA(typeFactory.getBlankNodeType)) {
       NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getInternalLabel)
     } else {
