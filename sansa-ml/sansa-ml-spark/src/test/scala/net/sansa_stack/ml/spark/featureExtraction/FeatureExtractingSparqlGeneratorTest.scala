@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.createSparql
+import net.sansa_stack.ml.spark.featureExtraction.FeatureExtractingSparqlGenerator.createSparql
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
