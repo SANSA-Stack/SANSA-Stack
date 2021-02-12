@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.utils
+package net.sansa_stack.ml.spark.featureExtraction
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}

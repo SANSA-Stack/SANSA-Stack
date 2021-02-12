@@ -1,7 +1,6 @@
 package net.sansa_stack.ml.spark.pipeline
 
-import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
-import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator
+import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SmartVectorAssembler, SparqlFrame}
 import net.sansa_stack.rdf.spark.io.{RDFDataFrameReader, RDFReader}
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.riot.Lang
