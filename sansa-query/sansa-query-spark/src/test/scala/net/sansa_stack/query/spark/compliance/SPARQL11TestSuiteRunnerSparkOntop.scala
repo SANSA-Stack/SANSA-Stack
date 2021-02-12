@@ -5,6 +5,7 @@ import java.util.Objects
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.resultset.SPARQLResult
+import org.apache.spark.SparkConf
 import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
 
@@ -27,20 +28,23 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
 //  KryoUtils.enableLoggingToFile("/tmp/kryo.log")
 
-  override lazy val IGNORE = Set(/* AGGREGATES */
-    aggregatesManifest + "agg-err-02", /* BINDINGS */
+  override lazy val IGNORE = Set(
+    /* AGGREGATES */
+    aggregatesManifest + "agg-err-02",
+    /* BINDINGS */
     // TODO: fix it (UNDEF involves the notion of COMPATIBILITY when joining)
-    bindingsManifest + "values8", bindingsManifest + "values5", /* FUNCTIONS */
+    bindingsManifest + "values8", bindingsManifest + "values5",
+    /* FUNCTIONS */
     // bnode not supported in SPARQL transformation
     functionsManifest + "bnode01", functionsManifest + "bnode02", // the SI does not preserve the original timezone
 //    functionsManifest + "hours", functionsManifest + "day", // not supported in SPARQL transformation
     functionsManifest + "if01", functionsManifest + "if02",
     functionsManifest + "in01", functionsManifest + "in02",
-    functionsManifest + "iri01", // not supported in H2 transformation
-    functionsManifest + "md5-01", functionsManifest + "md5-02", // The SI does not support IRIs as ORDER BY conditions
-    functionsManifest + "plus-1", functionsManifest + "plus-2", // SHA1 is not supported in H2
-//    functionsManifest + "sha1-01", functionsManifest + "sha1-02", // SHA512 is not supported in H2
-//    functionsManifest + "sha512-01", functionsManifest + "sha512-02",
+    functionsManifest + "iri01",
+    // not supported in H2 transformation
+//    functionsManifest + "md5-01", functionsManifest + "md5-02",
+    // The SI does not support IRIs as ORDER BY conditions
+    functionsManifest + "plus-1", functionsManifest + "plus-2",
     functionsManifest + "strdt01", functionsManifest + "strdt02", functionsManifest + "strdt03",
     functionsManifest + "strlang01", functionsManifest + "strlang02", functionsManifest + "strlang03",
 //    functionsManifest + "timezone", // TZ is not supported in H2
@@ -85,13 +89,18 @@ class SPARQL11TestSuiteRunnerSparkOntop
     functionsManifest + "tz", functionsManifest + "timezone",
   )
 
-
-//  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS") || t.name.startsWith("UCASE")
-//  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates")// && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
-// override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
+  override def conf: SparkConf = {
+    super.conf
+      .set("spark.sql.crossJoin.enabled", "true")
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryo.registrator", String.join(
+        ", ",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
+  }
 
 //  override lazy val IGNORE_FILTER = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
-  override lazy val IGNORE_FILTER = t => t.queryFile.contains("function") || t.queryFile.contains("project") // && t.name.contains("STR")
+//  override lazy val IGNORE_FILTER = t => t.queryFile.contains("function") || t.queryFile.contains("project") // && t.name.contains("STR")
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 

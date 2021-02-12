@@ -35,7 +35,8 @@ class OntopRowMapper(sessionId: String,
                      jdbcMetaData: Map[String, String],
                      sparqlQuery: String,
                      ontology: Option[OWLOntology],
-                     output: Output
+                     rewriteInstruction: RewriteInstruction,
+//                     output: Output
                     ) {
 
   val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
@@ -46,7 +47,7 @@ class OntopRowMapper(sessionId: String,
 
   val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
 
-  val rewriteInstruction = KryoUtils.deserialize(output, sessionId)
+//  val rewriteInstruction = KryoUtils.deserialize(output, sessionId)
 
   val sqlSignature = rewriteInstruction.sqlSignature
   val sqlTypeMap = rewriteInstruction.sqlTypeMap

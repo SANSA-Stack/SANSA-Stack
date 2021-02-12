@@ -285,11 +285,11 @@ class QueryEngineOntop(val spark: SparkSession,
         val ontologyBC = spark.sparkContext.broadcast(ontology)
         val idBC = spark.sparkContext.broadcast(sessionId)
         val databaseBC = spark.sparkContext.broadcast(database)
-//        val rewriteBC = spark.sparkContext.broadcast(rwi)
+        val rwiBC = spark.sparkContext.broadcast(rwi)
 
         implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
         df
-          .coalesce(8)
+          .coalesce(50)
           .mapPartitions(iterator => {
           //      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, idBC.value)
           val mapper = new OntopRowMapper(
@@ -300,8 +300,9 @@ class QueryEngineOntop(val spark: SparkSession,
             metaDataBC.value,
             sparqlQueryBC.value,
             ontologyBC.value,
-//            rewriteBC.value,
-            outputBC.value)
+            rwiBC.value,
+//            outputBC.value
+          )
           val it = iterator.map(mapper.map)
           //      mapper.close()
           it

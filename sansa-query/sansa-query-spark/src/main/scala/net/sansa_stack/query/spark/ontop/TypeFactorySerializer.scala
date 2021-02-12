@@ -15,7 +15,7 @@ class TypeFactorySerializer(ontopSessionID: String)
 
   override def read(kryo: Kryo, input: Input, `type`: Class[TypeFactory]): TypeFactory = {
     kryo.readClass(input)
-    OntopConnection.configs(ontopSessionID).getTypeFactory
+    OntopConnection.configs(Option(ontopSessionID).getOrElse(OntopConnection.configs.head._1)).getTypeFactory
   }
 }
 
