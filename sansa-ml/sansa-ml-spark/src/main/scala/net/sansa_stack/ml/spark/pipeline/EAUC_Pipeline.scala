@@ -41,23 +41,37 @@ object EAUC_Pipeline {
     // OPTION 1
     val manualSparqlString =
     """
-      |SELECT ?accidentId ?f1
+      |SELECT ?accidentId ?accidentId__down_hasEnvironmentDescription__down_weatherCondition ?accidentId__down_hasEnvironmentDescription__down_colisionCondition ?accidentId__down_hasEnvironmentDescription__down_colisionCondition ?accidentId__down_hasEnvironmentDescription__down_lightingCondition
       |
       |WHERE {
       |	?accidentId <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.engie.fr/ontologies/accidentontology/RoadAccident> .
       |
-      | ?accidentId__up_location <https://w3id.org/seas/location> ?accidentId .
-      |	?accidentId__up_location <https://schema.orgaddress> ?accidentId__up_location__down_schema_orgaddress .
-      |	?accidentId__up_location__down_schema_orgaddress <https://schema.orgpostalCode> ?f1 .
-      |
-      |}""".stripMargin
+      | OPTIONAL {
+      |		?accidentId <http://www.engie.fr/ontologies/accidentontology/hasEnvironmentDescription> ?accidentId__down_hasEnvironmentDescription .
+      |		?accidentId__down_hasEnvironmentDescription <http://www.engie.fr/ontologies/accidentontology/weatherCondition> ?accidentId__down_hasEnvironmentDescription__down_weatherCondition .
+      |	}
+      |	OPTIONAL {
+      |		?accidentId <http://www.engie.fr/ontologies/accidentontology/hasEnvironmentDescription> ?accidentId__down_hasEnvironmentDescription .
+      |		?accidentId__down_hasEnvironmentDescription <http://www.engie.fr/ontologies/accidentontology/colisionCondition> ?accidentId__down_hasEnvironmentDescription__down_colisionCondition .
+      |	}
+      |	OPTIONAL {
+      |		?accidentId <http://www.engie.fr/ontologies/accidentontology/hasEnvironmentDescription> ?accidentId__down_hasEnvironmentDescription .
+      |		?accidentId__down_hasEnvironmentDescription <http://www.engie.fr/ontologies/accidentontology/lightingCondition> ?accidentId__down_hasEnvironmentDescription__down_lightingCondition .
+      |	}
+      | OPTIONAL {
+      |		?accidentId <https://w3id.org/seas/location> ?accidentId__down_location .
+      |		?accidentId__down_location <https://w3id.org/seas/subZoneOf> ?accidentId__down_location__down_subZoneOf .
+      |		?accidentId__down_location__down_subZoneOf <http://www.w3.org/2000/01/rdf-schema#label> ?accidentId__down_location__down_subZoneOf__down_rdfschema_label .
+      |	}
+      |}
+      """.stripMargin
     // OPTION 2
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?accidentId", "?accidentId <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.engie.fr/ontologies/accidentontology/RoadAccident> . ", 1, 3, 10, featuresInOptionalBlocks = true)
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?accidentId", "?accidentId <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.engie.fr/ontologies/accidentontology/RoadAccident> . ", 0, 3, 10, featuresInOptionalBlocks = true)
     print(autoSparqlString)
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = manualSparqlString
+    val queryString = manualSparqlString // autoSparqlString // manualSparqlString
     println()
     println(queryString)
 
@@ -79,7 +93,7 @@ object EAUC_Pipeline {
     println("SMART VECTOR ASSEMBLER")
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("accidentId")
-      // .setLabelColumn("seed__down_age")
+      .setLabelColumn("accidentId__down_hasEnvironmentDescription__down_weatherCondition")
     val assembledDf = smartVectorAssembler.transform(res)
     assembledDf.show(false)
 

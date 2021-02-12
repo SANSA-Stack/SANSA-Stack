@@ -209,7 +209,7 @@ object FeatureExtractingSparqlGenerator {
       val rightN = nonNullRow((queryLineNumber * 3) + 3)
 
       var firstVarName = varNames.last
-      var secondVarName = firstVarName + f"__$direction" + "_" + p.toString.split("/").last.replace("#", "_")
+      var secondVarName = firstVarName + f"__$direction" + "_" + p.toString.split("/").last.replace("#", "_").replace(".", "").replace("-", "")
       varNames.append(secondVarName)
       val query_line: String = direction match {
         case "down" => f"$firstVarName <$p> $secondVarName ."
