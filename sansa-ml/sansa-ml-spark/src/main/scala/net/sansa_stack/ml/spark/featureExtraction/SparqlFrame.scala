@@ -110,7 +110,7 @@ class SparqlFrame extends Transformer{
    */
   def transform(dataset: Dataset[_]): DataFrame = {
     val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
-    graphRdd.foreach(println(_))
+    // graphRdd.foreach(println(_))
 
     val qef = _queryExcecutionEngine match {
       case "sparqlify" =>
@@ -122,6 +122,8 @@ class SparqlFrame extends Transformer{
 
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
+
+    resultSet.getBindings.foreach(println(_))
 
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
     val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
