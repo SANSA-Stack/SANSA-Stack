@@ -123,7 +123,7 @@ class SparqlFrame extends Transformer{
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
 
-    resultSet.getBindings.foreach(println(_))
+    // resultSet.getBindings.foreach(println(_))
 
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
     val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
