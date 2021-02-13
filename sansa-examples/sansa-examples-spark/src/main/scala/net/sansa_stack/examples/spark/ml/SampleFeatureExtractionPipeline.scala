@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.pipeline
+package net.sansa_stack.examples.spark.ml
 
 import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SmartVectorAssembler, SparqlFrame}
 import net.sansa_stack.rdf.spark.io.{RDFDataFrameReader, RDFReader}
@@ -7,7 +7,6 @@ import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
-import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SampleFeatureExtractionPipeline {

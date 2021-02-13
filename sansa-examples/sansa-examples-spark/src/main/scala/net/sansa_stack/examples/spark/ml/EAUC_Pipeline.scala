@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.pipeline
+package net.sansa_stack.examples.spark.ml
 
 import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SmartVectorAssembler, SparqlFrame}
 import net.sansa_stack.rdf.spark.io.{RDFDataFrameReader, RDFReader}
@@ -40,12 +40,23 @@ object EAUC_Pipeline {
     // OPTION 1
     val manualSparqlString =
     """
-      |SELECT ?accidentId ?accidentId__down_hasEnvironmentDescription__down_weatherCondition ?accidentId__down_hasEnvironmentDescription__down_colisionCondition ?accidentId__down_hasEnvironmentDescription__down_colisionCondition ?accidentId__down_hasEnvironmentDescription__down_lightingCondition
+      |SELECT
+      |?accidentId
+      |?accidentId__down_hasEnvironmentDescription__down_weatherCondition
+      |?accidentId__down_hasEnvironmentDescription__down_colisionCondition
+      |?accidentId__down_hasEnvironmentDescription__down_lightingCondition
+      |?accidentId__down_location__down_subZoneOf__down_rdfschema_label
+      |?accidentId__down_location__down_subZoneOf__down_rdfschema_label
+      |?accidentId__down_location__down_schemaorgaddress__down_schemaorgpostalCode
+      |?accidentId__down_location__down_schemaorgaddress__down_schemaorgstreetAddress
+      |?accidentId__down_location__down_schemaorgaddress__down_schemaorgaddressCountry
+      |?accidentId__down_location__down_wgs84_pos_point__down_wgs84_pos_lat
+      |?accidentId__down_location__down_wgs84_pos_point__down_wgs84_pos_long
       |
       |WHERE {
       |	?accidentId <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.engie.fr/ontologies/accidentontology/RoadAccident> .
       |
-      | OPTIONAL {
+      |	OPTIONAL {
       |		?accidentId <http://www.engie.fr/ontologies/accidentontology/hasEnvironmentDescription> ?accidentId__down_hasEnvironmentDescription .
       |		?accidentId__down_hasEnvironmentDescription <http://www.engie.fr/ontologies/accidentontology/weatherCondition> ?accidentId__down_hasEnvironmentDescription__down_weatherCondition .
       |	}
@@ -57,10 +68,35 @@ object EAUC_Pipeline {
       |		?accidentId <http://www.engie.fr/ontologies/accidentontology/hasEnvironmentDescription> ?accidentId__down_hasEnvironmentDescription .
       |		?accidentId__down_hasEnvironmentDescription <http://www.engie.fr/ontologies/accidentontology/lightingCondition> ?accidentId__down_hasEnvironmentDescription__down_lightingCondition .
       |	}
-      | OPTIONAL {
+      |	OPTIONAL {
       |		?accidentId <https://w3id.org/seas/location> ?accidentId__down_location .
       |		?accidentId__down_location <https://w3id.org/seas/subZoneOf> ?accidentId__down_location__down_subZoneOf .
       |		?accidentId__down_location__down_subZoneOf <http://www.w3.org/2000/01/rdf-schema#label> ?accidentId__down_location__down_subZoneOf__down_rdfschema_label .
+      |	}
+      |	OPTIONAL {
+      |		?accidentId <https://w3id.org/seas/location> ?accidentId__down_location .
+      |		?accidentId__down_location <https://schema.orgaddress> ?accidentId__down_location__down_schemaorgaddress .
+      |		?accidentId__down_location__down_schemaorgaddress <https://schema.orgpostalCode> ?accidentId__down_location__down_schemaorgaddress__down_schemaorgpostalCode .
+      |	}
+      |	OPTIONAL {
+      |		?accidentId <https://w3id.org/seas/location> ?accidentId__down_location .
+      |		?accidentId__down_location <https://schema.orgaddress> ?accidentId__down_location__down_schemaorgaddress .
+      |		?accidentId__down_location__down_schemaorgaddress <https://schema.orgstreetAddress> ?accidentId__down_location__down_schemaorgaddress__down_schemaorgstreetAddress .
+      |	}
+      |	OPTIONAL {
+      |		?accidentId <https://w3id.org/seas/location> ?accidentId__down_location .
+      |		?accidentId__down_location <https://schema.orgaddress> ?accidentId__down_location__down_schemaorgaddress .
+      |		?accidentId__down_location__down_schemaorgaddress <https://schema.orgaddressCountry> ?accidentId__down_location__down_schemaorgaddress__down_schemaorgaddressCountry .
+      |	}
+      |	OPTIONAL {
+      |		?accidentId <https://w3id.org/seas/location> ?accidentId__down_location .
+      |		?accidentId__down_location <http://www.w3.org/2003/01/geo/wgs84_pos#point> ?accidentId__down_location__down_wgs84_pos_point .
+      |		?accidentId__down_location__down_wgs84_pos_point <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?accidentId__down_location__down_wgs84_pos_point__down_wgs84_pos_lat .
+      |	}
+      |	OPTIONAL {
+      |		?accidentId <https://w3id.org/seas/location> ?accidentId__down_location .
+      |		?accidentId__down_location <http://www.w3.org/2003/01/geo/wgs84_pos#point> ?accidentId__down_location__down_wgs84_pos_point .
+      |		?accidentId__down_location__down_wgs84_pos_point <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?accidentId__down_location__down_wgs84_pos_point__down_wgs84_pos_long .
       |	}
       |}
       """.stripMargin
