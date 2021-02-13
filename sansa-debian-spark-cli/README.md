@@ -4,5 +4,7 @@ Requires activation of the `db` profile in order to be built:
 
 ```bash
 mvn -Pdeb package
-``
+sudo dpkg -i target/sansa-spark-cli_$VERSION$_all.deb
+```
+
 

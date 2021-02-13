@@ -1,20 +1,18 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
-import java.nio.file.{Files, Paths, StandardOpenOption}
+import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
 
 import com.google.common.base.Stopwatch
-import net.sansa_stack.query.spark.api.domain.ResultSetSpark
-import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
 import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
 import net.sansa_stack.spark.cli.cmd.{CmdSansaTrigDistinct, CmdSansaTrigQuery}
-import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
-import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseWrapper
-import org.apache.jena.query.{Dataset, QueryFactory, Syntax}
-import org.apache.jena.rdf.model.ModelFactory
+import org.aksw.commons.io.util.StdIo
+import org.aksw.jena_sparql_api.utils.io.StreamRDFDeferred
+import org.apache.jena.query.Dataset
 import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter}
-import org.apache.jena.riot.writer.WriterStreamRDFBase
-import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, ResultSetMgr}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
+import org.apache.jena.shared.PrefixMapping
+import org.apache.jena.shared.impl.PrefixMappingImpl
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
@@ -30,7 +28,17 @@ object CmdSansaTrigDistinctImpl {
 
   def run(cmd: CmdSansaTrigDistinct): Integer = {
 
+    import collection.JavaConverters._
+
     val stopwatch = Stopwatch.createStarted()
+
+    val prefixes: PrefixMapping = new PrefixMappingImpl()
+
+    for (prefixSource <- cmd.outPrefixes.asScala) {
+      logger.info("Adding prefixes from " + prefixSource)
+      val tmp = RDFDataMgr.loadModel(prefixSource)
+      prefixes.setNsPrefixes(tmp)
+    }
 
     // val resultSetFormats = RDFLanguagesEx.getResultSetFormats
     // val outLang = RDFLanguagesEx.findLang(cmd.outFormat, resultSetFormats)
@@ -41,7 +49,6 @@ object CmdSansaTrigDistinctImpl {
 
 //    logger.info("Detected registered result set format: " + outLang)
 
-    import collection.JavaConverters._
 
     val trigFiles = cmd.trigFiles.asScala
       .map(pathStr => Paths.get(pathStr).toAbsolutePath)
@@ -78,15 +85,15 @@ object CmdSansaTrigDistinctImpl {
 
     val effectiveRdd = RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
 
-
-    // Just for testing
-    // val prefixes = RDFDataMgr.loadModel("rdf-prefixes/prefix.cc.2019-12-17.ttl")
-    val prefixes = ModelFactory.createDefaultModel
-
     val rdfFormat = RDFFormat.TRIG_BLOCKS
-    val out = Files.newOutputStream(Paths.get("output.trig"), StandardOpenOption.WRITE, StandardOpenOption.CREATE)
+    val out = StdIo.openStdOutWithCloseShield
+
+    // val out = Files.newOutputStream(Paths.get("output.trig"), StandardOpenOption.WRITE, StandardOpenOption.CREATE)
     // System.out
-    val writer = StreamRDFWriter.getWriterStream(out, rdfFormat, null)
+    val coreWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, null)
+    val writer = new StreamRDFDeferred(coreWriter, true,
+      prefixes, cmd.deferOutputForUsedPrefixes, Long.MaxValue, null)
+
     writer.start
     StreamRDFOps.sendPrefixesToStream(prefixes, writer)
 

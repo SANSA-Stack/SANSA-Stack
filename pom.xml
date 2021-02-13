@@ -318,7 +318,12 @@
                 <groupId>org.aksw.commons</groupId>
                 <artifactId>aksw-commons-util</artifactId>
                 <version>0.8.16-SNAPSHOT</version>
-                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-io-utils</artifactId>
+                <version>0.8.16-SNAPSHOT</version>
             </dependency>
 
             <!-- web server component for use with sparqlify in sansa-query -->
