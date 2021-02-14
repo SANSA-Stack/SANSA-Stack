@@ -62,7 +62,7 @@ object CmdSansaTrigQueryImpl {
 
     val spark = SparkSession.builder
       .master(cmd.sparkMaster)
-      .appName(s"SPARQL example ( $trigFiles )")
+      .appName(s"Trig Query ( $trigFiles )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
         ", ",

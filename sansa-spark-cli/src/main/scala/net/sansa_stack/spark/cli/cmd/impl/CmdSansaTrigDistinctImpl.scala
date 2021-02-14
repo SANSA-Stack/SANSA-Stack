@@ -67,7 +67,7 @@ object CmdSansaTrigDistinctImpl {
 
     val spark = SparkSession.builder
       .master(cmd.sparkMaster)
-      .appName(s"SPARQL example ( $trigFiles )")
+      .appName(s"Trig Distinct ( $trigFiles )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryoserializer.buffer.max", "1000") // MB
       .config("spark.kryo.registrator", String.join(
@@ -103,6 +103,7 @@ object CmdSansaTrigDistinctImpl {
       StreamRDFOps.sendDatasetToStream(dataset.asDatasetGraph, writer)
     }
     writer.finish
+    out.flush
 
 
     // effectiveRdd.saveAsFile("outfile.trig.bz2", prefixes, RDFFormat.TRIG_BLOCKS)
