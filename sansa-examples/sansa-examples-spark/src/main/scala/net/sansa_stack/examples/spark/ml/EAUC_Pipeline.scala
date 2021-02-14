@@ -28,9 +28,10 @@ object EAUC_Pipeline {
     /*
     READ IN DATA
      */
-    val inputFilePath = "/Users/carstendraschner/Cloud/sciebo-research/PLATOON/ENGIE-UBO-accident-use-case/sampleData/caracteristiques_2018_out_1.nt"
+    val inputFilePath = "/Users/carstendraschner/Cloud/sciebo-research/PLATOON/ENGIE-UBO-accident-use-case/TeamsData/TTL_files_of_CSV/Traffic_Accident_Injury_Database_2018/*.ttl"
     val df: DataFrame = spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
     val dataset = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
+    println(f"READ IN DATA:\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
     /*
     CREATE FEATURE EXTRACTING SPARQL
@@ -120,7 +121,7 @@ object EAUC_Pipeline {
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine("sparqlify")
     val res = sparqlFrame.transform(dataset)
-    res.show()
+    res.show(false)
 
     /*
     Create Numeric Feature Vectors
@@ -128,9 +129,10 @@ object EAUC_Pipeline {
     println("SMART VECTOR ASSEMBLER")
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("accidentId")
-      .setLabelColumn("accidentId__down_hasEnvironmentDescription__down_weatherCondition")
-    val assembledDf = smartVectorAssembler.transform(res)
+      .setLabelColumn("accidentId__down_hasEnvironmentDescription__down_lightingCondition")
+    val assembledDf = smartVectorAssembler.transform(res).cache()
     assembledDf.show(false)
+    println(f"assembled df has ${assembledDf.count()} rows")
 
     /*
     APPLY Common SPARK MLlib Example Algorithm
