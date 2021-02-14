@@ -16,7 +16,8 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
  *
  * @author Lorenz Buehmann
  */
-class QueryEngineFactoryOntop(spark: SparkSession) extends QueryEngineFactoryBase(spark) {
+class QueryEngineFactoryOntop(spark: SparkSession)
+  extends QueryEngineFactoryBase(spark) {
 
   override protected def createWithPartitioning(triples: RDD[graph.Triple],
                                                 partitioner: RdfPartitioner[RdfPartitionStateDefault],
@@ -30,13 +31,16 @@ class QueryEngineFactoryOntop(spark: SparkSession) extends QueryEngineFactoryBas
       escapeIdentifiers = true)
   }
 
-  override def create(database: String, mappingModel: Model): QueryExecutionFactorySpark = {
+  override def create(database: Option[String], mappingModel: Model): QueryExecutionFactorySpark = {
     create(database, mappingModel, null)
   }
 
-  def create(database: String, mappingModel: Model, ontology: OWLOntology): QueryExecutionFactorySpark = {
+  def create(database: Option[String], mappingModel: Model, ontology: OWLOntology): QueryExecutionFactorySpark = {
+    require(database != null, "database must non be null. Use None for absence.")
+    require(mappingModel != null, "mappings must not be null.")
+
     val ontop: QueryEngineOntop = QueryEngineOntop(spark, database, mappingModel, Option(ontology))
 
-    new QueryExecutionFactorySparkOntop(spark, ontop)
+    new QueryExecutionFactorySparkOntop(spark, database, ontop)
   }
 }

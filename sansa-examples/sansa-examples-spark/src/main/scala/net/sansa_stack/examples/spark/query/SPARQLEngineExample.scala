@@ -77,7 +77,7 @@ object SPARQLEngineExample {
         val mappings = ModelFactory.createDefaultModel()
         RDFDataMgr.read(mappings, mappingsFile.toString)
 
-        queryEngineFactory.create(database, mappings)
+        queryEngineFactory.create(Some(database), mappings)
       } else {
         // load the data into an RDD
         val lang = Lang.NTRIPLES
@@ -98,9 +98,9 @@ object SPARQLEngineExample {
         ResultSetFormatter.out(rs)
       case "endpoint" =>
         val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
-        if (Desktop.isDesktopSupported) {
-          Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
-        }
+//        if (Desktop.isDesktopSupported) {
+//          Desktop.getDesktop.browse(URI.create("http://localhost:" + port + "/sparql"))
+//        }
         server.join()
       case _ => // should never happen
     }

@@ -11,6 +11,7 @@ import org.apache.spark.sql.types.StructType
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.schema._
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
 
 /**
@@ -61,7 +62,7 @@ object JDBCDatabaseGenerator {
     try {
       val stmt = connection.createStatement()
 
-      stmt.executeUpdate("DROP ALL OBJECTS")
+//      stmt.executeUpdate("DROP ALL OBJECTS")
 
       stmt.executeUpdate(s)
 
@@ -89,7 +90,7 @@ object JDBCDatabaseGenerator {
 
       partitions.foreach { p =>
 
-        val name = R2rmlUtils.createDefaultTableName(p)
+        val name = SQLUtils.createDefaultTableName(p)
 
 //        val sparkSchema = ScalaReflection.schemaFor(p.layout.schema).dataType.asInstanceOf[StructType]
         val schema = partitioner.determineLayout(p).schema

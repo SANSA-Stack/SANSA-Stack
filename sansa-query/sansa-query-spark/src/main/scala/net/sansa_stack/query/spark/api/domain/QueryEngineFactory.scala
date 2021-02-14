@@ -16,14 +16,17 @@ trait QueryEngineFactory {
    * tables located either in the given database or the default database. Mappings from triples to tables is
    * provided by the mapping model.
    *
-   * @param database the database that holds the tables for the RDF data, if `null` the default database will be used
+   * @param database     the database that holds the tables for the RDF data, if no database has been provided the
+   *                     default database will be used
    * @param mappingModel the model containing the mappings
    * @return a query execution factory
    */
-  def create(database: String, mappingModel: Model): QueryExecutionFactorySpark
+  def create(database: Option[String], mappingModel: Model): QueryExecutionFactorySpark
 
   /**
    * Creates a query engine factory for the given RDD of triples.
+   * A Spark database named by the ID of the given triples RDD will be used to maintain the tables used during
+   * SPARQL-to-SQL rewriting and execution.
    *
    * @param triples the RDD of triples
    * @return a query execution factory

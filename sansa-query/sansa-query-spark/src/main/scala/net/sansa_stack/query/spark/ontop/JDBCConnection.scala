@@ -15,15 +15,21 @@ object JDBCConnection {
   val JDBC_USER: String = "sa"
   val JDBC_PASSWORD: String = ""
 
+  var initialized: Boolean = false
+
   lazy val connection: Connection = try {
     // scalastyle:off classforname
     Class.forName("org.h2.Driver")
     // scalastyle:on classforname
-    DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+    val conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD)
+    initialized = true
+    conn
   } catch {
     case e: SQLException =>
       logger.error("Error occurred when creating in-memory H2 database", e)
       throw e
   }
+
+  def close(): Unit = if (initialized) connection.close()
 
 }

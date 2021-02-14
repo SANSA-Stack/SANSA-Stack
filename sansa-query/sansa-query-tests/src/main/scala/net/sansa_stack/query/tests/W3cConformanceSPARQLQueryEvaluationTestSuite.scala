@@ -1,11 +1,20 @@
 package net.sansa_stack.query.tests
 
+import java.io.File
+import java.net.{URI, URL}
+import java.nio.file.{Path, Paths}
+
 import scala.collection.JavaConverters._
 
+import org.apache.jena.riot.RDFParserBuilder
+import org.apache.jena.ext.com.google.common.reflect.ClassPath
+import org.apache.jena.iri.{IRIFactory, ViolationCodes}
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
-import org.apache.jena.rdf.model.{ModelFactory, RDFList}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.rdf.model.{ModelFactory, RDFList, Resource}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFParserBuilder}
+import org.apache.jena.util.FileManager
 import org.scalatest.FunSuite
+
 
 
 /**
@@ -34,20 +43,38 @@ class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VER
   val baseDir = "/sparql11"
   val testDirSPARQL11: String = baseDir + (if (sparqlVersion == SPARQL_VERSION.SPARQL_11) "/data-sparql11/" else "/data-r2/")
 
+  private def resolveGlobal(s: String) = {
+    val globalBase = "file://" + new File("").toURI.toString.substring(5)
+    val factory = new IRIFactory(IRIFactory.jenaImplementation)
+
+    factory.shouldViolation(false, false)
+    factory.securityViolation(false, false)
+    factory.setIsWarning(ViolationCodes.UNREGISTERED_IANA_SCHEME, false)
+    factory.setIsError(ViolationCodes.UNREGISTERED_IANA_SCHEME, false)
+    factory.setSameSchemeRelativeReferences("file")
+
+    val cwd = factory.construct(globalBase)
+
+    cwd.resolve(s).toString
+  }
+
   private def loadTestCasesFromManifest(): List[SPARQLQueryEvaluationTest] = {
     val baseURL = classOf[W3cConformanceSPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11)
-    val url = classOf[W3cConformanceSPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11 + "manifest-sparql11-query.ttl")
     val model = ModelFactory.createDefaultModel()
 
-    RDFDataMgr.read(model, url.getPath, baseURL.getPath, Lang.TURTLE)
+    RDFParserBuilder.create.source("sparql11/data-sparql11/manifest-sparql11-query.ttl").checking(false).resolveURIs(false).parse(model)
 
     val includesList = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#include")).next().as(classOf[RDFList])
 
-    includesList.asJavaList().asScala.flatMap(subDir => loadTestCasesFromSubManifest(subDir.asResource().getURI)).toList
+    includesList.asJavaList().asScala.flatMap(subDir => loadTestCasesFromSubManifest(subDir.asResource(), "sparql11/data-sparql11/")).toList
   }
 
-  private def loadTestCasesFromSubManifest(path: String) = {
-    val model = RDFDataMgr.loadModel(path, Lang.TURTLE)
+  private def loadTestCasesFromSubManifest(r: Resource, base: String) = {
+    val model = ModelFactory.createDefaultModel()
+    RDFParserBuilder.create.source(base + r.getURI).checking(false).resolveURIs(false).parse(model)
+
+    val uri = URI.create(r.getURI)
+    val parent = Paths.get(base + (if (uri.getPath().endsWith("/")) uri.resolve("..") else uri.resolve(".")).toString)
 
     val members = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#entries")).next().as(classOf[RDFList])
 
@@ -82,12 +109,16 @@ class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VER
         qs.getResource("test").getURI,
         qs.getLiteral("name").getLexicalForm,
         desc,
-        qs.getResource("queryFile").getURI,
-        qs.getResource("dataFile").getURI,
-        Some(qs.getResource("resultsFile").getURI)
+        relativePath(qs.getResource("queryFile"), parent),
+        relativePath(qs.getResource("dataFile"), parent),
+        Some(relativePath(qs.getResource("resultsFile"), parent))
       )
     }
     ).toList
+  }
+
+  private def relativePath(r: Resource, path: Path): String = {
+    path.resolve(r.getURI).toString
   }
 
 
@@ -97,6 +128,12 @@ class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VER
   val tests: List[SPARQLQueryEvaluationTest] = loadTestCasesFromManifest()
 
 
+}
+
+object W3cConformanceSPARQLQueryEvaluationTestSuite {
+  def main(args: Array[String]): Unit = {
+    new W3cConformanceSPARQLQueryEvaluationTestSuite(SPARQL_VERSION.SPARQL_11).tests.foreach(println)
+  }
 }
 
 

@@ -20,14 +20,25 @@ import org.semanticweb.owlapi.model.OWLOntology
  */
 object OntopUtils extends Serializable {
 
+
+  /**
+   * Convert a constant to a Jena [[Node]]
+   * @param constant the constant
+   * @param typeFactory a type factory
+   * @return the Jena [[Node]]
+   */
   def toNode(constant: RDFConstant, typeFactory: TypeFactory): Node = {
     val termType = constant.getType
     if (termType.isA(typeFactory.getIRITermType)) {
       NodeFactory.createURI(constant.asInstanceOf[IRIConstant].getIRI.getIRIString)
     } else if (termType.isA(typeFactory.getAbstractRDFSLiteral)) {
       val lit = constant.asInstanceOf[RDFLiteralConstant]
-      val dt = TypeMapper.getInstance().getTypeByName(lit.getType.getIRI.getIRIString)
-      NodeFactory.createLiteral(lit.getValue, dt)
+      val litType = lit.getType
+      val dt = TypeMapper.getInstance().getTypeByName(litType.getIRI.getIRIString)
+      val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
+      NodeFactory.createLiteral(lit.getValue, lang, dt)
+    } else if (termType.isA(typeFactory.getBlankNodeType)) {
+      NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getInternalLabel)
     } else {
       null.asInstanceOf[Node]
     }
@@ -90,14 +101,19 @@ object OntopUtils extends Serializable {
   }
 
   import scala.language.existentials
+
   @throws[OBDASpecificationException]
-  private def loadOBDASpecification(obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology]) = {
-    val builder = if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder.ontology(ontology.get)
-                  else OntopMappingSQLAllConfiguration.defaultBuilder
+  private def loadOBDASpecification[C <: OntopMappingSQLAllConfiguration.Builder[C]](database: Option[String],
+                                                                                     obdaMappings: Model,
+                                                                                     properties: Properties,
+                                                                                     ontology: Option[OWLOntology]) = {
+    val builder = (if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder.ontology(ontology.get)
+                    else OntopMappingSQLAllConfiguration.defaultBuilder)
+      .asInstanceOf[C]
 
     val mappingConfiguration = builder
       .r2rmlMappingGraph(new JenaRDF().asGraph(obdaMappings))
-      .jdbcUrl(OntopConnection.JDBC_URL)
+      .jdbcUrl(OntopConnection.getConnectionURL(database))
       .jdbcUser(OntopConnection.JDBC_USER)
       .jdbcPassword(OntopConnection.JDBC_PASSWORD)
       .properties(properties)
@@ -107,20 +123,23 @@ object OntopUtils extends Serializable {
   }
 
   @throws[OBDASpecificationException]
-  def createReformulationConfig(obdaMappings: Model, properties: Properties, ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
-    val obdaSpecification = loadOBDASpecification(obdaMappings, properties, ontology)
+  def createReformulationConfig[B <: OntopSQLOWLAPIConfiguration.Builder[B], C <: OntopReformulationSQLConfiguration.Builder[C]](database: Option[String],
+                                                        obdaMappings: Model,
+                                                        properties: Properties,
+                                                        ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
+    val obdaSpecification = loadOBDASpecification(database, obdaMappings, properties, ontology)
 
-    val builder = if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder
+    val builder = (if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder.asInstanceOf[B]
                                               .ontology(ontology.get)
                                               .properties(properties)
                                               .jdbcUser(OntopConnection.JDBC_USER)
                                               .jdbcPassword(OntopConnection.JDBC_PASSWORD)
-                  else OntopReformulationSQLConfiguration.defaultBuilder
+                  else OntopReformulationSQLConfiguration.defaultBuilder).asInstanceOf[C]
 
     builder
       .obdaSpecification(obdaSpecification)
       .properties(properties)
-      .jdbcUrl(OntopConnection.JDBC_URL)
+      .jdbcUrl(OntopConnection.getConnectionURL(database))
       .enableTestMode
       .build
   }

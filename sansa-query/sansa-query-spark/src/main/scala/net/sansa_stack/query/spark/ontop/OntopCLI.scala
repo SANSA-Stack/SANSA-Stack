@@ -49,7 +49,7 @@ class OntopCLI {
         triplesRDD.sparql(SPARQLEngine.Ontop)
       } else {
         val mappingsModel = RDFDataMgr.loadModel(config.metaDataPath.toString)
-        new QueryEngineFactoryOntop(spark).create(config.databaseName, mappingsModel)
+        new QueryEngineFactoryOntop(spark).create(Option(config.databaseName), mappingsModel)
       }
 
     var input = config.initialQuery

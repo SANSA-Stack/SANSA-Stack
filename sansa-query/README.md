@@ -86,66 +86,70 @@ Then do the same as for the release version and add the dependency:
 ```
 ### Running from code
 The following Scala code shows how to query an RDF file with SPARQL (be it a local file or a file residing in HDFS):
-#### Running SPARQL queries via Sparqlify engine
 
+#### From file
 ```scala
-
-val spark: SparkSession = ...
-
-val triples = spark.rdf(Lang.NTRIPLES)("path/to/rdf.nt")
-
-val partitions = RdfPartitionUtilsSpark.partitionGraph(triples)
-val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
-
-val qef = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
-
-val port = 7531
-val server = FactoryBeanSparqlServer.newInstance.setSparqlServiceFactory(qef).setPort(port).create()
-server.join()
-
-```
-
-#### Running SPARQL queries via Ontop engine
-``` scala
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import net.sansa_stack.query.spark.ontop.OntopSPARQLEngine
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionerComplex
-import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.engine.binding.Binding
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
+import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 
 // SparkSession is needed
 val spark = SparkSession.builder
-      .appName(s"Ontop SPARQL example")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
-      .config("spark.kryo.registrator", String.join(
-        ", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
-      .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
-      .getOrCreate()
+        .appName(s"Ontop SPARQL example")
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
+        .config("spark.kryo.registrator", String.join(
+          ", ",
+          "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+          "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator",
+          "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+        .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
+        .getOrCreate()
 
 // load an RDD of triples (from an N-Triples file here)
 val data = spark.rdf(Lang.NTRIPLES)("path/to/rdf.nt")
 
-// apply vertical partitioning which is necessary for the current Ontop integration
-val partitions = RdfPartitionUtilsSpark.partitionGraph(data, partitioner = RdfPartitionerComplex(false))
+// create the main query engine
+// we do provide two different SPARQL-to-SQL rewriter backends, Sparqlify and Ontop 
+val queryEngineFactory = new QueryEngineFactoryOntop(spark) // Ontop
+// or
+val queryEngineFactory = new QueryEngineFactorySparqlify(spark) // Sparqlify
 
-// create the SPARQL engine
-val ontopEngine = OntopSPARQLEngine(spark, partitions, ontology = None)
+// create the query execution factory
+val qef = queryEngineFactory.create(triples)
 
-// run a SPARQL
-// a) SELECT query and return an RDD of bindings
-val result: RDD[Binding] = ontopEngine.execSelect("SELECT ... WHERE { ... }")
+// our SPARQL query
+val query = "..."
 
-// b) ASK query and return a boolean value
-val result: Boolean = ontopEngine.execAsk("ASK WHERE { ... }")
+// create the query execution
+val qe = qef.createQueryExecution(query)
 
-// c) CONSTRUCT query and return an RDD of triples
-val result: RDD[Triple] = ontopEngine.execConstruct("CONSTRUCT { ... } WHERE { ... }")
+// depending on the query type, finally execute the query
+// a) SELECT query returns an RDD of bindings
+val result: RDD[Binding] = qe.execSelectSpark()
+
+// b) CONSTRUCT query returns an RDD of triples
+val result: RDD[Triple] = qe.execConstructSpark()
+
+// c) ASK query returns a boolean value
+val result: Boolean = qe.execAsk()
+
+// you may have noticed that for SELECT and CONSTRUCT queries we used methods ending on "Spark()"
+// the reason here is that those method keep the results distributed, i.e. as an RDD
+// For convenience, we do also support those methods without this behaviour, i.e. the results will be fetched to the driver
+// and can be processed without the Spark pros and cons:
+
+// a) SELECT query returns an Apache Jena ResultSet wrapping bindings and variables
+val result: ResultSet = qe.execSelect()
+
+// b) CONSTRUCT query and return an Apacje Jena Model wrapping providing the triples as Statements
+val result: Model = qe.execConstruct()
 ```
+
+
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 
 For querying heterogeneous data sources, refer to the documentation of the dedicated [SANSA-DataLake](https://github.com/SANSA-Stack/SANSA-DataLake) component.

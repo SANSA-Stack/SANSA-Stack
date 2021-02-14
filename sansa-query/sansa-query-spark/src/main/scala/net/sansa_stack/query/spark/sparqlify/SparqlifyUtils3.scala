@@ -28,7 +28,7 @@ object SparqlifyUtils3 // extends StrictLogging
    * @param r2rmlModel
    * @return
    */
-  def createSparqlSqlRewriter(sparkSession: SparkSession, databaseName: String, r2rmlModel: Model): SparqlSqlStringRewriter = {
+  def createSparqlSqlRewriter(sparkSession: SparkSession, databaseName: Option[String], r2rmlModel: Model): SparqlSqlStringRewriter = {
     val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) // new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()

@@ -27,7 +27,11 @@ abstract class SPARQL11TestSuiteRunnerSpark
     with SharedSparkContext { self: Suite =>
 
   System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  System.setProperty("spark.kryo.registrator", String.join(
+    ", ",
+    "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+    "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
+  System.setProperty("spark.sql.crossJoin.enabled", "true")
 
   @transient private var _spark: SparkSession = _
 
@@ -35,7 +39,10 @@ abstract class SPARQL11TestSuiteRunnerSpark
     conf
       .set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+      .set("spark.kryo.registrator", String.join(
+        ", ",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
   ).getOrCreate()
 
 
@@ -44,7 +51,10 @@ abstract class SPARQL11TestSuiteRunnerSpark
   override def beforeAll(configMap: ConfigMap): Unit = {
     conf.set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+      .set("spark.kryo.registrator", String.join(
+        ", ",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
     _spark = SparkSession.builder.config(conf).master("local[1]").getOrCreate()
 
     val toIgnore = configMap.get("ignore")

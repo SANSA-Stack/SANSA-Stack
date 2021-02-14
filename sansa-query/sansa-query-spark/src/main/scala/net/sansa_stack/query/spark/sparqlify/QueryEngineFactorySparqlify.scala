@@ -7,7 +7,7 @@ import org.apache.jena.rdf.model.Model
 import org.apache.spark.sql.SparkSession
 
 class QueryEngineFactorySparqlify(sparkSession: SparkSession) extends QueryEngineFactoryBase(sparkSession) {
-  override def create(databaseName: String, mappingModel: Model): QueryExecutionFactorySpark = {
+  override def create(databaseName: Option[String], mappingModel: Model): QueryExecutionFactorySpark = {
     val rewriter: SparqlSqlStringRewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, databaseName, mappingModel)
 
     val result = new QueryExecutionFactorySparkJavaWrapper(

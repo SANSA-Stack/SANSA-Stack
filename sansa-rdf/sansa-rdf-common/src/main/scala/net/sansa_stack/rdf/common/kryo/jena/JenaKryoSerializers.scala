@@ -12,7 +12,7 @@ import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryFactory, Synt
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.lang.LabelToNode
 import org.apache.jena.riot.lang.LabelToNode.createScopeByDocumentHash
-import org.apache.jena.riot.out.{NodeFmtLib, NodeFormatterTTL, NodeToLabel}
+import org.apache.jena.riot.out.{NodeFmtLib, NodeFormatterNT, NodeFormatterTTL, NodeToLabel}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RIOT}
 import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfile, ParserProfileStd, PrefixMapExtended, RiotLib}
 import org.apache.jena.riot.tokens.{TokenizerFactory, TokenizerText}
@@ -46,7 +46,8 @@ object JenaKryoSerializers {
     pmap.add("xsd", ARQConstants.xsdPrefix)
     pmap.add("owl", ARQConstants.owlPrefix)
 
-    val nodeFormatter = new NodeFormatterTTL(null, pmap, NodeToLabel.createBNodeByLabelEncoded())
+//    val nodeFormatter = new NodeFormatterTTL(null, pmap, NodeToLabel.createBNodeByLabelEncoded())
+val nodeFormatter = new NodeFormatterNT()
     val writer = new IndentedLineBuffer()
 
     override def write(kryo: Kryo, output: Output, obj: JenaNode) {

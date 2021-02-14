@@ -8,7 +8,7 @@ import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
 
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
 
 /**
@@ -114,7 +114,7 @@ object OntopMappingGenerator {
       partitions
         .map {
           case p@RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang) =>
-            val tableName = R2rmlUtils.createDefaultTableName(p)
+            val tableName = SQLUtils.createDefaultTableName(p)
             val id = sqlEscaper.escapeTableName(tableName)
 
             if (predicate == RDF.`type`.getURI) { // rdf:type mapping expansion here
