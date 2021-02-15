@@ -6,6 +6,7 @@ import java.util.UUID
 
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
+import org.aksw.jena_sparql_api.io.hdt.JenaPluginHdt
 import org.apache.jena.atlas.io.IndentedLineBuffer
 import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
 import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryFactory, Syntax}
@@ -13,7 +14,7 @@ import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.lang.LabelToNode
 import org.apache.jena.riot.lang.LabelToNode.createScopeByDocumentHash
 import org.apache.jena.riot.out.{NodeFmtLib, NodeFormatterNT, NodeFormatterTTL, NodeToLabel}
-import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RIOT}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RDFLanguages, RIOT}
 import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfile, ParserProfileStd, PrefixMapExtended, RiotLib}
 import org.apache.jena.riot.tokens.{TokenizerFactory, TokenizerText}
 import org.apache.jena.sparql.ARQConstants
@@ -304,9 +305,15 @@ val nodeFormatter = new NodeFormatterNT()
   }
 
   class ModelSerializer extends Serializer[Model] {
+    // def lang: Lang = Lang.RDFTHRIFT
+    // def format: RDFFormat = RDFFormat.RDF_THRIFT_VALUES
+
+    def lang: Lang = JenaPluginHdt.LANG_HDT
+    def format: RDFFormat = JenaPluginHdt.FORMAT_HDT
+
     override def write(kryo: Kryo, output: Output, obj: Model) {
       val tmp = new ByteArrayOutputStream()
-      RDFDataMgr.write(tmp, obj, RDFFormat.RDF_THRIFT_VALUES)
+      RDFDataMgr.write(tmp, obj, format)
 
       output.writeString(tmp.toString)
     }
@@ -315,7 +322,7 @@ val nodeFormatter = new NodeFormatterNT()
       val str = input.readString()
       val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
       val result = ModelFactory.createDefaultModel
-      RDFDataMgr.read(result, tmp, Lang.RDFTHRIFT)
+      RDFDataMgr.read(result, tmp, lang)
 
       result
     }
