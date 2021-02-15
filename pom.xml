@@ -292,6 +292,13 @@
 
             <!-- Miscellaneous -->
 
+            <!-- Thrift: Conflict between Jena with 0.13.0 vs Spark with 0.12.0 -->
+            <dependency>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>libthrift</artifactId>
+                <version>0.13.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>

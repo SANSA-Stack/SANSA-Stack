@@ -1,96 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-parent_2.12</artifactId>
+    <artifactId>sansa-query-parent_2.12</artifactId>
 
-	<parent>
-		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-parent_2.12</artifactId>
-		<version>0.7.2-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent_2.12</artifactId>
+        <version>0.7.2-SNAPSHOT</version>
+    </parent>
 
-	<packaging>pom</packaging>
+    <packaging>pom</packaging>
 
-	<name>SANSA Stack - Query Layer - Parent</name>
-	<description>SANSA Query Library</description>
+    <name>SANSA Stack - Query Layer - Parent</name>
+    <description>SANSA Query Library</description>
 
-	<developers>
-		<developer>
-			<id>Aklakan</id>
-			<name>Claus Stadler</name>
-			<email>cstadler@informatik.uni-leipzig.de</email>
-			<organization>AKSW, Department of Computer Science, University of Leipzig</organization>
-			<organizationUrl>http://aksw.org</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>0</timezone>
-		</developer>
-		<developer>
-			<id>sbin</id>
-			<name>Simon Bin</name>
-			<email>sbin@informatik.uni-leipzig.de</email>
-			<organization>AKSW, Department of Computer Science, University of Leipzig</organization>
-			<organizationUrl>http://aksw.org</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>0</timezone>
-		</developer>
-		<developer>
-			<id>GezimSejdiu</id>
-			<name>Gezim Sejdiu</name>
-			<url>https://gezimsejdiu.github.io/</url>
-			<organization>SDA</organization>
-			<organizationUrl>http://sda.tech</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>0</timezone>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <id>Aklakan</id>
+            <name>Claus Stadler</name>
+            <email>cstadler@informatik.uni-leipzig.de</email>
+            <organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+            <organizationUrl>http://aksw.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+        </developer>
+        <developer>
+            <id>sbin</id>
+            <name>Simon Bin</name>
+            <email>sbin@informatik.uni-leipzig.de</email>
+            <organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+            <organizationUrl>http://aksw.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+        </developer>
+        <developer>
+            <id>GezimSejdiu</id>
+            <name>Gezim Sejdiu</name>
+            <url>https://gezimsejdiu.github.io/</url>
+            <organization>SDA</organization>
+            <organizationUrl>http://sda.tech</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+        </developer>
+    </developers>
 
-	<modules>
-		<module>sansa-query-common</module>
-		<module>sansa-query-flink</module>
-		<module>sansa-query-spark</module>
-		<module>sansa-query-tests</module>
-	</modules>
+    <modules>
+        <module>sansa-query-common</module>
+        <module>sansa-query-flink</module>
+        <module>sansa-query-spark</module>
+        <module>sansa-query-tests</module>
+    </modules>
 
-	<dependencyManagement>
-		<dependencies>
+    <dependencyManagement>
+        <dependencies>
+            
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+                <!--				<type>test-jar</type>-->
+            </dependency>
 
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
-				<version>${project.version}</version>
-				<scope>test</scope>
-<!--				<type>test-jar</type>-->
-			</dependency>
-
-		</dependencies>
-	</dependencyManagement>
+        </dependencies>
+    </dependencyManagement>
 
 
 </project>
