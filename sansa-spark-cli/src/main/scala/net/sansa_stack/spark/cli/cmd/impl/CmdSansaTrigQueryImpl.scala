@@ -73,9 +73,9 @@ object CmdSansaTrigQueryImpl {
 
     import net.sansa_stack.rdf.spark.io._
 
-    val initialRdd: RDD[Dataset] = validPaths
-      .map(path => spark.datasets(Lang.TRIG)(path.toString))
-      .reduce((a, b) => a.union(b))
+    val initialRdd: RDD[Dataset] = spark.sparkContext.union(
+      validPaths
+      .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 
     val effectiveRdd = if (cmd.makeDistinct) RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
       else initialRdd
