@@ -78,7 +78,7 @@ object CmdSansaTrigDistinctImpl {
       .getOrCreate()
 
     import net.sansa_stack.rdf.spark.io._
-    
+
     val initialRdd: RDD[Dataset] = spark.sparkContext.union(
       validPaths
         .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)

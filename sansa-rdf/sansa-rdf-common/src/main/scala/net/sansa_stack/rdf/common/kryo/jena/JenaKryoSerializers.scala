@@ -288,7 +288,7 @@ val nodeFormatter = new NodeFormatterNT()
   class DatasetSerializer extends Serializer[Dataset] {
     override def write(kryo: Kryo, output: Output, obj: Dataset) {
       val tmp = new ByteArrayOutputStream()
-      RDFDataMgr.write(tmp, obj, RDFFormat.NQUADS)
+      RDFDataMgr.write(tmp, obj, RDFFormat.RDF_THRIFT_VALUES)
 
       output.writeString(tmp.toString)
     }
@@ -297,7 +297,7 @@ val nodeFormatter = new NodeFormatterNT()
       val str = input.readString()
       val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
       val result = DatasetFactory.create
-      RDFDataMgr.read(result, tmp, Lang.NQUADS)
+      RDFDataMgr.read(result, tmp, Lang.RDFTHRIFT)
 
       result
     }
@@ -306,7 +306,7 @@ val nodeFormatter = new NodeFormatterNT()
   class ModelSerializer extends Serializer[Model] {
     override def write(kryo: Kryo, output: Output, obj: Model) {
       val tmp = new ByteArrayOutputStream()
-      RDFDataMgr.write(tmp, obj, RDFFormat.NTRIPLES)
+      RDFDataMgr.write(tmp, obj, RDFFormat.RDF_THRIFT_VALUES)
 
       output.writeString(tmp.toString)
     }
@@ -315,7 +315,7 @@ val nodeFormatter = new NodeFormatterNT()
       val str = input.readString()
       val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
       val result = ModelFactory.createDefaultModel
-      RDFDataMgr.read(result, tmp, Lang.NTRIPLES)
+      RDFDataMgr.read(result, tmp, Lang.RDFTHRIFT)
 
       result
     }
