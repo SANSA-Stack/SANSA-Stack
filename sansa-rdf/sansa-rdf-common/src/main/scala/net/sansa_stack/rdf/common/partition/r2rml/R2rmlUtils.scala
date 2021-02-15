@@ -10,7 +10,7 @@ import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.r2rmlx.domain.api.TermMapX
 import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaper, SqlEscaperBacktick}
 import org.apache.jena.graph.NodeFactory
-import org.apache.jena.rdf.model.{Model, Property, Resource, ResourceFactory}
+import org.apache.jena.rdf.model.{Model, ModelFactory, Property, Resource, ResourceFactory}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.ExprVar
 
@@ -281,5 +281,17 @@ object R2rmlUtils {
       .map(_.as(classOf[TriplesMap]))
       .filter(tm =>
         tm.getPredicateObjectMaps.asScala.exists(_.getPredicateMaps.asScala.exists(pm => Option(pm.getConstant).contains(predicate))))
+  }
+
+  /**
+   * Expand the R2RML shorcuts in the given R"RML mappings model. Does return a new model, i.e. does not change
+   * the given model.
+   * @param mappingsModel the R2RML mappings
+   * @return a new model containing the same mappings, but all shortcuts expanded
+   */
+  def expandShortcuts(mappingsModel: Model): Model = {
+    val newModel = ModelFactory.createDefaultModel().add(mappingsModel)
+    R2rmlUtils.streamTriplesMaps(newModel).foreach(R2rmlLib.expandShortcuts)
+    newModel
   }
 }

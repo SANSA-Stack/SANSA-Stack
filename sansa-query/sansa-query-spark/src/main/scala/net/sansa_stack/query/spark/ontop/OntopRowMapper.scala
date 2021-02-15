@@ -39,6 +39,8 @@ class OntopRowMapper(sessionId: String,
 //                     output: Output
                     ) {
 
+  val startTime = System.currentTimeMillis()
+
   val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
 
 
@@ -56,13 +58,21 @@ class OntopRowMapper(sessionId: String,
 
   val substitution = substitutionFactory.getSubstitution(sparqlVar2Term)
 
+  import org.apache.spark.TaskContext
+  val ctx = TaskContext.get
+  val stageId = ctx.stageId
+  val partId = ctx.partitionId
+  val taskId = ctx.taskAttemptId()
+  val hostname = java.net.InetAddress.getLocalHost.getHostName
 
+  println(s"row mapper setup at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
 
   def map(row: Row): Binding = {
     toBinding(row)
   }
 
   def toBinding(row: Row): Binding = { // println(row)
+    val startTime = System.currentTimeMillis()
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]
@@ -86,6 +96,7 @@ class OntopRowMapper(sessionId: String,
       case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
       case _ =>
     }
+    println(s"binding generated at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
 //    println(s"row: $row --- binding: $binding")
     binding
   }

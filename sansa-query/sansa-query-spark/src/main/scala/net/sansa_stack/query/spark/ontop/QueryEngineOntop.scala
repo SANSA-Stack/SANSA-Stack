@@ -3,10 +3,13 @@ package net.sansa_stack.query.spark.ontop
 import java.util.Properties
 
 import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
+import it.unibz.inf.ontop.com.google.common.base.Charsets
 import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
+import it.unibz.inf.ontop.com.google.common.hash.Hashing
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
 import it.unibz.inf.ontop.iq.IQ
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
@@ -130,6 +133,16 @@ class QueryEngineOntop(val spark: SparkSession,
 
   private val logger = com.typesafe.scalalogging.Logger[QueryEngineOntop]
 
+  // read the Ontop properties
+  val ontopProperties = new Properties()
+  ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
+  private val maxRowMappers: Int = Try(Integer.parseInt(ontopProperties.getProperty("sansa.query.ontop.mapper.maxInstances"))) match {
+    case Success(value) => value
+    case Failure(exception) =>
+      logger.warn("Illegal value for property {sansa.query.ontop.mapper.maxInstances}, must be integer. Ignoring value.")
+      -1
+  }
+
   private val sqlEscaper = new SqlEscaperBacktick()
 
   // set the current Spark SQL database if given
@@ -162,7 +175,10 @@ class QueryEngineOntop(val spark: SparkSession,
 
   private val sparql2sql = new OntopSPARQL2SQLRewriter(sessionId, database, jdbcMetaData, mappingsModel, ontology)
 
-  private def generateSessionId(): String = jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
+  private def generateSessionId(): String = {
+    val s = database.getOrElse("") + jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
+    Hashing.sha256.hashString(s, Charsets.UTF_8).toString
+  }
 
 
   /**
@@ -179,7 +195,6 @@ class QueryEngineOntop(val spark: SparkSession,
       val s = tm.getSubjectMap.getColumn
       val o = tm.getPredicateObjectMaps.asScala.head.getObjectMaps.asScala.head.asTermMap().getColumn // TODO we assume a single predicate-object map here
 
-      // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
       // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
       val tn = SQLUtils.parseTableIdentifier(tableName)
       val to = sqlEscaper.escapeColumnName(o.stripPrefix("\"").stripSuffix("\""))
@@ -270,13 +285,13 @@ class QueryEngineOntop(val spark: SparkSession,
 
     rewriteOpt match {
       case Some(rewrite) =>
-        val df = df2Rewrite._1
+        var df = df2Rewrite._1
 
         OntopConnection(sessionId, database, mappingsModel, sparql2sql.ontopProperties, jdbcMetaData, ontology)
         val rwi = RewriteInstruction(rewrite.sqlSignature, rewrite.sqlTypeMap, rewrite.answerAtom, rewrite.sparqlVar2Term.getImmutableMap)
 
-        val output = KryoUtils.serialize(rwi, sessionId)
-        val outputBC = spark.sparkContext.broadcast(output)
+//        val output = KryoUtils.serialize(rwi, sessionId)
+//        val outputBC = spark.sparkContext.broadcast(output)
 
         val sparqlQueryBC = spark.sparkContext.broadcast(query)
         val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappingsModel)
@@ -288,11 +303,18 @@ class QueryEngineOntop(val spark: SparkSession,
         val rwiBC = spark.sparkContext.broadcast(rwi)
 
         implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
-        df
-          .coalesce(50)
-          .mapPartitions(iterator => {
-          //      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, idBC.value)
-          val mapper = new OntopRowMapper(
+        if (maxRowMappers > 0) {
+          df = df.coalesce(50)
+        }
+        df.mapPartitions(iterator => {
+            OntopConnection(idBC.value,
+              databaseBC.value,
+              mappingsBC.value,
+              propertiesBC.value,
+              metaDataBC.value,
+              ontologyBC.value)
+
+            val mapper = new OntopRowMapper(
             idBC.value,
             databaseBC.value,
             mappingsBC.value,
@@ -311,6 +333,41 @@ class QueryEngineOntop(val spark: SparkSession,
     }
   }
 
+  /**
+   * Computes the bindings of the query independently of the query type. This works,
+   * because all non-SELECT queries can be reduced to SELECT queries with a post-processing.
+   *
+   * @param query the SPARQL query
+   * @return an RDD of solution bindings
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+   */
+  def computeBindingsLocal(query: String): Seq[Binding] = {
+    val df2Rewrite = executeDebug(query)
+
+    val rewriteOpt = df2Rewrite._2
+
+    rewriteOpt match {
+      case Some(rewrite) =>
+        val df = df2Rewrite._1
+
+        val rwi = RewriteInstruction(rewrite.sqlSignature, rewrite.sqlTypeMap, rewrite.answerAtom, rewrite.sparqlVar2Term.getImmutableMap)
+
+        val mapper = new OntopRowMapper(
+          sessionId,
+          database,
+          sparql2sql.mappingsModel,
+          sparql2sql.ontopProperties,
+          jdbcMetaData,
+          query,
+          ontology,
+          rwi,
+          //            outputBC.value
+        )
+        df.collect().map(mapper.map)
+      case None => Seq()
+    }
+  }
+
 }
 
 object QueryEngineOntop {
@@ -324,11 +381,9 @@ object QueryEngineOntop {
             mappingsModel: Model,
             ontology: Option[OWLOntology]): QueryEngineOntop = {
     // expand shortcuts of R2RML model
-    val newModel = ModelFactory.createDefaultModel()
-    newModel.add(mappingsModel)
-    R2rmlUtils.streamTriplesMaps(newModel).toList.foreach(R2rmlLib.expandShortcuts)
+    val expandedMappingsModel = R2rmlUtils.expandShortcuts(mappingsModel)
 
-    new QueryEngineOntop(spark, databaseName, newModel, ontology)
+    new QueryEngineOntop(spark, databaseName, expandedMappingsModel, ontology)
   }
 
 }
