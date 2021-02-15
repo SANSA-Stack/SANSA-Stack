@@ -14,7 +14,7 @@ class QueryExecutionSparkOntop(query: Query,
                                subFactory: QueryExecutionFactory,
                                spark: SparkSession,
                                ontop: QueryEngineOntop)
-    extends QueryExecutionSparkBase(query, subFactory, spark) {
+  extends QueryExecutionSparkBase(query, subFactory, spark) {
 
   override def execSelectSpark(): ResultSetSpark = {
     val bindings = ontop.computeBindings(query.toString())
@@ -25,11 +25,14 @@ class QueryExecutionSparkOntop(query: Query,
   }
 
   override def executeCoreSelect(query: Query): ResultSetCloseable = {
-    val bindings = ontop.computeBindingsLocal(query.toString).iterator
+    if (ontop.useLocalEvaluation) {
+      val bindings = ontop.computeBindingsLocal(query.toString).iterator
 
-    val tmp = ResultSetUtils.create2(query.getProjectVars, bindings.asJava)
+      val rs = ResultSetUtils.create2(query.getProjectVars, bindings.asJava)
 
-    new ResultSetCloseable(tmp)
+      new ResultSetCloseable(rs)
+    } else {
+      super.executeCoreSelect(query)
+    }
   }
-
 }

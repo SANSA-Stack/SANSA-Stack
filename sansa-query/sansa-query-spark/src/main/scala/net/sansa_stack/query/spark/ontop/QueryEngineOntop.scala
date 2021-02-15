@@ -142,6 +142,12 @@ class QueryEngineOntop(val spark: SparkSession,
       logger.warn("Illegal value for property {sansa.query.ontop.mapper.maxInstances}, must be integer. Ignoring value.")
       -1
   }
+  val useLocalEvaluation: Boolean = Try(java.lang.Boolean.parseBoolean(ontopProperties.getProperty("sansa.query.ontop.evaluate.local"))) match {
+    case Success(value) => value
+    case Failure(exception) =>
+      logger.warn("Illegal value for property {sansa.query.ontop.evaluate.local}, must be integer. Ignoring value.")
+      false
+  }
 
   private val sqlEscaper = new SqlEscaperBacktick()
 
