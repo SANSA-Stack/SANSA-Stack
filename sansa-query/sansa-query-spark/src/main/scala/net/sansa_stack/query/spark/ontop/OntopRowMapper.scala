@@ -59,13 +59,13 @@ class OntopRowMapper(sessionId: String,
   val substitution = substitutionFactory.getSubstitution(sparqlVar2Term)
 
   import org.apache.spark.TaskContext
-  val ctx = TaskContext.get
-  val stageId = ctx.stageId
-  val partId = ctx.partitionId
-  val taskId = ctx.taskAttemptId()
-  val hostname = java.net.InetAddress.getLocalHost.getHostName
+  val ctx = Option(TaskContext.get)
+  val stageId = if (ctx.isDefined) ctx.get.stageId
+  val partId = if (ctx.isDefined) ctx.get.partitionId()
+  val taskId = if (ctx.isDefined) ctx.get.taskAttemptId()
+  val hostname = if (ctx.isDefined) java.net.InetAddress.getLocalHost.getHostName
 
-  println(s"row mapper setup at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
+  if (ctx.isDefined) println(s"row mapper setup at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
 
   def map(row: Row): Binding = {
     toBinding(row)
@@ -96,7 +96,10 @@ class OntopRowMapper(sessionId: String,
       case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
       case _ =>
     }
-    println(s"binding generated at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
+    if (ctx.isDefined) {
+      println(s"binding generated at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
+    }
+
 //    println(s"row: $row --- binding: $binding")
     binding
   }
