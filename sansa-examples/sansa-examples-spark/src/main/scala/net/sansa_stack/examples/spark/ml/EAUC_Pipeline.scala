@@ -102,7 +102,14 @@ object EAUC_Pipeline {
       |}
       """.stripMargin
     // OPTION 2
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?accidentId", "?accidentId <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.engie.fr/ontologies/accidentontology/RoadAccident> . ", 0, 3, 10, featuresInOptionalBlocks = true)
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
+      dataset,
+      "?accidentId",
+      "?accidentId <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.engie.fr/ontologies/accidentontology/RoadAccident> . ",
+      0,
+      3,
+      10,
+      featuresInOptionalBlocks = true)
     print(autoSparqlString)
 
     // select the query you want to use or adjust the automatic created one

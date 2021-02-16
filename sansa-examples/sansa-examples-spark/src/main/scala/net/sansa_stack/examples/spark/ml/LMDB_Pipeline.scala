@@ -39,14 +39,6 @@ object LMDB_Pipeline {
     println(f"READ IN DATA:\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
 
-    val df: DataFrame = NTripleReader.load(
-      spark,
-      inputFilePath,
-      stopOnBadTerm = ErrorParseMode.SKIP,
-      stopOnWarnings = WarningParseMode.IGNORE
-    ).toDF.toDF(Seq("s", "p", "o"): _*).cache() // .toDF(Seq("s", "p", "o"): _*)
-    df.show(false)
-    // val df = dataset.rdd.toDF()
     /*
     CREATE FEATURE EXTRACTING SPARQL
     from a knowledge graph we can either manually create a sparql query or
@@ -67,18 +59,16 @@ object LMDB_Pipeline {
       |}
       """.stripMargin
     // OPTION 2
-    /* val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
-      df,
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
+      dataset,
       "?movie",
       "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
-      0,
+      2,
       3,
       10,
       featuresInOptionalBlocks = true,
     )
     print(autoSparqlString)
-
-     */
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
@@ -104,7 +94,6 @@ object LMDB_Pipeline {
     println("SMART VECTOR ASSEMBLER")
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("movie")
-      // .setLabelColumn("accidentId__down_hasEnvironmentDescription__down_lightingCondition")
     val assembledDf = smartVectorAssembler.transform(res).cache()
     assembledDf.show(false)
     println(f"assembled df has ${assembledDf.count()} rows")
