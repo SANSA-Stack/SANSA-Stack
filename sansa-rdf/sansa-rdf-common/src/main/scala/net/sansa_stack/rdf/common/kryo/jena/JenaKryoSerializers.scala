@@ -10,11 +10,12 @@ import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.lang.LabelToNode
 import org.apache.jena.riot.out.NodeFormatterNT
-import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfileStd, RiotLib}
+import org.apache.jena.riot.system._
 import org.apache.jena.riot.thrift.wire.RDF_Term
 import org.apache.jena.riot.thrift.{TRDF, ThriftConvert}
 import org.apache.jena.riot.tokens.TokenizerText
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RIOT}
+import org.apache.jena.sparql.ARQConstants
 import org.apache.jena.sparql.core.{Var, VarExprList, Quad => JenaQuad}
 import org.apache.jena.sparql.expr.Expr
 import org.apache.jena.sparql.util.ExprUtils
@@ -27,12 +28,13 @@ object JenaKryoSerializers {
 
   /**
     * Kryo Serializer for Node
+    *
+    * Deprecated and subject to removal
     */
+  @deprecated
   class NodeSerializerOld extends Serializer[JenaNode]
   {
-
-    import org.apache.jena.riot.system.{PrefixMap, PrefixMapFactory}
-    import org.apache.jena.sparql.ARQConstants
+    val errorHandler = ErrorHandlerFactory.errorHandlerWarn
 
     private val profile = setupInternalParserProfile
 
@@ -43,12 +45,12 @@ object JenaKryoSerializers {
     pmap.add("xsd", ARQConstants.xsdPrefix)
     pmap.add("owl", ARQConstants.owlPrefix)
 
-//    val nodeFormatter = new NodeFormatterTTL(null, pmap, NodeToLabel.createBNodeByLabelEncoded())
-val nodeFormatter = new NodeFormatterNT()
+    //    val nodeFormatter = new NodeFormatterTTL(null, pmap, NodeToLabel.createBNodeByLabelEncoded())
+    val nodeFormatter = new NodeFormatterNT()
     val writer = new IndentedLineBuffer()
 
     override def write(kryo: Kryo, output: Output, obj: JenaNode) {
-//      println(s"serializing node $obj   => ${FmtUtils.stringForNode(obj)}")
+      //      println(s"serializing node $obj   => ${FmtUtils.stringForNode(obj)}")
       nodeFormatter.format(writer, obj)
       output.writeString(writer.toString)
       writer.clear()
@@ -60,12 +62,14 @@ val nodeFormatter = new NodeFormatterNT()
 
       val s = input.readString()
       val n = parse(s)
-//      println(s"deserializing string $s   => $n")
+      //      println(s"deserializing string $s   => $n")
       n
     }
 
     def parse(string: String): JenaNode = {
-      val tokenizer = TokenizerText.create().fromString(string).build()
+      val tokenizer = TokenizerText.create()
+        .errorHandler(errorHandler)
+        .fromString(string).build()
       val n: JenaNode = if (!tokenizer.hasNext) {
         null
       } else {
@@ -83,7 +87,7 @@ val nodeFormatter = new NodeFormatterNT()
       pmap.add("owl", ARQConstants.owlPrefix)
       val labelToNode = LabelToNode.createUseLabelEncoded()
       val factoryRDF = RiotLib.factoryRDF(labelToNode)
-      new ParserProfileStd(factoryRDF, ErrorHandlerFactory.errorHandlerStd, IRIResolver.create, pmap, RIOT.getContext.copy, true, false)
+      new ParserProfileStd(factoryRDF, errorHandler, IRIResolver.create, pmap, RIOT.getContext.copy, true, false)
     }
   }
 
@@ -114,10 +118,9 @@ val nodeFormatter = new NodeFormatterNT()
 
 
   /**
-    * Kryo Serializer for Array[Node]
-    */
-  class NodeArraySerializer extends Serializer[Array[JenaNode]]
-  {
+   * Kryo Serializer for Array[Node]
+   */
+  class NodeArraySerializer extends Serializer[Array[JenaNode]] {
     override def write(kryo: Kryo, output: Output, obj: Array[JenaNode]) {
       output.writeInt(obj.length, true)
       for (node <- obj) {
@@ -127,31 +130,29 @@ val nodeFormatter = new NodeFormatterNT()
 
     override def read(kryo: Kryo, input: Input, objClass: Class[Array[JenaNode]]): Array[JenaNode] = {
       val nodes = new Array[JenaNode](input.readInt(true))
-      var i = 0
-      while(i < nodes.length) {
+      for (i <- nodes.indices) {
         nodes(i) = kryo.readClassAndObject(input).asInstanceOf[JenaNode]
-        i += 1
       }
       nodes
     }
   }
 
   /**
-    * Kryo Serializer for Node_Blank
-    */
-//  class BlankNodeSerializer extends Serializer[Node_Blank] {
-//    override def write(kryo: Kryo, output: Output, obj: Node_Blank) {
-//      output.writeString(obj.toString)
-//    }
-//
-//    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Blank]): Node_Blank = {
-//      NodeFactory.createBlankNode(input.readString()).asInstanceOf[Node_Blank]
-//    }
-//  }
+   * Kryo Serializer for Node_Blank
+   */
+  //  class BlankNodeSerializer extends Serializer[Node_Blank] {
+  //    override def write(kryo: Kryo, output: Output, obj: Node_Blank) {
+  //      output.writeString(obj.toString)
+  //    }
+  //
+  //    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Blank]): Node_Blank = {
+  //      NodeFactory.createBlankNode(input.readString()).asInstanceOf[Node_Blank]
+  //    }
+  //  }
 
   /**
-    * Kryo Serializer for Node_ANY
-    */
+   * Kryo Serializer for Node_ANY
+   */
   class ANYNodeSerializer extends Serializer[Node_ANY] {
     override def write(kryo: Kryo, output: Output, obj: Node_ANY) {
 
@@ -163,8 +164,8 @@ val nodeFormatter = new NodeFormatterNT()
   }
 
   /**
-    * Kryo Serializer for Node_Variable
-    */
+   * Kryo Serializer for Node_Variable
+   */
   class VariableNodeSerializer extends Serializer[Node_Variable] {
     override def write(kryo: Kryo, output: Output, obj: Node_Variable) {
       output.writeString(obj.toString)
@@ -227,34 +228,34 @@ val nodeFormatter = new NodeFormatterNT()
   }
 
   /**
-    * Kryo Serializer for Node_URI
-    */
-//  class URINodeSerializer extends Serializer[Node_URI] {
-//    override def write(kryo: Kryo, output: Output, obj: Node_URI) {
-//      output.writeString(obj.toString())
-//    }
-//
-//    override def read(kryo: Kryo, input: Input, objClass: Class[Node_URI]): Node_URI = {
-//      NodeFactory.createURI(input.readString()).asInstanceOf[Node_URI]
-//    }
-//  }
+   * Kryo Serializer for Node_URI
+   */
+  //  class URINodeSerializer extends Serializer[Node_URI] {
+  //    override def write(kryo: Kryo, output: Output, obj: Node_URI) {
+  //      output.writeString(obj.toString())
+  //    }
+  //
+  //    override def read(kryo: Kryo, input: Input, objClass: Class[Node_URI]): Node_URI = {
+  //      NodeFactory.createURI(input.readString()).asInstanceOf[Node_URI]
+  //    }
+  //  }
 
   /**
-    * Kryo Serializer for Node_Literal
-    */
-//  class LiteralNodeSerializer extends Serializer[Node_Literal] {
-//    override def write(kryo: Kryo, output: Output, obj: Node_Literal) {
-//      output.writeString(obj.toString())
-//    }
-//
-//    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Literal]): Node_Literal = {
-//      NodeFactory.createLiteral(input.readString()).asInstanceOf[Node_Literal]
-//    }
-//  }
+   * Kryo Serializer for Node_Literal
+   */
+  //  class LiteralNodeSerializer extends Serializer[Node_Literal] {
+  //    override def write(kryo: Kryo, output: Output, obj: Node_Literal) {
+  //      output.writeString(obj.toString())
+  //    }
+  //
+  //    override def read(kryo: Kryo, input: Input, objClass: Class[Node_Literal]): Node_Literal = {
+  //      NodeFactory.createLiteral(input.readString()).asInstanceOf[Node_Literal]
+  //    }
+  //  }
 
   /**
-    * Kryo Serializer for Triple
-    */
+   * Kryo Serializer for Triple
+   */
   class TripleSerializer extends Serializer[JenaTriple] {
     override def write(kryo: Kryo, output: Output, obj: JenaTriple) {
       kryo.writeClassAndObject(output, obj.getSubject)
@@ -360,4 +361,5 @@ val nodeFormatter = new NodeFormatterNT()
       result
     }
   }
+
 }
