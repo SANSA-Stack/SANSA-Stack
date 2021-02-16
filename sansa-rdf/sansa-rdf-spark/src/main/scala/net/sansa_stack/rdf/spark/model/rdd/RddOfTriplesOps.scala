@@ -41,7 +41,7 @@ object RddOfTriplesOps {
    */
   def toDS(triples: RDD[Triple]): Dataset[Triple] = {
     val spark: SparkSession = SparkSession.builder().getOrCreate()
-    implicit val encoder = Encoders.kryo[Triple]
+    implicit val encoder: Encoder[Triple] = Encoders.kryo[Triple]
     spark.createDataset[Triple](triples)
   }
 
@@ -122,9 +122,9 @@ object RddOfTriplesOps {
    */
   def find(triples: RDD[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): RDD[Triple] = {
     triples.filter(t =>
-      (subject == None || t.getSubject.matches(subject.get)) &&
-        (predicate == None || t.getPredicate.matches(predicate.get)) &&
-        (`object` == None || t.getObject.matches(`object`.get)))
+                     (subject.isEmpty || t.getSubject.matches(subject.get)) &&
+                     (predicate.isEmpty || t.getPredicate.matches(predicate.get)) &&
+                     (`object`.isEmpty || t.getObject.matches(`object`.get)))
   }
 
   /**
@@ -203,8 +203,6 @@ object RddOfTriplesOps {
     // alternative but probably slower: triples.intersection(other).count() == other.count()
   }
 
-  @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
-
   /**
    * Add a statement to the current RDF graph.
    *
@@ -213,6 +211,7 @@ object RddOfTriplesOps {
    * @return new RDD of triples containing this statement.
    */
   def add(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
+    val spark: SparkSession = SparkSession.builder().getOrCreate()
     val statement = spark.sparkContext.parallelize(Seq(triple))
     triples.union(statement)
   }
@@ -225,6 +224,7 @@ object RddOfTriplesOps {
    * @return new RDD of triples containing this list of statements.
    */
   def addAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
+    val spark: SparkSession = SparkSession.builder().getOrCreate()
     val statements = spark.sparkContext.parallelize(triple)
     triples.union(statements)
   }
@@ -239,6 +239,7 @@ object RddOfTriplesOps {
    * @return new RDD of triples without this statement.
    */
   def remove(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
+    val spark: SparkSession = SparkSession.builder().getOrCreate()
     val statement = spark.sparkContext.parallelize(Seq(triple))
     triples.subtract(statement)
   }
@@ -253,6 +254,7 @@ object RddOfTriplesOps {
    * @return new RDD of triples without these statements.
    */
   def removeAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
+    val spark: SparkSession = SparkSession.builder().getOrCreate()
     val statements = spark.sparkContext.parallelize(triple)
     triples.subtract(statements)
   }
