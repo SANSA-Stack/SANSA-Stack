@@ -27,10 +27,12 @@ import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
+import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.model.OWLOntology
 
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.utils.ScalaUtils
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -291,6 +293,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
     rewriteOpt match {
       case Some(rewrite) =>
+
         var df = df2Rewrite._1
 
         OntopConnection(sessionId, database, mappingsModel, sparql2sql.ontopProperties, jdbcMetaData, ontology)
@@ -312,13 +315,16 @@ class QueryEngineOntop(val spark: SparkSession,
         if (maxRowMappers > 0) {
           df = df.coalesce(50)
         }
-        df.mapPartitions(iterator => {
-            OntopConnection(idBC.value,
+        val rdd = df.mapPartitions(iterator => {
+          ScalaUtils.time {
+            ("Ontop connection init", OntopConnection(idBC.value,
               databaseBC.value,
               mappingsBC.value,
               propertiesBC.value,
               metaDataBC.value,
-              ontologyBC.value)
+              ontologyBC.value))
+          }
+
 
             val mapper = new OntopRowMapper(
             idBC.value,
@@ -335,6 +341,30 @@ class QueryEngineOntop(val spark: SparkSession,
           //      mapper.close()
           it
         }).rdd
+        rdd.toDebugString
+        rdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        rdd
+//        val schema = spark.sparkContext.broadcast(df.schema.fields)
+//        df.queryExecution.toRdd.mapPartitions(iterator => {
+//          OntopConnection(idBC.value,
+//            databaseBC.value,
+//            mappingsBC.value,
+//            propertiesBC.value,
+//            metaDataBC.value,
+//            ontologyBC.value)
+//
+//          val mapper = new OntopRowMapper(
+//            idBC.value,
+//            databaseBC.value,
+//            mappingsBC.value,
+//            propertiesBC.value,
+//            metaDataBC.value,
+//            sparqlQueryBC.value,
+//            ontologyBC.value,
+//            rwiBC.value
+//          )
+//          iterator.map(row => mapper.map(row, schema.value))
+//        })
       case None => spark.sparkContext.emptyRDD
     }
   }

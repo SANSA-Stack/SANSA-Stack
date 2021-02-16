@@ -19,6 +19,8 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.types.{StructField, StructType}
 import org.eclipse.rdf4j.model.{IRI, Literal}
 import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
 import org.semanticweb.owlapi.model.OWLOntology
@@ -101,6 +103,44 @@ class OntopRowMapper(sessionId: String,
     }
 
 //    println(s"row: $row --- binding: $binding")
+    binding
+  }
+
+  val datatypeMappings = DatatypeMappings(typeFactory)
+  def map(row: InternalRow, schema: Array[StructField]): Binding = {
+    toBinding(row, schema)
+  }
+
+  def toBinding(row: InternalRow, schema: Array[StructField]): Binding = { // println(row)
+    val startTime = System.currentTimeMillis()
+    val binding = BindingFactory.create()
+
+    val builder = ImmutableMap.builder[Variable, Constant]
+
+    val it = sqlSignature.iterator()
+    for (i <- 0 until sqlSignature.size()) {
+      val variable = it.next()
+      val sqlType = sqlTypeMap.get(variable)
+      val value = row.get(i, schema(i).dataType)
+      val constant = if (value == null) termFactory.getNullConstant else termFactory.getDBConstant(value.toString, sqlType)
+      builder.put(variable, constant)
+    }
+    val sub = substitutionFactory.getSubstitution(builder.build)
+
+    val composition = sub.composeWith(substitution)
+    val ontopBindings = answerAtom.getArguments.asScala.map(v => {
+      (v, OntopUtils.evaluate(composition.apply(v)))
+    })
+
+    ontopBindings.foreach {
+      case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
+      case _ =>
+    }
+    if (ctx.isDefined) {
+      println(s"binding generated at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
+    }
+
+    //    println(s"row: $row --- binding: $binding")
     binding
   }
 

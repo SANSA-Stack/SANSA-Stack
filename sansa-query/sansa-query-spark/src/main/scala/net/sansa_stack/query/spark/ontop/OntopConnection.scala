@@ -61,6 +61,12 @@ object OntopConnection {
     })
   }
 
+//  lazy val dummyReformulationConfig: OntopReformulationSQLConfiguration = {
+//    JDBCDatabaseGenerator.generateTables(None, jdbcMetaData)
+//
+//    OntopUtils.createReformulationConfig(database, obdaMappings, properties, ontology)
+//  }
+
   /**
    * Does return a JDBC connection URL. If a database has been given, it will be provided as a H2 schema which will
    * be created and activated.
