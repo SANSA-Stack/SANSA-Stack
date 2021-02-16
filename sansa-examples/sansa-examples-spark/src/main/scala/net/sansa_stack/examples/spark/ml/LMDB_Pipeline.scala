@@ -24,14 +24,10 @@ object LMDB_Pipeline {
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
-    JenaSystem.init()
-    val confHadoop = org.apache.hadoop.mapreduce.Job.getInstance().getConfiguration
-    confHadoop.setBoolean("sansa.rdf.parser.skipinvalid", true)
-
     /*
     READ IN DATA
      */
-    val inputFilePath = "/Users/carstendraschner/Datasets/linkedmdb-latest-dump.nt.txt"
+    val inputFilePath = args(0)
     // val df: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
     // val dataset = spark.rdf(Lang.NTRIPLES)(inputFilePath).toDS().cache()
     val dataset = NTripleReader.load(
