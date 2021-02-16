@@ -169,8 +169,8 @@ object NTripleReader {
               ErrorHandlerFactory.errorHandlerStd(errorLog)
             }
           } else {
-            //            ErrorHandlerFactory.errorHandlerWarn
-            new CustomErrorHandler()
+                        ErrorHandlerFactory.errorHandlerWarn
+//            new CustomErrorHandler()
           }
         }
 
@@ -194,11 +194,14 @@ object NTripleReader {
           // this is the default behaviour of Jena, i.e. once a parse error occurs the whole process stops
           RiotParsers.createIteratorNTriples(input, null, profileWrapper.get)
         } else {
-          // here we "simply" skip illegal triples
-
           // we need a custom tokenizer
           val tokenizer = new TokenizerTextForgiving(PeekReader.makeUTF8(input))
-          tokenizer.setErrorHandler(ErrorHandlerFactory.errorHandlerWarn)
+
+          if (stopOnBadTerm == ErrorParseMode.IGNORE) { // ignore bad term errors if possible
+            tokenizer.setErrorHandler(new CustomErrorHandler())
+          } else if (stopOnBadTerm == ErrorParseMode.SKIP) { // skip triples with bad terms
+            tokenizer.setErrorHandler(ErrorHandlerFactory.errorHandlerStrict)
+          }
 
           // which is used by a custom N-Triples iterator
           val it = new LangNTriplesSkipBad(tokenizer, profileWrapper.get, null)

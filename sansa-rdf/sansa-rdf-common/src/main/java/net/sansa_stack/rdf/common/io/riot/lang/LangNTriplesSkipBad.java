@@ -45,8 +45,7 @@ import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving;
  * 
  * @see <a href="http://www.w3.org/TR/n-triples/">http://www.w3.org/TR/n-triples/</a>
  */
-public final class LangNTriplesSkipBad implements Iterator<Triple>
-{
+public final class LangNTriplesSkipBad implements Iterator<Triple> {
     private static Logger messageLog = LoggerFactory.getLogger(LangNTriplesSkipBad.class) ;
 	private RiotException bad = null;
 
@@ -79,7 +78,7 @@ public final class LangNTriplesSkipBad implements Iterator<Triple>
 		/** shadow parent errorHandler */
 		private ErrorHandler errorHandler;
     	Wrapper(Tokenizer tokens, ParserProfile profile, StreamRDF dest) {
-		    super(tokens, new NoErrorProfile(profile), dest) ;
+		    super(tokens, profile, dest) ;
 		    this.errorHandler = profile.getErrorHandler();
 	    }
 
@@ -134,14 +133,14 @@ public final class LangNTriplesSkipBad implements Iterator<Triple>
 			    Node p = tokenAsNode(pToken);
 			    Node o = tokenAsNode(oToken);
 			    triple = profile.createTriple(s, p, o, sToken.getLine(), sToken.getColumn());
-		    } catch (RiotParseException e) {
+		    } catch (RiotException e) {
 			    if (needSkip) {
-//					System.err.println("skipping..."+e.getMessage());
+					System.err.println("skipping..."+e.getMessage());
 				    ((TokenizerTextForgiving)tokens).skipLine();
 				    nextToken();
 			    } else {
-//					System.err.println("bad:"+e.getMessage());
-				    /** this is handled by {@link TokenizerTextForgiving} */
+////					System.err.println("bad:"+e.getMessage());
+//				    /** this is handled by {@link TokenizerTextForgiving} */
 			    }
 		    } catch (NullPointerException e2) {
 			    errorHandler.warning(e2.getMessage(), currLine, currCol);
