@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.common.kryo.jena
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream}
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -281,49 +281,59 @@ val nodeFormatter = new NodeFormatterNT()
     }
   }
 
-  /**
-   * TODO This is just a preliminary serializer implementation:
-   * Main tasks: use a more compact format than NQUADS and ensure that bnodes are preserved
-   *
-   */
-  class DatasetSerializer extends Serializer[Dataset] {
-    override def write(kryo: Kryo, output: Output, obj: Dataset) {
-      val tmp = new ByteArrayOutputStream()
-      RDFDataMgr.write(tmp, obj, RDFFormat.RDF_THRIFT_VALUES)
+  abstract class SerializerForJenaRiotBase[T](lang: Lang, format: RDFFormat)
+    extends Serializer[T] {
+    def writeActual(obj: T, out: OutputStream): Unit
+    def readActual(in: InputStream): T
 
-      output.writeString(tmp.toString)
+    override def write(kryo: Kryo, output: Output, obj: T) {
+      val tmp = new ByteArrayOutputStream()
+      writeActual(obj, tmp)
+
+      val bytes = tmp.toByteArray
+      output.writeInt(bytes.length)
+      output.writeBytes(bytes)
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Dataset]): Dataset = {
-      val str = input.readString()
-      val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
-      val result = DatasetFactory.create
-      RDFDataMgr.read(result, tmp, Lang.RDFTHRIFT)
+    override def read(kryo: Kryo, input: Input, objClass: Class[T]): T = {
+      val len = input.readInt
+      val bytes = input.readBytes(len)
+      val tmp = new ByteArrayInputStream(bytes)
+      val result = readActual(tmp)
 
       result
     }
   }
 
-  class ModelSerializer extends Serializer[Model] {
-    // def lang: Lang = Lang.RDFTHRIFT
-    // def format: RDFFormat = RDFFormat.RDF_THRIFT_VALUES
+  class ModelSerializer(lang: Lang, format: RDFFormat)
+    extends SerializerForJenaRiotBase[Model](lang, format) {
 
-    def lang: Lang = JenaPluginHdt.LANG_HDT
-    def format: RDFFormat = JenaPluginHdt.FORMAT_HDT
-
-    override def write(kryo: Kryo, output: Output, obj: Model) {
-      val tmp = new ByteArrayOutputStream()
-      RDFDataMgr.write(tmp, obj, format)
-
-      output.writeString(tmp.toString)
+    override def writeActual(obj: Model, out: OutputStream) {
+      RDFDataMgr.write(out, obj, format)
     }
 
-    override def read(kryo: Kryo, input: Input, objClass: Class[Model]): Model = {
-      val str = input.readString()
-      val tmp = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
+    override def readActual(in: InputStream): Model = {
       val result = ModelFactory.createDefaultModel
-      RDFDataMgr.read(result, tmp, lang)
+      RDFDataMgr.read(result, in, lang)
+      result
+    }
+  }
 
+  /**
+   * TODO This is just a preliminary serializer implementation:
+   * Main tasks: use a more compact format than NQUADS and ensure that bnodes are preserved
+   *
+   */
+  class DatasetSerializer(lang: Lang, format: RDFFormat)
+    extends SerializerForJenaRiotBase[Dataset](lang, format) {
+
+    override def writeActual(obj: Dataset, out: OutputStream) {
+      RDFDataMgr.write(out, obj, format)
+    }
+
+    override def readActual(in: InputStream): Dataset = {
+      val result = DatasetFactory.create
+      RDFDataMgr.read(result, in, lang)
       result
     }
   }

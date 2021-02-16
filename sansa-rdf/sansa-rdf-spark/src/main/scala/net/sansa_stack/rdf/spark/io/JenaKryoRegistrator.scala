@@ -4,8 +4,10 @@ import com.esotericsoftware.kryo.Kryo
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
 import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
 import net.sansa_stack.rdf.spark.kryo.jena.KryoRegistratorRDFNode
+import org.aksw.jena_sparql_api.io.hdt.JenaPluginHdt
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.impl.ModelCom
+import org.apache.jena.riot.{Lang, RDFFormat}
 import org.apache.jena.sparql.core.{DatasetImpl, VarExprList}
 import org.apache.spark.serializer.KryoRegistrator
 
@@ -63,10 +65,8 @@ class JenaKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Array[org.apache.jena.graph.Triple]])
     kryo.register(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
 
-
-    kryo.register(classOf[ModelCom], new ModelSerializer)
-    kryo.register(classOf[DatasetImpl], new DatasetSerializer)
-
+    kryo.register(classOf[ModelCom], new ModelSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES))
+    kryo.register(classOf[DatasetImpl], new DatasetSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES))
 
     KryoRegistratorRDFNode.registerClassesActual(kryo)
 
