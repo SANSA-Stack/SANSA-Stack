@@ -1,29 +1,23 @@
 package net.sansa_stack.rdf.common.kryo.jena
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream}
-import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
-import java.util.UUID
 
-import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
-import org.aksw.jena_sparql_api.io.hdt.JenaPluginHdt
+import com.esotericsoftware.kryo.{Kryo, Serializer}
 import org.apache.jena.atlas.io.IndentedLineBuffer
 import org.apache.jena.graph.{Node => JenaNode, Triple => JenaTriple, _}
-import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryFactory, Syntax}
+import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.lang.LabelToNode
-import org.apache.jena.riot.lang.LabelToNode.createScopeByDocumentHash
-import org.apache.jena.riot.out.{NodeFmtLib, NodeFormatterNT, NodeFormatterTTL, NodeToLabel}
-import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RDFLanguages, RIOT}
-import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfile, ParserProfileStd, PrefixMapExtended, RiotLib}
-import org.apache.jena.riot.thrift.{TRDF, ThriftConvert}
+import org.apache.jena.riot.out.NodeFormatterNT
+import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfileStd, RiotLib}
 import org.apache.jena.riot.thrift.wire.RDF_Term
-import org.apache.jena.riot.tokens.{TokenizerFactory, TokenizerText}
-import org.apache.jena.sparql.ARQConstants
+import org.apache.jena.riot.thrift.{TRDF, ThriftConvert}
+import org.apache.jena.riot.tokens.TokenizerText
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RIOT}
 import org.apache.jena.sparql.core.{Var, VarExprList, Quad => JenaQuad}
 import org.apache.jena.sparql.expr.Expr
-import org.apache.jena.sparql.util.{ExprUtils, FmtUtils, NodeFactoryExtra}
+import org.apache.jena.sparql.util.ExprUtils
 
 /**
  * @author Nilesh Chakraborty <nilesh@nileshc.com>
@@ -37,8 +31,7 @@ object JenaKryoSerializers {
   class NodeSerializerOld extends Serializer[JenaNode]
   {
 
-    import org.apache.jena.riot.system.PrefixMap
-    import org.apache.jena.riot.system.PrefixMapFactory
+    import org.apache.jena.riot.system.{PrefixMap, PrefixMapFactory}
     import org.apache.jena.sparql.ARQConstants
 
     private val profile = setupInternalParserProfile
@@ -100,9 +93,10 @@ val nodeFormatter = new NodeFormatterNT()
       val rdfTerm = ThriftConvert.convert(obj, allowValues)
       val out = new ByteArrayOutputStream
       val protocol = TRDF.protocol(out)
+      rdfTerm.write(protocol)
+      TRDF.flush(protocol)
       val buffer = out.toByteArray
       ByteArrayUtils.write(output, buffer)
-      // kryo.writeObject(output, buffer)
     }
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
