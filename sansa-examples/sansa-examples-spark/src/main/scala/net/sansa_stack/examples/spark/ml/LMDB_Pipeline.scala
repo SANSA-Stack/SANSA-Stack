@@ -63,16 +63,16 @@ object LMDB_Pipeline {
       dataset,
       "?movie",
       "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
-      2,
+      0,
+      1,
       3,
-      10,
       featuresInOptionalBlocks = true,
     )
     print(autoSparqlString)
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = manualSparqlString // autoSparqlString // manualSparqlString
+    val queryString = autoSparqlString // autoSparqlString // manualSparqlString
     println()
     println(queryString)
 
