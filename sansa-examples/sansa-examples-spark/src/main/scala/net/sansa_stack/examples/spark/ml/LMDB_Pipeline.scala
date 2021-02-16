@@ -38,7 +38,7 @@ object LMDB_Pipeline {
       spark,
       inputFilePath,
       stopOnBadTerm = ErrorParseMode.SKIP,
-      stopOnWarnings = WarningParseMode.SKIP
+      stopOnWarnings = WarningParseMode.IGNORE
     ).toDS().cache()
     println(f"READ IN DATA:\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
@@ -47,7 +47,7 @@ object LMDB_Pipeline {
       spark,
       inputFilePath,
       stopOnBadTerm = ErrorParseMode.SKIP,
-      stopOnWarnings = WarningParseMode.SKIP
+      stopOnWarnings = WarningParseMode.IGNORE
     ).toDF.toDF(Seq("s", "p", "o"): _*).cache() // .toDF(Seq("s", "p", "o"): _*)
     df.show(false)
     // val df = dataset.rdd.toDF()
