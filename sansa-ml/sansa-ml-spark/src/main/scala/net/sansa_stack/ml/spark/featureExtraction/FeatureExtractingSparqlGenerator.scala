@@ -100,15 +100,8 @@ object FeatureExtractingSparqlGenerator {
 
         // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
         val isLiteral = udf((cellElement: String) => {
-          if (cellElement.startsWith("http")) true
-          /* if (cellElement.startsWith("\"")) true
-          else if (cellElement.forall(_.isDigit)) true
-          else if (cellElement.isInstanceOf[Int]) true
-          else if (cellElement.isInstanceOf[Boolean]) true
-          else if (cellElement.isInstanceOf[Float]) true
-          else if (cellElement.isInstanceOf[Double]) true
-           */
-          else false
+          if (cellElement.startsWith("http")) false
+          else true
         })
         // they end with not literal.
         // see ! exclamation mark in where statement
