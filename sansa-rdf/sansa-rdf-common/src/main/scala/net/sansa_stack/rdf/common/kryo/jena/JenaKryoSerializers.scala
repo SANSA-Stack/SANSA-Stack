@@ -29,7 +29,7 @@ object JenaKryoSerializers {
    * Kryo Serializer for Node
    */
   class NodeSerializer extends Serializer[JenaNode] {
-    val errorHandler = ErrorHandlerFactory.errorHandlerStd
+    val errorHandler = ErrorHandlerFactory.errorHandlerWarn
 
     private val profile = setupInternalParserProfile
 
