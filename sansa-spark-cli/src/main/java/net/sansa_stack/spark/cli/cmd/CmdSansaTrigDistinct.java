@@ -23,6 +23,19 @@ public class CmdSansaTrigDistinct
             defaultValue = "srj")
     public String outFormat = null;
 
+    @CommandLine.Option(names = { "--out-file" },
+            description = "Output file")
+    public String outFile = null;
+
+    @CommandLine.Option(names = { "--op", "--out-prefixes" },
+            description = "Prefix sources for output. Subject to used prefix analysis. Default: ${DEFAULT-VALUE}",
+            defaultValue = "rdf-prefixes/prefix.cc.2019-12-17.ttl")
+    public List<String> outPrefixes = null;
+
+    @CommandLine.Option(names = { "--oup", "--out-used-prefixes" },
+            description = "Number of records by which to defer RDF output for used prefix analysis. Negative value emits all prefixes. Default: ${DEFAULT-VALUE}",
+            defaultValue = "100")
+    public long deferOutputForUsedPrefixes;
 
     @CommandLine.Parameters(arity = "1..n", description = "Trig File")
     public List<String> trigFiles;

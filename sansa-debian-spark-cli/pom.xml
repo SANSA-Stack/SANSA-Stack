@@ -22,7 +22,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-cli</artifactId>
+            <artifactId>sansa-spark-cli_2.12</artifactId>
         </dependency>
     </dependencies>
 

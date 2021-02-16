@@ -1,7 +1,7 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
 import net.sansa_stack.rdf.spark.utils._
-import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.graph.{Graph, Node, Triple}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
@@ -13,7 +13,7 @@ import org.apache.spark.sql._
 object RddOfTriplesOps {
 
   /**
-   * Convert a [[RDD[Triple]]] into a DataFrame.
+   * Convert a [[RDD[Triple]]] into a DataFrame of having three string columns.
    *
    * @param triples RDD of triples.
    * @return a DataFrame of triples.
@@ -268,5 +268,20 @@ object RddOfTriplesOps {
     triples
       .map(new JenaTripleToNTripleString()) // map to N-Triples string
       .saveAsTextFile(path)
+  }
+
+
+  /**
+   * Collect an RDD of triples into a graph
+   *
+   * @param outGraph the target graph
+   * @param triples
+   *
+   * @return the target graph
+   */
+  def toGraph(outGraph: Graph, triples: RDD[Triple]): Graph = {
+    val col = triples.collect
+    col.foreach(outGraph.add)
+    outGraph
   }
 }
