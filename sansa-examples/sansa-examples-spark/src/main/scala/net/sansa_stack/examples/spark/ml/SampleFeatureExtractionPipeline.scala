@@ -79,7 +79,7 @@ object SampleFeatureExtractionPipeline {
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine("sparqlify")
     val res = sparqlFrame.transform(dataset)
-    res.show()
+    res.show(false)
 
     /*
     Create Numeric Feature Vectors
@@ -88,6 +88,7 @@ object SampleFeatureExtractionPipeline {
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("seed")
       .setLabelColumn("seed__down_age")
+      .setFeatureColumns(List("seed__up_hasParent__down_age", "seed__up_hasSpouse__down_age"))
     val assembledDf = smartVectorAssembler.transform(res)
     assembledDf.show(false)
 
