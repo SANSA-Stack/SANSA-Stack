@@ -13,7 +13,7 @@ import org.apache.spark.sql._
 object RddOfTriplesOps {
 
   /**
-   * Convert a [[RDD[Triple]]] into a DataFrame.
+   * Convert a [[RDD[Triple]]] into a DataFrame of having three string columns.
    *
    * @param triples RDD of triples.
    * @return a DataFrame of triples.

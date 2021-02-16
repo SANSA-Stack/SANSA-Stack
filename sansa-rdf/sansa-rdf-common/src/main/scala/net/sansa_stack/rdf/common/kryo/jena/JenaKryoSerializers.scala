@@ -100,13 +100,14 @@ val nodeFormatter = new NodeFormatterNT()
       val rdfTerm = ThriftConvert.convert(obj, allowValues)
       val out = new ByteArrayOutputStream
       val protocol = TRDF.protocol(out)
-      val buffer = ByteBuffer.wrap(out.toByteArray)
-      kryo.writeObject(output, buffer)
+      val buffer = out.toByteArray
+      ByteArrayUtils.write(output, buffer)
+      // kryo.writeObject(output, buffer)
     }
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
-      val buffer = kryo.readObject(input, classOf[ByteBuffer])
-      val in = new ByteArrayInputStream(buffer.array)
+      val buffer = ByteArrayUtils.read(input)
+      val in = new ByteArrayInputStream(buffer)
       val protocol = TRDF.protocol(in)
       val rdfTerm = new RDF_Term
       rdfTerm.read(protocol)
@@ -321,13 +322,11 @@ val nodeFormatter = new NodeFormatterNT()
       writeActual(obj, tmp)
 
       val bytes = tmp.toByteArray
-      output.writeInt(bytes.length)
-      output.writeBytes(bytes)
+      ByteArrayUtils.write(output, bytes)
     }
 
     override def read(kryo: Kryo, input: Input, objClass: Class[T]): T = {
-      val len = input.readInt
-      val bytes = input.readBytes(len)
+      val bytes = ByteArrayUtils.read(input)
       val tmp = new ByteArrayInputStream(bytes)
       val result = readActual(tmp)
 
