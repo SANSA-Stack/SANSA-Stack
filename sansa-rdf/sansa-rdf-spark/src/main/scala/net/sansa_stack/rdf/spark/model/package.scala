@@ -2,7 +2,10 @@ package net.sansa_stack.rdf.spark
 
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.jena.graph.{Node, Triple}
+import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.spark.graphx._
+import org.apache.jena.graph.{Graph => JenaGraph}
+import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
@@ -235,6 +238,17 @@ package object model {
     def saveAsNTriplesFile(path: String): Unit =
       RddOfTriplesOps.saveAsNTriplesFile(triples, path)
 
+
+    def toGraph(graph: JenaGraph): JenaGraph = RddOfTriplesOps.toGraph(graph, triples)
+
+    def toGraph(): JenaGraph = toGraph(GraphFactory.createDefaultGraph)
+
+    def toModel(model: Model): Model = {
+      toGraph(model.getGraph)
+      model
+    }
+
+    def toModel(): Model = toModel(ModelFactory.createDefaultModel)
   }
 
   /**

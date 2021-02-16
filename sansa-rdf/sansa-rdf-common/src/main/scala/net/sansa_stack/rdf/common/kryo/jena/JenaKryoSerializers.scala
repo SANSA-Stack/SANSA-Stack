@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.common.kryo.jena
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream}
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -16,6 +17,8 @@ import org.apache.jena.riot.lang.LabelToNode.createScopeByDocumentHash
 import org.apache.jena.riot.out.{NodeFmtLib, NodeFormatterNT, NodeFormatterTTL, NodeToLabel}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RDFLanguages, RIOT}
 import org.apache.jena.riot.system.{ErrorHandlerFactory, IRIResolver, ParserProfile, ParserProfileStd, PrefixMapExtended, RiotLib}
+import org.apache.jena.riot.thrift.{TRDF, ThriftConvert}
+import org.apache.jena.riot.thrift.wire.RDF_Term
 import org.apache.jena.riot.tokens.{TokenizerFactory, TokenizerText}
 import org.apache.jena.sparql.ARQConstants
 import org.apache.jena.sparql.core.{Var, VarExprList, Quad => JenaQuad}
@@ -31,7 +34,7 @@ object JenaKryoSerializers {
   /**
     * Kryo Serializer for Node
     */
-  class NodeSerializer extends Serializer[JenaNode]
+  class NodeSerializerOld extends Serializer[JenaNode]
   {
 
     import org.apache.jena.riot.system.PrefixMap
@@ -59,6 +62,9 @@ val nodeFormatter = new NodeFormatterNT()
     }
 
     override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
+      ThriftConvert.toThrift(null, null, false)
+
+
       val s = input.readString()
       val n = parse(s)
 //      println(s"deserializing string $s   => $n")
@@ -87,6 +93,30 @@ val nodeFormatter = new NodeFormatterNT()
       new ParserProfileStd(factoryRDF, ErrorHandlerFactory.errorHandlerStd, IRIResolver.create, pmap, RIOT.getContext.copy, true, false)
     }
   }
+
+
+  class NodeSerializer(allowValues: Boolean) extends Serializer[JenaNode] {
+    override def write(kryo: Kryo, output: Output, obj: JenaNode) {
+      val rdfTerm = ThriftConvert.convert(obj, allowValues)
+      val out = new ByteArrayOutputStream
+      val protocol = TRDF.protocol(out)
+      val buffer = ByteBuffer.wrap(out.toByteArray)
+      kryo.writeObject(output, buffer)
+    }
+
+    override def read(kryo: Kryo, input: Input, objClass: Class[JenaNode]): JenaNode = {
+      val buffer = kryo.readObject(input, classOf[ByteBuffer])
+      val in = new ByteArrayInputStream(buffer.array)
+      val protocol = TRDF.protocol(in)
+      val rdfTerm = new RDF_Term
+      rdfTerm.read(protocol)
+      val result = ThriftConvert.convert(rdfTerm)
+      result
+    }
+
+
+  }
+
 
   /**
     * Kryo Serializer for Array[Node]

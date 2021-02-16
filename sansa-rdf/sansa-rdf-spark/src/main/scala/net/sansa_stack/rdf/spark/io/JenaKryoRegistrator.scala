@@ -53,14 +53,19 @@ class JenaKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault])
     kryo.register(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault]])
 
-    kryo.register(classOf[org.apache.jena.graph.Node], new NodeSerializer)
-    kryo.register(classOf[Array[org.apache.jena.graph.Node]], new NodeArraySerializer)
+    // Using allowValues false in order to retain RDF terms exactly
+    val nodeSerializer = new NodeSerializer(false)
+    
+    kryo.register(classOf[org.apache.jena.graph.Node], nodeSerializer)
     kryo.register(classOf[org.apache.jena.sparql.core.Var], new VarSerializer)
     kryo.register(classOf[org.apache.jena.graph.Node_Variable], new VariableNodeSerializer)
-    kryo.register(classOf[org.apache.jena.graph.Node_Blank], new NodeSerializer)
+    kryo.register(classOf[org.apache.jena.graph.Node_Blank], nodeSerializer)
     kryo.register(classOf[org.apache.jena.graph.Node_ANY], new ANYNodeSerializer)
-    kryo.register(classOf[org.apache.jena.graph.Node_URI], new NodeSerializer)
-    kryo.register(classOf[org.apache.jena.graph.Node_Literal], new NodeSerializer)
+    kryo.register(classOf[org.apache.jena.graph.Node_URI], nodeSerializer)
+    kryo.register(classOf[org.apache.jena.graph.Node_Literal], nodeSerializer)
+
+    kryo.register(classOf[Array[org.apache.jena.graph.Node]], new NodeArraySerializer)
+
     kryo.register(classOf[org.apache.jena.graph.Triple], new TripleSerializer)
     kryo.register(classOf[Array[org.apache.jena.graph.Triple]])
     kryo.register(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
