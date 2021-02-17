@@ -282,8 +282,6 @@ object FeatureExtractingSparqlGenerator {
 
     val df = dsLiteralsReplaced.rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
 
-    df.show(false)
-
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
     up.cache()
