@@ -47,7 +47,7 @@ public class GenericNodeSerializerCustom
         if (node.isURI()) {
             output.writeByte(TYPE_IRI);
             output.writeString(node.getURI());
-        } else if(node.isLiteral()) {
+        } else if (node.isLiteral()) {
             String lex = node.getLiteralLexicalForm();
             String lang = node.getLiteralLanguage();
             String dt = node.getLiteralDatatypeURI();
@@ -56,7 +56,7 @@ public class GenericNodeSerializerCustom
                 output.writeByte(TYPE_LITERAL | LITERAL_HAS_LANG);
                 output.writeString(lex);
                 output.writeString(lang);
-            } else if(dt != null && !dt.isEmpty() && !dt.equals(XSD.xstring.getURI())) {
+            } else if (dt != null && !dt.isEmpty() && !dt.equals(XSD.xstring.getURI())) {
                 output.writeByte(TYPE_LITERAL | LITERAL_HAS_DTYPE);
                 output.writeString(lex);
                 output.writeString(dt);
@@ -64,10 +64,10 @@ public class GenericNodeSerializerCustom
                 output.writeByte(TYPE_LITERAL);
                 output.writeString(lex);
             }
-        } else if(node.isBlank()) {
+        } else if (node.isBlank()) {
             output.writeByte(TYPE_BNODE);
             output.writeString(node.getBlankNodeLabel());
-        } else if(node.isVariable()) {
+        } else if (node.isVariable()) {
             output.writeByte(TYPE_VAR);
             output.writeString(node.getName());
         } else {
