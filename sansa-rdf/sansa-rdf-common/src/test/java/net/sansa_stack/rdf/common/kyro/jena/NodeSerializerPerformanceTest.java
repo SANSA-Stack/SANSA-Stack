@@ -12,6 +12,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.riot.system.RiotLib;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -25,6 +26,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/* The benchmark shouldn't be a unit test but it is simple doing it that way */
+@Ignore
 public class NodeSerializerPerformanceTest {
 
     private static final Kryo kryo = new Kryo();
