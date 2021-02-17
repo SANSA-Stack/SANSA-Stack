@@ -64,13 +64,13 @@ public class NodeSerializerPerformanceTest {
             }
         });
 
-        double expectedRatio = runTimeInMs / (double)sleepTimeInMs;
+        double expectedRatio = runTimeInMs / (double) sleepTimeInMs;
 
-        System.out.println(String.format("Test tasks completed: %.3f tasks/second - expected ratio: %.3f", actualRatio, + expectedRatio));
+        System.out.println(String.format("Test tasks completed: %.3f tasks/second - expected ratio: %.3f", actualRatio, +expectedRatio));
     }
 
 
-        @Test
+    @Test
     public void testRiotPerformance() throws Exception {
         Collection<Node> nodes = getNodes();
         // Warmup
@@ -111,7 +111,7 @@ public class NodeSerializerPerformanceTest {
         }
 
 //        System.out.println(batchCount);
-        double result = taskCount / ((double)elapsed * 1E-9);
+        double result = taskCount / ((double) elapsed * 1E-9);
         return result;
     }
 }
