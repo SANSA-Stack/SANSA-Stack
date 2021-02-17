@@ -2,31 +2,21 @@ package net.sansa_stack.rdf.common.kyro.jena;
 
 import com.google.common.base.Stopwatch;
 import net.sansa_stack.rdf.common.kryo.jena.ThriftUtils;
-import org.aksw.jena_sparql_api.utils.GraphUtils;
-import org.aksw.jena_sparql_api.utils.NodeUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.impl.NTripleReader;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.out.NodeFmtLib;
-import org.apache.jena.riot.out.NodeFormatterNT;
 import org.apache.jena.riot.system.RiotLib;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class NodeSerializerPerformanceTest {
 
@@ -52,10 +42,11 @@ public class NodeSerializerPerformanceTest {
         Assert.assertEquals(expected, actual);
     }
 
+    /** Test the little benchmark framework itself for whether the obtained results are sane */
     @Test
-    public void testFramework() throws Exception {
+    public void sanityCheckFramework() throws Exception {
         int runTimeInMs = 1000;
-        int sleepTimeInMs = 100;
+        int sleepTimeInMs = 20;
         double actualRatio = avgTimePerTask(runTimeInMs, () -> Collections.singleton("foo"), str -> {
             try {
                 Thread.sleep(sleepTimeInMs);
@@ -66,7 +57,7 @@ public class NodeSerializerPerformanceTest {
 
         double expectedRatio = runTimeInMs / (double) sleepTimeInMs;
 
-        System.out.println(String.format("Test tasks completed: %.3f tasks/second - expected ratio: %.3f", actualRatio, +expectedRatio));
+        System.out.println(String.format("Test tasks completed: %.3f tasks/second - expected ratio: %.3f", actualRatio, expectedRatio));
     }
 
 
@@ -90,22 +81,20 @@ public class NodeSerializerPerformanceTest {
         // Actual
         double ratio = avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithThrift);
         System.out.println(String.format("Thrift performance: %.3f roundtrips/second", ratio));
-
     }
 
     public static <T> double avgTimePerTask(long timeLimitInMs, Supplier<? extends Collection<T>> batches, Consumer<? super T> executor) throws InterruptedException {
         long taskCount = 0;
         Stopwatch sw = Stopwatch.createStarted();
-        long elapsed;
         long timeLimitInNanos = timeLimitInMs * 1000l * 1000l;
 
         long batchCount = 0;
+        long elapsed;
         while ((elapsed = sw.elapsed(TimeUnit.NANOSECONDS)) < timeLimitInNanos) {
             Collection<T> batch = batches.get();
             for (T task : batch) {
                 executor.accept(task);
             }
-//            Thread.sleep(100);
             taskCount += batch.size();
             ++batchCount;
         }
