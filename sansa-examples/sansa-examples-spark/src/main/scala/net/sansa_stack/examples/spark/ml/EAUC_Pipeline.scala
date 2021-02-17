@@ -28,8 +28,8 @@ object EAUC_Pipeline {
     /*
     READ IN DATA
      */
-    val inputFilePath = "/Users/carstendraschner/Cloud/sciebo-research/PLATOON/ENGIE-UBO-accident-use-case/TeamsData/TTL_files_of_CSV/Traffic_Accident_Injury_Database_2018/*.ttl"
-    val df: DataFrame = spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
+    val inputFilePath = "/Users/carstendraschner/Cloud/sciebo-research/PLATOON/ENGIE-UBO-accident-use-case/TeamsData/TTL_files_of_CSV/Traffic_Accident_Injury_Database_2018/caracteristiques_2018_out_1.ttl"
+    // val inputFilePath = "/Users/carstendraschner/Cloud/sciebo-research/PLATOON/ENGIE-UBO-accident-use-case/TeamsData/TTL_files_of_CSV/Traffic_Accident_Injury_Database_2018/*.ttl"
     val dataset = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
     println(f"READ IN DATA:\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
@@ -106,11 +106,10 @@ object EAUC_Pipeline {
       dataset,
       "?accidentId",
       "?accidentId <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.engie.fr/ontologies/accidentontology/RoadAccident> . ",
-      0,
+      1,
       3,
       10,
       featuresInOptionalBlocks = true)
-    print(autoSparqlString)
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
