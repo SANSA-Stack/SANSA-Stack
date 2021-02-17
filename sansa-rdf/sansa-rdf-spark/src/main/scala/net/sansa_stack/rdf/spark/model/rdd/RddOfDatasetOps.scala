@@ -9,6 +9,7 @@ import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.util.DatasetUtils
 import org.apache.jena.sparql.util.compose.DatasetLib
+import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
@@ -29,21 +30,38 @@ object RddOfDatasetOps {
    *
    * Ignores default graphs which get lost.
    */
-  def groupNamedGraphsByGraphIri(rdd: RDD[_ <: Dataset]): RDD[Dataset] = {
+  def groupNamedGraphsByGraphIri(
+                                  rdd: RDD[_ <: Dataset],
+                                  sortGraphsByIri: Boolean = false,
+                                  numPartitions: Int = 0): RDD[Dataset] = {
     import collection.JavaConverters._
     // Note: Model is usually ModelCom so we get out-of-the-box serialization
     // If we used Graph we'd have to deal with a lot more variation
     val graphNameAndModel: RDD[(String, Model)] = rdd
       .flatMap(ds => ds.listNames.asScala.map(iri => (iri, ds.getNamedModel(iri))))
 
-    val result: RDD[Dataset] = graphNameAndModel
-      .reduceByKey((g1, g2) => { g1.add(g2); g1 })
-      .sortByKey()
-      .map({ case (graphName, model) =>
-        val r = DatasetFactory.create
-        r.addNamedModel(graphName, model)
-        r
+    var intermediateRdd: RDD[(String, Model)] = graphNameAndModel
+      .reduceByKey((g1, g2) => {
+        g1.add(g2); g1
       })
+
+    if (numPartitions > 0) {
+      if (sortGraphsByIri) {
+        intermediateRdd = intermediateRdd.repartitionAndSortWithinPartitions(new HashPartitioner(numPartitions))
+      } else {
+        intermediateRdd = intermediateRdd.repartition(numPartitions)
+      }
+    }
+
+    if (sortGraphsByIri) {
+      intermediateRdd = intermediateRdd.sortByKey()
+    }
+
+    val result: RDD[Dataset] = intermediateRdd.map({ case (graphName, model) =>
+      val r = DatasetFactory.create
+      r.addNamedModel(graphName, model)
+      r
+    })
 
     result
   }
@@ -55,8 +73,7 @@ object RddOfDatasetOps {
 
     Objects.requireNonNull(query)
 
-    rdd.mapPartitions(datasets =>
-    {
+    rdd.mapPartitions(datasets => {
       val all = DatasetFactory.create
       datasets.foreach(ds => ds.asDatasetGraph.find
         .forEachRemaining(x => all.asDatasetGraph().add(x)))
