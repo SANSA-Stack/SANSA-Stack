@@ -1,10 +1,13 @@
 package net.sansa_stack.rdf.spark.io
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.aksw.jena_sparql_api.utils.GraphUtils
+import org.apache.jena.graph.GraphUtil
 import org.apache.jena.query.{QueryExecutionFactory, ResultSetFactory, ResultSetFormatter}
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.resultset.ResultSetCompare
+import org.apache.jena.sparql.util.compose.DatasetLib.Collectors
 import org.apache.spark.storage.StorageLevel
 import org.scalatest.FunSuite
 
@@ -16,21 +19,20 @@ import org.scalatest.FunSuite
 class RDFSerializationTests
   extends FunSuite with DataFrameSuiteBase {
 
-    val logger = com.typesafe.scalalogging.Logger(classOf[RDFLoadingTests].getName)
+  val logger = com.typesafe.scalalogging.Logger(classOf[RDFLoadingTests].getName)
 
-    test("serializing and deserializing triples should return the same model") {
+  test("serializing and deserializing triples should return the same model") {
 
-      import net.sansa_stack.rdf.spark.model._
+    import net.sansa_stack.rdf.spark.model._
 
-      val expectedModel = RDFDataMgr.loadModel("rdf.nt")
-      val triples = spark.rdf(expectedModel)
-      triples.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      val actualModel = triples.toModel
+    val expectedModel = RDFDataMgr.loadModel("rdf.nt")
+    val triples = spark.rdf(expectedModel)
+    triples.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    val actualModel = triples.toModel
 
-      val isIsomorphic = actualModel.isIsomorphicWith(expectedModel)
-      assertTrue(isIsomorphic)
-    }
-
+    val isIsomorphic = actualModel.isIsomorphicWith(expectedModel)
+    assertTrue(isIsomorphic)
+  }
 
   // This method should go into a common ResultSetCompareUtils method
   def isIsomorphic(expected: Model, actual: Model): Boolean = {

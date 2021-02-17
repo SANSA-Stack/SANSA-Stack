@@ -37,6 +37,15 @@ public class CmdSansaTrigDistinct
             defaultValue = "100")
     public long deferOutputForUsedPrefixes;
 
+    @CommandLine.Option(names = { "-s", "--sort" },
+            description = "Enable sorting of graphs by their IRI")
+    public boolean sort = false;
+
+    @CommandLine.Option(names = { "--repartition" },
+            description = "Number of partitions to use for grouping / sorting. '0' or negative values disable repartitioning")
+    public int numPartitions = 0;
+
+
     @CommandLine.Parameters(arity = "1..n", description = "Trig File")
     public List<String> trigFiles;
 

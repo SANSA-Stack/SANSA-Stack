@@ -11,8 +11,12 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class QueryExecutionUtilsSpark {
+	private static final Logger logger = LoggerFactory.getLogger(QueryExecutionUtilsSpark.class);
+
 	public static JavaRDD<Binding> createQueryExecution(SparkSession sparkSession, SparqlSqlStringRewrite rewrite, Query query) {
 
 		Multimap<Var, RestrictedExpr> varDef = rewrite.getVarDefinition().getMap();
@@ -28,7 +32,7 @@ public class QueryExecutionUtilsSpark {
 
 		Dataset<Row> dataset = sparkSession.sql(sqlQueryStr);
 
-		System.err.println("SqlQueryStr: " + sqlQueryStr);
+		logger.debug("SqlQueryStr: " + sqlQueryStr);
 //		System.out.println("VarDef: " + rewrite.getVarDefinition());
 
 		SparkRowMapperSparqlify rowMapper = new SparkRowMapperSparqlify(varDef);
