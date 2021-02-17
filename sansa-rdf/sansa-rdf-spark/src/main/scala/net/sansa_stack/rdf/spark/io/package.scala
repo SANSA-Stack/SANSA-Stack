@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream
 import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
-
 import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
@@ -13,7 +12,7 @@ import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
 import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseWrapper
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.jena.graph.{Graph, Node, NodeFactory, Triple}
 import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.io.output.QuadsOutputFormat
@@ -581,5 +580,34 @@ package object io {
         .map { case (_, v) => v }
     }
 
+    /**
+     * Create an RDD of triples from a model's graph
+     *
+     * @author Claus Stadler
+     */
+    def rdf(model: Model): RDD[Triple] = {
+      rdf(model.getGraph)
+    }
+
+    /**
+     * Create an RDD of triples from a graph's triples
+     *
+     * @author Claus Stadler
+     */
+    def rdf(graph: Graph): RDD[Triple] = {
+      import collection.JavaConverters._
+      // val seq = graph.
+      val it = graph.find
+
+      var result: RDD[Triple] = null
+      try {
+        val seq = it.asScala.toSeq
+        result = spark.sparkContext.parallelize(seq)
+      } finally {
+        it.close
+      }
+
+      result
+    }
   }
 }

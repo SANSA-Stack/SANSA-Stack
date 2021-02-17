@@ -62,7 +62,7 @@ object CmdSansaTrigQueryImpl {
 
     val spark = SparkSession.builder
       .master(cmd.sparkMaster)
-      .appName(s"SPARQL example ( $trigFiles )")
+      .appName(s"Trig Query ( $trigFiles )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
         ", ",
@@ -73,9 +73,9 @@ object CmdSansaTrigQueryImpl {
 
     import net.sansa_stack.rdf.spark.io._
 
-    val initialRdd: RDD[Dataset] = validPaths
-      .map(path => spark.datasets(Lang.TRIG)(path.toString))
-      .reduce((a, b) => a.union(b))
+    val initialRdd: RDD[Dataset] = spark.sparkContext.union(
+      validPaths
+      .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 
     val effectiveRdd = if (cmd.makeDistinct) RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
       else initialRdd

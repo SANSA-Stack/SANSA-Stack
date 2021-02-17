@@ -67,6 +67,8 @@
         <hadoop.version>2.8.5</hadoop.version>
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
+        <!-- Our util projects (mainly maintained by Claus) -->
+        <aksw-commons.version>0.8.16-SNAPSHOT</aksw-commons.version>
         <jena.version>3.17.0</jena.version>
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
@@ -147,7 +149,7 @@
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-spark-cli</artifactId>
+                <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -292,6 +294,21 @@
 
             <!-- Miscellaneous -->
 
+            <!-- Thrift: Conflict between Jena with 0.13.0 vs Spark with 0.12.0 -->
+            <!-- So far using jena/thrift fails with unknown type for a thrift Map -->
+            <dependency>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>libthrift</artifactId>
+                <version>0.13.0</version>
+            </dependency>
+
+            <!-- Attempt to use hdt instead of thrift -->
+            <dependency>
+                <groupId>org.aksw.jena-sparql-api</groupId>
+                <artifactId>jena-sparql-api-io-hdt</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
@@ -317,8 +334,13 @@
             <dependency>
                 <groupId>org.aksw.commons</groupId>
                 <artifactId>aksw-commons-util</artifactId>
-                <version>0.8.16-SNAPSHOT</version>
-                <scope>compile</scope>
+                <version>${aksw-commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-io-utils</artifactId>
+                <version>${aksw-commons.version}</version>
             </dependency>
 
             <!-- web server component for use with sparqlify in sansa-query -->

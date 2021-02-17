@@ -10,7 +10,7 @@
         <version>0.7.2_kryo-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-spark-cli</artifactId>
+    <artifactId>sansa-spark-cli_2.12</artifactId>
     <packaging>jar</packaging>
 
 <!--
@@ -59,6 +59,11 @@
         <dependency>
             <groupId>org.aksw.commons</groupId>
             <artifactId>aksw-commons-util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-io-utils</artifactId>
         </dependency>
     </dependencies>
 
