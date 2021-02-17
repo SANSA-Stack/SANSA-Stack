@@ -8,7 +8,7 @@ package net.sansa_stack.rdf.common.kryo.jena;
  * @author Claus Stadler
  */
 public class DefaultNodeSerializer
-    extends GenericNodeSerializerViaThrift
+    extends GenericNodeSerializerCustom
 {
     public DefaultNodeSerializer() {
         super();

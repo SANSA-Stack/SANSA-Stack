@@ -1,6 +1,11 @@
 package net.sansa_stack.rdf.common.kyro.jena;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.google.common.base.Stopwatch;
+import net.sansa_stack.rdf.common.kryo.jena.GenericNodeSerializerCustom;
+import net.sansa_stack.rdf.common.kryo.jena.JenaKryoRegistratorLib;
 import net.sansa_stack.rdf.common.kryo.jena.ThriftUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -9,6 +14,8 @@ import org.apache.jena.riot.system.RiotLib;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +27,13 @@ import java.util.stream.IntStream;
 
 public class NodeSerializerPerformanceTest {
 
+    private static final Kryo kryo = new Kryo();
+
+    static {
+        JenaKryoRegistratorLib.registerNodeSerializers(kryo, new GenericNodeSerializerCustom());
+    }
+
+
     public static Collection<Node> getNodes() {
         // Generate a sufficient number of nodes in order to avoid any caching issues
         Collection<Node> result = IntStream.range(0, 10000)
@@ -29,6 +43,16 @@ public class NodeSerializerPerformanceTest {
         return result;
     }
 
+    public static void roundTripWithCustomFormat(Node expected) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Output output = new Output(out);
+        kryo.writeClassAndObject(output, expected);
+        output.flush();
+        output.close();
+        byte[] bytes = out.toByteArray();
+        Node actual = (Node)kryo.readClassAndObject(new Input(new ByteArrayInputStream(bytes)));
+        Assert.assertEquals(expected, actual);
+    }
 
     public static void roundTripWithThrift(Node expected) {
         byte[] bytes = ThriftUtils.writeNode(expected, false);
@@ -83,6 +107,16 @@ public class NodeSerializerPerformanceTest {
         System.out.println(String.format("Thrift performance: %.3f roundtrips/second", ratio));
     }
 
+    @Test
+    public void testCustomPerformance() throws Exception {
+        Collection<Node> nodes = getNodes();
+        // Warmup
+        avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithCustomFormat);
+
+        // Actual
+        double ratio = avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithCustomFormat);
+        System.out.println(String.format("Custom performance: %.3f roundtrips/second", ratio));
+    }
     public static <T> double avgTimePerTask(long timeLimitInMs, Supplier<? extends Collection<T>> batches, Consumer<? super T> executor) throws InterruptedException {
         long taskCount = 0;
         Stopwatch sw = Stopwatch.createStarted();

@@ -64,15 +64,13 @@ public class JenaKryoRegistratorLib {
         kryo.register(RdfPartitionStateDefault[].class);
 
         // Using allowValues false in order to retain RDF terms exactly
-        Serializer<Node> nodeSerializer = new GenericNodeSerializerViaThrift(false);
+        // Serializer<Node> nodeSerializer = new GenericNodeSerializerViaThrift(false);
+        Serializer<Node> nodeSerializer = new GenericNodeSerializerCustom();
 
-        kryo.register(Node.class, nodeSerializer);
+        registerNodeSerializers(kryo, nodeSerializer);
         kryo.register(Var.class, new VarSerializer());
         kryo.register(Node_Variable.class, new VariableNodeSerializer());
-        kryo.register(Node_Blank.class, nodeSerializer);
         kryo.register(Node_ANY.class, new ANYNodeSerializer());
-        kryo.register(Node_URI.class, nodeSerializer);
-        kryo.register(Node_Literal.class, nodeSerializer);
 
         kryo.register(Node[].class); //, new NodeArraySerializer());
 
@@ -90,5 +88,13 @@ public class JenaKryoRegistratorLib {
         kryo.register(ResourceImpl.class, new RDFNodeSerializer<>(RDFNode::asResource, gson));
         kryo.register(PropertyImpl.class, new RDFNodeSerializer<>(n -> ResourceFactory.createProperty(n.asResource().getURI()), gson));
         kryo.register(LiteralImpl.class, new RDFNodeSerializer<>(RDFNode::asLiteral, gson));
+    }
+
+
+    public static void registerNodeSerializers(Kryo kryo, Serializer<Node> nodeSerializer) {
+        kryo.register(Node.class, nodeSerializer);
+        kryo.register(Node_Blank.class, nodeSerializer);
+        kryo.register(Node_URI.class, nodeSerializer);
+        kryo.register(Node_Literal.class, nodeSerializer);
     }
 }
