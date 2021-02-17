@@ -116,8 +116,8 @@
                                             <exclude>javax.servlet:servlet-api</exclude>
                                             <exclude>javax.validation:validation-api</exclude>
                                             <exclude>javax.ws.rs:javax.ws.rs-api</exclude>
-                                            <exclude>javax.xml.bind:jaxb-api</exclude>
-                                            <exclude>javax.xml.stream:stax-api</exclude>
+                                            <!-- <exclude>javax.xml.bind:jaxb-api</exclude> -->
+                                            <!-- <exclude>javax.xml.stream:stax-api</exclude> -->
                                             <exclude>jdk.tools:jdk.tools</exclude>
                                             <exclude>net.java.dev.jets3t:jets3t</exclude>
                                             <exclude>net.jpountz.lz4:lz4</exclude>
