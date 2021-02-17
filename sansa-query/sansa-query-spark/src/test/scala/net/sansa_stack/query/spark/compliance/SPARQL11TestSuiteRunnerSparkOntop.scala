@@ -104,15 +104,15 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 
-  KryoUtils.kryoLoggingEnabled = true
+//  KryoUtils.kryoLoggingEnabled = true
 
   override def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
-    enableLoggingToFile(s"/tmp/kryo/kryo-trace-${testCase.name}.log")
+//    enableLoggingToFile(s"/tmp/kryo/kryo-trace-${testCase.name}.log")
     super.runTest(testCase, data)
   }
 
   override def runQuery(query: Query, data: Model): SPARQLResult = {
-    com.esotericsoftware.minlog.Log.info(s"******** RUNNING QUERY *********\n$query")
+//    com.esotericsoftware.minlog.Log.info(s"******** RUNNING QUERY *********\n$query")
     super.runQuery(query, data)
   }
 }
