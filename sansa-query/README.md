@@ -148,7 +148,7 @@ val result: Boolean = qe.execAsk()
 // a) SELECT query returns an Apache Jena ResultSet wrapping bindings and variables
 val result: ResultSet = qe.execSelect()
 
-// b) CONSTRUCT query and return an Apacje Jena Model wrapping providing the triples as Statements
+// b) CONSTRUCT query and return an Apache Jena Model wrapping the triples as Statements
 val result: Model = qe.execConstruct()
 ```
 
