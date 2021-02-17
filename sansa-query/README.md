@@ -128,8 +128,11 @@ val query = "..."
 val qe = qef.createQueryExecution(query)
 
 // depending on the query type, finally execute the query
-// a) SELECT query returns an RDD of bindings
-val result: RDD[Binding] = qe.execSelectSpark()
+// a) SELECT query returns a ResultSetSpark which holdes an
+//    RDD of bindings and the result variables
+val result: ResultSetSpark = qe.execSelectSpark()
+val resultBindings: RDD[Binding] = result.getBindings
+val resultVars: Seq[Var] = result.getResultVars
 
 // b) CONSTRUCT query returns an RDD of triples
 val result: RDD[Triple] = qe.execConstructSpark()
