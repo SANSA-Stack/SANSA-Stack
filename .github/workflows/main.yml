@@ -5,6 +5,10 @@ name: CI
 on:
   push:
     branches: [ develop ]
+    paths: 
+     - '**.scala'
+     - '**.java'
+     - '**pom.xml'
   pull_request:
     branches: [ develop ]
   workflow_dispatch:
