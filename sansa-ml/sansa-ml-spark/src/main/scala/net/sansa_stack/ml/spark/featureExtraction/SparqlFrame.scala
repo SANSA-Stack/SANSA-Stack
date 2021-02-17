@@ -116,7 +116,8 @@ class SparqlFrame extends Transformer{
       case "sparqlify" =>
         graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
       case "ontop" =>
-        graphRdd.verticalPartition(RdfPartitionerDefault).ontop
+        throw new Exception(s"Ontop under develop at the moment")
+        // graphRdd.verticalPartition(RdfPartitionerDefault).ontop
       case _ => throw new Exception(s"Your set engine: ${_queryExcecutionEngine} not supported")
     }
 
