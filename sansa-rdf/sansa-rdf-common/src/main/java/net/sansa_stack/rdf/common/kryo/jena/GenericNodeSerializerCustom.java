@@ -11,6 +11,14 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 
+/**
+ * A node serializer using a custom (i.e. non-standard) format for intermediate serialization.
+ * This class was created in order to allow processing of invalid RDF data.
+ * Examples include IRIs with white spaces or even worse IRIs with angular brackets which would
+ * result in a non-parsable turtle serialization.
+ *
+ * @author Claus Stadler
+ */
 public class GenericNodeSerializerCustom
     extends Serializer<Node>
 {
