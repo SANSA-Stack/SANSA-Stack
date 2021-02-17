@@ -47,14 +47,31 @@ object LMDB_Pipeline {
     // OPTION 1
     val manualSparqlString =
     """
-      |SELECT
-      |?movie ?title
+      | SELECT ?movie ?movie__down_date ?movie__down_title ?movie__down_runtime ?movie__down_initial_release_date ?movie__up_director__down_director_name ?movie__down_actor__down_actor_name
       |
       |WHERE {
       |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
       |
+      |	OPTIONAL {
+      |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
+      |	}
+      |
+      |	OPTIONAL {
+      |		?movie <http://purl.org/dc/terms/title> ?movie__down_title .
+      |	}
+      |
+      |	OPTIONAL {
+      |		?movie <http://data.linkedmdb.org/movie/runtime> ?movie__down_runtime .
+      |	}
+      |
       | OPTIONAL {
-      |   ?movie <http://purl.org/dc/terms/title> ?title
+      |		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+      |		?movie__up_director <http://data.linkedmdb.org/movie/director_name> ?movie__up_director__down_director_name .
+      |	}
+      |
+      | OPTIONAL {
+      |		?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor .
+      |		?movie__down_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__down_actor__down_actor_name .
       | }
       |}
       """.stripMargin
@@ -63,16 +80,15 @@ object LMDB_Pipeline {
       dataset,
       "?movie",
       "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
-      0,
       1,
       3,
+      1,
       featuresInOptionalBlocks = true,
     )
-    print(autoSparqlString)
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = autoSparqlString // autoSparqlString // manualSparqlString
+    val queryString = manualSparqlString // autoSparqlString // manualSparqlString
     println()
     println(queryString)
 
