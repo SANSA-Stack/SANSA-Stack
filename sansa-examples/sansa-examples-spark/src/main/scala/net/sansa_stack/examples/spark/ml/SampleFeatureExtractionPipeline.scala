@@ -7,7 +7,7 @@ import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object SampleFeatureExtractionPipeline {
   def main(args: Array[String]): Unit = {
@@ -30,7 +30,7 @@ object SampleFeatureExtractionPipeline {
      */
     val inputFilePath = "/Users/carstendraschner/GitHub/SANSA-Stack/sansa-ml/sansa-ml-spark/src/main/resources/test.ttl"
     // val df: DataFrame = spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
-    val dataset = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
+    val dataset: Dataset[org.apache.jena.graph.Triple] = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
     dataset.foreach(println(_))
     /*
     CREATE FEATURE EXTRACTING SPARQL
