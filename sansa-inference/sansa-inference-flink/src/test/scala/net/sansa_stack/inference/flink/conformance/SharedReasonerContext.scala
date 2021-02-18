@@ -1,13 +1,12 @@
 package net.sansa_stack.inference.flink.conformance
 
-import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers.{NodeSerializer, TripleSerializer}
+import net.sansa_stack.inference.flink.forwardchaining.ForwardRuleReasoner
+import net.sansa_stack.rdf.common.kryo.jena.{DefaultNodeSerializer, TripleSerializer}
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration
 import org.apache.flink.test.util.MiniClusterWithClientResource
 import org.apache.jena.graph.{Node, Triple}
 import org.scalatest.{BeforeAndAfterAll, Suite}
-
-import net.sansa_stack.inference.flink.forwardchaining.ForwardRuleReasoner
 
 /**
   * A shared reasoner and Flink environment used for multiple test cases using the same resources.
@@ -38,7 +37,7 @@ trait SharedReasonerContext[R <: ForwardRuleReasoner]
     _env.setParallelism(4)
     _env.getConfig.disableSysoutLogging()
     _env.getConfig.addDefaultKryoSerializer(classOf[Triple], classOf[TripleSerializer])
-    _env.getConfig.addDefaultKryoSerializer(classOf[Node], classOf[NodeSerializer])
+    _env.getConfig.addDefaultKryoSerializer(classOf[Node], classOf[DefaultNodeSerializer])
   }
 
   import org.apache.flink.test.util.MiniClusterWithClientResource

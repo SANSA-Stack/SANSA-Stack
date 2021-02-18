@@ -4,6 +4,8 @@ import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe.MethodSymbol
 
+import net.sf.jsqlparser.schema.Table
+import net.sf.jsqlparser.statement.select.Select
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api._
 import org.aksw.r2rml.jena.vocab.RR
@@ -13,6 +15,8 @@ import org.apache.jena.graph.NodeFactory
 import org.apache.jena.rdf.model.{Model, ModelFactory, Property, Resource, ResourceFactory}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.ExprVar
+import net.sf.jsqlparser.parser.CCJSqlParserUtil
+import net.sf.jsqlparser.util.TablesNamesFinder
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, TermType}
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
@@ -293,5 +297,57 @@ object R2rmlUtils {
     val newModel = ModelFactory.createDefaultModel().add(mappingsModel)
     R2rmlUtils.streamTriplesMaps(newModel).foreach(R2rmlLib.expandShortcuts)
     newModel
+  }
+
+  def prependDatabaseName(database: String, model: Model): Model = {
+    streamTriplesMaps(model).foreach(tm => {
+      val lt = tm.getOrSetLogicalTable()
+      if (lt.qualifiesAsBaseTableOrView()) {
+        lt.asBaseTableOrView().setTableName(database + "." + lt.asBaseTableOrView().getTableName)
+      } else {
+        val view = lt.asR2rmlView()
+        var query = view.getSqlQuery
+        query = makeQualifiedTableNames(database, query)
+        view.setSqlQuery(query)
+      }
+    })
+    model
+  }
+
+  private def makeQualifiedTableNames(qualifier: String, query: String): String = {
+    val statement = CCJSqlParserUtil.parse(query)
+    val selectStatement = statement.asInstanceOf[Select]
+    val tablesNamesFinder = new TablesNamesFinder {
+      override def visit(tableName: Table): Unit = {
+        tableName.setSchemaName(qualifier)
+      }
+    }
+    selectStatement.accept(tablesNamesFinder)
+    statement.toString
+  }
+
+  def replaceEscapeChars(model: Model, oldEscapeChar: Char, newEscapeChar: Char): Model = {
+    streamTriplesMaps(model).foreach(tm => {
+      val lt = tm.getOrSetLogicalTable()
+      // tables
+      if (lt.qualifiesAsBaseTableOrView()) {
+        lt.asBaseTableOrView().setTableName(lt.asBaseTableOrView().getTableName.replace(oldEscapeChar, newEscapeChar))
+      } else {
+        // TODO views
+      }
+
+      // column names
+      tm.getSubjectMap.setColumn(tm.getSubjectMap.getColumn.replace(oldEscapeChar, newEscapeChar))
+      tm.getPredicateObjectMaps.asScala.foreach(pm => {
+        pm.getObjectMaps.asScala.foreach(om => {
+          if (om.qualifiesAsTermMap()) {
+            om.asTermMap().setColumn(om.asTermMap().getColumn.replace(oldEscapeChar, newEscapeChar))
+          }
+        })
+      })
+    })
+
+
+    model
   }
 }

@@ -81,4 +81,14 @@ object ScalaUtils extends Logging {
   def time[R](message: String)(block: => R): R = {
     time((message, block))
   }
+
+  /**
+   * @see org.apache.commons.lang3.StringUtils.unwrap
+   * @param s
+   * @param quoteChar
+   * @return
+   */
+  def unQuote(s: String, quoteChar: Char = '"'): String = {
+    org.apache.commons.lang3.StringUtils.unwrap(s, quoteChar)
+  }
 }

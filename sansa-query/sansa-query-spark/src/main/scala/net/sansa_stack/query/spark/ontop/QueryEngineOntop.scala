@@ -205,7 +205,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
       // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
       val tn = SQLUtils.parseTableIdentifier(tableName)
-      val to = sqlEscaper.escapeColumnName(o.stripPrefix("\"").stripSuffix("\""))
+      val to = sqlEscaper.escapeColumnName(ScalaUtils.unQuote(o))
       val df = spark.sql(s"SELECT DISTINCT $to FROM $tn")
 
       val classes = df.collect().map(_.getString(0))
