@@ -9,11 +9,13 @@ import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.RDFLanguages
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SparkSession}
+
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
-
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks.{break, breakable}
+
+import net.sansa_stack.query.spark.SPARQLEngine
 
 object FeatureExtractingSparqlGenerator {
 
@@ -258,7 +260,7 @@ object FeatureExtractingSparqlGenerator {
     // query for seeds and list those
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(seedFetchingSparql)
-      .setQueryExcecutionEngine("sparqlify")
+      .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
     val seedsDf: DataFrame = sparqlFrame.transform(ds).toDF("n_0").cache()
 
     if (seedsDf.count() == 0) {
