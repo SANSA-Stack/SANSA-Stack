@@ -288,7 +288,14 @@ object R2rmlUtils {
         tm.getPredicateObjectMaps.asScala.exists(_.getPredicateMaps.asScala.exists(pm => Option(pm.getConstant).contains(predicate))))
   }
 
-  def prependDatabaseName(database: String, model: Model): Model = {
+  /**
+   * Make all table identifiers being qualified with the given database resp. schema name.
+   *
+   * @param database the database schema name
+   * @param model    the R2RML mappings
+   * @return the modified R2RML mappings
+   */
+  def makeQualifiedTableIdentifiers(database: String, model: Model): Model = {
     streamTriplesMaps(model).foreach(tm => {
       val lt = tm.getOrSetLogicalTable()
       if (lt.qualifiesAsBaseTableOrView()) {
@@ -315,28 +322,93 @@ object R2rmlUtils {
     statement.toString
   }
 
-  def replaceEscapeChars(model: Model, oldEscapeChar: Char, newEscapeChar: Char): Model = {
+  val escapeChars = Seq('"', '`')
+  /**
+   * Unescapes all SQL identifiers, i.e. the table and column names.
+   *
+   * @param model the R2RML mappings
+   * @return the modified R2RML mappings
+   */
+  def unescapeIdentifiers(model: Model): Model = {
+    escapeChars.foreach(c => replaceEscapeChars(model, s"$c", ""))
+    model
+  }
+
+  /**
+   * Replaces the escape chars of all SQL identifiers, i.e. the table and column names.
+   *
+   * @param model the R2RML mappings
+   * @param oldEscapeChar the old escape char
+   * @param newEscapeChar the new escape char
+   * @return the modified R2RML mappings
+   */
+  def replaceEscapeChars(model: Model, oldEscapeChar: String, newEscapeChar: String): Model = {
     streamTriplesMaps(model).foreach(tm => {
       val lt = tm.getOrSetLogicalTable()
-      // tables
-      if (lt.qualifiesAsBaseTableOrView()) {
-        lt.asBaseTableOrView().setTableName(lt.asBaseTableOrView().getTableName.replace(oldEscapeChar, newEscapeChar))
-      } else {
-      // TODO views
+
+      if (lt.qualifiesAsBaseTableOrView()) {// tables
+        val tn = lt.asBaseTableOrView().getTableName
+        lt.asBaseTableOrView().setTableName(replaceIdentifier(tn, oldEscapeChar, newEscapeChar))
+      } else { // views
+        val view = lt.asR2rmlView()
+        val query = view.getSqlQuery
+        view.setSqlQuery(replaceQueryIdentifiers(query, oldEscapeChar, newEscapeChar))
       }
 
       // column names
-      tm.getSubjectMap.setColumn(tm.getSubjectMap.getColumn.replace(oldEscapeChar, newEscapeChar))
-      tm.getPredicateObjectMaps.asScala.foreach(pm => {
-        pm.getObjectMaps.asScala.foreach(om => {
-          if (om.qualifiesAsTermMap()) {
-            om.asTermMap().setColumn(om.asTermMap().getColumn.replace(oldEscapeChar, newEscapeChar))
-          }
-        })
+      // s
+      val sm = tm.getSubjectMap
+      if (sm != null) {
+        val col = sm.getColumn
+        if(col != null) {
+          sm.setColumn(replaceIdentifier(col, oldEscapeChar, newEscapeChar))
+        }
+      }
+
+      tm.getPredicateObjectMaps.forEach(pm => {
+        // p
+        val pms = pm.getPredicateMaps
+        if (pms != null) {
+          pms.forEach(pm => {
+            val col = pm.getColumn
+            if (col != null) {
+              pm.setColumn(replaceIdentifier(col, oldEscapeChar, newEscapeChar))
+            }
+          })
+        }
+
+        // o
+        val oms = pm.getObjectMaps
+        if (oms != null) {
+          oms.forEach(om => {
+            if (om.qualifiesAsTermMap()) {
+              val tm = om.asTermMap()
+              val col = tm.getColumn
+              if (col != null) {
+                tm.setColumn(replaceIdentifier(col, oldEscapeChar, newEscapeChar))
+              }
+            }
+          })
+        }
       })
     })
 
-
     model
+  }
+
+  private def replaceIdentifier(identifier: String, oldEscapeChar: String, newEscapeChar: String): String = {
+    identifier.replace(oldEscapeChar, newEscapeChar)
+  }
+
+  private def replaceQueryIdentifiers(query: String, oldEscapeChar: String, newEscapeChar: String): String = {
+    val statement = CCJSqlParserUtil.parse(query)
+    val selectStatement = statement.asInstanceOf[Select]
+    val tablesNamesFinder = new TablesNamesFinder {
+      override def visit(tableName: Table): Unit = {
+        tableName.setName(tableName.getName.replace(oldEscapeChar, newEscapeChar))
+      }
+    }
+    selectStatement.accept(tablesNamesFinder)
+    statement.toString
   }
 }
