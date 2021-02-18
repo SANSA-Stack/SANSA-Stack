@@ -95,7 +95,7 @@ object LMDB_Pipeline {
     /*
     FEATURE EXTRACTION OVER SPARQL
     Gain Features from Query
-    this creates a dataframe with coulms corresponding to Sparql features
+    this creates a dataframe with columns corresponding to Sparql features
      */
     println("FEATURE EXTRACTION OVER SPARQL")
     val sparqlFrame = new SparqlFrame()

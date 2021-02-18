@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
-import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
+import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark._
 import net.sansa_stack.rdf.spark.partition.RDFPartition
@@ -11,9 +11,10 @@ import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{BooleanType, DoubleType, FloatType, IntegerType, NullType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
-
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 
 /**
  * This SparqlFrame Transformer creates a dataframe based on a SPARQL query
@@ -41,7 +42,7 @@ class SparqlFrame extends Transformer{
   }
 
   /**
-   * setter to specify which query excecution engine to be used
+   * setter to specify which query execution engine to be used
    *
    * option one is ontop option two sparqlify
    *
@@ -101,9 +102,9 @@ class SparqlFrame extends Transformer{
   } */
 
   /**
-   * creates a natic spark mllib dataframe with columns corresponding to the projection variables
+   * creates a native spark Mllib DataFrame with columns corresponding to the projection variables
    *
-   * columns are implicitly casted to string or if specified in literals to repective integer ect
+   * columns are implicitly casted to string or if specified in literals to respective integer ect
    *
    * @param dataset the knowledge graph as dataset of jena triple
    * @return a dataframe with columns corresponding to projection variables
@@ -116,8 +117,10 @@ class SparqlFrame extends Transformer{
       case "sparqlify" =>
         graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
       case "ontop" =>
-        throw new Exception(s"Ontop under develop at the moment")
-        // graphRdd.verticalPartition(RdfPartitionerDefault).ontop
+         graphRdd.verticalPartition(new RdfPartitionerComplex(),
+                                   explodeLanguageTags = true,
+                                   new SqlEscaperDoubleQuote(),
+                                   escapeIdentifiers = true).ontop
       case _ => throw new Exception(s"Your set engine: ${_queryExcecutionEngine} not supported")
     }
 
