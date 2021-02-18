@@ -52,7 +52,7 @@ class SparqlFrame extends Transformer{
    * @return the set transformer
    */
   def setQueryExcecutionEngine(queryExcecutionEngine: SPARQLEngine.Value): this.type = {
-    if (queryExcecutionEngine == "sparqlify" | queryExcecutionEngine == "ontop" ) {
+    if (queryExcecutionEngine.toString.toLowerCase() == "sparqlify" | queryExcecutionEngine.toString.toLowerCase() == "ontop" ) {
       _queryExcecutionEngine = queryExcecutionEngine
     }
     else {
@@ -63,45 +63,6 @@ class SparqlFrame extends Transformer{
 
   override def transformSchema(schema: StructType): StructType =
     throw new NotImplementedError()
-  /*
-  /**
-   * call of repective query laver to get query result as RDD[Bindings]
-   * @param dataset the readin KG as Dataset[Triple]
-   * @return the aswer from the query as rdd bindings so features are a var binding
-   */
-  protected def getResultBindings(dataset: Dataset[_]): RDD[Binding] = {
-    if (_queryExcecutionEngine == "ontop") {
-      println("SparqlFrame: Usage of Ontop for Query Execution")
-      implicit val tripleEncoder = Encoders.kryo(classOf[Triple])
-
-      val partitions: Map[RdfPartitionComplex, RDD[Row]] =
-        RdfPartitionUtilsSpark.partitionGraph(
-          dataset.as[Triple].rdd,
-          partitioner = RdfPartitionerComplex(false))
-
-      val sparqlEngine = OntopSPARQLEngine(spark, partitions, Option.empty)
-      val bindings: RDD[Binding] = sparqlEngine.execSelect(_query)
-
-      bindings
-    }
-    else {
-      println("SparqlFrame: Usage of Sparqlify for Query Execution")
-      val query = QueryFactory.create(_query)
-      implicit val tripleEncoder = Encoders.kryo(classOf[Triple])
-      val partitions = RdfPartitionUtilsSpark.partitionGraph(dataset.as[Triple].rdd)
-      val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
-      val qef: QueryExecutionFactorySparqlifySpark = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
-      val qe: QueryExecutionSparqlifySpark = qef.createQueryExecution(query)
-
-      val sparkResultSet = qe.execSelectSpark() // SparkResultSet is a pair of result vars + rdd
-      val resultVars : java.util.List[Var] = sparkResultSet.getResultVars
-      val javaRdd: JavaRDD[Binding] = sparkResultSet.getRdd
-      val scalaRdd : RDD[Binding] = javaRdd.rdd
-
-      scalaRdd
-    }
-
-  } */
 
   /**
    * creates a native spark Mllib DataFrame with columns corresponding to the projection variables
