@@ -261,6 +261,10 @@ object FeatureExtractingSparqlGenerator {
       .setQueryExcecutionEngine("sparqlify")
     val seedsDf: DataFrame = sparqlFrame.transform(ds).toDF("n_0").cache()
 
+    if (seedsDf.count() == 0) {
+      throw new Exception(s"The sparql query hasn't resulted in any seed entity!")
+    }
+
     // TODO make log println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
 
     val numberOfSeeds: Int = seedsDf.count().toInt
