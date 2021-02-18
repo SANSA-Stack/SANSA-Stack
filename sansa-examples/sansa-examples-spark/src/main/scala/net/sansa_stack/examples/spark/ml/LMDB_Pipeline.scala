@@ -7,10 +7,11 @@ import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.clustering.KMeans
-import org.apache.spark.ml.evaluation.ClusteringEvaluator
+import org.apache.spark.ml.evaluation.{ClusteringEvaluator, MulticlassClassificationEvaluator}
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
 import net.sansa_stack.query.spark.SPARQLEngine
+import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
 
 object LMDB_Pipeline {
   def main(args: Array[String]): Unit = {
@@ -48,42 +49,66 @@ object LMDB_Pipeline {
      */
     // OPTION 1
     val manualSparqlString =
-    """
-      | SELECT ?movie ?movie__down_date ?movie__down_title ?movie__down_runtime ?movie__down_initial_release_date ?movie__up_director__down_director_name ?movie__down_actor__down_actor_name
-      |
-      |WHERE {
-      |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
-      |
-      |	OPTIONAL {
-      |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
-      |	}
-      |
-      |	OPTIONAL {
-      |		?movie <http://purl.org/dc/terms/title> ?movie__down_title .
-      |	}
-      |
-      |	OPTIONAL {
-      |		?movie <http://data.linkedmdb.org/movie/runtime> ?movie__down_runtime .
-      |	}
-      |
-      | OPTIONAL {
-      |		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
-      |		?movie__up_director <http://data.linkedmdb.org/movie/director_name> ?movie__up_director__down_director_name .
-      |	}
-      |
-      | OPTIONAL {
-      |		?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor .
-      |		?movie__down_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__down_actor__down_actor_name .
-      | }
-      |}
+      """
+        | SELECT
+        | ?movie
+        | ?movie__down_date
+        | ?movie__down_title
+        | ?movie__down_runtime
+        | ?movie__down_actor__down_actor_name
+        | ?movie__down_genre__down_film_genre_name
+        | ?movie__down_country__down_country_name
+        | ?movie__down_country__down_country_languages
+        | ?movie__down_country__down_country_areaInSqKm
+        |
+        |WHERE {
+        |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+        |
+        |	OPTIONAL {
+        |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
+        |	}
+        |
+        |	OPTIONAL {
+        |		?movie <http://purl.org/dc/terms/title> ?movie__down_title .
+        |	}
+        |
+        |	OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/runtime> ?movie__down_runtime .
+        |	}
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor .
+        |		?movie__down_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__down_actor__down_actor_name .
+        | }
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+        |		?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__down_genre__down_film_genre_name .
+        |	}
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+        |		?movie__down_country <http://data.linkedmdb.org/movie/country_name> ?movie__down_country__down_country_name .
+        |	}
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+        |		?movie__down_country <http://data.linkedmdb.org/movie/country_languages> ?movie__down_country__down_country_languages .
+        |	}
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+        |		?movie__down_country <http://data.linkedmdb.org/movie/country_areaInSqKm> ?movie__down_country__down_country_areaInSqKm .
+        |	}
+        |}
       """.stripMargin
     // OPTION 2
     val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
       dataset,
       "?movie",
       "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
-      1,
-      3,
+      0,
+      4,
       1,
       featuresInOptionalBlocks = true,
     )
@@ -111,23 +136,61 @@ object LMDB_Pipeline {
     */
     println("SMART VECTOR ASSEMBLER")
     val smartVectorAssembler = new SmartVectorAssembler()
-      .setEntityColumn("movie")
+      .setEntityColumn("movie").setLabelColumn("movie__down_genre__down_film_genre_name")
     val assembledDf = smartVectorAssembler.transform(res).cache()
     assembledDf.show(false)
     println(f"assembled df has ${assembledDf.count()} rows")
 
     /*
+    Indoex Labels
+     */
+    val labelIndexer = new StringIndexer()
+      .setInputCol("label")
+      .setOutputCol("indexedLabel")
+      .fit(assembledDf).setHandleInvalid("skip")
+    val assembledDflabeledIndex = labelIndexer.transform(assembledDf)
+    assembledDflabeledIndex.show(false)
+
+    /*
     APPLY Common SPARK MLlib Example Algorithm
      */
     println("APPLY Common SPARK MLlib Example Algorithm")
+
+    val rf = new RandomForestClassifier()
+      .setLabelCol("indexedLabel")
+      .setFeaturesCol("features")
+      .setNumTrees(10)
+    val model = rf.fit(assembledDflabeledIndex.distinct())
     // Trains a k-means model.
-    val kmeans = new KMeans().setK(2) // .setSeed(1L)
-    val model = kmeans.fit(assembledDf.distinct())
+    /* val kmeans = new KMeans()
+      .setK(2)
+      .setFeaturesCol("features").setLabe// .setSeed(1L)
+    val model = kmeans.fit(assembledDflabeledIndex.distinct())
+
+     */
 
     // Make predictions
-    val predictions = model.transform(assembledDf)
-    predictions.show(false)
+    val predictions = model.transform(assembledDflabeledIndex)
+    // predictions.show(false)
 
+    val labelConverter = new IndexToString()
+      .setInputCol("prediction")
+      .setOutputCol("predictedLabel")
+      .setLabels(labelIndexer.labelsArray(0))
+    labelConverter.transform(predictions).select("id", "label", "predictedLabel").show(false)
+
+    // Select (prediction, true label) and compute test error.
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("indexedLabel")
+      .setPredictionCol("prediction")
+      .setMetricName("accuracy")
+    val accuracy = evaluator.evaluate(predictions)
+    println(s"Test Error = ${(1.0 - accuracy)}")
+
+    // val rfModel = model.stages(2).asInstanceOf[RandomForestClassificationModel]
+    // println(s"Learned classification forest model:\n ${rfModel.toDebugString}")
+
+    /*
     // Evaluate clustering by computing Silhouette score
     val evaluator = new ClusteringEvaluator()
 
@@ -137,5 +200,7 @@ object LMDB_Pipeline {
     // Shows the result.
     println("Cluster Centers: ")
     model.clusterCenters.foreach(println)
+
+     */
   }
 }
