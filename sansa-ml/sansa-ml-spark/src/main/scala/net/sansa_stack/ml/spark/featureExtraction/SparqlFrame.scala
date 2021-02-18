@@ -16,13 +16,15 @@ import scala.collection.mutable.ListBuffer
 
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 
+import net.sansa_stack.query.spark.SPARQLEngine.SPARQLEngine
+
 /**
  * This SparqlFrame Transformer creates a dataframe based on a SPARQL query
  * the resulting columns correspond to projection variables
  */
 class SparqlFrame extends Transformer{
   var _query: String = _
-  var _queryExcecutionEngine: String = "sparqlify"
+  var _queryExcecutionEngine: SPARQLEngine.Value = SPARQLEngine.Sparqlify
 
   override val uid: String = Identifiable.randomUID("sparqlFrame")
 
@@ -49,7 +51,7 @@ class SparqlFrame extends Transformer{
    * @param queryExcecutionEngine a string either ontop or sparqlify
    * @return the set transformer
    */
-  def setQueryExcecutionEngine(queryExcecutionEngine: String): this.type = {
+  def setQueryExcecutionEngine(queryExcecutionEngine: SPARQLEngine.Value): this.type = {
     if (queryExcecutionEngine == "sparqlify" | queryExcecutionEngine == "ontop" ) {
       _queryExcecutionEngine = queryExcecutionEngine
     }
@@ -114,9 +116,9 @@ class SparqlFrame extends Transformer{
     // graphRdd.foreach(println(_))
 
     val qef = _queryExcecutionEngine match {
-      case "sparqlify" =>
+      case SPARQLEngine.Sparqlify =>
         graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
-      case "ontop" =>
+      case SPARQLEngine.Ontop =>
          graphRdd.verticalPartition(new RdfPartitionerComplex(),
                                    explodeLanguageTags = true,
                                    new SqlEscaperDoubleQuote(),

@@ -6,6 +6,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.types.{DecimalType, IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Encoders, SparkSession}
 import org.scalatest.FunSuite
+
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.apache.jena.graph.Triple
@@ -14,6 +15,8 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
+
+import net.sansa_stack.query.spark.SPARQLEngine
 
 
 class SparqlFrameTest extends FunSuite with SharedSparkContext{
@@ -67,7 +70,7 @@ class SparqlFrameTest extends FunSuite with SharedSparkContext{
                         |}""".stripMargin
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
-      .setQueryExcecutionEngine("sparqlify")
+      .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
     val res: DataFrame = sparqlFrame.transform(dataset)
 
     res.show(false)

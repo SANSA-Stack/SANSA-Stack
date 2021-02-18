@@ -9,6 +9,8 @@ import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+import net.sansa_stack.query.spark.SPARQLEngine
+
 object EAUC_Pipeline {
   def main(args: Array[String]): Unit = {
     // setup spark session
@@ -125,7 +127,7 @@ object EAUC_Pipeline {
     println("FEATURE EXTRACTION OVER SPARQL")
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
-      .setQueryExcecutionEngine("sparqlify")
+      .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
     val res = sparqlFrame.transform(dataset)
     res.show(false)
 
