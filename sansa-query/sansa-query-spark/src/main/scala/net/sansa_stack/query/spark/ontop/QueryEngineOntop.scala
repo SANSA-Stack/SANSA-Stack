@@ -28,6 +28,7 @@ import org.semanticweb.owlapi.model.OWLOntology
 
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.utils.ScalaUtils
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -182,7 +183,7 @@ class QueryEngineOntop(val spark: SparkSession,
       // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
       // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
       val tn = SQLUtils.parseTableIdentifier(tableName)
-      val to = sqlEscaper.escapeColumnName(o.stripPrefix("\"").stripSuffix("\""))
+      val to = sqlEscaper.escapeColumnName(ScalaUtils.unQuote(o))
       val df = spark.sql(s"SELECT DISTINCT $to FROM $tn")
 
       val classes = df.collect().map(_.getString(0))

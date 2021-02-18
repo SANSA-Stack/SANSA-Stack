@@ -69,4 +69,14 @@ object ScalaUtils extends Logging {
       }
     }
   }
+
+  /**
+   * @see org.apache.commons.lang3.StringUtils.unwrap
+   * @param s
+   * @param quoteChar
+   * @return
+   */
+  def unQuote(s: String, quoteChar: Char = '"'): String = {
+    org.apache.commons.lang3.StringUtils.unwrap(s, quoteChar)
+  }
 }
