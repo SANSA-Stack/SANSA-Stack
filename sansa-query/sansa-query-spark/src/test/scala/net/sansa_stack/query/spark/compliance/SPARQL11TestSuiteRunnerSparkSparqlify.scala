@@ -5,6 +5,7 @@ import org.scalatest.tags.Slow
 
 import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
+import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 
 
 /**
@@ -15,7 +16,7 @@ import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
  */
 @DoNotDiscover
 @Slow
-class SPARQL11TestSuiteRunnerSparkOntop
+class SPARQL11TestSuiteRunnerSparkSparqlify
   extends SPARQL11TestSuiteRunnerSpark {
 
   override lazy val IGNORE = Set(/* AGGREGATES */
@@ -69,13 +70,5 @@ class SPARQL11TestSuiteRunnerSparkOntop
     subqueryManifest + "subquery14"
   )
 
-
-//  override lazy val IGNORE_FILTER = t => t.name.startsWith("CONTAINS") || t.name.startsWith("UCASE")
-//  override lazy val IGNORE_FILTER = t => t.dataFile.contains("aggregates")// && !Seq("MIN", "MAX", "COUNT", "GROUP_CONCAT").exists(t.name.contains(_)) // && !t.name.startsWith("GROUP_CONCAT")
-// override lazy val IGNORE_FILTER = t => !t.name.startsWith("CONCAT")
-
-//  override lazy val IGNORE_FILTER = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
-//override lazy val IGNORE_FILTER = t => t.dataFile.contains("projexp01")
-
-  override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
+  override def getEngineFactory: QueryEngineFactory = new QueryEngineFactorySparqlify(spark)
 }
