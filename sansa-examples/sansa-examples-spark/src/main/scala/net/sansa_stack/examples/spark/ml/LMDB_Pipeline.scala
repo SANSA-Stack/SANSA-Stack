@@ -47,7 +47,20 @@ object LMDB_Pipeline {
     from a knowledge graph we can either manually create a sparql query or
     we use the auto rdf2feature
      */
+
     // OPTION 1
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
+      dataset,
+      "?movie",
+      "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
+      0,
+      2,
+      1,
+      featuresInOptionalBlocks = true,
+    )
+    println(autoSparqlString)
+
+    // OPTION 2
     val manualSparqlString =
       """
         | SELECT
@@ -102,16 +115,6 @@ object LMDB_Pipeline {
         |	}
         |}
       """.stripMargin
-    // OPTION 2
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
-      dataset,
-      "?movie",
-      "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
-      0,
-      4,
-      1,
-      featuresInOptionalBlocks = true,
-    )
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
