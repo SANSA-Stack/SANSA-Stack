@@ -51,6 +51,19 @@
             </exclusions>
         </dependency>
 
+        <!-- Added cause if not there failing when play around with fat jar in databricks -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.0.1</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
