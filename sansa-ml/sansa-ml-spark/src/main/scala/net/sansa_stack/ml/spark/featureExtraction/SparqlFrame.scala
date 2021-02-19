@@ -1,7 +1,6 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
-import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark._
 import net.sansa_stack.rdf.spark.partition.RDFPartition
@@ -11,12 +10,9 @@ import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{BooleanType, DoubleType, FloatType, IntegerType, NullType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
-import scala.collection.JavaConverters._
-import scala.collection.mutable.ListBuffer
+
 
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
-
-import net.sansa_stack.query.spark.SPARQLEngine.SPARQLEngine
 
 /**
  * This SparqlFrame Transformer creates a dataframe based on a SPARQL query
@@ -89,8 +85,6 @@ class SparqlFrame extends Transformer{
 
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
-
-    // resultSet.getBindings.foreach(println(_))
 
     val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
     val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
