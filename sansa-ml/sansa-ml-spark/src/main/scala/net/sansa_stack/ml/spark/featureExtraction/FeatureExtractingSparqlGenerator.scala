@@ -284,14 +284,15 @@ object FeatureExtractingSparqlGenerator {
     implicit val nodeEncoder = Encoders.kryo(classOf[Node])
     implicit val rowEncoder = Encoders.kryo(classOf[Row])
 
-    // val dsLiteralsReplaced: Dataset[Triple] = ds.map((triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Triple.create(triple.getSubject, triple.getPredicate, _literalReplacement) else triple)
-    val df: DataFrame = ds
+    /* val df: DataFrame = ds
       .map(
         (triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Row(Seq(triple.getSubject.toString(), triple.getPredicate.toString(), _literalReplacementString)) else Row(Seq(triple.getSubject.toString(), triple.getPredicate.toString(), triple.getObject().toString()))
       ).rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
-    // val dsLiteralsReplaced = ds.map((triple: org.apache.jena.graph.Triple) => literalReplacement).collect()
 
-    // val df = dsLiteralsReplaced.rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
+     */
+
+    val dsLiteralsReplaced: Dataset[Triple] = ds.map((triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Triple.create(triple.getSubject, triple.getPredicate, _literalReplacement) else triple)
+    val df = dsLiteralsReplaced.rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
 
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
