@@ -35,14 +35,12 @@ under the License.
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- RDF Layer -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- Apache Flink -->
