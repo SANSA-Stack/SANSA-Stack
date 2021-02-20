@@ -64,10 +64,11 @@ object SampleFeatureExtractionPipeline {
       3,
       featuresInOptionalBlocks = true
     )
+    println(autoSparqlString)
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = autoSparqlString
+    val queryString = manualSparqlString
     println()
     println(queryString)
 

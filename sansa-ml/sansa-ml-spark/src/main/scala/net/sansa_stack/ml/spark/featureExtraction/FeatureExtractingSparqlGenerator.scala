@@ -9,13 +9,13 @@ import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.RDFLanguages
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SparkSession}
-
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
+
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks.{break, breakable}
-
 import net.sansa_stack.query.spark.SPARQLEngine
+import org.apache.spark.rdd.RDD
 
 object FeatureExtractingSparqlGenerator {
 
@@ -284,15 +284,15 @@ object FeatureExtractingSparqlGenerator {
     implicit val nodeEncoder = Encoders.kryo(classOf[Node])
     implicit val rowEncoder = Encoders.kryo(classOf[Row])
 
-    /* val df: DataFrame = ds
-      .map(
-        (triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Row(Seq(triple.getSubject.toString(), triple.getPredicate.toString(), _literalReplacementString)) else Row(Seq(triple.getSubject.toString(), triple.getPredicate.toString(), triple.getObject().toString()))
-      ).rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
+    /* val tmpRdd: RDD[Seq[String]] = ds.map((triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Seq(triple.getSubject.toString(), triple.getPredicate.toString(), _literalReplacementString) else Seq(triple.getSubject.toString(), triple.getPredicate.toString(), triple.getObject().toString())).rdd
+
+    val df: DataFrame = spark.createDataFrame(
+      tmpRdd
+    ).toDF(Seq("s", "p", "o"): _*).cache()
 
      */
 
-    val dsLiteralsReplaced: Dataset[Triple] = ds.map((triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Triple.create(triple.getSubject, triple.getPredicate, _literalReplacement) else triple)
-    val df = dsLiteralsReplaced.rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
+    val df: DataFrame = ds.map((triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Triple.create(triple.getSubject, triple.getPredicate, _literalReplacement) else triple).rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
 
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
