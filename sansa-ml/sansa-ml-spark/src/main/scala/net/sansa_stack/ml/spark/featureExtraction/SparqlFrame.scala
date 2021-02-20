@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
-import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
+import net.sansa_stack.query.spark.ops.rdd.RddOfBindingToDataFrameMapper
 import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark._
@@ -123,8 +123,10 @@ class SparqlFrame extends Transformer{
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
 
-    val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
-    val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+    val schemaMapping = RddOfBindingToDataFrameMapper
+      .configureSchemaMapper(resultSet)
+      .createSchemaMapping()
+    val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df
   }
@@ -133,8 +135,8 @@ class SparqlFrame extends Transformer{
       val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
       val qef = dataset.rdd.verticalPartition(RdfPartitionerDefault).sparqlify
       val resultSet = qef.createQueryExcecution(_query)
-      val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
-      val df = RddToDataFrameMapper.applySchemaMapping(spark, resultSet.getBindings, schemaMapping)
+      val schemaMapping = RddOfBindingToDataFrameMapper.createSchemaMapping(resultSet)
+      val df = RddOfBindingToDataFrameMapper.applySchemaMapping(spark, resultSet.getBindings, schemaMapping)
       df
     } */
 /*

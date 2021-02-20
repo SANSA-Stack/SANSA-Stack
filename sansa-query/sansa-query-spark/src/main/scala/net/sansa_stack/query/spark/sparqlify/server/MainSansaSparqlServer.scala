@@ -1,21 +1,23 @@
 package net.sansa_stack.query.spark.sparqlify.server
 
 import java.io.File
-
 import net.sansa_stack.query.spark._
-import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
+import net.sansa_stack.query.spark.ops.rdd.RddOfBindingToDataFrameMapper
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.partition._
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
 import scala.collection.JavaConverters._
 
+/** Deprecated; use: net.sansa_stack.examples.spark.query.SPARQLEngineExample */
+@deprecated
 object MainSansaSparqlServer {
 
   def main(args: Array[String]): Unit = {
@@ -77,12 +79,16 @@ object MainSansaSparqlServer {
 
     val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
 
-    val resultSet = qef.createQueryExecution("SELECT * { ?s ?p ?o }")
+    val resultSet = qef.createQueryExecution("SELECT * { ?s ?p ?o . OPTIONAL { ?s <foobar> ?y } }")
       .execSelectSpark()
 
-    val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
+    val schemaMapping = RddOfBindingToDataFrameMapper
+      .configureSchemaMapper(resultSet)
+      .setVarToFallbackDatatype((v: Var) => null)
+      .createSchemaMapping
+
     println(schemaMapping)
-    val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+    val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df.show(20)
 
