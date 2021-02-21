@@ -373,7 +373,7 @@ public class TrigRecordReader
       Channels.newInputStream(
         new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
           new ReadableByteChannelImpl2(stream),
-      xstream -> hitSplitBound.test(rawStream, adjustedSplitEnd)));
+      xstream -> hitSplitBound.test(new SeekableInputStream(rawStream, rawStream), adjustedSplitEnd)));
 
     BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
     Seekable headNav = headBuffer.newChannel();
