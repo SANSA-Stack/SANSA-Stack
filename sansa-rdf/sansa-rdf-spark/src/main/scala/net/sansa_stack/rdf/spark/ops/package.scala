@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark
 
-import net.sansa_stack.rdf.spark.model.rdd.{RddOfDatasetOps, RddOfModelsOps, RddOfResourcesOps, RddOfTriplesOps}
+import net.sansa_stack.rdf.spark.model.rdd.{RddOfDatasetOps, RddOfModelOps, RddOfResourceOps, RddOfTripleOps}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, RDFNode, Resource}
@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
 package object ops {
   implicit class RddOfTriplesOpsImpl(rddOfTriples: RDD[Triple]) {
 
-    @inline def filterPredicates(predicateIris: Set[String]): RDD[Triple] = RddOfTriplesOps.filterPredicates(rddOfTriples, predicateIris)
+    @inline def filterPredicates(predicateIris: Set[String]): RDD[Triple] = RddOfTripleOps.filterPredicates(rddOfTriples, predicateIris)
   }
 
 
@@ -27,16 +27,16 @@ package object ops {
      * @param query
      * @return
      */
-    @inline def sparqlMap(query: Query): RDD[Model] = RddOfModelsOps.sparqlMap(rddOfModels, query.toString())
+    @inline def sparqlMap(query: Query): RDD[Model] = RddOfModelOps.sparqlMap(rddOfModels, query.toString())
 
     @inline def sparqlFilterKeep(query: Query): RDD[_ <: Model] = sparqlFilter(query, false)
     @inline def sparqlFilterDrop(query: Query): RDD[_ <: Model] = sparqlFilter(query, true)
-    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Model] = RddOfModelsOps.sparqlFilter(rddOfModels, query.toString(), drop)
+    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Model] = RddOfModelOps.sparqlFilter(rddOfModels, query.toString(), drop)
   }
 
   implicit class RddOfResourcesOpsImpl(rddOfResources: RDD[_ <: Resource]) {
-    @inline def mapAs[T <: RDFNode](clazz: Class[T]): RDD[T] = RddOfResourcesOps.mapAs(ClassTag(clazz), rddOfResources, clazz)
-    @inline def models(): RDD[Model] = RddOfResourcesOps.mapToModels(rddOfResources)
+    @inline def mapAs[T <: RDFNode](clazz: Class[T]): RDD[T] = RddOfResourceOps.mapAs(ClassTag(clazz), rddOfResources, clazz)
+    @inline def models(): RDD[Model] = RddOfResourceOps.mapToModels(rddOfResources)
   }
 
   implicit class RddOfDatasetsOpsImpl(rddOfDatasets: RDD[Dataset]) {

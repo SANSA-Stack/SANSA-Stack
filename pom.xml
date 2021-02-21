@@ -1241,6 +1241,14 @@
                 <version>2.4.2</version>
             </dependency>
 
+            <!-- JSQL parser -->
+            <!-- have to stick to 3.2 for now because Ontop does use 3.x and 4.o has some non-compatible changes -->
+            <dependency>
+                <groupId>com.github.jsqlparser</groupId>
+                <artifactId>jsqlparser</artifactId>
+                <version>3.2</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

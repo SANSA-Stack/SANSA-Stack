@@ -16,10 +16,11 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 object SQLUtils {
 
   import scala.util.matching.Regex
-  val qualifiedTableNameRegex: Regex = "^(\"(.*)\".)?\"(.*)\"$".r
+  val qualifiedTableNameDoubleQuotesRegex: Regex = "^(\"(.*)\".)?\"(.*)\"$".r
+  val qualifiedTableNameBackticksRegex: Regex = "^(`(.*)`.)?`(.*)`$".r
 
   def parseTableIdentifier(tableName: String): TableIdentifier = {
-    qualifiedTableNameRegex.findFirstMatchIn(tableName) match {
+    qualifiedTableNameDoubleQuotesRegex.findFirstMatchIn(tableName) match {
       case Some(i) =>
         val tn = i.group(3)
         val dn = Option(i.group(2))

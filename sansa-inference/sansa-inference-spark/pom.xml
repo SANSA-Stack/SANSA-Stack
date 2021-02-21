@@ -5,34 +5,22 @@
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-inference-parent_2.12</artifactId>
         <version>0.7.2-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>sansa-inference-spark_2.12</artifactId>
 
     <name>Inference API - Spark</name>
     <description>Apache Spark based inference layer for RDF and OWL</description>
 
-    <properties>
-        <spark.deps.scope>compile</spark.deps.scope>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
-            <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-inference-tests_${scala.binary.version}</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>${project.groupId}</groupId>-->
-<!--            <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>-->
-<!--        </dependency>-->
+
+        <!--        <dependency>-->
+        <!--            <groupId>${project.groupId}</groupId>-->
+        <!--            <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>-->
+        <!--        </dependency>-->
 
         <!-- SANSA OWL -->
         <dependency>
@@ -60,18 +48,18 @@
             </exclusions>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>net.sansa-stack</groupId>-->
-            <!--<artifactId>sansa-rdf-partition-core</artifactId>-->
+        <!--<groupId>net.sansa-stack</groupId>-->
+        <!--<artifactId>sansa-rdf-partition-core</artifactId>-->
         <!--</dependency>-->
 
         <!-- Query Layer -->
         <!--<dependency>-->
-            <!--<groupId>net.sansa-stack</groupId>-->
-            <!--<artifactId>sansa-query-spark-sparqlify</artifactId>-->
+        <!--<groupId>net.sansa-stack</groupId>-->
+        <!--<artifactId>sansa-query-spark-sparqlify</artifactId>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>org.aksw.jena-sparql-api</groupId>-->
-            <!--<artifactId>jena-sparql-api-server-standalone</artifactId>-->
+        <!--<groupId>org.aksw.jena-sparql-api</groupId>-->
+        <!--<artifactId>jena-sparql-api-server-standalone</artifactId>-->
         <!--</dependency>-->
 
         <!-- Scala -->
@@ -84,13 +72,13 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
-            <scope>${spark.deps.scope}</scope>
+<!--            <scope>${spark.deps.scope}</scope>-->
         </dependency>
         <!-- Apache Spark SQL -->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
-            <scope>${spark.deps.scope}</scope>
+<!--            <scope>${spark.deps.scope}</scope>-->
         </dependency>
 
         <!-- Shapeless lib -->
@@ -157,11 +145,11 @@
             <artifactId>jgrapht-ext</artifactId>
         </dependency>
         <!-- only used for debugging/visualization of rule graphs, thus, scope is 'provided' to be omitted in Maven shade execution -->
-<!--        <dependency>-->
-<!--            <groupId>org.gephi</groupId>-->
-<!--            <artifactId>gephi-toolkit</artifactId>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.gephi</groupId>-->
+        <!--            <artifactId>gephi-toolkit</artifactId>-->
+        <!--            <scope>provided</scope>-->
+        <!--        </dependency>-->
 
         <!-- Test -->
         <dependency>
@@ -230,125 +218,15 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-inference-tests_${scala.binary.version}</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
-
-    <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
-        <!--<outputDirectory>target/scala-${scala.binary.version}/classes</outputDirectory>-->
-        <!--<testOutputDirectory>target/scala-${scala.binary.version}/test-classes</testOutputDirectory>-->
-        <plugins>
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <!-- enable scalatest -->
-            <plugin>
-              <groupId>org.scalatest</groupId>
-              <artifactId>scalatest-maven-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <!-- Add src/main/scala to eclipse build path -->
-                    <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/main/scala</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                    <!-- Add src/test/scala to eclipse build path -->
-                    <execution>
-                        <id>add-test-source</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/test/scala</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--Extract core's resources-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>resource-dependencies</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeGroupIds>${project.groupId}</includeGroupIds>
-                            <includeArtifactIds>sansa-inference-tests_${scala.binary.version}</includeArtifactIds>
-                            <excludeTransitive>true</excludeTransitive>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                            <outputDirectory>${project.build.directory}/test-classes</outputDirectory>
-                            <excludes>org/**,META-INF/**,rebel.xml</excludes>
-                            <overWriteReleases>true</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>
-                                ${project.build.directory}/lib
-                            </outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>${project.build.directory}/lib</classpathPrefix>
-                            <mainClass>net.sansa_stack.inference.spark.forwardchaining.axioms.ForwardRuleReasonerOWLHorst</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
-        </plugins>
-        <!--New resource locations-->
-        <resources>
-            <resource>
-                <filtering>false</filtering>
-                <directory>${project.build.directory}/core-resources</directory>
-            </resource>
-            <resource>
-                <filtering>false</filtering>
-                <directory>${basedir}/src/main/resources</directory>
-            </resource>
-        </resources>
-    </build>
 
     <profiles>
         <!-- This profile uses the Maven shade plugin to create a special "dist" package
@@ -362,40 +240,27 @@
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <classpathPrefix>${project.build.directory}/lib</classpathPrefix>
-                                    <mainClass>net.sansa_stack.inference.spark.forwardchaining.axioms.ForwardRuleReasonerOWLHorst</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
-                    </plugin>
                     <!--<plugin>-->
-                        <!--<groupId>org.apache.maven.plugins</groupId>-->
-                        <!--<artifactId>maven-assembly-plugin</artifactId>-->
-                        <!--<version>3.0.0</version>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<id>dist</id>-->
-                                <!--<phase>package</phase>-->
-                                <!--<goals>-->
-                                    <!--<goal>single</goal>-->
-                                <!--</goals>-->
-                                <!--<configuration>-->
-                                    <!--&lt;!&ndash;<descriptorRefs>&ndash;&gt;-->
-                                        <!--&lt;!&ndash;<descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
-                                    <!--&lt;!&ndash;</descriptorRefs>&ndash;&gt;-->
-                                    <!--<descriptors>-->
-                                        <!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
-                                    <!--</descriptors>-->
-                                <!--</configuration>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
+                    <!--<groupId>org.apache.maven.plugins</groupId>-->
+                    <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                    <!--<version>3.0.0</version>-->
+                    <!--<executions>-->
+                    <!--<execution>-->
+                    <!--<id>dist</id>-->
+                    <!--<phase>package</phase>-->
+                    <!--<goals>-->
+                    <!--<goal>single</goal>-->
+                    <!--</goals>-->
+                    <!--<configuration>-->
+                    <!--&lt;!&ndash;<descriptorRefs>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</descriptorRefs>&ndash;&gt;-->
+                    <!--<descriptors>-->
+                    <!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
+                    <!--</descriptors>-->
+                    <!--</configuration>-->
+                    <!--</execution>-->
+                    <!--</executions>-->
                     <!--</plugin>-->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -530,8 +395,9 @@
                                     <finalName>dist-${project.artifactId}-${project.version}</finalName>
                                     <transformers>
                                         <transformer
-                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>net.sansa_stack.inference.spark.RDFGraphMaterializer</mainClass>
                                         </transformer>
                                     </transformers>
@@ -545,17 +411,17 @@
         </profile>
 
         <!-- Profile that disables inclusion of Spark dependencies. -->
-        <profile>
-            <id>spark-provided</id>
-            <activation>
-                <property>
-                    <name>dist</name>
-                </property>
-            </activation>
-            <properties>
-                <spark.deps.scope>provided</spark.deps.scope>
-            </properties>
-        </profile>
+<!--        <profile>-->
+<!--            <id>spark-provided</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>dist</name>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <properties>-->
+<!--                <spark.deps.scope>provided</spark.deps.scope>-->
+<!--            </properties>-->
+<!--        </profile>-->
 
         <profile>
             <id>dist-package</id>
@@ -591,7 +457,9 @@
                                 <phase>prepare-package</phase>
                                 <configuration>
                                     <tasks>
-                                        <replace token="VERSION_TMP" value="dist-${project.artifactId}-${project.version}.jar" dir="target/scripts">
+                                        <replace token="VERSION_TMP"
+                                                 value="dist-${project.artifactId}-${project.version}.jar"
+                                                 dir="target/scripts">
                                             <include name="cli"/>
                                         </replace>
                                     </tasks>
@@ -696,7 +564,7 @@
                                             <exclude>org.gephi:*</exclude>
                                             <exclude>org.jfree:*</exclude>
                                             <exclude>com.itextpdf:*</exclude>
-                                             <exclude>org.apache.poi:*</exclude>
+                                            <exclude>org.apache.poi:*</exclude>
                                             <exclude>org.apache.batik:*</exclude>
                                             <exclude>org.xerial:sqlite-jdbc</exclude>
                                         </excludes>
@@ -723,8 +591,10 @@
                                     <finalName>dist-${project.artifactId}-${project.version}</finalName>
                                     <outputDirectory>${project.build.directory}/shaded</outputDirectory>
                                     <transformers>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                             <mainClass>net.sansa_stack.inference.spark.RDFGraphMaterializer</mainClass>
                                         </transformer>
                                     </transformers>

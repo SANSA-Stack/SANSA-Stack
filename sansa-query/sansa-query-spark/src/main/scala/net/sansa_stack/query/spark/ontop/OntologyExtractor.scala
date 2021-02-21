@@ -13,6 +13,7 @@ import org.apache.jena.vocabulary.RDF
 
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.utils.ScalaUtils
 
 /**
  * An extractor for an ontology.
@@ -49,7 +50,7 @@ object OntologyExtractor {
 
         // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
         val tn = SQLUtils.parseTableIdentifier(tableName)
-        val to = sqlEscaper.escapeColumnName(o.stripPrefix("\"").stripSuffix("\""))
+        val to = sqlEscaper.escapeColumnName(ScalaUtils.unQuote(o))
 
         s"SELECT DISTINCT $to AS $clsCol FROM $tn"
 

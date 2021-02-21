@@ -10,7 +10,7 @@ import org.apache.spark.sql._
  *
  * @author Gezim Sejdiu
  */
-object RddOfTriplesOps {
+object RddOfTripleOps {
 
   /**
    * Convert a [[RDD[Triple]]] into a DataFrame of having three string columns.

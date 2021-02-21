@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
  * Requires serializers for [[Model]] implementations to be registered with kryo
  *
  */
-object RddOfModelsOps {
+object RddOfModelOps {
 
   @inline def sparqlMap(rddOfModels: RDD[_ <: Model], queryStr: String): RDD[Model] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =

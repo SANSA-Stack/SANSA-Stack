@@ -67,10 +67,11 @@ spark.sparkContext.setLogLevel("ERROR")
 implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
 // first mini file:
-val df = spark.read.rdf(Lang.TURTLE)(inputFilePath)
+    val dataset: Dataset[org.apache.jena.graph.Triple] = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
+
 
 val (totalSparqlQuery: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
-  df = df,
+  ds = dataset,
   seedVarName = seedVarName,
   seedWhereClause = whereClauseForSeed,
   maxUp = maxUp,
@@ -101,10 +102,10 @@ JenaSystem.init()
 
 // READ IN DATA
 val inputFilePath = "/Users/carstendraschner/GitHub/SANSA-Stack/sansa-ml/sansa-ml-spark/src/main/resources/test.ttl"
-val df: DataFrame = spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
-val dataset = df.toDS()
+val dataset: Dataset[org.apache.jena.graph.Triple] = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
 
-val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 1, 2, 3, featuresInOptionalBlocks = true)
+
+val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(dataset, "?seed", "?seed a <http://dig.isi.edu/Person> .", 1, 2, 3, featuresInOptionalBlocks = true)
 
 val queryString = autoSparqlString
 

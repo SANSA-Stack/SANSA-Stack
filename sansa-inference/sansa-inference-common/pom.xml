@@ -5,8 +5,8 @@
     <artifactId>sansa-inference-parent_2.12</artifactId>
     <groupId>net.sansa-stack</groupId>
     <version>0.7.2-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
+
   <artifactId>sansa-inference-common_2.12</artifactId>
   <name>Inference API - Common</name>
   <description>A set of common objects used in the Inference API</description>
@@ -130,19 +130,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>fully.qualified.MainClass</mainClass>
-            </manifest>
-          </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
       </plugin>
     </plugins>
   </build>

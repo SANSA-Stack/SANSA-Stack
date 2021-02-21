@@ -122,16 +122,12 @@
 			<artifactId>r2rml-jena-plugin</artifactId>
 		</dependency>
 
-<!-- What is hive exec doing here? If all things work then remove it.
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-exec</artifactId>
-            <version>core</version>
-            <scope>compile</scope>
-        </dependency>
--->
+		<dependency>
+			<groupId>com.github.jsqlparser</groupId>
+			<artifactId>jsqlparser</artifactId>
+		</dependency>
 
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>

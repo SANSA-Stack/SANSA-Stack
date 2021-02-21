@@ -4,6 +4,8 @@ import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe.MethodSymbol
 
+import net.sf.jsqlparser.schema.Table
+import net.sf.jsqlparser.statement.select.Select
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api._
 import org.aksw.r2rml.jena.vocab.RR
@@ -13,6 +15,9 @@ import org.apache.jena.graph.NodeFactory
 import org.apache.jena.rdf.model.{Model, Property, Resource, ResourceFactory}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.ExprVar
+
+import net.sf.jsqlparser.parser.CCJSqlParserUtil
+import net.sf.jsqlparser.util.TablesNamesFinder
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, TermType}
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
@@ -281,5 +286,129 @@ object R2rmlUtils {
       .map(_.as(classOf[TriplesMap]))
       .filter(tm =>
         tm.getPredicateObjectMaps.asScala.exists(_.getPredicateMaps.asScala.exists(pm => Option(pm.getConstant).contains(predicate))))
+  }
+
+  /**
+   * Make all table identifiers being qualified with the given database resp. schema name.
+   *
+   * @param database the database schema name
+   * @param model    the R2RML mappings
+   * @return the modified R2RML mappings
+   */
+  def makeQualifiedTableIdentifiers(database: String, model: Model): Model = {
+    streamTriplesMaps(model).foreach(tm => {
+      val lt = tm.getOrSetLogicalTable()
+      if (lt.qualifiesAsBaseTableOrView()) {
+        lt.asBaseTableOrView().setTableName(database + "." + lt.asBaseTableOrView().getTableName)
+      } else {
+        val view = lt.asR2rmlView()
+        var query = view.getSqlQuery
+        query = makeQualifiedTableNames(database, query)
+        view.setSqlQuery(query)
+      }
+    })
+    model
+  }
+
+  private def makeQualifiedTableNames(qualifier: String, query: String): String = {
+    val statement = CCJSqlParserUtil.parse(query)
+    val selectStatement = statement.asInstanceOf[Select]
+    val tablesNamesFinder = new TablesNamesFinder {
+      override def visit(tableName: Table): Unit = {
+        tableName.setSchemaName(qualifier)
+      }
+    }
+    selectStatement.accept(tablesNamesFinder)
+    statement.toString
+  }
+
+  val escapeChars = Seq('"', '`')
+  /**
+   * Unescapes all SQL identifiers, i.e. the table and column names.
+   *
+   * @param model the R2RML mappings
+   * @return the modified R2RML mappings
+   */
+  def unescapeIdentifiers(model: Model): Model = {
+    escapeChars.foreach(c => replaceEscapeChars(model, s"$c", ""))
+    model
+  }
+
+  /**
+   * Replaces the escape chars of all SQL identifiers, i.e. the table and column names.
+   *
+   * @param model the R2RML mappings
+   * @param oldEscapeChar the old escape char
+   * @param newEscapeChar the new escape char
+   * @return the modified R2RML mappings
+   */
+  def replaceEscapeChars(model: Model, oldEscapeChar: String, newEscapeChar: String): Model = {
+    streamTriplesMaps(model).foreach(tm => {
+      val lt = tm.getOrSetLogicalTable()
+
+      if (lt.qualifiesAsBaseTableOrView()) {// tables
+        val tn = lt.asBaseTableOrView().getTableName
+        lt.asBaseTableOrView().setTableName(replaceIdentifier(tn, oldEscapeChar, newEscapeChar))
+      } else { // views
+        val view = lt.asR2rmlView()
+        val query = view.getSqlQuery
+        view.setSqlQuery(replaceQueryIdentifiers(query, oldEscapeChar, newEscapeChar))
+      }
+
+      // column names
+      // s
+      val sm = tm.getSubjectMap
+      if (sm != null) {
+        val col = sm.getColumn
+        if(col != null) {
+          sm.setColumn(replaceIdentifier(col, oldEscapeChar, newEscapeChar))
+        }
+      }
+
+      tm.getPredicateObjectMaps.forEach(pm => {
+        // p
+        val pms = pm.getPredicateMaps
+        if (pms != null) {
+          pms.forEach(pm => {
+            val col = pm.getColumn
+            if (col != null) {
+              pm.setColumn(replaceIdentifier(col, oldEscapeChar, newEscapeChar))
+            }
+          })
+        }
+
+        // o
+        val oms = pm.getObjectMaps
+        if (oms != null) {
+          oms.forEach(om => {
+            if (om.qualifiesAsTermMap()) {
+              val tm = om.asTermMap()
+              val col = tm.getColumn
+              if (col != null) {
+                tm.setColumn(replaceIdentifier(col, oldEscapeChar, newEscapeChar))
+              }
+            }
+          })
+        }
+      })
+    })
+
+    model
+  }
+
+  private def replaceIdentifier(identifier: String, oldEscapeChar: String, newEscapeChar: String): String = {
+    identifier.replace(oldEscapeChar, newEscapeChar)
+  }
+
+  private def replaceQueryIdentifiers(query: String, oldEscapeChar: String, newEscapeChar: String): String = {
+    val statement = CCJSqlParserUtil.parse(query)
+    val selectStatement = statement.asInstanceOf[Select]
+    val tablesNamesFinder = new TablesNamesFinder {
+      override def visit(tableName: Table): Unit = {
+        tableName.setName(tableName.getName.replace(oldEscapeChar, newEscapeChar))
+      }
+    }
+    selectStatement.accept(tablesNamesFinder)
+    statement.toString
   }
 }
