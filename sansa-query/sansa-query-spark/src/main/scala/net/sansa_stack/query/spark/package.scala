@@ -78,7 +78,7 @@ package object spark {
         case SPARQLEngine.Sparqlify => new QueryEngineFactorySparqlify(spark)
       }
 
-      queryEngineFactory.create(null, mappedSession.r2rmlModel)
+      queryEngineFactory.create(None, mappedSession.r2rmlModel)
     }
 
     def sparqlify(): QueryExecutionFactorySpark = {

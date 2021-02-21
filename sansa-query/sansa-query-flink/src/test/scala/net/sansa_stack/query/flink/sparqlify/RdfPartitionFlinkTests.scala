@@ -4,7 +4,7 @@ import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import net.sansa_stack.rdf.common.kryo.jena.JenaKryoSerializers._
+import net.sansa_stack.rdf.common.kryo.jena._
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
@@ -33,15 +33,15 @@ class TestRdfPartitionFlink extends FlatSpec {
     // env.getConfig.registerTypeWithKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
     env.getConfig.registerKryoType(classOf[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault])
     env.getConfig.registerKryoType(classOf[Array[net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault]])
-    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node], classOf[NodeSerializer])
-    env.getConfig.addDefaultKryoSerializer(classOf[Array[org.apache.jena.graph.Node]], classOf[NodeSerializer])
+    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node], classOf[DefaultNodeSerializer])
+    env.getConfig.addDefaultKryoSerializer(classOf[Array[org.apache.jena.graph.Node]], classOf[DefaultNodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.core.Var], classOf[VarSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.sparql.expr.Expr], classOf[ExprSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_Variable], classOf[VariableNodeSerializer])
-    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_Blank], classOf[NodeSerializer])
+    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_Blank], classOf[DefaultNodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_ANY], classOf[ANYNodeSerializer])
-    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_URI], classOf[NodeSerializer])
-    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_Literal], classOf[NodeSerializer])
+    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_URI], classOf[DefaultNodeSerializer])
+    env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Node_Literal], classOf[DefaultNodeSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[org.apache.jena.graph.Triple], classOf[TripleSerializer])
     env.getConfig.addDefaultKryoSerializer(classOf[RestrictedExpr], classOf[RestrictedExprSerializer])
     env.getConfig.registerKryoType(classOf[Array[org.apache.jena.graph.Triple]])

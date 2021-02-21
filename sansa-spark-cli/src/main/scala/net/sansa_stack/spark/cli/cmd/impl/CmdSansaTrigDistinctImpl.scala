@@ -84,7 +84,7 @@ object CmdSansaTrigDistinctImpl {
         .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 
 
-    val effectiveRdd = RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
+    val effectiveRdd = RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd, cmd.sort, cmd.numPartitions)
 
     val rdfFormat = RDFFormat.TRIG_BLOCKS
     val out = StdIo.openStdOutWithCloseShield
