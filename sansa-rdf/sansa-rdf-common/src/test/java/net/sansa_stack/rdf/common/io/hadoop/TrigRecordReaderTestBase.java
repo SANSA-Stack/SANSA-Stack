@@ -2,7 +2,6 @@ package net.sansa_stack.rdf.common.io.hadoop;
 
 import com.google.common.collect.*;
 import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -15,7 +14,6 @@ import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,35 +39,15 @@ import java.util.stream.IntStream;
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-@RunWith(Parameterized.class)
-public class TrigRecordReaderTest {
+public class TrigRecordReaderTestBase {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrigRecordReaderTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrigRecordReaderTestBase.class);
 
-    /**
-     * Test case parameters
-     *
-     * @return
-     */
-    @Parameterized.Parameters(name = "{index}: file {0} with {1} splits")
-    public static Iterable<Object[]> data() {
-        // The map of test cases:
-        // Each file is mapped to the number of  min splits and max splits(both inclusive)
-        Map<String, Range<Integer>> params = new LinkedHashMap<>();
-
-        params.put("src/test/resources/nato-phonetic-alphabet-example.trig",
-                Range.closed(1, 5));
-
-        params.put("src/test/resources/nato-phonetic-alphabet-example.trig.bz2",
-                Range.closed(1, 5));
-
-        // Slow test
-        // params.put("../../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2",
-        //        Range.closed(1, 5));
+    public static List<Object[]> createParameters(Map<String, Range<Integer>> fileToNumSplits) {
 
         // Post process the map into junit params by enumerating the ranges
         // and creating a test case for each obtained value
-        List<Object[]> result = params.entrySet().stream()
+        List<Object[]> result = fileToNumSplits.entrySet().stream()
                 .flatMap(e -> ContiguousSet.create(e.getValue(), DiscreteDomain.integers()).stream()
                         .map(numSplits -> new Object[]{e.getKey(), numSplits}))
                 .collect(Collectors.toList());
@@ -80,7 +58,7 @@ public class TrigRecordReaderTest {
     protected String file;
     protected int numSplits;
 
-    public TrigRecordReaderTest(String file, int numSplits) {
+    public TrigRecordReaderTestBase(String file, int numSplits) {
         this.file = file;
         this.numSplits = numSplits;
     }

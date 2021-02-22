@@ -14,27 +14,37 @@ import java.util.function.Predicate;
 public class ReadableByteChannelWithConditionalBound<T extends ReadableByteChannel>
         extends ReadableByteChannelDecoratorBase<T>
 {
-    protected Predicate<? super T> testForEof;
+    protected Predicate<? super ReadableByteChannelWithConditionalBound<T>> testForEof;
     protected boolean isInEofState = false;
+    protected long bytesRead = 0;
 
     public ReadableByteChannelWithConditionalBound(
             T delegate,
-            Predicate<? super T> testForEof) {
+            Predicate<? super ReadableByteChannelWithConditionalBound<T>> testForEof) {
         super(delegate);
         this.testForEof = testForEof;
     }
 
     @Override
     public int read(ByteBuffer byteBuffer) throws IOException {
-        isInEofState = isInEofState || testForEof.test(getDelegate());
+        isInEofState = isInEofState || testForEof.test(this);
 
         int result;
         if (isInEofState) {
             result = -1;
         } else {
             result = getDelegate().read(byteBuffer);
+            if (result >= 0) {
+                bytesRead += result;
+            } else {
+                isInEofState = true;
+            }
         }
 
         return result;
+    }
+
+    public long getBytesRead() {
+        return bytesRead;
     }
 }

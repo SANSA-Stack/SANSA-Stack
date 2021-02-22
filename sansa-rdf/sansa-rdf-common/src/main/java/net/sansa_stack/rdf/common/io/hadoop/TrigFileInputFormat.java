@@ -143,8 +143,8 @@ public class TrigFileInputFormat
 
         long maxPrefixesBytes = job.getLong(PARSED_PREFIXES_LENGTH, PARSED_PREFIXES_LENGTH_DEFAULT);
         if (maxPrefixesBytes > end) {
-            logger.warn("Number of bytes set for prefixes parsing ($maxPrefixesBytes) larger than the size of the first" +
-                    " split ($end). Could be slow");
+            logger.warn(String.format("Number of bytes set for prefixes parsing (%d) larger than the size of the first" +
+                    " split (%d). Could be slow", maxPrefixesBytes, end));
         }
         end = Math.max(end, maxPrefixesBytes);
 

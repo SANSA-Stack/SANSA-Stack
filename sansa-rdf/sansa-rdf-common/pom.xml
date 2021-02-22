@@ -127,6 +127,12 @@
 			<artifactId>jsqlparser</artifactId>
 		</dependency>
 
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-test-resources_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 	</dependencies>
 
 	<build>

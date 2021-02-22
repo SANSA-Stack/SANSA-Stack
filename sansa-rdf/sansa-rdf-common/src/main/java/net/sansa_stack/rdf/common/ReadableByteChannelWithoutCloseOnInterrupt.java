@@ -5,15 +5,16 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
-// ReadableByteChannelImpl2 without the Interruptible stuff
-public class ReadableByteChannelImpl2
+/** ReadableByteChannel from an InputStream without closing the stream on interrupt as
+ * Channels.newChannel does. */
+public class ReadableByteChannelWithoutCloseOnInterrupt
         implements ReadableByteChannel {
     InputStream in;
     private static final int TRANSFER_SIZE = 8192;
     private byte buf[] = new byte[0];
     private boolean open = true;
 
-    public ReadableByteChannelImpl2(InputStream in) {
+    public ReadableByteChannelWithoutCloseOnInterrupt(InputStream in) {
         this.in = in;
     }
 
