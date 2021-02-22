@@ -7,14 +7,14 @@ In order to apply these transformations we first have to load the triples on one
 
 ### Reading RDF
 - Reading RDF graph using RDD.
-    ```scala
+    ```
     import net.sansa_stack.rdf.spark.model.io._ 
 
-    val lang =Lang.NTRIPLES 
+    val lang = Lang.NTRIPLES 
     val triplesRDD = spark.rdf(lang)(path)
     ```
 - Reading RDF graph using DataFrame.
-    ```scala
+    ```
     import net.sansa_stack.rdf.spark.model.io._ 
 
     val lang =Lang.NTRIPLES 
@@ -24,17 +24,17 @@ In order to apply these transformations we first have to load the triples on one
 ***
 ### RDD TripleOps
 This model represents all triple manipulation based on RDD representation of the triples. It contains a set of operations on top of the RDF graph, represented as `RDD[Triple]`.
-```scala
+```
 import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsDF = triplesRDD.toDF()
 ```
-See the [net.sansa_stack.rdf.spark.model.rdd.TripleOps](rdd/RddOfTriplesOps.scala) for more function implementations.
+See the [net.sansa_stack.rdf.spark.model.rdd.TripleOps](rdd/RddOfTripleOps.scala) for more function implementations.
 
 ***
 ### DataFrame TripleOps
 This model represents all triple manipulation based on DataFrame representation of the triples. It contains a set of operations on top of the RDF graph.
-```scala
+```
 import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsRDD = triplesDF.toRDD()
@@ -44,7 +44,7 @@ See the [net.sansa_stack.rdf.spark.model.df.TripleOps](df/TripleOps.scala) for m
 ***
 ### Dataset TripleOps
 This model represents all triple manipulation based on DataSet of triples representation of the triples. It contains a set of operations on top of the RDF graph.
-```scala
+```
 import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsDS = triples.toDS()
@@ -56,7 +56,7 @@ See the [net.sansa_stack.rdf.spark.model.ds.TripleOps](ds/TripleOps.scala) for m
 ***
 ### Graph TripleOps
 This model represents all triple manipulation based on GraphX representation of the triples. It contains a set of operations on top of the RDF graph.
-```scala
+```
 import net.sansa_stack.rdf.spark.model._ 
 
 val triplesAsGraph = triples.asGraph()

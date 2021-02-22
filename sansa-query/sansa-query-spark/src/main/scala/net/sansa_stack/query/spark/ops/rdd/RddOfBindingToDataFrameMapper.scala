@@ -1,8 +1,9 @@
 package net.sansa_stack.query.spark.ops.rdd
 
+import com.typesafe.scalalogging.LazyLogging
+
 import java.math.BigInteger
 import java.util
-
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
@@ -27,11 +28,11 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
  *
  * The schema mapping holds information about how to compute the values for the target
  * schema by means of SPARQL expressions over the source schema. For example,
- * if a target column 'foo' should carry the languages tags of the language tag of a column 'bar'
- * in the source schema, the definition for 'foo' becomes:
+ * if a target column 'foo' should carry the languages tags of RDF terms held in source column 'bar'
+ * then the definition for 'foo' would be:
  * ?foo = lang(?bar)
  *
- * Note, that column names are represented as SPARQL variables in order to facilite
+ * Note, that column names are represented as SPARQL variables in order to facilitate
  * re-use of SPARQL algebra and expressions as a model (=language) for declarative schema mappings.
  *
  * In addition, the field mapping stores type information for the target column. In this example,
@@ -39,14 +40,25 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
  * Jena's [[TypeMapper]] is used to resolve datatypeIris to [[org.apache.jena.datatypes.RDFDatatype]] instances which in
  * turn give access to the Java class which finally is converted to a spark type via [[DataTypeUtils]].
  *
- * FIXME Rename to ResultSetToFrameMapper
+ * FIXME Rename to ResultSetToFrameMapper?
  */
-object RddToDataFrameMapper {
+object RddOfBindingToDataFrameMapper extends LazyLogging {
   import net.sansa_stack.query.spark._
 
   import collection.JavaConverters._
 
-  def createSchemaMapping(resultSet: ResultSetSpark): SchemaMapping = {
+  /**
+   * Analyze the given [[ResultSetSpark]] (scans the data!) and use
+   * the result to configure a new [[SchemaMapperImpl]] instance
+   * with reasonable defaults:
+   *
+   * TypePromotion promotes e.g. short to int
+   * Unbound variables default to string columns (with null values only)
+   *
+   * @param resultSet
+   * @return
+   */
+  def configureSchemaMapper(resultSet: ResultSetSpark): SchemaMapperImpl = {
 
     // Create a linked hash set from the list of result vars
     // The schema mapper will respect the order
@@ -56,21 +68,69 @@ object RddToDataFrameMapper {
     val usedDatatypesAndNulls = resultSet.getBindings.javaCollect(
       ResultSetAnalytics.usedDatatypesAndNullCounts(javaResultVars).asCollector())
 
-    // Provide the stastistics to the schema mapper
-    val schemaMapping = SchemaMapperImpl.newInstance
+    val typeMapper = TypeMapper.getInstance()
+
+    // Supply the statistics to the schema mapper
+    val schemaMapper = SchemaMapperImpl.newInstance
       .setSourceVars(javaResultVars)
       .setSourceVarToDatatypes((v: Var) => usedDatatypesAndNulls.get(v).getKey.elementSet)
       .setSourceVarToNulls((v: Var) => usedDatatypesAndNulls.get(v).getValue)
       .setTypePromotionStrategy(TypePromoterImpl.create)
-      .createSchemaMapping
+      .setVarToFallbackDatatypeToString()
+      .setTypeRemap(considerDatatypeRemap(_, typeMapper))
 
-    schemaMapping
+    schemaMapper
   }
 
-  // Convenience method; execution doesn't need the resultVars
-  // def applySchemaMapping(resultSet: ResultSetSpark, schemaMapping: SchemaMapping): DataFrame =
-  // applySchemaMapping(resultSet.getBindings, schemaMapping)
 
+  /**
+   * If a given datatype IRI has no correspondence in Spark then fallback
+   * to xsd:string
+   *
+   * @param tgtType
+   * @param typeMapper
+   * @return
+   */
+  def considerDatatypeRemap(tgtType: String, typeMapper: TypeMapper): String = {
+    var result = tgtType
+    try {
+      getSparkDatatype(tgtType, typeMapper)
+      // If as spark datatype was obtained then accept the given datatype
+    } catch {
+      // Fall back to string
+      case _: Exception => result = XSD.xstring.getURI
+    }
+
+    result
+  }
+
+  /**
+   * Attemt to obtain a Spark [[DataType]] for the given datatype IRI w.r.t.
+   * to the given [[TypeMapper]]. Raises an exception if no datatype could be
+   * obtained
+   *
+   * @param datatypeIri
+   * @param typeMapper
+   * @return
+   */
+  def getSparkDatatype(datatypeIri: String, typeMapper: TypeMapper): DataType = {
+    val effectiveDatatypeIri = getEffectiveDatatype(datatypeIri)
+
+    val rdfDatatype = typeMapper.getSafeTypeByName(effectiveDatatypeIri)
+    val javaClass = rdfDatatype.getJavaClass
+
+    val dataType = DataTypeUtils.getSparkType(javaClass)
+    dataType
+  }
+
+  /**
+   * Apply a schemaMapping to an RDD[Binding] in order to obtain a
+   * corresponding [[DataFrame]]
+   *
+   * @param bindings
+   * @param schemaMapping
+   * @return
+   */
   def applySchemaMapping(
                           bindings: RDD[Binding],
                           schemaMapping: SchemaMapping): DataFrame = {
@@ -83,14 +143,8 @@ object RddToDataFrameMapper {
 
       val datatypeIri = fieldMapping.getDatatypeIri
 
-      // Special cases: R2RML IRI and BlankNodes
-      val effectiveDatatypeIri = getEffectiveDatatype(datatypeIri)
-
-      val rdfDatatype = typeMapper.getSafeTypeByName(effectiveDatatypeIri)
-      val javaClass = rdfDatatype.getJavaClass
-
       val name = v.getVarName
-      val dataType = DataTypeUtils.getSparkType(javaClass)
+      val dataType = getSparkDatatype(datatypeIri, typeMapper)
       val isNullable = fieldMapping.isNullable
 
       StructField(name, dataType, isNullable)
@@ -98,7 +152,8 @@ object RddToDataFrameMapper {
 
     val targetSchema = StructType(structFields)
 
-    println(targetSchema)
+    logger.debug("Created target schema: " + targetSchema)
+    // println(targetSchema)
 
     val rows: RDD[Row] = bindings.map(mapToRow(_, schemaMapping))
     sparkSession.createDataFrame(rows, targetSchema)
@@ -135,7 +190,7 @@ object RddToDataFrameMapper {
           getEffectiveDatatype(fieldMapping.getDatatypeIri)))
       }
 
-      // Special handling for BigInteger
+      // Special handling for BigInteger which needs to be converted to BigDecimal
       val effectiveJavaValue = DataTypeUtils.enforceSparkCompatibility(rawJavaValue)
 
       effectiveJavaValue

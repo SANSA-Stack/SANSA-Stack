@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-object RddOfResourcesOps {
+object RddOfResourceOps {
   def mapAs[T <: RDFNode](implicit t: ClassTag[T], rddOfRdfNodes: RDD[_ <: RDFNode], clazz: Class[T]): RDD[T] =
     rddOfRdfNodes.map(_.as(clazz))
 

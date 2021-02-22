@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
-import net.sansa_stack.query.spark.ops.rdd.RddToDataFrameMapper
+import net.sansa_stack.query.spark.ops.rdd.RddOfBindingToDataFrameMapper
+import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark._
 import net.sansa_stack.rdf.spark.partition.RDFPartition
@@ -86,9 +87,107 @@ class SparqlFrame extends Transformer{
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
 
-    val schemaMapping = RddToDataFrameMapper.createSchemaMapping(resultSet)
-    val df = RddToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+    val schemaMapping = RddOfBindingToDataFrameMapper
+      .configureSchemaMapper(resultSet)
+      .createSchemaMapping()
+    val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df
   }
+
+    /* if (_queryExcecutionEngine == "sparqlify") {
+      val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
+      val qef = dataset.rdd.verticalPartition(RdfPartitionerDefault).sparqlify
+      val resultSet = qef.createQueryExcecution(_query)
+      val schemaMapping = RddOfBindingToDataFrameMapper.createSchemaMapping(resultSet)
+      val df = RddOfBindingToDataFrameMapper.applySchemaMapping(spark, resultSet.getBindings, schemaMapping)
+      df
+    } */
+/*
+    val parser = new ParserSPARQL11()
+    val projectionVars: Seq[Var] = parser.parse(new Query(), _query).getProjectVars.asScala
+    val bindings: RDD[Binding] = getResultBindings(dataset)
+
+    val features: RDD[Seq[Node]] = bindings.map(binding => {
+      projectionVars.map(projectionVar => binding.get(projectionVar))
+    })
+
+    val columns: Seq[String] = projectionVars.map(_.toString().replace("?", ""))
+
+
+    // the next block is for the edge case that no elements are in result
+    if (features.count() == 0) {
+      println(f"[WARNING] the resulting DataFrame is empty!")
+      val emptyDf = spark.createDataFrame(
+        spark.sparkContext.emptyRDD[Row],
+        StructType(columns.map(colName => StructField(colName, StringType, nullable = true)))
+      )
+      return emptyDf
+    }
+
+    val types = features.map(seq => {
+      seq.map(node => {
+        if (node == null) {
+          NullType
+        }
+        else if (node.isLiteral) {
+          // TODO also include possiblity like Datetime and others
+          if (node.getLiteralValue.isInstanceOf[Float]) FloatType
+          else if (node.getLiteralValue.isInstanceOf[Double]) DoubleType
+          else if (node.getLiteralValue.isInstanceOf[Boolean]) BooleanType
+          else if (node.getLiteralValue.isInstanceOf[String]) StringType
+          else if (node.getLiteralValue.isInstanceOf[Int]) IntegerType
+          else StringType
+        }
+        else StringType
+      })
+    })
+
+    var columnTypes = ListBuffer.empty[org.apache.spark.sql.types.DataType]
+    val firstRow = types.take(1).toSeq
+    val numberColumns = firstRow(0).toSeq.size
+    // println(f"We have $numberColumns columns")
+    for (i <- 0 to numberColumns - 1) {
+      val allTypesOfColumn = types.map(_ (i)).filter(_ != NullType)
+      if (allTypesOfColumn.distinct.collect().toSeq.size == 1) {
+        val elements = allTypesOfColumn.take(1).toSeq
+        val element = elements(0).asInstanceOf[org.apache.spark.sql.types.DataType] // .toString
+        columnTypes.append(element)
+      }
+      else {
+        val typeDistribution = allTypesOfColumn.groupBy(identity).mapValues(_.size).collect().toSeq
+        println(
+          f"""
+            |[WARNING] the column type is not clear because different or only null types occured.
+            |\t type distribution is:
+            |\t ${typeDistribution.mkString(" ")}
+            |\t this is why we fallback to StringType
+            |\t """.stripMargin)
+        val element = StringType.asInstanceOf[org.apache.spark.sql.types.DataType] // .toString
+        columnTypes.append(element)
+      }
+    }
+
+    val structTypesList = ListBuffer.empty[StructField]
+    for (i <- 0 to numberColumns - 1) {
+      structTypesList.append(
+        StructField(columns(i), columnTypes(i), nullable = true)
+      )
+    }
+    val schema = StructType(structTypesList.toSeq)
+
+    val featuresNativeScalaDataTypes = features.map(seq => {
+      seq.map(node => {
+        if (node == null) null
+        else {
+          node.isLiteral match {
+            case true => node.getLiteralValue
+            case false => node.toString()
+          }
+        }
+      })
+    })
+
+    spark.createDataFrame(featuresNativeScalaDataTypes.map(Row.fromSeq(_)), schema)
+  } */
 }
