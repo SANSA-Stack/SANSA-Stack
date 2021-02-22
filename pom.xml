@@ -329,6 +329,13 @@
                 <version>0.9.0-SNAPSHOT</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.aksw.r2rml</groupId>
+                <artifactId>r2rml-jena-sql-transforms</artifactId>
+                <version>0.9.0-SNAPSHOT</version>
+            </dependency>
+
+
             <!-- Datalake (used in sansa-query) -->
             <!--
             <dependency>
@@ -1190,11 +1197,11 @@
                 <version>1.7.30</version>
             </dependency>
 
-        <dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
-<artifactId>slf4j-log4j12</artifactId>
-		<version>1.7.30</version>
-        </dependency>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.7.30</version>
+            </dependency>
 
 
             <dependency>
