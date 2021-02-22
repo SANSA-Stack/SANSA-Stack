@@ -7,7 +7,7 @@ import org.junit.runners.Parameterized;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@RunWith(Parameterized.class)
+// @RunWith(Parameterized.class)
 // @Category()
 public class TrigRecordReaderTestsSlow
     extends TrigRecordReaderTestBase
