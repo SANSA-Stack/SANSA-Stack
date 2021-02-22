@@ -107,6 +107,7 @@
     </properties>
 
     <modules>
+        <module>sansa-test-resources</module>
         <module>sansa-resource-metadata</module>
         <module>sansa-resource-testdata</module>
         <module>sansa-rdf</module>
@@ -134,6 +135,13 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-test-resources_${scala.binary.version}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- General SANSA metadata file (build time / version) -->
             <dependency>
                 <groupId>net.sansa-stack</groupId>
@@ -1181,6 +1189,13 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.30</version>
             </dependency>
+
+        <dependency>
+                <groupId>org.slf4j</groupId>
+<artifactId>slf4j-log4j12</artifactId>
+		<version>1.7.30</version>
+        </dependency>
+
 
             <dependency>
                 <groupId>org.eclipse.rdf4j</groupId>

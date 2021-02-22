@@ -1,5 +1,6 @@
 package net.sansa_stack.rdf.common.io.hadoop;
 
+import com.google.common.base.StandardSystemProperty;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.rdf.common.*;
 import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
@@ -360,26 +361,83 @@ public class TrigRecordReader
         BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
         Seekable tailNav = tailBuffer.newChannel();
 
-        long tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, desiredExtraBytes, prober);
+        long tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
         long tailBytes = tmp < 0 ? 0 : Ints.checkedCast(tmp);
 
         // Set the stream to the start of the split and get the head buffer
         // Note that we will use the stream in its state to read the body part
+        long knownDecodedDataLength[] = new long[]{-1};
+        if (!isEncoded) {
+            knownDecodedDataLength[0] = splitLength;
+        }
+
         Map.Entry<Long, Long> adjustedHeadSplitBounds = setStreamToInterval(splitStart, adjustedSplitEnd);
         long adjustedSplitStart = adjustedHeadSplitBounds.getKey();
 
+        Predicate<Long> posValidator = pos -> {
+            boolean r = knownDecodedDataLength[0] < 0 || pos < knownDecodedDataLength[0];
+            // logger.info("Validation request: " + pos + " known size=" + knownDecodedDataLength[0] + " valid=" + r);
+            return r;
+        };
+
+        /*
+        InputStream splitBoundedHeadStream =
+                Channels.newInputStream(
+                        new InterruptingReadableByteChannel(
+                                stream,
+                                rawStream,
+                                adjustedSplitEnd,
+                                self -> {
+                                    long bytesRead = self.getBytesRead();
+                                    if (knownDecodedDataLength[0] >= 0) {
+                                        if (bytesRead == knownDecodedDataLength[0]) {
+                                            throw new RuntimeException("Attempt to reset known data length to already known value: " + knownDecodedDataLength[0]);
+                                        } else {
+                                            throw new RuntimeException("Inconsistent decoded data length: " + knownDecodedDataLength[0] + " bytes were declared as known but split end reached after " + bytesRead + " bytes");
+                                        }
+                                    }
+
+                                    knownDecodedDataLength[0] = bytesRead;
+                                    logger.info("Head stream encountered split end; decoded data length = " + knownDecodedDataLength[0]);
+                                }));
+
+         */
+
+        // In the following snippet note that ReadableByteChannelWithConditionalBound's
+        // callback mechanism is only used to detect the split length of the decoded data.
+        // It is NOT used to flag the end of the stream.
         InputStream splitBoundedHeadStream =
                 Channels.newInputStream(
                         new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-                                new ReadableByteChannelImpl2(stream),
-                                xstream -> hitSplitBound.test(new SeekableInputStream(rawStream, rawStream), adjustedSplitEnd)));
+                                new ReadableByteChannelWithoutCloseOnInterrupt(stream),
+                                self -> {
+                                    if (knownDecodedDataLength[0] < 0) {
+                                        boolean foundBound = hitSplitBound.test(
+                                                new SeekableInputStream(rawStream, rawStream),
+                                                adjustedSplitEnd);
+
+                                        if (foundBound) {
+                                            knownDecodedDataLength[0] = self.getBytesRead();
+                                            logger.info("Head stream encountered split end; decoded data length = " + knownDecodedDataLength[0]);
+                                        }
+                                    }
+
+                                    // Never signal eof
+                                    return false;
+                                }));
+
+//        InputStream splitBoundedHeadStream =
+//                Channels.newInputStream(
+//                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
+//                                new ReadableByteChannelWithoutCloseOnInterrupt(stream),
+//                                xstream -> hitSplitBound.test(new SeekableInputStream(rawStream, rawStream), adjustedSplitEnd)));
 
         BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
         Seekable headNav = headBuffer.newChannel();
 
         int headBytes = splitStart == 0
                 ? 0
-                : Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, desiredExtraBytes, prober));
+                : Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
 
         // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
@@ -401,7 +459,7 @@ public class TrigRecordReader
         InputStream splitBoundedBodyStream =
                 Channels.newInputStream(
                         new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-                                new ReadableByteChannelImpl2(stream),
+                                new ReadableByteChannelWithoutCloseOnInterrupt(stream),
                                 xstream -> hitSplitBound.test(stream, adjustedSplitEnd)));
 
     /*
@@ -445,7 +503,10 @@ public class TrigRecordReader
             // FIXME There are two possibilities now why we couldn't find a record
             //  - There were errors in the data
             //  - There is a record that goes across this split
-            logger.warn("NEED TO PROPERLY HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD");
+            logger.warn(String.format("No data found in split starting at %d. Possible reasons: " +
+                    "(1) A large record spanning this split, " +
+                    "(2) Syntax error(s) in the data," +
+                    "(3) Some bug in the implementation", splitStart));
 
             // No data from this split
             headStream = new ByteArrayInputStream(new byte[0]);
@@ -453,12 +514,21 @@ public class TrigRecordReader
             tailStream = new ByteArrayInputStream(new byte[0]);
         } else {
 
-
             // headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+            // We need to check the headLength here
+            long headLength = knownDecodedDataLength[0] < 0
+                    ? headBuffer.getKnownDataSize()
+                    : knownDecodedDataLength[0];
 
             Seekable headChannel = headBuffer.newChannel();
-            headChannel.nextPos(headBytes);
-            headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headBuffer.getKnownDataSize() - headBytes);
+            if (headBytes != 0) {
+                // The method nextPos may read bytes from the head buffer if no bytes have been read yet!
+                // So only call nextPos when we have to and know for sure we had prior reads. This is indicated by
+                // a non-zero value of headBytes.
+                headChannel.nextPos(headBytes);
+            }
+
+            headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headLength - headBytes);
 
             // Sanity check for non-encoded data: The body must immediately follow
             // the (adjusted) split start + the know header size
@@ -467,7 +537,7 @@ public class TrigRecordReader
                 // println(s"adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
 
                 if (expectedBodyOffset != stream.getPos()) {
-                    throw new RuntimeException("Expected body offset does not match actual one: adjustedSplitStart = " + adjustedSplitStart + " known head buffer size = " + headBuffer.getKnownDataSize() + " = " + expectedBodyOffset + " - actual body offset = " + stream.getPos());
+                    throw new RuntimeException("Expected body offset does not match actual one: adjustedSplitStart = " + adjustedSplitStart + " known head buffer size = " + headBuffer.getKnownDataSize() + ", expected body offset = " + expectedBodyOffset + ", actual body offset = " + stream.getPos());
                 }
             }
 
@@ -485,9 +555,11 @@ public class TrigRecordReader
         if (writeOutSegments) {
             String splitName = split.getPath().getName();
 
-            logger.info("Writing segment " + splitName + " " + splitStart);
+            Path basePath = Paths.get(StandardSystemProperty.JAVA_IO_TMPDIR.value()).toAbsolutePath();
 
-            Path basePath = Paths.get("/mnt/LinuxData/tmp/");
+            logger.info("Writing segment " + splitName + " " + splitStart + " to " + basePath);
+
+            // Path basePath = Paths.get("/mnt/LinuxData/tmp/");
 
             Path prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.trig");
             Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.trig");
@@ -532,12 +604,24 @@ public class TrigRecordReader
     }
 
 
+    /**
+     * @param nav
+     * @param splitStart
+     * @param absProbeRegionStart
+     * @param maxRecordLength
+     * @param absDataRegionEnd
+     * @param posValidator
+     * @param prober
+     * @return
+     * @throws IOException
+     */
     public static long findNextRecord(
             Seekable nav,
             long splitStart,
             long absProbeRegionStart,
             long maxRecordLength,
             long absDataRegionEnd,
+            Predicate<Long> posValidator,
             Predicate<Seekable> prober) throws IOException {
         // Set up absolute positions
         long absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd); // = splitStart + bufferLength
@@ -560,7 +644,7 @@ public class TrigRecordReader
         Matcher fwdMatcher = trigFwdPattern.matcher(charSequence);
         fwdMatcher.region(0, relProbeRegionEnd);
 
-        long matchPos = findFirstPositionWithProbeSuccess(seekable, fwdMatcher, true, prober);
+        long matchPos = findFirstPositionWithProbeSuccess(seekable, posValidator, fwdMatcher, true, prober);
 
         long result = matchPos >= 0
                 ? matchPos + splitStart
@@ -585,6 +669,7 @@ public class TrigRecordReader
             long absProbeRegionStart,
             long maxRecordLength,
             long absDataRegionEnd,
+            Predicate<Long> posValidator,
             Predicate<Seekable> prober) throws IOException {
         long result = -1L;
 
@@ -592,7 +677,7 @@ public class TrigRecordReader
         long nextProbePos = absProbeRegionStart;
         int i = 0;
         while (i < 2) {
-            long candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, prober);
+            long candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, posValidator, prober);
             if (candidatePos < 0) {
                 // If there is more than maxRecordLength data available then
                 // it is inconsistent for findNextRecord to indicate that no record was found
@@ -600,8 +685,7 @@ public class TrigRecordReader
                 // or there is an internal error with the prober
                 // or there is a problem with the data (e.g. syntax error)
                 if (availableDataRegion >= maxRecordLength) {
-                    // FIXME
-                    logger.warn("TODO AVAILABLE DATA IS NOT YET ADJUSTED TO ACTUAL DATA. Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available");
+                    logger.warn("Found no record start in a record search region of " + maxRecordLength + " bytes, although up to " + availableDataRegion + " bytes were allowed for reading");
                     // throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
                 } else {
                     // Here we assume we read into the last chunk which contained no full record
@@ -630,6 +714,8 @@ public class TrigRecordReader
      * Matching ranges are part of the matcher configuration
      *
      * @param rawSeekable
+     * @param posValidator Test whether the seekable's absolute position is a valid start point.
+     *                     Used to prevent testing start points past a split boundary with unknown split lengths.
      * @param m
      * @param isFwd
      * @param prober
@@ -637,6 +723,7 @@ public class TrigRecordReader
      */
     public static long findFirstPositionWithProbeSuccess(
             Seekable rawSeekable,
+            Predicate<Long> posValidator,
             Matcher m,
             boolean isFwd,
             Predicate<Seekable> prober) throws IOException {
@@ -644,6 +731,7 @@ public class TrigRecordReader
         Seekable seekable = rawSeekable.cloneObject();
         long absMatcherStartPos = seekable.getPos();
 
+        long result = -1l;
         while (m.find()) {
             int start = m.start();
             int end = m.end();
@@ -653,6 +741,12 @@ public class TrigRecordReader
                     : -end + 1;
 
             int absPos = Ints.checkedCast(absMatcherStartPos + matchPos);
+
+            boolean validAbsPos = posValidator.test((long) absPos);
+            if (!validAbsPos) {
+                break;
+            }
+
             // Artificially create errors
             // absPos += 5;
             seekable.setPos(absPos);
@@ -662,11 +756,12 @@ public class TrigRecordReader
             // System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
 
             if (probeResult) {
-                return absPos;
+                result = absPos;
+                break;
             }
         }
 
-        return -1L;
+        return result;
     }
 
 
