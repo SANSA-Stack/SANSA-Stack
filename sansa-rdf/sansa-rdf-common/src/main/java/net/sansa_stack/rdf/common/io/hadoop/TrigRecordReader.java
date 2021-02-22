@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  * record reader for Trig RDF files. Can handle data skews where
  * sometimes large data blocks span multiple splits. E.g. a mix of 1 million graphs of 1 triple
  * and 1 graph of 1 million triples.
- *
+ * <p>
  * Each split is separated into a head, body and tail region.
  * <ul>
  *   <li>
@@ -79,331 +79,330 @@ import java.util.regex.Pattern;
  * @author Lorenz Buehmann
  */
 public class TrigRecordReader
-  extends RecordReader<LongWritable, Dataset> {
+        extends RecordReader<LongWritable, Dataset> {
 
-  private static final Logger logger = LoggerFactory.getLogger(TrigRecordReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrigRecordReader.class);
 
-  public static String MAX_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.maxlength";
-  public static String MIN_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.minlength";
-  public static String PROBE_RECORD_COUNT = "mapreduce.input.trigrecordreader.probe.count";
+    public static String MAX_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.maxlength";
+    public static String MIN_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.minlength";
+    public static String PROBE_RECORD_COUNT = "mapreduce.input.trigrecordreader.probe.count";
 
-  protected long maxRecordLength;
-  protected long minRecordLength;
-  protected int probeRecordCount;
+    protected long maxRecordLength;
+    protected long minRecordLength;
+    protected int probeRecordCount;
 
-  /**
-   * Regex pattern to search for candidate record starts
-   * used to avoid having to invoke the actual parser (which may start a new thread)
-   * on each single character
-   */
-  protected static final Pattern trigFwdPattern = Pattern.compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    /**
+     * Regex pattern to search for candidate record starts
+     * used to avoid having to invoke the actual parser (which may start a new thread)
+     * on each single character
+     */
+    protected static final Pattern trigFwdPattern = Pattern.compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
-  // private var start, end, position = 0L
+    // private var start, end, position = 0L
 
-  protected static final Dataset EMPTY_DATASET = DatasetFactory.create();
+    protected static final Dataset EMPTY_DATASET = DatasetFactory.create();
 
-  protected AtomicLong currentKey = new AtomicLong();
-  protected Dataset currentValue = DatasetFactory.create();
+    protected AtomicLong currentKey = new AtomicLong();
+    protected Dataset currentValue = DatasetFactory.create();
 
-  protected Iterator<Dataset> datasetFlow;
+    protected Iterator<Dataset> datasetFlow;
 
-  protected Decompressor decompressor;
-
-
-  protected FileSplit split;
-  protected CompressionCodec codec;
-  protected byte[] prefixBytes;
-  protected FSDataInputStream rawStream;
-  protected SeekableInputStream stream;
-  protected boolean isEncoded = false;
-  protected long splitStart = -1;
-  protected long splitLength = -1;
-  protected long splitEnd = -1;
+    protected Decompressor decompressor;
 
 
-  /**
-   * Read out config paramaters (prefixes, length thresholds, ...) and
-   * examine the codec in order to set an internal
-   * flag whether the stream will be encoded or not.
-   *
-   */
-  @Override
-  public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException {
-    // println("TRIG READER INITIALIZE CALLED")
-    Configuration job = context.getConfiguration();
-
-    maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024 * 1024);
-    minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 1);
-    probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10);
-
-    String str = context.getConfiguration().get("prefixes");
-    Model model = ModelFactory.createDefaultModel();
-    if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE);
-
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY);
-    // val prefixBytes = baos.toByteArray
-    prefixBytes = baos.toByteArray();
+    protected FileSplit split;
+    protected CompressionCodec codec;
+    protected byte[] prefixBytes;
+    protected FSDataInputStream rawStream;
+    protected SeekableInputStream stream;
+    protected boolean isEncoded = false;
+    protected long splitStart = -1;
+    protected long splitLength = -1;
+    protected long splitEnd = -1;
 
 
-    split = (FileSplit)inputSplit;
+    /**
+     * Read out config paramaters (prefixes, length thresholds, ...) and
+     * examine the codec in order to set an internal
+     * flag whether the stream will be encoded or not.
+     */
+    @Override
+    public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException {
+        // println("TRIG READER INITIALIZE CALLED")
+        Configuration job = context.getConfiguration();
 
-    // By default use the given stream
-    // We may need to wrap it with a decoder below
-    // var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
-    org.apache.hadoop.fs.Path path = split.getPath();
-    rawStream = path.getFileSystem(context.getConfiguration())
-            .open(path);
+        maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024 * 1024);
+        minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 1);
+        probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10);
+
+        String str = context.getConfiguration().get("prefixes");
+        Model model = ModelFactory.createDefaultModel();
+        if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY);
+        // val prefixBytes = baos.toByteArray
+        prefixBytes = baos.toByteArray();
+
+
+        split = (FileSplit) inputSplit;
+
+        // By default use the given stream
+        // We may need to wrap it with a decoder below
+        // var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
+        org.apache.hadoop.fs.Path path = split.getPath();
+        rawStream = path.getFileSystem(context.getConfiguration())
+                .open(path);
 
 //    if (rawStream.isInstanceOf[AbstractInterruptibleChannel]) {
 //      doNotCloseOnInterrupt(rawStream.asInstanceOf[AbstractInterruptibleChannel])
 //    }
 
-    // println("Got raw stream positioned at: " + rawStream.getPos)
-    isEncoded = false;
+        // println("Got raw stream positioned at: " + rawStream.getPos)
+        isEncoded = false;
 
 
-    // var splitStart = split.getStart
-    // val splitLength = split.getLength
-    // var splitEnd = splitStart + splitLength
-    splitStart = split.getStart();
-    splitLength = split.getLength();
-    splitEnd = splitStart + splitLength;
+        // var splitStart = split.getStart
+        // val splitLength = split.getLength
+        // var splitEnd = splitStart + splitLength
+        splitStart = split.getStart();
+        splitLength = split.getLength();
+        splitEnd = splitStart + splitLength;
 
-    // maxRecordLength = Math.min(maxRecordLength, splitLength)
-    // println("Split length = " + splitLength)
+        // maxRecordLength = Math.min(maxRecordLength, splitLength)
+        // println("Split length = " + splitLength)
 
-    // val rawDesiredBufferLength = split.getLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, split.getLength - 1)
+        // val rawDesiredBufferLength = split.getLength + Math.min(2 * maxRecordLength + probeRecordCount * maxRecordLength, split.getLength - 1)
 
-    org.apache.hadoop.fs.Path file = split.getPath();
+        org.apache.hadoop.fs.Path file = split.getPath();
 
-    codec = new CompressionCodecFactory(job).getCodec(file);
-    // var streamFactory: Long => (InputStream, Long, Long) = null
+        codec = new CompressionCodecFactory(job).getCodec(file);
+        // var streamFactory: Long => (InputStream, Long, Long) = null
 
-    if (null != codec) {
-      // decompressor = CodecPool.getDecompressor(codec)
-      if (codec instanceof SplittableCompressionCodec) {
-        // val scc = codec.asInstanceOf[SplittableCompressionCodec]
-        isEncoded = true;
-      } else {
-        throw new RuntimeException("Don't know how to handle codec: " + codec);
-      }
+        if (null != codec) {
+            // decompressor = CodecPool.getDecompressor(codec)
+            if (codec instanceof SplittableCompressionCodec) {
+                // val scc = codec.asInstanceOf[SplittableCompressionCodec]
+                isEncoded = true;
+            } else {
+                throw new RuntimeException("Don't know how to handle codec: " + codec);
+            }
+        }
     }
-  }
 
-  public void initDatasetFlow() throws IOException {
-
-
-    // val sw = Stopwatch.createStarted()
-    // val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
-
-    // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
-
-    Flowable<Dataset> tmp = createDatasetFlow();
-    datasetFlow = tmp.blockingIterable().iterator();
-  }
+    public void initDatasetFlow() throws IOException {
 
 
-  /**
-   * Seek to a given offset and prepare to read up to the 'end' position (exclusive)
-   * For non-encoded streams this is just performs a seek on th stream and returns
-   * start/end unchanged.
-   * Encoded streams will adjust the seek to the data part that follows some header
-   * information
-   *
-   * @param start
-   * @param end
-   * @return
-   */
-  public Map.Entry<Long, Long> setStreamToInterval(long start, long end) throws IOException {
+        // val sw = Stopwatch.createStarted()
+        // val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
 
-    Map.Entry<Long, Long> result;
+        // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
 
-    if (null != codec) {
-      if (decompressor != null) {
-        // CodecPool.returnDecompressor(decompressor)
-      }
+        Flowable<Dataset> tmp = createDatasetFlow();
+        datasetFlow = tmp.blockingIterable().iterator();
+    }
 
-      decompressor = CodecPool.getDecompressor(codec);
 
-      if (codec instanceof SplittableCompressionCodec) {
-        SplittableCompressionCodec scc = (SplittableCompressionCodec)codec;
+    /**
+     * Seek to a given offset and prepare to read up to the 'end' position (exclusive)
+     * For non-encoded streams this is just performs a seek on th stream and returns
+     * start/end unchanged.
+     * Encoded streams will adjust the seek to the data part that follows some header
+     * information
+     *
+     * @param start
+     * @param end
+     * @return
+     */
+    public Map.Entry<Long, Long> setStreamToInterval(long start, long end) throws IOException {
 
-        // rawStream.seek(0)
-        // rawStream.seek(start)
-        // try {
+        Map.Entry<Long, Long> result;
 
-        SplitCompressionInputStream tmp = scc.createInputStream(rawStream, decompressor, start, end,
-          SplittableCompressionCodec.READ_MODE.BYBLOCK);
+        if (null != codec) {
+            if (decompressor != null) {
+                // CodecPool.returnDecompressor(decompressor)
+            }
+
+            decompressor = CodecPool.getDecompressor(codec);
+
+            if (codec instanceof SplittableCompressionCodec) {
+                SplittableCompressionCodec scc = (SplittableCompressionCodec) codec;
+
+                // rawStream.seek(0)
+                // rawStream.seek(start)
+                // try {
+
+                SplitCompressionInputStream tmp = scc.createInputStream(rawStream, decompressor, start, end,
+                        SplittableCompressionCodec.READ_MODE.BYBLOCK);
 
 
 //        val tmp: SplitCompressionInputStream = scc.createInputStream(
 //          new SeekableInputStream(new CloseShieldInputStream(rawStream), rawStream), decompressor, start, end,
 //          SplittableCompressionCodec.READ_MODE.BYBLOCK)
 
-        // tmp.read(new Array[Byte](1))
-        // tmp.skip(0)
-        long adjustedStart = tmp.getAdjustedStart();
-        long adjustedEnd = tmp.getAdjustedEnd();
+                // tmp.read(new Array[Byte](1))
+                // tmp.skip(0)
+                long adjustedStart = tmp.getAdjustedStart();
+                long adjustedEnd = tmp.getAdjustedEnd();
 
-        // val rawPos = rawStream.getPos
-        // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
+                // val rawPos = rawStream.getPos
+                // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
 
-        // stream = tmp // new SeekableInputStream(new CloseShieldInputStream(tmp), tmp)
+                // stream = tmp // new SeekableInputStream(new CloseShieldInputStream(tmp), tmp)
 
-        stream =
-          new SeekableInputStream(
-            new InputStreamWithCloseIgnore(
-              InputStreamWithCloseLogging.wrap(tmp,
-                ExceptionUtils::getStackTrace, TrigRecordReader::logUnexpectedClose)), tmp);
+                stream =
+                        new SeekableInputStream(
+                                new InputStreamWithCloseIgnore(
+                                        InputStreamWithCloseLogging.wrap(tmp,
+                                                ExceptionUtils::getStackTrace, TrigRecordReader::logUnexpectedClose)), tmp);
 
-            result = new AbstractMap.SimpleEntry<>(adjustedStart, adjustedEnd);
-        // } catch {
-        // case _ => result = setStreamToInterval(start - 1, start -1)
-        // }
-      } else {
-        throw new RuntimeException("Don't know how to handle codec: " + codec);
-      }
-    } else {
-      rawStream.seek(start);
-      // stream = rawStream
-      // stream.seek(start)
+                result = new AbstractMap.SimpleEntry<>(adjustedStart, adjustedEnd);
+                // } catch {
+                // case _ => result = setStreamToInterval(start - 1, start -1)
+                // }
+            } else {
+                throw new RuntimeException("Don't know how to handle codec: " + codec);
+            }
+        } else {
+            rawStream.seek(start);
+            // stream = rawStream
+            // stream.seek(start)
 
-      stream =
-        new SeekableInputStream(
-          new InputStreamWithCloseIgnore(
-            Channels.newInputStream(
-              new InterruptingReadableByteChannel(
-                InputStreamWithCloseLogging.wrap(rawStream,
-                  ExceptionUtils::getStackTrace, TrigRecordReader::logUnexpectedClose), rawStream, end))),
-        rawStream);
+            stream =
+                    new SeekableInputStream(
+                            new InputStreamWithCloseIgnore(
+                                    Channels.newInputStream(
+                                            new InterruptingReadableByteChannel(
+                                                    InputStreamWithCloseLogging.wrap(rawStream,
+                                                            ExceptionUtils::getStackTrace, TrigRecordReader::logUnexpectedClose), rawStream, end))),
+                            rawStream);
 
-      result = new AbstractMap.SimpleEntry<>(start, end);
+            result = new AbstractMap.SimpleEntry<>(start, end);
+        }
+
+        return result;
     }
 
-    return result;
-  }
+    public static void logClose(String str) {
+        // logger.info(str)
+    }
 
-  public static void logClose(String str) {
-    // logger.info(str)
-  }
+    public static void logUnexpectedClose(String str) {
+        logger.error(str);
+        throw new RuntimeException("Unexpected close");
+    }
 
-  public static void logUnexpectedClose(String str) {
-    logger.error(str);
-    throw new RuntimeException("Unexpected close");
-  }
+    protected Flowable<Dataset> createDatasetFlow() throws IOException {
 
-  protected Flowable<Dataset> createDatasetFlow() throws IOException {
+        // System.err.println(s"Processing split $absSplitStart: $splitStart - $splitEnd | --+$actualExtraBytes--> $dataRegionEnd")
 
-    // System.err.println(s"Processing split $absSplitStart: $splitStart - $splitEnd | --+$actualExtraBytes--> $dataRegionEnd")
+        // Clones the provided seekable!
+        Function<Seekable, InputStream> effectiveInputStreamSupp = seekable -> {
+            InputStream r = new SequenceInputStream(
+                    new ByteArrayInputStream(prefixBytes),
+                    Channels.newInputStream(seekable.cloneObject()));
+            return r;
+        };
 
-    // Clones the provided seekable!
-    Function<Seekable, InputStream> effectiveInputStreamSupp = seekable -> {
-      InputStream r = new SequenceInputStream(
-        new ByteArrayInputStream(prefixBytes),
-        Channels.newInputStream(seekable.cloneObject()));
-      return r;
-    };
+        Function<Seekable, Flowable<Dataset>> parser = seekable -> {
+            Callable<InputStream> inSupp = () -> effectiveInputStreamSupp.apply(seekable);
 
-    Function<Seekable, Flowable<Dataset>> parser = seekable -> {
-      Callable<InputStream> inSupp = () -> effectiveInputStreamSupp.apply(seekable);
+            Flowable<Dataset> r = RDFDataMgrRx.createFlowableDatasets(inSupp, Lang.TRIG, null);
+            return r;
+        };
 
-      Flowable<Dataset> r = RDFDataMgrRx.createFlowableDatasets(inSupp, Lang.TRIG, null);
-      return r;
-    };
+        Predicate<Dataset> isNonEmptyDataset = t -> !t.isEmpty();
 
-    Predicate<Dataset> isNonEmptyDataset = t -> !t.isEmpty();
+        Predicate<Seekable> prober = seekable -> {
+            // printSeekable(seekable)
+            boolean quadCount = parser.apply(seekable)
+                    .take(probeRecordCount)
+                    .count()
+                    // .doOnError(new Consumer[Throwable] {
+                    //   override def accept(t: Throwable): Unit = t.printStackTrace
+                    // })
 
-    Predicate<Seekable> prober = seekable -> {
-      // printSeekable(seekable)
-      boolean quadCount = parser.apply(seekable)
-        .take(probeRecordCount)
-        .count()
-        // .doOnError(new Consumer[Throwable] {
-        //   override def accept(t: Throwable): Unit = t.printStackTrace
-        // })
+                    .onErrorReturnItem(-1L)
+                    .blockingGet() > 0;
+            return quadCount;
+        };
 
-        .onErrorReturnItem(-1L)
-        .blockingGet() > 0;
-      return quadCount;
-    };
+        // Predicate to test whether a split position was hit or passed for the given stream
+        // and position
+        BiPredicate<SeekableInputStream, Long> hitSplitBound = (strm, splitPos) -> {
+            long rawPos;
+            try {
+                rawPos = strm.getSeekable().getPos();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-    // Predicate to test whether a split position was hit or passed for the given stream
-    // and position
-    BiPredicate<SeekableInputStream, Long> hitSplitBound = (strm, splitPos) -> {
-      long rawPos;
-      try {
-        rawPos = strm.getSeekable().getPos();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      long exceed = rawPos - splitPos;
-      boolean eofReached = exceed >= 0;
-      if (eofReached) {
-        logger.warn("Exceeded maximum boundary by " + exceed + " bytes");
-      }
-      return eofReached;
-    };
+            long exceed = rawPos - splitPos;
+            boolean eofReached = exceed >= 0;
+            if (eofReached) {
+                logger.warn("Exceeded maximum boundary by " + exceed + " bytes");
+            }
+            return eofReached;
+        };
 
 
-    // Except for the first split, the first record in each split is skipped
-    // because it may belong to the last record of the previous split.
-    // So we need to read past the first record, then find the second record
-    // and then find probeRecordCount further records to validate the second one
-    // Hence we need to read up to (2 + probeRecordCount) * maxRecordLength bytes
-    long desiredExtraBytes = (2 + probeRecordCount) * maxRecordLength;
+        // Except for the first split, the first record in each split is skipped
+        // because it may belong to the last record of the previous split.
+        // So we need to read past the first record, then find the second record
+        // and then find probeRecordCount further records to validate the second one
+        // Hence we need to read up to (2 + probeRecordCount) * maxRecordLength bytes
+        long desiredExtraBytes = (2 + probeRecordCount) * maxRecordLength;
 
-    // Set the stream to the end of the split and get the tail buffer
-    Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes);
-    long adjustedSplitEnd = adjustedTailSplitBounds.getKey();
+        // Set the stream to the end of the split and get the tail buffer
+        Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes);
+        long adjustedSplitEnd = adjustedTailSplitBounds.getKey();
 
-    BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
-    Seekable tailNav = tailBuffer.newChannel();
+        BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
+        Seekable tailNav = tailBuffer.newChannel();
 
-    long tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, desiredExtraBytes, prober);
-    long tailBytes = tmp < 0 ? 0 : Ints.checkedCast(tmp);
+        long tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, desiredExtraBytes, prober);
+        long tailBytes = tmp < 0 ? 0 : Ints.checkedCast(tmp);
 
-    // Set the stream to the start of the split and get the head buffer
-    // Note that we will use the stream in its state to read the body part
-    Map.Entry<Long, Long> adjustedHeadSplitBounds = setStreamToInterval(splitStart, adjustedSplitEnd);
-    long adjustedSplitStart = adjustedHeadSplitBounds.getKey();
+        // Set the stream to the start of the split and get the head buffer
+        // Note that we will use the stream in its state to read the body part
+        Map.Entry<Long, Long> adjustedHeadSplitBounds = setStreamToInterval(splitStart, adjustedSplitEnd);
+        long adjustedSplitStart = adjustedHeadSplitBounds.getKey();
 
-    InputStream splitBoundedHeadStream =
-      Channels.newInputStream(
-        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-          new ReadableByteChannelImpl2(stream),
-      xstream -> hitSplitBound.test(new SeekableInputStream(rawStream, rawStream), adjustedSplitEnd)));
+        InputStream splitBoundedHeadStream =
+                Channels.newInputStream(
+                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
+                                new ReadableByteChannelImpl2(stream),
+                                xstream -> hitSplitBound.test(new SeekableInputStream(rawStream, rawStream), adjustedSplitEnd)));
 
-    BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
-    Seekable headNav = headBuffer.newChannel();
+        BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
+        Seekable headNav = headBuffer.newChannel();
 
-    int headBytes = splitStart == 0
-      ? 0
-      : Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, desiredExtraBytes, prober));
+        int headBytes = splitStart == 0
+                ? 0
+                : Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, desiredExtraBytes, prober));
 
-    // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
+        // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
-    //    val deltaSplitStart = adjustedSplitStart - splitStart
-    // println(s"Adjusted split start $splitStart to $adjustedSplitStart [$deltaSplitStart]")
+        //    val deltaSplitStart = adjustedSplitStart - splitStart
+        // println(s"Adjusted split start $splitStart to $adjustedSplitStart [$deltaSplitStart]")
 
-    // Stream is now positioned at beginning of body region
-    // And head and tail buffers have been populated
-    // logger.info(s"adjustment: [$splitStart, $splitEnd) -> [$adjustedSplitStart, $adjustedSplitEnd)")
-    // logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
+        // Stream is now positioned at beginning of body region
+        // And head and tail buffers have been populated
+        // logger.info(s"adjustment: [$splitStart, $splitEnd) -> [$adjustedSplitStart, $adjustedSplitEnd)")
+        // logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
 
-    // Set up the body stream whose read method returns
-    // -1 upon reaching the split boundry
+        // Set up the body stream whose read method returns
+        // -1 upon reaching the split boundry
 
 //    var splitBoundedBodyStream: InputStream = InputStreamWithCloseLogging.wrap(
 //    new CloseShieldInputStream(Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
 //      xstream => hitSplitBound(stream, adjustedSplitEnd)))), ExceptionUtils.getStackTrace(_), logger.info(_))
 
-    InputStream splitBoundedBodyStream =
-      Channels.newInputStream(
-        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-          new ReadableByteChannelImpl2(stream),
-      xstream -> hitSplitBound.test(stream, adjustedSplitEnd)));
+        InputStream splitBoundedBodyStream =
+                Channels.newInputStream(
+                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
+                                new ReadableByteChannelImpl2(stream),
+                                xstream -> hitSplitBound.test(stream, adjustedSplitEnd)));
 
     /*
         val bodyCore = InputStreamWithCloseLogging.wrap(
@@ -428,313 +427,312 @@ public class TrigRecordReader
         splitBoundedBodyStream = new ByteArrayInputStream(bodyBytes)
     */
 
-    // Find the second record in the next split - i.e. after splitEnd (inclusive)
-    // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
-    // such as <g> { } | <g> { }   (where '|' denotes the split boundary)
+        // Find the second record in the next split - i.e. after splitEnd (inclusive)
+        // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
+        // such as <g> { } | <g> { }   (where '|' denotes the split boundary)
 
-    // If we are at start 0, we parse from the beginning - otherwise we skip the first record
+        // If we are at start 0, we parse from the beginning - otherwise we skip the first record
 
-    // println("HEAD BUFFER: " + new String(headBuffer, headBytes, headBufferLength - headBytes, StandardCharsets.UTF_8))
-    // println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
+        // println("HEAD BUFFER: " + new String(headBuffer, headBytes, headBufferLength - headBytes, StandardCharsets.UTF_8))
+        // println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
 
-    // Assemble the overall stream
-    InputStream prefixStream = new ByteArrayInputStream(prefixBytes);
-    InputStream headStream = null;
-    InputStream tailStream = null;
+        // Assemble the overall stream
+        InputStream prefixStream = new ByteArrayInputStream(prefixBytes);
+        InputStream headStream = null;
+        InputStream tailStream = null;
 
-    if (headBytes < 0) {
-      // FIXME There are two possibilities now why we couldn't find a record
-      //  - There were errors in the data
-      //  - There is a record that goes across this split
-      logger.warn("NEED TO PROPERLY HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD");
+        if (headBytes < 0) {
+            // FIXME There are two possibilities now why we couldn't find a record
+            //  - There were errors in the data
+            //  - There is a record that goes across this split
+            logger.warn("NEED TO PROPERLY HANDLE THE CASE WHERE NO RECORD FOUND IN HEAD");
 
-      // No data from this split
-      headStream = new ByteArrayInputStream(new byte[0]);
-      splitBoundedBodyStream = new ByteArrayInputStream(new byte[0]);
-      tailStream = new ByteArrayInputStream(new byte[0]);
-    } else {
-
-
-      // headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
-
-      Seekable headChannel = headBuffer.newChannel();
-      headChannel.nextPos(headBytes);
-      headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headBuffer.getKnownDataSize() - headBytes);
-
-      // Sanity check for non-encoded data: The body must immediately follow
-      // the (adjusted) split start + the know header size
-      if (!isEncoded) {
-        long expectedBodyOffset = adjustedSplitStart + headBuffer.getKnownDataSize();
-        // println(s"adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
-
-        if (expectedBodyOffset != stream.getPos()) {
-          throw new RuntimeException("Expected body offset does not match actual one: adjustedSplitStart = " + adjustedSplitStart + " known head buffer size = " + headBuffer.getKnownDataSize() + " = " + expectedBodyOffset + " - actual body offset = " + stream.getPos());
-        }
-      }
-
-      // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
-      int displacement = isEncoded ? 1 : 0;
-
-      Seekable tailChannel = tailBuffer.newChannel();
-      tailChannel.nextPos(displacement);
-
-      tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes - displacement);
-    }
-
-    boolean writeOutSegments = false;
-
-    if (writeOutSegments) {
-      String splitName = split.getPath().getName();
-
-      logger.info("Writing segment " + splitName + " " + splitStart);
-
-      Path basePath = Paths.get("/mnt/LinuxData/tmp/");
-
-      Path prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.trig");
-      Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.trig");
-      Path bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.trig");
-      Path tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.trig");
-      Files.copy(prefixStream, prefixFile);
-      Files.copy(headStream, headFile);
-      Files.copy(splitBoundedBodyStream, bodyFile);
-      Files.copy(tailStream, tailFile);
-      // Nicely close streams? Then again, must parts are in-memory buffers and this is debugging code only
-      prefixStream = Files.newInputStream(prefixFile, StandardOpenOption.READ);
-      headStream = Files.newInputStream(headFile, StandardOpenOption.READ);
-      splitBoundedBodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ);
-      tailStream = Files.newInputStream(tailFile, StandardOpenOption.READ);
-    }
-
-
-    InputStream fullStream = InputStreamWithCloseLogging.wrap(new SequenceInputStream(Collections.enumeration(
-      Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream))), ExceptionUtils::getStackTrace, TrigRecordReader::logClose);
-
-
-    Flowable<Dataset> result = null;
-    if (headBytes >= 0) {
-      result = RDFDataMgrRx.createFlowableDatasets(() -> fullStream, Lang.TRIG, null);
-
-      // val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
-      // nav.setPos(effectiveRecordRangeStart - splitStart)
-      // nav.limitNext(parseLength)
-      // result = parser(nav)
-      // .onErrorReturnItem(EMPTY_DATASET)
-      // .filter(isNonEmptyDataset)
-    } else {
-      result = Flowable.empty();
-    }
-
-    //    val cnt = result
-    //      .count()
-    //      .blockingGet()
-    //    System.err.println("For effective region " + effectiveRecordRangeStart + " - " + effectiveRecordRangeEnd + " got " + cnt + " datasets")
-
-    return result;
-  }
-
-
-  public static long findNextRecord(
-          Seekable nav,
-          long splitStart,
-          long absProbeRegionStart,
-          long maxRecordLength,
-          long absDataRegionEnd,
-          Predicate<Seekable> prober) throws IOException {
-    // Set up absolute positions
-    long absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd); // = splitStart + bufferLength
-    int relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart);
-
-    // System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
-
-    // Data region is up to the end of the buffer
-    long relDataRegionEnd = absDataRegionEnd - absProbeRegionStart;
-
-    Seekable seekable = nav.cloneObject();
-    seekable.setPos(absProbeRegionStart - splitStart);
-    // seekable.limitNext(relDataRegionEnd)
-    // val charSequence = new CharSequenceFromSeekable(seekable)
-    // seekable.limitNext(relDataRegionEnd)
-    // TODO The original code used limitNext but do we need that
-    //  if we set the matcher region anyway?
-    CharSequence charSequence = new CharSequenceFromSeekable(seekable);
-
-    Matcher fwdMatcher = trigFwdPattern.matcher(charSequence);
-    fwdMatcher.region(0, relProbeRegionEnd);
-
-    long matchPos = findFirstPositionWithProbeSuccess(seekable, fwdMatcher, true, prober);
-
-    long result = matchPos >= 0
-            ? matchPos + splitStart
-            : -1;
-    return result;
-  }
-
-  /**
-   * Find the start of the *second* recard as seen from 'splitStart' (inclusive)
-   *
-   * @param nav
-   * @param splitStart
-   * @param absProbeRegionStart
-   * @param maxRecordLength
-   * @param absDataRegionEnd
-   * @param prober
-   * @return
-   */
-  long skipOverNextRecord(
-                          Seekable nav,
-                          long splitStart,
-                          long absProbeRegionStart,
-                          long maxRecordLength,
-                          long absDataRegionEnd,
-                          Predicate<Seekable> prober) throws IOException {
-    long result = -1L;
-
-    long availableDataRegion = absDataRegionEnd - absProbeRegionStart;
-    long nextProbePos = absProbeRegionStart;
-    int i = 0;
-    while (i < 2) {
-      long candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, prober);
-      if (candidatePos < 0) {
-        // If there is more than maxRecordLength data available then
-        // it is inconsistent for findNextRecord to indicate that no record was found
-        // Either the maxRecordLength parameter is too small,
-        // or there is an internal error with the prober
-        // or there is a problem with the data (e.g. syntax error)
-        if (availableDataRegion >= maxRecordLength) {
-          // FIXME
-          logger.warn("TODO AVAILABLE DATA IS NOT YET ADJUSTED TO ACTUAL DATA. Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available");
-          // throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
+            // No data from this split
+            headStream = new ByteArrayInputStream(new byte[0]);
+            splitBoundedBodyStream = new ByteArrayInputStream(new byte[0]);
+            tailStream = new ByteArrayInputStream(new byte[0]);
         } else {
-          // Here we assume we read into the last chunk which contained no full record
-          logger.warn("No more records found after pos " + (splitStart + nextProbePos));
+
+
+            // headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+
+            Seekable headChannel = headBuffer.newChannel();
+            headChannel.nextPos(headBytes);
+            headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headBuffer.getKnownDataSize() - headBytes);
+
+            // Sanity check for non-encoded data: The body must immediately follow
+            // the (adjusted) split start + the know header size
+            if (!isEncoded) {
+                long expectedBodyOffset = adjustedSplitStart + headBuffer.getKnownDataSize();
+                // println(s"adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
+
+                if (expectedBodyOffset != stream.getPos()) {
+                    throw new RuntimeException("Expected body offset does not match actual one: adjustedSplitStart = " + adjustedSplitStart + " known head buffer size = " + headBuffer.getKnownDataSize() + " = " + expectedBodyOffset + " - actual body offset = " + stream.getPos());
+                }
+            }
+
+            // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
+            int displacement = isEncoded ? 1 : 0;
+
+            Seekable tailChannel = tailBuffer.newChannel();
+            tailChannel.nextPos(displacement);
+
+            tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes - displacement);
+        }
+
+        boolean writeOutSegments = false;
+
+        if (writeOutSegments) {
+            String splitName = split.getPath().getName();
+
+            logger.info("Writing segment " + splitName + " " + splitStart);
+
+            Path basePath = Paths.get("/mnt/LinuxData/tmp/");
+
+            Path prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.trig");
+            Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.trig");
+            Path bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.trig");
+            Path tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.trig");
+            Files.copy(prefixStream, prefixFile);
+            Files.copy(headStream, headFile);
+            Files.copy(splitBoundedBodyStream, bodyFile);
+            Files.copy(tailStream, tailFile);
+            // Nicely close streams? Then again, must parts are in-memory buffers and this is debugging code only
+            prefixStream = Files.newInputStream(prefixFile, StandardOpenOption.READ);
+            headStream = Files.newInputStream(headFile, StandardOpenOption.READ);
+            splitBoundedBodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ);
+            tailStream = Files.newInputStream(tailFile, StandardOpenOption.READ);
         }
 
 
-        // Retain best found candidate position
-        // effectiveRecordRangeEnd = dataRegionEnd
-        i = 666; // break
-      } else {
-        result = candidatePos;
-        if (i == 0) {
-          nextProbePos = candidatePos + minRecordLength;
+        InputStream fullStream = InputStreamWithCloseLogging.wrap(new SequenceInputStream(Collections.enumeration(
+                Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream))), ExceptionUtils::getStackTrace, TrigRecordReader::logClose);
+
+
+        Flowable<Dataset> result = null;
+        if (headBytes >= 0) {
+            result = RDFDataMgrRx.createFlowableDatasets(() -> fullStream, Lang.TRIG, null);
+
+            // val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
+            // nav.setPos(effectiveRecordRangeStart - splitStart)
+            // nav.limitNext(parseLength)
+            // result = parser(nav)
+            // .onErrorReturnItem(EMPTY_DATASET)
+            // .filter(isNonEmptyDataset)
+        } else {
+            result = Flowable.empty();
         }
-        i += 1;
-      }
+
+        //    val cnt = result
+        //      .count()
+        //      .blockingGet()
+        //    System.err.println("For effective region " + effectiveRecordRangeStart + " - " + effectiveRecordRangeEnd + " got " + cnt + " datasets")
+
+        return result;
     }
 
-    return result;
-  }
 
-  /**
-   * Uses the matcher to find candidate probing positions, and returns the first positoin
-   * where probing succeeds.
-   * Matching ranges are part of the matcher configuration
-   *
-   * @param rawSeekable
-   * @param m
-   * @param isFwd
-   * @param prober
-   * @return
-   */
-  public static long findFirstPositionWithProbeSuccess(
-          Seekable rawSeekable,
-          Matcher m,
-          boolean isFwd,
-          Predicate<Seekable> prober) throws IOException {
+    public static long findNextRecord(
+            Seekable nav,
+            long splitStart,
+            long absProbeRegionStart,
+            long maxRecordLength,
+            long absDataRegionEnd,
+            Predicate<Seekable> prober) throws IOException {
+        // Set up absolute positions
+        long absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd); // = splitStart + bufferLength
+        int relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart);
 
-    Seekable seekable = rawSeekable.cloneObject();
-    long absMatcherStartPos = seekable.getPos();
+        // System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
 
-    while (m.find()) {
-      int start = m.start();
-      int end = m.end();
-      // The matcher yields absolute byte positions from the beginning of the byte sequence
-      int matchPos = isFwd
-        ? start
-        : -end + 1;
+        // Data region is up to the end of the buffer
+        long relDataRegionEnd = absDataRegionEnd - absProbeRegionStart;
 
-      int absPos = Ints.checkedCast(absMatcherStartPos + matchPos);
-      // Artificially create errors
-      // absPos += 5;
-      seekable.setPos(absPos);
-      Seekable probeSeek = seekable.cloneObject();
+        Seekable seekable = nav.cloneObject();
+        seekable.setPos(absProbeRegionStart - splitStart);
+        // seekable.limitNext(relDataRegionEnd)
+        // val charSequence = new CharSequenceFromSeekable(seekable)
+        // seekable.limitNext(relDataRegionEnd)
+        // TODO The original code used limitNext but do we need that
+        //  if we set the matcher region anyway?
+        CharSequence charSequence = new CharSequenceFromSeekable(seekable);
 
-      boolean probeResult = prober.test(probeSeek);
-      // System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
+        Matcher fwdMatcher = trigFwdPattern.matcher(charSequence);
+        fwdMatcher.region(0, relProbeRegionEnd);
 
-      if (probeResult) {
-        return absPos;
-      }
+        long matchPos = findFirstPositionWithProbeSuccess(seekable, fwdMatcher, true, prober);
+
+        long result = matchPos >= 0
+                ? matchPos + splitStart
+                : -1;
+        return result;
     }
 
-    return -1L;
-  }
+    /**
+     * Find the start of the *second* recard as seen from 'splitStart' (inclusive)
+     *
+     * @param nav
+     * @param splitStart
+     * @param absProbeRegionStart
+     * @param maxRecordLength
+     * @param absDataRegionEnd
+     * @param prober
+     * @return
+     */
+    long skipOverNextRecord(
+            Seekable nav,
+            long splitStart,
+            long absProbeRegionStart,
+            long maxRecordLength,
+            long absDataRegionEnd,
+            Predicate<Seekable> prober) throws IOException {
+        long result = -1L;
+
+        long availableDataRegion = absDataRegionEnd - absProbeRegionStart;
+        long nextProbePos = absProbeRegionStart;
+        int i = 0;
+        while (i < 2) {
+            long candidatePos = findNextRecord(nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, prober);
+            if (candidatePos < 0) {
+                // If there is more than maxRecordLength data available then
+                // it is inconsistent for findNextRecord to indicate that no record was found
+                // Either the maxRecordLength parameter is too small,
+                // or there is an internal error with the prober
+                // or there is a problem with the data (e.g. syntax error)
+                if (availableDataRegion >= maxRecordLength) {
+                    // FIXME
+                    logger.warn("TODO AVAILABLE DATA IS NOT YET ADJUSTED TO ACTUAL DATA. Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available");
+                    // throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
+                } else {
+                    // Here we assume we read into the last chunk which contained no full record
+                    logger.warn("No more records found after pos " + (splitStart + nextProbePos));
+                }
 
 
-  @Override
-  public boolean  nextKeyValue() throws IOException {
-    if (datasetFlow == null) {
-      initDatasetFlow();
+                // Retain best found candidate position
+                // effectiveRecordRangeEnd = dataRegionEnd
+                i = 666; // break
+            } else {
+                result = candidatePos;
+                if (i == 0) {
+                    nextProbePos = candidatePos + minRecordLength;
+                }
+                i += 1;
+            }
+        }
+
+        return result;
     }
 
-    boolean result;
-    if (!datasetFlow.hasNext()) {
-      // System.err.println("nextKeyValue: Drained all datasets from flow")
-      result = false;
+    /**
+     * Uses the matcher to find candidate probing positions, and returns the first positoin
+     * where probing succeeds.
+     * Matching ranges are part of the matcher configuration
+     *
+     * @param rawSeekable
+     * @param m
+     * @param isFwd
+     * @param prober
+     * @return
+     */
+    public static long findFirstPositionWithProbeSuccess(
+            Seekable rawSeekable,
+            Matcher m,
+            boolean isFwd,
+            Predicate<Seekable> prober) throws IOException {
+
+        Seekable seekable = rawSeekable.cloneObject();
+        long absMatcherStartPos = seekable.getPos();
+
+        while (m.find()) {
+            int start = m.start();
+            int end = m.end();
+            // The matcher yields absolute byte positions from the beginning of the byte sequence
+            int matchPos = isFwd
+                    ? start
+                    : -end + 1;
+
+            int absPos = Ints.checkedCast(absMatcherStartPos + matchPos);
+            // Artificially create errors
+            // absPos += 5;
+            seekable.setPos(absPos);
+            Seekable probeSeek = seekable.cloneObject();
+
+            boolean probeResult = prober.test(probeSeek);
+            // System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
+
+            if (probeResult) {
+                return absPos;
+            }
+        }
+
+        return -1L;
     }
-    else {
-      currentValue = datasetFlow.next();
-      // System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
-      // RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
-      // System.err.println("nextKeyValue: Done printing out dataset value")
-      currentKey.incrementAndGet();
-      result = currentValue != null;
+
+
+    @Override
+    public boolean nextKeyValue() throws IOException {
+        if (datasetFlow == null) {
+            initDatasetFlow();
+        }
+
+        boolean result;
+        if (!datasetFlow.hasNext()) {
+            // System.err.println("nextKeyValue: Drained all datasets from flow")
+            result = false;
+        } else {
+            currentValue = datasetFlow.next();
+            // System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
+            // RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
+            // System.err.println("nextKeyValue: Done printing out dataset value")
+            currentKey.incrementAndGet();
+            result = currentValue != null;
+        }
+
+        return result;
     }
 
-    return result;
-  }
+    @Override
+    public LongWritable getCurrentKey() {
+        LongWritable result = currentValue == null
+                ? null
+                : new LongWritable(currentKey.get());
 
-  @Override
-  public LongWritable getCurrentKey() {
-    LongWritable result = currentValue == null
-      ? null
-      : new LongWritable(currentKey.get());
-
-    return result;
-  }
-
-  @Override
-  public Dataset getCurrentValue() {
-    return currentValue;
-  }
-
-  @Override
-  public float getProgress() throws IOException {
-    // Very raw estimate; does not take head / tail buffers into accoun
-    // Also, in the beginning the position is beyond th split end in order to find the end position
-    // At this time the progress would be reported as 100%
-    float result = this.splitStart == this.splitEnd
-      ? 0.0F
-      : Math.min(1.0F, (this.rawStream.getPos() - this.splitStart) / (float)(this.splitEnd - this.splitStart));
-    return result;
-  }
-
-  @Override
-  public void close() throws IOException {
-    try {
-      // Stream apparently can be null if hadoop aborts a record reader early due
-      // an encountered error (not necessarily related to this instance)
-      if (rawStream != null) {
-        // Under normal operation this close is redundant because the stream is owned
-        // by the flowable which closes it the moment it has consumed the last item
-        rawStream.close();
-        rawStream = null;
-      }
-    } finally {
-      if (this.decompressor != null) {
-        CodecPool.returnDecompressor(this.decompressor);
-        this.decompressor = null;
-      }
+        return result;
     }
-  }
+
+    @Override
+    public Dataset getCurrentValue() {
+        return currentValue;
+    }
+
+    @Override
+    public float getProgress() throws IOException {
+        // Very raw estimate; does not take head / tail buffers into accoun
+        // Also, in the beginning the position is beyond th split end in order to find the end position
+        // At this time the progress would be reported as 100%
+        float result = this.splitStart == this.splitEnd
+                ? 0.0F
+                : Math.min(1.0F, (this.rawStream.getPos() - this.splitStart) / (float) (this.splitEnd - this.splitStart));
+        return result;
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            // Stream apparently can be null if hadoop aborts a record reader early due
+            // an encountered error (not necessarily related to this instance)
+            if (rawStream != null) {
+                // Under normal operation this close is redundant because the stream is owned
+                // by the flowable which closes it the moment it has consumed the last item
+                rawStream.close();
+                rawStream = null;
+            }
+        } finally {
+            if (this.decompressor != null) {
+                CodecPool.returnDecompressor(this.decompressor);
+                this.decompressor = null;
+            }
+        }
+    }
 }

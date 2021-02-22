@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.common.io.hadoop;
 
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 
+// TODO Delete this class; but first document this comment/snippet somewhere (sansa github wiki?)
 public class Trash {
     /**
      * It took one week to figure out the race condition that would indeterministically cause jena to bail out with
