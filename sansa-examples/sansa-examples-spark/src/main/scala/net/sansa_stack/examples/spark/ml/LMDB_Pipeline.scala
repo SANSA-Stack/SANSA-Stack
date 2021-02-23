@@ -32,7 +32,7 @@ object LMDB_Pipeline {
     /*
     READ IN DATA
      */
-    spark.rdf(Lang.NTRIPLES)(args(0)).toDS().foreach(println(_))
+    // spark.rdf(Lang.NTRIPLES)(args(0)).toDS().foreach(println(_))
 
     val inputFilePath = args(0)
     // val df: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
