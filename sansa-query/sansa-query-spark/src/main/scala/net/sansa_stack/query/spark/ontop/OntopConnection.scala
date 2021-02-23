@@ -8,8 +8,6 @@ import it.unibz.inf.ontop.injection.OntopReformulationSQLConfiguration
 import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-
 /**
  * Used to keep expensive resource per executor alive.
  *

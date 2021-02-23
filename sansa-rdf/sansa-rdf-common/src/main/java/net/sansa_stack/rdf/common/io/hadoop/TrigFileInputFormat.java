@@ -47,7 +47,8 @@ public class TrigFileInputFormat
     @Override
     public boolean isSplitable(JobContext context, Path file) {
         CompressionCodec codec = new CompressionCodecFactory(context.getConfiguration()).getCodec(file);
-        boolean result = codec instanceof SplittableCompressionCodec;
+        // If there is no codec - indicated by codec equals null - then the input is considered to be splittable
+        boolean result = codec == null || codec instanceof SplittableCompressionCodec;
         return result;
     }
 
