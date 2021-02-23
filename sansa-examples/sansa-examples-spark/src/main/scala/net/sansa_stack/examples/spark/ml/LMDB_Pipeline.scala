@@ -53,7 +53,7 @@ object LMDB_Pipeline {
      */
 
     // OPTION 1
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
+    /* val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
       dataset,
       "?movie",
       "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
@@ -62,7 +62,8 @@ object LMDB_Pipeline {
       1,
       featuresInOptionalBlocks = true,
     )
-    // println(autoSparqlString)
+    println(autoSparqlString)
+     */
 
     // OPTION 2
     val manualSparqlString =
