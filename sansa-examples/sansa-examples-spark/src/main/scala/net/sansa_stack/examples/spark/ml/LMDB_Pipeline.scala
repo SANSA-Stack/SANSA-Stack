@@ -62,7 +62,7 @@ object LMDB_Pipeline {
       1,
       featuresInOptionalBlocks = true,
     )
-    println(autoSparqlString)
+    // println(autoSparqlString)
 
     // OPTION 2
     val manualSparqlString =
