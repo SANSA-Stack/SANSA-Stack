@@ -27,6 +27,8 @@ object LMDB_Pipeline {
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
+    JenaSystem.init()
+
     /*
     READ IN DATA
      */
@@ -137,12 +139,22 @@ object LMDB_Pipeline {
     /*
     Create Numeric Feature Vectors
     */
+    val labelColumnName: String = res.columns.filter(_.startsWith("movie__down_genre__down_film_genre_name"))(0)
+    println(f"column name: $labelColumnName")
     println("SMART VECTOR ASSEMBLER")
     val smartVectorAssembler = new SmartVectorAssembler()
-      .setEntityColumn("movie").setLabelColumn("movie__down_genre__down_film_genre_name")
+      .setEntityColumn("movie")
+      .setLabelColumn(labelColumnName)
     val assembledDf = smartVectorAssembler.transform(res).cache()
     assembledDf.show(false)
     println(f"assembled df has ${assembledDf.count()} rows")
+
+
+
+    /*
+    APPLY Common SPARK MLlib Example Algorithm
+     */
+    println("APPLY Common SPARK MLlib Example Algorithm")
 
     /*
     Indoex Labels
@@ -154,23 +166,11 @@ object LMDB_Pipeline {
     val assembledDflabeledIndex = labelIndexer.transform(assembledDf)
     assembledDflabeledIndex.show(false)
 
-    /*
-    APPLY Common SPARK MLlib Example Algorithm
-     */
-    println("APPLY Common SPARK MLlib Example Algorithm")
-
     val rf = new RandomForestClassifier()
       .setLabelCol("indexedLabel")
       .setFeaturesCol("features")
       .setNumTrees(10)
     val model = rf.fit(assembledDflabeledIndex.distinct())
-    // Trains a k-means model.
-    /* val kmeans = new KMeans()
-      .setK(2)
-      .setFeaturesCol("features").setLabe// .setSeed(1L)
-    val model = kmeans.fit(assembledDflabeledIndex.distinct())
-
-     */
 
     // Make predictions
     val predictions = model.transform(assembledDflabeledIndex)
