@@ -62,23 +62,26 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
   protected val serviceManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/service/manifest#"
 
   // contains the list of ignored tests case IDs, must be overridden
-  lazy val IGNORE: Set[String] = Set.empty[String]
+  lazy val IGNORED_URIS: Set[String] = Set.empty[String]
+
+  // an optional filter function to ignore test cases by name
+  lazy val IGNORED_NAMES: mutable.Set[String] = mutable.Set[String]()
 
   // an optional filter function to ignore test cases
-  val IGNORE_NAMES: mutable.Set[String] = mutable.Set[String]()
-
-  // an optional filter function to ignore test cases
-  lazy val IGNORE_FILTER: SPARQLQueryEvaluationTest => Boolean = _ => {true}
+  lazy val FILTER_KEEP: SPARQLQueryEvaluationTest => Boolean = _ => {true}
 
   // holds the test data
   val testData: List[SPARQLQueryEvaluationTest] = new W3cConformanceSPARQLQueryEvaluationTestSuite(sparqlVersion).tests
 
+  private def isIgnored(testCase: SPARQLQueryEvaluationTest): Boolean = {
+    IGNORED_URIS.contains(testCase.uri) || IGNORED_NAMES.exists(testCase.name.startsWith) || !FILTER_KEEP(testCase)
+  }
+
   // the main loop over the test data starts here
   // a single ScalaTest is generated per query
+  // we group by data first, to load it just once and perform all tests based on the same data
   testData
-    .filter(data => !IGNORE.contains(data.uri))
-    .filter(t => IGNORE_NAMES.isEmpty || IGNORE_NAMES.exists(t.name.startsWith))
-    .filter(IGNORE_FILTER)
+    //    .filterNot(isIgnored)
     .groupBy(_.dataFile)
     .foreach { case (dataFile, tests) =>
       // load data
@@ -88,11 +91,22 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
       data.write(System.out, "Turtle")
 
       tests.foreach(testCase => {
-        // test starts here
-        test(s"testing ${testCase.name}") {
-          runTest(testCase, data)
+        // get the relevant data from the test case
+        val queryFileURL = testCase.queryFile
+        val resultFileURL = testCase.resultsFile
+        val testName = testCase.name
+        val description = Option(testCase.description).getOrElse("")
+
+        if (isIgnored(testCase)) {
+          ignore(s"$testName: $description") {}
+        } else {
+          // test starts here
+          test(s"$testName: $description") {
+            runTest(testCase, data)
+          }
         }
-      })
+      }
+      )
     }
 
   def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {

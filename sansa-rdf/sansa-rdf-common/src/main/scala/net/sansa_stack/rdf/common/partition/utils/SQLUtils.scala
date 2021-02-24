@@ -3,10 +3,8 @@ package net.sansa_stack.rdf.common.partition.utils
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaper, SqlEscaperBacktick}
-import org.apache.jena.graph.NodeFactory
-
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
+import org.apache.jena.graph.NodeFactory
 
 /**
  * Some utilities for working with SQL objects.
@@ -16,10 +14,11 @@ import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 object SQLUtils {
 
   import scala.util.matching.Regex
-  val qualifiedTableNameRegex: Regex = "^(\"(.*)\".)?\"(.*)\"$".r
+  val qualifiedTableNameDoubleQuotesRegex: Regex = "^(\"(.*)\".)?\"(.*)\"$".r
+  val qualifiedTableNameBackticksRegex: Regex = "^(`(.*)`.)?`(.*)`$".r
 
   def parseTableIdentifier(tableName: String): TableIdentifier = {
-    qualifiedTableNameRegex.findFirstMatchIn(tableName) match {
+    qualifiedTableNameDoubleQuotesRegex.findFirstMatchIn(tableName) match {
       case Some(i) =>
         val tn = i.group(3)
         val dn = Option(i.group(2))
@@ -45,8 +44,8 @@ object SQLUtils {
   /**
    * Creates a SQL table name for a partition state.
    *
-   * @note The table name might have to be escaped depending on the database. You can use [[SqlEscaper]] classes
-   * for this.
+   * @note The table name might have to be escaped depending on the database. You can use [[org.aksw.commons.sql.codec.api.SqlCodec]] classes
+   *       for this.
    *
    * @param p the RDF partition state
    * @return the SQL table name

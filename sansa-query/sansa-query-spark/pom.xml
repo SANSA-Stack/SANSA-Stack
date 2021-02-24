@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sansa-query-spark_2.12</artifactId>
+    <artifactId>sansa-query-spark_2.12</artifactId>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
@@ -10,18 +10,18 @@
 		<version>0.7.2_kryo-SNAPSHOT</version>
 	</parent>
 
-	<properties>
+    <properties>
         <version.owlapi.ontop>5.1.17</version.owlapi.ontop>
     </properties>
 
-	<dependencies>
+    <dependencies>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
             <scope>test</scope>
-<!--            <type>test-jar</type>-->
-<!--            <classifier>tests</classifier>-->
+            <!--            <type>test-jar</type>-->
+            <!--            <classifier>tests</classifier>-->
         </dependency>
 
         <dependency>
@@ -58,10 +58,10 @@
             <artifactId>jena-core</artifactId>
         </dependency>
 
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-tdb</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-tdb</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.jena</groupId>
@@ -120,19 +120,19 @@
             <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
         </dependency>
 
-		<!-- Spark dependencies -->
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_${scala.binary.version}</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-sql_${scala.binary.version}</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
-		</dependency>
+        <!-- Spark dependencies -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-graphx_${scala.binary.version}</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-hive_${scala.binary.version}</artifactId>
@@ -154,11 +154,11 @@
             </exclusions>
         </dependency>
 
-		<dependency>
-			<groupId>io.github.litmus-benchmark-suite</groupId>
-			<artifactId>gremlinator</artifactId>
-			<version>1.0</version>
-		</dependency>
+        <dependency>
+            <groupId>io.github.litmus-benchmark-suite</groupId>
+            <artifactId>gremlinator</artifactId>
+            <version>1.0</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-groovy</artifactId>
@@ -170,114 +170,114 @@
             <version>3.4.8</version>
         </dependency>
 
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
-			<version>${project.version}</version>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+            <version>${project.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-api</artifactId>
                 </exclusion>
             </exclusions>
-		</dependency>
+        </dependency>
 
-		<!-- Override transitive tdb version via litmus -->
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>apache-jena-libs</artifactId>
-			<type>pom</type>
-		</dependency>
+        <!-- Override transitive tdb version via litmus -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <type>pom</type>
+        </dependency>
 
-		<dependency>
-			<groupId>org.aksw.bsbm</groupId>
-			<artifactId>bsbm-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.aksw.bsbm</groupId>
+            <artifactId>bsbm-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<!-- Scala -->
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <!-- Scala -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>com.holdenkarau</groupId>
-			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
-    
-		<!-- Ontop -->
-		<dependency>
-			<groupId>it.unibz.inf.ontop</groupId>
-			<artifactId>ontop-owlapi</artifactId>
+        <dependency>
+            <groupId>com.holdenkarau</groupId>
+            <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Ontop -->
+        <dependency>
+            <groupId>it.unibz.inf.ontop</groupId>
+            <artifactId>ontop-owlapi</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.jena</groupId>
                     <artifactId>jena-osgi</artifactId>
                 </exclusion>
             </exclusions>
-		</dependency>
-		<dependency>
-			<groupId>it.unibz.inf.ontop</groupId>
-			<artifactId>ontop-system-sql-owlapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>it.unibz.inf.ontop</groupId>
+            <artifactId>ontop-system-sql-owlapi</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.jena</groupId>
                     <artifactId>jena-osgi</artifactId>
                 </exclusion>
             </exclusions>
-		</dependency>
-		<dependency>
-			<groupId>it.unibz.inf.ontop</groupId>
-			<artifactId>ontop-rdb</artifactId>
-<!--
-            <exclusions>
-                <exclusion>
-                    <groupId>org.javabits.jgrapht</groupId>
-                    <artifactId>jgrapht-core</artifactId>
-                </exclusion>
-            </exclusions>
--->
-		</dependency>
+        </dependency>
+        <dependency>
+            <groupId>it.unibz.inf.ontop</groupId>
+            <artifactId>ontop-rdb</artifactId>
+            <!--
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.javabits.jgrapht</groupId>
+                                <artifactId>jgrapht-core</artifactId>
+                            </exclusion>
+                        </exclusions>
+            -->
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.200</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>it.unibz.inf.ontop</groupId>-->
-<!--            <artifactId>ontop-sparql-compliance</artifactId>-->
-<!--            <version>${version.ontop}</version>-->
-<!--            <type>test-jar</type>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-		<!-- need to overwrite OWL API 5 with v4 used by Ontop -->
-		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
-			<artifactId>owlapi-api</artifactId>
-			<version>${version.owlapi.ontop}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
-			<artifactId>owlapi-apibinding</artifactId>
-			<version>${version.owlapi.ontop}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
-			<artifactId>owlapi-impl</artifactId>
-			<version>${version.owlapi.ontop}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
-			<artifactId>owlapi-parsers</artifactId>
-			<version>${version.owlapi.ontop}</version>
-		</dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>it.unibz.inf.ontop</groupId>-->
+        <!--            <artifactId>ontop-sparql-compliance</artifactId>-->
+        <!--            <version>${version.ontop}</version>-->
+        <!--            <type>test-jar</type>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
+        <!-- need to overwrite OWL API 5 with v4 used by Ontop -->
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-api</artifactId>
+            <version>${version.owlapi.ontop}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-apibinding</artifactId>
+            <version>${version.owlapi.ontop}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-impl</artifactId>
+            <version>${version.owlapi.ontop}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-parsers</artifactId>
+            <version>${version.owlapi.ontop}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.github.owlcs</groupId>
@@ -291,11 +291,11 @@
             <version>0.9.3</version>
         </dependency>
 
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-all</artifactId>
-			<version>4.1.42.Final</version>
-		</dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.42.Final</version>
+        </dependency>
 
         <dependency>
             <groupId>com.github.scopt</groupId>
@@ -313,7 +313,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-	</dependencies>
+    </dependencies>
 
     <profiles>
         <profile>

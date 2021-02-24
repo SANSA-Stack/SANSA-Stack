@@ -1,29 +1,22 @@
 package net.sansa_stack.query.spark.compliance
 
-import java.util.Objects
-
-import org.apache.jena.query.Query
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.sparql.resultset.SPARQLResult
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkConf
 import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
 
 import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
-import net.sansa_stack.query.spark.ontop.KryoUtils.enableLoggingToFile
-import net.sansa_stack.query.spark.ontop.{KryoUtils, QueryEngineFactoryOntop}
-import net.sansa_stack.query.tests.SPARQLQueryEvaluationTest
+import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
+import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 
 
 /**
  * SPARQL 1.1 test suite runner for Ontop-based SPARQL-to-SQL implementation on Apache Spark.
  *
+ *
  * @author Lorenz Buehmann
  */
 @DoNotDiscover
 @Slow
-class SPARQL11TestSuiteRunnerSparkOntop
+class SPARQL11TestSuiteRunnerSparkSparqlify
   extends SPARQL11TestSuiteRunnerSpark {
 
   override lazy val IGNORED_URIS = {
@@ -37,7 +30,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "if01", "if02", // not supported in SPARQL transformation
         "in01", "in02",
         "iri01", // not supported in H2 transformation
-//        "md5-01", "md5-02", // The SI does not support IRIs as ORDER BY conditions
+        "md5-01", "md5-02", // The SI does not support IRIs as ORDER BY conditions
         "plus-1", "plus-2",
         "sha1-01", "sha1-02", // SHA1 is not supported in H2
         "sha512-01", "sha512-02", // SHA512 is not supported in H2
@@ -74,35 +67,5 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "subquery14").map(subqueryManifest + _)
   }
 
-  // some tests that work on an empty model which we do not support in Spark query as the mappings would be empty (could be handled but
-  // most likely will never happen)
-  functionsManifest + "struuid01", functionsManifest + "uuid01",
-  // timezone
-  functionsManifest + "tz", functionsManifest + "timezone",
-
-  override def conf: SparkConf = {
-    super.conf
-      .set("spark.sql.crossJoin.enabled", "true")
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", String.join(
-        ", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
-  }
-
-  //  override lazy val FILTER_KEEP = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
-
-  override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
-
-//  KryoUtils.kryoLoggingEnabled = true
-
-  override def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
-//    enableLoggingToFile(s"/tmp/kryo/kryo-trace-${testCase.name}.log")
-    super.runTest(testCase, data)
-  }
-
-  override def runQuery(query: Query, data: Model): SPARQLResult = {
-//    com.esotericsoftware.minlog.Log.info(s"******** RUNNING QUERY *********\n$query")
-    super.runQuery(query, data)
-  }
+  override def getEngineFactory: QueryEngineFactory = new QueryEngineFactorySparqlify(spark)
 }

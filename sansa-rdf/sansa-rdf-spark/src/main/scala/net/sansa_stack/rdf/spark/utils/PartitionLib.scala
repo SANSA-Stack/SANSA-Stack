@@ -1,11 +1,10 @@
 package net.sansa_stack.rdf.spark.utils
 
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
-import org.apache.jena.rdf.model.{Model, ModelFactory}
-
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import org.aksw.commons.sql.codec.util.SqlCodecUtils
+import org.apache.jena.rdf.model.{Model, ModelFactory}
 
 /**
  * @author Lorenz Buehmann
@@ -36,7 +35,7 @@ object PartitionLib {
           partition,
           p => SQLUtils.createDefaultTableName(p),
           None,
-          new SqlEscaperBacktick,
+          SqlCodecUtils.createSqlCodecForApacheSpark,
           model,
           explodeLanguageTags,
           escapeIdentifiers)

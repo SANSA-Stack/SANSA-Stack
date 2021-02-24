@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
@@ -9,65 +9,41 @@
 		<version>0.7.2_kryo-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sansa-inference-parent_2.12</artifactId>
-	<packaging>pom</packaging>
-	<name>Inference API - Parent</name>
+    <artifactId>sansa-inference-parent_2.12</artifactId>
+    <packaging>pom</packaging>
+    <name>Inference API - Parent</name>
 
-	<description>An inference layer for RDF and OWL</description>
+    <description>An inference layer for RDF and OWL</description>
 
-	<developers>
-		<developer>
-			<id>lorenz</id>
-			<name>Lorenz Buehmann</name>
-			<email>buehmann@informatik.uni-leipzig.de</email>
-			<organization>AKSW, Department of Computer Science, University of Leipzig</organization>
-			<organizationUrl>http://www.aksw.org</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>0</timezone>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <id>lorenz</id>
+            <name>Lorenz Buehmann</name>
+            <email>buehmann@informatik.uni-leipzig.de</email>
+            <organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+            <organizationUrl>http://www.aksw.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+        </developer>
+    </developers>
 
-	<modules>
-		<module>sansa-inference-common</module>
-		<module>sansa-inference-flink</module>
-		<module>sansa-inference-spark</module>
-		<module>sansa-inference-tests</module>
-	</modules>
+    <modules>
+        <module>sansa-inference-common</module>
+        <module>sansa-inference-flink</module>
+        <module>sansa-inference-spark</module>
+        <module>sansa-inference-tests</module>
+    </modules>
 
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- RDF Layer -->
+    <dependencyManagement>
+        <dependencies>
 			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-				<version>${project.version}</version>
-				<!-- we have to exclude an old version here transitively included by 
-					a Kafka dependency of Spark Don't know how Spark 2.3 is able to work with 
-					Kafka 0.10 right now ... -->
-				<exclusions>
-					<exclusion>
-						<groupId>net.jpountz.lz4</groupId>
-						<artifactId>lz4</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<!-- SANSA OWL -->
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<!-- Query Layer -->
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+        </dependencies>
 
-		</dependencies>
-	</dependencyManagement>
-
+    </dependencyManagement>
 </project>

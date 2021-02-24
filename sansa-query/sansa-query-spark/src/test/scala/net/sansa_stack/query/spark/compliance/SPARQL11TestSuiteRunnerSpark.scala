@@ -59,7 +59,7 @@ abstract class SPARQL11TestSuiteRunnerSpark
 
     val toIgnore = configMap.get("ignore")
     if (toIgnore.nonEmpty) {
-      toIgnore.get.asInstanceOf[String].split(",").map(_.trim).foreach(name => IGNORE_NAMES.add(name))
+      toIgnore.get.asInstanceOf[String].split(",").map(_.trim).foreach(name => IGNORED_NAMES.add(name))
     }
   }
 

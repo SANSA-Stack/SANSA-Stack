@@ -123,9 +123,20 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.aksw.r2rml</groupId>
+			<artifactId>r2rml-jena-sql-transforms</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>com.github.jsqlparser</groupId>
 			<artifactId>jsqlparser</artifactId>
 		</dependency>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-test-resources_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
 
 	</dependencies>
 
