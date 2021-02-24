@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.common.io.hadoop;
+package net.sansa_stack.rdf.common.io.hadoop.trash;
 
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 

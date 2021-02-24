@@ -4,7 +4,8 @@ import java.io.ByteArrayOutputStream
 import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.FileInputFormatTrigDataset
+import net.sansa_stack.rdf.common.io.hadoop.trash.TrigFileInputFormatOld
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.Logging
@@ -574,7 +575,7 @@ package object io {
       val confHadoop = spark.sparkContext.hadoopConfiguration
 
       spark.sparkContext.newAPIHadoopFile(path,
-        classOf[TrigFileInputFormat],
+        classOf[FileInputFormatTrigDataset],
         classOf[LongWritable],
         classOf[JenaDataset], confHadoop)
         .map { case (_, v) => v }

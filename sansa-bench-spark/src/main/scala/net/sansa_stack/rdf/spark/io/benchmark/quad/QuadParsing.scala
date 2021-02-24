@@ -5,7 +5,8 @@ import java.net.URI
 import com.ibm.sparktc.sparkbench.utils.GeneralFunctions._
 import com.ibm.sparktc.sparkbench.utils.{SaveModes, SparkBenchException}
 import com.ibm.sparktc.sparkbench.workload.{Workload, WorkloadDefaults}
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.FileInputFormatTrigDataset
+import net.sansa_stack.rdf.common.io.hadoop.trash.TrigFileInputFormatOld
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
@@ -47,7 +48,7 @@ case class QuadParsingWorkload(input: Option[String] = None,
         case "nquad" => NQuadReader.load(spark, URI.create(input.get))
         case "trig" =>
           val hadoopConf = spark.sparkContext.hadoopConfiguration
-          spark.sparkContext.newAPIHadoopFile(input.get, classOf[TrigFileInputFormat],
+          spark.sparkContext.newAPIHadoopFile(input.get, classOf[FileInputFormatTrigDataset],
             classOf[LongWritable], classOf[Dataset], hadoopConf)
             .map(_._2)
             .flatMap(_.asDatasetGraph().find().asScala)

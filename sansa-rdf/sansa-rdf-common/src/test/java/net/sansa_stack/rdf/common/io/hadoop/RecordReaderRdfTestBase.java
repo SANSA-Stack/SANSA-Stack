@@ -1,15 +1,12 @@
 package net.sansa_stack.rdf.common.io.hadoop;
 
 import com.google.common.collect.*;
-import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
+import io.reactivex.rxjava3.core.Flowable;
+import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset;
+import net.sansa_stack.rdf.common.io.hadoop.util.FileSplitUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
@@ -17,8 +14,6 @@ import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +21,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
- * Test cases for the {@link TrigRecordReader}:
+ * Test cases for the {@link RecordReaderTrigDataset}:
  * A given set of test datasets (represented as trig files) is first split into a configurable
  * number of splits from which the overall graph is then reassembled.
  * The reassembled dataset must match the one of the original file.
@@ -39,9 +35,9 @@ import java.util.stream.IntStream;
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-public class TrigRecordReaderTestBase {
+public abstract class RecordReaderRdfTestBase<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrigRecordReaderTestBase.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecordReaderRdfTestBase.class);
 
     public static List<Object[]> createParameters(Map<String, Range<Integer>> fileToNumSplits) {
 
@@ -58,18 +54,21 @@ public class TrigRecordReaderTestBase {
     protected String file;
     protected int numSplits;
 
-    public TrigRecordReaderTestBase(String file, int numSplits) {
+    public RecordReaderRdfTestBase(String file, int numSplits) {
         this.file = file;
         this.numSplits = numSplits;
     }
+
+    public abstract InputFormat<?, T> createInputFormat();
+    public abstract void accumulate(Dataset target, T contrib);
 
     @Test
     public void test() throws IOException, InterruptedException {
 
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
-        conf.set(TrigRecordReader.MAX_RECORD_LENGTH, "10000");
-        conf.set(TrigRecordReader.PROBE_RECORD_COUNT, "1");
+        conf.set(RecordReaderTrigDataset.MAX_RECORD_LENGTH_KEY, "10000");
+        conf.set(RecordReaderTrigDataset.PROBE_RECORD_COUNT_KEY, "1");
 
         // val testFileName = "w3c_ex2.trig"
         // val referenceFileName = "nato-phonetic-alphabet-example.trig"
@@ -96,7 +95,8 @@ public class TrigRecordReaderTestBase {
 
 
         Job job = Job.getInstance(conf);
-        TrigFileInputFormat inputFormat = new TrigFileInputFormat();
+        // TrigFileInputFormat inputFormat = new TrigFileInputFormat();
+        InputFormat<?, T> inputFormat = createInputFormat();
 
         // add input path of the file
         org.apache.hadoop.fs.Path testHadoopPath = new org.apache.hadoop.fs.Path(testPath.toString());
@@ -110,54 +110,35 @@ public class TrigRecordReaderTestBase {
          * Ensure to start the loop from 1 for full testing. Takes quite long.
          */
         // compare with target dataset
-        Dataset actualDataset = testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits);
+        Dataset actualDataset = DatasetFactory.create();
+
+        testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
+                .forEach(record -> accumulate(actualDataset, record));
         logger.info("Dataset contains " + Iterators.size(actualDataset.listNames()) + " named graphs"); // - total contribs = " + totalContrib);
 
-        compareDatasets(expectedDataset, actualDataset);
+        // compareDatasets(expectedDataset, actualDataset);
+        boolean isIso = DatasetCompareUtils.isIsomorphic(
+                expectedDataset, actualDataset, true,
+                System.err);
+
+        Assert.assertTrue("Datasets were not isomoprhic - see output above", isIso);
     }
 
     //test("parsing Trig file provided by $i splits") {
 
-    public Dataset testSplit(
+    /**
+     * Create a sequential stream of all records covering all consecutive splits in order
+     */
+    public static <T> Flowable<T> testSplit(
             Job job,
-            TrigFileInputFormat inputFormat,
+            InputFormat<?, T> inputFormat,
             org.apache.hadoop.fs.Path testHadoopPath,
             long fileTotalLength,
-            int numSplits) throws IOException, InterruptedException {
-        List<InputSplit> splits = generateFileSplits(testHadoopPath, fileTotalLength, numSplits);
+            int numSplits
+    ) throws IOException, InterruptedException {
+        List<InputSplit> splits = FileSplitUtils.generateFileSplits(testHadoopPath, fileTotalLength, numSplits);
 
-        Dataset ds = DatasetFactory.create();
-        int totalContrib = 0;
-        for (InputSplit split : splits) {
-            // println(s"split (${split.getStart} - ${split.getStart + split.getLength}):" )
-
-          /*
-                  val stream = split.getPath.getFileSystem(new TaskAttemptContextImpl(conf, new TaskAttemptID()).getConfiguration)
-                    .open(split.getPath)
-
-                  val bufferSize = split.getLength.toInt
-                  val buffer = new Array[Byte](bufferSize)
-                  stream.readFully(split.getStart, buffer, 0, bufferSize)
-                  println(new String(buffer))
-                  stream.close()
-                  */
-
-            // setup
-            RecordReader<LongWritable, Dataset> reader = inputFormat.createRecordReader(split, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
-            //        val reader = new TrigRecordReader()
-
-            // initialize
-            reader.initialize(split, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
-
-            // read all records in split
-            Dataset contrib = consumeRecords(reader);
-            totalContrib += Iterators.size(contrib.listNames());
-            DatasetGraphUtils.addAll(ds.asDatasetGraph(), contrib.asDatasetGraph());
-            //        System.err.println("Dataset contribution")
-            //        RDFDataMgr.write(System.err, ds, RDFFormat.TRIG_PRETTY)
-        }
-
-        return ds;
+        return Flowable.fromIterable(splits).flatMap(split -> createFlow(job, inputFormat, split));
     }
 
 
@@ -188,12 +169,39 @@ public class TrigRecordReaderTestBase {
     }
   }
   */
-    public Dataset consumeRecords(RecordReader<LongWritable, Dataset> reader) throws IOException, InterruptedException {
+    public static <T> Flowable<T> createFlow(
+            Job job,
+            InputFormat<?, T> inputFormat,
+            InputSplit inputSplit) {
+        return Flowable.generate(() -> {
+                    // setup
+                    RecordReader<?, T> reader = inputFormat.createRecordReader(inputSplit, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
+                    // initialize
+                    reader.initialize(inputSplit, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
+                    return reader;
+                },
+                (reader, emitter) -> {
+                    try {
+                        if (reader.nextKeyValue()) {
+                            T record = reader.getCurrentValue();
+                            emitter.onNext(record);
+                        } else {
+                            emitter.onComplete();
+                        }
+                    } catch (Exception e) {
+                        emitter.onError(e);
+                    }
+                },
+                AutoCloseable::close);
+    }
+
+    /*
+    public Dataset consumeRecords(RecordReader<?, Dataset> reader) throws IOException, InterruptedException {
         Dataset result = DatasetFactory.create();
         // val actual = new mutable.ListBuffer[(LongWritable, Dataset)]()
         // var counter = 0;
         while (reader.nextKeyValue()) {
-            LongWritable k = reader.getCurrentKey();
+            // LongWritable k = reader.getCurrentKey();
             Dataset v = reader.getCurrentValue();
             // val item = (k, v)
             // actual += item
@@ -212,20 +220,7 @@ public class TrigRecordReaderTestBase {
         return result;
     }
 
-    public List<InputSplit> generateFileSplits(org.apache.hadoop.fs.Path testHadoopPath, long fileLengthTotal, int numSplits) throws IOException {
-        int splitLength = (int) (fileLengthTotal / (double) numSplits);
-
-        List<InputSplit> result = IntStream.range(0, numSplits)
-                .mapToObj(i -> {
-                    long start = i * splitLength;
-                    long end = Math.min((i + 1) * splitLength, fileLengthTotal);
-                    long length = end - start;
-
-                    return (InputSplit) new FileSplit(testHadoopPath, start, length, null);
-                })
-                .collect(Collectors.toList());
-        return result;
-    }
+     */
 
 
     public static void compareDatasets(Dataset ds1, Dataset ds2) {
@@ -250,14 +245,13 @@ public class TrigRecordReaderTestBase {
     System.err.println("Report done")
     */
 
-    /*
-    System.err.println("Dataset 1")
-    RDFDataMgr.write(System.err, ds1, RDFFormat.TRIG_PRETTY)
-    System.err.println("Dataset 2")
-    RDFDataMgr.write(System.err, ds2, RDFFormat.TRIG_PRETTY)
-    System.err.println("Datasets printed")
-    */
-
+/*
+    System.err.println("Dataset 1");
+    RDFDataMgr.write(System.err, ds1, RDFFormat.TRIG_PRETTY);
+    System.err.println("Dataset 2");
+    RDFDataMgr.write(System.err, ds2, RDFFormat.TRIG_PRETTY);
+    System.err.println("Datasets printed");
+*/
         // compare default graphs first
         Assert.assertTrue("default graphs do not match", ds1.getDefaultModel().getGraph().isIsomorphicWith(ds2.getDefaultModel().getGraph()));
 

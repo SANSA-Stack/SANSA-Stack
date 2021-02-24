@@ -1,19 +1,19 @@
-package net.sansa_stack.rdf.common.io.hadoop;
+package net.sansa_stack.rdf.common.io.hadoop.rdf.base;
 
+import net.sansa_stack.rdf.common.io.hadoop.util.FileSplitUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.compress.*;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.io.compress.SplittableCompressionCodec;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
@@ -30,19 +30,32 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * A Hadoop file input format for Trig RDF files.
+ * Base class for unit testing reading an RDF file with an arbitrary number of splits.
+ * RDF is read as Datasets which means that triples are expanded to quads.
  *
- * @author Lorenz Buehmann
- * @author Claus Stadler
+ * The only method that need to be overriden is {@link #createRecordReaderActual(InputSplit, TaskAttemptContext)}.
+ *
+ *
+ * @param <T>
  */
-public class TrigFileInputFormat
-        extends FileInputFormat<LongWritable, Dataset> { // TODO use CombineFileInputFormat?
+public abstract class FileInputFormatRdfBase<T>
+        extends FileInputFormat<LongWritable, T> { // TODO use CombineFileInputFormat?
 
-    private static final Logger logger = LoggerFactory.getLogger(TrigFileInputFormat.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileInputFormatRdfBase.class);
 
-    public static final String PREFIXES = "prefixes";
+    public static final String PREFIXES_KEY = "prefixes";
+    public static final String BASE_IRI_KEY = "base";
     public static final String PARSED_PREFIXES_LENGTH = "mapreduce.input.trigrecordreader.prefixes.maxlength";
     public static final long PARSED_PREFIXES_LENGTH_DEFAULT = 10 * 1024; // 10KB
+
+    /**
+     * Input language
+     */
+    protected Lang lang;
+
+    public FileInputFormatRdfBase(Lang lang) {
+        this.lang = lang;
+    }
 
     @Override
     public boolean isSplitable(JobContext context, Path file) {
@@ -53,16 +66,22 @@ public class TrigFileInputFormat
     }
 
     @Override
-    public RecordReader<LongWritable, Dataset> createRecordReader(
+    public final RecordReader<LongWritable, T> createRecordReader(
             InputSplit inputSplit,
             TaskAttemptContext context) {
-        if (context.getConfiguration().get(PREFIXES) == null) {
+        if (context.getConfiguration().get(PREFIXES_KEY) == null) {
             logger.warn("couldn't get prefixes from Job context");
         }
-        return new TrigRecordReader();
+
+        return createRecordReaderActual(inputSplit, context);
     }
 
-    @Override
+    public abstract RecordReader<LongWritable, T> createRecordReaderActual(
+            InputSplit inputSplit,
+            TaskAttemptContext context);
+
+
+            @Override
     public List<InputSplit> getSplits(JobContext job) throws IOException {
         List<InputSplit> splits = super.getSplits(job);
 
@@ -74,23 +93,10 @@ public class TrigFileInputFormat
             FileSplit firstSplit = (FileSplit) splits.get(0);
 
             // open input stream from split
-            try (InputStream is = getStreamFromSplit(firstSplit, job.getConfiguration())) {
+            try (InputStream is = FileSplitUtils.getDecodedStreamFromSplit(firstSplit, job.getConfiguration())) {
 
-                // Bound the stream for reading out prefixes
+                // Bound the decoded stream for reading out prefixes
                 BoundedInputStream boundedIs = new BoundedInputStream(is, PARSED_PREFIXES_LENGTH_DEFAULT);
-
-                // we do two steps here:
-                // 1. get all lines with base or prefix declaration
-                // 2. use a proper parser on those lines to cover corner case like multiple prefix declarations in a single line
-                //      val prefixStr = scala.io.Source.fromInputStream(boundedIs).getLines()
-                //        .map(_.trim)
-                //        .filterNot(_.isEmpty) // skip empty lines
-                //        .filterNot(_.startsWith("#")) // skip comments
-                //        .filter(line => line.startsWith("@prefix") || line.startsWith("@base") ||
-                //          line.startsWith("prefix") || line.startsWith("base"))
-                //        .mkString("\n")
-
-                // https://jena.apache.org/documentation/io/streaming-io.html
 
                 // A Model *isa* PrefixMap; use Model because it can be easily serialized
                 Model prefixModel = ModelFactory.createDefaultModel();
@@ -104,7 +110,7 @@ public class TrigFileInputFormat
                 };
 
                 try {
-                    RDFDataMgr.parse(prefixSink, boundedIs, Lang.TRIG);
+                    RDFDataMgr.parse(prefixSink, boundedIs, lang);
                 } catch (Exception e) {
                     // Ignore broken pipe exception because we deliberately cut off the stream
                     // Exception => // logger.warn("TODO Improve this non-fatal exception", e)
@@ -125,49 +131,12 @@ public class TrigFileInputFormat
                 RDFDataMgr.write(baos, prefixModel, RDFFormat.TURTLE_PRETTY);
 
                 // pass prefix string to job context object
-                job.getConfiguration().set("prefixes", baos.toString("UTF-8"));
+                Configuration conf = job.getConfiguration();
+                conf.set(BASE_IRI_KEY, firstSplit.getPath().toString());
+                conf.set(PREFIXES_KEY, baos.toString("UTF-8"));
             }
         }
 
         return splits;
     }
-
-    public static InputStream getStreamFromSplit(FileSplit split, Configuration job) throws IOException {
-        Path file = split.getPath();
-
-        // open the file and seek to the start of the split
-        FileSystem fs = file.getFileSystem(job);
-        FSDataInputStream fileIn = fs.open(file);
-
-        long start = split.getStart();
-        long end = start + split.getLength();
-
-        long maxPrefixesBytes = job.getLong(PARSED_PREFIXES_LENGTH, PARSED_PREFIXES_LENGTH_DEFAULT);
-        if (maxPrefixesBytes > end) {
-            logger.warn(String.format("Number of bytes set for prefixes parsing (%d) larger than the size of the first" +
-                    " split (%d). Could be slow", maxPrefixesBytes, end));
-        }
-        end = Math.max(end, maxPrefixesBytes);
-
-        CompressionCodec codec = new CompressionCodecFactory(job).getCodec(file);
-
-        InputStream result;
-        if (null != codec) {
-            Decompressor decompressor = CodecPool.getDecompressor(codec);
-
-            if (codec instanceof SplittableCompressionCodec) {
-                SplittableCompressionCodec splitableCodec = (SplittableCompressionCodec) codec;
-                result = splitableCodec.createInputStream(fileIn, decompressor, start, end, SplittableCompressionCodec.READ_MODE.BYBLOCK);
-            } else {
-                result = codec.createInputStream(fileIn, decompressor);
-            }
-        } else {
-            // No reason to bound the stream here
-            // new BoundedInputStream(fileIn, split.getLength)
-            result = fileIn;
-        }
-
-        return result;
-    }
-
 }

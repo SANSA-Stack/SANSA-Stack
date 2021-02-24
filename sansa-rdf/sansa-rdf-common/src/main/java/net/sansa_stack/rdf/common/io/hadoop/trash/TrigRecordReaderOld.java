@@ -1,8 +1,9 @@
-package net.sansa_stack.rdf.common.io.hadoop;
+package net.sansa_stack.rdf.common.io.hadoop.trash;
 
 import com.google.common.base.StandardSystemProperty;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.rdf.common.*;
+import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset;
 import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.aksw.jena_sparql_api.io.binseach.Seekable;
@@ -79,10 +80,10 @@ import java.util.regex.Pattern;
  * @author Claus Stadler
  * @author Lorenz Buehmann
  */
-public class TrigRecordReader
+public class TrigRecordReaderOld
         extends RecordReader<LongWritable, Dataset> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrigRecordReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecordReaderTrigDataset.class);
 
     public static String MAX_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.maxlength";
     public static String MIN_RECORD_LENGTH = "mapreduce.input.trigrecordreader.record.minlength";
@@ -132,9 +133,9 @@ public class TrigRecordReader
         // println("TRIG READER INITIALIZE CALLED")
         Configuration job = context.getConfiguration();
 
-        maxRecordLength = job.getInt(TrigRecordReader.MAX_RECORD_LENGTH, 10 * 1024 * 1024);
-        minRecordLength = job.getInt(TrigRecordReader.MIN_RECORD_LENGTH, 1);
-        probeRecordCount = job.getInt(TrigRecordReader.PROBE_RECORD_COUNT, 10);
+        maxRecordLength = job.getInt(TrigRecordReaderOld.MAX_RECORD_LENGTH, 10 * 1024 * 1024);
+        minRecordLength = job.getInt(TrigRecordReaderOld.MIN_RECORD_LENGTH, 1);
+        probeRecordCount = job.getInt(TrigRecordReaderOld.PROBE_RECORD_COUNT, 10);
 
         String str = context.getConfiguration().get("prefixes");
         Model model = ModelFactory.createDefaultModel();
@@ -255,7 +256,7 @@ public class TrigRecordReader
                         new SeekableInputStream(
                                 new InputStreamWithCloseIgnore(
                                         InputStreamWithCloseLogging.wrap(tmp,
-                                                ExceptionUtils::getStackTrace, TrigRecordReader::logUnexpectedClose)), tmp);
+                                                ExceptionUtils::getStackTrace, RecordReaderTrigDataset::logUnexpectedClose)), tmp);
 
                 result = new AbstractMap.SimpleEntry<>(adjustedStart, adjustedEnd);
                 // } catch {
@@ -275,7 +276,7 @@ public class TrigRecordReader
                                     Channels.newInputStream(
                                             new InterruptingReadableByteChannel(
                                                     InputStreamWithCloseLogging.wrap(rawStream,
-                                                            ExceptionUtils::getStackTrace, TrigRecordReader::logUnexpectedClose), rawStream, end))),
+                                                            ExceptionUtils::getStackTrace, RecordReaderTrigDataset::logUnexpectedClose), rawStream, end))),
                             rawStream);
 
             result = new AbstractMap.SimpleEntry<>(start, end);
@@ -578,7 +579,7 @@ public class TrigRecordReader
 
 
         InputStream fullStream = InputStreamWithCloseLogging.wrap(new SequenceInputStream(Collections.enumeration(
-                Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream))), ExceptionUtils::getStackTrace, TrigRecordReader::logClose);
+                Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream))), ExceptionUtils::getStackTrace, RecordReaderTrigDataset::logClose);
 
 
         Flowable<Dataset> result = null;

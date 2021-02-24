@@ -1,6 +1,10 @@
 package net.sansa_stack.rdf.common.io.hadoop;
 
 import com.google.common.collect.Range;
+import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.FileInputFormatTrigDataset;
+import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.jena.query.Dataset;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -8,11 +12,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RunWith(Parameterized.class)
-public class TrigRecordReaderTestsFast
-    extends TrigRecordReaderTestBase
+public class RecordReaderTrigTestsFast
+    extends RecordReaderRdfTestBase<Dataset>
 {
-    public TrigRecordReaderTestsFast(String file, int numSplits) {
+    public RecordReaderTrigTestsFast(String file, int numSplits) {
         super(file, numSplits);
+    }
+
+    @Override
+    public InputFormat<?, Dataset> createInputFormat() {
+        return new FileInputFormatTrigDataset();
+    }
+
+    @Override
+    public void accumulate(Dataset target, Dataset contrib) {
+        DatasetGraphUtils.addAll(target.asDatasetGraph(), contrib.asDatasetGraph());
     }
 
     /**
@@ -32,6 +46,6 @@ public class TrigRecordReaderTestsFast
         map.put("src/test/resources/nato-phonetic-alphabet-example.trig.bz2",
                 Range.closed(1, 5));
 
-        return TrigRecordReaderTestBase.createParameters(map);
+        return RecordReaderRdfTestBase.createParameters(map);
     }
 }

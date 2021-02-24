@@ -2,7 +2,8 @@ package net.sansa_stack.rdf.spark.io
 
 import java.net.URI
 
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.FileInputFormatTrigDataset
+import net.sansa_stack.rdf.common.io.hadoop.trash.TrigFileInputFormatOld
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
 import org.apache.spark.sql.SparkSession
@@ -85,7 +86,7 @@ object TrigReader {
         // hadoopConf.set("mapred.max.split.size", "10000321")
         // hadoopConf.set("mapred.min.split.size", "10000321")
 
-        val rdd = spark.sparkContext.newAPIHadoopFile(config.in.getPath, classOf[TrigFileInputFormat],
+        val rdd = spark.sparkContext.newAPIHadoopFile(config.in.getPath, classOf[FileInputFormatTrigDataset],
           classOf[LongWritable], classOf[Dataset], hadoopConf)
 
         config.mode match {
