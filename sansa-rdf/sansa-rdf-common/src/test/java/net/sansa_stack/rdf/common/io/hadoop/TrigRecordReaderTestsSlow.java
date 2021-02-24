@@ -1,7 +1,6 @@
 package net.sansa_stack.rdf.common.io.hadoop;
 
 import com.google.common.collect.Range;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.LinkedHashMap;

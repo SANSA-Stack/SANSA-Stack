@@ -11,12 +11,12 @@ import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
-
 import net.sansa_stack.query.spark._
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.RDFPartition
+import org.aksw.commons.sql.codec.util.SqlCodecUtils
 
 /**
  * https://github.com/SANSA-Stack/SANSA-Stack/issues/102
@@ -89,7 +89,7 @@ class Issue101
     // Spark query execution
     val qef = triplesRDD.verticalPartition(new RdfPartitionerComplex(),
       explodeLanguageTags = true,
-      new SqlEscaperDoubleQuote(),
+      SqlCodecUtils.createSqlCodecDefault,
       escapeIdentifiers = true).ontop()
 
     runQuery(qef)

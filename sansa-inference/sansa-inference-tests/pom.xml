@@ -55,7 +55,10 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatestplus</groupId>
+            <artifactId>junit-4-12_${scala.binary.version}</artifactId>
         </dependency>
 
         <dependency>

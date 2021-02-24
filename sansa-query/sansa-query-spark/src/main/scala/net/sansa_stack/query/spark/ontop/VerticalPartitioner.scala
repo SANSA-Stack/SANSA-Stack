@@ -4,8 +4,12 @@ import java.io.{File, FileOutputStream}
 import java.net.URI
 import java.nio.file.Paths
 
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, TermType}
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SparkTableGenerator}
+import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.aksw.r2rml.jena.vocab.RR
-import org.aksw.sparqlify.core.sql.common.serialization.{SqlEscaperBacktick, SqlEscaperDoubleQuote}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.{RDF, XSD}
@@ -17,11 +21,6 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession, SaveMode => TableSaveMode}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
-
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, TermType}
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.common.partition.utils.SQLUtils
-import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SparkTableGenerator}
 
 
 /**
@@ -133,7 +132,7 @@ object VerticalPartitioner {
 
   }
 
-  val sqlEscaper = new SqlEscaperBacktick()
+  val sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark
 
 
 
@@ -154,7 +153,7 @@ object VerticalPartitioner {
       .enableHiveSupport()
       .getOrCreate()
 
-    spark.sql(s"use ${sqlEscaper.escapeIdentifier(databaseName)}")
+    spark.sql(s"use ${sqlCodec.forSchemaName.encode(databaseName)}")
     spark.sql("show tables").show(1000, false)
     spark.sql("show tables").select("tableName").collect().foreach(
       row => {
@@ -168,9 +167,9 @@ object VerticalPartitioner {
 
   private def run(config: Config): Unit = {
 
-    import scala.collection.JavaConverters._
-
     import net.sansa_stack.rdf.spark.io._
+
+    import scala.collection.JavaConverters._
 
     val spark = SparkSession.builder
       //      .master("local")
@@ -222,7 +221,7 @@ object VerticalPartitioner {
     println(s"#partitions: ${partitions.size}")
     println(partitions.mkString("\n"))
 
-    val dbName = sqlEscaper.escapeIdentifier(config.databaseName)
+    val dbName = sqlCodec.forSchemaName.encode(config.databaseName)
 
     // we drop the database if forced
     if (config.dropDatabase) spark.sql(s"DROP DATABASE IF EXISTS $dbName CASCADE")
@@ -268,7 +267,7 @@ object VerticalPartitioner {
     partitionToTableName.foreach { case (p, tableName) =>
 
       try {
-        val df = spark.table(sqlEscaper.escapeTableName(tableName))
+        val df = spark.table(sqlCodec.forTableName.encode(tableName))
         var writer: DataFrameWriter[Row] = df.write
 
         // rdf:type partition will be partitioned by types
@@ -325,7 +324,7 @@ object VerticalPartitioner {
       partitions.keySet.toSeq,
       tableNameFn,
       Option(config.databaseName),
-      new SqlEscaperDoubleQuote(),
+      SqlCodecUtils.createSqlCodecForApacheSpark,
       model,
       explodeLanguageTags = true,
       escapeIdentifiers = true)
@@ -355,7 +354,7 @@ object VerticalPartitioner {
                                path: String,
                                usePartitioning: Boolean,
                                partitioningThreshold: Int): Unit = {
-    val tableName = sqlEscaper.escapeTableName(SQLUtils.createDefaultTableName(p))
+    val tableName = sqlCodec.forTableName.encode(SQLUtils.createDefaultTableName(p))
     // val scalaSchema = p.layout.schema
     val scalaSchema = partitioner.determineLayout(p).schema
     val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
