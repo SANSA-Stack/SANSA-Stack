@@ -62,23 +62,26 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
   protected val serviceManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/service/manifest#"
 
   // contains the list of ignored tests case IDs, must be overridden
-  lazy val IGNORE: Set[String] = Set.empty[String]
+  lazy val IGNORED_URIS: Set[String] = Set.empty[String]
+
+  // an optional filter function to ignore test cases by name
+  lazy val IGNORED_NAMES: mutable.Set[String] = mutable.Set[String]()
 
   // an optional filter function to ignore test cases
-  val IGNORE_NAMES: mutable.Set[String] = mutable.Set[String]()
-
-  // an optional filter function to ignore test cases
-  lazy val IGNORE_FILTER: SPARQLQueryEvaluationTest => Boolean = _ => {true}
+  lazy val FILTER_KEEP: SPARQLQueryEvaluationTest => Boolean = _ => {true}
 
   // holds the test data
   val testData: List[SPARQLQueryEvaluationTest] = new W3cConformanceSPARQLQueryEvaluationTestSuite(sparqlVersion).tests
 
+  private def isIgnored(testCase: SPARQLQueryEvaluationTest): Boolean = {
+    IGNORED_URIS.contains(testCase.uri) || IGNORED_NAMES.exists(testCase.name.startsWith) || !FILTER_KEEP(testCase)
+  }
+
   // the main loop over the test data starts here
   // a single ScalaTest is generated per query
+  // we group by data first, to load it just once and perform all tests based on the same data
   testData
-    .filter(data => !IGNORE.contains(data.uri))
-    .filter(t => IGNORE_NAMES.isEmpty || IGNORE_NAMES.exists(t.name.startsWith))
-    .filter(IGNORE_FILTER)
+    //    .filterNot(isIgnored)
     .groupBy(_.dataFile)
     .foreach { case (dataFile, tests) =>
       // load data
@@ -92,31 +95,37 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
         val queryFileURL = testCase.queryFile
         val resultFileURL = testCase.resultsFile
         val testName = testCase.name
+        val description = Option(testCase.description).getOrElse("")
 
-        // test starts here
-        test(s"testing $testName") {
-          val queryString = readQueryString(queryFileURL)
-          val query = QueryFactory.create(queryString)
-          println(s"SPARQL query:\n $query")
+        if (isIgnored(testCase)) {
+          ignore(s"$testName: $description") {}
+        } else {
+          // test starts here
+          test(s"$testName: $description") {
+            val queryString = readQueryString(queryFileURL)
+            val query = QueryFactory.create(queryString)
+            println(s"SPARQL query:\n $query")
 
-          // run the SPARQL query
-          val actualResult = runQuery(query, data)
+            // run the SPARQL query
+            val actualResult = runQuery(query, data)
 
-          // read expected result
-          val expectedResult = readExpectedResult(resultFileURL.get)
+            // read expected result
+            val expectedResult = readExpectedResult(resultFileURL.get)
 
-          // compare results
-          if (query.isSelectType) {
-            processSelect(query, expectedResult, actualResult)
-          } else if (query.isAskType) {
-            processAsk(query, expectedResult, actualResult)
-          } else if (query.isConstructType || query.isDescribeType) {
-            processGraph(query, expectedResult, actualResult)
-          } else {
-            fail(s"unsupported query type: ${query.queryType().name()}")
+            // compare results
+            if (query.isSelectType) {
+              processSelect(query, expectedResult, actualResult)
+            } else if (query.isAskType) {
+              processAsk(query, expectedResult, actualResult)
+            } else if (query.isConstructType || query.isDescribeType) {
+              processGraph(query, expectedResult, actualResult)
+            } else {
+              fail(s"unsupported query type: ${query.queryType().name()}")
+            }
           }
         }
-      })
+      }
+      )
     }
 
 //  def runQueries(queries: Seq[Query], data: Model): Seq[SPARQLResult]
