@@ -58,17 +58,21 @@ object MainSansaBSBM {
     // val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
 
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
-    val graphRdd = sparkSession.sparkContext.parallelize(it)
+    val tripleRdd = sparkSession.sparkContext.parallelize(it)
 
+    import net.sansa_stack.rdf.spark.partition._
+    import net.sansa_stack.query.spark._
+
+    val qef = tripleRdd.verticalPartition(RdfPartitionerDefault).sparqlify()
     // val map = graphRdd.partitionGraphByPredicates
-    val partitioner = RdfPartitionerDefault
-    val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
+    // val partitioner = RdfPartitionerDefault
+    // val partitions = RdfPartitionUtilsSpark.partitionGraph(graphRdd, partitioner)
 
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
+    // val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(sparkSession, partitioner, partitions)
 
     // Spark SQL does not support OFFSET - so for testing just remove it from the query
     val conn = new SparqlQueryConnectionJsa(FluentQueryExecutionFactory
-        .from(new JavaQueryExecutionFactorySparqlifySpark(sparkSession, rewriter))
+        .from(qef)
         .config()
           .withQueryTransform(q => { q.setOffset(Query.NOLIMIT); q })
           .withParser(q => QueryFactory.create(q))

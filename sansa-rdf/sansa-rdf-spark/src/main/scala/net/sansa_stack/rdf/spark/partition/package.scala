@@ -6,7 +6,7 @@ import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
 import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SparkTableGenerator}
 import net.sansa_stack.rdf.spark.partition.semantic.SemanticRdfPartitionUtilsSpark
-import net.sansa_stack.rdf.spark.utils.Logging
+import net.sansa_stack.rdf.spark.utils.{Logging, SparkSessionUtils}
 import org.aksw.commons.sql.codec.api.SqlCodec
 import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.apache.jena.graph.Triple
@@ -51,9 +51,7 @@ package object partition extends Logging {
       val mappingsModel = ModelFactory.createDefaultModel
       // R2rmlUtils.createR2rmlMappings(partitioner, partitioning.keys.toSeq, model, explodeLanguageTags)
 
-      val sparkSession = SparkSession.builder.config(rddOfTriples.sparkContext.getConf).getOrCreate()
-
-
+      val sparkSession = SparkSessionUtils.getSessionFromRdd(rddOfTriples)
 
       // Create a table prefix for each partitioning of RDDs
       // TODO Encode partitioner hash into the name
@@ -109,7 +107,14 @@ package object partition extends Logging {
 
 //      RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
 
-      new SparkTableGenerator(sparkSession, database).createAndRegisterSparkTables(partitioner, partitioning, tableNaming)
+      // TODO Refactor this method to return an object that gives access to the SparkTableGenerator
+      //   such that its settings can be post-processed
+
+      val targetDatabase = if (sparkSession.catalog.currentDatabase == "default") None
+        else Option(sparkSession.catalog.currentDatabase)
+
+      new SparkTableGenerator(sparkSession, targetDatabase)
+        .createAndRegisterSparkTables(partitioner, partitioning, tableNaming)
 
       R2rmlMappedSparkSession(sparkSession, mappingsModel)
     }

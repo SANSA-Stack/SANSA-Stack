@@ -8,13 +8,16 @@ import org.apache.jena.query.{QueryFactory, ResultSetFormatter}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.sql.SparkSession
-
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.query.spark.SPARQLEngine.{Ontop, SPARQLEngine, Sparqlify}
+import net.sansa_stack.query.spark.api.impl.QueryEngineFactoryBase
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.io._
+import org.apache.commons.rdf.jena.JenaTriple
+import org.apache.spark.rdd.RDD
 
 /**
  * This example shows how to run SPARQL queries over Spark using a SPARQL-to-SQL rewriter under the hood.
@@ -64,27 +67,53 @@ object SPARQLEngineExample {
       .getOrCreate()
 
     // we build the query engine here
-    val queryEngineFactory = queryEngine match {
+    val queryEngineFactory: QueryEngineFactoryBase = queryEngine match {
       case Ontop => new QueryEngineFactoryOntop(spark)
       case Sparqlify => new QueryEngineFactorySparqlify(spark)
       case _ => throw new RuntimeException("Unsupported query engine")
     }
 
     // create the query execution factory
-    val qef =
-      if (database != null && mappingsFile != null) { // pre-partitioned case
-        // load the R2RML mappings
-        val mappings = ModelFactory.createDefaultModel()
-        RDFDataMgr.read(mappings, mappingsFile.toString)
 
-        queryEngineFactory.create(Some(database), mappings)
+    // load the data into an RDD
+    if (database != null) { // pre-partitioned case
+        spark.sql("CREATE DATABASE IF NOT EXISTS " + database)
+        spark.sql("USE " + database)
+    }
+
+    val qef =
+      if (mappingsFile != null) {
+        // load the R2RML mappings
+        val mappings = RDFDataMgr.loadModel(mappingsFile.toString)
+        queryEngineFactory.create(Option(database), mappings)
       } else {
-        // load the data into an RDD
+        // triples.verticalPartition(RdfPartitionerDefault).r2rmlModel
         val lang = Lang.NTRIPLES
         val triples = spark.rdf(lang)(input)
+        import net.sansa_stack.rdf.spark.partition._
 
-        queryEngineFactory.create(triples)
+        // TODO Maybe support getting the partitioner from the queryEngineFactory
+        //  such as queryEngineFactory.newPartitioner.apply(triples)
+        val partitioner = queryEngineFactory.getPartitioner
+        val mappings = triples.verticalPartition(partitioner).r2rmlModel
+
+        spark.catalog.listTables.show
+        spark.catalog.listDatabases.show
+        queryEngineFactory.create(Option(database), mappings)
       }
+
+//        queryEngineFactory.create(Some(database), mappings)
+//      } else {
+        import net.sansa_stack.rdf.spark.partition._
+
+        // load the data into an RDD
+//        val lang = Lang.NTRIPLES
+//        val triples = spark.rdf(lang)(input)
+//
+//        triples.verticalPartition(RdfPartitionerDefault).r2rmlModel
+//
+//        queryEngineFactory.create(triples)
+//      }
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI
     mode.get match {
