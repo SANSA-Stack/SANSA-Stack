@@ -130,6 +130,21 @@
             <artifactId>scalatest_${scala.binary.version}</artifactId>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.scalatest</groupId>-->
+<!--            <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.scalatest</groupId>-->
+<!--            <artifactId>scalatest-flatspec_${scala.binary.version}</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.scalatest</groupId>-->
+<!--            <artifactId>scalatest-shouldmatchers_${scala.binary.version}</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
     </dependencies>
 
 
@@ -1093,9 +1108,27 @@
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>3.2.5</version>
+                <version>3.1.0</version>
                 <scope>test</scope>
             </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.scalatest</groupId>-->
+<!--                <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
+<!--                <version>3.2.5</version>-->
+<!--                <scope>test</scope>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>org.scalatest</groupId>-->
+<!--                <artifactId>scalatest-flatspec_${scala.binary.version}</artifactId>-->
+<!--                <version>3.2.5</version>-->
+<!--                <scope>test</scope>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>org.scalatest</groupId>-->
+<!--                <artifactId>scalatest-shouldmatchers_${scala.binary.version}</artifactId>-->
+<!--                <version>3.2.5</version>-->
+<!--                <scope>test</scope>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.scalatestplus</groupId>
