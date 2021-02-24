@@ -1093,7 +1093,7 @@
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>3.0.8</version>
+                <version>3.2.5</version>
                 <scope>test</scope>
             </dependency>
 
@@ -1488,12 +1488,14 @@
                 <plugin>
                     <groupId>org.scalatest</groupId>
                     <artifactId>scalatest-maven-plugin</artifactId>
-                    <version>2.0.0</version>
+                    <version>2.0.2</version>
                     <configuration>
                         <tagsToExclude>net.sansa_stack.test.conformance.IntegrationTestSuite</tagsToExclude>
                         <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                         <junitxml>.</junitxml>
                         <filereports>SANSA-${project.artifactId}-Tests.txt</filereports>
+                        <htmlreporters>${project.build.directory}/html/scalatest</htmlreporters>
+                        <testFailureIgnore>false</testFailureIgnore>
                     </configuration>
                     <executions>
                         <execution>
