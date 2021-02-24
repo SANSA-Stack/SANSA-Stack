@@ -76,11 +76,12 @@ class SparqlFrame extends Transformer{
     val qef = _queryExcecutionEngine match {
       case SPARQLEngine.Sparqlify =>
         graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
-      case SPARQLEngine.Ontop =>
+      /* case SPARQLEngine.Ontop =>
          graphRdd.verticalPartition(new RdfPartitionerComplex(),
                                    explodeLanguageTags = true,
                                    new SqlEscaperDoubleQuote(),
                                    escapeIdentifiers = true).ontop
+       */
       case _ => throw new Exception(s"Your set engine: ${_queryExcecutionEngine} not supported")
     }
 
