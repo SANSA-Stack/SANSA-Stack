@@ -26,7 +26,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -83,8 +82,8 @@ public abstract class RecordReaderRdfTestBase<T> {
 
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
-        conf.set(RecordReaderTrigDataset.MAX_RECORD_LENGTH_KEY, "10000");
-        conf.set(RecordReaderTrigDataset.PROBE_RECORD_COUNT_KEY, "1");
+        conf.set(RecordReaderTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
+        conf.set(RecordReaderTrigDataset.RECORD_PROBECOUNT_KEY, "1");
 
         configureHadoop(conf);
 

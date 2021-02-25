@@ -17,15 +17,10 @@ import scala.collection.JavaConverters._
  *
  * {{{spark.hadoop.}}}
  *
- * to the config params.
+ *       to the config params.
  *
- * Currently, we do support
- * {{{
- * mapreduce.input.trigrecordreader.record.maxlength
- * mapreduce.input.trigrecordreader.record.minlength
- * mapreduce.input.trigrecordreader.probe.count
- * mapreduce.input.trigrecordreader.prefixes.maxlength
- * }}}
+ * See [[net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset]] for supported
+ * hadoop config options.
  *
  *
  * @author Lorenz Buehmann

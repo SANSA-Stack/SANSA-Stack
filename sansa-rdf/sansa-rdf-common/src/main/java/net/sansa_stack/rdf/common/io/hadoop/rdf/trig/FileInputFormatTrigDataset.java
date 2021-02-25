@@ -12,7 +12,7 @@ public class FileInputFormatTrigDataset
     extends FileInputFormatRdfBase<Dataset>
 {
     public FileInputFormatTrigDataset() {
-        super(Lang.TRIG);
+        super(Lang.TRIG, RecordReaderTrigDataset.PREFIXES_MAXLENGTH_KEY);
     }
 
     @Override

@@ -17,17 +17,20 @@ import java.util.regex.Pattern;
 public class RecordReaderTrigDataset
     extends RecordReaderGenericRdfBase<Dataset>
 {
-    public static String MIN_RECORD_LENGTH_KEY = "mapreduce.input.trigrecordreader.record.minlength";
-    public static String MAX_RECORD_LENGTH_KEY = "mapreduce.input.trigrecordreader.record.maxlength";
-    public static String PROBE_RECORD_COUNT_KEY = "mapreduce.input.trigrecordreader.probe.count";
+    public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.trig.dataset.record.minlength";
+    public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.trig.dataset.record.maxlength";
+    public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.trig.dataset.record.probecount";
+    public static final String PREFIXES_MAXLENGTH_KEY = "mapreduce.input.trig.dataset.prefixes.maxlength";
+
 
     protected static final Pattern trigFwdPattern = Pattern.compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     public RecordReaderTrigDataset() {
         super(
-                MIN_RECORD_LENGTH_KEY,
-                MAX_RECORD_LENGTH_KEY,
-                PROBE_RECORD_COUNT_KEY,
+                RECORD_MINLENGTH_KEY,
+                RECORD_MAXLENGTH_KEY,
+                RECORD_PROBECOUNT_KEY,
+                PREFIXES_MAXLENGTH_KEY,
                 trigFwdPattern,
                 Lang.TRIG);
     }

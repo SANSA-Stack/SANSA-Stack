@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 /**
  * A generic record reader that uses a callback mechanism to detect a consecutive sequence of records
  * that must start in the current split and which may extend over any number of successor splits.
- * The framework applies probing using a callback mechanism based on the {@link #parse(Callable)} function.
+ * The callback that needs to be implemented is {@link #parse(Callable)}.
  * This method receives a supplier of input streams and must return an RxJava {@link Flowable} over such an
  * input stream.
  * Note that in constrast to Java Streams, RxJava Flowables idiomatically

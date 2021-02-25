@@ -11,7 +11,7 @@ import org.apache.jena.sparql.core.Quad;
 public class FileInputFormatTrigQuad
         extends FileInputFormatRdfBase<Quad> {
     public FileInputFormatTrigQuad() {
-        super(Lang.TRIG);
+        super(Lang.TRIG, RecordReaderTrigQuad.PREFIXES_MAXLENGTH_KEY);
     }
 
     @Override

@@ -11,10 +11,13 @@ public abstract class RecordReaderGenericRdfBase<T>
 {
     protected Lang lang;
 
+    protected String prefixesMaxLengthKey;
+
     public RecordReaderGenericRdfBase(
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
+            String prefixesMaxLengthKey,
             Pattern recordSearchPattern,
             Lang lang) {
         super(minRecordLengthKey,
@@ -23,5 +26,7 @@ public abstract class RecordReaderGenericRdfBase<T>
                 recordSearchPattern,
                 FileInputFormatRdfBase.BASE_IRI_KEY,
                 FileInputFormatRdfBase.PREFIXES_KEY);
+        this.lang = lang;
+        this.prefixesMaxLengthKey = prefixesMaxLengthKey;
     }
 }

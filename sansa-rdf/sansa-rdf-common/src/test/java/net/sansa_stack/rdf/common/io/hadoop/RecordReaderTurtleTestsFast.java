@@ -1,9 +1,8 @@
 package net.sansa_stack.rdf.common.io.hadoop;
 
 import com.google.common.collect.Range;
-import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset;
 import net.sansa_stack.rdf.common.io.hadoop.rdf.turtle.FileInputFormatTurtleTriple;
-import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
+import net.sansa_stack.rdf.common.io.hadoop.rdf.turtle.RecordReaderTurtleTriple;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.graph.Triple;
@@ -25,13 +24,7 @@ public class RecordReaderTurtleTestsFast
     @Override
     public void configureHadoop(Configuration conf) {
         super.configureHadoop(conf);
-        conf.set(RecordReaderTrigDataset.PROBE_RECORD_COUNT_KEY, "10");
-    }
-
-    @Override
-    protected Dataset createDataset() {
-        // return super.createDataset();
-        return DatasetFactoryEx.createInsertOrderPreservingDataset();
+        conf.set(RecordReaderTurtleTriple.RECORD_PROBECOUNT_KEY, "10");
     }
 
     @Override

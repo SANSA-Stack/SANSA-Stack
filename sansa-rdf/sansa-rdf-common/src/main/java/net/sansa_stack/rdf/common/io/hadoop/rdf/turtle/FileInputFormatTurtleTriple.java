@@ -12,7 +12,7 @@ public class FileInputFormatTurtleTriple
         extends FileInputFormatRdfBase<Triple>
 {
     public FileInputFormatTurtleTriple() {
-        super(Lang.TURTLE);
+        super(Lang.TURTLE, RecordReaderTurtleTriple.PREFIXES_MAXLENGTH_KEY);
     }
 
     @Override

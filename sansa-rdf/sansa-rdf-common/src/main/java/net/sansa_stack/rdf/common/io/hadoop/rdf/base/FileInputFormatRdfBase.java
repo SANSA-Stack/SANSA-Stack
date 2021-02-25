@@ -30,8 +30,11 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * Base class for unit testing reading an RDF file with an arbitrary number of splits.
+ * Base class for unit testing of reading an RDF file with
+ * an arbitrary number of splits.
  * RDF is read as Datasets which means that triples are expanded to quads.
+ *
+ * (We could generalize to tuples of RDF terms using Bindings)
  *
  * The only method that need to be overriden is {@link #createRecordReaderActual(InputSplit, TaskAttemptContext)}.
  *
@@ -45,16 +48,17 @@ public abstract class FileInputFormatRdfBase<T>
 
     public static final String PREFIXES_KEY = "prefixes";
     public static final String BASE_IRI_KEY = "base";
-    public static final String PARSED_PREFIXES_LENGTH = "mapreduce.input.trigrecordreader.prefixes.maxlength";
     public static final long PARSED_PREFIXES_LENGTH_DEFAULT = 10 * 1024; // 10KB
 
     /**
      * Input language
      */
     protected Lang lang;
+    protected String prefixesLengthMaxKey;
 
-    public FileInputFormatRdfBase(Lang lang) {
+    public FileInputFormatRdfBase(Lang lang, String prefixesLengthMaxKey) {
         this.lang = lang;
+        this.prefixesLengthMaxKey = prefixesLengthMaxKey;
     }
 
     @Override
@@ -121,7 +125,7 @@ public abstract class FileInputFormatRdfBase<T>
 
                 // RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
                 int prefixCount = prefixModel.getNsPrefixMap().size();
-                long prefixByteCount = job.getConfiguration().getLong(PARSED_PREFIXES_LENGTH, PARSED_PREFIXES_LENGTH_DEFAULT);
+                long prefixByteCount = job.getConfiguration().getLong(prefixesLengthMaxKey, PARSED_PREFIXES_LENGTH_DEFAULT);
 
                 logger.info(String.format("Parsed %d prefixes from first %d bytes", prefixCount, prefixByteCount));
 
