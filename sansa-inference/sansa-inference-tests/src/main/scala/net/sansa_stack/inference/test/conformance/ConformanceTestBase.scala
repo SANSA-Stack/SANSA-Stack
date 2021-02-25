@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.shared.PrefixMapping
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import net.sansa_stack.inference.data.{RDF, RDFOps}

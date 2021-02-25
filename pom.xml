@@ -130,6 +130,11 @@
             <artifactId>scalatest_${scala.binary.version}</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-all</artifactId>
+            <scope>test</scope>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.scalatest</groupId>-->
 <!--            <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
@@ -1108,10 +1113,20 @@
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.binary.version}</artifactId>
-                <version>3.1.0</version>
-                <scope>test</scope>
+                <version>3.1.4</version>
             </dependency>
-<!--            <dependency>-->
+            <dependency>
+                <groupId>org.scalatestplus</groupId>
+                <artifactId>junit-4-12_${scala.binary.version}</artifactId>
+                <version>3.1.4.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vladsch.flexmark</groupId>
+                <artifactId>flexmark-all</artifactId>
+                <version>0.36.8</version>
+            </dependency>
+
+            <!--            <dependency>-->
 <!--                <groupId>org.scalatest</groupId>-->
 <!--                <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
 <!--                <version>3.2.5</version>-->
@@ -1130,12 +1145,6 @@
 <!--                <scope>test</scope>-->
 <!--            </dependency>-->
 
-            <dependency>
-                <groupId>org.scalatestplus</groupId>
-                <artifactId>junit-4-12_${scala.binary.version}</artifactId>
-                <version>3.2.0.0</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.specs2</groupId>
