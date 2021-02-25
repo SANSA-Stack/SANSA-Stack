@@ -1,6 +1,8 @@
 package net.sansa_stack.rdf.common.io.hadoop;
 
 import org.apache.jena.query.*;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.ResultSetMgr;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
 
 import java.io.OutputStream;
@@ -25,7 +27,8 @@ public class DatasetCompareUtils {
             Dataset expected,
             Dataset actual,
             boolean compareByValue,
-            PrintStream out) {
+            PrintStream out,
+            Lang lang) {
         boolean result;
 
         String everything = "SELECT ?g ?s ?p ?o { { GRAPH ?g { ?s ?p ?o } } UNION { ?s ?p ?o } }";
@@ -44,9 +47,9 @@ public class DatasetCompareUtils {
                 rsa.reset();
                 rsb.reset();
                 out.println("Expected:");
-                ResultSetFormatter.out(out, rsa);
+                ResultSetMgr.write(out, rsa, lang);
                 out.println("Actual:");
-                ResultSetFormatter.out(out, rsb);
+                ResultSetMgr.write(out, rsb, lang);
             }
         }
 

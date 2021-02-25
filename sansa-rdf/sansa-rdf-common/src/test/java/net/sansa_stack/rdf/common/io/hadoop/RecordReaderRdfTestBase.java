@@ -4,6 +4,7 @@ import com.google.common.collect.*;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset;
 import net.sansa_stack.rdf.common.io.hadoop.util.FileSplitUtils;
+import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -12,6 +13,7 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.resultset.ResultSetLang;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -59,8 +62,21 @@ public abstract class RecordReaderRdfTestBase<T> {
         this.numSplits = numSplits;
     }
 
-    public abstract InputFormat<?, T> createInputFormat();
-    public abstract void accumulate(Dataset target, T contrib);
+    protected abstract InputFormat<?, T> createInputFormat();
+    protected abstract void accumulate(Dataset target, T contrib);
+
+    /** Override this for custom hadoop configuration */
+    protected void configureHadoop(Configuration conf) {};
+
+    /**
+     * Override this to use a different Dataset implementation
+     * such as {@link DatasetFactoryEx#createInsertOrderPreservingDataset()}
+     */
+    protected Dataset createDataset() {
+        return DatasetFactory.create();
+    };
+
+
 
     @Test
     public void test() throws IOException, InterruptedException {
@@ -69,6 +85,8 @@ public abstract class RecordReaderRdfTestBase<T> {
         conf.set("fs.defaultFS", "file:///");
         conf.set(RecordReaderTrigDataset.MAX_RECORD_LENGTH_KEY, "10000");
         conf.set(RecordReaderTrigDataset.PROBE_RECORD_COUNT_KEY, "1");
+
+        configureHadoop(conf);
 
         // val testFileName = "w3c_ex2.trig"
         // val referenceFileName = "nato-phonetic-alphabet-example.trig"
@@ -89,7 +107,13 @@ public abstract class RecordReaderRdfTestBase<T> {
         // read the target dataset
         // Dataset expectedDataset = DatasetFactory.create();
         //RDFDataMgr.read(expectedDataset, new BZip2CompressorInputStream(Files.newInputStream(referencePath)), Lang.TRIG);
-        Dataset expectedDataset = RDFDataMgr.loadDataset(referencePath.toString());
+        // Dataset expectedDataset = DatasetFactoryEx.createInsertOrderPreservingDataset();
+
+        // Supplier<Dataset> datasetFactory = DatasetFactory::create;
+        // Supplier<Dataset> datasetFactory = DatasetFactoryEx::createInsertOrderPreservingDataset;
+
+        Dataset expectedDataset = createDataset();
+        RDFDataMgr.read(expectedDataset, referencePath.toString());
 
         long fileLengthTotal = Files.size(testPath);
 
@@ -110,16 +134,22 @@ public abstract class RecordReaderRdfTestBase<T> {
          * Ensure to start the loop from 1 for full testing. Takes quite long.
          */
         // compare with target dataset
-        Dataset actualDataset = DatasetFactory.create();
+        Dataset actualDataset = createDataset();
 
         testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
                 .forEach(record -> accumulate(actualDataset, record));
-        logger.info("Dataset contains " + Iterators.size(actualDataset.listNames()) + " named graphs"); // - total contribs = " + totalContrib);
+        logger.info(String.format("Named graph counts expected/actual: %d/%d",
+                Iterators.size(expectedDataset.listNames()),
+                Iterators.size(actualDataset.listNames())));
+
+        logger.info(String.format("Quad counts expected/actual: %d/%d",
+                Iterators.size(expectedDataset.asDatasetGraph().find()),
+                Iterators.size(actualDataset.asDatasetGraph().find())));
 
         // compareDatasets(expectedDataset, actualDataset);
         boolean isIso = DatasetCompareUtils.isIsomorphic(
                 expectedDataset, actualDataset, true,
-                System.err);
+                System.err, ResultSetLang.SPARQLResultSetTSV);
 
         Assert.assertTrue("Datasets were not isomoprhic - see output above", isIso);
     }

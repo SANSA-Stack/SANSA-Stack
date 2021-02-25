@@ -398,8 +398,10 @@ public abstract class RecordReaderGenericBase<T>
 
             long exceed = rawPos - splitPos;
             boolean eofReached = exceed >= 0;
-            if (eofReached) {
-                logger.warn("Exceeded maximum boundary by " + exceed + " bytes");
+            if (eofReached && exceed > 0) {
+                // For encoded streams reads will usually not interrupt exactly at the
+                // split end - but for unencoded ones it should be exact
+                logger.warn("Exceeded maximum boundary by " + exceed + " bytes; should be harmless");
             }
             return eofReached;
         };
@@ -619,10 +621,10 @@ public abstract class RecordReaderGenericBase<T>
 
             // Path basePath = Paths.get("/mnt/LinuxData/tmp/");
 
-            Path prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.trig");
-            Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.trig");
-            Path bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.trig");
-            Path tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.trig");
+            Path prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.dat");
+            Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.dat");
+            Path bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.dat");
+            Path tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.dat");
             Files.copy(prefixStream, prefixFile);
             Files.copy(headStream, headFile);
             Files.copy(splitBoundedBodyStream, bodyFile);
