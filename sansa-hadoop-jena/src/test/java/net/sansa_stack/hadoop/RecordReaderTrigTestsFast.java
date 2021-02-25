@@ -1,21 +1,18 @@
-package net.sansa_stack.io.hadoop;
+package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
 import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset;
 import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.query.Dataset;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@Ignore
 @RunWith(Parameterized.class)
-// TODO Tag with @Category()
-public class RecordReaderTrigTestsSlow
+public class RecordReaderTrigTestsFast
     extends RecordReaderRdfTestBase<Dataset>
 {
     /**
@@ -23,23 +20,21 @@ public class RecordReaderTrigTestsSlow
      */
     @Parameterized.Parameters(name = "{index}: file {0} with {1} splits")
     public static Iterable<Object[]> data() {
+        // The map of test cases:
+        // Each file is mapped to the number of  min splits and max splits(both inclusive)
         Map<String, Range<Integer>> map = new LinkedHashMap<>();
 
-        // Slow test
-        map.put("../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2",
+        map.put("../sansa-rdf/sansa-rdf-common/src/test/resources/nato-phonetic-alphabet-example.trig",
                 Range.closed(1, 5));
 
-        return RecordReaderRdfTestBase.createParameters(map);
+        map.put("../sansa-rdf/sansa-rdf-common/src/test/resources/nato-phonetic-alphabet-example.trig.bz2",
+                Range.closed(1, 5));
+
+        return createParameters(map);
     }
 
-
-    public RecordReaderTrigTestsSlow(String file, int numSplits) {
+    public RecordReaderTrigTestsFast(String file, int numSplits) {
         super(file, numSplits);
-    }
-
-    @Override
-    protected void assertIsIsomorphic(Dataset expected, Dataset actual) {
-        DatasetCompareUtils.assertIsIsomorphicByGraph(expected, actual);
     }
 
     @Override

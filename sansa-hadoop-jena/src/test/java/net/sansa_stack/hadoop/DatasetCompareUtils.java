@@ -1,4 +1,4 @@
-package net.sansa_stack.io.hadoop;
+package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
@@ -8,9 +8,7 @@ import org.apache.jena.riot.ResultSetMgr;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.junit.Assert;
 
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.Set;
 
 // TODO Move this class to a better place - e.g. jena-sparql-api-utils

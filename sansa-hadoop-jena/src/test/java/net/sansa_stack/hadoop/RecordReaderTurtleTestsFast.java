@@ -1,4 +1,4 @@
-package net.sansa_stack.io.hadoop;
+package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
 import net.sansa_stack.hadoop.jena.rdf.turtle.FileInputFormatTurtleTriple;
@@ -32,7 +32,7 @@ public class RecordReaderTurtleTestsFast
         map.put("../sansa-query/sansa-query-tests/src/main/resources/sparql11/data-r2/basic/manifest.ttl",
                 Range.closed(1, 5));
 
-        return RecordReaderRdfTestBase.createParameters(map);
+        return createParameters(map);
     }
 
 

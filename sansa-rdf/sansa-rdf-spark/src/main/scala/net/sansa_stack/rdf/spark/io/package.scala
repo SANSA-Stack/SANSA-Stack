@@ -4,8 +4,7 @@ import java.io.ByteArrayOutputStream
 import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.FileInputFormatTrigDataset
-import net.sansa_stack.rdf.common.io.hadoop.trash.TrigFileInputFormatOld
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.Logging
@@ -122,7 +121,7 @@ package object io {
     } else if (oStr.startsWith("http") && !oStr.contains("^^")) { // URI
       NodeFactory.createURI(oStr)
     } else { // literal
-      var lit = oStr
+      val lit = oStr
 //      val idx = oStr.indexOf("^^")
 //      if (idx > 0) {
 //        val first = oStr.substring(0, idx)

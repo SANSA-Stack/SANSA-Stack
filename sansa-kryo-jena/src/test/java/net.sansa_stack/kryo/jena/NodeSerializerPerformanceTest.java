@@ -1,12 +1,9 @@
-package net.sansa_stack.rdf.common.kyro.jena;
+package net.sansa_stack.kryo.jena;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.base.Stopwatch;
-import net.sansa_stack.rdf.common.kryo.jena.GenericNodeSerializerCustom;
-import net.sansa_stack.rdf.common.kryo.jena.JenaKryoRegistratorLib;
-import net.sansa_stack.rdf.common.kryo.jena.ThriftUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.out.NodeFmtLib;
@@ -35,7 +32,6 @@ public class NodeSerializerPerformanceTest {
     static {
         JenaKryoRegistratorLib.registerNodeSerializers(kryo, new GenericNodeSerializerCustom());
     }
-
 
     public static Collection<Node> getNodes() {
         // Generate a sufficient number of nodes in order to avoid any caching issues

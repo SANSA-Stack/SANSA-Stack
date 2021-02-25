@@ -2,8 +2,8 @@ package net.sansa_stack.rdf.spark.io
 
 import java.net.URI
 
-import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.FileInputFormatTrigDataset
-import net.sansa_stack.rdf.common.io.hadoop.trash.TrigFileInputFormatOld
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
+import net.sansa_stack.hadoop.jena.trash.TrigFileInputFormatOld
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
 import org.apache.spark.sql.SparkSession
@@ -19,7 +19,7 @@ import scala.collection.JavaConverters._
  *
  *       to the config params.
  *
- * See [[net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset]] for supported
+ * See [[net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderTrigDataset]] for supported
  * hadoop config options.
  *
  *
