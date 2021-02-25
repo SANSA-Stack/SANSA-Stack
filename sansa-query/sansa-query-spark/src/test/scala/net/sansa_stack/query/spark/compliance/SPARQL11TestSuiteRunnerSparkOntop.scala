@@ -39,10 +39,14 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "iri01", // not supported in H2 transformation
 //        "md5-01", "md5-02", // The SI does not support IRIs as ORDER BY conditions
         "plus-1", "plus-2",
+        "tz", "timezone",
         "sha1-01", "sha1-02", // SHA1 is not supported in H2
         "sha512-01", "sha512-02", // SHA512 is not supported in H2
         "strdt01", "strdt02", "strdt03",
-        "strlang01", "strlang02", "strlang03").map(functionsManifest + _) ++
+        "strlang01", "strlang02", "strlang03",
+        "struuid01", "uuid01" // some tests that work on an empty model which we do not support in Spark query as the mappings would be empty (could be handled but
+        // most likely will never happen)
+      ).map(functionsManifest + _) ++
       // CONSTRUCT not supported yet
       Set("constructwhere01", "constructwhere02", "constructwhere03", // problem importing dataset
         "constructwhere04").map(constructManifest + _) ++
@@ -74,11 +78,6 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "subquery14").map(subqueryManifest + _)
   }
 
-  // some tests that work on an empty model which we do not support in Spark query as the mappings would be empty (could be handled but
-  // most likely will never happen)
-  functionsManifest + "struuid01", functionsManifest + "uuid01",
-  // timezone
-  functionsManifest + "tz", functionsManifest + "timezone",
 
   override def conf: SparkConf = {
     super.conf
