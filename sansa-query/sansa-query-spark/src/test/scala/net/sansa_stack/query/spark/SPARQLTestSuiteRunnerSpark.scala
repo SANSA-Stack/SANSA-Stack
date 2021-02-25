@@ -73,7 +73,7 @@ abstract class SPARQLTestSuiteRunnerSpark(testSuite: SPARQLQueryEvaluationTestSu
     // do some caching here to avoid reloading the same data
     if (data != previousModel) {
       // we drop the Spark database to remove all tables
-      spark.sql(s"DROP DATABASE IF EXISTS $db")
+      spark.sql(s"DROP DATABASE IF EXISTS $db CASCADE")
 
       // distribute on Spark
       triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)

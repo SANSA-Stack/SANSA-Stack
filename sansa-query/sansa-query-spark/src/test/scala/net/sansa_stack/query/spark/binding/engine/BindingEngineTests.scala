@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit
 
 import com.google.common.base.Stopwatch
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderTrigDataset
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
-import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.hadoop.fs.Path
 import org.apache.jena.query.{Dataset, DatasetFactory, QueryExecutionFactory, QueryFactory, ResultSetFactory}

@@ -5,8 +5,7 @@ import java.net.URI
 import com.ibm.sparktc.sparkbench.utils.GeneralFunctions._
 import com.ibm.sparktc.sparkbench.utils.{SaveModes, SparkBenchException}
 import com.ibm.sparktc.sparkbench.workload.{Workload, WorkloadDefaults}
-import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.FileInputFormatTrigDataset
-import net.sansa_stack.rdf.common.io.hadoop.trash.TrigFileInputFormatOld
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset

@@ -4,7 +4,7 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
-import net.sansa_stack.rdf.spark.partition.core.{RdfPartitionUtilsSpark, SparkTableGenerator}
+import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartitionUtilsSpark, SparkTableGenerator}
 import net.sansa_stack.rdf.spark.partition.semantic.SemanticRdfPartitionUtilsSpark
 import net.sansa_stack.rdf.spark.utils.{Logging, SparkSessionUtils}
 import org.aksw.commons.sql.codec.api.SqlCodec
@@ -96,9 +96,9 @@ package object partition extends Logging {
 //          escapeIdentifiers
 //        )
 //
-////        triplesMaps.foreach(tm =>
-////          RDFDataMgr.write(System.err, model, RDFFormat.TURTLE_PRETTY)
-////        )
+// //        triplesMaps.foreach(tm =>
+// //          RDFDataMgr.write(System.err, model, RDFFormat.TURTLE_PRETTY)
+// //        )
 //
 //        log.info(s"Partitioning: Created table ${tableName} with R2RML model of ${triplesMaps.size} triples maps")
 //        // val tableName = tableNaming.apply(p)
@@ -113,7 +113,9 @@ package object partition extends Logging {
       val targetDatabase = if (sparkSession.catalog.currentDatabase == "default") None
         else Option(sparkSession.catalog.currentDatabase)
 
-      new SparkTableGenerator(sparkSession, targetDatabase)
+      val useHive: Boolean = targetDatabase.isDefined
+
+      new SparkTableGenerator(sparkSession, targetDatabase, BlankNodeStrategy.Table, useHive)
         .createAndRegisterSparkTables(partitioner, partitioning, tableNaming)
 
       R2rmlMappedSparkSession(sparkSession, mappingsModel)
