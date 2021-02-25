@@ -214,7 +214,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val contains = triples.contains(Some(subject), Some(predicate))
 
-    assertTrue(contains)
+    assert(contains)
   }
 
   test("checks if a triple is present in the RDF graph should result true") {
@@ -225,7 +225,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val contains = triples.contains(triple)
 
-    assertTrue(contains)
+    assert(contains)
   }
 
   test("checks if any of the triples in an RDF graph are also contained in this RDF graph should result true") {
@@ -250,7 +250,7 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val containsAny = triples.containsAny(other)
 
-    assertTrue(containsAny)
+    assert(containsAny)
   }
 
   test("checks if all of the statements in an RDF graph are also contained in this RDF graph should result true") {
@@ -264,6 +264,6 @@ class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
 
     val containsAll = triples.containsAll(other)
 
-    assertTrue(containsAll)
+    assert(containsAll)
   }
 }
