@@ -3,6 +3,7 @@ package net.sansa_stack.rdf.common.io.hadoop;
 import com.google.common.collect.Range;
 import net.sansa_stack.rdf.common.io.hadoop.rdf.trig.RecordReaderTrigDataset;
 import net.sansa_stack.rdf.common.io.hadoop.rdf.turtle.FileInputFormatTurtleTriple;
+import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.graph.Triple;
@@ -24,7 +25,13 @@ public class RecordReaderTurtleTestsFast
     @Override
     public void configureHadoop(Configuration conf) {
         super.configureHadoop(conf);
-        conf.set(RecordReaderTrigDataset.PROBE_RECORD_COUNT_KEY, "20");
+        conf.set(RecordReaderTrigDataset.PROBE_RECORD_COUNT_KEY, "10");
+    }
+
+    @Override
+    protected Dataset createDataset() {
+        // return super.createDataset();
+        return DatasetFactoryEx.createInsertOrderPreservingDataset();
     }
 
     @Override
@@ -49,10 +56,10 @@ public class RecordReaderTurtleTestsFast
         Map<String, Range<Integer>> map = new LinkedHashMap<>();
 
         map.put("../../sansa-rdf/sansa-rdf-common/src/test/resources/nato-phonetic-alphabet-example.ttl",
-                Range.closed(1, 5));
+                Range.closed(1, 10));
 
-//        map.put("../../sansa-query/sansa-query-tests/src/main/resources/sparql11/data-r2/basic/manifest.ttl",
-//                Range.closed(1, 5));
+        map.put("../../sansa-query/sansa-query-tests/src/main/resources/sparql11/data-r2/basic/manifest.ttl",
+                Range.closed(1, 5));
 
         return RecordReaderRdfTestBase.createParameters(map);
     }

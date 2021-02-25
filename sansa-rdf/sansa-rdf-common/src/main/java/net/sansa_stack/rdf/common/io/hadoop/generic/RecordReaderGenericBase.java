@@ -422,7 +422,10 @@ public abstract class RecordReaderGenericBase<T>
         Seekable tailNav = tailBuffer.newChannel();
 
         long tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
-        long tailBytes = tmp < 0 ? 0 : Ints.checkedCast(tmp);
+        // If no record is found in the tail then take all its known bytes because
+        // we assume we hit the last few splits of the stream and there simply are no further record
+        // starts anymore
+        long tailBytes = tmp < 0 ? tailBuffer.getKnownDataSize() : Ints.checkedCast(tmp);
 
         // Set the stream to the start of the split and get the head buffer
         // Note that we will use the stream in its state to read the body part

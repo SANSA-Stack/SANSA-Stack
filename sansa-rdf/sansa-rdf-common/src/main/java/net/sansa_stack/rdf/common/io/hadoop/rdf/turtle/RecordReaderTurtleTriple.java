@@ -20,14 +20,35 @@ public class RecordReaderTurtleTriple
     public static String MAX_RECORD_LENGTH_KEY = "mapreduce.input.trigrecordreader.record.maxlength";
     public static String PROBE_RECORD_COUNT_KEY = "mapreduce.input.trigrecordreader.probe.count";
 
-    protected static final Pattern turtlePattern = Pattern.compile(".", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); //"@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    /**
+     * Syntatic constructs in Turtle can start with:
+     *
+     * TODO Anything missing?
+     *
+     * <ul>
+     *   <li>base / @base</li>
+     *   <li>prefix / @prefix</li>
+     *   <li>@lt;foo;&gt; - an IRI</li>
+     *   <li>[  ] - a blank node</li>
+     *   <li>foo: - a CURIE</li>
+     * </ul>
+     *
+     */
+    protected static final Pattern turtleRecordStartPattern = Pattern.compile(
+            String.join("|",
+                    "@?base",
+                    "@?prefix",
+                    "<[^>]*>",
+                    "\\[",
+                    "\\S*:"),
+            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     public RecordReaderTurtleTriple() {
         super(
                 MIN_RECORD_LENGTH_KEY,
                 MAX_RECORD_LENGTH_KEY,
                 PROBE_RECORD_COUNT_KEY,
-                turtlePattern,
+                turtleRecordStartPattern,
                 Lang.TURTLE);
     }
 
