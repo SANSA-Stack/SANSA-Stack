@@ -17,15 +17,14 @@ import org.semanticweb.owlapi.model.OWLOntology
  * @author Lorenz Buehmann
  */
 class QueryEngineFactoryOntop(spark: SparkSession)
-  extends QueryEngineFactoryBase(spark) {
+  extends QueryEngineFactoryBase(spark, new RdfPartitionerComplex()) {
 
+  // partitioner: RdfPartitioner[RdfPartitionStateDefault],
   override protected def createWithPartitioning(triples: RDD[graph.Triple],
-                                                partitioner: RdfPartitioner[RdfPartitionStateDefault],
                                                 explodeLanguageTags: Boolean,
                                                 sqlCodec: SqlCodec,
                                                 escapeIdentifiers: Boolean): QueryExecutionFactorySpark = {
     super.createWithPartitioning(triples,
-      new RdfPartitionerComplex(),
       explodeLanguageTags = true,
       SqlCodecUtils.createSqlCodecDefault,
       escapeIdentifiers = true)

@@ -2,7 +2,8 @@ package net.sansa_stack.rdf.spark.io
 
 import java.net.URI
 
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
+import net.sansa_stack.hadoop.jena.trash.TrigFileInputFormatOld
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
 import org.apache.spark.sql.SparkSession
@@ -16,15 +17,10 @@ import scala.collection.JavaConverters._
  *
  * {{{spark.hadoop.}}}
  *
- * to the config params.
+ *       to the config params.
  *
- * Currently, we do support
- * {{{
- * mapreduce.input.trigrecordreader.record.maxlength
- * mapreduce.input.trigrecordreader.record.minlength
- * mapreduce.input.trigrecordreader.probe.count
- * mapreduce.input.trigrecordreader.prefixes.maxlength
- * }}}
+ * See [[net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderTrigDataset]] for supported
+ * hadoop config options.
  *
  *
  * @author Lorenz Buehmann
@@ -85,7 +81,7 @@ object TrigReader {
         // hadoopConf.set("mapred.max.split.size", "10000321")
         // hadoopConf.set("mapred.min.split.size", "10000321")
 
-        val rdd = spark.sparkContext.newAPIHadoopFile(config.in.getPath, classOf[TrigFileInputFormat],
+        val rdd = spark.sparkContext.newAPIHadoopFile(config.in.getPath, classOf[FileInputFormatTrigDataset],
           classOf[LongWritable], classOf[Dataset], hadoopConf)
 
         config.mode match {
