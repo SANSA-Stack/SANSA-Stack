@@ -421,7 +421,7 @@ public abstract class RecordReaderGenericBase<T>
         BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
         Seekable tailNav = tailBuffer.newChannel();
 
-        long tmp = skipOverNextRecord(tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
+        long tmp = skipToNthRecord(3, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
         // If no record is found in the tail then take all its known bytes because
         // we assume we hit the last few splits of the stream and there simply are no further record
         // starts anymore
@@ -500,7 +500,7 @@ public abstract class RecordReaderGenericBase<T>
 
         int headBytes = splitStart == 0
                 ? 0
-                : Ints.checkedCast(skipOverNextRecord(headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
+                : Ints.checkedCast(skipToNthRecord(3, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
 
         // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
@@ -727,7 +727,8 @@ public abstract class RecordReaderGenericBase<T>
      * @param prober
      * @return
      */
-    long skipOverNextRecord(
+    long skipToNthRecord(
+            int n,
             Seekable nav,
             long splitStart,
             long absProbeRegionStart,
@@ -741,8 +742,7 @@ public abstract class RecordReaderGenericBase<T>
         //   the *actual* available amount of data may be much less
         long availableDataRegion = absDataRegionEnd - absProbeRegionStart;
         long nextProbePos = absProbeRegionStart;
-        int i = 0;
-        while (i < 2) {
+        for (int i = 0; i < n; ++i) {
             long candidatePos = findNextRecord(recordStartPattern, nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, posValidator, prober);
             if (candidatePos < 0) {
                 // If there is more than maxRecordLength data available then
@@ -765,13 +765,13 @@ public abstract class RecordReaderGenericBase<T>
 
                 // Retain best found candidate position
                 // effectiveRecordRangeEnd = dataRegionEnd
-                i = 666; // break
+                break;
             } else {
                 result = candidatePos;
-                if (i == 0) {
+                if (i + 1 < n) {
+                    // If not in the last iteration then update the probe position
                     nextProbePos = candidatePos + minRecordLength;
                 }
-                i += 1;
             }
         }
 
