@@ -1,7 +1,7 @@
 package net.sansa_stack.inference.flink.conformance
 
 import net.sansa_stack.inference.flink.forwardchaining.ForwardRuleReasoner
-import net.sansa_stack.rdf.common.kryo.jena.{DefaultNodeSerializer, TripleSerializer}
+import net.sansa_stack.rdf.common.kryo.jena.TripleSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration
 import org.apache.flink.test.util.MiniClusterWithClientResource

@@ -1,7 +1,6 @@
 package net.sansa_stack.rdf.spark.io
 
 import com.esotericsoftware.kryo.Kryo
-import net.sansa_stack.rdf.common.kryo.jena.JenaKryoRegistratorLib
 import org.apache.spark.serializer.KryoRegistrator
 
 /**
@@ -11,6 +10,12 @@ class JenaKryoRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
 
     JenaKryoRegistratorLib.registerClasses(kryo);
+
+    HashMultimapSerializer.registerSerializers(kryo)
+
+    // Partitioning
+    kryo.register(classOf[Nothing])
+    kryo.register(classOf[Array[Nothing]])
 
     kryo.register(classOf[scala.collection.mutable.WrappedArray.ofRef[_]])
   }
