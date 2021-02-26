@@ -86,9 +86,6 @@ abstract class SPARQL11TestSuiteRunnerSpark
     spark.catalog.listTables().collect().foreach(t => {
       val b = spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}")
     })
-    spark.catalog.listTables(db).collect().foreach(t => {
-      val b = spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}")
-    })
 
     // distribute on Spark
     val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
