@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.compliance
 
 import scala.collection.JavaConverters._
-
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.Query
@@ -10,9 +9,9 @@ import org.apache.jena.sparql.resultset.SPARQLResult
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{ConfigMap, Suite}
-
 import net.sansa_stack.query.spark.api.domain.{QueryEngineFactory, QueryExecutionFactorySpark}
 import net.sansa_stack.query.tests.W3CConformanceSPARQLQueryEvaluationTestSuiteRunner
+import org.aksw.commons.sql.codec.util.SqlCodecUtils
 
 /**
  * SPARQL 1.1 test suite runner on Apache Spark.
@@ -69,35 +68,37 @@ abstract class SPARQL11TestSuiteRunnerSpark
     _spark = null
   }
 
+  val sqlEscaper = SqlCodecUtils.createSqlCodecForApacheSpark()
+
   def getEngineFactory: QueryEngineFactory
 
   lazy val engineFactory: QueryEngineFactory = getEngineFactory
 
   val db = "TEST"
 
-  var previousModel: Model = _
-  var triplesRDD: RDD[Triple] = _
   var qef: QueryExecutionFactorySpark = _
 
+  override def loadData(datasetURL: String): Model = {
+    val data = super.loadData(datasetURL)
+
+    // we drop the Spark database to remove all tables from previous loaded data
+    spark.sql(s"DROP DATABASE IF EXISTS $db")
+    spark.catalog.listTables().foreach(t => spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}"))
+    spark.catalog.listTables(db).foreach(t => spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}"))
+
+    // distribute on Spark
+    val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
+
+    // we create a Spark database here to keep the implicit partitioning separate
+    spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
+    spark.sql(s"USE $db")
+
+    qef = engineFactory.create(triplesRDD)
+
+    data
+  }
+
   override def runQuery(query: Query, data: Model): SPARQLResult = {
-    // do some caching here to avoid reloading the same data
-    if (data != previousModel) {
-      // we drop the Spark database to remove all tables
-      spark.sql(s"DROP DATABASE IF EXISTS $db")
-
-      // distribute on Spark
-      triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
-
-      // we create a Spark database here to keep the implicit partitioning separate
-
-      spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
-      spark.sql(s"USE $db")
-
-      qef = engineFactory.create(triplesRDD)
-
-      previousModel = data
-    }
-
     val qe = qef.createQueryExecution(query)
 
     // produce result based on query type

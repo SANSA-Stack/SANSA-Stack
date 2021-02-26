@@ -272,7 +272,7 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     ReadAnything.read(resultFileURL)
   }
 
-  private def loadData(datasetURL: String): Model = {
+  def loadData(datasetURL: String): Model = {
     println(s"loading data from $datasetURL")
     import java.io.IOException
     import java.net.MalformedURLException
