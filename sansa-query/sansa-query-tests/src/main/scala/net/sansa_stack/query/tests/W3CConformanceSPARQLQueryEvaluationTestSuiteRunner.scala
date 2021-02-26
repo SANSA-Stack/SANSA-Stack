@@ -99,6 +99,8 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
 
         if (isIgnored(testCase)) {
           ignore(s"$testName: $description") {}
+        } else if (data.isEmpty) {
+          fail("cannot handle empty data model - please add test to ignored tests")
         } else {
           // test starts here
           test(s"$testName: $description") {

@@ -68,8 +68,6 @@ abstract class SPARQL11TestSuiteRunnerSpark
     _spark = null
   }
 
-  val sqlEscaper = SqlCodecUtils.createSqlCodecForApacheSpark()
-
   def getEngineFactory: QueryEngineFactory
 
   lazy val engineFactory: QueryEngineFactory = getEngineFactory
@@ -83,18 +81,23 @@ abstract class SPARQL11TestSuiteRunnerSpark
 
     // we drop the Spark database to remove all tables from previous loaded data
     spark.sql(s"DROP DATABASE IF EXISTS $db")
-    spark.catalog.listTables().collect().foreach(t => {
-      val b = spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}")
+    val sqlEscaper = SqlCodecUtils.createSqlCodecForApacheSpark()
+    spark.catalog.listDatabases().collect().foreach(db => {
+      spark.catalog.listTables(db.name).collect().foreach(t => {
+        val b = spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}")
+      })
     })
 
-    // distribute on Spark
-    val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
+    // we cannot handle empty data
+    if (!data.isEmpty) {
+      // distribute on Spark
+      val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
 
-    // we create a Spark database here to keep the implicit partitioning separate
-    spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
-    spark.sql(s"USE $db")
-
-    qef = engineFactory.create(triplesRDD)
+      // we create a Spark database here to keep the implicit partitioning separate
+      spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
+      spark.sql(s"USE $db")
+      qef = engineFactory.create(triplesRDD)
+    }
 
     data
   }
