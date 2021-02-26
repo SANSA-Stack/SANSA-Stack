@@ -1,4 +1,4 @@
-# This document contains a default graph and two named graphs.
+# This document contains a set of named graphs for testing
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix dc: <http://purl.org/dc/terms/> .

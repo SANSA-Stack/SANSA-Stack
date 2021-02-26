@@ -1,0 +1,37 @@
+# This document contains a set of triples for testing
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+       _:a foaf:name "Alfa" .
+       _:a foaf:mbox <mailto:alfa@work.example.org> .
+
+       _:b foaf:name "Bravo" .
+       _:b foaf:mbox <mailto:bravo@oldcorp.example.org> .
+       _:b foaf:knows _:a .
+
+       _:c foaf:name "Charlie" .
+       _:c foaf:mbox <mailto:charlie@work.example.org> .
+
+       _:d foaf:name "Delta" .
+       _:d foaf:mbox <mailto:delta@work.example.org> .
+
+       _:e foaf:name "Echo" .
+       _:e foaf:mbox <mailto:echo@work.example.org> .
+
+       _:f foaf:name "Foxtrot" .
+       _:f foaf:mbox <mailto:foxtrot@work.example.org> .
+
+       _:g foaf:name "Golf" .
+       _:g foaf:mbox <mailto:golf@oldcorp.example.org> .
+       _:g foaf:knows _:b .
+
+       _:h foaf:name "Hotel" .
+       _:h foaf:mbox <mailto:hotel@oldcorp.example.org> .
+
+       _:i foaf:name "India" .
+       _:i foaf:mbox <mailto:india@oldcorp.example.org> .
+       _:i foaf:knows _:b .
+
+

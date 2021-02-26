@@ -1,7 +1,6 @@
 package net.sansa_stack.rdf.common.io.hadoop
 
 import java.io.{ Closeable, InputStream, IOException }
-import java.util
 import java.util.concurrent.{ SynchronousQueue, TimeUnit }
 import java.util.concurrent.atomic.AtomicLong
 
@@ -45,7 +44,7 @@ class RiotFileInputFormat extends CombineFileInputFormat[LongWritable, Triple] {
 
   override def isSplitable(context: JobContext, file: Path): Boolean = false
 
-  override def listStatus(job: JobContext): util.List[FileStatus] =
+  override def listStatus(job: JobContext): java.util.List[FileStatus] =
     super.listStatus(job).asScala.filter(fs => RDFLanguages.filenameToLang(fs.getPath.getName) != null).asJava
 
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[LongWritable, Triple] =
