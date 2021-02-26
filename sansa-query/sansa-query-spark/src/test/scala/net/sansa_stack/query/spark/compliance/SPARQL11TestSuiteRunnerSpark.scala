@@ -83,8 +83,12 @@ abstract class SPARQL11TestSuiteRunnerSpark
 
     // we drop the Spark database to remove all tables from previous loaded data
     spark.sql(s"DROP DATABASE IF EXISTS $db")
-    spark.catalog.listTables().foreach(t => spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}"))
-    spark.catalog.listTables(db).foreach(t => spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}"))
+    spark.catalog.listTables().foreach(t => {
+      val b = spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}")
+    })
+    spark.catalog.listTables(db).foreach(t => {
+      val b = spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}")
+    })
 
     // distribute on Spark
     val triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
