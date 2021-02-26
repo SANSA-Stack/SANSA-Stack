@@ -248,7 +248,7 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     }
   }
 
-  private def readQueryString(queryFileURL: String): String = {
+  def readQueryString(queryFileURL: String): String = {
     println(s"loading query from $queryFileURL")
     val is = StreamManager.get().open(queryFileURL)
     withResources[AutoCloseable, String](is)(_ => {

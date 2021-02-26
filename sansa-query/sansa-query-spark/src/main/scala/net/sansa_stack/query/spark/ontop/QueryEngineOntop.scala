@@ -159,7 +159,7 @@ class QueryEngineOntop(val spark: SparkSession,
   }
 
   // get the JDBC metadata from the Spark tables
-  private val jdbcMetaData = spark.catalog.listTables().collect().map(t => {
+  val jdbcMetaData: Map[String, String] = spark.catalog.listTables().collect().map(t => {
     val fields = spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f => sqlEscaper.escapeColumnName(f.name)).mkString(",")
     val keyCondition = s"PRIMARY KEY ($fields)"
     (t.name,

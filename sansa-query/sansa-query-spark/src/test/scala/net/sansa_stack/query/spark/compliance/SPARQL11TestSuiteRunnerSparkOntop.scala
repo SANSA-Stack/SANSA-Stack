@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.compliance
 
 import java.util.Objects
-
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.resultset.SPARQLResult
@@ -9,11 +8,14 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkConf
 import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
-
 import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
 import net.sansa_stack.query.spark.ontop.KryoUtils.enableLoggingToFile
-import net.sansa_stack.query.spark.ontop.{KryoUtils, QueryEngineFactoryOntop}
+import net.sansa_stack.query.spark.ontop.{JDBCDatabaseGenerator, KryoUtils, QueryEngineFactoryOntop, QueryExecutionFactorySparkOntop}
 import net.sansa_stack.query.tests.SPARQLQueryEvaluationTest
+
+import java.io.{File, FileOutputStream}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 
 
 /**
@@ -78,7 +80,6 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "subquery14").map(subqueryManifest + _)
   }
 
-
   override def conf: SparkConf = {
     super.conf
       .set("spark.sql.crossJoin.enabled", "true")
@@ -95,9 +96,28 @@ class SPARQL11TestSuiteRunnerSparkOntop
 
 //  KryoUtils.kryoLoggingEnabled = true
 
+  val writeFailedTestMetatData: Boolean = true
+
   override def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
 //    enableLoggingToFile(s"/tmp/kryo/kryo-trace-${testCase.name}.log")
-    super.runTest(testCase, data)
+    try {
+      super.runTest(testCase, data)
+    } catch {
+      case e: Exception =>
+        if (writeFailedTestMetatData) {
+          val ontop = qef.asInstanceOf[QueryExecutionFactorySparkOntop].ontop
+          val id = testCase.name.replace(" ", "_")
+          val dir = System.getProperty("java.io.tmpdir")
+          val mappings = ontop.mappingsModel
+          mappings.write(new FileOutputStream(Paths.get(dir, s"$id.ttl").toFile), "TURTLE")
+          val jdbcCommand = JDBCDatabaseGenerator.generateJdbcCommand(ontop.jdbcMetaData)
+          val queryString = readQueryString(testCase.queryFile)
+          Files.write(Paths.get(dir, s"$id.sql"), jdbcCommand.getBytes(StandardCharsets.UTF_8))
+          Files.write(Paths.get(dir, s"$id.rq"), queryString.getBytes(StandardCharsets.UTF_8))
+        }
+
+        throw e
+    }
   }
 
   override def runQuery(query: Query, data: Model): SPARQLResult = {
