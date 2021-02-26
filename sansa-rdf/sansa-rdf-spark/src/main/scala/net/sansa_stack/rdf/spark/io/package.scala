@@ -2,14 +2,13 @@ package net.sansa_stack.rdf.spark
 
 import java.io.ByteArrayOutputStream
 import java.util.Collections
-
 import com.typesafe.config.{Config, ConfigFactory}
 import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.Logging
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
-import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseWrapper
+import org.aksw.jena_sparql_api.utils.io.{WriterStreamRDFBaseUtils, WriterStreamRDFBaseWrapper}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.graph.{Graph, Node, NodeFactory, Triple}
@@ -19,7 +18,7 @@ import org.apache.jena.hadoop.rdf.io.output.QuadsOutputFormat
 import org.apache.jena.hadoop.rdf.types.{QuadWritable, TripleWritable}
 import org.apache.jena.query.{Dataset => JenaDataset}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter}
+import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter, SyntaxLabels}
 import org.apache.jena.riot.writer.WriterStreamRDFBase
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RDFLanguages}
 import org.apache.jena.shared.PrefixMapping
@@ -385,17 +384,26 @@ package object io {
         val dataBlocks = quads
           .mapPartitions(p => {
             if (p.hasNext) {
+              // Look up the string here in order to avoid having to serialize RDFFormat
               val rdfFormat = RDFLanguagesEx.findRdfFormat(rdfFormatStr)
 
               val baos = new ByteArrayOutputStream()
               val rawWriter = StreamRDFWriter.getWriterStream(baos, rdfFormat, null)
+
+              // Retain blank nodes as given
+              if (rawWriter.isInstanceOf[WriterStreamRDFBase]) {
+                WriterStreamRDFBaseUtils.setNodeToLabel(rawWriter.asInstanceOf[WriterStreamRDFBase], SyntaxLabels.createNodeToLabelAsGiven())
+              }
+
               val writer = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
                 prefixMappingBc.value, rawWriter.asInstanceOf[WriterStreamRDFBase])
 
+              writer.start
               while (p.hasNext) {
                 val ds: JenaDataset = p.next
                 StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), writer)
               }
+              writer.finish
 
               Collections.singleton(baos.toString("UTF-8").trim).iterator().asScala
             } else {
@@ -403,9 +411,9 @@ package object io {
             }
           })
 
-        // If there are prefixes then serialize them and prepend
-        // their string to the output
-
+        // If there are prefixes then serialize them into their own partition and prepend them to all
+        // the other serialized data partitions.
+        // Note that this feature is unstable as it relies on spark retaining order of partitions (which so far it does)
         val allBlocks: RDD[String] =
           if (prefixStr != null) {
             val prefixRdd = quads.sparkContext.parallelize(Seq(prefixStr))

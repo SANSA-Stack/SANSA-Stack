@@ -32,6 +32,7 @@ object RddOfDatasetOps {
    */
   def groupNamedGraphsByGraphIri(
                                   rdd: RDD[_ <: Dataset],
+                                  distinct: Boolean = true,
                                   sortGraphsByIri: Boolean = false,
                                   numPartitions: Int = 0): RDD[Dataset] = {
     import collection.JavaConverters._
@@ -41,9 +42,13 @@ object RddOfDatasetOps {
       .flatMap(ds => ds.listNames.asScala.map(iri => (iri, ds.getNamedModel(iri))))
 
     var intermediateRdd: RDD[(String, Model)] = graphNameAndModel
-      .reduceByKey((g1, g2) => {
-        g1.add(g2); g1
+
+    if (distinct) {
+     intermediateRdd = intermediateRdd.reduceByKey((g1, g2) => {
+        g1.add(g2);
+        g1
       })
+    }
 
     if (numPartitions > 0) {
       if (sortGraphsByIri) {

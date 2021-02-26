@@ -1,21 +1,23 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
-import java.nio.file.{Files, Paths}
-import java.util.concurrent.TimeUnit
-
 import com.google.common.base.Stopwatch
 import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
-import net.sansa_stack.spark.cli.cmd.{CmdSansaTrigDistinct, CmdSansaTrigQuery}
+import net.sansa_stack.spark.cli.cmd.{CmdSansaTrigMerge, CmdSansaTrigQuery}
 import org.aksw.commons.io.util.StdIo
-import org.aksw.jena_sparql_api.utils.io.StreamRDFDeferred
+import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
+import org.aksw.jena_sparql_api.utils.io.{StreamRDFDeferred, WriterStreamRDFBaseUtils}
 import org.apache.jena.query.Dataset
-import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter}
-import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
+import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter, SyntaxLabels}
+import org.apache.jena.riot.writer.WriterStreamRDFBase
+import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.shared.PrefixMapping
 import org.apache.jena.shared.impl.PrefixMappingImpl
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
+
+import java.nio.file.{Files, Paths}
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -26,7 +28,7 @@ object CmdSansaTrigDistinctImpl {
   private val logger = LoggerFactory.getLogger(getClass)
   // JenaSystem.init()
 
-  def run(cmd: CmdSansaTrigDistinct): Integer = {
+  def run(cmd: CmdSansaTrigMerge): Integer = {
 
     import collection.JavaConverters._
 
@@ -84,29 +86,39 @@ object CmdSansaTrigDistinctImpl {
         .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 
 
-    val effectiveRdd = RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd, cmd.sort, cmd.numPartitions)
+    val effectiveRdd = RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd, cmd.sort, cmd.distinct, cmd.numPartitions)
 
-    val rdfFormat = RDFFormat.TRIG_BLOCKS
-    val out = StdIo.openStdOutWithCloseShield
+    val outRdfFormat = RDFLanguagesEx.findRdfFormat(cmd.outFormat)
+      // RDFFormat.TRIG_BLOCKS
 
-    // val out = Files.newOutputStream(Paths.get("output.trig"), StandardOpenOption.WRITE, StandardOpenOption.CREATE)
-    // System.out
-    val coreWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, null)
-    val writer = new StreamRDFDeferred(coreWriter, true,
-      prefixes, cmd.deferOutputForUsedPrefixes, Long.MaxValue, null)
+    if (cmd.outFolder == null) {
 
-    writer.start
-    StreamRDFOps.sendPrefixesToStream(prefixes, writer)
+      val out = StdIo.openStdOutWithCloseShield
 
-    // val it = effectiveRdd.collect
-    val it = effectiveRdd.toLocalIterator
-    for (dataset <- it) {
-      StreamRDFOps.sendDatasetToStream(dataset.asDatasetGraph, writer)
+      // val out = Files.newOutputStream(Paths.get("output.trig"), StandardOpenOption.WRITE, StandardOpenOption.CREATE)
+      // System.out
+      val coreWriter = StreamRDFWriter.getWriterStream(out, outRdfFormat, null)
+
+      if (coreWriter.isInstanceOf[WriterStreamRDFBase]) {
+        WriterStreamRDFBaseUtils.setNodeToLabel(coreWriter.asInstanceOf[WriterStreamRDFBase], SyntaxLabels.createNodeToLabelAsGiven())
+      }
+
+      val writer = new StreamRDFDeferred(coreWriter, true,
+        prefixes, cmd.deferOutputForUsedPrefixes, Long.MaxValue, null)
+
+      writer.start
+      StreamRDFOps.sendPrefixesToStream(prefixes, writer)
+
+      // val it = effectiveRdd.collect
+      val it = effectiveRdd.toLocalIterator
+      for (dataset <- it) {
+        StreamRDFOps.sendDatasetToStream(dataset.asDatasetGraph, writer)
+      }
+      writer.finish
+      out.flush
+    } else {
+      effectiveRdd.saveAsFile(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
     }
-    writer.finish
-    out.flush
-
-
     // effectiveRdd.saveAsFile("outfile.trig.bz2", prefixes, RDFFormat.TRIG_BLOCKS)
 
     // effectiveRdd.coalesce(1)

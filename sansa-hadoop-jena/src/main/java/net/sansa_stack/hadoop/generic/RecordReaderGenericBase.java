@@ -62,12 +62,12 @@ import java.util.regex.Pattern;
  * <ul>
  *   <li>
  *     The <b>tail</b> region <b>always<b/> extends beyond the current split's end up to the <b>starting position</b>
- *     of the <b>second</b> record in the successor split. The first record of the successor split may actually
+ *     of the <b>third</b> record in the successor split. The first record of the successor split may actually
  *     be a continuation of a record on this split: If you condsider two quads separated by the split
  *     boundary such as ":g :s :p :o |splitboundary| :g :x :y :z" then the first record after the boundary
  *     still uses the graph :g and thus belongs to the graph record started in the current split.
  *   </li>
- *   <li>Likewise, the head region always - with one exception - starts at the <i>second</i> record in a split (because as mentioned, the first record may
+ *   <li>Likewise, the head region always - with one exception - starts at the <i>third</i> record in a split (because as mentioned, the first record may
  *   belong to the prior split. <b>Unless</b> it is the first split (identified by an absolute starting
  *   position of 0. Then the head region start at the beginning of the split).
  *   The length of the head region depends on the number of data was considered for verifying that the starting
@@ -407,12 +407,13 @@ public abstract class RecordReaderGenericBase<T>
         };
 
 
-        // Except for the first split, the first record in each split is skipped
-        // because it may belong to the last record of the previous split.
-        // So we need to read past the first record, then find the second record
-        // and then find probeRecordCount further records to validate the second one
-        // Hence we need to read up to (2 + probeRecordCount) * maxRecordLength bytes
-        long desiredExtraBytes = (2 + probeRecordCount) * maxRecordLength;
+        // Except for the first split, the first record may parse but incorrectly due to incompleteness,
+        // the second record may be wrongly connected to the incomplete record, so the third record should be safe.
+        // Once we find the start of the third record wethe
+        // then need to find probeRecordCount further records to validate the the starting position.
+        // Hence we need to read up to (3 + probeRecordCount) * maxRecordLength bytes
+        int skipRecordCount = 2;
+        long desiredExtraBytes = (skipRecordCount + probeRecordCount) * maxRecordLength;
 
         // Set the stream to the end of the split and get the tail buffer
         Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes);
@@ -421,7 +422,7 @@ public abstract class RecordReaderGenericBase<T>
         BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
         Seekable tailNav = tailBuffer.newChannel();
 
-        long tmp = skipToNthRecord(3, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
+        long tmp = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
         // If no record is found in the tail then take all its known bytes because
         // we assume we hit the last few splits of the stream and there simply are no further record
         // starts anymore
@@ -500,7 +501,7 @@ public abstract class RecordReaderGenericBase<T>
 
         int headBytes = splitStart == 0
                 ? 0
-                : Ints.checkedCast(skipToNthRecord(3, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
+                : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
 
         // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
@@ -717,8 +718,10 @@ public abstract class RecordReaderGenericBase<T>
     }
 
     /**
-     * Find the start of the *second* recard as seen from 'splitStart' (inclusive)
+     * Find the start of the nth record as seen from 'splitStart' (inclusive)
+     * Only returns a result different from -1 if the nth record is found.
      *
+     * @param n
      * @param nav
      * @param splitStart
      * @param absProbeRegionStart
@@ -767,8 +770,10 @@ public abstract class RecordReaderGenericBase<T>
                 // effectiveRecordRangeEnd = dataRegionEnd
                 break;
             } else {
-                result = candidatePos;
-                if (i + 1 < n) {
+                // If this is the last iteration set the result
+                if (i + 1 == n) {
+                    result = candidatePos;
+                } else {
                     // If not in the last iteration then update the probe position
                     nextProbePos = candidatePos + minRecordLength;
                 }
