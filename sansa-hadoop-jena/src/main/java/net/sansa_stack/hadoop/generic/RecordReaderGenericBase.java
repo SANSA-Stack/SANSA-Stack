@@ -3,6 +3,7 @@ package net.sansa_stack.hadoop.generic;
 import com.google.common.base.StandardSystemProperty;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.util.*;
+import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
 import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.aksw.jena_sparql_api.io.binseach.Seekable;
@@ -86,7 +87,7 @@ import java.util.regex.Pattern;
  * @author Claus Stadler
  * @author Lorenz Buehmann
  */
-public abstract class RecordReaderGenericBase<T>
+public abstract class RecordReaderGenericBase<U, G, A, T>
         extends RecordReader<LongWritable, T> // TODO use CombineFileInputFormat?
 {
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderGenericBase.class);
@@ -104,6 +105,7 @@ public abstract class RecordReaderGenericBase<T>
      */
     protected final Pattern recordStartPattern;
 
+    protected final Accumulating<U, G, A, T> accumulating;
 
     protected String baseIri;
     protected long maxRecordLength;
@@ -139,13 +141,15 @@ public abstract class RecordReaderGenericBase<T>
             String probeRecordCountKey,
             Pattern recordStartPattern,
             String baseIriKey,
-            String headerBytesKey) {
+            String headerBytesKey,
+            Accumulating<U, G, A, T> accumulating) {
         this.minRecordLengthKey = minRecordLengthKey;
         this.maxRecordLengthKey = maxRecordLengthKey;
         this.probeRecordCountKey = probeRecordCountKey;
         this.recordStartPattern = recordStartPattern;
         this.baseIriKey = baseIriKey;
         this.headerBytesKey = headerBytesKey;
+        this.accumulating = accumulating;
     }
 
     /**
@@ -218,7 +222,7 @@ public abstract class RecordReaderGenericBase<T>
         }
     }
 
-    public void initDatasetFlow() throws IOException {
+    public void initRecordFlow() throws IOException {
 
 
         // val sw = Stopwatch.createStarted()
@@ -226,7 +230,7 @@ public abstract class RecordReaderGenericBase<T>
 
         // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
 
-        Flowable<T> tmp = createDatasetFlow();
+        Flowable<T> tmp = createRecordFlow();
         datasetFlow = tmp.blockingIterable().iterator();
     }
 
@@ -241,8 +245,7 @@ public abstract class RecordReaderGenericBase<T>
      *                            Taken streams should be closed by the client code.
      * @return
      */
-    protected abstract Flowable<T> parse(Callable<InputStream> inputStreamSupplier);
-
+    protected abstract Flowable<U> parse(Callable<InputStream> inputStreamSupplier);
 
     /**
      * Seek to a given offset and prepare to read up to the 'end' position (exclusive)
@@ -335,7 +338,116 @@ public abstract class RecordReaderGenericBase<T>
         throw new RuntimeException("Unexpected close");
     }
 
-    protected Flowable<T> createDatasetFlow() throws IOException {
+    /**
+     * Flowable transform that skips the first n groups of a flowable
+     *
+     * @param skipGroupCount
+     * @param classifier
+     * @param <I>
+     * @param <O>
+     * @param <K>
+     * @return
+     */
+/*
+    public static <I, O, K> FlowableTransformer<I, O> skipGroups(long skipGroupCount, Function<? super I, ? extends K> classifier) {
+        return upstream -> {
+            long[] numGroupsSkipped = {0};
+            boolean[] firstItemSeen = {false};
+            Object[] lastSeenKey = {null};
+
+            upstream.filter(item -> {
+                boolean r;
+                if (numGroupsSkipped[0] >= skipGroupCount) {
+                    r = true;
+                } else {
+                    Object key = classifier.apply(item);
+                    if (!firstItemSeen[0]) {
+                        lastSeenKey[0] = key;
+                        firstItemSeen[0] = true;
+                    } else {
+                        boolean isEqual = Objects.equals(lastSeenKey, key);
+                        if (!isEqual) {
+                            ++numGroupsSkipped[0];
+                            lastSeenKey[0] = key;
+                        }
+                    }
+
+                    r = numGroupsSkipped[0] >= skipGroupCount;
+                }
+                return r;
+            });
+        };
+    }
+
+    public static <I, O, K> FlowableTransformer<I, O> takeGroups(long takeGroupCount, Function<? super I, ? extends K> classifier) {
+        return upstream -> {
+            long[] numGroupsTaken = {0};
+            boolean[] firstItemSeen = {false};
+            Object[] lastSeenKey = {null};
+
+            upstream.filter(item -> {
+                boolean r;
+                if (numGroupsTaken[0] >= takeGroupCount) {
+                    r = false;
+                } else {
+                    Object key = classifier.apply(item);
+                    if (!firstItemSeen[0]) {
+                        lastSeenKey[0] = key;
+                        firstItemSeen[0] = true;
+                    } else {
+                        boolean isEqual = Objects.equals(lastSeenKey, key);
+                        if (!isEqual) {
+                            ++numGroupsTaken[0];
+                            lastSeenKey[0] = key;
+                        }
+                    }
+
+                    r = numGroupsSkipped[0] >= skipGroupCount;
+                }
+                return r;
+            });
+        };
+    }
+*/
+
+    /**
+     * Modify a flow to perform aggregation of items
+     * into records according to specification
+     * The complex part here is to correctly combine the two flows:
+     *  - The first group of the splitAggregateFlow needs to be skipped as this in handled by the previous split's processor
+     *  - If there are no further groups in splitFlow then no items are emitted at all (because all items belong to s previous split)
+     *  - ONLY if the splitFlow owned at least one group: The first group in the tailFlow needs to be emitted
+     *
+     * @param isFirstSplit If true then the first record is included in the output; otherwise it is skipped
+     * @param splitFlow The flow of items obtained from the split
+     * @param tailItems The first set of group items after in the next split
+     * @return
+     */
+    protected Flowable<T> aggregate(boolean isFirstSplit, Flowable<U> splitFlow, List<U> tailItems) {
+        // We need to be careful to not return null as a flow item:
+        // FlowableOperatorSequentialGroupBy returns a stream of (key, accumulator) pairs
+        // Returning a null accumulator is ok as long it resides within the pair
+
+        Flowable<T> result = splitFlow
+                .concatWith(Flowable.fromIterable(tailItems))
+                .lift(FlowableOperatorSequentialGroupBy.create(
+                        accumulating::classify,
+                        (accNum, groupKey) -> !isFirstSplit && accNum == 0
+                                ? null
+                                : accumulating.createAccumulator(groupKey),
+                        accumulating::accumulate))
+                .compose(flowable -> isFirstSplit ? flowable : flowable.skip(1))
+                .map(e -> accumulating.accumulatedValue(e.getValue()));
+
+        List<T> tmp = result.toList().blockingGet();
+        result = Flowable.fromIterable(tmp);
+        return result;
+    }
+
+    protected Flowable<T> createRecordFlow() throws IOException {
+
+        String splitName = split.getPath().getName();
+        String splitId = splitName + ":" + splitStart + "+" + splitLength;
 
         // System.err.println(s"Processing split $absSplitStart: $splitStart - $splitEnd | --+$actualExtraBytes--> $dataRegionEnd")
 
@@ -358,10 +470,10 @@ public abstract class RecordReaderGenericBase<T>
 
         // Predicate<T> isNonEmptyDataset = t -> !isEmptyRecord(t);
 
-        Function<Seekable, Flowable<T>> parserHelper = seekable -> {
+        Function<Seekable, Flowable<U>> parseFromSeekable = seekable -> {
             Callable<InputStream> inSupp = () -> effectiveInputStreamSupp.apply(seekable);
 
-            Flowable<T> r = parse(inSupp);
+            Flowable<U> r = parse(inSupp);
             return r;
         };
 
@@ -374,7 +486,7 @@ public abstract class RecordReaderGenericBase<T>
             }
 
             // printSeekable(seekable)
-            long recordCount = parserHelper.apply(seekable)
+            long recordCount = parseFromSeekable.apply(seekable)
                     // .doOnError(t -> t.printStackTrace())
                     .take(probeRecordCount)
                     .count()
@@ -427,6 +539,19 @@ public abstract class RecordReaderGenericBase<T>
         // we assume we hit the last few splits of the stream and there simply are no further record
         // starts anymore
         long tailBytes = tmp < 0 ? tailBuffer.getKnownDataSize() : Ints.checkedCast(tmp);
+
+
+        // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
+        // Note, that these items may need to be aggregated with items from the current split - that's why we retain them as a list
+        tailNav.setPos(tailBytes);
+        List<U> tailItems = parseFromSeekable.apply(tailNav)
+                .lift(FlowableOperatorSequentialGroupBy.create(accumulating::classify, () -> (List<U>)new ArrayList(), Collection::add))
+                .map(Map.Entry::getValue)
+                .first(Collections.emptyList())
+                 // .firstElement()
+                .blockingGet();
+
+        logger.info(String.format("In split %s got %d tail items", splitId, tailItems.size()));
 
         // Set the stream to the start of the split and get the head buffer
         // Note that we will use the stream in its state to read the body part
@@ -499,7 +624,8 @@ public abstract class RecordReaderGenericBase<T>
         BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
         Seekable headNav = headBuffer.newChannel();
 
-        int headBytes = splitStart == 0
+        boolean isFirstSplit = splitStart == 0;
+        int headBytes = isFirstSplit
                 ? 0
                 : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
 
@@ -617,7 +743,7 @@ public abstract class RecordReaderGenericBase<T>
         boolean writeOutSegments = false;
 
         if (writeOutSegments) {
-            String splitName = split.getPath().getName();
+            // String splitName = split.getPath().getName();
 
             Path basePath = Paths.get(StandardSystemProperty.JAVA_IO_TMPDIR.value()).toAbsolutePath();
 
@@ -647,7 +773,7 @@ public abstract class RecordReaderGenericBase<T>
 
         Flowable<T> result = null;
         if (headBytes >= 0) {
-            result = parse(() -> fullStream);
+            result = aggregate(isFirstSplit, parse(() -> fullStream), tailItems);
 
             // val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
             // nav.setPos(effectiveRecordRangeStart - splitStart)
@@ -824,10 +950,9 @@ public abstract class RecordReaderGenericBase<T>
                 break;
             }
 
-            // Artificially create errors
-            // absPos += 5;
+            // Set the seekable to the found position ...
             seekable.setPos(absPos);
-
+            // .. which may reveal that we have actually reached the end
             isEndReached = seekable.isPosAfterEnd();
 
             if (!isEndReached) {
@@ -852,7 +977,7 @@ public abstract class RecordReaderGenericBase<T>
     @Override
     public boolean nextKeyValue() throws IOException {
         if (datasetFlow == null) {
-            initDatasetFlow();
+            initRecordFlow();
         }
 
         boolean result;

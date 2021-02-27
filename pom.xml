@@ -393,6 +393,13 @@
                 <version>${aksw-commons.version}</version>
             </dependency>
 
+            <!-- Framework for building nestable aggregators; used in SchemaMapper and RecordReaderGenericBase -->
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-collectors</artifactId>
+                <version>${aksw-commons.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.aksw.commons</groupId>
                 <artifactId>aksw-commons-io-utils</artifactId>
