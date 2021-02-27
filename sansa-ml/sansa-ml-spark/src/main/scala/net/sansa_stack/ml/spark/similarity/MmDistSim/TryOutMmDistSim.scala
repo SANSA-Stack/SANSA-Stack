@@ -8,9 +8,10 @@ import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{col, collect_list, collect_set, greatest, struct, udf}
+import org.apache.spark.sql.functions.{col, collect_list, collect_set, desc, greatest, struct, sum, udf}
 import org.apache.spark.sql.types.{DataType, DoubleType, FloatType, IntegerType, LongType, StringType, StructField, StructType}
 
+import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
@@ -111,7 +112,7 @@ object TryOutMmDistSim {
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
-    val res = sparqlFrame.transform(dataset).filter(col("movie__down_genre__down_film_genre_name") === "Superhero").limit(10000).cache() // TODO remove limit
+    val res = sparqlFrame.transform(dataset).cache() // TODO remove limit // .filter(col("movie__down_genre__down_film_genre_name") === "Superhero").limit(10000)
     res.show(false)
 
     /*
@@ -135,13 +136,15 @@ object TryOutMmDistSim {
     each entity has only one line
     also column names will encode feature type
      */
+
+    // specify column names
     val keyColumnNameString: String = "movie"
     val featureColumns: Seq[String] = List(res.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
     println(s"feature columns $featureColumns")
 
-    // val listOfCollectedDataframes = ListBuffer[DataFrame]()
+
+    // collaps features into arrays instead of having multiple rows
     var collectedDataFrame = res.select(keyColumnNameString).dropDuplicates().cache()
-    println("starting dataframe")
 
     for (currentFeatureColumnNameString <- featureColumns) {
       println(currentFeatureColumnNameString)
@@ -152,32 +155,82 @@ object TryOutMmDistSim {
       collectedDataFrame = collectedDataFrame.join(collectedTmpDf, keyColumnNameString)
     }
 
+    println(s"it total we have we have: ${collectedDataFrame.count()} elements")
+    collectedDataFrame = collectedDataFrame.sample(withReplacement = false, fraction = 0.01, seed = 504)
+    println(s"after sampling we have: ${collectedDataFrame.count()} elements")
+
     println(collectedDataFrame.schema)
+    collectedDataFrame.show(false)
 
-
-
+    /*
+    cross join for all pair similairity
+     */
     val tmpDf1 = collectedDataFrame.toDF(collectedDataFrame.columns.map(_ + "_1"): _*)
     val tmpDf2 = collectedDataFrame.toDF(collectedDataFrame.columns.map(_ + "_2"): _*)
 
     val crossJoinColumnNames: Seq[String] = tmpDf1.columns.zip(tmpDf2.columns).flatMap(t => Seq(t._1, t._2)).toSeq
 
+    // drop diagonal entries
+    // re order columns to have theim in pairs
     val crossJoinedDFs = tmpDf1.crossJoin(tmpDf2)
       .filter(!(col(crossJoinColumnNames(0)) === col(crossJoinColumnNames(1))))
       .select(crossJoinColumnNames.map(col(_)): _*)
       .cache()
     crossJoinedDFs.show(false)
 
-    var featureSimilarityScores: DataFrame = crossJoinedDFs.cache() // .select(crossJoinColumnNames(0), crossJoinColumnNames(1))
+    // dataframe we operate on for similairty calculation
+    var featureSimilarityScores: DataFrame = crossJoinedDFs.cache()
 
+    // udf for naive Jaccard index as first placeholder
     val similarityEstimation = udf( (a: mutable.WrappedArray[Any], b: mutable.WrappedArray[Any]) => {
-
       val intersectionCard = a.toSet.intersect(b.toSet).size.toDouble
       val unionCard = a.toSet.union(b.toSet).size.toDouble
       val res = if (unionCard > 0) intersectionCard / unionCard else 0.0
       res
     })
 
-    for (featureName <- featureColumns) {
+    // drop thresholds
+    val minSimThresholds = mutable.Map(featureColumns.map((cn: String) => Tuple2(cn, 0.0)).toMap.toSeq: _*)
+
+    // similairity column names
+    val similairtyColumns = featureColumns.map(_ + "_Similarity")
+    println(f"similairtyColumns:\n$similairtyColumns")
+
+    // these weights are user given or calculated
+    val importance: mutable.Map[String, Double] = mutable.Map(featureColumns.map((cn: String) => Tuple2(cn, 1.0)).toMap.toSeq: _*)
+    val reliability: mutable.Map[String, Double] = mutable.Map(featureColumns.map((cn: String) => Tuple2(cn, 1.0)).toMap.toSeq: _*)
+    val availability: mutable.Map[String, Double] = mutable.Map(featureColumns.map((cn: String) => Tuple2(cn, 1.0)).toMap.toSeq: _*)
+
+    // norm weights such that they sum up to one
+    def normWeights(mapWeights: mutable.Map[String, Double]): Map[String, Double] = {
+      val sum = mapWeights.map(_._2).reduce(_ + _)
+      assert(sum > 0)
+      mapWeights.map(kv => {(kv._1, kv._2/sum)}).toMap
+    }
+
+    // the normalized weight maps
+    val importanceNormed: Map[String, Double] = normWeights(importance)
+    val reliabilityNormed: Map[String, Double] = normWeights(reliability)
+    val availabilityNormed: Map[String, Double] = normWeights(availability)
+    println(f"importanceNormed:\n$importanceNormed")
+    println(f"reliabilityNormed:\n$reliabilityNormed")
+    println(f"availabilityNormed:\n$availabilityNormed")
+
+
+    val orderedFeatureColumnNamesByImportance: Seq[String] = ListMap(importanceNormed.toSeq.sortWith(_._2 > _._2): _*).map(_._1).toSeq
+    println(f"orderedFeatureColumnNamesByImportance:\n$orderedFeatureColumnNamesByImportance")
+
+
+    // TODO Temporal change
+    minSimThresholds("movie__down_genre__down_film_genre_name") = 0.01
+
+    println(f"min Similarity Thresholds:\n$minSimThresholds")
+
+    /*
+    Apply similairty score for pairs
+     */
+    println("Apply similairty score for pairs")
+    for (featureName <- orderedFeatureColumnNamesByImportance) {
       println(featureName)
       val fc1 = f"collect_set($featureName)_1"
       val fc2 = f"collect_set($featureName)_2"
@@ -188,17 +241,47 @@ object TryOutMmDistSim {
         .withColumn(
           scn,
         similarityEstimation(col(fc1), col(fc2))
-      )
-        // .filter(col(scn) > 0)
+      ).filter(col(scn) >= minSimThresholds(featureName))
     }
 
-    val similairtyColumns = featureColumns.map(_ + "_Similarity")
-
+    // drop columns where no similarity at all is given
+    featureSimilarityScores = featureSimilarityScores.filter(greatest(similairtyColumns.map(col): _*) > 0)
     featureSimilarityScores.limit(20).show(false)
 
-    featureSimilarityScores = featureSimilarityScores.filter(greatest(similairtyColumns.filter(_ != "movie__down_genre__down_film_genre_name_Similarity").map(col): _*) > 0)
+    // calculate overall similarity
 
-    featureSimilarityScores.limit(20).show(false)
+
+
+    // calculated weighted sum of all similairties
+    println("calculated weighted sum of all similairties")
+    for (featureColumn <- featureColumns) {
+      val similairtyColumn = featureColumn + "_Similarity"
+      featureSimilarityScores = featureSimilarityScores
+        .withColumn(
+          f"${similairtyColumn}_weighted",
+          col(similairtyColumn) * importanceNormed(featureColumn) * reliabilityNormed(featureColumn) * availabilityNormed(featureColumn)
+        )
+    }
+    featureSimilarityScores.show(false)
+    featureSimilarityScores = featureSimilarityScores
+      .withColumn("overallSimilarity", similairtyColumns.map(s => s + "_weighted")
+        .map(col).reduce(_ + _))
+
+    // select only needed columns
+    /* featureSimilarityScores = featureSimilarityScores.select(
+      featureSimilarityScores.columns(0),
+      featureSimilarityScores.columns(1),
+      featureSimilarityScores.columns.last
+    )
+     */
+
+    // order desc
+    println("order desc")
+    featureSimilarityScores = featureSimilarityScores.orderBy(desc(featureSimilarityScores.columns.last))
+
+    featureSimilarityScores.show(false)
+
+
   }
 }
 
