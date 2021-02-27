@@ -439,8 +439,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 .compose(flowable -> isFirstSplit ? flowable : flowable.skip(1))
                 .map(e -> accumulating.accumulatedValue(e.getValue()));
 
-        List<T> tmp = result.toList().blockingGet();
-        result = Flowable.fromIterable(tmp);
+//        List<T> tmp = result.toList().blockingGet();
+//        result = Flowable.fromIterable(tmp);
         return result;
     }
 
