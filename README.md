@@ -9,7 +9,7 @@ This project comprises the whole Semantic Analytics Stack (SANSA). At a glance, 
 * Ingesting RDF and OWL data in various formats into RDDs
 * Operators for working with RDDs and data frames of RDF data at various levels (triples, bindings, graphs, etc)
 * *Transformation* of RDDs to data frames and *partitioning* of RDDs into R2RML-mapped data frames
-* Distributed SPARQL querying over data R2RML-mapped data frame partitions using RDB2RDF engines (Sparqlify & Ontop)
+* Distributed SPARQL querying over R2RML-mapped data frame partitions using RDB2RDF engines (Sparqlify & Ontop)
 * Enrichment of RDDs with inferences
 * Application of machine learning algorithms
 
