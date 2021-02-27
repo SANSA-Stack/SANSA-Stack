@@ -85,30 +85,32 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     .groupBy(_.dataFile)
     .foreach { case (dataFile, tests) =>
       // load data
-      val data = loadData(dataFile)
-      data.setNsPrefix("", "http://www.example.org/")
-      println("Data:")
-      data.write(System.out, "Turtle")
+      // (we only have to load the data if there is at least one unignored test)
+      if (tests.exists(t => !isIgnored(t))) {
+        val data = loadData(dataFile)
+        data.setNsPrefix("", "http://www.example.org/")
+        println("Data:")
+        data.write(System.out, "Turtle")
 
-      tests.foreach(testCase => {
-        // get the relevant data from the test case
-        val queryFileURL = testCase.queryFile
-        val resultFileURL = testCase.resultsFile
-        val testName = testCase.name
-        val description = Option(testCase.description).getOrElse("")
+        tests.foreach(testCase => {
+          // get the relevant data from the test case
+          val queryFileURL = testCase.queryFile
+          val resultFileURL = testCase.resultsFile
+          val testName = testCase.name
+          val description = Option(testCase.description).getOrElse("")
 
-        if (isIgnored(testCase)) {
-          ignore(s"$testName: $description") {}
-        } else if (data.isEmpty) {
-          fail("cannot handle empty data model - please add test to ignored tests")
-        } else {
-          // test starts here
-          test(s"$testName: $description") {
-            runTest(testCase, data)
+          if (isIgnored(testCase)) {
+            ignore(s"$testName: $description") {}
+          } else if (data.isEmpty) {
+            fail("cannot handle empty data model - please add test to ignored tests")
+          } else {
+            // test starts here
+            test(s"$testName: $description") {
+              runTest(testCase, data)
+            }
           }
-        }
+        })
       }
-      )
     }
 
   def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {

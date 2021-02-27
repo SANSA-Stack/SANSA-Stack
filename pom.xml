@@ -73,7 +73,7 @@
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
-        <rdf4j.version>2.3.2</rdf4j.version>
+        <rdf4j.version>3.3.0</rdf4j.version>
 
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
