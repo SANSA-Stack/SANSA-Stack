@@ -118,9 +118,9 @@ object CmdSansaTrigMergeImpl {
       out.flush
     } else {
       if (cmd.outFile != null) {
-        effectiveRdd.saveAsSingleFile(cmd.outFile, new PrefixMappingImpl(), outRdfFormat, cmd.outFolder)
+        effectiveRdd.saveToFile(cmd.outFile, new PrefixMappingImpl(), outRdfFormat, cmd.outFolder)
       } else { // if (cmd.outFolder != null) {
-        effectiveRdd.saveAsFile(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
+        effectiveRdd.saveToFolder(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
       }
     }
 

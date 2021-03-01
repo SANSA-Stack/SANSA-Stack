@@ -6,6 +6,7 @@ import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
 import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
+import net.sansa_stack.rdf.spark.io.JenaDatasetWriter
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark.logger
@@ -332,13 +333,12 @@ package object io {
 
 
   /**
-   * TODO Update documentation: For Sansa 8.0 besides N-quads also trig and turtle should be supported;
-   *   but it needs to be tested / verified
+   * Adds methods to save RDDs of datasets to a folder or file.
    *
-   * Adds method `saveAsNQuadsFile` to an RDD[Quad] that allows to write N-Quads files.
    */
-  implicit class RDFChunkWriter[T](quads: RDD[JenaDataset]) {
+  implicit class JenaDatasetWriter[T](quads: RDD[JenaDataset]) {
 
+    // TODO This method should go to a common util class
     def mergeFolder(outFile: java.nio.file.Path, srcFolder: java.nio.file.Path, pattern: String): Unit = {
       val partPaths = FileUtils.listPaths(srcFolder, pattern)
       java.util.Collections.sort(partPaths, (a: java.nio.file.Path, b: java.nio.file.Path) => a.getFileName.toString.compareTo(b.getFileName.toString))
@@ -352,12 +352,25 @@ package object io {
       merger.run
     }
 
-    def saveAsSingleFile(outFile: String,
-                         prefixMapping: PrefixMapping,
-                         rdfFormat: RDFFormat,
-                         outFolder: String,
-                         mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
-                         exitOnError: Boolean = false): Unit = {
+    /**
+     * Save the RDD to a single file.
+     * Underneath invokes [[JenaDatasetWriter#saveToFolder]] and merges
+     * the set of files created by it.
+     * See [[JenaDatasetWriter#saveToFolder]] for supported formats.
+     *
+     * @param outFile
+     * @param prefixMapping
+     * @param rdfFormat
+     * @param outFolder The folder for the part files; may be null.
+     * @param mode
+     * @param exitOnError
+     */
+    def saveToFile(outFile: String,
+                   prefixMapping: PrefixMapping,
+                   rdfFormat: RDFFormat,
+                   outFolder: String,
+                   mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+                   exitOnError: Boolean = false): Unit = {
 
       val outFilePath = Paths.get(outFile).toAbsolutePath
       val outFileFileName = outFilePath.getFileName.toString
@@ -365,22 +378,27 @@ package object io {
         if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
         else Paths.get(outFolder).toAbsolutePath
 
-      saveAsFile(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
+      saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
       mergeFolder(outFilePath, outFolderPath, "part*")
     }
 
     /**
-     * Save the data in N-Quads format.
+     * Save the data in Trig/Turtle or its sub-formats (n-quads/n-triples) format.
+     * If prefixes should be written out then they have to provided as an argument to
+     * the prefixMapping parameter.
+     * Prefix mappings are broadcasted to and processed in a .mapPartition operation.
+     * If the prefixMapping is non-empty then the first part file written out contains them.
+     * No other partition will write out prefixes.
      *
-     * @param path the path where the N-Quads file(s) will be written to
+     * @param path the folder into which the file(s) will be written to
      * @param mode the expected behavior of saving the data to a data source
      * @param exitOnError whether to stop if an error occurred
      */
-    def saveAsFile(path: String,
-                   prefixMapping: PrefixMapping,
-                   rdfFormat: RDFFormat,
-                   mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
-                   exitOnError: Boolean = false): Unit = {
+    def saveToFolder(path: String,
+                     prefixMapping: PrefixMapping,
+                     rdfFormat: RDFFormat,
+                     mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+                     exitOnError: Boolean = false): Unit = {
 
       val fsPath = new Path(path)
       val fs = fsPath.getFileSystem(quads.sparkContext.hadoopConfiguration)
