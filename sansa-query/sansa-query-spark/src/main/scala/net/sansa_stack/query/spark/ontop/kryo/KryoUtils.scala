@@ -1,24 +1,23 @@
-package net.sansa_stack.query.spark.ontop
-
-import java.io.{BufferedOutputStream, FileNotFoundException, FileOutputStream, PrintStream, PrintWriter, StringWriter}
-import java.lang.invoke.SerializedLambda
-import java.lang.reflect.InvocationHandler
-import java.util.Date
+package net.sansa_stack.query.spark.ontop.kryo
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy
 import com.esotericsoftware.kryo.io.{Input, Output}
-import com.esotericsoftware.kryo.serializers.{ClosureSerializer, JavaSerializer}
+import com.esotericsoftware.kryo.serializers.ClosureSerializer
 import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure
 import com.esotericsoftware.minlog.Log
+import de.javakaffee.kryoserializers.JdkProxySerializer
 import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.`type`.impl.TypeFactoryImpl
 import it.unibz.inf.ontop.model.term.TermFactory
 import it.unibz.inf.ontop.model.term.impl.TermFactoryImpl
+import net.sansa_stack.query.spark.ontop.RewriteInstruction
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import net.sansa_stack.query.spark.ontop.kryo.{Pool, ShadedBiMapSerializer, ShadedImmutableBiMapSerializer, ShadedImmutableListSerializer, ShadedImmutableMapSerializer, ShadedImmutableSortedSetSerializer, ShadedImmutableTableSerializer}
-import de.javakaffee.kryoserializers.JdkProxySerializer
+import java.io._
+import java.lang.invoke.SerializedLambda
+import java.lang.reflect.InvocationHandler
+import java.util.Date
 
 /**
  * Utility class to (de)serialize the Ontop rewrite instructions.
@@ -27,27 +26,27 @@ import de.javakaffee.kryoserializers.JdkProxySerializer
  */
 object KryoUtils {
 
-//  val kryoPool = new KryoPool.Builder(new KryoFactory {
-//    override def create(): Kryo = {
-//      val kryo = new Kryo()
-//      kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
-//      ShadedImmutableListSerializer.registerSerializers(kryo)
-//      ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
-//      ShadedImmutableMapSerializer.registerSerializers(kryo)
-//      ShadedImmutableBiMapSerializer.registerSerializers(kryo)
-//      ShadedBiMapSerializer.registerSerializers(kryo)
-//      ShadedImmutableTableSerializer.registerSerializers(kryo)
-//
-//      kryo.register(classOf[Array[AnyRef]])
-//      kryo.register(classOf[Class[_]])
-//      kryo.register(classOf[RewriteInstruction])
-//      kryo.register(classOf[SerializedLambda])
-//      kryo.register(classOf[Closure], new ClosureSerializer())
-//      kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
-//
-//      kryo
-//    }
-//  }).build()
+  //  val kryoPool = new KryoPool.Builder(new KryoFactory {
+  //    override def create(): Kryo = {
+  //      val kryo = new Kryo()
+  //      kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()))
+  //      ShadedImmutableListSerializer.registerSerializers(kryo)
+  //      ShadedImmutableSortedSetSerializer.registerSerializers(kryo)
+  //      ShadedImmutableMapSerializer.registerSerializers(kryo)
+  //      ShadedImmutableBiMapSerializer.registerSerializers(kryo)
+  //      ShadedBiMapSerializer.registerSerializers(kryo)
+  //      ShadedImmutableTableSerializer.registerSerializers(kryo)
+  //
+  //      kryo.register(classOf[Array[AnyRef]])
+  //      kryo.register(classOf[Class[_]])
+  //      kryo.register(classOf[RewriteInstruction])
+  //      kryo.register(classOf[SerializedLambda])
+  //      kryo.register(classOf[Closure], new ClosureSerializer())
+  //      kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
+  //
+  //      kryo
+  //    }
+  //  }).build()
 
   val kryoPool = new Pool[Kryo](true, false, 8) {
     protected def create: Kryo = {
@@ -97,7 +96,7 @@ object KryoUtils {
     kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
 
 
-//    val kryo = kryoPool.obtain()
+    //    val kryo = kryoPool.obtain()
     ImmutableFunctionalTermSerializer.registerSerializers(kryo, ontopSessionId)
     kryo.register(classOf[TermFactory], new TermFactorySerializer(ontopSessionId))
     kryo.register(classOf[TermFactoryImpl], new TermFactorySerializer(ontopSessionId))
@@ -106,8 +105,8 @@ object KryoUtils {
 
     val output = new Output(1024, -1)
     kryo.writeObject(output, rewriteInstruction)
-//    kryoPool.free(kryo)
-//    com.esotericsoftware.minlog.Log.INFO
+    //    kryoPool.free(kryo)
+    //    com.esotericsoftware.minlog.Log.INFO
     output
   }
 
@@ -131,7 +130,7 @@ object KryoUtils {
     kryo.register(classOf[Closure], new ClosureSerializer())
     kryo.register(classOf[InvocationHandler], new JdkProxySerializer)
 
-//    val kryo = kryoPool.obtain()
+    //    val kryo = kryoPool.obtain()
 
     // we need the current class loader which hopefully is the Spark classloader to get all the Ontop packages in
     // the Kryo classpath
@@ -147,7 +146,7 @@ object KryoUtils {
     val input = new Input(output.getBuffer, 0, output.position)
     val rewriteInstruction = kryo.readObject(input, classOf[RewriteInstruction])
 
-//    kryoPool.free(kryo)
+    //    kryoPool.free(kryo)
     rewriteInstruction
   }
 
@@ -179,7 +178,7 @@ object KryoUtils {
     override def log(level: Int, category: String, message: String, ex: Throwable): Unit = {
       val builder = new StringBuilder(256)
 
-//      builder.append(s"Thread: ${Thread.currentThread().getId} - ")
+      //      builder.append(s"Thread: ${Thread.currentThread().getId} - ")
 
       val time = new Date().getTime - firstLogTime
       val minutes = time / (1000 * 60)

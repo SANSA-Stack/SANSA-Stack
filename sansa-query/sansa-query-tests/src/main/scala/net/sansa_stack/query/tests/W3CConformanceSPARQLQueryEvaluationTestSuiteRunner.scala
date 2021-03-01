@@ -87,10 +87,6 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
       // load data
       // (we only have to load the data if there is at least one unignored test)
       if (tests.exists(t => !isIgnored(t))) {
-        val data = loadData(dataFile)
-        data.setNsPrefix("", "http://www.example.org/")
-        println("Data:")
-        data.write(System.out, "Turtle")
 
         tests.foreach(testCase => {
           // get the relevant data from the test case
@@ -101,11 +97,10 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
 
           if (isIgnored(testCase)) {
             ignore(s"$testName: $description") {}
-          } else if (data.isEmpty) {
-            fail("cannot handle empty data model - please add test to ignored tests")
           } else {
             // test starts here
             test(s"$testName: $description") {
+              val data = loadData(dataFile)
               runTest(testCase, data)
             }
           }
@@ -114,6 +109,7 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     }
 
   def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
+    if (data.isEmpty) cancel("cannot handle empty data model - please add test to ignored tests")
     // get the relevant data from the test case
     val queryFileURL = testCase.queryFile
     val resultFileURL = testCase.resultsFile
@@ -282,14 +278,16 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     import java.net.MalformedURLException
     try {
       val is = StreamManager.get().open(datasetURL)
-//      val is = new URL(datasetURL).openStream()
 
-      withResources[AutoCloseable, Model](is)(_ => {
-        val data = ModelFactory.createDefaultModel()
-        RDFDataMgr.read(data, is, null, if (datasetURL.endsWith(".rdf")) Lang.RDFXML else Lang.TURTLE)
-        data
+      val data = withResources[AutoCloseable, Model](is)(_ => {
+        val model = ModelFactory.createDefaultModel()
+        RDFDataMgr.read(model, is, null, if (datasetURL.endsWith(".rdf")) Lang.RDFXML else Lang.TURTLE)
+        model
       })
-
+      data.setNsPrefix("", "http://www.example.org/")
+      println("Data:")
+      data.write(System.out, "Turtle")
+      data
     } catch {
       case e: MalformedURLException =>
         System.err.println("Malformed input URL: " + datasetURL)

@@ -1,12 +1,12 @@
-package net.sansa_stack.query.spark.ontop
-
-import scala.util.{Failure, Success, Try}
+package net.sansa_stack.query.spark.ontop.kryo
 
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList
-import it.unibz.inf.ontop.model.term.ImmutableFunctionalTerm
 import it.unibz.inf.ontop.model.term.functionsymbol.{FunctionSymbol, FunctionSymbolFactory, RDFTermTypeFunctionSymbol}
+import net.sansa_stack.query.spark.ontop.OntopConnection
+
+import scala.util.{Failure, Success, Try}
 
 class RDFTermTypeFunctionSerializer(ontopSessionID: String)
   extends Serializer[RDFTermTypeFunctionSymbol](false, true) {

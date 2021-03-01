@@ -1,14 +1,14 @@
-package net.sansa_stack.query.spark.ontop
+package net.sansa_stack.query.spark.ontop.kryo
 
-
-import scala.util.{Failure, Success, Try}
-
-import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.{Kryo, Serializer}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList
 import it.unibz.inf.ontop.model.term.ImmutableFunctionalTerm
 import it.unibz.inf.ontop.model.term.functionsymbol.FunctionSymbol
-import it.unibz.inf.ontop.model.term.impl.{GroundExpressionImpl, GroundFunctionalTermImpl, ImmutableFunctionalTermImpl, NonGroundExpressionImpl, NonGroundFunctionalTermImpl}
+import it.unibz.inf.ontop.model.term.impl._
+import net.sansa_stack.query.spark.ontop.OntopConnection
+
+import scala.util.{Failure, Success, Try}
 
 class ImmutableFunctionalTermSerializer(ontopSessionID: String)
   extends Serializer[ImmutableFunctionalTerm](false, true) {

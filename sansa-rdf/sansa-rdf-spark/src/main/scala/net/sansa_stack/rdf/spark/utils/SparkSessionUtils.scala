@@ -1,5 +1,6 @@
 package net.sansa_stack.rdf.spark.utils
 
+import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -28,5 +29,15 @@ object SparkSessionUtils {
         case e: Exception => e.printStackTrace()
       }
     }
+  }
+
+  val sqlEscaper = SqlCodecUtils.createSqlCodecForApacheSpark()
+
+  def clearAllTablesAndViews(spark: SparkSession): Unit = {
+    spark.catalog.listDatabases().collect().foreach(db => {
+      spark.catalog.listTables(db.name).collect().foreach(t => {
+        val b = spark.catalog.dropTempView(s"${sqlEscaper.forSchemaName().encode(t.name)}")
+      })
+    })
   }
 }

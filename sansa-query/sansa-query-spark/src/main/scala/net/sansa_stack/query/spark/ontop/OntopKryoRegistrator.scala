@@ -2,7 +2,6 @@ package net.sansa_stack.query.spark.ontop
 
 import java.lang.invoke.SerializedLambda
 import java.lang.reflect.InvocationHandler
-
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy
 import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure
@@ -19,11 +18,12 @@ import org.apache.spark.serializer.KryoRegistrator
 import org.objenesis.strategy.StdInstantiatorStrategy
 import uk.ac.manchester.cs.owl.owlapi.OWLOntologyImpl
 import uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl
-
-import net.sansa_stack.query.spark.ontop.kryo.{ShadedBiMapSerializer, ShadedImmutableBiMapSerializer, ShadedImmutableListSerializer, ShadedImmutableMapSerializer, ShadedImmutableSortedSetSerializer, ShadedImmutableTableSerializer}
+import net.sansa_stack.query.spark.ontop.kryo.{ImmutableFunctionalTermSerializer, ShadedBiMapSerializer, ShadedImmutableBiMapSerializer, ShadedImmutableListSerializer, ShadedImmutableMapSerializer, ShadedImmutableSortedSetSerializer, ShadedImmutableTableSerializer, TermFactorySerializer, TypeFactorySerializer}
 
 
 /**
+ * The Spark Kryo registrator for Ontop related objects.
+ *
  * @author Lorenz Buehmann
  */
 class OntopKryoRegistrator extends KryoRegistrator {

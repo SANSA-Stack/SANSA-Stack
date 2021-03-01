@@ -1,19 +1,15 @@
 package net.sansa_stack.query.spark.compliance
 
-import java.util.Objects
+import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
+import net.sansa_stack.query.spark.ontop.{JDBCDatabaseGenerator, QueryEngineFactoryOntop, QueryExecutionFactorySparkOntop}
+import net.sansa_stack.query.tests.SPARQLQueryEvaluationTest
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.resultset.SPARQLResult
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkConf
 import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
-import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
-import net.sansa_stack.query.spark.ontop.KryoUtils.enableLoggingToFile
-import net.sansa_stack.query.spark.ontop.{JDBCDatabaseGenerator, KryoUtils, QueryEngineFactoryOntop, QueryExecutionFactorySparkOntop}
-import net.sansa_stack.query.tests.SPARQLQueryEvaluationTest
 
-import java.io.{File, FileOutputStream}
+import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
@@ -42,8 +38,6 @@ class SPARQL11TestSuiteRunnerSparkOntop
 //        "md5-01", "md5-02", // The SI does not support IRIs as ORDER BY conditions
         "plus-1", "plus-2",
         "tz", "timezone",
-        "sha1-01", "sha1-02", // SHA1 is not supported in H2
-        "sha512-01", "sha512-02", // SHA512 is not supported in H2
         "strdt01", "strdt02", "strdt03",
         "strlang01", "strlang02", "strlang03",
         "struuid01", "uuid01" // some tests that work on an empty model which we do not support in Spark query as the mappings would be empty (could be handled but
@@ -65,9 +59,10 @@ class SPARQL11TestSuiteRunnerSparkOntop
       // EXISTS not supported yet
       Set("exists01", "exists02", "exists03", "exists04", "exists05").map(existsManifest + _) ++
       // PROPERTY PATH
-      Set("pp02", // wrong result, unexpected binding // Not supported: ArbitraryLengthPath
-        "pp06", "pp12", "pp14", "pp16", "pp21", "pp23", "pp25", // Not supported: ZeroLengthPath
-        "pp28a", "pp34", "pp35", "pp36", "pp37").map(propertyPathManifest + _) ++
+      Set("pp02", // wrong result, unexpected binding
+        "pp06", "pp12", "pp14", "pp16", "pp21", "pp23", "pp25", // Not supported: ArbitraryLengthPath
+        "pp28a", "pp34", "pp35", "pp36", "pp37") // Not supported: ZeroLengthPath
+        .map(propertyPathManifest + _) ++
       // SERVICE not supported yet
       Set("service1", // no loading of the dataset
         "service2", "service3", "service4a", "service5", "service6", "service7").map(serviceManifest + _) ++
@@ -80,17 +75,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "subquery14").map(subqueryManifest + _)
   }
 
-  override def conf: SparkConf = {
-    super.conf
-      .set("spark.sql.crossJoin.enabled", "true")
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", String.join(
-        ", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
-  }
-
-  //  override lazy val FILTER_KEEP = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
+//  override lazy val FILTER_KEEP = t => t.name.startsWith("sq") || t.dataFile.contains("function")// && t.name.startsWith("SUM")
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 

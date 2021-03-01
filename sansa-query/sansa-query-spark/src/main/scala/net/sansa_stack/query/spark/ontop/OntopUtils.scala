@@ -142,17 +142,17 @@ object OntopUtils extends Serializable {
 
   @throws[OBDASpecificationException]
   def createReformulationConfig[B <: OntopSQLOWLAPIConfiguration.Builder[B], C <: OntopReformulationSQLConfiguration.Builder[C]](database: Option[String],
-                                                        obdaMappings: Model,
-                                                        properties: Properties,
-                                                        ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
+                                                                                                                                 obdaMappings: Model,
+                                                                                                                                 properties: Properties,
+                                                                                                                                 ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
     val obdaSpecification = loadOBDASpecification(database, obdaMappings, properties, ontology)
 
     val builder = (if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder.asInstanceOf[B]
-                                              .ontology(ontology.get)
-                                              .properties(properties)
-                                              .jdbcUser(OntopConnection.JDBC_USER)
-                                              .jdbcPassword(OntopConnection.JDBC_PASSWORD)
-                  else OntopReformulationSQLConfiguration.defaultBuilder).asInstanceOf[C]
+      .ontology(ontology.get)
+      .properties(properties)
+      .jdbcUser(OntopConnection.JDBC_USER)
+      .jdbcPassword(OntopConnection.JDBC_PASSWORD)
+    else OntopReformulationSQLConfiguration.defaultBuilder).asInstanceOf[C]
 
     builder
       .obdaSpecification(obdaSpecification)
