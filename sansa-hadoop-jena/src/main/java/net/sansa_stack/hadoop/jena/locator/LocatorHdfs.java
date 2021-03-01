@@ -42,8 +42,9 @@ public class LocatorHdfs extends LocatorURL {
         if (Arrays.stream(xschemeNames).anyMatch(schemaName -> uri.startsWith(schemaName))) {
             ContentType contentType = RDFLanguages.guessContentType(uri);
             Path path = new Path(uri);
+            InputStream in;
             try {
-                InputStream in = fileSystem.open(path);
+                in = fileSystem.open(path);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
