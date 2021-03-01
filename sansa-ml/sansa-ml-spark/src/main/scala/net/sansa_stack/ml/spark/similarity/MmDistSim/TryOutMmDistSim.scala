@@ -1,13 +1,14 @@
 package net.sansa_stack.ml.spark.similarity.MmDistSim
 
 import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SparqlFrame}
+import net.sansa_stack.ml.spark.utils.SimilarityExperimentMetaGraphFactory
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, collect_list, collect_set, desc, greatest, struct, sum, udf}
 import org.apache.spark.sql.types.{DataType, DoubleType, FloatType, IntegerType, LongType, StringType, StructField, StructType}
 
@@ -39,7 +40,8 @@ object TryOutMmDistSim {
       stopOnBadTerm = ErrorParseMode.SKIP,
       stopOnWarnings = WarningParseMode.IGNORE
     ).toDS().cache()
-    println(f"READ IN DATA:\ndata consists of ${dataset.count()} triples")
+    val numberTriples = dataset.count()
+    println(f"READ IN DATA:\ndata consists of ${numberTriples} triples")
     dataset.take(n = 10).foreach(println(_))
 
     /*
@@ -72,6 +74,9 @@ object TryOutMmDistSim {
         |
         |WHERE {
         |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+        |
+        | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+        |	?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero" .
         |
         |	OPTIONAL {
         |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
@@ -112,7 +117,7 @@ object TryOutMmDistSim {
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
-    val res = sparqlFrame.transform(dataset).cache() // TODO remove limit // .filter(col("movie__down_genre__down_film_genre_name") === "Superhero").limit(10000)
+    val res = sparqlFrame.transform(dataset).cache()
     res.show(false)
 
     /*
@@ -155,9 +160,10 @@ object TryOutMmDistSim {
       collectedDataFrame = collectedDataFrame.join(collectedTmpDf, keyColumnNameString)
     }
 
-    println(s"it total we have we have: ${collectedDataFrame.count()} elements")
-    collectedDataFrame = collectedDataFrame.sample(withReplacement = false, fraction = 0.01, seed = 504)
-    println(s"after sampling we have: ${collectedDataFrame.count()} elements")
+    println(s"in total we have we have: ${collectedDataFrame.count()} elements")
+    collectedDataFrame = collectedDataFrame
+      // .sample(withReplacement = false, fraction = 0.01, seed = 504)
+    // println(s"after sampling we have: ${collectedDataFrame.count()} elements")
 
     println(collectedDataFrame.schema)
     collectedDataFrame.show(false)
@@ -222,7 +228,7 @@ object TryOutMmDistSim {
 
 
     // TODO Temporal change
-    minSimThresholds("movie__down_genre__down_film_genre_name") = 0.01
+    minSimThresholds("movie__down_actor__down_actor_name") = 0.01
 
     println(f"min Similarity Thresholds:\n$minSimThresholds")
 
@@ -246,7 +252,7 @@ object TryOutMmDistSim {
 
     // drop columns where no similarity at all is given
     featureSimilarityScores = featureSimilarityScores.filter(greatest(similairtyColumns.map(col): _*) > 0)
-    featureSimilarityScores.limit(20).show(false)
+    featureSimilarityScores.show(false)
 
     // calculate overall similarity
 
@@ -262,10 +268,11 @@ object TryOutMmDistSim {
           col(similairtyColumn) * importanceNormed(featureColumn) * reliabilityNormed(featureColumn) * availabilityNormed(featureColumn)
         )
     }
-    featureSimilarityScores.show(false)
     featureSimilarityScores = featureSimilarityScores
       .withColumn("overallSimilarity", similairtyColumns.map(s => s + "_weighted")
         .map(col).reduce(_ + _))
+    featureSimilarityScores.show(false)
+
 
     // select only needed columns
     /* featureSimilarityScores = featureSimilarityScores.select(
@@ -276,12 +283,25 @@ object TryOutMmDistSim {
      */
 
     // order desc
-    println("order desc")
-    featureSimilarityScores = featureSimilarityScores.orderBy(desc(featureSimilarityScores.columns.last))
+    // println("order desc")
+    // featureSimilarityScores = featureSimilarityScores.orderBy(desc(featureSimilarityScores.columns.last))
 
-    featureSimilarityScores.show(false)
+    // featureSimilarityScores.show(false)
 
 
+    // make results rdf
+
+    val mgc = new SimilarityExperimentMetaGraphFactory
+    val semanticResult: Dataset[org.apache.jena.graph.Triple] = mgc.createRdfOutput(
+      outputDataset = featureSimilarityScores.select(featureSimilarityScores.columns(0), featureSimilarityScores.columns(1), featureSimilarityScores.columns.last)
+    )(
+      modelInformationEstimatorName = "DaDistSim",
+      modelInformationEstimatorType = "Similarity",
+      modelInformationMeasurementType = "Mix"
+    )(inputDatasetNumbertOfTriples = numberTriples, dataSetInformationFilePath = inputFileString
+    ).toDS()
+
+    semanticResult.take(50).foreach(println(_))
   }
 }
 
