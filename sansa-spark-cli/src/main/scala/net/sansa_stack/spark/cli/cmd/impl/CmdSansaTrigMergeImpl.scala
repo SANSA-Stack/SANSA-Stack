@@ -15,9 +15,10 @@ import org.apache.jena.shared.impl.PrefixMappingImpl
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
-
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
+
+import org.apache.commons.lang3.time.StopWatch
 
 
 /**
@@ -32,7 +33,7 @@ object CmdSansaTrigMergeImpl {
 
     import collection.JavaConverters._
 
-    val stopwatch = Stopwatch.createStarted()
+    val stopwatch = StopWatch.createStarted()
 
     val prefixes: PrefixMapping = new PrefixMappingImpl()
 
@@ -131,7 +132,7 @@ object CmdSansaTrigMergeImpl {
 
     // ResultSetMgr.write(System.out, resultSetSpark.collectToTable().toResultSet, outLang)
 
-    logger.info("Processing time: " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds")
+    logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds")
 
     0 // exit code
   }
