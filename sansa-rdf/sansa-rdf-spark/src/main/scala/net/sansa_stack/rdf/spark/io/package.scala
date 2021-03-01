@@ -1,12 +1,16 @@
 package net.sansa_stack.rdf.spark
 
 import java.io.ByteArrayOutputStream
+import java.nio.file.Paths
 import java.util.Collections
+
 import com.typesafe.config.{Config, ConfigFactory}
 import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark.logger
 import net.sansa_stack.rdf.spark.utils.Logging
+import org.aksw.commons.io.util.{FileMerger, FileUtils}
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
 import org.aksw.jena_sparql_api.utils.io.{WriterStreamRDFBaseUtils, WriterStreamRDFBaseWrapper}
 import org.apache.hadoop.fs.Path
@@ -328,9 +332,42 @@ package object io {
 
 
   /**
+   * TODO Update documentation: For Sansa 8.0 besides N-quads also trig and turtle should be supported;
+   *   but it needs to be tested / verified
+   *
    * Adds method `saveAsNQuadsFile` to an RDD[Quad] that allows to write N-Quads files.
    */
   implicit class RDFChunkWriter[T](quads: RDD[JenaDataset]) {
+
+    def mergeFolder(outFile: java.nio.file.Path, srcFolder: java.nio.file.Path, pattern: String): Unit = {
+      val partPaths = FileUtils.listPaths(srcFolder, pattern)
+      java.util.Collections.sort(partPaths, (a: java.nio.file.Path, b: java.nio.file.Path) => a.getFileName.toString.compareTo(b.getFileName.toString))
+      logger.info(String.format("Creating file %s by merging %d files from %s",
+        outFile.toString, partPaths.size, srcFolder.toString))
+
+      // val sw = Stopwatch.createStarted
+      val merger = FileMerger.create(outFile, partPaths)
+      merger.addProgressListener((self) => logger.info(
+        String.format("Write progress for %s: %.2f%%", outFile.getFileName.toString, self.getProgress * 100.0)))
+      merger.run
+    }
+
+    def saveAsSingleFile(outFile: String,
+                         prefixMapping: PrefixMapping,
+                         rdfFormat: RDFFormat,
+                         outFolder: String,
+                         mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+                         exitOnError: Boolean = false): Unit = {
+
+      val outFilePath = Paths.get(outFile).toAbsolutePath
+      val outFileFileName = outFilePath.getFileName.toString
+      val outFolderPath =
+        if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
+        else Paths.get(outFolder).toAbsolutePath
+
+      saveAsFile(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
+      mergeFolder(outFilePath, outFolderPath, "part*")
+    }
 
     /**
      * Save the data in N-Quads format.

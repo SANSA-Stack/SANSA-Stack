@@ -1,7 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigDistinctImpl;
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigQueryImpl;
+import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigMergeImpl;
 import picocli.CommandLine;
 
 import java.util.List;
@@ -26,6 +25,10 @@ public class CmdSansaTrigMerge
     @CommandLine.Option(names = { "--out-folder" },
             description = "Output folder")
     public String outFolder = null;
+
+    @CommandLine.Option(names = { "--out-file" },
+            description = "Output file; Merge of files created in out-folder")
+    public String outFile = null;
 
     @CommandLine.Option(names = { "--op", "--out-prefixes" },
             description = "Prefix sources for output. Subject to used prefix analysis. Default: ${DEFAULT-VALUE}",
@@ -55,6 +58,6 @@ public class CmdSansaTrigMerge
 
     @Override
     public Integer call() throws Exception {
-        return CmdSansaTrigDistinctImpl.run(this);
+        return CmdSansaTrigMergeImpl.run(this);
     }
 }

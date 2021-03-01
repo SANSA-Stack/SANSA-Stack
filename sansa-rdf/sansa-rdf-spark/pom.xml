@@ -124,7 +124,12 @@
 			<artifactId>jena-elephas-io</artifactId>
 		</dependency>
 
-        <dependency>
+		<dependency>
+			<groupId>org.aksw.commons</groupId>
+			<artifactId>aksw-commons-io-utils</artifactId>
+		</dependency>
+
+		<dependency>
             <groupId>org.aksw.sparqlify</groupId>
             <artifactId>sparqlify-core</artifactId>
         </dependency>

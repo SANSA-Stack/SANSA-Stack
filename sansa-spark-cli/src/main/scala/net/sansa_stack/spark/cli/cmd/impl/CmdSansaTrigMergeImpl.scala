@@ -21,10 +21,10 @@ import java.util.concurrent.TimeUnit
 
 
 /**
- * Called from the Java class [[CmdSansaTrigQuery]]
+ * Called from the Java class [[CmdSansaTrigMerge]]
  */
-class CmdSansaTrigDistinctImpl
-object CmdSansaTrigDistinctImpl {
+class CmdSansaTrigMergeImpl
+object CmdSansaTrigMergeImpl {
   private val logger = LoggerFactory.getLogger(getClass)
   // JenaSystem.init()
 
@@ -91,7 +91,7 @@ object CmdSansaTrigDistinctImpl {
     val outRdfFormat = RDFLanguagesEx.findRdfFormat(cmd.outFormat)
       // RDFFormat.TRIG_BLOCKS
 
-    if (cmd.outFolder == null) {
+    if (cmd.outFolder == null && cmd.outFile == null) {
 
       val out = StdIo.openStdOutWithCloseShield
 
@@ -117,8 +117,13 @@ object CmdSansaTrigDistinctImpl {
       writer.finish
       out.flush
     } else {
-      effectiveRdd.saveAsFile(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
+      if (cmd.outFile != null) {
+        effectiveRdd.saveAsSingleFile(cmd.outFile, new PrefixMappingImpl(), outRdfFormat, cmd.outFolder)
+      } else { // if (cmd.outFolder != null) {
+        effectiveRdd.saveAsFile(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
+      }
     }
+
     // effectiveRdd.saveAsFile("outfile.trig.bz2", prefixes, RDFFormat.TRIG_BLOCKS)
 
     // effectiveRdd.coalesce(1)
