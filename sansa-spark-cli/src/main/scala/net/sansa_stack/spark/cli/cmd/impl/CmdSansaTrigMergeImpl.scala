@@ -21,8 +21,9 @@ import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
 
 import net.sansa_stack.hadoop.jena.locator.LocatorHdfs
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.commons.lang3.time.StopWatch
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 import org.apache.jena.riot.system.stream.StreamManager
 
 
@@ -77,16 +78,21 @@ object CmdSansaTrigMergeImpl {
     val hadoopConf = spark.sparkContext.hadoopConfiguration
 
     val paths = cmd.trigFiles.asScala
-      .map(str => {
-        val path = new Path(str)
-        val fs = UriUtils.tryNewURI(str).map(
-            FileSystem.get(_, hadoopConf))
-          .orElseThrow(() => new RuntimeException("Could not parse as URI: " + str))
-
-        val r = fs.resolvePath(path)
-        (fs, r)
+      .flatMap(pathStr => {
+        var r: Iterator[(FileSystem, Path)] = Iterator()
+        try {
+          val uri = new URI(pathStr)
+          // TODO Use try-with-resources for the filesystem?
+          val fs = FileSystem.get(uri, hadoopConf)
+          val path = new Path(pathStr)
+          fs.resolvePath(path)
+          r = Iterator((fs, path))
+        } catch {
+          case e: Throwable => logger.error(ExceptionUtils.getRootCauseMessage(e))
+        }
+        r
       })
-      .filter(e => e._1.isFile(e._2))
+      .filter { case (fs, file) => fs.isFile(file) }
       .map(_._2)
       .toList
 
