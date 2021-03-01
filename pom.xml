@@ -197,7 +197,7 @@
             </dependency>
 
             <dependency>
-                <groupId>net.sansa-stack</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
