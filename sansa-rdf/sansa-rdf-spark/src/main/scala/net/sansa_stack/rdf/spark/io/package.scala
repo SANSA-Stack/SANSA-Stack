@@ -342,13 +342,13 @@ package object io {
     def mergeFolder(outFile: java.nio.file.Path, srcFolder: java.nio.file.Path, pattern: String): Unit = {
       val partPaths = FileUtils.listPaths(srcFolder, pattern)
       java.util.Collections.sort(partPaths, (a: java.nio.file.Path, b: java.nio.file.Path) => a.getFileName.toString.compareTo(b.getFileName.toString))
-      logger.info(String.format("Creating file %s by merging %d files from %s",
+      logger.info("Creating file %s by merging %d files from %s".format(
         outFile.toString, partPaths.size, srcFolder.toString))
 
       // val sw = Stopwatch.createStarted
       val merger = FileMerger.create(outFile, partPaths)
-      merger.addProgressListener((self) => logger.info(
-        String.format("Write progress for %s: %.2f%%", outFile.getFileName.toString, self.getProgress * 100.0)))
+      merger.addProgressListener(self => logger.info(
+        "Write progress for %s: %.2f%%".format(outFile.getFileName.toString, self.getProgress * 100.0)))
       merger.run
     }
 
