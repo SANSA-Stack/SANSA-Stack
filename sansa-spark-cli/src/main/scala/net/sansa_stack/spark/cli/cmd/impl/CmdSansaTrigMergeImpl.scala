@@ -18,7 +18,10 @@ import org.slf4j.LoggerFactory
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
 
+import net.sansa_stack.hadoop.jena.locator.LocatorHdfs
 import org.apache.commons.lang3.time.StopWatch
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.jena.riot.system.stream.StreamManager
 
 
 /**
@@ -37,6 +40,7 @@ object CmdSansaTrigMergeImpl {
 
     val prefixes: PrefixMapping = new PrefixMappingImpl()
 
+
     for (prefixSource <- cmd.outPrefixes.asScala) {
       logger.info("Adding prefixes from " + prefixSource)
       val tmp = RDFDataMgr.loadModel(prefixSource)
@@ -53,24 +57,10 @@ object CmdSansaTrigMergeImpl {
 //    logger.info("Detected registered result set format: " + outLang)
 
 
-    val trigFiles = cmd.trigFiles.asScala
-      .map(pathStr => Paths.get(pathStr).toAbsolutePath)
-      .toList
-
-    val validPaths = trigFiles
-      .filter(Files.exists(_))
-      .filter(!Files.isDirectory(_))
-      .filter(Files.isReadable(_))
-      .toSet
-
-    val invalidPaths = trigFiles.toSet.diff(validPaths)
-    if (!invalidPaths.isEmpty) {
-      throw new IllegalArgumentException("The following paths are invalid (do not exist or are not a (readable) file): " + invalidPaths)
-    }
 
     val spark = SparkSession.builder
       .master(cmd.sparkMaster)
-      .appName(s"Trig Distinct ( $trigFiles )")
+      .appName(s"Trig Merge ( ${cmd.trigFiles} )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryoserializer.buffer.max", "1000") // MB
       .config("spark.kryo.registrator", String.join(
@@ -79,6 +69,24 @@ object CmdSansaTrigMergeImpl {
         "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
+
+    val fileSystem = FileSystem.get(spark.sparkContext.hadoopConfiguration)
+    StreamManager.get().addLocator(new LocatorHdfs(fileSystem));
+
+    val paths = cmd.trigFiles.asScala
+      .map(new Path(_))
+      .toList
+
+    val validPaths = paths
+      .filter(fileSystem.exists(_))
+      .filter(!fileSystem.isFile(_))
+      .toSet
+
+    val invalidPaths = paths.toSet.diff(validPaths)
+    if (!invalidPaths.isEmpty) {
+      throw new IllegalArgumentException("The following paths are invalid (do not exist or are not a (readable) file): " + invalidPaths)
+    }
+
 
     import net.sansa_stack.rdf.spark.io._
 
