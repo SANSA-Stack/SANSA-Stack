@@ -408,10 +408,6 @@ class QueryEngineOntop(val spark: SparkSession,
 
 object QueryEngineOntop {
 
-  def main(args: Array[String]): Unit = {
-    new OntopCLI().run(args)
-  }
-
   def apply(spark: SparkSession,
             databaseName: Option[String],
             mappingsModel: Model,
