@@ -4,7 +4,16 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
-This project comprises the whole Semantic Analytics Stack (SANSA). For a detailed description of SANSA, please visit http://sansa-stack.net. 
+This project comprises the whole Semantic Analytics Stack (SANSA). At a glance, it features the following functionality:
+
+* Ingesting RDF and OWL data in various formats into RDDs
+* Operators for working with RDDs and data frames of RDF data at various levels (triples, bindings, graphs, etc)
+* *Transformation* of RDDs to data frames and *partitioning* of RDDs into R2RML-mapped data frames
+* Distributed SPARQL querying over R2RML-mapped data frame partitions using RDB2RDF engines (Sparqlify & Ontop)
+* Enrichment of RDDs with inferences
+* Application of machine learning algorithms
+
+For a detailed description of SANSA, please visit http://sansa-stack.net. 
 
 ## Layers
 The SANSA project is structured in the following five layers developed in their respective sub-folders:
