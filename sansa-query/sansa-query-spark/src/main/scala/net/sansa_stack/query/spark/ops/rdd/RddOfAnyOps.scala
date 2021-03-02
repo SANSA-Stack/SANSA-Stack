@@ -39,7 +39,7 @@ object RddOfAnyOps {
         it.foreach(accumulator.accept(result, _))
         Iterator.single(result)
       })
-      .reduce(collector.combiner.apply)
+      .reduce(collectorBc.value.combiner.apply)
 
     val finishedResult = collector.finisher.apply(unfinishedResult)
     finishedResult
