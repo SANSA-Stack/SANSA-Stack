@@ -38,12 +38,14 @@ class OntopRowMapper(sessionId: String,
                      sparqlQuery: String,
                      ontology: Option[OWLOntology],
                      rewriteInstruction: RewriteInstruction,
+                     dbMetadata: String = ""
 //                     output: Output
                     ) {
 
   val startTime = System.currentTimeMillis()
 
-  val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
+  // val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
+  val reformulationConfiguration = OntopConnection(sessionId, dbMetadata, obdaMappings, properties, ontology)
 
 
   val termFactory = reformulationConfiguration.getTermFactory

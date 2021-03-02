@@ -1,10 +1,8 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.util.Properties
-
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
-
 import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
 import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
 import it.unibz.inf.ontop.com.google.common.base.Charsets
@@ -17,6 +15,8 @@ import it.unibz.inf.ontop.iq.node.ConstructionNode
 import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
+import it.unibz.inf.ontop.spec.dbschema.tools.DBMetadataExtractorAndSerializer
+import it.unibz.inf.ontop.spec.dbschema.tools.impl.RDBMetadataExtractorAndSerializerImpl
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api.TriplesMap
@@ -29,7 +29,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
 import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.model.OWLOntology
-
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
@@ -75,6 +74,7 @@ case class RewriteInstruction(sqlSignature: ImmutableSortedSet[Variable],
  * @param ontology an optional ontology
  */
 class OntopSPARQL2SQLRewriter(ontopSessionId: String,
+                              ontopProperties: Properties,
                               database: Option[String],
                               jdbcMetaData: Map[String, String],
                               val mappingsModel: Model,
@@ -84,17 +84,20 @@ class OntopSPARQL2SQLRewriter(ontopSessionId: String,
 
   private val logger = com.typesafe.scalalogging.Logger(classOf[OntopSPARQL2SQLRewriter])
 
-  // load Ontop properties
-  val ontopProperties = new Properties()
-  ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
-
   // the Ontop core
   val reformulationConfiguration = OntopConnection(ontopSessionId, database, mappingsModel, ontopProperties, jdbcMetaData, ontology)
+
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
   val queryReformulator = reformulationConfiguration.loadQueryReformulator
   val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
   val inputQueryFactory = queryReformulator.getInputQueryFactory
+
+  // serialize the DB metadata
+  val mappingConfig = OntopUtils.createMappingConfig(ontopProperties, database)
+  val extractorAndSerializer = mappingConfig.getInjector.getInstance(classOf[DBMetadataExtractorAndSerializer])
+  val dbMetadata = extractorAndSerializer.extractAndSerialize()
+  println(dbMetadata)
 
 
   @throws[OBDASpecificationException]
@@ -181,7 +184,7 @@ class QueryEngineOntop(val spark: SparkSession,
   // define an ID for the whole setup - this will be used for caching of the whole Ontop setup
   private val sessionId: String = generateSessionId()
 
-  private val sparql2sql = new OntopSPARQL2SQLRewriter(sessionId, database, jdbcMetaData, mappingsModel, ontology)
+  private val sparql2sql = new OntopSPARQL2SQLRewriter(sessionId, ontopProperties, database, jdbcMetaData, mappingsModel, ontology)
 
   private def generateSessionId(): String = {
     val s = database.getOrElse("") + jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
@@ -296,20 +299,21 @@ class QueryEngineOntop(val spark: SparkSession,
 
         var df = df2Rewrite._1
 
-        OntopConnection(sessionId, database, mappingsModel, sparql2sql.ontopProperties, jdbcMetaData, ontology)
+        OntopConnection(sessionId, database, mappingsModel, ontopProperties, jdbcMetaData, ontology)
         val rwi = RewriteInstruction(rewrite.sqlSignature, rewrite.sqlTypeMap, rewrite.answerAtom, rewrite.sparqlVar2Term.getImmutableMap)
 
 //        val output = KryoUtils.serialize(rwi, sessionId)
 //        val outputBC = spark.sparkContext.broadcast(output)
 
         val sparqlQueryBC = spark.sparkContext.broadcast(query)
-        val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappingsModel)
-        val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
+        val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
+        val propertiesBC = spark.sparkContext.broadcast(ontopProperties)
         val metaDataBC = spark.sparkContext.broadcast(jdbcMetaData)
         val ontologyBC = spark.sparkContext.broadcast(ontology)
         val idBC = spark.sparkContext.broadcast(sessionId)
         val databaseBC = spark.sparkContext.broadcast(database)
         val rwiBC = spark.sparkContext.broadcast(rwi)
+        val dbMetadataBC = spark.sparkContext.broadcast(sparql2sql.dbMetadata)
 
         implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
         if (maxRowMappers > 0) {
@@ -335,6 +339,7 @@ class QueryEngineOntop(val spark: SparkSession,
             sparqlQueryBC.value,
             ontologyBC.value,
             rwiBC.value,
+              dbMetadataBC.value
 //            outputBC.value
           )
           val it = iterator.map(mapper.map)
@@ -391,8 +396,8 @@ class QueryEngineOntop(val spark: SparkSession,
         val mapper = new OntopRowMapper(
           sessionId,
           database,
-          sparql2sql.mappingsModel,
-          sparql2sql.ontopProperties,
+          mappingsModel,
+          ontopProperties,
           jdbcMetaData,
           query,
           ontology,

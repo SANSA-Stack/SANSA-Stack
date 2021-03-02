@@ -2,9 +2,9 @@ package net.sansa_stack.query.spark.ontop
 
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
-
 import it.unibz.inf.ontop.answering.connection.OntopConnection
 import it.unibz.inf.ontop.injection.OntopReformulationSQLConfiguration
+import net.sansa_stack.rdf.spark.utils.ScalaUtils
 import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
 
@@ -44,13 +44,15 @@ object OntopConnection {
     connections.getOrElse(db, {
       try {
         logger.debug("creating DB connection ...")
-        val conn = DriverManager.getConnection(getConnectionURL(database), JDBC_USER, JDBC_PASSWORD)
-        connections += db -> conn
-        sys.addShutdownHook {
-          conn.close()
+        ScalaUtils.time("creating DB connection ...", "Created DB connection") {
+          val conn = DriverManager.getConnection(getConnectionURL(database), JDBC_USER, JDBC_PASSWORD)
+          connections += db -> conn
+          sys.addShutdownHook {
+            conn.close()
+          }
+          logger.debug(" ... done")
+          conn
         }
-        logger.debug(" ... done")
-        conn
       } catch {
         case e: SQLException =>
           throw e
@@ -90,12 +92,35 @@ object OntopConnection {
 
     val conf = configs.getOrElse(id, {
       logger.debug(s"creating reformulation config for session $id...")
-      println(s"creating reformulation config for session $id...")
-      val reformulationConfiguration = {
-        JDBCDatabaseGenerator.generateTables(getOrCreateConnection(database), jdbcMetaData)
+      val reformulationConfiguration =
+        ScalaUtils.time(s"creating reformulation config for session $id...",
+          "created reformulation config for session $id") {
+          JDBCDatabaseGenerator.generateTables(getOrCreateConnection(database), jdbcMetaData)
 
-        OntopUtils.createReformulationConfig(database, obdaMappings, properties, ontology)
-      }
+          OntopUtils.createReformulationConfig(database, obdaMappings, properties, ontology)
+        }
+
+      configs += id -> reformulationConfiguration
+
+      logger.debug("...done")
+      reformulationConfiguration
+    })
+    conf
+  }
+
+  def apply(id: String,
+            dbMetadata: String,
+            obdaMappings: Model,
+            properties: Properties,
+            ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
+
+    val conf = configs.getOrElse(id, {
+      logger.debug(s"creating reformulation config for session $id...")
+      val reformulationConfiguration =
+        ScalaUtils.time(s"creating reformulation config for session $id...",
+          "created reformulation config for session $id") {
+          OntopUtils.createReformulationConfig(dbMetadata, obdaMappings, properties, ontology)
+        }
 
       configs += id -> reformulationConfiguration
 

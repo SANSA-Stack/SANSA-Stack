@@ -20,7 +20,7 @@ public class CmdSansaEndpoint
     public String sparkMaster;
 
     @ArgGroup(exclusive = true, multiplicity = "1")
-    DatasetArgs dataset;
+    public DatasetArgs dataset;
 
     @Option(names = { "-p", "--port" },
             description = "HTTP port. Default: ${DEFAULT-VALUE}",

@@ -82,6 +82,15 @@ object ScalaUtils extends Logging {
     time((message, block))
   }
 
+  def time[R](startedMessage: String = "", finishedMessage: String = "")(block: => R): R = {
+    println(startedMessage)
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    println(s"$finishedMessage\nElapsed time: " + (t1 - t0) / 10e6 + "ms")
+    result
+  }
+
   /**
    * @see org.apache.commons.lang3.StringUtils.unwrap
    * @param s
