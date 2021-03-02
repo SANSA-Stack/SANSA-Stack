@@ -9,6 +9,7 @@ import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.aksw.jena_sparql_api.io.binseach.Seekable;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.LongWritable;
@@ -35,6 +36,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -534,12 +536,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
         Seekable tailNav = tailBuffer.newChannel();
 
+
+        StopWatch tailSw = StopWatch.createStarted();
         long tmp = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
         // If no record is found in the tail then take all its known bytes because
         // we assume we hit the last few splits of the stream and there simply are no further record
         // starts anymore
         long tailBytes = tmp < 0 ? tailBuffer.getKnownDataSize() : Ints.checkedCast(tmp);
-
 
         // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
         // Note, that these items may need to be aggregated with items from the current split - that's why we retain them as a list
@@ -551,7 +554,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                  // .firstElement()
                 .blockingGet();
 
-        logger.info(String.format("In split %s got %d tail items", splitId, tailItems.size()));
+        long tailItemTime = tailSw.getTime(TimeUnit.MILLISECONDS);
+        logger.info(String.format("In split %s got %d tail items starting at pos %d with %d bytes read in %d ms",
+                splitId,
+                tailItems.size(),
+                tailBytes,
+                tailBuffer.getKnownDataSize(),
+                tailItemTime));
 
         // Set the stream to the start of the split and get the head buffer
         // Note that we will use the stream in its state to read the body part
@@ -624,10 +633,20 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
         Seekable headNav = headBuffer.newChannel();
 
+        StopWatch headSw = StopWatch.createStarted();
+
         boolean isFirstSplit = splitStart == 0;
         int headBytes = isFirstSplit
                 ? 0
                 : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
+
+        long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
+        logger.info(String.format("In split %s found head record at pos %d with %d bytes read in %d ms",
+                splitId,
+                headBytes,
+                headBuffer.getKnownDataSize(),
+                headRecordTime);
+
 
         // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
