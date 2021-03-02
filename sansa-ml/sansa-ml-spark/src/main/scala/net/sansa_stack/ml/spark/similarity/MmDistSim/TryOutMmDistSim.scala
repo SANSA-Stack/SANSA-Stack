@@ -8,9 +8,9 @@ import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
+import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.linalg.Vector
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, collect_list, collect_set, desc, greatest, struct, sum, udf}
 import org.apache.spark.sql.types.{DataType, DoubleType, FloatType, IntegerType, LongType, StringType, StructField, StructType}
 
@@ -36,14 +36,17 @@ object TryOutMmDistSim {
     val inputFileString: String = args(0)
     println(f"Read data from: $inputFileString")
 
-    val dataset = NTripleReader.load(
-      spark,
-      inputFileString,
-      stopOnBadTerm = ErrorParseMode.SKIP,
-      stopOnWarnings = WarningParseMode.IGNORE
-    ).toDS() // .cache()
+    val dataset = NTripleReader
+      .load(
+        spark,
+        inputFileString,
+        stopOnBadTerm = ErrorParseMode.SKIP,
+        stopOnWarnings = WarningParseMode.IGNORE)
+      .toDS()
+      .cache()
+
     val numberTriples = dataset.count()
-    println(f"READ IN DATA:\ndata consists of ${numberTriples} triples")
+    println(f"\nREAD IN DATA:\ndata consists of ${numberTriples} triples")
     dataset.take(n = 10).foreach(println(_))
 
     /*
@@ -115,7 +118,7 @@ object TryOutMmDistSim {
     Gain Features from Query
     this creates a dataframe with columns corresponding to Sparql features
      */
-    println("FEATURE EXTRACTION OVER SPARQL")
+    println("\nFEATURE EXTRACTION OVER SPARQL")
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
@@ -151,7 +154,7 @@ object TryOutMmDistSim {
 
 
     // collaps features into arrays instead of having multiple rows
-    println("COLLAPS FEATURES TO SETS")
+    println("\nCOLLAPS FEATURES TO SETS")
     var collectedDataFrame = queryResultDf.select(keyColumnNameString).dropDuplicates().cache()
 
     featureColumns.foreach(
@@ -174,7 +177,7 @@ object TryOutMmDistSim {
     println(collectedDataFrame.schema)
     collectedDataFrame.show(false)
 
-    println("CREATE CROSS JOINED DF")
+    println("\nCREATE CROSS JOINED DF")
     /*
     cross join for all pair similairity
      */
@@ -208,7 +211,7 @@ object TryOutMmDistSim {
     })
 
 
-    println("WEIGHTS AND THRESHOLDS")
+    println("\nWEIGHTS AND THRESHOLDS")
     // drop thresholds
     val minSimThresholds: mutable.Map[String, Double] = mutable.Map(featureColumns.map((cn: String) => Tuple2(cn, 0.0)).toMap.toSeq: _*)
     // TODO Temporal change
@@ -234,10 +237,10 @@ object TryOutMmDistSim {
     val importanceNormed: Map[String, Double] = normWeights(importance)
     val reliabilityNormed: Map[String, Double] = normWeights(reliability)
     val availabilityNormed: Map[String, Double] = normWeights(availability)
-    println(f"IMPORTANTS WEIGHTS: importanceNormed:\n$importanceNormed")
-    println(f"RELIABILITY WEIGHTS: reliabilityNormed:\n$reliabilityNormed")
-    println(f"AVAILABILITY WEIGHTS: availabilityNormed:\n$availabilityNormed")
-    println(f"MIN SIMILARITY THRESHOLDS:\n$minSimThresholds")
+    println(f"\nIMPORTANTS WEIGHTS: importanceNormed:\n$importanceNormed")
+    println(f"\nRELIABILITY WEIGHTS: reliabilityNormed:\n$reliabilityNormed")
+    println(f"\nAVAILABILITY WEIGHTS: availabilityNormed:\n$availabilityNormed")
+    println(f"\nMIN SIMILARITY THRESHOLDS:\n$minSimThresholds")
 
 
 
@@ -247,7 +250,7 @@ object TryOutMmDistSim {
     /*
     Apply similairty score for pairs
      */
-    println("CALCULATE COLUMN WISE SIMILARITY SCORES")
+    println("\nCALCULATE COLUMN WISE SIMILARITY SCORES")
     orderedFeatureColumnNamesByImportance.foreach(
       featureName => {
         println(featureName) // TODO remove in later version
@@ -269,7 +272,7 @@ object TryOutMmDistSim {
     )
 
     // drop columns where no similarity at all is given
-    println("DROP ROWS WHERE NO SIMILARITY IS GIVEN")
+    println("\nDROP ROWS WHERE NO SIMILARITY IS GIVEN")
     featureSimilarityScores = featureSimilarityScores.filter(greatest(similairtyColumns.map(col): _*) > 0)
     println(f"number of pair with similairty above 0 and above thresholds: ${featureSimilarityScores.count()}")
     featureSimilarityScores.show(false) // TODO remove in later version
@@ -277,7 +280,7 @@ object TryOutMmDistSim {
     // calculate overall similarity
 
     // calculated weighted sum of all similairties
-    println("CALCULATED WEIGHTED SIMILAIRTY SUM")
+    println("\nCALCULATED WEIGHTED SIMILAIRTY SUM")
     println("weight similairties")
     featureColumns.foreach(
       featureColumn => {
@@ -298,18 +301,18 @@ object TryOutMmDistSim {
     featureSimilarityScores.show(false) // TODO remove in later version
 
     // order desc
-    println("ORDER SIMIALRITIES DESC")
+    println("\nORDER SIMIALRITIES DESC")
     println("order desc")
     featureSimilarityScores = featureSimilarityScores.orderBy(desc(featureSimilarityScores.columns.last))
     featureSimilarityScores.show(false) // TODO remove in later version
 
 
     // make results rdf
-    println("SELECT ONLY NEEDED COLUMN")
+    println("\nSELECT ONLY NEEDED COLUMN")
     featureSimilarityScores = featureSimilarityScores.select(featureSimilarityScores.columns(0), featureSimilarityScores.columns(1), featureSimilarityScores.columns.last)
     featureSimilarityScores.show(false)
 
-    println("CREATE METAGRAPH")
+    println("\nCREATE METAGRAPH")
     val mgc = new SimilarityExperimentMetaGraphFactory
     val semanticResult: Dataset[org.apache.jena.graph.Triple] = mgc.createRdfOutput(
       outputDataset = featureSimilarityScores
@@ -327,7 +330,7 @@ object TryOutMmDistSim {
 
     val outputFolderPath = args(1)
     val outputFilePath = f"${outputFolderPath}DaDistSimResult${Calendar.getInstance().getTime().toString.replace(" ", "")}"
-    println(f"STORE METAGRAPH\nwrite resulting MG to ${outputFilePath}")
+    println(f"\nSTORE METAGRAPH\nwrite resulting MG to ${outputFilePath}")
     semanticResult.rdd.coalesce(1).saveAsNTriplesFile(outputFilePath)
   }
 }
