@@ -645,7 +645,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 splitId,
                 headBytes,
                 headBuffer.getKnownDataSize(),
-                headRecordTime);
+                headRecordTime));
 
 
         // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
