@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit
 
 import com.google.common.base.Stopwatch
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderTrigDataset
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
-import net.sansa_stack.rdf.common.io.hadoop.TrigRecordReader
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.hadoop.fs.Path
 import org.apache.jena.query.{Dataset, DatasetFactory, QueryExecutionFactory, QueryFactory, ResultSetFactory}
@@ -37,7 +37,7 @@ class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
   def createTestRdd(): RDD[Dataset] = {
     import net.sansa_stack.rdf.spark.io._
 
-    val testFile = new File(classOf[TrigRecordReader].getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
+    val testFile = new File(classOf[RecordReaderTrigDataset].getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
     val path = new Path(testFile.getAbsolutePath)
 
     spark.datasets(Lang.TRIG)(path.toString)

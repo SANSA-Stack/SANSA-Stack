@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream
 import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.Logging
@@ -121,7 +121,7 @@ package object io {
     } else if (oStr.startsWith("http") && !oStr.contains("^^")) { // URI
       NodeFactory.createURI(oStr)
     } else { // literal
-      var lit = oStr
+      val lit = oStr
 //      val idx = oStr.indexOf("^^")
 //      if (idx > 0) {
 //        val first = oStr.substring(0, idx)
@@ -574,7 +574,7 @@ package object io {
       val confHadoop = spark.sparkContext.hadoopConfiguration
 
       spark.sparkContext.newAPIHadoopFile(path,
-        classOf[TrigFileInputFormat],
+        classOf[FileInputFormatTrigDataset],
         classOf[LongWritable],
         classOf[JenaDataset], confHadoop)
         .map { case (_, v) => v }
