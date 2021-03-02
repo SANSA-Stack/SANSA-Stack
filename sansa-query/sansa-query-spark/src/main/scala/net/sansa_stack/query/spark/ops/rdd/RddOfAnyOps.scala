@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.ops.rdd
 
 import java.util.stream.Collector
 
+import net.sansa_stack.rdf.spark.utils.SparkSessionUtils
 import org.aksw.jena_sparql_api.mapper.{Accumulator, Aggregators}
 import org.apache.spark.rdd.RDD
 
@@ -26,8 +27,13 @@ object RddOfAnyOps {
    * @return
    */
   def aggregateUsingJavaCollector[T: ClassTag, A: ClassTag, R: ClassTag](rdd: RDD[_ <: T], collector: Collector[_ >: T, A, R]): R = {
+    val sparkSession = SparkSessionUtils.getSessionFromRdd(rdd)
+    val collectorBc = sparkSession.sparkContext.broadcast(collector)
+
     var unfinishedResult = rdd
       .mapPartitions(it => {
+        val collector = collectorBc.value
+
         val result = collector.supplier.get
         val accumulator = collector.accumulator
         it.foreach(accumulator.accept(result, _))
