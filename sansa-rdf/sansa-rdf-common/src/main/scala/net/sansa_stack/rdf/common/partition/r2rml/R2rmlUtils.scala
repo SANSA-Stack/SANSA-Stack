@@ -162,7 +162,7 @@ object R2rmlUtils {
     }
 
     // consider an optional table name qualifier and prepend it
-    tableName = tableNameQualifier.map(tnq => s"${sqlCodec.forTableName.encode(tnq)}.").getOrElse("") + tableName
+    tableName = tableNameQualifier.map(tnq => s"${sqlCodec.forSchemaName().encode(tnq)}.").getOrElse("") + tableName
 
     // if enabled, create mappings per language tag
     if (explodeLanguageTags && attrNames.length == 3) {
@@ -193,7 +193,7 @@ object R2rmlUtils {
         Seq(tm)
       } else {
         p.languages.map(lang => {
-          val tableNameSql = if (escapeIdentifiers) tableName else sqlCodec.forTableName.encode(tableName)
+          val tableNameSql = tableName
           val langSql = sqlCodec.forStringLiteral.encode(lang)
 
           val tm: TriplesMap = outModel.createResource.as(classOf[TriplesMap])
@@ -216,14 +216,17 @@ object R2rmlUtils {
       }
     } else {
       val tm: TriplesMap = outModel.createResource.as(classOf[TriplesMap])
+
+      // create subject map
+      val sm: SubjectMap = tm.getOrSetSubjectMap()
+      setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
+
+      // create predicate-object map
       val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
       pom.addPredicate(predicateIri)
 
-      val sm: SubjectMap = tm.getOrSetSubjectMap()
+      // create object map
       val om: ObjectMap = pom.addNewObjectMap()
-
-      // create subject map
-      setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
       setTermMapForNode(om, 1, attrNames, p.objectType, p.datatype, p.langTagPresent)
 
       tm.getOrSetLogicalTable().asBaseTableOrView().setTableName(tableName)
