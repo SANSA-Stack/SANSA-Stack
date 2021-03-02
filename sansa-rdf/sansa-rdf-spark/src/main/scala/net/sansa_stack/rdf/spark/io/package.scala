@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark
 
-import java.io.ByteArrayOutputStream
+import java.io.{BufferedReader, ByteArrayOutputStream, InputStreamReader, PipedInputStream, PipedOutputStream}
+import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.util.Collections
 
@@ -442,8 +443,9 @@ package object io {
               // Look up the string here in order to avoid having to serialize RDFFormat
               val rdfFormat = RDFLanguagesEx.findRdfFormat(rdfFormatStr)
 
-              val baos = new ByteArrayOutputStream()
-              val rawWriter = StreamRDFWriter.getWriterStream(baos, rdfFormat, null)
+              val out = new PipedOutputStream() // throws IOException
+              val in = new PipedInputStream(out, 8 * 1024)
+              val rawWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, null)
 
               // Retain blank nodes as given
               if (rawWriter.isInstanceOf[WriterStreamRDFBase]) {
@@ -453,14 +455,23 @@ package object io {
               val writer = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
                 prefixMappingBc.value, rawWriter.asInstanceOf[WriterStreamRDFBase])
 
-              writer.start
-              while (p.hasNext) {
-                val ds: JenaDataset = p.next
-                StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), writer)
-              }
-              writer.finish
-
-              Collections.singleton(baos.toString("UTF-8").trim).iterator().asScala
+              val thread = new Thread(() => {
+                try {
+                  writer.start
+                  while (p.hasNext) {
+                    val ds: JenaDataset = p.next
+                    StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), writer)
+                  }
+                  writer.finish
+                  out.flush
+                } finally {
+                  out.close
+                }
+              });
+              thread.start();
+              // Collections.singleton(baos.toString("UTF-8").trim).iterator().asScala
+              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
+                .lines().iterator().asScala
             } else {
               Iterator()
             }
