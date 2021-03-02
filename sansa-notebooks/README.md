@@ -5,8 +5,8 @@ The cluster also includes [Hue](http://gethue.com/) for navigation and copying f
 The notebooks are created and run using [Apache Zeppelin](https://zeppelin.apache.org/).
 
 # Requirements
-* Docker Engine >= 1.13.0
-* docker-compose >= 1.10.0
+* Docker >= 20.10.4
+* docker-compose >= 1.28.5
 * Around 10 GB of disk space for Docker images
 
 After installation of docker add yourself to docker group (%username% is your username) and relogin:
@@ -44,29 +44,6 @@ make restart
 Stop the whole stack:
 ```
 make down
-```
-# Executing Examples From Command Line
-It is also possible to execute the applications from the command line. Get SANSA-Examples jar and start the cluster if you already have not done it:
-```
-make
-make up
-make load-data
-```
-Then you can execute any of the following commands to run the examples from the command line:
-```
-make cli-triples-reader
-make cli-triple-ops
-make cli-triples-writer
-make cli-pagerank
-make cli-rdf-stats
-make cli-inferencing
-make cli-sparklify
-make cli-owl-reader-manchester
-make cli-owl-reader-functional
-make cli-owl-dataset-reader-manchester
-make cli-owl-dataset-reader-functional
-make cli-clustering
-make cli-rule-mining
 ```
 
 ## How to Contribute
