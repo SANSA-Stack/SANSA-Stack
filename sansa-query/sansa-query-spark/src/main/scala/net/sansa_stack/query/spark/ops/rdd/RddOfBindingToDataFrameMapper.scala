@@ -73,7 +73,7 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
     // Supply the statistics to the schema mapper
     val schemaMapper = SchemaMapperImpl.newInstance
       .setSourceVars(javaResultVars)
-      .setSourceVarToDatatypes((v: Var) => usedDatatypesAndNulls.get(v).getKey.elementSet)
+      .setSourceVarToDatatypes((v: Var) => usedDatatypesAndNulls.get(v).getKey)
       .setSourceVarToNulls((v: Var) => usedDatatypesAndNulls.get(v).getValue)
       .setTypePromotionStrategy(TypePromoterImpl.create)
       .setVarToFallbackDatatypeToString()
