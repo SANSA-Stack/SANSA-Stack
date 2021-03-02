@@ -28,18 +28,15 @@ object RddOfAnyOps {
    */
   def aggregateUsingJavaCollector[T: ClassTag, A: ClassTag, R: ClassTag](rdd: RDD[_ <: T], collector: Collector[_ >: T, A, R]): R = {
     val sparkSession = SparkSessionUtils.getSessionFromRdd(rdd)
-    val collectorBc = sparkSession.sparkContext.broadcast(collector)
 
     var unfinishedResult = rdd
       .mapPartitions(it => {
-        val collector = collectorBc.value
-
         val result = collector.supplier.get
         val accumulator = collector.accumulator
         it.foreach(accumulator.accept(result, _))
         Iterator.single(result)
       })
-      .reduce(collectorBc.value.combiner.apply)
+      .reduce(collector.combiner.apply)
 
     val finishedResult = collector.finisher.apply(unfinishedResult)
     finishedResult
