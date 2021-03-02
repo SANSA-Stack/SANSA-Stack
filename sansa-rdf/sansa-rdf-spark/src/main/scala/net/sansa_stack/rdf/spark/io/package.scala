@@ -254,12 +254,16 @@ package object io {
   implicit class RDFQuadsWriter[T](quads: RDD[Quad]) {
 
     /**
+     * Deprecated; this method does not reuse Jena's RDFFormat/Lang system and also
+     * does not scale because it writes each partition into a single string.
+     *
      * Save the data in N-Quads format.
      *
      * @param path the path where the N-Quads file(s) will be written to
      * @param mode the expected behavior of saving the data to a data source
      * @param exitOnError whether to stop if an error occurred
      */
+    @deprecated
     def saveAsNQuadsFile(path: String,
              mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
              exitOnError: Boolean = false): Unit = {
@@ -440,7 +444,7 @@ package object io {
         val dataBlocks = quads
           .mapPartitions(p => {
             if (p.hasNext) {
-              // Look up the string here in order to avoid having to serialize RDFFormat
+              // Look up the string here in order to avoid having to serialize the RDFFormat object
               val rdfFormat = RDFLanguagesEx.findRdfFormat(rdfFormatStr)
 
               val out = new PipedOutputStream() // throws IOException
@@ -452,6 +456,7 @@ package object io {
                 WriterStreamRDFBaseUtils.setNodeToLabel(rawWriter.asInstanceOf[WriterStreamRDFBase], SyntaxLabels.createNodeToLabelAsGiven())
               }
 
+              // Set the writer's prefix map without writing them out
               val writer = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
                 prefixMappingBc.value, rawWriter.asInstanceOf[WriterStreamRDFBase])
 
