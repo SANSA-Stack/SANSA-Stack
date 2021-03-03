@@ -5,7 +5,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "trig",
         description = "Trig Related Commands",
         subcommands = {
-                CmdSansaTrigDistinct.class,
+                CmdSansaTrigMerge.class,
                 CmdSansaTrigQuery.class
         })
 public class CmdSansaTrig {

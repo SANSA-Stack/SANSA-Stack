@@ -60,7 +60,24 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
           OpAsQuery.asQuery(op.getSubOp)
         }
 
-        result = RddOfDatasetOps.selectWithSparql(rddOfDataset, query)
+        result = RddOfDatasetOps.selectWithSparqlPerPartition(rddOfDataset, query)
+
+        success = true
+      } else if (serviceUri == "rdd:perGraph") {
+        // Get the RDD[Dataset] from the execution context
+        val rddOfDataset: RDD[Dataset] = execCxt.getContext.get(SYM_RDD_OF_DATASET)
+
+        if (rddOfDataset == null) {
+          throw new RuntimeException("No rddOfDataset in execution context - cannot delegate to " + serviceUri)
+        }
+
+        val query = if (op.getServiceElement != null) {
+          QueryUtils.elementToQuery(op.getServiceElement)
+        } else {
+          OpAsQuery.asQuery(op.getSubOp)
+        }
+
+        result = RddOfDatasetOps.selectWithSparqlPerGraph(rddOfDataset, query)
 
         success = true
       }

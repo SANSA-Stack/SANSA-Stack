@@ -1,15 +1,14 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigDistinctImpl;
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigQueryImpl;
+import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigMergeImpl;
 import picocli.CommandLine;
 
 import java.util.List;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "distinct",
+@CommandLine.Command(name = "merge",
         description = "Merge data from multiple trig files to make it distinct")
-public class CmdSansaTrigDistinct
+public class CmdSansaTrigMerge
         extends CmdBase
         implements Callable<Integer>
 {
@@ -20,11 +19,15 @@ public class CmdSansaTrigDistinct
 
     @CommandLine.Option(names = { "-o", "--out-format" },
             description = "Output format. Default: ${DEFAULT-VALUE}",
-            defaultValue = "srj")
+            defaultValue = "trig/blocks")
     public String outFormat = null;
 
+    @CommandLine.Option(names = { "--out-folder" },
+            description = "Output folder")
+    public String outFolder = null;
+
     @CommandLine.Option(names = { "--out-file" },
-            description = "Output file")
+            description = "Output file; Merge of files created in out-folder")
     public String outFile = null;
 
     @CommandLine.Option(names = { "--op", "--out-prefixes" },
@@ -37,6 +40,10 @@ public class CmdSansaTrigDistinct
             defaultValue = "100")
     public long deferOutputForUsedPrefixes;
 
+    @CommandLine.Option(names = { "-d", "--distinct" },
+            description = "Make quads distinct")
+    public boolean distinct = false;
+
     @CommandLine.Option(names = { "-s", "--sort" },
             description = "Enable sorting of graphs by their IRI")
     public boolean sort = false;
@@ -46,11 +53,11 @@ public class CmdSansaTrigDistinct
     public int numPartitions = 0;
 
 
-    @CommandLine.Parameters(arity = "1..n", description = "Trig File")
+    @CommandLine.Parameters(arity = "1..n", description = "Trig File(s)")
     public List<String> trigFiles;
 
     @Override
     public Integer call() throws Exception {
-        return CmdSansaTrigDistinctImpl.run(this);
+        return CmdSansaTrigMergeImpl.run(this);
     }
 }

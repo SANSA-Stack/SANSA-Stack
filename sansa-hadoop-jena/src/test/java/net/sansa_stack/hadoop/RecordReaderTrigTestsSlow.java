@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@Ignore
+// @Ignore
 @RunWith(Parameterized.class)
 // TODO Tag with @Category()
 public class RecordReaderTrigTestsSlow
