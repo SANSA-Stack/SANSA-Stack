@@ -148,7 +148,7 @@ object LMDB_Pipeline {
       case "0" => minimalSparql
       case "1" => oneFeatureSparql
       case "2" => manualSparqlString
-      case "3" => autoSparqlString
+      // case "3" => autoSparqlString
     } // autoSparqlString // manualSparqlString
     println()
     println(queryString)
