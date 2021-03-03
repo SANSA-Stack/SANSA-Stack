@@ -2,6 +2,7 @@ package net.sansa_stack.hadoop.jena.rdf.turtle;
 
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.jena.rdf.base.RecordReaderGenericRdfBase;
+import net.sansa_stack.hadoop.jena.rdf.base.RecordReaderGenericRdfNonAccumulatingBase;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
@@ -11,7 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 public class RecordReaderTurtleTriple
-        extends RecordReaderGenericRdfBase<Triple>
+        extends RecordReaderGenericRdfNonAccumulatingBase<Triple>
 {
 
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.turtle.triple.record.minlength";

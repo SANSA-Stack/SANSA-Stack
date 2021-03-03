@@ -6,28 +6,27 @@ import org.apache.jena.riot.Lang;
 
 import java.util.regex.Pattern;
 
-public abstract class RecordReaderGenericRdfBase<U, G, A, T>
-    extends RecordReaderGenericBase<U, G, A, T>
+public abstract class RecordReaderGenericRdfNonAccumulatingBase<T>
+    extends RecordReaderGenericBase<T, T, T, T>
 {
     protected Lang lang;
 
     protected String prefixesMaxLengthKey;
 
-    public RecordReaderGenericRdfBase(
+    public RecordReaderGenericRdfNonAccumulatingBase(
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
             String prefixesMaxLengthKey,
             Pattern recordSearchPattern,
-            Lang lang,
-            Accumulating<U, G, A, T> accumulating) {
+            Lang lang) {
         super(minRecordLengthKey,
                 maxRecordLengthKey,
                 probeRecordCountKey,
                 recordSearchPattern,
                 FileInputFormatRdfBase.BASE_IRI_KEY,
                 FileInputFormatRdfBase.PREFIXES_KEY,
-                accumulating);
+                Accumulating.identity());
         this.lang = lang;
         this.prefixesMaxLengthKey = prefixesMaxLengthKey;
     }
