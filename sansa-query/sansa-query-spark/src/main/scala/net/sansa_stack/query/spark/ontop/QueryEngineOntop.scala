@@ -16,7 +16,6 @@ import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.spec.dbschema.tools.DBMetadataExtractorAndSerializer
-import it.unibz.inf.ontop.spec.dbschema.tools.impl.RDBMetadataExtractorAndSerializerImpl
 import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api.TriplesMap
@@ -97,7 +96,6 @@ class OntopSPARQL2SQLRewriter(ontopSessionId: String,
   val mappingConfig = OntopUtils.createMappingConfig(ontopProperties, database)
   val extractorAndSerializer = mappingConfig.getInjector.getInstance(classOf[DBMetadataExtractorAndSerializer])
   val dbMetadata = extractorAndSerializer.extractAndSerialize()
-  println(dbMetadata)
 
 
   @throws[OBDASpecificationException]
@@ -317,7 +315,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
         implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
         if (maxRowMappers > 0) {
-          df = df.coalesce(50)
+          df = df.coalesce(maxRowMappers)
         }
         val rdd = df.mapPartitions(iterator => {
           ScalaUtils.time {
@@ -328,7 +326,7 @@ class QueryEngineOntop(val spark: SparkSession,
               metaDataBC.value,
               ontologyBC.value))
           }
-
+          println(s"started mapping partition at ${System.currentTimeMillis()}")
 
             val mapper = new OntopRowMapper(
             idBC.value,
@@ -343,33 +341,13 @@ class QueryEngineOntop(val spark: SparkSession,
 //            outputBC.value
           )
           val it = iterator.map(mapper.map)
+          val bindings = it.toSeq
+          println(s"finished mapping partition at ${System.currentTimeMillis()}")
           //      mapper.close()
-          it
+          // it
+          bindings.toIterator
         }).rdd
-        rdd.toDebugString
-        rdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
         rdd
-//        val schema = spark.sparkContext.broadcast(df.schema.fields)
-//        df.queryExecution.toRdd.mapPartitions(iterator => {
-//          OntopConnection(idBC.value,
-//            databaseBC.value,
-//            mappingsBC.value,
-//            propertiesBC.value,
-//            metaDataBC.value,
-//            ontologyBC.value)
-//
-//          val mapper = new OntopRowMapper(
-//            idBC.value,
-//            databaseBC.value,
-//            mappingsBC.value,
-//            propertiesBC.value,
-//            metaDataBC.value,
-//            sparqlQueryBC.value,
-//            ontologyBC.value,
-//            rwiBC.value
-//          )
-//          iterator.map(row => mapper.map(row, schema.value))
-//        })
       case None => spark.sparkContext.emptyRDD
     }
   }

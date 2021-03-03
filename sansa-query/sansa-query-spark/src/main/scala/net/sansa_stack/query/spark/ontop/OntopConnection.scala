@@ -94,7 +94,7 @@ object OntopConnection {
       logger.debug(s"creating reformulation config for session $id...")
       val reformulationConfiguration =
         ScalaUtils.time(s"creating reformulation config for session $id...",
-          "created reformulation config for session $id") {
+          s"created reformulation config for session $id") {
           JDBCDatabaseGenerator.generateTables(getOrCreateConnection(database), jdbcMetaData)
 
           OntopUtils.createReformulationConfig(database, obdaMappings, properties, ontology)
