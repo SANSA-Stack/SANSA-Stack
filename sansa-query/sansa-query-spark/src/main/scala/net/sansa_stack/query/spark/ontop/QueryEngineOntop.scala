@@ -174,7 +174,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
   // if no ontology has been provided, we try to extract it from the dataset
   if (ontology.isEmpty) {
-    ontology = OntologyExtractor.extract(spark, mappingsModel)
+    ontology = None // OntologyExtractor.extract(spark, mappingsModel)
   }
 
   // we have to add separate mappings for each rdf:type in Ontop.
@@ -319,15 +319,15 @@ class QueryEngineOntop(val spark: SparkSession,
           df = df.coalesce(maxRowMappers)
         }
         val rdd = df.mapPartitions(iterator => {
+          println(s"started mapping partition at ${System.currentTimeMillis()}")
           ScalaUtils.time {
             ("Ontop connection init", OntopConnection(idBC.value,
-              databaseBC.value,
+              dbMetadataBC.value,
               mappingsBC.value,
               propertiesBC.value,
-              metaDataBC.value,
               ontologyBC.value))
           }
-          println(s"started mapping partition at ${System.currentTimeMillis()}")
+
 
             val mapper = new OntopRowMapper(
             idBC.value,
@@ -341,6 +341,7 @@ class QueryEngineOntop(val spark: SparkSession,
               dbMetadataBC.value
 //            outputBC.value
           )
+          println(s"started mapping at ${System.currentTimeMillis()}")
           val it = iterator.map(mapper.map)
           val bindings = it.toSeq
           println(s"finished mapping partition at ${System.currentTimeMillis()}")
