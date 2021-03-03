@@ -200,7 +200,7 @@ object TryOutMmDistSim {
     // println(s"Full crossJoinedDFs size:  ${crossJoinedDFs.count()}") // TODO remove in later version
 
     // dataframe we operate on for similairty calculation
-    var featureSimilarityScores: DataFrame = crossJoinedDFs // .cache()
+    var featureSimilarityScores: DataFrame = crossJoinedDFs.cache()
 
     // udf for naive Jaccard index as first placeholder
     val similarityEstimation = udf( (a: mutable.WrappedArray[Any], b: mutable.WrappedArray[Any]) => {
@@ -209,7 +209,6 @@ object TryOutMmDistSim {
       val res = if (unionCard > 0) intersectionCard / unionCard else 0.0
       res
     })
-
 
     println("\nWEIGHTS AND THRESHOLDS")
     // drop thresholds
@@ -274,7 +273,7 @@ object TryOutMmDistSim {
     // drop columns where no similarity at all is given
     println("\nDROP ROWS WHERE NO SIMILARITY IS GIVEN")
     featureSimilarityScores = featureSimilarityScores.filter(greatest(similairtyColumns.map(col): _*) > 0)
-    println(f"number of pair with similairty above 0 and above thresholds: ${featureSimilarityScores.count()}")
+    // println(f"number of pair with similairty above 0 and above thresholds: ${featureSimilarityScores.count()}")
     featureSimilarityScores.show(false) // TODO remove in later version
 
     // calculate overall similarity
@@ -306,7 +305,6 @@ object TryOutMmDistSim {
     featureSimilarityScores = featureSimilarityScores.orderBy(desc(featureSimilarityScores.columns.last))
     featureSimilarityScores.show(false) // TODO remove in later version
 
-
     // make results rdf
     println("\nSELECT ONLY NEEDED COLUMN")
     featureSimilarityScores = featureSimilarityScores.select(featureSimilarityScores.columns(0), featureSimilarityScores.columns(1), featureSimilarityScores.columns.last)
@@ -316,7 +314,6 @@ object TryOutMmDistSim {
     val mgc = new SimilarityExperimentMetaGraphFactory
     val semanticResult: Dataset[org.apache.jena.graph.Triple] = mgc.createRdfOutput(
       outputDataset = featureSimilarityScores
-        // .limit(100) // TODO be careful with this limit, only to check memory issues
     )(
       modelInformationEstimatorName = "DaDistSim",
       modelInformationEstimatorType = "Similarity",
