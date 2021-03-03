@@ -57,7 +57,8 @@ services:
     ports:
       - 80:8080
     volumes:      
-      - ./examples:/opt/sansa-examples      
+      - ./examples:/opt/sansa-examples
+      - ./notebook:/opt/zeppelin/notebook/SANSA
     environment:
       CORE_CONF_fs_defaultFS: "hdfs://namenode:8020"
       SPARK_MASTER: "spark://spark:7077"
