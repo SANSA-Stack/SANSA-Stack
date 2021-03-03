@@ -31,6 +31,7 @@ import org.semanticweb.owlapi.model.OWLOntology
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
+import org.apache.spark.SparkEnv
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -347,7 +348,8 @@ class QueryEngineOntop(val spark: SparkSession,
           // it
           bindings.toIterator
         }).rdd
-        rdd
+
+        rdd.persist(StorageLevel.MEMORY_ONLY_SER)
       case None => spark.sparkContext.emptyRDD
     }
   }

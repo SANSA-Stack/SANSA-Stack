@@ -2,15 +2,18 @@ package net.sansa_stack.query.spark.ontop
 
 import java.lang.invoke.SerializedLambda
 import java.lang.reflect.InvocationHandler
-import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.Kryo.DefaultInstantiatorStrategy
+import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.ClosureSerializer.Closure
 import com.esotericsoftware.kryo.serializers.{ClosureSerializer, JavaSerializer}
 import de.javakaffee.kryoserializers.JdkProxySerializer
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import it.unibz.inf.ontop.model.`type`.TypeFactory
+import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
+import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
 import it.unibz.inf.ontop.model.`type`.impl.TypeFactoryImpl
-import it.unibz.inf.ontop.model.term.{ImmutableTerm, TermFactory}
+import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
+import it.unibz.inf.ontop.model.term.{ImmutableTerm, TermFactory, Variable}
 import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.{AbstractSQLDBFunctionSymbolFactory, DefaultSQLTimestampISONormFunctionSymbol}
 import it.unibz.inf.ontop.model.term.impl.TermFactoryImpl
 import org.apache.jena.sparql.engine.binding.Binding
@@ -19,6 +22,7 @@ import org.objenesis.strategy.StdInstantiatorStrategy
 import uk.ac.manchester.cs.owl.owlapi.OWLOntologyImpl
 import uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl
 import net.sansa_stack.query.spark.ontop.kryo.{ImmutableFunctionalTermSerializer, ShadedBiMapSerializer, ShadedImmutableBiMapSerializer, ShadedImmutableListSerializer, ShadedImmutableMapSerializer, ShadedImmutableSortedSetSerializer, ShadedImmutableTableSerializer, TermFactorySerializer, TypeFactorySerializer}
+import net.sansa_stack.rdf.spark.utils.ScalaUtils
 
 
 /**
@@ -46,6 +50,8 @@ class OntopKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[DefaultSQLTimestampISONormFunctionSymbol])
     kryo.register(classOf[AbstractSQLDBFunctionSymbolFactory])
 
+    kryo.register(classOf[RewriteInstruction], new RewriteInstructionSerializer())
+
     // OWLOntology
     kryo.register(classOf[OWLOntologyImpl], new JavaSerializer())
     kryo.register(classOf[ConcurrentOWLOntologyImpl], new JavaSerializer())
@@ -72,6 +78,27 @@ class OntopKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[TermFactoryImpl], new TermFactorySerializer(null))
     kryo.register(classOf[TypeFactory], new TypeFactorySerializer(null))
     kryo.register(classOf[TypeFactoryImpl], new TypeFactorySerializer(null))
+  }
+
+  class RewriteInstructionSerializer extends Serializer[RewriteInstruction](false, true) {
+    override def write(kryo: Kryo, output: Output, rwi: RewriteInstruction): Unit = {
+      ScalaUtils.time("writing rwi", "wrote rwi") {
+        kryo.writeClassAndObject(output, rwi.sqlSignature)
+        kryo.writeClassAndObject(output, rwi.sqlTypeMap)
+        kryo.writeClassAndObject(output, rwi.anserAtom)
+        kryo.writeClassAndObject(output, rwi.sparqlVar2Term)
+      }
+    }
+
+    override def read(kryo: Kryo, input: Input, `type`: Class[RewriteInstruction]): RewriteInstruction = {
+      ScalaUtils.time("reading rwi", "read rwi") {
+        RewriteInstruction(
+          kryo.readClassAndObject(input).asInstanceOf[ImmutableSortedSet[Variable]],
+          kryo.readClassAndObject(input).asInstanceOf[ImmutableMap[Variable, DBTermType]],
+          kryo.readClassAndObject(input).asInstanceOf[DistinctVariableOnlyDataAtom],
+          kryo.readClassAndObject(input).asInstanceOf[ImmutableMap[Variable, ImmutableTerm]])
+      }
+    }
   }
 
 }
