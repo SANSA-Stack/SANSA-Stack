@@ -1,24 +1,21 @@
 package net.sansa_stack.query.spark.ops.rdd
 
-import com.typesafe.scalalogging.LazyLogging
-
-import java.math.BigInteger
 import java.util
+
+import com.typesafe.scalalogging.LazyLogging
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
-import org.aksw.jena_sparql_api.rdf.collections.{ConverterFromRDFNodeMapper, NodeMapperFromRdfDatatype}
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapperFromRdfDatatype
 import org.aksw.jena_sparql_api.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
-import org.aksw.jena_sparql_api.utils.NodeUtils
 import org.aksw.r2rml.common.vocab.R2rmlTerms
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.vocabulary.XSD
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.cassandra.DataTypeConverter
-import org.apache.spark.sql.types.{DataType, DataTypes, DecimalType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.types.{DataType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
 
 /**
  * Mapper from SPARQL bindings to DataFrames
@@ -73,7 +70,7 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
     // Supply the statistics to the schema mapper
     val schemaMapper = SchemaMapperImpl.newInstance
       .setSourceVars(javaResultVars)
-      .setSourceVarToDatatypes((v: Var) => usedDatatypesAndNulls.get(v).getKey.elementSet)
+      .setSourceVarToDatatypes((v: Var) => usedDatatypesAndNulls.get(v).getKey)
       .setSourceVarToNulls((v: Var) => usedDatatypesAndNulls.get(v).getValue)
       .setTypePromotionStrategy(TypePromoterImpl.create)
       .setVarToFallbackDatatypeToString()

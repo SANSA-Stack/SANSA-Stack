@@ -15,6 +15,12 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
+        </dependency>
+
+
         <!-- RDF Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>

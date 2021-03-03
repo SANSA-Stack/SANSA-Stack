@@ -188,7 +188,7 @@
 											<exclude>net.sf.py4j:py4j</exclude>
 											<exclude>org.antlr:antlr4-runtime</exclude>
 											<exclude>org.apache.avro:avro*</exclude>
-											<exclude>org.apache.commons:commons-lang3</exclude>
+											<!-- <exclude>org.apache.commons:commons-lang3</exclude> -->
 											<exclude>org.apache.commons:commons-math3</exclude>
 											<exclude>org.apache.commons:commons-compress</exclude>
 											<exclude>org.apache.curator:curator*</exclude>
