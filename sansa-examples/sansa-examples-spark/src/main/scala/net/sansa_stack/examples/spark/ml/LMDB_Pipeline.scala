@@ -53,7 +53,7 @@ object LMDB_Pipeline {
      */
 
     // OPTION 1
-    /* val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
       dataset,
       "?movie",
       "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
@@ -62,10 +62,31 @@ object LMDB_Pipeline {
       1,
       featuresInOptionalBlocks = true,
     )
-    println(autoSparqlString)
-     */
+
 
     // OPTION 2
+    val minimalSparql = """
+                          | SELECT
+                          | ?movie
+                          |
+                          |WHERE {
+                          |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+                          |}
+      """.stripMargin
+
+    val oneFeatureSparql = """
+                          | SELECT
+                          | ?movie ?movie__down_title
+                          |
+                          |WHERE {
+                          |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+                          |
+                          | OPTIONAL {
+                          |		?movie <http://purl.org/dc/terms/title> ?movie__down_title .
+                          |	}
+                          |}
+      """.stripMargin
+
     val manualSparqlString =
       """
         | SELECT
@@ -123,7 +144,12 @@ object LMDB_Pipeline {
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = manualSparqlString // autoSparqlString // manualSparqlString
+    val queryString = args(1) match {
+      case "0" => minimalSparql
+      case "1" => oneFeatureSparql
+      case "2" => manualSparqlString
+      case "3" => autoSparqlString
+    } // autoSparqlString // manualSparqlString
     println()
     println(queryString)
 
