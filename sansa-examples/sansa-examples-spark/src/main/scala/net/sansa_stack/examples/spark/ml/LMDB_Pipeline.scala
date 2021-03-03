@@ -146,12 +146,14 @@ object LMDB_Pipeline {
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = args(1) match {
+    val queryString = args(1) /* match {
       case "0" => minimalSparql
       case "1" => oneFeatureSparql
       case "2" => manualSparqlString
       // case "3" => autoSparqlString
     } // autoSparqlString // manualSparqlString
+
+     */
     println()
     println(queryString)
 
