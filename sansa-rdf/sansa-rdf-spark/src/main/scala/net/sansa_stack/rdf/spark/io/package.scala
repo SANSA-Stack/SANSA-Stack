@@ -1,15 +1,20 @@
 package net.sansa_stack.rdf.spark
 
-import java.io.ByteArrayOutputStream
+import java.io.{BufferedReader, ByteArrayOutputStream, InputStreamReader, PipedInputStream, PipedOutputStream}
+import java.nio.charset.StandardCharsets
+import java.nio.file.Paths
 import java.util.Collections
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.sansa_stack.rdf.common.io.hadoop.TrigFileInputFormat
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
+import net.sansa_stack.rdf.spark.io.JenaDatasetWriter
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
+import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark.logger
 import net.sansa_stack.rdf.spark.utils.Logging
+import org.aksw.commons.io.util.{FileMerger, FileUtils}
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
-import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseWrapper
+import org.aksw.jena_sparql_api.utils.io.{WriterStreamRDFBaseUtils, WriterStreamRDFBaseWrapper}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.graph.{Graph, Node, NodeFactory, Triple}
@@ -19,7 +24,7 @@ import org.apache.jena.hadoop.rdf.io.output.QuadsOutputFormat
 import org.apache.jena.hadoop.rdf.types.{QuadWritable, TripleWritable}
 import org.apache.jena.query.{Dataset => JenaDataset}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
-import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter}
+import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter, SyntaxLabels}
 import org.apache.jena.riot.writer.WriterStreamRDFBase
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat, RDFLanguages}
 import org.apache.jena.shared.PrefixMapping
@@ -121,7 +126,7 @@ package object io {
     } else if (oStr.startsWith("http") && !oStr.contains("^^")) { // URI
       NodeFactory.createURI(oStr)
     } else { // literal
-      var lit = oStr
+      val lit = oStr
 //      val idx = oStr.indexOf("^^")
 //      if (idx > 0) {
 //        val first = oStr.substring(0, idx)
@@ -249,12 +254,16 @@ package object io {
   implicit class RDFQuadsWriter[T](quads: RDD[Quad]) {
 
     /**
+     * Deprecated; this method does not reuse Jena's RDFFormat/Lang system and also
+     * does not scale because it writes each partition into a single string.
+     *
      * Save the data in N-Quads format.
      *
      * @param path the path where the N-Quads file(s) will be written to
      * @param mode the expected behavior of saving the data to a data source
      * @param exitOnError whether to stop if an error occurred
      */
+    @deprecated
     def saveAsNQuadsFile(path: String,
              mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
              exitOnError: Boolean = false): Unit = {
@@ -329,22 +338,72 @@ package object io {
 
 
   /**
-   * Adds method `saveAsNQuadsFile` to an RDD[Quad] that allows to write N-Quads files.
+   * Adds methods to save RDDs of datasets to a folder or file.
+   *
    */
-  implicit class RDFChunkWriter[T](quads: RDD[JenaDataset]) {
+  implicit class JenaDatasetWriter[T](quads: RDD[JenaDataset]) {
+
+    // TODO This method should go to a common util class
+    def mergeFolder(outFile: java.nio.file.Path, srcFolder: java.nio.file.Path, pattern: String): Unit = {
+      val partPaths = FileUtils.listPaths(srcFolder, pattern)
+      java.util.Collections.sort(partPaths, (a: java.nio.file.Path, b: java.nio.file.Path) => a.getFileName.toString.compareTo(b.getFileName.toString))
+      logger.info("Creating file %s by merging %d files from %s".format(
+        outFile.toString, partPaths.size, srcFolder.toString))
+
+      // val sw = Stopwatch.createStarted
+      val merger = FileMerger.create(outFile, partPaths)
+      merger.addProgressListener(self => logger.info(
+        "Write progress for %s: %.2f%%".format(outFile.getFileName.toString, self.getProgress * 100.0)))
+      merger.run
+    }
 
     /**
-     * Save the data in N-Quads format.
+     * Save the RDD to a single file.
+     * Underneath invokes [[JenaDatasetWriter#saveToFolder]] and merges
+     * the set of files created by it.
+     * See [[JenaDatasetWriter#saveToFolder]] for supported formats.
      *
-     * @param path the path where the N-Quads file(s) will be written to
+     * @param outFile
+     * @param prefixMapping
+     * @param rdfFormat
+     * @param outFolder The folder for the part files; may be null.
+     * @param mode
+     * @param exitOnError
+     */
+    def saveToFile(outFile: String,
+                   prefixMapping: PrefixMapping,
+                   rdfFormat: RDFFormat,
+                   outFolder: String,
+                   mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+                   exitOnError: Boolean = false): Unit = {
+
+      val outFilePath = Paths.get(outFile).toAbsolutePath
+      val outFileFileName = outFilePath.getFileName.toString
+      val outFolderPath =
+        if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
+        else Paths.get(outFolder).toAbsolutePath
+
+      saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
+      mergeFolder(outFilePath, outFolderPath, "part*")
+    }
+
+    /**
+     * Save the data in Trig/Turtle or its sub-formats (n-quads/n-triples) format.
+     * If prefixes should be written out then they have to provided as an argument to
+     * the prefixMapping parameter.
+     * Prefix mappings are broadcasted to and processed in a .mapPartition operation.
+     * If the prefixMapping is non-empty then the first part file written out contains them.
+     * No other partition will write out prefixes.
+     *
+     * @param path the folder into which the file(s) will be written to
      * @param mode the expected behavior of saving the data to a data source
      * @param exitOnError whether to stop if an error occurred
      */
-    def saveAsFile(path: String,
-                   prefixMapping: PrefixMapping,
-                   rdfFormat: RDFFormat,
-                   mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
-                   exitOnError: Boolean = false): Unit = {
+    def saveToFolder(path: String,
+                     prefixMapping: PrefixMapping,
+                     rdfFormat: RDFFormat,
+                     mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+                     exitOnError: Boolean = false): Unit = {
 
       val fsPath = new Path(path)
       val fs = fsPath.getFileSystem(quads.sparkContext.hadoopConfiguration)
@@ -385,27 +444,47 @@ package object io {
         val dataBlocks = quads
           .mapPartitions(p => {
             if (p.hasNext) {
+              // Look up the string here in order to avoid having to serialize the RDFFormat object
               val rdfFormat = RDFLanguagesEx.findRdfFormat(rdfFormatStr)
 
-              val baos = new ByteArrayOutputStream()
-              val rawWriter = StreamRDFWriter.getWriterStream(baos, rdfFormat, null)
+              val out = new PipedOutputStream() // throws IOException
+              val in = new PipedInputStream(out, 8 * 1024)
+              val rawWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, null)
+
+              // Retain blank nodes as given
+              if (rawWriter.isInstanceOf[WriterStreamRDFBase]) {
+                WriterStreamRDFBaseUtils.setNodeToLabel(rawWriter.asInstanceOf[WriterStreamRDFBase], SyntaxLabels.createNodeToLabelAsGiven())
+              }
+
+              // Set the writer's prefix map without writing them out
               val writer = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
                 prefixMappingBc.value, rawWriter.asInstanceOf[WriterStreamRDFBase])
 
-              while (p.hasNext) {
-                val ds: JenaDataset = p.next
-                StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), writer)
-              }
-
-              Collections.singleton(baos.toString("UTF-8").trim).iterator().asScala
+              val thread = new Thread(() => {
+                try {
+                  writer.start
+                  while (p.hasNext) {
+                    val ds: JenaDataset = p.next
+                    StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), writer)
+                  }
+                  writer.finish
+                  out.flush
+                } finally {
+                  out.close
+                }
+              });
+              thread.start();
+              // Collections.singleton(baos.toString("UTF-8").trim).iterator().asScala
+              new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))
+                .lines().iterator().asScala
             } else {
               Iterator()
             }
           })
 
-        // If there are prefixes then serialize them and prepend
-        // their string to the output
-
+        // If there are prefixes then serialize them into their own partition and prepend them to all
+        // the other serialized data partitions.
+        // Note that this feature is unstable as it relies on spark retaining order of partitions (which so far it does)
         val allBlocks: RDD[String] =
           if (prefixStr != null) {
             val prefixRdd = quads.sparkContext.parallelize(Seq(prefixStr))
@@ -574,7 +653,7 @@ package object io {
       val confHadoop = spark.sparkContext.hadoopConfiguration
 
       spark.sparkContext.newAPIHadoopFile(path,
-        classOf[TrigFileInputFormat],
+        classOf[FileInputFormatTrigDataset],
         classOf[LongWritable],
         classOf[JenaDataset], confHadoop)
         .map { case (_, v) => v }

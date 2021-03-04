@@ -17,6 +17,16 @@
 
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-kryo-jena</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-hadoop-jena</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-resource-testdata</artifactId>
 			<scope>test</scope>
 		</dependency>
@@ -25,10 +35,12 @@
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-reflect</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.scalatest</groupId>
 			<artifactId>scalatest_${scala.binary.version}</artifactId>

@@ -2,8 +2,10 @@ package net.sansa_stack.query.spark.sparqlify
 
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
+import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.obda.jena.r2rml.impl.R2rmlImporter
+import org.aksw.r2rml.jena.sql.transform.R2rmlSqlLib
 import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}
@@ -29,7 +31,8 @@ object SparqlifyUtils3 // extends StrictLogging
    * @return
    */
   def createSparqlSqlRewriter(sparkSession: SparkSession, databaseName: Option[String], r2rmlModel: Model): SparqlSqlStringRewriter = {
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) // new SqlEscaperBacktick())
+    // val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) // new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("", "")) // new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
     val sqlFunctionMapping = SparqlifyCoreInit.loadSqlFunctionDefinitions("functions-spark.xml")
@@ -45,6 +48,13 @@ object SparqlifyUtils3 // extends StrictLogging
     // val loggerCount = new LoggerCount(logger.underlying)
     val r2rmlImporter = new R2rmlImporter
 
+    val sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark()
+
+    // TODO Consider moving the R2RML model transformation out of this method
+    if (databaseName.isDefined) {
+      R2rmlSqlLib.makeQualifiedTableIdentifiers(r2rmlModel, databaseName.get, sqlCodec, true)
+    }
+
     val viewDefinitions = r2rmlImporter.read(r2rmlModel)
     config.getViewDefinitions.addAll(viewDefinitions)
 
@@ -54,7 +64,7 @@ object SparqlifyUtils3 // extends StrictLogging
   }
 
 // FIXME Delete once ported
-  def createSparqlSqlRewriter(sparkSession: SparkSession, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]]): SparqlSqlStringRewriter = {
+  def createSparqlSqlRewriterOld(sparkSession: SparkSession, partitioner: RdfPartitioner[RdfPartitionStateDefault], partitions: Map[RdfPartitionStateDefault, RDD[Row]]): SparqlSqlStringRewriter = {
     val config = new Config()
     // val loggerCount = new LoggerCount(logger.underlying)
 

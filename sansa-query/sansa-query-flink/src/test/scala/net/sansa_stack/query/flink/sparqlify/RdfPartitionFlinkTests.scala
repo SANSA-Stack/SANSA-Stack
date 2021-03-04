@@ -4,7 +4,7 @@ import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import net.sansa_stack.rdf.common.kryo.jena._
+import net.sansa_stack.kryo.jena.{ANYNodeSerializer, DefaultNodeSerializer, ExprSerializer, TripleSerializer, VarSerializer, VariableNodeSerializer}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
@@ -21,7 +21,7 @@ import org.scalatest._
 
 import scala.collection.JavaConverters._
 
-class TestRdfPartitionFlink extends FlatSpec {
+class RdfPartitionFlinkTests extends FlatSpec {
 
   "A partitioner" should "support custom datatypes" in {
     ExecutionEnvironment.getExecutionEnvironment.getConfig

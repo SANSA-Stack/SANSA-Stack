@@ -1,8 +1,7 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
 import java.util.Objects
-
-import org.aksw.jena_sparql_api.utils.IteratorResultSetBinding
+import org.aksw.jena_sparql_api.utils.{DatasetGraphUtils, IteratorResultSetBinding}
 import org.apache.jena.graph.{Graph, GraphUtil}
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
@@ -32,6 +31,7 @@ object RddOfDatasetOps {
    */
   def groupNamedGraphsByGraphIri(
                                   rdd: RDD[_ <: Dataset],
+                                  distinct: Boolean = true,
                                   sortGraphsByIri: Boolean = false,
                                   numPartitions: Int = 0): RDD[Dataset] = {
     import collection.JavaConverters._
@@ -41,9 +41,13 @@ object RddOfDatasetOps {
       .flatMap(ds => ds.listNames.asScala.map(iri => (iri, ds.getNamedModel(iri))))
 
     var intermediateRdd: RDD[(String, Model)] = graphNameAndModel
-      .reduceByKey((g1, g2) => {
-        g1.add(g2); g1
+
+    if (distinct) {
+     intermediateRdd = intermediateRdd.reduceByKey((g1, g2) => {
+        g1.add(g2);
+        g1
       })
+    }
 
     if (numPartitions > 0) {
       if (sortGraphsByIri) {
@@ -97,7 +101,7 @@ object RddOfDatasetOps {
   /**
    * Run a select query on each individual dataset in the RDD
    */
-  def selectWithSparql(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
+  def selectWithSparqlPerGraph(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
     val queryBc = rdd.context.broadcast(query)
 
     Objects.requireNonNull(query)
@@ -116,6 +120,34 @@ object RddOfDatasetOps {
       r
     })
   }
+
+
+  /**
+   * Run a select query on each partition (merges all datasets in a partition and thus may remove duplicates) dataset in the RDD
+   */
+  def selectWithSparqlPerPartition(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
+    val queryBc = rdd.context.broadcast(query)
+
+    Objects.requireNonNull(query)
+
+    rdd.mapPartitions(it => {
+      val dataset = DatasetFactory.create()
+      it.foreach(item => DatasetGraphUtils.addAll(dataset.asDatasetGraph(), item.asDatasetGraph()))
+
+      val query = queryBc.value
+
+      val qe = QueryExecutionFactory.create(query, dataset)
+      var r: Seq[Binding] = null
+      try {
+        r = new IteratorResultSetBinding(qe.execSelect).asScala.toList
+      } finally {
+        qe.close()
+      }
+
+      r.iterator
+    })
+  }
+
 
   @inline def flatMapWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =

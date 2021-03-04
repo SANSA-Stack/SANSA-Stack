@@ -31,7 +31,7 @@ class RDFSerializationTests
     val actualModel = triples.toModel
 
     val isIsomorphic = actualModel.isIsomorphicWith(expectedModel)
-    assertTrue(isIsomorphic)
+    assert(isIsomorphic)
   }
 
   // This method should go into a common ResultSetCompareUtils method

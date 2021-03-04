@@ -107,6 +107,9 @@
     </properties>
 
     <modules>
+        <module>sansa-hadoop-jena</module>
+        <module>sansa-kryo-jena</module>
+
         <module>sansa-test-resources</module>
         <module>sansa-resource-metadata</module>
         <module>sansa-resource-testdata</module>
@@ -135,32 +138,50 @@
             <artifactId>flexmark-all</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.scalatest</groupId>-->
-<!--            <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.scalatest</groupId>-->
-<!--            <artifactId>scalatest-flatspec_${scala.binary.version}</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.scalatest</groupId>-->
-<!--            <artifactId>scalatest-shouldmatchers_${scala.binary.version}</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.scalatest</groupId>-->
+        <!--            <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.scalatest</groupId>-->
+        <!--            <artifactId>scalatest-flatspec_${scala.binary.version}</artifactId>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.scalatest</groupId>-->
+        <!--            <artifactId>scalatest-shouldmatchers_${scala.binary.version}</artifactId>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
     </dependencies>
 
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.esotericsoftware</groupId>
+                <artifactId>kryo</artifactId>
+                <version>4.0.2</version>
+            </dependency>
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
                 <artifactId>sansa-test-resources_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-kryo-jena</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-hadoop-jena</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <!-- General SANSA metadata file (build time / version) -->
             <dependency>
@@ -176,7 +197,7 @@
             </dependency>
 
             <dependency>
-                <groupId>net.sansa-stack</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -339,6 +360,12 @@
 
             <dependency>
                 <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.12.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>1.20</version>
             </dependency>
@@ -369,6 +396,13 @@
             <dependency>
                 <groupId>org.aksw.commons</groupId>
                 <artifactId>aksw-commons-util</artifactId>
+                <version>${aksw-commons.version}</version>
+            </dependency>
+
+            <!-- Framework for building nestable aggregators; used in SchemaMapper and RecordReaderGenericBase -->
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-collectors</artifactId>
                 <version>${aksw-commons.version}</version>
             </dependency>
 
@@ -664,6 +698,12 @@
                         <artifactId>javax.ws.rs-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.8.5</version>
             </dependency>
 
             <dependency>
@@ -1127,23 +1167,23 @@
             </dependency>
 
             <!--            <dependency>-->
-<!--                <groupId>org.scalatest</groupId>-->
-<!--                <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
-<!--                <version>3.2.5</version>-->
-<!--                <scope>test</scope>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>org.scalatest</groupId>-->
-<!--                <artifactId>scalatest-flatspec_${scala.binary.version}</artifactId>-->
-<!--                <version>3.2.5</version>-->
-<!--                <scope>test</scope>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>org.scalatest</groupId>-->
-<!--                <artifactId>scalatest-shouldmatchers_${scala.binary.version}</artifactId>-->
-<!--                <version>3.2.5</version>-->
-<!--                <scope>test</scope>-->
-<!--            </dependency>-->
+            <!--                <groupId>org.scalatest</groupId>-->
+            <!--                <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
+            <!--                <version>3.2.5</version>-->
+            <!--                <scope>test</scope>-->
+            <!--            </dependency>-->
+            <!--            <dependency>-->
+            <!--                <groupId>org.scalatest</groupId>-->
+            <!--                <artifactId>scalatest-flatspec_${scala.binary.version}</artifactId>-->
+            <!--                <version>3.2.5</version>-->
+            <!--                <scope>test</scope>-->
+            <!--            </dependency>-->
+            <!--            <dependency>-->
+            <!--                <groupId>org.scalatest</groupId>-->
+            <!--                <artifactId>scalatest-shouldmatchers_${scala.binary.version}</artifactId>-->
+            <!--                <version>3.2.5</version>-->
+            <!--                <scope>test</scope>-->
+            <!--            </dependency>-->
 
 
             <dependency>
