@@ -1,24 +1,19 @@
 package net.sansa_stack.examples.spark.query
 
-import java.awt.Desktop
-import java.net.URI
-import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
-import org.apache.jena.query.{QueryFactory, ResultSetFormatter}
-import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.riot.{Lang, RDFDataMgr}
-import org.apache.jena.sys.JenaSystem
-import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.query.spark.SPARQLEngine.{Ontop, SPARQLEngine, Sparqlify}
 import net.sansa_stack.query.spark.api.impl.QueryEngineFactoryBase
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
-import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.io._
-import org.apache.commons.rdf.jena.JenaTriple
-import org.apache.spark.rdd.RDD
+import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.apache.jena.query.{QueryFactory, ResultSetFormatter}
+import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.sys.JenaSystem
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.catalyst.analysis.DatabaseAlreadyExistsException
 
-import scala.util.Try
+import java.net.URI
 
 /**
  * This example shows how to run SPARQL queries over Spark using a SPARQL-to-SQL rewriter under the hood.
@@ -78,8 +73,9 @@ object SPARQLEngineExample {
 
     // load the data into an RDD
     if (database != null) { // pre-partitioned case
-        Try(spark.sql("CREATE DATABASE IF NOT EXISTS " + database))
-        spark.sql("USE " + database)
+      // we do catch the exception here which is always thrown because of ...
+      scala.util.control.Exception.catching(classOf[DatabaseAlreadyExistsException])(spark.sql("CREATE DATABASE IF NOT EXISTS " + database))
+      spark.sql("USE " + database)
     }
 
     val qef =
@@ -105,7 +101,6 @@ object SPARQLEngineExample {
 
 //        queryEngineFactory.create(Some(database), mappings)
 //      } else {
-        import net.sansa_stack.rdf.spark.partition._
 
         // load the data into an RDD
 //        val lang = Lang.NTRIPLES

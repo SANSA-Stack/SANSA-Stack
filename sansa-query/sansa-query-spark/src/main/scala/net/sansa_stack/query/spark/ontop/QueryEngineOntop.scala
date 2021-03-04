@@ -327,12 +327,10 @@ class QueryEngineOntop(val spark: SparkSession,
           val jdbcMetadata = jdbcMetadataBC.value
           val ontology = ontologyBC.value
           val dbMetadata = dbMetadataBC.value
-          val rwi = rwiBC.value
-          println(rwi)
           println(mappings.size())
           println(ontology.isDefined)
 
-          println(s"Ontop setup at ${System.currentTimeMillis()}")
+          println(s"Ontop connection setup at ${System.currentTimeMillis()}")
 
           ScalaUtils.time("init Ontop connection ...", "initialized Ontop connection") {
             OntopConnection(
@@ -343,7 +341,9 @@ class QueryEngineOntop(val spark: SparkSession,
               jdbcMetadata,
               ontology)
           }
-
+          val rwi = rwiBC.value
+          println(rwi)
+          println(s"Ontop row mapper setup at ${System.currentTimeMillis()}")
           val mapper = new OntopRowMapper(
             id,
             db,
