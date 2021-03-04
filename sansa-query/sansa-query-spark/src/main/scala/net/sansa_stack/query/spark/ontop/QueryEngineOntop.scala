@@ -319,15 +319,21 @@ class QueryEngineOntop(val spark: SparkSession,
           df = df.coalesce(maxRowMappers)
         }
         val rdd = df.mapPartitions(iterator => {
-
+          println(s"started mapping partition at ${System.currentTimeMillis()}")
           val id = idBC.value
           val db = databaseBC.value
           val mappings = mappingsBC.value
           val properties = propertiesBC.value
           val jdbcMetadata = jdbcMetadataBC.value
           val ontology = ontologyBC.value
+          val dbMetadata = dbMetadataBC.value
+          val rwi = rwiBC.value
+          println(rwi)
+          println(mappings.size())
+          println(ontology.isDefined)
 
-          println(s"started mapping partition at ${System.currentTimeMillis()}")
+          println(s"Ontop setup at ${System.currentTimeMillis()}")
+
           ScalaUtils.time("init Ontop connection ...", "initialized Ontop connection") {
             OntopConnection(
               id,
@@ -346,9 +352,8 @@ class QueryEngineOntop(val spark: SparkSession,
             jdbcMetadata,
             sparqlQueryBC.value,
             ontology,
-            rwiBC.value,
-            dbMetadataBC.value
-            //            outputBC.value
+            rwi,
+            dbMetadata
           )
           println(s"started mapping at ${System.currentTimeMillis()}")
           val it = iterator.map(mapper.map)
