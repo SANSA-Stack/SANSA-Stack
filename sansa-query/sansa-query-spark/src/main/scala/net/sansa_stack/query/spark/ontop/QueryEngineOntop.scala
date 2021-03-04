@@ -307,7 +307,7 @@ class QueryEngineOntop(val spark: SparkSession,
         val sparqlQueryBC = spark.sparkContext.broadcast(query)
         val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
         val propertiesBC = spark.sparkContext.broadcast(ontopProperties)
-        val metaDataBC = spark.sparkContext.broadcast(jdbcMetaData)
+        val jdbcMetadataBC = spark.sparkContext.broadcast(jdbcMetaData)
         val ontologyBC = spark.sparkContext.broadcast(ontology)
         val idBC = spark.sparkContext.broadcast(sessionId)
         val databaseBC = spark.sparkContext.broadcast(database)
@@ -319,27 +319,36 @@ class QueryEngineOntop(val spark: SparkSession,
           df = df.coalesce(maxRowMappers)
         }
         val rdd = df.mapPartitions(iterator => {
+
+          val id = idBC.value
+          val db = databaseBC.value
+          val mappings = mappingsBC.value
+          val properties = propertiesBC.value
+          val jdbcMetadata = jdbcMetadataBC.value
+          val ontology = ontologyBC.value
+
           println(s"started mapping partition at ${System.currentTimeMillis()}")
-          ScalaUtils.time {
-            ("Ontop connection init", OntopConnection(idBC.value,
-              dbMetadataBC.value,
-              mappingsBC.value,
-              propertiesBC.value,
-              ontologyBC.value))
+          ScalaUtils.time("init Ontop connection ...", "initialized Ontop connection") {
+            OntopConnection(
+              id,
+              db,
+              mappings,
+              properties,
+              jdbcMetadata,
+              ontology)
           }
 
-
-            val mapper = new OntopRowMapper(
-            idBC.value,
-            databaseBC.value,
-            mappingsBC.value,
-            propertiesBC.value,
-            metaDataBC.value,
+          val mapper = new OntopRowMapper(
+            id,
+            db,
+            mappings,
+            properties,
+            jdbcMetadata,
             sparqlQueryBC.value,
-            ontologyBC.value,
+            ontology,
             rwiBC.value,
-              dbMetadataBC.value
-//            outputBC.value
+            dbMetadataBC.value
+            //            outputBC.value
           )
           println(s"started mapping at ${System.currentTimeMillis()}")
           val it = iterator.map(mapper.map)
@@ -349,8 +358,7 @@ class QueryEngineOntop(val spark: SparkSession,
           // it
           bindings.toIterator
         }).rdd
-
-        rdd.persist(StorageLevel.MEMORY_ONLY_SER)
+        rdd
       case None => spark.sparkContext.emptyRDD
     }
   }
