@@ -398,10 +398,11 @@ object TryOutMmDistSim {
 
     // println(s"Fitting similarity pairs: ${featureSimilarityScores.count()}")
 
+    println(f"featureSimilarityScores size ${featureSimilarityScores.count()}")
+
     println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
     currentTime = System.nanoTime
 
-    println(f"featureSimilarityScores size ${featureSimilarityScores.count()}")
 
     // order desc
     /* println("\nORDER SIMIALRITIES DESC")
@@ -438,18 +439,21 @@ object TryOutMmDistSim {
     println(f"Resulting Semantic Annotated Similarity consists of ${semanticResult.count()} triples")
 
     val outputFolderPath = args(2)
-    val outputFilePath = f"${outputFolderPath}DaDistSimResult${Calendar.getInstance().getTime().toString.replace(" ", "")}"
 
-    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
-    currentTime = System.nanoTime
+    if (outputFolderPath != "") {
+      val outputFilePath = f"${outputFolderPath}DaDistSimResult${Calendar.getInstance().getTime().toString.replace(" ", "")}"
 
-    println(f"\nSTORE METAGRAPH\nwrite resulting MG to ${outputFilePath}")
-    semanticResult.rdd.coalesce(1).saveAsNTriplesFile(outputFilePath)
+      println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+      currentTime = System.nanoTime
 
-    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
-    currentTime = System.nanoTime
+      println(f"\nSTORE METAGRAPH\nwrite resulting MG to ${outputFilePath}")
+      semanticResult.rdd.coalesce(1).saveAsNTriplesFile(outputFilePath)
 
-    println(f"\nTotal experiment time  needed: ${(System.nanoTime - startTime) / 1e9d}")
+      println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+      currentTime = System.nanoTime
+
+      println(f"\nTotal experiment time  needed: ${(System.nanoTime - startTime) / 1e9d}")
+    }
   }
 }
 
