@@ -440,7 +440,7 @@ object QueryEngineOntop {
     // expand shortcuts of R2RML model
     val expandedMappingsModel = ModelFactory.createDefaultModel()
     expandedMappingsModel.add(mappingsModel)
-    R2rmlLib.streamTriplesMaps(mappingsModel).forEach(tm => R2rmlLib.expandShortcuts(tm))
+    R2rmlLib.streamTriplesMaps(expandedMappingsModel).forEach(tm => R2rmlLib.expandShortcuts(tm))
 
     new QueryEngineOntop(spark, databaseName, expandedMappingsModel, ontology)
   }

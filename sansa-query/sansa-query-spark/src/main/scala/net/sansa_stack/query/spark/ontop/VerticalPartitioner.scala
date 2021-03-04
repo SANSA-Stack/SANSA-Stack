@@ -316,7 +316,7 @@ object VerticalPartitioner {
 
     // write the partitioning metadata as R2RML mappings to disk
     // we use double quotes as escape chars for the SQL identifiers
-    val path = config.mappingsFile.getOrElse(Paths.get(spark.conf.get("spark.sql.warehouse.dir"), config.databaseName, s"${config.databaseName}-r2rml-mappings.ttl").toAbsolutePath.toString)
+    val path = config.mappingsFile.getOrElse(Paths.get(config.outputPath.toString, s"${config.databaseName}-r2rml-mappings.ttl").toAbsolutePath.toString)
     val model = ModelFactory.createDefaultModel()
     R2rmlUtils.createR2rmlMappings(
       partitioner,
@@ -328,7 +328,7 @@ object VerticalPartitioner {
       explodeLanguageTags = true,
       escapeIdentifiers = true)
 
-    model.write(new FileOutputStream(path), "TURTLE", RR.uri)
+    model.write(new FileOutputStream(new File(path)), "TURTLE", RR.uri)
     println(s"R2RML mapping model written to $path")
     spark.stop()
   }
