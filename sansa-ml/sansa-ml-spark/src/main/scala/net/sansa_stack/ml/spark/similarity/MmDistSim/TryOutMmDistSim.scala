@@ -192,8 +192,11 @@ object TryOutMmDistSim {
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
-    val queryResultDf = sparqlFrame.transform(dataset).cache()
+    val queryResultDf = sparqlFrame
+      .transform(dataset)
+      .cache()
     queryResultDf.show(false)
+    println(f"queryResultDf size ${queryResultDf.count()}")
 
     /*
     Classify Column Type
@@ -228,7 +231,10 @@ object TryOutMmDistSim {
 
     // collaps features into arrays instead of having multiple rows
     println("\nCOLLAPS FEATURES TO SETS")
-    var collectedDataFrame = queryResultDf.select(keyColumnNameString).dropDuplicates().cache()
+    var collectedDataFrame = queryResultDf
+      .select(keyColumnNameString)
+      .dropDuplicates()
+      .cache()
 
     featureColumns.foreach(
       currentFeatureColumnNameString =>
@@ -252,6 +258,9 @@ object TryOutMmDistSim {
 
     println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
     currentTime = System.nanoTime
+
+    println(f"collectedDataFrame size ${collectedDataFrame.count()}")
+
 
     println("\nCREATE CROSS JOINED DF")
     /*
@@ -387,19 +396,23 @@ object TryOutMmDistSim {
         .map(col).reduce(_ + _))
     featureSimilarityScores.show(false) // TODO remove in later version
 
-    println(s"Fitting similarity pairs: ${featureSimilarityScores.count()}")
+    // println(s"Fitting similarity pairs: ${featureSimilarityScores.count()}")
 
     println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
     currentTime = System.nanoTime
 
+    println(f"featureSimilarityScores size ${featureSimilarityScores.count()}")
+
     // order desc
-    println("\nORDER SIMIALRITIES DESC")
+    /* println("\nORDER SIMIALRITIES DESC")
     println("order desc")
     featureSimilarityScores = featureSimilarityScores.orderBy(desc(featureSimilarityScores.columns.last))
     featureSimilarityScores.show(false) // TODO remove in later version
 
     println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
     currentTime = System.nanoTime
+
+     */
 
     // make results rdf
     println("\nSELECT ONLY NEEDED COLUMN")
