@@ -534,7 +534,7 @@ public class RddRdfSaver<T> {
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(rdd.context());
         Configuration hadoopConfiguration = sparkContext.hadoopConfiguration();
 
-        OutputFormatRdfRegistry.Enty entry = OutputFormatRdfRegistry.getInstance().get(lang);
+        OutputFormatRdfRegistry.FormatEntry entry = OutputFormatRdfRegistry.getInstance().get(lang);
         Objects.requireNonNull(entry, String.format("No format registered for %s", lang));
         // TODO Add some registry to connect rdd + rdfFormat with the
         // hadoop API
