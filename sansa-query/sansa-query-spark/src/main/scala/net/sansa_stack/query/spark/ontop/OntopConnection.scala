@@ -3,6 +3,7 @@ package net.sansa_stack.query.spark.ontop
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Properties
 import it.unibz.inf.ontop.answering.connection.OntopConnection
+import it.unibz.inf.ontop.com.google.common.cache.{CacheBuilder, CacheLoader}
 import it.unibz.inf.ontop.injection.OntopReformulationSQLConfiguration
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
 import org.apache.jena.rdf.model.Model
@@ -81,7 +82,9 @@ object OntopConnection {
   }
 
   // maintain multiple reformulation configs, one per session
-  var configs = Map[String, OntopReformulationSQLConfiguration]()
+
+  // var configs = Map[String, OntopReformulationSQLConfiguration]()
+  val configs = new Cache[String, OntopReformulationSQLConfiguration]()
 
   def apply(id: String,
             database: Option[String],
@@ -90,18 +93,21 @@ object OntopConnection {
             jdbcMetaData: Map[String, String],
             ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
 
-    val conf = configs.getOrElse(id, {
-      logger.debug(s"creating reformulation config for session $id...")
+    val conf = configs.getOrElseUpdate(id, {
+      logger.debug(s"creating reformulation config for session $id at ${System.currentTimeMillis()}...")
+
       val reformulationConfiguration =
         ScalaUtils.time(s"creating reformulation config for session $id...",
           s"created reformulation config for session $id") {
-          JDBCDatabaseGenerator.generateTables(getOrCreateConnection(database), jdbcMetaData)
-
+          println(s"creating DB connection  for session $id at ${System.currentTimeMillis()}...")
+          val conn = getOrCreateConnection(database)
+          println(s"creating DB for session $id at ${System.currentTimeMillis()}...")
+          JDBCDatabaseGenerator.generateTables(conn, jdbcMetaData)
+          println(s"creating refo config session $id at ${System.currentTimeMillis()}...")
           OntopUtils.createReformulationConfig(database, obdaMappings, properties, ontology)
         }
-
-      configs += id -> reformulationConfiguration
-
+      println(s"done for session $id at ${System.currentTimeMillis()}...")
+      // configs += id -> reformulationConfiguration
       logger.debug("...done")
       reformulationConfiguration
     })
@@ -114,7 +120,7 @@ object OntopConnection {
             properties: Properties,
             ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
 
-    val conf = configs.getOrElse(id, {
+    val conf = configs.getOrElseUpdate(id, {
       logger.debug(s"creating reformulation config for session $id...")
       val reformulationConfiguration =
         ScalaUtils.time(s"creating reformulation config for session $id...",
@@ -122,7 +128,7 @@ object OntopConnection {
           OntopUtils.createReformulationConfig(dbMetadata, obdaMappings, properties, ontology)
         }
 
-      configs += id -> reformulationConfiguration
+      // configs += id -> reformulationConfiguration
 
       logger.debug("...done")
       reformulationConfiguration
@@ -131,7 +137,8 @@ object OntopConnection {
   }
 
   def clear(): Unit = {
-    configs = Map[String, OntopReformulationSQLConfiguration]()
+    // configs = Map[String, OntopReformulationSQLConfiguration]()
+    configs.clear()
     connections.foreach {case (_, conn) => conn.close()}
     connections = Map[String, Connection]()
   }

@@ -29,7 +29,7 @@ class ImmutableFunctionalTermSerializer(ontopSessionID: String)
       case Failure(exception) => throw new Exception(s"failed to read $functionSymbol", exception)
     }
 
-    val termFactory = OntopConnection.configs(Option(ontopSessionID).getOrElse(OntopConnection.configs.head._1)).getTermFactory
+    val termFactory = OntopConnection.configs.get(Option(ontopSessionID).getOrElse(OntopConnection.configs.head._1)).get.getTermFactory
     val term = termFactory.getImmutableFunctionalTerm(functionSymbol, terms)
 
     term

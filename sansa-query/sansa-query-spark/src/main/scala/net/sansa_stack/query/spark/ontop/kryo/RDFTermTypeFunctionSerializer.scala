@@ -28,7 +28,7 @@ class RDFTermTypeFunctionSerializer(ontopSessionID: String)
       case Failure(exception) => throw new Exception(s"failed to read $functionSymbol", exception)
     }
 
-    val functionSymbolFactory = OntopConnection.configs(ontopSessionID).getInjector.getInstance(classOf[FunctionSymbolFactory])
+    val functionSymbolFactory = OntopConnection.configs.get(ontopSessionID).get.getInjector.getInstance(classOf[FunctionSymbolFactory])
 //    val term = functionSymbolFactory.getRDFTermTypeFunctionSymbol()
 
     null.asInstanceOf[RDFTermTypeFunctionSymbol]

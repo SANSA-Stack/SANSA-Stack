@@ -26,12 +26,10 @@ import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
-import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.model.OWLOntology
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
-import org.apache.spark.SparkEnv
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -278,6 +276,34 @@ class QueryEngineOntop(val spark: SparkSession,
     }
   }
 
+  def prepare(): Unit = {
+    val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
+    val propertiesBC = spark.sparkContext.broadcast(ontopProperties)
+    val jdbcMetadataBC = spark.sparkContext.broadcast(jdbcMetaData)
+    val ontologyBC = spark.sparkContext.broadcast(ontology)
+    val idBC = spark.sparkContext.broadcast(sessionId)
+    val databaseBC = spark.sparkContext.broadcast(database)
+    val dbMetadataBC = spark.sparkContext.broadcast(sparql2sql.dbMetadata)
+
+    val data = spark.sparkContext.parallelize((1 to 100).toList).repartition(50)
+    data.foreachPartition(p => {
+      val id = idBC.value
+      val db = databaseBC.value
+      val mappings = mappingsBC.value
+      val properties = propertiesBC.value
+      val jdbcMetadata = jdbcMetadataBC.value
+      val ontology = ontologyBC.value
+      OntopConnection(
+        id,
+        db,
+        mappings,
+        properties,
+        jdbcMetadata,
+        ontology)
+    })
+  }
+
+  prepare()
 
 
   /**
