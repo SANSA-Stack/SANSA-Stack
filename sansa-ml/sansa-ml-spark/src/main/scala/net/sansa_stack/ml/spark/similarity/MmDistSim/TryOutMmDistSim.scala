@@ -20,40 +20,55 @@ import scala.collection.mutable.ListBuffer
 
 object TryOutMmDistSim {
   def main(args: Array[String]): Unit = {
+
+    val startTime: Long = System.nanoTime
+    var currentTime: Long = System.nanoTime
+    println("\nSETUP SPARK SESSION")
     // setup spark session
     val spark = SparkSession.builder
-      .appName(s"SampleFeatureExtractionPipeline").master("local[*]")
+      .appName(s"SampleFeatureExtractionPipeline")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
       .config("spark.kryo.registrator", String.join(
         ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+      // .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
     JenaSystem.init()
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
-    val inputFileString: String = args(0)
-    println(f"Read data from: $inputFileString")
+    /*
+    READ IN DATA
+     */
+    // spark.rdf(Lang.NTRIPLES)(args(0)).toDS().foreach(println(_))
 
-    val dataset = NTripleReader
-      .load(
-        spark,
-        inputFileString,
-        stopOnBadTerm = ErrorParseMode.SKIP,
-        stopOnWarnings = WarningParseMode.IGNORE)
-      .toDS()
-      .cache()
-
+    println("\nREAD IN DATA")
+    val inputFilePath = args(0)
+    // val df: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
+    // val dataset = spark.rdf(Lang.NTRIPLES)(inputFilePath).toDS().cache()
+    val dataset = NTripleReader.load(
+      spark,
+      inputFilePath,
+      stopOnBadTerm = ErrorParseMode.SKIP,
+      stopOnWarnings = WarningParseMode.IGNORE
+    ).toDS().cache()
     val numberTriples = dataset.count()
-    println(f"\nREAD IN DATA:\ndata consists of ${numberTriples} triples")
+    println(f"\ndata consists of ${numberTriples} triples")
     dataset.take(n = 10).foreach(println(_))
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     /*
     CREATE FEATURE EXTRACTING SPARQL
     from a knowledge graph we can either manually create a sparql query or
     we use the auto rdf2feature
      */
+
+    println("\nCREATE FEATURE EXTRACTING SPARQL")
 
     // OPTION 1
     val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
@@ -66,7 +81,33 @@ object TryOutMmDistSim {
       featuresInOptionalBlocks = true,
     )
 
+    println(autoSparqlString)
+    println(autoSparqlString.replace("\n", " "))
+
+
     // OPTION 2
+    val minimalSparql = """
+                          | SELECT
+                          | ?movie
+                          |
+                          |WHERE {
+                          |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+                          |}
+    """.stripMargin
+
+    val oneFeatureSparql = """
+                             | SELECT
+                             | ?movie ?movie__down_title
+                             |
+                             |WHERE {
+                             |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+                             |
+                             | OPTIONAL {
+                             |		?movie <http://purl.org/dc/terms/title> ?movie__down_title .
+                             |	}
+                             |}
+    """.stripMargin
+
     val manualSparqlString =
       """
         | SELECT
@@ -76,12 +117,12 @@ object TryOutMmDistSim {
         | ?movie__down_runtime
         | ?movie__down_actor__down_actor_name
         | ?movie__down_genre__down_film_genre_name
+        | ?movie__down_country__down_country_name
+        | ?movie__down_country__down_country_languages
+        | ?movie__down_country__down_country_areaInSqKm
         |
         |WHERE {
         |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
-        |
-        | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
-        |	?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero" .
         |
         |	OPTIONAL {
         |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
@@ -104,14 +145,40 @@ object TryOutMmDistSim {
         |		?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
         |		?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__down_genre__down_film_genre_name .
         |	}
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+        |		?movie__down_country <http://data.linkedmdb.org/movie/country_name> ?movie__down_country__down_country_name .
+        |	}
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+        |		?movie__down_country <http://data.linkedmdb.org/movie/country_languages> ?movie__down_country__down_country_languages .
+        |	}
+        |
+        | OPTIONAL {
+        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+        |		?movie__down_country <http://data.linkedmdb.org/movie/country_areaInSqKm> ?movie__down_country__down_country_areaInSqKm .
+        |	}
         |}
-      """.stripMargin
+    """.stripMargin
 
     // select the query you want to use or adjust the automatic created one
-    println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = manualSparqlString // autoSparqlString // manualSparqlString
+
+    val queryString = args(1) match {
+      case "0" => minimalSparql
+      case "1" => oneFeatureSparql
+      case "2" => manualSparqlString
+      case "3" => autoSparqlString
+      case _ => args(1)
+    } // autoSparqlString // manualSparqlString
+
     println()
     println(queryString)
+    println(queryString.replace("\n", " "))
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     /*
     FEATURE EXTRACTION OVER SPARQL
@@ -177,6 +244,9 @@ object TryOutMmDistSim {
     println(collectedDataFrame.schema)
     collectedDataFrame.show(false)
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
     println("\nCREATE CROSS JOINED DF")
     /*
     cross join for all pair similairity
@@ -209,6 +279,9 @@ object TryOutMmDistSim {
       val res = if (unionCard > 0) intersectionCard / unionCard else 0.0
       res
     })
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     println("\nWEIGHTS AND THRESHOLDS")
     // drop thresholds
@@ -246,6 +319,9 @@ object TryOutMmDistSim {
     val orderedFeatureColumnNamesByImportance: Seq[String] = ListMap(importanceNormed.toSeq.sortWith(_._2 > _._2): _*).map(_._1).toSeq
     println(f"orderedFeatureColumnNamesByImportance:\n$orderedFeatureColumnNamesByImportance \n")
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
     /*
     Apply similairty score for pairs
      */
@@ -270,11 +346,17 @@ object TryOutMmDistSim {
       }
     )
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
     // drop columns where no similarity at all is given
     println("\nDROP ROWS WHERE NO SIMILARITY IS GIVEN")
     featureSimilarityScores = featureSimilarityScores.filter(greatest(similairtyColumns.map(col): _*) > 0)
     // println(f"number of pair with similairty above 0 and above thresholds: ${featureSimilarityScores.count()}")
     featureSimilarityScores.show(false) // TODO remove in later version
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     // calculate overall similarity
 
@@ -299,16 +381,25 @@ object TryOutMmDistSim {
         .map(col).reduce(_ + _))
     featureSimilarityScores.show(false) // TODO remove in later version
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
     // order desc
     println("\nORDER SIMIALRITIES DESC")
     println("order desc")
     featureSimilarityScores = featureSimilarityScores.orderBy(desc(featureSimilarityScores.columns.last))
     featureSimilarityScores.show(false) // TODO remove in later version
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
     // make results rdf
     println("\nSELECT ONLY NEEDED COLUMN")
     featureSimilarityScores = featureSimilarityScores.select(featureSimilarityScores.columns(0), featureSimilarityScores.columns(1), featureSimilarityScores.columns.last)
     featureSimilarityScores.show(false)
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     println("\nCREATE METAGRAPH")
     val mgc = new SimilarityExperimentMetaGraphFactory
@@ -318,17 +409,26 @@ object TryOutMmDistSim {
       modelInformationEstimatorName = "DaDistSim",
       modelInformationEstimatorType = "Similarity",
       modelInformationMeasurementType = "Mix"
-    )(inputDatasetNumbertOfTriples = numberTriples, dataSetInformationFilePath = inputFileString
+    )(inputDatasetNumbertOfTriples = numberTriples, dataSetInformationFilePath = inputFilePath
     ).toDS() // .cache()
 
     println("Metagraph looks like")
     semanticResult.take(20).foreach(println(_))
     println(f"Resulting Semantic Annotated Similarity consists of ${semanticResult.count()} triples")
 
-    val outputFolderPath = args(1)
+    val outputFolderPath = args(2)
     val outputFilePath = f"${outputFolderPath}DaDistSimResult${Calendar.getInstance().getTime().toString.replace(" ", "")}"
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
     println(f"\nSTORE METAGRAPH\nwrite resulting MG to ${outputFilePath}")
     semanticResult.rdd.coalesce(1).saveAsNTriplesFile(outputFilePath)
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
+    println(f"\nTotal experiment time  needed: ${(System.nanoTime - startTime) / 1e9d}")
   }
 }
 
