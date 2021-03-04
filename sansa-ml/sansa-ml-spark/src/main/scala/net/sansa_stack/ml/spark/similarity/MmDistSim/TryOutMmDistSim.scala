@@ -219,6 +219,9 @@ object TryOutMmDistSim {
     val featureColumns: Seq[String] = List(queryResultDf.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
     println(s"feature columns $featureColumns")
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
 
     // collaps features into arrays instead of having multiple rows
     println("\nCOLLAPS FEATURES TO SETS")
@@ -380,6 +383,8 @@ object TryOutMmDistSim {
       .withColumn("overallSimilarity", similairtyColumns.map(s => s + "_weighted")
         .map(col).reduce(_ + _))
     featureSimilarityScores.show(false) // TODO remove in later version
+
+    println(s"Fitting similarity pairs: ${featureSimilarityScores.count()}")
 
     println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
     currentTime = System.nanoTime
