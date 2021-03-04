@@ -15,6 +15,8 @@ import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
 
 object LMDB_Pipeline {
   def main(args: Array[String]): Unit = {
+    var currentTime: Long = System.nanoTime
+    println("\nSETUP SPARK SESSION")
     // setup spark session
     val spark = SparkSession.builder
       .appName(s"SampleFeatureExtractionPipeline")
@@ -28,12 +30,15 @@ object LMDB_Pipeline {
     spark.sparkContext.setLogLevel("ERROR")
 
     JenaSystem.init()
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     /*
     READ IN DATA
      */
     // spark.rdf(Lang.NTRIPLES)(args(0)).toDS().foreach(println(_))
 
+    println("\nREAD IN DATA")
     val inputFilePath = args(0)
     // val df: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputFilePath).cache()
     // val dataset = spark.rdf(Lang.NTRIPLES)(inputFilePath).toDS().cache()
@@ -43,8 +48,11 @@ object LMDB_Pipeline {
       stopOnBadTerm = ErrorParseMode.SKIP,
       stopOnWarnings = WarningParseMode.IGNORE
     ).toDS().cache()
-    println(f"READ IN DATA:\ndata consists of ${dataset.count()} triples")
+    println(f"\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     /*
     CREATE FEATURE EXTRACTING SPARQL
@@ -52,18 +60,21 @@ object LMDB_Pipeline {
     we use the auto rdf2feature
      */
 
+    println("\nCREATE FEATURE EXTRACTING SPARQL")
+
     // OPTION 1
-    /* val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
       dataset,
       "?movie",
       "?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .",
       0,
-      2,
       1,
+      5,
       featuresInOptionalBlocks = true,
     )
 
-     */
+    println(autoSparqlString)
+    println(autoSparqlString.replace("\n", " "))
 
 
     // OPTION 2
@@ -145,36 +156,44 @@ object LMDB_Pipeline {
       """.stripMargin
 
     // select the query you want to use or adjust the automatic created one
-    println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = args(1) /* match {
+
+    val queryString = args(1) match {
       case "0" => minimalSparql
       case "1" => oneFeatureSparql
       case "2" => manualSparqlString
-      // case "3" => autoSparqlString
+      case "3" => autoSparqlString
+      case _ => args(1)
     } // autoSparqlString // manualSparqlString
 
-     */
     println()
     println(queryString)
+    println(queryString.replace("\n", " "))
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
 
     /*
     FEATURE EXTRACTION OVER SPARQL
     Gain Features from Query
     this creates a dataframe with columns corresponding to Sparql features
      */
-    println("FEATURE EXTRACTION OVER SPARQL")
+    println("\nFEATURE EXTRACTION OVER SPARQL")
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
     val res = sparqlFrame.transform(dataset)
     res.show(false)
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
+
     /*
     Create Numeric Feature Vectors
     */
-    val labelColumnName: String = res.columns.filter(_.startsWith("movie__down_genre__down_film_genre_name"))(0)
+    println("\nSMART VECTOR ASSEMBLER")
+    val labelColumnName: String = res.columns(1)
     println(f"column name: $labelColumnName")
-    println("SMART VECTOR ASSEMBLER")
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("movie")
       .setLabelColumn(labelColumnName)
@@ -182,12 +201,14 @@ object LMDB_Pipeline {
     assembledDf.show(false)
     println(f"assembled df has ${assembledDf.count()} rows")
 
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
 
     /*
     APPLY Common SPARK MLlib Example Algorithm
      */
-    println("APPLY Common SPARK MLlib Example Algorithm")
+    println("\nAPPLY Common SPARK MLlib Example Algorithm")
 
     /*
     Indoex Labels
@@ -222,6 +243,9 @@ object LMDB_Pipeline {
       .setMetricName("accuracy")
     val accuracy = evaluator.evaluate(predictions)
     println(s"Test Error = ${(1.0 - accuracy)}")
+
+    println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
+    currentTime = System.nanoTime
 
     // val rfModel = model.stages(2).asInstanceOf[RandomForestClassificationModel]
     // println(s"Learned classification forest model:\n ${rfModel.toDebugString}")
