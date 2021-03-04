@@ -102,58 +102,19 @@ object LMDB_Pipeline {
 
     val manualSparqlString =
       """
-        | SELECT
-        | ?movie
-        | ?movie__down_date
-        | ?movie__down_title
-        | ?movie__down_runtime
-        | ?movie__down_actor__down_actor_name
-        | ?movie__down_genre__down_film_genre_name
-        | ?movie__down_country__down_country_name
-        | ?movie__down_country__down_country_languages
-        | ?movie__down_country__down_country_areaInSqKm
-        |
+        |SELECT
+        |?movie
+        |?movie__down_genre__down_film_genre_name
+        |?movie__down_date ?movie__down_title
+        |?movie__down_runtime ?movie__down_actor__down_actor_name
         |WHERE {
-        |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
-        |
-        |	OPTIONAL {
-        |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
-        |	}
-        |
-        |	OPTIONAL {
-        |		?movie <http://purl.org/dc/terms/title> ?movie__down_title .
-        |	}
-        |
-        |	OPTIONAL {
-        |		?movie <http://data.linkedmdb.org/movie/runtime> ?movie__down_runtime .
-        |	}
-        |
-        | OPTIONAL {
-        |		?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor .
-        |		?movie__down_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__down_actor__down_actor_name .
-        | }
-        |
-        | OPTIONAL {
-        |		?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
-        |		?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__down_genre__down_film_genre_name .
-        |	}
-        |
-        | OPTIONAL {
-        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
-        |		?movie__down_country <http://data.linkedmdb.org/movie/country_name> ?movie__down_country__down_country_name .
-        |	}
-        |
-        | OPTIONAL {
-        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
-        |		?movie__down_country <http://data.linkedmdb.org/movie/country_languages> ?movie__down_country__down_country_languages .
-        |	}
-        |
-        | OPTIONAL {
-        |		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
-        |		?movie__down_country <http://data.linkedmdb.org/movie/country_areaInSqKm> ?movie__down_country__down_country_areaInSqKm .
-        |	}
-        |}
-      """.stripMargin
+        | ?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+        | OPTIONAL { ?movie <http://purl.org/dc/terms/date> ?movie__down_date . }
+        | OPTIONAL { ?movie <http://purl.org/dc/terms/title> ?movie__down_title . }
+        | OPTIONAL { ?movie <http://data.linkedmdb.org/movie/runtime> ?movie__down_runtime . }
+        | OPTIONAL { ?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor . ?movie__down_actor  <http://data.linkedmdb.org/movie/actor_name> ?movie__down_actor__down_actor_name . }
+        | OPTIONAL { ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre . ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__down_genre__down_film_genre_name . }
+        | }""".stripMargin
 
     // select the query you want to use or adjust the automatic created one
 
