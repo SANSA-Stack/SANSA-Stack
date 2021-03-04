@@ -124,6 +124,9 @@ object TryOutMmDistSim {
         |WHERE {
         |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
         |
+        | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
+        |
         |	OPTIONAL {
         |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
         |	}
