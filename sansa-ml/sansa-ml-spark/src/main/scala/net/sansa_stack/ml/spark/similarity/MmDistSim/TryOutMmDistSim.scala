@@ -452,8 +452,9 @@ object TryOutMmDistSim {
       println(f"\ntime needed: ${(System.nanoTime - currentTime) / 1e9d}")
       currentTime = System.nanoTime
 
-      println(f"\nTotal experiment time  needed: ${(System.nanoTime - startTime) / 1e9d}")
     }
+    println(f"\nTotal experiment time  needed: ${(System.nanoTime - startTime) / 1e9d}")
+
   }
 }
 
