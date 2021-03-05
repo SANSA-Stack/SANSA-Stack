@@ -22,7 +22,6 @@ class RDFTermTypeFunctionSerializer(ontopSessionID: String)
   override def read(kryo: Kryo, input: Input, `type`: Class[RDFTermTypeFunctionSymbol]): RDFTermTypeFunctionSymbol = {
 
     val functionSymbol = kryo.readClassAndObject(input).asInstanceOf[FunctionSymbol]
-    println(s"read ${functionSymbol}")
     val terms = Try(kryo.readClassAndObject(input).asInstanceOf[ImmutableList[it.unibz.inf.ontop.model.term.ImmutableTerm]]) match {
       case Success(value) => value
       case Failure(exception) => throw new Exception(s"failed to read $functionSymbol", exception)

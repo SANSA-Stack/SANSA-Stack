@@ -14,7 +14,6 @@ class TermFactorySerializer(ontopSessionID: String)
   }
 
   override def read(kryo: Kryo, input: Input, `type`: Class[TermFactory]): TermFactory = {
-    println("read term factory")
     kryo.readClass(input)
     OntopConnection.configs.get(Option(ontopSessionID).getOrElse(OntopConnection.configs.head._1)).get.getTermFactory
   }

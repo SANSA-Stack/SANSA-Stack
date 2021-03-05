@@ -63,7 +63,7 @@ abstract class SPARQL11TestSuiteRunnerSpark
       data = super.loadData(datasetURL)
 
       // we drop the Spark database to remove all tables from previous loaded data
-      spark.sql(s"DROP DATABASE IF EXISTS $db")
+      spark.sql(s"DROP DATABASE IF EXISTS $db CASCADE")
       SparkSessionUtils.clearAllTablesAndViews(spark)
 
       // we cannot handle empty data

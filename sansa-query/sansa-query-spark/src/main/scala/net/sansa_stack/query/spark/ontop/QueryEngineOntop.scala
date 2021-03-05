@@ -220,36 +220,41 @@ class QueryEngineOntop(val spark: SparkSession,
   }
 
   def prepare(): Unit = {
-    logger.debug(s"preparing Ontop setup on executors ...")
-    val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
-    val propertiesBC = spark.sparkContext.broadcast(ontopProperties)
-    val jdbcMetadataBC = spark.sparkContext.broadcast(jdbcMetaData)
-    val ontologyBC = spark.sparkContext.broadcast(ontology)
-    val idBC = spark.sparkContext.broadcast(sessionId)
-    val databaseBC = spark.sparkContext.broadcast(database)
+    // in local mode, there won't be any executor
+    if (spark.sparkContext.isLocal) {
+      logger.debug(s"preparing Ontop setup on executors ...")
+      val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
+      val propertiesBC = spark.sparkContext.broadcast(ontopProperties)
+      val jdbcMetadataBC = spark.sparkContext.broadcast(jdbcMetaData)
+      val ontologyBC = spark.sparkContext.broadcast(ontology)
+      val idBC = spark.sparkContext.broadcast(sessionId)
+      val databaseBC = spark.sparkContext.broadcast(database)
 
-    val numExecutors = SparkSessionUtils.currentActiveExecutors(spark).size
+      val numExecutors = SparkSessionUtils.currentActiveExecutors(spark).size
 
-    // we have to somehow achieve that
-    val data = spark.sparkContext.parallelize((1 to 100).toList).repartition(3 * numExecutors)
+      if (numExecutors > 0) {
+        // we have to somehow achieve that
+        val data = spark.sparkContext.parallelize((1 to 100).toList).repartition(3 * numExecutors)
 
-    // force an Ontop setup
-    data.foreachPartition(_ => {
-      val id = idBC.value
-      val db = databaseBC.value
-      val mappings = mappingsBC.value
-      val properties = propertiesBC.value
-      val jdbcMetadata = jdbcMetadataBC.value
-      val ontology = ontologyBC.value
-      OntopConnection(
-        id,
-        db,
-        mappings,
-        properties,
-        jdbcMetadata,
-        ontology)
-    })
-    logger.debug(s"finished preparing Ontop setup on executors.")
+        // force an Ontop setup
+        data.foreachPartition(_ => {
+          val id = idBC.value
+          val db = databaseBC.value
+          val mappings = mappingsBC.value
+          val properties = propertiesBC.value
+          val jdbcMetadata = jdbcMetadataBC.value
+          val ontology = ontologyBC.value
+          OntopConnection(
+            id,
+            db,
+            mappings,
+            properties,
+            jdbcMetadata,
+            ontology)
+        })
+        logger.debug(s"finished preparing Ontop setup on executors.")
+      }
+    }
   }
 
   if (settings.preInitializeWorkers) prepare()
