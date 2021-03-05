@@ -66,11 +66,12 @@
             <artifactId>jena-sparql-api-io-core</artifactId>
         </dependency>
 
+<!--
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-elephas-common</artifactId>
         </dependency>
-
+-->
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-elephas-io</artifactId>
