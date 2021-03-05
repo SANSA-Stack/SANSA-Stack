@@ -24,7 +24,7 @@ abstract class QueryEngineFactoryBase(spark: SparkSession, var partitioner: RdfP
   protected def createWithPartitioning(triples: RDD[graph.Triple],
                                        // partitioner: RdfPartitioner[RdfPartitionStateDefault] = RdfPartitionerDefault,
                                        explodeLanguageTags: Boolean = false,
-                                       sqlCodec: SqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark,
+                                       sqlCodec: SqlCodec = SqlCodecUtils.createSqlCodecDefault,
                                        escapeIdentifiers: Boolean = false): QueryExecutionFactorySpark = {
     // apply vertical partitioning
     import net.sansa_stack.rdf.spark.partition._
