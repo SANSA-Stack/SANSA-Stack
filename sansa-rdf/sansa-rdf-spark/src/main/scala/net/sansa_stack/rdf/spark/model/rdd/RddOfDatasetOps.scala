@@ -1,13 +1,13 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
 import java.util.Objects
+
 import org.aksw.jena_sparql_api.utils.{DatasetGraphUtils, IteratorResultSetBinding}
-import org.apache.jena.graph.{Graph, GraphUtil}
+import org.apache.jena.graph.Triple
 import org.apache.jena.query._
-import org.apache.jena.rdf.model.{Model, ModelFactory, Resource}
+import org.apache.jena.rdf.model.{Model, Resource}
+import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.util.DatasetUtils
-import org.apache.jena.sparql.util.compose.DatasetLib
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 
@@ -18,8 +18,24 @@ import scala.collection.JavaConverters._
  */
 object RddOfDatasetOps {
 
-  @inline def naturalResources(rddOfDatasets: RDD[_ <: Dataset]): RDD[Resource] = {
+  def naturalResources(rddOfDatasets: RDD[_ <: Dataset]): RDD[Resource] = {
     rddOfDatasets.flatMap(JenaDatasetOps.naturalResources)
+  }
+
+  /**
+   * Flat map each dataset to its set of quads using its .find() method.
+   * Includes triples in the default graph.
+   */
+  def flatMapToQuads(rddOfDatasets: RDD[_ <: Dataset]): RDD[Quad] = {
+    rddOfDatasets.flatMap(_.asDatasetGraph().find.asScala)
+  }
+
+  /**
+   * Flat map all quads in the dataset - in both named graphs and the default graph -
+   * to triples
+   */
+  def flatMapToTriples(rddOfDatasets: RDD[_ <: Dataset]): RDD[Triple] = {
+    flatMapToQuads(rddOfDatasets).map(_.asTriple)
   }
 
   /**
@@ -177,7 +193,7 @@ object RddOfDatasetOps {
     })
   }
 
-  @inline def filterWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String, drop: Boolean): RDD[_ <: Dataset] = {
+  def filterWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String, drop: Boolean): RDD[_ <: Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
     rddOfDatasets.filter(in => {
       // TODO Make deserialization of query work

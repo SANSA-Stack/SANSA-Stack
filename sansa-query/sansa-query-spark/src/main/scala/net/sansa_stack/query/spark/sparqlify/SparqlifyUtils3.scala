@@ -6,11 +6,11 @@ import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.obda.jena.r2rml.impl.R2rmlImporter
 import org.aksw.r2rml.jena.sql.transform.R2rmlSqlLib
+import org.aksw.r2rml.sql.transform.SqlUtils
 import org.aksw.sparqlify.backend.postgres.DatatypeToStringCast
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBase
 import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
 import org.apache.jena.rdf.model.Model
 import org.apache.spark.rdd.RDD
@@ -32,7 +32,7 @@ object SparqlifyUtils3 // extends StrictLogging
    */
   def createSparqlSqlRewriter(sparkSession: SparkSession, databaseName: Option[String], r2rmlModel: Model): SparqlSqlStringRewriter = {
     // val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) // new SqlEscaperBacktick())
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("", "")) // new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), SqlCodecUtils.createSqlCodecForApacheSpark) // new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
     val sqlFunctionMapping = SparqlifyCoreInit.loadSqlFunctionDefinitions("functions-spark.xml")
@@ -48,11 +48,11 @@ object SparqlifyUtils3 // extends StrictLogging
     // val loggerCount = new LoggerCount(logger.underlying)
     val r2rmlImporter = new R2rmlImporter
 
-    val sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark()
+    // val sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark()
 
     // TODO Consider moving the R2RML model transformation out of this method
     if (databaseName.isDefined) {
-      R2rmlSqlLib.makeQualifiedTableIdentifiers(r2rmlModel, databaseName.get, sqlCodec, true)
+      R2rmlSqlLib.makeQualifiedTableIdentifiers(r2rmlModel, databaseName.get, SqlCodecUtils.createSqlCodecDefault(), true)
     }
 
     val viewDefinitions = r2rmlImporter.read(r2rmlModel)
@@ -68,7 +68,7 @@ object SparqlifyUtils3 // extends StrictLogging
     val config = new Config()
     // val loggerCount = new LoggerCount(logger.underlying)
 
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), new SqlEscaperBase("`", "`")) // new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), SqlCodecUtils.createSqlCodecForApacheSpark()) // new SqlEscaperBacktick())
     val sqlEscaper = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
     val sqlFunctionMapping = SparqlifyCoreInit.loadSqlFunctionDefinitions("functions-spark.xml")
@@ -96,7 +96,7 @@ object SparqlifyUtils3 // extends StrictLogging
         val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
         val df = sparkSession.createDataFrame(rdd, sparkSchema).persist()
 
-        df.createOrReplaceTempView(sqlEscaper.escapeTableName(tableName))
+        df.createOrReplaceTempView(SqlUtils.harmonizeTableName(tableName, sqlEscaper))
         config.getViewDefinitions.add(vd)
     }
 
