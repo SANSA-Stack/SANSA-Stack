@@ -21,6 +21,7 @@ import org.apache.jena.graph.{Graph, Node, NodeFactory, Triple}
 import org.apache.jena.hadoop.rdf.io.input.TriplesInputFormat
 import org.apache.jena.hadoop.rdf.io.input.turtle.TurtleInputFormat
 import org.apache.jena.hadoop.rdf.io.output.QuadsOutputFormat
+import org.apache.jena.hadoop.rdf.io.output.trig.{BatchedTriGOutputFormat, TriGOutputFormat}
 import org.apache.jena.hadoop.rdf.types.{QuadWritable, TripleWritable}
 import org.apache.jena.query.{Dataset => JenaDataset}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
@@ -193,6 +194,8 @@ package object io {
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
+    def configureSave(): RddRdfSaver[Triple] = RddRdfSaver.createForTriple(triples)
+
 
     //     * @param singleFile write to a single file only (internally, this is done by RDD::coalesce(1) function)
     //     *                   and is usually not recommended for large dataset because all data has to be moved
@@ -252,6 +255,8 @@ package object io {
    * Adds method `saveAsNQuadsFile` to an RDD[Quad] that allows to write N-Quads files.
    */
   implicit class RDFQuadsWriter[T](quads: RDD[Quad]) {
+
+    def configureSave(): RddRdfSaver[Quad] = RddRdfSaver.createForQuad(quads)
 
     /**
      * Deprecated; this method does not reuse Jena's RDFFormat/Lang system and also
@@ -321,27 +326,25 @@ package object io {
 
         val confHadoop = sc.hadoopConfiguration
 
-        quads.zipWithIndex().map{case (k, v) => (v, k)}
-          .saveAsNewAPIHadoopFile(path, classOf[LongWritable], classOf[QuadWritable], classOf[QuadsOutputFormat[LongWritable]], confHadoop)
+//        quads.zipWithIndex().map{case (k, v) => (v, k)}
+//          .saveAsNewAPIHadoopFile(path, classOf[LongWritable], classOf[QuadWritable], classOf[QuadsOutputFormat[LongWritable]], confHadoop)
+//        quads.zipWithIndex().map{case (k, v) => ( new LongWritable(v), new QuadWritable(k) )}
+//          .saveAsNewAPIHadoopFile(path, classOf[LongWritable], classOf[QuadWritable], classOf[TriGOutputFormat[LongWritable]], confHadoop)
+        quads.zipWithIndex().map{case (k, v) => ( new LongWritable(v), new QuadWritable(k) )}
+          .saveAsNewAPIHadoopFile(path, classOf[LongWritable], classOf[QuadWritable], classOf[TriGOutputFormat[LongWritable]], confHadoop)
       }
     }
   }
-
-
-  def makeString(prefixMapping: PrefixMapping, rdfFormat: RDFFormat): String = {
-    val tmp: Model = ModelFactory.createDefaultModel
-    tmp.setNsPrefixes(prefixMapping)
-    val baos = new ByteArrayOutputStream()
-    RDFDataMgr.write(baos, tmp, RDFFormat.TURTLE_PRETTY)
-    baos.toString("UTF-8").trim
-  }
-
 
   /**
    * Adds methods to save RDDs of datasets to a folder or file.
    *
    */
   implicit class JenaDatasetWriter[T](quads: RDD[JenaDataset]) {
+
+    def configureSave(): RddRdfSaver[JenaDataset] = {
+      RddRdfSaver.createForDataset(quads);
+    }
 
     // TODO This method should go to a common util class
     def mergeFolder(outFile: java.nio.file.Path, srcFolder: java.nio.file.Path, pattern: String): Unit = {
@@ -429,7 +432,7 @@ package object io {
 
       val prefixStr: String =
         if (prefixMapping != null && !prefixMapping.hasNoMappings) {
-          makeString(prefixMapping, RDFFormat.TURTLE_PRETTY)
+          RddRdfSaver.toString(prefixMapping, RDFFormat.TURTLE_PRETTY)
         } else {
           null
         }

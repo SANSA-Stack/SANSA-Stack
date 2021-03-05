@@ -66,6 +66,17 @@
             <artifactId>jena-sparql-api-io-core</artifactId>
         </dependency>
 
+<!--
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-elephas-common</artifactId>
+        </dependency>
+-->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-elephas-io</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -76,6 +87,10 @@
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-elephas-io</artifactId>
         </dependency>
 
         <!--

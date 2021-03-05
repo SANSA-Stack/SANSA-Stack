@@ -111,6 +111,8 @@ object CmdSansaTrigMergeImpl {
 
 
     import net.sansa_stack.rdf.spark.io._
+    import net.sansa_stack.rdf.spark.ops._
+
 
     val initialRdd: RDD[Dataset] = spark.sparkContext.union(
       validPathSet
@@ -148,11 +150,22 @@ object CmdSansaTrigMergeImpl {
       writer.finish
       out.flush
     } else {
-      if (cmd.outFile != null) {
-        effectiveRdd.saveToFile(cmd.outFile, new PrefixMappingImpl(), outRdfFormat, cmd.outFolder)
-      } else { // if (cmd.outFolder != null) {
-        effectiveRdd.saveToFolder(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
-      }
+      effectiveRdd.configureSave()
+        .setGlobalPrefixMapping(new PrefixMappingImpl())
+        .setOutputFormat(outRdfFormat)
+        .setAllowOverwriteFiles(true)
+        .setPartitionFolder(cmd.outFolder)
+        .setTargetFile(cmd.outFile)
+        .setUseElephas(true)
+        .setDeletePartitionFolderAfterMerge(true)
+        .run()
+
+//      if (cmd.outFile != null) {
+//        // effectiveRdd.flatMapToQuads.save(cmd.outFile)
+//        effectiveRdd.saveToFile(cmd.outFile, new PrefixMappingImpl(), outRdfFormat, cmd.outFolder)
+//      } else { // if (cmd.outFolder != null) {
+//        effectiveRdd.saveToFolder(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
+//      }
     }
 
     // effectiveRdd.saveAsFile("outfile.trig.bz2", prefixes, RDFFormat.TRIG_BLOCKS)
