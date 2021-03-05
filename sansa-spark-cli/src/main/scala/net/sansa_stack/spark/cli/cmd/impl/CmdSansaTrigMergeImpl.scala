@@ -153,10 +153,10 @@ object CmdSansaTrigMergeImpl {
       effectiveRdd.configureSave()
         .setGlobalPrefixMapping(new PrefixMappingImpl())
         .setOutputFormat(outRdfFormat)
-        .setAllowOverwriteFiles(true)
+        // .setAllowOverwriteFiles(true)
         .setPartitionFolder(cmd.outFolder)
         .setTargetFile(cmd.outFile)
-        .setUseElephas(true)
+        // .setUseElephas(true)
         .setDeletePartitionFolderAfterMerge(true)
         .run()
 
