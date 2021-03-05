@@ -4,11 +4,11 @@ import com.typesafe.scalalogging.StrictLogging
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
 import net.sansa_stack.rdf.common.partition.model.sparqlify.SparqlifyUtils2
 import net.sansa_stack.rdf.common.partition.schema._
+import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.sparqlify.config.syntax.Config
 import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewDefinitionNormalizerImpl}
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
 import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
 import org.aksw.sparqlify.validation.LoggerCount
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
@@ -25,7 +25,7 @@ object SparqlifyUtils3
     val config = new Config()
     val loggerCount = new LoggerCount(logger.underlying)
 
-    val backendConfig = new SqlBackendConfig(new DatatypeToStringFlink(), new SqlEscaperBacktick())
+    val backendConfig = new SqlBackendConfig(new DatatypeToStringFlink(), SqlCodecUtils.createSqlCodecForApacheSpark())
     val sqlEscaper = backendConfig.getSqlEscaper
     val typeSerializer = backendConfig.getTypeSerializer
     val sqlFunctionMapping = SparqlifyCoreInit.loadSqlFunctionDefinitions("functions-spark.xml")
