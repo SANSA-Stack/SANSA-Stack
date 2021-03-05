@@ -13,6 +13,7 @@ import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewD
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
 import org.apache.jena.rdf.model.Model
+import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
@@ -56,6 +57,8 @@ object SparqlifyUtils3 // extends StrictLogging
     }
 
     val viewDefinitions = r2rmlImporter.read(r2rmlModel)
+    RDFDataMgr.write(System.out, r2rmlModel, RDFFormat.TURTLE_PRETTY)
+
     config.getViewDefinitions.addAll(viewDefinitions)
 
     val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper, sqlFunctionMapping)
@@ -69,7 +72,7 @@ object SparqlifyUtils3 // extends StrictLogging
     // val loggerCount = new LoggerCount(logger.underlying)
 
     val backendConfig = new SqlBackendConfig(new DatatypeToStringCast(), SqlCodecUtils.createSqlCodecForApacheSpark()) // new SqlEscaperBacktick())
-    val sqlEscaper = backendConfig.getSqlEscaper()
+    val sqlCodec = backendConfig.getSqlEscaper()
     val typeSerializer = backendConfig.getTypeSerializer()
     val sqlFunctionMapping = SparqlifyCoreInit.loadSqlFunctionDefinitions("functions-spark.xml")
 
@@ -96,13 +99,13 @@ object SparqlifyUtils3 // extends StrictLogging
         val sparkSchema = ScalaReflection.schemaFor(scalaSchema).dataType.asInstanceOf[StructType]
         val df = sparkSession.createDataFrame(rdd, sparkSchema).persist()
 
-        df.createOrReplaceTempView(SqlUtils.harmonizeTableName(tableName, sqlEscaper))
+        df.createOrReplaceTempView(SqlUtils.harmonizeTableName(tableName, sqlCodec))
         config.getViewDefinitions.add(vd)
     }
 
     val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
 
-    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlEscaper, sqlFunctionMapping)
+    val rewriter = SparqlifyUtils.createDefaultSparqlSqlStringRewriter(basicTableInfoProvider, null, config, typeSerializer, sqlCodec, sqlFunctionMapping)
     //   val rewrite = rewriter.rewrite(QueryFactory.create("Select * { <http://dbpedia.org/resource/Guy_de_Maupassant> ?p ?o }"))
 
     //    val rewrite = rewriter.rewrite(QueryFactory.create("Select * { ?s <http://xmlns.com/foaf/0.1/givenName> ?o ; <http://dbpedia.org/ontology/deathPlace> ?d }"))
