@@ -7,6 +7,7 @@ import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 import net.sansa_stack.rdf.spark.io._
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException
 import org.apache.jena.query.{QueryFactory, ResultSetFormatter}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sys.JenaSystem
@@ -69,15 +70,14 @@ object SPARQLEngineExample {
       case _ => throw new RuntimeException("Unsupported query engine")
     }
 
-    // create the query execution factory
-
     // load the data into an RDD
     if (database != null) { // pre-partitioned case
       // we do catch the exception here which is always thrown because of ...
-      scala.util.control.Exception.catching(classOf[DatabaseAlreadyExistsException])(spark.sql("CREATE DATABASE IF NOT EXISTS " + database))
+      scala.util.control.Exception.catching(classOf[DatabaseAlreadyExistsException], classOf[AlreadyExistsException])(spark.sql("CREATE DATABASE IF NOT EXISTS " + database))
       spark.sql("USE " + database)
     }
 
+    // create the query execution factory
     val qef =
       if (mappingsFile != null) {
         // load the R2RML mappings

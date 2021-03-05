@@ -25,7 +25,7 @@ class QueryExecutionSparkOntop(query: Query,
   }
 
   override def executeCoreSelect(query: Query): ResultSetCloseable = {
-    if (ontop.useLocalEvaluation) {
+    if (ontop.settings.useLocalEvaluation) {
       val bindings = ontop.computeBindingsLocal(query.toString).iterator
 
       val rs = ResultSetUtils.create2(query.getProjectVars, bindings.asJava)
