@@ -13,6 +13,8 @@ import org.apache.jena.rdf.model.impl.PropertyImpl;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.core.DatasetImpl;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
@@ -68,6 +70,8 @@ public class JenaKryoRegistratorLib {
 
         kryo.register(Triple.class, new TripleSerializer());
         kryo.register(org.apache.jena.graph.Triple[].class);
+
+        kryo.register(PrefixMappingImpl.class, new PrefixMappingSerializer(Lang.TURTLE, RDFFormat.TURTLE_PRETTY));
 
         kryo.register(ModelCom.class, new ModelSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES));
         kryo.register(DatasetImpl.class, new DatasetSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES));
