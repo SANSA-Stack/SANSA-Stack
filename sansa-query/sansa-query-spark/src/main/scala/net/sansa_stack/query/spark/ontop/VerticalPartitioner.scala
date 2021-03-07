@@ -326,8 +326,7 @@ object VerticalPartitioner {
       Option(config.databaseName),
       SqlCodecUtils.createSqlCodecForApacheSpark,
       model,
-      explodeLanguageTags = true,
-      escapeIdentifiers = true)
+      explodeLanguageTags = true)
 
     model.write(new FileOutputStream(path.toFile), "TURTLE", RR.uri)
     spark.stop()
