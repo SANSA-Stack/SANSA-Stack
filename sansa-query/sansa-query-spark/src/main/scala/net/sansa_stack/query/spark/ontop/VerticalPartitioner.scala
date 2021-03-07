@@ -325,8 +325,7 @@ object VerticalPartitioner {
       Option(config.databaseName),
       SqlCodecUtils.createSqlCodecDefault(),
       model,
-      explodeLanguageTags = true,
-      escapeIdentifiers = true)
+      explodeLanguageTags = true)
 
     model.write(new FileOutputStream(new File(path)), "TURTLE", RR.uri)
     println(s"R2RML mapping model written to $path")

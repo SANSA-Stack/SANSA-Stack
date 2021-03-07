@@ -43,7 +43,7 @@ package object partition extends Logging {
      */
     def verticalPartition(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                           explodeLanguageTags: Boolean = false,
-                          sqlCodec: SqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark,
+                          sqlCodec: SqlCodec = SqlCodecUtils.createSqlCodecDefault(),
                           escapeIdentifiers: Boolean = false): R2rmlMappedSparkSession = {
       val partitioning: Map[RdfPartitionStateDefault, RDD[Row]] =
         RdfPartitionUtilsSpark.partitionGraph(rddOfTriples, partitioner)
@@ -73,8 +73,7 @@ package object partition extends Logging {
         database,
         sqlCodec,
         mappingsModel,
-        explodeLanguageTags,
-        escapeIdentifiers
+        explodeLanguageTags
       )
 
 //      partitioning.foreach { case(p, rdd) =>

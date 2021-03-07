@@ -19,13 +19,11 @@ object PartitionLib {
      * @param explodeLanguageTags if `true` a separate mapping/TriplesMap will be created for each language tag,
      *                            otherwise a mapping to a column for the language tag represented by
      *                            `rr:langColumn` property will be used (note, this is an extension of R2RML)
-     * @param escapeIdentifiers if all SQL identifiers have to be escaped
      * @return the model containing the RDF partition states as as R2RML syntax
      */
     def exportAsR2RML(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                       partitions: Seq[RdfPartitionStateDefault],
-                      explodeLanguageTags: Boolean = false,
-                      escapeIdentifiers: Boolean = false): Model = {
+                      explodeLanguageTags: Boolean = false): Model = {
       // put all triple maps into a single model
       val model = ModelFactory.createDefaultModel()
 
@@ -35,10 +33,9 @@ object PartitionLib {
           partition,
           p => SQLUtils.createDefaultTableName(p),
           None,
-          SqlCodecUtils.createSqlCodecForApacheSpark,
+          SqlCodecUtils.createSqlCodecDefault,
           model,
-          explodeLanguageTags,
-          escapeIdentifiers)
+          explodeLanguageTags)
       )
 
       model

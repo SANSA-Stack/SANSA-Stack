@@ -437,7 +437,12 @@ public class RddRdfSaver<T> {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     } finally {
-                        IOUtils.closeQuietly(out, null);
+                        // IOUtils.closeQuietly(out, null);
+                        try {
+                           out.close();
+                        } catch (Exception e) {
+                            logger.warn("Failed to close a stream", e);
+                        }
                     }
                 });
 
