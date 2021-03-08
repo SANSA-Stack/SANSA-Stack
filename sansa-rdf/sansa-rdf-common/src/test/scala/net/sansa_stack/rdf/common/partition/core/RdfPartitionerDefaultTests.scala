@@ -133,7 +133,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true)
 
-    RDFDataMgr.write(System.out, actual, RDFFormat.TURTLE_PRETTY)
+    // RDFDataMgr.write(System.out, actual, RDFFormat.TURTLE_PRETTY)
 
     assert(triplesMaps.size == languages.size)
 
