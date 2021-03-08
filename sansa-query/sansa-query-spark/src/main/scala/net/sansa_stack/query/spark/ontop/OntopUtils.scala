@@ -1,9 +1,9 @@
 package net.sansa_stack.query.spark.ontop
 
+import java.text.DecimalFormat
 import java.util.Properties
-
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException}
-import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopMappingSQLAllOWLAPIConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
+import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopMappingSQLAllOWLAPIConfiguration, OntopMappingSQLConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
 import it.unibz.inf.ontop.iq.{IQ, IQTree, UnaryIQTree}
@@ -11,14 +11,23 @@ import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import org.apache.commons.rdf.jena.JenaRDF
 import org.apache.jena.datatypes.TypeMapper
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
+
+import java.io.StringReader
 
 /**
  * @author Lorenz Buehmann
  */
 object OntopUtils extends Serializable {
+
+  val fixScientificNotation: Boolean = true
+  import java.text.NumberFormat
+  val formatter = NumberFormat.getInstance()
+  formatter.setMaximumIntegerDigits(Integer.MAX_VALUE)
+  formatter.setMaximumFractionDigits(Integer.MAX_VALUE)
 
 
   /**
@@ -33,10 +42,20 @@ object OntopUtils extends Serializable {
       NodeFactory.createURI(constant.asInstanceOf[IRIConstant].getIRI.getIRIString)
     } else if (termType.isA(typeFactory.getAbstractRDFSLiteral)) {
       val lit = constant.asInstanceOf[RDFLiteralConstant]
+      // parse datatype
       val litType = lit.getType
       val dt = TypeMapper.getInstance().getTypeByName(litType.getIRI.getIRIString)
+
+      // workaround scientific notation in decimal values
+      var lexicalForm = lit.getValue
+      if (fixScientificNotation && dt == XSDDatatype.XSDdecimal) {
+        val d = java.lang.Double.parseDouble(lexicalForm)
+        lexicalForm = formatter.format(d)
+      }
+      // parse lang tag
       val lang = if (litType.getLanguageTag.isPresent) litType.getLanguageTag.get().getFullString else null
-      NodeFactory.createLiteral(lit.getValue, lang, dt)
+
+      NodeFactory.createLiteral(lexicalForm, lang, dt)
     } else if (termType.isA(typeFactory.getBlankNodeType)) {
       NodeFactory.createBlankNode(constant.asInstanceOf[BNode].getInternalLabel)
     } else {
@@ -123,24 +142,68 @@ object OntopUtils extends Serializable {
   }
 
   @throws[OBDASpecificationException]
+  private def loadOBDASpecification[C <: OntopMappingSQLAllConfiguration.Builder[C]](dbMetadata: String,
+                                                                                     obdaMappings: Model,
+                                                                                     properties: Properties,
+                                                                                     ontology: Option[OWLOntology]) = {
+    val builder = (if (ontology.nonEmpty) OntopMappingSQLAllOWLAPIConfiguration.defaultBuilder.ontology(ontology.get)
+    else OntopMappingSQLAllConfiguration.defaultBuilder)
+      .asInstanceOf[C]
+
+    val mappingConfiguration = builder
+      .r2rmlMappingGraph(new JenaRDF().asGraph(obdaMappings))
+      .dbMetadataReader(new StringReader(dbMetadata))
+      .properties(properties)
+      .enableTestMode
+      .build
+    mappingConfiguration.loadSpecification
+  }
+
+  @throws[OBDASpecificationException]
   def createReformulationConfig[B <: OntopSQLOWLAPIConfiguration.Builder[B], C <: OntopReformulationSQLConfiguration.Builder[C]](database: Option[String],
-                                                        obdaMappings: Model,
-                                                        properties: Properties,
-                                                        ontology: Option[OWLOntology] = None): OntopReformulationSQLConfiguration = {
+                                                                                                                                 obdaMappings: Model,
+                                                                                                                                 properties: Properties,
+                                                                                                                                 ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
     val obdaSpecification = loadOBDASpecification(database, obdaMappings, properties, ontology)
 
     val builder = (if (ontology.nonEmpty) OntopSQLOWLAPIConfiguration.defaultBuilder.asInstanceOf[B]
-                                              .ontology(ontology.get)
-                                              .properties(properties)
-                                              .jdbcUser(OntopConnection.JDBC_USER)
-                                              .jdbcPassword(OntopConnection.JDBC_PASSWORD)
-                  else OntopReformulationSQLConfiguration.defaultBuilder).asInstanceOf[C]
+      .ontology(ontology.get)
+      .properties(properties)
+      .jdbcUser(OntopConnection.JDBC_USER)
+      .jdbcPassword(OntopConnection.JDBC_PASSWORD)
+    else OntopReformulationSQLConfiguration.defaultBuilder).asInstanceOf[C]
 
     builder
       .obdaSpecification(obdaSpecification)
       .properties(properties)
       .jdbcUrl(OntopConnection.getConnectionURL(database))
       .enableTestMode
+      .build
+  }
+
+  @throws[OBDASpecificationException]
+  def createReformulationConfig[B <: OntopSQLOWLAPIConfiguration.Builder[B], C <: OntopReformulationSQLConfiguration.Builder[C]](dbMetadata: String,
+                                                                                                                                 obdaMappings: Model,
+                                                                                                                                 properties: Properties,
+                                                                                                                                 ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
+    val obdaSpecification = loadOBDASpecification(dbMetadata, obdaMappings, properties, ontology)
+
+    val builder = OntopSQLOWLAPIConfiguration.defaultBuilder.asInstanceOf[B]
+      .properties(properties)
+      .obdaSpecification(obdaSpecification)
+      .enableTestMode
+    if (ontology.isDefined) builder.ontology(ontology.get)
+
+    builder.build
+  }
+
+  def createMappingConfig[B <: OntopMappingSQLConfiguration.Builder[B]](properties: Properties,
+                                                                        database: Option[String]): OntopMappingSQLConfiguration = {
+    OntopMappingSQLConfiguration.defaultBuilder.asInstanceOf[B]
+      .properties(properties)
+      .jdbcUrl(OntopConnection.getConnectionURL(database))
+      .jdbcUser(OntopConnection.JDBC_USER)
+      .jdbcPassword(OntopConnection.JDBC_PASSWORD)
       .build
   }
 

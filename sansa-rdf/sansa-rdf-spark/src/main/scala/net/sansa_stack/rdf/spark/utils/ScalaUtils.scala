@@ -70,6 +70,27 @@ object ScalaUtils extends Logging {
     }
   }
 
+  def time[R](block: => (String, R)): R = {
+    val t0 = System.nanoTime()
+    val result = block._2    // call-by-name
+    val t1 = System.nanoTime()
+    println(s"${block._1} - Elapsed time: " + (t1 - t0) / 10e6 + "ms")
+    result
+  }
+
+  def time[R](message: String)(block: => R): R = {
+    time((message, block))
+  }
+
+  def time[R](startedMessage: String = "", finishedMessage: String = "")(block: => R): R = {
+    println(startedMessage)
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    println(s"$finishedMessage\nElapsed time: " + (t1 - t0) / 10e6 + "ms")
+    result
+  }
+
   /**
    * @see org.apache.commons.lang3.StringUtils.unwrap
    * @param s
