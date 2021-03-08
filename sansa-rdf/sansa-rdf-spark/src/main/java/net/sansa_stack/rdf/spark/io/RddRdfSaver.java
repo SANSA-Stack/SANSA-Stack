@@ -9,7 +9,6 @@ import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseUtils;
 import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseWrapper;
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -70,7 +69,6 @@ public class RddRdfSaver<T> {
     protected boolean useElephas;
 
     protected boolean partitionsAsIndependentFiles;
-
 
 
     // Static bindings for the generic 'T'
@@ -363,23 +361,23 @@ public class RddRdfSaver<T> {
      * See [[JenaDatasetWriter#saveToFolder]] for supported formats.
      *
      * @param mode
-     * @param exitOnError   /
-     *                      def saveToFile(outFile: String,
-     *                      prefixMapping: PrefixMapping,
-     *                      rdfFormat: RDFFormat,
-     *                      outFolder: String,
-     *                      mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
-     *                      exitOnError: Boolean = false): Unit = {
-     *                      <p>
-     *                      val outFilePath = Paths.get(outFile).toAbsolutePath
-     *                      val outFileFileName = outFilePath.getFileName.toString
-     *                      val outFolderPath =
-     *                      if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
-     *                      else Paths.get(outFolder).toAbsolutePath
-     *                      <p>
-     *                      saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
-     *                      mergeFolder(outFilePath, outFolderPath, "part*")
-     *                      }
+     * @param exitOnError /
+     *                    def saveToFile(outFile: String,
+     *                    prefixMapping: PrefixMapping,
+     *                    rdfFormat: RDFFormat,
+     *                    outFolder: String,
+     *                    mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+     *                    exitOnError: Boolean = false): Unit = {
+     *                    <p>
+     *                    val outFilePath = Paths.get(outFile).toAbsolutePath
+     *                    val outFileFileName = outFilePath.getFileName.toString
+     *                    val outFolderPath =
+     *                    if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
+     *                    else Paths.get(outFolder).toAbsolutePath
+     *                    <p>
+     *                    saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
+     *                    mergeFolder(outFilePath, outFolderPath, "part*")
+     *                    }
      */
 
     // public static void partitionMapper
@@ -391,18 +389,45 @@ public class RddRdfSaver<T> {
         return WrappedIterator.create(it).mapWith(FmtUtils::stringForQuad);
     }
 
-/*
-    public static Iterator<String> partitionMapperRDFStream(
-            Iterator<Dataset> it,
+    /*
+        public static Iterator<String> partitionMapperRDFStream(
+                Iterator<Dataset> it,
+                RDFFormat rdfFormat,
+                PrefixMapping prefixMapping) throws IOException {
+            return partitionMapperRDFStream(it, rdfFormat, prefixMapping,
+                    (ds, s) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), s));
+        }
+    */
+
+    /**
+     * Create a function that can create a StreamRDF instance that is backed by the given
+     * OutputStream.
+     *
+     * @param rdfFormat
+     * @param prefixMapping
+     * @return
+     */
+    public static Function<OutputStream, StreamRDF> createStreamRDFFactory(
             RDFFormat rdfFormat,
-            PrefixMapping prefixMapping) throws IOException {
-        return partitionMapperRDFStream(it, rdfFormat, prefixMapping,
-                (ds, s) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), s));
+            PrefixMapping prefixMapping) {
+
+        return out -> {
+
+            StreamRDF rawWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, null);
+
+            // Retain blank nodes as given
+            if (rawWriter instanceof WriterStreamRDFBase) {
+                WriterStreamRDFBaseUtils.setNodeToLabel((WriterStreamRDFBase) rawWriter, SyntaxLabels.createNodeToLabelAsGiven());
+                rawWriter = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
+                        prefixMapping, (WriterStreamRDFBase) rawWriter);
+            }
+
+            return rawWriter;
+        };
     }
-*/
+
     public static <T> ThrowingFunction<Iterator<T>, Iterator<String>> partitionMapperRDFStream(
-            RDFFormat rdfFormat,
-            PrefixMapping prefixMapping,
+            Function<OutputStream, StreamRDF> streamRDFFactory,
             BiConsumer<? super T, StreamRDF> sendRecordToWriter) {
 
         // Look up the string here in order to avoid having to serialize the RDFFormat object
@@ -413,17 +438,9 @@ public class RddRdfSaver<T> {
 
                 PipedOutputStream out = new PipedOutputStream();
                 PipedInputStream in = new PipedInputStream(out, 8 * 1024);
-                StreamRDF rawWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, null);
-
-                // Retain blank nodes as given
-                if (rawWriter instanceof WriterStreamRDFBase) {
-                    WriterStreamRDFBaseUtils.setNodeToLabel((WriterStreamRDFBase) rawWriter, SyntaxLabels.createNodeToLabelAsGiven());
-                    rawWriter = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
-                            prefixMapping, (WriterStreamRDFBase) rawWriter);
-                }
 
                 // Set the writer's prefix map without writing them out
-                StreamRDF writer = rawWriter;
+                StreamRDF writer = streamRDFFactory.apply(out);
                 Thread thread = new Thread(() -> {
                     try {
                         writer.start();
@@ -439,7 +456,7 @@ public class RddRdfSaver<T> {
                     } finally {
                         // IOUtils.closeQuietly(out, null);
                         try {
-                           out.close();
+                            out.close();
                         } catch (Exception e) {
                             logger.warn("Failed to close a stream", e);
                         }
@@ -466,8 +483,8 @@ public class RddRdfSaver<T> {
      * If the prefixMapping is non-empty then the first part file written out contains them.
      * No other partition will write out prefixes.
      *
-     * @param path        the folder into which the file(s) will be written to
-     * @param mode        the expected behavior of saving the data to a data source
+     * @param path the folder into which the file(s) will be written to
+     * @param mode the expected behavior of saving the data to a data source
      */
     public static <T> void saveToFolder(
             JavaRDD<T> javaRdd,
@@ -489,8 +506,10 @@ public class RddRdfSaver<T> {
         JavaRDD<String> dataBlocks = javaRdd.mapPartitions(it -> {
             RDFFormat rdfFmt = RDFLanguagesEx.findRdfFormat(rdfFormatStr);
             PrefixMapping pmap = prefixMappingBc.getValue();
+            Function<OutputStream, StreamRDF> streamRDFFactory = createStreamRDFFactory(rdfFmt, pmap);
+
             ThrowingFunction<Iterator<T>, Iterator<String>> mapper = partitionMapperRDFStream(
-                    rdfFmt, pmap, sendRecordToStreamRDF);
+                    streamRDFFactory, sendRecordToStreamRDF);
             Iterator<String> r = mapper.apply(it);
             return r;
         });
@@ -596,6 +615,6 @@ public class RddRdfSaver<T> {
                 (ds, streamRDF) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), streamRDF),
                 x -> x.flatMap(ds -> WrappedIterator.create(ds.asDatasetGraph().find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(ds -> ds.asDatasetGraph().find())
-                );
+        );
     }
 }
