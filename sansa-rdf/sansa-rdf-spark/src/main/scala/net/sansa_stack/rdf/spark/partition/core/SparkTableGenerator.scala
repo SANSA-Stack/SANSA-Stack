@@ -136,10 +136,10 @@ class SparkTableGenerator(spark: SparkSession,
       df.createOrReplaceTempView(s"$escapedTableName") // register the dataframe as a view
 
       // if a database has been defined, we generate the table based on the qualified table identifier and fill it with the temp view
-      if (database.isDefined) {
-        spark.sql(s"DROP TABLE IF EXISTS $escapedQualifiedTableName")
-        spark.sql(s"CREATE TABLE $escapedQualifiedTableName AS SELECT * FROM $escapedTableName")
-      }
+//      if (database.isDefined) {
+//        spark.sql(s"DROP TABLE IF EXISTS $escapedQualifiedTableName")
+//        spark.sql(s"CREATE TABLE $escapedQualifiedTableName AS SELECT * FROM $escapedTableName")
+//      }
       if (persistent) {
         df.write
           .mode(SaveMode.Overwrite)
