@@ -86,7 +86,7 @@
 
         <owlapi.version>5.1.17</owlapi.version>
 
-        <ontop.version>4.1.0-beta-2-guava-shaded-owlapiv5-SNAPSHOT</ontop.version>
+        <ontop.version>4.0.9-sansa</ontop.version>
 
 
         <sansa.version>${project.version}</sansa.version>
@@ -2059,7 +2059,7 @@
                 <enabled>false</enabled>
             </releases>
     	</repository>
-	<!--
+
         <repository>
             <id>maven.aksw.internal</id>
             <name>AKSW Release Repository</name>
@@ -2071,6 +2071,7 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
+        <!--
         <repository>
             <id>netbeans</id>
             <name>mvnrepository</name>

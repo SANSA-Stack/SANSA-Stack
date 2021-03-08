@@ -31,15 +31,15 @@ public class CmdSansaEndpoint
             description = "the SPARQL backend ('Ontop', 'Sparqlify')")
     public String queryEngine = null;
 
-    static class DatasetArgs {
+    public static class DatasetArgs {
         @ArgGroup(exclusive = false, multiplicity = "1", heading = "Arguments for simple RDF triples file.")
-        FreshDatasetArgs freshDatasetArgs;
+        public FreshDatasetArgs freshDatasetArgs;
 
         @ArgGroup(exclusive = false, multiplicity = "1", heading = "Arguments for pre-loaded dataset.")
-        PreloadedDatasetArgs preloadedDatasetArgs;
+        public PreloadedDatasetArgs preloadedDatasetArgs;
     }
 
-    static class FreshDatasetArgs {
+    public static class FreshDatasetArgs {
         @Parameters(arity = "1..n", description = "RDF triples file")
         public List<String> triplesFile;
 
@@ -49,7 +49,7 @@ public class CmdSansaEndpoint
         public boolean makeDistinct;
     }
 
-    static class PreloadedDatasetArgs {
+    public static class PreloadedDatasetArgs {
         @Option(names = { "--database" },
                 required = true,
                 description = "the database name")
