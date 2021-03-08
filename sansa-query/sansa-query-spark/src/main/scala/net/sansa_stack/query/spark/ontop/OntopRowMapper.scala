@@ -19,6 +19,8 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.types.{StructField, StructType}
 import org.eclipse.rdf4j.model.{IRI, Literal}
 import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
 import org.semanticweb.owlapi.model.OWLOntology
@@ -35,10 +37,14 @@ class OntopRowMapper(sessionId: String,
                      jdbcMetaData: Map[String, String],
                      sparqlQuery: String,
                      ontology: Option[OWLOntology],
-                     output: Output
+                     rewriteInstruction: RewriteInstruction,
+                     dbMetadata: String = ""
                     ) {
 
-  val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
+  val startTime = System.currentTimeMillis()
+
+  // val reformulationConfiguration = OntopConnection(sessionId, database, obdaMappings, properties, jdbcMetaData, ontology)
+  val reformulationConfiguration = OntopConnection(sessionId, dbMetadata, obdaMappings, properties, ontology)
 
 
   val termFactory = reformulationConfiguration.getTermFactory
@@ -46,22 +52,28 @@ class OntopRowMapper(sessionId: String,
 
   val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
 
-  val rewriteInstruction = KryoUtils.deserialize(output, sessionId)
-
   val sqlSignature = rewriteInstruction.sqlSignature
   val sqlTypeMap = rewriteInstruction.sqlTypeMap
   val sparqlVar2Term = rewriteInstruction.sparqlVar2Term
-  val answerAtom = rewriteInstruction.anserAtom
+  val answerAtom = rewriteInstruction.answerAtom
 
   val substitution = substitutionFactory.getSubstitution(sparqlVar2Term)
 
+  import org.apache.spark.TaskContext
+  val ctx = Option(TaskContext.get)
+  val stageId = if (ctx.isDefined) ctx.get.stageId
+  val partId = if (ctx.isDefined) ctx.get.partitionId()
+  val taskId = if (ctx.isDefined) ctx.get.taskAttemptId()
+  val hostname = if (ctx.isDefined) java.net.InetAddress.getLocalHost.getHostName
 
+  // if (ctx.isDefined) println(s"row mapper setup at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
 
   def map(row: Row): Binding = {
     toBinding(row)
   }
 
   def toBinding(row: Row): Binding = { // println(row)
+    val startTime = System.currentTimeMillis()
     val binding = BindingFactory.create()
 
     val builder = ImmutableMap.builder[Variable, Constant]
@@ -85,92 +97,51 @@ class OntopRowMapper(sessionId: String,
       case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
       case _ =>
     }
+    // if (ctx.isDefined) println(s"binding generated at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
+
 //    println(s"row: $row --- binding: $binding")
     binding
   }
 
-  // TODO this part is not used anymore, remove the commented code
-  /*
-  val queryReformulator = reformulationConfiguration.loadQueryReformulator
-  val inputQueryFactory = queryReformulator.getInputQueryFactory
-  val inputQuery = inputQueryFactory.createSPARQLQuery(sparqlQuery)
+  val datatypeMappings = DatatypeMappings(typeFactory)
+  def map(row: InternalRow, schema: Array[StructField]): Binding = {
+    toBinding(row, schema)
+  }
 
-  def toTriples(rows: Iterator[Row]): Iterator[Triple] = {
-    val constructTemplate = inputQuery.asInstanceOf[ConstructQuery].getConstructTemplate
+  def toBinding(row: InternalRow, schema: Array[StructField]): Binding = { // println(row)
+    val startTime = System.currentTimeMillis()
+    val binding = BindingFactory.create()
 
-    val ex = constructTemplate.getExtension
-    var extMap: Map[String, ValueExpr] = null
-    if (ex != null) {
-      extMap = ex.getElements.asScala.map(e => (e.getName, e.getExpr)).toMap
+    val builder = ImmutableMap.builder[Variable, Constant]
+
+    val it = sqlSignature.iterator()
+    for (i <- 0 until sqlSignature.size()) {
+      val variable = it.next()
+      val sqlType = sqlTypeMap.get(variable)
+      val value = row.get(i, schema(i).dataType)
+      val constant = if (value == null) termFactory.getNullConstant else termFactory.getDBConstant(value.toString, sqlType)
+      builder.put(variable, constant)
+    }
+    val sub = substitutionFactory.getSubstitution(builder.build)
+
+    val composition = sub.composeWith(substitution)
+    val ontopBindings = answerAtom.getArguments.asScala.map(v => {
+      (v, OntopUtils.evaluate(composition.apply(v)))
+    })
+
+    ontopBindings.foreach {
+      case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
+      case _ =>
+    }
+    if (ctx.isDefined) {
+      println(s"binding generated at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
     }
 
-    val bindings = rows.map(toBinding)
-    bindings.flatMap (binding => toTriples(binding, constructTemplate, extMap))
+    //    println(s"row: $row --- binding: $binding")
+    binding
   }
 
-  /**
-   * Convert a single binding to a set of triples.
-   */
-  private def toTriples(binding: Binding,
-                        constructTemplate: ConstructTemplate,
-                        extMap: Map[String, ValueExpr]): mutable.Buffer[Triple] = {
-    val l = constructTemplate.getProjectionElemList.asScala
-    l.flatMap { peList =>
-      val size = peList.getElements.size()
-
-      var triples = scala.collection.mutable.Set[Triple]()
-
-      for (i <- 0 until (size/3)) {
-
-        val s = getConstant(peList.getElements.get(i * 3), binding, extMap)
-        val p = getConstant(peList.getElements.get(i * 3 + 1), binding, extMap)
-        val o = getConstant(peList.getElements.get(i * 3 + 2), binding, extMap)
-
-        // A triple can only be constructed when none of bindings is missing
-        if (s == null || p == null || o == null) {
-
-        } else {
-          triples += Triple.create(s, p, o)
-        }
-      }
-      triples
-    }
-  }
-
-  /**
-   * Convert each node in a CONSTRUCT template to an RDF node.
-   */
-  private def getConstant(node: ProjectionElem, binding: Binding, extMap: Map[String, ValueExpr]): Node = {
-    var constant: Node = null
-
-    val nodeName = node.getSourceName
-
-    val ve: Option[ValueExpr] = if (extMap != null) extMap.get(nodeName) else None
-
-    // for constant terms in the template
-    if (ve.isDefined && ve.get.isInstanceOf[ValueConstant]) {
-      val vc = ve.get.asInstanceOf[ValueConstant]
-      vc.getValue match {
-        case iri: IRI =>
-          constant = NodeFactory.createURI(iri.stringValue)
-        case lit: Literal =>
-          val dt = TypeMapper.getInstance().getTypeByName(lit.getDatatype.toString)
-          constant = NodeFactory.createLiteral(lit.stringValue, dt)
-        case bnode =>
-          constant = NodeFactory.createBlankNode(bnode.stringValue)
-      }
-    } else { // for variable bindings
-      constant = binding.get(Var.alloc(nodeName))
-    }
-
-    constant
-  }
-
-  */
-
-  def close(): Unit = {
-
-  }
+  def close(): Unit = {}
 
   class InvalidTermAsResultException(term: ImmutableTerm) extends OntopInternalBugException("Term " + term + " does not evaluate to a constant")
   class InvalidConstantTypeInResultException(message: String) extends OntopInternalBugException(message)

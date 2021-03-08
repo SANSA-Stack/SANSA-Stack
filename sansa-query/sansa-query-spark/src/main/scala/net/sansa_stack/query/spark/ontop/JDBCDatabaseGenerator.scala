@@ -41,10 +41,8 @@ object JDBCDatabaseGenerator {
     "STRING" -> "VARCHAR"
   )
 
-  def generateTables(connection: Connection,
-                     jdbcMetaData: Map[String, String]): Unit = {
-
-    val s = jdbcMetaData.map { case (tableName, ddl) =>
+  def generateJdbcCommand(jdbcMetaData: Map[String, String]): String = {
+    jdbcMetaData.map { case (tableName, ddl) =>
 
       // replace Spark datatypes with H2 types
       var ddlH2 = ddl
@@ -52,11 +50,17 @@ object JDBCDatabaseGenerator {
       ddlH2 = ddlH2.replace("`", "\"")
 
       s"""
-        |CREATE TABLE IF NOT EXISTS ${sqlEscaper.escapeColumnName(tableName)}
-        |($ddlH2)
-        |""".stripMargin
+         |CREATE TABLE IF NOT EXISTS ${sqlEscaper.escapeColumnName(tableName)}
+         |($ddlH2)
+         |""".stripMargin
 
     }.mkString(";")
+  }
+
+  def generateTables(connection: Connection,
+                     jdbcMetaData: Map[String, String]): Unit = {
+
+    val s = generateJdbcCommand(jdbcMetaData)
 //    println(s)
 
     try {

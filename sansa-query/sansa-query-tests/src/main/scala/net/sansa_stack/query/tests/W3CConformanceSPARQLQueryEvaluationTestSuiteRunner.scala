@@ -85,48 +85,57 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     .groupBy(_.dataFile)
     .foreach { case (dataFile, tests) =>
       // load data
-      val data = loadData(dataFile)
-      data.setNsPrefix("", "http://www.example.org/")
-      println("Data:")
-      data.write(System.out, "Turtle")
+      // (we only have to load the data if there is at least one unignored test)
+      if (tests.exists(t => !isIgnored(t))) {
 
-      tests.foreach(testCase => {
-        // get the relevant data from the test case
-        val queryFileURL = testCase.queryFile
-        val resultFileURL = testCase.resultsFile
-        val testName = testCase.name
-        val description = Option(testCase.description).getOrElse("")
+        tests.foreach(testCase => {
+          // get the relevant data from the test case
+          val queryFileURL = testCase.queryFile
+          val resultFileURL = testCase.resultsFile
+          val testName = testCase.name
+          val description = Option(testCase.description).getOrElse("")
 
-        if (isIgnored(testCase)) {
-          ignore(s"$testName: $description") {}
-        } else {
-          // test starts here
-          test(s"$testName: $description") {
-            val queryString = readQueryString(queryFileURL)
-            val query = QueryFactory.create(queryString)
-            println(s"SPARQL query:\n $query")
-
-            // run the SPARQL query
-            val actualResult = runQuery(query, data)
-
-            // read expected result
-            val expectedResult = readExpectedResult(resultFileURL.get)
-
-            // compare results
-            if (query.isSelectType) {
-              processSelect(query, expectedResult, actualResult)
-            } else if (query.isAskType) {
-              processAsk(query, expectedResult, actualResult)
-            } else if (query.isConstructType || query.isDescribeType) {
-              processGraph(query, expectedResult, actualResult)
-            } else {
-              fail(s"unsupported query type: ${query.queryType().name()}")
+          if (isIgnored(testCase)) {
+            ignore(s"$testName: $description") {}
+          } else {
+            // test starts here
+            test(s"$testName: $description") {
+              val data = loadData(dataFile)
+              runTest(testCase, data)
             }
           }
-        }
+        })
       }
-      )
     }
+
+  def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
+    if (data.isEmpty) cancel("cannot handle empty data model - please add test to ignored tests")
+    // get the relevant data from the test case
+    val queryFileURL = testCase.queryFile
+    val resultFileURL = testCase.resultsFile
+    val testName = testCase.name
+
+    val queryString = readQueryString(queryFileURL)
+    val query = QueryFactory.create(queryString)
+    println(s"SPARQL query:\n $query")
+
+    // run the SPARQL query
+    val actualResult = runQuery(query, data)
+
+    // read expected result
+    val expectedResult = readExpectedResult(resultFileURL.get)
+
+    // compare results
+    if (query.isSelectType) {
+      processSelect(query, expectedResult, actualResult)
+    } else if (query.isAskType) {
+      processAsk(query, expectedResult, actualResult)
+    } else if (query.isConstructType || query.isDescribeType) {
+      processGraph(query, expectedResult, actualResult)
+    } else {
+      fail(s"unsupported query type: ${query.queryType().name()}")
+    }
+  }
 
 //  def runQueries(queries: Seq[Query], data: Model): Seq[SPARQLResult]
 
@@ -239,7 +248,7 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     }
   }
 
-  private def readQueryString(queryFileURL: String): String = {
+  def readQueryString(queryFileURL: String): String = {
     println(s"loading query from $queryFileURL")
     val is = StreamManager.get().open(queryFileURL)
     withResources[AutoCloseable, String](is)(_ => {
@@ -263,20 +272,22 @@ abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVers
     ReadAnything.read(resultFileURL)
   }
 
-  private def loadData(datasetURL: String): Model = {
+  def loadData(datasetURL: String): Model = {
     println(s"loading data from $datasetURL")
     import java.io.IOException
     import java.net.MalformedURLException
     try {
       val is = StreamManager.get().open(datasetURL)
-//      val is = new URL(datasetURL).openStream()
 
-      withResources[AutoCloseable, Model](is)(_ => {
-        val data = ModelFactory.createDefaultModel()
-        RDFDataMgr.read(data, is, null, if (datasetURL.endsWith(".rdf")) Lang.RDFXML else Lang.TURTLE)
-        data
+      val data = withResources[AutoCloseable, Model](is)(_ => {
+        val model = ModelFactory.createDefaultModel()
+        RDFDataMgr.read(model, is, null, if (datasetURL.endsWith(".rdf")) Lang.RDFXML else Lang.TURTLE)
+        model
       })
-
+      data.setNsPrefix("", "http://www.example.org/")
+      println("Data:")
+      data.write(System.out, "Turtle")
+      data
     } catch {
       case e: MalformedURLException =>
         System.err.println("Malformed input URL: " + datasetURL)

@@ -4,11 +4,11 @@
 
     <artifactId>sansa-query-spark_2.12</artifactId>
 
-    <parent>
-        <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-query-parent_2.12</artifactId>
-        <version>0.7.2-SNAPSHOT</version>
-    </parent>
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-query-parent_2.12</artifactId>
+		<version>0.7.2-SNAPSHOT</version>
+	</parent>
 
     <properties>
         <version.owlapi.ontop>5.1.17</version.owlapi.ontop>

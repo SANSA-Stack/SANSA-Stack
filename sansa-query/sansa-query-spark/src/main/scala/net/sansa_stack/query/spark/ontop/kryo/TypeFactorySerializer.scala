@@ -1,9 +1,9 @@
-package net.sansa_stack.query.spark.ontop
+package net.sansa_stack.query.spark.ontop.kryo
 
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import it.unibz.inf.ontop.model.`type`.TypeFactory
-import it.unibz.inf.ontop.model.term.TermFactory
+import net.sansa_stack.query.spark.ontop.OntopConnection
 
 class TypeFactorySerializer(ontopSessionID: String)
   extends Serializer[TypeFactory](false, true) {
@@ -15,7 +15,7 @@ class TypeFactorySerializer(ontopSessionID: String)
 
   override def read(kryo: Kryo, input: Input, `type`: Class[TypeFactory]): TypeFactory = {
     kryo.readClass(input)
-    OntopConnection.configs(ontopSessionID).getTypeFactory
+    OntopConnection.configs.get(Option(ontopSessionID).getOrElse(OntopConnection.configs.head._1)).get.getTypeFactory
   }
 }
 
