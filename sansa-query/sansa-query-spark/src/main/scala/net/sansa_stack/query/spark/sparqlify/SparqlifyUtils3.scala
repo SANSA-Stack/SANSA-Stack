@@ -57,7 +57,7 @@ object SparqlifyUtils3 // extends StrictLogging
     }
 
     val viewDefinitions = r2rmlImporter.read(r2rmlModel)
-    RDFDataMgr.write(System.out, r2rmlModel, RDFFormat.TURTLE_PRETTY)
+    // RDFDataMgr.write(System.out, r2rmlModel, RDFFormat.TURTLE_PRETTY)
 
     config.getViewDefinitions.addAll(viewDefinitions)
 
