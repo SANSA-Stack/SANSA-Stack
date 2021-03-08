@@ -1,7 +1,8 @@
 package net.sansa_stack.rdf.spark.model.rdd
 
-import java.util.Objects
+import net.sansa_stack.rdf.spark.utils.SparkSessionUtils
 
+import java.util.Objects
 import org.aksw.jena_sparql_api.utils.{DatasetGraphUtils, IteratorResultSetBinding}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query._
@@ -38,6 +39,12 @@ object RddOfDatasetOps {
     flatMapToQuads(rddOfDatasets).map(_.asTriple)
   }
 
+  def toNamedModels(rdd: RDD[_ <: Dataset]): RDD[(String, Model)] = {
+    // TODO Add a flag to include the default graph under a certain name such as Quad.defaultGraph
+    rdd
+      .flatMap(ds => ds.listNames.asScala.map(iri => (iri, ds.getNamedModel(iri))))
+  }
+
   /**
    * Group all graphs by their <b>named graph</b> IRIs.
    * Effectively merges triples from all named graphs with the same IRI.
@@ -53,40 +60,20 @@ object RddOfDatasetOps {
     import collection.JavaConverters._
     // Note: Model is usually ModelCom so we get out-of-the-box serialization
     // If we used Graph we'd have to deal with a lot more variation
-    val graphNameAndModel: RDD[(String, Model)] = rdd
-      .flatMap(ds => ds.listNames.asScala.map(iri => (iri, ds.getNamedModel(iri))))
-
-    var intermediateRdd: RDD[(String, Model)] = graphNameAndModel
-
-    if (distinct) {
-     intermediateRdd = intermediateRdd.reduceByKey((g1, g2) => {
-        g1.add(g2);
-        g1
-      })
-    }
-
-    if (numPartitions > 0) {
-      if (sortGraphsByIri) {
-        intermediateRdd = intermediateRdd.repartitionAndSortWithinPartitions(new HashPartitioner(numPartitions))
-      } else {
-        intermediateRdd = intermediateRdd.repartition(numPartitions)
-      }
-    }
-
-    if (sortGraphsByIri) {
-      intermediateRdd = intermediateRdd.sortByKey()
-    }
-
-    val result: RDD[Dataset] = intermediateRdd.map({ case (graphName, model) =>
-      val r = DatasetFactory.create
-      r.addNamedModel(graphName, model)
-      r
-    })
+    val step1 = toNamedModels(rdd)
+    val step2 = RddOfNamedModelOps.groupNamedModelsByGraphIri(step1, distinct, sortGraphsByIri, numPartitions)
+    val result = RddOfNamedModelOps.mapToDatasets(step2)
 
     result
   }
 
-  /* run <b>a single</b> query over <b>each whole partition</b> (i.e. the query affects all graphs in the partition) */
+  /**
+   * Deprecated due to scalability issues w.r.t. RAM when loading whole partitions into RAM in parallel with lotss of cores;
+   * use flatMapWithSparql
+   *
+   * Run <b>a single</b> query over <b>each whole partition</b> (i.e. the query affects all graphs in the partition)
+   */
+  @deprecated
   def mapPartitionsWithSparql(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
     val queryBc = rdd.context.broadcast(query)
@@ -165,12 +152,14 @@ object RddOfDatasetOps {
   }
 
 
-  @inline def flatMapWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String): RDD[Dataset] = {
+  def flatMapWithSparql(rddOfDatasets: RDD[_ <: Dataset], query: Query): RDD[Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
+    val queryBc = rddOfDatasets.context.broadcast(query)
+
     rddOfDatasets.flatMap(in => {
       // TODO I don't get why the Query object is not serializablbe even though
       // the registrator for it is loaded ... investigae...
-      val query = QueryFactory.create(queryStr, Syntax.syntaxARQ);
+      val query = queryBc.value// QueryFactory.create(queryStr, Syntax.syntaxARQ);
 
       val qe = QueryExecutionFactory.create(query, in)
       var r: Seq[Dataset] = null
@@ -185,6 +174,7 @@ object RddOfDatasetOps {
             ds.addNamedModel(name, model)
             ds
           })
+          .toList // Materialize as a list because of subsequent close
       } finally {
         qe.close()
       }
