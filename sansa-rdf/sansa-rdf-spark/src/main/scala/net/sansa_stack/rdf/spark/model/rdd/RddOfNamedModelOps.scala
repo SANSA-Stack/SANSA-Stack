@@ -94,7 +94,7 @@ object RddOfNamedModelOps {
   }
 
   /**
-   * Run a SPARQL query using execConstructDataset on each model
+   * Run a SPARQL query using execConstructDataset oon each model
    *
    * If the graph name needs to be part of the mapping operation then use
    * rddOfNamedModels.mapToDatasets.flotMapWithSparql

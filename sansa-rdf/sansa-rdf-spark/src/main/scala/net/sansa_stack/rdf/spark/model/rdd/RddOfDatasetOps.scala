@@ -183,11 +183,12 @@ object RddOfDatasetOps {
     })
   }
 
-  def filterWithSparql(rddOfDatasets: RDD[_ <: Dataset], queryStr: String, drop: Boolean): RDD[_ <: Dataset] = {
+  def filterWithSparql(rddOfDatasets: RDD[_ <: Dataset], query: Query, drop: Boolean): RDD[_ <: Dataset] = {
     // def flatMapQuery(query: Query): RDD[Dataset] =
+    val queryBc = rddOfDatasets.context.broadcast(query)
     rddOfDatasets.filter(in => {
       // TODO Make deserialization of query work
-      val rawQuery = QueryFactory.create(queryStr, Syntax.syntaxARQ)
+      val rawQuery = queryBc.value
       val query = RddOfRdfOpUtils.enforceQueryAskType(rawQuery)
 
       val qe = QueryExecutionFactory.create(query, in)
