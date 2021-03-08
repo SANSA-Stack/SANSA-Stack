@@ -280,7 +280,13 @@ public class RddRdfSaver<T> {
                 throw new IllegalStateException(String.format("Language %s is neiter triples nor quads", lang));
             }
         } else {
-            saveToFolder(effectiveRdd, effPartitionFolder.toString(), outputFormat, globalPrefixMapping, this.sendRecordToStreamRDF);
+            // FIXME Clarify semantics of partitions as independentFile
+            //   Even if the flag is true then there is still the question whether to...
+            //     use deferred output (per partition) in order to collect prefixes
+            //     allow extension of prefixes
+            PrefixMapping pmap = isPartitionsAsIndependentFiles() ? null : globalPrefixMapping;
+
+            saveToFolder(effectiveRdd, effPartitionFolder.toString(), outputFormat, pmap, this.sendRecordToStreamRDF);
         }
 
         if (targetFile != null) {
@@ -418,8 +424,11 @@ public class RddRdfSaver<T> {
             // Retain blank nodes as given
             if (rawWriter instanceof WriterStreamRDFBase) {
                 WriterStreamRDFBaseUtils.setNodeToLabel((WriterStreamRDFBase) rawWriter, SyntaxLabels.createNodeToLabelAsGiven());
-                rawWriter = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
-                        prefixMapping, (WriterStreamRDFBase) rawWriter);
+
+                if (prefixMapping != null) {
+                    rawWriter = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
+                            prefixMapping, (WriterStreamRDFBase) rawWriter);
+                }
             }
 
             return rawWriter;

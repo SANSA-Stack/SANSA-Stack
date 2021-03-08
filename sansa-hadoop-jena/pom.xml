@@ -88,10 +88,6 @@
             <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-elephas-io</artifactId>
-        </dependency>
 
         <!--
         <dependency>
