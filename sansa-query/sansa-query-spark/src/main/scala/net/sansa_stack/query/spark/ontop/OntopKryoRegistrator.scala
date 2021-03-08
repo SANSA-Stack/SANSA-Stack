@@ -85,7 +85,7 @@ class OntopKryoRegistrator extends KryoRegistrator {
       ScalaUtils.time("writing rwi", "wrote rwi") {
         kryo.writeClassAndObject(output, rwi.sqlSignature)
         kryo.writeClassAndObject(output, rwi.sqlTypeMap)
-        kryo.writeClassAndObject(output, rwi.anserAtom)
+        kryo.writeClassAndObject(output, rwi.answerAtom)
         kryo.writeClassAndObject(output, rwi.sparqlVar2Term)
       }
     }

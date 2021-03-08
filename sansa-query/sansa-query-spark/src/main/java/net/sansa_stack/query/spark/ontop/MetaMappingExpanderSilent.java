@@ -10,7 +10,6 @@ public class MetaMappingExpanderSilent implements MetaMappingExpander {
     @Override
     public ImmutableList<MappingAssertion> transform(ImmutableList<MappingAssertion> mappings,
                                                      DBParameters dbParameters) throws MetaMappingExpansionException {
-        System.out.println("expand");
         return mappings;
     }
 }
