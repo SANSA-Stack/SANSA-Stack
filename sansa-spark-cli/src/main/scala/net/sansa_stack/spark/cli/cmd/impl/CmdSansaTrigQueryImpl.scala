@@ -1,22 +1,19 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
-import java.nio.file.{Files, Path, Paths}
-import java.util
-import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
-
-import com.google.common.base.Stopwatch
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
 import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
 import net.sansa_stack.spark.cli.cmd.CmdSansaTrigQuery
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
-import org.apache.jena.ext.com.google.common.collect.Sets
+import org.apache.commons.lang3.time.StopWatch
 import org.apache.jena.query.{Dataset, QueryFactory, Syntax}
 import org.apache.jena.riot.{Lang, ResultSetMgr}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
+
+import java.nio.file.{Files, Paths}
+import java.util.concurrent.TimeUnit
 
 /**
  * Called from the Java class [[CmdSansaTrigQuery]]
@@ -79,14 +76,14 @@ object CmdSansaTrigQueryImpl {
     val effectiveRdd = if (cmd.makeDistinct) RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
       else initialRdd
 
-    val stopwatch = Stopwatch.createStarted()
+    val stopwatch = StopWatch.createStarted()
 
     val resultSetSpark: ResultSetSpark =
       RddOfBindingOps.execSparqlSelect(effectiveRdd, query)
 
     ResultSetMgr.write(System.out, resultSetSpark.collectToTable().toResultSet, outLang)
 
-    logger.info("Processing time: " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds")
+    logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds")
 
     0 // exit code
   }
