@@ -13,10 +13,12 @@ public class CmdSansaTrigQuery
     extends CmdBase
     implements Callable<Integer>
 {
+    /* Just use spark's -Dspark.master=... option
     @Option(names = { "-m", "--spark-master" },
             description = "Spark master. Default: ${DEFAULT-VALUE}",
             defaultValue = "local[*]")
-    public String sparkMaster;
+    public String sparkMaster = null;
+    */
 
     @Option(names = { "-o", "--out-format" },
             description = "Output format. Default: ${DEFAULT-VALUE}",

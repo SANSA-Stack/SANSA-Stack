@@ -73,7 +73,7 @@ class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
     sw.reset().start()
     val rdd = createTestRdd()
 
-    val resultSetSpark: ResultSetSpark = RddOfBindingOps.selectWithSparql(rdd, QueryFactory.create(
+    val resultSetSpark: ResultSetSpark = RddOfBindingOps.execSparqlSelect(rdd, QueryFactory.create(
       """
         | SELECT ?qec (SUM(?qc_contrib) AS ?qc) {
         |   SERVICE <rdd:perPartition> {

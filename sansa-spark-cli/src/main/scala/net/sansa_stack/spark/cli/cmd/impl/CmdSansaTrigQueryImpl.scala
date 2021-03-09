@@ -61,7 +61,6 @@ object CmdSansaTrigQueryImpl {
     }
 
     val spark = SparkSession.builder
-      .master(cmd.sparkMaster)
       .appName(s"Trig Query ( $trigFiles )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
@@ -80,11 +79,10 @@ object CmdSansaTrigQueryImpl {
     val effectiveRdd = if (cmd.makeDistinct) RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
       else initialRdd
 
-
     val stopwatch = Stopwatch.createStarted()
 
     val resultSetSpark: ResultSetSpark =
-      RddOfBindingOps.selectWithSparql(effectiveRdd, query)
+      RddOfBindingOps.execSparqlSelect(effectiveRdd, query)
 
     ResultSetMgr.write(System.out, resultSetSpark.collectToTable().toResultSet, outLang)
 
