@@ -102,6 +102,7 @@ Then do the same as for the release version and add the dependency:
 The following Scala code shows how to query an RDF file with SPARQL (be it a local file or a file residing in HDFS):
 
 #### From file
+You can find the example code also [here](https://github.com/SANSA-Stack/SANSA-Stack/blob/kryo-debug/sansa-examples/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/query/SPARQLExample.scala)
 ```scala
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
