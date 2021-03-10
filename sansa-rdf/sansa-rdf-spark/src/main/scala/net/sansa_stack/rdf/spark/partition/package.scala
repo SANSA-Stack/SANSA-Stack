@@ -56,7 +56,7 @@ package object partition extends Logging {
       // Create a table prefix for each partitioning of RDDs
       // TODO Encode partitioner hash into the name
       val rddSysHash = System.identityHashCode(rddOfTriples)
-      val rddId = if (rddSysHash < 0) "_" + rddSysHash else "" + rddSysHash
+      val rddId = if (rddSysHash < 0) "_" + -rddSysHash else "" + rddSysHash
       val tableNaming: RdfPartitionStateDefault => String =
         partitionState => "rdd" + rddId + "_" + SQLUtils.encodeTablename(SQLUtils.createDefaultTableName(partitionState))
 

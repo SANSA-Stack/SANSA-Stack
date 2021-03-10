@@ -1,8 +1,10 @@
 package net.sansa_stack.rdf.spark.utils
 
-import java.io.{Closeable, IOException}
+import com.typesafe.scalalogging
 
+import java.io.{Closeable, IOException}
 import org.apache.spark.sql.catalyst.ScalaReflection
+import org.slf4j.Logger
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.{ClassSymbol, Type}
@@ -82,12 +84,30 @@ object ScalaUtils extends Logging {
     time((message, block))
   }
 
-  def time[R](startedMessage: String = "", finishedMessage: String = "")(block: => R): R = {
+  def time[R](startedMessage: String, finishedMessage: String)(block: => R): R = {
     println(startedMessage)
     val t0 = System.nanoTime()
     val result = block    // call-by-name
     val t1 = System.nanoTime()
     println(s"$finishedMessage\nElapsed time: " + (t1 - t0) / 10e6 + "ms")
+    result
+  }
+
+  def time[R](startedMessage: String, finishedMessage: String, logger: Logger)(block: => R): R = {
+    logger.debug(startedMessage)
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    logger.debug(s"$finishedMessage\nElapsed time: " + (t1 - t0) / 10e6 + "ms")
+    result
+  }
+
+  def time[R](startedMessage: String, finishedMessage: String, logger: scalalogging.Logger)(block: => R): R = {
+    logger.debug(startedMessage)
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    logger.debug(s"$finishedMessage\nElapsed time: " + (t1 - t0) / 10e6 + "ms")
     result
   }
 

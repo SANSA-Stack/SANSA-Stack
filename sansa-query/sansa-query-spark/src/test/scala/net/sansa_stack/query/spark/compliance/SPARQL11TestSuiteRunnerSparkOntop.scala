@@ -75,7 +75,7 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "subquery14").map(subqueryManifest + _)
   }
 
-//  override lazy val FILTER_KEEP = t => t.name.startsWith("sq") || t.dataFile.contains("function")// && t.name.startsWith("SUM")
+  // override lazy val FILTER_KEEP = t => t.name.startsWith("sq06") // || t.dataFile.contains("function")// && t.name.startsWith("SUM")
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
 

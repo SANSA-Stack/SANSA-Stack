@@ -102,9 +102,9 @@ object RddOfDatasetOps {
   }
 
   /**
-   * Run a select query on each individual dataset in the RDD
+   * Run a select query on each individual dataset in the RDD and flat map it to the set of bindings
    */
-  def selectWithSparqlPerGraph(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
+  def flatMapWithSparqlSelect(rdd: RDD[_ <: Dataset], query: Query): RDD[Binding] = {
     val queryBc = rdd.context.broadcast(query)
 
     Objects.requireNonNull(query)

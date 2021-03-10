@@ -26,7 +26,7 @@ import java.net.URI
  * - start a SPARQL endpoint with a Web UI as optional interface
  *
  */
-object SPARQLEngineExample {
+object SPARQLEndpointExample {
 
   JenaSystem.init()
 
@@ -94,22 +94,8 @@ object SPARQLEngineExample {
         val partitioner = queryEngineFactory.getPartitioner
         val mappings = triples.verticalPartition(partitioner).r2rmlModel
 
-        spark.catalog.listTables.show
-        spark.catalog.listDatabases.show
         queryEngineFactory.create(Option(database), mappings)
       }
-
-//        queryEngineFactory.create(Some(database), mappings)
-//      } else {
-
-        // load the data into an RDD
-//        val lang = Lang.NTRIPLES
-//        val triples = spark.rdf(lang)(input)
-//
-//        triples.verticalPartition(RdfPartitionerDefault).r2rmlModel
-//
-//        queryEngineFactory.create(triples)
-//      }
 
     // run i) a single SPARQL query and terminate or ii) host some SNORQL web UI
     mode.get match {
