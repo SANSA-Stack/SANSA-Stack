@@ -46,6 +46,7 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
       val serviceUri = serviceNode.getURI
 
       // TODO Add some registry
+      // TODO Consider deprecation and/or removalof rdd:perPartition because of the scalability issues when loading them into RAM
       if (serviceUri == "rdd:perPartition") {
         // Get the RDD[Dataset] from the execution context
         val rddOfDataset: RDD[Dataset] = execCxt.getContext.get(SYM_RDD_OF_DATASET)
@@ -77,7 +78,7 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
           OpAsQuery.asQuery(op.getSubOp)
         }
 
-        result = RddOfDatasetOps.selectWithSparqlPerGraph(rddOfDataset, query)
+        result = RddOfDatasetOps.flatMapWithSparqlSelect(rddOfDataset, query)
 
         success = true
       }

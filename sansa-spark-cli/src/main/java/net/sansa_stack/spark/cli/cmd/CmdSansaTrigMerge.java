@@ -12,10 +12,12 @@ public class CmdSansaTrigMerge
         extends CmdBase
         implements Callable<Integer>
 {
+    /*
     @CommandLine.Option(names = { "-m", "--spark-master" },
             description = "Spark master. Default: ${DEFAULT-VALUE}",
             defaultValue = "local[*]")
     public String sparkMaster;
+     */
 
     @CommandLine.Option(names = { "-o", "--out-format" },
             description = "Output format. Default: ${DEFAULT-VALUE}",

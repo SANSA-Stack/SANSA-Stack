@@ -62,7 +62,6 @@ object CmdSansaTrigMergeImpl {
 
 
     val spark = SparkSession.builder
-      .master(cmd.sparkMaster)
       .appName(s"Trig Merge ( ${cmd.trigFiles} )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryoserializer.buffer.max", "1000") // MB
@@ -153,6 +152,7 @@ object CmdSansaTrigMergeImpl {
       effectiveRdd.configureSave()
         .setGlobalPrefixMapping(new PrefixMappingImpl())
         .setOutputFormat(outRdfFormat)
+        .setMapQuadsToTriplesForTripleLangs(true)
         // .setAllowOverwriteFiles(true)
         .setPartitionFolder(cmd.outFolder)
         .setTargetFile(cmd.outFile)

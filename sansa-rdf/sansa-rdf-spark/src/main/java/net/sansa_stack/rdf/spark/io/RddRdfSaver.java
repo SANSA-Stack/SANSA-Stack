@@ -7,8 +7,8 @@ import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
+import org.aksw.jena_sparql_api.utils.io.StreamRDFUtils;
 import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseUtils;
-import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseWrapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -24,10 +24,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.system.StreamRDFOps;
-import org.apache.jena.riot.system.StreamRDFWriter;
-import org.apache.jena.riot.system.SyntaxLabels;
+import org.apache.jena.riot.system.*;
 import org.apache.jena.riot.writer.WriterStreamRDFBase;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
@@ -50,6 +47,16 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * A fluent API for configuration of how to save an RDD of RDF data to disk.
+ * This class uniformly handles Triples, Quads, Model, Datasets, etc using a set of
+ * lambdas for relevant conversion.
+ *
+ * Instances of this class should be created using the appropriate createFor[Type] methods.
+ *   TODO Implementation for Model is currently missing
+ *
+ * @param <T>
+ */
 public class RddRdfSaver<T> {
     private static final Logger logger = LoggerFactory.getLogger(RddRdfSaver.class);
 
@@ -70,6 +77,8 @@ public class RddRdfSaver<T> {
 
     protected boolean partitionsAsIndependentFiles;
 
+    /** Whether to convert quads to triples if a triple-based output format is requested */
+    protected boolean mapQuadsToTriplesForTripleLangs;
 
     // Static bindings for the generic 'T'
     protected BiConsumer<T, StreamRDF> sendRecordToStreamRDF;
@@ -94,6 +103,20 @@ public class RddRdfSaver<T> {
         this.sendRecordToStreamRDF = sendRecordToStreamRDF;
         this.convertToTriple = convertToTriple;
         this.convertToQuad = convertToQuad;
+    }
+
+    public boolean isMapQuadsToTriplesForTripleLangs() {
+        return mapQuadsToTriplesForTripleLangs;
+    }
+
+    /**
+     * Whether to convert quads to triples if a triple-based output format is requested
+     * Jena by default discards any quad outside of the default graph when writing to a triple format.
+     * Setting this flag to true will map each quad in a named graph to the default graph.
+     */
+    public RddRdfSaver setMapQuadsToTriplesForTripleLangs(boolean mapQuadsToTriplesForTripleLangs) {
+        this.mapQuadsToTriplesForTripleLangs = mapQuadsToTriplesForTripleLangs;
+        return this;
     }
 
     public boolean isUseCoalesceOne() {
@@ -286,7 +309,7 @@ public class RddRdfSaver<T> {
             //     allow extension of prefixes
             PrefixMapping pmap = isPartitionsAsIndependentFiles() ? null : globalPrefixMapping;
 
-            saveToFolder(effectiveRdd, effPartitionFolder.toString(), outputFormat, pmap, this.sendRecordToStreamRDF);
+            saveToFolder(effectiveRdd, effPartitionFolder.toString(), outputFormat, mapQuadsToTriplesForTripleLangs, pmap, this.sendRecordToStreamRDF);
         }
 
         if (targetFile != null) {
@@ -415,20 +438,37 @@ public class RddRdfSaver<T> {
      */
     public static Function<OutputStream, StreamRDF> createStreamRDFFactory(
             RDFFormat rdfFormat,
+            boolean mapQuadsToTriplesForTripleLangs,
             PrefixMapping prefixMapping) {
 
         return out -> {
 
             StreamRDF rawWriter = StreamRDFWriter.getWriterStream(out, rdfFormat, null);
 
+            StreamRDF coreWriter = StreamRDFUtils.unwrap(rawWriter);
+
             // Retain blank nodes as given
-            if (rawWriter instanceof WriterStreamRDFBase) {
-                WriterStreamRDFBaseUtils.setNodeToLabel((WriterStreamRDFBase) rawWriter, SyntaxLabels.createNodeToLabelAsGiven());
+            if (coreWriter instanceof WriterStreamRDFBase) {
+                WriterStreamRDFBase tmp = (WriterStreamRDFBase)coreWriter;
+                WriterStreamRDFBaseUtils.setNodeToLabel(tmp, SyntaxLabels.createNodeToLabelAsGiven());
 
                 if (prefixMapping != null) {
-                    rawWriter = WriterStreamRDFBaseWrapper.wrapWithFixedPrefixes(
-                            prefixMapping, (WriterStreamRDFBase) rawWriter);
+                    PrefixMap pm = WriterStreamRDFBaseUtils.getPrefixMap(tmp);
+                    for (Map.Entry<String, String> e : prefixMapping.getNsPrefixMap().entrySet()) {
+                        pm.add(e.getKey(), e.getValue());
+                    }
+
+                    rawWriter = StreamRDFUtils.wrapWithoutPrefixDelegation(rawWriter);
                 }
+            }
+
+            if (RDFLanguages.isTriples(rdfFormat.getLang()) && mapQuadsToTriplesForTripleLangs) {
+                rawWriter = new StreamRDFWrapper(rawWriter) {
+                    @Override
+                    public void quad(Quad quad) {
+                        super.triple(quad.asTriple());
+                    }
+                };
             }
 
             return rawWriter;
@@ -499,6 +539,7 @@ public class RddRdfSaver<T> {
             JavaRDD<T> javaRdd,
             String path,
             RDFFormat rdfFormat,
+            boolean mapQuadsToTriplesForTripleLangs,
             PrefixMapping globalPrefixMapping,
             BiConsumer<T, StreamRDF> sendRecordToStreamRDF) throws IOException {
 
@@ -515,7 +556,7 @@ public class RddRdfSaver<T> {
         JavaRDD<String> dataBlocks = javaRdd.mapPartitions(it -> {
             RDFFormat rdfFmt = RDFLanguagesEx.findRdfFormat(rdfFormatStr);
             PrefixMapping pmap = prefixMappingBc.getValue();
-            Function<OutputStream, StreamRDF> streamRDFFactory = createStreamRDFFactory(rdfFmt, pmap);
+            Function<OutputStream, StreamRDF> streamRDFFactory = createStreamRDFFactory(rdfFmt, mapQuadsToTriplesForTripleLangs, pmap);
 
             ThrowingFunction<Iterator<T>, Iterator<String>> mapper = partitionMapperRDFStream(
                     streamRDFFactory, sendRecordToStreamRDF);
