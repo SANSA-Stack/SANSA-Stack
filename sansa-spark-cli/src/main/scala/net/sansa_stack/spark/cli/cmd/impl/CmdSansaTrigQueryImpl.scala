@@ -4,7 +4,6 @@ import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
 import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
 import net.sansa_stack.spark.cli.cmd.CmdSansaTrigQuery
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigMergeImpl.logger
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.commons.lang3.time.StopWatch
@@ -16,7 +15,7 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 
 import java.net.URI
-import java.nio.file.{Files, Paths}
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 /**

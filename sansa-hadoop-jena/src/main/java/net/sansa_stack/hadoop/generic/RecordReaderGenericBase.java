@@ -301,7 +301,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 stream =
                         new SeekableInputStream(
                                 new InputStreamWithCloseIgnore(
-                                        InputStreamWithCloseLogging.wrap(tmp,
+                                        InputStreamWithCloseLogging.wrap(
+                                                new InputStreamWithZeroOffsetRead(tmp),
                                                 ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose)), tmp);
 
                 result = new AbstractMap.SimpleEntry<>(adjustedStart, adjustedEnd);
@@ -309,6 +310,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 // case _ => result = setStreamToInterval(start - 1, start -1)
                 // }
             } else {
+                // TODO Add support for non-splittable codecs: If the codec is non-splittable then we
+                //   just get a split across the whole file
+                //   and we just have to wrap it with the codec for decoding - so actually its easy...
                 throw new RuntimeException("Don't know how to handle codec: " + codec);
             }
         } else {
