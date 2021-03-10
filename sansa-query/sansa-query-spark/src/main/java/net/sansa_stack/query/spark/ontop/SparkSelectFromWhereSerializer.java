@@ -17,11 +17,11 @@ import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbol;
 import it.unibz.inf.ontop.model.type.DBTermType;
 import it.unibz.inf.ontop.substitution.ImmutableSubstitution;
 import it.unibz.inf.ontop.utils.ImmutableCollectors;
+import it.unibz.inf.ontop.utils.StringUtils;
 import org.aksw.commons.sql.codec.api.SqlCodec;
 import org.aksw.commons.sql.codec.util.SqlCodecUtils;
 import org.aksw.r2rml.jena.sql.transform.SqlParseException;
 import org.aksw.r2rml.sql.transform.SqlUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Constructor;
@@ -201,40 +201,8 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                     }
 
                     @Override
-                    protected QuerySerialization visit(BinaryJoinExpression binaryJoinExpression, String operatorString) {
-                        QuerySerialization left = getSQLSerializationForChild(binaryJoinExpression.getLeft());
-                        QuerySerialization right = getSQLSerializationForChild(binaryJoinExpression.getRight());
-
-                        ImmutableMap<Variable, QualifiedAttributeID> columnIDs = ImmutableList.of(left,right).stream()
-                                .flatMap(m -> m.getColumnIDs().entrySet().stream())
-                                .collect(ImmutableCollectors.toMap());
-
-                        String onString = binaryJoinExpression.getFilterCondition()
-                                .map(e -> sqlTermSerializer.serialize(e, columnIDs))
-                                .map(s -> String.format("ON %s ", s))
-                                .orElse("ON 1 = 1 ");
-
-                        // Spark needs brackets as it can't handle chained ON statements
-                        // A join B join C on () on ()
-                        String rightStr = right.getString();
-                        if (!(binaryJoinExpression.getRight() instanceof SQLTable)) {
-                            rightStr = "(" + rightStr + ")";
-                        }
-                        String sql = String.format("%s\n %s \n%s %s", left.getString(), operatorString, rightStr, onString);
-                        return new QuerySerializationImpl(sql, columnIDs);
-                    }
-
-                    //this function is required in case at least one of the children is
-                    // SelectFromWhereWithModifiers expression
-                    private QuerySerialization getSQLSerializationForChild(SQLExpression expression) {
-                        if (expression instanceof SelectFromWhereWithModifiers) {
-                            QuerySerialization serialization = expression.acceptVisitor(this);
-                            RelationID alias = generateFreshViewAlias();
-                            String sql = String.format("(%s) %s", serialization.getString(), alias.getSQLRendering());
-                            return new QuerySerializationImpl(sql,
-                                    replaceRelationAlias(alias, serialization.getColumnIDs()));
-                        }
-                        return expression.acceptVisitor(this);
+                    protected String formatBinaryJoin(String operatorString, QuerySerialization left, QuerySerialization right, String onString) {
+                        return String.format("(%s\n %s \n%s %s)", left.getString(), operatorString, right.getString(), onString);
                     }
 
                     private ImmutableMap<Variable, QualifiedAttributeID> replaceRelationAlias(RelationID alias, ImmutableMap<Variable, QualifiedAttributeID> columnIDs) {
@@ -249,7 +217,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                         RelationID alias = generateFreshViewAlias();
                         RelationDefinition relation = sqlTable.getRelationDefinition();
                         String relationRendering = relation.getAtomPredicate().getName();
-                        // re-encode
+                        // we have to replace double quotes with backticks here
                         relationRendering = SparkSelectFromWhereSerializer.reEncodeSpark(relationRendering);
 
                         String sql = String.format("%s %s", relationRendering, alias.getSQLRendering());
@@ -270,46 +238,28 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
         );
     }
 
-    protected static class SparkSQLTermSerializer implements SQLTermSerializer {
-
-        private final TermFactory termFactory;
+    protected static class SparkSQLTermSerializer extends DefaultSQLTermSerializer {
 
         protected SparkSQLTermSerializer(TermFactory termFactory) {
-            this.termFactory = termFactory;
+            super(termFactory);
         }
 
         @Override
         public String serialize(ImmutableTerm term, ImmutableMap<Variable, QualifiedAttributeID> columnIDs)
                 throws SQLSerializationException {
-            if (term instanceof Constant) {
-                return serializeConstant((Constant)term);
-            }
-            else if (term instanceof Variable) {
+            if (term instanceof Variable) {
                 return Optional.ofNullable(columnIDs.get(term))
                         .map(a -> {
+                            // we have to replace double quotes with backticks here
                             String rendering = a.getSQLRendering();
                             rendering = SparkSelectFromWhereSerializer.reEncodeSpark(rendering);
                             return rendering;
                         })
-                                    //                               .map(a -> SqlUtils.reencodeColumnName(QualifiedAttributeID::getSQLRendering)
-                                    .orElseThrow(() -> new SQLSerializationException(String.format(
-                                            "The variable %s does not appear in the columnIDs", term)));
+                        //                               .map(QualifiedAttributeID::getSQLRendering)
+                        .orElseThrow(() -> new SQLSerializationException(String.format(
+                                "The variable %s does not appear in the columnIDs", term)));
             }
-            /*
-             * ImmutableFunctionalTerm with a DBFunctionSymbol
-             */
-            else {
-                return Optional.of(term)
-                        .filter(t -> t instanceof ImmutableFunctionalTerm)
-                        .map(t -> (ImmutableFunctionalTerm) t)
-                        .filter(t -> t.getFunctionSymbol() instanceof DBFunctionSymbol)
-                        .map(t -> ((DBFunctionSymbol) t.getFunctionSymbol()).getNativeDBString(
-                                t.getTerms(),
-                                t2 -> serialize(t2, columnIDs),
-                                termFactory))
-                        .orElseThrow(() -> new SQLSerializationException("Only DBFunctionSymbols must be provided " +
-                                "to a SQLTermSerializer"));
-            }
+            return super.serialize(term, columnIDs);
         }
 
         private String serializeConstant(Constant constant) {
@@ -342,9 +292,13 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
             return String.format("CAST(%s AS %s)", value, dbType.getCastName());
         }
 
+        private static final ImmutableMap<Character, String> BACKSLASH = ImmutableMap.of('\\', "\\\\");
+        @Override
         protected String serializeStringConstant(String constant) {
-            // duplicates single quotes, and adds outermost quotes
-            return "'" + constant.replace("'", "''") + "'";
+            // parent method + doubles backslashes
+            return StringUtils.encode(super.serializeStringConstant(constant), BACKSLASH);
         }
+
+
     }
 }
