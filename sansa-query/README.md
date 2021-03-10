@@ -152,6 +152,38 @@ val result: ResultSet = qe.execSelect()
 val result: Model = qe.execConstruct()
 ```
 
+### SPARQL 1.1 Language Support
+With Ontop integrated and used as SPARQL to SQL rewriter we do cover the following [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/) features
+(unsupported features are ~~crossed out~~ )¹:
+
+|             Section in SPARQL 1.1              |                                                               Features                                                               | Coverage |
+|------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------|
+| [5. Graph Patterns](https://www.w3.org/TR/sparql11-query/#GraphPattern)                              | BGP, FILTER                                                                                                                          | 2/2      |
+| [6. Including Optional Values](https://www.w3.org/TR/sparql11-query/#optionals)                   | OPTIONAL                                                                                                                             | 1/1      |
+| [7. Matching Alternatives](https://www.w3.org/TR/sparql11-query/#alternatives)                       | UNION                                                                                                                                | 1/1      |
+| [8. Negation](https://www.w3.org/TR/sparql11-query/#negation)                                    | MINUS, ~~FILTER [NOT] EXISTS~~                                                                                                         | 1/2      |
+| [9. Property Paths](https://www.w3.org/TR/sparql11-query/#propertypaths)                              | ~~PredicatePath~~, ~~InversePath~~, ~~ZeroOrMorePath~~, ...                                                                                      | 0        |
+| [10. Assignment](https://www.w3.org/TR/sparql11-query/#assignment)                                 | BIND, VALUES                                                                                                                         | 2/2      |
+| [11. Aggregates](https://www.w3.org/TR/sparql11-query/#aggregates)                                 | COUNT, SUM, MIN, MAX, AVG, GROUP_CONCAT, SAMPLE                                                                                      | 6/6      |
+| [12. Subqueries](https://www.w3.org/TR/sparql11-query/#subqueries)                                 | Subqueries                                                                                                                           | 1/1      |
+| [13. RDF Dataset](https://www.w3.org/TR/sparql11-query/#rdfDataset)                                | GRAPH, ~~FROM [NAMED\]~~                                                                                                                  | 1/2      |
+| [14. Basic Federated Query](https://www.w3.org/TR/sparql11-query/#basic-federated-query)                      | ~~SERVICE~~                                                                                                                              | 0        |
+| [15. Solution Seqs. & Mods.](https://www.w3.org/TR/sparql11-query/#solutionModifiers)                     | ORDER BY, SELECT, DISTINCT, REDUCED, OFFSET, LIMIT                                                                                   | 6/6      |
+| [16. Query Forms](https://www.w3.org/TR/sparql11-query/#QueryForms)                                | SELECT, CONSTRUCT, ASK, DESCRIBE                                                                                                     | 4/4      |
+| [17.4.1. Functional Forms](https://www.w3.org/TR/sparql11-query/#func-forms)                       | BOUND, IF, COALESCE, ~~EXISTS~~, ~~NOT EXISTS~~, &#124;&#124; , &&, =, sameTerm, IN, NOT IN                                                            | 7/11     |
+| [17.4.2. Functions on RDF Terms](https://www.w3.org/TR/sparql11-query/#func-rdfTerms)                 | isIRI, isBlank, isLiteral, isNumeric, str, lang, datatype, IRI, BNODE, ~~STRDT~~, ~~STRLANG~~, UUID, STRUUID                                 | 11/13    |
+| [17.4.3. Functions on Strings](https://www.w3.org/TR/sparql11-query/#func-strings)                   | STRLEN, SUBSTR, UCASE, LCASE, STRSTARTS, STRENDS, CONTAINS, STRBEFORE, STRAFTER, ENCODE_FOR_URI, CONCAT, langMatches, REGEX, REPLACE | 14/14    |
+| [17.4.4. Functions on Numerics](https://www.w3.org/TR/sparql11-query/#func-numerics)                | abs, round, ceil, floor, RAND                                                                                                        | 5/5      |
+| [17.4.5. Functions on Dates&Times](https://www.w3.org/TR/sparql11-query/#func-date-time)               | now, year, month, day, hours, minutes, seconds, ~~timezone~~, tz                                                                         | 8/9      |
+| [17.4.6. Hash Functions](https://www.w3.org/TR/sparql11-query/#func-hash)                         | MD5, SHA1, SHA256, SHA384, SHA512                                                                                                    | 5/5      |
+| [17.5 XPath Constructor Functions](https://www.w3.org/TR/sparql11-query/#FunctionMapping)               | ~~casting~~                                                                                                                              | 0        |
+| [17.6 Extensible Value Testing](https://www.w3.org/TR/sparql11-query/#extensionFunctions)                  | ~~user defined functions~~                                                                                                               | 0        |
+
+#### Limitations
+- In the implementation of function `langMatches`, the second argument has to a be a constant: allowing variables will have a negative impact on the performance in our framework.
+#
+
+¹ taken from the original Ontop web site at: https://ontop-vkg.org/guide/compliance.html#sparql-1-1 
 
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 
