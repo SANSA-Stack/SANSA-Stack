@@ -47,14 +47,14 @@ We currently require a Spark 2.4.x with Scala 2.12 setup.
 Some of our dependencies are not in Maven central, so you need to add following Maven repository to your project POM file `repositories` section:
 ```xml
 <repository>
-   <id>maven.aksw.snapshots</id>
-   <name>AKSW Snapshot Repository</name>
-   <url>http://maven.aksw.org/archiva/repository/snapshots</url>
+   <id>maven.aksw.internal</id>
+   <name>AKSW Release Repository</name>
+   <url>http://maven.aksw.org/archiva/repository/internal</url>
    <releases>
-      <enabled>false</enabled>
+      <enabled>true</enabled>
    </releases>
    <snapshots>
-      <enabled>true</enabled>
+      <enabled>false</enabled>
    </snapshots>
 </repository>
 ```
