@@ -108,7 +108,10 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                     }
 
                     @Override
-                    protected String serializeProjection(ImmutableSortedSet<Variable> projectedVariables, ImmutableMap<Variable, QuotedID> variableAliases, ImmutableSubstitution<? extends ImmutableTerm> substitution, ImmutableMap<Variable, QualifiedAttributeID> columnIDs) {
+                    protected String serializeProjection(ImmutableSortedSet<Variable> projectedVariables,
+                                                         ImmutableMap<Variable, QuotedID> variableAliases,
+                                                         ImmutableSubstitution<? extends ImmutableTerm> substitution,
+                                                         ImmutableMap<Variable, QualifiedAttributeID> columnIDs) {
                         variableAliasesStack.push(variableAliases);
                         String projection = super.serializeProjection(projectedVariables, variableAliases, substitution, columnIDs);
                         if (needOffsetProcessed()) {
