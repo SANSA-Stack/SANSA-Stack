@@ -44,6 +44,20 @@ SANSA Query Spark for heterogeneous data sources (data data) is composed of thre
 We currently require a Spark 2.4.x with Scala 2.12 setup.
 
 #### Release Version
+Some of our dependencies are not in Maven central, so you need to add following Maven repository to your project POM file `repositories` section:
+```xml
+<repository>
+   <id>maven.aksw.snapshots</id>
+   <name>AKSW Snapshot Repository</name>
+   <url>http://maven.aksw.org/archiva/repository/snapshots</url>
+   <releases>
+      <enabled>false</enabled>
+   </releases>
+   <snapshots>
+      <enabled>true</enabled>
+   </snapshots>
+</repository>
+```
 Add the following Maven dependency to your project POM file:
 ```xml
 <!-- SANSA Querying -->
@@ -61,7 +75,7 @@ git clone https://github.com/SANSA-Stack/SANSA-Stack.git
 cd SANSA-Stack
 mvn -am -DskipTests -pl :sansa-query-spark_2.12 clean install 
 ```
-Alternatively, you can use the following Maven repository and addd it to your project POM file `repositories` section:
+Alternatively, you can use the following Maven repository and add it to your project POM file `repositories` section:
 ```xml
 <repository>
    <id>maven.aksw.snapshots</id>
