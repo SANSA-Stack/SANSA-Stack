@@ -136,7 +136,7 @@ object OntopUtils extends Serializable {
       .jdbcUser(OntopConnection.JDBC_USER)
       .jdbcPassword(OntopConnection.JDBC_PASSWORD)
       .properties(properties)
-      .enableTestMode
+//      .enableTestMode
       .build
     mappingConfiguration.loadSpecification
   }
@@ -154,7 +154,7 @@ object OntopUtils extends Serializable {
       .r2rmlMappingGraph(new JenaRDF().asGraph(obdaMappings))
       .dbMetadataReader(new StringReader(dbMetadata))
       .properties(properties)
-      .enableTestMode
+//      .enableTestMode
       .build
     mappingConfiguration.loadSpecification
   }
@@ -177,7 +177,7 @@ object OntopUtils extends Serializable {
       .obdaSpecification(obdaSpecification)
       .properties(properties)
       .jdbcUrl(OntopConnection.getConnectionURL(database))
-      .enableTestMode
+//      .enableTestMode
       .build
   }
 
@@ -191,7 +191,7 @@ object OntopUtils extends Serializable {
     val builder = OntopSQLOWLAPIConfiguration.defaultBuilder.asInstanceOf[B]
       .properties(properties)
       .obdaSpecification(obdaSpecification)
-      .enableTestMode
+//      .enableTestMode
     if (ontology.isDefined) builder.ontology(ontology.get)
 
     builder.build
