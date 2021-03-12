@@ -80,7 +80,7 @@ public class NodeSerializerPerformanceTest {
 
         double expectedRatio = runTimeInMs / (double) sleepTimeInMs;
 
-        System.out.println(String.format("Test tasks completed: %.3f tasks/second - expected ratio: %.3f", actualRatio, expectedRatio));
+        System.out.printf("Test tasks completed: %.3f tasks/second - expected ratio: %.3f%n", actualRatio, expectedRatio);
     }
 
 
@@ -92,36 +92,36 @@ public class NodeSerializerPerformanceTest {
 
         // Actual
         double ratio = avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithRiot);
-        System.out.println(String.format("Riot performance: %.3f roundtrips/second", ratio));
+        System.out.printf("Riot performance: %.3f roundtrips/second%n", ratio);
     }
 
     @Test
-    public void testThriftPerformance() throws Exception {
+    public void testThriftPerformance() {
         Collection<Node> nodes = getNodes();
         // Warmup
         avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithThrift);
 
         // Actual
         double ratio = avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithThrift);
-        System.out.println(String.format("Thrift performance: %.3f roundtrips/second", ratio));
+        System.out.printf("Thrift performance: %.3f roundtrips/second%n", ratio);
     }
 
     @Test
-    public void testCustomPerformance() throws Exception {
+    public void testCustomPerformance() {
         Collection<Node> nodes = getNodes();
         // Warmup
         avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithCustomFormat);
 
         // Actual
         double ratio = avgTimePerTask(3000, () -> nodes, NodeSerializerPerformanceTest::roundTripWithCustomFormat);
-        System.out.println(String.format("Custom performance: %.3f roundtrips/second", ratio));
+        System.out.printf("Custom performance: %.3f roundtrips/second%n", ratio);
     }
-    public static <T> double avgTimePerTask(long timeLimitInMs, Supplier<? extends Collection<T>> batches, Consumer<? super T> executor) throws InterruptedException {
+    public static <T> double avgTimePerTask(long timeLimitInMs, Supplier<? extends Collection<T>> batches, Consumer<? super T> executor) {
         long taskCount = 0;
         StopWatch sw = StopWatch.createStarted();
-        long timeLimitInNanos = timeLimitInMs * 1000l * 1000l;
+        long timeLimitInNanos = timeLimitInMs * 1000L * 1000L;
 
-        long batchCount = 0;
+        // long batchCount = 0;
         long elapsed;
         while ((elapsed = sw.getTime(TimeUnit.NANOSECONDS)) < timeLimitInNanos) {
             Collection<T> batch = batches.get();
@@ -129,7 +129,7 @@ public class NodeSerializerPerformanceTest {
                 executor.accept(task);
             }
             taskCount += batch.size();
-            ++batchCount;
+            // ++batchCount;
         }
 
 //        System.out.println(batchCount);
