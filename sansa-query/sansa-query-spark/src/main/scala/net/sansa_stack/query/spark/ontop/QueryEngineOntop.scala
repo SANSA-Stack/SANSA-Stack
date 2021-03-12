@@ -276,8 +276,9 @@ class QueryEngineOntop(val spark: SparkSession,
     try {
       // translate to SQL query
       val queryRewrite = sparql2sql.createSQLQuery(query)
-      val sql = queryRewrite.sqlQuery.replace("\"", "`") // FIXME omit the schema in Ontop directly (it comes from H2 default schema)
-        .replace("`PUBLIC`.", "")
+      val sql = queryRewrite.sqlQuery
+        // .replace("\"", "`") // FIXME omit the schema in Ontop directly (it comes from H2 default schema)
+        // .replace("`PUBLIC`.", "")
       logger.info(s"SQL query:\n$sql")
 
       // execute SQL query
