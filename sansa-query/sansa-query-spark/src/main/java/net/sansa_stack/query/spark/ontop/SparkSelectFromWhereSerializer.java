@@ -45,7 +45,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
 //    }
 
     public static boolean offsetEnabled = true;
-    public static boolean orderByWorkaround = false;
+    public static boolean orderByWorkaround = true;
 
     public static QuotedIDFactory quotedIdFactory = new SparkQuotedIDFactory();
 
@@ -185,6 +185,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                                 ImmutableSortedSet<Variable> projectedVars = projectionVariableStack.peek();
                                 ImmutableMap<Variable, QuotedID> aliases = variableAliasesStack.peek();
 
+                                ((SparkSQLTermSerializer)SparkSelectFromWhereSerializer.this.sqlTermSerializer).inOrderBy = true;
                                 String conditionString = sortConditions.stream().map((c) -> {
 
                                     String s = (c.getTerm() instanceof Variable)
@@ -193,7 +194,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
 
                                     return s + (c.isAscending() ? " NULLS FIRST" : " DESC NULLS LAST");
                                 }).collect(Collectors.joining(", "));
-
+                                ((SparkSQLTermSerializer)SparkSelectFromWhereSerializer.this.sqlTermSerializer).inOrderBy = false;
 //                                String conditionString = sortConditions.stream().map((c) ->
 //                                    SparkSelectFromWhereSerializer.this.sqlTermSerializer.serialize(c.getTerm(), columnIDs) + (c.isAscending() ? " NULLS FIRST" : " DESC NULLS LAST")
 //                                ).collect(Collectors.joining(", "));
@@ -247,10 +248,11 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
             super(termFactory);
         }
 
-        @Override
+        boolean inOrderBy = false;
         public String serialize(ImmutableTerm term, ImmutableMap<Variable, QualifiedAttributeID> columnIDs)
                 throws SQLSerializationException {
             if (term instanceof Variable) {
+                // return ((Variable) term).getName();
                 return Optional.ofNullable(columnIDs.get(term))
                         .map(a -> {
                             // we have to replace double quotes with backticks here
@@ -264,6 +266,36 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
             }
             return super.serialize(term, columnIDs);
         }
+
+//        @Override
+//        public String serialize(ImmutableTerm term, ImmutableMap<Variable, QualifiedAttributeID> columnIDs)
+//                throws SQLSerializationException {
+//            String s;
+//            if (inOrderBy) {
+//                if (term instanceof Variable) {
+//                    s = codecBackTicks.forColumnName().encode(((Variable) term).getName());
+//                } else {
+//                    s = super.serialize(term, columnIDs);
+//                }
+//            } else {
+//                if (term instanceof Variable) {
+//                    // return ((Variable) term).getName();
+//                    s = Optional.ofNullable(columnIDs.get(term))
+//                            .map(a -> {
+//                                // we have to replace double quotes with backticks here
+//                                String rendering = a.getSQLRendering();
+//                                rendering = SparkSelectFromWhereSerializer.reEncodeSpark(rendering);
+//                                return rendering;
+//                            })
+//                            //                               .map(QualifiedAttributeID::getSQLRendering)
+//                            .orElseThrow(() -> new SQLSerializationException(String.format(
+//                                    "The variable %s does not appear in the columnIDs", term)));
+//                } else {
+//                    s = super.serialize(term, columnIDs);
+//                }
+//            }
+//            return s;
+//        }
 
         private String serializeConstant(Constant constant) {
             if (constant.isNull())
