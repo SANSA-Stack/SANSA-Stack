@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.ontop
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
+import net.sansa_stack.query.tests.util.ResultSetCompareUtils
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.query.{Query, QueryFactory, ResultSet, ResultSetFactory}
 import org.apache.jena.riot.Lang
@@ -29,7 +30,6 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
   override def conf(): SparkConf = {
     val conf = super.conf
     conf
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
@@ -49,25 +49,7 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
 
       val rsTarget = ResultSetFactory.fromXML(new FileInputStream(new File(getClass.getResource(s"/sansa-sparql-ts/bsbm/bsbm-$q.srx").getPath)))
 
-      assert(resultSetEquivalent(query, rs, rsTarget))
+      assert(ResultSetCompareUtils.resultSetEquivalent(query, rs, rsTarget))
     }
   })
-
-  def resultSetEquivalent(query: Query, resultsActual: ResultSet, resultsExpected: ResultSet): Boolean = {
-    val testByValue = true
-
-    if (testByValue) {
-      if (query.isOrdered) {
-        ResultSetCompare.equalsByValueAndOrder(resultsExpected, resultsActual)
-      } else {
-        ResultSetCompare.equalsByValue(resultsExpected, resultsActual)
-      }
-    } else {
-      if (query.isOrdered) {
-        ResultSetCompare.equalsByTermAndOrder(resultsExpected, resultsActual)
-      } else {
-        ResultSetCompare.equalsByTerm(resultsExpected, resultsActual)
-      }
-    }
-  }
 }

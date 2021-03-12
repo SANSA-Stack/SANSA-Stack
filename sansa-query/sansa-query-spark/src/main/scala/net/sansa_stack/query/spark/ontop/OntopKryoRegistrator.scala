@@ -82,22 +82,18 @@ class OntopKryoRegistrator extends KryoRegistrator {
 
   class RewriteInstructionSerializer extends Serializer[RewriteInstruction](false, true) {
     override def write(kryo: Kryo, output: Output, rwi: RewriteInstruction): Unit = {
-      ScalaUtils.time("writing rwi", "wrote rwi") {
-        kryo.writeClassAndObject(output, rwi.sqlSignature)
-        kryo.writeClassAndObject(output, rwi.sqlTypeMap)
-        kryo.writeClassAndObject(output, rwi.answerAtom)
-        kryo.writeClassAndObject(output, rwi.sparqlVar2Term)
-      }
+      kryo.writeClassAndObject(output, rwi.sqlSignature)
+      kryo.writeClassAndObject(output, rwi.sqlTypeMap)
+      kryo.writeClassAndObject(output, rwi.answerAtom)
+      kryo.writeClassAndObject(output, rwi.sparqlVar2Term)
     }
 
     override def read(kryo: Kryo, input: Input, `type`: Class[RewriteInstruction]): RewriteInstruction = {
-      ScalaUtils.time("reading rwi", "read rwi") {
-        RewriteInstruction(
-          kryo.readClassAndObject(input).asInstanceOf[ImmutableSortedSet[Variable]],
-          kryo.readClassAndObject(input).asInstanceOf[ImmutableMap[Variable, DBTermType]],
-          kryo.readClassAndObject(input).asInstanceOf[DistinctVariableOnlyDataAtom],
-          kryo.readClassAndObject(input).asInstanceOf[ImmutableMap[Variable, ImmutableTerm]])
-      }
+      RewriteInstruction(
+        kryo.readClassAndObject(input).asInstanceOf[ImmutableSortedSet[Variable]],
+        kryo.readClassAndObject(input).asInstanceOf[ImmutableMap[Variable, DBTermType]],
+        kryo.readClassAndObject(input).asInstanceOf[DistinctVariableOnlyDataAtom],
+        kryo.readClassAndObject(input).asInstanceOf[ImmutableMap[Variable, ImmutableTerm]])
     }
   }
 

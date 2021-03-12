@@ -179,7 +179,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
         }
 
       // compare results
-      val b = resultSetEquivalent(query, resultsActual, resultsExpected)
+      val b = ResultSetCompareUtils.resultSetEquivalent(query, resultsActual, resultsExpected)
 
       // print error message
       if (!b) {
@@ -199,24 +199,6 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
         )
       }
       assert(b, "Results of SELECT query do not match")
-    }
-  }
-
-  private def resultSetEquivalent(query: Query, resultsActual: ResultSet, resultsExpected: ResultSet): Boolean = {
-    val testByValue = true
-
-    if (testByValue) {
-      if (query.isOrdered) {
-        ResultSetCompare.equalsByValueAndOrder(resultsExpected, resultsActual)
-      } else {
-        ResultSetCompare.equalsByValue(resultsExpected, resultsActual)
-      }
-    } else {
-      if (query.isOrdered) {
-        ResultSetCompare.equalsByTermAndOrder(resultsExpected, resultsActual)
-      } else {
-        ResultSetCompare.equalsByTerm(resultsExpected, resultsActual)
-      }
     }
   }
 

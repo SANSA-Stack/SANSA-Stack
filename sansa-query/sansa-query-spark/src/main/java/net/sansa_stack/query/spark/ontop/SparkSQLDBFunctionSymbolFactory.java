@@ -220,4 +220,8 @@ public class SparkSQLDBFunctionSymbolFactory extends AbstractSQLDBFunctionSymbol
                 ));
     }
 
+    @Override
+    protected DBFunctionSymbol createEncodeURLorIRI(boolean preserveInternationalChars) {
+        return new SparkEncodeURLorIRIFunctionSymbolImpl(dbStringType, preserveInternationalChars);
+    }
 }

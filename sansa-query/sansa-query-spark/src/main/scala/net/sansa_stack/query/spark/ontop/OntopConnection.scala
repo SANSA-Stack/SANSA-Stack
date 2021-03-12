@@ -44,14 +44,12 @@ object OntopConnection {
     val db = database.getOrElse(DEFAULT_DATABASE) // for caching we have to use a default key
     connections.getOrElse(db, {
       try {
-        logger.debug("creating DB connection ...")
-        ScalaUtils.time("creating DB connection ...", "Created DB connection") {
+        ScalaUtils.time("creating DB connection ...", "Created DB connection", logger) {
           val conn = DriverManager.getConnection(getConnectionURL(database), JDBC_USER, JDBC_PASSWORD)
           connections += db -> conn
           sys.addShutdownHook {
             conn.close()
           }
-          logger.debug(" ... done")
           conn
         }
       } catch {
@@ -94,17 +92,14 @@ object OntopConnection {
             ontology: Option[OWLOntology]): OntopReformulationSQLConfiguration = {
 
     val conf = configs.getOrElseUpdate(id, {
-      logger.debug(s"creating reformulation config for session $id at ${System.currentTimeMillis()}...")
-
       val reformulationConfiguration =
         ScalaUtils.time(s"creating reformulation config for session $id...",
-          s"created reformulation config for session $id") {
+          s"created reformulation config for session $id", logger) {
           val conn = getOrCreateConnection(database)
           JDBCDatabaseGenerator.generateTables(conn, jdbcMetaData)
           OntopUtils.createReformulationConfig(database, obdaMappings, properties, ontology)
         }
       // configs += id -> reformulationConfiguration
-      logger.debug("...done")
       reformulationConfiguration
     })
     conf
