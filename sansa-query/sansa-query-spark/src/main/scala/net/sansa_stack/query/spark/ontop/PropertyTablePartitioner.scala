@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.ontop
 
 import java.net.URI
-
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.shared.impl.PrefixMappingImpl
@@ -48,40 +47,34 @@ object PropertyTablePartitioner {
                      overwrite: Boolean = false
                    )
 
-  import scopt.OParser
-  val builder = OParser.builder[Config]
-  val parser = {
-    import builder._
-    OParser.sequence(
-      programName("ppt-partitioner"),
-      head("property table partitioner", "0.1"),
-      opt[URI]('i', "input")
-        .required()
-        .action((x, c) => c.copy(inputPath = x))
-        .text("path to input data"),
-      opt[URI]('o', "output")
-        .required()
-        .action((x, c) => c.copy(outputPath = x))
-        .text("path to output directory"),
-      opt[URI]('s', "schema")
-        .optional()
-        .action((x, c) => c.copy(schemaPath = x))
-        .text("an optional file containing the OWL schema to process only object and data properties"),
-      opt[String]('t', "tableName")
-        .optional()
-        .action((x, c) => c.copy(tableName = x))
-        .text("the table name"),
-      opt[Boolean]('s', "stats")
-        .action((x, c) => c.copy(computeStatistics = x))
-        .text("compute statistics"),
-      opt[Unit]( "overwrite")
-        .action((_, c) => c.copy(overwrite = true))
-        .text("overwrite table if exists")
-    )
+  val parser = new scopt.OptionParser[Config]("PropertyTablePartitioner") {
+    head("property table partitioner", "0.1")
+    opt[URI]('i', "input")
+      .required()
+      .action((x, c) => c.copy(inputPath = x))
+      .text("path to input data")
+    opt[URI]('o', "output")
+      .required()
+      .action((x, c) => c.copy(outputPath = x))
+      .text("path to output directory")
+    opt[URI]('s', "schema")
+      .optional()
+      .action((x, c) => c.copy(schemaPath = x))
+      .text("an optional file containing the OWL schema to process only object and data properties")
+    opt[String]('t', "tableName")
+      .optional()
+      .action((x, c) => c.copy(tableName = x))
+      .text("the table name")
+    opt[Boolean]('s', "stats")
+      .action((x, c) => c.copy(computeStatistics = x))
+      .text("compute statistics")
+    opt[Unit]("overwrite")
+      .action((_, c) => c.copy(overwrite = true))
+      .text("overwrite table if exists")
   }
 
   def main(args: Array[String]): Unit = {
-    OParser.parse(parser, args, Config()) match {
+    parser.parse(args, Config()) match {
       case Some(config) =>
         run(config)
       case _ =>

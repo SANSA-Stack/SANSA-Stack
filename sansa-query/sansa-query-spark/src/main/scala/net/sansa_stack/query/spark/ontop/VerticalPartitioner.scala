@@ -52,8 +52,7 @@ object VerticalPartitioner {
                      partitioningThreshold: Int = 100,
                      mode: String = "partitioner")
 
-  import scopt.OParser
-  val parser = new scopt.OptionParser[Config]("SPARQLEngineExample") {
+  val parser = new scopt.OptionParser[Config]("VerticalPartitioner") {
       head("vertical partitioner", "0.1")
       opt[URI]('i', "input")
         .required()
@@ -114,8 +113,6 @@ object VerticalPartitioner {
   }
 
   def main(args: Array[String]): Unit = {
-    JenaSystem.init()
-
     parser.parse(args, Config()) match {
       case Some(config) =>
         if (config.mode == "partitioner") {
