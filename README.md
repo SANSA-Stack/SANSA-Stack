@@ -36,6 +36,21 @@ A SANSA stack release is done every six months and consists of the latest stable
 We currently require a Spark 3.x.x with Scala 2.12 setup. A Spark 2.x version can be built from source based on the [spark2](https://github.com/SANSA-Stack/SANSA-Stack/tree/spark2) branch.
 
 #### Release Version
+Some of our dependencies are not in Maven central (yet), so you need to add following Maven repository to your project POM file `repositories` section:
+```xml
+<repository>
+   <id>maven.aksw.internal</id>
+   <name>AKSW Release Repository</name>
+   <url>http://maven.aksw.org/archiva/repository/internal</url>
+   <releases>
+      <enabled>true</enabled>
+   </releases>
+   <snapshots>
+      <enabled>false</enabled>
+   </snapshots>
+</repository>
+```
+
 If you want to import the full SANSA Stack, please add the following Maven dependency to your project POM file:
 ```xml
 <!-- SANSA Stack -->
