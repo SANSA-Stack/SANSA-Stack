@@ -3,7 +3,7 @@ package net.sansa_stack.kryo.jena;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.google.common.base.Stopwatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.out.NodeFmtLib;
@@ -118,12 +118,12 @@ public class NodeSerializerPerformanceTest {
     }
     public static <T> double avgTimePerTask(long timeLimitInMs, Supplier<? extends Collection<T>> batches, Consumer<? super T> executor) throws InterruptedException {
         long taskCount = 0;
-        Stopwatch sw = Stopwatch.createStarted();
+        StopWatch sw = StopWatch.createStarted();
         long timeLimitInNanos = timeLimitInMs * 1000l * 1000l;
 
         long batchCount = 0;
         long elapsed;
-        while ((elapsed = sw.elapsed(TimeUnit.NANOSECONDS)) < timeLimitInNanos) {
+        while ((elapsed = sw.getTime(TimeUnit.NANOSECONDS)) < timeLimitInNanos) {
             Collection<T> batch = batches.get();
             for (T task : batch) {
                 executor.accept(task);
