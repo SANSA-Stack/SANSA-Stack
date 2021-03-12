@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingToDataFrameMapper
-import net.sansa_stack.query.spark.sparqlify.{SparqlifyUtils3}
+import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark._
 import net.sansa_stack.rdf.spark.partition.RDFPartition
@@ -11,9 +11,8 @@ import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{BooleanType, DoubleType, FloatType, IntegerType, NullType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
-
-
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 
 /**
  * This SparqlFrame Transformer creates a dataframe based on a SPARQL query
@@ -22,6 +21,8 @@ import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 class SparqlFrame extends Transformer{
   var _query: String = _
   var _queryExcecutionEngine: SPARQLEngine.Value = SPARQLEngine.Sparqlify
+
+  private var _experimentId: org.apache.jena.graph.Node = null
 
   override val uid: String = Identifiable.randomUID("sparqlFrame")
 
@@ -56,6 +57,26 @@ class SparqlFrame extends Transformer{
       throw new Exception(s"Your set engine: ${_queryExcecutionEngine} not supported. at the moment only ontop and sparqlify")
     }
     this
+  }
+
+  def setExperimentId(experimentURI: org.apache.jena.graph.Node): this.type = {
+    _experimentId = experimentURI
+    this
+  }
+
+  def getRDFdescription(): Array[org.apache.jena.graph.Triple] = {
+
+    val transformerURI: Node = NodeFactory.createURI("sansa-stack/ml/transfomer/Sparqlframe")
+    val pipelineElementURI: Node = NodeFactory.createURI("sansa-stack/ml/sansaVocab/ml/pipelineElement")
+
+    val description = List(
+      Triple.create(
+        _experimentId,
+        pipelineElementURI,
+        transformerURI
+      )
+    ).toArray
+    description
   }
 
   override def transformSchema(schema: StructType): StructType =
