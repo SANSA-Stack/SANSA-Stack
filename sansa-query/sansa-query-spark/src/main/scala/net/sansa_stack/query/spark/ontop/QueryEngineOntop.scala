@@ -316,10 +316,14 @@ class QueryEngineOntop(val spark: SparkSession,
     "CROSSES", "EQUALS", "DISJOINT", "COVERS", "COVEREDBY", "CONTAINSPROPERLY", "RELATE")
   val stBooleanFunctionsPattern = stBooleanFunctions.mkString("|")
   val booleanGeoFunctionTypeCastReplacementPattern: Pattern = Pattern.compile(s"ST_($stBooleanFunctionsPattern)\\(CAST\\((.*) AS string\\),CAST\\((.*) AS string\\)\\)")
-  val regexStr = s"ST_(INTERSECTS|CONTAINS)\\((CAST\\()?(.*)(?<! AS string)( AS string)?\\),(CAST\\()?(.*)(?<! AS string)( AS string)?\\)"
-  val r = Pattern.compile(regexStr, Pattern.MULTILINE)
+  val regexStr = "ST_(INTERSECTS|CONTAINS)\\((CAST\\()?(.*)(?<! AS string)( AS string)?\\),(CAST\\()?(.*)(?<! AS string)( AS string)?\\)"
+  val pattern = Pattern.compile(regexStr, Pattern.MULTILINE)
+  val subst = "ST_$1($3, $6)"
   private def geoRewrite(sql: String): String = {
-    r.matcher(sql).replaceAll("ST_$1($3, $6)")
+    val matcher = pattern.matcher(sql)
+
+    val result = matcher.replaceAll(subst)
+    result
   }
 
   /**

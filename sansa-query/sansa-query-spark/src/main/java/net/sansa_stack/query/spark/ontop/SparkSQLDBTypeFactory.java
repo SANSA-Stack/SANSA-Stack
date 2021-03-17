@@ -10,11 +10,14 @@ import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap;
 import it.unibz.inf.ontop.model.type.*;
 import it.unibz.inf.ontop.model.type.impl.DBTermTypeImpl;
 import it.unibz.inf.ontop.model.type.impl.DefaultSQLDBTypeFactory;
+import it.unibz.inf.ontop.model.type.impl.NonStringNonNumberNonBooleanNonDatetimeDBTermType;
 import it.unibz.inf.ontop.model.type.impl.StringDBTermType;
 import it.unibz.inf.ontop.model.vocabulary.XSD;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.geosparql.implementation.vocabulary.Geo;
+
 import static it.unibz.inf.ontop.model.type.DBTermType.Category.*;
 
 class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
@@ -73,6 +76,8 @@ class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
     protected static final String LONG_STR = "LONG";
     protected static final String DEC_STR = "DEC";
 
+    protected static final String GEOMETRY_STR = "GEOMETRY";
+
     @AssistedInject
     private SparkDBTypeFactory(@Assisted TermType rootTermType, @Assisted TypeFactory typeFactory) {
         super(createSparkSQLTypeMap(rootTermType, typeFactory), createSparkSQLCodeMap());
@@ -110,6 +115,13 @@ class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
 
         RDFDatatype xsdNonNegInt = typeFactory.getDatatype(factory.createIRI(XSDDatatype.XSDnonNegativeInteger.getURI()));
 //        map.put(TEXT_STR, new SparkStringDBTermType(TEXT_STR, "string", rootAncestry, xsdString));
+
+        /*
+         * geo types
+         */
+        RDFDatatype geo = typeFactory.getDatatype(factory.createIRI(Geo.WKT));
+        map.put(GEOMETRY_STR, new SparkNonStringNonNumberNonBooleanNonDatetimeDBTermType(GEOMETRY_STR, rootAncestry, geo));
+
         return map;
     }
 
@@ -122,11 +134,22 @@ class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
         Map<DefaultTypeCode, String> map = createDefaultSQLCodeMap();
         map.put(DefaultTypeCode.STRING, TEXT_STR);
         map.put(DefaultTypeCode.HEXBINARY, BINARY_STR);
+
+        /*
+         * geo types
+         */
+        map.put(DefaultTypeCode.GEOMETRY, GEOMETRY_STR);
+
         return ImmutableMap.copyOf(map);
     }
 
     @Override
     public Optional<String> getDBNaNLexicalValue() {
         return Optional.empty();
+    }
+
+    @Override
+    public boolean supportsDBGeometryType() {
+        return true;
     }
 }
