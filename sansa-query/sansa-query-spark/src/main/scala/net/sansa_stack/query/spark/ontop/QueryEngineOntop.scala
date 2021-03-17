@@ -21,6 +21,8 @@ import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.sedona_sql.UDT.GeometryUDT
+import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
 import org.semanticweb.owlapi.model.OWLOntology
 
@@ -137,16 +139,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
   // get the JDBC metadata from the Spark tables
   logger.debug("computing Spark DB metadata ...")
-  val jdbcMetaData: Map[String, String] = spark.catalog.listTables().collect().map(t => {
-    val fields = spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f => sqlEscaper.escapeColumnName(f.name)).mkString(",")
-    val keyCondition = s"PRIMARY KEY ($fields)"
-    (t.name,
-      spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f =>
-        s"${sqlEscaper.escapeColumnName(f.name)} ${f.dataType.sql} ${if (!f.nullable) "NOT NULL" else ""}"
-      ).mkString(",")
-        + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
-    )
-  }).toMap
+  val jdbcMetaData: Map[String, String] = extractJdbcMetadata()
   logger.debug("finished computing Spark DB metadata")
 
   // if no ontology has been provided, we try to extract it from the dataset
@@ -161,6 +154,23 @@ class QueryEngineOntop(val spark: SparkSession,
   private val sessionId: String = generateSessionId()
 
   private val sparql2sql = new OntopSPARQL2SQLRewriter(sessionId, ontopProperties, database, jdbcMetaData, mappingsModel, ontology)
+
+  /**
+   * @return tablename -> DDL
+   */
+  private def extractJdbcMetadata(): Map[String, String] = {
+    spark.catalog.listTables().collect().map(t => {
+      val fields = spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f => sqlEscaper.escapeColumnName(f.name)).mkString(",")
+      val keyCondition = s"PRIMARY KEY ($fields)"
+      val fieldType: StructField => String = f => if (f.dataType == GeometryUDT) "GEOMETRY" else f.dataType.sql
+      (t.name,
+        spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f =>
+          s"${sqlEscaper.escapeColumnName(f.name)} ${fieldType(f)} ${if (!f.nullable) "NOT NULL" else ""}"
+        ).mkString(",")
+          + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
+      )
+    }).toMap
+  }
 
   private def generateSessionId(): String = {
     val s = database.getOrElse("") + jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
@@ -276,10 +286,13 @@ class QueryEngineOntop(val spark: SparkSession,
     try {
       // translate to SQL query
       val queryRewrite = sparql2sql.createSQLQuery(query)
-      val sql = queryRewrite.sqlQuery
+      var sql = queryRewrite.sqlQuery
         // .replace("\"", "`") // FIXME omit the schema in Ontop directly (it comes from H2 default schema)
         // .replace("`PUBLIC`.", "")
       logger.info(s"SQL query:\n$sql")
+
+      // geo workaround for odd String cast
+      sql = geoRewrite(sql)
 
       // execute SQL query
       val resultRaw = spark.sql(sql)
@@ -296,6 +309,17 @@ class QueryEngineOntop(val spark: SparkSession,
         throw e
       case e: Exception => throw e
     }
+  }
+
+  import java.util.regex.Pattern
+  val stBooleanFunctions = Array("CONTAINS", "INTERSECTS", "TOUCHES", "WITHIN", "OVERLAPS",
+    "CROSSES", "EQUALS", "DISJOINT", "COVERS", "COVEREDBY", "CONTAINSPROPERLY", "RELATE")
+  val stBooleanFunctionsPattern = stBooleanFunctions.mkString("|")
+  val booleanGeoFunctionTypeCastReplacementPattern: Pattern = Pattern.compile(s"ST_($stBooleanFunctionsPattern)\\(CAST\\((.*) AS string\\),CAST\\((.*) AS string\\)\\)")
+  val regexStr = s"ST_(INTERSECTS|CONTAINS)\\((CAST\\()?(.*)(?<! AS string)( AS string)?\\),(CAST\\()?(.*)(?<! AS string)( AS string)?\\)"
+  val r = Pattern.compile(regexStr, Pattern.MULTILINE)
+  private def geoRewrite(sql: String): String = {
+    r.matcher(sql).replaceAll("ST_$1($3, $6)")
   }
 
   /**

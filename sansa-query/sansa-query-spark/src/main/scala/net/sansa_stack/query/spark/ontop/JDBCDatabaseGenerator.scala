@@ -34,7 +34,8 @@ object JDBCDatabaseGenerator {
     typeOf[SchemaStringBoolean] -> "BOOLEAN",
     typeOf[SchemaStringString] -> "VARCHAR(255)",
     typeOf[SchemaStringDate] -> "DATE",
-    typeOf[SchemaStringTimestamp] -> "TIMESTAMP"
+    typeOf[SchemaStringTimestamp] -> "TIMESTAMP",
+    typeOf[SchemaStringGeometry] -> "GEOMETRY"
   ) // .map(e => (typeOf[e._1.type], e._2))
 
   private val spark2H2DatatypeMapping = Map(

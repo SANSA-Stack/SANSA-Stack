@@ -150,6 +150,13 @@
             <scope>test</scope>
         </dependency>
 
+		<!-- GeoSpatial support -->
+		<!-- Apache Jena GeoSPARQL -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-geosparql</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

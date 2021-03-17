@@ -313,6 +313,26 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Libs for GeoSPARQL support -->
+        <!-- Apache Sedona (GeoSpark) -->
+        <dependency>
+            <groupId>org.apache.sedona</groupId>
+            <artifactId>sedona-core-3.0_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sedona</groupId>
+            <artifactId>sedona-sql-3.0_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sedona</groupId>
+            <artifactId>sedona-python-adapter-3.0_${scala.binary.version}</artifactId>
+        </dependency>
+        <!-- Apache Jena GeoSPARQL -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-geosparql</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>
