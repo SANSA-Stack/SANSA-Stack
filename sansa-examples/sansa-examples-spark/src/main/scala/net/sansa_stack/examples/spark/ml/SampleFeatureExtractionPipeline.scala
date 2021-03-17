@@ -1,15 +1,15 @@
-package net.sansa_stack.ml.spark.pipeline
+package net.sansa_stack.examples.spark.ml
 
-import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
-import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator
+import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SmartVectorAssembler, SparqlFrame}
 import net.sansa_stack.rdf.spark.io.{RDFDataFrameReader, RDFReader}
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
-import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+
+import net.sansa_stack.query.spark.SPARQLEngine
 
 object SampleFeatureExtractionPipeline {
   def main(args: Array[String]): Unit = {
@@ -31,8 +31,9 @@ object SampleFeatureExtractionPipeline {
     READ IN DATA
      */
     val inputFilePath = "/Users/carstendraschner/GitHub/SANSA-Stack/sansa-ml/sansa-ml-spark/src/main/resources/test.ttl"
-    val df: DataFrame = spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
-    val dataset = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
+    // val df: DataFrame = spark.read.rdf(Lang.TURTLE)(inputFilePath).cache()
+    val dataset: Dataset[org.apache.jena.graph.Triple] = spark.rdf(Lang.TURTLE)(inputFilePath).toDS().cache()
+    dataset.foreach(println(_))
     /*
     CREATE FEATURE EXTRACTING SPARQL
     from a knowledge graph we can either manually create a sparql query or
@@ -54,11 +55,20 @@ object SampleFeatureExtractionPipeline {
       |	}
       |}""".stripMargin
     // OPTION 2
-    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(df, "?seed", "?seed a <http://dig.isi.edu/Person> .", 1, 2, 3, featuresInOptionalBlocks = true)
+    val (autoSparqlString: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
+      dataset,
+      "?seed",
+      "?seed a <http://dig.isi.edu/Person> .",
+      1,
+      3,
+      3,
+      featuresInOptionalBlocks = true
+    )
+    println(autoSparqlString)
 
     // select the query you want to use or adjust the automatic created one
     println("CREATE FEATURE EXTRACTING SPARQL")
-    val queryString = autoSparqlString
+    val queryString = manualSparqlString
     println()
     println(queryString)
 
@@ -70,9 +80,9 @@ object SampleFeatureExtractionPipeline {
     println("FEATURE EXTRACTION OVER SPARQL")
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
-      .setQueryExcecutionEngine("sparqlify")
+      .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
     val res = sparqlFrame.transform(dataset)
-    res.show()
+    res.show(false)
 
     /*
     Create Numeric Feature Vectors
@@ -81,6 +91,7 @@ object SampleFeatureExtractionPipeline {
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("seed")
       .setLabelColumn("seed__down_age")
+      .setFeatureColumns(List("seed__up_hasParent__down_age", "seed__up_hasSpouse__down_age"))
     val assembledDf = smartVectorAssembler.transform(res)
     assembledDf.show(false)
 

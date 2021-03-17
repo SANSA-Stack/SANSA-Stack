@@ -1,20 +1,28 @@
-package net.sansa_stack.ml.spark.utils
+package net.sansa_stack.ml.spark.featureExtraction
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import net.sansa_stack.ml.spark.utils.{ConfigResolver, SPARQLQuery}
-import org.apache.jena.graph.Node
+import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.RDFLanguages
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SparkSession}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model._
 
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks.{break, breakable}
+import net.sansa_stack.query.spark.SPARQLEngine
+import org.apache.spark.rdd.RDD
 
 object FeatureExtractingSparqlGenerator {
+
+
+  val _literalReplacementString = "literalReplacement"
+  val _literalReplacement = NodeFactory.createLiteral(_literalReplacementString)
+
 
   /**
    * create on string level the seed fetching query
@@ -75,7 +83,7 @@ object FeatureExtractingSparqlGenerator {
 
     var dataFramesWithOpenEnd: DataFrame = paths
     var dataframeWithLiteralEnd: DataFrame = spark.emptyDataFrame
-    var currentPaths = paths.cache()
+    var currentPaths: DataFrame = paths.cache()
     traverseDf.cache()
 
     breakable {
@@ -97,20 +105,11 @@ object FeatureExtractingSparqlGenerator {
           case _ => left.join(right, columnName).sample(true, 2D * numberRandomWalks / traverseDf.count()).limit(numberRandomWalks)
         }
 
-        // current paths are the ones we want to follow in next iteration. so it is reasonable if   TODO better literal identification
         val isLiteral = udf((cellElement: String) => {
-          if (cellElement.startsWith("\"")) true
-          else if (cellElement.forall(_.isDigit)) true
-          else if (cellElement.isInstanceOf[Int]) true
-          else if (cellElement.isInstanceOf[Boolean]) true
-          else if (cellElement.isInstanceOf[Float]) true
-          else if (cellElement.isInstanceOf[Double]) true
+          if (cellElement == _literalReplacementString) true
           else false
         })
         // they end with not literal.
-        // see ! exclamation mark in where statement
-        // println(s"current paths dataframe: $iteration")
-        // currentPaths = joinedPaths.where(! col(columnNamePlusOne).startsWith("\""))
         currentPaths = joinedPaths.where(!isLiteral(col(columnNamePlusOne)))
         // final paths are paths which end with literal
         // this can only happen when traversing down
@@ -125,8 +124,7 @@ object FeatureExtractingSparqlGenerator {
           l.length == lFromSet.size
         })
         val nNamedColumns = currentPaths.columns.filter(_.startsWith("n_")).toList
-        // println(nNamedColumns)
-        // currentPaths.where(!noCycle(struct(nNamedColumns.map(col): _*))).show(false)
+
         currentPaths = currentPaths.where(noCycle(struct(nNamedColumns.map(col): _*)))
 
         // println(s"$iteration filtered current paths")
@@ -209,7 +207,7 @@ object FeatureExtractingSparqlGenerator {
       val rightN = nonNullRow((queryLineNumber * 3) + 3)
 
       var firstVarName = varNames.last
-      var secondVarName = firstVarName + f"__$direction" + "_" + p.toString.split("/").last.replace("#", "_")
+      var secondVarName = firstVarName + f"__$direction" + "_" + p.toString.split("/").last.replace("#", "_").replace(".", "").replace("-", "")
       varNames.append(secondVarName)
       val query_line: String = direction match {
         case "down" => f"$firstVarName <$p> $secondVarName ."
@@ -234,7 +232,7 @@ object FeatureExtractingSparqlGenerator {
    * take unique query lines
    * create sparql query
    *
-   * @param df               dataframe of true columns of type string representing triples  s p o
+   * @param ds               dataset of triple of true columns of type string representing triples  s p o
    * @param seedVarName      how the seeds should be named and with beginning question mark as needed for projection variable
    * @param seedWhereClause  a string representing the where part of a sparql query specifying how to reach seeds
    * @param maxUp            integer for limiting number of traversal up steps
@@ -244,42 +242,57 @@ object FeatureExtractingSparqlGenerator {
    * @return string of resulting sparql and list of string for each projection variable which later can be used for dataframe column naming
    */
   def createSparql(
-                 df: DataFrame,
-                 seedVarName: String,
-                 seedWhereClause: String,
-                 maxUp: Int,
-                 maxDown: Int,
-                 numberSeeds: Int = 0,
-                 ratioNumberSeeds: Double = 1.0,
-                 numberRandomWalks: Int = 0,
-                 sortedByLinks: Boolean = false,
-                 featuresInOptionalBlocks: Boolean = true,
-               ): (String, List[String]) = {
-
-    val spark = SparkSession.builder
-      .getOrCreate()
-    import spark.implicits._
-    implicit val nodeEncoder = Encoders.kryo(classOf[Node])
-    implicit val nodeTupleEncoder = Encoders.tuple[Node, Node, Node](nodeEncoder, nodeEncoder, nodeEncoder)
-
-    val ds = df.toDS().cache()
+                    ds: Dataset[org.apache.jena.graph.Triple],
+                    seedVarName: String,
+                    seedWhereClause: String,
+                    maxUp: Int,
+                    maxDown: Int,
+                    numberSeeds: Int = 0,
+                    ratioNumberSeeds: Double = 1.0,
+                    numberRandomWalks: Int = 0,
+                    sortedByLinks: Boolean = false,
+                    featuresInOptionalBlocks: Boolean = true,
+                  ): (String, List[String]) = {
 
     // create the sparql to reach seeds and maybe sort them by ths sparql as well
     val seedFetchingSparql: String = createSeedFetchingSparql(seedVarName, seedWhereClause, sortedByLinks)
 
     // query for seeds and list those
-    val queryTransformer1: SPARQLQuery = SPARQLQuery(seedFetchingSparql)
-    val seedsDf: DataFrame = queryTransformer1.transform(ds).cache()
-    val seeds: List[Node] = seedsDf.as[Node].rdd.collect().toList
+    val sparqlFrame = new SparqlFrame()
+      .setSparqlQuery(seedFetchingSparql)
+      .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
+    val seedsDf: DataFrame = sparqlFrame.transform(ds).toDF("n_0").cache()
+
+    if (seedsDf.count() == 0) {
+      throw new Exception(s"The sparql query hasn't resulted in any seed entity!")
+    }
+
     // TODO make log println(f"the fetched seeds are:\n${seeds.mkString("\n")}\n")
-    val numberOfSeeds: Int = seeds.length
+
+    val numberOfSeeds: Int = seedsDf.count().toInt
 
     // calculate cutoff
     val cutoff = if (numberSeeds > 0) numberSeeds else math.rint(numberOfSeeds * ratioNumberSeeds).toInt
-    val usedSeeds: List[Node] = seeds.take(cutoff)
-    val usedSeedsAsString = usedSeeds.map(_.toString)
 
-    // val usedSeedsAsString: List[String] = hardCodedSeeds // List("http://dig.isi.edu/John_jr", "http://dig.isi.edu/Mary", "http://dig.isi.edu/John") // usedSeeds.map(_.toString)
+    val usedSeedsDf: DataFrame = seedsDf.limit(cutoff).toDF("n_0")
+
+    val spark = SparkSession.builder
+      .getOrCreate()
+    import spark.implicits._
+
+    implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
+    implicit val nodeEncoder = Encoders.kryo(classOf[Node])
+    implicit val rowEncoder = Encoders.kryo(classOf[Row])
+
+    /* val tmpRdd: RDD[Seq[String]] = ds.map((triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Seq(triple.getSubject.toString(), triple.getPredicate.toString(), _literalReplacementString) else Seq(triple.getSubject.toString(), triple.getPredicate.toString(), triple.getObject().toString())).rdd
+
+    val df: DataFrame = spark.createDataFrame(
+      tmpRdd
+    ).toDF(Seq("s", "p", "o"): _*).cache()
+
+     */
+
+    val df: DataFrame = ds.map((triple: org.apache.jena.graph.Triple) => if (triple.getObject.isLiteral) Triple.create(triple.getSubject, triple.getPredicate, _literalReplacement) else triple).rdd.toDF().toDF(Seq("s", "p", "o"): _*).cache()
 
     // create dataframes for traversal (up and down)
     val (up: DataFrame, down: DataFrame) = createDataframesToTraverse(df)
@@ -289,7 +302,7 @@ object FeatureExtractingSparqlGenerator {
     // seeds in dataframe as starting paths
     // TODO make log println(s"we start initially with following seeds (after cutoff):\n${usedSeedsAsString.mkString("\n")}")
     // println("initial paths, so seeds are:")
-    var paths: DataFrame = usedSeedsAsString.toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
+    var paths: DataFrame = usedSeedsDf // usedSeedsAsString.toDF("n_0").cache() // seedsDf.map(_.toString).limit(cutoff).toDF("n0")
     // paths.show(10, false)
     // traverse up
     // println("traverse up")
@@ -374,14 +387,19 @@ object FeatureExtractingSparqlGenerator {
     // get lang from filename
     val lang = RDFLanguages.filenameToLang(inputFilePath)
 
-    // load RDF to Dataframe
-    val df: DataFrame = spark.read.rdf(lang)(inputFilePath).cache()
+    // load RDF to Dataset
+    val dataset = NTripleReader.load(
+      spark,
+      inputFilePath,
+      stopOnBadTerm = ErrorParseMode.SKIP,
+      stopOnWarnings = WarningParseMode.IGNORE
+    ).toDS().cache()
 
     // println("The dataframe looks like this:")
     // df.show(false)
 
     val (totalSparqlQuery: String, var_names: List[String]) = createSparql(
-      df = df,
+      ds = dataset,
       seedVarName = seedVarName,
       seedWhereClause = whereClauseForSeed,
       maxUp = maxUp,
