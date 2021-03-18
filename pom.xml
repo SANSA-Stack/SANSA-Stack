@@ -89,7 +89,7 @@
         <ontop.version>4.0.9-sansa</ontop.version>
 
         <guava.version>30.1-jre</guava.version>
-<!--        <guava.version>14.0.1</guava.version>-->
+        <!--        <guava.version>14.0.1</guava.version>-->
 
         <sansa.version>${project.version}</sansa.version>
         <!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
@@ -1394,16 +1394,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-
-            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
@@ -1973,11 +1963,6 @@
     </build>
 
     <distributionManagement>
-        <repository>
-            <id>maven.aksw.internal</id>
-            <name>AKSW Release Repository</name>
-            <url>https://maven.aksw.org/archiva/repository/internal</url>
-        </repository>
         <snapshotRepository>
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>
@@ -1999,20 +1984,20 @@
     -->
 
     <repositories>
-	<!--
+        <!--
+            <repository>
+                <id>oss-sonatype</id>
+                <name>oss-sonatype</name>
+                <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+                <releases>
+                    <enabled>false</enabled>
+                </releases>
+        </repository>
+        -->
         <repository>
-            <id>oss-sonatype</id>
-            <name>oss-sonatype</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-	</repository>
-	-->
-	<repository>
             <id>oss-sonatype-releases</id>
             <name>oss-sonatype</name>
             <url>https://oss.sonatype.org/content/repositories/releases/</url>
@@ -2022,21 +2007,21 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
-	</repository>
+        </repository>
 
-	<!--
-        <repository>
-            <id>apache-snapshot</id>
-            <name>Apache repository (snapshots)</name>
-            <url>https://repository.apache.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-	</repository>
-	-->
+        <!--
+            <repository>
+                <id>apache-snapshot</id>
+                <name>Apache repository (snapshots)</name>
+                <url>https://repository.apache.org/content/repositories/snapshots/</url>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+                <releases>
+                    <enabled>false</enabled>
+                </releases>
+        </repository>
+        -->
         <repository>
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>
@@ -2047,7 +2032,7 @@
             <releases>
                 <enabled>false</enabled>
             </releases>
-    	</repository>
+        </repository>
 
         <repository>
             <id>maven.aksw.internal</id>
@@ -2085,6 +2070,32 @@
                 </pluginManagement>
             </build>
         </profile>
+
+
+        <profile>
+            <id>source</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>javadoc</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
 
         <!-- the profile used for deployment to Sonatype Maven repository -->
         <profile>
@@ -2142,28 +2153,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
 
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
 
                     <plugin>
@@ -2197,6 +2191,33 @@
                         </configuration>
                     </plugin>
 
+                </plugins>
+            </build>
+        </profile>
+
+
+        <!-- Profile to release to our public AKSW maven repository -->
+        <!-- It is still a public release therefore calling it 'release-internal' seems inadequate -->
+        <profile>
+            <id>release-aksw</id>
+            <distributionManagement>
+                <repository>
+                    <id>maven.aksw.internal</id>
+                    <url>http://maven.aksw.org/repository/internal</url>
+                </repository>
+            </distributionManagement>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
