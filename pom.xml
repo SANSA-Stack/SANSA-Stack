@@ -1600,9 +1600,9 @@
 
                 <!-- Gitflow -->
                 <plugin>
-                    <groupId>org.aksw.maven.plugin</groupId>
+                    <groupId>com.amashchenko.maven.plugin</groupId>
                     <artifactId>gitflow-maven-plugin</artifactId>
-                    <version>1.12.1</version>
+                    <version>1.15.1</version>
                     <configuration>
                         <!--
                             <installProject>false</installProject>
