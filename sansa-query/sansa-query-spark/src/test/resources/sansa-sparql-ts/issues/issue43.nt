@@ -1,0 +1,6 @@
+_:a <http://xmlns.com/foaf/0.1/name> "Alice" .
+_:a <http://xmlns.com/foaf/0.1/knows> _:b .
+_:a <http://xmlns.com/foaf/0.1/knows> _:c .
+_:b <http://xmlns.com/foaf/0.1/name> "Bob" .
+_:c <http://xmlns.com/foaf/0.1/name> "Clare" .
+_:c <http://xmlns.com/foaf/0.1/nick> "CT" .

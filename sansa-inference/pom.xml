@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent_2.12</artifactId>
+		<version>0.8.0-RC1</version>
+	</parent>
+
+    <artifactId>sansa-inference-parent_2.12</artifactId>
+    <packaging>pom</packaging>
+    <name>Inference API - Parent</name>
+
+    <description>An inference layer for RDF and OWL</description>
+
+    <developers>
+        <developer>
+            <id>lorenz</id>
+            <name>Lorenz Buehmann</name>
+            <email>buehmann@informatik.uni-leipzig.de</email>
+            <organization>AKSW, Department of Computer Science, University of Leipzig</organization>
+            <organizationUrl>http://www.aksw.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+        </developer>
+    </developers>
+
+    <modules>
+        <module>sansa-inference-common</module>
+        <module>sansa-inference-flink</module>
+        <module>sansa-inference-spark</module>
+        <module>sansa-inference-tests</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+			<dependency>
+				<groupId>net.sansa-stack</groupId>
+				<artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+        </dependencies>
+
+    </dependencyManagement>
+</project>

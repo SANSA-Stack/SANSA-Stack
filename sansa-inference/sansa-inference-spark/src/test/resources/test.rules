@@ -1,0 +1,18 @@
+[prp-trp: (?p, rdf:type, owl:TransitiveProperty), (?x, ?p, ?y), (?y, ?p, ?z)	-> (?x, ?p, ?z)]
+[prp-symp: (?p, rdf:type, owl:SymmetricProperty), (?x, ?p, ?y) -> (?y, ?p, ?x)]
+
+# RDFS 1.1 rules
+[rdfs2:  (?p rdfs:domain ?c), (?x ?p ?y) -> (?x rdf:type ?c)]
+[rdfs3:  (?p rdfs:range ?c), (?x ?p ?y)  -> (?y rdf:type ?c) ]
+[rdfs5: (?a rdfs:subPropertyOf ?b), (?b rdfs:subPropertyOf ?c) -> (?a rdfs:subPropertyOf ?c)]
+[rdfs7:  (?p rdfs:subPropertyOf ?q), (?a ?p ?b), notEqual(?p,?q) -> (?a ?q ?b)]
+[rdfs9:  (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y) ]
+[rdfs11:  (?a rdfs:subClassOf ?b), (?b rdfs:subClassOf ?c) -> (?a rdfs:subClassOf ?c)]
+
+# OWL Horst rules
+[rdfp5a:(?X ?Q ?Y) -> (?X owl:sameAs ?X)]
+[rdfp5b:(?X ?P ?Y) -> (?Y owl:sameAs ?Y)]
+[rdfp8ax:(?P owl:inverseOf ?Q), (?X ?P ?Y) -> (?Y ?Q ?X)]
+[rdfp8bx:(?P owl:inverseOf ?Q), (?X ?Q ?Y) -> (?Y ?P ?X)]
+[rdfp14bx: (?R owl:hasValue ?V) (?R owl:onProperty ?P) (?U ?P ?W) -> (?U ?P ?V) ]
+[rdfp14a: (?R owl:hasValue ?V) (?R owl:onProperty ?P) (?U ?P ?W) -> (?U rdf:type ?V) ]

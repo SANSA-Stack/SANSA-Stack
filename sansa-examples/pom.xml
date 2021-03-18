@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>sansa-examples-parent_2.12</artifactId>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent_2.12</artifactId>
+		<version>0.8.0-RC1</version>
+	</parent>
+
+	<packaging>pom</packaging>
+	<name>SANSA-Examples - Parent</name>
+	<description>SANSA examples</description>
+
+	<developers>
+		<developer>
+			<id>jlehmann</id>
+			<name>Jens Lehmann</name>
+			<email>jens.lehmann@cs.uni-bonn.de</email>
+			<organization>Department of Computer Science, University of Bonn</organization>
+			<organizationUrl>http://www.informatik.uni-bonn.de/</organizationUrl>
+			<roles>
+				<role>principle maintainer</role>
+			</roles>
+			<timezone>0</timezone>
+		</developer>
+	</developers>
+
+
+	<modules>
+		<module>sansa-examples-flink</module>
+		<module>sansa-examples-spark</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- RDF Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<!-- OWL Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Query Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+				<!-- <version>${project.parent.version}</version> -->
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Inference Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+				<version>${sansa.version}</version>
+			</dependency>
+
+			<!-- ML Layer -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+</project>

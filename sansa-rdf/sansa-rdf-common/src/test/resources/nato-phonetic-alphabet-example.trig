@@ -1,0 +1,64 @@
+# This document contains a set of named graphs for testing
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+<http://example.org/alfa>
+    {
+       _:b foaf:name "Alfa" .
+       _:b foaf:mbox <mailto:alfa@work.example.org> .
+    }
+
+<http://example.org/bravo>
+    {
+       _:a foaf:name "Bravo" .
+       _:a foaf:mbox <mailto:bravo@oldcorp.example.org> .
+       _:a foaf:knows _:b .
+    }
+
+<http://example.org/charlie>
+    {
+       _:c foaf:name "Charlie" .
+       _:c foaf:mbox <mailto:charlie@work.example.org> .
+    }
+
+<http://example.org/delta>
+    {
+       _:d foaf:name "Delta" .
+       _:d foaf:mbox <mailto:delta@work.example.org> .
+    }
+
+<http://example.org/echo>
+    {
+       _:e foaf:name "Echo" .
+       _:e foaf:mbox <mailto:echo@work.example.org> .
+    }
+
+<http://example.org/foxtrot>
+    {
+       _:f foaf:name "Foxtrot" .
+       _:f foaf:mbox <mailto:foxtrot@work.example.org> .
+    }
+
+<http://example.org/golf>
+    {
+       _:a foaf:name "Golf" .
+       _:a foaf:mbox <mailto:golf@oldcorp.example.org> .
+       _:a foaf:knows _:b .
+    }
+
+<http://example.org/hotel>
+    {
+       _:a foaf:name "Hotel" .
+       _:a foaf:mbox <mailto:hotel@oldcorp.example.org> .
+    }
+
+<http://example.org/india>
+    {
+       _:a foaf:name "India" .
+       _:a foaf:mbox <mailto:india@oldcorp.example.org> .
+       _:a foaf:knows _:b .
+    }
+
+

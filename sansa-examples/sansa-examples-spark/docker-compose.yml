@@ -1,0 +1,121 @@
+version: '2' 
+services:
+ namenode:
+    image: bde2020/hadoop-namenode:1.0.0
+    hostname: namenode
+    container_name: namenode
+    networks:
+      - hadoop
+    volumes:
+      - ./data/namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+      - INIT_DAEMON_STEP=setup_hdfs
+      - VIRTUAL_HOST=hdfs.demo.sansa-stack.local
+    env_file:
+      - ./config/hadoop/hadoop.env
+    ports:
+      - "50070:50070"
+      - "8020:8020"
+ datanode1:
+    image: bde2020/hadoop-datanode:1.0.0
+    hostname: datanode1
+    container_name: datanode1
+    networks:
+      - hadoop
+    volumes:
+      - ./data/datanode1:/hadoop/dfs/data
+    env_file:
+      - ./config/hadoop/hadoop.env
+
+ datanode2:
+    image: bde2020/hadoop-datanode:1.0.0
+    hostname: datanode2
+    container_name: datanode2
+    networks: 
+      - hadoop
+    volumes:
+      - ./data/datanode2:/hadoop/dfs/data
+    env_file:
+      - ./config/hadoop/hadoop.env
+
+ filebrowser:
+    image: bde2020/hdfs-filebrowser:3.9
+    hostname: filebrowser
+    container_name: filebrowser
+    networks:
+      - hadoop
+    environment:
+      - NAMENODE_HOST=namenode
+      - VIRTUAL_HOST=hue.demo.sansa-stack.local
+      - VIRTUAL_PORT=8088
+#    ports:
+#      - "8088:8088"
+
+ master:
+   image: bde2020/spark-master:2.0.1-hadoop2.7
+   hostname: spark-master
+   container_name: spark-master
+   networks:
+    - hadoop
+   environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - VIRTUAL_HOST=spark-master.demo.sansa-stack.local
+      - VIRTUAL_PORT=8080
+   env_file:
+      - ./config/hadoop/hadoop.env
+
+ worker:
+   image: bde2020/spark-worker:2.0.1-hadoop2.7
+   hostname: spark-worker
+   container_name: spark-worker
+   networks:
+     - hadoop
+   environment:
+     - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+     - VIRTUAL_HOST=spark-worker.demo.sansa-stack.local
+     - VIRTUAL_PORT=8081
+   env_file:
+     - ./config/hadoop/hadoop.env
+   links:
+     - "master:spark-master"
+
+ integratorui:
+   image: bde2020/integrator-ui:latest
+#   build: ./config/csswrapper/integrator-ui/
+   hostname: integratorui
+   container_name: integratorui
+   networks:
+     - hadoop
+   volumes:
+      - ./config/integrator:/app/config
+   environment:
+      - VIRTUAL_HOST=demo.sansa-stack.local
+
+ csswrapper:
+    build: ./config/csswrapper/
+#    image: bde2020/nginx-proxy-with-css:latest
+    hostname: csswrapper
+    container_name: csswrapper
+    networks:
+      - hadoop
+    ports:
+      - 80:80
+#    volumes:
+#      -  /var/run/docker.sock:/tmp/docker.sock:ro
+    links:
+      - namenode:namenode
+      - filebrowser:filebrowser
+      - master:master
+      - worker:worker
+      - integratorui:integratorui
+    depends_on:
+      - namenode
+      - filebrowser 
+      - master
+      - worker
+      - integratorui
+
+networks:
+  hadoop:
+    external: true

@@ -1,0 +1,22 @@
+@prefix :        <http://www.example.org#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex:      <http://www.example.org#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+rdf:Alt
+      rdfs:subClassOf rdfs:Container .
+
+rdfs:ContainerMembershipProperty
+      rdfs:subClassOf rdf:Property .
+
+rdfs:member
+      rdfs:domain rdfs:Resource ;
+      rdfs:range rdfs:Resource .
+
+rdf:Bag
+      rdfs:subClassOf rdfs:Container .
+
+rdf:Seq
+      rdfs:subClassOf rdfs:Container .

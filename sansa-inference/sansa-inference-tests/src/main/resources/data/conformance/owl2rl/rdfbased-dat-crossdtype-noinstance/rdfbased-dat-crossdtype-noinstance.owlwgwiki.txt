@@ -1,0 +1,19 @@
+{{InconsistencyTestCase
+|id=rdfbased-dat-crossdtype-noinstance
+|description=A literal of a datatype d1 representing a data value that is outside the value space of another datatype d2 is not an instance of d2.
+|author=Michael Schneider, Kai Mainzer
+|syntax=RDF/XML
+|semantics=Test applies only to RDF-based semantics
+|rlrulescomplete=Yes
+|inconsistent-ontology=<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:ex="http://www.example.org#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://www.example.org#v">
+    <rdf:type rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <owl:sameAs rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</owl:sameAs>
+  </rdf:Description>
+</rdf:RDF>
+}}

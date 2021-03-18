@@ -1,0 +1,29 @@
+*.class
+*.log
+
+# sbt specific
+.cache
+.settings
+.history
+.lib/
+.project
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+.idea/
+*.iml
+
+deptree.txt
+scalastyle-output.xml
+
+
+# Files generated for spark runs
+sansa-examples-spark/data/
+

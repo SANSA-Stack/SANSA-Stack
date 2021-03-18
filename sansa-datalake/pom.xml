@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>sansa-datalake-parent_2.12</artifactId>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-parent_2.12</artifactId>
+		<version>0.8.0-RC1</version>
+	</parent>
+
+	<!-- <version>0.1.2</version> -->
+	<packaging>pom</packaging>
+
+	<name>SANSA Stack - DataLake Layer - Parent</name>
+	<description>A library to query heterogeneous data sources uniformly using SPARQL</description>
+
+	<developers>
+		<developer>
+			<name>Mohamed Nadjib MAMI</name>
+			<url>https://github.com/mnmami</url>
+			<organization>SDA</organization>
+			<organizationUrl>http://sda.tech</organizationUrl>
+			<roles>
+				<role>contributor</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<modules>
+		<module>sansa-datalake-spark</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>de.javakaffee</groupId>
+				<artifactId>kryo-serializers</artifactId>
+			</dependency>
+
+			<dependency>
+				<groupId>io.gatling</groupId>
+				<artifactId>jsonpath_${scala.binary.version}</artifactId>
+				<version>0.7.0</version>
+			</dependency>
+
+			<!-- Connectors -->
+			<dependency>
+				<groupId>com.datastax.spark</groupId>
+				<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
+				<version>3.0.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mongodb.spark</groupId>
+				<artifactId>mongo-spark-connector_${scala.binary.version}</artifactId>
+				<version>3.0.0</version>
+			</dependency>
+
+			<!-- No couchbase Connector for Spark 3.0 yet, a PR is available but unmerged: https://github.com/couchbase/couchbase-spark-connector/pull/17 -->
+<!--			<dependency>-->
+<!--				<groupId>com.couchbase.client</groupId>-->
+<!--				<artifactId>spark-connector_${scala.binary.version}</artifactId>-->
+<!--				<version>2.4.0</version>-->
+<!--			</dependency>-->
+
+			<!--Disable till a Scala 2.12 version is provided-->
+			<!--dependency>
+				<groupId>org.elasticsearch</groupId>
+				<artifactId>elasticsearch-spark-20_${scala.binary.version}</artifactId>
+				<version>6.2.4</version>
+			</dependency-->
+
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
+		</dependency>
+	</dependencies>
+
+<!--
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>com.amashchenko.maven.plugin</groupId>
+				<artifactId>gitflow-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.scalatest</groupId>
+				<artifactId>scalatest-maven-plugin</artifactId>
+				<configuration>
+					<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+					<junitxml>.</junitxml>
+					<filereports>SANSA-DataLake-Tests.txt</filereports>
+				</configuration>
+				<executions>
+					<execution>
+						<id>test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+-->
+
+</project>

@@ -1,0 +1,120 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>sansa-datalake-spark_2.12</artifactId>
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-datalake-parent_2.12</artifactId>
+		<version>0.8.0-RC1</version>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-hive_${scala.binary.version}</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Scala -->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+		</dependency>
+
+		<!-- Jena API -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.gatling</groupId>
+			<artifactId>jsonpath_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.typesafe.play</groupId>
+			<artifactId>play_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Spark Connectors -->
+		<dependency>
+			<groupId>com.datastax.spark</groupId>
+			<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mongodb.spark</groupId>
+			<artifactId>mongo-spark-connector_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- No couchbase Connector for Spark 3.0 yet, a PR is available but unmerged: https://github.com/couchbase/couchbase-spark-connector/pull/17 -->
+<!--		<dependency>-->
+<!--			<groupId>com.couchbase.client</groupId>-->
+<!--			<artifactId>spark-connector_${scala.binary.version}</artifactId>-->
+<!--		</dependency>-->
+
+		<!--Disabled till a Scala 2.12 version is provided-->
+		<!--dependency> 
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch-spark-20_${scala.binary.version}</artifactId>
+		</dependency-->
+
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+          <groupId>com.typesafe.scala-logging</groupId>
+          <artifactId>scala-logging_${scala.binary.version}</artifactId>
+	    </dependency>
+
+	    <dependency>
+		    <groupId>ch.qos.logback</groupId>
+		    <artifactId>logback-classic</artifactId>
+		   <version>1.2.3</version>
+		    <scope>test</scope>
+	    </dependency>
+	</dependencies>
+
+
+<!--
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.scalastyle</groupId>
+				<artifactId>scalastyle-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+-->
+
+</project>

@@ -1,0 +1,109 @@
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix : <http://www.w3.org/2001/sw/DataAccess/tests/data-r2/basic/manifest#> .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix mf:     <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+@prefix qt:     <http://www.w3.org/2001/sw/DataAccess/tests/test-query#> .
+@prefix dawgt:   <http://www.w3.org/2001/sw/DataAccess/tests/test-dawg#> .
+
+<>  rdf:type mf:Manifest ;
+    rdfs:label "Issue-driven Regression Tests" ;
+    rdfs:comment "Issue-driven Regression Tests" ;
+    mf:entries
+    (
+      :issue14-q1
+      :issue34-q1
+      :issue43-q1
+      :issue44-q1
+    ) .
+
+
+# Disabled test because Sparqlify at present does not handle longs and decimals correctly
+#:issue14-q1 rdf:type mf:QueryEvaluationTest ;
+#    mf:name    "Issue 14 - Q1" ;
+#    dawgt:approval dawgt:Approved ;
+#    mf:action
+#         [ qt:query  <spo.rq> ;
+#           qt:data   <issue14.nt> ] ;
+#    mf:result  <> ;
+#    .
+
+:issue15-q1 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue15-q1.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue15-q1.srx> ;
+    .
+
+:issue15-q2 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue15-q2.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue15-q2.srx> ;
+    .
+
+:issue15-q3 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue15-q3.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue15-q3.srx> ;
+    .
+
+:issue15-q4 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue15-q4.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue15-q4.srx> ;
+    .
+
+:issue17-q1 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue17-q1.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue17-q1.srx> ;
+    .
+
+:issue17-q2 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue17-q2.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue17-q2.srx> ;
+    .
+
+:issue17-q3 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue17-q3.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue17-q3.srx> ;
+    .
+
+:issue17-q4 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue17-q4.rq> ;
+           qt:data   <issue43.nt> ] ;
+    mf:result  <issue17-q4.srx> ;
+    .
+
+
+:issue34-q1 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <select-spo.rq> ;
+           qt:data   <issue34.nt> ] ;
+    mf:result  <issue34.srx> ;
+    .
+
+:issue44-q1 rdf:type mf:QueryEvaluationTest ;
+    dawgt:approval dawgt:Approved ;
+    mf:action
+         [ qt:query  <issue44.rq> ;
+           qt:data   <issue44.nt> ] ;
+    mf:result  <issue44.srx> ;
+    .

@@ -1,0 +1,319 @@
+@prefix exp: <http://example.com/ns/>
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+@prefix dcterms: <http://purl.org/dc/terms/>
+@prefix schema: <http://schema.org/>
+@prefix gr: <http://purl.org/goodrelations/v1#>
+@prefix npg: <http://ns.nature.com/terms/>
+@prefix foaf: <http://xmlns.com/foaf/spec/> # correct http://xmlns.com/foaf/0.1/
+@prefix edm: <http://www.europeana.eu/schemas/edm/>
+@prefix rr: <http://www.w3.org/ns/r2rml#>
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>
+@prefix nosql: <http://purl.org/db/nosql#>
+@prefix bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+@prefix dc: <http://purl.org/dc/elements/1.1/>
+@prefix rev: <http://purl.org/stuff/rev#>
+
+<#ProducerMapping>
+	rml:logicalSource [
+		rml:source "hdfs://namenode:8020/data/datalake/data/producer.csv";
+		nosql:store nosql:csv
+	];
+	rr:subjectMap [
+		rr:template "http://example.com/{nr}";
+		rr:class bsbm:Producer
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate edm:country;
+		rr:objectMap [rml:reference "country"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate rdfs:label;
+		rr:objectMap [rml:reference "label"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:publisher;
+		rr:objectMap [rml:reference "publisher"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate foaf:homepage;
+		rr:objectMap [rml:reference "homepage"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate exp:publishDate;
+		rr:objectMap [rml:reference "publishDate"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate rdfs:comment;
+		rr:objectMap [rml:reference "comment"]
+	].
+
+<#ReviewMapping>
+	rml:logicalSource [
+		rml:source "hdfs://namenode:8020/data/datalake/data/review.csv";
+		nosql:store nosql:csv
+	];
+	rr:subjectMap [
+		rr:template "http://example.com/{nr}";
+		rr:class schema:Review
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate dc:publisher;
+		rr:objectMap [rml:reference "publisher"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate rev:text;
+		rr:objectMap [rml:reference "text"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:producer;
+		rr:objectMap [rml:reference "producer"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate rev:reviewer;
+		rr:objectMap [rml:reference "person"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:rating3;
+		rr:objectMap [rml:reference "rating3"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate dcterms:language;
+		rr:objectMap [rml:reference "language"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:reviewFor;
+		rr:objectMap [rml:reference "product"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate dc:title;
+		rr:objectMap [rml:reference "title"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:rating2;
+		rr:objectMap [rml:reference "rating2"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:reviewDate;
+		rr:objectMap [rml:reference "reviewDate"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate exp:publishDate;
+		rr:objectMap [rml:reference "publishDate"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:rating1;
+		rr:objectMap [rml:reference "rating1"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:rating4;
+		rr:objectMap [rml:reference "rating4"]
+	].
+
+<#PersonMapping>
+	rml:logicalSource [
+		rml:source "hdfs://namenode:8020/data/datalake/data/person.csv";
+		nosql:store nosql:csv
+	];
+	rr:subjectMap [
+		rr:template "http://example.com/{nr}";
+		rr:class foaf:Person
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate edm:country;
+		rr:objectMap [rml:reference "country"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate dc:publisher;
+		rr:objectMap [rml:reference "publisher"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate foaf:mbox_sha1sum;
+		rr:objectMap [rml:reference "mbox_sha1sum"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate exp:publishDate;
+		rr:objectMap [rml:reference "publishDate"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate foaf:name;
+		rr:objectMap [rml:reference "name"]
+	].
+
+<#OfferMapping>
+	rml:logicalSource [
+		rml:source "hdfs://namenode:8020/data/datalake/data/offer.csv";
+		nosql:store nosql:csv
+	];
+	rr:subjectMap [
+		rr:template "http://example.com/{_id}";
+		rr:class schema:Offer
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:validTo;
+		rr:objectMap [rml:reference "validTo"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate dc:publisher;
+		rr:objectMap [rml:reference "publisher"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:producer;
+		rr:objectMap [rml:reference "producer"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:product;
+		rr:objectMap [rml:reference "product"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate gr:validFrom;
+		rr:objectMap [rml:reference "validFrom"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:deliveryDays;
+		rr:objectMap [rml:reference "deliveryDays"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate exp:publishDate;
+		rr:objectMap [rml:reference "publishDate"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate npg:webpage;
+		rr:objectMap [rml:reference "offerWebpage"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:price;
+		rr:objectMap [rml:reference "price"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:vendor;
+		rr:objectMap [rml:reference "vendor"]
+	].
+
+<#ProductMapping>
+	rml:logicalSource [
+		rml:source "hdfs://namenode:8020/data/datalake/data/product.csv";
+		nosql:store nosql:csv
+	];
+	rr:subjectMap [
+		rr:template "http://example.com/{nr}";
+		rr:class bsbm:Product
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate rdfs:label;
+		rr:objectMap [rml:reference "label"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate dc:publisher;
+		rr:objectMap [rml:reference "publisher"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:producer;
+		rr:objectMap [rml:reference "producer"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyNumeric4;
+		rr:objectMap [rml:reference "propertyNum4"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyNumeric3;
+		rr:objectMap [rml:reference "propertyNum3"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyTextual6;
+		rr:objectMap [rml:reference "propertyTex6"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyTextual1;
+		rr:objectMap [rml:reference "propertyTex1"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyNumeric1;
+		rr:objectMap [rml:reference "propertyNum1"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyTextual4;
+		rr:objectMap [rml:reference "propertyTex4"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyNumeric5;
+		rr:objectMap [rml:reference "propertyNum5"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyNumeric2;
+		rr:objectMap [rml:reference "propertyNum2"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate exp:publishDate;
+		rr:objectMap [rml:reference "publishDate"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyTextual5;
+		rr:objectMap [rml:reference "propertyTex5"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyTextual3;
+		rr:objectMap [rml:reference "propertyTex3"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate rdfs:comment;
+		rr:objectMap [rml:reference "comment"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyNumeric6;
+		rr:objectMap [rml:reference "propertyNum6"]
+	];
+
+	rr:predicateObjectMap [
+		rr:predicate bsbm:productPropertyTextual2;
+		rr:objectMap [rml:reference "propertyTex2"]
+	].

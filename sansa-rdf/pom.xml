@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sansa-rdf-parent_2.12</artifactId>
+
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent_2.12</artifactId>
+        <version>0.8.0-RC1</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <name>SANSA Stack - RDF Layer - Parent</name>
+    <description>RDF Toolkit for Spark and Flink</description>
+
+    <developers>
+        <developer>
+            <name>Claus Stadler</name>
+            <url>http://aksw.org/ClausStadler</url>
+            <organization>AKSW</organization>
+            <organizationUrl>http://aksw.org</organizationUrl>
+            <roles>
+                <role>contributor</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Gezim Sejdiu</name>
+            <url>https://gezimsejdiu.github.io/</url>
+            <organization>SDA</organization>
+            <organizationUrl>http://sda.tech/</organizationUrl>
+            <roles>
+                <role>contributor</role>
+            </roles>
+        </developer>
+    </developers>
+
+
+    <modules>
+        <module>sansa-rdf-common</module>
+        <module>sansa-rdf-flink</module>
+        <module>sansa-rdf-spark</module>
+    </modules>
+
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

@@ -1,79 +1,113 @@
-# SANSA RDF
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-rdf-parent_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-rdf-parent_2.11)
-[![Build Status](https://ci.aksw.org/jenkins/job/SANSA%20RDF/job/develop/badge/icon)](https://ci.aksw.org/jenkins/job/SANSA%20RDF/job/develop/)
-[![Coverage Status](https://coveralls.io/repos/github/SANSA-Stack/SANSA-RDF/badge.svg?branch=develop)](https://coveralls.io/github/SANSA-Stack/SANSA-RDF?branch=develop)
+# SANSA-Stack
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent)
+[![Build Status](https://github.com/SANSA-Stack/SANSA-Stack/workflows/CI/badge.svg)](https://github.com/SANSA-Stack/SANSA-Stack/actions?query=workflow%3ACI)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
 
-## Description
-SANSA RDF is a library to read RDF files into [Spark](https://spark.apache.org) or [Flink](https://flink.apache.org). It allows files to reside in HDFS as well as in a local file system and distributes them across Spark RDDs/Datasets or Flink DataSets.
+This project comprises the whole Semantic Analytics Stack (SANSA). At a glance, it features the following functionality:
 
+* Ingesting RDF and OWL data in various formats into RDDs
+* Operators for working with RDDs and data frames of RDF data at various levels (triples, bindings, graphs, etc)
+* *Transformation* of RDDs to data frames and *partitioning* of RDDs into R2RML-mapped data frames
+* Distributed SPARQL querying over R2RML-mapped data frame partitions using RDB2RDF engines (Sparqlify & Ontop)
+* Enrichment of RDDs with inferences
+* Application of machine learning algorithms
 
-SANSA uses the RDF data model for representing graphs consisting of triples with subject, predicate and object. RDF datasets may contains multiple RDF graphs and record information about each graph, allowing any of the upper layers of sansa (Querying and ML) to make queries that involve information from more than one graph. Instead of directly dealing with RDF datasets, the target RDF datasets need to be converted into an RDD/DataSets of triples. We name such an RDD/DataSets a main dataset. The main dataset is based on an RDD/DataSets data structure, which is a basic building block of the Spark/Flink framework. RDDs/DataSets are in-memory collections of records that can be operated on in parallel on large clusters.
+For a detailed description of SANSA, please visit http://sansa-stack.net. 
+
+## Layers
+The SANSA project is structured in the following five layers developed in their respective sub-folders:
+
+* [RDF](sansa-rdf)
+* [OWL](sansa-owl)
+* [Query](sansa-query)
+* [Inference](sansa-inference)
+* [ML](sansa-ml)
+
+## Release Cycle
+A SANSA stack release is done every six months and consists of the latest stable versions of each layer at this point. This repository is used for organising those joint releases.
 
 ## Usage
 
-The following Scala code shows how to read an RDF file in N-Triples syntax (be it a local file or a file residing in HDFS) into a Spark RDD:
-```scala
-import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.riot.Lang
+### Spark
 
-val spark: SparkSession = ...
+#### Requirements
 
-val lang = Lang.NTRIPLES
-val triples = spark.rdf(lang)(path)
+We currently require a Spark 3.x.x with Scala 2.12 setup. A Spark 2.x version can be built from source based on the [spark2](https://github.com/SANSA-Stack/SANSA-Stack/tree/spark2) branch.
 
-triples.take(5).foreach(println(_))
+#### Release Version
+Some of our dependencies are not in Maven central (yet), so you need to add following Maven repository to your project POM file `repositories` section:
+```xml
+<repository>
+   <id>maven.aksw.internal</id>
+   <name>AKSW Release Repository</name>
+   <url>http://maven.aksw.org/archiva/repository/internal</url>
+   <releases>
+      <enabled>true</enabled>
+   </releases>
+   <snapshots>
+      <enabled>false</enabled>
+   </snapshots>
+</repository>
 ```
 
-### N-Triples loading options
+If you want to import the full SANSA Stack, please add the following Maven dependency to your project POM file:
+```xml
+<!-- SANSA Stack -->
+<dependency>
+   <groupId>net.sansa-stack</groupId>
+   <artifactId>sansa-stack-spark_2.12</artifactId>
+   <version>$LATEST_RELEASE_VERSION$</version>
+</dependency>
 ```
-NTripleReader.load(...)
+If you only want to use particular layers, just replace `$LAYER_NAME$` with the corresponding name of the layer
+```xml
+<!-- SANSA $LAYER_NAME$ layer -->
+<dependency>
+   <groupId>net.sansa-stack</groupId>
+   <artifactId>sansa-$LAYER_NAME$-spark_2.12</artifactId>
+   <version>$LATEST_RELEASE_VERSION$</version>
+</dependency>
 ```
-Loads N-Triples data from a file or directory into an RDD.
-The path can also contain multiple paths
-and even wildcards, e.g.
-`"/my/dir1,/my/paths/part-00[0-5],/another/dir,/a/specific/file"`
 
-#### Handling of errors
+#### SNAPSHOT Version
+While the release versions are available on Maven Central, latest SNAPSHOT versions have to be installed from source code:
+```bash
+git clone https://github.com/SANSA-Stack/SANSA-Stack.git
+cd SANSA-Stack
+```
+Then to build and install the full SANSA Spark stack you can do
+```bash
+./dev/mvn_install_stack_spark.sh 
+```
+or for a single layer `$LAYER_NAME$` you can do
+```bash
+mvn -am -DskipTests -pl :sansa-$LAYER_NAME$-spark_2.12 clean install 
+```
 
-By default, it stops once a parse error occurs, i.e. a `org.apache.jena.net.sansa_stack.rdf.spark.riot.RiotException` will be thrown
-generated by the underlying parser.
-
-The following options exist:
-- STOP the whole data loading process will be stopped and a `org.apache.jena.net.sansa_stack.rdf.spark.riot.RiotException` will be thrown
-- SKIP the line will be skipped but the data loading process will continue, an error message will be logged
-
-#### Handling of warnings
-
-If the additional checking of RDF terms is enabled, warnings during parsing can occur. For example,
-a wrong lexical form of a literal w.r.t. to its datatype will lead to a warning.
-
-The following can be done with those warnings:
-- IGNORE the warning will just be logged to the configured logger
-- STOP similar to the error handling mode, the whole data loading process will be stopped and a
-`org.apache.jena.net.sansa_stack.rdf.spark.riot.RiotException` will be thrown
-- SKIP similar to the error handling mode, the line will be skipped but the data loading process will continue. 
-In additon, an error message will be logged
-
-
-#### Checking of RDF terms
-Set whether to perform checking of NTriples - defaults to no checking.
-
-Checking adds warnings over and above basic syntax errors.
-This can also be used to turn warnings into exceptions if the option `stopOnWarnings` is set to STOP or SKIP.
-
-- IRIs - whether IRIs confirm to all the rules of the IRI scheme
-- Literals: whether the lexical form conforms to the rules for the datatype.
-- Triples: check slots have a valid kind of RDF term (parsers usually make this a syntax error anyway).
-
-
-See also the optional `errorLog` argument to control the output. The default is to log.
-
----
-An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#rdf-processing). 
-Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
+Alternatively, you can use the following Maven repository and add it to your project POM file `repositories` section:
+```xml
+<repository>
+   <id>maven.aksw.snapshots</id>
+   <name>AKSW Snapshot Repository</name>
+   <url>http://maven.aksw.org/archiva/repository/snapshots</url>
+   <releases>
+      <enabled>false</enabled>
+   </releases>
+   <snapshots>
+      <enabled>true</enabled>
+   </snapshots>
+</repository>
+```
+Then do the same as for the release version and add the dependency:
+```xml
+<!-- SANSA Stack -->
+<dependency>
+   <groupId>net.sansa-stack</groupId>
+   <artifactId>sansa-stack-spark_2.12</artifactId>
+   <version>$LATEST_SNAPSHOT_VERSION$</version>
+</dependency>
+```
 
 ## How to Contribute
 We always welcome new contributors to the project! Please see [our contribution guide](http://sansa-stack.net/contributing-to-sansa/) for more details on how to get started contributing to SANSA.
-

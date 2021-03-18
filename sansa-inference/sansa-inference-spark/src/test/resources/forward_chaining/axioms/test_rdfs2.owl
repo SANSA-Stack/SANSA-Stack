@@ -1,0 +1,37 @@
+Prefix(:=<http://ex.com/default#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+  <http://ex.com/ont/release/123/sample1.owl>
+
+  Declaration(Class(:Cls01))
+  Declaration(Class(:Cls02))
+  Declaration(Class(:Cls03))
+
+  Declaration(NamedIndividual(:indivA))
+  Declaration(NamedIndividual(:indivB))
+  Declaration(NamedIndividual(:indivC))
+  Declaration(NamedIndividual(:indivD))
+  Declaration(NamedIndividual(:indivE))
+  Declaration(NamedIndividual(:indivF))
+
+  Declaration(ObjectProperty(:objProp01))
+  Declaration(ObjectProperty(:objProp02))
+  ObjectPropertyDomain(:objProp02 :Cls01)
+
+  Declaration(DataProperty(:dataProp01))
+  Declaration(DataProperty(:dataProp02))
+  DataPropertyDomain(:dataProp02 :Cls02)
+
+  Declaration(AnnotationProperty(:annProp01))
+  Declaration(AnnotationProperty(:annProp02))
+  AnnotationPropertyDomain(:annProp02 :Cls03)
+
+  ObjectPropertyAssertion(:objProp01 :indivA :indivB)
+  ObjectPropertyAssertion(:objProp02 :indivB :indivC)
+
+  DataPropertyAssertion(:dataProp01 :indivC "ABCD")
+  DataPropertyAssertion(:dataProp02 :indivD "DCBA")
+
+  AnnotationAssertion(:annProp01 :indivE "wxyz")
+  AnnotationAssertion(:annProp02 :indivF "zyxw")
+)

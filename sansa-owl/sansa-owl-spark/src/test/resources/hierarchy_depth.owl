@@ -1,0 +1,47 @@
+Prefix(:=<http://ex.com/default#>)
+Prefix(foo:=<http://ex.com/foo#>)
+Prefix(bar:=<http://ex.com/bar#>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+
+Ontology(<http://ex.com/ont/sample1.owl>
+<http://ex.com/ont/release/123/sample1.owl>
+
+## declarations
+# class declarations
+Declaration(Annotation(foo:ann "some annotation") Class(bar:Cls1))
+Declaration(Class(bar:Cls2))
+# datatype declarations
+Declaration(Datatype(bar:dtype1))
+Declaration(Datatype(bar:dtype2))
+# object property declarations
+Declaration(ObjectProperty(bar:objProp1))
+Declaration(ObjectProperty(bar:objProp2))
+Declaration(ObjectProperty(bar:objProp3))
+Declaration(ObjectProperty(bar:objProp4))
+Declaration(ObjectProperty(bar:objProp5))
+# data property declarations
+Declaration(DataProperty(bar:dataProp1))
+Declaration(DataProperty(bar:dataProp2))
+Declaration(DataProperty(bar:dataProp3))
+Declaration(DataProperty(bar:dataProp4))
+Declaration(DataProperty(bar:dataProp5))
+
+## subClassOf axioms
+SubClassOf(bar:Cls1 bar:UnionCls)
+SubClassOf(bar:Cls2 bar:UnionCls)
+SubClassOf(bar:Cls3 bar:Cls2)
+SubClassOf(bar:Cls4 bar:Cls3)
+
+
+## subObject property axioms
+SubObjectPropertyOf(bar:objProp2 bar:objProp1)
+SubObjectPropertyOf(bar:objProp3 bar:objProp2)
+SubObjectPropertyOf(bar:objProp4 bar:objProp3)
+SubObjectPropertyOf(bar:objProp5 bar:objProp1)
+
+## subData property axioms
+SubDataPropertyOf(bar:dataProp2 bar:dataProp1)
+SubDataPropertyOf(bar:dataProp3 bar:dataProp2)
+SubDataPropertyOf(bar:dataProp4 bar:dataProp3)
+SubDataPropertyOf(bar:dataProp5 bar:dataProp1)
+)

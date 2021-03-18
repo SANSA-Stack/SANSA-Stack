@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-examples-parent_2.12</artifactId>
+		<version>0.8.0-RC1</version>
+	</parent>
+
+	<artifactId>sansa-examples-flink_2.12</artifactId>
+	<name>SANSA Examples - Apache Flink</name>
+	<description>SANSA examples for Apache Flink</description>
+
+	<dependencies>
+		<!-- SANSA RDF -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- SANSA OWL -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty-util</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- SANSA Inference -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- SANSA Query -->
+
+		<!-- SANSA ML -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Scala -->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+		</dependency>
+
+		<!-- Apache Flink -->
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-scala_${scala.binary.version}</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-clients_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>com.typesafe.scala-logging</groupId>
+			<artifactId>scala-logging_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Scopt -->
+		<dependency>
+			<groupId>com.github.scopt</groupId>
+			<artifactId>scopt_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.specs2</groupId>
+			<artifactId>specs2-core_${scala.binary.version}</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<!-- A profile that does everything correctly: We set the Flink dependencies 
+				to provided -->
+			<id>build-jar</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.flink</groupId>
+					<artifactId>flink-scala_${scala.binary.version}</artifactId>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.flink</groupId>
+					<artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.flink</groupId>
+					<artifactId>flink-clients_${scala.binary.version}</artifactId>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
+</project>

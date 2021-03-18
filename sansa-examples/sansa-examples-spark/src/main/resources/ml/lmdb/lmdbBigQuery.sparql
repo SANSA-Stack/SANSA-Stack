@@ -1,0 +1,596 @@
+SELECT ?movie ?movie__down_date ?movie__down_title ?movie__down_filmid ?movie__down_runtime ?movie__down_rdfschema_label ?movie__up_film_cut__down_runtime ?movie__up_actor__down_actor_name ?movie__down_initial_release_date ?movie__down_actor__down_actor_name ?movie__down_film_cut__down_runtime ?movie__up_country__down_country_id ?movie__up_writer__down_writer_name ?movie__up_actor__down_actor_actorid ?movie__down_writer__down_writer_name ?movie__down_country__down_country_id ?movie__up_country__down_country_name ?movie__down_actor__down_actor_actorid ?movie__up_genre__down_film_genre_name ?movie__up_genre__down_rdfschema_label ?movie__up_actor__down_rdfschema_label ?movie__down_country__down_country_name ?movie__up_producer__down_producer_name ?movie__up_writer__down_rdfschema_label ?movie__up_writer__down_writer_writerid ?movie__up_director__down_director_name ?movie__down_actor__down_rdfschema_label ?movie__down_genre__down_film_genre_name ?movie__down_genre__down_rdfschema_label ?movie__up_country__down_rdfschema_label ?movie__up_country__down_country_capital ?movie__down_writer__down_rdfschema_label ?movie__down_writer__down_writer_writerid ?movie__up_director__down_made__down_date ?movie__down_director__down_director_name ?movie__down_producer__down_producer_name ?movie__up_film_cut__down_rdfschema_label ?movie__up_producer__down_rdfschema_label ?movie__up_country__down_country_currency ?movie__up_director__down_rdfschema_label ?movie__up_director__down_made__down_title ?movie__down_country__down_rdfschema_label ?movie__down_country__down_country_capital ?movie__up_country__down_country_fips_code ?movie__up_country__down_country_languages ?movie__up_country__down_country_continent ?movie__down_director__down_made__down_date ?movie__up_director__down_made__down_filmid ?movie__down_film_cut__down_rdfschema_label ?movie__down_director__down_rdfschema_label ?movie__down_producer__down_rdfschema_label ?movie__down_country__down_country_currency ?movie__up_country__down_country_iso_alpha3 ?movie__up_country__down_country_areaInSqKm ?movie__up_country__down_country_population ?movie__up_country__down_country_iso_alpha2 ?movie__down_director__down_made__down_title ?movie__up_director__down_made__down_runtime ?movie__down_country__down_country_fips_code ?movie__down_country__down_country_languages ?movie__down_country__down_country_continent ?movie__up_country__down_country_iso_numeric ?movie__down_director__down_made__down_filmid ?movie__down_country__down_country_iso_alpha3 ?movie__down_country__down_country_areaInSqKm ?movie__down_country__down_country_population ?movie__down_country__down_country_iso_alpha2 ?movie__up_film_cut__down_film_cut_film_cutid ?movie__up_producer__down_producer_producerid ?movie__up_director__down_director_directorid ?movie__down_director__down_made__down_runtime ?movie__down_country__down_country_iso_numeric ?movie__up_genre__down_film_genre_film_genreid ?movie__down_film_cut__down_film_cut_film_cutid ?movie__down_director__down_director_directorid ?movie__down_producer__down_producer_producerid ?movie__down_genre__down_film_genre_film_genreid ?movie__up_director__down_made__down_rdfschema_label ?movie__down_director__down_made__down_rdfschema_label ?movie__up_director__down_made__down_sequel__down_date ?movie__up_director__down_made__down_sequel__down_title ?movie__up_director__down_made__down_sequel__down_filmid ?movie__up_director__down_made__down_sequel__down_runtime ?movie__up_director__down_made__down_initial_release_date ?movie__up_director__down_made__down_actor__down_actor_name ?movie__up_director__down_made__down_film_cut__down_runtime ?movie__down_director__down_made__down_initial_release_date ?movie__up_director__down_made__down_writer__down_writer_name ?movie__up_director__down_made__down_country__down_country_id ?movie__up_director__down_made__down_editor__down_editor_name ?movie__up_director__down_made__down_actor__down_actor_actorid ?movie__up_director__down_made__down_country__down_country_name ?movie__up_director__down_made__down_actor__down_rdfschema_label ?movie__up_director__down_made__down_genre__down_film_genre_name ?movie__up_director__down_made__down_genre__down_rdfschema_label ?movie__up_director__down_made__down_writer__down_rdfschema_label ?movie__up_director__down_made__down_writer__down_writer_writerid ?movie__up_director__down_made__down_producer__down_producer_name ?movie__up_director__down_made__down_sequel__down_rdfschema_label ?movie__up_director__down_made__down_film_cut__down_film_cut_note ?movie__up_director__down_made__down_editor__down_rdfschema_label ?movie__up_director__down_made__down_editor__down_editor_editorid ?movie__up_director__down_made__down_country__down_rdfschema_label ?movie__up_director__down_made__down_country__down_country_capital ?movie__up_director__down_made__down_film_cut__down_rdfschema_label ?movie__up_director__down_made__down_producer__down_rdfschema_label ?movie__up_director__down_made__down_country__down_country_currency ?movie__up_director__down_made__down_country__down_country_fips_code ?movie__up_director__down_made__down_country__down_country_languages ?movie__up_director__down_made__down_country__down_country_continent ?movie__up_director__down_made__down_country__down_country_iso_alpha3 ?movie__up_director__down_made__down_country__down_country_areaInSqKm ?movie__up_director__down_made__down_country__down_country_population ?movie__up_director__down_made__down_country__down_country_iso_alpha2 ?movie__up_director__down_made__down_country__down_country_iso_numeric ?movie__up_director__down_made__down_sequel__down_initial_release_date ?movie__up_director__down_made__down_film_cut__down_film_cut_film_cutid ?movie__up_director__down_made__down_producer__down_producer_producerid ?movie__up_director__down_made__down_genre__down_film_genre_film_genreid ?movie__up_director__down_made__down_cinematographer__down_rdfschema_label ?movie__up_director__down_made__down_music_contributor__down_rdfschema_label ?movie__up_director__down_made__down_cinematographer__down_cinematographer_name ?movie__up_director__down_made__down_music_contributor__down_music_contributor_name ?movie__up_director__down_made__down_cinematographer__down_cinematographer_cinematographerid ?movie__up_director__down_made__down_music_contributor__down_music_contributor_music_contributorid
+
+WHERE {
+	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+
+	OPTIONAL {
+		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
+	}
+	OPTIONAL {
+		?movie <http://purl.org/dc/terms/title> ?movie__down_title .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/filmid> ?movie__down_filmid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/runtime> ?movie__down_runtime .
+	}
+	OPTIONAL {
+		?movie <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/initial_release_date> ?movie__down_initial_release_date .
+	}
+	OPTIONAL {
+		?movie__up_actor <http://data.linkedmdb.org/movie/actor> ?movie .
+		?movie__up_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__up_actor__down_actor_name .
+	}
+	OPTIONAL {
+		?movie__up_genre <http://data.linkedmdb.org/movie/genre> ?movie .
+		?movie__up_genre <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_genre__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_actor <http://data.linkedmdb.org/movie/actor> ?movie .
+		?movie__up_actor <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_actor__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor .
+		?movie__down_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__down_actor__down_actor_name .
+	}
+	OPTIONAL {
+		?movie__up_film_cut <http://data.linkedmdb.org/movie/film_cut> ?movie .
+		?movie__up_film_cut <http://data.linkedmdb.org/movie/runtime> ?movie__up_film_cut__down_runtime .
+	}
+	OPTIONAL {
+		?movie__up_actor <http://data.linkedmdb.org/movie/actor> ?movie .
+		?movie__up_actor <http://data.linkedmdb.org/movie/actor_actorid> ?movie__up_actor__down_actor_actorid .
+	}
+	OPTIONAL {
+		?movie__up_writer <http://data.linkedmdb.org/movie/writer> ?movie .
+		?movie__up_writer <http://data.linkedmdb.org/movie/writer_name> ?movie__up_writer__down_writer_name .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_id> ?movie__up_country__down_country_id .
+	}
+	OPTIONAL {
+		?movie__up_writer <http://data.linkedmdb.org/movie/writer> ?movie .
+		?movie__up_writer <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_writer__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_genre <http://data.linkedmdb.org/movie/genre> ?movie .
+		?movie__up_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__up_genre__down_film_genre_name .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor .
+		?movie__down_actor <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_actor__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+		?movie__down_genre <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_genre__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor .
+		?movie__down_actor <http://data.linkedmdb.org/movie/actor_actorid> ?movie__down_actor__down_actor_actorid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/writer> ?movie__down_writer .
+		?movie__down_writer <http://data.linkedmdb.org/movie/writer_name> ?movie__down_writer__down_writer_name .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/film_cut> ?movie__down_film_cut .
+		?movie__down_film_cut <http://data.linkedmdb.org/movie/runtime> ?movie__down_film_cut__down_runtime .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_name> ?movie__up_country__down_country_name .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_country__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_id> ?movie__down_country__down_country_id .
+	}
+	OPTIONAL {
+		?movie__up_writer <http://data.linkedmdb.org/movie/writer> ?movie .
+		?movie__up_writer <http://data.linkedmdb.org/movie/writer_writerid> ?movie__up_writer__down_writer_writerid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/writer> ?movie__down_writer .
+		?movie__down_writer <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_writer__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+		?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__down_genre__down_film_genre_name .
+	}
+	OPTIONAL {
+		?movie__up_film_cut <http://data.linkedmdb.org/movie/film_cut> ?movie .
+		?movie__up_film_cut <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_film_cut__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_producer <http://data.linkedmdb.org/movie/producer> ?movie .
+		?movie__up_producer <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_producer__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_name> ?movie__down_country__down_country_name .
+	}
+	OPTIONAL {
+		?movie__up_producer <http://data.linkedmdb.org/movie/producer> ?movie .
+		?movie__up_producer <http://data.linkedmdb.org/movie/producer_name> ?movie__up_producer__down_producer_name .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_capital> ?movie__up_country__down_country_capital .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://data.linkedmdb.org/movie/director_name> ?movie__up_director__down_director_name .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_country__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/writer> ?movie__down_writer .
+		?movie__down_writer <http://data.linkedmdb.org/movie/writer_writerid> ?movie__down_writer__down_writer_writerid .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_currency> ?movie__up_country__down_country_currency .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_fips_code> ?movie__up_country__down_country_fips_code .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_languages> ?movie__up_country__down_country_languages .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_continent> ?movie__up_country__down_country_continent .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/film_cut> ?movie__down_film_cut .
+		?movie__down_film_cut <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_film_cut__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_director__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/producer> ?movie__down_producer .
+		?movie__down_producer <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_producer__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://data.linkedmdb.org/movie/director_name> ?movie__down_director__down_director_name .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/producer> ?movie__down_producer .
+		?movie__down_producer <http://data.linkedmdb.org/movie/producer_name> ?movie__down_producer__down_producer_name .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_capital> ?movie__down_country__down_country_capital .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_iso_alpha3> ?movie__up_country__down_country_iso_alpha3 .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_areaInSqKm> ?movie__up_country__down_country_areaInSqKm .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_population> ?movie__up_country__down_country_population .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_iso_alpha2> ?movie__up_country__down_country_iso_alpha2 .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_currency> ?movie__down_country__down_country_currency .
+	}
+	OPTIONAL {
+		?movie__up_genre <http://data.linkedmdb.org/movie/genre> ?movie .
+		?movie__up_genre <http://data.linkedmdb.org/movie/film_genre_film_genreid> ?movie__up_genre__down_film_genre_film_genreid .
+	}
+	OPTIONAL {
+		?movie__up_country <http://data.linkedmdb.org/movie/country> ?movie .
+		?movie__up_country <http://data.linkedmdb.org/movie/country_iso_numeric> ?movie__up_country__down_country_iso_numeric .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_fips_code> ?movie__down_country__down_country_fips_code .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_languages> ?movie__down_country__down_country_languages .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_continent> ?movie__down_country__down_country_continent .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_iso_alpha3> ?movie__down_country__down_country_iso_alpha3 .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_areaInSqKm> ?movie__down_country__down_country_areaInSqKm .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_population> ?movie__down_country__down_country_population .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_iso_alpha2> ?movie__down_country__down_country_iso_alpha2 .
+	}
+	OPTIONAL {
+		?movie__up_film_cut <http://data.linkedmdb.org/movie/film_cut> ?movie .
+		?movie__up_film_cut <http://data.linkedmdb.org/movie/film_cut_film_cutid> ?movie__up_film_cut__down_film_cut_film_cutid .
+	}
+	OPTIONAL {
+		?movie__up_producer <http://data.linkedmdb.org/movie/producer> ?movie .
+		?movie__up_producer <http://data.linkedmdb.org/movie/producer_producerid> ?movie__up_producer__down_producer_producerid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://data.linkedmdb.org/movie/director_directorid> ?movie__up_director__down_director_directorid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+		?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_film_genreid> ?movie__down_genre__down_film_genre_film_genreid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/country> ?movie__down_country .
+		?movie__down_country <http://data.linkedmdb.org/movie/country_iso_numeric> ?movie__down_country__down_country_iso_numeric .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/film_cut> ?movie__down_film_cut .
+		?movie__down_film_cut <http://data.linkedmdb.org/movie/film_cut_film_cutid> ?movie__down_film_cut__down_film_cut_film_cutid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://data.linkedmdb.org/movie/director_directorid> ?movie__down_director__down_director_directorid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/producer> ?movie__down_producer .
+		?movie__down_producer <http://data.linkedmdb.org/movie/producer_producerid> ?movie__down_producer__down_producer_producerid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://purl.org/dc/terms/date> ?movie__up_director__down_made__down_date .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://purl.org/dc/terms/title> ?movie__up_director__down_made__down_title .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://xmlns.com/foaf/0.1/made> ?movie__down_director__down_made .
+		?movie__down_director__down_made <http://purl.org/dc/terms/date> ?movie__down_director__down_made__down_date .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/filmid> ?movie__up_director__down_made__down_filmid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://xmlns.com/foaf/0.1/made> ?movie__down_director__down_made .
+		?movie__down_director__down_made <http://purl.org/dc/terms/title> ?movie__down_director__down_made__down_title .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/runtime> ?movie__up_director__down_made__down_runtime .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://xmlns.com/foaf/0.1/made> ?movie__down_director__down_made .
+		?movie__down_director__down_made <http://data.linkedmdb.org/movie/filmid> ?movie__down_director__down_made__down_filmid .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://xmlns.com/foaf/0.1/made> ?movie__down_director__down_made .
+		?movie__down_director__down_made <http://data.linkedmdb.org/movie/runtime> ?movie__down_director__down_made__down_runtime .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://xmlns.com/foaf/0.1/made> ?movie__down_director__down_made .
+		?movie__down_director__down_made <http://www.w3.org/2000/01/rdf-schema#label> ?movie__down_director__down_made__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/initial_release_date> ?movie__up_director__down_made__down_initial_release_date .
+	}
+	OPTIONAL {
+		?movie <http://data.linkedmdb.org/movie/director> ?movie__down_director .
+		?movie__down_director <http://xmlns.com/foaf/0.1/made> ?movie__down_director__down_made .
+		?movie__down_director__down_made <http://data.linkedmdb.org/movie/initial_release_date> ?movie__down_director__down_made__down_initial_release_date .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/sequel> ?movie__up_director__down_made__down_sequel .
+		?movie__up_director__down_made__down_sequel <http://purl.org/dc/terms/date> ?movie__up_director__down_made__down_sequel__down_date .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/sequel> ?movie__up_director__down_made__down_sequel .
+		?movie__up_director__down_made__down_sequel <http://purl.org/dc/terms/title> ?movie__up_director__down_made__down_sequel__down_title .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/sequel> ?movie__up_director__down_made__down_sequel .
+		?movie__up_director__down_made__down_sequel <http://data.linkedmdb.org/movie/filmid> ?movie__up_director__down_made__down_sequel__down_filmid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/sequel> ?movie__up_director__down_made__down_sequel .
+		?movie__up_director__down_made__down_sequel <http://data.linkedmdb.org/movie/runtime> ?movie__up_director__down_made__down_sequel__down_runtime .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/actor> ?movie__up_director__down_made__down_actor .
+		?movie__up_director__down_made__down_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__up_director__down_made__down_actor__down_actor_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/actor> ?movie__up_director__down_made__down_actor .
+		?movie__up_director__down_made__down_actor <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_actor__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/genre> ?movie__up_director__down_made__down_genre .
+		?movie__up_director__down_made__down_genre <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_genre__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/actor> ?movie__up_director__down_made__down_actor .
+		?movie__up_director__down_made__down_actor <http://data.linkedmdb.org/movie/actor_actorid> ?movie__up_director__down_made__down_actor__down_actor_actorid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/writer> ?movie__up_director__down_made__down_writer .
+		?movie__up_director__down_made__down_writer <http://data.linkedmdb.org/movie/writer_name> ?movie__up_director__down_made__down_writer__down_writer_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/film_cut> ?movie__up_director__down_made__down_film_cut .
+		?movie__up_director__down_made__down_film_cut <http://data.linkedmdb.org/movie/runtime> ?movie__up_director__down_made__down_film_cut__down_runtime .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/editor> ?movie__up_director__down_made__down_editor .
+		?movie__up_director__down_made__down_editor <http://data.linkedmdb.org/movie/editor_name> ?movie__up_director__down_made__down_editor__down_editor_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_id> ?movie__up_director__down_made__down_country__down_country_id .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/writer> ?movie__up_director__down_made__down_writer .
+		?movie__up_director__down_made__down_writer <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_writer__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/sequel> ?movie__up_director__down_made__down_sequel .
+		?movie__up_director__down_made__down_sequel <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_sequel__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/editor> ?movie__up_director__down_made__down_editor .
+		?movie__up_director__down_made__down_editor <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_editor__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/genre> ?movie__up_director__down_made__down_genre .
+		?movie__up_director__down_made__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__up_director__down_made__down_genre__down_film_genre_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_name> ?movie__up_director__down_made__down_country__down_country_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_country__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/writer> ?movie__up_director__down_made__down_writer .
+		?movie__up_director__down_made__down_writer <http://data.linkedmdb.org/movie/writer_writerid> ?movie__up_director__down_made__down_writer__down_writer_writerid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/editor> ?movie__up_director__down_made__down_editor .
+		?movie__up_director__down_made__down_editor <http://data.linkedmdb.org/movie/editor_editorid> ?movie__up_director__down_made__down_editor__down_editor_editorid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/film_cut> ?movie__up_director__down_made__down_film_cut .
+		?movie__up_director__down_made__down_film_cut <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_film_cut__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/producer> ?movie__up_director__down_made__down_producer .
+		?movie__up_director__down_made__down_producer <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_producer__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/producer> ?movie__up_director__down_made__down_producer .
+		?movie__up_director__down_made__down_producer <http://data.linkedmdb.org/movie/producer_name> ?movie__up_director__down_made__down_producer__down_producer_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_capital> ?movie__up_director__down_made__down_country__down_country_capital .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/film_cut> ?movie__up_director__down_made__down_film_cut .
+		?movie__up_director__down_made__down_film_cut <http://data.linkedmdb.org/movie/film_cut_note> ?movie__up_director__down_made__down_film_cut__down_film_cut_note .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_currency> ?movie__up_director__down_made__down_country__down_country_currency .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_fips_code> ?movie__up_director__down_made__down_country__down_country_fips_code .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_languages> ?movie__up_director__down_made__down_country__down_country_languages .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_continent> ?movie__up_director__down_made__down_country__down_country_continent .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_iso_alpha3> ?movie__up_director__down_made__down_country__down_country_iso_alpha3 .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_areaInSqKm> ?movie__up_director__down_made__down_country__down_country_areaInSqKm .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_population> ?movie__up_director__down_made__down_country__down_country_population .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_iso_alpha2> ?movie__up_director__down_made__down_country__down_country_iso_alpha2 .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/sequel> ?movie__up_director__down_made__down_sequel .
+		?movie__up_director__down_made__down_sequel <http://data.linkedmdb.org/movie/initial_release_date> ?movie__up_director__down_made__down_sequel__down_initial_release_date .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/country> ?movie__up_director__down_made__down_country .
+		?movie__up_director__down_made__down_country <http://data.linkedmdb.org/movie/country_iso_numeric> ?movie__up_director__down_made__down_country__down_country_iso_numeric .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/genre> ?movie__up_director__down_made__down_genre .
+		?movie__up_director__down_made__down_genre <http://data.linkedmdb.org/movie/film_genre_film_genreid> ?movie__up_director__down_made__down_genre__down_film_genre_film_genreid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/film_cut> ?movie__up_director__down_made__down_film_cut .
+		?movie__up_director__down_made__down_film_cut <http://data.linkedmdb.org/movie/film_cut_film_cutid> ?movie__up_director__down_made__down_film_cut__down_film_cut_film_cutid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/producer> ?movie__up_director__down_made__down_producer .
+		?movie__up_director__down_made__down_producer <http://data.linkedmdb.org/movie/producer_producerid> ?movie__up_director__down_made__down_producer__down_producer_producerid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/cinematographer> ?movie__up_director__down_made__down_cinematographer .
+		?movie__up_director__down_made__down_cinematographer <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_cinematographer__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/music_contributor> ?movie__up_director__down_made__down_music_contributor .
+		?movie__up_director__down_made__down_music_contributor <http://www.w3.org/2000/01/rdf-schema#label> ?movie__up_director__down_made__down_music_contributor__down_rdfschema_label .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/cinematographer> ?movie__up_director__down_made__down_cinematographer .
+		?movie__up_director__down_made__down_cinematographer <http://data.linkedmdb.org/movie/cinematographer_name> ?movie__up_director__down_made__down_cinematographer__down_cinematographer_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/music_contributor> ?movie__up_director__down_made__down_music_contributor .
+		?movie__up_director__down_made__down_music_contributor <http://data.linkedmdb.org/movie/music_contributor_name> ?movie__up_director__down_made__down_music_contributor__down_music_contributor_name .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/cinematographer> ?movie__up_director__down_made__down_cinematographer .
+		?movie__up_director__down_made__down_cinematographer <http://data.linkedmdb.org/movie/cinematographer_cinematographerid> ?movie__up_director__down_made__down_cinematographer__down_cinematographer_cinematographerid .
+	}
+	OPTIONAL {
+		?movie__up_director <http://data.linkedmdb.org/movie/director> ?movie .
+		?movie__up_director <http://xmlns.com/foaf/0.1/made> ?movie__up_director__down_made .
+		?movie__up_director__down_made <http://data.linkedmdb.org/movie/music_contributor> ?movie__up_director__down_made__down_music_contributor .
+		?movie__up_director__down_made__down_music_contributor <http://data.linkedmdb.org/movie/music_contributor_music_contributorid> ?movie__up_director__down_made__down_music_contributor__down_music_contributor_music_contributorid .
+	}
+}

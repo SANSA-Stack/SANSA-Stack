@@ -23,6 +23,9 @@ deptree.txt
 *.iml
 .idea
 /bin
+*.log*
+*.DS_Store
+*.swp
 
 # filename i use to store output of mvn dependency:tree ~Claus
 deptree.txt
@@ -30,3 +33,7 @@ deptree.txt
 tmp
 
 scalastyle-output.xml
+
+metastore_db
+spark-warehouse
+
