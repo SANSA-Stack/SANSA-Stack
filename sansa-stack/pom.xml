@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sansa-bench-spark_2.12</artifactId>
+    <artifactId>sansa-stack_2.12</artifactId>
 
     <parent>
         <groupId>net.sansa-stack</groupId>
@@ -10,17 +10,11 @@
         <version>0.8.0-RC2-SNAPSHOT</version>
     </parent>
 
-    <dependencies>
-        <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-rdf-spark_2.12</artifactId>
-        </dependency>
+    <packaging>pom</packaging>
 
-        <dependency>
-            <groupId>com.ibm.sparktc</groupId>
-            <artifactId>spark-bench_2.12</artifactId>
-        </dependency>
-
-    </dependencies>
+    <modules>
+        <module>sansa-stack-spark</module>
+        <module>sansa-stack-flink</module>
+    </modules>
 
 </project>

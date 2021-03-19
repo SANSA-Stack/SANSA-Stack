@@ -151,8 +151,17 @@ class SmartVectorAssembler extends Transformer{
     validateLabelColumn(cols = allColumns)
     validateFeatureColumns(cols = allColumns)
 
+    var wantedColumns = _featureColumns:+ _entityColumn
+    if (_labelColumn != null) {
+      wantedColumns = wantedColumns:+ _labelColumn
+    }
+    // wantedColumns.foreach(println(_))
+    val dfWantedColumns = df.select(wantedColumns.toSeq.map(col(_)): _*)
+
+    // dfWantedColumns.show(false)
+
     // replace strings by numeric values
-    var digitizedDf = df
+    var digitizedDf = dfWantedColumns
     val dfFeaturesSchemaMap = digitizedDf.schema.map(e => (e.name, e.dataType)).toMap
 
     for (columnName <- digitizedDf.columns) {
