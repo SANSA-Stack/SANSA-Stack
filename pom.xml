@@ -126,6 +126,7 @@
         <module>sansa-spark-cli</module>
         <module>sansa-debian-spark-cli</module>
         <module>sansa-bench-spark</module>
+	<module>sansa-stack</module>
     </modules>
 
 
@@ -431,6 +432,21 @@
                 </exclusions>
                 <!-- <classifier>${scala.compat.version}</classifier> -->
             </dependency>
+
+
+	    <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>2.3.0.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>2.3.0.1</version>
+            </dependency>
+
 
             <!-- Jena-SPARQL-API -->
             <dependency>
