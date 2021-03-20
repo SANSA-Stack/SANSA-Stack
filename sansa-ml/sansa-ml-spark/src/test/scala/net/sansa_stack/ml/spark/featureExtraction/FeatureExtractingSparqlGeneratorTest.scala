@@ -1,8 +1,9 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator.createSparql
+import net.sansa_stack.ml.spark.featureExtraction.FeatureExtractingSparqlGenerator.createSparql
 import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
@@ -46,10 +47,10 @@ class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteB
     implicit val nodeTupleEncoder = Encoders.kryo(classOf[(Node, Node, Node)])
 
     // first mini file:
-    val df = spark.read.rdf(Lang.TURTLE)(inputFilePath)
+    val ds = spark.rdf(Lang.TURTLE)(inputFilePath).toDS
 
     val (totalSparqlQuery: String, var_names: List[String]) = createSparql(
-      df = df,
+      ds = ds,
       seedVarName = seedVarName,
       seedWhereClause = whereClauseForSeed,
       maxUp = maxUp,

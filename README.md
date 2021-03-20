@@ -1,5 +1,5 @@
 # SANSA-Stack
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent)
+<!-- [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent) -->
 [![Build Status](https://github.com/SANSA-Stack/SANSA-Stack/workflows/CI/badge.svg)](https://github.com/SANSA-Stack/SANSA-Stack/actions?query=workflow%3ACI)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
