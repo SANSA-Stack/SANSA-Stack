@@ -42,7 +42,7 @@ class RdfPartitionerComplex(distinguishStringLiterals: Boolean = false, partitio
       case w if w == classOf[java.math.BigInteger] => TripleLayoutLong // xsd:integer
       case w if dtypeIri == XSD.date.getURI => TripleLayoutStringDate // v will be null for xsd:date, thus, we have to compare the datatype URI
       case w if dtypeIri == XSD.dateTime.getURI || dtypeIri == XSD.dateTimeStamp.getURI => TripleLayoutStringTimestamp
-      case w if dtypeIri == Geo.WKT => TripleLayoutStringGeometry
+      case w if dtypeIri == Geo.WKT || dtypeIri == Geo.GML => TripleLayoutStringGeometry
       // case w if(w == classOf[String]) => TripleLayoutString
       case w => TripleLayoutString
       // case _ => TripleLayoutStringDatatype

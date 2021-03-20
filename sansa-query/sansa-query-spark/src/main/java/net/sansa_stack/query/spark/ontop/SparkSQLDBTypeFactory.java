@@ -10,7 +10,6 @@ import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap;
 import it.unibz.inf.ontop.model.type.*;
 import it.unibz.inf.ontop.model.type.impl.DBTermTypeImpl;
 import it.unibz.inf.ontop.model.type.impl.DefaultSQLDBTypeFactory;
-import it.unibz.inf.ontop.model.type.impl.NonStringNonNumberNonBooleanNonDatetimeDBTermType;
 import it.unibz.inf.ontop.model.type.impl.StringDBTermType;
 import it.unibz.inf.ontop.model.vocabulary.XSD;
 import org.apache.commons.rdf.api.RDF;
@@ -120,7 +119,7 @@ class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
          * geo types
          */
         RDFDatatype geo = typeFactory.getDatatype(factory.createIRI(Geo.WKT));
-        map.put(GEOMETRY_STR, new SparkNonStringNonNumberNonBooleanNonDatetimeDBTermType(GEOMETRY_STR, rootAncestry, geo));
+        map.put(GEOMETRY_STR, new SparkGeometryDBTermType(GEOMETRY_STR, rootAncestry, geo));
 
         return map;
     }

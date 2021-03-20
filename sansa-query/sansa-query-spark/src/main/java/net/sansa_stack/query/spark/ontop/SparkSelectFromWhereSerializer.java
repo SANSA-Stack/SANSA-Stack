@@ -13,7 +13,12 @@ import it.unibz.inf.ontop.generation.serializer.SQLSerializationException;
 import it.unibz.inf.ontop.generation.serializer.impl.DefaultSelectFromWhereSerializer;
 import it.unibz.inf.ontop.generation.serializer.impl.SQLTermSerializer;
 import it.unibz.inf.ontop.model.term.*;
+import it.unibz.inf.ontop.model.term.functionsymbol.BooleanFunctionSymbol;
+import it.unibz.inf.ontop.model.term.functionsymbol.FunctionSymbol;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbol;
+import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.DefaultSimpleDBCastFunctionSymbol;
+import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.GeoDBBooleanFunctionSymbol;
+import it.unibz.inf.ontop.model.term.impl.NonGroundExpressionImpl;
 import it.unibz.inf.ontop.model.type.DBTermType;
 import it.unibz.inf.ontop.substitution.ImmutableSubstitution;
 import it.unibz.inf.ontop.utils.ImmutableCollectors;
@@ -249,6 +254,9 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
         }
 
         boolean inOrderBy = false;
+        boolean inBooleanGeoFunction = false;
+
+        @Override
         public String serialize(ImmutableTerm term, ImmutableMap<Variable, QualifiedAttributeID> columnIDs)
                 throws SQLSerializationException {
             if (term instanceof Variable) {
@@ -264,8 +272,30 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                         .orElseThrow(() -> new SQLSerializationException(String.format(
                                 "The variable %s does not appear in the columnIDs", term)));
             }
+            else if (term instanceof NonGroundExpressionImpl) {
+                BooleanFunctionSymbol functionSymbol = ((NonGroundExpressionImpl) term).getFunctionSymbol();
+                if (functionSymbol instanceof GeoDBBooleanFunctionSymbol) {
+                    inBooleanGeoFunction = true;
+                    String s = super.serialize(term, columnIDs);
+                    inBooleanGeoFunction = false;
+                    return s;
+                } else {
+                    return super.serialize(term, columnIDs);
+                }
+
+            } else if (term instanceof NonGroundFunctionalTerm) {
+                FunctionSymbol functionSymbol = ((NonGroundFunctionalTerm) term).getFunctionSymbol();
+                if (inBooleanGeoFunction && functionSymbol instanceof DefaultSimpleDBCastFunctionSymbol) {
+                    if (((DefaultSimpleDBCastFunctionSymbol) functionSymbol).getInputType().get().getName().equals("GEOMETRY") ) {
+                        return serialize(((NonGroundFunctionalTerm) term).getTerm(0), columnIDs);
+                    } else {
+                        return super.serialize(term, columnIDs);
+                    }
+                }
+            }
             return super.serialize(term, columnIDs);
         }
+
 
 //        @Override
 //        public String serialize(ImmutableTerm term, ImmutableMap<Variable, QualifiedAttributeID> columnIDs)
@@ -307,6 +337,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
             return serializeDBConstant((DBConstant) constant);
         }
 
+        @Override
         protected String serializeDBConstant(DBConstant constant) {
             DBTermType dbType = constant.getType();
 
@@ -319,6 +350,9 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                 case BOOLEAN:
                     return constant.getValue();
                 default:
+                    if (inBooleanGeoFunction) {
+                        return serializeGeometryConstant(constant.getValue());
+                    }
                     return serializeStringConstant(constant.getValue());
             }
         }
@@ -332,6 +366,10 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
         protected String serializeStringConstant(String constant) {
             // parent method + doubles backslashes
             return StringUtils.encode(super.serializeStringConstant(constant), BACKSLASH);
+        }
+
+        private String serializeGeometryConstant(String constant) {
+            return String.format("ST_GeomFromWKT('%s')", constant);
         }
 
 

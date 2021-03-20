@@ -7,16 +7,17 @@ import it.unibz.inf.ontop.com.google.common.collect.ImmutableTable;
 import it.unibz.inf.ontop.com.google.common.collect.Table;
 import it.unibz.inf.ontop.model.term.ImmutableTerm;
 import it.unibz.inf.ontop.model.term.TermFactory;
-import it.unibz.inf.ontop.model.term.functionsymbol.db.DBBooleanFunctionSymbol;
-import it.unibz.inf.ontop.model.term.functionsymbol.db.DBConcatFunctionSymbol;
-import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbol;
-import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbolSerializer;
+import it.unibz.inf.ontop.model.term.functionsymbol.db.*;
 import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.AbstractSQLDBFunctionSymbolFactory;
+import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.DefaultSimpleDBCastFunctionSymbol;
+import it.unibz.inf.ontop.model.term.functionsymbol.db.impl.Serializers;
 import it.unibz.inf.ontop.model.type.DBTermType;
 import it.unibz.inf.ontop.model.type.DBTypeFactory;
 import it.unibz.inf.ontop.model.type.TypeFactory;
 
 import java.util.function.Function;
+
+import static it.unibz.inf.ontop.model.type.impl.DefaultSQLDBTypeFactory.CHAR_STR;
 
 /**
  * @author Lorenz Buehmann
@@ -224,4 +225,17 @@ public class SparkSQLDBFunctionSymbolFactory extends AbstractSQLDBFunctionSymbol
     protected DBFunctionSymbol createEncodeURLorIRI(boolean preserveInternationalChars) {
         return new SparkEncodeURLorIRIFunctionSymbolImpl(dbStringType, preserveInternationalChars);
     }
+
+//    @Override
+//    protected DBTypeConversionFunctionSymbol createStringToStringCastFunctionSymbol(DBTermType inputType,
+//                                                                                    DBTermType targetType) {
+//        switch (inputType.getName()) {
+//            case GEO:
+//                return new DefaultSimpleDBCastFunctionSymbol(inputType, targetType,
+//                        Serializers.getCastSerializer(targetType));
+//            default:
+//                // Implicit cast
+//                return super.createStringToStringCastFunctionSymbol(inputType, targetType);
+//        }
+//    }
 }
