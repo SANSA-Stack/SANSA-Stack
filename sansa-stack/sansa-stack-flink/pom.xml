@@ -4,8 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-parent_2.12</artifactId>
-		<version>0.7.2-SNAPSHOT</version>
+		<artifactId>sansa-stack_2.12</artifactId>
+		<version>0.8.0-RC2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sansa-stack-flink_2.12</artifactId>

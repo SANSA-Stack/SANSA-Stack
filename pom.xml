@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-parent_2.12</artifactId>
-    <version>0.7.2-SNAPSHOT</version>
+    <version>0.8.0-RC2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - Parent</name>
 
@@ -68,9 +68,9 @@
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw-commons.version>0.8.16-SNAPSHOT</aksw-commons.version>
+        <aksw-commons.version>0.9.0</aksw-commons.version>
         <jena.version>3.17.0</jena.version>
-        <jsa.subversion>1-SNAPSHOT</jsa.subversion>
+        <jsa.subversion>1</jsa.subversion>
         <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
@@ -88,8 +88,8 @@
 
         <ontop.version>4.0.9-sansa</ontop.version>
 
-<!--        <guava.version>30.1-jre</guava.version>-->
-        <guava.version>14.0.1</guava.version>
+        <guava.version>30.1-jre</guava.version>
+        <!--        <guava.version>14.0.1</guava.version>-->
 
         <sansa.version>${project.version}</sansa.version>
         <!--		<scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>-->
@@ -126,6 +126,7 @@
         <module>sansa-spark-cli</module>
         <module>sansa-debian-spark-cli</module>
         <module>sansa-bench-spark</module>
+	<module>sansa-stack</module>
     </modules>
 
 
@@ -375,13 +376,13 @@
             <dependency>
                 <groupId>org.aksw.r2rml</groupId>
                 <artifactId>r2rml-jena-plugin</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.9.0</version>
             </dependency>
 
             <dependency>
                 <groupId>org.aksw.r2rml</groupId>
                 <artifactId>r2rml-jena-sql-transforms</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.9.0</version>
             </dependency>
 
 
@@ -431,6 +432,21 @@
                 </exclusions>
                 <!-- <classifier>${scala.compat.version}</classifier> -->
             </dependency>
+
+
+	    <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>2.3.0.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>2.3.0.1</version>
+            </dependency>
+
 
             <!-- Jena-SPARQL-API -->
             <dependency>
@@ -764,19 +780,6 @@
                 <version>1.14</version>
             </dependency>
 
-            <!-- GeoSpark -->
-            <dependency>
-                <groupId>org.datasyslab</groupId>
-                <artifactId>geospark</artifactId>
-                <version>1.3.2-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.datasyslab</groupId>
-                <artifactId>geospark-sql_3.0</artifactId>
-                <version>1.3.2-SNAPSHOT</version>
-            </dependency>
-
-
             <!-- Spark Testing -->
             <dependency>
                 <groupId>com.holdenkarau</groupId>
@@ -947,7 +950,7 @@
             <dependency>
                 <groupId>org.aksw.sparqlify</groupId>
                 <artifactId>sparqlify-core</artifactId>
-                <version>0.8.10-SNAPSHOT</version>
+                <version>0.9.0</version>
                 <exclusions>
                     <!-- <exclusion> <groupId>cglib</groupId> <artifactId>cglib</artifactId>
                         </exclusion> -->
@@ -1407,16 +1410,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-
-            <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
@@ -1427,7 +1420,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.aksw.maven.plugin</groupId>
+                <groupId>com.amashchenko.maven.plugin</groupId>
                 <artifactId>gitflow-maven-plugin</artifactId>
             </plugin>
 
@@ -1623,9 +1616,9 @@
 
                 <!-- Gitflow -->
                 <plugin>
-                    <groupId>org.aksw.maven.plugin</groupId>
+                    <groupId>com.amashchenko.maven.plugin</groupId>
                     <artifactId>gitflow-maven-plugin</artifactId>
-                    <version>1.12.1</version>
+                    <version>1.15.1</version>
                     <configuration>
                         <!--
                             <installProject>false</installProject>
@@ -1986,11 +1979,6 @@
     </build>
 
     <distributionManagement>
-        <repository>
-            <id>maven.aksw.internal</id>
-            <name>AKSW Release Repository</name>
-            <url>https://maven.aksw.org/archiva/repository/internal</url>
-        </repository>
         <snapshotRepository>
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>
@@ -2012,20 +2000,20 @@
     -->
 
     <repositories>
-	<!--
+        <!--
+            <repository>
+                <id>oss-sonatype</id>
+                <name>oss-sonatype</name>
+                <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+                <releases>
+                    <enabled>false</enabled>
+                </releases>
+        </repository>
+        -->
         <repository>
-            <id>oss-sonatype</id>
-            <name>oss-sonatype</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-	</repository>
-	-->
-	<repository>
             <id>oss-sonatype-releases</id>
             <name>oss-sonatype</name>
             <url>https://oss.sonatype.org/content/repositories/releases/</url>
@@ -2035,21 +2023,21 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
-	</repository>
+        </repository>
 
-	<!--
-        <repository>
-            <id>apache-snapshot</id>
-            <name>Apache repository (snapshots)</name>
-            <url>https://repository.apache.org/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-	</repository>
-	-->
+        <!--
+            <repository>
+                <id>apache-snapshot</id>
+                <name>Apache repository (snapshots)</name>
+                <url>https://repository.apache.org/content/repositories/snapshots/</url>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+                <releases>
+                    <enabled>false</enabled>
+                </releases>
+        </repository>
+        -->
         <repository>
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>
@@ -2060,7 +2048,7 @@
             <releases>
                 <enabled>false</enabled>
             </releases>
-    	</repository>
+        </repository>
 
         <repository>
             <id>maven.aksw.internal</id>
@@ -2098,6 +2086,32 @@
                 </pluginManagement>
             </build>
         </profile>
+
+
+        <profile>
+            <id>source</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>javadoc</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
 
         <!-- the profile used for deployment to Sonatype Maven repository -->
         <profile>
@@ -2155,28 +2169,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
 
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
 
                     <plugin>
@@ -2210,6 +2207,33 @@
                         </configuration>
                     </plugin>
 
+                </plugins>
+            </build>
+        </profile>
+
+
+        <!-- Profile to release to our public AKSW maven repository -->
+        <!-- It is still a public release therefore calling it 'release-internal' seems inadequate -->
+        <profile>
+            <id>release-aksw</id>
+            <distributionManagement>
+                <repository>
+                    <id>maven.aksw.internal</id>
+                    <url>http://maven.aksw.org/repository/internal</url>
+                </repository>
+            </distributionManagement>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
