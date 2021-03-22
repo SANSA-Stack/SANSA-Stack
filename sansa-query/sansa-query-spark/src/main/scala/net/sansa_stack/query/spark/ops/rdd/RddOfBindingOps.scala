@@ -33,9 +33,12 @@ object RddOfBindingOps {
   //  }
 
 
-  def selectWithSparql(rddOfDataset: RDD[_ <: Dataset], query: Query): ResultSetSpark = {
+  // FIXME This belongs to RddOfDatasetOps
+  def execSparqlSelect(rddOfDataset: RDD[_ <: Dataset], query: Query): ResultSetSpark = {
     val op = Algebra.compile(query)
 
+    // Set up an execution context
+    // TODO ... allow passing that as a parameter
     val cxt = ARQ.getContext.copy()
     cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime)
     val execCxt = new ExecutionContext(cxt, null, null, null)

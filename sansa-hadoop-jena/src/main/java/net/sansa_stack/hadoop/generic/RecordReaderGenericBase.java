@@ -1,6 +1,5 @@
 package net.sansa_stack.hadoop.generic;
 
-import com.google.common.base.StandardSystemProperty;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.util.*;
 import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
@@ -8,6 +7,7 @@ import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.aksw.jena_sparql_api.io.binseach.Seekable;
 import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
@@ -32,7 +32,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -301,7 +300,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 stream =
                         new SeekableInputStream(
                                 new InputStreamWithCloseIgnore(
-                                        InputStreamWithCloseLogging.wrap(tmp,
+                                        InputStreamWithCloseLogging.wrap(
+                                                new InputStreamWithZeroOffsetRead(tmp),
                                                 ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose)), tmp);
 
                 result = new AbstractMap.SimpleEntry<>(adjustedStart, adjustedEnd);
@@ -309,6 +309,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 // case _ => result = setStreamToInterval(start - 1, start -1)
                 // }
             } else {
+                // TODO Add support for non-splittable codecs: If the codec is non-splittable then we
+                //   just get a split across the whole file
+                //   and we just have to wrap it with the codec for decoding - so actually its easy...
                 throw new RuntimeException("Don't know how to handle codec: " + codec);
             }
         } else {
@@ -764,7 +767,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         if (writeOutSegments) {
             // String splitName = split.getPath().getName();
 
-            Path basePath = Paths.get(StandardSystemProperty.JAVA_IO_TMPDIR.value()).toAbsolutePath();
+            Path basePath = SystemUtils.getJavaIoTmpDir().toPath().toAbsolutePath();
 
             logger.info("Writing segment " + splitName + " " + splitStart + " to " + basePath);
 

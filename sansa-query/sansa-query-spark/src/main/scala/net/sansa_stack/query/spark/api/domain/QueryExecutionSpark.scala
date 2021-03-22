@@ -6,6 +6,6 @@ import org.apache.spark.rdd.RDD
 
 trait QueryExecutionSpark extends QueryExecution {
   def execSelectSpark(): ResultSetSpark
-  def execConstructSpark: RDD[org.apache.jena.graph.Triple]
-  def execConstructQuadsSpark: RDD[Quad]
+  def execConstructSpark(): RDD[org.apache.jena.graph.Triple]
+  def execConstructQuadsSpark(): RDD[Quad]
 }

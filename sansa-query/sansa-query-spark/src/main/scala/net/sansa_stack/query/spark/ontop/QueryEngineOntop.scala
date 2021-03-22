@@ -1,20 +1,18 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.util.Properties
-
-import scala.collection.JavaConverters._
-
-import it.unibz.inf.ontop.answering.reformulation.input.SPARQLQuery
-import it.unibz.inf.ontop.answering.resultset.OBDAResultSet
+import it.unibz.inf.ontop.com.google.common.base.Charsets
 import it.unibz.inf.ontop.com.google.common.collect.{ImmutableMap, ImmutableSortedSet}
+import it.unibz.inf.ontop.com.google.common.hash.Hashing
 import it.unibz.inf.ontop.exception.{OBDASpecificationException, OntopReformulationException}
-import it.unibz.inf.ontop.iq.IQ
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
-import it.unibz.inf.ontop.iq.node.ConstructionNode
-import it.unibz.inf.ontop.model.`type`.{DBTermType, TypeFactory}
+import it.unibz.inf.ontop.model.`type`.DBTermType
 import it.unibz.inf.ontop.model.atom.DistinctVariableOnlyDataAtom
 import it.unibz.inf.ontop.model.term._
-import it.unibz.inf.ontop.substitution.{ImmutableSubstitution, SubstitutionFactory}
+import it.unibz.inf.ontop.spec.dbschema.tools.DBMetadataExtractorAndSerializer
+import it.unibz.inf.ontop.substitution.SubstitutionFactory
+import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.utils.{ScalaUtils, SparkSessionUtils}
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
 import org.aksw.r2rml.jena.domain.api.TriplesMap
 import org.aksw.r2rml.jena.vocab.RR
@@ -26,9 +24,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
 import org.semanticweb.owlapi.model.OWLOntology
 
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.common.partition.utils.SQLUtils
-import net.sansa_stack.rdf.spark.utils.ScalaUtils
+import java.util.Properties
+import scala.collection.JavaConverters._
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -39,22 +36,13 @@ abstract class QueryRewrite(sparqlQuery: String, sqlQuery: String)
  * Wraps the result of query rewriting of Ontop.
  */
 case class OntopQueryRewrite(sparqlQuery: String,
-                             inputQuery: SPARQLQuery[_ <: OBDAResultSet],
                              sqlQuery: String,
-                             sqlSignature: ImmutableSortedSet[Variable],
-                             sqlTypeMap: ImmutableMap[Variable, DBTermType],
-                             constructionNode: ConstructionNode,
-                             answerAtom: DistinctVariableOnlyDataAtom,
-                             sparqlVar2Term: ImmutableSubstitution[ImmutableTerm],
-                             termFactory: TermFactory,
-                             typeFactory: TypeFactory,
-                             substitutionFactory: SubstitutionFactory,
-                             executableQuery: IQ
+                             rewriteInstruction: RewriteInstruction
                             ) extends QueryRewrite(sparqlQuery, sqlQuery) {}
 
 case class RewriteInstruction(sqlSignature: ImmutableSortedSet[Variable],
                               sqlTypeMap: ImmutableMap[Variable, DBTermType],
-                              anserAtom: DistinctVariableOnlyDataAtom,
+                              answerAtom: DistinctVariableOnlyDataAtom,
                               sparqlVar2Term: ImmutableMap[Variable, ImmutableTerm])
 
 /**
@@ -71,6 +59,7 @@ case class RewriteInstruction(sqlSignature: ImmutableSortedSet[Variable],
  * @param ontology an optional ontology
  */
 class OntopSPARQL2SQLRewriter(ontopSessionId: String,
+                              ontopProperties: Properties,
                               database: Option[String],
                               jdbcMetaData: Map[String, String],
                               val mappingsModel: Model,
@@ -80,17 +69,19 @@ class OntopSPARQL2SQLRewriter(ontopSessionId: String,
 
   private val logger = com.typesafe.scalalogging.Logger(classOf[OntopSPARQL2SQLRewriter])
 
-  // load Ontop properties
-  val ontopProperties = new Properties()
-  ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
-
   // the Ontop core
   val reformulationConfiguration = OntopConnection(ontopSessionId, database, mappingsModel, ontopProperties, jdbcMetaData, ontology)
+
   val termFactory = reformulationConfiguration.getTermFactory
   val typeFactory = reformulationConfiguration.getTypeFactory
   val queryReformulator = reformulationConfiguration.loadQueryReformulator
   val substitutionFactory = reformulationConfiguration.getInjector.getInstance(classOf[SubstitutionFactory])
   val inputQueryFactory = queryReformulator.getInputQueryFactory
+
+  // serialize the DB metadata
+  val mappingConfig = OntopUtils.createMappingConfig(ontopProperties, database)
+  val extractorAndSerializer = mappingConfig.getInjector.getInstance(classOf[DBMetadataExtractorAndSerializer])
+  val dbMetadata = extractorAndSerializer.extractAndSerialize()
 
 
   @throws[OBDASpecificationException]
@@ -107,8 +98,8 @@ class OntopSPARQL2SQLRewriter(ontopSessionId: String,
     val signature = nativeNode.getVariables
     val typeMap = nativeNode.getTypeMap
 
-    OntopQueryRewrite(sparqlQuery, inputQuery, sqlQuery, signature, typeMap, constructionNode,
-      executableQuery.getProjectionAtom, constructionNode.getSubstitution, termFactory, typeFactory, substitutionFactory, executableQuery)
+    OntopQueryRewrite(sparqlQuery, sqlQuery,
+      RewriteInstruction(signature, typeMap, executableQuery.getProjectionAtom, constructionNode.getSubstitution.getImmutableMap))
   }
 
   def close(): Unit = OntopConnection.getOrCreateConnection(database).close()
@@ -131,6 +122,12 @@ class QueryEngineOntop(val spark: SparkSession,
 
   private val logger = com.typesafe.scalalogging.Logger[QueryEngineOntop]
 
+  // read the Ontop properties
+  val ontopProperties = new Properties()
+  ontopProperties.load(getClass.getClassLoader.getResourceAsStream("ontop-spark.properties"))
+
+  val settings = OntopSettings(ontopProperties)
+
   private val sqlEscaper = new SqlEscaperBacktick()
 
   // set the current Spark SQL database if given
@@ -139,7 +136,8 @@ class QueryEngineOntop(val spark: SparkSession,
   }
 
   // get the JDBC metadata from the Spark tables
-  private val jdbcMetaData = spark.catalog.listTables().collect().map(t => {
+  logger.debug("computing Spark DB metadata ...")
+  val jdbcMetaData: Map[String, String] = spark.catalog.listTables().collect().map(t => {
     val fields = spark.table(sqlEscaper.escapeTableName(t.name)).schema.fields.map(f => sqlEscaper.escapeColumnName(f.name)).mkString(",")
     val keyCondition = s"PRIMARY KEY ($fields)"
     (t.name,
@@ -149,10 +147,11 @@ class QueryEngineOntop(val spark: SparkSession,
         + s", $keyCondition" // mark the table as duplicate free to avoid DISTINCT in every generated SQL query
     )
   }).toMap
+  logger.debug("finished computing Spark DB metadata")
 
   // if no ontology has been provided, we try to extract it from the dataset
   if (ontology.isEmpty) {
-    ontology = OntologyExtractor.extract(spark, mappingsModel)
+    ontology = None // OntologyExtractor.extract(spark, mappingsModel)
   }
 
   // we have to add separate mappings for each rdf:type in Ontop.
@@ -161,15 +160,19 @@ class QueryEngineOntop(val spark: SparkSession,
   // define an ID for the whole setup - this will be used for caching of the whole Ontop setup
   private val sessionId: String = generateSessionId()
 
-  private val sparql2sql = new OntopSPARQL2SQLRewriter(sessionId, database, jdbcMetaData, mappingsModel, ontology)
+  private val sparql2sql = new OntopSPARQL2SQLRewriter(sessionId, ontopProperties, database, jdbcMetaData, mappingsModel, ontology)
 
-  private def generateSessionId(): String = jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
+  private def generateSessionId(): String = {
+    val s = database.getOrElse("") + jdbcMetaData.map(_.productIterator.mkString(":")).mkString("|") + mappingsModel.hashCode()
+    Hashing.sha256.hashString(s, Charsets.UTF_8).toString
+  }
 
 
   /**
    * We have to add separate mappings for each rdf:type in Ontop.
    */
   private def expandMappingsWithTypes(model: Model): Unit = {
+    logger.debug("expanding mappings with rdf:type mappings ...")
     // get the rdf:type TripleMaps with o being an IRI
     val tms = R2rmlUtils.triplesMapsForPredicate(RDF.`type`, model)
       .filter(_.getPredicateObjectMaps.asScala.exists(_.getObjectMaps.asScala.exists(_.asTermMap().getTermType == RR.IRI.inModel(model))))
@@ -180,7 +183,6 @@ class QueryEngineOntop(val spark: SparkSession,
       val s = tm.getSubjectMap.getColumn
       val o = tm.getPredicateObjectMaps.asScala.head.getObjectMaps.asScala.head.asTermMap().getColumn // TODO we assume a single predicate-object map here
 
-      // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
       // we have to unwrap the quote from H2 escape and also apply Spark SQL escape
       val tn = SQLUtils.parseTableIdentifier(tableName)
       val to = sqlEscaper.escapeColumnName(ScalaUtils.unQuote(o))
@@ -198,10 +200,51 @@ class QueryEngineOntop(val spark: SparkSession,
         pom.addPredicate(RDF.`type`.inModel(model))
         pom.addObject(model.createResource(cls))
       })
+      logger.debug(s"finished expanding mappings with rdf:type mappings (added ${classes.length} class mappings)")
 
       model.removeAll(tm, null, null)
     })
   }
+
+  def prepare(): Unit = {
+    // in local mode, there won't be any executor
+    if (spark.sparkContext.isLocal) {
+      logger.debug(s"preparing Ontop setup on executors ...")
+      val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
+      val propertiesBC = spark.sparkContext.broadcast(ontopProperties)
+      val jdbcMetadataBC = spark.sparkContext.broadcast(jdbcMetaData)
+      val ontologyBC = spark.sparkContext.broadcast(ontology)
+      val idBC = spark.sparkContext.broadcast(sessionId)
+      val databaseBC = spark.sparkContext.broadcast(database)
+
+      val numExecutors = SparkSessionUtils.currentActiveExecutors(spark).size
+
+      if (numExecutors > 0) {
+        // we have to somehow achieve that
+        val data = spark.sparkContext.parallelize((1 to 100).toList).repartition(3 * numExecutors)
+
+        // force an Ontop setup
+        data.foreachPartition(_ => {
+          val id = idBC.value
+          val db = databaseBC.value
+          val mappings = mappingsBC.value
+          val properties = propertiesBC.value
+          val jdbcMetadata = jdbcMetadataBC.value
+          val ontology = ontologyBC.value
+          OntopConnection(
+            id,
+            db,
+            mappings,
+            properties,
+            jdbcMetadata,
+            ontology)
+        })
+        logger.debug(s"finished preparing Ontop setup on executors.")
+      }
+    }
+  }
+
+  if (settings.preInitializeWorkers) prepare()
 
   /**
    * Shutdown of the engine, i.e. all open resource will be closed.
@@ -233,8 +276,9 @@ class QueryEngineOntop(val spark: SparkSession,
     try {
       // translate to SQL query
       val queryRewrite = sparql2sql.createSQLQuery(query)
-      val sql = queryRewrite.sqlQuery.replace("\"", "`") // FIXME omit the schema in Ontop directly (it comes from H2 default schema)
-        .replace("`PUBLIC`.", "")
+      val sql = queryRewrite.sqlQuery
+        // .replace("\"", "`") // FIXME omit the schema in Ontop directly (it comes from H2 default schema)
+        // .replace("`PUBLIC`.", "")
       logger.info(s"SQL query:\n$sql")
 
       // execute SQL query
@@ -254,8 +298,6 @@ class QueryEngineOntop(val spark: SparkSession,
     }
   }
 
-
-
   /**
    * Computes the bindings of the query independently of the query type. This works,
    * because all non-SELECT queries can be reduced to SELECT queries with a post-processing.
@@ -265,70 +307,142 @@ class QueryEngineOntop(val spark: SparkSession,
    * @throws org.apache.spark.sql.AnalysisException if the query execution fails
    */
   def computeBindings(query: String): RDD[Binding] = {
-
     val df2Rewrite = executeDebug(query)
     val rewriteOpt = df2Rewrite._2
 
     rewriteOpt match {
       case Some(rewrite) =>
         val df = df2Rewrite._1
-
-        OntopConnection(sessionId, database, mappingsModel, sparql2sql.ontopProperties, jdbcMetaData, ontology)
-        val rwi = RewriteInstruction(rewrite.sqlSignature, rewrite.sqlTypeMap, rewrite.answerAtom, rewrite.sparqlVar2Term.getImmutableMap)
-
-        val output = KryoUtils.serialize(rwi, sessionId)
-        val outputBC = spark.sparkContext.broadcast(output)
-
-        val sparqlQueryBC = spark.sparkContext.broadcast(query)
-        val mappingsBC = spark.sparkContext.broadcast(sparql2sql.mappingsModel)
-        val propertiesBC = spark.sparkContext.broadcast(sparql2sql.ontopProperties)
-        val metaDataBC = spark.sparkContext.broadcast(jdbcMetaData)
-        val ontologyBC = spark.sparkContext.broadcast(ontology)
-        val idBC = spark.sparkContext.broadcast(sessionId)
-        val databaseBC = spark.sparkContext.broadcast(database)
-//        val rewriteBC = spark.sparkContext.broadcast(rwi)
-
-        implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
-        df
-          .coalesce(50)
-          .mapPartitions(iterator => {
-          //      val mapper = new OntopRowMapper2(mappingsBC.value, propertiesBC.value, metaDataBC.value, sparqlQueryBC.value, ontologyBC.value, idBC.value)
-          val mapper = new OntopRowMapper(
-            idBC.value,
-            databaseBC.value,
-            mappingsBC.value,
-            propertiesBC.value,
-            metaDataBC.value,
-            sparqlQueryBC.value,
-            ontologyBC.value,
-//            rewriteBC.value,
-            outputBC.value)
-          val it = iterator.map(mapper.map)
-          //      mapper.close()
-          it
-        }).rdd
-      case None => spark.sparkContext.emptyRDD
+        val rwi = rewrite.rewriteInstruction
+        if (settings.useLocalEvaluation) {
+          logger.warn("computing the bindings locally, i.e. in the driver. This can be time consuming of the result is large." +
+            "Please try the non-local evaluation in that case which keeps the data always distributed")
+          // compute bindings in driver
+          val bindings = evaluateBindingsLocal(df, query, rwi)
+          logger.debug(s"got $bindings bindings. Re-distributing on the cluster into ${spark.sparkContext.defaultParallelism} partitions (using 'spark.default.parallelism' value)")
+          // re-distribute
+          spark.sparkContext.parallelize(bindings)
+        } else {
+          evaluateBindingsRemote(df, query, rwi)
+        }
+      case None =>
+        spark.sparkContext.emptyRDD
     }
+  }
+
+  /**
+   * Computes the bindings locally in the driver. This works,
+   * because all non-SELECT queries can be reduced to SELECT queries with a post-processing.
+   *
+   * @param query the SPARQL query
+   * @return a list of solution bindings
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+   */
+  def computeBindingsLocal(query: String): Seq[Binding] = {
+    val df2Rewrite = executeDebug(query)
+    val rewriteOpt = df2Rewrite._2
+
+    rewriteOpt match {
+      case Some(rewrite) =>
+        val df = df2Rewrite._1
+        val rwi = rewrite.rewriteInstruction
+        val bindings = evaluateBindingsLocal(df, query, rwi)
+        bindings
+      case None =>
+        Seq()
+    }
+  }
+
+  private def evaluateBindingsRemote(rows: DataFrame, query: String, rewriteInstruction: RewriteInstruction): RDD[Binding] = {
+    val sparqlQueryBC = spark.sparkContext.broadcast(query)
+    val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
+    val propertiesBC = spark.sparkContext.broadcast(ontopProperties)
+    val jdbcMetadataBC = spark.sparkContext.broadcast(jdbcMetaData)
+    val ontologyBC = spark.sparkContext.broadcast(ontology)
+    val idBC = spark.sparkContext.broadcast(sessionId)
+    val databaseBC = spark.sparkContext.broadcast(database)
+    val rwiBC = spark.sparkContext.broadcast(rewriteInstruction)
+    val dbMetadataBC = spark.sparkContext.broadcast(sparql2sql.dbMetadata)
+
+    implicit val bindingEncoder: Encoder[Binding] = org.apache.spark.sql.Encoders.kryo[Binding]
+    var df = rows
+    if (settings.maxRowMappers > 0) {
+      df = df.coalesce(settings.maxRowMappers)
+    }
+    val rdd = df.mapPartitions(iterator => {
+      val id = idBC.value
+      val db = databaseBC.value
+      val mappings = mappingsBC.value
+      val properties = propertiesBC.value
+      val jdbcMetadata = jdbcMetadataBC.value
+      val ontology = ontologyBC.value
+      val dbMetadata = dbMetadataBC.value
+
+      OntopConnection(
+        id,
+        db,
+        mappings,
+        properties,
+        jdbcMetadata,
+        ontology)
+
+      val rwi = rwiBC.value
+
+      val mapper = new OntopRowMapper(
+        id,
+        db,
+        mappings,
+        properties,
+        jdbcMetadata,
+        sparqlQueryBC.value,
+        ontology,
+        rwi,
+        dbMetadata
+      )
+      val it = iterator.map(mapper.map)
+      //      mapper.close()
+      it
+    }).rdd
+
+    rdd
+  }
+
+  /**
+   * Computes the bindings of the query independently of the query type. This works,
+   * because all non-SELECT queries can be reduced to SELECT queries with a post-processing.
+   *
+   * @param query the SPARQL query
+   * @return an RDD of solution bindings
+   * @throws org.apache.spark.sql.AnalysisException if the query execution fails
+   */
+  private def evaluateBindingsLocal(rows: DataFrame, query: String, rewriteInstruction: RewriteInstruction): Seq[Binding] = {
+    val mapper = new OntopRowMapper(
+      sessionId,
+      database,
+      mappingsModel,
+      ontopProperties,
+      jdbcMetaData,
+      query,
+      ontology,
+      rewriteInstruction
+    )
+    rows.collect().map(mapper.map)
   }
 
 }
 
 object QueryEngineOntop {
 
-  def main(args: Array[String]): Unit = {
-    new OntopCLI().run(args)
-  }
-
   def apply(spark: SparkSession,
             databaseName: Option[String],
             mappingsModel: Model,
             ontology: Option[OWLOntology]): QueryEngineOntop = {
     // expand shortcuts of R2RML model
-    val newModel = ModelFactory.createDefaultModel()
-    newModel.add(mappingsModel)
-    R2rmlUtils.streamTriplesMaps(newModel).toList.foreach(R2rmlLib.expandShortcuts)
+    val expandedMappingsModel = ModelFactory.createDefaultModel()
+    expandedMappingsModel.add(mappingsModel)
+    R2rmlLib.streamTriplesMaps(expandedMappingsModel).forEach(tm => R2rmlLib.expandShortcuts(tm))
 
-    new QueryEngineOntop(spark, databaseName, newModel, ontology)
+    new QueryEngineOntop(spark, databaseName, expandedMappingsModel, ontology)
   }
 
 }

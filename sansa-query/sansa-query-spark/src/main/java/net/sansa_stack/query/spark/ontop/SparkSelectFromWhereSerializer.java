@@ -4,10 +4,10 @@ import com.google.inject.Inject;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableSortedSet;
-import it.unibz.inf.ontop.dbschema.DBParameters;
-import it.unibz.inf.ontop.dbschema.QualifiedAttributeID;
-import it.unibz.inf.ontop.dbschema.QuotedID;
-import it.unibz.inf.ontop.dbschema.RelationID;
+import it.unibz.inf.ontop.dbschema.*;
+import it.unibz.inf.ontop.dbschema.impl.MySQLCaseSensitiveTableNamesQuotedIDFactory;
+import it.unibz.inf.ontop.dbschema.impl.QuotedIDImpl;
+import it.unibz.inf.ontop.dbschema.impl.SQLStandardQuotedIDFactory;
 import it.unibz.inf.ontop.generation.algebra.*;
 import it.unibz.inf.ontop.generation.serializer.SQLSerializationException;
 import it.unibz.inf.ontop.generation.serializer.impl.DefaultSelectFromWhereSerializer;
@@ -17,7 +17,15 @@ import it.unibz.inf.ontop.model.term.functionsymbol.db.DBFunctionSymbol;
 import it.unibz.inf.ontop.model.type.DBTermType;
 import it.unibz.inf.ontop.substitution.ImmutableSubstitution;
 import it.unibz.inf.ontop.utils.ImmutableCollectors;
+import it.unibz.inf.ontop.utils.StringUtils;
+import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.commons.sql.codec.util.SqlCodecUtils;
+import org.aksw.r2rml.jena.sql.transform.SqlParseException;
+import org.aksw.r2rml.sql.transform.SqlUtils;
 
+import javax.annotation.Nonnull;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,10 +47,24 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
     public static boolean offsetEnabled = true;
     public static boolean orderByWorkaround = false;
 
+    public static QuotedIDFactory quotedIdFactory = new SparkQuotedIDFactory();
+
+    public static SqlCodec codecDoubleQuotes = SqlCodecUtils.createSqlCodecDoubleQuotes();
+    public static SqlCodec codecBackTicks = SqlCodecUtils.createSqlCodecForApacheSpark();
+
+    public static String reEncodeSpark(String rendering) {
+        try {
+            return SqlUtils.reencodeColumnName(rendering, SparkSelectFromWhereSerializer.codecDoubleQuotes, SparkSelectFromWhereSerializer.codecBackTicks);
+        } catch (SqlParseException e) {
+            e.printStackTrace();
+        }
+        return rendering;
+    }
+
     @Override
     public QuerySerialization serialize(SelectFromWhereWithModifiers selectFromWhere, DBParameters dbParameters) {
         return selectFromWhere.acceptVisitor(
-                new DefaultRelationVisitingSerializer(dbParameters.getQuotedIDFactory()) {
+                new DefaultRelationVisitingSerializer(quotedIdFactory) {
 
                     final Deque<Boolean> handleOffsetStack = new ArrayDeque<>();
                     String rowNumCol = "row_num";
@@ -86,7 +108,10 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                     }
 
                     @Override
-                    protected String serializeProjection(ImmutableSortedSet<Variable> projectedVariables, ImmutableMap<Variable, QuotedID> variableAliases, ImmutableSubstitution<? extends ImmutableTerm> substitution, ImmutableMap<Variable, QualifiedAttributeID> columnIDs) {
+                    protected String serializeProjection(ImmutableSortedSet<Variable> projectedVariables,
+                                                         ImmutableMap<Variable, QuotedID> variableAliases,
+                                                         ImmutableSubstitution<? extends ImmutableTerm> substitution,
+                                                         ImmutableMap<Variable, QualifiedAttributeID> columnIDs) {
                         variableAliasesStack.push(variableAliases);
                         String projection = super.serializeProjection(projectedVariables, variableAliases, substitution, columnIDs);
                         if (needOffsetProcessed()) {
@@ -179,40 +204,8 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                     }
 
                     @Override
-                    protected QuerySerialization visit(BinaryJoinExpression binaryJoinExpression, String operatorString) {
-                        QuerySerialization left = getSQLSerializationForChild(binaryJoinExpression.getLeft());
-                        QuerySerialization right = getSQLSerializationForChild(binaryJoinExpression.getRight());
-
-                        ImmutableMap<Variable, QualifiedAttributeID> columnIDs = ImmutableList.of(left,right).stream()
-                                .flatMap(m -> m.getColumnIDs().entrySet().stream())
-                                .collect(ImmutableCollectors.toMap());
-
-                        String onString = binaryJoinExpression.getFilterCondition()
-                                .map(e -> sqlTermSerializer.serialize(e, columnIDs))
-                                .map(s -> String.format("ON %s ", s))
-                                .orElse("ON 1 = 1 ");
-
-                        // Spark needs brackets as it can't handle chained ON statements
-                        // A join B join C on () on ()
-                        String rightStr = right.getString();
-                        if (!(binaryJoinExpression.getRight() instanceof SQLTable)) {
-                            rightStr = "(" + rightStr + ")";
-                        }
-                        String sql = String.format("%s\n %s \n%s %s", left.getString(), operatorString, rightStr, onString);
-                        return new QuerySerializationImpl(sql, columnIDs);
-                    }
-
-                    //this function is required in case at least one of the children is
-                    // SelectFromWhereWithModifiers expression
-                    private QuerySerialization getSQLSerializationForChild(SQLExpression expression) {
-                        if (expression instanceof SelectFromWhereWithModifiers) {
-                            QuerySerialization serialization = expression.acceptVisitor(this);
-                            RelationID alias = generateFreshViewAlias();
-                            String sql = String.format("(%s) %s", serialization.getString(), alias.getSQLRendering());
-                            return new QuerySerializationImpl(sql,
-                                    replaceRelationAlias(alias, serialization.getColumnIDs()));
-                        }
-                        return expression.acceptVisitor(this);
+                    protected String formatBinaryJoin(String operatorString, QuerySerialization left, QuerySerialization right, String onString) {
+                        return String.format("(%s\n %s \n%s %s)", left.getString(), operatorString, right.getString(), onString);
                     }
 
                     private ImmutableMap<Variable, QualifiedAttributeID> replaceRelationAlias(RelationID alias, ImmutableMap<Variable, QualifiedAttributeID> columnIDs) {
@@ -221,45 +214,55 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                                         Map.Entry::getKey,
                                         e -> new QualifiedAttributeID(alias, e.getValue().getAttribute())));
                     }
+
+                    @Override
+                    public QuerySerialization visit(SQLTable sqlTable) {
+                        RelationID alias = generateFreshViewAlias();
+                        RelationDefinition relation = sqlTable.getRelationDefinition();
+                        String relationRendering = relation.getAtomPredicate().getName();
+                        // we have to replace double quotes with backticks here
+                        relationRendering = SparkSelectFromWhereSerializer.reEncodeSpark(relationRendering);
+
+                        String sql = String.format("%s %s", relationRendering, alias.getSQLRendering());
+                        return new QuerySerializationImpl(sql, attachRelationAlias(alias, sqlTable.getArgumentMap().entrySet().stream()
+                                .collect(ImmutableCollectors.toMap(
+                                        // Ground terms must have been already removed from atoms
+                                        e -> (Variable) e.getValue(),
+                                        e -> relation.getAttribute(e.getKey() + 1).getID()))));
+                    }
+
+                    ImmutableMap<Variable, QualifiedAttributeID> attachRelationAlias(RelationID alias, ImmutableMap<Variable, QuotedID> variableAliases) {
+                        return variableAliases.entrySet().stream()
+                                .collect(ImmutableCollectors.toMap(
+                                        Map.Entry::getKey,
+                                        e -> new QualifiedAttributeID(alias, e.getValue())));
+                    }
                 }
         );
     }
 
-    protected static class SparkSQLTermSerializer implements SQLTermSerializer {
-
-        private final TermFactory termFactory;
+    protected static class SparkSQLTermSerializer extends DefaultSQLTermSerializer {
 
         protected SparkSQLTermSerializer(TermFactory termFactory) {
-            this.termFactory = termFactory;
+            super(termFactory);
         }
 
         @Override
         public String serialize(ImmutableTerm term, ImmutableMap<Variable, QualifiedAttributeID> columnIDs)
                 throws SQLSerializationException {
-            if (term instanceof Constant) {
-                return serializeConstant((Constant)term);
-            }
-            else if (term instanceof Variable) {
+            if (term instanceof Variable) {
                 return Optional.ofNullable(columnIDs.get(term))
-                        .map(QualifiedAttributeID::getSQLRendering)
+                        .map(a -> {
+                            // we have to replace double quotes with backticks here
+                            String rendering = a.getSQLRendering();
+                            rendering = SparkSelectFromWhereSerializer.reEncodeSpark(rendering);
+                            return rendering;
+                        })
+                        //                               .map(QualifiedAttributeID::getSQLRendering)
                         .orElseThrow(() -> new SQLSerializationException(String.format(
                                 "The variable %s does not appear in the columnIDs", term)));
             }
-            /*
-             * ImmutableFunctionalTerm with a DBFunctionSymbol
-             */
-            else {
-                return Optional.of(term)
-                        .filter(t -> t instanceof ImmutableFunctionalTerm)
-                        .map(t -> (ImmutableFunctionalTerm) t)
-                        .filter(t -> t.getFunctionSymbol() instanceof DBFunctionSymbol)
-                        .map(t -> ((DBFunctionSymbol) t.getFunctionSymbol()).getNativeDBString(
-                                t.getTerms(),
-                                t2 -> serialize(t2, columnIDs),
-                                termFactory))
-                        .orElseThrow(() -> new SQLSerializationException("Only DBFunctionSymbols must be provided " +
-                                "to a SQLTermSerializer"));
-            }
+            return super.serialize(term, columnIDs);
         }
 
         private String serializeConstant(Constant constant) {
@@ -292,9 +295,13 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
             return String.format("CAST(%s AS %s)", value, dbType.getCastName());
         }
 
+        private static final ImmutableMap<Character, String> BACKSLASH = ImmutableMap.of('\\', "\\\\");
+        @Override
         protected String serializeStringConstant(String constant) {
-            // duplicates single quotes, and adds outermost quotes
-            return "'" + constant.replace("'", "''") + "'";
+            // parent method + doubles backslashes
+            return StringUtils.encode(super.serializeStringConstant(constant), BACKSLASH);
         }
+
+
     }
 }

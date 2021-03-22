@@ -1,5 +1,5 @@
 # SANSA-Stack
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent)
+<!-- [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sansa-stack/sansa-parent) -->
 [![Build Status](https://github.com/SANSA-Stack/SANSA-Stack/workflows/CI/badge.svg)](https://github.com/SANSA-Stack/SANSA-Stack/actions?query=workflow%3ACI)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Twitter](https://img.shields.io/twitter/follow/SANSA_Stack.svg?style=social)](https://twitter.com/SANSA_Stack)
@@ -36,6 +36,21 @@ A SANSA stack release is done every six months and consists of the latest stable
 We currently require a Spark 3.x.x with Scala 2.12 setup. A Spark 2.x version can be built from source based on the [spark2](https://github.com/SANSA-Stack/SANSA-Stack/tree/spark2) branch.
 
 #### Release Version
+Some of our dependencies are not in Maven central (yet), so you need to add following Maven repository to your project POM file `repositories` section:
+```xml
+<repository>
+   <id>maven.aksw.internal</id>
+   <name>AKSW Release Repository</name>
+   <url>http://maven.aksw.org/archiva/repository/internal</url>
+   <releases>
+      <enabled>true</enabled>
+   </releases>
+   <snapshots>
+      <enabled>false</enabled>
+   </snapshots>
+</repository>
+```
+
 If you want to import the full SANSA Stack, please add the following Maven dependency to your project POM file:
 ```xml
 <!-- SANSA Stack -->

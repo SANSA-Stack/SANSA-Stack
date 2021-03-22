@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent_2.12</artifactId>
-		<version>0.7.2-SNAPSHOT</version>
+		<version>0.8.0-RC2-SNAPSHOT</version>
 	</parent>
 
 	<!-- <version>0.1.2</version> -->
@@ -85,6 +85,7 @@
 		</dependency>
 	</dependencies>
 
+<!--
 	<build>
 		<plugins>
 			<plugin>
@@ -141,5 +142,6 @@
 			</plugin>
 		</plugins>
 	</build>
+-->
 
 </project>

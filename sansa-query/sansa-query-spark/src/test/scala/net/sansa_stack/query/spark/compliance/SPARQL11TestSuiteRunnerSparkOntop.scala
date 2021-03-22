@@ -1,10 +1,17 @@
 package net.sansa_stack.query.spark.compliance
 
+import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
+import net.sansa_stack.query.spark.ontop.{JDBCDatabaseGenerator, QueryEngineFactoryOntop, QueryExecutionFactorySparkOntop}
+import net.sansa_stack.query.tests.SPARQLQueryEvaluationTest
+import org.apache.jena.query.Query
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.sparql.resultset.SPARQLResult
 import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
 
-import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
-import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
+import java.io.FileOutputStream
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 
 
 /**
@@ -28,12 +35,14 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "if01", "if02", // not supported in SPARQL transformation
         "in01", "in02",
         "iri01", // not supported in H2 transformation
-        "md5-01", "md5-02", // The SI does not support IRIs as ORDER BY conditions
+//        "md5-01", "md5-02", // The SI does not support IRIs as ORDER BY conditions
         "plus-1", "plus-2",
-        "sha1-01", "sha1-02", // SHA1 is not supported in H2
-        "sha512-01", "sha512-02", // SHA512 is not supported in H2
+        "tz", "timezone",
         "strdt01", "strdt02", "strdt03",
-        "strlang01", "strlang02", "strlang03").map(functionsManifest + _) ++
+        "strlang01", "strlang02", "strlang03",
+        "struuid01", "uuid01" // some tests that work on an empty model which we do not support in Spark query as the mappings would be empty (could be handled but
+        // most likely will never happen)
+      ).map(functionsManifest + _) ++
       // CONSTRUCT not supported yet
       Set("constructwhere01", "constructwhere02", "constructwhere03", // problem importing dataset
         "constructwhere04").map(constructManifest + _) ++
@@ -50,9 +59,10 @@ class SPARQL11TestSuiteRunnerSparkOntop
       // EXISTS not supported yet
       Set("exists01", "exists02", "exists03", "exists04", "exists05").map(existsManifest + _) ++
       // PROPERTY PATH
-      Set("pp02", // wrong result, unexpected binding // Not supported: ArbitraryLengthPath
-        "pp06", "pp12", "pp14", "pp16", "pp21", "pp23", "pp25", // Not supported: ZeroLengthPath
-        "pp28a", "pp34", "pp35", "pp36", "pp37").map(propertyPathManifest + _) ++
+      Set("pp02", // wrong result, unexpected binding
+        "pp06", "pp12", "pp14", "pp16", "pp21", "pp23", "pp25", // Not supported: ArbitraryLengthPath
+        "pp28a", "pp34", "pp35", "pp36", "pp37") // Not supported: ZeroLengthPath
+        .map(propertyPathManifest + _) ++
       // SERVICE not supported yet
       Set("service1", // no loading of the dataset
         "service2", "service3", "service4a", "service5", "service6", "service7").map(serviceManifest + _) ++
@@ -65,7 +75,38 @@ class SPARQL11TestSuiteRunnerSparkOntop
         "subquery14").map(subqueryManifest + _)
   }
 
-  //  override lazy val FILTER_KEEP = t => t.dataFile.contains("/aggregates") && !t.name.startsWith("CONCAT") // && t.name.startsWith("SUM")
+  // override lazy val FILTER_KEEP = t => t.name.startsWith("sq06") // || t.dataFile.contains("function")// && t.name.startsWith("SUM")
 
   override def getEngineFactory: QueryEngineFactory = new QueryEngineFactoryOntop(spark)
+
+//  KryoUtils.kryoLoggingEnabled = true
+
+  val writeFailedTestMetatData: Boolean = true
+
+  override def runTest(testCase: SPARQLQueryEvaluationTest, data: Model): Unit = {
+//    enableLoggingToFile(s"/tmp/kryo/kryo-trace-${testCase.name}.log")
+    try {
+      super.runTest(testCase, data)
+    } catch {
+      case e: Exception =>
+        if (writeFailedTestMetatData) {
+          val ontop = qef.asInstanceOf[QueryExecutionFactorySparkOntop].ontop
+          val id = testCase.name.replace(" ", "_")
+          val dir = System.getProperty("java.io.tmpdir")
+          val mappings = ontop.mappingsModel
+          mappings.write(new FileOutputStream(Paths.get(dir, s"$id.ttl").toFile), "TURTLE")
+          val jdbcCommand = JDBCDatabaseGenerator.generateJdbcCommand(ontop.jdbcMetaData)
+          val queryString = readQueryString(testCase.queryFile)
+          Files.write(Paths.get(dir, s"$id.sql"), jdbcCommand.getBytes(StandardCharsets.UTF_8))
+          Files.write(Paths.get(dir, s"$id.rq"), queryString.getBytes(StandardCharsets.UTF_8))
+        }
+
+        throw e
+    }
+  }
+
+  override def runQuery(query: Query, data: Model): SPARQLResult = {
+//    com.esotericsoftware.minlog.Log.info(s"******** RUNNING QUERY *********\n$query")
+    super.runQuery(query, data)
+  }
 }

@@ -37,21 +37,18 @@ object R2rmlUtils {
    * @param outModel            The output model
    * @param explodeLanguageTags If true then a mapping is generated for each language tag listed in the partition state.
    *                            Otherwise a generic language column is introduced
-   * @param escapeIdentifiers   if all SQL identifiers have to be escaped
    * @return The sequence of {@link TriplesMap}s added to the output model
    */
   def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                           partitionStates: Seq[RdfPartitionStateDefault],
                           outModel: Model,
-                          explodeLanguageTags: Boolean,
-                          escapeIdentifiers: Boolean): Seq[TriplesMap] = {
+                          explodeLanguageTags: Boolean): Seq[TriplesMap] = {
     partitionStates
       .flatMap(p => createR2rmlMappings(
         partitioner,
         p,
         outModel,
-        explodeLanguageTags,
-        escapeIdentifiers))
+        explodeLanguageTags))
   }
 
   /**
@@ -68,7 +65,6 @@ object R2rmlUtils {
    * @param outModel            The output model
    * @param explodeLanguageTags If true then a mapping is generated for each language tag listed in the partition state.
    *                            Otherwise a generic language column is introduced
-   * @param escapeIdentifiers   if all SQL identifiers have to be escaped
    * @return The sequence of {@link TriplesMap}s added to the output model
    */
   def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault],
@@ -77,8 +73,7 @@ object R2rmlUtils {
                           tableNameQualifier: Option[String] = None,
                           sqlCodec: SqlCodec,
                           outModel: Model,
-                          explodeLanguageTags: Boolean,
-                          escapeIdentifiers: Boolean): Seq[TriplesMap] = {
+                          explodeLanguageTags: Boolean): Seq[TriplesMap] = {
     partitionStates
       .flatMap(p => createR2rmlMappings(
         partitioner,
@@ -87,8 +82,7 @@ object R2rmlUtils {
         tableNameQualifier,
         sqlCodec,
         outModel,
-        explodeLanguageTags,
-        escapeIdentifiers))
+        explodeLanguageTags))
   }
 
   /**
@@ -103,23 +97,20 @@ object R2rmlUtils {
    * @param outModel            The output model
    * @param explodeLanguageTags If true then a mapping is generated for each language tag listed in the partition state.
    *                            Otherwise a generic language column is introduced
-   * @param escapeIdentifiers   if all SQL identifiers have to be escaped
    * @return The sequence of {@link TriplesMap}s added to the output model
    */
   def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault],
                           partitionState: RdfPartitionStateDefault,
                           outModel: Model,
-                          explodeLanguageTags: Boolean,
-                          escapeIdentifiers: Boolean): Seq[TriplesMap] = {
+                          explodeLanguageTags: Boolean): Seq[TriplesMap] = {
     createR2rmlMappings(
       partitioner,
       partitionState,
       p => SQLUtils.createDefaultTableName(p), // Map the partition to a name
       None,
-      SqlCodecUtils.createSqlCodecForApacheSpark,
+      SqlCodecUtils.createSqlCodecDefault,
       outModel,
-      explodeLanguageTags,
-      escapeIdentifiers)
+      explodeLanguageTags)
   }
 
   /**
@@ -136,7 +127,6 @@ object R2rmlUtils {
    * @param outModel            The output model
    * @param explodeLanguageTags If true then a mapping is generated for each language tag listed in the partition state.
    *                            Otherwise a generic language column is introduced
-   * @param escapeIdentifiers   if all SQL identifiers have to be escaped
    * @return The sequence of {@link TriplesMap}s added to the output model
    */
   def createR2rmlMappings(partitioner: RdfPartitioner[RdfPartitionStateDefault],
@@ -145,31 +135,27 @@ object R2rmlUtils {
                           tableNameQualifier: Option[String],
                           sqlCodec: SqlCodec,
                           outModel: Model,
-                          explodeLanguageTags: Boolean,
-                          escapeIdentifiers: Boolean): Seq[TriplesMap] = {
+                          explodeLanguageTags: Boolean): Seq[TriplesMap] = {
+
     val p = partitionState // Shorthand
     val t = partitioner.determineLayout(partitionState).schema
 
-    var attrNames = t.members.sorted.collect({ case m: MethodSymbol if m.isCaseAccessor => m.name.toString })
-    if (escapeIdentifiers) {
-      attrNames = attrNames.map(sqlCodec.forColumnName.encode)
-    }
+    val columnNames = t.members.sorted.collect({ case m: MethodSymbol if m.isCaseAccessor => m.name.toString })
+    val encodedColumnNames = columnNames.map(sqlCodec.forColumnName.encode)
 
     val predicateIri: String = partitionState.predicate
-    var tableName = extractTableName(partitionState)
-    if (escapeIdentifiers) {
-      tableName = sqlCodec.forTableName.encode(tableName)
-    }
+    val tableName = extractTableName(partitionState)
 
     // consider an optional table name qualifier and prepend it
-    tableName = tableNameQualifier.map(tnq => s"${sqlCodec.forTableName.encode(tnq)}.").getOrElse("") + tableName
+    val encodedTableName = tableNameQualifier
+      .map(tnq => sqlCodec.forSchemaName.encode(tnq) + ".").getOrElse("") +
+      sqlCodec.forTableName.encode(tableName)
 
     // if enabled, create mappings per language tag
-    if (explodeLanguageTags && attrNames.length == 3) {
-      val escapedColumns = if (escapeIdentifiers) attrNames else attrNames.map(sqlCodec.forColumnName.encode)
-      val projectedColumns = escapedColumns.slice(0, 2)
+    if (explodeLanguageTags && encodedColumnNames.length == 3) {
+      val projectedColumns = encodedColumnNames.slice(0, 2)
       val columnsSql = projectedColumns.mkString(", ")
-      val langColSql = escapedColumns(2)
+      val langColSql = encodedColumnNames(2)
 
       // if there is only one language tag, we can omit the SQL query with the FILTER on the lang column
       if (p.languages.size == 1) {
@@ -181,52 +167,54 @@ object R2rmlUtils {
 
         // create subject map
         val sm: SubjectMap = tm.getOrSetSubjectMap()
-        setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
+        setTermMapForNode(sm, 0, encodedColumnNames, p.subjectType, "", false)
 
         // and the object map
         val om: ObjectMap = pom.addNewObjectMap()
-        om.setColumn(escapedColumns(1))
+        om.setColumn(encodedColumnNames(1))
         if (p.languages.head.trim.nonEmpty) om.setLanguage(p.languages.head)
 
-        tm.getOrSetLogicalTable().asBaseTableOrView().setTableName(tableName)
+        tm.getOrSetLogicalTable().asBaseTableOrView().setTableName(encodedTableName)
 
         Seq(tm)
       } else {
         p.languages.map(lang => {
-          val tableNameSql = if (escapeIdentifiers) tableName else sqlCodec.forTableName.encode(tableName)
           val langSql = sqlCodec.forStringLiteral.encode(lang)
 
           val tm: TriplesMap = outModel.createResource.as(classOf[TriplesMap])
 
           // create subject map
           val sm: SubjectMap = tm.getOrSetSubjectMap()
-          setTermMapForNode(sm, 0, escapedColumns, p.subjectType, "", false)
+          setTermMapForNode(sm, 0, encodedColumnNames, p.subjectType, "", false)
 
           val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
           pom.addPredicate(predicateIri)
 
           val om: ObjectMap = pom.addNewObjectMap()
-          om.setColumn(escapedColumns(1))
+          om.setColumn(encodedColumnNames(1))
           if (lang.trim.nonEmpty) om.setLanguage(lang)
 
-          tm.getOrSetLogicalTable().asR2rmlView().setSqlQuery(s"SELECT $columnsSql FROM $tableNameSql WHERE $langColSql = $langSql")
+          tm.getOrSetLogicalTable().asR2rmlView().setSqlQuery(s"SELECT $columnsSql FROM $encodedTableName WHERE $langColSql = $langSql")
 
           tm
         }).toSeq
       }
     } else {
       val tm: TriplesMap = outModel.createResource.as(classOf[TriplesMap])
+
+      // create subject map
+      val sm: SubjectMap = tm.getOrSetSubjectMap()
+      setTermMapForNode(sm, 0, encodedColumnNames, p.subjectType, "", false)
+
+      // create predicate-object map
       val pom: PredicateObjectMap = tm.addNewPredicateObjectMap()
       pom.addPredicate(predicateIri)
 
-      val sm: SubjectMap = tm.getOrSetSubjectMap()
+      // create object map
       val om: ObjectMap = pom.addNewObjectMap()
+      setTermMapForNode(om, 1, encodedColumnNames, p.objectType, p.datatype, p.langTagPresent)
 
-      // create subject map
-      setTermMapForNode(sm, 0, attrNames, p.subjectType, "", false)
-      setTermMapForNode(om, 1, attrNames, p.objectType, p.datatype, p.langTagPresent)
-
-      tm.getOrSetLogicalTable().asBaseTableOrView().setTableName(tableName)
+      tm.getOrSetLogicalTable().asBaseTableOrView().setTableName(encodedTableName)
 
       Seq(tm)
     }

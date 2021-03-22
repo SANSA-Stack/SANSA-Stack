@@ -4,6 +4,7 @@ import net.sansa_stack.rdf.spark.model.rdd.{RddOfDatasetOps, RddOfModelOps, RddO
 import org.apache.jena.graph.Triple
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, RDFNode, Resource}
+import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -11,7 +12,7 @@ import scala.reflect.ClassTag
 package object ops {
   implicit class RddOfTriplesOpsImpl(rddOfTriples: RDD[Triple]) {
 
-    @inline def filterPredicates(predicateIris: Set[String]): RDD[Triple] = RddOfTripleOps.filterPredicates(rddOfTriples, predicateIris)
+    def filterPredicates(predicateIris: Set[String]): RDD[Triple] = RddOfTripleOps.filterPredicates(rddOfTriples, predicateIris)
   }
 
 
@@ -27,19 +28,19 @@ package object ops {
      * @param query
      * @return
      */
-    @inline def sparqlMap(query: Query): RDD[Model] = RddOfModelOps.sparqlMap(rddOfModels, query.toString())
+    def sparqlMap(query: Query): RDD[Model] = RddOfModelOps.sparqlMap(rddOfModels, query.toString())
 
-    @inline def sparqlFilterKeep(query: Query): RDD[_ <: Model] = sparqlFilter(query, false)
-    @inline def sparqlFilterDrop(query: Query): RDD[_ <: Model] = sparqlFilter(query, true)
-    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Model] = RddOfModelOps.sparqlFilter(rddOfModels, query.toString(), drop)
+    def sparqlFilterKeep(query: Query): RDD[_ <: Model] = sparqlFilter(query, false)
+    def sparqlFilterDrop(query: Query): RDD[_ <: Model] = sparqlFilter(query, true)
+    def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Model] = RddOfModelOps.sparqlFilter(rddOfModels, query.toString(), drop)
   }
 
   implicit class RddOfResourcesOpsImpl(rddOfResources: RDD[_ <: Resource]) {
-    @inline def mapAs[T <: RDFNode](clazz: Class[T]): RDD[T] = RddOfResourceOps.mapAs(ClassTag(clazz), rddOfResources, clazz)
-    @inline def models(): RDD[Model] = RddOfResourceOps.mapToModels(rddOfResources)
+    def mapAs[T <: RDFNode](clazz: Class[T]): RDD[T] = RddOfResourceOps.mapAs(ClassTag(clazz), rddOfResources, clazz)
+    def models(): RDD[Model] = RddOfResourceOps.mapToModels(rddOfResources)
   }
 
-  implicit class RddOfDatasetsOpsImpl(rddOfDatasets: RDD[Dataset]) {
+  implicit class RddOfDatasetsOpsImpl(rddOfDatasets: RDD[_ <: Dataset]) {
     /**
      * Execute an <b>extended</b> CONSTRUCT SPARQL query on an RDD of Datasets and
      * yield every constructed named graph or default graph as a separate item
@@ -49,13 +50,16 @@ package object ops {
      * @param query
      * @return
      */
-    @inline def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetOps.flatMapWithSparql(rddOfDatasets, query.toString())
+    def sparqlFlatMap(query: Query): RDD[Dataset] = RddOfDatasetOps.flatMapWithSparql(rddOfDatasets, query)
 
-    @inline def sparqlFilterKeep(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, false)
-    @inline def sparqlFilterDrop(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, true)
-    @inline def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetOps.filterWithSparql(rddOfDatasets, query.toString(), drop)
+    def sparqlFilterKeep(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, false)
+    def sparqlFilterDrop(query: Query): RDD[_ <: Dataset] = sparqlFilter(query, true)
+    def sparqlFilter(query: Query, drop: Boolean = false): RDD[_ <: Dataset] = RddOfDatasetOps.filterWithSparql(rddOfDatasets, query, drop)
 
-    @inline def mapToNaturalResources(): RDD[Resource] = RddOfDatasetOps.naturalResources(rddOfDatasets)
+    def mapToNaturalResources(): RDD[Resource] = RddOfDatasetOps.naturalResources(rddOfDatasets)
+
+    def flatMapToTriples(): RDD[Triple] = RddOfDatasetOps.flatMapToTriples(rddOfDatasets)
+    def flatMapToQuads(): RDD[Quad] = RddOfDatasetOps.flatMapToQuads(rddOfDatasets)
   }
 
 }

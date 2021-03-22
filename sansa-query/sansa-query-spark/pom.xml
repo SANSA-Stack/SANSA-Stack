@@ -4,11 +4,11 @@
 
     <artifactId>sansa-query-spark_2.12</artifactId>
 
-    <parent>
-        <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-query-parent_2.12</artifactId>
-        <version>0.7.2-SNAPSHOT</version>
-    </parent>
+	<parent>
+		<groupId>net.sansa-stack</groupId>
+		<artifactId>sansa-query-parent_2.12</artifactId>
+		<version>0.8.0-RC2-SNAPSHOT</version>
+	</parent>
 
     <properties>
         <version.owlapi.ontop>5.1.17</version.owlapi.ontop>
@@ -31,21 +31,24 @@
         </dependency>
 
         <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-test-resources${scala.version.suffix}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.10.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.10.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.10.1</version>
         </dependency>
 
         <dependency>
@@ -64,15 +67,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>apache-jena-libs</artifactId>
-            <type>pom</type>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>27.0.1-jre</version>
         </dependency>
 
         <dependency>
@@ -288,7 +284,6 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>chill_${scala.binary.version}</artifactId>
-            <version>0.9.3</version>
         </dependency>
 
         <dependency>
@@ -300,7 +295,6 @@
         <dependency>
             <groupId>com.github.scopt</groupId>
             <artifactId>scopt_${scala.binary.version}</artifactId>
-            <version>4.0.0</version>
         </dependency>
 
         <dependency>

@@ -1,13 +1,13 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
-import java.net.URI
-
-import com.google.common.base.Stopwatch
 import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
-import net.sansa_stack.spark.cli.cmd.{CmdSansaTrigMerge, CmdSansaTrigQuery}
-import org.aksw.commons.io.util.{StdIo, UriToPathUtils, UriUtils}
+import net.sansa_stack.spark.cli.cmd.CmdSansaTrigMerge
+import org.aksw.commons.io.util.StdIo
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
 import org.aksw.jena_sparql_api.utils.io.{StreamRDFDeferred, WriterStreamRDFBaseUtils}
+import org.apache.commons.lang3.exception.ExceptionUtils
+import org.apache.commons.lang3.time.StopWatch
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.jena.query.Dataset
 import org.apache.jena.riot.system.{StreamRDFOps, StreamRDFWriter, SyntaxLabels}
 import org.apache.jena.riot.writer.WriterStreamRDFBase
@@ -17,14 +17,9 @@ import org.apache.jena.shared.impl.PrefixMappingImpl
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
-import java.nio.file.{Files, Paths}
-import java.util.concurrent.TimeUnit
 
-import net.sansa_stack.hadoop.jena.locator.LocatorHdfs
-import org.apache.commons.lang3.exception.ExceptionUtils
-import org.apache.commons.lang3.time.StopWatch
-import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
-import org.apache.jena.riot.system.stream.StreamManager
+import java.net.URI
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -62,7 +57,6 @@ object CmdSansaTrigMergeImpl {
 
 
     val spark = SparkSession.builder
-      .master(cmd.sparkMaster)
       .appName(s"Trig Merge ( ${cmd.trigFiles} )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryoserializer.buffer.max", "1000") // MB
@@ -112,6 +106,7 @@ object CmdSansaTrigMergeImpl {
 
     import net.sansa_stack.rdf.spark.io._
 
+
     val initialRdd: RDD[Dataset] = spark.sparkContext.union(
       validPathSet
         .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
@@ -148,11 +143,23 @@ object CmdSansaTrigMergeImpl {
       writer.finish
       out.flush
     } else {
-      if (cmd.outFile != null) {
-        effectiveRdd.saveToFile(cmd.outFile, new PrefixMappingImpl(), outRdfFormat, cmd.outFolder)
-      } else { // if (cmd.outFolder != null) {
-        effectiveRdd.saveToFolder(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
-      }
+      effectiveRdd.configureSave()
+        .setGlobalPrefixMapping(new PrefixMappingImpl())
+        .setOutputFormat(outRdfFormat)
+        .setMapQuadsToTriplesForTripleLangs(true)
+        // .setAllowOverwriteFiles(true)
+        .setPartitionFolder(cmd.outFolder)
+        .setTargetFile(cmd.outFile)
+        // .setUseElephas(true)
+        .setDeletePartitionFolderAfterMerge(true)
+        .run()
+
+//      if (cmd.outFile != null) {
+//        // effectiveRdd.flatMapToQuads.save(cmd.outFile)
+//        effectiveRdd.saveToFile(cmd.outFile, new PrefixMappingImpl(), outRdfFormat, cmd.outFolder)
+//      } else { // if (cmd.outFolder != null) {
+//        effectiveRdd.saveToFolder(cmd.outFolder, new PrefixMappingImpl(), outRdfFormat)
+//      }
     }
 
     // effectiveRdd.saveAsFile("outfile.trig.bz2", prefixes, RDFFormat.TRIG_BLOCKS)

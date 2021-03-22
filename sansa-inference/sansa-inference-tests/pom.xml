@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>sansa-inference-parent_2.12</artifactId>
-        <groupId>net.sansa-stack</groupId>
-        <version>0.7.2-SNAPSHOT</version>
-    </parent>
-
-    <artifactId>sansa-inference-tests_2.12</artifactId>
-    <name>Inference API - Tests</name>
-    <description>Contains common data and utils for inference API testing</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>sansa-inference-parent_2.12</artifactId>
+    <groupId>net.sansa-stack</groupId>
+    <version>0.8.0-RC2-SNAPSHOT</version>
+  </parent>
+  <artifactId>sansa-inference-tests_2.12</artifactId>
+  <name>Inference API - Tests</name>
+  <description>Contains common data and utils for inference API testing</description>
 
     <dependencies>
         <dependency>

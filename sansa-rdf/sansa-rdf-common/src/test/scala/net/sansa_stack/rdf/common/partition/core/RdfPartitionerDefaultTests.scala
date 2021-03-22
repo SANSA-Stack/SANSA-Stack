@@ -54,13 +54,13 @@ class RdfPartitionerDefaultTests extends FunSuite {
       """
         | @prefix rr:    <http://www.w3.org/ns/r2rml#> .
         |
-        |[ rr:logicalTable        [ rr:tableName  "http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang" ] ;
-        |  rr:predicateObjectMap  [ rr:objectMap  [ rr:column      "o" ;
-        |                                           rr:languageColumn  "l"
+        |[ rr:logicalTable        [ rr:tableName  "\"http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang\"" ] ;
+        |  rr:predicateObjectMap  [ rr:objectMap  [ rr:column      "\"o\"" ;
+        |                                           rr:languageColumn  "\"l\""
         |                                         ] ;
         |                           rr:predicate  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
-        |  rr:subjectMap          [ rr:column    "s" ;
+        |  rr:subjectMap          [ rr:column    "\"s\"" ;
         |                           rr:termType  rr:IRI
         |                         ]
         |] .
@@ -71,7 +71,9 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val model = ModelFactory.createDefaultModel()
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, model, false, false)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, model, false)
+
+    // RDFDataMgr.write(System.out, model, RDFFormat.TURTLE_PRETTY)
 
     // There must be just a single triples map
     assert(triplesMaps.size == 1)
@@ -88,35 +90,35 @@ class RdfPartitionerDefaultTests extends FunSuite {
     RDFDataMgr.read(expected, new ByteArrayInputStream(
       """
         | @base          <http://www.w3.org/ns/r2rml#> .
-        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'fr'" ] ;
-        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "`o`" ;
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT \"s\", \"o\" FROM \"http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang\" WHERE \"l\" = 'fr'" ] ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "\"o\"" ;
         |                                           <#language>  "fr"
         |                                         ] ;
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
-        |  <#subjectMap>  [ <#column>  "`s`" ;
+        |  <#subjectMap>  [ <#column>  "\"s\"" ;
         |                   <#termType>  <#IRI>
         |                 ]
         |] .
         |
-        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'de'" ] ;
-        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "`o`" ;
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT \"s\", \"o\" FROM \"http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang\" WHERE \"l\" = 'de'" ] ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "\"o\"" ;
         |                                           <#language>  "de"
         |                                         ] ;
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
-        |  <#subjectMap>  [ <#column>  "`s`" ;
+        |  <#subjectMap>  [ <#column>  "\"s\"" ;
         |                   <#termType>  <#IRI>
         |                 ]
         |] .
         |
-        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT `s`, `o` FROM `http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang` WHERE `l` = 'en'" ] ;
-        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "`o`" ;
+        |[ <#logicalTable>  [ <#sqlQuery>  "SELECT \"s\", \"o\" FROM \"http://xmlns.com/foaf/0.1/givenName_XMLSchema#string_lang\" WHERE \"l\" = 'en'" ] ;
+        |  <#predicateObjectMap>  [ <#objectMap>  [ <#column>  "\"o\"" ;
         |                                           <#language>  "en"
         |                                         ] ;
         |                           <#predicate>  <http://xmlns.com/foaf/0.1/givenName>
         |                         ] ;
-        |  <#subjectMap>  [ <#column>  "`s`" ;
+        |  <#subjectMap>  [ <#column>  "\"s\"" ;
         |                   <#termType>  <#IRI>
         |                 ]
         |] .
@@ -129,9 +131,9 @@ class RdfPartitionerDefaultTests extends FunSuite {
 
     val actual = ModelFactory.createDefaultModel()
 
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true, true)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, actual, true)
 
-    RDFDataMgr.write(System.out, actual, RDFFormat.TURTLE_PRETTY)
+    // RDFDataMgr.write(System.out, actual, RDFFormat.TURTLE_PRETTY)
 
     assert(triplesMaps.size == languages.size)
 
@@ -144,7 +146,7 @@ class RdfPartitionerDefaultTests extends FunSuite {
       2, "http://www.w3.org/2001/XMLSchema#string", true, Set("en", "de", "fr"))
 
     val exportModel = ModelFactory.createDefaultModel()
-    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, exportModel, true, true)
+    val triplesMaps = R2rmlUtils.createR2rmlMappings(RdfPartitionerDefault, partitionState, exportModel, true)
 
      // val exportModel = exportModel // RdfPartitionImportExport.exportAsR2RML(RdfPartitionerDefault, partitionState, true)
     exportModel.write(System.out, "Turtle", "http://www.w3.org/ns/r2rml#")

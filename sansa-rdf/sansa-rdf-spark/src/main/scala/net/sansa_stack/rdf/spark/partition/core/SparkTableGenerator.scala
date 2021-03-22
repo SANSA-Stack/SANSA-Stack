@@ -8,6 +8,8 @@ import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfP
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import org.aksw.commons.codec.entity.util.EntityCodecUtils
 import org.aksw.commons.sql.codec.util.SqlCodecUtils
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException
+import org.apache.spark.sql.catalyst.analysis.DatabaseAlreadyExistsException
 
 /**
  * Creates Spark tables for given RDF partitions.
@@ -31,7 +33,9 @@ class SparkTableGenerator(spark: SparkSession,
 
   if (database.isDefined) {
     val dbName = EntityCodecUtils.harmonize(database.get, sqlCodec.forSchemaName)
-    spark.sql(s"CREATE DATABASE IF NOT EXISTS $dbName")
+    scala.util.control.Exception.ignoring(classOf[DatabaseAlreadyExistsException], classOf[org.apache.hadoop.hive.metastore.api.AlreadyExistsException])(
+      spark.sql(s"CREATE DATABASE IF NOT EXISTS $dbName")
+    )
     spark.sql(s"USE $dbName")
   }
 
@@ -136,10 +140,10 @@ class SparkTableGenerator(spark: SparkSession,
       df.createOrReplaceTempView(s"$escapedTableName") // register the dataframe as a view
 
       // if a database has been defined, we generate the table based on the qualified table identifier and fill it with the temp view
-      if (database.isDefined) {
-        spark.sql(s"DROP TABLE IF EXISTS $escapedQualifiedTableName")
-        spark.sql(s"CREATE TABLE $escapedQualifiedTableName AS SELECT * FROM $escapedTableName")
-      }
+//      if (database.isDefined) {
+//        spark.sql(s"DROP TABLE IF EXISTS $escapedQualifiedTableName")
+//        spark.sql(s"CREATE TABLE $escapedQualifiedTableName AS SELECT * FROM $escapedTableName")
+//      }
       if (persistent) {
         df.write
           .mode(SaveMode.Overwrite)

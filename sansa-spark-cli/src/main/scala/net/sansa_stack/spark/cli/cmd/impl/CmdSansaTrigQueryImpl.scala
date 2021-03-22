@@ -1,22 +1,22 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
-import java.nio.file.{Files, Path, Paths}
-import java.util
-import java.util.concurrent.TimeUnit
-import java.util.stream.Collectors
-
-import com.google.common.base.Stopwatch
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
 import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
 import net.sansa_stack.spark.cli.cmd.CmdSansaTrigQuery
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
-import org.apache.jena.ext.com.google.common.collect.Sets
+import org.apache.commons.lang3.exception.ExceptionUtils
+import org.apache.commons.lang3.time.StopWatch
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.jena.query.{Dataset, QueryFactory, Syntax}
 import org.apache.jena.riot.{Lang, ResultSetMgr}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
+
+import java.net.URI
+import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 
 /**
  * Called from the Java class [[CmdSansaTrigQuery]]
@@ -49,19 +49,7 @@ object CmdSansaTrigQueryImpl {
       .map(pathStr => Paths.get(pathStr).toAbsolutePath)
       .toList
 
-    val validPaths = trigFiles
-      .filter(Files.exists(_))
-      .filter(!Files.isDirectory(_))
-      .filter(Files.isReadable(_))
-      .toSet
-
-    val invalidPaths = trigFiles.toSet.diff(validPaths)
-    if (!invalidPaths.isEmpty) {
-      throw new IllegalArgumentException("The following paths are invalid (do not exist or are not a (readable) file): " + invalidPaths)
-    }
-
     val spark = SparkSession.builder
-      .master(cmd.sparkMaster)
       .appName(s"Trig Query ( $trigFiles )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
@@ -71,24 +59,57 @@ object CmdSansaTrigQueryImpl {
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
 
+    val hadoopConf = spark.sparkContext.hadoopConfiguration
+
+    val paths = cmd.trigFiles.asScala
+      .flatMap(pathStr => {
+        var r: Iterator[(FileSystem, Path)] = Iterator()
+        try {
+          val uri = new URI(pathStr)
+          // TODO Use try-with-resources for the filesystem?
+          val fs = FileSystem.get(uri, hadoopConf)
+          val path = new Path(pathStr)
+          fs.resolvePath(path)
+          r = Iterator((fs, path))
+        } catch {
+          case e: Throwable => logger.error(ExceptionUtils.getRootCauseMessage(e))
+        }
+        r
+      })
+      .filter { case (fs, file) => fs.isFile(file) }
+      .map(_._2)
+      .toList
+
+    /*
+    val validPaths = paths
+      .filter(_.getFileSystem(hadoopConf).get)
+      .filter(!fileSystem.isFile(_))
+      .toSet
+*/
+    val validPathSet = paths.toSet
+
+    val invalidPaths = paths.toSet.diff(validPathSet)
+    if (!invalidPaths.isEmpty) {
+      throw new IllegalArgumentException("The following paths are invalid (do not exist or are not a (readable) file): " + invalidPaths)
+    }
+
     import net.sansa_stack.rdf.spark.io._
 
     val initialRdd: RDD[Dataset] = spark.sparkContext.union(
-      validPaths
-      .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
+      validPathSet
+        .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 
     val effectiveRdd = if (cmd.makeDistinct) RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd)
       else initialRdd
 
-
-    val stopwatch = Stopwatch.createStarted()
+    val stopwatch = StopWatch.createStarted()
 
     val resultSetSpark: ResultSetSpark =
-      RddOfBindingOps.selectWithSparql(effectiveRdd, query)
+      RddOfBindingOps.execSparqlSelect(effectiveRdd, query)
 
     ResultSetMgr.write(System.out, resultSetSpark.collectToTable().toResultSet, outLang)
 
-    logger.info("Processing time: " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds")
+    logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds")
 
     0 // exit code
   }
