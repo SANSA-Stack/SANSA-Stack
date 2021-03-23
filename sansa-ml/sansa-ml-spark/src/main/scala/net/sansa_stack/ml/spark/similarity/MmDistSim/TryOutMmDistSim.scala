@@ -261,6 +261,23 @@ object TryOutMmDistSim {
 
     println(f"collectedDataFrame size ${collectedDataFrame.count()}")
 
+    println("Feature Identification")
+    /*
+    In this step we expect a dataframe with column for features and labels and so on
+    we want to resuta map where for each column it is defined, what kind of feature it is
+    possible features
+    - single element
+      - numeric
+      - boolean
+      - categorical
+      - nlp
+    - multiple elemnt
+      - categorical feature set
+      - nlps
+      - numeric distribution
+      - numbers as category ids
+     */
+
 
     println("\nCREATE CROSS JOINED DF")
     /*
