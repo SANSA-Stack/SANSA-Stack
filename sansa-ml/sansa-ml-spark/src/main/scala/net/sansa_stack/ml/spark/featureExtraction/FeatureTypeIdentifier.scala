@@ -1,12 +1,14 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
+import com.sun.xml.bind.v2.runtime.unmarshaller.XsiNilLoader.Single
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.sys.JenaSystem
+import org.apache.spark.ml.feature.{StopWordsRemover, StringIndexer, Tokenizer, Word2Vec, Word2VecModel}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{col, collect_list, collect_set, concat_ws, count, max, min, size}
+import org.apache.spark.sql.functions.{col, collect_list, collect_set, concat_ws, count, explode, max, min, size, split}
 import org.apache.spark.sql.types.{DataType, DoubleType, StringType}
 
 import scala.collection.mutable
@@ -64,7 +66,7 @@ object FeatureTypeIdentifier {
         |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
         |
         | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
-        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
+        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Drama"
         |
         |	OPTIONAL {
         |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
@@ -187,12 +189,18 @@ object FeatureTypeIdentifier {
         val numberDistinctValues: Int = twoColumnDf.select(currentFeatureColumnNameString).distinct.count.toInt
         val isListOfEntries: Boolean = if (maxNumberOfElements > 1) true else false
         val availability: Double = collapsedTwoColumnDfwithSize.select("size").filter(col("size") > 0).count().toDouble / numberRows.toDouble
+        /* val medianAlphaRatio: Double = datatype match {
+          case StringType => twoColumnDf.
+          case _ => 0
+        }
+        TODO nlp identification
+         */
 
-        val isCategorical: Boolean = if (numberDistinctValues.toDouble / numberRows.toDouble < 0.001) true else false
+        val isCategorical: Boolean = if ((numberDistinctValues.toDouble / numberRows.toDouble) < 0.1) true else false
 
         var featureType: String = ""
         if (isListOfEntries) featureType += "ListOf_" else featureType += "Single_"
-        if (isCategorical) featureType += "categorical_" else featureType += "nonCategorical_"
+        if (isCategorical) featureType += "Categorical_" else featureType += "NonCategorical_"
         featureType += datatype.toString.split("Type")(0)
 
         val featureSummary: Map[String, Any] = Map(
@@ -220,69 +228,144 @@ object FeatureTypeIdentifier {
               .select(keyColumnNameString, currentFeatureColumnNameString)
           }
         }
-        collapsedDataframe = collapsedDataframe.join(joinableDf, keyColumnNameString)
+        collapsedDataframe = collapsedDataframe.join(joinableDf.withColumnRenamed(currentFeatureColumnNameString, f"${currentFeatureColumnNameString}(${featureType})"), keyColumnNameString)
       }
     )
     collapsedDataframe.show(false)
     featureDescriptions.foreach(println(_))
 
+    val collectedFeatureColumns: Seq[String] = List(collapsedDataframe.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
+
     /*
-    // collaps features into arrays instead of having multiple rows
-    println("\nCOLLAPS FEATURES TO SETS")
-    var collectedDataFrame = queryResultDf
+    Strategies
+    Boolean -> Double
+    BooleanList -> DoubleList
+    Double -> Double
+    DoubleList -> DoubleList
+    CategoricalString -> IndexedString
+    CategoricalStringList -> IndexedStringList
+    NlpString -> Word2VecDoubleVector
+    NlpStringList -> Word2VecDoubleVectorList
+     */
+    var fullDigitizedDf: DataFrame = collapsedDataframe
       .select(keyColumnNameString)
-      .dropDuplicates()
-      .cache()
 
-    featureColumns.foreach(
-      currentFeatureColumnNameString =>
-        collectedDataFrame = collectedDataFrame.join(
-          queryResultDf
-            .select(keyColumnNameString, currentFeatureColumnNameString)
-            .groupBy(keyColumnNameString)
-            .agg(collect_set(currentFeatureColumnNameString))
-            .as(currentFeatureColumnNameString),
-          keyColumnNameString)
-    )
+    for (featureColumn <- collectedFeatureColumns) {
 
-    println(collectedDataFrame.schema)
-    collectedDataFrame.show(false)
+      println(featureColumn)
+      val featureType = featureColumn.split("\\(")(1).split("\\)")(0)
+      val featureName = featureColumn.split("\\(")(0)
+      println(featureType)
 
-    println("Feature Identification")
-    /*
-    In this step we expect a dataframe with column for features and labels and so on
-    we want to resuta map where for each column it is defined, what kind of feature it is
-    possible features
-    - single element
-      - numeric
-      - boolean
-      - categorical
-      - nlp
-    - multiple elemnt
-      - categorical feature set
-      - nlps
-      - numeric distribution
-      - numbers as category ids
-     */
-    // for this purpose we iterate over the columns
-    for (collapsedColumn <- collectedDataFrame.columns) {
-      println(collapsedColumn)
-      /*
-      needed steps
-      - gain datatype of elements: eg: boolean, double, string, ...
-      - collect number distribution
-      - collect null value exists
-       */
+      val dfCollapsedTwoColumns = collapsedDataframe
+        .select(keyColumnNameString, featureColumn)
 
-      // count values in collapsed lists for min and max to evaluate if it is feature set or something else
-      collectedDataFrame
-        .select(collapsedColumn)
-        .rdd
-        .map((row: Row) => row(1).asInstanceOf[Array[Any]])
-        .map(_.size)
-        .foreach(println(_))
+      var digitizedDf: DataFrame = fullDigitizedDf
+      var newFeatureColumnName: String = featureName
+
+      if (featureType == "Single_NonCategorical_String") {
+
+        val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
+          .na.fill("")
+
+        val tokenizer = new Tokenizer()
+          .setInputCol(featureColumn)
+          .setOutputCol("words")
+
+        val tokenizedDf = tokenizer
+          .transform(dfCollapsedTwoColumnsNullsReplaced)
+
+        val remover = new StopWordsRemover()
+          .setInputCol("words")
+          .setOutputCol("filtered")
+
+        val inputDf = remover
+          .transform(tokenizedDf)
+
+        val word2vec = new Word2Vec()
+          .setInputCol("filtered")
+          .setOutputCol("output")
+          .setVectorSize(10)
+        val model = word2vec
+          .fit(inputDf)
+        digitizedDf = model
+          .transform(inputDf)
+          .select(keyColumnNameString, "output")
+
+        newFeatureColumnName += "(Word2Vec)"
+      }
+      else if (featureType == "ListOf_NonCategorical_String") {
+
+        val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
+          .withColumn("sentences", concat_ws(". ", col(featureColumn)))
+          .na.fill("")
+
+        val tokenizer = new Tokenizer()
+          .setInputCol("sentences")
+          .setOutputCol("words")
+
+        val tokenizedDf = tokenizer
+          .transform(dfCollapsedTwoColumnsNullsReplaced)
+
+        val remover = new StopWordsRemover()
+          .setInputCol("words")
+          .setOutputCol("filtered")
+
+        val inputDf = remover
+          .transform(tokenizedDf)
+
+        val word2vec = new Word2Vec()
+          .setInputCol("filtered")
+          .setOutputCol("output")
+          .setVectorSize(10)
+        val model = word2vec
+          .fit(inputDf)
+        digitizedDf = model
+          .transform(inputDf)
+          .select(keyColumnNameString, "output")
+
+        newFeatureColumnName += "(Word2Vec)"
+      }
+      else if (featureType == "Single_Categorical_String") {
+
+        val inputDf = dfCollapsedTwoColumns
+
+        val indexer = new StringIndexer()
+          .setInputCol(featureColumn)
+          .setOutputCol("output")
+
+        digitizedDf = indexer.fit(inputDf).transform(inputDf)
+        newFeatureColumnName += "(IndexedString)"
+      }
+      else if (featureType == "ListOf_Categorical_String") {
+
+        val inputDf = dfCollapsedTwoColumns
+          .select(col(keyColumnNameString), explode(col(featureColumn)))
+
+        val indexer = new StringIndexer()
+          .setInputCol(featureColumn)
+          .setOutputCol("outputTmp")
+
+        digitizedDf = indexer
+          .fit(inputDf)
+          .transform(inputDf).withColumn("output", collect_list(col("tmpOutput"))) //TODO better collect_list
+        newFeatureColumnName += "(IndexedString)"
+      }
+
+      else {
+        println("transformation not possible yet")
+      }
+
+      val joinableDf: DataFrame = digitizedDf
+        .withColumnRenamed("output", newFeatureColumnName)
+
+      joinableDf.show(false)
+
+      fullDigitizedDf = fullDigitizedDf.join(
+        joinableDf,
+        keyColumnNameString
+      )
     }
-
-     */
+    fullDigitizedDf.show(false)
   }
 }
