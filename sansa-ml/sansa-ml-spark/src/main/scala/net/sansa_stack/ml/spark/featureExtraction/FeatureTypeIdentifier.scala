@@ -40,7 +40,7 @@ object FeatureTypeIdentifier {
       inputFilePath,
       stopOnBadTerm = ErrorParseMode.SKIP,
       stopOnWarnings = WarningParseMode.IGNORE
-    ).toDS().cache()
+    ).toDS() // .cache()
 
     /*
     CREATE FEATURE EXTRACTING SPARQL
@@ -119,7 +119,7 @@ object FeatureTypeIdentifier {
       .setSparqlQuery(queryString)
     val queryResultDf = sparqlFrame
       .transform(dataset)
-      .cache()
+      // .cache()
     queryResultDf.show(false)
     println(f"queryResultDf size ${queryResultDf.count()}")
 
@@ -154,9 +154,10 @@ object FeatureTypeIdentifier {
     var collapsedDataframe: DataFrame = queryResultDf
       .select(keyColumnNameString)
       .dropDuplicates()
-      .cache()
+      // .cache()
 
     val numberRows: Long = collapsedDataframe.count()
+    println(s"number rows of distinct ids is: $numberRows")
 
     var featureDescriptions: mutable.Map[String, Map[String, Any]] = mutable.Map()
 
@@ -225,15 +226,20 @@ object FeatureTypeIdentifier {
               .select(keyColumnNameString, currentFeatureColumnNameString)
           }
           else {
-            queryResultDf
+            twoColumnDf
               .select(keyColumnNameString, currentFeatureColumnNameString)
           }
         }
-        collapsedDataframe = collapsedDataframe.join(joinableDf.withColumnRenamed(currentFeatureColumnNameString, f"${currentFeatureColumnNameString}(${featureType})"), keyColumnNameString)
+        collapsedDataframe = collapsedDataframe
+          .join(joinableDf.withColumnRenamed(currentFeatureColumnNameString, f"${currentFeatureColumnNameString}(${featureType})"), keyColumnNameString)
       }
     )
     collapsedDataframe.show(false)
     featureDescriptions.foreach(println(_))
+
+    println(s"check if collapsed dataframe has still needed number of rows: $numberRows , $collapsedDfSize")
+    val collapsedDfSize = collapsedDataframe.count()
+    assert(collapsedDfSize == numberRows)
 
     val collectedFeatureColumns: Seq[String] = List(collapsedDataframe.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
 
@@ -250,7 +256,7 @@ object FeatureTypeIdentifier {
      */
     var fullDigitizedDf: DataFrame = collapsedDataframe
       .select(keyColumnNameString)
-      .cache()
+      // .cache()
 
     for (featureColumn <- collectedFeatureColumns) {
 
@@ -383,8 +389,9 @@ object FeatureTypeIdentifier {
       )
     }
     println("Resulting Dataframe:")
-    fullDigitizedDf.show()
-    println(s"resulting dataframe has size ${fullDigitizedDf.count()}")
+    fullDigitizedDf.show(false)
+    val resDFSize = fullDigitizedDf.count()
+    println(s"resulting dataframe has size ${resDFSize}")
 
     println("dataframe only with digitized columns")
 
@@ -396,7 +403,8 @@ object FeatureTypeIdentifier {
     println(s"we drop following non digitized columns: ${nonDigitizedCoulumns.mkString(", ")}")
     println("So simple digitized Dataframe looks like this:")
     val onlyDigitizedDf = fullDigitizedDf.select(digitzedColumns.map(col(_)): _*)
-    println(s"resulting dataframe has size ${onlyDigitizedDf.count()}")
+    val reducedDfSize = onlyDigitizedDf.count()
+    println(s"resulting dataframe has size ${reducedDfSize}")
     onlyDigitizedDf.show()
   }
 }
