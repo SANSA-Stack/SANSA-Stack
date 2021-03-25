@@ -66,7 +66,7 @@ object FeatureTypeIdentifier {
         |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
         |
         | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
-        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Drama"
+        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
         |
         |	OPTIONAL {
         |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
@@ -178,6 +178,7 @@ object FeatureTypeIdentifier {
           .agg(min("size"))
           .head()
           .getInt(0)
+
         val maxNumberOfElements = collapsedTwoColumnDfwithSize
           .select("size")
           .agg(max("size"))
@@ -249,12 +250,14 @@ object FeatureTypeIdentifier {
      */
     var fullDigitizedDf: DataFrame = collapsedDataframe
       .select(keyColumnNameString)
+      .cache()
 
     for (featureColumn <- collectedFeatureColumns) {
 
-      println(featureColumn)
+      // println(featureColumn)
       val featureType = featureColumn.split("\\(")(1).split("\\)")(0)
       val featureName = featureColumn.split("\\(")(0)
+      println(featureName)
       println(featureType)
 
       val dfCollapsedTwoColumns = collapsedDataframe
@@ -285,12 +288,12 @@ object FeatureTypeIdentifier {
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
-          .setVectorSize(10)
+          .setVectorSize(2)
         val model = word2vec
           .fit(inputDf)
         digitizedDf = model
           .transform(inputDf)
-          .select(keyColumnNameString, "output")
+          // .select(keyColumnNameString, "output")
 
         newFeatureColumnName += "(Word2Vec)"
       }
@@ -317,12 +320,12 @@ object FeatureTypeIdentifier {
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
-          .setVectorSize(10)
+          .setVectorSize(2)
         val model = word2vec
           .fit(inputDf)
         digitizedDf = model
           .transform(inputDf)
-          .select(keyColumnNameString, "output")
+          // .select(keyColumnNameString, "output")
 
         newFeatureColumnName += "(Word2Vec)"
       }
@@ -343,29 +346,57 @@ object FeatureTypeIdentifier {
           .select(col(keyColumnNameString), explode(col(featureColumn)))
 
         val indexer = new StringIndexer()
-          .setInputCol(featureColumn)
+          .setInputCol("col")
           .setOutputCol("outputTmp")
 
         digitizedDf = indexer
           .fit(inputDf)
-          .transform(inputDf).withColumn("output", collect_list(col("tmpOutput"))) //TODO better collect_list
+          .transform(inputDf)
+          .groupBy(keyColumnNameString)
+          .agg(collect_set("outputTmp") as "output")
+          .select(keyColumnNameString, "output")
+          // .join(dfCollapsedTwoColumns, keyColumnNameString) // TODO this is optional if we are interested in the pair of original and digitized feature representation
         newFeatureColumnName += "(IndexedString)"
-      }
 
+      }
+      else if (featureType.endsWith("Double")) {
+        digitizedDf = dfCollapsedTwoColumns
+          .withColumnRenamed(featureColumn, "output")
+        newFeatureColumnName += s"(${featureType})"
+      }
       else {
         println("transformation not possible yet")
+        digitizedDf = dfCollapsedTwoColumns
+          .withColumnRenamed(featureColumn, "output")
+        newFeatureColumnName += ("(notDigitizedYet)")
       }
 
       val joinableDf: DataFrame = digitizedDf
         .withColumnRenamed("output", newFeatureColumnName)
+        .select(keyColumnNameString, newFeatureColumnName)
 
-      joinableDf.show(false)
+      // joinableDf.show()
 
       fullDigitizedDf = fullDigitizedDf.join(
         joinableDf,
         keyColumnNameString
       )
     }
-    fullDigitizedDf.show(false)
+    println("Resulting Dataframe:")
+    fullDigitizedDf.show()
+    println(s"resulting dataframe has size ${fullDigitizedDf.count()}")
+
+    println("dataframe only with digitized columns")
+
+    val allColumns: Array[String] = fullDigitizedDf.columns
+    val nonDigitizedCoulumns: Array[String] = allColumns.filter(_.contains("(notDigitizedYet)"))
+    val digitzedColumns: Array[String] = allColumns diff nonDigitizedCoulumns
+    println(s"digitized columns are: ${digitzedColumns.mkString(", ")}")
+
+    println(s"we drop following non digitized columns: ${nonDigitizedCoulumns.mkString(", ")}")
+    println("So simple digitized Dataframe looks like this:")
+    val onlyDigitizedDf = fullDigitizedDf.select(digitzedColumns.map(col(_)): _*)
+    println(s"resulting dataframe has size ${onlyDigitizedDf.count()}")
+    onlyDigitizedDf.show()
   }
 }
