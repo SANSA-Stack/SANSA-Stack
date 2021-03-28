@@ -157,6 +157,7 @@ object FeatureTypeIdentifier {
     var collapsedDataframe: DataFrame = queryResultDf
       .select(keyColumnNameString)
       .dropDuplicates()
+      .persist()
       // .cache()
 
     val numberRows: Long = collapsedDataframe.count()
@@ -266,7 +267,9 @@ object FeatureTypeIdentifier {
      */
     var fullDigitizedDf: DataFrame = collapsedDataframe
       .select(keyColumnNameString)
-      // .cache()
+      .persist()
+
+    collapsedDataframe.unpersist()
 
     val fullDigitizedDfSize = fullDigitizedDf.count()
 
@@ -436,6 +439,9 @@ object FeatureTypeIdentifier {
     val onlyDigitizedDf = fullDigitizedDf
       .select(digitzedColumns.map(col(_)): _*)
       // .limit(1502) // TODO only for debug and memory issue
+
+    fullDigitizedDf.unpersist()
+
     val reducedDfSize = onlyDigitizedDf.count()
     println(s"resulting dataframe has size ${reducedDfSize}")
     onlyDigitizedDf.show()
@@ -446,9 +452,9 @@ object FeatureTypeIdentifier {
     // they are idenitidyiable over starts with ListOf
     val columnsNameWithVariableFeatureColumnLength: Array[String] = onlyDigitizedDf.columns.filter(_.contains("ListOf"))
 
-    var fixedLengthFeatureDf: DataFrame = onlyDigitizedDf.select(
-      (onlyDigitizedDf.columns diff columnsNameWithVariableFeatureColumnLength).map(col(_)): _*
-    )
+    var fixedLengthFeatureDf: DataFrame = onlyDigitizedDf
+      .select((onlyDigitizedDf.columns diff columnsNameWithVariableFeatureColumnLength).map(col(_)): _*)
+      .persist()
     println("Dataframe with features of fixed length")
     fixedLengthFeatureDf.show(false)
     val fixedLengthFeatureDfSize = fixedLengthFeatureDf.count()
@@ -506,6 +512,9 @@ object FeatureTypeIdentifier {
       .setInputCols(columnsToAssemble)
       .setOutputCol("features")
     val output = assembler.transform(fixedLengthFeatureDf)
+
+    fixedLengthFeatureDf.unpersist()
+
     output.select(keyColumnNameString, "features").show(false)
 
   }
